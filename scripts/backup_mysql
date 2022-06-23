@@ -1,0 +1,15 @@
+#!/bin/sh
+
+DEST=/home/psfs_reg/backups
+D=`/bin/date +%Y_%m_%d_%H` export D
+DBNAME=yourreg_database
+DBHOSTNAME=yourmysql.host.name
+DBUSERID=''
+DBPASSWORD=''
+db_name=''
+
+echo "Starting $DBNAME.$D"
+/usr/bin/mysqldump -h $DBHOSTNAME -u $DBUSERID --password="$DBPASSWORD" $DBNAME > $DEST/$DBNAME.$D
+
+bzip2 $DEST/$DBNAME.$D
+

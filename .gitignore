@@ -1,0 +1,7 @@
+*.swp
+*.bak
+
+# Visual Studio Stuff
+/.vs/
+/BalticonReg.phpproj
+/BalticonReg.sln

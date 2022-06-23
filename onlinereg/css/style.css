@@ -1,0 +1,101 @@
+
+input.need {
+  background-color: red;
+}
+
+
+h3 { 
+  text-align: center;
+  color: #73f;
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+}
+
+/* div { overflow: auto; } */
+
+div.padded {
+  padding: 5px;
+  margin: 5px;
+}
+
+form, hr { border-color: inherit; }
+
+.small { 
+  font-size: x-small;
+}
+
+
+select, option {
+  max-width:20ch;
+}
+
+#memType, #memType option {
+    max-width: 40ch;
+}
+
+.age {
+  width:180px;
+  height:300px;
+  transform: rotate(-90deg) translate(23px,-20px);
+  text-align:center;
+  font-weight:bold;
+  font-size:24px;
+  color: white;
+  margin: 4px;
+  padding: 4px;
+}
+
+.editbutton {
+  width: 25px;
+  padding: 0px;
+  margin: 0px;
+  }
+
+.kit {
+    background-color: slateblue;
+}
+
+.youth {
+    background-color: #5e27d0;
+}
+.adult {
+  background-color: purple;
+}
+
+.military {
+  background-color: mediumorchid;
+}
+.child {
+  background-color: blue;
+}
+
+.hidden { 
+  display: none;
+  }
+
+.mask {
+  background-color:#ccc;
+  position:fixed;
+  width:100%;
+  height:100%;
+  top:0px;
+  left:0px;
+  z-index:1000;
+}
+
+#review {
+ opacity:1;
+ background-color:white;
+ position:fixed;
+ width:80%;
+ height:90%;
+ overflow:auto;
+ }
+
+.newBadge.ui-dialog-titlebar {
+    background-color: lightsteelblue;
+}
+
+.regPaybody {
+    background-color: oldlace;
+}
