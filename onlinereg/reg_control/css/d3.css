@@ -1,0 +1,104 @@
+svg { 
+    font-size: small;
+    border: 1px solid black;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.blank path,
+.blank line {
+    fill: none;
+    stroke-width: 0px;
+}
+
+.lineAll {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 1.5px;
+}
+.lineUnpaid {
+    fill: none;
+    stroke: #aaa;
+    stroke-width: 1.5px;
+}
+.linePaid {
+    fill: none;
+    stroke: purple;
+    stroke-width: 1.5px;
+}
+.lineMax {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 0.5px;
+}
+.lineMin {
+    fill: none;
+    stroke: red;
+    stroke-width: 0.5px;
+}
+.lineMed {
+    fill: none;
+    stroke: black;
+    stroke-width: 0.5px;
+}
+.line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 1.5px;
+}
+.areaUpper {
+    fill: #ddf;
+    stroke: none;
+}
+.areaMid {
+    fill: #dfd;
+    stroke: none;
+}
+.areaLower {
+    fill: #fdd;
+    stroke: none;
+}
+.legend {
+    font-size: 12px;
+}
+.legend rect {
+    stroke-width: 2;
+}
+.legend text.big {
+    font-size: 16px;
+}
+
+.lineDE{
+  fill: none;
+  stroke: black;
+  stroke-width: 1.5px;
+  }
+.lineREG{
+  fill: none;
+  stroke: green;
+  stroke-width: 1.5px;
+  }
+.areaFull {
+  fill: purple;
+  stroke: none;
+}
+
+.areaOneday {
+  fill: steelblue;
+  stroke: none;
+}
+.areaExpired {
+  fill: #fdd;
+  stroke: none;
+}
+.area {
+  fill: purple;
+  stroke: none;
+}
+
+

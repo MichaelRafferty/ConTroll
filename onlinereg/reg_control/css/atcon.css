@@ -1,0 +1,36 @@
+div.badge {
+    background-color: white;
+    margin: 2px;
+    border: 1px solid orange;
+    padding: 2px;
+}
+
+div.badge.selected {
+    background-color: white;
+    margin: 0px;
+    border: 3px solid orange;
+    padding: 2px;
+}
+
+#finalButtons { 
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+.bigButton {
+    height: 4em;
+    background-color: #fef;
+}
+
+.quantity {
+    width: 50px;
+}
+
+.bid {
+    width: 80px;
+}
+
+.red {
+    text-color: red;
+}

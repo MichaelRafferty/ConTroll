@@ -1,0 +1,76 @@
+div.facet {
+    width: 99%;
+    border: 2px solid #800080;
+    margin: 0px 0px 5px 0px;
+}
+
+.facetHdr {
+    background-color: #800080;
+    color: white;
+}
+
+text.filter_num {
+    text-anchor: end;
+    fill: black;
+}
+
+text.filter_num.grey{
+    text-anchor: end;
+    fill: white;
+}
+
+text.filter_num.reverse {
+    text-anchor: start;
+    fill: black; 
+}
+
+g.facets rect.vis {
+    fill: #808;
+}
+
+g.facets rect.full {
+    fill: #888;
+}
+
+
+#grid, #grid thead, #grid tbody {
+    border: 1px solid #a5f;
+    border-collapse: collapse;
+
+}
+
+td.unconfirmed {
+    color: #c05;
+}
+
+g.facets rect.even.background {
+    fill: #ecf;
+}
+
+g.facets rect.odd.background:nth-child(2n+1) {
+    fill: #fef;
+}
+
+tbody tr:nth-child(2n) {
+    background-color: #ecf;
+}
+
+tbody tr:nth-child(2n+1) {
+    background-color: #fef;
+}
+
+g.facets.selected rect.even.background {
+    fill: #c9f;
+}
+
+g.facets.selected rect.odd.background {
+    fill: #daf;
+}
+
+tbody tr.selected:nth-child(2n) {
+    background-color: #c9f;
+}
+
+tbody tr.selected:nth-child(2n+1) {
+    background-color: #daf;
+}
