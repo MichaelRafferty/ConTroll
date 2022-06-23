@@ -1,6 +1,9 @@
 *.swp
 *.bak
 
+/config/
+/config-philcon/
+
 # Visual Studio Stuff
 /.vs/
 /BalticonReg.phpproj
