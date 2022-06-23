@@ -2,7 +2,6 @@
 *.bak
 
 /config/
-/config-philcon/
 
 # Visual Studio Stuff
 /.vs/
