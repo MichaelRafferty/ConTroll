@@ -23,6 +23,13 @@ switch ($ccauth['type']) {
         require_once("../../Composer/vendor/autoload.php");
         require_once("../lib/square.php");
         break;
+    case 'bypass':
+        $con = get_conf('con');
+        $reg = get_conf('reg');
+        if (str_contains($con['server'], '//127.0.0.1') || str_contains($con['server'], '//192.168.149.128') || $reg['test'] == 1) {
+            require_once("../lib/bypass.php");
+            break;
+        }
     default:
         echo "No valid credit card processor defined\n";
         ajaxSuccess(array('status'=>'error', 'error'=>"Error: No credit card processor defined")); exit();
@@ -36,11 +43,14 @@ logInit($log['reg']);
 $prices = array();
 $memId = array();
 $priceQ = <<<EOQ
-SELECT id, memAge, price
-FROM memList
+SELECT m.id, m.memAge, a.label, a.shortname, m.price
+FROM memList m
+JOIN ageList a ON (a.conid = m.conid and a.ageType = m.memAge)
 WHERE
-    conid=? AND memCategory IN ('standard', 'premium')
-    AND startdate < current_timestamp() AND enddate >= current_timestamp()
+    m.conid=?
+    AND memCategory IN ('standard', 'premium')
+    AND startdate < current_timestamp()
+    AND enddate >= current_timestamp()
     AND memType='full'
 ;
 EOQ;
@@ -144,8 +154,12 @@ EOF;
         );
       $res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
       if ($res !== false) {
-          $match = fetch_safe_assoc($res);
-          $id = $match['id'];
+          if ($res->num_rows > 0) {
+              $match = fetch_safe_assoc($res);
+              $id = $match['id'];
+          } else {
+              $id = null;
+          }
       } else {
           $id = null;
       }

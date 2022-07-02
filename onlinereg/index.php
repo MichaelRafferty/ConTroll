@@ -3,37 +3,43 @@ require_once("lib/base.php");
 $ini = redirect_https();
 
 $cc = get_conf('cc');
+$con = get_conf('con');
 switch ($cc['type']) {
-      case 'convergepay':
-          require_once("lib/convergepay.php");
-          break;
-      case 'square':
-          require_once("lib/square.php");
-          break;
-      default:
-          echo "No valid credit card processor defined\n";
-          exit();
+    case 'convergepay':
+        require_once("lib/convergepay.php");
+        break;
+    case 'square':
+        require_once("lib/square.php");
+        break;
+    case 'bypass':
+        $reg = get_conf('reg');
+        if (str_contains($con['server'], '//127.0.0.1') || str_contains($con['server'], '//192.168.149.128') || $reg['test'] == 1) {
+            require_once("lib/bypass.php");
+            break;
+        }
+    default:
+        echo "No valid credit card processor defined\n";
+        exit();
 }
 $condata = get_con();
-$con = get_conf('con');
 
-$prices = array();
-$priceQ = "SELECT memAge, price from memList where conid='". $condata['id'] .
-"' and memCategory='standard' and startdate < current_timestamp() and enddate >= current_timestamp() and memType='full';";
+$membershiptypes = array();
 $priceQ = <<<EOS
-SELECT memAge, price
-FROM memList 
+SELECT m.memAge, a.label, a.shortname, a.sortorder, m.price
+FROM memList m
+JOIN ageList a ON (a.conid = m.conid and a.ageType = m.memAge)
 WHERE 
-    conid=? 
+    m.conid=? 
     AND memCategory='standard' 
     AND startdate < current_timestamp() 
     AND enddate >= current_timestamp() 
     AND memType='full'
+ORDER BY sortorder
 ;
 EOS;
 $priceR = dbSafeQuery($priceQ, "i", array($condata['id']));
-while($priceL = fetch_safe_assoc($priceR)) { 
-    $prices[$priceL['memAge']] = $priceL['price'];
+while($priceL = fetch_safe_assoc($priceR)) {
+    $membershiptypes[] = array('memAge' => $priceL['memAge'], 'shortname' => $priceL['shortname'], 'price' => $priceL['price'], 'label' => $priceL['label']);
 }
 
 $startdate = new DateTime($condata['startdate']);
@@ -204,11 +210,9 @@ $onsitesale = $startdate->format("l, F j");
                     </div>
                     <div class="col-6 ms-0 me-0 p-0"> 
                         <select id='memType' name='age' style="width:300px;" tabindex='15' title='Age as of <?php echo substr($condata['startdate'], 0, 10); ?> (the first day of the convention)'>
-                            <?php if (array_key_exists('adult', $prices)) { ?><option value='adult'>Adult [21+ years old] ($<?php echo $prices['adult'];?>)</option> <?php }; ?>
-                            <?php if (array_key_exists('military', $prices)) { ?><option value='military'>Active Duty Military ($<?php echo $prices['military'];?>)</option> <?php }; ?>
-                            <?php if (array_key_exists('youth', $prices)) { ?><option value='youth'>Young Adult or Child [13 to 20 years old] ($<?php echo $prices['youth'];?>)</option><?php }; ?>
-                            <?php if (array_key_exists('child', $prices)) { ?><option value='child'>Child [6 to 12 years old] ($<?php echo $prices['child'];?>)</option><?php }; ?>
-                            <?php if (array_key_exists('kit', $prices)) { ?><option value='kit'>Kid in Tow [under 6 years old] ($<?php echo $prices['kit'];?>)</option><?php }; ?>
+                            <?php foreach ($membershiptypes as $memType) { ?>
+                                <option value='<?php echo $memType['memAge'];?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price'];?>)</option>
+                            <?php    } ?>
                         </select>
                     </div>
                 </div> 
@@ -259,11 +263,9 @@ $onsitesale = $startdate->format("l, F j");
              <div class="col-6 p-2 border border-2 border-primary">
                  <h3 class="text-primary">Summary</h3>
                  <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
-                 <?php if (array_key_exists('adult', $prices)) { ?>Adult Badges <span id='adults'>0</span> x $<?php echo $prices['adult']; ?><br/><?php }; ?>
-                 <?php if (array_key_exists('military', $prices)) { ?>Military Badges <span id='militarys'>0</span> x $<?php echo $prices['military']; ?><br/><?php }; ?>
-                 <?php if (array_key_exists('youth', $prices)) { ?>YA Badges <span id='youths'>0</span> x $<?php echo $prices['youth']; ?><br/><?php }; ?>
-                 <?php if (array_key_exists('child', $prices)) { ?>Child Badges <span id='childs'>0</span> x $<?php echo $prices['child']; ?><br/><?php }; ?>
-                 <?php if (array_key_exists('kit', $prices)) { ?>Kids in Tow <span id='kits'>0</span> x $<?php echo $prices['kit']; ?><br/><?php }; ?>
+                   <?php foreach ($membershiptypes as $memType) { ?>
+                        <?php echo $memType['shortname']; ?> Badges <span id='<?php echo $memType['memAge'];?>'>0</span> x $<?php echo $memType['price']; ?><br/>    
+                   <?php    } ?>
                  <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
                  Total Cost: $<span id='total'>0</span><br/>
                  <button onclick='$("#newBadge").dialog("open");'>Add Badges</button>
@@ -390,8 +392,11 @@ For questions about <?php echo $con['conname']; ?> Registration, email <a href="
 
 <script>
   <?php
-  foreach($prices as $grp => $price) {
-    echo "setPrice('$grp',$price);";
+  foreach($membershiptypes as $memType) {
+    $grp = $memType['memAge'];
+    $price = $memType['price'];
+    $shortname = $memType['shortname'];
+    echo "setPrice('$grp', $price, '$shortname');";
   }
   ?>
 
