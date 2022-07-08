@@ -299,49 +299,54 @@ $success = 'success';
 $data = 'success';
 $email_error = "none";
 
-try {
-    $awsClient = SesClient::factory(array(
-      'version'=>$amazonCred['version'],
-      'region'=>$amazonCred['region'],
-      'credentials' => array(
-	      'key'=>$amazonCred['aws_access_key_id'],
-	      'secret'=>$amazonCred['aws_secret_access_key']
-	      )
-      )
-      );
-} catch (AwsException $e) {
-    $email_error = $e->getCode();
-    $success="error";
-    $data=$e->getMessage();
-}
+if ($amazonCred['test'] != 1) {
 
-$email_msg = "no send attempt or a failure";
-try {
-    $email_msg = $awsClient->sendEmail(
-        array(
-        'Source' => $con['regadminemail'],
-        'Destination' => array(
-         'ToAddresses' => array(trim($_POST['cc_email']))
-        ),
-      'Message' => array(
-        'Subject' => array(
-          'Data' => $condata['label']. " Online Registration Receipt"
-          ),
-        'Body' => array(
-          'Text' => array(
-            'Data' => getEmailBody($transid)
-            ) // HTML (Data)
-           ) // (Text)
-          )// ReplyToAddresses or ReturnPath (body)
-         ) // (message)
-        ); //(email)
-    $email_error = "none";
-    $success = "success";
-    $data = "success";
-} catch (AwsException $e) {
-    $email_error = $e->getCode();
-    $success="error";
-    $data=$e->getMessage();
+    try {
+        $awsClient = SesClient::factory(array(
+          'version'=>$amazonCred['version'],
+          'region'=>$amazonCred['region'],
+          'credentials' => array(
+              'key'=>$amazonCred['aws_access_key_id'],
+              'secret'=>$amazonCred['aws_secret_access_key']
+              )
+          )
+          );
+    }
+    catch (AwsException $e) {
+        $email_error = $e->getCode();
+        $success="error";
+        $data=$e->getMessage();
+    }
+
+    $email_msg = "no send attempt or a failure";
+    try {
+        $email_msg = $awsClient->sendEmail(
+            array(
+            'Source' => $con['regadminemail'],
+            'Destination' => array(
+             'ToAddresses' => array(trim($_POST['cc_email']))
+            ),
+          'Message' => array(
+            'Subject' => array(
+              'Data' => $condata['label']. " Online Registration Receipt"
+              ),
+            'Body' => array(
+              'Text' => array(
+                'Data' => getEmailBody($transid)
+                ) // HTML (Data)
+               ) // (Text)
+              )// ReplyToAddresses or ReturnPath (body)
+             ) // (message)
+            ); //(email)
+        $email_error = "none";
+        $success = "success";
+        $data = "success";
+    }
+    catch (AwsException $e) {
+        $email_error = $e->getCode();
+        $success="error";
+        $data=$e->getMessage();
+    }
 }
 
 ajaxSuccess(array(
