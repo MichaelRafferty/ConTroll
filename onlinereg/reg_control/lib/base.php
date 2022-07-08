@@ -91,7 +91,7 @@ function google_init($mode) {
     ) {
         $client->setAccessToken($_SESSION['id_token_token']);
         $token_data = $client->verifyIdToken();
-        if(array_key_exists('exp', $token_data) && ($token_data['exp'] - time() < 900)) {
+        if(is_array($token_data) && array_key_exists('exp', $token_data) && ($token_data['exp'] - time() < 900)) {
             $client->refreshToken($_SESSION['id_token_token']['refresh_token']);
         }
     } else {
