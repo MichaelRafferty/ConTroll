@@ -28,6 +28,8 @@ $conf = get_conf('con');
     <?php 
         $artshowQ = "SELECT * from artshow_reg where conid=$conid;";
         $as_status = fetch_safe_assoc(dbQuery($artshowQ));
+        if (!is_array($as_status))
+            $as_status = array();
         $artshowQ = "SELECT attending, count(id) as c from artshow where conid=$conid GROUP BY attending;";
         $countR = dbQuery($artshowQ);
         $artist_count = array('all' => 0, 'mailin' => 0);
@@ -43,18 +45,52 @@ $conf = get_conf('con');
         }
     ?>
     <a href='reports/artshowRegReport.php'>Report</a><br/>
-    Artshow Space Remaining:
-    <?php echo ($as_status['max_art'] - $as_status['cur_art']); ?> Panels
-    <?php echo ($as_status['max_table'] - $as_status['cur_table']); ?> Tables,
-    Printshop:
-    <?php echo ($as_status['max_print'] - $as_status['cur_print']); ?> Panels,
-    Mailin: 
-    <?php echo ($as_status['max_mailin'] - $as_status['cur_mailin']); ?> Panels
-    <br/>
-    # Artists: 
-    <?php echo $artist_count['all']; ?>
-    , # Mailin:
-    <?php echo $artist_count['mailin']; ?>
+    <?php 
+    
+    $a_panels = 0;
+    $a_tables = 0;
+    $p_panels = 0;
+    $m_panels = 0;
+    $a_count = 0;
+    $m_count = 0;
+
+    if (array_key_exists('max_art', $as_status)) {
+        $a_panels += $as_status['max_art'];
+    }
+    if (array_key_exists('cur_art', $as_status)) {
+        $a_panels -= $as_status['cur_art'];
+        
+    }
+
+    if (array_key_exists('max_table', $as_status)) {
+        $a_tables += $as_status['max_table'];
+    }
+    if (array_key_exists('cur_table', $as_status)) {
+        $a_tables -= $as_status['cur_table'];        
+    }
+
+    if (array_key_exists('max_print', $as_status)) {
+        $p_panels += $as_status['max_print'];
+    }
+    if (array_key_exists('cur_print', $as_status)) {
+        $p_panels -= $as_status['cur_print'];        
+    }
+
+    if (array_key_exists('max_mailin', $as_status)) {
+        $m_panels += $as_status['max_mailin'];
+    }
+    if (array_key_exists('cur_mailin', $as_status)) {
+        $m_panels -= $as_status['cur_mailin'];  
+    }
+    
+    if (array_key_exists('all', $artist_count)) {
+        $a_count = $artist_count['all'];
+    }
+    if (array_key_exists('mailin', $artist_count)) {
+        $m_count = $artist_count['mailin'];  
+    }
+    echo "Artshow Space Remaining: $a_panels Panels $a_tables Tables, Printshop: $p_panels Panels, Mailin: $m_panels Panels<br/>\n";
+    echo "# Artists: $a_count, # Mailin: $m_count\n"; ?>
   </div>
   <div id='searchResults' class='half right'>
     <span class='blocktitle'>Search Results</span>
