@@ -129,7 +129,9 @@ return isset($_SERVER['HTTP_USER_AGENT']);
 function page_init($title, $css, $js, $auth) {
     global $db_ini;
 // auth gets the token in need_login
-    newUser($auth['email'], $auth['sub']);
+    if (is_array($auth) && array_key_exists('email', $auth)) {
+        newUser($auth['email'], array_key_exists('sub', $auth) ? $auth['sub'] : '');
+    }
     
     if(isWebRequest()) { 
 ?>
@@ -186,7 +188,7 @@ function page_head($title, $auth) {
 }
 
 function con_info($auth) {
-    if(checkAuth($auth['sub'], 'overview')) {
+    if(is_array($auth) && checkAuth(array_key_exists('sub', $auth) ? $auth['sub'] : null, 'overview')) {
         $con = get_con();
         $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."';");
         $badgeCount = fetch_safe_array($count_res);
@@ -210,7 +212,11 @@ function con_info($auth) {
 }
 
 function tab_bar($auth, $page) {
-    $page_list = getPages($auth['sub']);
+    if (is_array($auth) && array_key_exists('sub', $auth)) {
+        $page_list = getPages($auth['sub']);
+    } else {
+        $page_list = array();
+    }
     ?>
     <div class='tabbar'>
         <span class='
