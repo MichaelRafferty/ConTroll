@@ -1,15 +1,9 @@
 <?php
 ## Pull INI for variables
 global $db_ini;
-if (!$db_ini) {
-    if (strpos(__DIR__, "/test/")) {
-        $db_ini = parse_ini_file(__DIR__ . "/../../../../config/reg_test.ini", true);
-        $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../../../google_client";
-
-    } else {
-        $db_ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-        $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../../google_client";
-    }
+if (!$db_ini) {    
+    $db_ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
+    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../../google_client";    
 }
 
 if ($db_ini['reg']['https'] <> 0) {

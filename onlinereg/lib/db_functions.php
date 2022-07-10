@@ -10,11 +10,7 @@ global $db_ini;
 
 $dbObject = null;
 if (!$db_ini) {
-    if (strpos(__DIR__, "/test/")) {
-        $db_ini = parse_ini_file(__DIR__ . "/../../../config/reg_test.ini", true);
-    } else {
-        $db_ini = parse_ini_file(__DIR__ . "/../../config/reg_conf.ini", true);
-    }
+    $db_ini = parse_ini_file(__DIR__ . "/../../config/reg_conf.ini", true);    
 }
 
 
