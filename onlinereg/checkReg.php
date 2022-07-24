@@ -7,8 +7,8 @@ $con = get_conf('con');
 $lname = "";
 $fname = "";
 if(isset($_GET) && isset($_GET['lname']) && isset($_GET['fname'])) {
-  $lname = sql_safe($_GET['lname']);
-  $fname = sql_safe($_GET['fname']);
+  $lname = $_GET['lname'];
+  $fname = $_GET['fname'];
 }
 
 ol_page_init($condata['label'] . ' Registration Check');
@@ -20,35 +20,52 @@ ol_page_init($condata['label'] . ' Registration Check');
     <?php
 if($lname == "" or $fname == "") {
     ?>
-Please provide the last name and at least the first initial of the first name.
-    <form method="GET">
-        First Name: <input required='required' type='text' name='fname' />
-        Last Name: <input required='required' type='text' name='lname' />
-        <input type='submit' value='Search' />
-    </form>
+     <div id='newBadge' class="container-fluid">
+         <form method="GET">
+             <div class="row" style="width:100%;">
+                 <div class="col-12 ms-0 me-0 p-0">
+                     <p>Please provide the last name and at least the first initial of the first name.</p>
+                 </div>
+             </div>
+             <div class="row" style="width:100%;">
+                 <div class="col-1 ms-0 me-0 p-0">
+                    <label for="fname" class="form-label-sm"><span class="text-dark"><span class='text-info'>*</span>First Name:</span></label>
+                 </div>
+                 <div class="col-2 ms-0 me-0 p-0">
+                     <input class="form-control-sm" type="text" name="fname" id='fname' size="12" maxlength="32" tabindex="1"/>
+                 </div>
+                 <div class="col-1 ms-0 me-0 p-0">
+                    <label for="lname" class="form-label-sm"><span class="text-dark"><span class='text-info'>*</span>Last Name:</span></label>
+                 </div>
+                 <div class="col-3 ms-0 me-0 p-0">
+                     <input class="form-control-sm" type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="2"/>
+                 </div>
+                 <div class="col-1 ms-0 me-0 p-0">
+                     <input type='submit' value='Search' />
+                 </div>
+             </div>
+         </form>
+     </div>
     <?php
 } else {
-    $fname = sql_safe($fname);
-    $lname = sql_safe($lname);
-    $query = "SELECT P.last_name, SUBSTRING(P.first_name, 1, 1) as fi, SUBSTRING(P.middle_name, 1, 1) as mi, P.zip ".
-         "FROM reg as R, perinfo as P " .
-         "WHERE (R.perid = P.id AND P.share_reg_ok='Y' AND " .
-             "R.conid = '" . $condata['id'] . "' AND ".
-             "P.first_name like '$fname%' AND " .
-             "P.last_name = '$lname' AND " .
-             "R.price=R.paid);";
+    $fname .= '%';
+    $query = <<<EOS
+SELECT P.last_name, SUBSTRING(P.first_name, 1, 1) AS fi, SUBSTRING(P.middle_name, 1, 1) AS mi, P.zip
+FROM reg R
+JOIN perinfo P ON (R.perid = P.id)
+WHERE P.share_reg_ok='Y' AND R.conid = ? AND P.first_name like ? AND P.last_name = ? AND R.price=R.paid;
+EOS;
 
-    $perR = dbQuery($query);
+    $perR = dbSafeQuery($query, 'iss', array($condata['id'],  $fname, $lname));
 
-    $newp_query = "SELECT NP.last_name, SUBSTRING(NP.first_name, 1, 1) as fi, SUBSTRING(NP.middle_name, 1, 1) as mi, NP.zip ".
-         "FROM reg as R, newperson as NP " .
-         "WHERE (R.perid is null AND NP.share_reg_ok='Y' AND " .
-             "R.newperid = NP.id AND R.conid = '" . $condata['id'] . "' AND ".
-             "NP.first_name like '$fname%' AND " .
-             "NP.last_name = '$lname' AND " .
-             "R.price=R.paid);";
+    $newp_query = <<<EOS
+SELECT NP.last_name, SUBSTRING(NP.first_name, 1, 1) as fi, SUBSTRING(NP.middle_name, 1, 1) as mi, NP.zip
+FROM reg R
+JOIN newperson NP ON (R.newperid = NP.id)
+WHERE R.perid is null AND NP.share_reg_ok='Y' AND R.conid =? AND NP.first_name like ? AND NP.last_name = ? AND R.price=R.paid;
+EOS;
 
-    $nperR = dbQuery($newp_query);
+    $nperR = dbSafeQuery($newp_query, 'iss', array($condata['id'],  $fname, $lname));
 
     $results = array();
     while($perR && $row = fetch_safe_assoc($perR)) {
@@ -59,37 +76,49 @@ Please provide the last name and at least the first initial of the first name.
         array_push($results, $row);
     }
 
+    $numbadges = count($results);
     ?>
-Your search for <?php echo $fname . " " . $lname; ?> found <?php echo count($results); ?> Badges.<br />
-    <table>
-        <thead>
-            <tr>
-                <th>Last Name</th><th>FI</th><th>MI</th><th>Zip</th>
-            </tr>
-        </thead>
-        <tbody>
+    <div id='newBadge' class="container-fluid">
+        <div class="row" style="width:100%;">
+            <div class="col-12 ms-0 me-0 p-0">
+                <p>Your search for <?php echo $fname . " " . $lname; ?> found <?php echo$numbadges; ?> Badge<?php if ($numbadges != 1) { echo "s"; } ?>.</p>
+            </div>
+        </div>
+        <div class="row" style="width:100%;">
+             <div class="col-2 ms-0 me-0 p-0">
+                 <strong>Last Name</strong>
+             </div>
+            <div class="col-1 ms-0 me-0 p-0">
+                 <strong>FI</strong>
+             </div>
+             <div class="col-1 ms-0 me-0 p-0">
+                 <strong>MI</strong>
+             </div>
+             <div class="col-1 ms-0 me-0 p-0">
+                 <strong>Zip</strong>
+             </div>
+        </div> 
             <?php
   foreach($results as $row) {
             ?>
-            <tr>
-                <td>
-                    <?php echo $row['last_name'];?>
-                </td>
-                <td>
+            <div class="row" style="width:100%;">
+                 <div class="col-2 ms-0 me-0 p-0">
+                      <?php echo $row['last_name'];?>
+                 </div>
+                <div class="col-1 ms-0 me-0 p-0">
                     <?php echo $row['fi'];?>
-                </td>
-                <td>
+                </div>
+                <div class="col-1 ms-0 me-0 p-0">
                     <?php echo $row['mi'];?>
-                </td>
-                <td>
-                    <?php echo $row['zip'];?>
-                </td>
-            </tr>
+                </div>
+                <div class="col-1 ms-0 me-0 p-0">
+                     <?php echo $row['zip'];?>
+                </div>
+            </div> 
             <?php
   }
             ?>
-        </tbody>
-    </table>
+    </div>
 
 
     <?php } ?>
