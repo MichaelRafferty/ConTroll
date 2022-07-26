@@ -27,24 +27,29 @@ $conid=$con['id'];
 if(isset($_GET) && isset($_GET['conid'])) { $conid=sql_safe($_GET['conid']); }
 
 header('Content-Type: application/csv');
-header('Content-Disposition: attachment; filename="registration.csv"');
+header('Content-Disposition: attachment; filename="hotel_registration.csv"');
 
-$query = "SELECT DISTINCT concat_ws(' ', P.first_name, P.last_name)"
-        . ", REPLACE(concat_ws('\n', P.address, P.addr_2, concat(P.city, ', ', P.state, ' ', P.zip)), '\n\n', '\n')"
-        . ", M.label, U.name, U.email" // , min(B.date)"
-    . " FROM reg as R JOIN perinfo as P on P.id=R.perid JOIN memList as M on M.id=R.memId"
-        //. " JOIN atcon_badge as B on B.badgeId=R.id"
-        . " LEFT JOIN user AS U ON U.id=R.create_user"
-    . " WHERE R.conid=$conid" //  and B.action='pickup'"
-    . " GROUP BY P.last_name, P.first_name" // , B.action"
-    . " ORDER BY P.last_name, P.first_name, M.id"
-    . ";";
+// need to understand additional select item of // , min(B.date)" that was commented out at end of list
+// with added group by field of " // , B.action which wasn't in select list
+// added join commented out  //. " JOIN atcon_badge as B on B.badgeId=R.id"
+// which used the where clause of  //  and B.action='pickup'"
+$query = <<<EOS
+SELECT DISTINCT CONCAT_WS(' ', P.first_name, P.last_name), REPLACE(CONCAT_WS('\n', P.address, P.addr_2, CONCAT(P.city, ', ', P.state, ' ', P.zip)), '\n\n', '\n')
+    , A.label, U.name, U.email
+FROM reg R
+JOIN perinfo P ON (P.id=R.perid)
+JOIN memList M ON (M.id=R.memId)
+JOIN ageList A ON (M.memAge = A.ageType and M.conid = A.conid)
+LEFT OUTER JOIN user U ON (U.id=R.create_user)
+WHERE R.conid=?
+GROUP BY P.last_name, P.first_name
+ORDER BY P.last_name, P.first_name, M.id;
+EOS;
 
 
-echo "Name, Address, Member Type, Authorizing User, Authorizing Email"
-    . "\n";
+echo "Name, Address, Member Type, Authorizing User, Authorizing Email\n";
 
-$reportR = dbQuery($query);
+$reportR = dbSafeQuery($query, 'i', array($conid));
 while($reportL = fetch_safe_array($reportR)) {
     for($i = 0 ; $i < count($reportL); $i++) {
         printf("\"%s\",", html_entity_decode($reportL[$i], ENT_QUOTES | ENT_HTML401));
