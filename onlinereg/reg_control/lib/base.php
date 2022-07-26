@@ -359,12 +359,12 @@ function paymentDialogs() {
         </tr>
       </table>
       <div>
-        <input required='required' class='right' type='text' size=10 name='amt' id='discountAmt'></input>Amount
+        <input required='required' class='right' type='text' size=10 name='amt' id='discountAmt'/>Amount
       </div>
       <div>
-        <input required='required' class='right' type='text' size=20 name='notes' id='discountDesc'></input>Note
+        <input required='required' class='right' type='text' size=20 name='notes' id='discountDesc'/>Note
       </div>
-      <input id='discountPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#discountPaymentForm") && makePayment("discount");'></input>
+      <input id='discountPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#discountPaymentForm") && makePayment("discount");'/>
     </form>
   </div>
   <div id='checkPayment' class='dialog'>
@@ -388,15 +388,15 @@ function paymentDialogs() {
           <td id='checkPaymentTotal' class='right'></td>
         </tr>
       </table>
-      <div><input required='required' class='right' type='text' size=10 id='checkNo'></input>
+      <div><input required='required' class='right' type='text' size=10 id='checkNo'/>
       Check #</div>
       <div>
-        <input required='required' class='right' type='text' size=10 name='amt' id='checkAmt'></input>Amount
+        <input required='required' class='right' type='text' size=10 name='amt' id='checkAmt'/>Amount
       </div>
       <div>
-        <input class='right' type='text' size=20 name='notes' id='checkDesc'></input>Note
+        <input class='right' type='text' size=20 name='notes' id='checkDesc'/>Note
       </div>
-      <input id='checkPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#checkPaymentForm") && makePayment("check");'></input>
+      <input id='checkPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#checkPaymentForm") && makePayment("check");'/>
     </form>
   </div>
   <div id='cashPayment' class='dialog'>
@@ -421,12 +421,12 @@ function paymentDialogs() {
         </tr>
       </table>
       <div>
-        <input required='required' class='right' type='text' size=10 name='amt' id='cashAmt'></input>Amount
+        <input required='required' class='right' type='text' size=10 name='amt' id='cashAmt'/>Amount
       </div>
       <div>
-        <input class='right' type='text' size=20 name='notes' id='cashDesc'></input>Note
+        <input class='right' type='text' size=20 name='notes' id='cashDesc'/>Note
       </div>
-      <input id='cashPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#cashPaymentForm") && makePayment("cash");'></input>
+      <input id='cashPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#cashPaymentForm") && makePayment("cash");'/>
     </form>
   </div>
   <div id='creditPayment' class='dialog'>
@@ -450,10 +450,10 @@ function paymentDialogs() {
           <td id='creditPaymentTotal' class='right'></td>
         </tr>
       </table>
-      <div><input required='required' class='right' type='text' size=10 name='amt' id='creditAmt'></input>Amount</div>
+      <div><input required='required' class='right' type='text' size=10 name='amt' id='creditAmt'/>Amount</div>
       <?php /* <div><input class='right' type='password' size=4 name='track' id='creditTrack'></input>CC Data</div> */ ?>
-      <div><input required='required' class='right' type='text' name='notes' id='creditDesc' autocomplete='off'></input>Transaction</div>
-      <input id='creditPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#creditPaymentForm") && makePayment("credit");'></input>
+      <div><input required='required' class='right' type='text' name='notes' id='creditDesc' autocomplete='off'/>Transaction</div>
+      <input id='creditPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#creditPaymentForm") && makePayment("credit");'/>
       </div>
     </form>
   </div>
