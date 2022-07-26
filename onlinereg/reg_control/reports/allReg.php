@@ -27,14 +27,16 @@ $conid=$con['id'];
 header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="members.csv"');
 
-$query = "SELECT R.conid, M.label, M.price, count(R.id) as num_badges"
-    . " FROM reg as R JOIN memList as M on M.id=R.memId"
-    . " GROUP BY R.conid, M.label, M.price"
-    . " ORDER BY R.conid, M.price"
-    . ";";
+$query = <<<EOS
+SELECT R.conid, A.label, M.price, count(R.id) as num_badges
+FROM reg R
+JOIN memList M ON (M.id=R.memId)
+JOIN ageList A ON (M.conid = A.conid and M.memAge = A.ageType)
+GROUP BY R.conid, A.label, M.price
+ORDER BY R.conid, A.label, M.price
+EOS;
 
-echo $ini['con']['conname']. " #, Membership Type, Price, Number of Badges"
-    . "\n";
+echo $ini['con']['conname']. " #, Membership Type, Price, Number of Badges\n";
 
 $reportR = dbQuery($query);
 while($reportL = fetch_safe_array($reportR)) {
