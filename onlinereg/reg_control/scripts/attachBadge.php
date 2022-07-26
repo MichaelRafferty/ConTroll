@@ -47,7 +47,7 @@ FROM atcon_badge
 WHERE badgeId=? AND action !='attach';
 EOQ;
 
-$actionR = dbSafeQuery($actionQ, 'i', array($badgeid));
+$actionR = dbSafeQuery($actionQ, 'i', array($badgeId));
 
 $actions = array();
 while($action = fetch_safe_assoc($actionR)) {

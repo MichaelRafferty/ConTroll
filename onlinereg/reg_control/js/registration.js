@@ -58,7 +58,7 @@ function appendNewPerson(data, textStatus, jqXHR) {
   success: function(data, textStatus, jqXHR) {
     appendPerson(data['results']);
   },
-  error: function(JqXHR, textStatus, errorThrown) {
+  error: function(jqXHR, textStatus, errorThrown) {
     $('#test').empty().append(jqXHR);
     }
 
@@ -205,7 +205,9 @@ function createTransaction(user) {
     type: "POST",
     data: "perid=" + user['id'],
     success: setTransaction,
-    error: function(data, textStatus, jqXHR) { showError(JSON.stringify(data, null, 2)); return false; }
+      error: function (JqXHR, textStatus, errorThrown) {
+          showError(JSON.stringify(JqXHR, null, 2)); return false;
+      }
   });
 }
 
@@ -740,7 +742,7 @@ function completeTransaction (trans) {
         $('#fetchTransactionSubmit').click();
         return false;
       },
-      error: function(JqXHR, textStatus, errorThrown) {
+      error: function(jqXHR, textStatus, errorThrown) {
         showError("ERROR in " + script + ":\n" + JSON.stringify(jqXHR, null, 2));
       }
     });
