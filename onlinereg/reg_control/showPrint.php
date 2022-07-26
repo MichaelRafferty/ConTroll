@@ -62,7 +62,7 @@ $tmpuri = $tmpmeta['uri'];
 if (!$bidsxml->openURI($tmpuri)) {
     // I have no idea how this could even happen, though.
     header('Content-Type: text/html');
-    echo $error_msg;
+    echo "Error opening item, see assistance\n";
     exit();
 }
 
@@ -114,7 +114,7 @@ if (curl_exec($ch)) {
 } else {
     // Damnit, Jim, we have an error.
     header('Content-Type: text/html');
-    echo $error_msg;
+    echo "Error opening item, see assistance\n";;
 }
 curl_close($ch);
 ?>
