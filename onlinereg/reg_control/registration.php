@@ -321,11 +321,17 @@ if(isset($_GET['id'])) {
           </tr>
           <tr id='transactionFormOwnerBadge'>
            <?php
-            $badge_res=dbQuery("SELECT concat_ws('-', id, memCategory, memType, memAge) as type, label, price  FROM memList WHERE conid=$conid ORDER BY sort_order, memType, memAge ASC;");
-            $badges=array();
-            while($row = fetch_safe_assoc($badge_res)) {
+           $badgeage_q = <<<EOS
+SELECT CONCAT_WS('-', M.id, M.memCategory, M.memType, M.memAge) as type, A.label, M.price
+FROM memList M
+JOIN ageList A ON (M.memAge = A.ageType and M.conid = A.conid)
+WHERE M.conid=? ORDER BY sort_order, memType, memAge ASC;
+EOS;
+           $badge_res=dbSafeQuery($badgeage_q, 'i', array($conid));
+           $badges=array();
+           while($row = fetch_safe_assoc($badge_res)) {
               $badges[count($badges)] = $row;
-            }
+           }
             ?>
             <td id='transactionFormOwnerBadgeName' colspan=2> </td>
             <td id='transactionFormOwnerBadgePaidPrice' class='center'>
