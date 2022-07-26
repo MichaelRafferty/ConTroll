@@ -27,17 +27,17 @@ $conid=$con['id'];
 header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="mailer.csv"');
 
-$query = "SELECT conid, label, price, startdate, enddate"
-    . " FROM memList"
-    . " WHERE conid >= $conid"
-    . " ORDER BY conid, sort_order, startdate, enddate, label"
-    . ";";
+$query = <<<EOS
+SELECT M.conid, A.label, M.price, M.startdate, M.enddate
+FROM memList M
+JOIN ageList A ON (M.memAge = A.ageType AND M.conid = A.conid)
+WHERE M.conid >= ?
+ORDER BY M.conid, M.sort_order, M.startdate, M.enddate, A.label;
+EOS;
 
+echo "conid, label, price, startdate, enddate\n";
 
-echo "conid, label, price, startdate, enddate"
-    . "\n";
-
-$reportR = dbQuery($query);
+$reportR = dbSafeQuery($query, 'i', array($conid));
 while($reportL = fetch_safe_array($reportR)) {
     for($i = 0 ; $i < count($reportL); $i++) {
         printf("\"%s\",", $reportL[$i]);
