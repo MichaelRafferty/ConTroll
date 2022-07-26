@@ -29,18 +29,20 @@ if(isset($_GET) && isset($_GET['conid'])) { $conid=sql_safe($_GET['conid']); }
 header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="participants.csv"');
 
-$query = "SELECT DISTINCT P.first_name, P.last_name, P.email_addr, P.id"
-        . ", M.label" // , min(B.date)"
-    . " FROM reg as R JOIN perinfo as P on P.id=R.perid JOIN memList as M on M.id=R.memId"
-    . " WHERE R.conid=$conid" //  and B.action='pickup'"
-    . " AND M.label like '%Participant%' AND M.memAge='all'"
-    . ";";
+// query had commented out field of " // , min(B.date)"
+// and commented out where of //  and B.action='pickup'"
+$query = <<<EOS
+SELECT DISTINCT P.first_name, P.last_name, P.email_addr, P.id, A.label
+FROM reg R
+JOIN perinfo P ON (P.id=R.perid)
+JOIN memList M ON (M.id=R.memId)
+JOIN ageList A ON (M.memAge = A.ageType and M.conid = A.conid)
+WHERE R.conid=? AND A.label LIKE '%Participant%' AND M.memAge='all';
+EOS;
 
+echo "First Name, Last Name, Email, ID, Reg type\n";
 
-echo "First Name, Last Name, Email, ID, Reg type"
-    . "\n";
-
-$reportR = dbQuery($query);
+$reportR = dbSafeQuery($query, 'i', array($conid));
 while($reportL = fetch_safe_array($reportR)) {
     for($i = 0 ; $i < count($reportL); $i++) {
         printf("\"%s\",", html_entity_decode($reportL[$i], ENT_QUOTES | ENT_HTML401));
