@@ -72,8 +72,8 @@ JOIN atcon A ON (A.id = B.atconId)
 SET R.paid=R.price WHERE A.transid=?;
 EOS;
 
-  dbSafeQuery($query0, 'ddii', array($totalPrice, $totalPaid, $userid, $transid));
-  dbSafeQuery($query1, 'i', array($transid));
+  dbSafeCmd($query0, 'ddii', array($totalPrice, $totalPaid, $userid, $transid));
+  dbSafeCmd($query1, 'i', array($transid));
   $response['success']='true';
 }
 

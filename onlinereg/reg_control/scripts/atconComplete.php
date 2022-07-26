@@ -91,8 +91,8 @@ SET R.paid=R.price
 WHERE A.transid=?;
 EOS;
 
-  dbQuery($query0, 'ddii', array($totalPrice, $totalPaid, $userid, $transid));
-  dbQuery($query1, 'i', array($transid));
+  dbSafeCmd($query0, 'ddii', array($totalPrice, $totalPaid, $userid, $transid));
+  dbSafeCmd($query1, 'i', array($transid));
   $response['success']='true';
 
     $badgeRes = dbQuery($badgeQ);

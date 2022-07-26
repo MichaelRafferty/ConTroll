@@ -103,7 +103,7 @@ UPDATE transaction SET price=?, tax=0, withtax=?, paid=?
 WHERE id=?;
 EOS;
 
-dbSafeQuery($transQ, 'dddi', array($total, $total, $paid + $amount, $transid);
+dbSafeCmd($transQ, 'dddi', array($total, $total, $paid + $amount, $transid);
 
 $resultQ = "SELECT type, description, cc_approval_code, amount FROM payments where id=?;";
 $resultA = dbSafeQuery($resultQ, 'i', $payid);
