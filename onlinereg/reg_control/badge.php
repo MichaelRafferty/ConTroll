@@ -25,8 +25,14 @@ page_init($page,
               $need_login);
 
     // Get list of freebie badge types for pulldown
-    $freeSQL = "select id, label from memList where conid = '" . sql_safe($db_ini['con']['id']) . "' and memCategory = 'freebie';";
-    $freeR = dbQuery($freeSQL);
+    $freeSQL = <<<EOS
+SELECT M.id, A.label
+FROM memList M
+JOIN ageList A ON (M.conid = A.conid and M.memAge = A.ageType)
+WHERE m.conid = ? and m.memCategory = 'freebie';
+EOS;
+
+    $freeR = dbSafeQuery($freeSQL, 'i', array($db_ini['con']['id']));
     $freeSelect = "<option disabled='disabled' selected='true'> -- select an option --</option>\\n";
     while($free = fetch_safe_assoc($freeR)) {
         $freeSelect .= "<option value='" . $free['id'] . "'>" . $free['label'] . "</option>\\n";
