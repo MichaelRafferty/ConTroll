@@ -36,18 +36,18 @@ $conid = $con['id'];
 $transid = sql_safe($_GET['id']);
 
 $totalPrice = 0;
-$badgeQ = "SELECT DISTINCT R.id, M.label, R.price, R.paid, P.badge_name"
-    . ", concat_ws(' ', first_name, last_name) as full_name"
-    . ", S.action"
-    . " FROM atcon as A"
-        . " JOIN atcon_badge as B on B.atconId = A.id and action='attach'"
-        . " JOIN reg as R on R.id = B.badgeId"
-        . " JOIN memList as M ON M.id=R.memId"
-        . " JOIN perinfo as P on P.id=R.perid"
-        . " LEFT JOIN atcon_badge as S ON S.badgeId=R.id and S.action='pickup'"
-    . " WHERE A.transid = $transid";
+$badgeQ = <<<EOS
+SELECT DISTINCT R.id, AL.label, R.price, R.paid, P.badge_name, CONCAT_WS(' ', first_name, last_name) AS full_name, S.action
+FROM atcon A
+JOIN atcon_badge B ON (B.atconId = A.id AND action='attach')
+JOIN reg R ON (R.id = B.badgeId)
+JOIN memList M ON (M.id=R.memId)
+JOIN ageList AL ON (M.conid = AL.conid AND M.memAge = AL.ageType)
+JOIN perinfo P ON (P.id=R.perid)
+LEFT OUTER JOIN atcon_badge S ON (S.badgeId=R.id and S.action='pickup')
+WHERE A.transid = ?;
 
-$badgeRes = dbQuery($badgeQ);
+$badgeRes = dbSafeQuery($badgeQ, 'i', array($transid));
 $paidBadges=array();
 $newBadges=array();
 $oldBadges=array();
@@ -69,7 +69,7 @@ $response['oldBadges'] = $oldBadges;
 
 
 $totalPaid = 0;
-$paymentRes = dbQuery("SELECT amount FROM payments WHERE transid=$transid");
+$paymentRes = dbSafeQuery("SELECT amount FROM payments WHERE transid=?", 'i', array($transid));
 if($paymentRes) {
   while($payment = fetch_safe_array($paymentRes)) {
     $totalPaid += $payment[0];
@@ -82,14 +82,17 @@ if($totalPrice < $totalPaid) {
 }
 
 if($totalPrice <= $totalPaid) {
-  $query0 = "UPDATE transaction SET price=$totalPrice, paid=$totalPaid, complete_date=current_timestamp(), userid=$userid WHERE id=$transid;";
-  $query1 = "UPDATE reg as R"
-    . " JOIN atcon_badge as B ON R.id=B.badgeId"
-    . " JOIN atcon as A"
-    . " SET R.paid=R.price WHERE A.transid=$transid;";
+  $query0 = "UPDATE transaction SET price=?, paid=?, complete_date=current_timestamp(), userid=? WHERE id=?;";
+  $query1 = <<<EOS
+UPDATE reg R
+JOIN atcon_badge B ON (R.id=B.badgeId)
+JOIN atcon A ON (B.atconId = A.id)
+SET R.paid=R.price 
+WHERE A.transid=?;
+EOS;
 
-  dbQuery($query0);
-  dbQuery($query1);
+  dbQuery($query0, 'ddii', array($totalPrice, $totalPaid, $userid, $transid));
+  dbQuery($query1, 'i', array($transid));
   $response['success']='true';
 
     $badgeRes = dbQuery($badgeQ);
