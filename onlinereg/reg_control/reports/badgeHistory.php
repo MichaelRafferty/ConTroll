@@ -23,32 +23,32 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 
 $con = get_conf("con");
 $conid=$con['id'];
-
-
+$mincomp = $con['minComp'];
 
 header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="badgeHistory.csv"');
 
 if(!(isset($_GET) and isset($_GET['perid']))) {
-    echo  "conid, perid, membership\n"; exit();
+    echo  "conid, perid, membership\n";
+    exit();
 }
 
-$perid = sql_safe($_GET['perid']);
+$perid = $_GET['perid'];
 
-$query = "SELECT R.conid, R.perid, M.label, R.create_user, R.create_date"
-        . ", max(B.date)"
-    . " FROM reg as R JOIN memList as M ON M.id=R.memId"
-        . " LEFT JOIN atcon_badge as B on B.badgeId=R.id and B.action='pickup'"
-    . " WHERE R.conid >= 49 and R.perid = '$perid'"
-    . " GROUP BY R.conid, R.perid, M.label, R.create_user, R.create_date"
-    . " ORDER BY R.conid"
-    . ";";
+$query = <<<EOS
+SELECT R.conid, R.perid, A.label, R.create_user, R.create_date, max(B.date)
+FROM reg R
+JOIN memList M ON (M.id=R.memId)
+JOIN ageList A ON (M.memAge = A.ageType AND M.conid = A.conid)
+LEFT OUTER JOIN atcon_badge B ON (B.badgeId=R.id AND B.action='pickup')
+WHERE R.conid >= ? and R.perid = ?
+GROUP BY R.conid, R.perid, A.label, R.create_user, R.create_date
+ORDER BY R.conid;
+EOS;
 
+echo "Convention, Perid, Membership, Created By, Created On, Pickup\n";
 
-echo "Convention, Perid, Membership, Created By, Created On, Pickup"
-    . "\n";
-
-$reportR = dbQuery($query);
+$reportR = dbSafeQuery($query, 'ii', array($mincomp, $perid));
 while($reportL = fetch_safe_array($reportR)) {
     for($i = 0 ; $i < count($reportL); $i++) {
         printf("\"%s\",", $reportL[$i]);
@@ -56,8 +56,14 @@ while($reportL = fetch_safe_array($reportR)) {
     echo "\n";
 }
 
-$secondQ = "SELECT R.conid, A.date, A.action, A.comment FROM reg as R JOIN atcon_badge as A on A.badgeId=R.id WHERE R.perid=$perid";
-$secondR = dbQuery($secondQ);
+$secondQ = <<<EOS
+SELECT R.conid, A.date, A.action, A.comment
+FROM reg R
+JOIN atcon_badge A ON (A.badgeId=R.id)
+WHERE R.perid=?
+EOS;
+
+$secondR = dbSafeQuery($secondQ, 'i', array($perid));
 
 echo "\n\nCon, Date, Action, Comment\n";
 
