@@ -25,23 +25,23 @@ $con = get_conf("con");
 $conid=$con['id'];
 
 header('Content-Type: application/csv');
-header('Content-Disposition: attachment; filename="members.csv"');
+header('Content-Disposition: attachment; filename="reg_transactions.csv"');
 
-$query = "SELECT T.id, Y.type, Y.description"
-        . ", COUNT(DISTINCT R.perid) as people, COUNT(DISTINCT P.email_addr) as emails"
-        . ", T.create_date, SUM(R.paid) as reg_paid, T.paid, Y.amount"
-    . " FROM memList as M"
-        . " JOIN reg as R on R.memId=M.id"
-        . " JOIN perinfo as P on P.id=R.perid"
-        . " JOIN transaction as T on T.id=R.create_trans"
-        . " JOIN payments as Y on Y.transid=T.id"
-    . " WHERE M.conid=54 and M.memCategory in ('standard', 'yearahead')"
-    . " GROUP BY T.id ORDER BY emails;"
+$query = <<<EOS
+SELECT T.id, Y.type, Y.description, COUNT(DISTINCT R.perid) AS people, COUNT(DISTINCT P.email_addr) AS emails, T.create_date, SUM(R.paid) AS reg_paid, T.paid, Y.amount
+FROM memList M
+JOIN reg R ON (R.memId=M.id)
+JOIN perinfo P ON (P.id=R.perid)
+JOIN transaction T ON (T.id=R.create_trans)
+JOIN payments Y ON (Y.transid=T.id)
+WHERE M.conid=? and M.memCategory IN ('standard', 'yearahead')
+GROUP BY T.id 
+ORDER BY emails;
+EOS;
 
-echo "First Name, Last Name, Email, Type, Price, Transaction, Total, Method, Description, Paid "
-    . "\n";
+echo "First Name, Last Name, Email, Type, Price, Transaction, Total, Method, Description, Paid\n";
 
-$reportR = dbQuery($query);
+$reportR = dbSafeQuery($query, 'i', array($conid));
 while($reportL = fetch_safe_array($reportR)) {
     for($i = 0 ; $i < count($reportL); $i++) {
         printf("\"%s\",", $reportL[$i]);
