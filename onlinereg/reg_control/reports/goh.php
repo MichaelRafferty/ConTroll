@@ -23,25 +23,27 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 
 $con = get_conf("con");
 $conid=$con['id'];
+// this hard code needs to move to the config file
 $gohLiaison = 29;
 
 header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="goh.csv"');
 
-$query = "SELECT DISTINCT concat(P.first_name, ' ', P.last_name), P.badge_name, M.label"
-    . " FROM reg as R"
-        . " RIGHT JOIN badgeList as B ON B.perid=R.perid and B.conid=50"
-        . " JOIN perinfo as P on P.id=R.perid"
-        . " JOIN memList as M on M.id=R.memId"
-    . " WHERE R.conid=$conid AND (B.userid=$gohLiaison OR M.memCategory='goh')"
-    . " ORDER BY M.label, P.last_name, P.first_name"
-    . ";";
+// there was an extra on clause part for badgeList of "and B.conid=50", need to understand why the hardcode?
+$query = <<<EOS
+SELECT DISTINCT CONCAT(P.first_name, ' ', P.last_name), P.badge_name, A.label
+FROM reg R
+JOIN badgeList B ON (B.perid=R.perid)
+JOIN perinfo P ON (P.id=R.perid)
+JOIN memList M ON (M.id=R.memId)
+JOIN ageList A ON (M.memAge = A.ageType AND M.conid = A.conid)
+WHERE R.conid=? AND ((B.userid=? OR M.memCategory='goh') AND B.conid = M.conid)
+ORDER BY A.label, P.last_name, P.first_name;
+EOS;
 
+echo "Name, Badge Name, Badge Type\n";
 
-echo "Name, Badge Name, Badge Type"
-    . "\n";
-
-$reportR = dbQuery($query);
+$reportR = dbSafeQuery($query, 'ii', array($conid, $gohLiaison));
 while($reportL = fetch_safe_array($reportR)) {
     for($i = 0 ; $i < count($reportL); $i++) {
         printf("\"%s\",", $reportL[$i]);
