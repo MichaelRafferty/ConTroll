@@ -45,16 +45,19 @@ $transid=$trans_key;
 
 $complete = false;
 
-$badgeListQ = "SELECT DISTINCT R.id, M.label, (R.price-R.paid) as remainder"
-    . " FROM atcon as A"
-        . " JOIN atcon_badge as B on B.atconId = A.id and action='attach'"
-        . " JOIN reg as R on R.id = B.badgeId"
-        . " JOIN memList as M ON M.id=R.memId"
-    . " WHERE A.transid = $transid";
+$badgeListQ = <<<EOS
+SELECT DISTINCT R.id, AL.label, (R.price-R.paid) AS remainder
+FROM atcon A
+JOIN atcon_badge B ON (B.atconId = A.id and action='attach')
+JOIN reg R ON (R.id = B.badgeId)
+JOIN memList M ON (M.id=R.memId)
+JOIN ageList AL ON (M.conid = AL.conid AND M.memAge = AL.ageType)
+WHERE A.transid = ?;
+EOS;
 
 $total = 0;
 
-$badgeListR = dbQuery($badgeListQ);
+$badgeListR = dbSafeQuery($badgeListQ, 'i', array($transid));
 $badgeList= array();
 while($badge = $badgeListR->fetch_assoc()) {
     array_push($badgeList, $badge);
@@ -63,8 +66,8 @@ while($badge = $badgeListR->fetch_assoc()) {
 
 $paid = 0;
 
-$paidQ = "SELECT amount FROM payments WHERE transid=$transid;";
-$paidR = dbQuery($paidQ);
+$paidQ = "SELECT amount FROM payments WHERE transid=?;";
+$paidR = dbSafeQuery($paidQ, 'i', array($transid));
 if(isset($paidR) && $paidR->num_rows > 0) {
     while($paidA = $paidR->fetch_array()) {
         $paid += $paidA[0];
@@ -86,22 +89,24 @@ if(($paid + $amount) > $total) {
 }
 if($complete) { $response['complete']='true'; } else { $response['complete']='false'; }
 
-$paymentQ = "INSERT INTO payments"
-    . " (transid, userid, type, category, description, source, amount)"
-    . " VALUES"
-    . " ($transid, $user, '$type', 'reg', '$description'"
-    . ", '$user_s', $amount);";
+$paymentQ = <<<EOS
+INSERT INTO payments(transid, userid, type, category, description, source, amount)
+VALUES(?,?,?,'reg', ?, ?, ?);
+EOS;
+
 $response['paymentQ'] = $paymentQ;
 
-$payid = dbInsert($paymentQ);
+$payid = dbSafeInsert($paymentQ, 'iisssd', array($transid, $user, $type, $description, $user_s, $amount));
 
-$transQ = "UPDATE transaction SET price=$total, tax=0, withtax=$total"
-    . ", paid=".($paid + $amount)
-    . " WHERE id=$transid";
-dbQuery($transQ);
+$transQ = <<<EOS
+UPDATE transaction SET price=?, tax=0, withtax=?, paid=?
+WHERE id=?;
+EOS;
 
-$resultQ = "SELECT type, description, cc_approval_code, amount FROM payments where id=$payid;";
-$resultA = dbQuery($resultQ);
+dbSafeQuery($transQ, 'dddi', array($total, $total, $paid + $amount, $transid);
+
+$resultQ = "SELECT type, description, cc_approval_code, amount FROM payments where id=?;";
+$resultA = dbSafeQuery($resultQ, 'i', $payid);
 $response['result'] = fetch_safe_assoc($resultA);
 
 ajaxSuccess($response);
