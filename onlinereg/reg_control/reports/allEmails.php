@@ -29,12 +29,19 @@ if(isset($_GET) and isset($_GET['con'])) { $conid=sql_safe($_GET['con']); }
 header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="allEmails.csv"');
 
-$query = "SELECT DISTINCT P.id, concat_ws(' ', P.first_name, P.middle_name, P.last_name) as name, P.email_addr as email, M.label, P.contact_ok FROM reg as R JOIN perinfo as P on P.id=R.perid JOIN memList as M on M.id=R.memId WHERE R.paid = R.price and R.conid=$conid";
+$query = <<<EOS
+SELECT DISTINCT P.id, CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name) AS name, P.email_addr AS email, A.label, P.contact_ok
+FROM reg AS R
+JOIN perinfo P ON (P.id=R.perid)
+JOIN memList M ON (M.id=R.memId)
+JOIN ageList A ON (M.memAge = A.ageType and M.conid = A.conid)
+WHERE R.paid = R.price and R.conid=?
+EOS;
 
 echo "perid, Name, email, badgeType"
     . "\n";
 
-$reportR = dbQuery($query);
+$reportR =dbSafeQuery($query, 'i', array($conid));
 while($reportL = fetch_safe_array($reportR)) {
     for($i = 0 ; $i < count($reportL); $i++) {
         printf("\"%s\",", htmlspecialchars_decode($reportL[$i], ENT_QUOTES));
