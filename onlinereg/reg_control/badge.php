@@ -28,7 +28,7 @@ page_init($page,
     $freeSQL = <<<EOS
 SELECT M.id, M.label
 FROM memList M
-WHERE m.conid = ? and m.memCategory = 'freebie';
+WHERE M.conid = ? and M.memCategory = 'freebie';
 EOS;
 
     $freeR = dbSafeQuery($freeSQL, 'i', array($db_ini['con']['id']));
