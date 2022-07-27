@@ -1,14 +1,6 @@
 <?php
-global $ini;
-if (!$ini)
-    $ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-if ($ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-        exit();
-    }
-}
+global $db_ini;
+
 
 require_once "../lib/base.php";
 require_once "../lib/ajax_functions.php";
@@ -31,41 +23,48 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
 if($_SERVER['REQUEST_METHOD'] != "GET") { ajaxError("No Data"); }
 if(!isset($_GET['perid'])) { ajaxError("No Data"); }
 
-$perid=sql_safe($_GET['perid']);
-$perQ = "SELECT perinfo.id, first_name, middle_name, last_name, suffix, badge_name, email_addr, phone, address, addr_2, city, state, zip, country"
-    . ", reg.id as badge, memList.label as label"
-    . " FROM perinfo"
-    . " LEFT JOIN reg on reg.perid=perinfo.id AND reg.conid=$conid"
-    . " LEFT JOIN memList on memList.id=reg.memId"
-    . " WHERE perinfo.id=$perid";
+$perid=$_GET['perid'];
+$perQ = <<<EOS
+SELECT P.id, first_name, middle_name, last_name, suffix, badge_name, email_addr, phone, address, addr_2, city, state, zip, country
+    , R.id AS badge, A.label AS label
+FROM perinfo P
+LEFT OUTER JOIN reg R ON (R.perid=P.id AND R.conid=?)
+LEFT OUTER JOIN memList M ON (M.id=R.memId)
+LEFT OUTER JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
+WHERE P.id=?;
+EOS;
 
-$artistQ = "SELECT artist.id, vendor, login, ship_addr, ship_addr2, ship_city, ship_state, ship_zip, ship_country"
-    . ", agent, agent_request"
-    . " FROM artist"
-        . " LEFT JOIN artshow as S on S.artid=artist.id"
-    . " WHERE artist=$perid;";
-$person = fetch_safe_assoc(dbQuery($perQ));
-$artist = fetch_safe_assoc(dbQuery($artistQ));
+$artistQ = <<<EOS
+SELECT A.id, vendor, login, ship_addr, ship_addr2, ship_city, ship_state, ship_zip, ship_country, agent, agent_request
+FROM artist A
+LEFT OUTER JOIN artshow S ON (S.artid=A.id)
+WHERE artist=?;
+EOS;
+
+$person = fetch_safe_assoc(dbSafeQuery($perQ, 'ii', array($conid, $perid)));
+$artist = fetch_safe_assoc(dbSafeQuery($artistQ, 'i', array($perid)));
 
 $agent = null;
 if(isset($artist['agent']) && $artist['agent']!="") {
-  $agentQ = "SELECT perinfo.id, first_name, middle_name, last_name, suffix, badge_name, email_addr, phone, address, addr_2, city, state, zip, country"
-    . ", reg.id as badge, memList.label as label"
-    . " FROM perinfo"
-    . " LEFT JOIN reg on reg.perid=perinfo.id AND reg.conid=$conid"
-    . " LEFT JOIN memList on memList.id=reg.memId"
-    . " WHERE perinfo.id=". $artist['agent'] . ";";
-  $agent = fetch_safe_assoc(dbQuery($agentQ));
+    $agentQ = <<<EOS
+SELECT P.id, first_name, middle_name, last_name, suffix, badge_name, email_addr, phone, address, addr_2, city, state, zip, country, R.id as badge, A.label as label
+FROM perinfo P
+LEFT OUTER JOIN reg R on (R.perid=P.id AND R.conid=?)
+LEFT OUTER JOIN memList M ON (M.id=R.memId)
+LEFT OUTER JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
+WHERE P.id=?;
+EOS;
+
+  $agent = fetch_safe_assoc(dbSafeQuery($agentQ, 'ii', $conid, $artist['agent']));
 }
 
 $vendor = null;
 if(isset($artist['vendor']) && $artist['vendor']!="") {
-  $vendorQ = "SELECT id, name, website, description, email FROM vendors WHERE id=". $artist['vendor']. ";";
-  $vendor = fetch_safe_assoc(dbQuery($vendorQ));
+  $vendorQ = "SELECT id, name, website, description, email FROM vendors WHERE id=?;";
+  $vendor = fetch_safe_assoc(dbSafeQuery($vendorQ, 'i', array($artist['vendor'])));
 } else {
-  $vendorQ = "SELECT id, name, website, description, email FROM vendors WHERE email='". $person['email_addr']. "';";
-  $vendor = fetch_safe_assoc(dbQuery($vendorQ));
-
+  $vendorQ = "SELECT id, name, website, description, email FROM vendors WHERE email=?;";
+  $vendor = fetch_safe_assoc(dbSafeQuery($vendorQ, 's', array($person['email_addr'])));
 }
 
 
