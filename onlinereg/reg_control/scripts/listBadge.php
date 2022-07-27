@@ -32,8 +32,8 @@ if(!isset($_GET['perid'])) { ajaxError("No Data"); }
 $perid = $_GET['perid'];
 $user = $check_auth['email'];
 $response['user'] = $user;
-$userQ = "SELECT id FROM user WHERE email=?;";
-$userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', array($user)));
+$userQ = "SELECT id FROM user WHERE email='$user';";
+$userR = fetch_safe_assoc(dbQuery($userQ));
 $userid = $userR['id'];
 
 $con = get_con();
@@ -45,21 +45,21 @@ $response['id'] = $perid;
 // do not allow duplicate entries in badgeList
 $linkQ = "INSERT IGNORE INTO badgeList (perid, conid, userid)
 SELECT perid, conid, userid FROM (
-    SELECT ? AS perid, ? AS conid, ? AS userid) AS tmp
+    SELECT '" . sql_safe($perid) . "' AS perid, '" . sql_safe($conid) . "' AS conid, '" . sql_safe($userid) . "' AS userid) AS tmp
     WHERE NOT EXISTS (
-        SELECT perid FROM badgeList WHERE perid=? AND conid =? AND userid = ?
+        SELECT perid FROM badgeList WHERE perid='" . sql_safe($perid) . "' AND conid ='" . sql_safe($conid) . "' AND userid = '" . sql_safe($userid) . "'
 ) LIMIT 1;";
 
-$linID = dbSafeInsert($linkQ, 'iiiiii', array($perid, $conid, $userid, $perid, $conid, $userid));
+$linID = dbInsert($linkQ);
 $response['link']=$linID;
 
-$perQ = "SELECT id, CONCAT_WS(' ', first_name, middle_name, last_name, suffix) as name, badge_name from perinfo where id=?;";
-$perR = dbSafeQuery($perQ, 'i', array($perid));
+$perQ = "SELECT id, concat_ws(' ', first_name, middle_name, last_name, suffix) as name, badge_name from perinfo where id=". sql_safe($perid);
+$perR = dbQuery($perQ);
 $response['per'] = fetch_safe_assoc($perR);
 
-$badgeQ = "SELECT R.id, R.memId, M.label FROM reg as R, memList as M WHERE M.id=R.memId and R.perid=?;";
+$badgeQ = "SELECT R.id, R.memId, M.label FROM reg as R, memList as M WHERE M.id=R.memId and R.perid=".sql_safe($perid).";";
 
-$badgeR = dbSafeQuery($badgeQ, 'i', array($perid));
+$badgeR = dbQuery($badgeQ);
 
 $response['badge'] = fetch_safe_assoc($badgeR);
 if($badgeR->num_rows>0) {

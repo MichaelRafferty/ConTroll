@@ -57,23 +57,15 @@ $awsClient = SesClient::factory(array(
 ));
 
 
-$emailQ = <<<EOS
-SELECT distinct P.email_addr AS email, create_trans AS tid 
-FROM memList M
-JOIN reg R ON (R.memId=M.id)
-JOIN perinfo P ON (P.id=R.perid)
-JOIN payments Y ON (Y.transid=R.create_trans)
-WHERE M.memCategory in ('standard', 'yearahead') and M.conid=? order by tid;
-EOS;
-
-$emailR = dbSafeQuery($emailQ, 'i', $conid);
+$emailQ = "select distinct P.email_addr as email, create_trans as tid FROM memList as M JOIN reg as R on R.memId=M.id JOIN perinfo as P on P.id=R.perid JOIN payments as Y on Y.transid=R.create_trans where M.memCategory in ('standard', 'yearahead') and M.conid=$conid order by tid;";
+$emailR = dbQuery($emailQ);
 $response['numEmails'] = $emailR->num_rows;
 
 $email_array=array();
 $data_array=array();
 
 if($test) {
-    $emailR = dbSafeQuery("select DISTINCT P.email_addr AS email, create_trans AS tid FROM reg R JOIN perinfo P ON (P.id=R.perid) WHERE create_trans=?;", 'i', array($tid));
+    $emailR = dbQuery("select DISTINCT P.email_addr as email, create_trans as tid FROM reg as R JOIN perinfo as P on P.id=R.perid where create_trans=".sql_safe($tid).";");
     while ($email_value = fetch_safe_assoc($emailR)) {
         array_push($email_array, array('email'=>$email_value['email'], 'tid'=>$email_value['tid']));
     }
