@@ -28,8 +28,8 @@ if($check_auth == false || (!checkAuth($check_auth['sub'], $perm) &&
 
 $user = $check_auth['email'];
 $response['user'] = $user;
-$userQ = "SELECT id FROM user WHERE email='$user';";
-$userR = fetch_safe_assoc(dbQuery($userQ));
+$userQ = "SELECT id FROM user WHERE email=?;";
+$userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', array($user)));
 $userid = $userR['id'];
 $con = get_conf('con');
 $conid=$con['id'];
@@ -38,30 +38,51 @@ $badgeid=sql_safe($_POST['badgeId']);
 
 $response['iden'] = $_POST['iden'];
 
+$types = '';
+$values = array();
+
 $memListQuery = "SELECT id, price, label FROM memList WHERE ";
 if(isset($_POST['memId'])) {
-  $memListQuery .= "id='" . sql_safe($_POST['memId']) . "' AND ";
+  $memListQuery .= "id=? AND ";
+  $types .= 'i';
+  $values[] = $_POST['memId'];
 }
+
 if(isset($_POST['category'])) {
-  $memListQuery .= "memCategory='" . sql_safe($_POST['category']) . "' AND ";
+  $memListQuery .= "memCategory=? AND ";
+  $types .= 's';
+  $values[] = $_POST['category'];
 }
+
 if(isset($_POST['type'])) {
-  $memListQuery .= "memType='" . sql_safe($_POST['type']) . "' AND ";
+  $memListQuery .= "memType=? AND ";
+  $types .= "s";
+  $values[] = $_POST['type'];
 }
+
 if(isset($_POST['age'])) {
-  $memListQuery .= "memAge='" . sql_safe($_POST['age']) . "' AND ";
+  $memListQuery .= "memAge=? AND ";
+  $types .= 's';
+  $values[] = $_POST['age'];
 }
-$memListQuery .= "conid=$conid ORDER by price DESC";
-$memInfo = fetch_safe_assoc(dbQuery($memListQuery));
 
-$updateQ = "UPDATE reg SET memId=" . $memInfo['id']
-    . ", price=" . $memInfo['price']
-    . " WHERE id=$badgeid;";
-dbQuery($updateQ);
+$memListQuery .= "conid=? ORDER by price DESC";
+$types .= 'i';
+$values[] = $conid;
+$memInfo = fetch_safe_assoc(dbSafeQuery($memListQuery, $types, $values));
 
-$query = "SELECT R.id, R.price, R.paid, (R.price-R.paid) as cost, M.id as memId, M.memCategory, M.memType, M.memAge, M.label, R.locked FROM reg as R, memList as M WHERE M.id=R.memId AND R.id=$badgeid;";
+$updateQ = "UPDATE reg SET memId=?,  price=? WHERE id=?;";
+dbSafeCmd($updateQ), 'idi', array($memInfo['id'],  $memInfo['price'],$badgeid));
 
-$badgeInfo=fetch_safe_assoc(dbQuery($query));
+$query = <<<EOS
+SELECT R.id, R.price, R.paid, (R.price-R.paid) as cost, M.id as memId, M.memCategory, M.memType, M.memAge, A.label, R.locked
+FROM reg R
+JOIN memList M ON (M.id = R.memId)
+JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
+WHERE M.id=R.memId AND R.id=?;
+EOS;
+
+$badgeInfo=fetch_safe_assoc(dbSafeQuery($query, 'i', array($badgeid)));
 
 $response['badgeInfo'] = $badgeInfo;
 
