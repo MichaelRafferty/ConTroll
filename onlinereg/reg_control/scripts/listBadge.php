@@ -1,14 +1,5 @@
 <?php
-global $ini;
-if (!$ini)
-    $ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-if ($ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-        exit();
-    }
-}
+global $db_ini;
 
 require_once "../lib/base.php";
 require_once "../lib/ajax_functions.php";
@@ -17,7 +8,6 @@ $check_auth = google_init("ajax");
 $perm = "badge";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
-
 
 if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     $response['error'] = "Authentication Failed";
@@ -43,12 +33,15 @@ $response['con'] = $con['name'];
 $response['id'] = $perid;
 
 // do not allow duplicate entries in badgeList
-$linkQ = "INSERT IGNORE INTO badgeList (perid, conid, userid)
+$linkQ = <<<EOS
+INSERT IGNORE INTO badgeList (perid, conid, userid)
 SELECT perid, conid, userid FROM (
     SELECT ? AS perid, ? AS conid, ? AS userid) AS tmp
     WHERE NOT EXISTS (
-        SELECT perid FROM badgeList WHERE perid=? AND conid =? AND userid = ?
-) LIMIT 1;";
+        SELECT perid FROM badgeList 
+        WHERE perid=? AND conid =? AND userid = ?
+) LIMIT 1;
+EOS;
 
 $linID = dbSafeInsert($linkQ, 'iiiiii', array($perid, $conid, $userid, $perid, $conid, $userid));
 $response['link']=$linID;
@@ -57,7 +50,12 @@ $perQ = "SELECT id, CONCAT_WS(' ', first_name, middle_name, last_name, suffix) a
 $perR = dbSafeQuery($perQ, 'i', array($perid));
 $response['per'] = fetch_safe_assoc($perR);
 
-$badgeQ = "SELECT R.id, R.memId, M.label FROM reg as R, memList as M WHERE M.id=R.memId and R.perid=?;";
+$badgeQ = <<<EOS
+SELECT R.id, R.memId, M.label 
+FROM reg  R,
+JOIN memList M ON (M.id=R.memId)
+WHERE R.perid=?;
+EOS;
 
 $badgeR = dbSafeQuery($badgeQ, 'i', array($perid));
 

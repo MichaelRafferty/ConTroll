@@ -30,12 +30,11 @@ $response['con'] = $con['name'];
 $response['id'] = $userid;
 
 $entryQ = <<<EOS
-SELECT CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name, P.suffix) as name, P.badge_name, R.id as regid, R.staff, R.memId, A.label, B.id, P.id as perid
+SELECT CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name, P.suffix) as name, P.badge_name, R.id as regid, R.staff, R.memId, M.label, B.id, P.id as perid
 FROM badgeList B
 LEFT OUTER JOIN perinfo P ON (P.id=B.perid)
 LEFT OUTER JOIN reg R ON (R.perid=P.id AND R.conid=B.conid)
 LEFT OUTER JOIN memList M ON (M.id=R.memId)
-LEFT OUTER JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
 WHERE B.conid=? AND B.userid=?
 ORDER BY B.id;
 EOS;
