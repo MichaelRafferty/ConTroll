@@ -19,7 +19,7 @@ if($check_auth == false || (!checkAuth($check_auth['sub'], $perm) &&
 
 if(!isset($_GET['id'])) { $resonse['error'] = "No Data"; ajaxSuccess($response); exit(); }
 
-$transactionId=sql_safe($_GET['id']);
+$transactionId=$_GET['id'];
 $con = get_con();
 $conid=$con['id'];
 
@@ -88,7 +88,7 @@ JOIN memList as M on M.id=R.memId
 
 EOQ;
 }
-$badgeQuery .= " WHERE T.id = ?";
+$badgeQuery .= " WHERE T.id = ?;";
 $response['badgeQ'] = $badgeQuery;
 $badgeRes = dbSafeQuery($badgeQuery, 'i', array($transactionId));
 $badges=array();
