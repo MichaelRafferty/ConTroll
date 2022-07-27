@@ -1,14 +1,5 @@
 <?php
-global $ini;
-if (!$ini)
-    $ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-if ($ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-        exit();
-    }
-}
+global $db_ini;
 
 require_once "../lib/base.php";
 require_once "../lib/ajax_functions.php";
@@ -33,8 +24,7 @@ $userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', array($user)));
 $userid = $userR['id'];
 $con = get_conf('con');
 $conid=$con['id'];
-$transid=sql_safe($_POST['transaction']);
-$badgeid=sql_safe($_POST['badgeId']);
+$badgeid=$_POST['badgeId'];
 
 $response['iden'] = $_POST['iden'];
 
@@ -72,7 +62,7 @@ $values[] = $conid;
 $memInfo = fetch_safe_assoc(dbSafeQuery($memListQuery, $types, $values));
 
 $updateQ = "UPDATE reg SET memId=?,  price=? WHERE id=?;";
-dbSafeCmd($updateQ), 'idi', array($memInfo['id'],  $memInfo['price'],$badgeid));
+dbSafeCmd($updateQ, 'idi', array($memInfo['id'],  $memInfo['price'], $badgeid));
 
 $query = <<<EOS
 SELECT R.id, R.price, R.paid, (R.price-R.paid) as cost, M.id as memId, M.memCategory, M.memType, M.memAge, A.label, R.locked
