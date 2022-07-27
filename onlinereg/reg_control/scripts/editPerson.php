@@ -28,9 +28,19 @@ if($check_auth == false || (!checkAuth($check_auth['sub'], $perm) &&
 
 if($_SERVER['REQUEST_METHOD'] == "GET") {
     if(!isset($_GET['id'])) { ajaxError("Need ID"); }
-    $res = dbQuery("SELECT perinfo.*, conlist.label as last_reg FROM perinfo LEFT JOIN reg ON reg.perid=perinfo.id LEFT JOIN conlist ON conlist.id=reg.conid WHERE perinfo.id='".sql_safe($_GET['id'])."' ORDER BY conlist.id;");
+    $idquery = <<<EOS
+SELECT perinfo.*, conlist.label as last_reg
+FROM perinfo
+LEFT OUTER JOIN reg ON (reg.perid=perinfo.id)
+LEFT JOIN conlist ON (conlist.id=reg.conid)
+WHERE perinfo.id=?
+ORDER BY conlist.id;
+EOS;
+    $res = dbSafeQuery($idquery, 'i', array($_GET['id']));
     $perinfo = fetch_safe_assoc($res);
-    $perinfo["prefix"] = htmlspecialchars($_GET['prefix']);
+    if (isset($_GET['prefix'])) {
+        $perinfo["prefix"] = htmlspecialchars($_GET['prefix']);
+    }
     ajaxSuccess($perinfo);
     exit();
 }
