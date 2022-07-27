@@ -179,7 +179,7 @@ function showEditPerson(perinfo,formid) {
     $('#edit_suffix').val(perinfo['suffix']);
     $('#edit_badge').val(perinfo['badge_name'])
     $('#edit_addr').val(perinfo['address']);
-    $('#edit_addr2').val(perinfo['addr2']);
+    $('#edit_addr2').val(perinfo['addr_2']);
     $('#edit_city').val(perinfo['city']);
     $('#edit_state').val(perinfo['state']);
     $('#edit_zip').val(perinfo['zip']);
