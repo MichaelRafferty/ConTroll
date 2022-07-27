@@ -63,7 +63,7 @@ $types .= 'i';
 $values[] = $conid;
 $memInfo = fetch_safe_assoc(dbSafeQuery($memListQuery, $types, $values));
 
-$query = "INSERT INTO reg (conid, create_user, create_trans, perid, newperid, memId, price, locked) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+$query = "INSERT INTO reg (conid, create_user, create_trans, perid, newperid, memId, price, paid, locked) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?);";
 $types = 'iiiiiids';
 $values = array($conid, $userid, $transid);
 if(isset($_POST['id'])) {
