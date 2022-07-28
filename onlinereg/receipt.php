@@ -30,8 +30,7 @@ ol_page_init($condata['label'] . ' Registration Complete');
         <?php } ?>
     </div>
     <h1>
-        <?php echo $owner['first_name'] . " " . $owner['last_name'] . "&nbsp;"; ?>
-thank you for registering for <?php echo $condata['label']; ?>
+        <?php echo $owner['first_name'] . " " . $owner['last_name']; ?> thank you for registering for <?php echo $condata['label']; ?>
     </h1>
     <div>
         <?php
