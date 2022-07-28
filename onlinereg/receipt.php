@@ -21,7 +21,14 @@ $owner = fetch_safe_assoc(dbQuery($ownerQ));
 ol_page_init($condata['label'] . ' Registration Complete');
 ?>
 <body>
-    <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring ;?>"/>
+    <div class="container-fluid">
+        <?php if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') { ?>
+        <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring ;?>"/>
+        <?php }
+              if(array_key_exists('logotext', $ini) && $ini['logotext'] != '') { ?>       
+        <div style='display:inline-block' class='display-1'><?php echo $ini['logotext']; ?></div>
+        <?php } ?>
+    </div>
     <h1>
         <?php echo $owner['first_name'] . " " . $owner['last_name'] . "&nbsp;"; ?>
 thank you for registering for <?php echo $condata['label']; ?>

@@ -44,6 +44,7 @@ cancelled=0
 cancel_date="Day, Month Day"
 server="https://reg.philcon.org/"
 logoimage="philcon2022.png"
+logotext="Tagline not alt=text"
 onsiteopen="3:00 PM"
 [vendor]
 test=0
@@ -60,6 +61,7 @@ json="/home/psfs_reg/config/philcon.json"
 client_id=""
 client_secret=""
 [cc]
+; valid types are 'square', 'convergepay' or 'test'
 type=square
 appid=""
 token=""
@@ -71,6 +73,8 @@ webpaysdk="https://web.squarecdn.com/v1/square.js"
   artshow = "/home/psfs_reg/reglogs/artshowReg"
   cancel = "/home/psfs_reg/reglogs/cancel"
 [email]
+; valid types are 'aws' or 'mta'
+  type="aws"
   aws_access_key_id=""
   aws_secret_access_key=""
   username=""
