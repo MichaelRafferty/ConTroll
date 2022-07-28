@@ -61,7 +61,7 @@ json="/home/psfs_reg/config/philcon.json"
 client_id=""
 client_secret=""
 [cc]
-; valid types are 'square', 'convergepay' or 'test'
+; valid types are 'square', 'convergepay' or 'bypass' (Note: bypass is for testing only and requires localhost or test=1)
 type=square
 appid=""
 token=""
