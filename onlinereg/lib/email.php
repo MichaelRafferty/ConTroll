@@ -27,13 +27,12 @@ if($ini['test']==1) {
 $body .= "Your Transaction number is $transid and Receipt number is " . $owner['payid'] . "\n\nIn response to your request Badges have been created for:\n\n";
 
 $badgeQ = <<<EOS
-SELECT NP.first_name, NP.last_name, A.label
+SELECT NP.first_name, NP.last_name, M.label
 FROM transaction T
 JOIN reg R ON  (R.create_trans=T.id)
 JOIN newperson NP ON (NP.id = R.newperid)
-JOIN memList M ON (R.memID = M.id)
-JOIN ageList A ON (M.memAge = A.ageType AND M.conid = A.conid)
-WHERE  T.id= ?
+JOIN memLabel M ON (R.memID = M.id)
+WHERE T.id= ?
 EOS;
 
 $badgeR = dbSafeQuery($badgeQ, 'i', array($transid));
