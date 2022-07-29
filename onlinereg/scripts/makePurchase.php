@@ -3,14 +3,9 @@
 require_once "../lib/ajax_functions.php";
 require_once "../lib/db_functions.php";
 require_once "../lib/log.php";
-require_once("../lib/cc__load_methods.php");
-
-
-require_once "../../config/aws.phar";
+require_once("../../lib/cc__load_methods.php");
+require_once("../../lib/email__load_methods.php");
 require_once "../lib/email.php";
-use Aws\Ses\SesClient;
-use Aws\Exception\AwsException;
-
 
 if(!isset($_POST) || !isset($_POST['badgeList'])) {
     ajaxSuccess(array('status'=>'error', 'error'=>"Error: No Badges")); exit();
@@ -19,17 +14,7 @@ if(!isset($_POST) || !isset($_POST['badgeList'])) {
 db_connect();
 $ccauth = get_conf('cc');
 load_cc_procs();
-
-$emailConf = get_conf('email');
-switch ($emailConf['type']) {
-    case 'aws':
-    case 'awsses':
-        require_once("../lib/awsses.php");
-        break;
-    case 'mta':
-        require_once("../lib/mta.php");
-        break;
-}
+load_email_procs();
 
 $condata = get_con();
 $log = get_conf('log');
@@ -39,15 +24,13 @@ logInit($log['reg']);
 $prices = array();
 $memId = array();
 $priceQ = <<<EOQ
-SELECT m.id, m.memAge, a.label, a.shortname, m.price
-FROM memList m
-JOIN ageList a ON (a.conid = m.conid and a.ageType = m.memAge)
+SELECT m.id, m.memAge, m.label, m.shortname, m.price
+FROM memLabel m
 WHERE
     m.conid=?
-    AND memCategory IN ('standard', 'premium')
+    AND m.online = 'Y'
     AND startdate < current_timestamp()
     AND enddate >= current_timestamp()
-    AND memType='full'
 ;
 EOQ;
 $counts = array();
