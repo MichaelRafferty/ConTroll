@@ -35,6 +35,16 @@ switch ($ccauth['type']) {
         ajaxSuccess(array('status'=>'error', 'error'=>"Error: No credit card processor defined")); exit();
 }
 db_connect();
+$emailConf = get_conf('email');
+switch ($emailConf['type']) {
+    case 'aws':
+    case 'awsses':
+        require_once("../lib/awsses.php");
+        break;
+    case 'mta':
+        require_once("../lib/mta.php");
+        break;
+
 $condata = get_con();
 $log = get_conf('log');
 $con = get_conf('con');
@@ -293,68 +303,16 @@ $txnU = dbSafeCmd($txnUpdate, "di", array($approved_amt, $transid) );
 
 $regQ = "UPDATE reg SET paid=price WHERE create_trans=?;";
 dbSafeCmd($regQ, "i", array($transid));
-$amazonCred = get_conf('email');
 
-$success = 'success';
-$data = 'success';
-$email_error = "none";
 
-if ($amazonCred['test'] != 1) {
-
-    try {
-        $awsClient = SesClient::factory(array(
-          'version'=>$amazonCred['version'],
-          'region'=>$amazonCred['region'],
-          'credentials' => array(
-              'key'=>$amazonCred['aws_access_key_id'],
-              'secret'=>$amazonCred['aws_secret_access_key']
-              )
-          )
-          );
-    }
-    catch (AwsException $e) {
-        $email_error = $e->getCode();
-        $success="error";
-        $data=$e->getMessage();
-    }
-
-    $email_msg = "no send attempt or a failure";
-    try {
-        $email_msg = $awsClient->sendEmail(
-            array(
-            'Source' => $con['regadminemail'],
-            'Destination' => array(
-             'ToAddresses' => array(trim($_POST['cc_email']))
-            ),
-          'Message' => array(
-            'Subject' => array(
-              'Data' => $condata['label']. " Online Registration Receipt"
-              ),
-            'Body' => array(
-              'Text' => array(
-                'Data' => getEmailBody($transid)
-                ) // HTML (Data)
-               ) // (Text)
-              )// ReplyToAddresses or ReturnPath (body)
-             ) // (message)
-            ); //(email)
-        $email_error = "none";
-        $success = "success";
-        $data = "success";
-    }
-    catch (AwsException $e) {
-        $email_error = $e->getCode();
-        $success="error";
-        $data=$e->getMessage();
-    }
-}
+$return_arr = send_email($con['regadminemail'], trim($_POST['cc_email']), /* cc */ null, $condata['label']. " Online Registration Receipt",  getEmailBody($transid), /* htmlbody */ null);
 
 ajaxSuccess(array(
-  "status"=>$success,
+  "status"=>$return_arr['success'],
   "url"=>$rtn['url'],
-  "data"=>$data,
+  "data"=> $return_arr['email_error'],
   "trans"=>$transid,
   //"email"=>$email_msg,
-  "email_error"=>$email_error
+  "email_error"=>$return_arr['error_code']
 ));
 ?>
