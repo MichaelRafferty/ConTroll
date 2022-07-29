@@ -8,7 +8,7 @@ var prices = {};
 // badgeref = array by ageType (memAge) of $# reference to html object
 var badgeref = {};
 var $purchase_label = 'purchase';
-// shortnames are the ageList short names for the ageType (memAge)
+// shortnames are the memLabel short names for the memAge
 var shortnames = {};
 
 //function flashSect2(sect, i, max) {
