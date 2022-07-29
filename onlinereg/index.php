@@ -2,7 +2,7 @@
 require_once("lib/base.php");
 $ini = redirect_https();
 
-require_once("lib/cc__load_methods.php");
+require_once("../lib/cc__load_methods.php");
 
 $cc = get_conf('cc');
 $con = get_conf('con');
@@ -12,16 +12,14 @@ $condata = get_con();
 
 $membershiptypes = array();
 $priceQ = <<<EOS
-SELECT m.memAge, a.label, a.shortname, a.sortorder, m.price
-FROM memList m
-JOIN ageList a ON (a.conid = m.conid and a.ageType = m.memAge)
+SELECT memAge, label, shortname, sort_order, price
+FROM memLabel 
 WHERE 
-    m.conid=? 
-    AND memCategory='standard' 
+    conid=? 
+    AND online = 'Y' 
     AND startdate < current_timestamp() 
     AND enddate >= current_timestamp() 
-    AND memType='full'
-ORDER BY sortorder
+ORDER BY sort_order, price DESC
 ;
 EOS;
 $priceR = dbSafeQuery($priceQ, "i", array($condata['id']));

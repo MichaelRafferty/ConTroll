@@ -56,12 +56,11 @@ Your transaction number is <?php echo $transid; ?> and receipt number is
                 <?php
 
 $badgeQ = <<<EOS
-SELECT NP.first_name, NP.last_name, A.label
+SELECT NP.first_name, NP.last_name, M.label
 FROM transaction T
 JOIN reg R ON  (R.create_trans=T.id)
 JOIN newperson NP ON (NP.id = R.newperid)
-JOIN memList M ON (R.memID = M.id)
-JOIN ageList A ON (M.memAge = A.ageType AND M.conid = A.conid)
+JOIN memLabel M ON (R.memID = M.id)
 WHERE  T.id= ?
 EOS;
 
