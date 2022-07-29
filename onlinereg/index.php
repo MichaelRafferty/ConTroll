@@ -2,25 +2,12 @@
 require_once("lib/base.php");
 $ini = redirect_https();
 
+require_once("lib/cc__load_methods.php");
+
 $cc = get_conf('cc');
 $con = get_conf('con');
-switch ($cc['type']) {
-    case 'convergepay':
-        require_once("lib/convergepay.php");
-        break;
-    case 'square':
-        require_once("lib/square.php");
-        break;
-    case 'bypass':
-        $reg = get_conf('reg');
-        if (str_contains($con['server'], '//127.0.0.1') || str_contains($con['server'], '//192.168.149.128') || $reg['test'] == 1) {
-            require_once("lib/bypass.php");
-            break;
-        }
-    default:
-        echo "No valid credit card processor defined\n";
-        exit();
-}
+load_cc_procs();
+
 $condata = get_con();
 
 $membershiptypes = array();

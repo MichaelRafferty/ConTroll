@@ -3,6 +3,8 @@
 require_once "../lib/ajax_functions.php";
 require_once "../lib/db_functions.php";
 require_once "../lib/log.php";
+require_once("../lib/cc__load_methods.php");
+
 
 require_once "../../config/aws.phar";
 require_once "../lib/email.php";
@@ -14,27 +16,10 @@ if(!isset($_POST) || !isset($_POST['badgeList'])) {
     ajaxSuccess(array('status'=>'error', 'error'=>"Error: No Badges")); exit();
 }
 
-$ccauth = get_conf('cc');
-switch ($ccauth['type']) {
-    case 'convergepay':
-        require_once("../lib/convergepay.php");
-        break;
-    case 'square':
-        require_once("../../Composer/vendor/autoload.php");
-        require_once("../lib/square.php");
-        break;
-    case 'bypass':
-        $con = get_conf('con');
-        $reg = get_conf('reg');
-        if (str_contains($con['server'], '//127.0.0.1') || str_contains($con['server'], '//192.168.149.128') || $reg['test'] == 1) {
-            require_once("../lib/bypass.php");
-            break;
-        }
-    default:
-        echo "No valid credit card processor defined\n";
-        ajaxSuccess(array('status'=>'error', 'error'=>"Error: No credit card processor defined")); exit();
-}
 db_connect();
+$ccauth = get_conf('cc');
+load_cc_procs();
+
 $emailConf = get_conf('email');
 switch ($emailConf['type']) {
     case 'aws':
@@ -44,6 +29,7 @@ switch ($emailConf['type']) {
     case 'mta':
         require_once("../lib/mta.php");
         break;
+}
 
 $condata = get_con();
 $log = get_conf('log');
