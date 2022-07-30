@@ -31,14 +31,13 @@ header('Content-Disposition: attachment; filename="goh.csv"');
 
 // there was an extra on clause part for badgeList of "and B.conid=50", need to understand why the hardcode?
 $query = <<<EOS
-SELECT DISTINCT CONCAT(P.first_name, ' ', P.last_name), P.badge_name, A.label
+SELECT DISTINCT CONCAT(P.first_name, ' ', P.last_name), P.badge_name, M.label
 FROM reg R
 JOIN badgeList B ON (B.perid=R.perid)
 JOIN perinfo P ON (P.id=R.perid)
-JOIN memList M ON (M.id=R.memId)
-JOIN ageList A ON (M.memAge = A.ageType AND M.conid = A.conid)
+JOIN memLabel M ON (M.id=R.memId)
 WHERE R.conid=? AND ((B.userid=? OR M.memCategory='goh') AND B.conid = M.conid)
-ORDER BY A.label, P.last_name, P.first_name;
+ORDER BY M.label, P.last_name, P.first_name;
 EOS;
 
 echo "Name, Badge Name, Badge Type\n";

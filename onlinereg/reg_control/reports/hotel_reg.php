@@ -35,11 +35,10 @@ header('Content-Disposition: attachment; filename="hotel_registration.csv"');
 // which used the where clause of  //  and B.action='pickup'"
 $query = <<<EOS
 SELECT DISTINCT CONCAT_WS(' ', P.first_name, P.last_name), REPLACE(CONCAT_WS('\n', P.address, P.addr_2, CONCAT(P.city, ', ', P.state, ' ', P.zip)), '\n\n', '\n')
-    , A.label, U.name, U.email
+    , M.label, U.name, U.email
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
-JOIN memList M ON (M.id=R.memId)
-JOIN ageList A ON (M.memAge = A.ageType and M.conid = A.conid)
+JOIN memLabel M ON (M.id=R.memId)
 LEFT OUTER JOIN user U ON (U.id=R.create_user)
 WHERE R.conid=?
 GROUP BY P.last_name, P.first_name

@@ -32,12 +32,11 @@ header('Content-Disposition: attachment; filename="participants.csv"');
 // query had commented out field of " // , min(B.date)"
 // and commented out where of //  and B.action='pickup'"
 $query = <<<EOS
-SELECT DISTINCT P.first_name, P.last_name, P.email_addr, P.id, A.label
+SELECT DISTINCT P.first_name, P.last_name, P.email_addr, P.id, M.label
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
-JOIN memList M ON (M.id=R.memId)
-JOIN ageList A ON (M.memAge = A.ageType and M.conid = A.conid)
-WHERE R.conid=? AND A.label LIKE '%Participant%' AND M.memAge='all';
+JOIN memLabel M ON (M.id=R.memId)
+WHERE R.conid=? AND M.label LIKE '%Participant%' AND M.memAge='all';
 EOS;
 
 echo "First Name, Last Name, Email, ID, Reg type\n";

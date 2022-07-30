@@ -25,14 +25,13 @@ $con = get_conf("con");
 $conid=$con['id'];
 
 header('Content-Type: application/csv');
-header('Content-Disposition: attachment; filename="mailer.csv"');
+header('Content-Disposition: attachment; filename="badgeTypes.csv"');
 
 $query = <<<EOS
-SELECT M.conid, A.label, M.price, M.startdate, M.enddate
-FROM memList M
-JOIN ageList A ON (M.memAge = A.ageType AND M.conid = A.conid)
+SELECT M.conid, M.label, M.price, M.startdate, M.enddate
+FROM memLabel M
 WHERE M.conid >= ?
-ORDER BY M.conid, M.sort_order, M.startdate, M.enddate, A.label;
+ORDER BY M.conid, M.sort_order, M.startdate, M.enddate, M.label;
 EOS;
 
 echo "conid, label, price, startdate, enddate\n";

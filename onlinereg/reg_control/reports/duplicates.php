@@ -31,14 +31,12 @@ header('Content-Disposition: attachment; filename="duplicates.csv"');
 # , concat(NP1.first_name, ' ', NP1.last_name) as name1
 # , concat(NP2.first_name, ' ', NP2.last_name) as name2
 $query = <<<EOS
-SELECT concat(P.first_name, ' ', P.last_name) as name, R1.id, A1.label, R1.paid, R1.price, R2.id, A2.label, R2.paid, R2.price
+SELECT concat(P.first_name, ' ', P.last_name) as name, R1.id, M1.label, R1.paid, R1.price, R2.id, M2.label, R2.paid, R2.price
 FROM reg R1
 JOIN perinfo P ON (P.id=R1.perid)
-JOIN memList M1 ON (M1.id=R1.memId)
-JOIN ageList A1 ON (M1.memAge = A1.ageType AND M1.conid = A1.conid)
+JOIN memLabel M1 ON (M1.id=R1.memId)
 JOIN reg R2 ON (R2.conid=R1.conid and R2.perid=R1.perid and R2.id>R1.id)
-JOIN memList M2 ON (M2.id=R2.memId)
-JOIN ageList A2 ON (M1.memAge = A2.ageType AND M2.conid = A2.conid)
+JOIN memLabel M2 ON (M2.id=R2.memId)
 LEFT OUTER JOIN newperson NP1 ON (NP1.id=R1.newperid)
 LEFT OUTER JOIN newperson NP2 ON (NP2.id=R2.newperid)
 WHERE R1.conid=?

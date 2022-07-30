@@ -36,13 +36,12 @@ if(!(isset($_GET) and isset($_GET['perid']))) {
 $perid = $_GET['perid'];
 
 $query = <<<EOS
-SELECT R.conid, R.perid, A.label, R.create_user, R.create_date, max(B.date)
+SELECT R.conid, R.perid, M.label, R.create_user, R.create_date, max(B.date)
 FROM reg R
-JOIN memList M ON (M.id=R.memId)
-JOIN ageList A ON (M.memAge = A.ageType AND M.conid = A.conid)
+JOIN memLabel M ON (M.id=R.memId)
 LEFT OUTER JOIN atcon_badge B ON (B.badgeId=R.id AND B.action='pickup')
 WHERE R.conid >= ? and R.perid = ?
-GROUP BY R.conid, R.perid, A.label, R.create_user, R.create_date
+GROUP BY R.conid, R.perid, M.label, R.create_user, R.create_date
 ORDER BY R.conid;
 EOS;
 

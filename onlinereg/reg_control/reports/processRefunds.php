@@ -41,10 +41,9 @@ while ($memArray = fetch_safe_assoc($memList)) {
 
 //get list of transactions
 $txnQ = <<<EOS
-SELECT DISTINCT A.label, Y.transid, Y.description, Y.cc_txn_id, Y.amount
-FROM memList M
+SELECT DISTINCT M.label, Y.transid, Y.description, Y.cc_txn_id, Y.amount
+FROM memLabel M
 JOIN reg R ON (R.memId=M.id)
-JOIN ageList A ON (M.memAge = A.ageType and M.conid = A.conid)
 JOIN payments Y ON (Y.transid=R.create_trans)
 WHERE M.id=?;
 EOS;
@@ -53,12 +52,11 @@ $txnR = dbSafeQuery($txnQ, 'i', array($memTypes['Request Refund']));
 $failed_refunds = array();
 
 $badgeQ = <<<EOS
-SELECT R.create_trans, A.label, R.id, CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name) as name, P.email_addr, P.phone
+SELECT R.create_trans, M.label, R.id, CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name) as name, P.email_addr, P.phone
     , P.address, P.addr_2, P.city, P.state, P.zip, P.country
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
-JOIN memList M ON (M.id=R.memId)
-JOIN ageList A ON (M.memAge = A.ageType and M.conid = A.conid)
+JOIN memLabel M ON (M.id=R.memId)
 WHERE R.create_trans=?;
 EOS;
 

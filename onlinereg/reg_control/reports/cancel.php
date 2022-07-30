@@ -28,10 +28,9 @@ header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="canceled_memberships.csv"');
 
 $query = <<<EOS
-SELECT T.id, P.first_name, P.last_name, P.email_addr, P.address, P.addr_2, P.city, P.state, P.zip, P.country, A.label, R.paid
+SELECT T.id, P.first_name, P.last_name, P.email_addr, P.address, P.addr_2, P.city, P.state, P.zip, P.country, M.label, R.paid
     , Y.type, Y.description, Y.amount, Y.txn_time, Y.cc_txn_id
-FROM memList M
-JOIN ageList A ON (M.memAge = A.ageType AND M.conid = A.conid)
+FROM memLabel M
 JOIN reg R ON (R.memId=M.id)
 JOIN transaction T ON (T.id=R.create_trans)
 JOIN perinfo P ON (P.id=R.perid)

@@ -35,11 +35,10 @@ header('Content-Disposition: attachment; filename="reg_report.csv"');
 // make need full group by, as it's only a partial list right now
 $query = <<<EOS
 SELECT R.id, CONCAT_WS(' ', P.first_name, P.last_name) AS name, CONCAT_WS(' ', P.address, P.addr_2, P.city, P.state, P.zip) AS addr
-    , P.zip as locale, P.country, P.email_addr, A.label, R.price, R.paid, R.create_date, MIN(B.date)
+    , P.zip as locale, P.country, P.email_addr, M.label, R.price, R.paid, R.create_date, MIN(B.date)
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
-JOIN memList M ON (M.id=R.memId)
-JOIN ageList A ON (M.memAge = A.ageType and M.conid = A.conid)
+JOIN memLabel M ON (M.id=R.memId)
 LEFT OUTER JOIN atcon_badge B ON (B.badgeId=R.id and B.action='attach' and B.date > '2019-05-22')
 WHERE R.conid=?
 GROUP BY P.id;

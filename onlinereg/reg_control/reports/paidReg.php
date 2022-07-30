@@ -25,14 +25,13 @@ $con = get_conf("con");
 $conid=$con['id'];
 
 header('Content-Type: application/csv');
-header('Content-Disposition: attachment; filename="members.csv"');
+header('Content-Disposition: attachment; filename="paidReg.csv"');
 
 // this query had a hard code of conid=54 in it, changed that to $conid
 $query = <<<EOS
-SELECT P.first_name, P.last_name, P.email_addr, A.label, R.paid, R.create_trans, T.paid, Y.type, Y.description, Y.amount
-FROM memList M
+SELECT P.first_name, P.last_name, P.email_addr, M.label, R.paid, R.create_trans, T.paid, Y.type, Y.description, Y.amount
+FROM memLabel M
 JOIN reg R ON (R.memId=M.id)
-JOIN ageList A ON (M.memAge = A.ageType and M.conid = A.conid)
 JOIN transaction T ON (T.id=R.create_trans)
 JOIN perinfo P ON (P.id=R.perid)
 JOIN payments AS Y ON (Y.transid=T.id)
