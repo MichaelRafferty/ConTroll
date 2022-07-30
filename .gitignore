@@ -1,5 +1,6 @@
 *.swp
 *.bak
+*~
 
 /config/
 /google_client/
@@ -10,3 +11,5 @@
 /BalticonReg.sln
 /BalticonReg.phpproj.user
 /google_client
+dead
+.htaccess
