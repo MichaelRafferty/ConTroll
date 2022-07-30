@@ -96,24 +96,26 @@ CREATE TEMPORARY TABLE history
         ORDER BY conid, year, diff;
 EOS;
 
+
+
+
 $addlwhere = '';
 #$addlwhere = "AND (B.action = 'create' OR B.action = 'upgrade' OR B.action = 'pickup')";
 switch($_GET['method']) {
     case 'attendance':
       #  $con = get_con();
         $badgeQ = <<<EOF
-SELECT Distinct R.perid, A.label, R.conid, M.memType
+SELECT Distinct R.perid, M.shortname as label, R.conid, M.memType
     , FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(min(T.complete_date))/900)*900) AS time
     , DATEDIFF(CURRENT_TIMESTAMP(), MIN(T.complete_date)) as diff
 FROM atcon A
 JOIN atcon_badge B ON (B.atconId=A.id)
 JOIN reg R ON (R.id=B.badgeId)
 JOIN transaction T ON (T.id=A.transid)
-JOIN memList M ON (M.id=R.memId)
-JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
+JOIN memLabel M ON (M.id=R.memId)
 WHERE A.conid>=? AND (B.action = 'attach')
     $addlwhere
-GROUP BY R.perid, A.label, R.conid, M.memType ORDER BY time, M.memType;
+GROUP BY R.perid, M.shortname, R.conid, M.memType ORDER BY time, M.memType;
 EOF;
 
         $badgeR = dbSafeQuery($badgeQ, 'i', array($conid));
@@ -145,14 +147,13 @@ EOF;
             }
         }
         $preregQ = <<<EOS
-SELECT M.id, A.label, COUNT(distinct R.perid) AS c
+SELECT M.id, M.shortname as label, COUNT(distinct R.perid) AS c
 FROM reg R
-JOIN memList M ON (M.id=R.memId)
-JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
+JOIN memLabel M ON (M.id=R.memId)
 JOIN conlist C ON (C.id=R.conid)
 LEFT OUTER JOIN atcon_badge B ON (B.badgeId = R.id AND B.action!='attach')
 WHERE R.create_date < C.startdate and R.conid=? AND B.action is NULL
-GROUP BY A.label, M.id
+GROUP BY M.shortname, M.id
 ORDER BY M.id;
 EOS;
         $preregR = dbSafeQuery($preregQ, 'i', array($conid));
@@ -246,12 +247,11 @@ EOF;
         $query = <<<EOF
 SELECT memCategory AS cat, memType AS type, memAge AS age, label, cnt
 FROM (
-    SELECT COUNT(R.id) AS cnt, M.sort_order, M.memCategory, M.memType, M.memAge, A.label
+    SELECT COUNT(R.id) AS cnt, M.sort_order, M.memCategory, M.memType, M.memAge, M.shortname as label
     FROM reg R
-    JOIN memList M ON (M.id=R.memId)
-    JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
+    JOIN memLabel M ON (M.id=R.memId)
     WHERE R.conid=?
-    GROUP BY M.sort_order, M.memCategory, M.memType, M.memAge, M.label
+    GROUP BY M.sort_order, M.memCategory, M.memType, M.memAge, M.shortname
     ) m
 WHERE memCategory is NOT NULL
 ORDER BY sort_order ASC, memCategory DESC, memType ASC, memAge ASC;
