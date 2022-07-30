@@ -1,14 +1,5 @@
 <?php
-global $ini;
-if (!$ini)
-    $ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-if ($ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-        exit();
-    }
-}
+global $db_ini;
 
 require_once "../lib/base.php";
 require_once "../lib/ajax_functions.php";
@@ -34,11 +25,10 @@ $conid=$con['id'];
 
 $query = <<<EOS
 SELECT P.id, CONCAT_WS(' ', first_name, middle_name, last_name) AS full_name, address, addr_2, CONCAT_WS(' ', city, state, zip) AS locale
-    , badge_name, email_addr, phone, active, banned, A.label
+    , badge_name, email_addr, phone, active, banned, M.label
 FROM perinfo P
 LEFT OUTER JOIN reg R ON (R.perid=P.id and R.conid=?)
-LEFT JOIN memList M ON (M.id=R.memId)
-JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
+LEFT JOIN memLabel M ON (M.id=R.memId)
 WHERE CONCAT_WS(' ', first_name, middle_name, last_name) LIKE ?
 ORDER BY R.id, last_name, first_name;
 EOS;

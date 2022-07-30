@@ -1,14 +1,5 @@
 <?php
-global $ini;
-if (!$ini)
-    $ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-if ($ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-        exit();
-    }
-}
+global $db_ini;
 
 require_once "../lib/base.php";
 require_once "../lib/ajax_functions.php";
@@ -46,12 +37,11 @@ $transid=$trans_key;
 $complete = false;
 
 $badgeListQ = <<<EOS
-SELECT DISTINCT R.id, AL.label, (R.price-R.paid) AS remainder
+SELECT DISTINCT R.id, M.label, (R.price-R.paid) AS remainder
 FROM atcon A
 JOIN atcon_badge B ON (B.atconId = A.id and action='attach')
 JOIN reg R ON (R.id = B.badgeId)
-JOIN memList M ON (M.id=R.memId)
-JOIN ageList AL ON (M.conid = AL.conid AND M.memAge = AL.ageType)
+JOIN memLabel M ON (M.id=R.memId)
 WHERE A.transid = ?;
 EOS;
 

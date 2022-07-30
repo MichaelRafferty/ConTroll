@@ -1,14 +1,5 @@
 <?php
-global $ini;
-if (!$ini)
-    $ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-if ($ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-        exit();
-    }
-}
+global $db_ini;
 
 require_once "../lib/base.php";
 require_once "../lib/ajax_functions.php";
@@ -37,12 +28,11 @@ $transid = sql_safe($_GET['id']);
 
 $totalPrice = 0;
 $badgeQ = <<<EOS
-SELECT DISTINCT R.id, AL.label, R.price, R.paid, P.badge_name, CONCAT_WS(' ', first_name, last_name) AS full_name, S.action
+SELECT DISTINCT R.id, M.label, R.price, R.paid, P.badge_name, CONCAT_WS(' ', first_name, last_name) AS full_name, S.action
 FROM atcon A
 JOIN atcon_badge B ON (B.atconId = A.id AND action='attach')
 JOIN reg R ON (R.id = B.badgeId)
-JOIN memList M ON (M.id=R.memId)
-JOIN ageList AL ON (M.conid = AL.conid AND M.memAge = AL.ageType)
+JOIN memLabel M ON (M.id=R.memId)
 JOIN perinfo P ON (P.id=R.perid)
 LEFT OUTER JOIN atcon_badge S ON (S.badgeId=R.id and S.action='pickup')
 WHERE A.transid = ?;
