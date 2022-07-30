@@ -28,12 +28,11 @@ $transid = sql_safe($_GET['id']);
 
 $totalPrice = 0;
 $badgeQ = <<<EOS
-SELECT DISTINCT R.id, Ag.label, R.price, R.paid, P.badge_name
+SELECT DISTINCT R.id, M.label, R.price, R.paid, P.badge_name
 FROM atcon A
 JOIN atcon_badge B ON (B.atconId = A.id and action='attach')
 JOIN reg R ON(R.id = B.badgeId)
-JOIN memList as M ON M.id=R.memId
-JOIN ageList Ag ON (M.conid = Ag.conid AND M.memAge = Ag.ageType)
+JOIN memLabel as M ON M.id=R.memId
 JOIN perinfo as P on P.id=R.perid
 WHERE A.transid = ?;
 EOS;

@@ -23,10 +23,9 @@ $conid=$con['id'];
 
 
 $query = <<<EOS
-SELECT R.id, R.price, R.paid, (R.price-R.paid) AS cost, CONCAT_WS('-', M.id, M.memCategory, M.memType, M.memAge) AS type, M.memAge AS age, R.locked, A.label
+SELECT R.id, R.price, R.paid, (R.price-R.paid) AS cost, CONCAT_WS('-', M.id, M.memCategory, M.memType, M.memAge) AS type, M.memAge AS age, R.locked, AMlabel
 FROM reg R
-JOIN memList M ON(M.id = R.memId)
-JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
+JOIN memLabel M ON(M.id = R.memId)
 WHERE R.perid=? AND R.conid BETWEEN ? AND ?
 EOS;
 
@@ -46,9 +45,8 @@ if(isset($badgeInfoRes)) { $badgeInfo=fetch_safe_assoc($badgeInfoRes); }
 $response["badgeInfo"]=$badgeInfo;
 
 $badge_resQ= <<<EOS
-SELECT CONCAT_WS('-', M.id, memCategory, memType, memAge) AS type, price, A.label
-FROM memList M
-JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
+SELECT CONCAT_WS('-', M.id, memCategory, memType, memAge) AS type, price, M.label
+FROM memLabel M
 WHERE M.conid=?
 ORDER BY sort_order, memType, memAge ASC;
 EOS;

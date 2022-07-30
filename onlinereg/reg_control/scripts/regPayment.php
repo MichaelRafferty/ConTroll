@@ -35,12 +35,11 @@ $transid=$trans_key;
 $complete = false;
 
 $badgeListQ = <<<EOQ
-SELECT DISTINCT R.id, Ag.label, (IFNULL(R.price, 0)-IFNULL(R.paid,0)) AS remainder
+SELECT DISTINCT R.id, M.label, (IFNULL(R.price, 0)-IFNULL(R.paid,0)) AS remainder
 FROM atcon A
 JOIN atcon_badge B ON (B.atconId = A.id and action='attach')
 JOIN reg R ON (R.id = B.badgeId)
-JOIN memList M ON (M.id=R.memId)
-JOIN ageList Ag ON (M.conid = Ag.conid AND M.memAge = Ag.ageType)
+JOIN memLabel M ON (M.id=R.memId)
 WHERE A.transid = ?;
 EOQ;
 

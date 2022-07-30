@@ -29,10 +29,9 @@ $transid=sql_safe($_POST['transaction']);
 $response['iden'] = $_POST['iden'];
 
 $memListQuery = <<<EOS
-SELECT M.id, M.price, A.label
-FROM memList M
-JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
-WHERE 
+SELECT id, price, label
+FROM memLabel
+WHERE  
 EOS;
 
 $types = '';
@@ -58,7 +57,7 @@ if(isset($_POST['age'])) {
   $types .= 's';
   $values[] = $_POST['age'];
 }
-$memListQuery .= "M.conid=? ORDER by price DESC;";
+$memListQuery .= "conid=? ORDER by price DESC;";
 $types .= 'i';
 $values[] = $conid;
 $memInfo = fetch_safe_assoc(dbSafeQuery($memListQuery, $types, $values));
@@ -91,10 +90,9 @@ $response['badgeQuery'] = $query;
 $badgeid = dbSafeInsert($query, $types, $values);
 
 $query = <<<EOS
-SELECT R.id, R.price, R.paid, (R.price-R.paid) as cost, M.id as memId, M.memCategory, M.memType, M.memAge, A.label, R.locked
+SELECT R.id, R.price, R.paid, (R.price-R.paid) as cost, M.id as memId, M.memCategory, M.memType, M.memAge, M.label, R.locked
 FROM reg R
-JOIN memList M ON (R.memId = M.id)
-JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
+JOIN memLabel M ON (R.memId = M.id)
 WHERE R.id=?;
 EOS;
 
