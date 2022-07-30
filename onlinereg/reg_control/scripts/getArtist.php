@@ -26,11 +26,10 @@ if(!isset($_GET['perid'])) { ajaxError("No Data"); }
 $perid=$_GET['perid'];
 $perQ = <<<EOS
 SELECT P.id, first_name, middle_name, last_name, suffix, badge_name, email_addr, phone, address, addr_2, city, state, zip, country
-    , R.id AS badge, A.label AS label
+    , R.id AS badge, M.label
 FROM perinfo P
 LEFT OUTER JOIN reg R ON (R.perid=P.id AND R.conid=?)
-LEFT OUTER JOIN memList M ON (M.id=R.memId)
-LEFT OUTER JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
+LEFT OUTER JOIN memLabel M ON (M.id=R.memId)
 WHERE P.id=?;
 EOS;
 
@@ -47,11 +46,10 @@ $artist = fetch_safe_assoc(dbSafeQuery($artistQ, 'i', array($perid)));
 $agent = null;
 if(isset($artist['agent']) && $artist['agent']!="") {
     $agentQ = <<<EOS
-SELECT P.id, first_name, middle_name, last_name, suffix, badge_name, email_addr, phone, address, addr_2, city, state, zip, country, R.id as badge, A.label as label
+SELECT P.id, first_name, middle_name, last_name, suffix, badge_name, email_addr, phone, address, addr_2, city, state, zip, country, R.id as badge, M.label
 FROM perinfo P
 LEFT OUTER JOIN reg R on (R.perid=P.id AND R.conid=?)
-LEFT OUTER JOIN memList M ON (M.id=R.memId)
-LEFT OUTER JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
+LEFT OUTER JOIN memLabel M ON (M.id=R.memId)
 WHERE P.id=?;
 EOS;
 
