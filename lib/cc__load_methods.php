@@ -4,6 +4,7 @@
 function load_cc_procs() {
     $reg = get_conf('reg');
     $cc = get_conf('cc');
+    $con = get_conf('con');
 
     switch ($cc['type']) {
         case 'convergepay':
