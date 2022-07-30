@@ -65,10 +65,9 @@ $updateQ = "UPDATE reg SET memId=?,  price=? WHERE id=?;";
 dbSafeCmd($updateQ, 'idi', array($memInfo['id'],  $memInfo['price'], $badgeid));
 
 $query = <<<EOS
-SELECT R.id, R.price, R.paid, (R.price-R.paid) as cost, M.id as memId, M.memCategory, M.memType, M.memAge, A.label, R.locked
+SELECT R.id, R.price, R.paid, (R.price-R.paid) as cost, M.id as memId, M.memCategory, M.memType, M.memAge, M.label, R.locked
 FROM reg R
-JOIN memList M ON (M.id = R.memId)
-JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
+JOIN memLabel M ON (M.id = R.memId)
 WHERE M.id=R.memId AND R.id=?;
 EOS;
 

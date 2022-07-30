@@ -24,10 +24,9 @@ SELECT R.create_date, R.change_date, R.price, R.paid, R.id AS badgeId, P.id AS p
     , CONCAT_WS(' ', NP.first_name, NP.middle_name, NP.last_name, NP.suffix) AS np_name
     , P.badge_name AS p_badge, NP.badge_name AS np_badge
     , CONCAT_WS('-', M.memCategory, M.memType, M.memAge) as memTyp
-    , M.memCategory AS category, M.memType AS type, M.memAge AS age, A.label AS label
+    , M.memCategory AS category, M.memType AS type, M.memAge AS age, M.label
 FROM reg R
-JOIN memList M ON(M.id=R.memId)
-JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
+JOIN memLabel M ON(M.id=R.memId)
 LEFT OUTER JOIN perinfo P ON (P.id=R.perid)
 LEFT OUTER JOIN newperson NP ON (NP.id=R.newperid)
 WHERE R.conid=?;

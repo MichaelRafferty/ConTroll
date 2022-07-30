@@ -20,12 +20,11 @@ function refundEmail_HTML($test, $email, $tid) {
   $homepage = $con['website'];
 
   $transQ = <<<EOS
-SELECT T.paid, A.label, M.memAge, P.first_name, P.last_name, P.badge_name, R.paid
+SELECT T.paid, M.label, M.memAge, P.first_name, P.last_name, P.badge_name, R.paid
 FROM transaction as T
 JOIN reg R ON (R.create_trans=T.id)
 JOIN perinfo P ON (P.id=R.perid)
-JOIN memList M ON (M.id=R.memId)
-JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
+JOIN memLabel M ON (M.id=R.memId)
 JOIN payments Y ON (Y.transid=T.id)
 WHERE T.id = ? AND M.memCategory in ('standard', 'yearahead') AND M.conid=?;
 EOS;
@@ -88,12 +87,11 @@ function refundEmail_TEXT($test, $email, $tid) {
     $url = $ini['server'] . "/cancelation.php";
 
   $transQ = <<<EOS
-SELECT T.paid, A.label, M.memAge, P.first_name, P.last_name, P.badge_name, R.paid
+SELECT T.paid, M.label, M.memAge, P.first_name, P.last_name, P.badge_name, R.paid
 FROM transaction T
 JOIN reg R ON (R.create_trans=T.id)
 JOIN perinfo P ON (P.id=R.perid)
-JOIN memList M ON (M.id=R.memId)
-JOIN ageList A ON (M.conid = A.conid AND M.memAge = A.ageType)
+JOIN memLabel M ON (M.id=R.memId)
 JOIN payments Y ON (Y.transid=T.id)
 WHERE T.id = ? AND M.memCategory in ('standard', 'yearahead') AND M.conid=?;
 EOS;

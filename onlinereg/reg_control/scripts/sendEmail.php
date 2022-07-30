@@ -1,21 +1,11 @@
 <?php
-global $ini;
-if (!$ini)
-    $ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-if ($ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-        exit();
-    }
-}
+<?php
+global $db_ini;
 
 require_once "../lib/base.php";
 require_once "../lib/ajax_functions.php";
-require_once "../../../aws.phar";
 require_once "../lib/email.php";
-use Aws\Ses\SesClient;
-use Aws\Exception\AwsException;
+
 
 $check_auth = google_init("ajax");
 $perm = "admin";
@@ -27,6 +17,7 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     ajaxSuccess($response);
     exit();
 }
+load_email_procs();
 
 $test = true;
 $email = "mike@bsfs.org";
@@ -49,15 +40,6 @@ $con = get_conf("con");
 $reg = get_conf("reg");
 $conid=$con['id'];
 
-$amazonCred = get_conf('email');
-$awsClient = SesClient::factory(array(
-    'key'=>$amazonCred['aws_access_key_id'],
-    'secret'=>$amazonCred['aws_secret_access_key'],
-    'region'=>'us-east-1',
-    'version'=>'2010-12-01'
-));
-
-
 $emailQ = "SELECT DISTINCT P.email_addr as email FROM reg as R JOIN perinfo as P on P.id=R.perid where R.conid=$conid and R.paid=R.price and P.email_addr like '%@%' and P.contact_ok='Y'";
 $emailR = dbQuery($emailQ);
 $response['numEmails'] = $emailR->num_rows;
@@ -73,39 +55,18 @@ if($test) {
     }
 }
 
-
 foreach ($email_array as $email) {
-  $email_msg = "";
-  try {
-    $email_msg = $awsClient->sendEmail(array(
-        'Source' => 'regadmin@bsfs.org',
-      'Destination' => array(
-        'ToAddresses' => array($email)
-      ),
-      'Message' => array(
-        'Subject' => array(
-          'Data' => $con['label']. " Welcome Email"
-        ),
-        'Body' => array(
-          'Text' => array(
-            'Data' => preConEmail_last_TEXT($reg['test'])
-          ),
-          'Html' => array(
-            'Data' => preConEmail_last_HTML($reg['test'])
-          )
-        )
-      )
-    ));
-    $email_error = "none";
-    $success = "success";
-    array_push($data_array, array($email, "success"));
-  } catch (AwsException $e) {
-    $email_error = $e->getCode();
-    $success="error";
-    array_push($data_array, array($email, $e->getMessage()));
-  }
+    $return_arr = send_email($con['regadminemail'], trim($email), /* cc */ null, $condata['label']. " Welcome Email",  preConEmail_last_TEXT($reg['test']), preConEmail_last_HTML($reg['test']));
 
-sleep(10);
+
+    if ($return_arr[''] == 'success') {
+        array_push($data_array, array($email, "success"));
+    } else {
+        array_push($data_array, array($email, $return_arr['email_error']));
+        $success = 'error';
+    }
+
+sleep(1);
 }
 
 $response['status'] = $success;
