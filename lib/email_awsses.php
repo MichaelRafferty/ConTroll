@@ -1,13 +1,14 @@
 <?php
-//  awsses.php - library of functions to use the Amazon Web Services Simple Email Services
-// uses config variables:
-// [email]
-//    type="aws"
-//    aws_access_key_id=...
-//    aws_secret_access_key=...
-//    username="arn:..."
-//    region=...
-//    version= (string of which API version you are using)
+/*  awsses.php - library of functions to use the Amazon Web Services Simple Email Services
+ uses config variables:
+ [email]
+    type="aws"
+    aws_access_key_id=...
+    aws_secret_access_key=...
+    username="arn:..."
+    region = ...
+    version= (string of which API version you are using)
+*/
 
 
 // send_email - exposed function send an email
@@ -24,8 +25,8 @@
 //      error_code = error code returned by api
 //
 
-require_once "../lib/db_functions.php";
-require_once "../../config/aws.phar";
+require_once (__DIR__ . "/../onlinereg/lib/db_functions.php");
+require_once (__DIR__ . "/../config/aws.phar");
 use Aws\Ses\SesClient;
 use Aws\Exception\AwsException;
 
@@ -54,7 +55,7 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
 
     $Destination = array();
     $Destination['ToAddresses'] = array($to);
-    if (!isnull($cc)) {
+    if (!is_null($cc)) {
         if (is_array($cc)) {
             $Destination['CcAddresses'] = $cc;
         } else {
@@ -63,7 +64,7 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
     }
 
     $Body = array();
-    if (!is_ull($textbody)) {
+    if (!is_null($textbody)) {
     $Body['Text'] = array(
         'Data' => $textbody
         );
@@ -85,7 +86,7 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
                 'Body' => $Body
              ) // (message end)
             ) //(email end)
-            ) // (sendEmail)
+            ); // (sendEmail)
     }
     catch (AwsException $e) {
         $return_arr['status'] = "error";

@@ -11,7 +11,7 @@ function load_cc_procs() {
             require_once("cc_convergepay.php");
             break;
         case 'square':
-            require_once("../../Composer/vendor/autoload.php");
+            require_once (__DIR__ . "/../Composer/vendor/autoload.php");
             require_once("cc_square.php");
             break;
         case 'test':
