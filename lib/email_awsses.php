@@ -48,7 +48,7 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
     catch (AwsException $e) {
         $return_arr['status'] = "error";
         $return_arr['error_code'] = $e->getCode();
-        $return_arr['email_error'] = =$e->getMessage();
+        $return_arr['email_error'] = $e->getMessage();
         return $return_arr;
     }
 
@@ -90,7 +90,7 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
     catch (AwsException $e) {
         $return_arr['status'] = "error";
         $return_arr['error_code'] = $e->getCode();
-        $return_arr['email_error'] = =$e->getMessage();
+        $return_arr['email_error'] = $e->getMessage();
         return $return_arr;
     }
     $return_arr['status'] = "success";
