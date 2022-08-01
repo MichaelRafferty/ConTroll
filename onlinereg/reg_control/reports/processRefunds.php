@@ -1,17 +1,6 @@
 <?php
-global $ini;
-if (!$ini)
-    $ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-if ($ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-        exit();
-    }
-}
 // hardcode: This entire routine is hardcoded to the Balticon CC vendor, and is not portable to Square, and needs to be rewritten calling some function in the credit card processing .php file to make it portable
 require_once "../lib/base.php";
-require_once "../lib/ajax_functions.php";
 require_once "../lib/log.php";
 
 $need_login = google_init("page");

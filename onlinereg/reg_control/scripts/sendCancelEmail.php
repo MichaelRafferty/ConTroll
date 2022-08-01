@@ -2,9 +2,8 @@
 global $db_ini;
 
 require_once "../lib/base.php";
-require_once "../lib/ajax_functions.php";
 require_once "../lib/email.php";
-require_once("../../lib/email__load_methods.php");
+require_once(__DIR__ . "/../../../lib/email__load_methods.php");
 
 $check_auth = google_init("ajax");
 $perm = "admin";

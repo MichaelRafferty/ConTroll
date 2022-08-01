@@ -3,7 +3,6 @@
 global $db_ini;
 
 require_once "../lib/base.php";
-require_once "../lib/ajax_functions.php";
 require_once "../lib/email.php";
 
 

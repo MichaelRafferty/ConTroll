@@ -1,6 +1,5 @@
 <?php
 require_once "../lib/base.php";
-require_once "../lib/ajax_functions.php";
 
 function calc_stats($inArray) {
     sort($inArray);
