@@ -1,6 +1,6 @@
 <?php
 
-require_once("db_functions.php");
+require_once(__DIR__ . "/../../lib/db_functions.php");
 
 function redirect_https() {
     $ini = get_conf('reg');
