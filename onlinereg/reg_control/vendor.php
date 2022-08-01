@@ -27,6 +27,11 @@ $conf = get_conf('con');
   <div id='currentNumbers' class='half'>
     <span class='blocktitle'>Artist Alley Registrations:</span>
     <?php
+        // initialize arrays in case select returns 0 rows
+        $alley_show = ['requested' => 0, 'authorized' => 0, 'purchased' => 0];
+        $dealer6_show = ['requested' => 0, 'authorized' => 0, 'purchased' => 0];
+        $dealer10_show = ['requested' => 0, 'authorized' => 0, 'purchased' => 0];
+        $virtual_show = ['requested' => 0, 'authorized' => 0, 'purchased' => 0];
         $showQ = "SELECT type, sum(requested) as requested, sum(authorized) as authorized, sum(purchased) as purchased from vendor_show WHERE conid=$conid group by type;";
         $showR = dbQuery($showQ);
         while($showLine = fetch_safe_assoc($showR)) {

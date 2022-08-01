@@ -1,23 +1,23 @@
 <?php
 global $dbObject;
-global $ini;
+global $db_ini;
+
 
 $dbObject = null;
-if (!$ini)
-    $ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
+$db_ini = parse_ini_file(__DIR__ . "/../../../../config/reg_conf.ini", true);
 
 function db_connect() {
     global $dbObject;
-    global $ini;
+    global $db_ini;
     if(is_null($dbObject)) {
         $dbObject = new mysqli(
-            $ini['mysql']['host'],
-            $ini['mysql']['user'],
-            $ini['mysql']['password'],
-            $ini['mysql']['db_name']);
+            $db_ini['mysql']['host'], 
+            $db_ini['mysql']['user'],
+            $db_ini['mysql']['password'],
+            $db_ini['mysql']['db_name']);
         if($dbObject->connect_errno) {
-            echo "Failed to connect to MySQL: (" .
-                $dbObject->connect_errno .") " . $dbObject->connect_error;
+            echo "Failed to connect to MySQL: (" . 
+                $mysqli->connect_erno .") " . $mysqli->connect_error;
         }
     }
 }
@@ -35,7 +35,7 @@ function dbQuery($query) {
     } else {
         echo "ERROR: DB Connection Not Open";
         return false;
-    }
+    } 
 }
 
 function dbInsert($query) {
@@ -51,7 +51,7 @@ function dbInsert($query) {
     } else {
         echo "ERROR: DB Connection Not Open";
         return false;
-    }
+    } 
 }
 
 /* if I want to handle refresh tokens in the database I'll need something like this
@@ -100,7 +100,7 @@ function register($email, $sub, $name) {
 function getAuthsById($id) {
     $res = array();
     $auths = dbQuery("SELECT A.name FROM user AS U, auth AS A, user_auth as UA WHERE U.id = '$id' AND U.id = UA.user_id AND A.id = UA.auth_id ORDER BY A.id;");
-    if(!$auths) { return false; }
+    if(!$auths) { return false; } 
     while($new_auth = fetch_safe_assoc($auths)) {
         $res[count($res)] = $new_auth['name'];
     }
@@ -109,10 +109,10 @@ function getAuthsById($id) {
 
 function getPages($sub) {
     $res = array();
-    $auths = dbQuery("SELECT DISTINCT A.name, A.display FROM user AS U, auth AS A, user_auth as UA WHERE U.google_sub = '$sub' AND A.page='Y' AND U.id = UA.user_id AND A.id = UA.auth_id ORDER BY A.id;");
-    if(!$auths) { return false; }
+    $auths = dbQuery("SELECT A.name FROM user AS U, auth AS A, user_auth as UA WHERE U.google_sub = '$sub' AND A.page='Y' AND U.id = UA.user_id AND A.id = UA.auth_id ORDER BY A.id;");
+    if(!$auths) { return false; } 
     while($new_auth = fetch_safe_assoc($auths)) {
-        $res[count($res)] = $new_auth;
+        $res[count($res)] = $new_auth['name'];
     }
     return $res;
 }
@@ -120,7 +120,7 @@ function getPages($sub) {
 function getAuths($sub) {
     $res = array();
     $auths = dbQuery("SELECT A.name FROM user AS U, auth AS A, user_auth as UA WHERE U.google_sub = '$sub' AND U.id = UA.user_id AND A.id = UA.auth_id ORDER BY A.id;");
-    if(!$auths) { return false; }
+    if(!$auths) { return false; } 
     while($new_auth = fetch_safe_assoc($auths)) {
         $res[count($res)] = $new_auth['name'];
     }
@@ -131,26 +131,11 @@ function checkAuth($sub, $name) {
     if(!isset($sub) || !$sub) { return false; }
     $res = array();
     $auths = dbQuery("SELECT A.name FROM user AS U, auth AS A, user_auth as UA WHERE U.google_sub = '$sub' AND A.name='$name' AND U.id = UA.user_id AND A.id = UA.auth_id ORDER BY A.id;");
-    if(!$auths) { return false; }
+    if(!$auths) { return false; } 
     while($new_auth = $auths->fetch_array(MYSQLI_ASSOC)) {
         $res[count($res)] = $new_auth['name'];
     }
     return $res;
-}
-
-function newUser($email, $sub){
-    if(!isset($sub) || !isset($email) || !$sub || !$email) {
-        return false;
-    }
-    $userR = dbQuery("SELECT id,google_sub,email FROM user WHERE email='$email';");
-    if(!$userR || $userR->num_rows!=1) {
-        return false;
-    }
-    $user = fetch_safe_assoc($userR);
-    if($user['google_sub'] == '') {
-        $id = $user['id'];
-        dbQuery("UPDATE user SET google_sub='$sub' WHERE id='$id';");
-    }
 }
 
 function checkUser($sub) {
@@ -174,7 +159,7 @@ function getUsers($new=null) {
 }
 
 
-function db_close() {
+function db_close() { 
     global $dbObject;
     if(!is_null($dbObject)) { $dbObject->close(); $dbObject=null; }
 }
@@ -200,13 +185,13 @@ function fetch_safe_array($res) {
 }
 
 function get_conf($name) {
-  global $ini;
-  return $ini[$name];
+  global $db_ini;
+  return $db_ini[$name];
 }
 
 function get_con() {
-    global $ini;
-    return fetch_safe_assoc(dbQuery("SELECT * FROM conlist WHERE id='".$ini['con']['id']."';"));
+    global $db_ini;
+    return fetch_safe_assoc(dbQuery("SELECT * FROM conlist WHERE id='".$db_ini['con']['id']."';"));
 }
 
 function get_user($sub) {
@@ -221,8 +206,26 @@ function check_atcon($user, $passwd, $level, $conid) {
 
     $q = "SELECT id FROM atcon_auth WHERE perid=$u and passwd='$p' and conid=$conid and auth='$level';";
     $r = dbQuery($q);
-    if($r->num_rows > 0) { return true; }
+    if($r->num_rows > 0) { return true; } 
     else { return false; }
 }
 
+function get_username($user) {
+	$u = sql_safe($user);
+	$q = "SELECT first_name, last_name FROM perinfo WHERE id = '$user';";
+	$r = dbQuery($q);
+	if ($r->num_rows <= 0)
+		return $u;
+
+	$ret = '';
+	$res = fetch_safe_assoc($r);
+	if ($res['first_name'] != '')
+		$ret = $res['first_name'];
+	if ( $res['last_name'] != '') {
+		if ($ret != '')
+			$ret .= ' ';
+		$ret .= $res['last_name'];
+	}
+	return $ret;
+}
 ?>

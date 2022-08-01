@@ -1,6 +1,5 @@
 <?php
 require_once "../lib/base.php";
-require_once "../lib/ajax_functions.php";
 
 $check_auth = google_init("ajax");
 $perm = "registration";
@@ -16,8 +15,8 @@ if($check_auth == false || (!checkAuth($check_auth['sub'], $perm) &&
 
 $user = $check_auth['email'];
 $response['user'] = $user;
-$userQ = "SELECT id FROM user WHERE email='$user';";
-$userR = fetch_safe_assoc(dbQuery($userQ));
+$userQ = "SELECT id FROM user WHERE email=?;";
+$userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', array($user)));
 $userid = $userR['id'];
 $con = get_conf('con');
 $conid=$con['id'];
@@ -60,13 +59,13 @@ SELECT T.id as tID, T.create_date as tCreate
     , concat_ws(' ', P.first_name, P.middle_name, P.last_name, P.suffix) as ownerName
     , concat_ws(' ', P.city, P.state, P.zip) as ownerLocale
     , P.badge_name as ownerBadge, P.email_addr as ownerEmail
-    , R.id as badgeId, R.price, R.paid, (R.price - R.paid) as cost, M.label
+    , R.id as badgeId, R.price, R.paid, (IFNULL(R.price,0) - IFNULL(R.paid,0)) as cost, M.label
     , concat_ws('-', M.id, M.memCategory, M.memType, M.memAge) as type
     , R.locked, R.create_trans
 FROM transaction as T
 JOIN perinfo as P ON (P.id=T.perid)
 LEFT OUTER JOIN reg as R ON (R.perid=P.id AND (R.conid=T.conid OR R.conid=?))
-LEFT OUTER JOIN memList as M ON (M.id=R.memId)
+LEFT OUTER JOIN memLabel as M ON (M.id=R.memId)
 WHERE T.id=? AND T.conid=?;
 EOQ;
 
@@ -79,14 +78,14 @@ SELECT P.address, P.addr_2,  P.badge_name, P.email_addr, P.phone
     , concat_ws(' ', P.city, P.state, P.zip) as locale
     , concat_ws(' ', P.first_name, P.middle_name, P.last_name, P.suffix) as name
     , concat_ws(' ', NP.first_name, NP.middle_name, NP.last_name, NP.suffix) as newname
-    , R.id as badgeId, R.price, R.paid, (R.price - R.paid) as cost, R.locked
+    , R.id as badgeId, R.price, R.paid, (IFNULL(R.price,0) - IFNULL(R.paid,0)) as cost, R.locked
     , M.memCategory, M.memType, M.memAge, M.label
     , concat_ws('-', M.id, M.memCategory, M.memType, M.memAge) as type
 FROM transaction as T
 JOIN reg as R ON (R.create_trans=T.id)
 LEFT OUTER JOIN perinfo as P ON (P.id=R.perid AND P.id != T.perid)
 LEFT OUTER JOIN newperson as NP ON (NP.id=R.newperid AND NP.id != T.newperid)
-JOIN memList as M ON (M.id=R.memId)
+JOIN memLabel as M ON (M.id=R.memId)
 WHERE T.id=?;
 EOQ;
 

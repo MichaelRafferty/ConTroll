@@ -1,21 +1,9 @@
 <?php
-global $ini;
-if (!$ini)
-    $ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-if ($ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-        exit();
-    }
-}
+global $db_ini;
 
 require_once "../lib/base.php";
-require_once "../lib/ajax_functions.php";
-require_once "../../../aws.phar";
 require_once "../lib/email.php";
-use Aws\Ses\SesClient;
-use Aws\Exception\AwsException;
+require_once(__DIR__ . "/../../../lib/email__load_methods.php");
 
 $check_auth = google_init("ajax");
 $perm = "admin";
@@ -27,6 +15,8 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     ajaxSuccess($response);
     exit();
 }
+
+load_email_procs();
 
 $test = true;
 $email = "raffem47@yahoo.com";
@@ -48,24 +38,23 @@ $con = get_conf("con");
 $reg = get_conf("reg");
 $conid=$con['id'];
 
-$amazonCred = get_conf('email');
-$awsClient = SesClient::factory(array(
-    'key'=>$amazonCred['aws_access_key_id'],
-    'secret'=>$amazonCred['aws_secret_access_key'],
-    'region'=>'us-east-1',
-    'version'=>'2010-12-01'
-));
+$emailQ = <<<EOS
+SELECT distinct P.email_addr AS email, create_trans AS tid
+FROM memList M
+JOIN reg R ON (R.memId=M.id)
+JOIN perinfo P ON (P.id=R.perid)
+JOIN payments Y ON (Y.transid=R.create_trans)
+WHERE M.memCategory in ('standard', 'yearahead') and M.conid=? order by tid;
+EOS;
 
-
-$emailQ = "select distinct P.email_addr as email, create_trans as tid FROM memList as M JOIN reg as R on R.memId=M.id JOIN perinfo as P on P.id=R.perid JOIN payments as Y on Y.transid=R.create_trans where M.memCategory in ('standard', 'yearahead') and M.conid=$conid order by tid;";
-$emailR = dbQuery($emailQ);
+$emailR = dbSafeQuery($emailQ, 'i', $conid);
 $response['numEmails'] = $emailR->num_rows;
 
 $email_array=array();
 $data_array=array();
 
 if($test) {
-    $emailR = dbQuery("select DISTINCT P.email_addr as email, create_trans as tid FROM reg as R JOIN perinfo as P on P.id=R.perid where create_trans=".sql_safe($tid).";");
+    $emailR = dbSafeQuery("select DISTINCT P.email_addr AS email, create_trans AS tid FROM reg R JOIN perinfo P ON (P.id=R.perid) WHERE create_trans=?;", 'i', array($tid));
     while ($email_value = fetch_safe_assoc($emailR)) {
         array_push($email_array, array('email'=>$email_value['email'], 'tid'=>$email_value['tid']));
     }
@@ -75,39 +64,19 @@ if($test) {
     }
 }
 
-
+$success = 'success';
 foreach ($email_array as $email) {
-  $email_msg = "";
-  try {
-    $email_msg = $awsClient->sendEmail(array(
-        'Source' => 'regadmin@bsfs.org',
-      'Destination' => array(
-        'ToAddresses' => array($email['email'])
-      ),
-      'Message' => array(
-        'Subject' => array(
-          'Data' => $con['label']. " Membership Cancelation Instructions"
-        ),
-        'Body' => array(
-          'Text' => array(
-            'Data' => refundEmail_TEXT($reg['test'], $email['email'], $email['tid'])
-          ),
-          'Html' => array(
-            'Data' => refundEmail_HTML($reg['test'], $email['email'], $email['tid'])
-          )
-        )
-      )
-    ));
-    $email_error = "none";
-    $success = "success";
-    array_push($data_array, array($email, "success"));
-  } catch (AwsException $e) {
-    $email_error = $e->getCode();
-    $success="error";
-    array_push($data_array, array($email, $e->getMessage()));
-  }
+    $return_arr = send_email($con['regadminemail'], trim($email['email']), /* cc */ null, $condata['label']. " Membership Cancelation Instructions",  refundEmail_TEXT($reg['test'], $email['email'], $email['tid']), refundEmail_HTML($reg['test'], $email['email'], $email['tid']));
 
-sleep(10);
+
+    if ($return_arr[''] == 'success') {
+        array_push($data_array, array($email, "success"));
+    } else {
+        array_push($data_array, array($email, $return_arr['email_error']));
+        $success = 'error';
+    }
+
+sleep(1);
 }
 
 $response['status'] = $success;

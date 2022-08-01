@@ -1,15 +1,9 @@
 <?php
 ## Pull INI for variables
 global $db_ini;
-if (!$db_ini) {
-    if (strpos(__DIR__, "/test/")) {
-        $db_ini = parse_ini_file(__DIR__ . "/../../../../config/reg_test.ini", true);
-        $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../../../google_client";
-
-    } else {
-        $db_ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-        $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../../google_client";
-    }
+if (!$db_ini) {    
+    $db_ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
+    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../../google_client";    
 }
 
 if ($db_ini['reg']['https'] <> 0) {
@@ -22,7 +16,8 @@ if ($db_ini['reg']['https'] <> 0) {
 set_include_path(get_include_path(). $include_path_additions);
 
 require_once("vendor/autoload.php");
-require_once(__DIR__ . "/../../lib/db_functions.php");
+require_once(__DIR__ . "/../../../lib/db_functions.php");
+require_once(__DIR__ . "/../../../lib/ajax_functions.php");
 db_connect();
 
 
@@ -91,7 +86,7 @@ function google_init($mode) {
     ) {
         $client->setAccessToken($_SESSION['id_token_token']);
         $token_data = $client->verifyIdToken();
-        if(array_key_exists('exp', $token_data) && ($token_data['exp'] - time() < 900)) {
+        if(is_array($token_data) && array_key_exists('exp', $token_data) && ($token_data['exp'] - time() < 900)) {
             $client->refreshToken($_SESSION['id_token_token']['refresh_token']);
         }
     } else {
@@ -129,7 +124,9 @@ return isset($_SERVER['HTTP_USER_AGENT']);
 function page_init($title, $css, $js, $auth) {
     global $db_ini;
 // auth gets the token in need_login
-    newUser($auth['email'], $auth['sub']);
+    if (is_array($auth) && array_key_exists('email', $auth)) {
+        newUser($auth['email'], array_key_exists('sub', $auth) ? $auth['sub'] : '');
+    }
     
     if(isWebRequest()) { 
 ?>
@@ -186,7 +183,7 @@ function page_head($title, $auth) {
 }
 
 function con_info($auth) {
-    if(checkAuth($auth['sub'], 'overview')) {
+    if(is_array($auth) && checkAuth(array_key_exists('sub', $auth) ? $auth['sub'] : null, 'overview')) {
         $con = get_con();
         $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."';");
         $badgeCount = fetch_safe_array($count_res);
@@ -210,7 +207,11 @@ function con_info($auth) {
 }
 
 function tab_bar($auth, $page) {
-    $page_list = getPages($auth['sub']);
+    if (is_array($auth) && array_key_exists('sub', $auth)) {
+        $page_list = getPages($auth['sub']);
+    } else {
+        $page_list = array();
+    }
     ?>
     <div class='tabbar'>
         <span class='
@@ -359,12 +360,12 @@ function paymentDialogs() {
         </tr>
       </table>
       <div>
-        <input required='required' class='right' type='text' size=10 name='amt' id='discountAmt'></input>Amount
+        <input required='required' class='right' type='text' size=10 name='amt' id='discountAmt'/>Amount
       </div>
       <div>
-        <input required='required' class='right' type='text' size=20 name='notes' id='discountDesc'></input>Note
+        <input required='required' class='right' type='text' size=20 name='notes' id='discountDesc'/>Note
       </div>
-      <input id='discountPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#discountPaymentForm") && makePayment("discount");'></input>
+      <input id='discountPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#discountPaymentForm") && makePayment("discount");'/>
     </form>
   </div>
   <div id='checkPayment' class='dialog'>
@@ -388,15 +389,15 @@ function paymentDialogs() {
           <td id='checkPaymentTotal' class='right'></td>
         </tr>
       </table>
-      <div><input required='required' class='right' type='text' size=10 id='checkNo'></input>
+      <div><input required='required' class='right' type='text' size=10 id='checkNo'/>
       Check #</div>
       <div>
-        <input required='required' class='right' type='text' size=10 name='amt' id='checkAmt'></input>Amount
+        <input required='required' class='right' type='text' size=10 name='amt' id='checkAmt'/>Amount
       </div>
       <div>
-        <input class='right' type='text' size=20 name='notes' id='checkDesc'></input>Note
+        <input class='right' type='text' size=20 name='notes' id='checkDesc'/>Note
       </div>
-      <input id='checkPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#checkPaymentForm") && makePayment("check");'></input>
+      <input id='checkPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#checkPaymentForm") && makePayment("check");'/>
     </form>
   </div>
   <div id='cashPayment' class='dialog'>
@@ -421,12 +422,12 @@ function paymentDialogs() {
         </tr>
       </table>
       <div>
-        <input required='required' class='right' type='text' size=10 name='amt' id='cashAmt'></input>Amount
+        <input required='required' class='right' type='text' size=10 name='amt' id='cashAmt'/>Amount
       </div>
       <div>
-        <input class='right' type='text' size=20 name='notes' id='cashDesc'></input>Note
+        <input class='right' type='text' size=20 name='notes' id='cashDesc'/>Note
       </div>
-      <input id='cashPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#cashPaymentForm") && makePayment("cash");'></input>
+      <input id='cashPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#cashPaymentForm") && makePayment("cash");'/>
     </form>
   </div>
   <div id='creditPayment' class='dialog'>
@@ -450,10 +451,10 @@ function paymentDialogs() {
           <td id='creditPaymentTotal' class='right'></td>
         </tr>
       </table>
-      <div><input required='required' class='right' type='text' size=10 name='amt' id='creditAmt'></input>Amount</div>
+      <div><input required='required' class='right' type='text' size=10 name='amt' id='creditAmt'/>Amount</div>
       <?php /* <div><input class='right' type='password' size=4 name='track' id='creditTrack'></input>CC Data</div> */ ?>
-      <div><input required='required' class='right' type='text' name='notes' id='creditDesc' autocomplete='off'></input>Transaction</div>
-      <input id='creditPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#creditPaymentForm") && makePayment("credit");'></input>
+      <div><input required='required' class='right' type='text' name='notes' id='creditDesc' autocomplete='off'/>Transaction</div>
+      <input id='creditPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#creditPaymentForm") && makePayment("credit");'/>
       </div>
     </form>
   </div>

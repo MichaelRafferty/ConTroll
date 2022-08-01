@@ -1,0 +1,220 @@
+<?php
+$stylemod = array(
+    'lbl' => array(
+        'Reset'          => "\x1B*",
+        '7cpi'           => "\x1BT",
+        '10cpi'          => "\x1BU",
+        '12cpi'          => "\x1BM",
+        '16cpi'          => "\x1BP",
+        '20cpi'          => "\x1BS",
+        '32cpl'          => "\x1Dt\x20",
+        '38cpl'          => "\x1Dt\x26",
+        '50cpl'          => "\x1Dt\x32",
+        'Landscape'      => "\x1DV\x01",
+        'Truncate'       => "\x1DT\x00",
+        'FeedLength282'  => "\x1DL\x02\x61",
+        'VertStrtPt95'   => "\x1BY\x19\n",
+        'VertStrtPt97'   => "\x1BY\x1a\n",
+        'VertStrtPt99'   => "\x1BY\x1c\n",
+        'DblHighON'      => "\x1D\x12",
+        'DblHighOFF'     => "\x1D\x13",
+        'DblWideON'      => "\x0E",
+        'DblWideOFF'     => "\x14",
+        'InverseON'      => "\x1D\x1E",
+        'InverseOFF'     => "\x1D\x1F"
+    ) // end lbl
+);
+
+/* function printMod returns a string of binary printer control commands
+ ** $type is a  type of printer
+ **** "lbl" == Dymo LabelWriter SE450
+ ** $mods is an array of controls to pull back
+ */
+function printMod($type, $mods) { 
+  global $stylemod;
+  $ret = '';
+  foreach($mods as $mod) {
+    $ret .= $stylemod[$type][$mod];
+  }
+  return $ret;
+}
+
+$badgeTypes = array(
+    'bsfs'     => 'B',
+    'discount' => 'M',
+    'freebie'  => 'F',
+    'goh'      => 'G',
+    'rollover' => 'R',
+    'standard' => 'M'
+);
+
+function lookupType($type) {
+    global $badgeTypes;
+    return $badgeTypes[$type];
+}
+
+/* function label_init sends initialization codes to the Dymo LabelWriter SE450
+ */
+function badge_init($queue) {
+    $tempfile = tempnam(sys_get_temp_dir(), "prnCtrl");
+    if(!$tempfile) { 
+        print "FATAL: Unable to create unique file name<br/>\n";
+        print_r(error_get_last());
+        return false;
+    }
+
+    $temp = fopen($tempfile, "w");
+    if(!$temp) { 
+        print "FATAL: Unable to create temp file<br/>\n";
+        print_r(error_get_last());
+        return false;
+    }
+
+    //echo "$tempfile\n";
+    $printerctl = printMod('lbl', 
+            array('Reset', '38cpl', 'Landscape', 'Truncate'));
+
+    $printerctl .= "\f";
+
+    fwrite($temp, $printerctl);
+    fclose($temp);
+
+    exec("lp -d $queue $tempfile");
+
+    unlink($tempfile);
+
+}
+
+function print_badge($queue, $badge) {
+    $tempfile = tempnam(sys_get_temp_dir(), "prnCtrl");
+    if(!$tempfile) { 
+        print "FATAL: Unable to create unique file name<br/>\n";
+        print_r(error_get_last());
+        return false;
+    }
+
+    $temp = fopen($tempfile, "w");
+    if(!$temp) { 
+        print "FATAL: Unable to create temp file<br/>\n";
+        print_r(error_get_last());
+        return false;
+    }
+    
+    //set start position
+    $output = printmod('lbl', array('VertStrtPt97')); 
+
+    //build badge name
+    if($badge['badge_name'] == "") {
+      $badge['badge_name'] = $badge['full_name'];
+    }
+
+    $namelen = strlen($badge['badge_name']);
+
+    $name = $badge['badge_name'];
+    if($namelen > 16) {
+        $len = strrpos(substr($badge['badge_name'],1,16), ' ');
+        if($len === false || $len === 0) { $len = 16; }
+        else { $len +=1; }
+        $name = substr($badge['badge_name'], 0, $len);
+        $name2 = substr($badge['badge_name'], $len, 22);
+        $name .= "\n"
+            . printmod('lbl', array('7cpi', 'DblHighOFF', 'DblWideOFF'))
+            . $name2;
+    } else { $name .= "\n"; }
+
+    $output .= printmod('lbl', array('10cpi', 'DblHighON', 'DblWideON'));
+    $output .= $name;
+    $output .= "\n";
+
+    //info line
+    $type = lookupType($badge['category']);
+    $id = $badge['id'];
+    $age = "";
+    $day = "";
+
+    if(strtolower($badge['type'])=='oneday') {
+        $day = date("D");
+    } else { $day = ""; }
+
+    if($badge['age'] == 'child') {
+        $age = sprintf("%schild%s", 
+                printmod('lbl', array('InverseON')),
+                printmod('lbl', array('InverseOFF'))
+                );
+    } else { $age = ""; }
+
+    $output .= sprintf("%s%3s%s%5s%1s%s\n",
+                printmod('lbl', array('10cpi', 'DblHighON', 'DblWideON')),
+                $day,
+                printmod('lbl', array('10cpi', 'DblHighOFF', 'DblWideOFF')),
+                "", $type, $id);
+
+    $output .= sprintf("%s%11s%s", 
+                printmod('lbl', array('10cpi', 'DblHighOFF', 'DblWideOFF')),
+                "", $age);
+
+    $output .= "\f";
+
+    fwrite($temp, $output);
+    fclose($temp);
+
+    //echo $tempfile;
+    exec("lp -d $queue $tempfile");
+    unlink($tempfile);
+}
+
+function badge_test($queue) {
+    $tempfile = tempnam(sys_get_temp_dir(), "prnCtrl");
+    if(!$tempfile) { 
+        print "FATAL: Unable to create unique file name<br/>\n";
+        print_r(error_get_last());
+        return false;
+    }
+
+    $temp = fopen($tempfile, "w");
+    if(!$temp) { 
+        print "FATAL: Unable to create temp file<br/>\n";
+        print_r(error_get_last());
+        return false;
+    }
+
+    $badge = printmod('lbl', array('VertStrtPt97'));  // start badge
+
+    //name line 1
+    $badge .= printmod('lbl', array('10cpi', 'DblHighON', 'DblWideON'));
+    $badge .= "First Line";
+    $badge .= "\n";
+
+    //name line 2
+    $badge .= printmod("lbl", array('7cpi', 'DblHighOFF', 'DblWideOFF'));
+    $badge .= "Second Line";
+    $badge .= "\n";
+
+    //info line
+    $badge .= sprintf("%s%1.1s%-6.6s%-11.11s%s%5.5s%s%3.3s",
+            printmod("lbl", array('10cpi', 'DblHighOFF', 'DblWideOFF')),
+            "X", // badge type
+            "1234", // transaction number
+            "ymnu", // ribbons
+            printmod("lbl", array('InverseON')),
+            "=abc=", // age
+            printmod("lbl", array('InverseOFF')),
+            "DAY" // day
+            );
+     $badge .= "\n";
+
+    //bidder (perid) line
+    $badge .= "Bidder # " . "5471";
+
+    $badge .= "\f";
+
+    fwrite($temp, $badge);
+    fclose($temp);
+
+    //echo $tempfile;
+    exec("lp -d $queue $tempfile");
+
+    unlink($tempfile);
+}
+
+?>

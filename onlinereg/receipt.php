@@ -5,6 +5,11 @@ $ini = redirect_https();
 $condata = get_con();
 $ini = get_conf('reg');
 $con = get_conf('con');
+$startdate = new DateTime($condata['startdate']);
+$enddate = new DateTime($condata['enddate']);
+$daterange = $startdate->format("F j-") . $enddate->format("j, Y");
+$altstring = $con['org'] . '. ' . $condata['label'] . ' . ' . $daterange;
+
 
 $transid = 0;
 if(isset($_GET) && isset($_GET['trans']) && is_numeric($_GET['trans'])) {
@@ -16,10 +21,16 @@ $owner = fetch_safe_assoc(dbQuery($ownerQ));
 ol_page_init($condata['label'] . ' Registration Complete');
 ?>
 <body>
-    <img src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring ;?>" width="50%" height="auto" />
+    <div class="container-fluid">
+        <?php if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') { ?>
+        <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring ;?>"/>
+        <?php }
+              if(array_key_exists('logotext', $ini) && $ini['logotext'] != '') { ?>       
+        <div style='display:inline-block' class='display-1'><?php echo $ini['logotext']; ?></div>
+        <?php } ?>
+    </div>
     <h1>
-        <?php echo $owner['first_name'] . " " . $owner['last_name']; ?>
-thank you for registering for <?php echo $condata['label']; ?>
+        <?php echo $owner['first_name'] . " " . $owner['last_name']; ?> thank you for registering for <?php echo $condata['label']; ?>
     </h1>
     <div>
         <?php
@@ -38,14 +49,22 @@ thank you for registering for <?php echo $condata['label']; ?>
         </p>
 
         <?php } else { ?>
-Your Transaction number is <?php echo $transid; ?> and Receipt number is
+Your transaction number is <?php echo $transid; ?> and receipt number is
         <?php echo $owner['payid']; if ($owner['url'] != '') echo " (<a href='" . $owner['url'] . "'>" . $owner['url'] . "</a>)"; ?>.<br />
         <p>
-            In response to your request Badges have been created for <ul>
+            In response to your request badges have been created for <ul>
                 <?php
 
-$badgeQ = "select NP.first_name, NP.last_name, M.label from memList as M, newperson as NP, transaction as T, reg as R where M.id=R.memId and NP.id=R.newperid and R.create_trans=T.id and T.id='". sql_safe($transid) . "';";
-$badgeR = dbQuery($badgeQ);
+$badgeQ = <<<EOS
+SELECT NP.first_name, NP.last_name, M.label
+FROM transaction T
+JOIN reg R ON  (R.create_trans=T.id)
+JOIN newperson NP ON (NP.id = R.newperid)
+JOIN memLabel M ON (R.memID = M.id)
+WHERE  T.id= ?
+EOS;
+
+$badgeR = dbSafeQuery($badgeQ, 'i', array($transid));
 
 while($badge = fetch_safe_assoc($badgeR)) {
                 ?>

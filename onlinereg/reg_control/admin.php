@@ -68,7 +68,11 @@ page_init($page,
 <?php
         $perm_num = array();
         foreach ($perms as $perm) {
-            $perm_num[] = $auth_set[$perm];
+            if (array_key_exists($perm, $auth_set)) {
+                $perm_num[] = $auth_set[$perm];
+            } else {
+                $perm_num[] = false;
+            }
         }
         $sets_num[$group] = $perm_num;
     }
@@ -87,9 +91,14 @@ page_init($page,
     <td><?php echo $user['name'];?></td><td><?php echo $user['email']; ?></td>
 <?php
         foreach($sets_num as $n => $set) {
-            $a = true;
+            $a = false;  // start as false, if there are no items in the set as a safeguard
             foreach ($set as $value) {
-                $a = $a & $user_auth[$user['id']][$value];
+                if (array_key_exists($value, $user_auth[$user['id']])) {
+                    $a = true;  // first granted perm will set it to true
+                } else {
+                    $a = false;  // first not granted perm will clear it to false and end the looping over the set
+                    break;
+                }
             }
 ?>
         <td><input form='<?php echo $user['id']; 

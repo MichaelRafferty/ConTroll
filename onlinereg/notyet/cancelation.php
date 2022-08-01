@@ -1,17 +1,17 @@
 <?php
-  require_once("lib/db_functions.php");
-  $ini = get_conf('reg');
-  if ($ini['https'] <> 0) {     
-      if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-          header("HTTP/1.1 301 Moved Permanently");
-          header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-          exit();
-      }
-  }
-  db_connect();
-  $condata = get_con();
-  $conid=$condata['id'];
-  $con=get_conf('con');
+require_once(__DIR__ . "/../../lib/db_functions.php");
+$ini = get_conf('reg');
+if ($ini['https'] <> 0) {     
+    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
+        header("HTTP/1.1 301 Moved Permanently");
+        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
+        exit();
+    }
+}
+db_connect();
+$condata = get_con();
+$conid=$condata['id'];
+$con=get_conf('con');
 
 
 $price = array('adult'=>56, 'youth'=>28, 'child'=>19, 'all'=>56);

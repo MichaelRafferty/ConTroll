@@ -1,17 +1,7 @@
 <?php
-global $ini;
-if (!$ini)
-    $ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-if ($ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-        exit();
-    }
-}
+global $db_ini;
 
 require_once "../lib/base.php";
-require_once "../lib/ajax_functions.php";
 
 $check_auth = google_init("ajax");
 $perm = "atcon";
@@ -36,18 +26,17 @@ $conid = $con['id'];
 $transid = sql_safe($_GET['id']);
 
 $totalPrice = 0;
-$badgeQ = "SELECT DISTINCT R.id, M.label, R.price, R.paid, P.badge_name"
-    . ", concat_ws(' ', first_name, last_name) as full_name"
-    . ", S.action"
-    . " FROM atcon as A"
-        . " JOIN atcon_badge as B on B.atconId = A.id and action='attach'"
-        . " JOIN reg as R on R.id = B.badgeId"
-        . " JOIN memList as M ON M.id=R.memId"
-        . " JOIN perinfo as P on P.id=R.perid"
-        . " LEFT JOIN atcon_badge as S ON S.badgeId=R.id and S.action='pickup'"
-    . " WHERE A.transid = $transid";
+$badgeQ = <<<EOS
+SELECT DISTINCT R.id, M.label, R.price, R.paid, P.badge_name, CONCAT_WS(' ', first_name, last_name) AS full_name, S.action
+FROM atcon A
+JOIN atcon_badge B ON (B.atconId = A.id AND action='attach')
+JOIN reg R ON (R.id = B.badgeId)
+JOIN memLabel M ON (M.id=R.memId)
+JOIN perinfo P ON (P.id=R.perid)
+LEFT OUTER JOIN atcon_badge S ON (S.badgeId=R.id and S.action='pickup')
+WHERE A.transid = ?;
 
-$badgeRes = dbQuery($badgeQ);
+$badgeRes = dbSafeQuery($badgeQ, 'i', array($transid));
 $paidBadges=array();
 $newBadges=array();
 $oldBadges=array();
@@ -69,7 +58,7 @@ $response['oldBadges'] = $oldBadges;
 
 
 $totalPaid = 0;
-$paymentRes = dbQuery("SELECT amount FROM payments WHERE transid=$transid");
+$paymentRes = dbSafeQuery("SELECT amount FROM payments WHERE transid=?", 'i', array($transid));
 if($paymentRes) {
   while($payment = fetch_safe_array($paymentRes)) {
     $totalPaid += $payment[0];
@@ -82,14 +71,17 @@ if($totalPrice < $totalPaid) {
 }
 
 if($totalPrice <= $totalPaid) {
-  $query0 = "UPDATE transaction SET price=$totalPrice, paid=$totalPaid, complete_date=current_timestamp(), userid=$userid WHERE id=$transid;";
-  $query1 = "UPDATE reg as R"
-    . " JOIN atcon_badge as B ON R.id=B.badgeId"
-    . " JOIN atcon as A"
-    . " SET R.paid=R.price WHERE A.transid=$transid;";
+  $query0 = "UPDATE transaction SET price=?, paid=?, complete_date=current_timestamp(), userid=? WHERE id=?;";
+  $query1 = <<<EOS
+UPDATE reg R
+JOIN atcon_badge B ON (R.id=B.badgeId)
+JOIN atcon A ON (B.atconId = A.id)
+SET R.paid=R.price 
+WHERE A.transid=?;
+EOS;
 
-  dbQuery($query0);
-  dbQuery($query1);
+  dbSafeCmd($query0, 'ddii', array($totalPrice, $totalPaid, $userid, $transid));
+  dbSafeCmd($query1, 'i', array($transid));
   $response['success']='true';
 
     $badgeRes = dbQuery($badgeQ);

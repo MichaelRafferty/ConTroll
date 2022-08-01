@@ -10,11 +10,7 @@ global $db_ini;
 
 $dbObject = null;
 if (!$db_ini) {
-    if (strpos(__DIR__, "/test/")) {
-        $db_ini = parse_ini_file(__DIR__ . "/../../../config/reg_test.ini", true);
-    } else {
-        $db_ini = parse_ini_file(__DIR__ . "/../../config/reg_conf.ini", true);
-    }
+    $db_ini = parse_ini_file(__DIR__ . "/../config/reg_conf.ini", true);
 }
 
 
@@ -345,22 +341,27 @@ function db_close() {
 }
 
 function fetch_safe_assoc($res) {
-    if(is_null($res)) { return null; }
-    if($res === false) { return null; }
+    if (is_null($res)) { return null; }
+    if ($res === false) { return null; }
     $assoc = $res->fetch_assoc();
-    if(is_null($assoc)) { return null; }
+    if (is_null($assoc)) { return null; }
     foreach ($assoc as $key => $value) {
-        $assoc[$key] = htmlentities($value, ENT_QUOTES);
+        if (!is_null($value)) {
+            $assoc[$key] = htmlentities($value, ENT_QUOTES);
+        }
     }
     return $assoc;
 }
 
 function fetch_safe_array($res) {
-    if(is_null($res)) { return null; }
+    if (is_null($res)) { return null; }
+    if ($res === false) { return null; }
     $assoc = $res->fetch_row();
-    if(is_null($assoc)) { return null; }
+    if (is_null($assoc)) { return null; }
     foreach ($assoc as $key => $value) {
-        $assoc[$key] = htmlentities($value, ENT_QUOTES);
+        if (!is_null($value)) {
+            $assoc[$key] = htmlentities($value, ENT_QUOTES);
+        }
     }
     return $assoc;
 }

@@ -1,33 +1,20 @@
 <?php
-
-require_once "../lib/ajax_functions.php";
-require_once "../lib/db_functions.php";
+require_once(__DIR__ . "/../../lib/db_functions.php");
+require_once(__DIR__ . "/../../lib/ajax_functions.php");
 require_once "../lib/log.php";
-
-require_once "../../config/aws.phar";
+require_once("../../lib/cc__load_methods.php");
+require_once("../../lib/email__load_methods.php");
 require_once "../lib/email.php";
-use Aws\Ses\SesClient;
-use Aws\Exception\AwsException;
-
 
 if(!isset($_POST) || !isset($_POST['badgeList'])) {
     ajaxSuccess(array('status'=>'error', 'error'=>"Error: No Badges")); exit();
 }
 
-$ccauth = get_conf('cc');
-switch ($ccauth['type']) {
-    case 'convergepay':
-        require_once("../lib/convergepay.php");
-        break;
-    case 'square':
-        require_once("../../Composer/vendor/autoload.php");
-        require_once("../lib/square.php");
-        break;
-    default:
-        echo "No valid credit card processor defined\n";
-        ajaxSuccess(array('status'=>'error', 'error'=>"Error: No credit card processor defined")); exit();
-}
 db_connect();
+$ccauth = get_conf('cc');
+load_cc_procs();
+load_email_procs();
+
 $condata = get_con();
 $log = get_conf('log');
 $con = get_conf('con');
@@ -36,12 +23,13 @@ logInit($log['reg']);
 $prices = array();
 $memId = array();
 $priceQ = <<<EOQ
-SELECT id, memAge, price
-FROM memList
+SELECT m.id, m.memAge, m.label, m.shortname, m.price
+FROM memLabel m
 WHERE
-    conid=? AND memCategory IN ('standard', 'premium')
-    AND startdate < current_timestamp() AND enddate >= current_timestamp()
-    AND memType='full'
+    m.conid=?
+    AND m.online = 'Y'
+    AND startdate < current_timestamp()
+    AND enddate >= current_timestamp()
 ;
 EOQ;
 $counts = array();
@@ -144,8 +132,12 @@ EOF;
         );
       $res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
       if ($res !== false) {
-          $match = fetch_safe_assoc($res);
-          $id = $match['id'];
+          if ($res->num_rows > 0) {
+              $match = fetch_safe_assoc($res);
+              $id = $match['id'];
+          } else {
+              $id = null;
+          }
       } else {
           $id = null;
       }
@@ -279,63 +271,16 @@ $txnU = dbSafeCmd($txnUpdate, "di", array($approved_amt, $transid) );
 
 $regQ = "UPDATE reg SET paid=price WHERE create_trans=?;";
 dbSafeCmd($regQ, "i", array($transid));
-$amazonCred = get_conf('email');
 
-$success = 'success';
-$data = 'success';
-$email_error = "none";
 
-try {
-    $awsClient = SesClient::factory(array(
-      'version'=>$amazonCred['version'],
-      'region'=>$amazonCred['region'],
-      'credentials' => array(
-	      'key'=>$amazonCred['aws_access_key_id'],
-	      'secret'=>$amazonCred['aws_secret_access_key']
-	      )
-      )
-      );
-} catch (AwsException $e) {
-    $email_error = $e->getCode();
-    $success="error";
-    $data=$e->getMessage();
-}
-
-$email_msg = "no send attempt or a failure";
-try {
-    $email_msg = $awsClient->sendEmail(
-        array(
-        'Source' => $con['regadminemail'],
-        'Destination' => array(
-         'ToAddresses' => array(trim($_POST['cc_email']))
-        ),
-      'Message' => array(
-        'Subject' => array(
-          'Data' => $condata['label']. " Online Registration Receipt"
-          ),
-        'Body' => array(
-          'Text' => array(
-            'Data' => getEmailBody($transid)
-            ) // HTML (Data)
-           ) // (Text)
-          )// ReplyToAddresses or ReturnPath (body)
-         ) // (message)
-        ); //(email)
-    $email_error = "none";
-    $success = "success";
-    $data = "success";
-} catch (AwsException $e) {
-    $email_error = $e->getCode();
-    $success="error";
-    $data=$e->getMessage();
-}
+$return_arr = send_email($con['regadminemail'], trim($_POST['cc_email']), /* cc */ null, $condata['label']. " Online Registration Receipt",  getEmailBody($transid), /* htmlbody */ null);
 
 ajaxSuccess(array(
-  "status"=>$success,
+  "status"=>$return_arr['success'],
   "url"=>$rtn['url'],
-  "data"=>$data,
+  "data"=> $return_arr['email_error'],
   "trans"=>$transid,
   //"email"=>$email_msg,
-  "email_error"=>$email_error
+  "email_error"=>$return_arr['error_code']
 ));
 ?>

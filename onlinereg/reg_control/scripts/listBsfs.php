@@ -1,17 +1,6 @@
 <?php
-global $ini;
-if (!$ini)
-    $ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-if ($ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-        exit();
-    }
-}
-
+global $db_ini;
 require_once "../lib/base.php";
-require_once "../lib/ajax_functions.php";
 
 $check_auth = google_init("ajax");
 $perm = "bsfs";
@@ -25,7 +14,7 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     exit();
 }
 
-$perid = sql_safe($_POST['perid']);
+$perid = $_POST['perid'];
 $con = get_con();
 $conid = $con['id'];
 
@@ -42,33 +31,37 @@ function check_memType($type, $year) {
 
 $type = 'none';
 $year = '';
-if(isset($_POST['type'])) {$type=sql_safe($_POST['type']); }
-if(isset($_POST['year'])) {$year=sql_safe($_POST['year']); }
+if(isset($_POST['type'])) {$type=$_POST['type']; }
+if(isset($_POST['year'])) {$year=$_POST['year']; }
 
-$linkQ = "SELECT id FROM bsfs where perid=$perid";
-$linkR = dbQuery($linkQ);
+$linkQ = "SELECT id FROM bsfs where perid=?;";
+$linkR = dbSafeQuery($linkQ, 'i', array($perid));
 $linId = 0;
 if($linkR->num_rows >0) {
   $link = fetch_safe_assoc($linkR);
   $linId = $link['id'];
-  $linkQ = "UPDATE bsfs SET type='$type', year='$year' WHERE id=$linId;";
-  dbQuery($linkQ);
+  $linkQ = "UPDATE bsfs SET type=?, year=? WHERE id=?;";
+  dbSafeCmd($linkQ, 'ssi', array($type, $year, $linId));
 } else {
-  $linkQ = "INSERT IGNORE INTO bsfs (perid, type, year) VALUES ($perid, '$type', '$year');";
+  $linkQ = "INSERT IGNORE INTO bsfs (perid, type, year) VALUES (?, ?, ?);";
 
-  $linID = dbInsert($linkQ);
+  $linID = dbSafeInsert($linkQ, 'ssi', array($linId, $type, $year));
 }
 $response['link']=$linId;
 
-$badgeQ = "SELECT R.id, R.memId, M.label FROM reg as R, memList as M WHERE M.id=R.memId and R.perid=".sql_safe($perid).";";
+$badgeQ = <<<EOS
+SELECT R.id, R.memId, M.label
+FROM reg R
+JOIN memList M ON ( M.id=R.memId)
+WHERE R.perid=?;
+EOS;
 
-$badgeR = dbQuery($badgeQ);
+$badgeR = dbSafeQuery($badgeQ, 'i', array($perid));
 $badgeId = '';
-
+// why is this a hardced memId and transaction id???
 if($badgeR->num_rows == 0 && check_memType($type, $year)) {
-  $badgeQ = "INSERT INTO reg (conid, perid, memId, create_trans) VALUES"
-    . " ($conid, $perid, 64, 20985);";
-  $badgeId = dbInsert($badgeQ);
+  $badgeQ = "INSERT INTO reg (conid, perid, memId, create_trans) VALUES (?, ?, ?, ?);";
+  $badgeId = dbSafeInsert($badgeQ, 'iiii', array ($conid, $perid, 64, 20985));
 
 } else  {
   $badge = fetch_safe_assoc($badgeR);

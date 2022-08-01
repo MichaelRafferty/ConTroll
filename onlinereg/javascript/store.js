@@ -1,7 +1,15 @@
-var badges ={'count': 0, 'total':0, 
-    'adults':0, 'militarys':0, 'youths':0, 'childs':0, 'kits':0, 'badges':[]};
+// count = total count of badges
+// total = sum(prices) * qty of badges
+// agecount = array by ageType (memAge) of counts
+// badges = array of the data for individual badges
+var badges = { 'count': 0, 'total': 0, 'agecount': [], 'badges': [] };
+// prices = array by ageType (memAge) of prices for badges
 var prices = {};
+// badgeref = array by ageType (memAge) of $# reference to html object
+var badgeref = {};
 var $purchase_label = 'purchase';
+// shortnames are the memLabel short names for the memAge
+var shortnames = {};
 
 //function flashSect2(sect, i, max) {
 //  if(i < max) { 
@@ -10,8 +18,11 @@ var $purchase_label = 'purchase';
 //  }
 //}
 
-function setPrice(group, price) {
-  prices[group]=price;
+function setPrice(group, price, shortname) {
+    prices[group]= price;
+    badges['agecount'][group] = 0;
+    badgeref[group] = $('#' + group);
+    shortnames[group] = shortname;
 }
 
 $.fn.serializeObject = function()
@@ -33,70 +44,58 @@ $.fn.serializeObject = function()
 
 
 function process(formObj) {
-  var valid = true; 
-  if($('#email1').val() =='' || $('#email2').val() == '' || $('#email1').val() != $('#email2').val()) { 
-    $('#email1').addClass('need');
-    $('#email2').addClass('need');
-    valid=false;
-  } else {
-    $('#email1').removeClass('need');
-    $('#email2').removeClass('need');
-  }
+    var valid = true; 
+    if ($('#email1').val() == '' || $('#email2').val() == '' || $('#email1').val() != $('#email2').val()) {
+        $('#email1').addClass('need');
+        $('#email2').addClass('need');
+        valid = false;
+    } else {
+        $('#email1').removeClass('need');
+        $('#email2').removeClass('need');
+    }
 
-  if($('#fname').val()=='') { valid = false; $('#fname').addClass('need'); }
-  else { $('#fname').removeClass('need'); }
-  if($('#lname').val()=='') { valid = false; $('#lname').addClass('need'); }
-  else { $('#lname').removeClass('need'); }
-  if($('#addr').val()=='') { valid = false; $('#addr').addClass('need'); }
-  else { $('#addr').removeClass('need'); }
-  if($('#city').val()=='') { valid = false; $('#city').addClass('need'); }
-  else { $('#city').removeClass('need'); }
-  if($('#state').val()=='') { valid = false; $('#state').addClass('need'); }
-  else { $('#state').removeClass('need'); }
-  if($('#zip').val()=='') { valid = false; $('#zip').addClass('need'); }
-  else { $('#zip').removeClass('need'); }
-  if($('#age').val()=='') { valid = false; $('#age').addClass('need'); }
-  else { $('#age').removeClass('need'); }
+    if ($('#fname').val() == '') { valid = false; $('#fname').addClass('need'); }
+    else { $('#fname').removeClass('need'); }
+    if ($('#lname').val() == '') { valid = false; $('#lname').addClass('need'); }
+    else { $('#lname').removeClass('need'); }
+    if($('#addr').val()=='') { valid = false; $('#addr').addClass('need'); }
+    else { $('#addr').removeClass('need'); }
+    if($('#city').val()=='') { valid = false; $('#city').addClass('need'); }
+    else { $('#city').removeClass('need'); }
+    if($('#state').val()=='') { valid = false; $('#state').addClass('need'); }
+    else { $('#state').removeClass('need'); }
+    if($('#zip').val()=='') { valid = false; $('#zip').addClass('need'); }
+    else { $('#zip').removeClass('need'); }
+    if($('#age').val()=='') { valid = false; $('#age').addClass('need'); }
+    else { $('#age').removeClass('need'); }
+
+    if (!valid) { return false; }
 
 
-  if(!valid) { return false; }
-
-
-  var formData = formObj.serializeObject();
+    var formData = formObj.serializeObject();
   
-  $('#fname').val('');
-  $('#mname').val('');
-  $('#lname').val('');
-  $('#suffix').val('');
-  $('#badgename').val('');
+    $('#fname').val('');
+    $('#mname').val('');
+    $('#lname').val('');
+    $('#suffix').val('');
+    $('#suffix').val('');
+    $('#badgename').val('');
 
-  var badgeList = $('#badge_list');
-  var adults = $('#adults');
-  var militarys = $('#militarys');
-  var youths= $('#youths');
-  var childs = $('#childs');
-  var kits = $('#kits');
-  var total = $('#total');
+    // reference to badge_list area of screen
+    var badgeList = $('#badge_list');
+    // reference to tolal cost on screen
+    var total = $('#total');
 
+    badges['count'] +=  1;
+    badges['agecount'][formData['age']] += 1;
+    badges['total'] += prices[formData['age']];
+    badges['badges'].push($.extend(true, {}, formData));
+
+    for (ageType in badgeref) {
+        badgeref[ageType].empty().text(badges['agecount'][ageType]);
+    }
+    total.empty().text(badges['total']);
   
-  //var badges ={'total':0, 'adults':0, 'childs':0, 'badges':[]};
-
-  badges['count']= badges['count']+1;
-  if(formData['age']=='adult') { badges['adults']=badges['adults']+1; }
-  if(formData['age']=='military') { badges['militarys']=badges['militarys']+1; }
-  if(formData['age']=='youth') { badges['youths']=badges['youths']+1; }
-  if(formData['age']=='child') { badges['childs']=badges['childs']+1; }
-  if(formData['age']=='kit') { badges['kits']=badges['kits']+1; }
-  badges['total'] += prices[formData['age']];
-  badges['badges'].push($.extend(true, {}, formData));
-
-  adults.empty().text(badges['adults']);
-  militarys.empty().text(badges['militarys']);
-  youths.empty().text(badges['youths']);
-  childs.empty().text(badges['childs']);
-  kits.empty().text(badges['kits']);
-  total.empty().text(badges['total']);
-
   var badgename = formData['badgename'];
   if(formData['badgename']=='') { 
     badgename = formData['fname']+" "+formData['lname']; 
@@ -135,8 +134,8 @@ function process(formObj) {
         .addClass('col-3 p-0 m-0');
        
     var age_text = formData['age'];
-    if (age_text != 'adult' && age_text != 'military' && age_text != 'child' && age_text != 'youth' && age_text != 'kit') {
-        age_text = 'unknown';
+    if (age_text != 'adult' && age_text != 'military' && age_text != 'child' && age_text != 'youth' && age_text != 'kit' && age_text != 'student') {
+       //age_text = 'unknown';
         labelDiv.addClass('unknown');
     } else {
         labelDiv.addClass(age_text)
@@ -151,12 +150,14 @@ function process(formObj) {
     blockDiv.append(badgeDetails);
     blockDiv.append(optDiv);
 
-    var labeldivtext = age_text;
-    if (age_text == 'kit') {
-        labeldivtext = 'in tow';
-    } else if (age_text == 'youth') {
-        labeldivtext = 'YA';
-    }
+    var labeldivtext = shortnames[age_text];
+    if (age_text == 'unknown')
+        labeldivtext = 'Unknown';
+    //if (age_text == 'kit') {
+    //    labeldivtext = 'in tow';
+    //} else if (age_text == 'youth') {
+    //    labeldivtext = 'YA';
+    //}
     labelDiv.html('<h4><span class="badge text-white"' + age_text + '">' + labeldivtext + '</span></h4>');
 
     $('#badge_list').append(badgeDiv);
@@ -171,22 +172,21 @@ function process(formObj) {
 }
 
 function removeBadge(index) {
-  var toRemove = $('#'+index);
-  var i = toRemove.data('index');
-  var badge_age = badges['badges'][i]['age'];
-  badges[badge_age+'s'] -= 1;
-  badges['count'] -= 1;
-  badges['total'] -= prices[badges['badges'][i]['age']];
+    var toRemove = $('#'+index);
+    var i = toRemove.data('index');
+    var badge_age = badges['badges'][i]['age'];
 
-  $('#adults').empty().text(badges['adults']);
-  $('#militarys').empty().text(badges['militarys']);
-  $('#youths').empty().text(badges['youths']);
-  $('#childs').empty().text(badges['childs']);
-  $('#kits').empty().text(badges['kits']);
-  $('#total').empty().text(badges['total']);
+    badges['agecount'][badge_age] -= 1;
+    badges['count'] -= 1;
+    badges['total'] -= prices[badge_age];
 
-  badges['badges'][i]={};
-  toRemove.remove();
+    for (ageType in badgeref) {
+        badgeref[ageType].empty().text(badges['agecount'][ageType]);
+    }
+    $('#total').empty().text(badges['total']);
+
+    badges['badges'][i]={};
+    toRemove.remove();
 }
 
 

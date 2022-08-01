@@ -1,6 +1,5 @@
 <?php
 require_once "../lib/base.php";
-require_once "../lib/ajax_functions.php";
 
 function calc_stats($inArray) {
     sort($inArray);
@@ -53,7 +52,6 @@ $perm = "overview";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
-
 if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     $response['error'] = "Authentication Failed";
     ajaxSuccess($response);
@@ -72,16 +70,16 @@ $minCon = $conConf['minComp'];
 $maxLen = $conConf['compLen'];
 
 if(isset($_GET['conid'])) {
-    $conid=sql_safe($_GET['conid']);
-    $con = fetch_safe_assoc(dbQuery("SELECT * FROM conlist WHERE id=$conid;"));
+    $conid=$_GET['conid'];
+    $con = fetch_safe_assoc(dbSafeQuery("SELECT * FROM conlist WHERE id=?;", 'i', array($conid)));
 } else {
     $con = get_con();
     $conid= $con['id'];
 }
 
 
-$historyQuery = <<<EOF
-CREATE TEMPORARY TABLE history AS (
+$historyQuery = <<<EOS
+CREATE TEMPORARY TABLE history
     SELECT conid, year, diff, cnt_all, cnt_paid
     FROM (
         SELECT R.conid, year(C.enddate) as year
@@ -91,11 +89,14 @@ CREATE TEMPORARY TABLE history AS (
         FROM reg R
         JOIN conlist C ON (R.conid=C.id)
         WHERE (R.memType IS NULL OR (R.memType != 'B' and R.memType != 'V'))
-           AND C.id>=$minCon
+           AND C.id>=?
         GROUP BY C.id, datediff(C.enddate, R.create_date)
         WITH ROLLUP) r
-        ORDER BY conid, year, diff);
-EOF;
+        ORDER BY conid, year, diff;
+EOS;
+
+
+
 
 $addlwhere = '';
 #$addlwhere = "AND (B.action = 'create' OR B.action = 'upgrade' OR B.action = 'pickup')";
@@ -103,22 +104,20 @@ switch($_GET['method']) {
     case 'attendance':
       #  $con = get_con();
         $badgeQ = <<<EOF
-SELECT Distinct R.perid, M.label
-    , R.conid, M.memType
-    , from_unixtime(FLOOR(unix_timestamp(min(T.complete_date))/900)*900) as time
-    , datediff(current_timestamp(), min(T.complete_date)) as diff
-FROM atcon as A
-JOIN atcon_badge AS B ON B.atconId=A.id
-JOIN reg as R ON R.id=B.badgeId
-JOIN transaction as T ON T.id=A.transid
-JOIN memList as M ON M.id=R.memId
-WHERE A.conid>=$conid
-    AND (B.action = 'attach')
+SELECT Distinct R.perid, M.shortname as label, R.conid, M.memType
+    , FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(min(T.complete_date))/900)*900) AS time
+    , DATEDIFF(CURRENT_TIMESTAMP(), MIN(T.complete_date)) as diff
+FROM atcon A
+JOIN atcon_badge B ON (B.atconId=A.id)
+JOIN reg R ON (R.id=B.badgeId)
+JOIN transaction T ON (T.id=A.transid)
+JOIN memLabel M ON (M.id=R.memId)
+WHERE A.conid>=? AND (B.action = 'attach')
     $addlwhere
-GROUP BY R.perid, M.label, R.conid, M.memType ORDER BY time, M.memType;
+GROUP BY R.perid, M.shortname, R.conid, M.memType ORDER BY time, M.memType;
 EOF;
 
-        $badgeR = dbQuery($badgeQ);
+        $badgeR = dbSafeQuery($badgeQ, 'i', array($conid));
         $badgeList = array(
             'expired'=>array(),
             'onsite'=>array(),
@@ -146,18 +145,17 @@ EOF;
                 }
             }
         }
-        $preregQ = <<<EOF
-SELECT M.id, M.label, count(distinct R.perid) as c
-FROM reg as R
-JOIN memList as M ON M.id=R.memId
-JOIN conlist as C on C.id=R.conid
-LEFT JOIN atcon_badge as B ON B.badgeId = R.id AND B.action!='attach'
-WHERE R.create_date < C.startdate and R.conid=$conid
-AND B.action is NULL
-GROUP BY M.label, M.id
+        $preregQ = <<<EOS
+SELECT M.id, M.shortname as label, COUNT(distinct R.perid) AS c
+FROM reg R
+JOIN memLabel M ON (M.id=R.memId)
+JOIN conlist C ON (C.id=R.conid)
+LEFT OUTER JOIN atcon_badge B ON (B.badgeId = R.id AND B.action!='attach')
+WHERE R.create_date < C.startdate and R.conid=? AND B.action is NULL
+GROUP BY M.shortname, M.id
 ORDER BY M.id;
-EOF;
-        $preregR = dbQuery($preregQ);
+EOS;
+        $preregR = dbSafeQuery($preregQ, 'i', array($conid));
         while ($prereg = fetch_safe_assoc($preregR)) {
             if(isset($badgeList['prereg'][$prereg['label']])) {
                 $badgeList['prereg'][$prereg['label']] += $prereg['c'];
@@ -167,27 +165,27 @@ EOF;
         }
 
 
-# OLD WHeRE CLAUSE: AND (B.action='attach')
-        $histoQ = <<<EOF
-SELECT count(distinct A.id) as trans, count(distinct B.badgeId) as badge
+# OLD WHERE CLAUSE: AND (B.action='attach')
+        $histoQ = <<<EOS
+SELECT COUNT(distinct A.id) AS trans, COUNT(distinct B.badgeId) AS badge
     , IF(T.complete_date is not null
-    ,from_unixtime(FLOOR(unix_timestamp(T.complete_date)/900)*900)
-    ,from_unixtime(FLOOR(unix_timestamp(T.create_date)/900)*900)) as time
-    , datediff(current_timestamp(), T.complete_date) as diff
+    ,FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(T.complete_date)/900)*900)
+    ,FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(T.create_date)/900)*900)) AS time
+    , DATEDIFF(CURRENT_TIMESTAMP(), T.complete_date) AS diff
     , M.memType
-FROM atcon as A
-JOIN conlist as C on C.id=A.conid
-JOIN atcon_badge as B on B.atconid=A.id
-JOIN transaction as T on T.id=A.transid
-JOIN reg as R on R.id=B.badgeId
-JOIN memList as M on M.id=R.memId
-WHERE A.conid=$conid
+FROM atcon A
+JOIN conlist C ON (C.id=A.conid)
+JOIN atcon_badge B ON (B.atconid=A.id)
+JOIN transaction T ON (T.id=A.transid)
+JOIN reg R ON (R.id=B.badgeId)
+JOIN memList M ON (M.id=R.memId)
+WHERE A.conid=?
     AND (B.action='pickup' or B.action='create' or B.action='upgrade')
     AND T.create_date >= C.startdate - INTERVAL 1 Day
 GROUP BY time, diff, memType ORDER BY time;
-EOF;
+EOS;
 
-        $histoR = dbQuery($histoQ);
+        $histoR = dbSafeQuery($histoQ, 'i', $conid);
         $histogram = array(); //sub arrays 'expired', 'oneday', 'full', 'trans'
         $acc = array('expired'=>0, 'oneday'=>0, 'full'=>0);
         $lastdiff = 0;
@@ -218,16 +216,16 @@ EOF;
         }
 
         $staffQ = <<<EOF
-SELECT count(distinct P.cashier) as reg
-    , count(distinct A.perid) as de
-    , from_unixtime(FLOOR(unix_timestamp(P.time)/900)*900) as t
-FROM transaction as T
-LEFT JOIN payments as P ON P.transid=T.id and P.cashier is not null
-LEFT JOIN atcon as A ON A.transid=T.id and A.perid is not null
-WHERE T.conid=$conid and time is not null
+SELECT COUNT(distinct P.cashier) AS reg
+    , COUNT(distinct A.perid) AS de
+    , FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(P.time)/900)*900) AS t
+FROM transaction T
+LEFT OUTER JOIN payments P ON (P.transid=T.id and P.cashier IS NOT NULL)
+LEFT OUTER JOIN atcon as A ON (A.transid=T.id and A.perid IS NOT NULL)
+WHERE T.conid=? AND time IS NOT NULL
 GROUP BY t;
 EOF;
-        $staffR = dbQuery($staffQ);
+        $staffR = dbSafeQuery($staffQ, 'i', array($conid));
         $staffing = array();
         while($staff = fetch_safe_assoc($staffR)) {
             array_push($staffing, $staff);
@@ -246,19 +244,19 @@ EOF;
         break;
     case "overview":
         $query = <<<EOF
-SELECT memCategory as cat, memType as type, memAge as age, label, cnt
+SELECT memCategory AS cat, memType AS type, memAge AS age, label, cnt
 FROM (
-    SELECT count(R.id) as cnt, M.sort_order, M.memCategory, M.memType, M.memAge, M.label
-    FROM reg as R
-    JOIN memList as M ON M.id=R.memId
-    WHERE R.conid=$conid
-    GROUP BY M.sort_order, M.memCategory, M.memType, M.memAge, M.label
+    SELECT COUNT(R.id) AS cnt, M.sort_order, M.memCategory, M.memType, M.memAge, M.shortname as label
+    FROM reg R
+    JOIN memLabel M ON (M.id=R.memId)
+    WHERE R.conid=?
+    GROUP BY M.sort_order, M.memCategory, M.memType, M.memAge, M.shortname
     ) m
 WHERE memCategory is NOT NULL
 ORDER BY sort_order ASC, memCategory DESC, memType ASC, memAge ASC;
 EOF;
         $response['query'] = $query;
-        $res = dbQuery($query);
+        $res = dbSafeQuery($query, 'i', array($conid));
         while($resA = fetch_safe_assoc($res)) {
             $cat = $resA['cat']; // membership category (standard, premium)
             $type = $resA['type']; // membership type (full, one-day)
@@ -271,10 +269,10 @@ EOF;
 
         break;
     case "totalMembership":
-        dbQuery($historyQuery);
+        dbSafeCmd($historyQuery, 'i', array($minCon));
         $maxRegQ = <<<EOQ
-SELECT conid, true as complete, year, min(cnt_all) AS cnt_all, min(cnt_paid) AS cnt_paid
-FROM history WHERE conid<=? AND diff is null
+SELECT conid, true AS complete, year, MIN(cnt_all) AS cnt_all, min(cnt_paid) AS cnt_paid
+FROM history WHERE conid<=? AND diff IS NULL
 GROUP BY conid, year;
 EOQ;
         $maxRegA = dbSafeQuery($maxRegQ, 'i', array($conid));
@@ -286,14 +284,14 @@ EOQ;
         break;
     case "preConTrend":
         if($conid==1) { $conid=51; }
-        dbQuery($historyQuery);
+        dbSafeCmd($historyQuery, 'i', array($minCon));
         $dayRegQ = <<<EOF
 SELECT datediff(enddate, current_timestamp())
 FROM conlist
-WHERE id=$conid;
+WHERE id=?;
 EOF;
 
-        $dayRegA = dbQuery($dayRegQ);
+        $dayRegA = dbSafeQuery($dayRegQ, 'i', array($conid));
         $dayReg = fetch_safe_array($dayRegA);
         $response['today'] = $dayReg[0];
         $statArray = array();
@@ -345,11 +343,11 @@ $response['statQuery'] = $pivot_col;
         $response['statArray'] = $statArray;
         break;
     case "modelInput":
-        dbQuery($historyQuery);
+        dbSafeCmd($historyQuery, 'i', array($minCon));
         $currentQ = "SELECT min(diff) as diff"
             . ", sum(cnt_all) as total, sum(cnt_paid) as paid"
-            . " FROM history WHERE conid = $conid and diff is not null;";
-        $currentR = dbQuery($currentQ);
+            . " FROM history WHERE conid = ? and diff is not null;";
+        $currentR = dbQuery($currentQ, 'i', array($conid));
         $currentA = fetch_safe_assoc($currentR);
         $diff = $currentA['diff'];
         $inputQ = "SELECT conid, sum(cnt_all) as total, sum(cnt_paid) as paid"

@@ -1,21 +1,7 @@
 <?php
-global $ini;
-if (!$ini)
-    $ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-if ($ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-        exit();
-    }
-}
+global $db_ini;
 
 require_once "../lib/base.php";
-require_once "../lib/ajax_functions.php";
-
-require_once "../../../aws.phar";
-use Aws\Ses\SesClient;
-use Aws\Exception\AwsException;
 
 $check_auth = google_init("ajax");
 $perm = "virtual";
@@ -29,6 +15,9 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     ajaxSuccess($response);
     exit();
 }
+
+require_once("../../../lib/email__load_methods.php");
+$con = get_conf('con');
 
 if(!isset($_POST)
     or !isset($_POST['day']) or $_POST['day'] == ""
@@ -104,39 +93,9 @@ $emailString = $response['day'] . " at " . $response['time'] . " for " . $respon
     . $response['desc'] . "<br/>\n"
     . $response['link'] . "<br/>\n";
 
-$amazonCred = get_conf('email');
-  $awsClient = SesClient::factory(array(
-    'key'=>$amazonCred['aws_access_key_id'],
-    'secret'=>$amazonCred['aws_secret_access_key'],
-    'region'=>'us-east-1',
-    'version'=>'2010-12-01'
-  ));
+$return_arr = send_email($con['regadminemail'], /* to needs fixing */ 'VBmembers@balticon.org', /* cc */ null, "New Virtual " . $condata['label'] . " OnlineItem",
+     "We've created a new link for a Virtual " . $condata['label'] . " event". "<br/>" . $emailString . "<br/>Thank you for your support for Virtual " . $condata['label'] . "\n", /* htmlbody */ null);
 
-$email_msg = "no send attempt or a failure";
-  try {
-    $email_msg = $awsClient->sendEmail(array(
-      'Source' => 'regadmin@bsfs.org',
-      'Destination' => array(
-        'ToAddresses' => array('VBmembers@balticon.org')
-      ),
-      'Message' => array(
-        'Subject' => array(
-          'Data' => 'New Virtual Balticon Item!'
-        ),
-        'Body' => array(
-          'Html' => array(
-            'Data' => "We've created a new link for a Virtual $label event". "<br/>" . $emailString . "<br/>Thank you for your support for Virtual Balticon\n"
-          ) // HTML
-        )
-      )// ReplyToAddresses or ReturnPath
-    ));
-    $email_error = "none";
-    $success = "success";
-    $data = "success";
-  } catch (AwsException $e) {
-    $email_error = $e->getCode();
-    $success="error";
-    $data=$e->getMessage();
 }
 
 ?>

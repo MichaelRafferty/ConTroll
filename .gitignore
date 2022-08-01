@@ -1,10 +1,15 @@
 *.swp
 *.bak
+*~
 
 /config/
+/google_client/
 
 # Visual Studio Stuff
 /.vs/
 /BalticonReg.phpproj
 /BalticonReg.sln
 /BalticonReg.phpproj.user
+/google_client
+dead
+.htaccess

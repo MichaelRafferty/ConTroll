@@ -2,7 +2,6 @@
 global $db_ini;
 
 require_once "../lib/base.php";
-require_once "../lib/ajax_functions.php";
 
 $check_auth = google_init("ajax");
 $perm = "registration";
@@ -35,11 +34,11 @@ $transid=$trans_key;
 $complete = false;
 
 $badgeListQ = <<<EOQ
-SELECT DISTINCT R.id, M.label, (R.price-R.paid) as remainder
-FROM atcon as A
-JOIN atcon_badge as B ON (B.atconId = A.id and action='attach')
-JOIN reg as R ON (R.id = B.badgeId)
-JOIN memList as M ON (M.id=R.memId)
+SELECT DISTINCT R.id, M.label, (IFNULL(R.price, 0)-IFNULL(R.paid,0)) AS remainder
+FROM atcon A
+JOIN atcon_badge B ON (B.atconId = A.id and action='attach')
+JOIN reg R ON (R.id = B.badgeId)
+JOIN memLabel M ON (M.id=R.memId)
 WHERE A.transid = ?;
 EOQ;
 
@@ -104,9 +103,9 @@ foreach ($badgeList as $badge) {
     $amt = $badge['remainder'];
     if ($amt > 0) {
         $paid = $remainder >= $amt ? $amt : $remainder;
-        $rows = dbSafeCmd("UPDATE reg set paid = paid + ? WHERE id = ?", "di", array($paid, $badge['id']));
+        $rows = dbSafeCmd("UPDATE reg set paid = IFNULL(paid, 0) + ? WHERE id = ?", "di", array($paid, $badge['id']));
         $remainder -= $amt;
-    }  
+    }
 }
 
 $resultQ = "SELECT type, description, cc_approval_code, amount FROM payments where id=?;";

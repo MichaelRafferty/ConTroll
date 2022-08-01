@@ -1,0 +1,63 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 0 0 252 79
+%%Pages: 1
+%%LanguageLevel: 1
+%%DocumentData: Clean7Bit
+%%DocumentSuppliedResources: procset testprint/1.1
+%%DocumentNeededResources: font Helvetica Helvetica-Bold Times-Roman
+%%Title: Test Page
+%%EndComments
+%%BeginProlog
+%%BeginResource procset testprint 1.1 0
+/CENTER {
+  dup stringwidth pop
+  0.5 mul neg 0 rmoveto
+  show
+}bind def
+%%EndResource
+%%EndProlog
+%%Page: 1 1
+
+  <</PageSize[252 79]/ImagingBBox null/cupsInteger0 0>>setpagedevice
+gsave
+
+  initclip newpath clippath
+%% new bbox for labels
+    0.0 -0.0 252.0 79.0
+  72 div /pageTop exch def
+  72 div /pageRight exch def
+  72 div /pageBottom exch def
+  72 div /pageLeft exch def
+
+  /pageWidth pageRight pageLeft sub def
+  /pageHeight pageTop pageBottom sub def
+
+  %% roughtly 5cpi
+  /firstline /Courier-Bold findfont
+  24 scalefont def
+
+    %% rougly 10 cpi
+    /details /Courier findfont
+    12 scalefont def
+
+    /childFont /Courier-Bold findfont
+    12 scalefont def
+
+    %% rougly 7 cpi
+    /secondline /Courier-Bold findfont
+    18 scalefont def
+
+    0 setgray
+save
+180 4 translate
+.25 .25 scale
+.65 setgray
+/showpage {} bind def
+
+%%Trailer
+%%EOF
+
+4 4 scale
+restore
+0 setgray
+%% End Initial setup

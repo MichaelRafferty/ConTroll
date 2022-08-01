@@ -1,17 +1,5 @@
 <?php
-global $ini;
-if (!$ini)
-    $ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-if ($ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-        exit();
-    }
-}
-
 require_once "../lib/base.php";
-require_once "../lib/ajax_functions.php";
 
 $need_login = google_init("page");
 $page = "reports";
@@ -23,25 +11,26 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 
 $con = get_conf("con");
 $conid=$con['id'];
+// this hard code needs to move to the config file
 $gohLiaison = 29;
 
 header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="goh.csv"');
 
-$query = "SELECT DISTINCT concat(P.first_name, ' ', P.last_name), P.badge_name, M.label"
-    . " FROM reg as R"
-        . " RIGHT JOIN badgeList as B ON B.perid=R.perid and B.conid=50"
-        . " JOIN perinfo as P on P.id=R.perid"
-        . " JOIN memList as M on M.id=R.memId"
-    . " WHERE R.conid=$conid AND (B.userid=$gohLiaison OR M.memCategory='goh')"
-    . " ORDER BY M.label, P.last_name, P.first_name"
-    . ";";
+// there was an extra on clause part for badgeList of "and B.conid=50", need to understand why the hardcode?
+$query = <<<EOS
+SELECT DISTINCT CONCAT(P.first_name, ' ', P.last_name), P.badge_name, M.label
+FROM reg R
+JOIN badgeList B ON (B.perid=R.perid)
+JOIN perinfo P ON (P.id=R.perid)
+JOIN memLabel M ON (M.id=R.memId)
+WHERE R.conid=? AND ((B.userid=? OR M.memCategory='goh') AND B.conid = M.conid)
+ORDER BY M.label, P.last_name, P.first_name;
+EOS;
 
+echo "Name, Badge Name, Badge Type\n";
 
-echo "Name, Badge Name, Badge Type"
-    . "\n";
-
-$reportR = dbQuery($query);
+$reportR = dbSafeQuery($query, 'ii', array($conid, $gohLiaison));
 while($reportL = fetch_safe_array($reportR)) {
     for($i = 0 ; $i < count($reportL); $i++) {
         printf("\"%s\",", $reportL[$i]);

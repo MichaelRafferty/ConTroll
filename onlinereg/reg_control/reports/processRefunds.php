@@ -1,17 +1,6 @@
 <?php
-global $ini;
-if (!$ini)
-    $ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-if ($ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-        exit();
-    }
-}
-
+// hardcode: This entire routine is hardcoded to the Balticon CC vendor, and is not portable to Square, and needs to be rewritten calling some function in the credit card processing .php file to make it portable
 require_once "../lib/base.php";
-require_once "../lib/ajax_functions.php";
 require_once "../lib/log.php";
 
 $need_login = google_init("page");
@@ -32,7 +21,7 @@ $cclink = get_conf('cc-connect');
 header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="refunds_results.csv"');
 
-$memList = dbQuery("SELECT id, label from memList WHERE memCategory='cancel' and conid=$conid;");
+$memList = dbSafeQuery("SELECT id, label from memList WHERE memCategory='cancel' and conid=?", 'i', array($conid));
 
 $memTypes = array();
 while ($memArray = fetch_safe_assoc($memList)) {
@@ -40,27 +29,29 @@ while ($memArray = fetch_safe_assoc($memList)) {
 }
 
 //get list of transactions
-$txnQ = "SELECT DISTINCT M.label, Y.transid, Y.description, Y.cc_txn_id, Y.amount"
-    . " FROM memList as M"
-        . " JOIN reg as R ON R.memId=M.id"
-        . " JOIN payments as Y on Y.transid=R.create_trans"
-    . " WHERE M.id=" . $memTypes['Request Refund'] . ";";
+$txnQ = <<<EOS
+SELECT DISTINCT M.label, Y.transid, Y.description, Y.cc_txn_id, Y.amount
+FROM memLabel M
+JOIN reg R ON (R.memId=M.id)
+JOIN payments Y ON (Y.transid=R.create_trans)
+WHERE M.id=?;
+EOS;
 
-$txnR = dbQuery($txnQ);
+$txnR = dbSafeQuery($txnQ, 'i', array($memTypes['Request Refund']));
 $failed_refunds = array();
 
-echo "Transaction, Label, Reference, Name, Email, Phone, Address, Addr_2, City, State, Zip, Country, Result, Reason"
-    . "\n";
+$badgeQ = <<<EOS
+SELECT R.create_trans, M.label, R.id, CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name) as name, P.email_addr, P.phone
+    , P.address, P.addr_2, P.city, P.state, P.zip, P.country
+FROM reg R
+JOIN perinfo P ON (P.id=R.perid)
+JOIN memLabel M ON (M.id=R.memId)
+WHERE R.create_trans=?;
+EOS;
+
+echo "Transaction, Label, Reference, Name, Email, Phone, Address, Addr_2, City, State, Zip, Country, Result, Reason\n";
 
 while($txn = fetch_safe_assoc($txnR)) {
-    $badgeQ = "SELECT R.create_trans, M.label, R.id"
-            . ", concat_ws(' ', P.first_name, P.middle_name, P.last_name) as name"
-            . ", P.email_addr, P.phone"
-            . ", P.address, P.addr_2, P.city, P.state, P.zip, P.country"
-        . " FROM reg as R"
-            . " JOIN perinfo as P on P.id=R.perid"
-            . " JOIN memList as M on M.id=R.memId"
-        . " WHERE R.create_trans=" . $txn['transid'] . ";";
     $result = "failed";
     $reason = "unknown";
 
@@ -156,7 +147,7 @@ while($txn = fetch_safe_assoc($txnR)) {
         logWrite(array('transid'=>$txn['transid'], $log_resp));
     }
 
-    $badgeR = dbQuery($badgeQ);
+    $badgeR = dbSafeQuery($badgeQ, 'i', array($txn['transid']));
     while($badge = fetch_safe_array($badgeR)) {
         $regid = $badge[2];
         if($result=='success') {

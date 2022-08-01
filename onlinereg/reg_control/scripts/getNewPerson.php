@@ -2,7 +2,6 @@
 global $db_ini;
 
 require_once "../lib/base.php";
-require_once "../lib/ajax_functions.php";
 
 $check_auth = google_init("ajax");
 $perm = "search";
@@ -103,16 +102,16 @@ EOQ;
 
     while($nameRes = fetch_safe_assoc($nameA)) {
         /* set a large number of boolean values to improve readability */
-        $mname_match = (strtoupper($newRes['middle_name']) == strtoupper($nameRes['middle_name']));
-        $badge_match = (strtoupper($newRes['badge_name']) == strtoupper($nameRes['badge_name']));
-        $addr_match = (strtoupper($newRes['address']) == strtoupper($nameRes['address']))
-             && (strtoupper($newRes['locale']) == strtoupper($nameRes['locale']))
-             && ($newRes['country']=='USA' or
-                    (strtoupper($newRes['country']) == strtoupper($nameRes['country'])));
-        $addr2_match = (strtoupper($newRes['addr_2']) == strtoupper($nameRes['addr_2']));
-        $email_match = (strtoupper($newRes['email_addr']) == strtoupper($nameRes['email_addr']));
-        $phone_match = ($newRes['phone'] == $nameRes['phone']);
-        $phone_onenull = ($newRes['phone'] == '') || ($nameRes['phone'] == '');
+        $mname_match = (strtoupper(is_null($newRes['middle_name']) ? '' : $newRes['middle_name']) == strtoupper(is_null($nameRes['middle_name']) ? '' : $nameRes['middle_name']));
+        $badge_match = (strtoupper(is_null($newRes['badge_name']) ? '' : $newRes['badge_name']) == strtoupper(is_null($nameRes['badge_name']) ? '' : $nameRes['badge_name']));
+        $addr_match = (strtoupper(is_null($newRes['address']) ? '' : $newRes['address']) == strtoupper(is_null($nameRes['address']) ? '' : $nameRes['address']))
+             && (strtoupper(is_null($newRes['locale']) ? '' : $newRes['locale']) == strtoupper(is_null($nameRes['locale']) ? '' : $nameRes['locale']))
+             && ($newRes['country']=='USA' ||
+                    (strtoupper(is_null($newRes['country']) ? '' : $newRes['country']) == strtoupper(is_null($nameRes['country']) ? '' : $nameRes['country'])));
+        $addr2_match = (strtoupper(is_null($newRes['addr_2']) ? '' : $newRes['addr_2']) == strtoupper(is_null($nameRes['addr_2']) ? '' : $nameRes['addr_2']));
+        $email_match = (strtoupper(is_null($newRes['email_addr']) ? '' : $newRes['email_addr']) == strtoupper(is_null($nameRes['email_addr']) ? '' : $nameRes['email_addr']));
+        $phone_match = (strtoupper(is_null($newRes['phone']) ? '' : $newRes['phone']) == strtoupper(is_null($nameRes['phone']) ? '' : $nameRes['phone'])); 
+        $phone_onenull = ((is_null($newRes['phone']) ? '' : $newRes['phone'])  == '') || ((is_null($nameRes['phone']) ? '' : $nameRes['phone']) == '');
         $banned = ($nameRes['banned'] == 'Y');
 
         if($addr_match && $email_match && ($phone_match || $phone_onenull)) { // exact match
@@ -142,14 +141,14 @@ EOQ;
 
     while($nameRes = fetch_safe_assoc($emailA)) {
         /* set a large number of booleans to improve later readability */
-        $mname_match = (strtoupper($newRes['middle_name']) == strtoupper($nameRes['middle_name']));
-        $badge_match = (strtoupper($newRes['badge_name']) == strtoupper($nameRes['badge_name']));
-        $addr_match = (strtoupper($newRes['address']) == strtoupper($nameRes['address']))
-            && (strtoupper($newRes['locale']) == strtoupper($nameRes['locale']))
-            && (strtoupper($newRes['country']) == strtoupper($nameRes['country']));
-        $addr2_match = (strtoupper($newRes['addr_2']) == strtoupper($nameRes['addr_2']));
-        $phone_match = ($newRes['phone'] == $nameRes['phone']);
-        $phone_onenull = ($newRes['phone'] == '') || ($nameRes['phone'] == '');
+        $mname_match = (strtoupper(is_null($newRes['middle_name']) ? '' : $newRes['middle_name']) == strtoupper(is_null($nameRes['middle_name']) ? '' : $nameRes['middle_name']));
+        $badge_match = (strtoupper(is_null($newRes['badge_name']) ? '' : $newRes['badge_name']) == strtoupper(is_null($nameRes['badge_name']) ? '' : $nameRes['badge_name']));
+        $addr_match = (strtoupper(is_null($newRes['address']) ? '' : $newRes['address']) == strtoupper(is_null($nameRes['address']) ? '' : $nameRes['address']))
+            && (strtoupper(is_null($newRes['locale']) ? '' : $newRes['locale']) == strtoupper(is_null($nameRes['locale']) ? '' : $nameRes['locale']))
+            && (strtoupper(is_null($newRes['country']) ? '' : $newRes['country']) == strtoupper(is_null($nameRes['country']) ? '' : $nameRes['country']));
+        $addr2_match = (strtoupper(is_null($newRes['addr_2']) ? '' : $newRes['addr_2']) == strtoupper(is_null($nameRes['addr_2']) ? '' : $nameRes['addr_2']));
+        $phone_match = (strtoupper(is_null($newRes['phone']) ? '' : $newRes['phone']) == strtoupper(is_null($nameRes['phone']) ? '' : $nameRes['phone']));
+        $phone_onenull = ((is_null($newRes['phone']) ? '' : $newRes['phone'])  == '') || ((is_null($nameRes['phone']) ? '' : $nameRes['phone']) == '');
         $banned = ($nameRes['banned'] == 'Y');
 
         if($addr_match && ($phone_match || $phone_onenull)) {

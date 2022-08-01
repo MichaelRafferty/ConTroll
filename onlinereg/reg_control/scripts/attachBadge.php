@@ -2,7 +2,6 @@
 global $db_ini;
 
 require_once "../lib/base.php";
-require_once "../lib/ajax_functions.php";
 
 $check_auth = google_init("ajax");
 $perm = "registration";
@@ -47,7 +46,7 @@ FROM atcon_badge
 WHERE badgeId=? AND action !='attach';
 EOQ;
 
-$actionR = dbSafeQuery($actionQ, 'i', array($badgeid));
+$actionR = dbSafeQuery($actionQ, 'i', array($badgeId));
 
 $actions = array();
 while($action = fetch_safe_assoc($actionR)) {

@@ -1,17 +1,5 @@
 <?php
-global $ini;
-if (!$ini)
-    $ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-if ($ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-        exit();
-    }
-}
-
 require_once "../lib/base.php";
-require_once "../lib/ajax_functions.php";
 
 $check_auth = google_init("ajax");
 $perm = "artshow";
@@ -27,6 +15,7 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
 
 $con = get_con();
 $conf = get_conf('con');
+$artshow = get_conf('artshow')
 
 $artistQ = "SELECT art_name, perid, other_email FROM artist where id='".sql_safe($_GET['id'])."';";
 $artist = fetch_safe_assoc(dbQuery($artistQ));
@@ -46,7 +35,7 @@ if($artist['art_name']!='') { $intro .= "(".$artist['art_name'].")"; }
 
 $email = array(
     'ToAddresses' => $toAddr,
-    "Data" => "The URL is: " . $ini['artshow']['url'] . "<br/>" .
+    "Data" => "The URL is: " . $artshow['url'] . "<br/>" .
         "Your Artist id is: ". $show["art_key"]."<br/>" .
         "Your ArtShow Pin is: ". $show["id"]
   );

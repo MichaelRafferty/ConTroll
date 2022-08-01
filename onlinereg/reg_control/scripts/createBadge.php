@@ -1,17 +1,7 @@
 <?php
-global $ini;
-if (!$ini)
-    $ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-if ($ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-        exit();
-    }
-}
+global $db_ini;
 
 require_once "../lib/base.php";
-require_once "../lib/ajax_functions.php";
 
 $check_auth = google_init("ajax");
 $perm = "badge";
@@ -28,8 +18,8 @@ if($check_auth == false || (!checkAuth($check_auth['sub'], $perm) &&
 
 $user = $check_auth['email'];
 $response['user'] = $user;
-$userQ = "SELECT id FROM user WHERE email='$user';";
-$userR = fetch_safe_assoc(dbQuery($userQ));
+$userQ = "SELECT id FROM user WHERE email=?;";
+$userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', array($user)));
 $userid = $userR['id'];
 $con = get_conf('con');
 $conid=$con['id'];
@@ -37,39 +27,75 @@ $transid=sql_safe($_POST['transaction']);
 
 $response['iden'] = $_POST['iden'];
 
-$memListQuery = "SELECT id, price, label FROM memList WHERE ";
+$memListQuery = <<<EOS
+SELECT id, price, label
+FROM memLabel
+WHERE  
+EOS;
+
+$types = '';
+$values=array();
+
 if(isset($_POST['memId'])) {
-  $memListQuery .= "id='" . sql_safe($_POST['memId']) . "' AND ";
+  $memListQuery .= "id=? AND ";
+  $types .= 'i';
+  $values[] = $_POST['memId'];
 }
 if(isset($_POST['category'])) {
-  $memListQuery .= "memCategory='" . sql_safe($_POST['category']) . "' AND ";
+  $memListQuery .= "memCategory=? AND ";
+  $types .= 's';
+  $values[] = $_POST['category'];
 }
 if(isset($_POST['type'])) {
-  $memListQuery .= "memType='" . sql_safe($_POST['type']) . "' AND ";
+  $memListQuery .= "memType=? AND ";
+  $types .= 's';
+  $values[] = $_POST['type'];
 }
 if(isset($_POST['age'])) {
-  $memListQuery .= "memAge='" . sql_safe($_POST['age']) . "' AND ";
+  $memListQuery .= "memAge=? AND ";
+  $types .= 's';
+  $values[] = $_POST['age'];
 }
-$memListQuery .= "conid=$conid ORDER by price DESC";
-$memInfo = fetch_safe_assoc(dbQuery($memListQuery));
+$memListQuery .= "conid=? ORDER by price DESC;";
+$types .= 'i';
+$values[] = $conid;
+$memInfo = fetch_safe_assoc(dbSafeQuery($memListQuery, $types, $values));
 
-$query = "INSERT INTO reg (conid, create_user, create_trans, perid, newperid, memId, price, locked) VALUES ($conid, $userid, $transid, ";
-if(isset($_POST['id'])) { $query .= "'" . sql_safe($_POST['id']) . "', "; }
-  else { $query .= "NULL, "; }
-if(isset($_POST['newid'])) { $query .= "'" . sql_safe($_POST['newid']) . "', "; }
-  else { $query .= "NULL, "; }
+$query = "INSERT INTO reg (conid, create_user, create_trans, perid, newperid, memId, price, paid, locked) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?);";
+$types = 'iiiiiids';
+$values = array($conid, $userid, $transid);
+if(isset($_POST['id'])) {
+    $values[] = $_POST['id'];
+} else {
+    $values[] = null;
+}
+
+if(isset($_POST['newid'])) {
+    $values[] = $_POST['newid'];
+} else {
+    $values[] = null;
+}
+
 if(isset($memInfo)) {
-  $query .= "'" . sql_safe($memInfo['id']) . "', '" .  $memInfo['price'] . "', ";
-} else { ajaxSuccess(array("error"=>"Invalid MembershipType")); exit(); }
-$query .= "'N');";
+    $values[] = $memInfo['id'];
+    $values[] = $memInfo['price'] ;
+} else {
+    ajaxSuccess(array("error"=>"Invalid MembershipType")); exit();
+}
+$values[] = 'N';
 
 $response['badgeQuery'] = $query;
 
-$badgeid = dbInsert($query);
+$badgeid = dbSafeInsert($query, $types, $values);
 
-$query = "SELECT R.id, R.price, R.paid, (R.price-R.paid) as cost, M.id as memId, M.memCategory, M.memType, M.memAge, M.label, R.locked FROM reg as R, memList as M WHERE M.id=R.memId AND R.id=$badgeid;";
+$query = <<<EOS
+SELECT R.id, R.price, R.paid, (R.price-R.paid) as cost, M.id as memId, M.memCategory, M.memType, M.memAge, M.label, R.locked
+FROM reg R
+JOIN memLabel M ON (R.memId = M.id)
+WHERE R.id=?;
+EOS;
 
-$badgeInfo=fetch_safe_assoc(dbQuery($query));
+$badgeInfo=fetch_safe_assoc(dbSafeQuery($query, 'i', array($badgeid)));
 
 $response['badgeInfo'] = $badgeInfo;
 

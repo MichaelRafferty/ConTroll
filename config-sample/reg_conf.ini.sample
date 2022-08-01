@@ -7,6 +7,7 @@ db_name=""
 label="Philcon 2022"
 conname="Philcon"
 org="Philadelphia Science Fiction Society"
+orgabv="PSFS"
 volunteers="volunteers2022@philcon.org"
 policy="https://philcon.org/policies"
 regpolicy="https://philcon.org/policies"
@@ -15,18 +16,21 @@ regemail="registration2022@philcon.org"
 regadminemail="registration2022@philcon.org"
 infoemail="info2022@philcon.org"
 refundemail='info2022@philcon.org'
+feedbackemail='info2022@philcon.org'
 website="https://philcon.org"
+regpage="https://philcon.org/registration/"
+schedulepage="https://schedule.philcon.org"
 dailywebsite="https://philcon.org"
 pickupareatext="at the Registration table across from Crystal 1 in the Crystal Foyer"
 addlpickuptext="The hotel has free parking. You can find information at <a href='https://philcon.org/location/directions' target='_blank'>https://philcon.org/location/directions</a>."
 hotelwebsite="https://philcon.org/hotel"
 hotelname="The Doubletree by Hilton Hotel, Cherry Hill/Philadelphia"
+hoteladdr="2349 Marlton Pike West, Cherry Hill, New Jersey, 08002"
 id="2022"
 taxRate=6
 minComp="2021"
 compLen="150"
 server="https://reg.philcon.org/"
-testserver="http://reg.philcon.org/"
 [reg]
 https=1
 test=0
@@ -37,9 +41,10 @@ suspended=0
 suspendreason="while we examine the impact of COVID-19"
 suspendmessage="https://philcon.org"
 cancelled=0
+cancel_date="Day, Month Day"
 server="https://reg.philcon.org/"
-testserver="https://reg.philcon.org/"
 logoimage="philcon2022.png"
+logotext="Tagline not alt=text"
 onsiteopen="3:00 PM"
 [vendor]
 test=0
@@ -56,6 +61,7 @@ json="/home/psfs_reg/config/philcon.json"
 client_id=""
 client_secret=""
 [cc]
+; valid types are 'square', 'convergepay' or 'bypass' (Note: bypass is for testing only and requires localhost or test=1)
 type=square
 appid=""
 token=""
@@ -67,6 +73,8 @@ webpaysdk="https://web.squarecdn.com/v1/square.js"
   artshow = "/home/psfs_reg/reglogs/artshowReg"
   cancel = "/home/psfs_reg/reglogs/cancel"
 [email]
+; valid types are 'aws' or 'mta'
+  type="aws"
   aws_access_key_id=""
   aws_secret_access_key=""
   username=""

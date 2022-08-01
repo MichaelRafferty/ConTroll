@@ -65,6 +65,11 @@ select, option {
 .military {
   background-color: mediumorchid;
 }
+
+.student {
+    background-color: #483D8B;
+}
+
 .child {
   background-color: blue;
 }
