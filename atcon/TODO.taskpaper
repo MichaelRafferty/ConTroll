@@ -1,0 +1,22 @@
+Bugs:
+- don't allow blank queries
+Questions:
+- Preregistered?
+  Paid/Participant/Staff
+  Unsure (either paid or not there)
+  No (been to BaltiCon before?)
+- Pickup or pay?
+- Existing person or new?
+
+Paths:
+- Easy: prereg -> just print
+- Medium: Existing and will pay -> determine purchase, send to cashier
+- Hard: First timer -> enter info, determine purchase, send to cashier
+- Nightmare: Not in system but thinks they paid -> search name variants else trouble desk
+- Combination
+
+Options:
+- Preregistered (1 or more)
+- Individual Purchase
+- Multiple Purchase
+- 

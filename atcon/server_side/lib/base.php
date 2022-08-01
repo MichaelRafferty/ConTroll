@@ -1,29 +1,20 @@
 <?php
 ## Pull INI for variables
-global $db_ini;
-if (!$db_ini) {    
-    $db_ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../../google_client";    
-}
+$ini = parse_ini_file("../../../config/reg_conf.ini", true);
 
-if ($db_ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-        exit();
-    }
-}
-set_include_path(get_include_path(). $include_path_additions);
+###
+# initialize Google Connection
+###
+#set_include_path(get_include_path(). PATH_SEPARATOR . $ini['client']['path'] . "/lib/google_client/src");
+#require_once("Google/autoload.php");
 
-require_once("vendor/autoload.php");
-require_once(__DIR__ . "/../../../lib/db_functions.php");
-require_once(__DIR__ . "/../../../lib/ajax_functions.php");
+require_once("db_functions.php");
 db_connect();
 
 
 function bounce_page($new_page) {
-    global $db_ini;
-    $url = $db_ini['google']['redirect_base'] . "/$new_page";
+    global $ini;
+    $url = $ini['google']['redirect_base'] . "/$new_page";
     header("Location: $url");
 }
 
@@ -33,87 +24,91 @@ function bounce_page($new_page) {
  * return current status of google session
  */
 function google_init($mode) {
-  global $db_ini;
+  global $ini;
   session_start();
 
-  // bypass for testing on Development PC
-  if (stripos(__DIR__, "C:\\Websites\\") !== false) {
-      $token_data = array();
-      $token_data['email'] = 'syd.weinstein@philcon.org'; // 'todd.dashoff@philcon.org'; // 
-      $token_data['sub'] = '114007818392249665998'; //  '123'; //
-      //$token_data['email'] = 'syd@philcon.org'; // 'todd.dashoff@philcon.org'; // 
-      //$token_data['sub'] = '1'; //  '123'; //
-      $token_data['iat'] = time();
-      $token_data['exp'] = time() + 3600;
-      return($token_data);
-  }
-
-  // end bypass
-
-  // set redirect URI to current page -- maybe make this better later.
-  $redirect_uri = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
-
   $client = new Google_Client();
-  $client->setAuthConfigFile($db_ini['google']['json']);
-  $client->setRedirectUri($redirect_uri);
+  $client->setAuthConfigFile($ini['google']['json']);
+  $client->setRedirectUri($ini['google']['redirect_base'] . "/index.php");
   $client->addScope('email');
   $client->setAccessType('offline');
-  $client->setApprovalPrompt('force');
-
-    //unset id_token if logging out.
-    if(isset($_REQUEST['logout'])) {
-        unset($_SESSION['id_token_token']);
-        $client->revokeToken();
-    }
 
 
-    //handle code response
-    if (isset($_GET['code'])) {
-        $client->authenticate($_GET['code']);
-        $token = $client->getAccessToken();
-        // store in the session also
-        $_SESSION['id_token_token'] = $token;
-        // redirect back to the example
-        header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
-    }
+if($mode == "page") { // if this is a page we can redirect stuff
+/************************************************
+  If we're logging out we just need to clear our
+  local access token in this case
+ ************************************************/
+  if(isset($_REQUEST['logout'])) {
+    $client->setAccessToken($_SESSION['access_token']);
+    $client->revokeToken();
+    unset($_SESSION['access_token']);
+    session_destroy();
+    return false;
+  }
 
-    /************************************************
-    If we have an access token, we can make
-    requests, else we generate an authentication URL.
-    ************************************************/
-    if (!empty($_SESSION['id_token_token'])
-          && isset($_SESSION['id_token_token'])
-    ) {
-        $client->setAccessToken($_SESSION['id_token_token']);
-        $token_data = $client->verifyIdToken();
-        if(is_array($token_data) && array_key_exists('exp', $token_data) && ($token_data['exp'] - time() < 900)) {
-            $client->refreshToken($_SESSION['id_token_token']['refresh_token']);
+
+/************************************************
+  If we have a code back from the OAuth 2.0 flow,
+  we need to exchange that with the authenticate()
+  function. We store the resultant access token
+  bundle in the session, and redirect to ourself.
+ ************************************************/
+  if (isset($_GET['code'])) {
+    $client->authenticate($_GET['code']);
+    $_SESSION['access_token'] = $client->getAccessToken();
+    $redirect = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
+    header('Location: ' . filter_var($redirect, FILTER_SANITIZE_URL));
+  }
+
+} // the rest of this is fine for ajax calls
+
+/************************************************
+  If we have an access token, we can make
+  requests, else we generate an authentication URL.
+ ************************************************/
+  if (isset($_SESSION['access_token']) && $_SESSION['access_token']) {
+    $tokens = json_decode($_SESSION['access_token']);
+    $client->setAccessToken($_SESSION['access_token']);
+    if($client->isAccessTokenExpired()) {
+        if(!isset($tokens->refresh_token)) { 
+            $client->revokeToken();
+            unset($_SESSION['access_token']);
+            return false; 
         }
-    } else {
-        $authUrl = $client->createAuthUrl();
-        if($mode == "page") { // we're on a page
-            header('Location: ' . $authUrl);
-        } else {
-            return $authUrl;
-        }
+        $client->refreshToken($tokens->refresh_token);
     }
+    $_SESSION['access_token'] = $client->getAccessToken();
+    if(isset($tokens->refresh_token)) { 
+        $t_hold = json_decode($_SESSION['access_token']);
+        $t_hold->refresh_token = $tokens->refresh_token;
+        $_SESSION['access_token'] = json_encode($t_hold);
+    }
+  } else {
+    $authUrl = $client->createAuthUrl();
+    header('Location: ' . filter_var($authUrl, FILTER_SANITIZE_URL));
+  }
 
-    /************************************************
-    If we're signed in we can go ahead and retrieve
-    the ID token, which is part of the bundle of
-    data that is exchange in the authenticate step
-    - we only need to do a network call if we have
-    to retrieve the Google certificate to verify it,
-    and that can be cached.
-    ************************************************/
-    $token = $client->getAccessToken();
-    if ($token) {
-        $client->setAccessToken($token);
-        $token_data = $client->verifyIdToken();
-        return($token_data);
-    } else {
+  if($client->getAccessToken()) {
+    try {
+        return($client->verifyIdToken()->getAttributes());
+    } catch (Exception $e) {
         return false;
     }
+  }
+}
+
+function certSeal() {
+?>
+<!-- Begin DigiCert site seal HTML and JavaScript -->
+<div id="DigiCertClickID_WdDqlpia" data-language="en_US">
+  <a href="https://www.digicert.com/ssl-certificate.htm">SSL Certificate</a>
+</div>
+<script type="text/javascript">
+  var __dcid = __dcid || [];__dcid.push(["DigiCertClickID_WdDqlpia", "3", "s", "black", "WdDqlpia"]);(function(){var cid=document.createElement("script");cid.async=true;cid.src="//seal.digicert.com/seals/cascade/seal.min.js";var s = document.getElementsByTagName("script");var ls = s[(s.length - 1)];ls.parentNode.insertBefore(cid, ls.nextSibling);}());
+</script>
+<!-- End DigiCert site seal HTML and JavaScript -->
+<?php
 }
 
 function isWebRequest()
@@ -121,32 +116,19 @@ function isWebRequest()
 return isset($_SERVER['HTTP_USER_AGENT']);
 }
 
-function page_init($title, $css, $js, $auth) {
-    global $db_ini;
-// auth gets the token in need_login
-    if (is_array($auth) && array_key_exists('email', $auth)) {
-        newUser($auth['email'], array_key_exists('sub', $auth) ? $auth['sub'] : '');
-    }
-    
+function page_init($title, $css, $js, $need_login) {
+    $auth = $need_login['payload'];
     if(isWebRequest()) { 
-?>
-<!DOCTYPE html>
-<html lang="en">
+    ?>
+<!doctype html>
+<html>
 <head>
-    <meta charset="utf-8"/>
-    <title><?php echo $title . '--' . $db_ini['con']['conname']?> Reg</title>
-    <link href='/css/jquery-ui-1.13.1.css' rel='stylesheet' type='text/css' />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title><?php echo $title; ?> -- Balticon Reg</title>
     <?php
     if(isset($css) && $css != null) { foreach ($css as $sheet) {
         ?><link href='<?php echo $sheet; ?>' 
                 rel=stylesheet type='text/css' /><?php
     }}
-    ?>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-    <script type='text/javascript' src='/javascript/jquery-min-3.60.js'></script>
-    <script type='text/javascript' src='/javascript/jquery-ui.min-1.13.1.js'></script>
-    <?PHP
     if(isset($js) && $js != null) { foreach ($js as $script) {
         ?><script src='<?php echo $script; ?>' 
                 type='text/javascript'></script><?php
@@ -162,32 +144,28 @@ function page_init($title, $css, $js, $auth) {
 }
 
 function page_head($title, $auth) {
-    global $db_ini;
 ?>
     <div id='titlebar'>
         <a id='login' class='right button' 
             <?php if($auth==null) {
-                ?>href='index.php?logout'>Login<?php
+                ?>href='index.php'>Login<?php
             } else { 
                 ?>href='?logout'>Logout <?php echo $auth['email']; 
             } ?>
         </a>
         <h1 class='title'>
-            <?php echo $db_ini['con']['conname']?> Reg Controller <?php echo $title; ?> page
+            Balticon Reg Controller <?php echo $title; ?> page
         </h1>
     </div>
-    <?php if ($db_ini['reg']['test']==1) { ?>
-    <h2 class='text-danger'><strong>This Page is for test purposes only</strong></h2>
-    <?php } ?>
 <?php
 }
 
 function con_info($auth) {
-    if(is_array($auth) && checkAuth(array_key_exists('sub', $auth) ? $auth['sub'] : null, 'overview')) {
+    if(checkAuth($auth['sub'], 'overview')) {
         $con = get_con();
         $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."';");
         $badgeCount = fetch_safe_array($count_res);
-        $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."' AND price <= paid;");
+        $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."' AND locked='N';");
         $unlockCount = fetch_safe_array($count_res);
   
         ?>
@@ -207,11 +185,7 @@ function con_info($auth) {
 }
 
 function tab_bar($auth, $page) {
-    if (is_array($auth) && array_key_exists('sub', $auth)) {
-        $page_list = getPages($auth['sub']);
-    } else {
-        $page_list = array();
-    }
+    $page_list = getPages($auth['sub']);
     ?>
     <div class='tabbar'>
         <span class='
@@ -222,13 +196,11 @@ function tab_bar($auth, $page) {
             }?>'>
             <a href="index.php">Home</a></span><?php
         for($i = 0 ; $i < count($page_list); $i++) {
-            $pageInfo = $page_list[$i];
-            $p = $pageInfo['name'];
-            $d = $pageInfo['display'];
+            $p = $page_list[$i];
             $thisTab = ($p == $page);
             ?><span class='<?php 
             if($thisTab) { echo "activeTab"; } else { echo "tab"; }
-            ?>'><a href='<?php echo $p . ".php";?>'><?php echo $d; ?></a>
+            ?>'><a href='<?php echo $p . ".php";?>'><?php echo $p; ?></a>
         </span><?php
         }
     ?>
@@ -360,12 +332,12 @@ function paymentDialogs() {
         </tr>
       </table>
       <div>
-        <input required='required' class='right' type='text' size=10 name='amt' id='discountAmt'/>Amount
+        <input required='required' class='right' type='text' size=10 name='amt' id='discountAmt'></input>Amount
       </div>
       <div>
-        <input required='required' class='right' type='text' size=20 name='notes' id='discountDesc'/>Note
+        <input required='required' class='right' type='text' size=20 name='notes' id='discountDesc'></input>Note
       </div>
-      <input id='discountPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#discountPaymentForm") && makePayment("discount");'/>
+      <input id='discountPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#discountPaymentForm") && makePayment("discount");'></input>
     </form>
   </div>
   <div id='checkPayment' class='dialog'>
@@ -389,15 +361,15 @@ function paymentDialogs() {
           <td id='checkPaymentTotal' class='right'></td>
         </tr>
       </table>
-      <div><input required='required' class='right' type='text' size=10 id='checkNo'/>
+      <div><input required='required' class='right' type='text' size=10 id='checkNo'></input>
       Check #</div>
       <div>
-        <input required='required' class='right' type='text' size=10 name='amt' id='checkAmt'/>Amount
+        <input required='required' class='right' type='text' size=10 name='amt' id='checkAmt'></input>Amount
       </div>
       <div>
-        <input class='right' type='text' size=20 name='notes' id='checkDesc'/>Note
+        <input class='right' type='text' size=20 name='notes' id='checkDesc'></input>Note
       </div>
-      <input id='checkPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#checkPaymentForm") && makePayment("check");'/>
+      <input id='checkPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#checkPaymentForm") && makePayment("check");'></input>
     </form>
   </div>
   <div id='cashPayment' class='dialog'>
@@ -422,12 +394,12 @@ function paymentDialogs() {
         </tr>
       </table>
       <div>
-        <input required='required' class='right' type='text' size=10 name='amt' id='cashAmt'/>Amount
+        <input required='required' class='right' type='text' size=10 name='amt' id='cashAmt'></input>Amount
       </div>
       <div>
-        <input class='right' type='text' size=20 name='notes' id='cashDesc'/>Note
+        <input class='right' type='text' size=20 name='notes' id='cashDesc'></input>Note
       </div>
-      <input id='cashPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#cashPaymentForm") && makePayment("cash");'/>
+      <input id='cashPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#cashPaymentForm") && makePayment("cash");'></input>
     </form>
   </div>
   <div id='creditPayment' class='dialog'>
@@ -451,14 +423,34 @@ function paymentDialogs() {
           <td id='creditPaymentTotal' class='right'></td>
         </tr>
       </table>
-      <div><input required='required' class='right' type='text' size=10 name='amt' id='creditAmt'/>Amount</div>
+      <div><input required='required' class='right' type='text' size=10 name='amt' id='creditAmt'></input>Amount</div>
       <?php /* <div><input class='right' type='password' size=4 name='track' id='creditTrack'></input>CC Data</div> */ ?>
-      <div><input required='required' class='right' type='text' name='notes' id='creditDesc' autocomplete='off'/>Transaction</div>
-      <input id='creditPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#creditPaymentForm") && makePayment("credit");'/>
+      <div><input required='required' class='right' type='text' name='notes' id='creditDesc' autocomplete='off'></input>Transaction</div>
+      <input id='creditPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#creditPaymentForm") && makePayment("credit");'></input>
       </div>
     </form>
   </div>
 <?php
+}
+
+function callOut($url, $data) {
+   $ch = curl_init($url);
+   curl_setopt($ch, CURLOPT_POST, TRUE);
+   curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+   curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+    'Content-Length: ' . strlen($data)
+   ));
+   curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+   $result = curl_exec($ch);
+   curl_close($ch);
+}
+
+function var_error_log( $object=null ){
+    ob_start();                    // start buffer capture
+    var_dump( $object );           // dump the values
+    $contents = ob_get_contents(); // put the buffer into a variable
+    ob_end_clean();                // end capture
+    error_log( $contents );        // log contents of the result of var_dump( $object )
 }
 
 ?>
