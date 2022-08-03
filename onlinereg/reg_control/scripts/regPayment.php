@@ -28,6 +28,13 @@ $trans_key = $_POST['trans_key'];
 $amount = $_POST['amount'];
 $type = $_POST['type'];
 $description = $_POST['description'];
+$approvalcode = '';
+if (array_key_exists('checkno', $_POST) && $type = 'check') {
+    $approvalcode = $_POST['checkno'];
+}
+if (array_key_exists('approvalcode', $_POST) && $type = 'credit') {
+    $approvalcode = $_POST['approvalcode'];
+}
 
 $transid=$trans_key;
 
@@ -81,7 +88,7 @@ EOQ;
 
 $response['paymentQ'] = $paymentQ;
 $types = "iisssssd";
-$values = array($transid, $user, $type, 'reg', $description, $description, $user_s, $amount);
+$values = array($transid, $user, $type, 'reg', $description, $approvalcode, $user_s, $amount);
 
 $payid = dbSafeInsert($paymentQ, $types, $values);
 

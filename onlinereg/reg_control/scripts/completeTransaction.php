@@ -25,7 +25,32 @@ $conid = $con['id'];
 
 $transid = sql_safe($_GET['id']);
 
+// check for already complete
+$complete = false;
 $totalPrice = 0;
+
+$transq = <<<EOS
+SELECT id, price, paid, complete_date
+FROM transaction
+WHERE id = ?
+EOS;
+$transRes = dbSafeQuery($transq, 'i', array($transid));
+// check result for price == paid, if not complete, mark it complete
+if ($transRes !== false && mysqli_num_rows($transRes) == 1) {
+    $transArr = fetch_safe_assoc($transRes);
+    if ($transArr['price'] == $transArr['paid']) {
+        if ((!isset($transArr['complete_date'])) || $transArr['complete_date'] == '') {
+            $rows = dbSafeCmd("UPDATE SET complete_date = now() where id = ?;", 'i', array($transid));
+            if ($rows != 1) {
+                $response['error'] = "Unable to compelte transaction";
+            }
+        }
+        $complete = true;
+        $totalPrice = $transArr['price'];
+        $totalPaid = $transArr['paid'];
+    }
+}
+
 $badgeQ = <<<EOS
 SELECT DISTINCT R.id, M.label, R.price, R.paid, P.badge_name
 FROM atcon A
@@ -40,25 +65,26 @@ $badgeRes = dbSafeQuery($badgeQ, 'i', array($transid));
 $badges = array();
 if($badgeRes) {
   while($badge = fetch_safe_assoc($badgeRes)) {
-    $totalPrice += $badge['price']-$badge['paid'];
+    if (!$complete) $totalPrice += $badge['price']-$badge['paid'];
     array_push($badges, $badge);
   }
 } else { $resp["error"].="No Badges!<br/>"; }
 $response['price'] = $totalPrice;
 $response['badges'] = $badges;
 
-
-$totalPaid = 0;
-$paymentRes = dbSafeQuery("SELECT amount FROM payments WHERE transid=?", 'i', array($transid));
-if($paymentRes) {
-  while($payment = fetch_safe_array($paymentRes)) {
-    $totalPaid += $payment[0];
-  }
+if (!$complete) {
+    $totalPaid = 0;
+    $paymentRes = dbSafeQuery("SELECT amount FROM payments WHERE transid=?", 'i', array($transid));
+    if($paymentRes) {
+        while($payment = fetch_safe_array($paymentRes)) {
+            $totalPaid += $payment[0];
+        }
+    }
 }
 $response['paid'] = $totalPaid;
 
 if($totalPrice < $totalPaid) {
-  $response["error"] = "Over Payment by $".($totalPaid-$totalPrice)."<br/>";
+    $response["error"] = "Over Payment by $".($totalPaid-$totalPrice)."<br/>";
 }
 
 if($totalPrice <= $totalPaid) {
@@ -69,8 +95,9 @@ JOIN atcon_badge B ON (R.id=B.badgeId)
 JOIN atcon A ON (A.id = B.atconId)
 SET R.paid=R.price WHERE A.transid=?;
 EOS;
-
-  dbSafeCmd($query0, 'ddii', array($totalPrice, $totalPaid, $userid, $transid));
+  if (!$complete) {
+      dbSafeCmd($query0, 'ddii', array($totalPrice, $totalPaid, $userid, $transid));
+  }
   dbSafeCmd($query1, 'i', array($transid));
   $response['success']='true';
 }
