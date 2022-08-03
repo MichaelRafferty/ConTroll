@@ -671,7 +671,10 @@ function takePayment(type) {
 function makePayment(type) {
     $(".payBtn").attr('disabled', 'disabled');
     var description = "";
-    if(type == 'check') { description = $('#checkNo').val(); }
+    var checkno = "";
+    var approvalcode = "";
+    if (type == 'check') { description = $('#checkNo').val(); checkno = description; }
+    if (type == 'credit') { approvalcode = $("#" + type + "Desc").val(); }
     description += ": " + $("#" + type + "Desc").val();
 
     var postData = "trans_key=" + $('#transactionForm').data('id')
@@ -679,8 +682,12 @@ function makePayment(type) {
         + "&description=" + description
         + "&type=" + type;
 
-    if(type=="credit") {
-        postData += "&track="+encodeURIComponent($('#creditTrack').val());
+    if (type == "credit") {
+        postData += "&track=" + encodeURIComponent($('#creditTrack').val())
+            + "&approvalcode=" + approvalcode;
+    }
+    if (type == "check") {
+        postData += "&checkno=" + checkno;
     }
 
     $.ajax({
