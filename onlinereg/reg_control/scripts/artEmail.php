@@ -15,10 +15,10 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
 
 $con = get_con();
 $conf = get_conf('con');
-$artshow = get_conf('artshow')
+$artshow = get_conf('artshow');
 
-$artistQ = "SELECT art_name, perid, other_email FROM artist where id='".sql_safe($_GET['id'])."';";
-$artist = fetch_safe_assoc(dbQuery($artistQ));
+$artistQ = "SELECT art_name, perid, other_email FROM artist where id=?;";
+$artist = fetch_safe_assoc(dbSafeQuery($artistQ, 's', array($_GET['id'])));
 $perQ = "SELECT  first_name, middle_name, last_name, suffix, email_addr FROM perinfo where id='".$artist['perid']."';";
 $showQ = "SELECT id, art_key FROM artshow WHERE artid='".sql_safe($_GET['id'])."' AND conid='".$con['id']."';";
 
