@@ -185,7 +185,7 @@ WHERE A.conid=?
 GROUP BY time, diff, memType ORDER BY time;
 EOS;
 
-        $histoR = dbSafeQuery($histoQ, 'i', $conid);
+        $histoR = dbSafeQuery($histoQ, 'i', array($conid));
         $histogram = array(); //sub arrays 'expired', 'oneday', 'full', 'trans'
         $acc = array('expired'=>0, 'oneday'=>0, 'full'=>0);
         $lastdiff = 0;
@@ -266,6 +266,15 @@ EOF;
 
             $response['overview'][$cat][$type][$age][$label]= $count;
         }
+        $dayRegQ = <<<EOF
+SELECT datediff(enddate, current_timestamp())
+FROM conlist
+WHERE id=?;
+EOF;
+
+        $dayRegA = dbSafeQuery($dayRegQ, 'i', array($conid));
+        $dayReg = fetch_safe_array($dayRegA);
+        if ($dayReg > 0) $response['today'] = $dayReg[0];
 
         break;
     case "totalMembership":
@@ -283,7 +292,6 @@ EOQ;
         }
         break;
     case "preConTrend":
-        if($conid==1) { $conid=51; }
         dbSafeCmd($historyQuery, 'i', array($minCon));
         $dayRegQ = <<<EOF
 SELECT datediff(enddate, current_timestamp())
