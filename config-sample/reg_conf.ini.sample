@@ -88,7 +88,7 @@ close=0
 max_failures=10
 url="https://reg.philcon.org/artshow"
 [user]
-server="https://reg.philcon.org/server_side"
+server="https://atcon.philcon.org/server_side"
 user="online_atcon"
 passwd="online_atcon"
 [control]

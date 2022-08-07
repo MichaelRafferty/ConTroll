@@ -142,13 +142,11 @@ function showPerson(data) {
   ret += "</td>";
 
   ret += "<td class='small'>";
-    if(data['badge_name']=='') { ret += "&lt;default&gt;<br/>"; }
+    if (data['badge_name']=='') { ret += "&lt;default&gt;<br/>"; }
     else { ret += data['badge_name'] + "<br/>"; }
-    //if(cont) { ret += staffSelect(formid, data['staff']); }
-    //else { ret += "--"; }
-  ret += "</td>";
 
-  ret += "<td class='small'>"
+   ret += "</td>";
+   ret += "<td class='small'>"
     ret+= "<input form='"+formid+"' type='submit' value='update badge' onClick='updateReg(\"#"+formid+"\"); return false;'></input>";
   ret += '</td>'
 
@@ -190,35 +188,6 @@ function showEditPerson(perinfo,formid) {
     $('#editPersonFormIdNum').empty().append(perinfo['id']);
     track("#editForm")
     $('#editDialog').dialog('open');
-}
-
-function staffSelect(form, cur) {
-  var ret="<select form='"+form+"' name='staff'>";
-    ret+="<option value='none'";
-    if(cur== '') { ret+= " selected='selected'"; }
-    ret+=">None</option>";
-
-    ret+="<option value='general staff'";
-    if(cur== 'general staff') { ret+= " selected='selected'"; }
-    ret+=">Gen. Staff</option>";
-
-    ret+="<option value='senior staff'";
-    if(cur== 'senior staff') { ret+= " selected='selected'"; }
-    ret+=">Senior Staff</option>";
-
-    ret+="<option value='department head'";
-    if(cur== 'department head') { ret+= " selected='selected'"; }
-    ret+=">Department Head</option>";
-
-    ret+="<option value='committee'";
-    if(cur== 'committee') { ret+= " selected='selected'"; }
-    ret+=">Committee</option>";
-
-    ret+="<option value='volunteer'";
-    if(cur== 'volunteer') { ret+= " selected='selected'"; }
-    ret+=">Volunteer</option>";
-  ret+="</select>";
-  return ret;
 }
 
 function updateReg(form) {

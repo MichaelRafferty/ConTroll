@@ -1,7 +1,7 @@
 <?php
 session_start();
 ## Pull INI for variables
-$ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
+$ini = parse_ini_file(__DIR__ . "/../../config/reg_conf.ini", true);
 date_default_timezone_set("America/New_York");
 
 function get_conf($type) {
@@ -414,7 +414,7 @@ function check_atcon($user, $passwd, $method) {
     #var_error_log($access);
     $access = json_decode($access,true);
     #echo var_dump($access);
-    if($access['success']==0) { return false; }
+    if($access === false || $access['success']==0) { return false; }
     $perms = $access['auth'];
     return in_array($method, $perms);
 }

@@ -51,7 +51,7 @@ $response['per'] = fetch_safe_assoc($perR);
 
 $badgeQ = <<<EOS
 SELECT R.id, R.memId, M.label 
-FROM reg  R,
+FROM reg  R
 JOIN memList M ON (M.id=R.memId)
 WHERE R.perid=?;
 EOS;

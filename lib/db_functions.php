@@ -284,9 +284,36 @@ function register($email, $sub, $name) {
     return $res;
 }
 
+function getPages($sub) {
+    $res = array();
+    $sql = <<<EOS
+SELECT DISTINCT A.name, A.display
+FROM user U
+JOIN user_auth UA ON (U.id = UA.user_id)
+JOIN auth A ON (A.id = UA.auth_id)
+WHERE U.google_sub = ? AND A.page='Y'
+ORDER BY A.id;
+EOS;
+    $auths = dbSafeQuery($sql, 's', array($sub));
+    if(!$auths) { return false; }
+    while($new_auth = fetch_safe_assoc($auths)) {
+        $res[count($res)] = $new_auth;
+    }
+    return $res;
+}
+
+
 function getAuthsById($id) {
     $res = array();
-    $auths = dbQuery("SELECT A.name FROM user AS U, auth AS A, user_auth as UA WHERE U.id = '$id' AND U.id = UA.user_id AND A.id = UA.auth_id ORDER BY A.id;");
+    $sql = <<<EOS
+SELECT A.name
+FROM user U
+JOIN user_auth UA ON (U.id = UA.user_id)
+JOIN auth A ON (A.id = UA.auth_id)
+WHERE U.id = ?
+ORDER BY A.id;
+EOS;
+    $auths = dbSafeQuery($sql, 's', array($id));
     if(!$auths) { return false; }
     while($new_auth = fetch_safe_assoc($auths)) {
         $res[count($res)] = $new_auth['name'];
@@ -296,7 +323,15 @@ function getAuthsById($id) {
 
 function getAuths($sub) {
     $res = array();
-    $auths = dbQuery("SELECT A.name FROM user AS U, auth AS A, user_auth as UA WHERE U.google_sub = '$sub' AND U.id = UA.user_id AND A.id = UA.auth_id ORDER BY A.id;");
+    $sql = <<<EOS
+SELECT A.name
+FROM user U
+JOIN user_auth UA ON (U.id = UA.user_id)
+JOIN auth A ON (A.id = UA.auth_id)
+WHERE U.google_sub = ?
+ORDER BY A.id;
+EOS;
+    $auths = dbSafeQuery($sql, 's', array($sub));
     if(!$auths) { return false; }
     while($new_auth = fetch_safe_assoc($auths)) {
         $res[count($res)] = $new_auth['name'];
@@ -307,7 +342,15 @@ function getAuths($sub) {
 function checkAuth($sub, $name) {
     if(!isset($sub) || !$sub) { return false; }
     $res = array();
-    $auths = dbQuery("SELECT A.name FROM user AS U, auth AS A, user_auth as UA WHERE U.google_sub = '$sub' AND A.name='$name' AND U.id = UA.user_id AND A.id = UA.auth_id ORDER BY A.id;");
+    $sql = <<<EOS
+SELECT A.name
+FROM user U
+JOIN user_auth UA ON (U.id = UA.user_id)
+JOIN auth A ON (A.id = UA.auth_id)
+WHERE U.google_sub = ? AND A.name=?
+ORDER BY A.id;
+EOS;
+    $auths = dbSafeQuery($sql, 'ss', array($sub, $name));
     if(!$auths) { return false; }
     while($new_auth = $auths->fetch_array(MYSQLI_ASSOC)) {
         $res[count($res)] = $new_auth['name'];
@@ -317,7 +360,7 @@ function checkAuth($sub, $name) {
 
 function checkUser($sub) {
     if(!isset($sub) || !$sub) { return false; }
-    $res = dbQuery("SELECT email FROM user WHERE google_sub='$sub';");
+    $res = dbSafeQuery("SELECT email FROM user WHERE google_sub=?;", 's', array($sub));
     if(!$res || $res->num_rows <= 0) { return false; }
     else { return true; }
 }
@@ -373,12 +416,11 @@ function get_conf($name) {
 
 function get_con() {
     global $db_ini;
-    return fetch_safe_assoc(dbQuery("SELECT * FROM conlist WHERE id='".$db_ini['con']['id']."';"));
+    return fetch_safe_assoc(dbSafeQuery("SELECT * FROM conlist WHERE id=?;", 'i', array($db_ini['con']['id'])));
 }
 
 function get_user($sub) {
-    $query = "SELECT * FROM user WHERE google_sub='". sql_safe($sub) . "';";
-    $res = fetch_safe_assoc(dbQuery($query));
+    $res = fetch_safe_assoc(dbSafeQuery("SELECT * FROM user WHERE google_sub=?;", 's', $sub));
     return $res['id'];
 }
 
@@ -402,21 +444,11 @@ dbQuery($query);
 }
  */
 
-function getPages($sub) {
-    $res = array();
-    $auths = dbQuery("SELECT DISTINCT A.name, A.display FROM user AS U, auth AS A, user_auth as UA WHERE U.google_sub = '$sub' AND A.page='Y' AND U.id = UA.user_id AND A.id = UA.auth_id ORDER BY A.id;");
-    if(!$auths) { return false; }
-    while($new_auth = fetch_safe_assoc($auths)) {
-        $res[count($res)] = $new_auth;
-    }
-    return $res;
-}
-
 function newUser($email, $sub){
     if(!isset($sub) || !isset($email) || !$sub || !$email) {
         return false;
     }
-    $userR = dbQuery("SELECT id,google_sub,email FROM user WHERE email='$email';");
+    $userR = dbSafeQuery("SELECT id,google_sub,email FROM user WHERE email=?;", 's', array($email));
     if(!$userR || $userR->num_rows!=1) {
         return false;
     }
@@ -431,8 +463,8 @@ function check_atcon($user, $passwd, $level, $conid) {
     $u = sql_safe($user);
     $p = sql_safe($passwd);
 
-    $q = "SELECT id FROM atcon_auth WHERE perid=$u and passwd='$p' and conid=$conid and auth='$level';";
-    $r = dbQuery($q);
+    $q = "SELECT id FROM atcon_auth WHERE perid=? and passwd=? and conid=? and auth=?;";
+    $r = dbSafeQuery($q, 'isis', array($u, $p, $conid, $level));
     if($r->num_rows > 0) { return true; }
     else { return false; }
 }

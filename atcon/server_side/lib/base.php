@@ -1,20 +1,13 @@
 <?php
 ## Pull INI for variables
-$ini = parse_ini_file("../../../config/reg_conf.ini", true);
-
-###
-# initialize Google Connection
-###
-#set_include_path(get_include_path(). PATH_SEPARATOR . $ini['client']['path'] . "/lib/google_client/src");
-#require_once("Google/autoload.php");
-
-require_once("db_functions.php");
+require_once(__DIR__ . "/../../../lib/db_functions.php");
+require_once(__DIR__ . "/../../../lib/ajax_functions.php");
 db_connect();
 
 
 function bounce_page($new_page) {
-    global $ini;
-    $url = $ini['google']['redirect_base'] . "/$new_page";
+    $google = get_conf('google');
+    $url = $$google['redirect_base'] . "/$new_page";
     header("Location: $url");
 }
 
@@ -24,12 +17,12 @@ function bounce_page($new_page) {
  * return current status of google session
  */
 function google_init($mode) {
-  global $ini;
+  $google = get_conf('google');
   session_start();
 
   $client = new Google_Client();
-  $client->setAuthConfigFile($ini['google']['json']);
-  $client->setRedirectUri($ini['google']['redirect_base'] . "/index.php");
+  $client->setAuthConfigFile($google['json']);
+  $client->setRedirectUri($google['redirect_base'] . "/index.php");
   $client->addScope('email');
   $client->setAccessType('offline');
 
@@ -443,14 +436,6 @@ function callOut($url, $data) {
    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
    $result = curl_exec($ch);
    curl_close($ch);
-}
-
-function var_error_log( $object=null ){
-    ob_start();                    // start buffer capture
-    var_dump( $object );           // dump the values
-    $contents = ob_get_contents(); // put the buffer into a variable
-    ob_end_clean();                // end capture
-    error_log( $contents );        // log contents of the result of var_dump( $object )
 }
 
 ?>
