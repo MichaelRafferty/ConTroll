@@ -29,7 +29,7 @@ $response['con'] = $con['name'];
 $response['id'] = $userid;
 
 $entryQ = <<<EOS
-SELECT CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name, P.suffix) as name, P.badge_name, R.id as regid, R.staff, R.memId, M.label, B.id, P.id as perid
+SELECT CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name, P.suffix) as name, P.badge_name, R.id as regid, R.memId, M.label, B.id, P.id as perid
 FROM badgeList B
 LEFT OUTER JOIN perinfo P ON (P.id=B.perid)
 LEFT OUTER JOIN reg R ON (R.perid=P.id AND R.conid=B.conid)
