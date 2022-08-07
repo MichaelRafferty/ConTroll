@@ -185,7 +185,7 @@ WHERE A.conid=?
 GROUP BY time, diff, memType ORDER BY time;
 EOS;
 
-        $histoR = dbSafeQuery($histoQ, 'i', $conid);
+        $histoR = dbSafeQuery($histoQ, 'i', array($conid));
         $histogram = array(); //sub arrays 'expired', 'oneday', 'full', 'trans'
         $acc = array('expired'=>0, 'oneday'=>0, 'full'=>0);
         $lastdiff = 0;
