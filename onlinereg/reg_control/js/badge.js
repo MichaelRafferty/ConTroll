@@ -125,12 +125,12 @@ function showPerson(data) {
   var formid = "badge"+data['id'];
   var ret = "<form id='"+formid+"' action='javascript:void(0)' perid='"
             + data['perid'] + "'>";
-  var cont = false;
+    var cont = false;
 
-  ret += "<input form='"+formid+"' type='hidden' name='regid' value='"+data['regid']+"'></input>";
-  ret += "<input form='"+formid+"' type='hidden' name='id' value='"+data['id']+"'></input>";
+    ret += "<input form='" + formid + "' type='hidden' name='regid' value='" + data['regid'] + "'></input>";
+    ret += "<input form='" + formid + "' type='hidden' name='id' value='" + data['id'] + "'></input>";
 
-  ret += "<td class='small'>";
+    ret += "<td class='small'>";
     ret += data['name'] + "<br/>";
     //badgeType
     if(data['regid']!=null && data['regid']!='') {
@@ -139,23 +139,27 @@ function showPerson(data) {
     } else {
       ret+= badgeSelect(formid);
     }
-  ret += "</td>";
+    ret += "</td>";
 
-  ret += "<td class='small'>";
+    ret += "<td class='small'>";
     if (data['badge_name']=='') { ret += "&lt;default&gt;<br/>"; }
     else { ret += data['badge_name'] + "<br/>"; }
 
-   ret += "</td>";
-   ret += "<td class='small'>"
-    ret+= "<input form='"+formid+"' type='submit' value='update badge' onClick='updateReg(\"#"+formid+"\"); return false;'></input>";
-  ret += '</td>'
+    ret += "</td>";
+    ret += "<td class='small'>";
+    if (cont) { 
+        ret += "&nbsp;";
+    } else {
+        ret += "<input form='" + formid + "' type='submit' value='update badge' onClick='updateReg(\"#" + formid + "\"); return false;'></input>";  
+    }
+    ret += '</td>';
 
-  ret += "<td class='small'>"
+    ret += "<td class='small'>";
     ret+= "<input form='"+formid+"' type='submit' value='Edit Person' onClick='editPerson(\""+data['perid']+"\",\""+formid+"\"); return false;'></input>";
-  ret += '</td>'
-  ret += "</form>";
+    ret += '</td>';
+    ret += "</form>";
 
-  return ret;
+    return ret;
 }
 
 function editPerson(perid,formid) {
