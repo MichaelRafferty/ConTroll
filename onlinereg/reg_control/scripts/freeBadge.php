@@ -36,7 +36,7 @@ $transR = dbQuery($transQ);
 
 $transid=0;
 
-if($transR->num_rows > 0) {
+if ($transR->num_rows > 0) {
   $trans=fetch_safe_assoc($transR);
   $transid=$trans['id'];
 } else {
@@ -46,32 +46,33 @@ if($transR->num_rows > 0) {
 }
 
 if($_POST['regid'] == '') {
-  if(!isset($_POST['memId'])) {
-    ajaxSuccess(array('error'=>'Missing Membership Type'));
-    exit();
-  }
+    if(!isset($_POST['memId'])) {
+        ajaxSuccess(array('error'=>'Missing Membership Type'));
+        exit();
+    }
 
-  $perQ = "SELECT perid FROM badgeList WHERE id='".sql_safe($_POST['id'])."';";
-  $perid = fetch_safe_assoc(dbQuery($perQ));
+    $perQ = "SELECT perid FROM badgeList WHERE id='".sql_safe($_POST['id'])."';";
+    $perid = fetch_safe_assoc(dbQuery($perQ));
 
-  $reg = array(
-    'conid'=>sql_safe($con['id']),
-    'memId'=>sql_safe($_POST['memId']),
-    'perid'=>$perid['perid'],
-    'trans'=>$transid
-  );
+    $reg = array(
+      'conid'=>sql_safe($con['id']),
+      'memId'=>sql_safe($_POST['memId']),
+      'perid'=>$perid['perid'],
+      'trans'=>$transid
+    );
 
-  $regQ = "INSERT INTO reg (conid, perid, memId, create_trans, paid, price, locked, create_user) VALUES (" .
-    $reg['conid'] . ", " . $reg['perid'] . ", " . $reg['memId'] . ", " .
-    $reg['trans'] . ", 0, 0, 'N', " . $userid . ");";
+    $regQ = "INSERT INTO reg (conid, perid, memId, create_trans, paid, price, locked, create_user) VALUES (" .
+      $reg['conid'] . ", " . $reg['perid'] . ", " . $reg['memId'] . ", " .
+      $reg['trans'] . ", 0, 0, 'N', " . $userid . ");";
 
-  $regId = dbInsert($regQ);
+    $regId = dbInsert($regQ);
 } else {
 
-  $reg= array(
-    'conid'=>sql_safe($con['id']),
-    'regid'=>sql_safe($_POST['regid']),
-  );
+    $reg= array(
+      'conid'=>sql_safe($con['id']),
+      'regid'=>sql_safe($_POST['regid']),
+    );
+}
 
 $response['reg']=$reg;
 
