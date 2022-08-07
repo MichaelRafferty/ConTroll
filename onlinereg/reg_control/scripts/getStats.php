@@ -283,7 +283,6 @@ EOQ;
         }
         break;
     case "preConTrend":
-        if($conid==1) { $conid=51; }
         dbSafeCmd($historyQuery, 'i', array($minCon));
         $dayRegQ = <<<EOF
 SELECT datediff(enddate, current_timestamp())
