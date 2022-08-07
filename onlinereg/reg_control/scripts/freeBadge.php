@@ -44,7 +44,7 @@ if ($transR->num_rows > 0) {
   $transid=dbSafeInsert($transQ, 'ii', array($con['id'] ,$userid));
 }
 
-if((!array_key_exists('regid', $_POST)) || $_POST['regid'] == '') {
+if((!array_key_exists('regid', $_POST)) || (!isset($_POST['regid'])) || $_POST['regid'] == ''  || $_POST['regid'] == 'null') {
     if((!array_key_exists('memId'$_POST)) || (!isset($_POST['memId']))) {
         ajaxSuccess(array('error'=>'Missing Membership Type'));
         exit();
