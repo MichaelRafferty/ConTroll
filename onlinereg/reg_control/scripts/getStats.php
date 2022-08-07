@@ -266,6 +266,15 @@ EOF;
 
             $response['overview'][$cat][$type][$age][$label]= $count;
         }
+        $dayRegQ = <<<EOF
+SELECT datediff(enddate, current_timestamp())
+FROM conlist
+WHERE id=?;
+EOF;
+
+        $dayRegA = dbSafeQuery($dayRegQ, 'i', array($conid));
+        $dayReg = fetch_safe_array($dayRegA);
+        if ($dayReg > 0) $response['today'] = $dayReg[0];
 
         break;
     case "totalMembership":

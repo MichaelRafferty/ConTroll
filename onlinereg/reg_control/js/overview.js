@@ -57,6 +57,11 @@ function getBreakdown() {
                 for(key in overview) {
                     buildBreakdownLevel(key, ptr, overview[key], 2);
                 }
+                if (data['today']) {
+                    var ptr = $(document.createElement('p'));
+                    ptr.html(data['today'] + ' days until con');
+                    $('#membershipBreakdown').append(ptr);
+                }
                 getOverTime();
                 getDailyTrend();
                 return false;
