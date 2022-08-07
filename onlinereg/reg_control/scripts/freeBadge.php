@@ -45,8 +45,6 @@ if($transR->num_rows > 0) {
   $transid=dbInsert($transQ);
 }
 
-
-
 if($_POST['regid'] == '') {
   if(!isset($_POST['memId'])) {
     ajaxSuccess(array('error'=>'Missing Membership Type'));
@@ -55,8 +53,6 @@ if($_POST['regid'] == '') {
 
   $perQ = "SELECT perid FROM badgeList WHERE id='".sql_safe($_POST['id'])."';";
   $perid = fetch_safe_assoc(dbQuery($perQ));
-
-
 
   $reg = array(
     'conid'=>sql_safe($con['id']),
@@ -75,48 +71,7 @@ if($_POST['regid'] == '') {
   $reg= array(
     'conid'=>sql_safe($con['id']),
     'regid'=>sql_safe($_POST['regid']),
-    'ribbonList'=>$_POST['ribbon']
   );
-
-    if($reg['ribbonList'] == null) { $reg['ribbonList']=array(); }
-
-  if(isset($_POST['staff'])) {
-    switch($_POST['staff']) {
-      case 'committee':
-        $reg['staff']=sql_safe($_POST['staff']);
-        array_push($reg['ribbonList'], sql_safe($_POST['staff']));
-        break;
-      case 'department head':
-        $reg['staff']=sql_safe($_POST['staff']);
-        array_push($reg['ribbonList'], sql_safe($_POST['staff']));
-        break;
-      case 'senior staff':
-        $reg['staff']=sql_safe($_POST['staff']);
-        array_push($reg['ribbonList'], sql_safe($_POST['staff']));
-        break;
-      case 'general staff':
-        $reg['staff']=sql_safe($_POST['staff']);
-        array_push($reg['ribbonList'], sql_safe($_POST['staff']));
-        break;
-      case 'volunteer':
-        $reg['staff']=sql_safe($_POST['staff']);
-        array_push($reg['ribbonList'], sql_safe($_POST['staff']));
-        break;
-      case 'none':
-      default:
-        $reg['staff']='';
-    }
-
-
-
-    $regQ = "UPDATE reg SET staff='".$reg['staff']."' WHERE id = '".$reg['regid']."';";
-    dbQuery($regQ);
-  } else {
-    $regQ = "UPDATE reg SET staff=NULL WHERE id='".$reg['regid']."';";
-    dbQuery($regQ);
-  }
-
-}
 
 $response['reg']=$reg;
 
