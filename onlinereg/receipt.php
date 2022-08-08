@@ -16,8 +16,15 @@ if(isset($_GET) && isset($_GET['trans']) && is_numeric($_GET['trans'])) {
     $transid = $_GET['trans'];
 }
 
-$ownerQ = "select NP.first_name, NP.last_name, T.complete_date, P.receipt_id as payid, P.receipt_url as url from newperson as NP, transaction as T, payments as P where P.transid=T.id and NP.id=T.newperid and T.id='" . sql_safe($transid) . "';";
-$owner = fetch_safe_assoc(dbQuery($ownerQ));
+$ownerQ = <<<EOS
+SELECT NP.first_name, NP.last_name, T.complete_date, P.receipt_id as payid, P.receipt_url as url 
+FROM transaction T
+JOIN newperson NP ON (NP.id=T.newperid)
+JOIN payments P ON (P.transid=T.id)
+WHERE T.id=?;
+EOS;
+
+$owner = fetch_safe_assoc(dbSafeQuery($ownerQ, 'i', array($transid)));
 ol_page_init($condata['label'] . ' Registration Complete');
 ?>
 <body>
