@@ -15,27 +15,29 @@ if(!isset($_GET) || !isset($_GET['id'])) {
     exit();
 }
 
-$id= sql_safe($_GET['id']);
+$id= $_GET['id'];
 $con = get_con();
 $conid = $con['id'];
     
 $conf = get_conf('con');
 
-$artQ = "SELECT S.id, S.art_key, S.artid, V.name as art_name"
-   . ", concat_ws(' ', P.first_name, P.last_name) as name"
-    . " FROM artshow as S" 
-    . " JOIN artist as A ON A.id=S.artid"
-    . " JOIN perinfo as P ON P.id=A.artist"
-    . " JOIN vendors as V on V.id=A.vendor"
-    . " WHERE conid=$conid AND artid=$id;";
-$artR = dbQuery($artQ);
+$artQ = <<<EOS
+SELECT S.id, S.art_key, S.artid, V.name as art_name, concat_ws(' ', P.first_name, P.last_name) as name
+FROM artshow S
+JOIN artist A ON (A.id=S.artid)
+JOIN perinfo P ON (P.id=A.artist)
+JOIN vendors V ON (V.id=A.vendor)
+WHERE conid=? AND artid=?;
+EOS;
+
+$artR = dbSafeQuery($artQ, 'ii', array($conid, $id));
 $artist = fetch_safe_assoc($artR);
 
 
 function getInfo($pin) {
   global $con;
-  $artshowQ = "SELECT * from artshow WHERE id='".sql_safe($pin)."' and conid='".$con['id']."';";
-  $artshowR = dbQuery($artshowQ);
+  $artshowQ = "SELECT * FROM artshow WHERE id=? AND conid=?;";
+  $artshowR = dbSafeQuery($artshowQ, 'ii', array($pin, $id));
   $artshowInfo = fetch_safe_assoc($artshowR);
   $perid = $artshowInfo['perid'];
   $artid = $artshowInfo['artid'];
@@ -59,15 +61,15 @@ function getInfo($pin) {
 }
 
 function getArtwork($id) {
-    $artQ = "SELECT I.item_key, I.title, I.type, I.status, I.material"
-        . ", I.original_qty, I.quantity, I.min_price, I.sale_price"
-        . ", I.final_price, concat_ws(' ', P.first_name, P.last_name) as name"
-        . ", P.email_addr"
-        . " FROM artItems as I"
-            . " LEFT JOIN perinfo as P ON P.id=I.bidder"
-        . " WHERE artshow=$id;";
+    $artQ = <<<EOS
+SELECT I.item_key, I.title, I.type, I.status, I.material, I.original_qty, I.quantity, I.min_price, I.sale_price
+    I.final_price, concat_ws(' ', P.first_name, P.last_name) as name, P.email_addr
+FROM artItems as I
+LEFT JOIN perinfo P (ON P.id=I.bidder)
+WHERE artshow=?;
+EOS;
     #print($artQ);
-    $artR = dbQuery($artQ);
+    $artR = dbSafeQuery($artQ, 'i', array($id));
     $art = array();
     while($item = fetch_safe_assoc($artR)) {
         array_push($art, $item);

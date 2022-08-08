@@ -16,8 +16,8 @@ page_init($page,
                    ),
               $need_login);
 if(isset($_GET) && isset($_GET['id'])) {
-    $updateQ = "UPDATE reg SET paid = 0 WHERE create_trans=" . sql_safe($_GET['id']). ";";
-    dbquery($updateQ);
+    $updateQ = "UPDATE reg SET paid = 0 WHERE create_trans=?;";
+    dbSafeCmd($updateQ, 'i', array($_GET['id']));
 }
 ?>
 <div id='main'>
