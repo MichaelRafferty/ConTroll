@@ -17,37 +17,44 @@ if(!isset($_GET) || !isset($_GET['artid'])) {
     . "\n";
     exit();
 } else {
-    $artid = sql_safe($_GET['artid']);
+    $artid = $_GET['artid'];
 }
 
-$nameQuery = "SELECT concat_ws('_', P.first_name, P.last_name) FROM artshow as S JOIN artist as A on A.id=S.artid JOIN perinfo as P on P.id=A.artist WHERE S.id=$artid;";
+$nameQuery = <<<EOS
+SELECT concat_ws('_', P.first_name, P.last_name)
+FROM artshow S 
+JOIN artist A ON (A.id=S.artid)
+JOIN perinfo P ON (P.id=A.artist)
+WHERE S.id=?;";
+EOS;
 
-$nameR = fetch_safe_array(dbQuery($nameQuery));
+$nameR = fetch_safe_array(dbSafeQuery($nameQuery, 'i', array($artid)));
 $name=$nameR[0];
 
 header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="checkout_'.$name.'.csv"');
 
-$query = "SELECT A.art_key, I.item_key, I.title"
-    . ", CASE I.quantity < I.original_qty"
-        . " WHEN true THEN I.original_qty - I.quantity"
-        . " ELSE 1"
-        . " END as number_sold"
-    . ", CASE I.type"
-        . " WHEN 'art' THEN I.final_price"
-        . " ELSE I.sale_price"
-        . " END as item_price"
-    . " FROM artItems as I"
-        . " JOIN artshow as A on A.id=I.artshow"
-    . " WHERE I.artshow = $artid"
-    . " AND (I.quantity < I.original_qty OR I.final_price IS NOT null OR status='Sold Bid Sheet');";
+$query = <<<EOS
+SELECT A.art_key, I.item_key, I.title, 
+    CASE I.quantity < I.original_qty
+        WHEN true THEN I.original_qty - I.quantity
+        ELSE 1 
+    END as number_sold
+    CASE I.type
+        WHEN 'art' THEN I.final_price
+        ELSE I.sale_price
+    END as item_price
+FROM artItems I
+JOIN artshow A ON (A.id=I.artshow)
+WHERE I.artshow = ? AND (I.quantity < I.original_qty OR I.final_price IS NOT null OR status='Sold Bid Sheet');
+EOS;
 
 //echo $query; exit();
 
 echo "Artist #, Item #, Title, Number Sold, Item Price, Total"
     . "\n";
 
-$reportR = dbQuery($query);
+$reportR = dbSafeQuery($query, 'i', array($artid));
 $total = 0;
 while($reportL = fetch_safe_array($reportR)) {
     for($i = 0 ; $i < count($reportL); $i++) {
@@ -59,20 +66,21 @@ while($reportL = fetch_safe_array($reportR)) {
 }
 echo ",,$name TOTAL,,,$total\n";
 
-$query = "SELECT A.art_key, I.item_key, I.title"
-    . ", I.quantity"
-    . " FROM artItems as I"
-        . " JOIN artshow as A on A.id=I.artshow"
-    . " WHERE I.artshow = $artid"
-    . " AND ((I.type = 'print' AND I.quantity >0)"
-    . " OR (I.type='art' AND I.status='Checked In')"
-    . " OR I.type='nfs');";
-
+$query = <<<EOS
+SELECT A.art_key, I.item_key, I.title, I.quantity
+FROM artItems I
+JOIN artshow A ON (A.id=I.artshow)
+WHERE I.artshow = ? AND (
+    (I.type = 'print' AND I.quantity >0)
+    OR (I.type='art' AND I.status='Checked In')
+    OR I.type='nfs'
+);
+EOS;
 
 echo "\n\n\n";
 
 echo "Artist #, Item #, Title, Number Returned" . "\n";
-$reportR = dbQuery($query);
+$reportR = dbSafeQuery($query, 'i', array($artid));
 while($reportL = fetch_safe_array($reportR)) {
     for($i = 0 ; $i < count($reportL); $i++) {
         printf("\"%s\",", html_entity_decode($reportL[$i], ENT_QUOTES | ENT_HTML401));

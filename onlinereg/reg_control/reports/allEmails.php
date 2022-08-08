@@ -12,7 +12,7 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 $con = get_conf("con");
 $conid=$con['id'];
 
-if(isset($_GET) and isset($_GET['con'])) { $conid=sql_safe($_GET['con']); }
+if(isset($_GET) and isset($_GET['con'])) { $conid=$_GET['con']; }
 
 header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="allEmails.csv"');
