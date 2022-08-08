@@ -1,6 +1,5 @@
 <?php
 require_once "lib/base.php";
-require_once "lib/ajax_functions.php";
 
 $perm = "artshow";
 
@@ -20,15 +19,17 @@ if(!isset($_POST) || !isset($_POST['transid'])) {
     exit();
 }
 
-$transid = sql_safe($_POST['transid']);
+$transid = $_POST['transid'];
 
-$artQ = "SELECT S.amount, S.quantity, I.title, I.item_key, A.art_key"
-    . " FROM artsales as S"
-        . " JOIN artItems as I ON I.id=S.artid"
-        . " JOIN artshow as A on A.id=I.artshow"
-    . " WHERE S.transid=$transid";
+$artQ = <<<EOS
+SELECT S.amount, S.quantity, I.title, I.item_key, A.art_key
+FROM artsales S
+JOIN artItems I ON (I.id=S.artid)
+JOIN artshow A ON (A.id=I.artshow)
+WHERE S.transid=?;
+EOS;
 
-$artR = dbQuery($artQ);
+$artR = dbSafeQuery($artQ, 'i', array($transid));
 
 $artList = array();
 while($art = fetch_safe_assoc($artR)) {
@@ -37,14 +38,14 @@ while($art = fetch_safe_assoc($artR)) {
 
 $response['artlist'] = $artList;
 
-$transQ = "SELECT T.price, T.paid, T.withtax, T.tax, T.change_due"
-        . ", ROUND(T.withtax + T.change_due,2) as amount"
-        . ", P.type, P.description, P.cc, P.cc_approval_code"
-    . " FROM transaction as T"
-        . " JOIN payments as P on P.transid=T.id"
-    . " WHERE T.id=$transid";
+$transQ = <<<EOS
+SELECT T.price, T.paid, T.withtax, T.tax, T.change_due, ROUND(T.withtax + T.change_due,2) as amount, P.type, P.description, P.cc, P.cc_approval_code
+FROM transaction T
+JOIN payments P ON (P.transid=T.id)
+WHERE T.id=?;
+EOS;
 
-$transR = dbQuery($transQ);
+$transR = dbSafeQuery($transQ, 'i', array($transid));
 
 $response['transinfo'] = fetch_safe_assoc($transR);
 

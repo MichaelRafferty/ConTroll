@@ -1,12 +1,5 @@
 <?php
-if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
-
 require_once "lib/base.php";
-require_once "lib/ajax_functions.php";
     
 $response = array("post" => $_POST, "get" => $_GET);
 
@@ -15,15 +8,15 @@ $conid=$con['id'];
 $check_auth=false;
 $perm = 'manager';
 if(isset($_POST) && isset($_POST['user']) && isset($_POST['passwd']) && isset($_POST['newpw'])) {
-    $user = sql_safe($_POST['user']);
-    $passwd = sql_safe($_POST['passwd']);
-    $resetUser = sql_safe($_POST['resetUser']);
-    $newpw = sql_safe($_POST['newpw']);
-    $checkQ = "SELECT * from atcon_auth where perid=$user and passwd='$passwd' and auth='$perm' and conid=$conid;";
-    $checkR = dbQuery($checkQ);
+    $user = $_POST['user'];
+    $passwd = $_POST['passwd'];
+    $resetUser = $_POST['resetUser'];
+    $newpw = $_POST['newpw'];
+    $checkQ = "SELECT * from atcon_auth where perid=? and passwd=? and auth=? and conid=?;";
+    $checkR = dbSafeQuery($checkQ, 'issi', array($user, $passwd, $perm, $conid));
     if(isset($checkR) && $checkR != null && $checkR->num_rows >= 1) {
-        $updateQ = "UPDATE atcon_auth SET passwd='$newpw' WHERE perid=$resetUser;";
-        dbQuery($updateQ);
+        $updateQ = "UPDATE atcon_auth SET passwd=? WHERE perid=?;";
+        dbSafeCmd($updateQ, 'si', array($newpw, $resetUser));
         $response['message'] = "Password Changed";
     } else { 
         $response['message'] = "Incorrect Password Entered";

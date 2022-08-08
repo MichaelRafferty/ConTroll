@@ -28,7 +28,7 @@ if(!isset($_SESSION['user']) ||
         $_SESSION['user']=$_POST['user'];
         $_SESSION['passwd']=$_POST['passwd'];
         $_SESSION['printer']=$_POST['printer'];
-	$_SESSION['username'] = get_username($_SESSION['user']);
+	//$_SESSION['username'] = get_username($_SESSION['user']);
     } else {
         unset($_SESSION['user']);
         unset($_SESSION['passwd']);

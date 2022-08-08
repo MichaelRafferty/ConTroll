@@ -468,4 +468,25 @@ function check_atcon($user, $passwd, $level, $conid) {
     if($r->num_rows > 0) { return true; }
     else { return false; }
 }
+
+function get_username($user) {
+    $u = sql_safe($user);
+    error_log($user);
+    $q = "SELECT first_name, last_name FROM perinfo WHERE id = ?;";
+    $r = dbSafeQuery($q, 's', array($user));
+    if ($r->num_rows <= 0)
+        return $u;
+    
+    $ret = '';
+    $res = fetch_safe_assoc($r);
+    if ($res['first_name'] != '')
+        $ret = $res['first_name'];
+    if ( $res['last_name'] != '') {
+        if ($ret != '')
+            $ret .= ' ';
+        $ret .= $res['last_name'];
+    }
+    return $ret;
+}
+
 ?>

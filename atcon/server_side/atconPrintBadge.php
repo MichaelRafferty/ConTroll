@@ -1,15 +1,7 @@
 <?php
-if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
-
 require_once "lib/base.php";
-require_once "lib/ajax_functions.php";
 
 $response = array("post" => $_POST, "get" => $_GET);
-
 
 $perm="data_entry";
 $con = get_con();
@@ -26,30 +18,37 @@ if($check_auth == false) {
     exit();
 }
 
-$transid = sql_safe($_POST['transid']);
-$transQ = "SELECT id FROM atcon where transid=$transid";
-$transR = fetch_safe_assoc(dbQuery($transQ));
+$transid = $_POST['transid'];
+$transQ = "SELECT id FROM atcon where transid=?";
+$transR = fetch_safe_assoc(dbSafeQuery($transQ, 'i', array($transid)));
 $atconid = $transR['id'];
 
-$owner = sql_safe($_POST['owner']);
-$action= sql_safe($_POST['action']);
+$owner = $_POST['owner'];
+$action= $_POST['action'];
 
 
 
 $badges = json_decode($_POST['badgeList'], true);
 
 if(isset($_POST['printed']) && $_POST['printed'] == 'true') {
-  $badgeQ = "INSERT IGNORE INTO atcon_badge"
-    . " (atconId, badgeId, action, comment) VALUES ";
+  $badgeQ = "INSERT IGNORE INTO atcon_badge(atconId, badgeId, action, comment) VALUES ";
 
+  $datatypes = '';
+  $comment = 'By: ' . $owner;
+  $values = array();
   $multi = false;
   foreach($badges as $badge) {
     if($multi) { $badgeQ .= ", "; }
-    $badgeQ .= "($atconid, " . $badge['badgeId'] . ", '$action', 'By: $owner')";
+    $badgeQ .= "(?,?,?,?)";
+    $datatypes .= 'iiss';
+    $values[] = $atconid;
+    $values[] = $badge['badgeId'];
+    $values[] = $action;
+    $values[] = $comment;
     $multi=true;
   }
 
-  $result = dbInsert($badgeQ);
+  $result = dbSafeInsert($badgeQ, $datatypes, $values);
   $response['result'] = $result;
 
   ajaxSuccess($response);

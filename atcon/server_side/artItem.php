@@ -1,12 +1,5 @@
 <?php
-if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
-
 require_once "lib/base.php";
-require_once "lib/ajax_functions.php";
 
 $perm = "artshow";
 
@@ -29,25 +22,26 @@ if(!isset($_POST) || !isset($_POST['artist']) || !isset($_POST['item'])) {
 $con = get_conf("con");
 $conid=$con['id'];
 
-$item= sql_safe($_POST['item']);
-$artist = sql_safe($_POST['artist']);
+$item= $_POST['item'];
+$artist = $_POST['artist'];
 
-$artistQ = "SELECT id FROM artshow WHERE conid=$conid AND art_key=$artist";
-$artistR = dbQuery($artistQ);
+$artistQ = "SELECT id FROM artshow WHERE conid=? AND art_key=?";
+$artistR = dbSafeQuery($artistQ, 'ii', array($conid, $artist));
 $art = fetch_safe_assoc($artistR);
 $artid = $art['id'];
 
-$itemQ = "SELECT S.art_key, I.item_key"
-        . ", I.title, I.type, I.status, I.min_price, I.sale_price"
-        . ", I.final_price, I.quantity, V.name"
-        . ", concat_ws(' ', P.first_name, P.last_name) as name"
-    . " FROM artItems as I"
-        . " JOIN artshow as S on S.id=I.artshow"
-        . " JOIN artist as A on A.id=S.artid"
-        . " JOIN perinfo as P on P.id=S.perid"
-        . " JOIN vendors as V on V.id=A.vendor"
-    . " WHERE I.conid=$conid AND I.item_key=$item AND I.artshow=$artid;";
-$itemR = dbQuery($itemQ);
+$itemQ = <<<EOS
+SELECT S.art_key, I.item_key, I.title, I.type, I.status, I.min_price, I.sale_price
+    , I.final_price, I.quantity, V.name, concat_ws(' ', P.first_name, P.last_name) as name
+FROM artItems I
+JOIN artshow S ON (S.id=I.artshow
+JOIN artist A ON (A.id=S.artid)
+JOIN perinfo P ON (P.id=S.perid
+JOIN vendors V ON (V.id=A.vendor)
+WHERE I.conid=? AND I.item_key=? AND I.artshow=?;
+EOS;
+
+$itemR = dbSafeQuery($itemQ, 'iii', array($conid, $item, $artid));
 if($itemR->num_rows > 0) {
     $item = fetch_safe_assoc($itemR);
 

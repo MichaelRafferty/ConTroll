@@ -1,12 +1,5 @@
 <?php
-if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
-
 require_once "lib/base.php";
-require_once "lib/ajax_functions.php";
 
 $response = array("post" => $_POST, "get" => $_GET);
 
@@ -33,10 +26,10 @@ $conid = $con['id'];
 $conf = get_conf('con');
 $taxRate = $conf['taxRate'];
 
-$trans_key = sql_safe($_POST['trans_key']);
-$amount = sql_safe($_POST['amount']);
-$type = sql_safe($_POST['type']);
-$description = sql_safe($_POST['description']);
+$trans_key = $_POST['trans_key'];
+$amount = $_POST['amount'];
+$type = $_POST['type'];
+$description = $_POST['description'];
 
 if($type == 'offline') { $type = 'credit'; }
 
@@ -46,28 +39,30 @@ $transid=$trans_key;
 
 $complete = false;
 
-$badgeListQ = "SELECT DISTINCT R.id, M.label, (R.price-R.paid) as remainder"
-    . " FROM atcon as A"
-        . " JOIN atcon_badge as B on B.atconId = A.id and action='attach'"
-        . " JOIN reg as R on R.id = B.badgeId"
-        . " JOIN memList as M ON M.id=R.memId"
-    . " WHERE A.transid = $transid";
+$badgeListQ = <<<EOS
+SELECT DISTINCT R.id, M.label, (R.price-R.paid) as remainder
+FROM atcon A
+JOIN atcon_badge B ON (B.atconId = A.id and action='attach')
+JOIN reg R ON (R.id = B.badgeId)
+JOIN memList M ON (M.id=R.memId)
+WHERE A.transid = ?;
+EOS;
 
 $total = 0;
 
-$badgeListR = dbQuery($badgeListQ);
+$badgeListR = dbSafeQuery($badgeListQ, 'i', array($transid));
 $badgeList= array();
 while($badge = $badgeListR->fetch_assoc()) {
     array_push($badgeList, $badge);
     $total += $badge['remainder'];
 }
 
-$paid = 0; 
+$paid = 0;
 
-$paidQ = "SELECT amount FROM payments WHERE transid=$transid;";
-$paidR = dbQuery($paidQ);
-if(isset($paidR) && $paidR->num_rows > 0) { 
-    while($paidA = $paidR->fetch_array()) { 
+$paidQ = "SELECT amount FROM payments WHERE transid=?;";
+$paidR = dbSafeQuery($paidQ, 'i', array($transid));
+if(isset($paidR) && $paidR->num_rows > 0) {
+    while($paidA = $paidR->fetch_array()) {
         $paid += $paidA[0];
     }
 }
@@ -87,41 +82,31 @@ if(($paid + $amount) > $total) {
 }
 if($complete) { $response['complete']='true'; } else { $response['complete']='false'; }
 
-$paymentQ = "INSERT INTO payments"
-    . " (transid, cashier, type, category, description, source, amount)"
-    . " VALUES"
-    . " ($transid, $userid, '$type', 'reg', '$description'"
-    . ", '$user_s', $amount);";
-#$response['paymentQ'] = $paymentQ;
 
 if($_POST['type']=='credit') {
-    $paymentQ = "UPDATE payments SET"
-        . " transid = $transid, description =''"
-        . " WHERE id=" . sql_safe($_POST['payment']) . ";";
-    dbQuery($paymentQ);
+    $paymentQ = "UPDATE payments SET transid = ?, description ='' WHERE id=?;";
+    dbSafeCmd($paymentQ, 'ii', array($transid, $_POST['payment']));
     $payid = $_POST['payment'];
 } else {
-    $payid = dbInsert($paymentQ);
+    $paymentQ = "INSERT INTO payments(transid, cashier, type, category, description, source, amount) VALUES(?,?,?,'reg',?,?,?);";
+    $payid = dbSafeInsert($paymentQ, 'iisssd', array($transid, $userid, $type, $description, $user_s, $amount));
 }
 
 $response['payid'] = $payid;
+#$response['paymentQ'] = $paymentQ;
 
-$transQ = "UPDATE transaction SET price=$total, tax=0, withtax=$total"
-    . ", paid=".($paid + $amount)
-    . " WHERE id=$transid";
-dbQuery($transQ);
+$transQ = "UPDATE transaction SET price=?, tax=0, withtax=?, paid=? WHERE id=?";
+dbSafeCmd($transQ, 'dddi', array($total, $total, ($paid + $amount, $transid));
 
 if($_POST['type']=='offline') {
-    $paymentQ2 = "UPDATE payments SET"
-        . " cc_approval_code='" . sql_safe($_POST['cc_approval_code']) . "'"
-        . " WHERE id=$payid;";
-    dbQuery($paymentQ2);
+    $paymentQ2 = "UPDATE payments SET cc_approval_code=? WHERE id=?;";
+    dbSafeCmd($paymentQ2, 'si', array($_POST['cc_approval_code'], $payid));
 #$response['paymentUpdate'] = $paymentQ2;
 }
 
-$resultQ = "SELECT type, description, cc_approval_code, amount FROM payments where id=$payid;";
-$resultA = dbQuery($resultQ);
-$response['result'] = fetch_safe_assoc($resultA); 
+$resultQ = "SELECT type, description, cc_approval_code, amount FROM payments where id=?;";
+$resultA = dbSafeQuery($resultQ, 'i', array($payid));
+$response['result'] = fetch_safe_assoc($resultA);
 
 ajaxSuccess($response);
 ?>

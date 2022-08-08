@@ -1,12 +1,5 @@
 <?php
-if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
-
 require_once "lib/base.php";
-require_once "lib/ajax_functions.php";
 
 $response = array("post" => $_POST, "get" => $_GET);
 
@@ -25,57 +18,79 @@ if($check_auth == false) {
 }
 
 
-$user = 'regadmin@bsfs.org';
+$user = 'regadmin@bsfs.org';  // this is hardcoded for now, should we use a different hardcode name?
 $response['user'] = $user;
-$userQ = "SELECT id FROM user WHERE email='$user';";
-$userR = fetch_safe_assoc(dbQuery($userQ));
+$userQ = "SELECT id FROM user WHERE email=?;";
+$userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', array($user)));
 $userid = $userR['id'];
 $con = get_conf('con');
 $conid=$con['id'];
-$transid=sql_safe($_POST['transaction']);
+$transid=$_POST['transaction'];
 
 $response['iden'] = $_POST['iden'];
 
 $memListQuery = "SELECT id, price, label FROM memList WHERE ";
-if(isset($_POST['memId'])) {
-  $memListQuery .= "id='" . sql_safe($_POST['memId']) . "' AND ";
-}
-$memListQuery .= "conid=$conid ORDER by price DESC";
-$memInfo = fetch_safe_assoc(dbQuery($memListQuery));
+$datatypes = '';
+$values = array();
 
-$perid = sql_safe($_POST['id']);
-$regCheckR = dbQuery("SELECT id FROM reg WHERE conid=$conid and perid=$perid;");
-if($regCheckR->num_rows > 0) {
-    $response['error'] = "Duplicate Membership";
-    ajaxSuccess($response);
+if(isset($_POST['memId'])) {
+  $memListQuery .= "id=? AND ";
+  $datatypes .= 'i';
+  $values[] = $_POST['memId'];
+}
+$memListQuery .= "conid=? ORDER by price DESC;";
+$datatypes .= 'i';
+$values[] = $conid;
+$memInfo = fetch_safe_assoc(dbSafeQuery($memListQuery, $datatypes, $values));
+
+if (!isset($memInfo)) {
+    ajaxSuccess(array("error"=>"Invalid MembershipType"));
     exit();
 }
 
-$query = "INSERT INTO reg (conid, create_user, create_trans, perid, newperid, memId, price, locked) VALUES ($conid, $userid, $transid, ";
-if(isset($_POST['id'])) { $query .= "'" . sql_safe($_POST['id']) . "', "; }
-  else { $query .= "NULL, "; }
-if(isset($_POST['newid'])) { $query .= "'" . sql_safe($_POST['newid']) . "', "; }
-  else { $query .= "NULL, "; }
-if(isset($memInfo)) {
-  $query .= "'" . sql_safe($memInfo['id']) . "', '" .  $memInfo['price'] . "', ";
-} else { ajaxSuccess(array("error"=>"Invalid MembershipType")); exit(); }
-$query .= "'N');";
+if (isset($_POST['id'])) {
+    $perid = $_POST['id'];
+} else {
+    $perid = null;
+}
 
+if ($perid !== null) {
+    $regCheckR = dbSafeQuery("SELECT id FROM reg WHERE conid=? and perid=?;", 'ii', array($conid, $perid));
+    if($regCheckR->num_rows > 0) {
+        $response['error'] = "Duplicate Membership";
+        ajaxSuccess($response);
+        exit();
+    }
+}
+
+$query = "INSERT INTO reg (conid, create_user, create_trans, perid, newperid, memId, price, locked) VALUES (?, ?, ?, ?, ?, ?, ?, 'N');";
+$datatypes = 'iiiiiid';
+if(isset($_POST['newid'])) {
+    $newid = $_POST['newid'];
+} else {
+    $newid = null;
+}
+
+$values = array($conid, $userid, $transid, $perid, $newid, $memInfo['id'], $meminfo['price']);
 $response['badgeQuery'] = $query;
 
-$badgeid = dbInsert($query);
+$badgeid = dbSafeInsert($query, $datatypes, $values);
 
-$atconR = dbQuery("SELECT id FROM atcon WHERE transid=$transid");
+$atconR = dbSafeQuery("SELECT id FROM atcon WHERE transid=?;", 'i', array($transid));
 $atconL = fetch_safe_array($atconR);
 $atconid = $atconL[0];
 
-$query = "SELECT R.id, R.price, R.paid, (R.price-R.paid) as cost, M.id as memId, M.memCategory, M.memType, M.memAge, M.label, R.locked FROM reg as R, memList as M WHERE M.id=R.memId AND R.id=$badgeid;";
+$query = <<<EOS
+SELECT R.id, R.price, R.paid, (R.price-R.paid) as cost, M.id as memId, M.memCategory, M.memType, M.memAge, M.label, R.locked
+FROM reg R
+JOIN memList M  ON (M.id=R.memId)
+WHERE AND R.id=?;
+EOS;
 
-$createEventQ = "INSERT INTO atcon_badge (atconId, badgeId, action) VALUES"
-    . " ($atconid , $badgeid, 'create');";
-dbInsert($createEventQ);
+$createEventQ = "INSERT INTO atcon_badge (atconId, badgeId, action) VALUES(?, ?, 'create');";
+dbSafeInsert($createEventQ, 'ii', array($atconid, $badgeid));
 
-$badgeInfo=fetch_safe_assoc(dbQuery($query));
+$badgeInfo=fetch_safe_assoc(dbSafeQuery($query, 'i', array($badgeid)));
 
 $response['badgeInfo'] = $badgeInfo;
 

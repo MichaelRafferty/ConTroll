@@ -4,9 +4,6 @@ require_once "lib/ajax_functions.php";
 
 $response = array("post" => $_POST, "get" => $_GET);
 
-
-$response = array("post" => $_POST, "get" => $_GET);
-
 $con = get_con();
 $conid=$con['id'];
 $check_auth=false;
@@ -28,12 +25,10 @@ if(!isset($_POST) || !isset($_POST['payment'])) {
     exit();
 }
 
-$payment = sql_safe($_POST['payment']);
+$payment = $_POST['payment'];
 
-$sigQ = "SELECT cc, cc_txn_id, cc_approval_code, txn_time, amount"
-    . " FROM payments WHERE id=$payment";
-
-$sigR = dbquery($sigQ);
+$sigQ = "SELECT cc, cc_txn_id, cc_approval_code, txn_time, amount FROM payments WHERE id=?";
+$sigR = dbSafeQuery($sigQ, 'i', array($payment));
 $response['ccinfo'] = fetch_safe_assoc($sigR);
 
 ajaxSuccess($response);
