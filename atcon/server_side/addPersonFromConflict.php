@@ -31,20 +31,20 @@ WHERE id=?;
 EOS;
 
 $id = dbSafeInsert($newPersonQ, 'i', array($_POST['newID']));
-$resolveInsert = "UPDATE newperson SET perid=$id WHERE id=?";
-dbSafeQuery($resolveInsert, 'i', array($_POST['newID']));
+$resolveInsert = "UPDATE newperson SET perid=? WHERE id=?";
+dbSafeCmd($resolveInsert, 'ii', array($id, $_POST['newID']));
 
 $perQ = <<<EOS
 SELECT banned, concat_ws(' ', first_name, middle_name, last_name) as full_name, email_addr, address, addr_2,
     concat_ws(' ', city, state, zip) as locale, badge_name, id
 FROM perinfo
-WHERE id = $id;
+WHERE id = ?;
 EOS;
 
 $updateRegQ = "UPDATE reg SET perid=? WHERE newperid=?;";
 dbSafeCmd($updateRegQ, 'ii', array($id, $_POST['newID']));
 
-$updateTransQ = "UPDATE transaction SET perid=? WHERE newperid=?';";
+$updateTransQ = "UPDATE transaction SET perid=? WHERE newperid=?;";
 dbSafeCmd($updateTransQ, 'ii', array($id, $_POST['newID']));
 
 $response['id'] = $id;

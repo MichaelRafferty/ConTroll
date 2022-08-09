@@ -1,9 +1,9 @@
 <?php
 require_once "lib/base.php";
 
+$perm="data_entry";
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
-$perm="data_entry";
 $con = get_con();
 $conid=$con['id'];
 $check_auth=false;
