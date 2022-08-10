@@ -275,12 +275,24 @@ dbSafeCmd($regQ, "i", array($transid));
 
 $return_arr = send_email($con['regadminemail'], trim($_POST['cc_email']), /* cc */ null, $condata['label']. " Online Registration Receipt",  getEmailBody($transid), /* htmlbody */ null);
 
+if (array_key_exists('error_code', $return_arr)) {
+    $error_code = $return_arr['error_code'];
+} else {
+    $error_code = null;
+}
+
+if (array_key_exists('email_error', $return_arr)) {
+    $error_msg = $return_arr['email_error'];
+} else {
+    $error_msg = null;
+}
+
 ajaxSuccess(array(
-  "status"=>$return_arr['success'],
+  "status"=>$return_arr['status'],
   "url"=>$rtn['url'],
-  "data"=> $return_arr['email_error'],
+  "data"=> $error_msg,
   "trans"=>$transid,
   //"email"=>$email_msg,
-  "email_error"=>$return_arr['error_code']
+  "email_error"=>$error_code
 ));
 ?>
