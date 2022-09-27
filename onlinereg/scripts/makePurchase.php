@@ -276,8 +276,8 @@ dbSafeCmd($regQ, "i", array($transid));
 $return_arr = send_email($con['regadminemail'], trim($_POST['cc_email']), /* cc */ null, $condata['label']. " Online Registration Receipt",  getEmailBody($transid), /* htmlbody */ null);
 
 ajaxSuccess(array(
-  //"status"=>$return_arr['success'],
-  //"url"=>$rtn['url'],
+  "status"=>$return_arr['success'],
+  "url"=>$rtn['url'],
   "email"=>$return_arr,
   "data"=> $return_arr['email_error'],
   "trans"=>$transid,
