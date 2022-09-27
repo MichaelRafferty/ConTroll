@@ -49,16 +49,31 @@ function log_mysqli_error($query, $additional_error_message) {
 function db_connect() {
     global $dbObject;
     global $db_ini;
-    if(is_null($dbObject)) {
+
+    $port = 3306;
+    if (array_key_exists("port", $db_ini['mysql'])) {
+        $port = $db_ini['mysql']['port'];
+    }
+
+    if (is_null($dbObject)) {
         $dbObject = new mysqli(
             $db_ini['mysql']['host'],
             $db_ini['mysql']['user'],
             $db_ini['mysql']['password'],
-            $db_ini['mysql']['db_name']);
+            $db_ini['mysql']['db_name'],
+            $port);
 
         if($dbObject->connect_errno) {
             echo "Failed to connect to MySQL: (" . $dbObject->connect_errno .") " . $dbObject->connect_error;
             error_log("Failed to connect to MySQL: (" . $dbObject->connect_errno .") " . $dbObject->connect_error);
+        }
+
+        // for mysql with non standard sql_mode (from zambia point of view) temporarily force ours
+        $sql = "SET sql_mode='STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION';";
+        $success = $dbObject -> query($sql);
+        if (!$success) {
+            error_log("failed setting sql mode on db connection");
+            return false;
         }
     }
 }
@@ -476,7 +491,7 @@ function get_username($user) {
     $r = dbSafeQuery($q, 's', array($user));
     if ($r->num_rows <= 0)
         return $u;
-    
+
     $ret = '';
     $res = fetch_safe_assoc($r);
     if ($res['first_name'] != '')
