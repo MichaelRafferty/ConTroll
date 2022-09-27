@@ -133,7 +133,8 @@ function process(formObj) {
     var labelDiv = $(document.createElement('div'))
         .addClass('col-3 p-0 m-0');
        
-    var age_text = formData['age'];
+    var group_text = formData['age'].split('_');
+    var age_text = group_text[group_text.length -1];
     if (age_text != 'adult' && age_text != 'military' && age_text != 'child' && age_text != 'youth' && age_text != 'kit' && age_text != 'student') {
        //age_text = 'unknown';
         labelDiv.addClass('unknown');
@@ -150,7 +151,7 @@ function process(formObj) {
     blockDiv.append(badgeDetails);
     blockDiv.append(optDiv);
 
-    var labeldivtext = shortnames[age_text];
+    var labeldivtext = shortnames[formData['age']];
     if (age_text == 'unknown')
         labeldivtext = 'Unknown';
     //if (age_text == 'kit') {

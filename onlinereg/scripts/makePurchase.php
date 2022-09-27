@@ -23,7 +23,7 @@ logInit($log['reg']);
 $prices = array();
 $memId = array();
 $priceQ = <<<EOQ
-SELECT m.id, m.memAge, m.label, m.shortname, m.price
+SELECT m.id, m.memGroup, m.label, m.shortname, m.price
 FROM memLabel m
 WHERE
     m.conid=?
@@ -35,9 +35,9 @@ EOQ;
 $counts = array();
 $priceR = dbSafeQuery($priceQ, 'i', array($condata['id']));
 while($priceL = fetch_safe_assoc($priceR)) {
-  $prices[$priceL['memAge']] = $priceL['price'];
-  $memId[$priceL['memAge']] = $priceL['id'];
-  $counts[$priceL['memAge']] = 0;
+  $prices[$priceL['memGroup']] = $priceL['price'];
+  $memId[$priceL['memGroup']] = $priceL['id'];
+  $counts[$priceL['memGroup']] = 0;
 }
 
 $badges = json_decode($_POST['badgeList'], true);
@@ -291,6 +291,7 @@ ajaxSuccess(array(
   "status"=>$return_arr['status'],
   "url"=>$rtn['url'],
   "data"=> $error_msg,
+  "email"=>$return_arr,
   "trans"=>$transid,
   //"email"=>$email_msg,
   "email_error"=>$error_code

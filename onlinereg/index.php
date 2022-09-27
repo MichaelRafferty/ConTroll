@@ -12,7 +12,7 @@ $condata = get_con();
 
 $membershiptypes = array();
 $priceQ = <<<EOS
-SELECT memAge, label, shortname, sort_order, price
+SELECT memGroup, label, shortname, sort_order, price
 FROM memLabel 
 WHERE 
     conid=? 
@@ -24,7 +24,7 @@ ORDER BY sort_order, price DESC
 EOS;
 $priceR = dbSafeQuery($priceQ, "i", array($condata['id']));
 while($priceL = fetch_safe_assoc($priceR)) {
-    $membershiptypes[] = array('memAge' => $priceL['memAge'], 'shortname' => $priceL['shortname'], 'price' => $priceL['price'], 'label' => $priceL['label']);
+    $membershiptypes[] = array('memGroup' => $priceL['memGroup'], 'shortname' => $priceL['shortname'], 'price' => $priceL['price'], 'label' => $priceL['label']);
 }
 
 $startdate = new DateTime($condata['startdate']);
@@ -201,7 +201,7 @@ $onsitesale = $startdate->format("l, F j");
                     <div class="col-6 ms-0 me-0 p-0"> 
                         <select id='memType' name='age' style="width:300px;" tabindex='15' title='Age as of <?php echo substr($condata['startdate'], 0, 10); ?> (the first day of the convention)'>
                             <?php foreach ($membershiptypes as $memType) { ?>
-                                <option value='<?php echo $memType['memAge'];?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price'];?>)</option>
+                                <option value='<?php echo $memType['memGroup'];?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price'];?>)</option>
                             <?php    } ?>
                         </select>
                     </div>
@@ -254,7 +254,7 @@ $onsitesale = $startdate->format("l, F j");
                  <h3 class="text-primary">Summary</h3>
                  <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
                    <?php foreach ($membershiptypes as $memType) { ?>
-                        <?php echo $memType['shortname']; ?> Badges <span id='<?php echo $memType['memAge'];?>'>0</span> x $<?php echo $memType['price']; ?><br/>    
+                        <?php echo $memType['shortname']; ?> Badges <span id='<?php echo $memType['memGroup'];?>'>0</span> x $<?php echo $memType['price']; ?><br/>    
                    <?php    } ?>
                  <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
                  Total Cost: $<span id='total'>0</span><br/>
@@ -383,7 +383,7 @@ For questions about <?php echo $con['conname']; ?> Registration, email <a href="
 <script>
   <?php
   foreach($membershiptypes as $memType) {
-    $grp = $memType['memAge'];
+    $grp = $memType['memGroup'];
     $price = $memType['price'];
     $shortname = $memType['shortname'];
     echo "setPrice('$grp', $price, '$shortname');";
