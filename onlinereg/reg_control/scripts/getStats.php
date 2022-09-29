@@ -79,7 +79,7 @@ if(isset($_GET['conid'])) {
 
 
 $historyQuery = <<<EOS
-CREATE TEMPORARY TABLE history
+CREATE TEMPORARY TABLE history (id INT auto_increment PRIMARY KEY)
     SELECT conid, year, diff, cnt_all, cnt_paid
     FROM (
         SELECT R.conid, year(C.enddate) as year

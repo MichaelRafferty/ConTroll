@@ -1,5 +1,6 @@
 [mysql]
 host=""
+port=3306
 user=""
 password=""
 db_name=""
@@ -69,6 +70,7 @@ env="production"
 location=""
 webpaysdk="https://web.squarecdn.com/v1/square.js"
 [log]
+  web = "/home/psfs_reg/reglogs/web"
   reg = "/home/psfs_reg/reglogs/onLineReg"
   artshow = "/home/psfs_reg/reglogs/artshowReg"
   cancel = "/home/psfs_reg/reglogs/cancel"
