@@ -14,32 +14,32 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 $updateQ = <<<EOF
 UPDATE perinfo p
 JOIN newperson n ON (
-	REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.first_name,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.first_name, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.middle_name,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.middle_name, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.last_name,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.last_name, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.suffix,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.suffix, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.email_addr,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.email_addr, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.phone,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.phone, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.badge_name,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.badge_name, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.address,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.address, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.addr_2,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.addr_2, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.city,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.city, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.state,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.state, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.zip,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.zip, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.country,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.country, ''))), "  *", " ")
+	REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.first_name,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.first_name, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.middle_name,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.middle_name, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.last_name,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.last_name, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.suffix,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.suffix, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.email_addr,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.email_addr, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.phone,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.phone, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.badge_name,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.badge_name, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.address,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.address, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.addr_2,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.addr_2, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.city,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.city, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.state,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.state, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.zip,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.zip, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.country,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.country, ''))), '  *', ' ')
 )
 SET p.contact_ok = IFNULL(n.contact_ok, 'Y'), p.share_reg_ok = IFNULL(n.share_reg_ok,'Y')
 WHERE n.perid IS NULL and p.id is not null;

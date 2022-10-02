@@ -79,7 +79,7 @@ function db_connect() {
         }
 
         // for mysql with non standard sql_mode (from zambia point of view) temporarily force ours
-        $sql = "SET sql_mode='STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION';";
+        $sql = "SET sql_mode='" .  $db_ini['mysql']['sql_mode'] . "';";
         $success = $dbObject -> query($sql);
         if (!$success) {
             error_log("failed setting sql mode on db connection");
@@ -312,7 +312,7 @@ function register($email, $sub, $name) {
 function getPages($sub) {
     $res = array();
     $sql = <<<EOS
-SELECT DISTINCT A.name, A.display
+SELECT DISTINCT A.id, A.name, A.display
 FROM user U
 JOIN user_auth UA ON (U.id = UA.user_id)
 JOIN auth A ON (A.id = UA.auth_id)

@@ -4,6 +4,7 @@ port=3306
 user=""
 password=""
 db_name=""
+sql_mode='STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION'
 [con]
 label="Philcon 2022"
 conname="Philcon"
