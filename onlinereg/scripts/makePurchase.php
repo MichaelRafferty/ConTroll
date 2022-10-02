@@ -1,7 +1,7 @@
 <?php
 require_once(__DIR__ . "/../../lib/db_functions.php");
 require_once(__DIR__ . "/../../lib/ajax_functions.php");
-require_once "../lib/log.php";
+require_once(__DIR__ . "/../../lib/log.php");
 require_once("../../lib/cc__load_methods.php");
 require_once("../../lib/email__load_methods.php");
 require_once "../lib/email.php";
