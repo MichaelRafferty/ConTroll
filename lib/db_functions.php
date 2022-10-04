@@ -445,7 +445,7 @@ function get_con() {
 }
 
 function get_user($sub) {
-    $res = fetch_safe_assoc(dbSafeQuery("SELECT * FROM user WHERE google_sub=?;", 's', array($sub)));
+    $res = fetch_safe_assoc(dbSafeQuery("SELECT * FROM user WHERE google_sub=?;", 's', $sub));
     return $res['id'];
 }
 
