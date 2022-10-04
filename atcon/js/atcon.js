@@ -199,6 +199,12 @@ function appendPerson(user) {
         .click(function () { addBadgeAddon("volunteer", $('#'+id+"BadgeId").val(), id,"", true); })
         .append("Volunteer"));
 
+    actionButtons.append($(document.createElement('button'))
+        .attr('id', id+"BadgeReprint")
+        .addClass('badgeAction')
+        .addClass('right')
+        .click(function () { addBadgeNote("return", $('#'+id+"BadgeId").val(), id+"Badge"); })
+        .append("Return"));
 
     actionButtons.append($(document.createElement('button'))
         .attr('id', id+"BadgeYearAhead")
@@ -327,7 +333,7 @@ function setTransaction(data, textStatus, jqXHR) {
         $('#addNewPerson').attr('disabled', false);
         $('#addPayment').attr('disabled', false);
         $('#transactionFormSubmit').attr('disabled', false);
-        if($("#transactionFormOwnerBadgeId").val() != '') { $('.badgeAction').removeAttr('disabled'); }
+        $('.badgeAction').removeAttr('disabled');
     }
 
     if(data['result']['tPaid'] == undefined || isNaN(data['result']['tPaid'])) {
@@ -825,7 +831,7 @@ function completeTransaction (trans) {
         return false;
       },
       error: function(JqXHR, textStatus, errorThrown) {
-        showError("ERROR in scripts/atconComplete.php:\n" + JSON.stringify(JqXHR, null, 2));
+        showError("ERROR in scripts/atconComplete.php:\n" + JSON.stringify(jqXHR, null, 2));
       }
     });
 }
