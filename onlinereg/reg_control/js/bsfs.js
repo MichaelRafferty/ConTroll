@@ -38,7 +38,7 @@ function showBadgeList(data) {
 function showPerson(data) {
   var formid = "badge"+data['id'];
   var ret = "<form id='"+formid+"' action='javascript:void(0)'>";
-  ret += "<input type='hidden' form='"+formid+"' name='perid' value='"+data['perid']+"'></input>";
+  ret += "<input type='hidden' form='"+formid+"' name='perid' value='"+data['perid']+"'/>";
   var cont = false;
     ret+= "<td>"+data['name']+"</td>";
     ret+= "<td>";
@@ -46,10 +46,10 @@ function showPerson(data) {
     ret+="</td>";
     ret+= "<td>"
     ret+= "<input form='"+formid+"' type='text' size=4 value='"+data['year']
-        + "' name='year'></input>";
+        + "' name='year'/>";
     ret+="</td>";
     ret+= "<td>";
-    ret+= "<input form='"+formid+"' type='submit' value='update' onClick='updateReg(\"#"+formid+"\"); return false;'></input>";
+    ret+= "<input form='"+formid+"' type='submit' value='update' onClick='updateReg(\"#"+formid+"\"); return false;'/>";
   ret += '</td>'
   ret += "</form>";
 

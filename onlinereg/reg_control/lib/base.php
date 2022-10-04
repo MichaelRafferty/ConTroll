@@ -452,7 +452,7 @@ function paymentDialogs() {
         </tr>
       </table>
       <div><input required='required' class='right' type='text' size=10 name='amt' id='creditAmt'/>Amount</div>
-      <?php /* <div><input class='right' type='password' size=4 name='track' id='creditTrack'></input>CC Data</div> */ ?>
+      <?php /* <div><input class='right' type='password' size=4 name='track' id='creditTrack'/>CC Data</div> */ ?>
       <div><input required='required' class='right' type='text' name='notes' id='creditDesc' autocomplete='off'/>Transaction</div>
       <input id='creditPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#creditPaymentForm") && makePayment("credit");'/>
       </div>
