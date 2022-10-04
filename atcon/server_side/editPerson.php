@@ -16,9 +16,8 @@ if($check_auth == false) {
     exit();
 }
 
-
-if($_POST['method'] == 'GET') {
-    if(!isset($_POST['id'])) { ajaxError("Need ID"); }
+if(isset($_POST) && array_key_exists('method', $_POST) && $_POST['method'] == 'GET') {
+    if(!(array_key_exists('id', $_POST) && isset($_POST['id']))) { ajaxError("Need ID"); }
     $res = dbSafeQuery("SELECT * FROM perinfo WHERE id=?;", 'i', array($_POST['id']));
     $perinfo = fetch_safe_assoc($res);
     $perinfo["prefix"] = htmlspecialchars($_POST['prefix']);
@@ -182,7 +181,7 @@ if(isset($_POST['admin_notes'])) {
   $values[] = $_POST['admin_notes'];
 }
 if($change) {
-    $query .= " WHERE id='?;";
+    $query .= " WHERE id=?;";
     $datatypes .= 'i';
     $values[] = $_POST['id'];
 

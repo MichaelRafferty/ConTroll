@@ -48,20 +48,20 @@ $conf = get_conf('con');
   </style>
 <div id='auction' class='dialog'>
   <form id='auctionArt' action='javascript:void(0);'>
-    Perid: <input required='required' id='auctionPerid' name='perid' type='text' size=7></input>
+    Perid: <input required='required' id='auctionPerid' name='perid' type='text' size=7/>
     <button onClick='fetchPerson("#auctionPerid", "#auctionWinner")'>Check Person</button>
 
     <div id='auctionWinner' class='boxed'>
     </div>
-    Artist: <input required='required' id='auctionArtist' type='text' name='art_key' size=4></input>
-    Item: <input required='required' id='auctionItem' type='text' name='item_key' size=4></input>
+    Artist: <input required='required' id='auctionArtist' type='text' name='art_key' size=4/>
+    Item: <input required='required' id='auctionItem' type='text' name='item_key' size=4/>
     <button onClick='fetchArt("#auctionArtist", "#auctionItem", "#auctionArtItem")'>Check Art</button>
     <div id='auctionArtItem' class='boxed'>
     </div>
-    Price: <input required='required' id='auctionPrice' name='price' type='text'></input>
+    Price: <input required='required' id='auctionPrice' name='price' type='text'/>
     <br/>
-    <input type='submit' onClick='testValid("#auctionArt") && purchase("#auctionArt")' value='Buy'></input>
-    <label><input id='auctionArtDone' type='checkbox' name='toReg'>Go to Register</input></label>
+    <input type='submit' onClick='testValid("#auctionArt") && purchase("#auctionArt")' value='Buy'/>
+    <label><input id='auctionArtDone' type='checkbox' name='toReg'/>Go to Register</label>
   </form>
 </div>
 <div id='newItem' class='dialog'>
@@ -76,22 +76,22 @@ $conf = get_conf('con');
       <span id='artPriceWarn'>Quick Sale price should be higher than Art price</span>
       <table class='inline'>
         <tr><td class='formlabel'>Title</td></tr>
-        <tr><td class='formfield'><input id='newItemTitle' name='title' required='required' type='text'></input></td></tr>
+        <tr><td class='formfield'><input id='newItemTitle' name='title' required='required' type='text'/></td></tr>
       </table>
       <table class='inline'>
         <tr><td class='formlabel'>Min Bid (USD)<br/>Ins Amnt</td></tr>
-        <tr><td class='formfield'><input name='price' type='text' size=5></input></td></tr>
+        <tr><td class='formfield'><input name='price' type='text' size=5/></td></tr>
       </table>
       <table class='inline'>
         <tr><td class='formlabel'>Quicksale<br/>Print Shop</td></tr>
-        <tr><td class='formfield'><input name='qsale' type='text' size=5></input></td></tr>
+        <tr><td class='formfield'><input name='qsale' type='text' size=5/></td></tr>
       </table>
       <table class='inline'>
         <tr><td class='formlabel'>Quantity</td></tr>
-        <tr><td class='formfield'><input name='qty' type='text' size=5></input></td></tr>
+        <tr><td class='formfield'><input name='qty' type='text' size=5/></td></tr>
       </table>
       <br/>
-      <input type='submit' value='Add' onClick="addItem('#newArt', false);"></input>
+      <input type='submit' value='Add' onClick="addItem('#newArt', false);"/>
     </form>
     <div id='newItemLog'></div>
 </div>

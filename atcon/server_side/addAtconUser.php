@@ -12,7 +12,7 @@ if(isset($_POST) && isset($_POST['user']) && isset($_POST['passwd'])) {
     $passwd = $_POST['passwd'];
     $updateUser = $_POST['perid'];
     $checkQ = "SELECT * from atcon_auth where perid=? and passwd=? and auth=? and conid=?;";
-    $checkR = dbSafeQuery($checkQ, 'issi', array($user, $passed, $perm, $conid));
+    $checkR = dbSafeQuery($checkQ, 'issi', array($user, $passwd, $perm, $conid));
     if(isset($checkR) && $checkR != null && $checkR->num_rows >= 1) {
         $newpw = $_POST['newpw'];
         $datatypes = '';

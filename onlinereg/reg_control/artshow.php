@@ -101,8 +101,8 @@ $conf = get_conf('con');
 <div class='half'>
   <div id="searchPerson"><span class="blocktitle">Search Person</span>
     <form class='inline' id="findPerson" method="GET" action="javascript:void(0)">
-      Name: <input type="text" name="full_name" id="findPersonFullName"></input>
-      <input type="submit" value="Find" onClick='findPerson("#findPerson")'></input>
+      Name: <input type="text" name="full_name" id="findPersonFullName"/>
+      <input type="submit" value="Find" onClick='findPerson("#findPerson")'/>
     </form>
   </div>
 
@@ -115,10 +115,10 @@ $conf = get_conf('con');
       <table class='inline2'><tr><td class='formlabel'>Artist Name</td></tr><tr><td class='formfield' id='pername'></td></tr></table>
       <table class='inline2'><tr><td class='formlabel'>Badge Status</td></tr><tr><td class='formfield' id='badge'></td></tr></table>
       <table class='inline2'><tr><td class='formlabel'>Trade Name</td></tr><tr><td id='artname'></td></tr></table>
-      <table class='inline2'><tr><td class='formlabel'>Emails</td></tr><td class='formfield' id='emails'></td></tr></table>
-      <table class='inline2'><tr><td class='formlabel'>Website</td></tr><td class='formfield' id='website'></td></tr></table>
+      <table class='inline2'><tr><td class='formlabel'>Emails</td></tr><tr><td class='formfield' id='emails'></td></tr></table>
+      <table class='inline2'><tr><td class='formlabel'>Website</td></tr><tr><td class='formfield' id='website'></td></tr></table>
       <br/>
-      <table class='inline'><tr><td class='formlabel'>Description</td></tr><td class='formfield' id='description'></td></tr></table>
+      <table class='inline'><tr><td class='formlabel'>Description</td></tr><tr><td class='formfield' id='description'></td></tr></table>
       <br/>
     <span id='agent_row'>
       <table class='inline2'><tr><td class='formlabel'>Agent Request</td></tr><tr><td class='formfield' id='agent_request'></td></tr></table>
@@ -127,31 +127,32 @@ $conf = get_conf('con');
       <table class='inline2'><tr><td class='formlabel'>Agent Id</td></tr><tr><td class='formfield' id='agent_id'></td></tr></table>
     </span>
       <br/>
-      <table class='inline'><tr><td class='formlabel'>In Show</td></tr><td class='formfield' id='inshow'></td></tr></table>
-      <table class='inline'><tr><td class='formlabel'>Artist Num</td></tr><td class='formfield'><input type='text' id='key' name='key' size=5></input></td></tr></table>
-      <table class='inline'><tr><td class='formlabel'># Items</td></tr><td class='formfield' id='itemcount'></td></tr></table>
+      <table class='inline'><tr><td class='formlabel'>In Show</td></tr><tr><td class='formfield' id='inshow'></td></tr></table>
+      <table class='inline'><tr><td class='formlabel'>Artist Num</td></tr><tr><td class='formfield'><input type='text' id='key' name='key' size=5/></td></tr></table>
+      <table class='inline'><tr><td class='formlabel'># Items</td></tr><tr><td class='formfield' id='itemcount'></td></tr></table>
       <br/>
-      <table class='inline'><tr><td class='formlabel'>Description For Show</td></tr><td class='formfield' id='show_desc'></td></tr></table>
+      <table class='inline'><tr><td class='formlabel'>Description For Show</td></tr><tr><td class='formfield' id='show_desc'></td></tr></table>
       <br/>
-      <table><tr>
+      <table>
         <tbody>
+            <tr>
         <th class='formfield'>Art </th><td class='formfield'>&#8531;Panels</td>
-        <td class='formfield'> <input type='text' size=2 name='asp_count' id='asp_count'></input></td>
+        <td class='formfield'> <input type='text' size=2 name='asp_count' id='asp_count'/></td>
         <td class='formfield'>&#188;Tables</td>
-        <td><input type='text' size=2 name='ast_count' id='ast_count'></input>
+        <td><input type='text' size=2 name='ast_count' id='ast_count'/>
         </td>
         <th class='formfield'>Print </th><td class='formfield'>&#8531;Panels</td>
-          <td class='formfield'><input type='text' size=2 name='psp_count' id='psp_count'></input></td>
-        </td></tr>
+          <td class='formfield'><input type='text' size=2 name='psp_count' id='psp_count'/></td>
+        </tr>
         <tr><td class='formfield'>ids:</td>
-          <td class='formfield' colspan=2><input type='text' size=15 name='asp' id='asp' placeholder='list of panels'></input></td>
-          <td class='formfield' colspan=2><input type='text' size=15 name='ast' id='ast' placeholder='list of tables'></input>
+          <td class='formfield' colspan=2><input type='text' size=15 name='asp' id='asp' placeholder='list of panels'/></td>
+          <td class='formfield' colspan=2><input type='text' size=15 name='ast' id='ast' placeholder='list of tables'/>
         </td>
        <td class='formfield'>ids:</td>
-         <td class='formfield' colspan=2'><input type='text' size=15 name='psp' id='psp' placeholder='list of print'></input></td></tr>
+         <td class='formfield' colspan='2'><input type='text' size=15 name='psp' id='psp' placeholder='list of print'/></td></tr>
         </tbody>
      </table>
-     <input type='submit' value='Update Assignments' onClick='updateAssignment()'></input>
+     <input type='submit' value='Update Assignments' onClick='updateAssignment()'/>
      <br/>History
      <table id='artistHistoryForm'>
         <thead>
@@ -189,12 +190,12 @@ $conf = get_conf('con');
 </div>
 <div id='newArtist'>
     <div id='newArtist'>
-        <span id='newArtistName'></span></br>
-        <span id='newArtistTrade'></span></br>
+        <span id='newArtistName'></span><br/>
+        <span id='newArtistTrade'></span><br/>
     </div>
     <form id='newArtistForm' action='javascript:void(0)'>
-        <input type='hidden' name='artid' id='newartistId'></input>
-        <input type='hidden' name='perid' id='newperid'></input>
+        <input type='hidden' name='artid' id='newartistId'/>
+        <input type='hidden' name='perid' id='newperid'/>
         Artist Type: <select name='mailin'>
             <option default='default' value='attending'>Attending</option>
             <option value='agent'>Agent</option>
@@ -202,7 +203,7 @@ $conf = get_conf('con');
             <option value='special'>Special (e.g. GoH)</option>
         </select>
         <br/>
-        <div id='agent_name'>Agent Name: <input type='text' id='agent_name_in' name='agent_request'></input></div>
+        <div id='agent_name'>Agent Name: <input type='text' id='agent_name_in' name='agent_request'/></div>
         <table>
             <tr><td class='righttext'>Artshow Panel Thirds: </td>
                 <td>
@@ -224,7 +225,7 @@ $conf = get_conf('con');
             </tr>
         </table>
         Description/Special Requriements:<br/><textarea rows=4 cols=40 id='desc' name='desc' placeholder='Enter art description or requirements for display'></textarea>
-        <input type='submit' value='Add to Show' onClick='addArtist()'></input><input type='reset'></input>
+        <input type='submit' value='Add to Show' onClick='addArtist()'/><input type='reset'/>
     </form>
 </div>
 <script>

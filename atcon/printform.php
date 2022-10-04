@@ -43,10 +43,10 @@ if(isset($_GET['action']) && $_GET['action']=='logout') {
 if(!isset($_SESSION['user'])) {
 ?>
 <form method='POST'>
-User Badge Id: <input type='text' name='user'></input><br/>
-Password: <input type='password' name='passwd'></input><br/>
-Badge Printer: <input type='number' name='printer'></input><br/>
-<input type='submit' value='Login'</input>
+User Badge Id: <input type='text' name='user'/><br/>
+Password: <input type='password' name='passwd'/><br/>
+Badge Printer: <input type='number' name='printer'/><br/>
+<input type='submit' value='Login'/>
 </form>
 <?php
 
@@ -61,7 +61,7 @@ Category:<select name='category' id='category'>
     <option>voter</option>
     <option>NoRights</option>
     </select><br/>
-<label>Badge Id: <input type='number' size='6' name='id' id='badge_id'/></label></br/>
+<label>Badge Id: <input type='number' size='6' name='id' id='badge_id'/></label><br/>
 Duration: <select name='type' id='type'>
     <option value='full'>Full Convention</option>
     <option value='oneday'>One Day</option>

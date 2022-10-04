@@ -29,9 +29,9 @@ function ageDialog($con)
   </script>
   <div id='getAge' class='dialog'>
     <form id='getAgeForm' action='javascript:void(0);'>
-        <input type='hidden' id='getAgeBadgeId'></input>
-        <input type='hidden' id='getAgeBadgeWhich'></input>
-        <input type='hidden' id='getAgeAction'></input>
+        <input type='hidden' id='getAgeBadgeId'/>
+        <input type='hidden' id='getAgeBadgeWhich'/>
+        <input type='hidden' id='getAgeAction'/>
         <select id='getAgeSelect'>
             <?php foreach($ageList as $age) {
                 echo "<option value='" . $age['memAge'] . "'>" 
@@ -44,7 +44,7 @@ function ageDialog($con)
                                    $("#getAgeBadgeWhich").val(),
                                    $("#getAgeSelect").val(), true); 
                      $("#getAge").dialog("close");
-                     return false;'></input>
+                     return false;'/>
     </form>
   </div>
 <?php }
@@ -79,7 +79,7 @@ function page_init($title, $css, $js) {
         <td><a href='register.php'>Reg Cashier</a></td>
 <?php // <td><a href='artsales.php'>Artshow Cashier</a></td> ?>
 	<td><a href='printform.php'>Printform</a></td>
-        <td><a href='admin.php'>Administration<a/></td>
+        <td><a href='admin.php'>Administration</a></td>
     </tr></table>
   <?php
   } else {
@@ -274,12 +274,12 @@ function paymentDialogs() {
         </tr>
       </table>
       <div>
-        <input required='required' class='right' type='text' size=10 name='amt' id='discountAmt'></input>Amount
+        <input required='required' class='right' type='text' size=10 name='amt' id='discountAmt'/>Amount
       </div>
       <div>
-        <input required='required' class='right' type='text' size=20 name='notes' id='discountDesc'></input>Note
+        <input required='required' class='right' type='text' size=20 name='notes' id='discountDesc'/>Note
       </div>
-      <input id='discountPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#discountPaymentForm") && makePayment("discount");'></input>
+      <input id='discountPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#discountPaymentForm") && makePayment("discount");'/>
     </form>
   </div>
   <div id='checkPayment' class='dialog'>
@@ -303,15 +303,15 @@ function paymentDialogs() {
           <td id='checkPaymentTotal' class='right'></td>
         </tr>
       </table>
-      <div><input required='required' class='right' type='text' size=10 id='checkNo'></input>
+      <div><input required='required' class='right' type='text' size=10 id='checkNo'/>
       Check #</div>
       <div>
-        <input required='required' class='right' type='text' size=10 name='amt' id='checkAmt'></input>Amount
+        <input required='required' class='right' type='text' size=10 name='amt' id='checkAmt'/>Amount
       </div>
       <div>
-        <input class='right' type='text' size=20 name='notes' id='checkDesc'></input>Note
+        <input class='right' type='text' size=20 name='notes' id='checkDesc'/>Note
       </div>
-      <input id='checkPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#checkPaymentForm") && makePayment("check");'></input>
+      <input id='checkPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#checkPaymentForm") && makePayment("check");'/>
     </form>
   </div>
   <div id='cashPayment' class='dialog'>
@@ -336,12 +336,12 @@ function paymentDialogs() {
         </tr>
       </table>
       <div>
-        <input required='required' class='right' type='text' size=10 name='amt' id='cashAmt'></input>Amount
+        <input required='required' class='right' type='text' size=10 name='amt' id='cashAmt'/>Amount
       </div>
       <div>
-        <input class='right' type='text' size=20 name='notes' id='cashDesc'></input>Note
+        <input class='right' type='text' size=20 name='notes' id='cashDesc'/>Note
       </div>
-      <input id='cashPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#cashPaymentForm") && makePayment("cash");'></input>
+      <input id='cashPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#cashPaymentForm") && makePayment("cash");'/>
     </form>
   </div>
   <div id='offline' class='dialog'>
@@ -365,12 +365,10 @@ function paymentDialogs() {
           <td id='offlinePaymentTotal' class='right'></td>
         </tr>
       </table>
-      <input type='hidden' name='amt' id='offlineAmt'></input>
-      <div><input disabled='disabled' class='right' type='text' size=10 name='view' id='offlineView'></input>Amount</div>
-      <div><input required='optional' class='right' type='text' size=10 name='cc_approval_code' id='offlineCode' autocomplete='off'></input>Approval Code</div>
-      <input id='offlinePay' class='payBtn' type='submit' value='Pay' onClick='testValid("#offlinePaymentForm") && makePayment("offline");'></input>
-      </div>
-  </div>
+      <input type='hidden' name='amt' id='offlineAmt'/>
+      <div><input disabled='disabled' class='right' type='text' size=10 name='view' id='offlineView'/>Amount</div>
+      <div><input required='optional' class='right' type='text' size=10 name='cc_approval_code' id='offlineCode' autocomplete='off'/>Approval Code</div>
+      <input id='offlinePay' class='payBtn' type='submit' value='Pay' onClick='testValid("#offlinePaymentForm") && makePayment("offline");'/>
   <div id='creditPayment' class='dialog'>
     <form id='creditPaymentForm' action='javascript:void(0);'>
       TransactionID: <span id='creditTransactionId'></span>
@@ -392,10 +390,10 @@ function paymentDialogs() {
           <td id='creditPaymentTotal' class='right'></td>
         </tr>
       </table>
-      <input type='hidden' name='amt' id='creditAmt'></input>
-      <div><input disabled='disabled' class='right' type='text' size=10 name='view' id='creditView'></input>Amount</div>
-      <div><input required='required' class='right' type='password' size=4 name='track' id='creditTrack' autocomplete='off'></input>CC</div>
-      <input id='creditPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#creditPaymentForm") && makePayment("credit");'></input>
+      <input type='hidden' name='amt' id='creditAmt'/>
+      <div><input disabled='disabled' class='right' type='text' size=10 name='view' id='creditView'/>Amount</div>
+      <div><input required='required' class='right' type='password' size=4 name='track' id='creditTrack' autocomplete='off'/>CC</div>
+      <input id='creditPay' class='payBtn' type='submit' value='Pay' onClick='testValid("#creditPaymentForm") && makePayment("credit");'/>
       </div>
     </form>
   </div>
@@ -490,17 +488,15 @@ function passwdForm() {
     <div id='passwordWrap'>
         <button id='logout' class='right' 
             onclick='window.location.href=window.location.pathname+"?action=logout"'>
-           Logout</input>
+           Logout
         </button>
         <span class='blocktitle' onclick='$("#chpw").toggle()'>Change Password</span>
         <div id='chpw'>
             <form action='javascript:void(0)' id='chpwForm'>
-                Current Password: <input type='password' name='passwd'>
-                                  </input><br/>
-                New Password: <input type='password' name='newpasswd' id='newpw1'>
-                              </input><br/>
-                New PW again: <input type='password' id='newpw2'></input><br/>
-                <input type='submit' onclick='pw_script("#chpwForm");'></input>
+                Current Password: <input type='password' name='passwd'/><br/>
+                New Password: <input type='password' name='newpasswd' id='newpw1'/><br/>
+                New PW again: <input type='password' id='newpw2'/><br/>
+                <input type='submit' onclick='pw_script("#chpwForm");'/>
             </form>
         </div>
     </div>

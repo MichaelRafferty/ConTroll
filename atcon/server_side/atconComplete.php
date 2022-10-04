@@ -1,14 +1,8 @@
 <?php
-if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
-
-$response = array("post" => $_POST, "get" => $_GET);
 
 require_once "lib/base.php";
-require_once "lib/ajax_functions.php";
+
+$response = array("post" => $_POST, "get" => $_GET);
 
 $perm="data_entry";
 $con = get_con();
@@ -19,7 +13,7 @@ if(isset($_POST) && isset($_POST['user']) && isset($_POST['passwd'])) {
 }
 
 if($check_auth == false) {
-    $response['error'] = "Authentication Failed";
+    $response['error'] = "Authentication Failed";;
     ajaxSuccess($response);
     exit();
 }
@@ -44,7 +38,7 @@ JOIN reg R ON (R.id = B.badgeId)
 JOIN memList M ON (M.id=R.memId)
 JOIN perinfo P ON (P.id=R.perid)
 LEFT OUTER JOIN atcon_badge S ON (B.atconId= S.id and S.action='pickup')
-WHERE A.transid = ?";
+WHERE A.transid = ?;
 EOS;
 
 $badgeRes = dbSafeQuery($badgeQ, 'i', array($transid));
@@ -88,18 +82,18 @@ UPDATE reg  R
 JOIN atcon_badge B ON (R.id=B.badgeId)
 JOIN atcon A ON (A.id=B.atconid)
 SET R.paid=R.price
-WHERE A.transid=$transid;
+WHERE A.transid=?;
 EOS;
-
+  
   dbSafeCmd($query0, 'ddii', array($totalPrice, $totalPrice, $userid, $transid));
   dbSafeCmd($query1, 'i', array($transid));
   $response['success']='true';
-  
+
   $badgeRes = dbQuery($badgeQ);
   $paidBadges=array();
   $newBadges=array();
   $oldBadges=array();
-  
+
   if($badgeRes) {
       while($badge = fetch_safe_assoc($badgeRes)) {
           $totalPrice += $badge['price']-$badge['paid'];

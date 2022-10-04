@@ -20,10 +20,11 @@ if($check_auth == false) {
 
 $users = array();
 $query = <<<EOS
-ELECT perid, concat(P.first_name, ' ', P.last_name) as name, auth
+SELECT perid, concat(P.first_name, ' ', P.last_name) as name, auth
 FROM atcon_auth A 
 JOIN perinfo P ON (P.id=A.perid)
-WHERE conid=?;
+WHERE conid=?
+ORDER BY perid;
 EOS;
 $userQ = dbSafeQuery($query, 'i', array($conid));
 while($user = fetch_safe_assoc($userQ)) {

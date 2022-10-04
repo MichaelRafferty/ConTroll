@@ -22,7 +22,7 @@ if(isset($_GET) && isset($_GET['id'])) {
 ?>
 <div id='main'>
 <form method='GET'>
-<input name='id' type='text'></input>
-<input type='submit' value='Set'></input>
+<input name='id' type='text'/>
+<input type='submit' value='Set'/>
 </form>
 </div>

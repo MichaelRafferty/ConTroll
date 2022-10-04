@@ -102,7 +102,7 @@ EOS;
 }
 $saleQ .= ";";
 
-dbSafeInsert($saleQ);
+dbSafeInsert($saleQ, $sqdatatypes, $values);
 $totalTax = $totalPrice * $taxRate/100;
 $totalWT = $totalPrice + $totalTax;
 
@@ -130,7 +130,7 @@ dbSafeCmd($transUQ, 'dddddi', array($totalPrice,$totalTax,$totalWT,$amount,$chan
 if($type == 'credit') {
     $paymentQ = "UPDATE payments SET transid = ?, description = ? WHERE id=?;";
     dbSafeCmd($paymentQ, 'isi', array($transI,$desc,  $_POST['payment']));
-} else { 
+} else {
     dbSafeInsert($paymentQ, 'issdi', array($transI, $type, $desc, $amount, $purchaseUser));
 }
 

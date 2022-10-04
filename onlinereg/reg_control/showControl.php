@@ -34,7 +34,7 @@ $artR = dbSafeQuery($artQ, 'ii', array($conid, $id));
 $artist = fetch_safe_assoc($artR);
 
 
-function getInfo($pin) {
+function getInfo($pin, $id) {
   global $con;
   $artshowQ = "SELECT * FROM artshow WHERE id=? AND conid=?;";
   $artshowR = dbSafeQuery($artshowQ, 'ii', array($pin, $id));
@@ -86,14 +86,14 @@ EOS;
     <link href='css/base.css' rel='stylesheet' type='text/css' />
     <link href='css/showControl.css' rel='stylesheet' type='text/css' />
 
-  <script type='text/javascript' src='/javascript/jquery-min-3.60.js''></script>
+  <script type='text/javascript' src='/javascript/jquery-min-3.60.js'></script>
   <script type='text/javascript' src='/javascript/d3.js'></script>
   <script type='text/javascript' src='js/base.js'></script>
 </head>
 <body>
 <h2> Art Control Sheet for <?php echo $artist['art_name']; ?></h2>
 <h4>Artist & Agent Information</h4>
-<?php $info = getInfo($artist['id']); 
+<?php $info = getInfo($artist['id'], $id); 
 #var_dump($info); 
 ?>
   <p>Artist Number: <?php echo $info['artshow']['art_key']; ?><br/>
@@ -199,18 +199,25 @@ EOS;
     <tr><td colspan=3>Agent Name: <span class='warn'>No Agent</span></td></tr>
   <?php
   }
-?>
+  ?>
   </table>
   <h4>Contact/Shipping Information</h4>
 Blank unless information differs from above.
   <table>
-  <tr><td>Contact Info:</td></tr>
+  <tr><td>Contact Info:</td>
   <tbody>
-  <td>Cell Phone:</td><td><?php echo $info['artist']['other_cell']; ?></td></tr>
-  <td>Other Phone:</td><td><?php echo $info['artist']['other_phone']; ?></td></tr>
-  <td>Email:</td><td><?php echo $info['artist']['other_email']; ?></td></tr>
+      <tr>
+          <td>Cell Phone:</td><td><?php echo $info['artist']['other_cell']; ?></td>
+      </tr>
+      <tr>
+          <td>Other Phone:</td><td><?php echo $info['artist']['other_phone']; ?></td>
+      </tr>
+      <tr>
+          <td>Email:</td><td><?php echo $info['artist']['other_email']; ?></td>
+      </tr>
   </tbody>
-  <tr><td>Shipping Info:</td><td>
+  <tr>
+      <td>Shipping Info:</td><td>
     Ship To: <?php $info['artist']['ship_to']; ?>
   </td></tr>
   <tbody id='shippinginfo'>

@@ -46,17 +46,17 @@ $conf = get_conf('con');
     New: <?php echo $alley_show['requested'] - $alley_show['authorized']; ?>
     Pending: <?php echo $alley_show['authorized'] - $alley_show['purchased']; ?>
     Purchased: <?php echo $alley_show['purchased']; ?>
-    </br>
+    <br/>
     <span class='blocktitle'>Dealers Room 6' Registrations:</span>
     New: <?php echo $dealer6_show['requested'] - $dealer6_show['authorized']; ?>
     Pending: <?php echo $dealer6_show['authorized'] - $dealer6_show['purchased']; ?>
     Purchased: <?php echo $dealer6_show['purchased']; ?>
-    </br>
+    <br/>
     <span class='blocktitle'>Dealers Room 10' Registrations:</span>
     New: <?php echo $dealer10_show['requested'] - $dealer10_show['authorized']; ?>
     Pending: <?php echo $dealer10_show['authorized'] - $dealer10_show['purchased']; ?>
     Purchased: <?php echo $dealer10_show['purchased']; ?>
-    </br>
+    <br/>
     <span class='blocktitle'>Virtual Vendor Registration:</span>
     New: <?php echo $virtual_show['requested']; ?> Purchased: <?php echo $virtual_show['purchased']; ?>
     <br/>
@@ -74,8 +74,8 @@ $conf = get_conf('con');
     <a class='hidelink' id='searchPersonHideLink' href='javascript:void(0)'
       onclick='hideBlock("#searchPerson")'>(hide)</a>
     <form class='inline' id="findPerson" method="GET" action="javascript:void(0)">
-      Name: <input type="text" name="full_name" id="findPersonFullName"></input>
-      <input type="submit" value="Find" onClick='findPerson("#findPerson")'></input>
+      Name: <input type="text" name="full_name" id="findPersonFullName"/>
+      <input type="submit" value="Find" onClick='findPerson("#findPerson")'/>
     </form>
   </div>
   <div id='vendorList'><span class='blocktitle'>Vendor List</span>
@@ -163,13 +163,13 @@ $conf = get_conf('con');
         Website: <input type='text' name='website' id='vendorWebsite'/><br/>
         Description: <textarea name='description' id='vendorDesc'></textarea><br/>
         <table>
-            <tr><th>Artist Alley</td><td>Requested</td><td>Authorized</td><td>Paid</td><td/></tr>
+            <tr><th>Artist Alley</th><td>Requested</td><td>Authorized</td><td>Paid</td><td/></tr>
             <tr><td>Tables</td>
                 <td><input type='number' name='alleyRequest' id='alleyRequest'/></td>
                 <td><input type='number' name='alleyAuth' id='alleyAuth'/></td>
                 <td><input type='number' name='alleyPurch' id='alleyPurch'/></td>
             </tr>
-            <tr><th>Dealers</td><td>Requested</td><td>Authorized</td><td>Paid</td><td/></tr>
+            <tr><th>Dealers</th><td>Requested</td><td>Authorized</td><td>Paid</td><td/></tr>
             <tr><td>6x6 spaces</td>
                 <td><input type='number' name='dealerRequest' id='dealerRequest'/></td>
                 <td><input type='number' name='dealerAuth' id='dealerAuth'/></td>

@@ -23,27 +23,27 @@ $conid=$con['id'];
 
 ?>
 <div id='main'>
-  <a href='reports/artSales.php'>Artshow amounts sold</a></br>
-  <a href='reports/artists.php'>Artists since <?PHP echo $con['minComp']; ?></a></br>
-  <a href="reports/artInventory.php">Art Inventory</a></br>
-  <a href='reports/newMembers.php'>New Members</a></br>
+  <a href='reports/artSales.php'>Artshow amounts sold</a><br/>
+  <a href='reports/artists.php'>Artists since <?PHP echo $con['minComp']; ?></a><br/>
+  <a href="reports/artInventory.php">Art Inventory</a><br/>
+  <a href='reports/newMembers.php'>New Members</a><br/>
   <a href='reports/duplicates.php'>Duplicate Memberships</a><br/>
-  <a href='reports/badgeTypes.php'>Badge Types</a></br>
-  <a href='reports/bsfsHistory.php'><?PHP echo $control['clubname']; ?> History</a></br>
+  <a href='reports/badgeTypes.php'>Badge Types</a><br/>
+  <a href='reports/bsfsHistory.php'><?PHP echo $control['clubname']; ?> History</a><br/>
   <form action='reports/badgeHistory.php' method='GET'>
     Badge Hisory For:
-    <input type='number' name='perid'></input>
-    <input type='submit' value='Get'></input>
+    <input type='number' name='perid'/>
+    <input type='submit' value='Get'/>
   </form>
   <form action='reports/hotel_reg.php' method='GET'>
     Registration Report For <?PHP echo $con['conname']; ?>
-    <input type='number' name='conid'></input>
-    <input type='submit' value='Get'></input>
+    <input type='number' name='conid'/>
+    <input type='submit' value='Get'/>
   </form>
   <form action='reports/participants.php' method='GET'>
     Participant list for <?PHP echo $con['conname']; ?>
-    <input type='number' name='conid'></input>
-    <input type='submit' value='Get'></input>
+    <input type='number' name='conid'/>
+    <input type='submit' value='Get'/>
   </form>
   <form action='reports/artCheckout.php' method='GET'>
     <select name='artid'>
@@ -56,10 +56,10 @@ $conid=$con['id'];
             }
         ?>
     </select>
-    <input type='submit' value='Artshow Checkout'></input>
+    <input type='submit' value='Artshow Checkout'/>
   </form>
     <form action='reports/badgeHistory.php' method='GET'>
-        <input type='number' name='perid' size=6></input>
-        <input type='submit' value='Get Badge History'></input>
+        <input type='number' name='perid' size=6/>
+        <input type='submit' value='Get Badge History'/>
     </form>
 </div>

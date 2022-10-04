@@ -44,10 +44,10 @@ if(isset($_GET['action']) && $_GET['action']=='logout') {
 if(!isset($_SESSION['user'])) {
 ?>
 <form method='POST'>
-User Badge Id: <input type='text' name='user'></input><br/>
-Password: <input type='password' name='passwd'></input><br/>
-Badge Printer: <input type='number' name='printer'></input><br/>
-<input type='submit' value='Login'</input>
+User Badge Id: <input type='text' name='user'/><br/>
+Password: <input type='password' name='passwd'/><br/>
+Badge Printer: <input type='number' name='printer'/><br/>
+<input type='submit' value='Login'/>
 </form>
 <?php
 
@@ -134,27 +134,27 @@ if(isset($_GET['id'])) {
 </div>
 <div id='initialDialog'>
 <form class='inline' action='javascript:void(0)' id='createTransaction' method='GET'>
-    Search by Name: <input type='text' name='full_name' id='init_full' placeholder='Name'></input><br/>
-    <input type='submit' class='bigButton' value='Search User' onClick='findToCreate("#createTransaction")'></input>
+    Search by Name: <input type='text' name='full_name' id='init_full' placeholder='Name'/><br/>
+    <input type='submit' class='bigButton' value='Search User' onClick='findToCreate("#createTransaction")'/>
 </form>
     <button id='newPersonTransaction' class='bigButton' onClick='$("#newPerson").data("callback", createTransactionNewPerson); $("#newPerson").show(); $("#initialDialog").dialog("close")'>New Person</button>
     <br/>
     <form class='inline' id='peridTransaction' method='POST' action='javascript:void(0)'>
-      Lookup Badge: <input type="text" id='fetchPerId' name="perid" size=10 maxlength=10 placeholder='Per Id'></input>
-      <input type="submit" id='peridSubmit' value="Get Badge" onclick='submitForm("#peridTransaction", "scripts/reg_start.php", setTransaction, null)'></input>
+      Lookup Badge: <input type="text" id='fetchPerId' name="perid" size=10 maxlength=10 placeholder='Per Id'/>
+      <input type="submit" id='peridSubmit' value="Get Badge" onclick='submitForm("#peridTransaction", "scripts/reg_start.php", setTransaction, null)'/>
     </form>
     <br/>
     <form class='inline' id='fetchTransaction' method="GET" action="javascript:void(0)">
-      Transaction #: <input type="text" id='fetchTransactionId' name="id" size=10 maxlength=10 placeholder='Key #'></input>
-      <input type="submit" id='fetchTransactionSubmit' value="Get Transaction" onclick='getForm("#fetchTransaction", "scripts/getTransaction.php", setTransaction, null)'></input>
+      Transaction #: <input type="text" id='fetchTransactionId' name="id" size=10 maxlength=10 placeholder='Key #'/>
+      <input type="submit" id='fetchTransactionSubmit' value="Get Transaction" onclick='getForm("#fetchTransaction", "scripts/getTransaction.php", setTransaction, null)'/>
     </form>
 <hr/>
 <?php passwdForm(); ?>
 </div>
         <div id='editDialog'>
             <form id='editForm' action='javascript:void(0)'>
-              <input type='hidden' name='id'></input>
-              <input type='hidden' name='prefix'></input>
+              <input type='hidden' name='id'/>
+              <input type='hidden' name='prefix'/>
               <table class='formalign'>
         <thead id='editPersonFormId'>
             <tr>
@@ -172,16 +172,16 @@ if(isset($_GET['id'])) {
                 <td class='formlabel'>Suffix</td>
             </tr>
             <tr>
-                <td class='formfield'><input type="text" name="fname" size=20></input></td>
-                <td class='formfield'><input type="text" name="mname" size=20></input></td>
-                <td class='formfield' colspan=2><input type="text" name="lname" size=20></input></td>
-                <td class='formfield'><input type="text" name="suffix" size=4 maxlength=4></input></td>
+                <td class='formfield'><input type="text" name="fname" size=20/></td>
+                <td class='formfield'><input type="text" name="mname" size=20/></td>
+                <td class='formfield' colspan=2><input type="text" name="lname" size=20/></td>
+                <td class='formfield'><input type="text" name="suffix" size=4 maxlength=4/></td>
             </tr>
             <tr>
                 <td class='formlabel'>Badge Name</td>
             </tr>
             <tr>
-                <td class='formfield'><input type="text" name="badge" size=20></input></td>
+                <td class='formfield'><input type="text" name="badge" size=20/></td>
             </tr>
         </tbody>
         <tbody id='editPersonFormAddress'>
@@ -189,13 +189,13 @@ if(isset($_GET['id'])) {
                 <td class='formlabel' colspan=5>Street Address</td>
             </tr>
             <tr>
-                <td class='formfield' colspan=4><input type="text" name="address" size=60></input>
+                <td class='formfield' colspan=4><input type="text" name="address" size=60/>
             </tr>
             <tr>
                 <td class='formlabel' colspan=4>Company/Address Line 2</td>
             </tr>
             <tr>
-                <td class='formfield' colspan=4><input type="text" name="addr2" size=60></input></td>
+                <td class='formfield' colspan=4><input type="text" name="addr2" size=60/></td>
             </tr>
             <tr>
                 <td class='formlabel' colspan=2>City/Locality</td>
@@ -203,15 +203,15 @@ if(isset($_GET['id'])) {
                 <td class='formlabel'>Zip</td>
             </tr>
             <tr>
-                <td class='formfield' colspan=2><input type="text" name="city" size=40></input></td>
-                <td class='formfield'><input type="text" name="state" size=2 maxlength=2></input></td>
-                <td class='formfield'><input type="text" name="zip" size=5 maxlength=10></input></td>
+                <td class='formfield' colspan=2><input type="text" name="city" size=40/></td>
+                <td class='formfield'><input type="text" name="state" size=2 maxlength=2/></td>
+                <td class='formfield'><input type="text" name="zip" size=5 maxlength=10/></td>
             </tr>
             <tr>
                 <td class='formlabel'>Country</td>
             </tr>
             <tr>
-                <td class='formfield'><input type="text" name="country" size="15" value="USA"></input></td>
+                <td class='formfield'><input type="text" name="country" size="15" value="USA"/></td>
             </tr>
         </tbody>
         <tbody id="editPersonFormContact">
@@ -221,16 +221,16 @@ if(isset($_GET['id'])) {
                 <td></td>
             </tr>
             <tr>
-                <td class='formfield' colspan=2><input type="text" name="email" size=30></input></td>
-                <td class='formfield' colspan=2><input type="text" name="phone" size=10></input></td>
+                <td class='formfield' colspan=2><input type="text" name="email" size=30/></td>
+                <td class='formfield' colspan=2><input type="text" name="phone" size=10/></td>
                 <td></td>
             </tr>
         </tbody>
         <tfoot id="editPersonFormButtons">
             <tr>
                 <td colspan=5>
-                    <input type="submit" value="Update Person" onClick='submitUpdateForm("#editForm", "scripts/editPerson.php", getEdited, null)'></input>
-                    <input type="reset"></input>
+                    <input type="submit" value="Update Person" onClick='submitUpdateForm("#editForm", "scripts/editPerson.php", getEdited, null)'/>
+                    <input type="reset"/>
                 </td>
             </tr>
         </tfoot>
@@ -239,8 +239,8 @@ if(isset($_GET['id'])) {
 </div>
 <div id='newPerson' class='popup'>
   <form id='newPersonForm' action='javascript:void(0)'>
-  <input type='hidden' id='newID' name='newID' value=''></input>
-  <input type='hidden' id='oldID' name='oldID' value=''></input>
+  <input type='hidden' id='newID' name='newID' value=''/>
+  <input type='hidden' id='oldID' name='oldID' value=''/>
   <table>
     <thead>
       <tr>
@@ -259,10 +259,10 @@ if(isset($_GET['id'])) {
         <td class='separated formlabel'>Use New Name</td>
       </tr>
       <tr>
-        <td><input tabindex=1 type='text' name='fname' id='fname' required='required'></input></td>
-        <td><input tabindex=2 type='text' name='mname' id='mname'></input></td>
-        <td><input tabindex=3 type='text' name='lname' id='lname' required='required'></input></td>
-        <td><input tabindex=4 type='text' name='suffix' size=4 id='suffix'></input></td>
+        <td><input tabindex=1 type='text' name='fname' id='fname' required='required'/></td>
+        <td><input tabindex=2 type='text' name='mname' id='mname'/></td>
+        <td><input tabindex=3 type='text' name='lname' id='lname' required='required'/></td>
+        <td><input tabindex=4 type='text' name='suffix' size=4 id='suffix'/></td>
         <td class='separated' id='conflictFormOldName'></td>
         <td class='separated center'><input type='checkbox' name='conflictFormName' value='checked' checked='checked'></td>
       </tr>
@@ -272,7 +272,7 @@ if(isset($_GET['id'])) {
         <td class='formlabel separated'>Use New Badge</td>
       </tr>
       <tr>
-        <td colspan=4><input tabindex=5 type='text' name='badge' id='obadge'></input></td>
+        <td colspan=4><input tabindex=5 type='text' name='badge' id='obadge'/></td>
         <td class='separated' id='conflictFormOldBadge'></td>
         <td class='separated center'><input type='checkbox' name='conflictFormBadge' value='checked' checked='checked'></td>
       </tr>
@@ -282,7 +282,7 @@ if(isset($_GET['id'])) {
         <td class='formlabel separated'>Use New Email</td>
       </tr>
       <tr>
-        <td colspan=4><input tabindex=6 type='text' name='email' id='email' required='required'></input></td>
+        <td colspan=4><input tabindex=6 type='text' name='email' id='email' required='required'/></td>
         <td class='separated' id='conflictFormOldEmail'></td>
         <td class='separated center'>
             <input type='checkbox' name='conflictFormEmail' value='checked' checked='checked'/>
@@ -294,7 +294,7 @@ if(isset($_GET['id'])) {
         <td class='formlabel separated'>Use New Phone</td>
       </tr>
       <tr>
-        <td colspan=4><input tabindex=7 type='text' name='phone' id='phone'></input></td>
+        <td colspan=4><input tabindex=7 type='text' name='phone' id='phone'/></td>
         <td class='separated' id='conflictFormOldPhone'></td>
         <td class='separated center'>
             <input type='checkbox' name='conflictFormPhone' value='checked' checked='checked'/>
@@ -307,7 +307,7 @@ if(isset($_GET['id'])) {
       </tr>
       <tr>
         <td colspan=4>
-          <input tabindex=8 type='text' name='address' id='addr' size=60 required='required'></input>
+          <input tabindex=8 type='text' name='address' id='addr' size=60 required='required'/>
         </td>
         <td class='separated' id='conflictFormOldAddr'></td>
         <td class='separated center' rowspan=4>
@@ -319,7 +319,7 @@ if(isset($_GET['id'])) {
       </tr>
       <tr>
         <td colspan=4>
-          <input tabindex=9 type='text' name='addr2' id='addr2' size=60></input>
+          <input tabindex=9 type='text' name='addr2' id='addr2' size=60/>
         </td>
         <td class='separated' id='conflictFormOldAddr2'></td>
       </tr>
@@ -330,11 +330,11 @@ if(isset($_GET['id'])) {
       </tr>
       <tr>
         <td>
-          <input tabindex=10 type='text' name='city' id='city' required='required'></input>
+          <input tabindex=10 type='text' name='city' id='city' required='required'/>
         </td>
         <td>
-          <input tabindex=11 type='text' size=2 name='state' id='state' required='required'></input> /
-          <input tabindex=12 type='text' name='zip' id='zip' size=5 required='required'></input>
+          <input tabindex=11 type='text' size=2 name='state' id='state' required='required'/> /
+          <input tabindex=12 type='text' name='zip' id='zip' size=5 required='required'/>
         </td>
         <td colspan=2>
           <select tabindex=13 id='country' name='country' size=1 width=20>
@@ -385,7 +385,8 @@ Printer: <?php echo $_SESSION['printer']; ?>
     <a class='hidelink' id='transactionHideLink' href='javascript:void(0)'
       onclick='hideBlock("#transaction")'>(hide)</a>
     <form id='transactionForm' method="POST" action="javascript:void(0)">
-    <input type='hidden' id='transactionFormOwnerId'></input>
+    <input type='hidden' id='transactionFormOwnerId'/>
+    <input type='hidden' id='transactionFormOwnerBadgeId' name='transactionFormOwnerBadgeId'/>
       <table id='transactionFormTable'>
         <thead id='transactionFormId'>
           <tr>
@@ -425,7 +426,7 @@ Printer: <?php echo $_SESSION['printer']; ?>
               <span id='transactionFormOwnerBadgePaid'></span>/
               <span id='transactionFormOwnerBadgePrice'></span>
             </td>
-            <input type='hidden' id='transactionFormOwnerBadgeId' name='transactionFormOwnerBadgeId'></input>
+           
             <td>
               <select name='transactionFormOwnerBadgeType' id='transactionFormOwnerBadgeType'>
                 <option default=true value='none'>None</option>
@@ -455,7 +456,7 @@ Printer: <?php echo $_SESSION['printer']; ?>
         <tbody id="transactionFormAdd">
         <tr>
           <td colspan=3>
-            <input type='submit' class='bigButton' id='addFullNameSubmit' value='Find' onClick='findToAppend()'></input>
+            <input type='submit' class='bigButton' id='addFullNameSubmit' value='Find' onClick='findToAppend()'/>
           </td>
           <td>
           <button id='newPersonShow' class='bigButton' onClick='$("#newPerson").data("callback", appendNewPerson); $("#newPerson").show();'>New Person</button>
@@ -464,13 +465,13 @@ Printer: <?php echo $_SESSION['printer']; ?>
         </tr>
         </tbody>
         <tbody id='actionTableBody'>
-             <tr><th colspan=3>name</th><th>action</th><th>age</th><th>price</th></td></tr>
+             <tr><th colspan=3>name</th><th>action</th><th>age</th><th>price</th></tr>
         </tbody>
         <tbody id="transactionFormPayments" class='noborder'>
         <tr>
-          <th class='formlabel'>Type</td>
-          <th class='formlabel' colspan=3>Description/Transaction Id</td>
-          <th class='formlabel'>Amount</td>
+          <th class='formlabel'>Type</th>
+          <th class='formlabel' colspan=3>Description/Transaction Id</th>
+          <th class='formlabel'>Amount</th>
           <th class='formlabel'></th>
         </tr>
         </tbody>
@@ -488,10 +489,10 @@ Printer: <?php echo $_SESSION['printer']; ?>
         <tr>
           <td colspan=6>
             <span class='right'>
-              <input type=reset class='bigButton' value='New Transaction' onClick='window.location.href=window.location.pathname'></input>
-              <input type=reset class='bigButton' value='Logout' onClick='window.location.href=window.location.pathname+"?action=logout"'></input>
+              <input type=reset class='bigButton' value='New Transaction' onClick='window.location.href=window.location.pathname'/>
+              <input type=reset class='bigButton' value='Logout' onClick='window.location.href=window.location.pathname+"?action=logout"'/>
             </span>
-            <input type='submit' class='bigButton' id='transactionFormSubmit' value='Complete Transaction' onClick='completeTransaction("transactionForm")' disabled=true class='disable'></input>
+            <input type='submit' class='bigButton disale' id='transactionFormSubmit' value='Complete Transaction' onClick='completeTransaction("transactionForm")'/>
           </td>
         </tr>
         </tfoot>

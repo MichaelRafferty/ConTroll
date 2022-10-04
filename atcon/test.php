@@ -23,9 +23,9 @@
 <a href='register.php'>Cash Register Page</a>
 
 <form method='POST'>
-    User: <input type='text' name='user'></input><br/>
-    Pass: <input type='password' name='passwd'></input></br>
-    <input type='submit'></input>
+    User: <input type='text' name='user'/><br/>
+    Pass: <input type='password' name='passwd'/><br/>
+    <input type='submit'/>
 </form>
 
 </body>

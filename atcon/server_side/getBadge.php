@@ -29,7 +29,7 @@ JOIN memList M ON (M.id=R.memId)
 WHERE R.perid=? AND R.conid=?
 EOS;
 
-$dataypes = 'ai';
+$datatypes = 'ii';
 $values = array($perid, $conid);
 
 if(isset($_POST['badgeId'])) {

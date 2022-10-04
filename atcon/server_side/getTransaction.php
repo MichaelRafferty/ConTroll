@@ -51,17 +51,18 @@ EOS;
       $payments[count($payments)] = $payment;
     }
 
-    $total = fetch_safe_array(dbSafeQuery("select sum(amount) FROM payments where transid=$transactionId;", 'i', array($transactionId)));
+    $total = fetch_safe_array(dbSafeQuery("select sum(amount) FROM payments where transid=?;", 'i', array($transactionId)));
   }
 
   $badgeQuery = <<<EOS
 SELECT DISTINCT P.id as id, concat_ws(' ', P.first_name, P.middle_name, P.last_name) as full_name
     , P.banned, P.address as address, P.addr_2, concat_ws(' ', P.city, P.state, P.zip) as locale
     , P.badge_name as badge_name, P.email_addr as ownerEmail, R.id as badgeId, M.memAge as age, P.id as perid
-FROM transaction T;
+FROM transaction T
+
 EOS;
     $atconQ = "SELECT id from atcon where transid=?;";
-    $atconR = dbSafeQuery($atconQ, , 'i', array($transactionId));
+    $atconR = dbSafeQuery($atconQ, 'i', array($transactionId));
     if($atconR->num_rows == 1) {
         $atcon = fetch_safe_assoc($atconR);
         $atconId = $atcon['id'];
