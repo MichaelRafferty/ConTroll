@@ -27,6 +27,7 @@ function callOut($url, $data) {
    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
    $result = curl_exec($ch);
    curl_close($ch);
+   return $result;
 }
 
 function nullifnotsetempty($item) {
