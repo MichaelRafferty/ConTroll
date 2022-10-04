@@ -115,7 +115,8 @@ function sendCC($amount, $track, $source) {
 
 function recordCCSale($dbinfo, $source) {
     $method='POST';
-    $data = "user=".$_SESSION['user']."&passwd=".$_SESSION['passwd'] . "&src=$source";
+    $data = "user=".$_SESSION['user']."&passwd=".$_SESSION['passwd']
+        . "&src=$source";
     foreach ($dbinfo as $key => $value) {
         $data .= "&$key=$value";
     }
