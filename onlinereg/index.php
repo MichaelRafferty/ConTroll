@@ -260,9 +260,9 @@ $onsitesale = $startdate->format("l, F j");
             </div>
         </form>
     </div>
-     <div class="container-fluid">
+     <div class="container-fluid form-floating">
          <div class="row">
-             <div class="col-6 p-2 border border-2 border-primary">
+             <div class="col-sm-6 p-2 border border-2 border-primary">
                  <h3 class="text-primary">Summary</h3>
                  <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
                    <?php foreach ($membershiptypes as $memType) { ?>
@@ -357,7 +357,7 @@ $onsitesale = $startdate->format("l, F j");
                  For details and questions about transfers and rollovers to future conventions, please see
                  <a href='<?php echo $con['regpolicy']; ?>'>The Registration Policies Page.</a></p>
              </div>
-             <div class="col-6 p-2 border border-2 border-primary">
+             <div class="col-sm-6 p-2 border border-2 border-primary">
                  <h3 class="text-primary">Badges</h3>
                  <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
                 <div class="container-fluid" id='badge_list'>
