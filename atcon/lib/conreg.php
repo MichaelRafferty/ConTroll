@@ -69,12 +69,11 @@ function init_file($printer) {
         case 3:
         case 4:
             return init_ps();
-            break;
         case 'old4':
         case 'old5':
             return init_se450();
-            break;
     }
+    return null;
 }
 
 function init_ps() {

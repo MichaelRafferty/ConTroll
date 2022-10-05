@@ -121,9 +121,9 @@ function recordCCSale($dbinfo, $source) {
         $data .= "&$key=$value";
     }
     
-#    echo callHome("recordCC.php", "POST", $data);
+#    echo callHome("recordCC.php", $method", $data);
 #    exit();
-    return(callHome("recordCC.php", "POST", $data));
+    return(callHome("recordCC.php", $method, $data));
 }
 
 function buildSalesDraft($ccinfo) {
