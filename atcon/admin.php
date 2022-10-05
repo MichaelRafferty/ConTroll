@@ -4,12 +4,12 @@ require("lib/base.php");
 $page = "Atcon Administration";
 
 page_init($page,
-    /* css */ array('css/jquery-ui.css',
+    /* css */ array('css/jquery-ui-1.13.1.css',
                     'css/base.css',
                     'css/registration.css',
                    ),
-    /* js  */ array('js/jquery.js',
-                    'js/jquery-ui.min.js',
+    /* js  */ array('js/jquery-min-3.60.js',
+                    'js/jquery-ui.min-1.13.1.js',
                     'js/d3.js',
                     'js/base.js',
                     'js/admin.js'
@@ -24,7 +24,7 @@ $method='manager';
 //echo $conid;
 
 
-if(!isset($_SESSION['user']) || 
+if(!isset($_SESSION['user']) ||
   !check_atcon($_SESSION['user'], $_SESSION['passwd'], $method, $conid)) {
     if(isset($_POST['user']) && isset($_POST['passwd']) &&
       check_atcon($_POST['user'], $_POST['passwd'], $method, $conid)) {

@@ -4,15 +4,15 @@ require_once "lib/base.php";
 $page = "Register";
 
 page_init($page,
-    /* css */ array('css/jquery-ui.css',
+    /* css */ array('css/jquery-ui-1.13.1.css',
                     'css/base.css',
                     'css/registration.css',
                     'css/atcon.css'
                    ),
-    /* js  */ array('js/jquery.js',
-                    'js/jquery-ui.min.js',
+    /* js  */ array('js/jquery-min-3.60.js',
+                    'js/jquery-ui.min-1.13.1.js',
                     'js/d3.js',
-                    'js/base.js',
+                    'js/base.js',  
                     'js/atcon.js'
                    )
               );
