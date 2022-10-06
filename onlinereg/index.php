@@ -105,15 +105,15 @@ $onsitesale = $startdate->format("l, F j");
                     <label for="city" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>City</span></label><br/>
                     <input class="form-control-sm" type="text" name="city" id='city' size="22" maxlength="32" tabindex="7"/>
                 </div>
-                <div class="col-2 ms-0 me-0 p-0">
+                <div class="col-sm-2 ms-0 me-0 p-0">
                     <label for="state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>State</span></label><br/>
                     <input class="form-control-sm" type="text" name="state" id='state' size="2" maxlength="2" tabindex="8"/>
                 </div>
-                <div class="col-2 ms-0 me-0 p-0">
+                <div class="col-sm-2 ms-0 me-0 p-0">
                     <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Zip</span></label><br/>
                     <input class="form-control-sm" type="text" name="zip" id='lname' size="5" maxlength="10" tabindex="9"/>
                 </div>
-                <div class="col-4 ms-0 me-0 p-0">
+                <div class="col-sm-4 ms-0 me-0 p-0">
                     <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
                     <select name='country' tabindex='10'>
                         <option value="USA" default='true'>United States</option>
