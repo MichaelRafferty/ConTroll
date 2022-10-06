@@ -301,7 +301,7 @@ $onsitesale = $startdate->format("l, F j");
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-sm-9">
+                             <div class="col-sm-9 mb-4">
                                  <label>Choose who's paying for the order:</label><br/>
                                  <select id='personList' onchange='updateAddr()'></select>
                              </div>
