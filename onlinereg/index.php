@@ -1,4 +1,4 @@
-<?php 
+<?php
 require_once("lib/base.php");
 $ini = redirect_https();
 
@@ -13,12 +13,12 @@ $condata = get_con();
 $membershiptypes = array();
 $priceQ = <<<EOS
 SELECT memGroup, label, shortname, sort_order, price
-FROM memLabel 
-WHERE 
-    conid=? 
-    AND online = 'Y' 
-    AND startdate < current_timestamp() 
-    AND enddate >= current_timestamp() 
+FROM memLabel
+WHERE
+    conid=?
+    AND online = 'Y'
+    AND startdate < current_timestamp()
+    AND enddate >= current_timestamp()
 ORDER BY sort_order, price DESC
 ;
 EOS;
@@ -42,7 +42,7 @@ $onsitesale = $startdate->format("l, F j");
         <?php if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') { ?>
         <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring ;?>"/>
         <?php }
-               if(array_key_exists('logotext', $ini) && $ini['logotext'] != '') { ?>       
+               if(array_key_exists('logotext', $ini) && $ini['logotext'] != '') { ?>
         <div style='display:inline-block' class='display-1'><?php echo $ini['logotext']; ?></div>
         <?php } ?>
     </div>
@@ -53,11 +53,11 @@ $onsitesale = $startdate->format("l, F j");
     <h2 class='text-danger'><strong>This Page is for test purposes only</strong></h2>
     <?php
   }
-  if($ini['open']==1 and $ini['close']==0 and $ini['suspended']==0) { 
+  if($ini['open']==1 and $ini['close']==0 and $ini['suspended']==0) {
     ?>
-     
+
     <div class="container" id='anotherBadge' title='Add another Badge?'>
-        <p class="text-body">        Badge added for <span id='oldBadgeName'></span>.<br/>
+        <p class="text-body">Badge added for <span id='oldBadgeName'></span>.<br/>
         Add another Badge?</p>
     </div>
 
@@ -138,14 +138,14 @@ $onsitesale = $startdate->format("l, F j");
                     <p class="text-body">Please provide a way for us to contact you if there are questions about your registration.  We will never share your information without your consent.</p>
                 </div>
             </div>
-           
+
             <div class="row">
                 <div class="col-sm-6 ms-0 me-0 p-0">
                     <label for="email1" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Email</span></label><br/>
                     <input class="form-control-sm" type="email" name="email1" id='email1' size="35" maxlength="64" tabindex="11"/>
                 </div>
                 <div class="col-sm-6 ms-0 me-0 p-0">
-                    <label for="email2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Confirm Email</span></label><br/>                   
+                    <label for="email2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Confirm Email</span></label><br/>
                     <input class="form-control-sm" type="email" name="email2" id='email2' size="35" maxlength="64" tabindex="12"/>
                 </div>
             </div>
@@ -159,7 +159,7 @@ $onsitesale = $startdate->format("l, F j");
                 <div class="col-sm-12">
                     <hr/>
                 </div>
-            </div>      
+            </div>
              <div class="row">
                 <div class="col-sm-12">
                     <p class="text-body"> Please provide information about your membership and badge.<br/>
@@ -174,7 +174,7 @@ $onsitesale = $startdate->format("l, F j");
                     <input class="form-control-sm" type="text" name="badgename" id='badgename' size="35" maxlength="32"  placeholder='defaults to first and last name' tabindex="14"/>
                 </div>
                 <div class="col-sm-6 ms-0 me-0 p-0">
-                    <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Membership Type</span></label><br/>                  
+                    <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Membership Type</span></label><br/>
                     <select id='memType' name='age' style="width:300px;" tabindex='15' title='Age as of <?php echo substr($condata['startdate'], 0, 10); ?> (the first day of the convention)'>
                         <?php foreach ($membershiptypes as $memType) { ?>
                             <option value='<?php echo $memType['memGroup'];?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price'];?>)</option>
@@ -185,7 +185,7 @@ $onsitesale = $startdate->format("l, F j");
             <div class="row">
                 <div class="col-sm-12 pt-4">
                     <p class="text-body"><?php echo $con['conname']; ?> is entirely run by volunteers.
-                    If you're interested in helping us run the convention please email 
+                    If you're interested in helping us run the convention please email
                     <a href='mailto:<?php echo $con['volunteers']; ?>'><?php echo $con['volunteers']; ?></a>.
                     </p>
                 </div>
@@ -198,7 +198,7 @@ $onsitesale = $startdate->format("l, F j");
             <div class="row">
                 <div class="col-sm-12">
                     <p class="text-body">
-                    <a href="<?php echo $con['policy'];?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.   
+                    <a href="<?php echo $con['policy'];?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.
                     </p>
                 </div>
             </div>
@@ -237,9 +237,9 @@ $onsitesale = $startdate->format("l, F j");
                     <p class="text-body">
                         <label>
                             <input type='checkbox' checked name='share' id='share' value='Y'/>
-                            May we include you in our <a target='_blank' href='checkReg.php'>online search of members</a>? 
+                            May we include you in our <a target='_blank' href='checkReg.php'>online search of members</a>?
                             To support members checking their registration, we allow a search for a name through our list of members.
-                            This provides city/state of residence as well as a partial name. 
+                            This provides city/state of residence as well as a partial name.
                             If you choose to opt out, you can only check the status of your registration status manually by contacting
                             one of our volunteer staff at <?php echo $con['regemail']; ?> (please allow several days for a reply).
                         </label>
@@ -263,61 +263,102 @@ $onsitesale = $startdate->format("l, F j");
      <div class="container-fluid form-floating">
          <div class="row">
              <div class="col-sm-6 p-2 border border-2 border-primary">
-                 <h3 class="text-primary">Summary</h3>
-                 <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
-                   <?php foreach ($membershiptypes as $memType) { ?>
-                        <?php echo $memType['shortname']; ?> Badges <span id='<?php echo $memType['memGroup'];?>'>0</span> x $<?php echo $memType['price']; ?><br/>    
-                   <?php    } ?>
-                 <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
-                 Total Cost: $<span id='total'>0</span><br/>
-                 <button onclick='$("#newBadge").dialog("open");'>Add Badges</button>
-                 <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
-                 <label>Choose who's paying for the order:<br/>
-                 <select id='personList' onchange='updateAddr()'>
-                 </select></label>
-                 <button onclick='toggleAddr()'>Edit</button>
                  <form action='javascript:void(0)' id='purchaseForm'>
-                     <div class="container-fluid">
+                     <div class="container-fluid form-floating">
                          <div class="row">
-                             <div class="col-2 ms-0 me-0 p-0">
+                             <div class="col-sm-12">
+                                   <h3 class="text-primary">Summary</h3>
+                             </div>
+                         </div>
+                         <div class="row">
+                             <div class="col-sm-12 ms-0 me-0 p-0">
+                                 <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
+                             </div>
+                         </div>
+                         <div class="row">
+                             <div class="col-sm-12">
+                                 <?php foreach ($membershiptypes as $memType) { ?>
+                                    <?php echo $memType['shortname']; ?> Badges <span id='<?php echo $memType['memGroup'];?>'>0</span> x $<?php echo $memType['price']; ?><br/>
+                                 <?php    } ?>
+                             </div>
+                         </div>
+                         <div class="row">
+                             <div class="col-sm-12 ms-0 me-0 p-0">
+                                 <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
+                             </div>
+                         </div>
+                         <div class="row">
+                             <div class="col-sm-8">
+                                Total Cost: $<span id='total'>0</span><br/>
+                             </div>
+                             <div class="col-sm-auto ms-auto me-2 p-0">
+                                  <button onclick='$("#newBadge").dialog("open");'>Add Badges</button>
+                             </div>
+                         </div>
+                         <div class="row">
+                             <div class="col-sm-12 ms-0 me-0 p-0">
+                                 <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
+                             </div>
+                         </div>
+                         <div class="row">
+                             <div class="col-sm-9">
+                                 <label>Choose who's paying for the order:</label><br/>
+                                 <select id='personList' onchange='updateAddr()'></select>
+                             </div>
+                             <div class="col-sm-auto ms-auto me-2 p-0">
+                                 <button onclick='toggleAddr()'>Edit</button>
+                             </div>
+                         </div>
+                         <div class="row">
+                             <div class="col-sm-2 ms-0 me-0 p-0">
                                  <label for="cc_fname">
                                      Name:
                                  </label>
                              </div>
-                             <div class="col-10 ms-0 me-0 p-0">
+                             <div class="col-sm-auto ms-0 me-0 p-0">
                                  <input type='text' name='fname' class='ccdata' id='cc_fname' required='required' placeholder='First Name'/>
+                             </div>
+                             <div class="col-sm-auto ms-0 me-0 p-0">
                                  <input type='text' name='lname' id='cc_lname' required='required' class='ccdata' placeholder='Last Name'/>
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-2 ms-0 me-0 p-0">
+                             <div class="col-sm-2 ms-0 me-0 p-0">
                                  <label for="cc_street">
                                      Street:
                                  </label>
                              </div>
-                             <div class="col-10 ms-0 me-0 p-0">
+                             <div class="col-sm-auto ms-0 me-0 p-0">
                                  <input type='text' size=40 class='ccdata' id='cc_street' required='required' name='street'/>
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-2 ms-0 me-0 p-0">
+                             <div class="col-sm-2 ms-0 me-0 p-0">
                                  <label for="cc_city">City:</label>
                              </div>
-                             <div class="col-10 ms-0 me-0 p-0">
+                             <div class="col-sm-auto ms-0 me-2 p-0">
                                  <input type='text' id='cc_city' required='required' size="20" class='ccdata' name='city'/>
+                             </div>
+                             <div class="col-sm-auto ms-0 me-1 p-0">
                                  <label for="cc_state">State:</label>
+                             </div>
+                             <div class="col-sm-auto ms-0 me-2 p-0">
                                  <input type='text' id='cc_state' size=2 required='required' class='ccdata' name='state/'>
+                             </div>
+                             <div class="col-sm-auto ms-0 me-1 p-0">
                                  <label for="cc_zip">Zip:</label>
+                             </div>
+                             <div class="col-sm-auto ms-0 me-0 p-0">
                                  <input type='text' id='cc_zip' required='required' size=10 class='ccdata' name='zip/'>
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-2 ms-0 me-0 p-0">
+                             <div class="col-sm-2 ms-0 me-0 p-0">
                                  <label for="cc_country">Country:</label>
                              </div>
-                             <div class="col-10 ms-0 me-0 p-0">
+                             <div class="col-sm-auto ms-0 me-0 p-0">
                                   <select id='cc_country' class='ccdata' required='required' name='country' size=1>
-                                      <?php                                      
+                                      <?php
                                       $fh = fopen("countryCodes.csv","r");
                                       while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
                                           echo "<option value='".$data[1]."'>".$data[0]."</option>";
@@ -328,22 +369,30 @@ $onsitesale = $startdate->format("l, F j");
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-2 ms-0 me-0 p-0">
+                             <div class="col-sm-2 ms-0 me-0 p-0">
                                  <label for="cc_email">Email:</label>
                              </div>
-                             <div class="col-10 ms-0 me-0 p-0">
+                             <div class="col-sm-auto ms-0 me-0 p-0">
                                   <input type='email' id='cc_email' class='ccdata' name='cc_email'/>
                              </div>
                          </div>
-                         <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
+                         <div class="row">
+                             <div class="col-12 ms-0 me-0 p-0">
+                                 <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
+                             </div>
+                         </div>
                          <div class="row">
                              <div class="col-12 ms-0 me-0 p-0">
                                    <?php draw_cc_html($cc); ?>
                              </div>
                          </div>
+                         <div class="row">
+                             <div class="col-12 ms-0 me-0 p-0">
+                                 <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
+                             </div>
+                         </div>
                      </div>
-                 </form>
-                 <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
+                 </form>               
                  <p class="text-body">We Accept</p>
                  <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/><br/>
 <?php
@@ -353,14 +402,25 @@ $onsitesale = $startdate->format("l, F j");
     <?php
       }
     ?>
-                 <p class="text-body"><?php echo $con['conname']; ?> memberships are not refundable, except in case of emergency. 
+                 <p class="text-body"><?php echo $con['conname']; ?> memberships are not refundable, except in case of emergency.
                  For details and questions about transfers and rollovers to future conventions, please see
                  <a href='<?php echo $con['regpolicy']; ?>'>The Registration Policies Page.</a></p>
              </div>
              <div class="col-sm-6 p-2 border border-2 border-primary">
-                 <h3 class="text-primary">Badges</h3>
-                 <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
-                <div class="container-fluid" id='badge_list'>
+                 <div class="container-fluid">
+                     <div class="row">
+                         <div class="col-sm-12">
+                              <h3 class="text-primary">Badges</h3>
+                         </div>
+                     </div>
+                     <div class="row">
+                         <div class="col-sm-12 ms-0 me-0 p-0">
+                             <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
+                         </div>
+                     </div>
+                     <div class="row">
+                         <div class="col-sm-12" id="badge_list"></div>
+                     </div>
                 </div>
              </div>
          </div>
@@ -374,8 +434,8 @@ $onsitesale = $startdate->format("l, F j");
 <?php echo $con['conname']; ?> has temporarily suspended online registration <?php echo $ini['suspendreason']; ?> on our ability to host <?php echo $con['conname']; ?> this year.  Please see the <a href='<?php echo $ini['suspendmessage']; ?>'>Message from our Chair</a> for details.
 </p>
 <?php } else if($ini['close']==1) { ?>
-<p class="text-primary">Preregistration for <?php echo $condata['label']; ?> is now closed.  
-Badges will be available for purchase starting <?php echo $onsitesale; ?> by <?php echo $ini['onsiteopen'] . ' ' . $con['pickupareatext']; ?> 
+<p class="text-primary">Preregistration for <?php echo $condata['label']; ?> is now closed.
+Badges will be available for purchase starting <?php echo $onsitesale; ?> by <?php echo $ini['onsiteopen'] . ' ' . $con['pickupareatext']; ?>
 <a href="<?php echo $con['hotelwebsite']; ?>"> <?php echo $con['hotelname']; ?></a>.
 Daily rates are posted on <a href="<?php echo $con['dailywebsite']; ?>">The <?php echo $con['conname']; ?> website</a></p>
 <p class="text-body"><?php echo $con['addlpickuptext']; ?></p>
@@ -407,7 +467,7 @@ For questions about <?php echo $con['conname']; ?> Registration, email <a href="
         var $width = document.documentElement.clientWidth;
         if ($width > 800) { $width = 800; }
         $('#newBadge').dialog({
-            title: 'New Membership',           
+            title: 'New Membership',
             classes: { "ui-dialog-titlebar": 'newBadge'},
             autoOpen: true,
             width: $width,
