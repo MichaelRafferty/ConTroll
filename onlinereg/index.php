@@ -164,7 +164,7 @@ $onsitesale = $startdate->format("l, F j");
                 <div class="col-sm-12">
                     <p class="text-body"> Please provide information about your membership and badge.<br/>
                 Select membership type from the drop-down menu below.
-                Eligibiilty for Child and Young Adult rates are based on age on <?php echo $agebydate; ?>
+                Eligibility for Child and Young Adult rates are based on age on <?php echo $agebydate; ?>
                 (the first day of the convention).</p>
                 </div>
              </div>
