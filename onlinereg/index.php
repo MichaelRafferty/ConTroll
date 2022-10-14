@@ -71,19 +71,19 @@ $onsitesale = $startdate->format("l, F j");
                 </div>
             </div>
             <div class="row">
-                <div class="col-sm-4 ms-0 me-0 p-0">
+                <div class="col-sm-auto ms-0 me-2 p-0">
                     <label for="fname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>First Name</span></label><br/>
                     <input class="form-control-sm" type="text" name="fname" id='fname' size="22" maxlength="32" tabindex="1"/>
                 </div>
-                <div class="col-sm-2 ms-0 me-0 p-0">
+                <div class="col-sm-auto ms-0 me-2 p-0">
                     <label for="mname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
                     <input class="form-control-sm" type="text" name="mname" id='mname' size="8" maxlength="32" tabindex="2"/>
                 </div>
-                <div class="col-sm-4 ms-0 me-0 p-0">
+                <div class="col-sm-auto ms-0 me-2 p-0">
                     <label for="lname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Last Name</span></label><br/>
                     <input class="form-control-sm" type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="3"/>
                 </div>
-                <div class="col-sm-2 ms-0 me-0 p-0">
+                <div class="col-sm-auto ms-0 me-0 p-0">
                     <label for="suffix" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
                     <input class="form-control-sm" type="text" name="suffix" id='suffix' size="4" maxlength="4" tabindex="4"/>
                 </div>
@@ -101,19 +101,19 @@ $onsitesale = $startdate->format("l, F j");
                 </div>
             </div>
             <div class="row">
-                <div class="col-sm-4 ms-0 me-0 p-0">
+                <div class="col-sm-auto ms-0 me-2 p-0">
                     <label for="city" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>City</span></label><br/>
                     <input class="form-control-sm" type="text" name="city" id='city' size="22" maxlength="32" tabindex="7"/>
                 </div>
-                <div class="col-sm-2 ms-0 me-0 p-0">
+                <div class="col-sm-auto ms-0 me-2 p-0">
                     <label for="state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>State</span></label><br/>
                     <input class="form-control-sm" type="text" name="state" id='state' size="2" maxlength="2" tabindex="8"/>
                 </div>
-                <div class="col-sm-2 ms-0 me-0 p-0">
+                <div class="col-sm-auto ms-0 me-2 p-0">
                     <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Zip</span></label><br/>
                     <input class="form-control-sm" type="text" name="zip" id='lname' size="5" maxlength="10" tabindex="9"/>
                 </div>
-                <div class="col-sm-4 ms-0 me-0 p-0">
+                <div class="col-sm-auto ms-0 me-0 p-0">
                     <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
                     <select name='country' tabindex='10'>
                         <option value="USA" default='true'>United States</option>
@@ -140,11 +140,11 @@ $onsitesale = $startdate->format("l, F j");
             </div>
 
             <div class="row">
-                <div class="col-sm-6 ms-0 me-0 p-0">
+                <div class="col-sm-auto ms-0 me-2 p-0">
                     <label for="email1" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Email</span></label><br/>
                     <input class="form-control-sm" type="email" name="email1" id='email1' size="35" maxlength="64" tabindex="11"/>
                 </div>
-                <div class="col-sm-6 ms-0 me-0 p-0">
+                <div class="col-sm-auto ms-0 me-0 p-0">
                     <label for="email2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Confirm Email</span></label><br/>
                     <input class="form-control-sm" type="email" name="email2" id='email2' size="35" maxlength="64" tabindex="12"/>
                 </div>
@@ -169,11 +169,11 @@ $onsitesale = $startdate->format("l, F j");
                 </div>
              </div>
             <div class="row">
-                <div class="col-sm-6 ms-0 me-0 p-0">
+                <div class="col-sm-auto ms-0 me-2 p-0">
                     <label for="badgename" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name</span></label><br/>
                     <input class="form-control-sm" type="text" name="badgename" id='badgename' size="35" maxlength="32"  placeholder='defaults to first and last name' tabindex="14"/>
                 </div>
-                <div class="col-sm-6 ms-0 me-0 p-0">
+                <div class="col-sm-auto ms-0 me-0 p-0">
                     <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Membership Type</span></label><br/>
                     <select id='memType' name='age' style="width:300px;" tabindex='15' title='Age as of <?php echo substr($condata['startdate'], 0, 10); ?> (the first day of the convention)'>
                         <?php foreach ($membershiptypes as $memType) { ?>
