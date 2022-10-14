@@ -10,6 +10,10 @@ var badgeref = {};
 var $purchase_label = 'purchase';
 // shortnames are the memLabel short names for the memAge
 var shortnames = {};
+// anotherbadge = bootstrap 5 modal for the add another modal popup
+var anotherBadge = null;
+// newBadge = bootstrap 5 modal for the add badge modal popop
+var newBadge = null;
 
 //function flashSect2(sect, i, max) {
 //  if(i < max) { 
@@ -169,7 +173,8 @@ function process(formObj) {
 
     updateAddr();
     $('#oldBadgeName').empty().append(name);
-    $('#anotherBadge').dialog('open');
+    newBadgeModalClose();
+    anotherBadgeModalOpen();
 }
 
 function removeBadge(index) {
@@ -250,7 +255,7 @@ function makePurchase($token, $label) {
     var postdata = badges['badges'];
     if (postdata.length == 0) {
         alert("You don't have any badges to buy, please add some badges");
-        $('#newBadge').dialog('open');
+        newBadge.show();
         return false;
     }
 
@@ -264,4 +269,31 @@ function makePurchase($token, $label) {
         success: mp_ajax_success,
         error: mp_ajax_error
     });
+}
+
+function newBadgeModalOpen() {
+    newBadge.show();
+}
+
+function newBadgeModalClose() {
+    newBadge.hide();
+}
+
+function anotherBadgeModalOpen() {
+    anotherBadge.show();
+}
+
+function anotherBadgeModalClose() {
+    anotherBadge.hide();
+}
+
+function togglePopup() {
+    anotherBadge.hide();
+    newBadge.show();
+}
+
+window.onload = function () {
+    anotherBadge = new bootstrap.Modal(document.getElementById('anotherBadge'), { focus: true, backdrop: 'static' });
+    newBadge = new bootstrap.Modal(document.getElementById('newBadge'), { focus: true, backdrop: 'static' });
+    newBadge.show();
 }
