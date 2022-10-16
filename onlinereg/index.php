@@ -82,8 +82,9 @@ $onsitesale = $startdate->format("l, F j");
                 <div class="modal-header" style="background-color: #b0c4de;">
                     <div class="modal-title">
                         <strong>New Membership</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                       
                     </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" style="padding: 4px;">
                      <div id='newBadgeBody' class="container-fluid form-floating" style="background:#f4f4ff;">
