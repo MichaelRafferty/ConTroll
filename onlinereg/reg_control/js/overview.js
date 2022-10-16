@@ -116,13 +116,11 @@ function buildOverTime(data) {
 
   var parseYear = d3.time.format("%Y").parse;
   data.forEach(function(d) {
-    d['year_int'] = +d['year'];
-    if (d['year'] != null) {
-        d['year'] = parseYear(d['year']);
-    }
-    d['conid'] = +d['conid'];
-    d['cnt_all'] = +d['cnt_all'];
-    d['cnt_paid'] = +d['cnt_paid'];
+      d['year_int'] = +d['year'];
+      d['year'] = parseYear(d['year']);
+      d['conid'] = +d['conid'];
+      d['cnt_all'] = +d['cnt_all'];
+      d['cnt_paid'] = +d['cnt_paid'];
 });
 
   var x = d3.time.scale().range([0,width]);

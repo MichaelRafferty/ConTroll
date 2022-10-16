@@ -279,7 +279,7 @@ EOF;
         dbSafeCmd($historyQuery, 'i', array($minCon));
         $maxRegQ = <<<EOQ
 SELECT conid, true AS complete, year, MIN(cnt_all) AS cnt_all, min(cnt_paid) AS cnt_paid
-FROM history WHERE conid<=? AND diff IS NULL
+FROM history WHERE conid<=? AND diff IS NULL AND year IS NOT NULL
 GROUP BY conid, year;
 EOQ;
         $maxRegA = dbSafeQuery($maxRegQ, 'i', array($conid));
