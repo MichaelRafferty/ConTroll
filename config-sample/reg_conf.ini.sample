@@ -32,6 +32,7 @@ id="2022"
 taxRate=6
 minComp="2021"
 compLen="150"
+conLen="3"
 server="https://reg.philcon.org/"
 [reg]
 https=1
