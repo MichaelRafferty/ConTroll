@@ -272,7 +272,7 @@ EOF;
 
         $dayRegA = dbSafeQuery($dayRegQ, 'i', array($conid));
         $dayReg = fetch_safe_array($dayRegA);
-        if ($dayReg > 0) $response['today'] = $dayReg[0];
+        if ($dayReg > 0) $response['today'] = $dayReg[0] - $conLen;
 
         break;
     case "totalMembership":
