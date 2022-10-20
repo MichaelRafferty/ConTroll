@@ -1,12 +1,6 @@
 <?php
-if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
-
 require_once "lib/base.php";
-require_once "lib/ajax_functions.php";
+
 $perm="manager";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
@@ -24,9 +18,15 @@ if($check_auth == false) {
     exit();
 }
 
-
 $users = array();
-$userQ = dbQuery("SELECT perid, concat(P.first_name, ' ', P.last_name) as name, auth FROM atcon_auth as A JOIN perinfo as P on P.id=A.perid where conid=$conid;");
+$query = <<<EOS
+SELECT perid, concat(P.first_name, ' ', P.last_name) as name, auth
+FROM atcon_auth A 
+JOIN perinfo P ON (P.id=A.perid)
+WHERE conid=?
+ORDER BY perid;
+EOS;
+$userQ = dbSafeQuery($query, 'i', array($conid));
 while($user = fetch_safe_assoc($userQ)) {
     if(isset($users[$user['perid']])) {
         $users[$user['perid']][$user['auth']] = 'checked';

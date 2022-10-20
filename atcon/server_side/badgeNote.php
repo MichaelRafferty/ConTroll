@@ -1,12 +1,5 @@
 <?php
-if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
-
 require_once "lib/base.php";
-require_once "lib/ajax_functions.php";
 
 $perm="data_entry";
 $con = get_con();
@@ -23,34 +16,34 @@ if($check_auth == false) {
     exit();
 }
 
-
-$user = 'regadmin@bsfs.org';
+$user = 'regadmin@bsfs.org'; // hardcoded - do we need a different hardcode for this?
 $response['user'] = $user;
-$userQ = "SELECT id FROM user WHERE email='$user';";
-$userR = fetch_safe_assoc(dbQuery($userQ));
+$userQ = "SELECT id FROM user WHERE email=?;";
+$userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', array($user)));
 $userid = $userR['id'];
 $con = get_conf('con');
 $conid=$con['id'];
 
- $atconIdQ = "SELECT id FROM atcon WHERE conid=$conid AND transid=" .
-    sql_safe($_POST['transid']) . ";";
-  $atconId = fetch_safe_assoc(dbQuery($atconIdQ));
+$atconIdQ = "SELECT id FROM atcon WHERE conid=? AND transid=?;";
+$atconId = fetch_safe_assoc(dbSafeQuery($atconIdQ, 'ii', array($conid,$_POST['transid'])));
 
-  $attachQ = "INSERT IGNORE INTO atcon_badge (atconId, badgeId, action, comment)  VALUES (" .
-    $atconId['id'] . ", " . sql_safe($_POST['badgeId']) .
-    ", '" . sql_safe($_POST['type']) . "', '" . $user . ": " . sql_safe($_POST['content']) . "');";
-  $attachR = dbInsert($attachQ);
+$attachQ = "INSERT IGNORE INTO atcon_badge (atconId, badgeId, action, comment)  VALUES (?, ?, ?, ?);";
+$attachR = dbSafeInsert($attachQ, 'iiss', array($atconId['id'], $_POST['badgeId'], $_POST['type'], $user . ": " . $_POST['content']));
 
-  $atconQ = "SELECT B.date, A.atcon_key, B.action, B.comment FROM atcon_badge as B, atcon as A WHERE A.id=B.atconId AND badgeId='"
-    . sql_safe($_POST['badgeId']) . "' AND action != 'attach';";
-
-  $atconR = dbQuery($atconQ);
-  $actions = array();
-  if($atconR->num_rows > 0) while($act = fetch_safe_assoc($atconR)) {
-    array_push($actions, $act);
-  }
+$atconQ = <<<EOS
+SELECT B.date, A.atcon_key, B.action, B.comment
+FROM atcon_badge B
+JOIN atcon A ON (A.id=B.atconId)
+WHERE badgeId=?;
+EOS;
+$atconR = dbSafeQuery($atconQ, 'i', array($_POST['badgeId']));
+$actions = array();
+if($atconR->num_rows > 0) {
+    while($act = fetch_safe_assoc($atconR)) {
+        array_push($actions, $act);
+    }
+}
 $response['actions'] = $actions;
-
 
 ajaxSuccess($response);
 ?>

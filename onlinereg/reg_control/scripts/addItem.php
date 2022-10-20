@@ -18,15 +18,14 @@ $conf = get_conf('con');
 $con = get_con();
 $conid=$con['id'];
 
-$artshowQ = "SELECT id FROM artshow WHERE art_key='"
-    . sql_safe($_POST['artist']) . "' AND conid=$conid;";
-$artshow = fetch_safe_array(dbQuery($artshowQ));
+$artshowQ = "SELECT id FROM artshow WHERE art_key=? AND conid=?;";
+$artshow = fetch_safe_array(dbSafeQuery($artshowQ, 'ii', array($_POST['artist'], $conid)));
 
 $pin = $artshow[0];
 
 
-$query = "SELECT max(item_key) FROM artItems where artshow='$pin';";
-$keyR = fetch_safe_array(dbQuery($query));
+$query = "SELECT max(item_key) FROM artItems where artshow=?;";
+$keyR = fetch_safe_array(dbSafeQuery($query, 'i', array($pin)));
 $maxKey=$keyR[0];
 if($maxKey == '') { $maxKey=1; }
 else { $maxKey +=1; }
@@ -82,23 +81,22 @@ switch($_POST['type']) {
 
 $newI = dbInsert($newItem);
 
-    $artQ = "SELECT I.item_key, I.title, I.type, I.status, I.location" .
-        ", I.quantity, I.original_qty, I.min_price, I.sale_price" .
-        ", I.final_price, A.art_key" .
-        ", concat_ws(',', A.a_panel_list, A.a_table_list, A.p_panel_list, A.p_table_list) as loc_list" .
-        ", AR.art_name as artist" .
-        ", concat_ws(' ', P.first_name, P.middle_name, P.last_name, P.suffix) as name" .
-        ", concat_ws(' ', B.first_name, B.middle_name, B.last_name, B.suffix, B.id) as bidder" .
-        " FROM artItems as I JOIN artshow as A ON A.id=I.artshow" .
-        " JOIN artist as AR ON AR.id=A.artid" .
-        " JOIN perinfo as P ON P.id=A.perid" .
-        " LEFT OUTER JOIN perinfo as B on B.id=I.bidder" .
-        " WHERE I.conid=$conid" .
-        " ORDER BY A.art_key, I.item_key;";
+$artQ = <<<EOS
+SELECT I.item_key, I.title, I.type, I.status, I.location, I.quantity, I.original_qty, I.min_price, I.sale_price
+    , I.final_price, A.art_key, concat_ws(',', A.a_panel_list, A.a_table_list, A.p_panel_list, A.p_table_list) as loc_list
+    , AR.art_name as artist, concat_ws(' ', P.first_name, P.middle_name, P.last_name, P.suffix) as name
+    , concat_ws(' ', B.first_name, B.middle_name, B.last_name, B.suffix, B.id) as bidder
+FROM artItems I JOIN artshow as A ON A.id=I.artshow
+JOIN artist AR ON (AR.id=A.artid)
+JOIN perinfo P ON (P.id=A.perid)
+LEFT OUTER JOIN perinfo B ON (B.id=I.bidder)
+WHERE I.conid=?
+ORDER BY A.art_key, I.item_key;
+EOS;
 
 $items=array();
 
-    $artR = dbQuery($artQ);
+$artR = dbSafeQuery($artQ, 'i', array($conid));
     while($artItem = fetch_safe_assoc($artR)) {
         array_push($items, $artItem);
     }

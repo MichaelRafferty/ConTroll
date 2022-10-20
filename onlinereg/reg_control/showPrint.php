@@ -20,21 +20,20 @@ if(!isset($_GET) || !isset($_GET['id'])) {
 $renderer_conf = get_conf('renderer');
 $renderer_url = ($renderer_conf ? $renderer_conf['url'] : 'http://localhost:3000/'); // set default
 
-$id= sql_safe($_GET['id']);
+$id = $_GET['id'];
 $con = get_con();
 $conid = $con['id'];
 
-$query = "SELECT v.name artist_name, ats.art_key artist_id, i.title work_name,
-i.item_key work_id, i.sale_price, i.type, i.original_qty, i.material
+$query = <<<EOS
+SELECT v.name artist_name, ats.art_key artist_id, i.title work_name, i.item_key work_id, i.sale_price, i.type, i.original_qty, i.material
 FROM artItems i
-JOIN artshow ats ON ats.id = i.artshow
-JOIN artist a ON a.id = ats.artid
-JOIN vendors v on v.id = a.vendor
-WHERE ats.artid = " . sql_safe($id). "
-AND i.type = 'print'
-AND   i.conid = " . sql_safe($conid);
+JOIN artshow ats ON (ats.id = i.artshow)
+JOIN artist a ON (a.id = ats.artid)
+JOIN vendors v ON (v.id = a.vendor)
+WHERE ats.artid = ? AND i.type = 'print' AND i.conid = ?;
+EOS;
 
-$results = dbQuery($query);
+$results = dbSafeQuery($query, 'ii', array($id, $conid));
 // (U) Redirect to explanatory message if no results.
 if ($results->num_rows == 0) {
     header('Content-Type: text/html');

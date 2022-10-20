@@ -14,6 +14,9 @@ function load_email_procs() {
     case 'file':
         require_once("email_file.php");
         break;
+    case 'symfony':
+        require_once("email_symfony.php");
+        break;
     default:
         echo "No valid email transport agent defined\n";
         exit();

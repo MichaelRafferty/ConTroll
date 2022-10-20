@@ -109,9 +109,9 @@ page_init($page,
         }
 ?>
         <td><input form='<?php echo $user['id']; 
-            ?>' type='submit' onClick='updatePermissions("<?php echo $user['id']; ?>")' value='Update'></input>
+            ?>' type='submit' onClick='updatePermissions("<?php echo $user['id']; ?>")' value='Update'/>
             <input form='<?php echo $user['id'];
-            ?>' type='button' onClick='clearPermissions("<?php echo $user['id']; ?>")' value='Delete'></input>
+            ?>' type='button' onClick='clearPermissions("<?php echo $user['id']; ?>")' value='Delete'/>
         </td>
     </form></tr>
 <?php
@@ -123,19 +123,19 @@ page_init($page,
 </div>
 <div id='createDialog'>
     <form id='createUserForm' action='javascript:void(0)'>
-        Name: <input name='name' type='text'></input><br/>
-        Email: <input name='email' type='email'></input><br/>
+        Name: <input name='name' type='text'/><br/>
+        Email: <input name='email' type='email'/><br/>
 <?php
     foreach($sets_num as $n => $set) {
 ?>
         <label class='blocks'><?php echo $n;?>
-            <input type='checkbox' name='<?php echo $n;?>'></input>
+            <input type='checkbox' name='<?php echo $n;?>'/>
         </label>
 <?php
     }
 ?>
         <br/>
-        <input type='submit' value='Create' onclick='createAccount()'></input>
+        <input type='submit' value='Create' onclick='createAccount()'/>
     </form>
 </div>
 <script>

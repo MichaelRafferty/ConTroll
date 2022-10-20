@@ -69,12 +69,11 @@ function init_file($printer) {
         case 3:
         case 4:
             return init_ps();
-            break;
         case 'old4':
         case 'old5':
             return init_se450();
-            break;
     }
+    return null;
 }
 
 function init_ps() {
@@ -85,7 +84,7 @@ function init_ps() {
         ajaxSuccess($response);
         exit();
     }
-    
+
     if(!copy(dirname(__FILE__) . "/init.ps", $tempfile)) {
         $response['error'] = "Unable to copy init.ps file";
         $response['error_message'] = error_get_last();
@@ -113,7 +112,7 @@ function init_se450() {
         exit();
     }
 
-    $ctrlLine = printMod('lbl', 
+    $ctrlLine = printMod('lbl',
         array('Reset', '38cpl', 'Landscape', 'Truncate', 'VertStrtPt97'));
     fwrite($temp, $ctrlLine);
     fclose($temp);
@@ -145,7 +144,7 @@ function write_ps($badge, $tempfile) {
         ajaxSuccess($response);
         exit();
     }
-    
+
     //build badge name
     if($badge['badge_name'] == "") {
       $badge['badge_name'] = $badge['full_name'];
@@ -161,7 +160,7 @@ function write_ps($badge, $tempfile) {
         else { $len +=1; }
         $name = substr($badge_name, 0, $len);
         $name2 = substr($badge_name, $len, 20);
-    } 
+    }
 
     fwrite($temp, "16\n"
         . "pageHeight 72 mul 22 sub\n"
@@ -242,7 +241,7 @@ function write_se450($badge, $tempfile) {
         ajaxSuccess($response);
         exit();
     }
-    
+
     //build badge name
     if($badge['badge_name'] == "") {
       $badge['badge_name'] = $badge['full_name'];

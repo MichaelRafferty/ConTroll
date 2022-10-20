@@ -12,7 +12,7 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 $con = get_conf("con");
 $conid=$con['id'];
 
-if(isset($_GET) && isset($_GET['conid'])) { $conid=sql_safe($_GET['conid']); }
+if(isset($_GET) && isset($_GET['conid'])) { $conid=$_GET['conid'); }
 
 header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="participants.csv"');

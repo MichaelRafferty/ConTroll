@@ -22,7 +22,7 @@ page_init($page,
 <form action='javascript:void(0)' id='newEvent'>
 <table>
 <tr><td>Day:</td><td colspan=2><select name='day'><option>Friday</option><option>Saturday</option><option>Sunday</option><option>Monday</option></select></td></tr>
-<tr><td colspan>Attendee Start Time:</td><td><select name='time'> <?php /* on change set tech start */?>
+<tr><td colspan="1">Attendee Start Time:</td><td><select name='time'> <?php /* on change set tech start */?>
     <option value=10>10 AM</option>
     <option value=11>11 AM</option>
     <option value=12>Noon</option>
@@ -36,11 +36,11 @@ page_init($page,
     <option value=20>8 PM</option>
     <option value=21>9 PM</option>
     <option value=22>10 PM</option>
-</select></td><td>Duration: <input type='text' value='50 minutes' name='duration'></input></td></tr>
-<tr><td>Title:</td><td colspan=2><input id='eventTitle' size=60 type='text' name='title' placeholder='Title'></input></td></tr>
-<tr><td>Panelists:</td><td colspan=2><input id='eventPeople' size=60 type='text' name='panelists' placeholder='Moderator & Panelists'></input></td></tr>
+</select></td><td>Duration: <input type='text' value='50 minutes' name='duration'/></td></tr>
+<tr><td>Title:</td><td colspan=2><input id='eventTitle' size=60 type='text' name='title' placeholder='Title'/></td></tr>
+<tr><td>Panelists:</td><td colspan=2><input id='eventPeople' size=60 type='text' name='panelists' placeholder='Moderator & Panelists'/></td></tr>
 <tr><td colspan=3>Descrition:<br/><textarea id='eventDesc' name='description' cols=80 rows=5 placeholder='description'></textarea></td></tr>
-<tr><td>Tags:</td><td colspan=2><input name='tags' size=60 type='text' placeholder='Tags / Tracks'></input></td></tr>
+<tr><td>Tags:</td><td colspan=2><input name='tags' size=60 type='text' placeholder='Tags / Tracks'/></td></tr>
 <tr><td colspan=3><hr/></td></tr>
 <tr><td>Event Type</td><td colspan=2>
     <label><input type='radio' name='type' value='Zoom' onclick='$("#reg").val("");'/>Zoom</label>
@@ -48,12 +48,12 @@ page_init($page,
     <label><input type='radio' name='type' value='Twitch' onclick='$("#reg").val("https://www.twitch.tv/bsfsbalticon");'/>Twitch</label>
     <label><input type='radio' name='type' value='Other' onclick='$("#reg").val("");'/>Other</label>
 </td></tr>
-<tr><td>Registration</td><td colspan=2><input type='text' id=reg name='reg' size=60 placeholder='Attendee Registration Link'></input></td></tr>
-<tr><td>Account</td><td colspan=2><input type='text' name='account' size=20 placeholder='Host Account'></input></td></tr>
-<tr><td>Call ID</td><td colspan=2><input type='text' name='id' size=15 placeholder='Zoom Call ID'></input></td></tr>
-<tr><td>Password</td><td colspan=2><input type='text' name='password' size=15 placeholder='Zoom Call Password'></input></td></tr>
+<tr><td>Registration</td><td colspan=2><input type='text' id=reg name='reg' size=60 placeholder='Attendee Registration Link'/></td></tr>
+<tr><td>Account</td><td colspan=2><input type='text' name='account' size=20 placeholder='Host Account'/></td></tr>
+<tr><td>Call ID</td><td colspan=2><input type='text' name='id' size=15 placeholder='Zoom Call ID'/></td></tr>
+<tr><td>Password</td><td colspan=2><input type='text' name='password' size=15 placeholder='Zoom Call Password'/></td></tr>
 </table>
-<input type='submit' onclick='submitForm("#newEvent", "scripts/createVBItem.php", eventCreated, null)'></input>
+<input type='submit' onclick='submitForm("#newEvent", "scripts/createVBItem.php", eventCreated, null)'/>
 </form>
 <hr/>
 <?php

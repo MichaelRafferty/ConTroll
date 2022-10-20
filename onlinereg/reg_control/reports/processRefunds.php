@@ -1,7 +1,7 @@
 <?php
 // hardcode: This entire routine is hardcoded to the Balticon CC vendor, and is not portable to Square, and needs to be rewritten calling some function in the credit card processing .php file to make it portable
 require_once "../lib/base.php";
-require_once "../lib/log.php";
+require_once(__DIR__ . "/../../../lib/log.php");
 
 $need_login = google_init("page");
 $page = "reg_admin";

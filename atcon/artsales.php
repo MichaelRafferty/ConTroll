@@ -4,14 +4,14 @@ require_once "lib/base.php";
 $page = "art_sales";
 
 page_init($page,
-    /* css */ array('css/jquery-ui.css',
+     /* css */ array('css/jquery-ui-1.13.1.css',
                     'css/base.css',
-                    'css/atcon.css'
+                    'css/atcon.css',
                    ),
-    /* js  */ array('js/jquery.js',
-                    'js/jquery-ui.min.js',
+    /* js  */ array('js/jquery-min-3.60.js',
+                    'js/jquery-ui.min-1.13.1.js',
                     'js/d3.js',
-                    'js/base.js',
+                    'js/base.js',                    
                     'js/artsales.js'
                    )
               );
@@ -41,9 +41,9 @@ if(isset($_GET['action']) && $_GET['action']=='logout') {
 if(!isset($_SESSION['user'])) {
 ?>
 <form method='POST'>
-User Badge Id: <input type='text' name='user'></input><br/>
-Password: <input type='password' name='passwd'></input><br/>
-<input type='submit' value='Login'</input>
+User Badge Id: <input type='text' name='user'/><br/>
+Password: <input type='password' name='passwd'/><br/>
+<input type='submit' value='Login'/>
 </form>
 <?php
 
@@ -107,10 +107,9 @@ if(isset($_GET['id'])) {
 <div id='initialDialog'>
     <form class='inline' id='fetchUser' method='GET' action='javascript:void(0)'>
       Member Id # <input type='text' id='fetchUserId' name='perid' size=10 
-                         maxlength=10, placeholder='Badge #'></input>
+                         maxlength=10 placeholder='Badge #'/>
       <input type='submit' class='bigButton' id='fetchUserSubmit' value='Get User'
-        onclick='getForm("#fetchUser", "scripts/artMember.php", setUser, null)'>
-      </input>
+        onclick='getForm("#fetchUser", "scripts/artMember.php", setUser, null)'/>
     </form><br/>
     <hr/>
     <button id='anonMember' class='bigButton'
@@ -127,10 +126,10 @@ if(isset($_GET['id'])) {
   </span></div>
   <form class='inline' id='getItem' action='javascript:void(0)'>
     Artist #: <input type='number' id='artArtist' name='artist' 
-                   placeholder='Artist #'></input>
+                   placeholder='Artist #'/>
     Item #: <input type='number' id='artItem' name='Item' 
-                 placeholder='Item #'></input>
-    <input type='submit' value='Get Item' onclick='getItem()'></input>
+                 placeholder='Item #'/>
+    <input type='submit' value='Get Item' onclick='getItem()'/>
   </form>
   <table id='cart' class='outerborder'>
     <thead><tr>
@@ -150,15 +149,15 @@ if(isset($_GET['id'])) {
     <tfoot id='transValues' class='outerborder'>
         <tr>
             <th colspan=5 class='righttext'>Total</th>
-            <td>$<span id='transTotal'>0.00</td>
+            <td>$<span id='transTotal'>0.00</span></td>
         </tr>
         <tr>
             <th colspan=5 class='righttext'>Paid</th>
-            <td>$<span id='transPaid'>0.00</td>
+            <td>$<span id='transPaid'>0.00</span></td>
         </tr>
         <tr>
             <th colspan=5 class='righttext'>Remainder/Change</th>
-            <td>$<span id='transChange'>0.00</td>
+            <td>$<span id='transChange'>0.00</span></td>
         </tr>
     </tfoot>
     <tfoot id='cartValues' class='outerborder'>
@@ -168,11 +167,11 @@ if(isset($_GET['id'])) {
         </tr>
         <tr>
             <th colspan=5 class='righttext'>6% Tax</th>
-            <td>$<span id='cartTax'>0.00</td>
+            <td>$<span id='cartTax'>0.00</span></td>
         </tr>
         <tr>
             <th colspan=5 class='righttext'>Total</th>
-            <td>$<span id='cartTotal'>0.00</td>
+            <td>$<span id='cartTotal'>0.00</span></td>
         </tr>
     </tfoot>
     <tfoot id='paymentMethods'><tr><td colspan=7>
@@ -190,7 +189,7 @@ if(isset($_GET['id'])) {
   </button>
   <button id='logout' class='bigButton' 
           onclick='window.location.href=window.location.pathname+"?action=logout"'>
-          Logout</input>
+          Logout
   </button>
 </div>
 <pre id='test'></pre>

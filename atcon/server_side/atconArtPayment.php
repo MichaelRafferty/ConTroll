@@ -1,12 +1,5 @@
 <?php
-if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
-
 require_once "lib/base.php";
-require_once "lib/ajax_functions.php";
 
 $perm = "artshow";
 
@@ -23,7 +16,6 @@ $method='artshow';
 $taxRate = $con['taxRate'];
 $response['taxRate'] = $taxRate;
 
-
 if(!isset($_SESSION['user']) ||
   !check_atcon($_SESSION['user'], $_SESSION['passwd'], $method, $conid)) {
     if(isset($_POST['user']) && isset($_POST['passwd']) &&
@@ -37,35 +29,39 @@ if(!isset($_SESSION['user']) ||
 }
 
 $purchaseUser = $_SESSION['user'];
-$transUser = sql_safe($_POST['perid']);
+$transUser = $_POST['perid'];
 $paid = $_POST['amount'];
-$desc = sql_safe($_POST['description']);
-$type = sql_safe($_POST['type']);
+$desc = $_POST['description'];
+$type = $_POST['type'];
 $items = json_decode($_POST['items'], true);
 
 $response['items'] = $items;
 $response['type'] = $type;
 
-$transQ = "INSERT INTO transaction (conid, perid, userid, type) values"
-    . " ($conid, $transUser, 2, 'artshow');";
+$transQ = "INSERT INTO transaction (conid, perid, userid, type) VALUES ($conid, $transUser, 2, 'artshow');";
 
-$transI = dbInsert($transQ);
+$transI = dbSafeInsert($transQ, 'ii', array($conid, $transUser));
 $response['transid']=$transI;
 
-$saleQ = "INSERT INTO artsales (transid, artid, perid, amount, quantity) values";
+$saleQ = "INSERT INTO artsales (transid, artid, perid, amount, quantity) VALUES";
+$sqdatatypes = '';
+$sqvalues = array();
 
 $firstItem = true;
 $totalPrice = 0;
 
 foreach($items as $item) {
-    $itemQ = "SELECT I.id, I.type, I.min_price, I.sale_price"
-        . ", I.final_price, I.quantity"
-    . " FROM artshow as S"
-        . " JOIN artItems as I ON I.item_key=" . $item['item']
-            . " AND I.conid=$conid AND I.artshow=S.id"
-    . " WHERE S.art_key=" . $item['artist'] . " AND S.conid=$conid;";
-    $itemR = fetch_safe_assoc(dbQuery($itemQ));
+    $itemQ = <<<EOS
+SELECT I.id, I.type, I.min_price, I.sale_price, I.final_price, I.quantity
+FROM artshow S
+JOIN artItems I ON (I.item_key=? AND I.conid=S.conid AND I.artshow=S.id)
+WHERE S.art_key=? AND S.conid=?;
+EOS;
+
+    $itemR = fetch_safe_assoc(dbSafeQuery($itemQ, 'iii', array($item['item'], $conid, $item['artist'])));
     $updateQ = "UPDATE artItems SET";
+    $datatypes = '';
+    $values = array();
 
     $itemPrice = $itemR['sale_price'];
     if($item['type'] == 'print') {
@@ -76,23 +72,37 @@ foreach($items as $item) {
         $itemPrice = $item['bid'];
         $itemQty = 1;
         if($item['depart'] == "staying") {
-            $updateQ .= " final_price=$itemPrice, bidder=$transUser, status='Quicksale/Sold'";
+            $updateQ .= " final_price=?, bidder=?, status='Quicksale/Sold'";
+            $datatypes .= 'di';
+            $values[] = $itemPrice;
+            $values[] = $transUser;
         } else if($item['depart'] == 'departing') {
-            $updateQ .= " final_price=$itemPrice, bidder=$transUser, status='purchased/released'";
+            $updateQ .= " final_price=?, bidder=?, status='purchased/released'";
+            $datatypss .= 'di';
+            $values[] = $itemPrice;
+            $values[] = $transUser;
         }
     }
-    $updateQ .= " WHERE id=". $itemR['id'] . ";";
-    dbQuery($updateQ);
+    $updateQ .= " WHERE id=?;";
+    $datatypes .= 'i';
+    $valuesp[] = $itemR['id'];
+    dbSafeCmd($updateQ, $datatypes, $values);
 
     $totalPrice += $itemPrice;
 
-    if(!$firstItem) { $saleQ .= ","; }
+    if (!$firstItem) { $saleQ .= ","; }
     else { $firstItem=false; }
-    $saleQ .= " ($transI, " . $itemR['id'] . ", $transUser, $itemPrice, $itemQty )";
+    $saleQ .= " ?,?,?,?,?)";
+    $sqdatatypes .= 'iiidi';
+    $values[] = $transI;
+    $values[] = $itemR['id'];
+    $values[] = $transUser;
+    $values[] = $itemPrice;
+    $values[] = $itemQty;
 }
 $saleQ .= ";";
 
-dbInsert($saleQ);
+dbSafeInsert($saleQ, $sqdatatypes, $values);
 $totalTax = $totalPrice * $taxRate/100;
 $totalWT = $totalPrice + $totalTax;
 
@@ -110,23 +120,19 @@ $response['taxRate'] = $taxRate;
 $response['totalT'] = $totalTax;
 $response['WT'] = $totalWT;
 
-if ($totalWT <= $paid) { $response['complete']='true'; } 
+if ($totalWT <= $paid) { $response['complete']='true'; }
 else { $response['complete']='false'; }
 
-$transUQ = "UPDATE transaction SET price=$totalPrice, tax=$totalTax, withtax=$totalWT, paid=$amount, change_due=$change WHERE id=$transI";
+$transUQ = "UPDATE transaction SET price=?, tax=?, withtax=?, paid=?, change_due=? WHERE id=?";
+$paymentQ = "INSERT INTO payments(transid, type, category, description, source, amount, cashier) VALUES(?, ?, 'artshow', ?, 'Atcon Artshow', ?, ?);";
 
-$paymentQ = "INSERT INTO payments"
-    . " (transid, type, category, description, source, amount, cashier)"
-    . " VALUES"
-    . " ($transI, '$type', 'artshow', '$desc', 'Atcon Artshow', $amount, $purchaseUser);";
-
-dbQuery($transUQ);
+dbSafeCmd($transUQ, 'dddddi', array($totalPrice,$totalTax,$totalWT,$amount,$change,$transI));
 if($type == 'credit') {
-    $paymentQ = "UPDATE payments SET"
-        . " transid = $transI, description = '$desc'"
-        . " WHERE id=" . sql_safe($_POST['payment']) . ";";
-    dbQuery($paymentQ);
-} else { dbInsert($paymentQ); }
+    $paymentQ = "UPDATE payments SET transid = ?, description = ? WHERE id=?;";
+    dbSafeCmd($paymentQ, 'isi', array($transI,$desc,  $_POST['payment']));
+} else {
+    dbSafeInsert($paymentQ, 'issdi', array($transI, $type, $desc, $amount, $purchaseUser));
+}
 
 ajaxSuccess($response);
 ?>

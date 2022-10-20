@@ -1,16 +1,9 @@
 <?php
-if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
-
 require_once "lib/base.php";
-require_once "lib/ajax_functions.php";
-
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
 $perm="data_entry";
+$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
+
 $con = get_con();
 $conid=$con['id'];
 $check_auth=false;
@@ -31,28 +24,27 @@ if(!isset($_POST)) {
     exit();
 }
 
-$query = "INSERT INTO newperson (last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, address, addr_2, city, state, zip, country) VALUES (";
+$query = <<<EOS
+INSERT INTO newperson (last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, address, addr_2, city, state, zip, country)
+VALUES (?, ?,?,?,?,?,?,?,?,?,?,?,?);
+EOS;
 
+$datatypes = 'sssssssssssss';
+$values[] = blankifnotset($_POST['lname']);
+$values[] = blankifnotset($_POST['fname']);
+$values[] = blankifnotset($_POST['mname']);
+$values[] = blankifnotset($_POST['suffix']);
+$values[] = blankifnotset($_POST['email']);
+$values[] = blankifnotset($_POST['phone']);
+$values[] = nullifnotsetempty($_POST['badge']);
+$values[] = blankifnotset($_POST['address']);
+$values[] = blankifnotset($_POST['addr2']);
+$values[] = blankifnotset($_POST['city']);
+$values[] = blankifnotset($_POST['state']);
+$values[] = blankifnotset($_POST['zip']);
+$values[] = blankifnotset($_POST['country']);
 
-$query .= "'" . sql_safe($_POST['lname']) . "', '" .
-    sql_safe($_POST['fname']) . "', '" .
-    sql_safe($_POST['mname']) . "', '" .
-    sql_safe($_POST['suffix']) . "', ";
-$query .= "'" . sql_safe($_POST['email']) . "', '" .
-    sql_safe($_POST['phone']) . "', ";
-if(isset($_POST['badge']) && $_POST['badge'] != '') {
-  $query .= "'" . sql_safe($_POST['badge']) . "', ";
-} else {
-  $query .= "NULL, ";
-}
-$query .= "'" . sql_safe($_POST['address']) . "', '" .
-    sql_safe($_POST['addr2']) . "', '" .
-    sql_safe($_POST['city']) . "', '" .
-    sql_safe($_POST['state']) . "', '" .
-    sql_safe($_POST['zip']) . "', '" .
-    sql_safe($_POST['country']) . "');";
-
-$id = dbInsert($query);
+$id = dbSafeInsert($query, $datatypes, $values);
 
 $response['id'] = $id;
 

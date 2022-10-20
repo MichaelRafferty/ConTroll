@@ -1,10 +1,9 @@
 <?php
-<?php
 global $db_ini;
 
 require_once "../lib/base.php";
 require_once "../lib/email.php";
-
+require_once(__DIR__ . "/../../../lib/email__load_methods.php");
 
 $check_auth = google_init("ajax");
 $perm = "admin";
@@ -19,10 +18,16 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
 load_email_procs();
 
 $test = true;
-$email = "mike@bsfs.org";
+$email = null;
 
 if(!$_POST || !$_POST['action']) {
     $response['error'] = "missing trigger";
+    ajaxSuccess($response);
+    exit();
+}
+
+if(!$_POST || !$_POST['type']) {
+    $response['error'] = "missing email type";
     ajaxSuccess($response);
     exit();
 }
@@ -39,7 +44,35 @@ $con = get_conf("con");
 $reg = get_conf("reg");
 $conid=$con['id'];
 
-$emailQ = "SELECT DISTINCT P.email_addr as email FROM reg as R JOIN perinfo as P on P.id=R.perid where R.conid=$conid and R.paid=R.price and P.email_addr like '%@%' and P.contact_ok='Y'";
+if ($_POST['type'] == 'reminder') {
+    $emailQ = <<<EOQ
+SELECT DISTINCT P.email_addr AS email
+FROM reg R
+JOIN perinfo P ON (P.id=R.perid)
+WHERE R.conid=$conid AND R.paid=R.price AND P.email_addr LIKE '%@%' AND P.contact_ok='Y';
+EOQ;
+
+    $email_text = preConEmail_last_TEXT($reg['test']);
+    $email_html = preConEmail_last_HTML($reg['test']);
+    $email_subject = "Welcome Email";
+} else if ($_POST['type'] == 'marketing') {
+    $priorcon = $conid - 1;
+    $emailQ = <<<EOQ
+SELECT DISTINCT p.email_addr AS email
+FROM perinfo p
+JOIN reg r ON (r.perid = p.id AND r.conid = $priorcon)
+LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = $conid)
+WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' and r2.id IS NULL;
+EOQ;
+    $email_text = MarketingEmail_TEXT($reg['test']);
+    $email_html = MarketingEmail_HTML($reg['test']);
+    $email_subject = "We miss you! Please come back to Philcon";
+} else {
+    $response['error'] = "invalid email type";
+    ajaxSuccess($response);
+    exit();
+}
+
 $emailR = dbQuery($emailQ);
 $response['numEmails'] = $emailR->num_rows;
 
@@ -55,8 +88,7 @@ if($test) {
 }
 
 foreach ($email_array as $email) {
-    $return_arr = send_email($con['regadminemail'], trim($email), /* cc */ null, $condata['label']. " Welcome Email",  preConEmail_last_TEXT($reg['test']), preConEmail_last_HTML($reg['test']));
-
+    $return_arr = send_email($con['regadminemail'], trim($email), /* cc */ null, $con['label'] . ": $email_subject",  $email_text, $email_html);
 
     if ($return_arr[''] == 'success') {
         array_push($data_array, array($email, "success"));

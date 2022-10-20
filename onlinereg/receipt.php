@@ -16,8 +16,15 @@ if(isset($_GET) && isset($_GET['trans']) && is_numeric($_GET['trans'])) {
     $transid = $_GET['trans'];
 }
 
-$ownerQ = "select NP.first_name, NP.last_name, T.complete_date, P.receipt_id as payid, P.receipt_url as url from newperson as NP, transaction as T, payments as P where P.transid=T.id and NP.id=T.newperid and T.id='" . sql_safe($transid) . "';";
-$owner = fetch_safe_assoc(dbQuery($ownerQ));
+$ownerQ = <<<EOS
+SELECT NP.first_name, NP.last_name, T.complete_date, P.receipt_id as payid, P.receipt_url as url 
+FROM transaction T
+JOIN newperson NP ON (NP.id=T.newperid)
+JOIN payments P ON (P.transid=T.id)
+WHERE T.id=?;
+EOS;
+
+$owner = fetch_safe_assoc(dbSafeQuery($ownerQ, 'i', array($transid)));
 ol_page_init($condata['label'] . ' Registration Complete');
 ?>
 <body>
@@ -52,7 +59,7 @@ ol_page_init($condata['label'] . ' Registration Complete');
 Your transaction number is <?php echo $transid; ?> and receipt number is
         <?php echo $owner['payid']; if ($owner['url'] != '') echo " (<a href='" . $owner['url'] . "'>" . $owner['url'] . "</a>)"; ?>.<br />
         <p>
-            In response to your request badges have been created for <ul>
+            In response to your request memberships have been created for <ul>
                 <?php
 
 $badgeQ = <<<EOS
@@ -79,11 +86,11 @@ while($badge = fetch_safe_assoc($badgeR)) {
         </p>
         <?php if ($owner['url'] != '') { ?>
         <p>
-            You should have an email from <?php echo $con['regadminemail']; ?> containing the credit card transaction receipt url and details of the badges listed above. If you haven't received it in a few minutes please check your spam folder.
+            You should have an email from <?php echo $con['regadminemail']; ?> containing the credit card transaction receipt url and details of the memberships listed above. If you haven't received it in a few minutes please check your spam folder.
         </p>
         <?php } else { ?>
         <p>
-            You should have two emails from <?php echo $con['regadminemail']; ?> containing the credit card transaction receipt and details of the badges listed above. If you haven't received them in a few minutes please check your spam folder.
+            You should have two emails from <?php echo $con['regadminemail']; ?> containing the credit card transaction receipt and details of the memberships listed above. If you haven't received them in a few minutes please check your spam folder.
         </p>
         <?php } ?>
         <p>

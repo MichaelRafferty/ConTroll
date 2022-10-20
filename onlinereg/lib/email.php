@@ -18,13 +18,13 @@ $owner = fetch_safe_assoc(dbSafeQuery($ownerQ, 'i', array($transid)));
 
 
 $body = trim($owner['first_name'] . " " . $owner['last_name']) .",\n\n";
-$body .= "thank you for registering for ". $condata['label'] . "\n\n";
+$body .= "Thank you for registering for ". $condata['label'] . "!\n\n";
 
 if($ini['test']==1) {
-  $body .= "This Page is for test purposes only\n\n";
+  $body .= "This email was send as part of testing.\n\n";
 }
 
-$body .= "Your Transaction number is $transid and Receipt number is " . $owner['payid'] . "\n\nIn response to your request Badges have been created for:\n\n";
+$body .= "Your Transaction number is $transid and Receipt number is " . $owner['payid'] . "\n\nIn response to your request memberships have been created for:\n\n";
 
 $badgeQ = <<<EOS
 SELECT NP.first_name, NP.last_name, M.label

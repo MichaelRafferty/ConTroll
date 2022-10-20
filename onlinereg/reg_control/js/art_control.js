@@ -17,7 +17,7 @@ function input(name, d) {
   var size = 5;
   if(name == 'title') { size=30; }
   var ret = "<input size="+size+" name='" + id + "' type='text' "
-      + "value='" + d[name] + "' onChange='doChange(\"item" + key(d) + "\")'></input>";
+      + "value='" + d[name] + "' onChange='doChange(\"item" + key(d) + "\")'/>";
 
   return ret;
 }

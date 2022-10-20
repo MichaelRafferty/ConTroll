@@ -1,12 +1,5 @@
 <?php
-if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
-
 require_once "lib/base.php";
-require_once "lib/ajax_functions.php";
 
 $perm="data_entry";
 $con = get_con();
@@ -23,35 +16,34 @@ if($check_auth == false) {
     exit();
 }
 
-
-
 if(!isset($_POST) || !isset($_POST['id'])) {
     $response['error'] = "No Data";
     ajaxSuccess($response);
     exit();
 }
 
-$newPQ = "SELECT id, perid, first_name, middle_name, last_name, suffix"
-    . ", concat_ws(' ', first_name, middle_name, last_name, suffix) as full_name"
-    . ", address, addr_2, concat_ws(' ', city, state, zip) as locale, country"
-    . ", badge_name, email_addr, phone"
-    . " FROM newperson";
+$newPQ = <<<EOS
+SELECT id, perid, first_name, middle_name, last_name, suffix, concat_ws(' ', first_name, middle_name, last_name, suffix) as full_name
+    , address, addr_2, concat_ws(' ', city, state, zip) as locale, country, badge_name, email_addr, phone
+FROM newperson
+WHERE id =?;
+EOS;
 
 if(strtolower(substr($_POST['id'],0,1)) == 'f') {
     $id = dbQuery("select min(id) from newperson where perid IS NULL;")->fetch_array();
-    $newPQ .= " WHERE id='" . $id[0] . "';";
+    $id = $id[0];
 } else if(strtolower(substr($_POST['id'],0,1)) == 'l') {
     $id = dbQuery("select max(id) from newperson where perid IS NULL;")->fetch_array();
-    $newPQ .= " WHERE id='" . $id[0] . "';";
+    $id = $id[0];
 } else {
-    $newPQ .= " WHERE id='" . sql_safe($_POST['id']) . "';";
+    $id = $_POST['id'];
 }
 
 //$response['newPQ'] = $newPQ;
 
-$newPA = dbQuery($newPQ);
-if(!$newPA) { 
-    $response['error'] = 'Query Failed'; 
+$newPA = dbSafeQuery($newPQ, 'i', array($id));
+if(!$newPA) {
+    $response['error'] = 'Query Failed';
     $response['newPQ'] = $newPQ;
     ajaxSuccess($response);
     exit();
@@ -71,51 +63,48 @@ $results = array(
     'name_change' => array(),
     'other'=>array());
 
-$nameQ = "SELECT id, first_name, middle_name, last_name, suffix"
-    . ", concat_ws(' ', first_name, middle_name, last_name, suffix) as full_name"
-    . ", address, addr_2, concat_ws(' ', city, state, zip) as locale, country"
-    . ", badge_name, email_addr, phone, active, banned"
-    . " FROM perinfo"
-    . " WHERE last_name='"
-        . sql_safe(html_entity_decode(trim($newRes['last_name']), ENT_QUOTES))."'"
-    . " AND first_name like '"
-        . sql_safe(html_entity_decode(substr(trim($newRes['first_name']),0,2), 
-             ENT_QUOTES))."%'"
-    . " ORDER BY active DESC, id ASC;";
+$nameQ = <<<EOS
+SELECT id, first_name, middle_name, last_name, suffix, concat_ws(' ', first_name, middle_name, last_name, suffix) as full_name
+    , address, addr_2, concat_ws(' ', city, state, zip) as locale, country, badge_name, email_addr, phone, active, banned
+FROM perinfo
+WHERE last_name=? AND first_name like ?
+ORDER BY active DESC, id ASC;
+EOS;
 
-$emailQ = "SELECT id, first_name, middle_name, last_name, suffix"
-    . ", concat_ws(' ', first_name, middle_name, last_name, suffix) as full_name"
-    . ", address, addr_2, concat_ws(' ', city, state, zip) as locale, country"
-    . ", badge_name, email_addr, phone, active, banned"
-    . " FROM perinfo"
-    . " WHERE email_addr='"
-        . sql_safe(html_entity_decode($newRes['email_addr'], ENT_QUOTES))."'"
-    . " AND (last_name !='"
-        . sql_safe(html_entity_decode($newRes['last_name'], ENT_QUOTES))."'"
-        . " OR first_name !='"
-        . sql_safe(html_entity_decode($newRes['first_name'], ENT_QUOTES))."')"
-    . " ORDER BY active DESC, id ASC;";
+$emailQ = <<<EOS
+SELECT id, first_name, middle_name, last_name, suffix, concat_ws(' ', first_name, middle_name, last_name, suffix) as full_name
+    , address, addr_2, concat_ws(' ', city, state, zip) as locale, country, badge_name, email_addr, phone, active, banned
+FROM perinfo
+WHERE email_addr=? AND (last_name != ? OR first_name != ?)
+ORDER BY active DESC, id ASC;
+EOS;
 
-$nameA = dbQuery($nameQ);
+$nameA = dbSafeQuery($nameQ, 'ss', array(
+        html_entity_decode(trim(blankifnotset($newRes['last_name'])), ENT_QUOTES),
+        html_entity_decode(substr(trim(blankifnotset($newRes['first_name'])),0, 2), ENT_QUOTES) . "%"
+        ));
 $response['nameQ'] = $nameQ;
-$emailA = dbQuery($emailQ);
+$emailA = dbSafeQuery($emailQ, 'sss', array(
+        html_entity_decode(trim(blankifnotset($newRes['email_addr'])), ENT_QUOTES),
+        html_entity_decode(trim(blankifnotset($newRes['last_name'])), ENT_QUOTES),
+        html_entity_decode(trim(blankifnotset($newRes['first_name'])), ENT_QUOTES)
+        ));
 $response['emailQ'] = $emailQ;
 $countFound = 0;
 
 while($nameRes = fetch_safe_assoc($nameA)) {
     /* set a large number of boolean values to improve readability */
-    $mname_match = (strtoupper($newRes['middle_name']) == strtoupper($nameRes['middle_name']));
-    $badge_match = (strtoupper($newRes['badge_name']) == strtoupper($nameRes['badge_name']));
-    $addr_match = (strtoupper($newRes['address']) == strtoupper($nameRes['address']))
-         && (strtoupper($newRes['locale']) == strtoupper($nameRes['locale']))
-         && ($newRes['country']=='USA' or 
-                (strtoupper($newRes['country']) == strtoupper($nameRes['country'])));
-    $addr2_match = (strtoupper($newRes['addr_2']) == strtoupper($nameRes['addr_2']));
-    $email_match = (strtoupper($newRes['email_addr']) == strtoupper($nameRes['email_addr']));
-    $phone_match = ($newRes['phone'] == $nameRes['phone']);
-    $phone_onenull = ($newRes['phone'] == '') || ($nameRes['phone'] == '');
-    $banned = ($nameRes['banned'] == 'Y');
-    
+    $mname_match = (strtoupper(trim(blankifnotset($newRes['middle_name']))) == strtoupper(trim(blankifnotset($nameRes['middle_name']))));
+    $badge_match = (strtoupper(trim(blankifnotset($newRes['badge_name']))) == strtoupper(trim(blankifnotset($nameRes['badge_name']))));
+    $addr_match = (strtoupper(trim(blankifnotset($newRes['address']))) == strtoupper(trim(blankifnotset($nameRes['address']))))
+         && (strtoupper(trim(blankifnotset($newRes['locale']))) == strtoupper(trim(blankifnotset($nameRes['locale']))))
+         && (trim(blankifnotset($newRes['country']))=='USA' || (strtoupper(trim(blankifnotset($newRes['country']))) == strtoupper(trim(blankifnotset($nameRes['country'])))));
+    $addr2_match = (strtoupper(trim(blankifnotset($newRes['addr_2']))) == strtoupper(trim(blankifnotset($nameRes['addr_2']))));
+    $email_match = (strtoupper(trim(blankifnotset($newRes['email_addr']))) == strtoupper(trim(blankifnotset($nameRes['email_addr']))));
+    $phone_match = (trim(blankifnotset($newRes['phone'])) == trim(blankifnotset($nameRes['phone'])));
+    $phone_onenull = (trim(blankifnotset($newRes['phone'])) == '') || (trim(blankifnotset($nameRes['phone'] == '')));
+    $banned = (blankifnotset($nameRes['banned']) == 'Y');
+
     if($addr_match && $email_match && ($phone_match || $phone_onenull)) { // exact match
         $countFound += 1;
         if($banned) {
@@ -143,15 +132,15 @@ while($nameRes = fetch_safe_assoc($nameA)) {
 
 while($nameRes = fetch_safe_assoc($emailA)) {
     /* set a large number of booleans to improve later readability */
-    $mname_match = (strtoupper($newRes['middle_name']) == strtoupper($nameRes['middle_name']));
-    $badge_match = (strtoupper($newRes['badge_name']) == strtoupper($nameRes['badge_name']));
-    $addr_match = (strtoupper($newRes['address']) == strtoupper($nameRes['address']))
-        && (strtoupper($newRes['locale']) == strtoupper($nameRes['locale'])) 
-        && (strtoupper($newRes['country']) == strtoupper($nameRes['country']));
-    $addr2_match = (strtoupper($newRes['addr_2']) == strtoupper($nameRes['addr_2']));
-    $phone_match = ($newRes['phone'] == $nameRes['phone']);
-    $phone_onenull = ($newRes['phone'] == '') || ($nameRes['phone'] == '');
-    $banned = ($nameRes['banned'] == 'Y');
+    $mname_match = (strtoupper(trim(blankifnotset($newRes['middle_name']))) == strtoupper(trim(blankifnotset($nameRes['middle_name']))));
+    $badge_match = (strtoupper(trim(blankifnotset($newRes['badge_name']))) == strtoupper(trim(blankifnotset($nameRes['badge_name']))));
+    $addr_match = (strtoupper(trim(blankifnotset($newRes['address']))) == strtoupper(trim(blankifnotset($nameRes['address']))))
+        && (strtoupper(trim(blankifnotset($newRes['locale']))) == strtoupper(trim(blankifnotset($nameRes['locale']))))
+        && (strtoupper(trim(blankifnotset($newRes['country']))) == strtoupper(trim(blankifnotset($nameRes['country']))));
+    $addr2_match = (strtoupper(trim(blankifnotset($newRes['addr_2']))) == strtoupper(trim(blankifnotset($nameRes['addr_2']))));
+    $phone_match = (trim(blankifnotset($newRes['phone'])) == trim(blankifnotset($nameRes['phone'])));
+    $phone_onenull = (trim(blankifnotset($newRes['phone'])) == '') || (trim(blankifnotset($nameRes['phone'])) == '');
+    $banned = (blankifnotset($nameRes['banned']) == 'Y');
 
     if($addr_match && ($phone_match || $phone_onenull)) {
         $countFound += 1;

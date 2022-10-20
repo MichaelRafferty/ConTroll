@@ -1,6 +1,5 @@
 <?php
 require("../lib/base.php");
-require("../lib/ajax_functions.php");
 
 if(isset($_POST) && count($_POST)>0) {
     $method='POST';
@@ -15,8 +14,7 @@ if(isset($_POST) && count($_POST)>0) {
     }
 }
 
-    header('content-type: application/json');
-    echo callHome("reg_start.php", "POST", $data);
+header('content-type: application/json');
+echo callHome("reg_start.php", "POST", $data);
 
 ?>
-

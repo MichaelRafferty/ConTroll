@@ -1,90 +1,23 @@
 <?php
 require_once(__DIR__ . "/../../lib/db_functions.php");
 require_once(__DIR__ . "/../../lib/ajax_functions.php");
-require_once(__DIR__ . "/../../lib/log.php");
-require_once("../../lib/cc__load_methods.php");
-require_once("../../lib/email__load_methods.php");
-require_once "../lib/email.php";
 
-if(!isset($_POST) || !isset($_POST['badgeList'])) {
-    ajaxSuccess(array('status'=>'error', 'error'=>"Error: No Badges")); exit();
+
+if(!isset($_POST) || !isset($_POST['badge'])) {
+    ajaxSuccess(array('status'=>'error', 'error'=>"Error: No Badge")); exit();
 }
 
 db_connect();
-$ccauth = get_conf('cc');
-load_cc_procs();
-load_email_procs();
-
 $condata = get_con();
-$log = get_conf('log');
 $con = get_conf('con');
-logInit($log['reg']);
 
-$prices = array();
-$memId = array();
-$priceQ = <<<EOQ
-SELECT m.id, m.memGroup, m.label, m.shortname, m.price
-FROM memLabel m
-WHERE
-    m.conid=?
-    AND m.online = 'Y'
-    AND startdate < current_timestamp()
-    AND enddate >= current_timestamp()
-;
-EOQ;
-$counts = array();
-$priceR = dbSafeQuery($priceQ, 'i', array($condata['id']));
-while($priceL = fetch_safe_assoc($priceR)) {
-  $prices[$priceL['memGroup']] = $priceL['price'];
-  $memId[$priceL['memGroup']] = $priceL['id'];
-  $counts[$priceL['memGroup']] = 0;
-}
-
-$badges = json_decode($_POST['badgeList'], true);
+$badge = json_decode($_POST['badge'], true);
 $people = array();
-
-$total = 0;
-$count = 0;
-
-$newid_list = "";
-
-// check that we got valid total from the post before anything is inserted into the database
-foreach ($badges as $badge) {
-    if(!isset($badge) || !isset($badge['age'])) { continue; }
-    if (array_key_exists($badge['age'], $counts)) {
-        $total += $prices[$badge['age']];
-    }
-}
-
-$total=round($total, 2);
-
-if($_POST['total'] != $total) {
-    error_log("bad total: post=" . $_POST['total'] . ", calc=" . $total);
-    ajaxSuccess(array('status'=>'error', 'data'=>'Unable to process, bad total sent to Server'));
-    exit();
-}
-
-foreach ($badges as $badge) {
-  if(!isset($badge) || !isset($badge['age'])) { continue; }
-  if (array_key_exists($badge['age'], $counts)) {
-      $counts[$badge['age']]++;
-
-      $people[$count] = array(
-        'info'=>$badge,
-        'price'=>$prices[$badge['age']],
-        'memId'=>$memId[$badge['age']]
-        );
-
-      if($badge['age'] != 'adult' && $badge['age'] != 'military' && $badge['age'] != 'youth' && $badge['age'] != 'child' && $badge['age'] != 'kit') {
-          $badge['age']='all';
-      }
-
-      if($badge['share'] == "") { $badge['share'] = 'Y'; }
 
 // see if there is an exact match
 
 // now resolve exact matches
-      $exactMsql = <<<EOF
+$exactMsql = <<<EOF
 SELECT id
 FROM perinfo p
 WHERE
@@ -115,32 +48,33 @@ WHERE
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.country, ''))), '  *', ' ');
 EOF;
-      $value_arr = array(
-        trim($badge['fname']),
-        trim($badge['mname']),
-        trim($badge['lname']),
-        trim($badge['suffix']),
-        trim($badge['email1']),
-        trim($badge['phone']),
-        trim($badge['badgename']),
-        trim($badge['addr']),
-        trim($badge['addr2']),
-        trim($badge['city']),
-        trim($badge['state']),
-        trim($badge['zip']),
-        $badge['country']
-        );
-      $res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
-      if ($res !== false) {
-          if ($res->num_rows > 0) {
-              $match = fetch_safe_assoc($res);
-              $id = $match['id'];
-          } else {
-              $id = null;
-          }
-      } else {
-          $id = null;
-      }
+$value_arr = array(
+    trim($badge['fname']),
+    trim($badge['mname']),
+    trim($badge['lname']),
+    trim($badge['suffix']),
+    trim($badge['email1']),
+    trim($badge['phone']),
+    trim($badge['badgename']),
+    trim($badge['addr']),
+    trim($badge['addr2']),
+    trim($badge['city']),
+    trim($badge['state']),
+    trim($badge['zip']),
+    $badge['country']
+);
+$res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
+if ($res !== false) {
+    if ($res->num_rows > 0) {
+        $match = fetch_safe_assoc($res);
+        $id = $match['id'];
+    } else {
+        $id = null;
+    }
+} else {
+    $id = null;
+}
+
       $value_arr = array(
         trim($badge['lname']),
         trim($badge['mname']),

@@ -1,12 +1,5 @@
 <?php
-if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
-
 require_once "lib/base.php";
-require_once "lib/ajax_functions.php";
 
 $perm="data_entry";
 $con = get_con();
@@ -24,40 +17,38 @@ if($check_auth == false) {
     exit();
 }
 
-
 if(!isset($_POST) || !isset($_POST['newID'])) {
     $response['error'] = "No Data";
     ajaxSuccess($response);
     exit();
 }
 
-$newPersonQ = "INSERT INTO perinfo (last_name, first_name, middle_name, suffix"
-        . ", email_addr, phone, badge_name, address, addr_2, city, state, zip"
-        . ", country)"
-    . "SELECT last_name, first_name, middle_name, suffix, email_addr, phone"
-        . ", badge_name, address, addr_2, city, state, zip, country"
-    . " FROM newperson"
-    . " WHERE id='" . sql_safe($_POST['newID']) . "';";
+$newPersonQ = <<<EOS
+INSERT INTO perinfo (last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, address, addr_2, city, state, zip, country)
+SELECT last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, address, addr_2, city, state, zip, country
+FROM newperson
+WHERE id=?;
+EOS;
 
+$id = dbSafeInsert($newPersonQ, 'i', array($_POST['newID']));
+$resolveInsert = "UPDATE newperson SET perid=? WHERE id=?";
+dbSafeCmd($resolveInsert, 'ii', array($id, $_POST['newID']));
 
-$id = dbInsert($newPersonQ);
-$resolveInsert = "UPDATE newperson SET perid=$id WHERE id='"
-    . sql_safe($_POST['newID']) . "';";
-dbQuery($resolveInsert);
+$perQ = <<<EOS
+SELECT banned, concat_ws(' ', first_name, middle_name, last_name) as full_name, email_addr, address, addr_2,
+    concat_ws(' ', city, state, zip) as locale, badge_name, id
+FROM perinfo
+WHERE id = ?;
+EOS;
 
-$perQ = "SELECT banned, concat_ws(' ', first_name, middle_name, last_name) as full_name, email_addr, address, addr_2, concat_ws(' ', city, state, zip) as locale, badge_name, id FROM perinfo where id = $id;";
+$updateRegQ = "UPDATE reg SET perid=? WHERE newperid=?;";
+dbSafeCmd($updateRegQ, 'ii', array($id, $_POST['newID']));
 
-$updateRegQ = "UPDATE reg SET perid='".$id . "'"
-    . " WHERE " . "newperid='".sql_safe($_POST['newID']) . "';";
-
-dbQuery($updateRegQ);
-
-$updateTransQ = "UPDATE transaction SET perid='".$id . "'"
-    . " WHERE newperid='".sql_safe($_POST['newID']) . "';";
-dbQuery($updateTransQ);
+$updateTransQ = "UPDATE transaction SET perid=? WHERE newperid=?;";
+dbSafeCmd($updateTransQ, 'ii', array($id, $_POST['newID']));
 
 $response['id'] = $id;
-$response['results'] = fetch_safe_assoc(dbQuery($perQ));
+$response['results'] = fetch_safe_assoc(dbSafeQuery($perQ, 'i', array($id)));
 
 ajaxSuccess($response);
 ?>

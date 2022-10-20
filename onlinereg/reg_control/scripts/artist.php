@@ -38,8 +38,8 @@ $conf = get_conf('con');
     <a class='hidelink' id='searchPersonHideLink' href='javascript:void(0)'
       onclick='hideBlock("#searchPerson")'>(hide)</a>
     <form class='inline' id="findPerson" method="GET" action="javascript:void(0)">
-      Name: <input type="text" name="full_name" id="findPersonFullName"></input>
-      <input type="submit" value="Find" onClick='findPerson("#findPerson")'></input>
+      Name: <input type="text" name="full_name" id="findPersonFullName"/>
+      <input type="submit" value="Find" onClick='findPerson("#findPerson")'/>
     </form>
   </div>
   <div id='request'><span class='blocktitle'>Artist Requests</span>
@@ -104,18 +104,19 @@ $conf = get_conf('con');
             <td class='formlabel'>Last Name</td>
             <td class='formlabel'>Suffix</td>
           </tr>
-            <td class='formfield'><input type='text' disabled='disabled' id='fname'></input></td>
-            <td class='formfield'><input type='text' disabled='disabled' id='mname'></input></td>
-            <td class='formfield'><input type='text' disabled='disabled' id='lname'></input></td>
-            <td class='formfield'><input type='text' disabled='disabled' id='suffix' size=4></input></td>
+          <tr>
+            <td class='formfield'><input type='text' disabled='disabled' id='fname'/></td>
+            <td class='formfield'><input type='text' disabled='disabled' id='mname'/></td>
+            <td class='formfield'><input type='text' disabled='disabled' id='lname'/></td>
+            <td class='formfield'><input type='text' disabled='disabled' id='suffix' size=4/></td>
           </tr>
           <tr>
             <td class='formlabel' colspan=2>Email Addr</td>
             <td class='formlabel'>Phone</td>
           </tr>
           <tr>
-            <td class='formfield' colspan=2><input type='text' disabled='disabled' id='email' size=40></input></td>
-            <td class='formfield'><input type='text' id='phone' disabled='disabled' id='phone'></input></td>
+            <td class='formfield' colspan=2><input type='text' disabled id='email' size=40/></td>
+            <td class='formfield'><input type='text' disabled id='phone'/></td>
           </tr>
         </tbody>
         <tbody>
@@ -147,13 +148,13 @@ $conf = get_conf('con');
             <td class='formlabel' colspan=5>Address</td>
           </tr>
           <tr>
-            <td class='formfield' colspan=5><input type='text' name='ship_addr' id='ship_addr' size=60></input></td>
+            <td class='formfield' colspan=5><input type='text' name='ship_addr' id='ship_addr' size=60/></td>
           </tr>
           <tr>
             <td class='formlabel' colspan=5>Company</td>
           </tr>
           <tr>
-            <td class='formfield' colspan=5><input type='text' name='ship_addr2' id='ship_addr2' size=60></input></td>
+            <td class='formfield' colspan=5><input type='text' name='ship_addr2' id='ship_addr2' size=60/></td>
           </tr>
           <tr>
             <td class='formlabel'>City</td>
@@ -162,9 +163,9 @@ $conf = get_conf('con');
             <td class='formlabel'>Country</td>
           </tr>
           <tr>
-            <td class='formfield'><input type='text' name='ship_city' id='ship_city'></input></td>
-            <td class='formfield'><input type='text' name='ship_state' id='ship_state' size=4></input></td>
-            <td class='formfield'><input type='text' name='ship_zip' id='ship_zip' size=10></input></td>
+            <td class='formfield'><input type='text' name='ship_city' id='ship_city'/></td>
+            <td class='formfield'><input type='text' name='ship_state' id='ship_state' size=4/></td>
+            <td class='formfield'><input type='text' name='ship_zip' id='ship_zip' size=10/></td>
             <td class='formfield'><select id='ship_country' name='ship_country' size=1 width=20>
               <?php
               $fh = fopen("lib/countryCodes.csv","r");

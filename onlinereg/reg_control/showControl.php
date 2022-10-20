@@ -15,27 +15,29 @@ if(!isset($_GET) || !isset($_GET['id'])) {
     exit();
 }
 
-$id= sql_safe($_GET['id']);
+$id= $_GET['id'];
 $con = get_con();
 $conid = $con['id'];
     
 $conf = get_conf('con');
 
-$artQ = "SELECT S.id, S.art_key, S.artid, V.name as art_name"
-   . ", concat_ws(' ', P.first_name, P.last_name) as name"
-    . " FROM artshow as S" 
-    . " JOIN artist as A ON A.id=S.artid"
-    . " JOIN perinfo as P ON P.id=A.artist"
-    . " JOIN vendors as V on V.id=A.vendor"
-    . " WHERE conid=$conid AND artid=$id;";
-$artR = dbQuery($artQ);
+$artQ = <<<EOS
+SELECT S.id, S.art_key, S.artid, V.name as art_name, concat_ws(' ', P.first_name, P.last_name) as name
+FROM artshow S
+JOIN artist A ON (A.id=S.artid)
+JOIN perinfo P ON (P.id=A.artist)
+JOIN vendors V ON (V.id=A.vendor)
+WHERE conid=? AND artid=?;
+EOS;
+
+$artR = dbSafeQuery($artQ, 'ii', array($conid, $id));
 $artist = fetch_safe_assoc($artR);
 
 
-function getInfo($pin) {
+function getInfo($pin, $id) {
   global $con;
-  $artshowQ = "SELECT * from artshow WHERE id='".sql_safe($pin)."' and conid='".$con['id']."';";
-  $artshowR = dbQuery($artshowQ);
+  $artshowQ = "SELECT * FROM artshow WHERE id=? AND conid=?;";
+  $artshowR = dbSafeQuery($artshowQ, 'ii', array($pin, $id));
   $artshowInfo = fetch_safe_assoc($artshowR);
   $perid = $artshowInfo['perid'];
   $artid = $artshowInfo['artid'];
@@ -59,15 +61,15 @@ function getInfo($pin) {
 }
 
 function getArtwork($id) {
-    $artQ = "SELECT I.item_key, I.title, I.type, I.status, I.material"
-        . ", I.original_qty, I.quantity, I.min_price, I.sale_price"
-        . ", I.final_price, concat_ws(' ', P.first_name, P.last_name) as name"
-        . ", P.email_addr"
-        . " FROM artItems as I"
-            . " LEFT JOIN perinfo as P ON P.id=I.bidder"
-        . " WHERE artshow=$id;";
+    $artQ = <<<EOS
+SELECT I.item_key, I.title, I.type, I.status, I.material, I.original_qty, I.quantity, I.min_price, I.sale_price
+    I.final_price, concat_ws(' ', P.first_name, P.last_name) as name, P.email_addr
+FROM artItems as I
+LEFT JOIN perinfo P (ON P.id=I.bidder)
+WHERE artshow=?;
+EOS;
     #print($artQ);
-    $artR = dbQuery($artQ);
+    $artR = dbSafeQuery($artQ, 'i', array($id));
     $art = array();
     while($item = fetch_safe_assoc($artR)) {
         array_push($art, $item);
@@ -84,14 +86,14 @@ function getArtwork($id) {
     <link href='css/base.css' rel='stylesheet' type='text/css' />
     <link href='css/showControl.css' rel='stylesheet' type='text/css' />
 
-  <script type='text/javascript' src='/javascript/jquery-min-3.60.js''></script>
+  <script type='text/javascript' src='/javascript/jquery-min-3.60.js'></script>
   <script type='text/javascript' src='/javascript/d3.js'></script>
   <script type='text/javascript' src='js/base.js'></script>
 </head>
 <body>
 <h2> Art Control Sheet for <?php echo $artist['art_name']; ?></h2>
 <h4>Artist & Agent Information</h4>
-<?php $info = getInfo($artist['id']); 
+<?php $info = getInfo($artist['id'], $id); 
 #var_dump($info); 
 ?>
   <p>Artist Number: <?php echo $info['artshow']['art_key']; ?><br/>
@@ -197,18 +199,25 @@ function getArtwork($id) {
     <tr><td colspan=3>Agent Name: <span class='warn'>No Agent</span></td></tr>
   <?php
   }
-?>
+  ?>
   </table>
   <h4>Contact/Shipping Information</h4>
 Blank unless information differs from above.
   <table>
-  <tr><td>Contact Info:</td></tr>
+  <tr><td>Contact Info:</td>
   <tbody>
-  <td>Cell Phone:</td><td><?php echo $info['artist']['other_cell']; ?></td></tr>
-  <td>Other Phone:</td><td><?php echo $info['artist']['other_phone']; ?></td></tr>
-  <td>Email:</td><td><?php echo $info['artist']['other_email']; ?></td></tr>
+      <tr>
+          <td>Cell Phone:</td><td><?php echo $info['artist']['other_cell']; ?></td>
+      </tr>
+      <tr>
+          <td>Other Phone:</td><td><?php echo $info['artist']['other_phone']; ?></td>
+      </tr>
+      <tr>
+          <td>Email:</td><td><?php echo $info['artist']['other_email']; ?></td>
+      </tr>
   </tbody>
-  <tr><td>Shipping Info:</td><td>
+  <tr>
+      <td>Shipping Info:</td><td>
     Ship To: <?php $info['artist']['ship_to']; ?>
   </td></tr>
   <tbody id='shippinginfo'>

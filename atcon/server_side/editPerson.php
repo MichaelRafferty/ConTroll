@@ -1,12 +1,5 @@
 <?php
-if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
-
 require_once "lib/base.php";
-require_once "lib/ajax_functions.php";
 
 $perm="data_entry";
 $con = get_con();
@@ -23,157 +16,178 @@ if($check_auth == false) {
     exit();
 }
 
-
-if($_POST['method'] == 'GET') {
-    if(!isset($_POST['id'])) { ajaxError("Need ID"); }
-    $res = dbQuery("SELECT * FROM perinfo WHERE id=".sql_safe($_POST['id']).";");
+if(isset($_POST) && array_key_exists('method', $_POST) && $_POST['method'] == 'GET') {
+    if(!(array_key_exists('id', $_POST) && isset($_POST['id']))) { ajaxError("Need ID"); }
+    $res = dbSafeQuery("SELECT * FROM perinfo WHERE id=?;", 'i', array($_POST['id']));
     $perinfo = fetch_safe_assoc($res);
     $perinfo["prefix"] = htmlspecialchars($_POST['prefix']);
     ajaxSuccess($perinfo);
     exit();
 }
 
-if($_SERVER['REQUEST_METHOD'] != "POST") { 
+if($_SERVER['REQUEST_METHOD'] != "POST") {
     $response['error'] = "No Data";
     ajaxSuccess($response);
     exit();
 }
 
-$changeLog = "Atcon Edit ". sql_safe($_POST['user']) . ": " . date(DATE_ATOM) . ": " ;
+$changeLog = "Atcon Edit ". $_POST['user'] . ": " . date(DATE_ATOM) . ": " ;
 $change = false;
+$datatypes = '';
+$values = array();
 
 $query = "UPDATE perinfo SET ";
 if(isset($_POST['fname'])) {
   $change = true;
   $changeLog .= "first_name, ";
-  $query .= "first_name='" . sql_safe($_POST['fname']) . "'";
+  $query .= "first_name=?";
+  $datatypes .= 's';
+  $values[] = $_POST['fname'];
 }
 if(isset($_POST['mname'])) {
   if($change) { $query .= ", "; }
   $change = true;
   $changeLog .= "middle_name, ";
-  $query .= "middle_name='" . sql_safe($_POST['mname']) . "'";
+  $query .= "middle_name=?";
+  $datatypes .= 's';
+  $values[] = $_POST['mname'];
 }
 if(isset($_POST['lname'])) {
   if($change) { $query .= ", "; }
   $change = true;
   $changeLog .= "last_name, ";
-  $query .= "last_name='" . sql_safe($_POST['lname']) . "'";
+  $query .= "last_name=?";
+  $datatypes .= 's';
+  $values[] = $_POST['last_name'];
 }
 if(isset($_POST['suffix'])) {
   if($change) { $query .= ", "; }
   $change = true;
   $changeLog .= "suffix, ";
-  $query .= "suffix='" . sql_safe($_POST['suffix']) . "'";
+  $query .= "suffix=?";
+  $datatypes .= 's';
+  $values[] = $_POST['suffix'];
 }
 if(isset($_POST['email'])) {
   if($change) { $query .= ", "; }
   $change = true;
   $changeLog .= "email_addr, ";
-  $query .= "email_addr='" . sql_safe($_POST['email']) . "'";
+  $query .= "email_addr=?";
+  $datatypes .= 's';
+  $values[] = $_POST['email'];
 }
 if(isset($_POST['phone'])) {
   if($change) { $query .= ", "; }
   $change = true;
   $changeLog .= "phone, ";
-  $query .= "phone='" . sql_safe($_POST['phone']) . "'";
+  $query .= "phone=?";
+  $datatypes .= 's';
+  $values[] = $_POST['phone'];
 }
 if(isset($_POST['badge'])) {
   if($change) { $query .= ", "; }
   $change = true;
   $changeLog .= "badge_name, ";
-  $query .= "badge_name='" . sql_safe($_POST['badge']) . "'";
+  $query .= "badge_name=?";
+  $datatypes .= 's';
+  $values[] = $_POST['badge'];
 }
 if(isset($_POST['address'])) {
   if($change) { $query .= ", "; }
   $change = true;
   $changeLog .= "address, ";
-  $query .= "address='" . sql_safe($_POST['address']) . "'";
+  $query .= "address=?";
+  $datatypes .= 's';
+  $values[] = $_POST['address'];
 }
 if(isset($_POST['addr2'])) {
   if($change) { $query .= ", "; }
   $change = true;
   $changeLog .= "addr_2, ";
-  $query .= "addr_2='" . sql_safe($_POST['addr2']) . "'";
+  $query .= "addr_2=?";
+  $datatypes .= 's';
+  $values[] = $_POST['addr_2'];
 }
 if(isset($_POST['city'])) {
   if($change) { $query .= ", "; }
   $change = true;
   $changeLog .= "city, ";
-  $query .= "city='" . sql_safe($_POST['city']) . "'";
+  $query .= "city=?";
+  $datatypes .= 's';
+  $values[] = $_POST['CITY'];
 }
 if(isset($_POST['state'])) {
   if($change) { $query .= ", "; }
   $change = true;
   $changeLog .= "state, ";
-  $query .= "state='" . sql_safe($_POST['state']) . "'";
+  $query .= "state=?";
+  $datatypes .= 's';
+  $values[] = $_POST['state'];
 }
 if(isset($_POST['zip'])) {
   if($change) { $query .= ", "; }
   $change = true;
   $changeLog .= "zip, ";
-  $query .= "zip='" . sql_safe($_POST['zip']) . "'";
+  $query .= "zip=?";
+  $datatypes .= 's';
+  $values[] = $_POST['zip'];
 }
 if(isset($_POST['country'])) {
   if($change) { $query .= ", "; }
   $change = true;
   $changeLog .= "country, ";
-  $query .= "country='" . sql_safe($_POST['country']) . "'";
-}
-if(isset($_POST['bid'])) {
-  if($change) { $query .= ", "; }
-  $change = true;
-  $changeLog .= "bid_ok, ";
-  $query .= "bid_ok='" . sql_safe($_POST['bid']) . "'";
+  $query .= "country=?";
+  $datatypes .= 's';
+  $values[] = $_POST['country'];
 }
 if(isset($_POST['share_mail'])) {
   if($change) { $query .= ", "; }
   $change = true;
   $changeLog .= "sharemail_ok, ";
-  $query .= "sharemail_ok='" . sql_safe($_POST['share_mail']) . "'";
-}
-if(isset($_POST['address_ok'])) {
-  if($change) { $query .= ", "; }
-  $change = true;
-  $changeLog .= "addr_good, ";
-  $query .= "addr_good='" . sql_safe($_POST['address_ok']) . "'";
-}
-if(isset($_POST['checks_ok'])) {
-  if($change) { $query .= ", "; }
-  $change = true;
-  $changeLog .= "checks_ok, ";
-  $query .= "checks_ok='" . sql_safe($_POST['checks_ok']) . "'";
+  $query .= "sharemail_ok=?";
+  $datatypes .= 's';
+  $values[] = $_POST['share_mail'];
 }
 if(isset($_POST['banned'])) {
   if($change) { $query .= ", "; }
   $change = true;
   $changeLog .= "banned, ";
-  $query .= "banned='" . sql_safe($_POST['banned']) . "'";
+  $query .= "banned=?";
+  $datatypes .= 's';
+  $values[] = $_POST['banned'];
 }
 if(isset($_POST['active'])) {
   if($change) { $query .= ", "; }
   $change = true;
   $changeLog .= "active, ";
-  $query .= "active='" . sql_safe($_POST['active']) . "'";
+  $query .= "active=?";
+  $datatypes .= 's';
+  $values[] = $_POST['active'];
 }
 if(isset($_POST['open_notes'])) {
   if($change) { $query .= ", "; }
   $change = true;
   $changeLog .= "open_notes, ";
-  $query .= "open_notes='" . sql_safe($_POST['open_notes']) . "'";
+  $query .= "open_notes=?";
+  $datatypes .= 's';
+  $values[] = $_POST['open_notes'];
 }
 if(isset($_POST['admin_notes'])) {
   if($change) { $query .= ", "; }
   $change = true;
   $changeLog .= "admin_notes, ";
-  $query .= "admin_notes='" . sql_safe($_POST['admin_notes']) . "'";
+  $query .= "admin_notes=?";
+  $datatypes .= 's';
+  $values[] = $_POST['admin_notes'];
 }
 if($change) {
-  $query .= " WHERE id='" . sql_safe($_POST['id']) . "';";
+    $query .= " WHERE id=?;";
+    $datatypes .= 'i';
+    $values[] = $_POST['id'];
 
-  $res = dbQuery($query);
-  $query2 = "UPDATE perinfo SET change_notes=CONCAT(change_notes, '<br/>$changeLog') WHERE id='".sql_safe($_POST['id'])."';";
-  $res = dbQuery($query2);
+    $res = dbSafeCmd($query, $datatypes, $values);
+    $query2 = "UPDATE perinfo SET change_notes=CONCAT(change_notes, '<br/>', ?) WHERE id=?;";
+    $res = dbSafeCmd($query2, 'si', array($changeLog, $_POST['id']));
 }
 
 $response['changed'] = $change;

@@ -1,8 +1,10 @@
 [mysql]
 host=""
+port=3306
 user=""
 password=""
 db_name=""
+sql_mode='STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION'
 [con]
 label="Philcon 2022"
 conname="Philcon"
@@ -30,6 +32,7 @@ id="2022"
 taxRate=6
 minComp="2021"
 compLen="150"
+conLen="3"
 server="https://reg.philcon.org/"
 [reg]
 https=1
@@ -69,6 +72,7 @@ env="production"
 location=""
 webpaysdk="https://web.squarecdn.com/v1/square.js"
 [log]
+  web = "/home/psfs_reg/reglogs/web"
   reg = "/home/psfs_reg/reglogs/onLineReg"
   artshow = "/home/psfs_reg/reglogs/artshowReg"
   cancel = "/home/psfs_reg/reglogs/cancel"

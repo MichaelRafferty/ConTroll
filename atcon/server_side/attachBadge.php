@@ -1,12 +1,5 @@
 <?php
-if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
-
 require_once "lib/base.php";
-require_once "lib/ajax_functions.php";
 
 $perm="data_entry";
 $con = get_con();
@@ -23,32 +16,30 @@ if($check_auth == false) {
     exit();
 }
 
-$user = 'regadmin@bsfs.org';
+$user = 'regadmin@bsfs.org'; // hardcoded, do we need a different common hardcode?
 $response['user'] = $user;
-$userQ = "SELECT id FROM user WHERE email='$user';";
-$userR = fetch_safe_assoc(dbQuery($userQ));
+$userQ = "SELECT id FROM user WHERE email=?;";
+$userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', array($user)));
 $userid = $userR['id'];
 $con = get_conf('con');
 $conid=$con['id'];
 
-$transid = sql_safe($_POST['transid']);
-$badgeId = sql_safe($_POST['id']);
+$transid = $_POST['transid'];
+$badgeId = $_POST['id'];
 
-$atconQ = "SELECT id from atcon where transid=$transid;";
-$atconR = dbQuery($atconQ);
+$atconQ = "SELECT id from atcon where transid=?;";
+$atconR = dbSafeQuery($atconQ, 'i', array($transid));
 if($atconR->num_rows > 0) {
     $atcon=fetch_safe_assoc($atconR);
     $atconid = $atcon['id'];
-    $attachQ = "INSERT IGNORE INTO atcon_badge (atconId, badgeId, action)"
-        . " VALUES ($atconid, $badgeId, 'attach');";
-    dbInsert($attachQ);
+    $attachQ = "INSERT IGNORE INTO atcon_badge (atconId, badgeId, action) VALUES (?, ?, 'attach');";
+    dbSafeInsert($attachQ, 'ii', array($atconid, $badgeId));
 
     $response['atconid'] = $atconid;
 }
 
-$actionQ = "SELECT * from atcon_badge WHERE badgeId=$badgeId" 
-    . " AND action !='attach'";
-$actionR = dbQuery($actionQ);
+$actionQ = "SELECT * from atcon_badge WHERE badgeId=? AND action !='attach';";
+$actionR = dbSafeQuery($actionQ, 'i', array($badgeId));
 
 $actions = array();
 while($action = fetch_safe_assoc($actionR)) {

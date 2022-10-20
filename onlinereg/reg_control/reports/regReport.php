@@ -16,7 +16,7 @@ header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="reg_report.csv"');
 
 //if($_POSE and $_POST['con']) {
-    //$conid=sql_safe($_POST['con']);
+    //$conid=$_POST['con'];
 //}
 
 //hardcode: why the hard coded B.date in this this report, and the hard code to b53, need to generalize what we want this to do going forward
@@ -27,7 +27,7 @@ SELECT R.id, CONCAT_WS(' ', P.first_name, P.last_name) AS name, CONCAT_WS(' ', P
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
 JOIN memLabel M ON (M.id=R.memId)
-LEFT OUTER JOIN atcon_badge B ON (B.badgeId=R.id and B.action='attach' and B.date > '2019-05-22')
+LEFT OUTER JOIN atcon_badge B ON (B.badgeId=R.id AND B.action='attach')
 WHERE R.conid=?
 GROUP BY P.id;
 EOS;

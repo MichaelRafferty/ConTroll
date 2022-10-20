@@ -1,9 +1,7 @@
 <?php
 require_once "lib/base.php";
-require_once "lib/ajax_functions.php";
 
 $response = array("post" => $_POST, "get" => $_GET);
-
 
 $perm="data_entry";
 $con = get_con();
@@ -19,25 +17,25 @@ if($check_auth == false) {
     exit();
 }
 
-if(!(isset($_POST['transid']) && isset($_POST['perid']) 
+if(!(isset($_POST['transid']) && isset($_POST['perid'])
         && isset($_POST['type']) && isset($_POST['age']))) {
     $response['error'] = "Missing Data";
     ajaxSuccess($response);
     exit();
 }
 
-$transid = sql_safe($_POST['transid']);
-$perid = sql_safe($_POST['perid']);
-$userid = sql_safe($_POST['user']);
-$action = sql_safe($_POST['type']);
-$age = sql_safe($_POST['age']);
-$origid = sql_safe($_POST['origId']);
+$transid = $_POST['transid'];
+$perid = $_POST['perid'];
+$userid = $_POST['user'];
+$action = $_POST['type'];
+$age = $_POST['age'];
+$origid = $_POST['origId'];
 
-$atconR = dbQuery("SELECT id FROM atcon WHERE transid=$transid;");
+$atconR = dbSafeQuery("SELECT id FROM atcon WHERE transid=?;", 'i', array($transid));
 $atcon = fetch_safe_assoc($atconR);
 $atconid = $atcon['id'];
 
-$memR = dbQuery("SELECT  label, memCategory, memAge, id, price from memList where conid=$conid+1;");
+$memR = dbSafeQuery("SELECT label, memCategory, memAge, id, price FROM memList WHERE conid=?;", 'i', array($conid+1));
 $memIds = array('yearahead' => array(), 'rollover'=>array(), 'volunteer'=>array());
 $prices = array('yearahead' => array(), 'rollover'=>array(), 'volunteer'=>array());
 
@@ -60,19 +58,11 @@ $price = $prices[$action][$age];
 
 $newconid = $conid + 1;
 
-$regQ = "INSERT IGNORE INTO reg (conid, perid, memId, price, create_trans) VALUES"
-    . " ($newconid, $perid, $memid, $price, $transid);";
+$regQ = "INSERT IGNORE INTO reg (conid, perid, memId, price, create_trans) VALUES (?,?,?,?,?);";
+$badgeId = dbSafeInsert($regQ, 'iiidi', array($newconid, $perid, $memid, $price, $transid));
 
-
-$badgeId = dbInsert($regQ);
-
-$actionQ = "INSERT IGNORE INTO atcon_badge (atconId, badgeId, action, comment) VALUES"
-    . " ($atconid, $badgeId, '$action', '$age'),"
-    . " ($atconid, $origid, 'notes', '$action'),"
-    . " ($atconid, $badgeId, 'attach', '$age');";
-
-
-$response['action'] = dbInsert($actionQ);
+$actionQ = "INSERT IGNORE INTO atcon_badge (atconId, badgeId, action, comment) VALUES (?,?,?,?), (?,?,?,?), (?,?,?,?);";
+$response['action'] = dbSafeInsert($actionQ, 'iissiissiiss', array($atconid, $badgeId, $action, $age, $atconid, $origid, 'notes', $action, $atconid, $badgeId, 'attach', $age));
 $response['reg'] = $badgeId;
 $response['price'] = $price;
 

@@ -7,22 +7,32 @@
 
 global $dbObject;
 global $db_ini;
+global $logdest;
 
 $dbObject = null;
 if (!$db_ini) {
     $db_ini = parse_ini_file(__DIR__ . "/../config/reg_conf.ini", true);
 }
+$log = get_conf("log");
+$logdest = $log['web'];
 
+// Function web_error_log($string)
+// $string = string to write to file $logdest with added newline at end
+function web_error_log($string) {
+    global $logdest;
 
+    error_log(date("Y-m-d H:i:s") . ": " . $string . "\n", 3, $logdest);
+}
 // Function var_error_log()
 // $object = object to be dumped to the PHP error log
 // the object is walked and written to the PHP error log using var_dump and a redirect of the output buffer.
 function var_error_log( $object=null ){
+    global $logdest;
     ob_start();                    // start buffer capture
     var_dump( $object );           // dump the values
     $contents = ob_get_contents(); // put the buffer into a variable
     ob_end_clean();                // end capture
-    error_log( $contents );        // log contents of the result of var_dump( $object )
+    error_log( $contents . "\n", 3, $logdest);        // log contents of the result of var_dump( $object )
 }
 
 // Common function to log a mysql error
@@ -49,16 +59,31 @@ function log_mysqli_error($query, $additional_error_message) {
 function db_connect() {
     global $dbObject;
     global $db_ini;
-    if(is_null($dbObject)) {
+
+    $port = 3306;
+    if (array_key_exists("port", $db_ini['mysql'])) {
+        $port = $db_ini['mysql']['port'];
+    }
+
+    if (is_null($dbObject)) {
         $dbObject = new mysqli(
             $db_ini['mysql']['host'],
             $db_ini['mysql']['user'],
             $db_ini['mysql']['password'],
-            $db_ini['mysql']['db_name']);
+            $db_ini['mysql']['db_name'],
+            $port);
 
         if($dbObject->connect_errno) {
             echo "Failed to connect to MySQL: (" . $dbObject->connect_errno .") " . $dbObject->connect_error;
             error_log("Failed to connect to MySQL: (" . $dbObject->connect_errno .") " . $dbObject->connect_error);
+        }
+
+        // for mysql with non standard sql_mode (from zambia point of view) temporarily force ours
+        $sql = "SET sql_mode='" .  $db_ini['mysql']['sql_mode'] . "';";
+        $success = $dbObject -> query($sql);
+        if (!$success) {
+            error_log("failed setting sql mode on db connection");
+            return false;
         }
     }
 }
@@ -287,7 +312,7 @@ function register($email, $sub, $name) {
 function getPages($sub) {
     $res = array();
     $sql = <<<EOS
-SELECT DISTINCT A.name, A.display
+SELECT DISTINCT A.id, A.name, A.display
 FROM user U
 JOIN user_auth UA ON (U.id = UA.user_id)
 JOIN auth A ON (A.id = UA.auth_id)
@@ -468,4 +493,25 @@ function check_atcon($user, $passwd, $level, $conid) {
     if($r->num_rows > 0) { return true; }
     else { return false; }
 }
+
+function get_username($user) {
+    $u = sql_safe($user);
+    error_log($user);
+    $q = "SELECT first_name, last_name FROM perinfo WHERE id = ?;";
+    $r = dbSafeQuery($q, 's', array($user));
+    if ($r->num_rows <= 0)
+        return $u;
+
+    $ret = '';
+    $res = fetch_safe_assoc($r);
+    if ($res['first_name'] != '')
+        $ret = $res['first_name'];
+    if ( $res['last_name'] != '') {
+        if ($ret != '')
+            $ret .= ' ';
+        $ret .= $res['last_name'];
+    }
+    return $ret;
+}
+
 ?>

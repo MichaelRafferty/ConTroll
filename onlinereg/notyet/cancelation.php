@@ -22,9 +22,9 @@ $price = array('adult'=>56, 'youth'=>28, 'child'=>19, 'all'=>56);
 <head>
     <link href='css/style.css' rel='stylesheet' type='text/css' />
     <link href='css/jquery-ui-1.13.1.css' rel='stylesheet' type='text/css' />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous" />
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
     <script type='text/javascript' src='javascript/jquery-min-3.60.js'></script>
     <script type='text/javascript' src='javascript/jquery-ui.min-1.13.1.js'></script>
     <script type='text/javascript' src='javascript/store.js'></script>
@@ -143,19 +143,19 @@ if(($ini['suspended'] != 1) or ($ini['close'] != 1)) {
                 <DT><label><strong><input type='radio' id='complex_choice' name='choice' value='complex'/>Other</strong></label></DT>
                 <DD><label for='complex_choice'>
                 If you are looking for something that's not represented here, please note it in the comment field and you will be contacted by  <a href='mailto:registration@balticon.org'>registration@balticon.org</a>.</label></DD>
-            </DD>
+            </DL>
 
         <br/>
         Comment:<br/><textarea cols=40 rows=5></textarea>
         <br/>
         <p>Please provide current contact information that we can use to process this request.</p>
-        Name: <input type='text' name='name'  placeholder='Full Name'></input><br/>
-        Email: <input type='text' name='email'  placeholder='Email Address'></input><br/>
-        Phone: <input type='text' name='phone'  placeholder='Phone #'></input><br/>
+        Name: <input type='text' name='name'  placeholder='Full Name'/><br/>
+        Email: <input type='text' name='email'  placeholder='Email Address'/><br/>
+        Phone: <input type='text' name='phone'  placeholder='Phone #'/><br/>
         Address:<br/>
-            <input type='text' name='addr1' size=40 placeholder='Address Line 1'></input><br/>
-            <input type='text' name='addr2' size=40 placeholder='Address Line 2'></input><br/>
-            <input type='text' name='city' placeholder='City / State / Zip'></input> <input type='text' size=2 name='state'></input> <input type='text' size=5 name='zip'></input><br/>
+            <input type='text' name='addr1' size=40 placeholder='Address Line 1'/><br/>
+            <input type='text' name='addr2' size=40 placeholder='Address Line 2'/><br/>
+            <input type='text' name='city' placeholder='City / State / Zip'/> <input type='text' size=2 name='state'/> <input type='text' size=5 name='zip'/><br/>
         <p>The information provided here will only be used to process your request.  Your request will be processed as staff is available.  All requests are due by June 15th, 2020.  We hope to have all rollovers, refunds, and donations processed by the end of the summer.  Please remember that Balticon is a 100% volunteer run organization, and we thank you in advance for your patience.  </p>
         <br/>
         <input type='submit'><input type='reset'>

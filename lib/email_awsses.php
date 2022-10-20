@@ -25,7 +25,7 @@
 //      error_code = error code returned by api
 //
 
-require_once (__DIR__ . "/../onlinereg/lib/db_functions.php");
+require_once (__DIR__ . "/db_functions.php");
 require_once (__DIR__ . "/../config/aws.phar");
 use Aws\Ses\SesClient;
 use Aws\Exception\AwsException;

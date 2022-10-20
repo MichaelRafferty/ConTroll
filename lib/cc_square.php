@@ -1,5 +1,5 @@
 <?php
-//  square.php - library of modules to add the square php payment API to onlinereg
+//  cc_square.php - library of modules to add the square php payment API to onlinereg
 // uses config variables:
 // [cc]
 // type=square - selects that reg is to use square for credit cards
@@ -164,20 +164,27 @@ function cc_charge_purchase($results, $ccauth) {
 
     try {
         $ordersApi = $client->getOrdersApi();
+        //web_error_log("ordersApi"); var_error_log($ordersApi);
+        //web_error_log("body"); var_error_log($body);
         $apiResponse = $ordersApi->createOrder($body);
+        //web_error_log("apiResponse"); var_error_log($apiResponse);
         if ($apiResponse->isSuccess()) {
             $crerateorderresponse = $apiResponse->getResult();
-            //error_log("order: success");
+            //web web_error_log("order: success");
             //var_error_log($crerateorderresponse);
         } else {
-            $error = $apiResponse->getErrors()[0];
-            error_log("Order returned non-success");
-            var_error_log($error);
-            ajaxSuccess(array('status'=>'error','data'=>"Order Error: " . $error->getCategory() . "/" . $error->getCode() . ": " . $error->getDetail() . "[" . $error->getField() . "]"));
+            $errors = $apiResponse->getErrors();
+            web_error_log("Order returned non-success");
+            foreach ($errors as $error) {
+                var_error_log("Cat: " . $error->getCategory() . ": Code " . $error->getCode() . ". Detail: " . $error->getDetail() . ", [" . $error->getField() . "]");
+                ajaxSuccess(array('status'=>'error','data'=>"Order Error: " . $error->getCategory() . "/" . $error->getCode() . ": " . $error->getDetail() . "[" . $error->getField() . "]"));
+                exit();
+            }
+            ajaxSuccess(array('status'=>'error','data'=>"UnknownOrder Error"));
             exit();
         }
     } catch (ApiException $e) {
-        error_log("Order received error while calling Square: " . $e->getMessage());
+        web_error_log("Order received error while calling Square: " . $e->getMessage());
         ajaxSuccess(array('status'=>'error','data'=>"Error: Error connecting to Square"));
         exit();
     }
@@ -207,17 +214,21 @@ function cc_charge_purchase($results, $ccauth) {
 
         if ($apiResponse->isSuccess()) {
             $createPaymentResponse = $apiResponse->getResult();
-            //error_log("payment: success");
+            //web_error_log("payment: success");
             //var_error_log($createPaymentResponse);
         } else {
-            $error = $apiResponse->getErrors()[0];
-            error_log("Payment returned non-success");
-            var_error_log($error);
-            ajaxSuccess(array('status'=>'error','data'=>"Payment Error: " . $error->getCategory() . "/" . $error->getCode() . ": " . $error->getDetail() . "[" . $error->getField() . "]"));
+            $errors = $apiResponse->getErrors();
+            web_error_log("Payment returned non-success");
+            foreach ($errors as $error) {
+                var_error_log("Cat: " . $error->getCategory() . ": Code " . $error->getCode() . ". Detail: " . $error->getDetail() . ", [" . $error->getField() . "]");
+                ajaxSuccess(array('status'=>'error','data'=>"Payment Error: " . $error->getCategory() . "/" . $error->getCode() . ": " . $error->getDetail() . "[" . $error->getField() . "]"));
+                exit();
+            }
+            ajaxSuccess(array('status'=>'error','data'=>"Unknown Payment Error"));
             exit();
         }
     } catch (ApiException $e) {
-        error_log("Payment received error while calling Square: " . $e->getMessage());
+        web_error_log("Payment received error while calling Square: " . $e->getMessage());
         ajaxSuccess(array('status'=>'error','data'=>"Error: Error connecting to Square"));
         exit();
     }

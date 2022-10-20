@@ -1,6 +1,5 @@
 <?php
 require_once "lib/base.php";
-require_once "lib/ajax_functions.php";
 
 $perm = "data_entry";
 
@@ -20,17 +19,19 @@ if(!isset($_POST) || !isset($_POST['transid'])) {
     exit();
 }
 
-$transid = sql_safe($_POST['transid']);
+$transid = $_POST['transid'];
 
-$badgeQ = "SELECT M.label, B.action, count(R.id) as count, sum(R.price - R.paid) as amount"
-    . " FROM atcon as A"
-        . " JOIN atcon_badge as B ON B.atconId=A.id"
-        . " JOIN reg as R on R.id=B.badgeId"
-        . " JOIN memList as M on M.id=R.memId"
-    . " WHERE A.transid=$transid and B.action in ('create', 'yearahead', 'upgrade')"
-    . " GROUP BY M.label, B.action;";
+$badgeQ = <<<EOS
+SELECT M.label, B.action, count(R.id) as count, sum(R.price - R.paid) as amount
+FROM atcon A
+JOIN atcon_badge B ON (B.atconId=A.id)
+JOIN reg R ON (R.id=B.badgeId)
+JOIN memList M ON (M.id=R.memId)
+WHERE A.transid=? and B.action in ('create', 'yearahead', 'upgrade')
+GROUP BY M.label, B.action;
+EOS;
 
-$badgeR = dbQuery($badgeQ);
+$badgeR = dbSafeQuery($badgeQ, 'i', array($transid));
 
 $badgeList = array();
 while($badge = fetch_safe_assoc($badgeR)) {
@@ -39,14 +40,15 @@ while($badge = fetch_safe_assoc($badgeR)) {
 
 $response['badgelist'] = $badgeList;
 
-$transQ = "SELECT T.price, T.paid, T.withtax, T.tax, T.change_due"
-        . ", ROUND(T.withtax + T.change_due,2) as amount"
-        . ", P.type, P.description, P.cc, P.cc_approval_code"
-    . " FROM transaction as T"
-        . " JOIN payments as P on P.transid=T.id"
-    . " WHERE T.id=$transid";
+$transQ = <<<EOS
+SELECT T.price, T.paid, T.withtax, T.tax, T.change_due, ROUND(T.withtax + T.change_due,2) as amount
+    , P.type, P.description, P.cc, P.cc_approval_code
+FROM transaction T
+JOIN payments P ON (P.transid=T.id)
+WHERE T.id=?;
+EOS;
 
-$transR = dbQuery($transQ);
+$transR = dbSafeQuery($transQ, 'i', array($transid));
 
 $response['transinfo'] = fetch_safe_assoc($transR);
 

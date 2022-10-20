@@ -68,6 +68,7 @@ if($_SERVER['REQUEST_METHOD'] != "GET" ||
 $conConf = get_conf('con');
 $minCon = $conConf['minComp'];
 $maxLen = $conConf['compLen'];
+$conLen = $conConf['conLen'];
 
 if(isset($_GET['conid'])) {
     $conid=$_GET['conid'];
@@ -79,7 +80,7 @@ if(isset($_GET['conid'])) {
 
 
 $historyQuery = <<<EOS
-CREATE TEMPORARY TABLE history
+CREATE TEMPORARY TABLE history (id INT auto_increment PRIMARY KEY)
     SELECT conid, year, diff, cnt_all, cnt_paid
     FROM (
         SELECT R.conid, year(C.enddate) as year
@@ -90,13 +91,10 @@ CREATE TEMPORARY TABLE history
         JOIN conlist C ON (R.conid=C.id)
         WHERE (R.memType IS NULL OR (R.memType != 'B' and R.memType != 'V'))
            AND C.id>=?
-        GROUP BY C.id, datediff(C.enddate, R.create_date)
+        GROUP BY R.conid, year(C.enddate), datediff(C.enddate, R.create_date)
         WITH ROLLUP) r
         ORDER BY conid, year, diff;
 EOS;
-
-
-
 
 $addlwhere = '';
 #$addlwhere = "AND (B.action = 'create' OR B.action = 'upgrade' OR B.action = 'pickup')";
@@ -274,14 +272,14 @@ EOF;
 
         $dayRegA = dbSafeQuery($dayRegQ, 'i', array($conid));
         $dayReg = fetch_safe_array($dayRegA);
-        if ($dayReg > 0) $response['today'] = $dayReg[0];
+        if ($dayReg > 0) $response['today'] = $dayReg[0] - $conLen;
 
         break;
     case "totalMembership":
         dbSafeCmd($historyQuery, 'i', array($minCon));
         $maxRegQ = <<<EOQ
 SELECT conid, true AS complete, year, MIN(cnt_all) AS cnt_all, min(cnt_paid) AS cnt_paid
-FROM history WHERE conid<=? AND diff IS NULL
+FROM history WHERE conid<=? AND diff IS NULL AND year IS NOT NULL
 GROUP BY conid, year;
 EOQ;
         $maxRegA = dbSafeQuery($maxRegQ, 'i', array($conid));
@@ -303,7 +301,7 @@ EOF;
         $dayReg = fetch_safe_array($dayRegA);
         $response['today'] = $dayReg[0];
         $statArray = array();
-        for ($i=$maxLen; $i >=4; $i--) {
+        for ($i=$maxLen; $i >=$conLen; $i--) {
             $localStat = array();
             $pivot_col = "SELECT $i, ";
             $inner = "SELECT conid, sum(cnt_all) as sum_all"
@@ -336,7 +334,7 @@ $response['statQuery'] = $pivot_col;
                 //array_pop($res);
                 //array_pop($res);
             }
-            $localStat['day'] = - (int)$diff + 4;
+            $localStat['day'] = - (int)$diff + $conLen;
 
             for ($j = 0; $j < count($res); $j++) {
                 if($j%2==0 && $res[$j]) { array_push($all_vals, $res[$j]); }
@@ -362,7 +360,7 @@ $response['statQuery'] = $pivot_col;
             . " FROM history WHERE conid < $conid AND diff >= $diff"
             . " GROUP BY conid;";
         $preconQ = "SELECT conid, sum(cnt_all) as total, sum(cnt_paid) as paid"
-            . " FROM history WHERE conid < $conid AND diff >= 4"
+            . " FROM history WHERE conid < $conid AND diff >= $conLen"
             . " GROUP BY conid;";
         $finalQ = "SELECT conid, sum(cnt_all) as total, sum(cnt_paid) as paid"
             . " FROM history WHERE conid < $conid and diff is not null"

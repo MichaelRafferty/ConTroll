@@ -4,12 +4,12 @@ require("lib/base.php");
 $page = "Atcon Administration";
 
 page_init($page,
-    /* css */ array('css/jquery-ui.css',
+    /* css */ array('css/jquery-ui-1.13.1.css',
                     'css/base.css',
                     'css/registration.css',
                    ),
-    /* js  */ array('js/jquery.js',
-                    'js/jquery-ui.min.js',
+    /* js  */ array('js/jquery-min-3.60.js',
+                    'js/jquery-ui.min-1.13.1.js',
                     'js/d3.js',
                     'js/base.js',
                     'js/admin.js'
@@ -24,7 +24,7 @@ $method='manager';
 //echo $conid;
 
 
-if(!isset($_SESSION['user']) || 
+if(!isset($_SESSION['user']) ||
   !check_atcon($_SESSION['user'], $_SESSION['passwd'], $method, $conid)) {
     if(isset($_POST['user']) && isset($_POST['passwd']) &&
       check_atcon($_POST['user'], $_POST['passwd'], $method, $conid)) {
@@ -47,9 +47,9 @@ if(isset($_GET['action']) && $_GET['action']=='logout') {
 if(!isset($_SESSION['user'])) {
 ?>
 <form method='POST'>
-User Badge Id: <input type='text' name='user'></input><br/>
-Password: <input type='password' name='passwd'></input><br/>
-<input type='submit' value='Login'</input>
+User Badge Id: <input type='text' name='user'/><br/>
+Password: <input type='password' name='passwd/'><br/>
+<input type='submit' value='Login'/>
 </form>
 <?php
 
@@ -70,18 +70,18 @@ Password: <input type='password' name='passwd'></input><br/>
 </script>
 <div id='addUser'>
     <form id='addUserForm' action='javascript:void(0);'>
-        Perid: <input name='perid'></input><br/>
-        Passwd: <input type='password' name='newpw'></input><br/>
+        Perid: <input name='perid'/><br/>
+        Passwd: <input type='password' name='newpw'/><br/>
         <table>
             <tr><th>Reg Checkin</th><th>Cashier</th><th>Artshow</th><th>Admin</th></tr>
             <tr>
-                <td><input name='data_entry' type='checkbox'></input></td>
-                <td><input name='register' type='checkbox'></input></td>
-                <td><input name='artshow' type='checkbox'></input></td>
-                <td><input name='manager' type='checkbox'></input></td>
+                <td><input name='data_entry' type='checkbox'/></td>
+                <td><input name='register' type='checkbox'/></td>
+                <td><input name='artshow' type='checkbox'/></td>
+                <td><input name='manager' type='checkbox'/></td>
             </tr>
         </table>
-        <input onclick='addUser()' type='Submit' value='Add Person'></input>
+        <input onclick='addUser()' type='Submit' value='Add Person'/>
     </form>
 </div>
 <div id='main'>
