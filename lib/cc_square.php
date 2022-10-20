@@ -1,5 +1,5 @@
 <?php
-//  square.php - library of modules to add the square php payment API to onlinereg
+//  cc_square.php - library of modules to add the square php payment API to onlinereg
 // uses config variables:
 // [cc]
 // type=square - selects that reg is to use square for credit cards

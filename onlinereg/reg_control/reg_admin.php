@@ -15,9 +15,7 @@ page_init($page,
                     'css/table.css',
                     'css/reg_admin.css'
                     ),
-    /* js  */ array('javascript/jquery-min-3.60.js',
-                    '/javascript/jquery-ui.min-1.13.1.js',
-                    '/javascript/d3.js',
+    /* js  */ array('/javascript/d3.js',
                     'js/base.js',
                     'js/reg_admin.js',
                     'js/table.js'),
@@ -72,14 +70,15 @@ page_init($page,
         </table>
     </span>
     <span class='half' id='reports'>
-        <a href="reports/allEmails.php">Email List</a>
-        <button onClick="sendEmail()">Send Bulk Email</button>
+        <a href="reports/allEmails.php">Email List</a> |
+        <a href="reports/regReport.php">Reg Report</a> |
+        <button onClick="sendEmail('marketing')">Send Marketing Email</button>
+        <button onClick="sendEmail('reminder')">Send Attendance Reminder Email</button>
         <?php if ($db_ini['reg']['cancelled']) { ?>
         <button onClick="sendCancel()">Send Cancelation Instructions</button>
-        <?php } ?>
-    <br/>
-        <a href="reports/regReport.php">Reg Report</a>
+        <?php } ?>      
          <?php if ($db_ini['reg']['cancelled']) { ?>
+        <br/>
         <a href="reports/cancel.php">Cancelation Report</a>
         <a href="reports/processRefunds.php">Process Refunds</a>
         <?php } ?>

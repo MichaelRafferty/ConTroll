@@ -154,12 +154,12 @@ function sendCancel() {
     });
 }
 
-function sendEmail() {
-    var email = prompt("Would you like to send a test email?\nIf so please enter the address to send the test to.");
+function sendEmail(type) {
+    var email = prompt("Would you like to send a test " + type + " email?\nIf so please enter the address to send the test to.");
     var action = "none";
 
     if(email == null) {
-        if(confirm("You are about to send email to a lot of people.  Are you sure?")) {
+        if(confirm("You are about to send a " + type + " email to a lot of people.  Are you sure?")) {
         action = 'full';
       } else { return false; }
     } else {
@@ -168,7 +168,7 @@ function sendEmail() {
 
     $.ajax({
         url: 'scripts/sendEmail.php',
-        data: { 'action' : action, 'email' : email},
+        data: { 'action' : action, 'email' : email, 'type' : type},
         method: "POST",
         success: function(data, textStatus, jqXHR) {
             if(data.error != '') {

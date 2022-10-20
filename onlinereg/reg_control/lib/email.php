@@ -1,5 +1,4 @@
 <?php
-  require_once("../../lib/db_functions.php");
 
 function refundEmail_HTML($test, $email, $tid) {
   $ini = get_conf('reg');
@@ -141,7 +140,7 @@ function preConEmail_last_HTML($test) {
   $conname = $con['conname'];
   $orgname = $con['org'];
   $orgabv = $con['orgabv'];
-  $url = $ini['server'];
+  $url = rtrim($ini['server'], '/');
   $hotelpage = $con['hotelwebsite'];
   $hotelname = $con['hotelname'];
   $hoteladdr = $con['hoteladdr'];
@@ -156,14 +155,14 @@ function preConEmail_last_HTML($test) {
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body><p>Hello!</p>
 
 <p>
-	$conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to attend this year’s convention. To check the status of your badge or the rest of your family, you can always visit: <a href="$url/checkreg.php" target="_blank">$url/checkreg.php</a>
+	$conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to attend this year’s convention. To check the status of your, or the rest of your family's, registration you can always visit: <a href="$url/checkReg.php" target="_blank">$url/checkReg.php</a>
 </p>
 <p>
-	This year, we are again at the <a href="$hotelpage" target="_blank">$hotelname</a>, at $hoteladdr. Badges can be picked up or purchased at $conname Registration, which is $pickupareatext. $addlpickuptext
+	This year we are at the same hotel, which is now the <a href="$hotelpage" target="_blank">$hotelname</a>, at $hoteladdr. Badges can be picked up or purchased at $conname Registration, which is $pickupareatext. $addlpickuptext
 </p>
 
 <p>
-	Our Programming team has put together a great schedule for us this year, and you can take a look at it at <a href="$schedulepage" target="_blank">$schedulepage/</a> . Information about other activities, as well as our Guests of Honor, can be found on our website at <a href="$homepage" target="_blank">$homepage</a>.
+	Our programming team has put together a great schedule for us this year, and you can take a look at it at <a href="$schedulepage" target="_blank">$schedulepage/</a> . Information about other activities, as well as our Guests of Honor, can be found on our website at <a href="$homepage" target="_blank">$homepage</a>.
 </p>
 
 <p>
@@ -194,7 +193,7 @@ function preConEmail_last_TEXT($test) {
     $conname = $con['conname'];
     $orgname = $con['org'];
     $orgabv = $con['orgabv'];
-    $url = $ini['server'];
+    $url = rtrim($ini['server'], '/');
     $hotelname = $con['hotelname'];
     $hoteladdr = $con['hoteladdr'];
     $pickupareatext = $con['pickupareatext'];
@@ -207,11 +206,11 @@ function preConEmail_last_TEXT($test) {
   $text = <<<EOT
 Hello!
 
-$conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to attend this year’s convention. To check the status of your badge or the rest of your family, you can always visit: $url/checkreg.php
+$conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to attend this year’s convention. To check the status of your, or the rest of your family's, registration you can always visit: $url/checkreg.php
 
-This year, we are again at the $hotelname</a>, at $hoteladdr. Badges can be picked up or purchased at $conname Registration, which is $pickupareatext. $addlpickuptext
+This year we are at the same hotel, which is now the $hotelname</a>, at $hoteladdr. Badges can be picked up or purchased at $conname Registration, which is $pickupareatext. $addlpickuptext
 
-Our Programming team has put together a great schedule for us this year, and you can take a look at it at $schedulepage. Information about other activities, as well as our Guests of Honor, can be found on our website at $homepage.
+Our programming team has put together a great schedule for us this year, and you can take a look at it at $schedulepage. Information about other activities, as well as our Guests of Honor, can be found on our website at $homepage.
 
 The $orgname ($orgabv) is dedicated to providing a comfortable and harassment-free environment for everyone at $conname and other $orgabv-sponsored events. For specific information, including our full Anti-Harassment Policy, see $policypage.
 
@@ -229,4 +228,108 @@ EOT;
   }
 
   return $text;
+}
+
+function MarketingEmail_HTML($test) {
+
+    $ini = get_conf('reg');
+    $con = get_conf('con');
+    $reg = get_conf('reg');
+
+    $conlabel = $con['label'];
+    $conname = $con['conname'];
+    $orgname = $con['org'];
+    $orgabv = $con['orgabv'];
+    $url = rtrim($ini['server'], '/');
+    $hotelpage = $con['hotelwebsite'];
+    $hotelname = $con['hotelname'];
+    $hoteladdr = $con['hoteladdr'];
+    $pickupareatext = $con['pickupareatext'];
+    $addlpickuptext = $con['addlpickuptext'];
+    $schedulepage = $con['schedulepage'];
+    $homepage = $con['website'];
+    $policypage = $con['policy'];
+    $feedbackemail = $con['feedbackemail'];
+    $regsite = $reg['server'];
+
+    $html = <<<EOT
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body><p>Hello!</p>
+
+<p>
+	$conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to attend last year’s convention, but we don't have you registered for this year's convention. You can always register on-site, but you can save money by purchaging your membership in advance at <a href=$regsite" target-"_blank">$regsite</a>. To check the status of your, or the rest of your family's, registration  you can always visit: <a href="$url/checkReg.php" target="_blank">$url/checkReg.php</a>
+</p>
+<p>
+	This year, we are again at the <a href="$hotelpage" target="_blank">$hotelname</a>, at $hoteladdr.  Please register for rooms as soon as possible as the block will be closing soon.
+</p>
+
+<p>
+	Our programming team is putting together a great schedule for us this year, and you will soon be able to take a look at it at <a href="$schedulepage" target="_blank">$schedulepage</a> . Information about other activities, as well as our Guests of Honor, can be found on our website at <a href="$homepage" target="_blank">$homepage</a>.
+</p>
+
+<p>
+	The $orgname ($orgabv) is dedicated to providing a comfortable and harassment-free environment for everyone at $conname and other $orgabv-sponsored events. For specific information, including our full Anti-Harassment Policy, see <a href="$policypage" target="_blank">$policypage</a>.
+</p>
+<p>
+	If you have any further questions, please feel free to contact us at <a href="mailto:$feedbackemail" target="_blank">$feedbackemail</a>, or visit our website for information on how to contact individual departments.
+</p>
+
+<p>We hope to see you at the convention!</p>
+<br>
+EOT;
+    $addlemailhtml= __DIR__ . "/../../../config/ConSpecificMarketingEmailAddlHTML.txt";
+    if (is_readable($addlemailhtml)) {
+        $html .= file_get_contents($addlemailhtml);
+    }
+    if($test) {
+        $html= "THIS IS A TEST\n\n" . $html;
+    }
+    return $html;
+}
+
+function MarketingEmail_TEXT($test) {
+    $ini = get_conf('reg');
+    $con = get_conf('con');
+    $reg = get_conf('reg');
+
+    $conlabel = $con['label'];
+    $conname = $con['conname'];
+    $orgname = $con['org'];
+    $orgabv = $con['orgabv'];
+    $url = rtrim($ini['server'], '/');
+    $hotelname = $con['hotelname'];
+    $hoteladdr = $con['hoteladdr'];
+    $pickupareatext = $con['pickupareatext'];
+    $addlpickuptext = $con['addlpickuptext'];
+    $schedulepage = $con['schedulepage'];
+    $homepage = $con['website'];
+    $policypage = $con['policy'];
+    $feedbackemail = $con['feedbackemail'];
+    $regsite = $reg['server'];
+
+    $text = <<<EOT
+Hello!
+
+$conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to attend last year’s convention, but we don't have you registered for this year's convention. You can always register on-site, but you can save money by purchasing your membership in advance at $regsite. To check the status of your, or the rest of your family's, memberships, you can always visit: $url/checkReg.php
+
+This year, we are at the same hotel which is now the $hotelname, at $hoteladdr.  Please rsgister for rooms as soon as possible as the block will be closing soon.
+
+Our programming team is putting together a great schedule for us this year, and you will be able to soon take a look at it at $schedulepage. Information about other activities, as well as our Guests of Honor, can be found on our website at $homepage.
+
+The $orgname ($orgabv) is dedicated to providing a comfortable and harassment-free environment for everyone at $conname and other $orgabv-sponsored events. For specific information, including our full Anti-Harassment Policy, see $policypage.
+
+If you have any further questions, please feel free to contact us at $feedbackemail, or visit our website for information on how to contact individual departments.
+
+We hope to see you at the convention!
+
+EOT;
+
+    $addlemailtxt= __DIR__ . "/../../../config/ConSpecificMarketingEmailAddlText.txt";
+    if (is_readable($addlemailtxt)) {
+        $text .= file_get_contents($addlemailtxt);
+    }
+    if($test) {
+        $text = "THIS IS A TEST\n\n" . $text;
+    }
+
+    return $text;
 }
