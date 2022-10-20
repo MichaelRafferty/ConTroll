@@ -46,7 +46,7 @@
 //
 
 require_once (__DIR__ . "/db_functions.php");
-require_once (__DIR__ . "/../../Composer/vendor/autoload.php");
+require_once (__DIR__ . "/../Composer/vendor/autoload.php");
 
 global $transport, $mailer, $emailconf;
 $transport = null;
