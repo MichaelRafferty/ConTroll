@@ -66,7 +66,7 @@ $onsitesale = $startdate->format("l, F j");
                     </div>
                 </div>
                 <div class="modal-body">
-                     <p class="text-body">Membership added for <span id='oldBadgeName'></span>.<br/>Add another Membership?</p>
+                     <p class="text-body">Membership added for <span id='oldBadgeName'></span>.<br/>Add another Badge?</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" onclick="togglePopup();">Add Another</button>
@@ -92,7 +92,7 @@ $onsitesale = $startdate->format("l, F j");
                         <form id='newBadgeForm' action='javascript:void(0);' class="form-floating">
                             <div class="row" style="width:100%;">
                                 <div class="col-sm-12">
-                                    <p class="text-body">Please provide your legal name that will match a form of identification you can present at registration and a current address.</p>
+                                    <p class="text-body">Please provide your legal name that will match a valid form of ID. If you provide a Badge Name, your legal name will not be publicly visible..</p>
                                 </div>
                             </div>
                             <div class="row">
@@ -160,7 +160,7 @@ $onsitesale = $startdate->format("l, F j");
                             </div>
                             <div class="row">
                                 <div col="col-12-sm">
-                                    <p class="text-body">Please provide a way for us to contact you if there are questions about your registration.  We will never share your information without your consent.</p>
+                                    <p class="text-body">Contact Information (We will never share your information without your consent).</p>
                                 </div>
                             </div>
 
@@ -187,7 +187,7 @@ $onsitesale = $startdate->format("l, F j");
                             </div>
                              <div class="row">
                                 <div class="col-sm-12">
-                                    <p class="text-body"> Please provide information about your membership and badge.<br/>
+                                    <p class="text-body">
                                 Select membership type from the drop-down menu below.
                                 Eligibility for Child and Young Adult rates are based on age on <?php echo $agebydate; ?>
                                 (the first day of the convention).</p>
@@ -195,7 +195,7 @@ $onsitesale = $startdate->format("l, F j");
                              </div>
                             <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="badgename" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name</span></label><br/>
+                                    <label for="badgename" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
                                     <input class="form-control-sm" type="text" name="badgename" id='badgename' size="35" maxlength="32"  placeholder='defaults to first and last name' tabindex="14"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
@@ -262,10 +262,9 @@ $onsitesale = $startdate->format("l, F j");
                                     <p class="text-body">
                                         <label>
                                             <input type='checkbox' checked name='share' id='share' value='Y'/>
-                                            May we include you in our <a target='_blank' href='checkReg.php'>online search of members</a>?
-                                            To support members checking their registration, we allow a search for a name through our list of members.
-                                            This provides city/state of residence as well as a partial name.
-                                            If you choose to opt out, you can only check the status of your registration status manually by contacting
+                                            May we include you in our <a target='_blank' href='checkReg.php'>Check Registration page</a>?
+                                            This will allow you to check the status of your registration at your convenience.
+                                            If you choose to opt out, you can only check the status of your registration status by contacting
                                             one of our volunteer staff at <?php echo $con['regemail']; ?> (please allow several days for a reply).
                                         </label>
                                     </p>
