@@ -62,11 +62,11 @@ $onsitesale = $startdate->format("l, F j");
             <div class="modal-content">
                 <div class="modal-header">
                     <div class="modal-title">
-                        Add another Badge?
+                        Add another Membership?
                     </div>
                 </div>
                 <div class="modal-body">
-                     <p class="text-body">Badge added for <span id='oldBadgeName'></span>.<br/>Add another Badge?</p>
+                     <p class="text-body">Membership added for <span id='oldBadgeName'></span>.<br/>Add another Membership?</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" onclick="togglePopup();">Add Another</button>
@@ -88,7 +88,7 @@ $onsitesale = $startdate->format("l, F j");
                 </div>
                 <div class="modal-body" style="padding: 4px;">
                      <div id='newBadgeBody' class="container-fluid form-floating" style="background:#f4f4ff;">
-                        <h3 class="text-primary">New Convention Badges</h3>
+                        <h3 class="text-primary">New Convention Memberships</h3>
                         <form id='newBadgeForm' action='javascript:void(0);' class="form-floating">
                             <div class="row" style="width:100%;">
                                 <div class="col-sm-12">
@@ -229,7 +229,7 @@ $onsitesale = $startdate->format("l, F j");
                             </div>
                              <div class="row">
                                 <div class="col-sm-12">
-                                    <input type='submit' onclick='process($("#newBadgeForm"));' value='Add Badge To Cart'/>
+                                    <input type='submit' onclick='process($("#newBadgeForm"));' value='Add Membership To Cart'/>
                                     <input type='submit' onclick='newBadgeModalClose();' value='Cancel'/>
                                     <input type='reset'/>
                                 </div>
@@ -278,7 +278,7 @@ $onsitesale = $startdate->format("l, F j");
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <input type='submit' onclick='process($("#newBadgeForm"));' value='Add Badge To Cart'/>
+                                    <input type='submit' onclick='process($("#newBadgeForm"));' value='Add Membership To Cart'/>
                                     <input type='submit' onclick='newBadgeModalClose();' value='Review and Pay'/>
                                     <input type='reset'/>
                                 </div>
@@ -310,7 +310,7 @@ $onsitesale = $startdate->format("l, F j");
                          <div class="row">
                              <div class="col-sm-12">
                                  <?php foreach ($membershiptypes as $memType) { ?>
-                                    <?php echo $memType['shortname']; ?> Badges <span id='<?php echo $memType['memGroup'];?>'>0</span> x $<?php echo $memType['price']; ?><br/>
+                                    <?php echo $memType['shortname']; ?> Memberships <span id='<?php echo $memType['memGroup'];?>'>0</span> x $<?php echo $memType['price']; ?><br/>
                                  <?php    } ?>
                              </div>
                          </div>
@@ -324,7 +324,7 @@ $onsitesale = $startdate->format("l, F j");
                                 Total Cost: $<span id='total'>0</span><br/>
                              </div>
                              <div class="col-sm-auto ms-auto me-2 p-0">
-                                  <button onclick='newBadgeModalOpen();'>Add Badges</button>
+                                  <button onclick='newBadgeModalOpen();'>Add Memberships</button>
                              </div>
                          </div>
                          <div class="row">
