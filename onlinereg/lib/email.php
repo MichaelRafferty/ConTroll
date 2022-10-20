@@ -24,7 +24,7 @@ if($ini['test']==1) {
   $body .= "This Page is for test purposes only\n\n";
 }
 
-$body .= "Your Transaction number is $transid and Receipt number is " . $owner['payid'] . "\n\nIn response to your request Badges have been created for:\n\n";
+$body .= "Your Transaction number is $transid and Receipt number is " . $owner['payid'] . "\n\nIn response to your request memberships have been created for:\n\n";
 
 $badgeQ = <<<EOS
 SELECT NP.first_name, NP.last_name, M.label
