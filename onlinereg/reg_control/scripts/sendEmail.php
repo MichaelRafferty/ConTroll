@@ -43,26 +43,29 @@ $response['test'] = $test;
 $con = get_conf("con");
 $reg = get_conf("reg");
 $conid=$con['id'];
+$email_type = $_POST['type'];
 
-if ($_POST['type'] == 'reminder') {
+if ($email_type == 'reminder') {
     $emailQ = <<<EOQ
 SELECT DISTINCT P.email_addr AS email
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
-WHERE R.conid=$conid AND R.paid=R.price AND P.email_addr LIKE '%@%' AND P.contact_ok='Y';
+WHERE R.conid=$conid AND R.paid=R.price AND P.email_addr LIKE '%@%' AND P.contact_ok='Y'
+ORDER BY email;
 EOQ;
 
     $email_text = preConEmail_last_TEXT($reg['test']);
     $email_html = preConEmail_last_HTML($reg['test']);
     $email_subject = "Welcome Email";
-} else if ($_POST['type'] == 'marketing') {
+} else if ($email_type == 'marketing') {
     $priorcon = $conid - 1;
     $emailQ = <<<EOQ
 SELECT DISTINCT p.email_addr AS email
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id AND r.conid = $priorcon)
 LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = $conid)
-WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' and r2.id IS NULL;
+WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' and r2.id IS NULL AND r.price > 0
+ORDER BY email;
 EOQ;
     $email_text = MarketingEmail_TEXT($reg['test']);
     $email_html = MarketingEmail_HTML($reg['test']);
@@ -87,17 +90,25 @@ if($test) {
     }
 }
 
+// bunch in groups of 10 to avoid throttle cutoff
+$i = 0;
 foreach ($email_array as $email) {
+    $i++;
     $return_arr = send_email($con['regadminemail'], trim($email), /* cc */ null, $con['label'] . ": $email_subject",  $email_text, $email_html);
 
-    if ($return_arr[''] == 'success') {
+    if ($return_arr['status'] == 'success') {
         array_push($data_array, array($email, "success"));
+        web_error_log("sent $email_type email to $email");
     } else {
         array_push($data_array, array($email, $return_arr['email_error']));
         $success = 'error';
+        web_error_log("failed $email_type email to $email");
     }
 
-sleep(1);
+    if ($i > 10) {
+	    $i = 0;
+	    sleep(1);
+    }
 }
 
 $response['status'] = $success;
