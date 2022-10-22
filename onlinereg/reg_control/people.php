@@ -52,32 +52,32 @@ dbquery($updateQ);
 $updateQ = <<<EOF
 UPDATE newperson n
 JOIN perinfo p ON (
-	REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.first_name,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.first_name, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.middle_name,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.middle_name, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.last_name,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.last_name, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.suffix,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.suffix, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.email_addr,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.email_addr, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.phone,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.phone, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.badge_name,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.badge_name, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.address,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.address, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.addr_2,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.addr_2, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.city,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.city, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.state,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.state, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.zip,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.zip, ''))), "  *", " ")
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.country,''))), "  *", " ") =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.country, ''))), "  *", " ")
+	REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.first_name,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.first_name, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.middle_name,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.middle_name, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.last_name,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.last_name, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.suffix,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.suffix, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.email_addr,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.email_addr, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.phone,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.phone, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.badge_name,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.badge_name, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.address,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.address, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.addr_2,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.addr_2, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.city,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.city, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.state,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.state, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.zip,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.zip, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.country,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.country, ''))), '  *', ' ')
 )
 SET n.perid = p.id
 WHERE n.perid IS NULL and p.id is not null;
@@ -141,7 +141,7 @@ page_init($page,
                         </tr>
                     </thead>
                     <tbody id='conflictFormName'>
-                        <tr><td>Name</td>
+                        <tr><th>Name</th>
                             <td id='conflictFormDbName'>dbName</td>
                             <td class='right'><button id='useDbName' onclick="setField('Name', 'Db');">&gt;</button></td>
                             <td>
@@ -153,7 +153,7 @@ page_init($page,
                             <td><button id='useNewName' onclick="setField('Name', 'User');">&lt;</button></td>
                             <td id='conflictFormUserName'>User Input</td>
                         </tr>
-                        <tr><td>Badge</td>
+                        <tr><th>Badge</th>
                             <td id='conflictFormDbBadge'>dbBadge</td>
                             <td class='right'><button id='useDbBadge' onclick="setField('Badge', 'Db');">&gt;</button></td>
                             <td>
@@ -165,7 +165,7 @@ page_init($page,
                     </tbody>
                     <tbody id='conflictFormAddress'>
                         <tr>
-                            <td rowspan=4 class='center'>Addr</td>
+                            <th rowspan=4 class='center'>Addr</th>
                             <td id='conflictFormDbAddr'>dbAddr</td>
                             <td class='right'></td>
                             <td>
@@ -198,7 +198,7 @@ page_init($page,
                     </tbody>
                     <tbody id='conflictFormContact'>
                         <tr>
-                            <td>Email</td>
+                            <th>Email</th>
                             <td id='conflictFormDbEmail'>dbEmail</td>
                             <td class='right'><button id='useDbEmail' onclick="setField('Email', 'Db');">&gt;</button></td>
                             <td>
@@ -208,7 +208,7 @@ page_init($page,
                             <td id='conflictFormUserEmail'>User Input</td>
                         </tr>
                         <tr>
-                            <td>Phone</td>
+                            <th>Phone</th>
                             <td id='conflictFormDbPhone'>dbPhone</td>
                             <td class='right'><button id='useDbPhone' onclick="setField('Phone', 'Db');">&gt;</button></td>
                             <td>
@@ -216,6 +216,21 @@ page_init($page,
                             </td>
                             <td><button id='useNewPhone' onclick="setField('Phone', 'User');">&lt;</button></td>
                             <td id='conflictFormUserPhone'>User Input</td>
+                        </tr>
+                        <tr>
+                            <th>Flags</th>
+                            <td id='conflictFormDbFlags'>dbFlags</td>
+                            <td class='right'><button id='useDbFlags' onclick="setField('Flags', 'Db');">&gt;</button></td>
+                             <td>
+                                <span class="formlabel">&nbsp;&nbsp;Share Reg?</span>
+                                <input type="radio" name="conflictFormNewShareReg" value="Y">Y</input>
+                                <input type="radio" name="conflictFormNewShareReg" value="N">N</input>
+                                <span class="formlabel">Contact?</span>
+                                <input type="radio" name="conflictFormNewContactOK" value="Y">Y</input>
+                                <input type="radio" name="conflictFormNewContactOK" value="N">N</input>
+                            </td>
+                            <td><button id='useNewFlags' onclick="setField('Flags', 'User');">&lt;</button></td>
+                            <td id='conflictFormUserFlags'>User Input</td>
                         </tr>
                         <tr><td></td>
                         <td colspan=2>

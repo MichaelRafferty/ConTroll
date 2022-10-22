@@ -34,13 +34,15 @@ $updatebadge = array_key_exists('conflictFormBadge', $_POST) ? $_POST['conflictF
 $updateemail = array_key_exists('conflictFormEmail', $_POST) ? $_POST['conflictFormEmail'] == 'checked' : false;
 $updatephone = array_key_exists('conflictFormPhone', $_POST) ? $_POST['conflictFormPhone'] == 'checked' : false;
 $updateaddr = array_key_exists('conflictFormAddr', $_POST) ? $_POST['conflictFormAddr'] == 'checked' : false;
-$do_update = $nocheckboxes || $updatename || $updatebadge || $updateemail || $updatephone || $updateaddr;
+$updateflags = array_key_exists('conflictFormFlags', $_POST) ? $_POST['conflictFormFlags'] == 'checked' : false;
+$do_update = $nocheckboxes || $updatename || $updatebadge || $updateemail || $updatephone || $updateaddr || $updateflags;
 
 if ($do_update) {
-    $query = "UPDATE perinfo SET ";
+    $query = "UPDATE perinfo SET active='Y', ";
     $types = '';
     $values = array();
     $addcomma = false;
+    var_error_log($_POST);
 
     // name fields if all or checked
     if ($nocheckboxes || $updatename) {
@@ -85,6 +87,19 @@ if ($do_update) {
         $query .= 'email_addr = ?';
         $types .= 's';
         array_push($values, trim($_POST['email_addr']));
+    }
+
+    // flags if all or checked
+    if ($nocheckboxes || $updateflags) {
+        if ($addcomma) {
+            $query .= ", ";
+        } else {
+            $addcomma = true;
+        }
+        $query .= 'share_reg_ok = ?, contact_ok = ?';
+        $types .= 'ss';
+        array_push($values, trim($_POST['conflictFormNewShareReg']));
+        array_push($values, trim($_POST['conflictFormNewContactOK']));
     }
 
 
