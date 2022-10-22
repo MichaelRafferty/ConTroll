@@ -80,7 +80,7 @@ JOIN perinfo p ON (
 		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.country, ''))), '  *', ' ')
 )
 SET n.perid = p.id
-WHERE n.perid IS NULL and p.id is not null;
+WHERE n.perid IS NULL and p.id is not null AND p.active = 'Y';
 EOF;
 
 dbquery($updateQ);
