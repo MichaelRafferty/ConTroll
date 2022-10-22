@@ -77,13 +77,30 @@ webpaysdk="https://web.squarecdn.com/v1/square.js"
   artshow = "/home/psfs_reg/reglogs/artshowReg"
   cancel = "/home/psfs_reg/reglogs/cancel"
 [email]
-; valid types are 'aws' or 'mta'
-  type="aws"
-  aws_access_key_id=""
-  aws_secret_access_key=""
-  username=""
-  region="us-east-2"
-  version="2010-12-01"
+; valid types are 'aws', 'mta', 'symfony', 'file'
+;; for aws:
+;;  type="aws"
+;;  aws_access_key_id=""
+;;  aws_secret_access_key=""
+;;  username=""
+;;  region="us-east-2"
+;;  version="2010-12-01"
+;;
+;; for mta
+;;  type="mta"
+;;	  uses php.ini mail setup
+;;    note: text email only, html email ignored
+;;
+;; for symfony
+;;  type="symfony"
+;;  transport="transport-type"  (one of smtp, ses+smtp, ses+https, )
+;;  host="FQDN:port"
+;;  username="" (optional, for ses+https this is the access key)
+;;	password="" (optional, for ses+https this is the secret key)
+; batchsize = number of emails to send before delay, 0 = unlimited
+  batchsize=10
+; delay = sleep in seconds between batches, 0 = no delay and unlimited batchsize
+  delay=1
 [artshow]
 test=0
 open=1
