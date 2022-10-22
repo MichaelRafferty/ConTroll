@@ -220,8 +220,31 @@ function cc_charge_purchase($results, $ccauth) {
             $errors = $apiResponse->getErrors();
             web_error_log("Payment returned non-success");
             foreach ($errors as $error) {
-                var_error_log("Cat: " . $error->getCategory() . ": Code " . $error->getCode() . ". Detail: " . $error->getDetail() . ", [" . $error->getField() . "]");
-                ajaxSuccess(array('status'=>'error','data'=>"Payment Error: " . $error->getCategory() . "/" . $error->getCode() . ": " . $error->getDetail() . "[" . $error->getField() . "]"));
+                $cat = $error->getCategory();
+                $code = $error->getCode();
+                $detail = $error->getDetail();
+                $field = $error->getField();
+                web_error_log("Cat: $cat: Code $code, Detail: $detail [$field]");
+                switch ($code) {
+                    case "GENERIC_DECLINE":
+                        $msg = "Card Declined";
+                        break;
+                    case "CVV_FAILURE":
+                        $msg = "Authorization error: Invalid CVV";
+                        break;
+                    case "ADDRESS_VERIFICATION_FAILURE":
+                        $msg = "Address Verification Failure: Zip Code";
+                        break;
+                    case "INVALID_EXPIRATION":
+                        $msg = "Authorization error: Invalid Expiration Date";
+                        break;
+                    default:
+                        $msg = $code;
+                }
+
+
+
+                ajaxSuccess(array('status'=>'error','data'=>"Payment Error: $msg"));
                 exit();
             }
             ajaxSuccess(array('status'=>'error','data'=>"Unknown Payment Error"));

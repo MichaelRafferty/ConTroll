@@ -14,37 +14,6 @@
 */
 
 
-// send_email - exposed function send an email
-//      $from = sender
-//      $to = recepient
-//      $cc = array of cc addresses
-//      $subject = subject of the email
-//      $textbody = text of email message for plain text
-//      $htmlbody = email message in HTML format
-//
-// returns an associative array of status
-//      status = success / error
-//      email_error = error message (only if status = error)
-//      error_code = error code returned by api
-//
-
-
-
-
-// send_email - exposed function send an email
-//      $from = sender
-//      $to = recepient
-//      $cc = array of cc addresses
-//      $subject = subject of the email
-//      $textbody = text of email message for plain text
-//      $htmlbody = email message in HTML format
-//
-// returns an associative array of status
-//      status = success / error
-//      email_error = error message (only if status = error)
-//      error_code = error code returned by api
-//
-
 require_once (__DIR__ . "/db_functions.php");
 require_once (__DIR__ . "/../Composer/vendor/autoload.php");
 
@@ -57,6 +26,20 @@ use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mime\Email;
 
+// send_email - exposed function send an email
+//      $from = sender
+//      $to = recepient
+//      $cc = array of cc addresses
+//      $subject = subject of the email
+//      $textbody = text of email message for plain text
+//      $htmlbody = email message in HTML format
+//
+// returns an associative array of status
+//      status = success / error
+//      email_error = error message (only if status = error)
+//      error_code = error code returned by api
+//
+
 function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
     global $transport, $mailer, $emailconf;
     $return_arr = array();
@@ -65,15 +48,24 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
         // Create a Transport object
         try {
             $dsn = $emailconf['transport'] . '://';
-            $dsn .= $emailconf['username'] . ':';
-            $dsn .= urlencode($emailconf['password']) . '@';
+            if (array_key_exists('username', $emailconf)) {
+                $dsn .= $emailconf['username'];
+                if (array_key_exists('password', $emailconf)) {
+                    $dsn .= ':' . urlencode($emailconf['password']);
+                }
+                $dsn .= '@';
+            }
+
             $dsn .= $emailconf['host'];
             $transport = Transport::fromDsn($dsn);
+            web_error_log("dsn = '$dsn'");
         }
         catch (TransportExceptionInterface $e) {
             $return_arr['status'] = "error";
             $return_arr['error_code'] = $e->getCode();
             $return_arr['email_error'] = $e->getMessage();
+            web_error_log("symfony send_email transport create error:");
+            var_error_log($return_arr);
             return $return_arr;
         }
     }
@@ -87,6 +79,8 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
             $return_arr['status'] = "error";
             $return_arr['error_code'] = $e->getCode();
             $return_arr['email_error'] = $e->getMessage();
+            web_error_log("symfony send_email mailer create error:");
+            var_error_log($return_arr);
             return $return_arr;
         }
     }
@@ -140,6 +134,8 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
         $return_arr['status'] = "error";
         $return_arr['error_code'] = $e->getCode();
         $return_arr['email_error'] = $e->getMessage();
+        web_error_log("symfony send_email send error:");
+        var_error_log($return_arr);
         return $return_arr;
     }
     $return_arr['status'] = "success";

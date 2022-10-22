@@ -42,6 +42,7 @@ $response['test'] = $test;
 
 $con = get_conf("con");
 $reg = get_conf("reg");
+$emailconf = get_conf("email");
 $conid=$con['id'];
 $email_type = $_POST['type'];
 
@@ -90,6 +91,21 @@ if($test) {
     }
 }
 
+if (array_key_exists('batchsize', $emailconf)) {
+    $batchsize = $emailconf['batchsize'];
+} else {
+    $batchsize= 10;
+}
+
+if (array_key_exists('delay', $emailconf)) {
+    $delay = $emailconf['delay'];
+} else {
+    $delay= 1;
+}
+
+if ($batchsize == 0  || $delay == 0)
+    $batchsize = 999999;
+
 // bunch in groups of 10 to avoid throttle cutoff
 $i = 0;
 foreach ($email_array as $email) {
@@ -105,13 +121,13 @@ foreach ($email_array as $email) {
         web_error_log("failed $email_type email to $email");
     }
 
-    if ($i > 10) {
+    if ($i > $batchsize) {
 	    $i = 0;
-	    sleep(1);
+	    sleep($delay);
     }
 }
 
-$response['status'] = $success;
+$response['status'] = 'success';
 $response['error'] = $data_array;
 $response['email_array'] = $email_array;
 
