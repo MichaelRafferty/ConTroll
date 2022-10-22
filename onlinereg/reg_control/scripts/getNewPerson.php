@@ -26,7 +26,7 @@ SELECT id, perid, first_name, middle_name, last_name, suffix
     , concat_ws(' ', first_name, middle_name, last_name, suffix) as full_name
     , address, addr_2, city, state, zip
     , concat_ws(' ', city, state, zip) as locale, country
-    , badge_name, email_addr, phone
+    , badge_name, email_addr, phone, share_reg_ok, contact_ok
 FROM newperson
 WHERE id = ?;
 EOQ;
@@ -69,7 +69,7 @@ SELECT id, first_name, middle_name, last_name, suffix
     , concat_ws(' ', first_name, middle_name, last_name, suffix) as full_name
     , address, addr_2, city, state, zip
     , concat_ws(' ', city, state, zip) as locale, country
-    , badge_name, email_addr, phone, active, banned
+    , badge_name, email_addr, phone, active, banned, share_reg_ok, contact_ok
 FROM perinfo
 WHERE last_name=? AND first_name like ?
 ORDER BY active DESC, id ASC;
@@ -86,7 +86,7 @@ EOQ;
 SELECT id, first_name, middle_name, last_name, suffix
     , concat_ws(' ', first_name, middle_name, last_name, suffix) as full_name
     , address, addr_2, concat_ws(' ', city, state, zip) as locale, country
-    , badge_name, email_addr, phone, active, banned
+    , badge_name, email_addr, phone, active, banned, share_reg_ok, contact_ok
 FROM perinfo
 WHERE email_addr=? AND (last_name != ? OR first_name != ?)
 ORDER BY active DESC, id ASC;
@@ -110,7 +110,7 @@ EOQ;
                     (strtoupper(is_null($newRes['country']) ? '' : $newRes['country']) == strtoupper(is_null($nameRes['country']) ? '' : $nameRes['country'])));
         $addr2_match = (strtoupper(is_null($newRes['addr_2']) ? '' : $newRes['addr_2']) == strtoupper(is_null($nameRes['addr_2']) ? '' : $nameRes['addr_2']));
         $email_match = (strtoupper(is_null($newRes['email_addr']) ? '' : $newRes['email_addr']) == strtoupper(is_null($nameRes['email_addr']) ? '' : $nameRes['email_addr']));
-        $phone_match = (strtoupper(is_null($newRes['phone']) ? '' : $newRes['phone']) == strtoupper(is_null($nameRes['phone']) ? '' : $nameRes['phone'])); 
+        $phone_match = (strtoupper(is_null($newRes['phone']) ? '' : $newRes['phone']) == strtoupper(is_null($nameRes['phone']) ? '' : $nameRes['phone']));
         $phone_onenull = ((is_null($newRes['phone']) ? '' : $newRes['phone'])  == '') || ((is_null($nameRes['phone']) ? '' : $nameRes['phone']) == '');
         $banned = ($nameRes['banned'] == 'Y');
 

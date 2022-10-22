@@ -154,6 +154,11 @@ function loadNewPerson(data) {
         $('#conflictFormNewPhone').val(user['phone']);
         $('#conflictFormUserPhone').empty().append(user['phone']);
 
+        $('#conflictFormDbFlags').empty();
+        $("#conflictViewForm :radio[name='conflictFormNewShareReg'][value='" + user["share_reg_ok"] + "']").prop('checked', true)
+        $("#conflictViewForm :radio[name='conflictFormNewContactOK'][value='" + user["contact_ok"] + "']").prop('checked', true)
+        $('#conflictFormUserFlags').empty().append('S: ' + user['share_reg_ok'] + '  C: ' + user['contact_ok']);
+
         $('#conflictUpdate').attr('disabled', true);
         showBlock('#conflictView');
     } else {
@@ -180,6 +185,17 @@ function loadOldPerson(objData) {
     $('#conflictFormDbCouuntry').empty().append(objData['country']);
     $('#conflictFormDbEmail').empty().append(objData['email_addr']);
     $('#conflictFormDbPhone').empty().append(objData['phone']);
+    $('#conflictFormDbFlags').empty().append('S: ' + objData['share_reg_ok'] + '  C: ' + objData['contact_ok']);
+
+    $('#conflictFormDbName').css("background-color", $('#conflictFormDbName').text() != $('#conflictFormUserName').text() ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbBadge').css("background-color", $('#conflictFormDbBadge').text() != $('#conflictFormUserBadge').text() ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbAddr').css("background-color", $('#conflictFormDbAddr').text() != $('#conflictFormUserAddr').text() ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbAddr2').css("background-color", $('#conflictFormDbAddr2').text() != $('#conflictFormUserAddr2').text() ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbLocale').css("background-color", $('#conflictFormDbLocale').text() != $('#conflictFormUserLocale').text() ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbCouuntry').css("background-color", $('#conflictFormDbCouuntry').text() != $('#conflictFormUserCouuntry').text() ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbEmail').css("background-color", $('#conflictFormDbEmail').text() != $('#conflictFormUserEmail').text() ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbPhone').css("background-color", $('#conflictFormDbPhone').text() != $('#conflictFormNwqPhone').text() ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbFlags').css("background-color", $('#conflictFormDbFlags').text() != $('#conflictFormUserFlags').text() ? "LightGoldenRodYellow" : "");
 
     $('#conflictUpdate').attr('disabled', false);
 
@@ -208,6 +224,10 @@ function setField(field, source) {
     }
     if(field == 'all' || field == 'Phone') {
         $('#conflictFormNewPhone').val($('#conflictViewForm').data(source)['phone']);
+    }
+    if (field == 'all' || field == 'Flags') {
+        $("#conflictViewForm :radio[name='conflictFormNewShareReg'][value='" + $('#conflictViewForm').data(source)["share_reg_ok"] + "']").prop('checked', true)
+        $("#conflictViewForm :radio[name='conflictFormNewContactOK'][value='" + $('#conflictViewForm').data(source)["contact_ok"] + "']").prop('checked', true)
     }
 }
 
