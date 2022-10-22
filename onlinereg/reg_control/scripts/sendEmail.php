@@ -127,7 +127,7 @@ foreach ($email_array as $email) {
     }
 }
 
-$response['status'] = $success;
+$response['status'] = 'success';
 $response['error'] = $data_array;
 $response['email_array'] = $email_array;
 
