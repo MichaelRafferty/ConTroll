@@ -187,15 +187,24 @@ function loadOldPerson(objData) {
     $('#conflictFormDbPhone').empty().append(objData['phone']);
     $('#conflictFormDbFlags').empty().append('S: ' + objData['share_reg_ok'] + '  C: ' + objData['contact_ok']);
 
-    $('#conflictFormDbName').css("background-color", $('#conflictFormDbName').text() != $('#conflictFormUserName').text() ? "LightGoldenRodYellow" : "");
-    $('#conflictFormDbBadge').css("background-color", $('#conflictFormDbBadge').text() != $('#conflictFormUserBadge').text() ? "LightGoldenRodYellow" : "");
-    $('#conflictFormDbAddr').css("background-color", $('#conflictFormDbAddr').text() != $('#conflictFormUserAddr').text() ? "LightGoldenRodYellow" : "");
-    $('#conflictFormDbAddr2').css("background-color", $('#conflictFormDbAddr2').text() != $('#conflictFormUserAddr2').text() ? "LightGoldenRodYellow" : "");
-    $('#conflictFormDbLocale').css("background-color", $('#conflictFormDbLocale').text() != $('#conflictFormUserLocale').text() ? "LightGoldenRodYellow" : "");
-    $('#conflictFormDbCouuntry').css("background-color", $('#conflictFormDbCouuntry').text() != $('#conflictFormUserCouuntry').text() ? "LightGoldenRodYellow" : "");
-    $('#conflictFormDbEmail').css("background-color", $('#conflictFormDbEmail').text() != $('#conflictFormUserEmail').text() ? "LightGoldenRodYellow" : "");
-    $('#conflictFormDbPhone').css("background-color", $('#conflictFormDbPhone').text() != $('#conflictFormNwqPhone').text() ? "LightGoldenRodYellow" : "");
-    $('#conflictFormDbFlags').css("background-color", $('#conflictFormDbFlags').text() != $('#conflictFormUserFlags').text() ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbName').css("background-color",
+        trim($('#conflictFormDbName').text()) != trim($('#conflictFormUserName').text()) ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbBadge').css("background-color",
+        trim($('#conflictFormDbBadge').text()) != trim($('#conflictFormUserBadge').text()) ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbAddr').css("background-color",
+        trim($('#conflictFormDbAddr').text()) != trim($('#conflictFormUserAddr').text()) ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbAddr2').css("background-color",
+        trim($('#conflictFormDbAddr2').text()) != trim($('#conflictFormUserAddr2').text()) ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbLocale').css("background-color",
+        trim($('#conflictFormDbLocale').text()) != trim($('#conflictFormUserLocale').text()) ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbCouuntry').css("background-color",
+        trim($('#conflictFormDbCouuntry').text()) != trim($('#conflictFormUserCouuntry').text()) ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbEmail').css("background-color",
+        trim($('#conflictFormDbEmail').text()) != trim($('#conflictFormUserEmail').text()) ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbPhone').css("background-color",
+        trim($('#conflictFormDbPhone').text()) != trim($('#conflictFormNwqPhone').text()) ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbFlags').css("background-color",
+        trim($('#conflictFormDbFlags').text()) != trim($('#conflictFormUserFlags').text()) ? "LightGoldenRodYellow" : "");
 
     $('#conflictUpdate').attr('disabled', false);
 
