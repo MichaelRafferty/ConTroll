@@ -188,23 +188,23 @@ function loadOldPerson(objData) {
     $('#conflictFormDbFlags').empty().append('S: ' + objData['share_reg_ok'] + '  C: ' + objData['contact_ok']);
 
     $('#conflictFormDbName').css("background-color",
-        trim($('#conflictFormDbName').text()) != trim($('#conflictFormUserName').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbName').text().trim() != $('#conflictFormUserName').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbBadge').css("background-color",
-        trim($('#conflictFormDbBadge').text()) != trim($('#conflictFormUserBadge').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbBadge').text().trim() != $('#conflictFormUserBadge').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbAddr').css("background-color",
-        trim($('#conflictFormDbAddr').text()) != trim($('#conflictFormUserAddr').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbAddr').text().trim() != $('#conflictFormUserAddr').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbAddr2').css("background-color",
-        trim($('#conflictFormDbAddr2').text()) != trim($('#conflictFormUserAddr2').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbAddr2').text().trim() != $('#conflictFormUserAddr2').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbLocale').css("background-color",
-        trim($('#conflictFormDbLocale').text()) != trim($('#conflictFormUserLocale').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbLocale').text().trim() != $('#conflictFormUserLocale').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbCouuntry').css("background-color",
-        trim($('#conflictFormDbCouuntry').text()) != trim($('#conflictFormUserCouuntry').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbCouuntry').text().trim() != $('#conflictFormUserCouuntry').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbEmail').css("background-color",
-        trim($('#conflictFormDbEmail').text()) != trim($('#conflictFormUserEmail').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbEmail').text().trim() != $('#conflictFormUserEmail').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbPhone').css("background-color",
-        trim($('#conflictFormDbPhone').text()) != trim($('#conflictFormNwqPhone').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbPhone').text().trim() != $('#conflictFormNwqPhone').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbFlags').css("background-color",
-        trim($('#conflictFormDbFlags').text()) != trim($('#conflictFormUserFlags').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbFlags').text().trim() != $('#conflictFormUserFlags').text().trim() ? "LightGoldenRodYellow" : "");
 
     $('#conflictUpdate').attr('disabled', false);
 
