@@ -773,7 +773,7 @@ function completeTransaction(trans) {
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
-            reutrn false;
+                return false;
             }
         });
     }
