@@ -28,7 +28,7 @@ SELECT DISTINCT P.id, concat_ws(' ', P.first_name, P.middle_name, P.last_name) a
     P.address, P.addr_2, concat_ws(' ', P.city, P.state, P.zip) as locale,
     P.badge_name, P.email_addr, P.phone, P.active, P.banned, M.label
 FROM perinfo as P
-LEFT OUTER JOIN reg R ON (R.perid = p.id AND R.conid = ?)
+LEFT OUTER JOIN reg R ON (R.perid = P.id AND R.conid = ?)
 LEFT OUTER JOIN memLabel M ON (R.memId = M.id)
 EOQ;
 
