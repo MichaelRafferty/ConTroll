@@ -7,14 +7,14 @@ $.ajax({
   method: "GET",
   data: {'method': 'attendance', 'conid': conid},
   success: function(data, textStatus, jhXHR) {
-    //showError(JSON.stringify(data));
+    //showError('trace:', data);
     d3.select("svg").remove();
     buildBreakdown(data['badgeList']);
     buildGraph(data['histogram'], data['staffing'], data['con']);
     return false;
   },
   error: function(jqXHR, textStatus, errorThrown) {
-    showError("ERROR in " + script + ": " + textStatus);
+    showError("ERROR in " + script + ": " + textStatus, jqXHR);
   }
 });
 }
