@@ -29,7 +29,7 @@ SELECT DISTINCT P.id, concat_ws(' ', P.first_name, P.middle_name, P.last_name) a
     P.badge_name, P.email_addr, P.phone, P.active, P.banned, M.label
 FROM perinfo as P
 LEFT OUTER JOIN reg R ON (r.perid = p.id AND r.conid = ?)
-LEFT OUTER JOIN memLabel M ON (r.memId = M.id)
+LEFT OUTER JOIN memLabel M ON (R.memId = M.id)
 EOQ;
 
 if(isset($_GET['condition'])) {
