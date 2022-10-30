@@ -20,6 +20,7 @@ $userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', array($user)));
 $userid = $userR['id'];
 $con = get_conf('con');
 $conid=$con['id'];
+$nextconid = $conid + 1;
 
 $query = "INSERT INTO transaction (conid, perid, newperid, userid) VALUES(?, ?, ?, ?);";
 $values = array($conid);
@@ -61,15 +62,16 @@ SELECT T.id as tID, T.create_date as tCreate
     , P.badge_name as ownerBadge, P.email_addr as ownerEmail
     , R.id as badgeId, R.price, R.paid, (IFNULL(R.price,0) - IFNULL(R.paid,0)) as cost, M.label
     , concat_ws('-', M.id, M.memCategory, M.memType, M.memAge) as type
-    , R.locked, R.create_trans
+    , R.locked, R.create_trans, IFNULL(R1.id, -1) as nextid
 FROM transaction as T
 JOIN perinfo as P ON (P.id=T.perid)
 LEFT OUTER JOIN reg as R ON (R.perid=P.id AND (R.conid=T.conid OR R.conid=?))
+LEFT OUTER JOIN reg as R1 ON (R1.perid=P.id AND R1.conid=?)
 LEFT OUTER JOIN memLabel as M ON (M.id=R.memId)
 WHERE T.id=? AND T.conid=?;
 EOQ;
 
-$trans = fetch_safe_assoc(dbSafeQuery($transQ, 'iii', array($conid, $transid, $conid)));
+$trans = fetch_safe_assoc(dbSafeQuery($transQ, 'iiii', array($conid, $nextconid, $transid, $conid)));
 $response['transQ'] = $transQ;
 $response['result'] = $trans;
 

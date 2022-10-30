@@ -309,7 +309,8 @@ if(isset($_GET['id'])) {
             <td id='transactionFormOwnerAddr' colspan=4></td>
             <td id='transactionFormOwnerManage' colspan=2>
               <button id='transactionFormOwnerEdit' onClick='editPerson("transactionFormOwner"); return false;'>Edit Person</button><br/>
-              <button id='transactionFormOwnerBadgeRollover' onclick='processRollover($("#transactionFormOwnerBadgeId").val()); return false;' disabled>Rollover</button>
+              <button id='transactionFormOwnerBadgeRollover' onclick='processRollover($("#transactionFormOwnerBadgeId").val(), "rollover"); return false;' disabled>Rollover</button>
+              <button id='transactionFormOwnerBadgeVolunteer' onclick='processRollover($("#transactionFormOwnerBadgeId").val(), "volunteer"); return false;' disabled>Volunteer RO</button>
             </td>
           </tr>
           <tr>

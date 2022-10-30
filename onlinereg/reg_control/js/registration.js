@@ -143,13 +143,6 @@ function appendPerson(user) {
 
     /*
         actionButtons.append($(document.createElement('button'))
-            .attr('id', id+"BadgeVolunteer")
-            .addClass('badgeAction')
-            .addClass('right')
-            .click(function () { addBadgeAddon("volunteer", $('#'+id+"BadgeId").val(), id,""); })
-            .append("Volunteer"));
-    
-        actionButtons.append($(document.createElement('button'))
             .attr('id', id+"BadgeReturn")
             .addClass('badgeAction')
             .addClass('right')
@@ -162,18 +155,6 @@ function appendPerson(user) {
             .addClass('right')
             .click(function () { addBadgeNote("return", $('#'+id+"BadgeId").val(), id+"Badge"); })
             .append("Return"));
-    
-        actionButtons.append($(document.createElement('button'))
-            .attr('id', id+"BadgeUpgrade")
-            .addClass('badgeAction')
-            .click(function () { addBadgeAddon("upgrade", $('#'+id+"BadgeId").val(), id,""); })
-            .append("Upgrade"));
-    
-        actionButtons.append($(document.createElement('button'))
-            .attr('id', id+"BadgeYearAhead")
-                    .addClass('badgeAction')
-                    .click(function () { addBadgeAddon("yearahead", $('#'+id+"BadgeId").val(), id,""); })
-                    .append("Year Ahead"));
      */
     actionButtonLine.append(actionButtons);
     perBody.append(actionButtonLine);
@@ -194,9 +175,6 @@ function appendPerson(user) {
         }
     });
 }
-
-
-
 
 function createTransaction(user) {
     $('#searchResultHolder').empty();
@@ -352,14 +330,17 @@ function setTransaction_inner(tData) {
     if (tData['badgeId']) {
         setBadge("transactionFormOwnerBadge", tData['badgeId'], tData['paid'], tData['price'],
             tData['type'], tData['cost'], tData['locked'], tData['label']);
-        if (tData['label'].includes('cancel')) {
+        if (tData['label'].includes('cancel') || (tData['nextid'] > 0)) {
             $('#transactionFormOwnerBadgeRollover').attr('disabled', 'disabled');
+            $('#transactionFormOwnerBadgeVolunteer').attr('disabled', 'disabled');
         } else {
             $('#transactionFormOwnerBadgeRollover').removeAttr('disabled');
+            $('#transactionFormOwnerBadgeVolunteer').removeAttr('disabled');
         }
     } else {
         clearBadge("transactionFormOwnerBadge");
         $('#transactionFormOwnerBadgeRollover').attr('disabled', 'disabled');
+        $('#transactionFormOwnerBadgeVolunteer').attr('disabled', 'disabled');
     }
 }
 
@@ -792,8 +773,7 @@ function addBadgeNote(type, badgeId, prefix, note) {
         data: formdata,
         method: "POST",
         success: function (data, textstatus, jqXHR) {
-            if (data['error'] && data['error'] != '') { showError(data['error']); }
-            showActions(prefix, data['actions'], badgeId, transid);
+            if (data['error'] && data['error'] != '') { showError(data['error']); }          
         },
         error: function (jqXHR, textStatus, errorThrown) {
             showError("ERROR in " + formurl + ": " + textStatus, jqXHR);
@@ -842,25 +822,34 @@ function getEdited(data, textStatus, jqXHR) {
 }
 
 function processRolloverReturn(data, textstatus, jqXHR) {
-    if (data['error'] && data['error'] != '') { showError(data['error']); }
-    if (data['sucess'] && data['success'] != '') {
-        setBadge("transactionFormOwnerBadge", Data['badgeId'], Data['paid'], Data['price'],
-            Data['type'], Data['cost'], Data['locked'], Data['label']);
+    //console.log("success");
+    //console.log(data);
+    if (data['error'] && data['error'] != '') {
+        showError(data['error']);
+        return false;
+    }
+    if (data['success'] && data['success'] != '') {
+        showError(data['success']);
+        if (data['newlabel'] && data['newlabel'] != '') {
+            $('#transactionFormOwnerBadgeType').val(data['newlabelid'] + '-rollover-full-all');
+        }
         $('#transactionFormOwnerBadgeRollover').attr('disabled', 'disabled');
+        $('#transactionFormOwnerBadgeVolunteer').attr('disabled', 'disabled');
     }
 }
 
 function processRollover(badgeid, type) {
-    console.log(badgeid);
+    //console.log(badgeid);
+    //console.log(type);
 
     var script = "scripts/rolloverBadge.php";
-
     $.ajax({
         url: script,
         method: "POST",
         data: { "id": badgeid, "type": type },
         success: processRolloverReturn,
         error: function (jqXHR, textStatus, errorThrown) {
+            //console.log("error");
             showError("ERROR in " + script + ": " + textStatus, jqXHR);
             return false;
         }

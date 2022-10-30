@@ -81,6 +81,7 @@ function init_ps() {
     if(!$tempfile) {
         $response['error'] = "Unable to get unique file";
         $response['error_message'] = error_get_last();
+        var_error_log($response);
         ajaxSuccess($response);
         exit();
     }
@@ -88,6 +89,7 @@ function init_ps() {
     if(!copy(dirname(__FILE__) . "/init.ps", $tempfile)) {
         $response['error'] = "Unable to copy init.ps file";
         $response['error_message'] = error_get_last();
+        var_error_log($response);
         ajaxSuccess($response);
         exit();
     }
