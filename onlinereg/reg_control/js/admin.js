@@ -7,6 +7,8 @@ var current_condata = null;
 var current_memlist = null;
 var next_condata = null;
 var next_memlist = null;
+var next_conlistDirty = false;
+var proposed = ' ';
 
 function clearPermissions(userid) {
     var formdata = $("#" + userid).serialize();
@@ -84,7 +86,8 @@ function draw_current(data, textStatus, jhXHR) {
         data: data['memlist'],
         layout: "fitDataTable",
         columns: [
-            { title: "ID", field: "id" },
+            { title: "ID", field: "id", visible: false },
+            { title: "Con", field: "conid" },
             { title: "Sort", field: "sort_order", headerSort: false },
             { title: "Category", field: "memCategory" },
             { title: "Type", field: "memType" },
@@ -121,14 +124,35 @@ function open_current() {
 function draw_next(data, textStatus, jhXHR) {
     //console.log('in draw current');
     //console.log(data);
+    proposed = ' ';
 
-    var html = `<h5><strong>Next Convention Data:</strong></h5>
+    if (data['conlist-type'] == 'proposed')
+        proposed = ' Proposed ';
+
+    var html = '<h5><strong>' + proposed + `Next Convention Data:</strong></h5>
 <div id="next-conlist"></div>
+<div id="conlist-buttons">  
+    <button id="nextconlist-undo" type="button" class="btn btn-secondary btn-sm" onclick="undoNextConlist(); return false;" disabled>Undo</button>
+    <button id="nextconlist-redo" type="button" class="btn btn-secondary btn-sm" onclick="redoNextConlist(); return false;" disabled>Redo</button>
+    <button id="nextconlist-save" type="button" class="btn btn-primary btn-sm"  onclick="saveNextConlist(); return false;" disabled>Save Changes</button>
+</div>
+<div>&nbsp;</div>
 <h5><strong>Next Membership Types:</strong></h5>
 <div id="next-memlist"></div>
 `;
     $('#nextconsetup-pane').empty().append(html);
     $('#test').empty();
+    condate = new Date(data['startdate']);
+    conyear = condate.getFullYear();
+    mindate = conyear + "-01-01";
+    maxdate = conyear + "-12-31";
+    dateformat = 'yyyy-MM-dd';
+
+    if (proposed != ' ') {
+        var savebtn = document.getElementById("nextconlist-save");
+        savebtn.innerHTML = "Save Changes*";
+        savebtn.disabled = false;
+    }        
 
     next_condata = null;
 
@@ -137,17 +161,29 @@ function draw_next(data, textStatus, jhXHR) {
     } else {
         next_condata = new Tabulator('#next-conlist', {
             maxHeight: "400px",
+            history: true,
             data: [data['conlist']],
             layout: "fitDataTable",
             columns: [
                 { title: "ID", field: "id", headerSort: false },
-                { title: "Name", field: "name", headerSort: false },
-                { title: "Label", field: "label", headerSort: false },
-                { title: "Start Date", field: "startdate", headerSort: false },
-                { title: "End Date", field: "enddate", headerSort: false }
+                { title: "Name", field: "name", headerSort: false, editor: "input" },
+                { title: "Label", field: "label", headerSort: false, editor: "input" },
+                { title: "Start Date", field: "startdate", headerSort: false, editor: "date" },
+                { title: "End Date", field: "enddate", headerSort: false, editor: "date" }
             ],
         });
     }
+
+    next_condata.on("dataChanged", function (data) {
+        //data - the updated table data
+        next_conlistDirty = true;
+        var savebtn = document.getElementById("nextconlist-save");
+        savebtn.innerHTML = "Save Changes*";
+        savebtn.disabled = false;
+        if (this.getHistoryUndoSize() > 0) {
+            document.getElementById("nextconlist-undo").disabled = false;
+        }
+    });
 
     next_memlist = null;
 
@@ -159,7 +195,8 @@ function draw_next(data, textStatus, jhXHR) {
             data: data['memlist'],
             layout: "fitDataTable",
             columns: [
-                { title: "ID", field: "id" },
+                { title: "ID", field: "id", visible: false },
+                { title: "Con ID", field: "conid" },
                 { title: "Sort", field: "sort_order", headerSort: false },
                 { title: "Category", field: "memCategory" },
                 { title: "Type", field: "memType" },
@@ -205,6 +242,85 @@ function close_next() {
     next_memlist = null;
     $('#nextconsetup-pane').empty();
 }
+
+function undoNextConlist() {
+    if (next_condata != null) {
+        next_condata.undo();
+
+        var undoCount = next_condata.getHistoryUndoSize();
+        if (undoCount <= 0) {
+            document.getElementById("nextconlist-undo").disabled = true;
+            next_conlistDirty = false;
+            if (proposed == ' ') {
+                var savebtn = document.getElementById("nextconlist-save");
+                savebtn.innerHTML = "Save Changes";
+                savebtn.disabled = true;
+            }
+        }
+        var redoCount = next_condata.getHistoryRedoSize();
+        if (redoCount > 0) {
+            document.getElementById("nextconlist-redo").disabled = false;
+        }
+    }
+};
+
+function redoNextConlist() {
+    if (next_condata != null) {
+        next_condata.redo();
+
+        var undoCount = next_condata.getHistoryUndoSize();
+        if (undoCount > 0) {
+            document.getElementById("nextconlist-undo").disabled = false;
+            next_conlistDirty = true;
+            var savebtn = document.getElementById("nextconlist-save");
+            savebtn.innerHTML = "Save Changes*";
+            savebtn.disabled = false;
+        }
+        var redoCount = next_condata.getHistoryRedoSize();
+        if (redoCount <= 0) {
+            document.getElementById("nextconlist-redo").disabled = true;
+        }
+    }
+};
+
+function saveNextConlistComplete(data, textStatus, jhXHR) {
+    if (data['error'] && data['error' != '']) {
+        showError(data['error']);
+    } else {
+        showError(data['success']);
+    }
+    var savebtn = document.getElementById("nextconlist-save");
+    savebtn.innerHTML = "Save Changes";
+}
+
+function saveNextConlist() {
+    if (next_condata != null) {
+        var savebtn = document.getElementById("nextconlist-save");
+        savebtn.innerHTML = "Saving...";
+        savebtn.disabled = true;
+
+        var script = "scripts/updateCondata.php";
+
+        var postdata = {
+            ajax_request_action: "update_nextcondata",
+            tabledata: next_condata.getData(),
+            tablename: "conlist",
+            indexcol: "id"
+        };
+        //console.log(postdata);
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postdata,
+            success: saveNextConlistComplete,
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                return false;
+            }
+        });
+    }
+};
+
 
 function settab(tabname) {
     switch (tabname) {
