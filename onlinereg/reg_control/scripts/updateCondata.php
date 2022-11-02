@@ -19,18 +19,15 @@ if($check_auth == false || (!checkAuth($check_auth['sub'], $perm) &&
 $con = get_conf('con');
 $conid=$con['id'];
 
-//ajax_request_action: "update_nextcondata",
-//tabledata: next_condata.getData(),
-//tablename: "conlist",
-//indexcol: "id"
-$response['error'] = 'Dump';
-var_error_log($_POST);
+//var_error_log($_POST);
 
 
 $action=$_POST['ajax_request_action'];
+$response['year'] = $action;
 
 switch ($action) {
-    case 'update_nextcondata':
+    case 'next':
+    case 'current':
         $data = $_POST['tabledata'][0];
         $sql = <<<EOS
 INSERT INTO conlist(id, name, label, startdate, enddate, create_date)

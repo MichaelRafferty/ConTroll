@@ -10,11 +10,16 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 }
 
 page_init($page,
-    /* css */ array('css/base.css',
+    /* css */ array('https://unpkg.com/tabulator-tables@5.4.2/dist/css/tabulator.min.css',
+                    'css/base.css',
                    ),
-    /* js  */ array('/javascript/d3.js',
+    /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
+                    'https://unpkg.com/tabulator-tables@5.4.2/dist/js/tabulator.min.js',
+                    '/javascript/d3.js',
                     'js/base.js',
-                    'js/admin.js'
+                    'js/admin.js',
+                    'js/admin_consetup.js',
+                    'js/admin_memconfig.js'
                    ),
               $need_login);
 $con = get_conf("con");
@@ -66,6 +71,9 @@ $conid=$con['id'];
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="nextconsetup-tab" data-bs-toggle="pill" data-bs-target="#nextconsetup-pane" type="button" role="tab" aria-controls="nav-nextconsetup" aria-selected="false" onclick="settab('nextconsetup-pane');">Next Convention Setup</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="memconfig-tab" data-bs-toggle="pill" data-bs-target="#memconfig-pane" type="button" role="tab" aria-controls="nav-nextconsetup" aria-selected="false" onclick="settab('memconfig-pane');">Membership Configuration Tables</button>
         </li>
     </ul>
     <div class="tab-content" id="admin-content">
@@ -168,38 +176,9 @@ $conid=$con['id'];
             </form>
         </div>
     </div>
-    <div class="tab-pane fade" id="consetup-pane" role="tabpanel" aria-labelledby="consetup-tab" tabindex="0" style="width:98%;">
-<?php if (false) { ?>
-        <div id="curcon_data">
-            <div class="row overflow-hidden">
-                <div class="col-sm-1 ms-4"><strong>ID</strong></div>
-                <div class="col-sm-2"><strong>Name</strong></div>
-                <div class="col-sm-2"><strong>Label</strong></div>
-                <div class="col-sm-2"><strong>Start Date</strong></div>
-                <div class="col-sm-2"><strong>End Date</strong></div>
-            </div>
-<?php
-        $curcon = fetch_safe_assoc(dbSafeQuery("SELECT id, name, label, CAST(startdate AS DATE) AS startdate, CAST(enddate as DATE) AS enddate FROM conlist WHERE id = ?;", 'i', array($conid)));
-?>
-            <div class="row overflow-hidden">
-                <div class="col-sm-1 ms-4"><?php echo $curcon['id'];?></div>
-                <div class="col-sm-2"><?php echo $curcon['name'];?></div>
-                <div class="col-sm-2"><?php echo $curcon['label'];?></div>
-                <div class="col-sm-2"><?php echo $curcon['startdate'];?></div>
-                <div class="col-sm-2"><?php echo $curcon['enddate'];?></div>
-            </div>
-        </div>
-        <div>
-            &nbsp;<h4>Membership Types</h4>
-            <div id="cur-member-types"></div>
-        </div>
-<?php } ?>
-    </div>
-    <div class="tab-pane fade" id="nextconsetup-pane" role="tabpanel" aria-labelledby="nextconsetup-tab" tabindex="0">
-<?php if (false) { ?>
-        <h1>Next con setup</h1>
-<?php } ?>
-    </div>
+    <div class="tab-pane fade" id="consetup-pane" role="tabpanel" aria-labelledby="consetup-tab" tabindex="0"></div>
+    <div class="tab-pane fade" id="nextconsetup-pane" role="tabpanel" aria-labelledby="nextconsetup-tab" tabindex="0"></div>
+    <div class="tab-pane fade" id="memconfig-pane" role="tabpanel" aria-labelledby="memconfig-tab" tabindex="0"></div>
 </div>
 <script>
     $(function() {

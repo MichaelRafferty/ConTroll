@@ -136,8 +136,7 @@ function page_init($title, $css, $js, $auth) {
     <meta charset="utf-8"/>
     <title><?php echo $title . '--' . $db_ini['con']['conname']?> Reg</title>
     <link href='/css/jquery-ui-1.13.1.css' rel='stylesheet' type='text/css' />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
-    <link href="https://unpkg.com/tabulator-tables@5.4.2/dist/css/tabulator.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous"/>
   
     <?php
     if(isset($css) && $css != null) { foreach ($css as $sheet) {
@@ -148,10 +147,6 @@ function page_init($title, $css, $js, $auth) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
     <script type='text/javascript' src='/javascript/jquery-min-3.60.js'></script>
     <script type='text/javascript' src='/javascript/jquery-ui.min-1.13.1.js'></script>
-    <?php if (false) { ?>
-    <script type='text/javascript' src='https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js'></script>
-    <?php } ?>
-    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.4.2/dist/js/tabulator.min.js"></script>
     <?php
     if(isset($js) && $js != null) { foreach ($js as $script) {
         ?><script src='<?php echo $script; ?>' 

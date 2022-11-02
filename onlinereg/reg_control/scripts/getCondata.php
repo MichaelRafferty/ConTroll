@@ -36,6 +36,7 @@ if ($year == 'current') {
 }
 
 $response['conlist'] = null;
+$response['year'] = $year;
 
 $result = dbSafeQuery("SELECT id, name, label, CAST(startdate AS DATE) AS startdate, CAST(enddate as DATE) AS enddate FROM conlist WHERE id = ?;", 'i', array($id));
 
