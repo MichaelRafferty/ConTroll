@@ -59,6 +59,8 @@ function settab(tabname) {
         case 'consetup-pane':            
             if (next != null)
                 next.close();
+            if (current != null)
+                current.close();
             if (mem != null)
                 mem.close();
             if (current == null)
@@ -71,6 +73,8 @@ function settab(tabname) {
                 current.close();
             if (mem != null)
                 mem.close();
+            if (next != null)
+                next.close();
             if (next == null)
                 next = new consetup('next');
             next.open();
@@ -80,6 +84,8 @@ function settab(tabname) {
                 current.close();
             if (next != null)
                 next.close();
+            if (mem != null)
+                mem.close();
             if (mem == null)
                 mem = new memsetup();
             mem.open();
@@ -90,4 +96,17 @@ function settab(tabname) {
 function cellChanged(cell) {
     dirty = true;
     cell.getElement().style.backgroundColor = "#fff3cd";
+}
+
+function deleteicon(cell, formattParams, onRendered) {
+    var value = cell.getValue();
+    if (value == 0)
+        return "&#x1F5D1;";
+    return value;
+}
+
+function deleterow(e, row) {
+    var count = row.getCell("uses").getValue();
+    if (count == 0)
+        row.delete();
 }

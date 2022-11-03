@@ -213,6 +213,14 @@ class memsetup {
         var _this = this;
 
         this.#memtype_dirty = false;
+
+        if (this.#memtypetable != null) {
+            this.#memtypetable.off("dataChanged");
+            this.#memtypetable.off("rowMoved")
+            this.#memtypetable.off("cellEdited");
+            this.#memtypetable.destroy();
+        }
+
         this.#memtypetable = null;
         // memtype table
         this.#memtypetable = new Tabulator('#types-div', {
@@ -223,8 +231,8 @@ class memsetup {
             layout: "fitDataTable",
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
-                { title: "Type", field: "memType", headerSort: true, width: 150, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } } },
-                { title: "Active", field: "active", headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], } },
+                { title: "Type", field: "memType", headerSort: true, width: 150, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "unique", "required" ] },
+                { title: "Active", field: "active", headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], }, validator: "required" },
                 { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
@@ -248,6 +256,14 @@ class memsetup {
         var _this = this;
 
         this.#category_dirty = false;
+
+        if (this.#categorytable != null) {
+            this.#categorytable.off("dataChanged");
+            this.#categorytable.off("rowMoved")
+            this.#categorytable.off("cellEdited");
+            this.#categorytable.destroy();
+        }
+
         this.#categorytable = null;
         // category table
         this.#categorytable = new Tabulator('#cat-div', {
@@ -258,8 +274,8 @@ class memsetup {
             layout: "fitDataTable",
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
-                { title: "Category", field: "memCategory", width: 150, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } } },
-                { title: "Active", field: "active", headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], } },
+                { title: "Category", field: "memCategory", width: 150, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "unique", "required" ] },
+                { title: "Active", field: "active", headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], }, validator: "required" },
                 { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
@@ -284,6 +300,14 @@ class memsetup {
         var _this = this;
 
         this.#curage_dirty = false;
+
+        if (this.#curagetable != null) {
+            this.#curagetable.off("dataChanged");
+            this.#curagetable.off("rowMoved")
+            this.#curagetable.off("cellEdited");
+            this.#curagetable.destroy();
+        }
+
         this.#curagetable = null;
         // current agelist table
         this.#curagetable = new Tabulator('#curage-div', {
@@ -295,9 +319,9 @@ class memsetup {
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
                 { title: "ConID", field: "conid", visible: false },
-                { title: "Age Type", field: "ageType", headerSort: true, editor: "input" },
-                { title: "Label", field: "label", headerSort: false, editor: "input", editorParams: { elementAttributes: { maxlength: "64" } } },
-                { title: "shortname", field: "shortname", headerSort: false, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } } },
+                { title: "Age Type", field: "ageType", width: 140, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: "required" },
+                { title: "Label", field: "label", headerSort: false, width: 200, editor: "input", editorParams: { elementAttributes: { maxlength: "64" } }, validator: "required" },
+                { title: "shortname", field: "shortname", headerSort: false, width: 140, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: "required" },
                 { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
@@ -321,6 +345,14 @@ class memsetup {
         var _this = this;
 
         this.#nextage_dirty = false;
+
+        if (this.#nextagetable != null) {
+            this.#nextagetable.off("dataChanged");
+            this.#nextagetable.off("rowMoved")
+            this.#nextagetable.off("cellEdited");
+            this.#nextagetable.destroy();
+        }
+
         this.#nextagetable = null;
         // next  agelist table
         this.#nextagetable = new Tabulator('#nextage-div', {
@@ -332,9 +364,9 @@ class memsetup {
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
                 { title: "ConID", field: "conid", visible: false },
-                { title: "Age Type", field: "ageType", headerSort: true, editor: "input" },
-                { title: "Label", field: "label", headerSort: false, editor: "input", editorParams: { elementAttributes: { maxlength: "64" } } },
-                { title: "shortname", field: "shortname", headerSort: false, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } } },
+                { title: "Age Type", field: "ageType", width: 140, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } } },
+                { title: "Label", field: "label", headerSort: false, width: 200, editor: "input", editorParams: { elementAttributes: { maxlength: "64" } } },
+                { title: "shortname", field: "shortname", headerSort: false, width: 140, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } } },
                 { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
@@ -371,11 +403,44 @@ class memsetup {
     };
 
     close() {
-        this.#memtypetable = null;
-        this.#categorytable = null;
+        if (this.#curagetable != null) {
+            this.#curagetable.off("dataChanged");
+            this.#curagetable.off("rowMoved")
+            this.#curagetable.off("cellEdited");
+            this.#curagetable.destroy();
+            this.#curagetable = null;
+        }
+
+        if (this.#categorytable != null) {
+            this.#categorytable.off("dataChanged");
+            this.#categorytable.off("rowMoved")
+            this.#categorytable.off("cellEdited");
+            this.#categorytable.destroy();
+            this.#categorytable = null;
+        }
+
+        if (this.#memtypetable != null) {
+            this.#memtypetable.off("dataChanged");
+            this.#memtypetable.off("rowMoved")
+            this.#memtypetable.off("cellEdited");
+            this.#memtypetable.destroy();
+            this.#memtypetable = null;
+        }
+
+        if (this.#nextagetable != null) {
+            this.#nextagetable.off("dataChanged");
+            this.#nextagetable.off("rowMoved")
+            this.#nextagetable.off("cellEdited");
+            this.#nextagetable.destroy();
+            this.#nextagetable = null;
+        }
+
+               
         this.#memsetup_pane.innerHTML = '';
         this.#memtype_dirty = false;
         this.#category_dirty = false;
+        this.#curage_dirty = false;
+        this.#nextage_dirty = false;
     };
 
     undoTypes() {
@@ -421,8 +486,11 @@ class memsetup {
     saveTypesComplete(data, textStatus, jhXHR) {
         if (data['error'] && data['error' != '']) {
             showError(data['error']);
+            this.#memtype_savebtn.innerHTML = "Save Changes*";
+            this.#memtype_savebtn.disabled = false;
+            return false;
         } else {
-            showError(data['success']);
+            showError(data['success']);    
         }
         this.#memtype_savebtn.innerHTML = "Save Changes";
         var script = "scripts/getMemberSetupData.php";
@@ -442,6 +510,12 @@ class memsetup {
 
     saveTypes() {
         if (this.#memtypetable != null) {
+            var invalids = this.#memtypetable.validate();
+            if (invalids !== true) {
+                console.log(invalids);
+                alert("MemType Table does not pass validation, please check for empty cells or cells in red");
+                return false;
+            }
             this.#memtype_savebtn.innerHTML = "Saving...";
             this.#memtype_savebtn.disabled = true;
 
@@ -512,6 +586,9 @@ class memsetup {
     saveCatComplete(data, textStatus, jhXHR) {
         if (data['error'] && data['error' != '']) {
             showError(data['error']);
+            this.#category_savebtn.innerHTML = "Save Changes*";
+            this.#category_savebtn.disabled = false;
+            return false;
         } else {
             showError(data['success']);
         }
@@ -533,6 +610,12 @@ class memsetup {
 
     saveCat() {
         if (this.#categorytable != null) {
+            var invalids = this.#categorytable.validate();
+            if (invalids !== true) {
+                console.log(invalids);
+                alert("Category Table does not pass validation, please check for empty cells or cells in red");
+                return false;
+            }
             this.#category_savebtn.innerHTML = "Saving...";
             this.#category_savebtn.disabled = true;
 
@@ -541,7 +624,7 @@ class memsetup {
             var postdata = {
                 ajax_request_action: 'category',
                 tabledata: this.#categorytable.getData(),
-                tablename: "memcategories",
+                tablename: "memCategories",
                 indexcol: "memCategory"
             };
             //console.log(postdata);
@@ -603,6 +686,9 @@ class memsetup {
     saveCurAgeComplete(data, textStatus, jhXHR) {
         if (data['error'] && data['error' != '']) {
             showError(data['error']);
+            this.#curage_savebtn.innerHTML = "Save Changes*";
+            this.#curage_savebtn.disabled = false;
+            return false;
         } else {
             showError(data['success']);
         }
@@ -624,6 +710,12 @@ class memsetup {
 
     saveCurAge() {
         if (this.#curagetable != null) {
+            var invalids = this.#curagetable.validate();
+            if (invalids !== true) {
+                console.log(invalids);
+                alert("Age Table does not pass validation, please check for empty cells or cells in red");
+                return false;
+            }
             this.#curage_savebtn.innerHTML = "Saving...";
             this.#curage_savebtn.disabled = true;
 
@@ -634,7 +726,7 @@ class memsetup {
                 year: this.#current_conid,
                 tabledata: this.#curagetable.getData(),
                 tablename: "ageList",
-                indexcol: "curage"
+                indexcol: "ageType"
             };
             //console.log(postdata);
             $.ajax({
@@ -695,6 +787,9 @@ class memsetup {
     saveNextAgeComplete(data, textStatus, jhXHR) {
         if (data['error'] && data['error' != '']) {
             showError(data['error']);
+            this.#nextage_savebtn.innerHTML = "Save Changes*";
+            this.#nextage_savebtn.disabled = false;
+            return false;
         } else {
             showError(data['success']);
         }
@@ -716,6 +811,12 @@ class memsetup {
 
     saveNextAge() {
         if (this.#nextagetable != null) {
+            var invalids = this.#nextagetable.validate();
+            if (invalids !== true) {
+                console.log(invalids);
+                alert("MemType Table does not pass validation, please check for empty cells or cells in red");
+                return false;
+            }
             this.#nextage_savebtn.innerHTML = "Saving...";
             this.#nextage_savebtn.disabled = true;
 
@@ -726,7 +827,7 @@ class memsetup {
                 year: this.#current_conid,
                 tabledata: this.#nextagetable.getData(),
                 tablename: "ageList",
-                indexcol: "nextage"
+                indexcol: "ageType"
             };
             //console.log(postdata);
             $.ajax({
@@ -744,16 +845,3 @@ class memsetup {
         }
     };
 };
-
-function deleteicon(cell, formattParams, onRendered) {
-    var value = cell.getValue();
-    if (value == 0)
-        return "&#x1F5D1;";
-    return value;
-}
-
-function deleterow(e, row) {
-    var count = row.getCell("uses").getValue();
-    if (count == 0)
-        row.delete();
-}

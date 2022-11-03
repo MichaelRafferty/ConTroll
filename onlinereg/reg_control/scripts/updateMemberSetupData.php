@@ -45,11 +45,11 @@ foreach ($data as $row ) {
     $first = false;
 }
 
-error_log("Keys to keep = ($keys)");
+//error_log("Keys to keep = ($keys)");
 switch ($action) {
     case 'nextage':
         $year = $nextconid;
-    case 'current':
+    case 'curage':
         $delsql = "DELETE FROM ageList WHERE conid = ? AND ageType not in ( $keys );";
         $addupdsql = <<<EOS
 INSERT INTO ageList(conid, ageType, label, shortname, sortorder)
@@ -57,7 +57,7 @@ VALUES(?,?,?,?,?)
 ON DUPLICATE KEY UPDATE label=?, shortname=?, sortorder=?
 EOS;
         $instypes = 'isssissi';
-        error_log("Delete sql = /$delsql/");
+        //error_log("Delete sql = /$delsql/");
         $deleted += dbSafeCmd($delsql, 'i', array($year));
         // now the inserts and updates, rows effected = 1 for insert or 2 for update
         $sort_order = 10;
@@ -71,8 +71,8 @@ EOS;
                 $year,
                 $row['ageType'],
                 $row['label'],
-                $roworder,
-                $row['sortorder'],
+                $row['shortname'],
+                $roworder,   
                 $row['label'],
                 $row['shortname'],
                 $roworder
@@ -96,7 +96,7 @@ VALUES(?,?,?)
 ON DUPLICATE KEY UPDATE active=?, sortorder=?
 EOS;
         $instypes = 'ssisi';
-        error_log("Delete sql = /$delsql/");
+        //error_log("Delete sql = /$delsql/");
         $deleted += dbCmd($delsql);
         // now the inserts and updates, rows effected = 1 for insert or 2 for update
         $sort_order = 10;
@@ -123,7 +123,7 @@ EOS;
             }
         }
         break;
-    case 'catetgory':
+    case 'category':
         $delsql = "DELETE FROM memCategories WHERE memCategory not in ( $keys );";
         $addupdsql = <<<EOS
 INSERT INTO memCategories(memCategory, active, sortorder)
@@ -131,7 +131,7 @@ VALUES(?,?,?)
 ON DUPLICATE KEY UPDATE active=?, sortorder=?
 EOS;
         $instypes = 'ssisi';
-        error_log("Delete sql = /$delsql/");
+        //error_log("Delete sql = /$delsql/");
         $deleted += dbCmd($delsql);
         // now the inserts and updates, rows effected = 1 for insert or 2 for update
         $sort_order = 10;
@@ -166,6 +166,6 @@ EOS;
 
 $response['year'] = $year;
 $response['success'] = "$table updated: $inserted added, $updated changed, $deleted removed.";
-error_log("$action = $action on year $year");
+//error_log("$action = $action on year $year");
 ajaxSuccess($response);
 ?>
