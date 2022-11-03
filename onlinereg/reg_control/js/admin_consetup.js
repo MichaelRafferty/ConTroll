@@ -20,7 +20,6 @@ class consetup {
     #memlist_savebtn = null;
     #memlist_undobtn = null;
     #memlist_div = null;
-    #memlist_pane = null;
     #message_div = null;
     #setup_type = null;
     #setup_title = null;
@@ -30,20 +29,18 @@ class consetup {
         this.#message_div = document.getElementById('test');
         if (setup_type == 'current' || setup_type == 'c') {
             this.#conlist_pane = document.getElementById('consetup-pane');
-            this.#memlist_pane = document.getElementById('memlist-pane');
             this.#setup_type = 'current';
             this.#setup_title = 'Current';
         }
         if (setup_type == 'next' || setup_type == '') {
             this.#conlist_pane = document.getElementById('nextconsetup-pane');
-            this.#memlist_pane = document.getElementById('nextmemlist-pane');
             this.#setup_type = 'next';
             this.#setup_title = 'Next';
         }
     };
 
 
-    dataChanged(data) {
+    conlist_dataChanged(data) {
         //data - the updated table data
         if (!this.#conlist_dirty) {
             this.#conlist_savebtn.innerHTML = "Save Changes*";
@@ -57,14 +54,14 @@ class consetup {
 
     draw(data, textStatus, jhXHR) {
         var _this = this;
-        //console.log('in draw current');
+        //console.log('in draw');
         //console.log(data);
         this.#proposed = ' ';
 
-        if (data['conlist-type'] == 'proposed')
+        if (data['age-type'] == 'proposed')
             this.#proposed = ' Proposed ';
 
-        var html = '<h5><strong>' + this.#proposed + `Next Convention Data:</strong></h5>
+        var html = '<h5><strong>' + this.#proposed + ' ' + this.#setup_title + ` Convention Data:</strong></h5>
 <div id="` + this.#setup_type + `-conlist"></div>
 <div id="conlist-buttons">  
     <button id="` + this.#setup_type + `conlist-undo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.undoConlist(); return false;" disabled>Undo</button>
@@ -116,8 +113,9 @@ class consetup {
         }
 
         this.#contable.on("dataChanged", function (data) {
-            _this.dataChanged(data);
+            _this.conlist_dataChanged(data);
         });
+        this.#contable.on("cellEdited", cellChanged);
 
         this.#memtable = null;
 

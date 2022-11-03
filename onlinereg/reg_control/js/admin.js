@@ -86,3 +86,8 @@ function settab(tabname) {
             break;
     }
 }
+
+function cellChanged(cell) {
+    dirty = true;
+    cell.getElement().style.backgroundColor = "#fff3cd";
+}
