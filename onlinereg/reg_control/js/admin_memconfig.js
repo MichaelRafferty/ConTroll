@@ -190,24 +190,30 @@ class memsetup {
         this.#memtype_savebtn = document.getElementById('types-save');
         this.#memtype_undobtn = document.getElementById('types-undo');
         this.#memtype_redobtn = document.getElementById('types-redo');
-        this.#memtype_dirty = false;
-        this.#memtypetable = null;
+
         this.#category_savebtn = document.getElementById('cat-save');
         this.#category_undobtn = document.getElementById('cat-undo');
         this.#category_redobtn = document.getElementById('cat-redo');
-        this.#category_dirty = false;
-        this.#categorytable = null;
+
         this.#curage_savebtn = document.getElementById('curage-save');
         this.#curage_undobtn = document.getElementById('curage-undo');
         this.#curage_redobtn = document.getElementById('curage-redo');
-        this.#curage_dirty = false;
-        this.#curagetable = null;
+
         this.#nextage_savebtn = document.getElementById('nextage-save');
         this.#nextage_undobtn = document.getElementById('nextage-undo');
         this.#nextage_redobtn = document.getElementById('nextage-redo');
-        this.#nextage_dirty = false;
-        this.#nextagetable = null;
 
+        this.draw_memtype(data, textStatus, jhXHR);
+        this.draw_memcat(data, textStatus, jhXHR);
+        this.draw_curage(data, textStatus, jhXHR);
+        this.draw_nextage(data, textStatus, jhXHR);
+    };
+
+    draw_memtype(data, textStatus, jhXHR) {
+        var _this = this;
+
+        this.#memtype_dirty = false;
+        this.#memtypetable = null;
         // memtype table
         this.#memtypetable = new Tabulator('#types-div', {
             maxHeight: "300px",
@@ -219,7 +225,7 @@ class memsetup {
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
                 { title: "Type", field: "memType", headerSort: true, width: 150, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } } },
                 { title: "Active", field: "active", headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], } },
-                { title: "Sort Order", field: "sort_order", headerSort: true, visible: false },
+                { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
                     cellClick: function (e, cell) {
@@ -236,7 +242,13 @@ class memsetup {
             _this.memtype_rowMoved(row)
         });
         this.#memtypetable.on("cellEdited", cellChanged);
+    };
 
+    draw_memcat(data, textStatus, jhXHR) {
+        var _this = this;
+
+        this.#category_dirty = false;
+        this.#categorytable = null;
         // category table
         this.#categorytable = new Tabulator('#cat-div', {
             maxHeight: "300px",
@@ -248,7 +260,7 @@ class memsetup {
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
                 { title: "Category", field: "memCategory", width: 150, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } } },
                 { title: "Active", field: "active", headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], } },
-                { title: "Sort Order", field: "sort_order", headerSort: true, visible: false },
+                { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
                     cellClick: function (e, cell) {
@@ -266,6 +278,13 @@ class memsetup {
         });
         this.#categorytable.on("cellEdited", cellChanged);
 
+    }
+
+    draw_curage(data, textStatus, jhXHR) {
+        var _this = this;
+
+        this.#curage_dirty = false;
+        this.#curagetable = null;
         // current agelist table
         this.#curagetable = new Tabulator('#curage-div', {
             maxHeight: "300px",
@@ -277,9 +296,9 @@ class memsetup {
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
                 { title: "ConID", field: "conid", visible: false },
                 { title: "Age Type", field: "ageType", headerSort: true, editor: "input" },
-                { title: "Label", field: "label", headerSort: false, editor: "input", editorParams: { elementAttributes: { maxlength: "64" } }  },
-                { title: "shortname", field: "shortname", headerSort: false, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } } },                
-                { title: "Sort Order", field: "sort_order", headerSort: true, visible: false },
+                { title: "Label", field: "label", headerSort: false, editor: "input", editorParams: { elementAttributes: { maxlength: "64" } } },
+                { title: "shortname", field: "shortname", headerSort: false, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } } },
+                { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
                     cellClick: function (e, cell) {
@@ -296,7 +315,13 @@ class memsetup {
             _this.curage_rowMoved(row)
         });
         this.#curagetable.on("cellEdited", cellChanged);
+    }
 
+    draw_nextage(data, textStatus, jhXHR) {
+        var _this = this;
+
+        this.#nextage_dirty = false;
+        this.#nextagetable = null;
         // next  agelist table
         this.#nextagetable = new Tabulator('#nextage-div', {
             maxHeight: "300px",
@@ -310,7 +335,7 @@ class memsetup {
                 { title: "Age Type", field: "ageType", headerSort: true, editor: "input" },
                 { title: "Label", field: "label", headerSort: false, editor: "input", editorParams: { elementAttributes: { maxlength: "64" } } },
                 { title: "shortname", field: "shortname", headerSort: false, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } } },
-                { title: "Sort Order", field: "sort_order", headerSort: true, visible: false },
+                { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
                     cellClick: function (e, cell) {
@@ -327,14 +352,14 @@ class memsetup {
             _this.nextage_rowMoved(row)
         });
         this.#nextagetable.on("cellEdited", cellChanged);
-    };
+    }
 
     open() {
         var script = "scripts/getMemberSetupData.php";
         $.ajax({
             url: script,
             method: 'GET',
-            data: 'tpyr=all',
+            data: 'type=all',
             success: function (data, textStatus, jhXHR) {
                 mem.draw(data, textStatus, jhXHR);
             },
@@ -390,7 +415,7 @@ class memsetup {
     };
 
     addrowTypes() {
-        this.#memtypetable.addRow({ memType: 'new-row', active: 'Y', sort_order: 99, uses: 0 }, false);
+        this.#memtypetable.addRow({ memType: 'new-row', active: 'Y', sortorder: 99, uses: 0 }, false);
     };
 
     saveTypesComplete(data, textStatus, jhXHR) {
@@ -400,6 +425,19 @@ class memsetup {
             showError(data['success']);
         }
         this.#memtype_savebtn.innerHTML = "Save Changes";
+        var script = "scripts/getMemberSetupData.php";
+        $.ajax({
+            url: script,
+            method: 'GET',
+            data: 'type=memType',
+            success: function (data, textStatus, jhXHR) {
+                mem.draw_memtype(data, textStatus, jhXHR);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                return false;
+            }
+        });
     }
 
     saveTypes() {
@@ -412,7 +450,7 @@ class memsetup {
             var postdata = {
                 ajax_request_action: 'memtype',
                 tabledata: this.#memtypetable.getData(),
-                tablename: "memtype",
+                tablename: "memTypes",
                 indexcol: "memType"
             };
             //console.log(postdata);
@@ -468,7 +506,7 @@ class memsetup {
     };
 
     addrowCat() {
-        this.#categorytable.addRow({ memCategory: 'new-row', active: 'Y', sort_order: 99, uses: 0 }, false);
+        this.#categorytable.addRow({ memCategory: 'new-row', active: 'Y', sortorder: 99, uses: 0 }, false);
     };
 
     saveCatComplete(data, textStatus, jhXHR) {
@@ -478,6 +516,19 @@ class memsetup {
             showError(data['success']);
         }
         this.#category_savebtn.innerHTML = "Save Changes";
+        var script = "scripts/getMemberSetupData.php";
+        $.ajax({
+            url: script,
+            method: 'GET',
+            data: 'type=memCat',
+            success: function (data, textStatus, jhXHR) {
+                mem.draw_memcat(data, textStatus, jhXHR);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                return false;
+            }
+        });
     }
 
     saveCat() {
@@ -490,8 +541,8 @@ class memsetup {
             var postdata = {
                 ajax_request_action: 'category',
                 tabledata: this.#categorytable.getData(),
-                tablename: "category",
-                indexcol: "memType"
+                tablename: "memcategories",
+                indexcol: "memCategory"
             };
             //console.log(postdata);
             $.ajax({
@@ -546,7 +597,7 @@ class memsetup {
     };
 
     addrowCurAge() {
-        this.#curagetable.addRow({ conid: this.#current_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sort_order: 99, uses: 0 }, false);
+        this.#curagetable.addRow({ conid: this.#current_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0 }, false);
     };
 
     saveCurAgeComplete(data, textStatus, jhXHR) {
@@ -556,6 +607,19 @@ class memsetup {
             showError(data['success']);
         }
         this.#curage_savebtn.innerHTML = "Save Changes";
+        var script = "scripts/getMemberSetupData.php";
+        $.ajax({
+            url: script,
+            method: 'GET',
+            data: 'type=curage',
+            success: function (data, textStatus, jhXHR) {
+                mem.draw_curage(data, textStatus, jhXHR);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                return false;
+            }
+        });
     }
 
     saveCurAge() {
@@ -569,7 +633,7 @@ class memsetup {
                 ajax_request_action: 'curage',
                 year: this.#current_conid,
                 tabledata: this.#curagetable.getData(),
-                tablename: "curage",
+                tablename: "ageList",
                 indexcol: "curage"
             };
             //console.log(postdata);
@@ -625,7 +689,7 @@ class memsetup {
     };
 
     addrowNextAge() {
-        this.#nextagetable.addRow({ conid: this.#next_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sort_order: 99, uses: 0 }, false);
+        this.#nextagetable.addRow({ conid: this.#next_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0 }, false);
     };
 
     saveNextAgeComplete(data, textStatus, jhXHR) {
@@ -635,6 +699,19 @@ class memsetup {
             showError(data['success']);
         }
         this.#nextage_savebtn.innerHTML = "Save Changes";
+        var script = "scripts/getMemberSetupData.php";
+        $.ajax({
+            url: script,
+            method: 'GET',
+            data: 'type=nextage',
+            success: function (data, textStatus, jhXHR) {
+                mem.draw_nextage(data, textStatus, jhXHR);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                return false;
+            }
+        });
     }
 
     saveNextAge() {
@@ -648,7 +725,7 @@ class memsetup {
                 ajax_request_action: 'nextage',
                 year: this.#current_conid,
                 tabledata: this.#nextagetable.getData(),
-                tablename: "nextage",
+                tablename: "ageList",
                 indexcol: "nextage"
             };
             //console.log(postdata);
