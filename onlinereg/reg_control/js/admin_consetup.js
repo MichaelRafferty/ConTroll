@@ -169,6 +169,8 @@ class consetup {
             this.#memtable.destroy();
         }
 
+        this.#memlist_dirty = false;
+
         this.#memtable = null;
         if (data['memlist'] == null) {
             this.#memlist_div.innerHTML = 'Nothing defined yet';
@@ -208,14 +210,6 @@ class consetup {
 
             });
         }
-
-        this.#memtable.on("tableBuilt", function () {
-            _this.memtable_built();
-        });
-    };
-
-    memtable_built() {
-        var _this = this;
 
         this.#memtable.on("dataChanged", function (data) {
             _this.memlist_dataChanged(data);
@@ -345,6 +339,16 @@ class consetup {
     addrowMemList() {
         this.#memtable.addRow({ id: -99999, conid: this.#conid, shortname: 'new-row', price:0, atcon: 'N', online:'N', sortorder: 199, uses: 0 }, false);
     };
+
+    memlist_rowMoved(row) {
+        this.#memlist_savebtn.innerHTML = "Save Changes*";
+        this.#memlist_savebtn.disabled = false;
+        this.#memlist_dirty = true;
+        if (this.#memtable.getHistoryUndoSize() > 0) {
+            this.#memlist_undobtn.disabled = false;
+            this.#memlist_undobtn.disabled = false;
+        }
+    }
 
     saveConlistComplete(data, textStatus, jhXHR) {
         if (data['error'] && data['error' != '']) {
