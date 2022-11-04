@@ -85,6 +85,18 @@ function db_connect() {
             error_log("failed setting sql mode on db connection");
             return false;
         }
+
+        if (array_key_exists('php_timezone', $db_ini['mysql'])) {
+            date_default_timezone_set($db_ini['mysql']['php_timezone']);
+        }
+        if (array_key_exists('db_timezone', $db_ini['mysql'])) {
+            $sql = "SET time_zone ='" .  $db_ini['mysql']['db_timezone'] . "';";
+            $success = $dbObject -> query($sql);
+            if (!$success) {
+                error_log("failed setting sql mode on db connection");
+                return false;
+            }
+        }
     }
 }
 

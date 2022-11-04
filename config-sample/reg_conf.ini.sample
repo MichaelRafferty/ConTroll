@@ -5,6 +5,8 @@ user=""
 password=""
 db_name=""
 sql_mode='STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION'
+db_timezone='US/Eastern'
+php_timezone='AMERICA/NEW_YORK'
 [con]
 label="Philcon 2022"
 conname="Philcon"
