@@ -184,22 +184,31 @@ class consetup {
                 columns: [
                     { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
                     { title: "ID", field: "id", visible: false },
-                    { title: "Con ID", field: "conid" },
+                    { title: "Con ID", field: "conid", headerFilter: true },
                     { title: "Sort", field: "sort_order", headerSort: false, visible: false },
-                    { title: "Category", field: "memCategory", editor: "list", editorParams: { values: data['memCats'], } },
-                    { title: "Type", field: "memType", editor: "list", editorParams: { values: data['memTypes'], } },
-                    { title: "Age", field: "memAge", editor: "list", editorParams: { values: data['ageTypes'], } },
+                    { title: "Category", field: "memCategory", editor: "list", editorParams: { values: data['memCats'], }, headerFilter: true, headerFilterParams: { values: data['memCats'] } },
+                    { title: "Type", field: "memType", editor: "list", editorParams: { values: data['memTypes'], }, headerFilter: true, headerFilterParams: { values: data['memTypes'], } },
+                    { title: "Age", field: "memAge", editor: "list", editorParams: { values: data['ageTypes'], }, headerFilter: true, headerFilterParams: { values: data['ageTypes'], }, },
                     {
                         title: "Label", field: "shortname",
                         tooltip: function (e, cell, onRendered) { return cell.getRow().getCell("label").getValue(); },
-                        editor: "input", editorParams: { elementAttributes: { maxlength: "64" } }
+                        editor: "input", editorParams: { elementAttributes: { maxlength: "64" } },
+                        headerFilter: true
                     },
                     { title: "Label", field: "label", visible: false },
-                    { title: "Price", field: "price", editor: "input", validator: ["required", this.#priceregexp] },
-                    { title: "Start Date", field: "startdate", width: 150, editor: "datetime", validator: "required" },
-                    { title: "End Date", field: "enddate", width: 150, editor: "datetime", validator: "required" },
-                    { title: "Atcon", field: "atcon", editor: "list", editorParams: { values: ["Y", "N"], } },
-                    { title: "Online", field: "online", editor: "list", editorParams: { values: ["Y", "N"], } },
+                    {
+                        title: "Price", field: "price", editor: "input", validator: ["required", this.#priceregexp],
+                        headerFilter: "input"
+                    },
+                    { title: "Start Date", field: "startdate", width: 150, editor: "datetime", validator: "required", headerFilter: "input" },
+                    { title: "End Date", field: "enddate", width: 150, editor: "datetime", validator: "required", headerFilter: "input" },
+                    {
+                        title: "Atcon", field: "atcon", editor: "list", editorParams: { values: ["Y", "N"], },
+                        headerFilter: true, headerFilterParams: { values: ["Y", "N"], }
+                    },
+                    {
+                        title: "Online", field: "online", editor: "list", editorParams: { values: ["Y", "N"], },
+                        headerFilter: true, headerFilterParams: { values: ["Y", "N"], } },
                     {
                         title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
                         cellClick: function (e, cell) {
