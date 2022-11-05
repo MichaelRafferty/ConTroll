@@ -89,8 +89,7 @@ CREATE TEMPORARY TABLE history (id INT auto_increment PRIMARY KEY)
             , count(CASE WHEN paid>0 THEN R.id ELSE NULL END) as cnt_paid
         FROM reg R
         JOIN conlist C ON (R.conid=C.id)
-        WHERE (R.memType IS NULL OR (R.memType != 'B' and R.memType != 'V'))
-           AND C.id>=?
+        WHERE C.id>=?
         GROUP BY R.conid, year(C.enddate), datediff(C.enddate, R.create_date)
         WITH ROLLUP) r
         ORDER BY conid, year, diff;
