@@ -231,3 +231,11 @@ function showAlert(str) {
     $('#alert').show();
 }
 
+function notnullorempty(str) {
+    if (str === null)
+        return false;
+    if (str.trim() == "")
+        return false;
+
+    return true;        
+}
