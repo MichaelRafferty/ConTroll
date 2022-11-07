@@ -67,7 +67,7 @@ function searchConflictPerson(data, textStatus, jsXHR) {
             });
         },
      error: function (jqXHR, textStatus, errorThrown) {
-      showError("ERROR in " + formurl + ": " + textStatus, jqXHR));
+      showError("ERROR in " + formurl + ": " + textStatus, jqXHR);
       return false;
      }
    });
