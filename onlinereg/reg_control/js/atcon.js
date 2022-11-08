@@ -439,7 +439,7 @@ function setBadge(prefix, id, paid, price, badgeType, cost, locked, label) {
         data: data,
         url: script,
         success: function(data, textstatus, jqXHR) {
-            if(data['error'] && data['error']!='') { showError(data['error']); }
+            if('error' in data && data['error']!='') { showError(data['error']); }
             showActions(prefix, data['actions'], id, transid);
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -574,7 +574,7 @@ function updateBadge(formName, badgeLabel, script) {
     data: postData,
     success: function(data, textStatus, jqXHR) {
       var bData = data['badgeInfo'];
-      if(data['error'] && data['error']!='') { showError(data['error']); return false;}
+      if('error' in data && data['error']!='') { showError(data['error']); return false;}
       setBadge(formName+badgeLabel+"Badge", bData['id'], bData['paid'], bData['price'],
         bData['memId']+'-'+bData['memCategory']+'-'+bData['memType']+'-'+bData['memAge'],
         bData['cost'], bData['label']);
@@ -692,7 +692,7 @@ function makePayment(type) {
         },
         success: function(data, textStatus, jqXHR) {
             //$('#test').empty().append(JSON.stringify(data, null, 2)); 
-            if(data['error'] && data['error']!='') { showError(data['error']); }
+            if('error' in data && data['error']!='') { showError(data['error']); }
             addPayment("transactionForm", data['result']);
             var paid = +$("#transactionForm").data('paid');
             if(!isNaN(data['result']['amount'])) { 
@@ -805,7 +805,7 @@ function addBadgeNote(type, badgeId, prefix, note) {
     data: formdata,
     method: "POST",
     success: function(data, textstatus, jqXHR) {
-      if(data['error'] && data['error']!='') { showError(JSON.stringify(data['error'])); }
+      if('error' in data && data['error']!='') { showError(JSON.stringify(data['error'])); }
       showActions(prefix, data['actions'], badgeId, transid);
     },
       error: function (jqXHR, textStatus, errorThrown) {

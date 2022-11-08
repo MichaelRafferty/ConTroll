@@ -484,7 +484,7 @@ class memsetup {
     };
 
     saveTypesComplete(data, textStatus, jhXHR) {
-        if (data['error'] && data['error' != '']) {
+        if ('error' in data && data['error'] != '') {
             showError(data['error']);
             this.#memtype_savebtn.innerHTML = "Save Changes*";
             this.#memtype_savebtn.disabled = false;
@@ -584,7 +584,7 @@ class memsetup {
     };
 
     saveCatComplete(data, textStatus, jhXHR) {
-        if (data['error'] && data['error' != '']) {
+        if ('error' in data && data['error'] != '') {
             showError(data['error']);
             this.#category_savebtn.innerHTML = "Save Changes*";
             this.#category_savebtn.disabled = false;
@@ -684,7 +684,7 @@ class memsetup {
     };
 
     saveCurAgeComplete(data, textStatus, jhXHR) {
-        if (data['error'] && data['error' != '']) {
+        if ('error' in data && data['error'] != '') {
             showError(data['error']);
             this.#curage_savebtn.innerHTML = "Save Changes*";
             this.#curage_savebtn.disabled = false;
@@ -785,7 +785,7 @@ class memsetup {
     };
 
     saveNextAgeComplete(data, textStatus, jhXHR) {
-        if (data['error'] && data['error' != '']) {
+        if ('error' in data && data['error'] != '') {
             showError(data['error']);
             this.#nextage_savebtn.innerHTML = "Save Changes*";
             this.#nextage_savebtn.disabled = false;

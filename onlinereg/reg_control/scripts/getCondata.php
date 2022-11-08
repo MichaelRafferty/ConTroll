@@ -1,6 +1,17 @@
 <?php
 global $db_ini;
 
+function getSameDayNextYear($date)
+{
+    $current = DateTime::createFromFormat("Y-m-d", $date);
+    $next = new DateTime();
+    $year = (int)$current->format('o') + 1;
+    $week = (int)$current->format('W');
+    $dow = (int)$current->format('N');
+    $next->setISODate((int)$current->format('o') + 1, (int)$current->format('W'), (int)$current->format('N'));
+    return date_format($next, "Y-m-d");
+}
+
 require_once "../lib/base.php";
 $check_auth = google_init("ajax");
 $perm = "admin";
@@ -39,15 +50,39 @@ if ($year == 'current') {
 $response['conlist'] = null;
 $response['year'] = $year;
 $response['conid'] = $id;
-if ($type == 'all' || $type = 'conlist') {
-    $result = dbSafeQuery("SELECT id, name, label, CAST(startdate AS DATE) AS startdate, CAST(enddate as DATE) AS enddate FROM conlist WHERE id = ?;", 'i', array($id));
+$priorcondata = array();
+$currentcondata = array();
+$twopriorcondata = array();
+$conlistSQL = <<<EOS
+SELECT id, name, label, CAST(startdate AS DATE) AS startdate, CAST(enddate as DATE) AS enddate
+FROM conlist
+WHERE id = ?;
+EOS;
 
-    if($result->num_rows == 1) {
-        $response['conlist'] = fetch_safe_assoc($result);
-        $response['conlist-type'] = 'actual';
-    } else {
-
-        $sql = <<<EOS
+$result = dbSafeQuery($conlistSQL, 'i', array($id - 2));
+if($result->num_rows == 1) {
+    $twopriorcondata = fetch_safe_assoc($result);
+}
+$result = dbSafeQuery($conlistSQL, 'i', array($id - 1));
+if($result->num_rows == 1) {
+    $priorcondata = fetch_safe_assoc($result);
+}
+if (!array_key_exists('enddate', $twopriorcondata)) {
+    if (array_key_exists('startdate', $priorcondata)) {
+        $datestr = $priorcondata['startdate'];
+        $year = mb_substr($datestr, 0, 4)  + 1;
+        $twopriorcondata['enddate'] = $year . mb_substr($datestr, 4);
+    }
+}
+$result = dbSafeQuery($conlistSQL, 'i', array($id));
+if($result->num_rows == 1) {
+    $currentcondata = fetch_safe_assoc($result);
+    if ($type == 'all' || $type = 'conlist') {
+    $response['conlist'] = $currentcondata;
+    $response['conlist-type'] = 'actual';
+    }
+} else {
+    $sql = <<<EOS
 SELECT
 	id + 1 as id,
     CASE
@@ -68,10 +103,11 @@ FROM conlist
 WHERE id = ?;
 EOS;
 
-        $result = dbSafeQuery($sql, 'i', array($conid));
-
-        if($result->num_rows == 1) {
-            $response['conlist'] = fetch_safe_assoc($result);
+    $result = dbSafeQuery($sql, 'i', array($conid));
+    if($result->num_rows == 1) {
+        $currentcondata = fetch_safe_assoc($result);
+        if ($type == 'all' || $type = 'conlist') {
+            $response['conlist'] = fetch_safe_assoc($result);;
             $response['conlist-type'] = 'proposed';
         }
     }
@@ -100,16 +136,55 @@ WHERE ((m.conid = ? and m.memCategory != 'yearahead') OR (m.conid = ? AND m.memC
 GROUP BY m.id, m.conid,m.sort_order,m.memCategory,m.memType,m.memAge,m.shortname,m.label,m.memGroup,m.price,m.startdate,m.enddate,m.atcon,m.online
 ORDER BY m.conid, m.sort_order, m.memCategory, m.memType, m.memAge, m.startdate;
 EOS;
-
+    $thisyearcount = 0;
     $result = dbSafeQuery($memSQL, 'ii', array($id, $id+1));
     $memlist = array();
     if($result->num_rows >= 1) {
         while($memtype = $result->fetch_assoc()) {
+            if ($memtype['conid'] == $id && $memtype['memCategory'] != 'yearahead' and $memtype['memCategory'] != 'rollover')
+                $thisyearcount++;
             array_push($memlist, $memtype);
         }
         $response['memlist'] = $memlist;
     } else {
         $response['memlist'] = null;
+    }
+
+    if ($thisyearcount < 5) {
+        $breaksql = <<<EOS
+SELECT DISTINCT CAST(startdate as DATE) AS startdate
+FROM memList
+WHERE conid = ?;
+EOS;
+        $result = dbSafeQuery($breaksql, 'i', array($id - 1));
+        $breaklist = array();
+        if($result->num_rows >= 1) {
+            while($breakrow = $result->fetch_assoc()) {
+                // test date to see where it is
+                $break = $breakrow['startdate'];
+                $breaktime = strtotime($break);
+                $diff = $breaktime - strtotime($priorcondata['startdate']);
+                if ($breaktime >= strtotime($priorcondata['startdate']) && $breaktime <= strtotime($priorcondata['enddate'])) {
+                    // during the prior con, add the offset to the start of the current con
+                    $diff = $breaktime - strtotime($priorcondata['startdate']);
+                    $break = date('Y-m-d', strtotime($currentcondata['startdate']) + $diff);
+                } else if (str_ends_with($break, '-01')) {
+                    // -01 (start of month) - same month, this year;
+                    $year = date('Y', $breaktime) + 1;
+                    $break = $year . mb_substr($break, 4);
+                } else if ($breaktime <= strtotime($twopriorcondata['enddate'])) {
+                    $break = $priorcondata['startdate'];
+                } else {
+                    // remaining, use same day of the same week of the year.
+                    $break = getSameDayNextYear($break);
+                }
+                 array_push($breaklist, array ('old' => $breakrow['startdate'], 'new' => $break));
+            }
+            $response['breaklist']  = $breaklist;
+        } else {
+            $response['breaklist']  = null;
+        }
+
     }
 
     $result = dbQuery("SELECT memType FROM memTypes WHERE active = 'Y' ORDER BY sortorder;");

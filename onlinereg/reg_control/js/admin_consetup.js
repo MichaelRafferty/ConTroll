@@ -4,6 +4,7 @@ class consetup {
     #active = false;
     #contable = null;
     #memtable = null;
+    #breaktable = null;
     #proposed = ' ';
     #condate = null;
     #conyear = null;
@@ -25,6 +26,12 @@ class consetup {
     #memlist_redobtn = null;
     #memlist_addrowbtn = null;
     #memlist_div = null;
+    #breaksetup_div = null
+    #breaklist_div = null;
+    #breaklist_dirty = false;
+    #breaklist_savebtn = null;
+    #breaklist_undobtn = null;
+    #breaklist_redobtn = null;
     #message_div = null;
     #setup_type = null;
     #setup_title = null;
@@ -43,7 +50,6 @@ class consetup {
             this.#setup_title = 'Next';
         }
     };
-
 
     conlist_dataChanged(data) {
         //data - the updated table data
@@ -67,6 +73,18 @@ class consetup {
         if (this.#memtable.getHistoryUndoSize() > 0) {
             this.#memlist_undobtn.disabled = false;
         }
+    };
+
+    breaklist_dataChanged(data) {
+        //data - the updated table data
+        if (!this.#breaklist_dirty) {
+            this.#breaklist_dirty = true;
+        }
+        if (this.#breaktable.getHistoryUndoSize() > 0) {
+            this.#breaklist_undobtn.disabled = false;
+        }
+        this.#breaklist_savebtn.innerHTML = "Build " + this.#setup_title + " Membership Types";
+        this.#breaklist_savebtn.disabled = false;
     };
 
     draw(data, textStatus, jhXHR) {
@@ -94,6 +112,16 @@ class consetup {
     <button id="` + this.#setup_type + `memlist-addrow" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.addrowMemList(); return false;">Add New</button>
     <button id="` + this.#setup_type + `memlist-save" type="button" class="btn btn-primary btn-sm"  onclick="` + this.#setup_type + `.saveMemList(); return false;" disabled>Save Changes</button>
 </div>
+<div id="` + this.#setup_type + `-breakpointsetup" hidden>
+<div>&nbsp;</div>
+<h5><strong>` + this.#setup_title + ` Membership Breakpoints:</strong></h5>
+<div id="` + this.#setup_type + `-breaklist"></div>
+<div id="breaklist-buttons">
+    <button id="` + this.#setup_type + `breaklist-undo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.undoBreakList(); return false;" disabled>Undo</button>
+    <button id="` + this.#setup_type + `breaklist-redo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.redoBreakList(); return false;" disabled>Redo</button>
+    <button id="` + this.#setup_type + `breaklist-save" type="button" class="btn btn-primary btn-sm"  onclick="` + this.#setup_type + `.saveBreakList(); return false;">Build ` + this.#setup_title + ` Membership Types</button>
+</div>
+</div>
 `;
         this.#conlist_pane.innerHTML = html;
         this.#message_div.innerHTML = '';
@@ -111,9 +139,18 @@ class consetup {
         this.#memlist_undobtn = document.getElementById(this.#setup_type + 'memlist-undo');
         this.#memlist_redobtn = document.getElementById(this.#setup_type + 'memlist-redo')
         this.#memlist_addrowbtn = document.getElementById(this.#setup_type + 'memlist-addrow')
+        this.#breaksetup_div = document.getElementById(this.#setup_type + '-breakpointsetup');
+        this.#breaklist_div = document.getElementById(this.#setup_type + '-breaklist');
+        this.#breaklist_savebtn = document.getElementById(this.#setup_type + 'breaklist-save');
+        this.#breaklist_undobtn = document.getElementById(this.#setup_type + 'breaklist-undo');
+        this.#breaklist_redobtn = document.getElementById(this.#setup_type + 'breaklist-redo')
+
 
         this.draw_conlist(data, textStatus, jhXHR);
         this.draw_memlist(data, textStatus, jhXHR);
+        if (data['breaklist'] && data['breaklist'] !== null) {
+            this.draw_breaklist(data, textStatus, jhXHR);
+        }
     };
 
     draw_conlist(data, textStatus, jhXHR) {
@@ -229,6 +266,39 @@ class consetup {
         this.#memtable.on("cellEdited", cellChanged);
     };
 
+    draw_breaklist(data, textStatus, jhXHR) {
+        var _this = this;
+
+        if (this.#breaktable != null) {
+            this.#breaktable.off("dataChanged");
+
+            this.#breaktable.off("cellEdited");
+            this.#breaktable.destroy();
+        }
+
+        this.#breaklist_dirty = true;
+
+        this.#breaktable = null;
+
+        this.#breaksetup_div.removeAttribute("hidden");
+
+        this.#breaktable = new Tabulator('#' + this.#setup_type + '-breaklist', {
+            history: true,
+            data: data['breaklist'],
+            layout: "fitDataTable",
+            columns: [
+                { title: "Last Cons Breakpoint", field: "old" },
+                { title: "New Con Breakpoint", field: "new", width: 150, editor: "date", validator: "required" },
+            ],
+        });
+
+        this.#breaktable.on("dataChanged", function (data) {
+            _this.breaklist_dataChanged(data);
+        });
+
+        this.#breaktable.on("cellEdited", cellChanged);
+    };
+
     open() {
         var script = "scripts/getCondata.php";     
         $.ajax({
@@ -257,6 +327,12 @@ class consetup {
             this.#memtable.destroy();
             this.#memtable = null;
         }
+        if (this.#breaktable != null) {
+            this.#breaktable.off("dataChanged");
+            this.#breaktable.off("cellEdited");
+            this.#breaktable.destroy();
+            this.#breaktable = null;
+        }
         if (this.#contable != null) {
             this.#contable.off("dataChanged");
             this.#contable.off("cellEdited");
@@ -267,6 +343,7 @@ class consetup {
         this.#conlist_pane.innerHTML = '';
         this.#conlist_dirty = false;
         this.#memlist_dirty = false;
+        this.#breaklist_dirty = false;
     };
 
     undoConlist() {
@@ -345,6 +422,36 @@ class consetup {
         }
     };
 
+    undoBreakList() {
+        if (this.#breaktable != null) {
+            this.#breaktable.undo();
+
+            var undoCount = this.#breaktable.getHistoryUndoSize();
+            if (undoCount <= 0) {
+                this.#breaklist_undobtn.disabled = true;
+            }
+            var redoCount = this.#breaktable.getHistoryRedoSize();
+            if (redoCount > 0) {
+                this.#breaklist_redobtn.disabled = false;
+            }
+        }
+    };
+
+    redoBreakList() {
+        if (this.#breaktable != null) {
+            this.#breaktable.redo();
+
+            var undoCount = this.#breaktable.getHistoryUndoSize();
+            if (undoCount > 0) {
+                this.#breaklist_undobtn.disabled = false;       
+            }
+            var redoCount = this.#breaktable.getHistoryRedoSize();
+            if (redoCount <= 0) {
+                this.#breaklist_redobtn.disabled = true;
+            }
+        }
+    };
+
     addrowMemList() {
         this.#memtable.addRow({ id: -99999, conid: this.#conid, shortname: 'new-row', price:0, atcon: 'N', online:'N', sortorder: 199, uses: 0 }, false);
     };
@@ -359,15 +466,7 @@ class consetup {
         }
     }
 
-    saveConlistComplete(data, textStatus, jhXHR) {
-        if (data['error'] && data['error' != '']) {
-            showError(data['error']);
-            this.#conlist_savebtn.innerHTML = "Save Changes*";
-            this.#conlist_savebtn.disabled = false;
-            return false;
-        } else {
-            showError(data['success']);
-        }
+    saveConlistComplete(data, textStatus, jhXHR) {        
         this.#conlist_savebtn.innerHTML = "Save Changes";
 
         var script = "scripts/getCondata.php";
@@ -376,6 +475,7 @@ class consetup {
             method: 'GET',
             data: 'year=' + this.#setup_type + '&type=conlist',      
             success: function (data, textStatus, jhXHR) {
+                if (data['error'])
                 if (data['year'] == 'current') {
                     current.draw_conlist(data, textStatus, jhXHR);
                 } else {
@@ -415,6 +515,19 @@ class consetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
+                    if ('error' in data && data['error'] != '') {
+                        showError(data['error']);
+                        // reset save button
+                        if (data['year'] == 'current') {
+                            current.conlist_dataChanged(data);
+                        } else {
+                            next.conlist_dataChanged(data);
+                        }
+                        return false;
+                    } else {
+                        showError(data['success']);
+                    }
+                    this.#memlist_savebtn.innerHTML = "Save Changes";
                     if (data['year'] == 'current') {
                         current.saveConlistComplete(data, textStatus, jhXHR);
                     } else {
@@ -430,7 +543,7 @@ class consetup {
     };
 
     saveMemListComplete(data, textStatus, jhXHR) {
-        if (data['error'] && data['error' != '']) {
+        if ('error' in data && data['error'] != '') {
             showError(data['error']);
             this.#memlist_savebtn.innerHTML = "Save Changes*";
             this.#memlist_savebtn.disabled = false;
@@ -485,10 +598,105 @@ class consetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
+                    if ('error' in data && data['error'] != '') {
+                        showError(data['error']);
+                        // reset save button
+                        if (data['year'] == 'current') {
+                            current.memlist_dataChanged(data);
+                        } else {
+                            next.memlist_dataChanged(data);
+                        }
+                        return false;
+                    } else {
+                        showError(data['success']);
+                    }
+                    this.#memlist_savebtn.innerHTML = "Save Changes";
+
                     if (data['year'] == 'current') {
                         current.saveMemListComplete(data, textStatus, jhXHR);
                     } else {
                         next.saveMemListComplete(data, textStatus, jhXHR);
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                    return false;
+                }
+            });
+        }
+    };
+
+    saveBreakListComplete(data, textStatus, jhXHR) {
+        if ('error' in data && data['error'] != '') {
+            showError(data['error']);
+            return false;
+        } else {
+            showError(data['success']);
+        }
+
+        var script = "scripts/getCondata.php";
+        $.ajax({
+            url: script,
+            method: 'GET',
+            data: 'year=' + this.#setup_type + '&type=memlist',
+            success: function (data, textStatus, jhXHR) {                
+                if (data['year'] == 'current') {
+                    current.close();
+                    current.draw(data, textStatus, jhXHR);
+                } else {
+                    next.close();
+                    next.draw(data, textStatus, jhXHR);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                return false;
+            }
+        });
+    }
+
+    saveBreakList() {
+        if (this.#breaktable != null) {
+            var invalids = this.#breaktable.validate();
+            if (invalids !== true) {
+                console.log(invalids);
+                alert("Breakpoint Table does not pass validation, please check for empty cells or cells in red");
+                return false;
+            }
+
+            this.#breaklist_savebtn.innerHTML = "Creating new membership type list...";
+            this.#breaklist_savebtn.disabled = true;
+
+            var script = "scripts/updateCondata.php";
+
+            var postdata = {
+                ajax_request_action: this.#setup_type,
+                tabledata: this.#breaktable.getData(),
+                tablename: "breaklist",
+                indexcol: "old"
+            };
+            //console.log(postdata);
+            $.ajax({
+                url: script,
+                method: 'POST',
+                data: postdata,
+                success: function (data, textStatus, jhXHR) {
+                    if ('error' in data && data['error'] != '') {
+                        showError(data['error'])
+                        // reset save button
+                        if (data['year'] == 'current') {
+                            current.breaklist_dataChanged(data);
+                        } else {
+                            next.breaklist_dataChanged(data);
+                        }   
+                        return false;
+                    } else {
+                        showError(data['success']);                        
+                    }
+                    if (data['year'] == 'current') {
+                        current.saveBreakListComplete(data, textStatus, jhXHR);
+                    } else {
+                        next.saveBreakListComplete(data, textStatus, jhXHR);
                     }
                 },
                 error: function (jqXHR, textStatus, errorThrown) {

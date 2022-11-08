@@ -315,7 +315,7 @@ function purchase(form) {
     method: "POST",
     data: args,
     success: function(data, textStatus, jqXHR) {
-      if(data['error'] && data['error']!='') { 
+      if('error' in data && data['error']!='') { 
         showError(data['error']); 
       }
       //$('#main').data('art', data['art']);
