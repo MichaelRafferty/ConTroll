@@ -28,8 +28,8 @@ FROM memLabel m
 WHERE
     m.conid=?
     AND m.online = 'Y'
-    AND startdate < current_timestamp()
-    AND enddate >= current_timestamp()
+    AND startdate <= current_timestamp()
+    AND enddate > current_timestamp()
 ;
 EOQ;
 $counts = array();

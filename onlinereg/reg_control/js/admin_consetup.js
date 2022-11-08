@@ -12,7 +12,6 @@ class consetup {
     #mindate = null;
     #maxdate = null;
     #dateformat = 'yyyy-MM-dd';
-    #datetimeformat = 'yyyy-MM-dd hh:mm:ss';
     #priceregexp = 'regex:^([0-9]+([.][0-9]*)?|[.][0-9]+)';
     #conlist_dirty = false;
     #conlist_savebtn = null;
@@ -105,6 +104,7 @@ class consetup {
 </div>
 <div>&nbsp;</div>
 <h5><strong>` + this.#setup_title + ` Membership Types:</strong></h5>
+<p><strong>NOTE: All date ranges are '>=' Start Date and '<' End Date, so the End Date of one period should be the start date of the next.</p>
 <div id="` + this.#setup_type + `-memlist"></div>
 <div id="memlist-buttons">  
     <button id="` + this.#setup_type + `memlist-undo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.undoMemList(); return false;" disabled>Undo</button>
@@ -237,8 +237,8 @@ class consetup {
                         title: "Price", field: "price", editor: "input", validator: ["required", this.#priceregexp],
                         headerFilter: "input"
                     },
-                    { title: "Start Date", field: "startdate", width: 150, editor: "datetime", validator: "required", headerFilter: "input" },
-                    { title: "End Date", field: "enddate", width: 150, editor: "datetime", validator: "required", headerFilter: "input" },
+                    { title: "Start Date", field: "startdate", width: 100, editor: "date", validator: "required", headerFilter: "input" },
+                    { title: "End Date", field: "enddate", width: 100, editor: "date", validator: "required", headerFilter: "input" },
                     {
                         title: "Atcon", field: "atcon", editor: "list", editorParams: { values: ["Y", "N"], },
                         headerFilter: true, headerFilterParams: { values: ["Y", "N"], }
@@ -287,9 +287,21 @@ class consetup {
             data: data['breaklist'],
             layout: "fitDataTable",
             columns: [
-                { title: "Last Cons Breakpoint", field: "old" },
-                { title: "New Con Breakpoint", field: "new", width: 150, editor: "date", validator: "required" },
-            ],
+                { // last con group
+                    title: "Last Con's Breakpoint", columns: [
+                        { title: "ConID", field: "oldconid" },
+                        { title: "Start", field: "oldstart" , width: 100},
+                        { title: "End", field: "oldend", width: 100 }
+                    ],
+                },
+                { // new group
+                    title: "New Con Breakpoint", columns: [
+                        { title: "ConID", field: "newconid" },
+                        { title: "Start", field: "newstart", width: 100, editor: "date", validator: "required" },
+                        { title: "End", field: "newend", width: 100, editor: "date", validator: "required" },
+                    ],
+                },
+            ]
         });
 
         this.#breaktable.on("dataChanged", function (data) {

@@ -90,7 +90,7 @@ EOS;
             $delSQL .= " AND id NOT IN (" . $keys[$nextconid] . ")";
         }
         $delSQL .= ");";
-        error_log("Delsql = /$delSQL/");
+        //error_log("Delsql = /$delSQL/");
         $deleted += dbSafeCmd($delSQL, 'ii', array($conid, $nextconid));
 
         $addSQL = <<<EOS
@@ -137,6 +137,76 @@ EOS;
         $response['success'] = "memList updated: $inserted added, $updated changed, $deleted removed.";
         //error_log($response['success']);
         break;
+    case 'breaklist':
+        if ($action == 'current')
+            $year = $conid;
+        else
+            $year = $nextconid;
+
+        // first create any missing agelist entries
+        $inssql = <<<EOS
+INSERT INTO ageList(conid, ageType, label, shortname, sortorder)
+SELECT ?, a1.ageType, a1.label, a1.shortname, a1.sortorder
+FROM ageList a1
+LEFT OUTER JOIN ageList a2 ON (a2.conid = ? AND a2.ageType = a1.ageType)
+WHERE a1.conid = ? and a2.conid IS NULL;
+EOS;
+        $numages = dbSafeCmd($inssql, 'iii', array($year + 1, $year + 1, $year));
+        if ($numages === false) {
+            $response['error'] = 'Error creating new age table entries, see logs';
+            ajaxSuccess($response);
+            exit();
+        }
+        // create table of existing rows for
+        $tmpsql = <<<EOS
+CREATE TEMPORARY TABLE existing_memList
+SELECT conid, memCategory,memType,memAge,label,startdate, enddate,atcon,`online`
+FROM memList
+WHERE conid >= ?;
+EOS;
+        $numrows = dbSafeCmd($tmpsql, 'i', array($year));
+        if ($numrows === false) {
+            $response['error'] = 'Error creating temporary table, see logs';
+            ajaxSuccess($response);
+            exit();
+        }
+        $inssql = <<<EOS
+INSERT INTO memlist(conid,sort_order,memCategory,memType,memAge,label,price,startdate,enddate,atcon,online)
+SELECT ? AS conid,m.sort_order,m.memCategory,m.memType,m.memAge,replace(m.label, ?, ?) AS label,m.price,? AS startdate,? AS enddate,m.atcon,m.online
+FROM memList m
+LEFT OUTER JOIN existing_memList e ON (
+    e.memCategory = m.memCategory AND e.memType = m.memType AND e.memAge = m.memAge AND REPLACE(m.label, ?, ?) = e.label
+    AND e.startdate = ? AND e.enddate = ? AND e.atcon = m.atcon AND e.online = m.online)
+WHERE m.conid = ? AND e.conid IS NULL AND m.startdate = ? AND m.enddate = ?;
+EOS;
+        $typelist = 'issssssssiss';
+        $data = $_POST['tabledata'];
+        $numrows = 0;
+        foreach ($data as $row ) {
+            $paramarr = array(
+                $row['newconid'], // conid
+                $row['oldconid'], // label prior str
+                $row['newconid'], // label new str
+                $row['newstart'], // startdate
+                $row['newend'],  // enddate
+                $row['oldconid'], // m.label prior string
+                $row['newconid'], // m.label current string
+                $row['newstart'], // e.startdate
+                $row['newend'], // e.enddate
+                $row['oldconid'], // m.conid
+                $row['oldstart'], // m.startdate
+                $row['oldend'] // m.enddate
+            );
+            //$result = dbSafeQuery($inssql, $typelist, $paramarr);
+            //var_error_log($result);
+            // while ($row = fetch_safe_assoc($result)) {
+            //    var_error_log($row);
+            //}
+            $numrows += dbSafeInsert($inssql, $typelist, $paramarr);
+        }
+        $response['success'] = "ageList updated, $numages added, memList updated, $numrows added";
+        break;
+
     default:
         $response['error'] = 'Invalid table';
 }

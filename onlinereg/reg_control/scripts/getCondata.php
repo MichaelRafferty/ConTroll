@@ -54,7 +54,7 @@ $priorcondata = array();
 $currentcondata = array();
 $twopriorcondata = array();
 $conlistSQL = <<<EOS
-SELECT id, name, label, CAST(startdate AS DATE) AS startdate, CAST(enddate as DATE) AS enddate
+SELECT id, name, label, startdate, enddate
 FROM conlist
 WHERE id = ?;
 EOS;
@@ -152,39 +152,68 @@ EOS;
 
     if ($thisyearcount < 5) {
         $breaksql = <<<EOS
-SELECT DISTINCT CAST(startdate as DATE) AS startdate
+SELECT DISTINCT conid, startdate, enddate
 FROM memList
-WHERE conid = ?;
+WHERE (conid = ? and memCategory != 'yearahead') or (conid = ? and memCategory in ('yearahead', 'rollover'))
+ORDER BY conid, startdate, enddate;
 EOS;
-        $result = dbSafeQuery($breaksql, 'i', array($id - 1));
+        $result = dbSafeQuery($breaksql, 'ii', array($id - 1, $id));
         $breaklist = array();
         if($result->num_rows >= 1) {
+            $day = 24 * 60 * 60;
             while($breakrow = $result->fetch_assoc()) {
                 // test date to see where it is
-                $break = $breakrow['startdate'];
-                $breaktime = strtotime($break);
-                $diff = $breaktime - strtotime($priorcondata['startdate']);
-                if ($breaktime >= strtotime($priorcondata['startdate']) && $breaktime <= strtotime($priorcondata['enddate'])) {
+                $breakstart = $breakrow['startdate'];
+                $breaktimestart = strtotime($breakstart);
+                $breakend = $breakrow['enddate'];
+                $breaktimeend = strtotime($breakend);
+                $breakend = '';
+                if ($breaktimestart >= strtotime($priorcondata['startdate']) && $breaktimestart <= (strtotime($priorcondata['enddate']) + $day)) {
                     // during the prior con, add the offset to the start of the current con
-                    $diff = $breaktime - strtotime($priorcondata['startdate']);
-                    $break = date('Y-m-d', strtotime($currentcondata['startdate']) + $diff);
-                } else if (str_ends_with($break, '-01')) {
+                    $diffstart = $breaktimestart - strtotime($priorcondata['startdate']);
+                    $diffend = $breaktimeend - strtotime($priorcondata['enddate']);
+                    $breakstart = date('Y-m-d', strtotime($currentcondata['startdate']) + $diffstart);
+                    $breakend = date('Y-m-d', strtotime($currentcondata['enddate']) + $diffend + $day);
+                } else if (str_ends_with($breakstart, '-01')) {
                     // -01 (start of month) - same month, this year;
-                    $year = date('Y', $breaktime) + 1;
-                    $break = $year . mb_substr($break, 4);
-                } else if ($breaktime <= strtotime($twopriorcondata['enddate'])) {
-                    $break = $priorcondata['startdate'];
+                    $yeartmp = date('Y', $breaktimestart) + 1;
+                    $breakstart = $yeartmp . mb_substr($breakstart, 4);
+                } else if ($breaktimestart <= strtotime($twopriorcondata['enddate'])) {
+                    $breakstart = $priorcondata['startdate'];
                 } else {
                     // remaining, use same day of the same week of the year.
-                    $break = getSameDayNextYear($break);
+                    $breakstart = getSameDayNextYear($breakstart);
                 }
-                 array_push($breaklist, array ('old' => $breakrow['startdate'], 'new' => $break));
+                if ($breakend == '') {
+                    $breakend = $breakrow['enddate'];
+                    // possible ends handled
+                    // -01 (same as a following row start time)
+                    // between prior con start and prior con end + 1
+                    // between twoprior con start and prior con end + 1
+                    // arbitary date - make same day of week next year
+                    if (str_ends_with($breakend, '-01')) {
+                        $yeartmp = date('Y', $breaktimeend) + 1;
+                        $breakend = $yeartmp . mb_substr($breakend, 4);
+                    } else if ($breaktimeend >= strtotime($priorcondata['startdate']) && $breaktimeend <= (strtotime($priorcondata['enddate']) + $day)) {
+                        $diffend = $breaktimeend - strtotime($priorcondata['enddate']);
+                        $breakend = date('Y-m-d', strtotime($currentcondata['enddate']) + $diffend + $day);
+                    } else if ($breaktimeend >= strtotime($twopriorcondata['startdate']) && $breaktimeend <= (strtotime($twopriorcondata['enddate']) + $day)) {
+                        $diffend = $breaktimeend - strtotime($twopriorcondata['enddate']);
+                        $breakend = date('Y-m-d', strtotime($priorcondata['enddate']) + $diffend + $day);
+                    } else {
+                        $breakend = getSameDayNextYear($breakend);
+                    }
+                }
+                array_push($breaklist, array (
+                    'oldconid' => $breakrow['conid'], 'newconid' => $breakrow['conid'] + 1,
+                    'oldstart' => $breakrow['startdate'], 'newstart' => $breakstart,
+                    'oldend' => $breakrow['enddate'], 'newend' => $breakend
+                    ));
             }
             $response['breaklist']  = $breaklist;
         } else {
             $response['breaklist']  = null;
         }
-
     }
 
     $result = dbQuery("SELECT memType FROM memTypes WHERE active = 'Y' ORDER BY sortorder;");

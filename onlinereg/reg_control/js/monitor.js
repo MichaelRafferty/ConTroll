@@ -20,52 +20,58 @@ $.ajax({
 }
 
 function buildGraph(data, staff, con) {
-  var svg = d3.select("#graphs").append("svg");
-  var numCharts = 3;
-  var parentWidth = $("#graphs").width();
+    var svg = d3.select("#graphs").append("svg");
+    var numCharts = 3;
+    var parentWidth = $("#graphs").width();
 
-  var margin = {top: 20, right: 50, bottom: 40, left: 50},
-  width = (.9 * parentWidth) - margin.left - margin.right,
-  baseHeight = .33*parentWidth - margin.bottom - margin.top/numCharts;
+    var margin = { top: 20, right: 50, bottom: 40, left: 50 },
+        width = (.9 * parentWidth) - margin.left - margin.right,
+        baseHeight = .33 * parentWidth - margin.bottom - margin.top / numCharts;
 
-  var activityHeight = baseHeight/2;
-  var cummHeight = baseHeight;
+    var activityHeight = baseHeight / 2;
+    var cummHeight = baseHeight;
 
-  var totalHeight = (numCharts - 1) * activityHeight + cummHeight + margin.top + (numCharts * margin.bottom);
+    var totalHeight = (numCharts - 1) * activityHeight + cummHeight + margin.top + (numCharts * margin.bottom);
 
   // condition data
-  data.forEach(function(d) {
-    d['expired']=+d['expired'];
-    d['oneday']=+d['oneday'];
-    d['full']=+d['full'];
-    d['badge']=+d['badge'];
-    d['trans']=+d['trans'];
-    if(d['time'] < "2016-05-26 17:00:00") {
-        d['time'] = "2016-05-26 17:00:00";
-    }   
-    d['time']=Date.parse(d['time'].replace(" ", "T")+"Z");
-  });
-  staff.forEach(function(d) {
-    d['time']=Date.parse(d['t'].replace(" ", "T")+"Z");
-    d['de']=+d['de'];
-    d['reg']=+d['reg'];
-  });
+    data.forEach(function (d) {
+        d['expired'] = +d['expired'];
+        d['oneday'] = +d['oneday'];
+        d['full'] = +d['full'];
+        d['badge'] = +d['badge'];
+        d['trans'] = +d['trans'];
+        if (d['time'] < "2016-05-26 17:00:00") {
+            d['time'] = "2016-05-26 17:00:00";
+        }
+        d['time']=Date.parse(d['time']);
+    });
+    staff.forEach(function (d) {
+        // d['time']=Date.parse(d['t'].replace(" ", "T")+"Z");
+        d['time']=Date.parse(d['t']);
+        d['time']=Date.parse(d['t']);
+      
+        d['de'] = +d['de'];
+        d['reg'] = +d['reg'];
+    });
 
-  con['start']=Date.parse(con['startdate'].replace(" ", "T") + "Z");
-  con['end']=Date.parse(con['enddate'].replace(" ", "T") + "Z");
+    //con['start']=Date.parse(con['startdate'].replace(" ", "T") + "Z");
+    con['start']=Date.parse(con['startdate']);
+    //con['end']=Date.parse(con['enddate'].replace(" ", "T") + "Z");
+    con['end']=Date.parse(con['enddate']);
+    
 
-  //establish canvas
-  svg.attr('width', width + margin.left + margin.right)
-    .attr('height', totalHeight);
+    //establish canvas
+    svg.attr('width', width + margin.left + margin.right)
+        .attr('height', totalHeight);
 
-  var canvas = {
-    cumm: svg.append("g").attr('transform', 
-        'translate(' + margin.left + ', ' + margin.top + ')'),
-    activity: svg.append("g").attr('transform', 
-        'translate(' + margin.left + ', ' + (+margin.top+cummHeight+margin.bottom) + ')'),
-    staff: svg.append("g").attr('transform', 
-        'translate(' + margin.left + ', ' + (+margin.top+cummHeight+activityHeight+2*margin.bottom) + ')'),
-  };
+    var canvas = {
+        cumm: svg.append("g").attr('transform',
+            'translate(' + margin.left + ', ' + margin.top + ')'),
+        activity: svg.append("g").attr('transform',
+            'translate(' + margin.left + ', ' + (+margin.top + cummHeight + margin.bottom) + ')'),
+        staff: svg.append("g").attr('transform',
+            'translate(' + margin.left + ', ' + (+margin.top + cummHeight + activityHeight + 2 * margin.bottom) + ')'),
+    };
 
 
   // define scales and axes
