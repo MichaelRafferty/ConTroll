@@ -104,7 +104,7 @@ class consetup {
 </div>
 <div>&nbsp;</div>
 <h5><strong>` + this.#setup_title + ` Membership Types:</strong></h5>
-<p><strong>NOTE: All date ranges are '>=' Start Date and '<' End Date, so the End Date of one period should be the start date of the next.</p>
+<p><strong>NOTE:</strong> All date ranges are '>=' Start Date and '<' End Date, so the End Date of one period should be the start date of the next.</p>
 <div id="` + this.#setup_type + `-memlist"></div>
 <div id="memlist-buttons">  
     <button id="` + this.#setup_type + `memlist-undo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.undoMemList(); return false;" disabled>Undo</button>
