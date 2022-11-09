@@ -10,84 +10,71 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
 
-page_init($page,
-    /* css */ array('css/base.css',
+page_init("Badge List",
+    /* css */ array('https://unpkg.com/tabulator-tables@5.4.2/dist/css/tabulator.min.css',
+                    'css/base.css',
                     'css/table.css',
                     'css/reg_admin.css'
                     ),
-    /* js  */ array('/javascript/d3.js',
+    /* js  */ array(//'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
+                    'https://unpkg.com/tabulator-tables@5.4.2/dist/js/tabulator.min.js',
                     'js/base.js',
-                    'js/reg_admin.js',
-                    'js/table.js'),
+                    'js/reg_admin.js'),
                     $need_login);
 
 ?>
-<div id='main'>
-    <span class='half' id='facets'>
-    </span>
-    <span class='half' id='table'>
-        <div id='gridFilter'>
-            <span id='gridSelectWrap' class='right'>
-                <span id='gridSelect'></span>
-                <button onclick='clearSelect("#grid")'>Clear</button>
-                <button onclick='invSelect("#grid")'>Invert</button>
-                <button onclick='addFilter("#grid")'>Filter</button>
-            </span>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-auto me-1 p-0">
+            <div id="category-table"></div>
         </div>
-        <div id='gridCtrl'>
-            <span class='right'>
-                Badge
-                <input type='number' id='gridStart' min=0 step=1 value=0 />
-                Of <span id='gridVis'></span> (<span id='gridMax'></span>)
-                <button onClick='redraw("#grid")'>Go</button>
-            </span>
-            <span >
-                <button onClick='firstPage("#grid")'>First</button>
-                <button onClick='prevPage("#grid")'>Prev</button>
-                <button onClick='nextPage("#grid")'>Next</button>
-                <button onClick='lastPage("#grid")'>Last</button>
-                Page Size
-                <select id='gridSize'>
-                    <option>10</option>
-                    <option selected='selected'>25</option>
-                    <option>50</option>
-                    <option>100</option>
-                </select>
-            </span>
+        <div class="col-sm-auto me-1  p-0">
+            <div id="type-table"></div>
         </div>
-        <table id='grid'>
-            <thead>
-                <tr>
-                    <th>Person</th>
-                    <th>Badge Type</th>
-                    <th>Payment</th>
-                    <th>Dates</th>
-                    <th>Buttons</th>
-                </tr>
-            </thead>
-            <tbody id='gridBody'>
-            </tbody>
-        </table>
-    </span>
-    <span class='half' id='reports'>
-        <a href="reports/allEmails.php">Email List</a> |
-        <a href="reports/regReport.php">Reg Report</a> |
-        <button onClick="sendEmail('marketing')">Send Marketing Email</button>
-        <button onClick="sendEmail('reminder')">Send Attendance Reminder Email</button>
+        <div class="col-sm-auto me-1  p-0">
+            <div id="age-table"></div>
+        </div>
+        <div class="col-sm-auto me-1  p-0">
+            <div id="paid-table"></div>
+        </div>
+        <div class="col-sm-auto me-1 p-0">
+            <div id="label-table"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-auto p-0">
+            <div id="badge-table"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-auto p-2">
+            <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/allEmails.php';">Download Email List</button>
+        </div>
+        <div class="col-sm-auto p-2">
+            <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/regReport.php';">Download Reg Report</button>
+        </div>
+        <div class="col-sm-auto p-2">
+            <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')">Send Marketing Email</button>
+        </div>
+        <div class="col-sm-auto p-2">
+            <button class="btn btn-primary btn-sm" onclick="sendEmail('reminder')">Send Attendance Reminder Email</button>
+        </div>
         <?php if ($db_ini['reg']['cancelled']) { ?>
-        <button onClick="sendCancel()">Send Cancelation Instructions</button>
-        <?php } ?>      
-         <?php if ($db_ini['reg']['cancelled']) { ?>
-        <br/>
-        <a href="reports/cancel.php">Cancelation Report</a>
-        <a href="reports/processRefunds.php">Process Refunds</a>
+        <div class="col-sm-auto p-2">
+            <button class="btn btn-primary btn-sm" onclick="sendCancel()">Send Cancelation Instructions</button>
+        </div>
+        <div class="col-sm-auto p-2">
+            <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/cancel.php';">Download Cancellation Report</button>
+        </div>
+        <div class="col-sm-auto p-2">
+            <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/processRefunds.php';">Download Process Refunds Report</button>
+        </div>
         <?php } ?>
-    </span>
+    </div>
 </div>
 <pre id='test'>
 </pre>
 <?php
-
 
 page_foot($page);
 ?>
