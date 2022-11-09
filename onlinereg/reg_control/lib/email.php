@@ -162,7 +162,7 @@ function preConEmail_last_HTML($test) {
 </p>
 
 <p>
-	Our programming team has put together a great schedule for us this year, and you can take a look at it at <a href="$schedulepage" target="_blank">$schedulepage/</a> . Information about other activities, as well as our Guests of Honor, can be found on our website at <a href="$homepage" target="_blank">$homepage</a>.
+	Our programming team has put together a great schedule for us this year, and you can take a look at it at <a href="$schedulepage" target="_blank">$schedulepage/</a> on your computer or portable device. Information about other activities, as well as our Guests of Honor, can be found on our website at <a href="$homepage" target="_blank">$homepage</a>.
 </p>
 
 <p>
@@ -210,7 +210,7 @@ $conlabel is almost upon us! You are receiving this email because your email add
 
 This year we are at the same hotel, which is now the $hotelname</a>, at $hoteladdr. Badges can be picked up or purchased at $conname Registration, which is $pickupareatext. $addlpickuptext
 
-Our programming team has put together a great schedule for us this year, and you can take a look at it at $schedulepage. Information about other activities, as well as our Guests of Honor, can be found on our website at $homepage.
+Our programming team has put together a great schedule for us this year, and you can take a look at it at $schedulepage on your computer or portable device. Information about other activities, as well as our Guests of Honor, can be found on our website at $homepage.
 
 The $orgname ($orgabv) is dedicated to providing a comfortable and harassment-free environment for everyone at $conname and other $orgabv-sponsored events. For specific information, including our full Anti-Harassment Policy, see $policypage.
 
