@@ -211,6 +211,15 @@ function draw_stats(data) {
     labelfilter = [];       
 }
 
+function transferbutton(cell, formatterParams, onRendered) {
+    return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Transfer</button>';
+}
+
+function transfer(e, cell) {
+    badgeid = cell.getRow().getCell("badgeId").getValue();
+    return transferBadge(badgeid);
+}
+
 function draw_badges(data) {
     if (badgetable !== null) {
         badgetable = null;
@@ -218,8 +227,9 @@ function draw_badges(data) {
     badgetable = new Tabulator('#badge-table', {
         data: data['badges'],
         layout: "fitDataTable",
-        height: "600px",
         pagination: true,
+        paginationSize: 25,
+        paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         columns: [
             { title: "perid", field: "perid", visible: false },
             { title: "Person", field: "p_name", headerSort: true, headerFilter: true },
@@ -232,6 +242,9 @@ function draw_badges(data) {
             { field: "category", visible: false },
             { field: "age", visible: false },
             { field: "type", visible: false },
+            { field: "badgeId", visible: false },
+            { field: "perid", visible: false },
+            { title: "Transfer", formatter: transferbutton, hozAlign:"center", cellClick: transfer, headerSort: false },
         ]       
     });
 }
@@ -257,6 +270,9 @@ function getData() {
 function transferBadge(badge) {
     var newId = prompt('Please enter the Perid of the person you are transferring TO');
 
+    if (newID == null || newID == '')
+        return;
+
     var formData = { 'badge': badge, 'perid': newId };
     $.ajax({
         url: 'scripts/transferBadge.php',
@@ -267,7 +283,7 @@ function transferBadge(badge) {
                 $('#test').empty().append(JSON.stringify(data));
                 alert(data.error);
             } else {
-                location.reload();
+                getData();
             }
         }
     });
