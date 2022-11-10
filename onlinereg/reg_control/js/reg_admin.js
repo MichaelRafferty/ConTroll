@@ -252,3 +252,78 @@ function getData() {
         }
     })
 }
+
+
+function transferBadge(badge) {
+    var newId = prompt('Please enter the Perid of the person you are transferring TO');
+
+    var formData = { 'badge': badge, 'perid': newId };
+    $.ajax({
+        url: 'scripts/transferBadge.php',
+        data: formData,
+        method: 'POST',
+        success: function (data, textStatus, jqXHR) {
+            if (data.error != '') {
+                $('#test').empty().append(JSON.stringify(data));
+                alert(data.error);
+            } else {
+                location.reload();
+            }
+        }
+    });
+}
+
+function sendCancel() {
+    var tid = prompt("Would you like to send a test email?\nIf so please enter the transaction you want to send the test for.");
+    var action = "none";
+
+    if (tid == null) {
+        if (confirm("You are about to send email to a lot of people.  Are you sure?")) {
+            action = 'full';
+        } else { return false; }
+    } else {
+        action = 'test';
+    }
+
+    $.ajax({
+        url: 'scripts/sendCancelEmail.php',
+        data: { 'action': action, 'tid': tid },
+        method: "POST",
+        success: function (data, textStatus, jqXHR) {
+            if (data.error != '') {
+                $('#test').empty().append(JSON.stringify(data));
+                alert(data.error);
+            } else {
+                $('#test').empty().append(JSON.stringify(data));
+            }
+        }
+    });
+}
+
+
+function sendEmail(type) {
+    var email = prompt("Would you like to send a test " + type + " email?\nIf so please enter the address to send the test to.");
+    var action = "none";
+
+    if (email == null) {
+        if (confirm("You are about to send a " + type + " email to a lot of people.  Are you sure?")) {
+            action = 'full';
+        } else { return false; }
+    } else {
+        action = 'test';
+    }
+
+    $.ajax({
+        url: 'scripts/sendEmail.php',
+        data: { 'action': action, 'email': email, 'type': type },
+        method: "POST",
+        success: function (data, textStatus, jqXHR) {
+            if (data.error != '') {
+                $('#test').empty().append(JSON.stringify(data));
+                alert(data.error);
+            } else {
+                $('#test').empty().append(JSON.stringify(data));
+            }
+        }
+    });
+}
