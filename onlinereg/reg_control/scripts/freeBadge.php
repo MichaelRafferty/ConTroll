@@ -64,6 +64,8 @@ if((!array_key_exists('regid', $_POST)) || (!isset($_POST['regid'])) || $_POST['
     $regQ = "INSERT INTO reg (conid, perid, memId, create_trans, paid, price, locked, create_user) VALUES (?, ?, ?, ?, 0, 0, 'N', ?);";
 
     $regId = dbSafeInsert($regQ, 'iiiii', array( $reg['conid'], $reg['perid'], $reg['memId'], $reg['trans'], $userid));
+
+    $rows_modified = dbSafeCmd("UPDATE transaction SET perid = ? WHERE id = ?;", 'ii', array($reg['perid'], $reg['trans']));
 } else {
 
     $reg= array(
