@@ -24,7 +24,7 @@ $con = get_conf('con');
 $conid=$con['id'];
 
 $atconIdQ = "SELECT id FROM atcon WHERE conid=? AND transid=?;";
-$atconId = fetch_safe_assoc(dbSafeQuery($atconIdQ, 'ii', array($conid, $_POST['transid']));
+$atconId = fetch_safe_assoc(dbSafeQuery($atconIdQ, 'ii', array($conid, $_POST['transid'])));
 
 $attachQ = "INSERT IGNORE INTO atcon_badge (atconId, badgeId, action, comment)  VALUES (?, ?, ?, ?);";
 $attachR = dbSafeInsert($attachQ, 'iiss', array($atconId['id'], $_POST['badgeId'], $_POST['type'], $user . ": " . $_POST['content']));
