@@ -41,7 +41,7 @@ if ($transR->num_rows > 0) {
   $trans=fetch_safe_assoc($transR);
   $transid=$trans['id'];
 } else {
-  $transQ = "INSERT INTO transaction (conid, userid, price, paid, type, notes) VALUES (?, ?, 0, 0, 'staff', 'Free memberships');";
+  $transQ = "INSERT INTO transaction (conid, userid, price, paid, type, notes, complete_date) VALUES (?, ?, 0, 0, 'staff', 'Free memberships', NOW());";
   $transid=dbSafeInsert($transQ, 'ii', array($con['id'] ,$userid));
 }
 
