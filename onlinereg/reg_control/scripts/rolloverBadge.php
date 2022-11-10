@@ -41,7 +41,7 @@ if (isset($_POST['type'])) {
 // validate rollover request
 //  rules:
 //  type rollover
-//      badgetype is a paid badge or rollover other thanb rollover-cancel and is not one day
+//      badgetype is a paid badge or rollover other than rollover-cancel and is not one day
 //      badge has not been picked up or printed
 //      no membership for this person for conid + 1
 // type volunteer
