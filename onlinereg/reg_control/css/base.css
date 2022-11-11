@@ -9,10 +9,14 @@ body {
     border-color: #ccc
 }
 
-#titlebar {
+.titlebar {
     width: 100%;
     margin: 0px;
     background-color: #aa55ff;
+}
+
+.navitem {
+    background-color: #dd88ff;
 }
 
 h1.title {
@@ -55,7 +59,7 @@ a.button {
 }
 
 span.tab {
-    background-color: #c7f;
+    background-color: #cc77ff;
 }
 span.tab a {
     color: black;

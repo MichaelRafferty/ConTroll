@@ -165,8 +165,9 @@ function page_init($title, $css, $js, $auth) {
 function page_head($title, $auth) {
     global $db_ini;
     ?>
+
     <div class="container-fluid">
-        <div class="row" id='titlebar'>
+        <div class="row titlebar" id='titlebar'>
             <div class="col-sm-9">
                 <h1 class='title'>
                     <?php echo $db_ini['con']['conname']?> Reg Controller <?php echo $title; ?> page
@@ -183,8 +184,9 @@ function page_head($title, $auth) {
             </div>         
         </div>
     <?php if ($db_ini['reg']['test']==1) { ?>
+
         <div class="row">
-             <h2 class='text-danger'><strong>This Page is for test purposes only</strong></h2>
+            <h2 class='text-danger'><strong>This Page is for test purposes only</strong></h2>
         </div>   
     <?php } ?>
 <?php
@@ -199,18 +201,19 @@ function con_info($auth) {
         $unlockCount = fetch_safe_array($count_res);
   
 ?>
-    <div class="row" id='regInfo'>
-        <div class="col-sm-auto">
-            <span id='regInfoCon' class='left'>Con: 
-                <span class='blocktitle'> <?php echo $con['label']; ?> </span>
-                <small><?php echo $badgeCount[0] . " Badges (" . $unlockCount[0] . " Ready)"; ?></small>
-            </span>
-        </div>       
-    </div>
+
+        <div class="row" id='regInfo'>
+            <div class="col-sm-auto">
+                <span id='regInfoCon' class='left'>Con: 
+                    <span class='blocktitle'> <?php echo $con['label']; ?> </span>
+                    <small><?php echo $badgeCount[0] . " Badges (" . $unlockCount[0] . " Ready)"; ?></small>
+                </span>
+            </div>       
+        </div>
     <?php } else { ?>
-    <div class="row" id='regInfo'>
-        <div class="col-sm-auto">Please log in for convention information.</div>
-    </div>
+        <div class="row" id='regInfo'>
+            <div class="col-sm-auto">Please log in for convention information.</div>
+        </div>
     <?php
     }
 }
@@ -221,32 +224,42 @@ function tab_bar($auth, $page) {
     } else {
         $page_list = array();
     }
+    $active = $page == "Home" ? "active" : "";
+    $ariainfo = $page == "Home" ? 'aria-current="page"' : '';
+
     ?>
-    <div class='tabbar'>
-        <span class='
-            <?php if($page=="Home") { 
-                echo 'activeTab'; 
-            } else { 
-                echo 'tab'; 
-            }?>'>
-            <a href="index.php">Home</a></span><?php
-        for($i = 0 ; $i < count($page_list); $i++) {
-            $pageInfo = $page_list[$i];
-            $p = $pageInfo['name'];
-            $d = $pageInfo['display'];
-            $thisTab = ($p == $page);
-            ?><span class='<?php 
-            if($thisTab) { echo "activeTab"; } else { echo "tab"; }
-            ?>'><a href='<?php echo $p . ".php";?>'><?php echo $d; ?></a>
-        </span><?php
-        }
-    ?>
-    </div>
+
+        <nav class="navbar navbar-light navitem navbar-expand-lg mb-2">
+            <div>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto p-0">
+                    <li>
+                         <a class="nav-link navitem <?php echo $active; ?>" <?php echo $ariainfo; ?> href="index.php">Home</a>
+                    </li> 
+                    <?php foreach ($page_list as $pageInfo) {
+                        $p = $pageInfo['name'];
+                        $d = $pageInfo['display'];
+                        $active = $page == $p ? "active" : "";
+                        $ariainfo = $page == $p ? 'aria-current="page"' : '';
+                    ?>
+                    <li>
+                         <a class="nav-link navitem <?php echo $active; ?>" <?php echo $ariainfo; ?> href="<?php echo $p; ?>.php"><?php echo $d; ?></a>
+                    </li>
+                    <?php  } ?>
+                </ul>
+            </div>
+        </nav>
     <?php
 }
 
 function page_foot($title) {
     ?>
+
+    </div>
 </body>
 </html>
 <?php
