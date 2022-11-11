@@ -174,13 +174,9 @@ function page_head($title, $auth) {
                 </h1>
             </div>
             <div class="col-sm-3">
-                <a id='login' class='right button' 
-                <?php if($auth==null) { ?>
-                    href='index.php?logout'>Login
-                <?php } else {  ?>
-                    href='?logout'>Logout
-                <?php echo $auth['email']; } ?>
-                </a>
+                <button class="btn btn-light" id="login" style="float: right;" onclick="window.location.href='<?php echo $auth == null ? "index.php?logout" : "?logout"; ?>'">
+                    <?php echo $auth == null ? "Login" : "Logout " . $auth['email']; ?>
+                </button>
             </div>         
         </div>
     <?php if ($db_ini['reg']['test']==1) { ?>
