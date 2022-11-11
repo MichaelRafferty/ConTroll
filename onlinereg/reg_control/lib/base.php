@@ -164,21 +164,28 @@ function page_init($title, $css, $js, $auth) {
 
 function page_head($title, $auth) {
     global $db_ini;
-?>
-    <div id='titlebar'>
-        <a id='login' class='right button' 
-            <?php if($auth==null) {
-                ?>href='index.php?logout'>Login<?php
-            } else { 
-                ?>href='?logout'>Logout <?php echo $auth['email']; 
-            } ?>
-        </a>
-        <h1 class='title'>
-            <?php echo $db_ini['con']['conname']?> Reg Controller <?php echo $title; ?> page
-        </h1>
-    </div>
+    ?>
+    <div class="container-fluid">
+        <div class="row" id='titlebar'>
+            <div class="col-sm-9">
+                <h1 class='title'>
+                    <?php echo $db_ini['con']['conname']?> Reg Controller <?php echo $title; ?> page
+                </h1>
+            </div>
+            <div class="col-sm-3">
+                <a id='login' class='right button' 
+                <?php if($auth==null) { ?>
+                    href='index.php?logout'>Login
+                <?php } else {  ?>
+                    href='?logout'>Logout
+                <?php echo $auth['email']; } ?>
+                </a>
+            </div>         
+        </div>
     <?php if ($db_ini['reg']['test']==1) { ?>
-    <h2 class='text-danger'><strong>This Page is for test purposes only</strong></h2>
+        <div class="row">
+             <h2 class='text-danger'><strong>This Page is for test purposes only</strong></h2>
+        </div>   
     <?php } ?>
 <?php
 }
@@ -188,22 +195,23 @@ function con_info($auth) {
         $con = get_con();
         $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."';");
         $badgeCount = fetch_safe_array($count_res);
-        $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."' AND price <= paid;");
+        $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."' AND price <= ifnull(paid,0);");
         $unlockCount = fetch_safe_array($count_res);
   
-        ?>
-    <div id='regInfo'>
-        <span id='regInfoCon' class='left'>
-        Con: <span class='blocktitle'> <?php echo $con['label']; ?> </span>
-        <small><?php 
-            echo $badgeCount[0] . " Badges (" . 
-                $unlockCount[0] . " Ready)";
-        ?></small>
-        </span>
+?>
+    <div class="row" id='regInfo'>
+        <div class="col-sm-auto">
+            <span id='regInfoCon' class='left'>Con: 
+                <span class='blocktitle'> <?php echo $con['label']; ?> </span>
+                <small><?php echo $badgeCount[0] . " Badges (" . $unlockCount[0] . " Ready)"; ?></small>
+            </span>
+        </div>       
     </div>
-        <?php
-    } else { 
-        ?><div id='regInfo'>Please log in for convention information.</div><?php
+    <?php } else { ?>
+    <div class="row" id='regInfo'>
+        <div class="col-sm-auto">Please log in for convention information.</div>
+    </div>
+    <?php
     }
 }
 
