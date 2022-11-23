@@ -71,7 +71,7 @@ if(isset($_POST['newid'])) {
     $newid = null;
 }
 
-$values = array($conid, $userid, $transid, $perid, $newid, $memInfo['id'], $meminfo['price']);
+$values = array($conid, $userid, $transid, $perid, $newid, $memInfo['id'], $memInfo['price']);
 $response['badgeQuery'] = $query;
 
 $badgeid = dbSafeInsert($query, $datatypes, $values);
@@ -84,7 +84,7 @@ $query = <<<EOS
 SELECT R.id, R.price, R.paid, (R.price-R.paid) as cost, M.id as memId, M.memCategory, M.memType, M.memAge, M.label, R.locked
 FROM reg R
 JOIN memList M  ON (M.id=R.memId)
-WHERE AND R.id=?;
+WHERE M.id=R.memId AND R.id=?;
 EOS;
 
 $createEventQ = "INSERT INTO atcon_badge (atconId, badgeId, action) VALUES(?, ?, 'create');";

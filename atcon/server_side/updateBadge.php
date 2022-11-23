@@ -50,7 +50,7 @@ if (isset($_POST['type'])) {
 if (isset($_POST['age'])) {
     $memListQuery .= "memAge=? AND ";
     $datatypes .= 's';
-    $value[] = $_POST['age'];
+    $values[] = $_POST['age'];
 }
 $memListQuery .= "conid=? ORDER by price DESC";
 $datatypes .= 'i';
