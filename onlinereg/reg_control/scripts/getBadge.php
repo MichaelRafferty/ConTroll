@@ -22,7 +22,7 @@ $conid=$con['id'];
 
 
 $query = <<<EOS
-SELECT R.id, R.price, R.paid, (R.price-R.paid) AS cost, CONCAT_WS('-', M.id, M.memCategory, M.memType, M.memAge) AS type, M.memAge AS age, R.locked, AMlabel
+SELECT R.id, R.price, R.paid, (R.price-R.paid) AS cost, CONCAT_WS('-', M.id, M.memCategory, M.memType, M.memAge) AS type, M.memAge AS age, R.locked, M.label
 FROM reg R
 JOIN memLabel M ON(M.id = R.memId)
 WHERE R.perid=? AND R.conid BETWEEN ? AND ?
@@ -50,7 +50,7 @@ WHERE M.conid=?
 ORDER BY sort_order, memType, memAge ASC;
 EOS;
 
-$badge_res=dbSafeQuery($badge_resQ, 'i', array($con['id']);
+$badge_res=dbSafeQuery($badge_resQ, 'i', array($con['id']));
 $badges=array();
 while($row = fetch_safe_assoc($badge_res)) {
     $badges[count($badges)] = $row;

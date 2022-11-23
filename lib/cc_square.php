@@ -224,7 +224,7 @@ function cc_charge_purchase($results, $ccauth) {
                 $code = $error->getCode();
                 $detail = $error->getDetail();
                 $field = $error->getField();
-                web_error_log("Cat: $cat: Code $code, Detail: $detail [$field]");
+                web_error_log("Transid: " . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail [$field]");
                 switch ($code) {
                     case "GENERIC_DECLINE":
                         $msg = "Card Declined";
@@ -241,12 +241,11 @@ function cc_charge_purchase($results, $ccauth) {
                     default:
                         $msg = $code;
                 }
-
-
-
+                web_error_log("Square card payment error for " . $results['transid'] . " of $msg");
                 ajaxSuccess(array('status'=>'error','data'=>"Payment Error: $msg"));
                 exit();
             }
+            web_error_log("Square card payment error for " . $results['transid'] . " of 'unknown'");
             ajaxSuccess(array('status'=>'error','data'=>"Unknown Payment Error"));
             exit();
         }

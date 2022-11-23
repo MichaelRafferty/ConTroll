@@ -37,7 +37,7 @@ function load_list() {
     method: "GET",
     url: listURL,
     success: function(data, textStatus, jqXHR) {
-      //showError(JSON.stringify(data, null, 2));
+      //showError('trace:', data);
       console.log(data['art'].length);
       $('#grid').data('data', data['art']);
       $('#grid').data('rowFunc', buildRow);
@@ -172,7 +172,7 @@ function update(item) {
     method: "POST",
     data: args,
     success: function(data, textStatus, jqXHR) { 
-        //showError(JSON.stringify(data, null, 2));
+        //showError('trace:', data);
         $('#grid').data('data', data['art']);
         redraw('#grid'); 
         }
@@ -218,7 +218,7 @@ $.ajax({
     method: "POST",
     data: formdata,
     success: function (data, textStatus, jqXHR) {
-      //showError(JSON.stringify(data, null, 2));
+      //showError('trace: ', data);
       if(data['error'] != null) { alert(data['error']); }
       else {
         $('#main').data('art', data['art']);
@@ -315,7 +315,7 @@ function purchase(form) {
     method: "POST",
     data: args,
     success: function(data, textStatus, jqXHR) {
-      if(data['error'] && data['error']!='') { 
+      if('error' in data && data['error']!='') { 
         showError(data['error']); 
       }
       //$('#main').data('art', data['art']);

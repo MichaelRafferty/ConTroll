@@ -29,18 +29,19 @@ $userQ = "SELECT id FROM user WHERE email='$user';";
 $userR = fetch_safe_assoc(dbQuery($userQ));
 $userid = $userR['id'];
 
-
-$transQ = "SELECT * FROM transaction WHERE userid='" .
-    $userid . "' AND type='staff';";
-$transR = dbQuery($transQ);
-
+$transQ = <<<EOS
+SELECT *
+FROM transaction
+WHERE userid=? AND type = 'staff' and conid = ?;
+EOS;
+$transR = dbSafeQuery($transQ, 'ii', array($userid, $con['id']));
 $transid=0;
 
 if ($transR->num_rows > 0) {
   $trans=fetch_safe_assoc($transR);
   $transid=$trans['id'];
 } else {
-  $transQ = "INSERT INTO transaction (conid, userid, price, paid, type, notes) VALUES (?, ?, 0, 0, 'staff', 'Free memberships');";
+  $transQ = "INSERT INTO transaction (conid, userid, price, paid, type, notes, complete_date) VALUES (?, ?, 0, 0, 'staff', 'Free memberships', NOW());";
   $transid=dbSafeInsert($transQ, 'ii', array($con['id'] ,$userid));
 }
 
@@ -63,6 +64,8 @@ if((!array_key_exists('regid', $_POST)) || (!isset($_POST['regid'])) || $_POST['
     $regQ = "INSERT INTO reg (conid, perid, memId, create_trans, paid, price, locked, create_user) VALUES (?, ?, ?, ?, 0, 0, 'N', ?);";
 
     $regId = dbSafeInsert($regQ, 'iiiii', array( $reg['conid'], $reg['perid'], $reg['memId'], $reg['trans'], $userid));
+
+    $rows_modified = dbSafeCmd("UPDATE transaction SET perid = ? WHERE id = ?;", 'ii', array($reg['perid'], $reg['trans']));
 } else {
 
     $reg= array(

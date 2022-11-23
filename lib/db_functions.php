@@ -85,6 +85,18 @@ function db_connect() {
             error_log("failed setting sql mode on db connection");
             return false;
         }
+
+        if (array_key_exists('php_timezone', $db_ini['mysql'])) {
+            date_default_timezone_set($db_ini['mysql']['php_timezone']);
+        }
+        if (array_key_exists('db_timezone', $db_ini['mysql'])) {
+            $sql = "SET time_zone ='" .  $db_ini['mysql']['db_timezone'] . "';";
+            $success = $dbObject -> query($sql);
+            if (!$success) {
+                error_log("failed setting sql mode on db connection");
+                return false;
+            }
+        }
     }
 }
 
@@ -220,6 +232,35 @@ function dbSafeCmd($sql, $typestr, $value_arr) {
                 return false;
             }
 
+            // get the number of rows affected
+            $numrows = $dbObject->affected_rows;
+        }
+        catch (Exception $e) {
+            log_mysqli_error("", $e->getMessage());
+            return false;
+        }
+        return $numrows;
+    } else {
+        echo "ERROR: DB Connection Not Open";
+        error_log("ERROR: DB Connection Not Open");
+        return false;
+    }
+}
+// dbSafeCmd - using prepare safely perform an update/delete/multi-line insert operation
+// returns the number of rows modified/deleted (actually changed a value)
+// This should replace all database calls to db functions that use variable data in their SQL string
+//
+function dbCmd($sql) {
+    global $dbObject;
+    $numrows=null;
+    if(!is_null($dbObject)) {
+        try {
+            // execute the command
+            $res = $dbObject->query($sql);
+            if ($res === false || $dbObject->errno) {
+                log_mysqli_error($sql, "Command Execute Error");
+                return false;
+            }
             // get the number of rows affected
             $numrows = $dbObject->affected_rows;
         }

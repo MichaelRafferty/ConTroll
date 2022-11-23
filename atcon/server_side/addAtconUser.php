@@ -21,8 +21,8 @@ if(isset($_POST) && isset($_POST['user']) && isset($_POST['passwd'])) {
         $first = true;
         if(isset($_POST['data_entry']) && $_POST['data_entry'] == 'on') {
             if(!$first) { $updateQ .= ","; }
-            $updateQ .= " (? 'data_entry', ?, ?)";
-            $datatypes = 'iis';
+            $updateQ .= " (?, 'data_entry', ?, ?)";
+            $datatypes .= 'iis';
             $values[] = $updateUser;
             $values[] = $conid;
             $values[] = $newpw;
@@ -32,7 +32,7 @@ if(isset($_POST) && isset($_POST['user']) && isset($_POST['passwd'])) {
         if(isset($_POST['register']) && $_POST['register'] == 'on') {
             if(!$first) { $updateQ .= ","; }
             $updateQ .= " (?, 'cashier', ?, ?)";
-            $datatypes = 'iis';
+            $datatypes .= 'iis';
             $values[] = $updateUser;
             $values[] = $conid;
             $values[] = $newpw;
@@ -41,7 +41,7 @@ if(isset($_POST) && isset($_POST['user']) && isset($_POST['passwd'])) {
         if(isset($_POST['artshow']) && $_POST['artshow'] == 'on') {
             if(!$first) { $updateQ .= ","; }
             $updateQ .= " (?, 'artshow', ?, ?)";
-            $datatypes = 'iis';
+            $datatypes .= 'iis';
             $values[] = $updateUser;
             $values[] = $conid;
             $values[] = $newpw;
@@ -50,7 +50,7 @@ if(isset($_POST) && isset($_POST['user']) && isset($_POST['passwd'])) {
         if(isset($_POST['manager']) && $_POST['manager'] == 'on') {
             if(!$first) { $updateQ .= ","; }
             $updateQ .= " (?, 'manager', ?, ?)";
-            $datatypes = 'iis';
+            $datatypes .= 'iis';
             $values[] = $updateUser;
             $values[] = $conid;
             $values[] = $newpw;

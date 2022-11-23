@@ -51,7 +51,8 @@ if ($email_type == 'reminder') {
 SELECT DISTINCT P.email_addr AS email
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
-WHERE R.conid=$conid AND R.paid=R.price AND P.email_addr LIKE '%@%' AND P.contact_ok='Y'
+JOIN memList M ON (R.memId = M.id)
+WHERE R.conid=$conid AND R.paid=R.price AND P.email_addr LIKE '%@%' AND P.contact_ok='Y' AND M.label != 'rollover-cancel'
 ORDER BY email;
 EOQ;
 

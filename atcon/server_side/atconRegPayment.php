@@ -96,7 +96,7 @@ $response['payid'] = $payid;
 #$response['paymentQ'] = $paymentQ;
 
 $transQ = "UPDATE transaction SET price=?, tax=0, withtax=?, paid=? WHERE id=?";
-dbSafeCmd($transQ, 'dddi', array($total, $total, ($paid + $amount, $transid));
+dbSafeCmd($transQ, 'dddi', array($total, $total, ($paid + $amount), $transid));
 
 if($_POST['type']=='offline') {
     $paymentQ2 = "UPDATE payments SET cc_approval_code=? WHERE id=?;";

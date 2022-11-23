@@ -8,7 +8,7 @@ $response = array("post" => $_POST, "get" => $_GET);
 $query = <<<EOS
 SELECT concat_ws('-', id, memCategory, memType, memAge) as type, memAge, memCategory, label, price
 FROM memList
-WHERE conid=? and atcon='Y' and current_timestamp() < enddate and current_timestamp() > startdate
+WHERE conid=? and atcon='Y' and current_timestamp() < enddate and current_timestamp() >= startdate
 ORDER BY sort_order, memType, memAge ASC, price DESC;
 EOS;
 $badge_res=dbSafeQuery($query, 'i', array($conid));

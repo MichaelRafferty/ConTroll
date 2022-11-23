@@ -42,12 +42,12 @@ function getArtist(perid) {
     success: function(data, textStatus, jqXHR) {
       console.log(data);
       loadPerson(data['person'], data['vendor'], data['artist'], data['agent']);
-      //showError(JSON.stringify(data));
+      //showError('trace:', data);
 
       return false;
     },
-    error: function(qXHR, textStatus, errorThrown) {
-      showError("ERROR in " + formUrl + ": " + textStatus);
+    error: function(jqXHR, textStatus, errorThrown) {
+      showError("ERROR in " + formUrl + ": " + textStatus, jqXHR);
       return false;
     }
   });
@@ -145,12 +145,12 @@ function updateArtist() {
     method: "POST",
     data: postdata,
     success: function (data, textStatus, jqXHR) {
-      //showError(JSON.stringify(data))
+      //showError('trace: ', data);
       getArtist({id: data['perid']});
       return false;
     },
-    error: function(qXHR, textStatus, errorThrown) {
-      showError("ERROR in " + formUrl + ": " + textStatus);
+    error: function(jqXHR, textStatus, errorThrown) {
+      showError("ERROR in " + formUrl + ": " + textStatus, jqXHR);
       return false;
     }
   });
@@ -170,8 +170,8 @@ function setAgent(id) {
       getArtist({id: data['perid']});
       return false;
     },
-    error: function(qXHR, textStatus, errorThrown) {
-      showError("ERROR in " + formUrl + ": " + textStatus);
+    error: function(jqXHR, textStatus, errorThrown) {
+      showError("ERROR in " + formUrl + ": " + textStatus, jqXHR);
       return false;
     }
   });

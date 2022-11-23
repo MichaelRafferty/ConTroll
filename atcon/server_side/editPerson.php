@@ -58,7 +58,7 @@ if(isset($_POST['lname'])) {
   $changeLog .= "last_name, ";
   $query .= "last_name=?";
   $datatypes .= 's';
-  $values[] = $_POST['last_name'];
+  $values[] = $_POST['lname'];
 }
 if(isset($_POST['suffix'])) {
   if($change) { $query .= ", "; }
@@ -114,7 +114,7 @@ if(isset($_POST['city'])) {
   $changeLog .= "city, ";
   $query .= "city=?";
   $datatypes .= 's';
-  $values[] = $_POST['CITY'];
+  $values[] = $_POST['city'];
 }
 if(isset($_POST['state'])) {
   if($change) { $query .= ", "; }

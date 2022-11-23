@@ -188,23 +188,23 @@ function loadOldPerson(objData) {
     $('#conflictFormDbFlags').empty().append('S: ' + objData['share_reg_ok'] + '  C: ' + objData['contact_ok']);
 
     $('#conflictFormDbName').css("background-color",
-        trim($('#conflictFormDbName').text()) != trim($('#conflictFormUserName').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbName').text().trim() != $('#conflictFormUserName').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbBadge').css("background-color",
-        trim($('#conflictFormDbBadge').text()) != trim($('#conflictFormUserBadge').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbBadge').text().trim() != $('#conflictFormUserBadge').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbAddr').css("background-color",
-        trim($('#conflictFormDbAddr').text()) != trim($('#conflictFormUserAddr').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbAddr').text().trim() != $('#conflictFormUserAddr').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbAddr2').css("background-color",
-        trim($('#conflictFormDbAddr2').text()) != trim($('#conflictFormUserAddr2').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbAddr2').text().trim() != $('#conflictFormUserAddr2').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbLocale').css("background-color",
-        trim($('#conflictFormDbLocale').text()) != trim($('#conflictFormUserLocale').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbLocale').text().trim() != $('#conflictFormUserLocale').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbCouuntry').css("background-color",
-        trim($('#conflictFormDbCouuntry').text()) != trim($('#conflictFormUserCouuntry').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbCouuntry').text().trim() != $('#conflictFormUserCouuntry').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbEmail').css("background-color",
-        trim($('#conflictFormDbEmail').text()) != trim($('#conflictFormUserEmail').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbEmail').text().trim() != $('#conflictFormUserEmail').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbPhone').css("background-color",
-        trim($('#conflictFormDbPhone').text()) != trim($('#conflictFormNwqPhone').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbPhone').text().trim() != $('#conflictFormNwqPhone').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbFlags').css("background-color",
-        trim($('#conflictFormDbFlags').text()) != trim($('#conflictFormUserFlags').text()) ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbFlags').text().trim() != $('#conflictFormUserFlags').text().trim() ? "LightGoldenRodYellow" : "");
 
     $('#conflictUpdate').attr('disabled', false);
 
@@ -286,68 +286,68 @@ function showEditPerson(data) {
     $("#editPersonFormIdUpdate").empty().append(data["update_date"]);
 
     $(formObj + "id']").val(data["id"]);
-    if(data['first_name'] != "") { 
-        $(formObj + "fname']").val($.parseHTML(data["first_name"])[0].nodeValue);
+    if(notnullorempty(data['first_name'])) { 
+        $(formObj + "fname']").val($.parseHTML(data["first_name"].trim())[0].nodeValue);
     } else { 
         $(formObj + "fname']").val("");
     }
-    if(data['middle_name'] != "") { 
-        $(formObj + "mname']").val($.parseHTML(data["middle_name"])[0].nodeValue);
+    if(notnullorempty(data['middle_name'])) { 
+        $(formObj + "mname']").val($.parseHTML(data["middle_name"].trim())[0].nodeValue);
     } else { 
         $(formObj + "mname']").val("");
     }
-    if(data['last_name'] != "") { 
-        $(formObj + "lname']").val($.parseHTML(data["last_name"])[0].nodeValue);
+    if(notnullorempty(data['last_name'])) { 
+        $(formObj + "lname']").val($.parseHTML(data["last_name"].trim())[0].nodeValue);
     } else { 
         $(formObj + "lname']").val("");
     }
-    if(data['suffix'] != "") { 
-        $(formObj + "suffix']").val($.parseHTML(data["suffix"])[0].nodeValue);
+    if(notnullorempty(data['suffix'])) { 
+        $(formObj + "suffix']").val($.parseHTML(data["suffix"].trim())[0].nodeValue);
     } else { 
         $(formObj + "suffix']").val("");
     }
-    if(data['badge_name'] != "") { 
-        $(formObj + "badge']").val($.parseHTML(data["badge_name"])[0].nodeValue);
+    if(notnullorempty(data['badge_name'])) { 
+        $(formObj + "badge']").val($.parseHTML(data["badge_name"].trim())[0].nodeValue);
     } else { 
         $(formObj + "badge']").val("");
     }
-    if(data['address'] != "") { 
-        $(formObj + "address']").val($.parseHTML(data["address"])[0].nodeValue);
+    if(notnullorempty(data['address'])) { 
+        $(formObj + "address']").val($.parseHTML(data["address"].trim())[0].nodeValue);
     } else { 
         $(formObj + "address']").val("");
     }
-    if(data['addr_2'] != "") { 
-        $(formObj + "addr2']").val($.parseHTML(data["addr_2"])[0].nodeValue);
+    if(notnullorempty(data['addr_2'])) { 
+        $(formObj + "addr2']").val($.parseHTML(data["addr_2"].trim())[0].nodeValue);
     } else { 
         $(formObj + "addr2']").val("");
     }
-    if(data['city'] != "") { 
-        $(formObj + "city']").val($.parseHTML(data["city"])[0].nodeValue);
+    if(notnullorempty(data['city'])) { 
+        $(formObj + "city']").val($.parseHTML(data["city"].trim())[0].nodeValue);
     } else { 
         $(formObj + "city']").val("");
     }
-    if(data['state'] != "") { 
-        $(formObj + "state']").val($.parseHTML(data["state"])[0].nodeValue);
+    if(notnullorempty(data['state'])) { 
+        $(formObj + "state']").val($.parseHTML(data["state"].trim())[0].nodeValue);
     } else { 
         $(formObj + "state']").val("");
     }
-    if(data['zip'] != "") { 
-        $(formObj + "zip']").val($.parseHTML(data["zip"])[0].nodeValue);
+    if(notnullorempty(data['zip'])) { 
+        $(formObj + "zip']").val($.parseHTML(data["zip"].trim())[0].nodeValue);
     } else { 
         $(formObj + "zip']").val("");
     }
-    if(data['country'] != "") { 
-        $(formObj + "country']").val($.parseHTML(data["country"])[0].nodeValue);
+    if(notnullorempty(data['country'])) { 
+        $(formObj + "country']").val($.parseHTML(data["country"].trim())[0].nodeValue);
     } else { 
         $(formObj + "country']").val("");
     }
-    if(data['email_addr'] != "") { 
-        $(formObj + "email']").val($.parseHTML(data["email_addr"])[0].nodeValue);
+    if(notnullorempty(data['email_addr'])) { 
+        $(formObj + "email']").val($.parseHTML(data["email_addr"].trim())[0].nodeValue);
     } else { 
         $(formObj + "email']").val("");
     }
-    if(data['phone'] != "") { 
-        $(formObj + "phone']").val($.parseHTML(data["phone"])[0].nodeValue);
+    if(notnullorempty(data['phone'])) { 
+        $(formObj + "phone']").val($.parseHTML(data["phone"].trim())[0].nodeValue);
     } else { 
         $(formObj + "phone']").val("");
     }

@@ -30,11 +30,12 @@ function findPerson(form) {
 }
 
 function searchConflictPerson(data, textStatus, jsXHR) {
-   var getData = 'id='+data['id'];
+    var getData = 'id=' + data['id'];
+    var formurl = "scripts/getNewPerson.php";
    $.ajax({
      method: "GET",
      data: getData,
-     url: "scripts/getNewPerson.php",
+     url: formurl,
      success:  function (data, textStatus, jqXhr) {
             if(data['error'] != undefined) { console.log(data['error']); }
             $('#newID').val(data['new']['id']);
@@ -48,15 +49,16 @@ function searchConflictPerson(data, textStatus, jsXHR) {
             resDiv.append(newPersonButton);
         
             newPersonButton.click(function () {
-                var formData = "newID="+data['new']['id'];
+                var formData = "newID=" + data['new']['id'];
+                var script = "scripts/addPersonFromConflict.php";
                 if(confirm("Please only use this if the person you are looking for isn't in the list above this.  If only minor changes are needed then click on their name in the list above this and you will be able to update their record.  Click 'Cancel' if the name is in the list above the \"New Person\" button.  otherwise click 'OK'")) {
                   $.ajax({
                     data: formData,
                     method: "POST",
-                    url: "scripts/addPersonFromConflict.php",
+                    url: script,
                     success: updatePersonCatch,
                     error: function (jqXHR, textStatus, errorThrown) {
-                        showError(JSON.stringify(jqXHR));
+                        showError("ERROR in " + script + ": " + textStatus, jqXHR);
                         return false;
                     }
                   });
@@ -65,7 +67,7 @@ function searchConflictPerson(data, textStatus, jsXHR) {
             });
         },
      error: function (jqXHR, textStatus, errorThrown) {
-      showError(JSON.stringify(jqXHR));
+      showError("ERROR in " + formurl + ": " + textStatus, jqXHR);
       return false;
      }
    });
@@ -208,7 +210,7 @@ function updateReg(form) {
       return false;
     },
     error: function (jqXHR, textStatus, errorThrown) {
-      showError(JSON.stringify(jqXHR));
+      showError(JSON.stringify(jqXHR, null, 2));
       return false;
     }
   });
@@ -220,7 +222,7 @@ function updatePersonCatch (data, textStatus, jqXHR) {
     alert('Person Created or Updated. If you do not see the person in your list below please search for them.');
     $('#newPerson').hide();
     addPerson(data);
-    //showError(JSON.stringify(data));
+    //showError('trace:', data);
 }
 
 function getEdited(data, textStatus, jqXHR) {

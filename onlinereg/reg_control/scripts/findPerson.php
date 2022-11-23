@@ -20,7 +20,18 @@ if(!isset($_GET)) {
     exit();
 }
 
-$query = "SELECT P.id, concat_ws(' ', P.first_name, P.middle_name, P.last_name) as full_name, P.address, P.addr_2, concat_ws(' ', P.city, P.state, P.zip) as locale, P.badge_name, P.email_addr, P.phone, P.active, P.banned FROM perinfo as P";
+$con = get_conf("con");
+$conid=$con['id'];
+
+$query = <<<EOQ
+SELECT DISTINCT P.id, concat_ws(' ', P.first_name, P.middle_name, P.last_name) as full_name,
+    P.address, P.addr_2, concat_ws(' ', P.city, P.state, P.zip) as locale,
+    P.badge_name, P.email_addr, P.phone, P.active, P.banned, M.label
+FROM perinfo as P
+LEFT OUTER JOIN reg R ON (R.perid = P.id AND R.conid = ?)
+LEFT OUTER JOIN memLabel M ON (R.memId = M.id)
+EOQ;
+
 if(isset($_GET['condition'])) {
     switch($_GET['condition']) {
         case 'artist':
@@ -36,7 +47,7 @@ if(isset($_GET['full_name'])) {
     }
 
 $response['query'] = $query;
-$res = dbSafeQuery($query, 's', array("%" . $searchString . "%"));
+$res = dbSafeQuery($query, 'is', array($conid, "%" . $searchString . "%"));
 if(!$res) {
   ajaxSuccess(array(
     "args"=>$_POST,
