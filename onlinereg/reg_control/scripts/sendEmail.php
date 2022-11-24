@@ -72,6 +72,24 @@ EOQ;
     $email_text = MarketingEmail_TEXT($reg['test']);
     $email_html = MarketingEmail_HTML($reg['test']);
     $email_subject = "We miss you! Please come back to Philcon";
+} else if ($email_type == 'survey') {
+    $emailQ = <<<EOQ
+SELECT Distinct P.email_addr
+FROM atcon A
+JOIN atcon_badge B ON (B.atconId=A.id)
+JOIN reg R ON (R.id=B.badgeId)
+JOIN transaction T ON (T.id=A.transid)
+JOIN memLabel M ON (M.id=R.memId)
+JOIN perinfo P ON (R.perid = P.id)
+WHERE R.conid=$conid AND (B.action = 'attach')
+AND M.shortname not like '%cancel%' AND M.shortname not like '%Child%' AND M.shortname not like '% In Tow%'
+AND P.email_addr != '' AND R.conid = A.conid
+ORDER BY P.email_addr;
+EOQ;
+
+    $email_text = surveyEmail_TEXT($reg['test']);
+    $email_html = surveyEmail_HTML($reg['test']);
+    $email_subject = "Thanks for attending, can you help us improve by answering this 3 question survey";
 } else {
     $response['error'] = "invalid email type";
     ajaxSuccess($response);

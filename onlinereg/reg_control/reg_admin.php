@@ -58,7 +58,12 @@ page_init("Badge List",
         </div>
         <div class="col-sm-auto p-2">
             <button class="btn btn-primary btn-sm" onclick="sendEmail('reminder')">Send Attendance Reminder Email</button>
+        </div>       
+        <?php if ($db_ini['con']['survey_url']) { ?>
+        <div class="col-sm-auto p-2">
+            <button class="btn btn-primary btn-sm" onclick="sendEmail('survey')">Send Survey Email</button>
         </div>
+        <?php } ?>
         <?php if ($db_ini['reg']['cancelled']) { ?>
         <div class="col-sm-auto p-2">
             <button class="btn btn-primary btn-sm" onclick="sendCancel()">Send Cancelation Instructions</button>

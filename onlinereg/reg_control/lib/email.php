@@ -231,10 +231,8 @@ EOT;
 }
 
 function MarketingEmail_HTML($test) {
-
     $ini = get_conf('reg');
     $con = get_conf('con');
-    $reg = get_conf('reg');
 
     $conlabel = $con['label'];
     $conname = $con['conname'];
@@ -250,7 +248,7 @@ function MarketingEmail_HTML($test) {
     $homepage = $con['website'];
     $policypage = $con['policy'];
     $feedbackemail = $con['feedbackemail'];
-    $regsite = $reg['server'];
+    $regsite = $ini['server'];
 
     $html = <<<EOT
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body><p>Hello!</p>
@@ -289,7 +287,6 @@ EOT;
 function MarketingEmail_TEXT($test) {
     $ini = get_conf('reg');
     $con = get_conf('con');
-    $reg = get_conf('reg');
 
     $conlabel = $con['label'];
     $conname = $con['conname'];
@@ -304,7 +301,7 @@ function MarketingEmail_TEXT($test) {
     $homepage = $con['website'];
     $policypage = $con['policy'];
     $feedbackemail = $con['feedbackemail'];
-    $regsite = $reg['server'];
+    $regsite = $ini['server'];
 
     $text = <<<EOT
 Hello!
@@ -327,6 +324,56 @@ EOT;
     if (is_readable($addlemailtxt)) {
         $text .= file_get_contents($addlemailtxt);
     }
+    if($test) {
+        $text = "THIS IS A TEST\n\n" . $text;
+    }
+
+    return $text;
+}
+
+function surveyEmail_HTML($test) {
+    $con = get_conf('con');
+
+    $conlabel = $con['label'];
+    $conname = $con['conname'];
+    $survey = $con['survey_url'];
+
+    $html = <<<EOT
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body><p>Hello!</p>
+
+<p>
+	Thank you for attending $conlabel.
+    You are receiving this email because your email address is associated with a registration that attended this year.
+    We have a short 3 question survey we would like you to complete that will help is improve $conname.
+</p>
+<p>
+    <a href="$survey">Take the $conlabel Post Convention Feedback Survey</a>
+
+</p>
+<p>We look forward to reviewing your comments to help us import $conlabel.</p>
+<br>
+EOT;
+    if($test) {
+        $html= "THIS IS A TEST\n\n" . $html;
+    }
+    return $html;
+}
+
+function surveyEmail_TEXT($test) {
+    $con = get_conf('con');
+
+    $conlabel = $con['label'];
+    $conname = $con['conname'];
+    $survey = $con['survey_url'];
+
+    $text = <<<EOT
+Thank you for attending $conlabel. You are receiving this email because your email address is associated with a registration that attended this year. We have a short 3 question survey we would like you to complete that will help is improve $conname.
+
+Take the $conlabel Post Convention Feedback Survey at $survey
+
+We look forward to reviewing your comments to help us import $conlabel.
+
+EOT;
     if($test) {
         $text = "THIS IS A TEST\n\n" . $text;
     }
