@@ -74,7 +74,7 @@ EOQ;
     $email_subject = "We miss you! Please come back to Philcon";
 } else if ($email_type == 'survey') {
     $emailQ = <<<EOQ
-SELECT Distinct P.email_addr
+SELECT Distinct P.email_addr AS email
 FROM atcon A
 JOIN atcon_badge B ON (B.atconId=A.id)
 JOIN reg R ON (R.id=B.badgeId)
