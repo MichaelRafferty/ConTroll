@@ -3,19 +3,10 @@ require_once "lib/base.php";
 
 $page = "Register";
 
-page_init($page,
-    /* css */ array('css/jquery-ui-1.13.1.css',
-                    'css/base.css',
-                    'css/registration.css',
-                    'css/atcon.css'
-                   ),
-    /* js  */ array('js/jquery-min-3.60.js',
-                    'js/jquery-ui.min-1.13.1.js',
-                    'js/d3.js',
-                    'js/base.js',  
-                    'js/atcon.js'
-                   )
-              );
+page_init($page, 'cashier',
+    /* css */ array('css/registration.css','css/atcon.css'),
+    /* js  */ array('js/atcon.js')
+    );
 
 $con = get_conf("con");
 $conid=$con['id'];
