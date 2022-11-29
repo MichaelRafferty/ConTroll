@@ -1,5 +1,11 @@
 <?php
+
 require("lib/base.php");
+
+if (!isset($_SESSION['user'])) {
+    header("Location: /index.php");
+    exit(0);
+}
 
 $page = "Atcon Administration";
 
@@ -15,40 +21,7 @@ $method='manager';
 //var_dump($_SESSION);
 //echo $conid;
 
-
-if(!isset($_SESSION['user']) ||
-  !check_atcon($_SESSION['user'], $_SESSION['passwd'], $method, $conid)) {
-    if(isset($_POST['user']) && isset($_POST['passwd']) &&
-      check_atcon($_POST['user'], $_POST['passwd'], $method, $conid)) {
-	    //var_dump($_POST);
-        $_SESSION['user']=$_POST['user'];
-        $_SESSION['passwd']=$_POST['passwd'];
-        $_SESSION['printer']=$_POST['printer'];
-    } else {
-        unset($_SESSION['user']);
-        unset($_SESSION['passwd']);
-    }
-}
-
-if(isset($_GET['action']) && $_GET['action']=='logout') {
-    unset($_SESSION['user']);
-    unset($_SESSION['passwd']);
-    echo "<script>window.location.href=window.location.pathname</script>";
-}
-
-if(!isset($_SESSION['user'])) {
 ?>
-<form method='POST'>
-User Badge Id: <input type='text' name='user'/><br/>
-Password: <input type='password' name='passwd/'><br/>
-<input type='submit' value='Login'/>
-</form>
-<?php
-
-} else {
-
-?>
-<?php passwdForm(); ?>
 <script>
   $(function() {
     $('#addUser').dialog({
@@ -89,7 +62,4 @@ Password: <input type='password' name='passwd/'><br/>
   </table>
     <button onclick='$("#addUser").dialog("open");' class='bigButton'>Add User</button>
 </div>
-<?php
-}
-?>
 <pre id='test'></pre>

@@ -3,6 +3,11 @@ require_once "lib/base.php";
 //initialize google session
 $page = "art_sales";
 
+if (!isset($_SESSION['user'])) {
+    header("Location: /index.php");
+    exit(0);
+}
+
 page_init($page, 'artshow',
      /* css */ array('css/atcon.css'),
     /* js  */ array('js/artsales.js')
@@ -11,35 +16,6 @@ page_init($page, 'artshow',
 $con = get_conf("con");
 $conid=$con['id'];
 $method='artshow';
-
-if(!isset($_SESSION['user']) ||
-  !check_atcon($_SESSION['user'], $_SESSION['passwd'], $method, $conid)) {
-    if(isset($_POST['user']) && isset($_POST['passwd']) &&
-      check_atcon($_POST['user'], $_POST['passwd'], $method, $conid)) {
-        $_SESSION['user']=$_POST['user'];
-        $_SESSION['passwd']=$_POST['passwd'];
-    } else {
-        unset($_SESSION['user']);
-        unset($_SESSION['passwd']);
-    }
-}
-
-if(isset($_GET['action']) && $_GET['action']=='logout') {
-    unset($_SESSION['user']);
-    unset($_SESSION['passwd']);
-    echo "<script>window.location.href=window.location.pathname</script>";
-}
-
-if(!isset($_SESSION['user'])) {
-?>
-<form method='POST'>
-User Badge Id: <input type='text' name='user'/><br/>
-Password: <input type='password' name='passwd'/><br/>
-<input type='submit' value='Login'/>
-</form>
-<?php
-
-} else {
 
 ?>
 <script>
@@ -185,7 +161,3 @@ if(isset($_GET['id'])) {
   </button>
 </div>
 <pre id='test'></pre>
-
-<?php
-}
-?>

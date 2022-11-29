@@ -1,6 +1,11 @@
 <?php
 require_once "lib/base.php";
 
+if (!isset($_SESSION['user'])) {
+    header("Location: /index.php");
+    exit(0);
+}
+
 $page = "Register";
 
 page_init($page, 'cashier',
@@ -11,38 +16,6 @@ page_init($page, 'cashier',
 $con = get_conf("con");
 $conid=$con['id'];
 $method='cashier';
-
-if(!isset($_SESSION['user']) || 
-  !check_atcon($_SESSION['user'], $_SESSION['passwd'], $method, $conid)) {
-    if(isset($_POST['user']) && isset($_POST['passwd']) && isset($_POST['printer']) &&
-      check_atcon($_POST['user'], $_POST['passwd'], $method, $conid)) {
-        $_SESSION['user']=$_POST['user'];
-        $_SESSION['passwd']=$_POST['passwd'];
-        $_SESSION['printer']=$_POST['printer'];
-	//$_SESSION['username'] = get_username($_SESSION['user']);
-    } else {
-        unset($_SESSION['user']);
-        unset($_SESSION['passwd']);
-    }
-}
-
-if(isset($_GET['action']) && $_GET['action']=='logout') {
-    unset($_SESSION['user']);
-    unset($_SESSION['passwd']);
-    echo "<script>window.location.href=window.location.pathname</script>";
-}
-
-if(!isset($_SESSION['user'])) {
-?>
-<form method='POST'>
-User Badge Id: <input type='text' name='user'/><br/>
-Password: <input type='password' name='passwd'/><br/>
-Badge Printer: <input type='number' name='printer'/><br/>
-<input type='submit' value='Login'/>
-</form>
-<?php
-
-} else {
 
 ?>
 <script>
@@ -494,9 +467,6 @@ Printer: <?php echo $_SESSION['printer']; ?>
   </div>
 
 </div>
-<?php
-}
-?>
 <pre id='test'></pre>
 <div id='alert' class='popup'>
     <div id='alertInner'>
