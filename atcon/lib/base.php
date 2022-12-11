@@ -95,45 +95,61 @@ function page_init($title, $tab, $css, $js) {
     if(isset($_SESSION['user'])) {
     $perms = $_SESSION['perms'];
     ?>
-    <nav class="navbar navbar-dark bg-primary navbar-expand-lg mb-2">
-        <div>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-        </div>       
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto p-0">                
-                <?php if (in_array('data_entry', $perms)) { ?>
-                <li>
-                    <a class="nav-link navitem <?php echo $tab == "checkin" ? "active" : ""; ?>" <?php echo $tab == "checkin" ? 'aria-current="page"' : ""; ?> href="checkin.php">Reg Check In</a>
-                </li>
-                <?php  }
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-10 text-bg-primary">
+                <nav class="navbar navbar-dark bg-primary navbar-expand-lg">
+                    <div>
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                    </div>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav me-auto p-0">
+                            <?php if (in_array('data_entry', $perms)) { ?>
+                            <li>
+                                <a class="nav-link navitem <?php echo $tab == "checkin" ? "active" : ""; ?>" <?php echo $tab == "checkin" ? 'aria-current="page"' : ""; ?> href="checkin.php">Reg Check In</a>
+                            </li>
+                            <?php  }
                       if (in_array('cashier', $perms)) { ?>
-                <li>
-                    <a class="nav-link navitem <?php echo $tab == "cashier" ? "active" : ""; ?>" <?php echo $tab == "cashier" ? 'aria-current="page"' : ""; ?> href="register.php">Reg Cashier</a>
-                </li>
-                <?php  }
+                            <li>
+                                <a class="nav-link navitem <?php echo $tab == "cashier" ? "active" : ""; ?>" <?php echo $tab == "cashier" ? 'aria-current="page"' : ""; ?> href="register.php">Reg Cashier</a>
+                            </li>
+                            <?php  }
                       if (in_array('artshow', $perms)) { ?>
-                <li>
-                    <a class="nav-link navitem <?php echo $tab == "artshow" ? "active" : ""; ?>" <?php echo $tab == "artshow" ? 'aria-current="page"' : ""; ?> href="artsales.php">Artshow Cashier</a>
-                </li>
-                <?php  }
+                            <li>
+                                <a class="nav-link navitem <?php echo $tab == "artshow" ? "active" : ""; ?>" <?php echo $tab == "artshow" ? 'aria-current="page"' : ""; ?> href="artsales.php">Artshow Cashier</a>
+                            </li>
+                            <?php  }
                       if (in_array('data-entry', $perms) || in_array('cashier', $perms)) { ?>
-                <li>
-                    <a class="nav-link navitem <?php echo $tab == "printform" ? "active" : ""; ?>" <?php echo $tab == "printform" ? 'aria-current="page"' : ""; ?> href="printform.php">Printform</a>
-                </li>
-                <?php  }
+                            <li>
+                                <a class="nav-link navitem <?php echo $tab == "printform" ? "active" : ""; ?>" <?php echo $tab == "printform" ? 'aria-current="page"' : ""; ?> href="printform.php">Printform</a>
+                            </li>
+                            <?php  }
                       if (in_array('manager', $perms)) { ?>
-                <li>
-                    <a class="nav-link navitem <?php echo $tab == "admin" ? "active" : ""; ?>" <?php echo $tab == "admin" ? 'aria-current="page"' : ""; ?> href="admin.php">Administrator</a>
-                </li>
-                <?php  } ?>
-                <li>
-                    <a class="nav-link navitem" <?php echo $ariainfo; ?> href="index.php?action=logout">Logout</a>
-                </li>
-            </ul>
+                            <li>
+                                <a class="nav-link navitem <?php echo $tab == "admin" ? "active" : ""; ?>" <?php echo $tab == "admin" ? 'aria-current="page"' : ""; ?> href="admin.php">Administrator</a>
+                            </li>
+                            <li>
+                                <a class="nav-link navitem <?php echo $tab == "mockup" ? "active" : ""; ?>" <?php echo $tab == "mockup" ? 'aria-current="page"' : ""; ?> href="mockup.php">Mockup</a>
+                            </li>
+                            <?php  } ?>
+                            <li>
+                                <a class="nav-link navitem" <?php echo $ariainfo; ?> href="index.php?action=change_passwd">Change Password</a>
+                            </li>
+                            <li>
+                                <a class="nav-link navitem" <?php echo $ariainfo; ?> href="index.php?action=logout">Logout</a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+            <div class="col-sm-2 text-bg-primary">              
+                User: <?php echo $_SESSION['user']; ?><br/>
+                Printer: <?php echo $_SESSION['printer']; ?>
+            </div>
         </div>
-    </nav>
+    </div>
     <?php
     }
   } else {
@@ -144,7 +160,7 @@ function page_init($title, $tab, $css, $js) {
 function page_head($title) {
     $con=get_conf('con');
     $label = $con['label'];
-                ?>
+    ?>
     <div id='titlebar' class="container-fluid bg-primary text-white">
         <h1 class='title'>
             <?php echo $label; ?> Registration <?php echo $title; ?> page
