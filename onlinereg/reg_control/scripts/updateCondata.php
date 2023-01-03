@@ -94,12 +94,12 @@ EOS;
         $deleted += dbSafeCmd($delSQL, 'ii', array($conid, $nextconid));
 
         $addSQL = <<<EOS
-INSERT INTO memlist(conid,sort_order,memCategory,memType,memAge,label,price,startdate,enddate,atcon,online)
+INSERT INTO memList(conid,sort_order,memCategory,memType,memAge,label,price,startdate,enddate,atcon,online)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
         $addtypes = 'iisssssssss';
         $updSQL = <<<EOS
-UPDATE memlist
+UPDATE memList
 SET sort_order = ?,memCategory = ?,memType = ?,memAge = ?,label = ?,price = ?,startdate = ?,enddate = ?,atcon = ?,online = ?
 WHERE id = ?
 EOS;
@@ -171,7 +171,7 @@ EOS;
             exit();
         }
         $inssql = <<<EOS
-INSERT INTO memlist(conid,sort_order,memCategory,memType,memAge,label,price,startdate,enddate,atcon,online)
+INSERT INTO memList(conid,sort_order,memCategory,memType,memAge,label,price,startdate,enddate,atcon,online)
 SELECT ? AS conid,m.sort_order,m.memCategory,m.memType,m.memAge,replace(m.label, ?, ?) AS label,m.price,? AS startdate,? AS enddate,m.atcon,m.online
 FROM memList m
 LEFT OUTER JOIN existing_memList e ON (

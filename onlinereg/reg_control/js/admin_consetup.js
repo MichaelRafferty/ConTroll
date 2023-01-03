@@ -92,7 +92,7 @@ class consetup {
         //console.log(data);
         this.#proposed = ' ';
 
-        if (data['age-type'] == 'proposed')
+        if (data['conlist-type'] == 'proposed')
             this.#proposed = ' Proposed ';
 
         var html = '<h5><strong>' + this.#proposed + ' ' + this.#setup_title + ` Convention Data:</strong></h5>
@@ -190,10 +190,12 @@ class consetup {
             });
         }
 
-        this.#contable.on("dataChanged", function (data) {
-            _this.conlist_dataChanged(data);
-        });
-        this.#contable.on("cellEdited", cellChanged);
+        if (this.#contable) {
+            this.#contable.on("dataChanged", function (data) {
+                _this.conlist_dataChanged(data);
+            });
+            this.#contable.on("cellEdited", cellChanged);
+        }
     };
 
     draw_memlist(data, textStatus, jhXHR) {
@@ -257,13 +259,15 @@ class consetup {
             });
         }
 
-        this.#memtable.on("dataChanged", function (data) {
-            _this.memlist_dataChanged(data);
-        });
-        this.#memtable.on("rowMoved", function (row) {
-            _this.memlist_rowMoved(row)
-        });
-        this.#memtable.on("cellEdited", cellChanged);
+        if (this.#memtable != null) {
+            this.#memtable.on("dataChanged", function (data) {
+                _this.memlist_dataChanged(data);
+            });
+            this.#memtable.on("rowMoved", function (row) {
+                _this.memlist_rowMoved(row)
+            });
+            this.#memtable.on("cellEdited", cellChanged);
+        }
     };
 
     draw_breaklist(data, textStatus, jhXHR) {
@@ -304,11 +308,13 @@ class consetup {
             ]
         });
 
-        this.#breaktable.on("dataChanged", function (data) {
-            _this.breaklist_dataChanged(data);
-        });
+        if (this.#breaktable) {
+            this.#breaktable.on("dataChanged", function (data) {
+                _this.breaklist_dataChanged(data);
+            });
 
-        this.#breaktable.on("cellEdited", cellChanged);
+            this.#breaktable.on("cellEdited", cellChanged);
+        }
     };
 
     open() {

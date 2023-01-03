@@ -90,14 +90,14 @@ SELECT
         ELSE REPLACE(name, id, id + 1)
 	END AS name,
     REPLACE(label, id, id + 1) as label,
-    CAST (CASE
+    CASE
 		WHEN WEEK(startdate) = WEEK(date_add(startdate, INTERVAL 52 WEEK)) then DATE_ADD(startdate, INTERVAL 52 WEEK)
         ELSE DATE_ADD(startdate, INTERVAL 53 WEEK)
-	END AS DATE) AS startdate,
-    CAST (CASE
+	END AS startdate,
+    CASE
 		WHEN WEEK(enddate) = WEEK(DATE_ADD(enddate, INTERVAL 52 WEEK)) THEN DATE_ADD(enddate, INTERVAL 52 WEEK)
         ELSE DATE_ADD(enddate, INTERVAL 53 WEEK)
-	END AS DATE) AS enddate,
+	END AS enddate,
     NOW() AS create_date
 FROM conlist
 WHERE id = ?;
@@ -107,7 +107,7 @@ EOS;
     if($result->num_rows == 1) {
         $currentcondata = fetch_safe_assoc($result);
         if ($type == 'all' || $type = 'conlist') {
-            $response['conlist'] = fetch_safe_assoc($result);;
+            $response['conlist'] = $currentcondata;
             $response['conlist-type'] = 'proposed';
         }
     }
