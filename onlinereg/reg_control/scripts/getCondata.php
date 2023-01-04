@@ -150,7 +150,7 @@ EOS;
         $response['memlist'] = null;
     }
 
-    if ($thisyearcount < 5) {
+    if ($thisyearcount < 10) {
         $breaksql = <<<EOS
 SELECT DISTINCT conid, startdate, enddate
 FROM memList
@@ -192,6 +192,9 @@ EOS;
                     // between twoprior con start and prior con end + 1
                     // arbitary date - make same day of week next year
                     if (str_ends_with($breakend, '-01')) {
+                        $yeartmp = date('Y', $breaktimeend) + 1;
+                        $breakend = $yeartmp . mb_substr($breakend, 4);
+                    } else if (str_ends_with($breakend, '-31')) {
                         $yeartmp = date('Y', $breaktimeend) + 1;
                         $breakend = $yeartmp . mb_substr($breakend, 4);
                     } else if ($breaktimeend >= strtotime($priorcondata['startdate']) && $breaktimeend <= (strtotime($priorcondata['enddate']) + $day)) {

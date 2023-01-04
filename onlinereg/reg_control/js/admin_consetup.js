@@ -644,11 +644,13 @@ class consetup {
     };
 
     saveBreakListComplete(data, textStatus, jhXHR) {
+        var success;
         if ('error' in data && data['error'] != '') {
             showError(data['error']);
             return false;
         } else {
-            showError(data['success']);
+            success = data['success'];
+            showError(success);
         }
 
         var script = "scripts/getCondata.php";
@@ -664,6 +666,7 @@ class consetup {
                     next.close();
                     next.draw(data, textStatus, jhXHR);
                 }
+                showError(success);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);

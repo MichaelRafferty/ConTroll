@@ -127,7 +127,7 @@ EOS;
                     $row['memType'],$row['memAge'],$row['shortname'],$row['price'],$row['startdate'],
                     $row['enddate'],$row['atcon'],$row['online']);
                 //web_error_log("add row: /$addSQL/, types '$addtypes', values:");
-                //var_error_log($paramarray);                
+                //var_error_log($paramarray);
                 $newid = dbSafeCmd($addSQL, $addtypes, $paramarray);
                 if ($newid)
                     $inserted++;
@@ -156,7 +156,11 @@ FROM ageList a1
 LEFT OUTER JOIN ageList a2 ON (a2.conid = ? AND a2.ageType = a1.ageType)
 WHERE a1.conid = ? and a2.conid IS NULL;
 EOS;
-        $numages = dbSafeCmd($inssql, 'iii', array($year + 1, $year + 1, $year));
+        $paramarray = array($year + 1, $year + 1, $year);
+        //web_error_log("$inssql, types='ii',params:");
+        //var_error_log($paramarray);
+        $numages = 0;
+        $numages = dbSafeCmd($inssql, 'iii', $paramarray);
         if ($numages === false) {
             $response['error'] = 'Error creating new age table entries, see logs';
             ajaxSuccess($response);
@@ -169,7 +173,10 @@ SELECT conid, memCategory,memType,memAge,label,startdate, enddate,atcon,`online`
 FROM memList
 WHERE conid >= ?;
 EOS;
-        $numrows = dbSafeCmd($tmpsql, 'i', array($year));
+        $paramarray = array($year);
+        //web_error_log("$tmpsql, types='i',params:");
+        //var_error_log($paramarray);
+        $numrows = dbSafeCmd($tmpsql, 'i', $paramarray);
         if ($numrows === false) {
             $response['error'] = 'Error creating temporary table, see logs';
             ajaxSuccess($response);
@@ -188,7 +195,7 @@ EOS;
         $data = $_POST['tabledata'];
         $numrows = 0;
         foreach ($data as $row ) {
-            $paramarr = array(
+            $paramarray = array(
                 $row['newconid'], // conid
                 $row['oldconid'], // label prior str
                 $row['newconid'], // label new str
@@ -202,14 +209,11 @@ EOS;
                 $row['oldstart'], // m.startdate
                 $row['oldend'] // m.enddate
             );
-            //$result = dbSafeQuery($inssql, $typelist, $paramarr);
-            //var_error_log($result);
-            // while ($row = fetch_safe_assoc($result)) {
-            //    var_error_log($row);
-            //}
-            $numrows += dbSafeInsert($inssql, $typelist, $paramarr);
+            //web_error_log("$inssql, $typelist, params:");
+            //var_error_log($paramarray);          
+            $numrows += dbSafeCmd($inssql, $typelist, $paramarray);
         }
-        $response['success'] = "ageList updated, $numages added, memList updated, $numrows added";
+        $response['success'] = "ageList updated: $numages added, memList updated: $numrows added";
         break;
 
     default:
