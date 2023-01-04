@@ -90,7 +90,7 @@ EOS;
             $delSQL .= " AND id NOT IN (" . $keys[$nextconid] . ")";
         }
         $delSQL .= ");";
-        //error_log("Delsql = /$delSQL/");
+        //web_error_log("Delsql = /$delSQL/, types 'ii', values: $conid, $nextconid");
         $deleted += dbSafeCmd($delSQL, 'ii', array($conid, $nextconid));
 
         $addSQL = <<<EOS
@@ -123,15 +123,20 @@ EOS;
                 }
             }
             if ($row['id'] < 0) {
-                $newid = dbSafeCmd($addSQL, $addtypes, array($row['conid'],$roworder,$row['memCategory'],
+                $paramarray= array($row['conid'],$roworder,$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['price'],$row['startdate'],
-                    $row['enddate'],$row['atcon'],$row['online']));
+                    $row['enddate'],$row['atcon'],$row['online']);
+                //web_error_log("add row: /$addSQL/, types '$addtypes', values:");
+                //var_error_log($paramarray);                
+                $newid = dbSafeCmd($addSQL, $addtypes, $paramarray);
                 if ($newid)
                     $inserted++;
-            } else {
-                $updated += dbSafeCmd($updSQL, $updtypes, array($roworder,$row['memCategory'],
+                $paramarray = array($roworder,$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['price'],$row['startdate'],
-                    $row['enddate'],$row['atcon'],$row['online'], $row['id']));
+                    $row['enddate'],$row['atcon'],$row['online'], $row['id']);
+                //web_error_log("update row: /$updSQL/, types = '$updtypes', values:");
+                //var_error_log($paramarray);
+                $updated += dbSafeCmd($updSQL, $updtypes, $paramarray);
             }
         }
         $response['success'] = "memList updated: $inserted added, $updated changed, $deleted removed.";

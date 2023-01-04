@@ -628,11 +628,10 @@ class consetup {
                     } else {
                         showError(data['success']);
                     }
-                    this.#memlist_savebtn.innerHTML = "Save Changes";
 
-                    if (data['year'] == 'current') {
+                    if (data['year'] == 'current') {                        
                         current.saveMemListComplete(data, textStatus, jhXHR);
-                    } else {
+                    } else {                        
                         next.saveMemListComplete(data, textStatus, jhXHR);
                     }
                 },
