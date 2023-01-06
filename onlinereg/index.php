@@ -136,7 +136,7 @@ $onsitesale = $startdate->format("l, F j");
                                 </div>
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Zip</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="zip" id='lname' size="5" maxlength="10" tabindex="9"/>
+                                    <input class="form-control-sm" type="text" name="zip" id='zip' size="5" maxlength="10" tabindex="9"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
