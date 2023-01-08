@@ -598,14 +598,22 @@ function passwdForm() {
 <?php
 }
 
+// Function web_error_log($string)
+// $string = string to write to file $logdest with added newline at end
+function web_error_log($string) {
+    global $logdest;
+
+    error_log(date("Y-m-d H:i:s") . ": " . $string . "\n", 3, $logdest);
+}
 // Function var_error_log()
 // $object = object to be dumped to the PHP error log
 // the object is walked and written to the PHP error log using var_dump and a redirect of the output buffer.
 function var_error_log( $object=null ){
+    global $logdest;
     ob_start();                    // start buffer capture
     var_dump( $object );           // dump the values
     $contents = ob_get_contents(); // put the buffer into a variable
     ob_end_clean();                // end capture
-    error_log( $contents );        // log contents of the result of var_dump( $object )
+    error_log( $contents . "\n", 3, $logdest);        // log contents of the result of var_dump( $object )
 }
 ?>
