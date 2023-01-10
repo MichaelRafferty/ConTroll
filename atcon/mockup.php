@@ -19,7 +19,8 @@ page_init($page, 'mockup',
 
 $con = get_conf("con");
 $conid=$con['id'];
-$startdate = $conid . '-11-10';
+$startdate = $conid . '-11-01';
+$enddate = $conid . '-11-02';
 $method='manager';
 db_connect();
 
@@ -34,11 +35,11 @@ WHERE
     conid=?
     AND atcon = 'Y'
     AND startdate >= ?
-    AND enddate > current_timestamp()
+    AND enddate > ?
 ORDER BY sort_order, price DESC
 ;
 EOS;
-$priceR = dbSafeQuery($priceQ, "is", array($conid, $startdate));
+$priceR = dbSafeQuery($priceQ, "iss", array($conid, $startdate, $enddate));
 while($priceL = fetch_safe_assoc($priceR)) {
     $membershiptypes[] = array('memGroup' => $priceL['memGroup'], 'shortname' => $priceL['shortname'], 'price' => $priceL['price'], 'label' => $priceL['label']);
 }
