@@ -546,13 +546,11 @@ function draw_cart() {
         review_button.hidden = in_review;
     }
     cart_div.innerHTML = html;
-    if (num_rows > 0) {
-        startover_button.hidden = false;        
-    } else {
-        startover_button.hidden = true;
+    startover_button.hidden = num_rows == 0;
+    if (needmembership_rows > 0 || membership_rows == 0) {
+        review_tab.disabled = true;
         review_button.hidden = true;
     }
-    review_tab.disabled = !(needmembership_rows == 0 && membership_rows > 0);
 }
 
 function draw_record(row, first) {
