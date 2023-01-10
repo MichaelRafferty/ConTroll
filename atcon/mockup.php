@@ -50,19 +50,19 @@ while($priceL = fetch_safe_assoc($priceR)) {
             <div id="pos-tabs">
                  <ul class="nav nav-pills mb-2" id="tab-ul" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="find-tab" data-bs-toggle="pill" data-bs-target="#find-pane" type="button" role="tab" aria-controls="nav-find" aria-selected="true" onclick-old="settab('find-pane');">Find People</button>
+                        <button class="nav-link active" id="find-tab" data-bs-toggle="pill" data-bs-target="#find-pane" type="button" role="tab" aria-controls="nav-find" aria-selected="true">Find People</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="add-tab" data-bs-toggle="pill" data-bs-target="#add-pane" type="button" role="tab" aria-controls="nav-add" aria-selected="false" onclick-old="settab('add-pane');">Add People</button>
+                        <button class="nav-link" id="add-tab" data-bs-toggle="pill" data-bs-target="#add-pane" type="button" role="tab" aria-controls="nav-add" aria-selected="false">Add People</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="review-tab" data-bs-toggle="pill" data-bs-target="#review-pane" type="button" role="tab" aria-controls="nav-review" aria-selected="false" onclick-old="settab('review-pane');" disabled>Review Data</button>
+                        <button class="nav-link" id="review-tab" data-bs-toggle="pill" data-bs-target="#review-pane" type="button" role="tab" aria-controls="nav-review" aria-selected="false" disabled>Review Data</button>
                     </li>
                      <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="pay-tab" data-bs-toggle="pill" data-bs-target="#pay-pane" type="button" role="tab" aria-controls="nav-pay" aria-selected="false" onclick-ols="settab('pay-pane');" disabled>Payment</button>
+                        <button class="nav-link" id="pay-tab" data-bs-toggle="pill" data-bs-target="#pay-pane" type="button" role="tab" aria-controls="nav-pay" aria-selected="false" disabled>Payment</button>
                     </li>
                       <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="print-tab" data-bs-toggle="pill" data-bs-target="#print-pane" type="button" role="tab" aria-controls="nav-print" aria-selected="false" onclick-old="settab('print-pane');" disabled>Print Badges</button>
+                        <button class="nav-link" id="print-tab" data-bs-toggle="pill" data-bs-target="#print-pane" type="button" role="tab" aria-controls="nav-print" aria-selected="false" disabled>Print Badges</button>
                     </li>
                 </ul>
                 <div class="tab-content" id="find-content">          
@@ -117,7 +117,7 @@ while($priceL = fetch_safe_assoc($priceR)) {
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane fade" id="add-pane" role="tabpanel" aria-labelledby="add-tab" tabindex="0">
+                    <div class="tab-pane fade" id="add-pane" role="tabpanel" aria-labelledby="add-tab" tabindex="1">
                          <div class="container-fluid">
                             <div class="row" id="add_header">
                                 <div class="col-sm-12 text-bg-primary mb-2">
@@ -229,13 +229,13 @@ while($priceL = fetch_safe_assoc($priceR)) {
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane fade" id="review-pane" role="tabpanel" aria-labelledby="review-tab" tabindex="0">
+                    <div class="tab-pane fade" id="review-pane" role="tabpanel" aria-labelledby="review-tab" tabindex="2">
                         Review Data
                     </div>
-                    <div class="tab-pane fade" id="pay-pane" role="tabpanel" aria-labelledby="pay-tab" tabindex="0">
+                    <div class="tab-pane fade" id="pay-pane" role="tabpanel" aria-labelledby="pay-tab" tabindex="3">
                         Prrocess Payment
                     </div>
-                    <div class="tab-pane fade" id="print-pane" role="tabpanel" aria-labelledby="print-tab" tabindex="0">
+                    <div class="tab-pane fade" id="print-pane" role="tabpanel" aria-labelledby="print-tab" tabindex="4">
                         Print Badges
                     </div>
                  </div>
@@ -246,7 +246,8 @@ while($priceL = fetch_safe_assoc($priceR)) {
             <div class="row">
                 <div class="col-sm-12 mt-3">
                     <button type="button" class="btn btn-success btn-small" id="complete_btn" onclick="complete_over();" hidden>Complete Transaction</button>
-                    <button type="button" class="btn btn-primary btn-small" id="startover_btn" onclick="start_over();" hidden>Start Over</button>
+                    <button type="button" class="btn btn-primary btn-small" id="review_btn" onclick="start_review();" hidden>Review Data</button>
+                    <button type="button" class="btn btn-warning btn-small" id="startover_btn" onclick="start_over();" hidden>Start Over</button>
                     <button type="button" class="btn btn-warning btn-small" id="void_btn" onclick="void ();" hidden>Void</button>
                 </div>
             </div>

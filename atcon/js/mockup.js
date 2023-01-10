@@ -1,8 +1,13 @@
 // cart fields
 var void_button = null;
 var startover_button = null;
-var complete_button = null;
+var review_button = null;
 var cart_div = null;
+var cart_div = null;
+var in_review = false;
+
+// cart items
+var membership_select = null;
 
 // tab fields
 var find_tab = null;
@@ -44,7 +49,6 @@ var cart = new Array();
 var cart_perid = new Array();
 var new_perid = -1;
 
-
 window.onload = function initpagbe() {
     // tabls
     find_tab = document.getElementById("find-tab");
@@ -57,7 +61,10 @@ window.onload = function initpagbe() {
     cart_div = document.getElementById("cart");
     void_button = document.getElementById("void_btn");
     startover_button = document.getElementById("startover_btn");
+    review_button = document.getElementById("review_btn");
     complete_button = document.getElementById("complete_btn");
+    membership_select = document.getElementById("memType").innerHTML;
+    upgrade_select = membership_select.split("\n").filter((element) => element.includes("Upgrade")).join("\n");
 
     // find people
     name_field = document.getElementById("find_name");
@@ -83,6 +90,13 @@ window.onload = function initpagbe() {
     add_header = document.getElementById("add_header");
     addnew_button = document.getElementById("addnew-btn");
     add_results_div = document.getElementById("add_results")
+
+    // add events
+    find_tab.addEventListener('shown.bs.tab', find_shown)
+    add_tab.addEventListener('shown.bs.tab', add_shown)
+    review_tab.addEventListener('shown.bs.tab', review_shown)
+    pay_tab.addEventListener('shown.bs.tab', pay_shown)
+    print_tab.addEventListener('shown.bs.tab', print_shown)
 
     draw_cart();
 }
@@ -110,10 +124,11 @@ function start_over() {
     review_tab.disabled = true;
     pay_tab.disabled = true;
     print_tab.disabled = true;
+    in_review = false;
 
     clear_add();
     // set tab to find-tab    
-    bootstrap.Tab.getInstance(find_tab).show();
+    bootstrap.Tab.getOrCreateInstance(find_tab).show();
 
     draw_cart();
 }
@@ -126,14 +141,14 @@ var mockup_data = [
         address_1: "123 Any St", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19101-0000', country: 'USA',
         email_addr: 'john.q.public@gmail.com', phone: '215-555-2368',
         share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N',
-        mem_type: 'stadard full adult', reg_type: 'general', price: 75, paid: 75, tid: 11, index:0, 
+        mem_type: 'standard full adult', reg_type: 'adult', price: 75, paid: 75, tid: 11, index:0, 
     },
     {
         perid: 2, first_name: "Jane", middle_name: "Q.", last_name: "Smith", badge_name: "Jane Smith",
         address_1: "123 Any St", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19101-0000', country: 'USA',
         email_addr: 'jane.q.public@gmail.com', phone: '215-555-2368',
         share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N',
-        mem_type: 'standard full adult', reg_type: 'general', price: 75, paid: 75, tid: 11, index:1,
+        mem_type: 'standard full adult', reg_type: 'adult', price: 75, paid: 75, tid: 11, index:1,
     },
     {
         perid: 3, first_name: "Amy", middle_name: "", last_name: "Jones", badge_name: "Lady Amy",
@@ -168,7 +183,7 @@ var mockup_data = [
         address_1: "Unknown Location", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
         email_addr: 'abuse@aol.com', phone: '',
         share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N',
-        mem_type: 'standard oneday adult', reg_type: 'Fri General', price: 35, paid: 35, tid: '14', index: 6,
+        mem_type: 'standard oneday adult', reg_type: 'Fri adult', price: 35, paid: 35, tid: '14', index: 6,
     },
 ];
 var result_data = mockup_data;
@@ -315,7 +330,7 @@ function add_new() {
                         { title: "Middle Name", field: "middle_name", headerFilter: false, headerWordWrap: true, tooltip: true, headerSort: false, maxWidth: 60, width: 60 },
                         { title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true, },
                         { title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true, },
-                        { title: "Reg", field: "reg_type", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80, },
+                        { title: "Reg", field: "mem_type", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80, },
                         {
                             title: "Cart", width: 45, hozAlign: "center", headerFilter: false, headerSort: false,
                             cellClick: addCartClick, formatter: addCartIcon,
@@ -393,13 +408,13 @@ function add_new() {
     </div>`;
             return;
         }
-
+        var age = new_badgetype.replace(/.* /, '');
         var row = {
             perid: new_perid, first_name: new_first, middle_name: new_middle, last_name: new_last, badge_name: new_badgename,
             address_1: new_addr1, address_2: new_addr2, city: new_city, state: new_state, postal_code: new_postal_code,
             country: new_country, email_addr: new_email, phone: new_phone,
             share_reg: 'Y', contact_ok, new_contact, active: 'Y', banned: 'N',
-            mem_type: new_badgetype.replace(/_/g, ' '), reg_type: '???', price: new_price, paid: 0, tid: 0, index: max_index,
+            mem_type: new_badgetype.replace(/_/g, ' '), reg_type: age, price: new_price, paid: 0, tid: 0, index: max_index,
         };
         new_perid--;
         max_index++;
@@ -429,6 +444,7 @@ function add_new() {
 
 function draw_cart_row(rownum) {
     row = cart[rownum];
+    var seltxt = membership_select;
     var rowhtml = '<div class="row">';
     if (row['reg_type'] == '') {
         rowhtml += '<div class="col-sm-8 text-bg-info">'
@@ -440,19 +456,35 @@ function draw_cart_row(rownum) {
     } else {
         rowhtml += 'No Membership</div>';
     }
-    if (row['mem_type'] == 'oneday') {
+    if (row['mem_type'] == 'standard oneday adult' || row['mem_type'].includes("upgrade")) {
+        seltxt = upgrade_select;
         rowhtml += `
-    <div class="col-sm-2 p-0 text-end"><button type="button" class="btn btn-small btn-info pt-0 pb-0 ps-1 pe-1" onclick=upgrade_cart(` + rownum + `)>Upgrade</button></div>`
+    <div class="col-sm-2 p-0 text-end"><button type="button" class="btn btn-small btn-info pt-0 pb-0 ps-1 pe-1" onclick="upgrade_membership_cart(` + rownum + ", 'cart-mt-" + rownum + `')">Upgrade</button></div>`
     } else if (row['mem_type']== '') {
         rowhtml += `
-        <div class="col-sm-2 p-0 text-end"><button type="button" class="btn btn-small btn-info pt-0 pb-0 ps-1 pe-1" onclick=add_membership_cart(` + rownum + `)>Add</button></div >`
+        <div class="col-sm-2 p-0 text-end"><button type="button" class="btn btn-small btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mt-" + rownum + `')">Add</button></div >`
+    } else if (row['tid'] == '') {
+        rowhtml += `
+        <div class="col-sm-2 p-0 text-end"><button type="button" class="btn btn-small btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mt-" + rownum + `')">Chg</button></div >`
     } else {
             rowhtml += `
     <div class="col-sm-2"></div>`
     }
     rowhtml += `        
-    <div class="col-sm-2 p-0 text-end"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick=remove_from_cart(` + rownum + `)>Remove</button></div>
-</div>
+    <div class="col-sm-2 p-0 text-end"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="remove_from_cart(` + rownum + `)">Remove</button></div>
+</div>`;
+
+    if (row['reg_type'] == '' || row['tid'] == '' || row['mem_type'] == 'standard oneday adult' || row['mem_type'].includes('upgrade')) {
+        rowhtml += `
+<div class="row">
+    <div class="col-sm-auto ps-0 pe-1">` + ((row['reg_type'] == '' || row['mem_type'] == 'standard oneday adult') ? 'Add' : 'Chg') + `:</div>
+    <div class="col-sm-auto ps-0 pe-0"><select id="cart-mt-` + rownum + `" name="cart-age">
+` + seltxt + `
+        </select>
+    </div>
+</div>`;
+    }
+    rowhtml += `
 <div class="row">
     <div class="col-sm-8">` + row['badge_name'] + `</div>
     <div class="col-sm-2 text-end">` + row['price'] + `</div>
@@ -510,12 +542,15 @@ function draw_cart() {
     <div class="col-sm-12">Cannot proceed to "Review" because ` + needmembership_rows + person + " still " + need + `.  Use "Add" button to add memberships for them or "Remove" button to take them out of the cart.
     </div>
 `;
+    } else if (num_rows > 0) {
+        review_button.hidden = in_review;
     }
     cart_div.innerHTML = html;
     if (num_rows > 0) {
         startover_button.hidden = false;        
     } else {
         startover_button.hidden = true;
+        review_button.hidden = true;
     }
     review_tab.disabled = !(needmembership_rows == 0 && membership_rows > 0);
 }
@@ -595,7 +630,7 @@ function draw_record(row, first) {
     </div>
     <div class="row">
        <div class="col-sm-3">Membership Type:</div>
-       <div class="col-sm-9">` + data['reg_type'] + `</div>
+       <div class="col-sm-9">` + data['mem_type'] + `</div>
     </div>
 `;
     return html;
@@ -613,6 +648,41 @@ function addCartIcon(cell, formatterParams, onRendered) { //plain text value
 function addCartClick(e, cell) {
     var index = cell.getRow().getData().index;
     add_to_cart(index);
+}
+
+function add_membership_cart(rownum, selectname) {
+    var select = document.getElementById(selectname);
+    var badgetype = select.value.trim();
+    var price = Number(select.options[select.selectedIndex].innerHTML.replace(/.*\(/, '').replace(/\).*/, '').replace(/\$/, ''));
+
+    row['mem_type'] = badgetype.replace(/_/g, ' ');
+    row['reg_type'] = badgetype.replace(/.*_/, '');
+    row['price'] = price;
+    draw_cart();
+}
+
+function upgrade_membership_cart(rownum, selectname) {
+    var select = document.getElementById(selectname);
+    var badgetype = select.value.trim();
+    var price = Number(select.options[select.selectedIndex].innerHTML.replace(/.*\(/, '').replace(/\).*/, '').replace(/\$/, ''));
+
+    row['mem_type'] = badgetype.replace(/_/g, ' ');
+    row['reg_type'] = row['mem_type'].replace(/.* /, '');
+    row['price'] = price;
+    row['paid'] = 0;
+    row['tid'] = '';
+    draw_cart();
+}
+
+function add_membership_cart(rownum, selectname) {
+    var select = document.getElementById(selectname);
+    var badgetype = select.value.trim();
+    var price = Number(select.options[select.selectedIndex].innerHTML.replace(/.*\(/, '').replace(/\).*/, '').replace(/\$/, ''));
+
+    row['mem_type'] = badgetype.replace(/_/g, ' ');
+    row['reg_type'] = row['mem_type'].replace(/.* /, '');
+    row['price'] = price;
+    draw_cart();
 }
 
 function find_record() {
@@ -651,7 +721,7 @@ function find_record() {
                     { title: "Middle Name", field: "middle_name", headerFilter: false, headerWordWrap: true, tooltip: true, headerSort: false, maxWidth: 60, width: 60 },
                     { title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true, },
                     { title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true, },
-                    { title: "Reg", field: "reg_type", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80, },
+                    { title: "Reg", field: "mem_type", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80, },
                     {
                         title: "Cart", width: 45, hozAlign: "center", headerFilter: false, headerSort: false,
                         cellClick: addCartClick, formatter: addCartIcon,
@@ -708,4 +778,36 @@ function find_record() {
     }
 
     id_div.innerHTML = "No search criteria specified";
+}
+
+function start_review() {
+    // set tab to review-tab
+    bootstrap.Tab.getOrCreateInstance(review_tab).show();
+  
+}
+
+// tab shown events
+function find_shown(current, previous) {
+    in_review = false;
+    draw_cart();
+}
+
+function add_shown(current, previous) {
+    in_review = false;
+    draw_cart();
+}
+
+function review_shown(current, previous) {
+    in_review = true;
+    draw_cart();
+}
+
+function pay_shown(current, previous) {
+    in_review = false;
+    draw_cart();
+}
+
+function print_shown(current, previous) {
+    in_review = false;
+    draw_cart();
 }
