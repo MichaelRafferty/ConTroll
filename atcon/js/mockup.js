@@ -2,12 +2,15 @@
 var void_button = null;
 var startover_button = null;
 var review_button = null;
+var next_button = null;
 var cart_div = null;
 var cart_div = null;
 var in_review = false;
+var freeze_cart = false;
 
 // cart items
 var membership_select = null;
+var unpaid_rows = 0;
 
 // tab fields
 var find_tab = null;
@@ -27,6 +30,7 @@ var find_result_table = null;
 var add_first_field = null;
 var add_middle_field = null;
 var add_last_field = null;
+var add_suffix_field = null;
 var add_addr1_field = null;
 var add_addr2_field = null;
 var add_city_field = null;
@@ -42,6 +46,16 @@ var add_header = null;
 var addnew_button = null;
 var add_results_table = null;
 var add_results_div = null;
+
+// review items
+var review_div = null;
+var country_select = null;
+
+// pay items
+var pay_div = null;
+
+// print items
+var print_div = null;
 
 // Data tables
 var datatbl = new Array();
@@ -62,6 +76,7 @@ window.onload = function initpagbe() {
     void_button = document.getElementById("void_btn");
     startover_button = document.getElementById("startover_btn");
     review_button = document.getElementById("review_btn");
+    next_button = document.getElementById("next_btn");
     complete_button = document.getElementById("complete_btn");
     membership_select = document.getElementById("memType").innerHTML;
     upgrade_select = membership_select.split("\n").filter((element) => element.includes("Upgrade")).join("\n");
@@ -76,6 +91,7 @@ window.onload = function initpagbe() {
     add_first_field = document.getElementById("fname");
     add_middle_field = document.getElementById("mname");
     add_last_field = document.getElementById("lname");
+    add_suffix_field = document.getElementById("suffix");
     add_addr1_field = document.getElementById("addr");
     add_addr2_field = document.getElementById("addr2");
     add_city_field = document.getElementById("city");
@@ -91,6 +107,16 @@ window.onload = function initpagbe() {
     addnew_button = document.getElementById("addnew-btn");
     add_results_div = document.getElementById("add_results")
 
+    // review items
+    review_div = document.getElementById('review-div');
+    country_select = document.getElementById('country').innerHTML;
+
+    // pay items
+    pay_div = document.getElementById('pay-div');
+
+    // print itmes
+    print_div = document.getElementById('print-div');
+
     // add events
     find_tab.addEventListener('shown.bs.tab', find_shown)
     add_tab.addEventListener('shown.bs.tab', add_shown)
@@ -101,10 +127,11 @@ window.onload = function initpagbe() {
     draw_cart();
 }
 
-function start_over() {
+function start_over(reset_all) {
     // empty cart
     cart = new Array();
     cart_perid = new Array();
+    freeze_cart = false;
     // empty search strings and results
     name_field.value = "";
     perid_field.value = "";
@@ -115,71 +142,75 @@ function start_over() {
     }
     id_div.innerHTML = "";
     datatbl = new Array();
+
     // reset data to call up
-    // result_data = mockup_data;
-    // max_index = result_data.length;
+    if (reset_all) {
+        result_data = mockup_data;
+        max_index = result_data.length;
+    }
+
     // reset tabs to initial values
     find_tab.disabled = false;
     add_tab.disabled = false;
     review_tab.disabled = true;
     pay_tab.disabled = true;
     print_tab.disabled = true;
+    next_button.hidden = true;
     in_review = false;
 
     clear_add();
-    // set tab to find-tab    
+    // set tab to find-tab
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
 
     draw_cart();
 }
 
-
 // result data
 var mockup_data = [
     {
-        perid: 1, first_name: "John", middle_name: "Q.", last_name: "Smith", badge_name: "John Smith",
+        perid: 1, first_name: "John", middle_name: "Q.", last_name: "Smith", suffix: "", badge_name: "John Smith",
         address_1: "123 Any St", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19101-0000', country: 'USA',
         email_addr: 'john.q.public@gmail.com', phone: '215-555-2368',
         share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N',
-        mem_type: 'standard full adult', reg_type: 'adult', price: 75, paid: 75, tid: 11, index:0, 
+        mem_type: 'standard full adult', reg_type: 'adult', price: 75, paid: 75, tid: 11, index:0,
     },
     {
-        perid: 2, first_name: "Jane", middle_name: "Q.", last_name: "Smith", badge_name: "Jane Smith",
+        perid: 2, first_name: "Jane", middle_name: "Q.", last_name: "Smith", suffix: "", badge_name: "Jane Smith",
         address_1: "123 Any St", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19101-0000', country: 'USA',
         email_addr: 'jane.q.public@gmail.com', phone: '215-555-2368',
         share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N',
         mem_type: 'standard full adult', reg_type: 'adult', price: 75, paid: 75, tid: 11, index:1,
     },
     {
-        perid: 3, first_name: "Amy", middle_name: "", last_name: "Jones", badge_name: "Lady Amy",
+        perid: 3, first_name: "Amy", middle_name: "", last_name: "Jones", suffix: "", badge_name: "Lady Amy",
         address_1: "1023 Chestnut St", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
         email_addr: 'ladyamy@gmail.com', phone: '215-555-5432',
         share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N',
         mem_type: 'standard full student', reg_type: 'student', price: 40, paid: 40, tid: 13, index:2,
     },
     {
-        perid: 4, first_name: "John", middle_name: "", last_name: "Doe", badge_name: "Unknown Attendee",
+        perid: 4, first_name: "John", middle_name: "", last_name: "Doe", suffix: "", badge_name: "Unknown Attendee",
         address_1: "Unknown Monument", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
         email_addr: 'lost@aol.com', phone: '',
         share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N',
         mem_type: '', reg_type: '', price: 0, paid: 0, tid: '', index: 3,
     },
     {
-        perid: 5, first_name: "Bad", middle_name: "", last_name: "Mewber", badge_name: "Baddie",
+        perid: 5, first_name: "Bad", middle_name: "", last_name: "Mewber", suffix: "", badge_name: "Baddie",
         address_1: "Unknown Location", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
         email_addr: 'abuse@aol.com', phone: '',
         share_reg: 'N', contact_ok: 'N', active: 'Y', banned: 'Y',
         mem_type: '', reg_type: '', price: 0, paid: 0, tid: '', index: 4,
     },
     {
-        perid: 6, first_name: "No", middle_name: "", last_name: "Membership", badge_name: "Just Person",
+        perid: 6, first_name: "No", middle_name: "", last_name: "Membership", suffix: "", badge_name: "Just Person",
         address_1: "Unknown Location", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
         email_addr: 'abuse@aol.com', phone: '',
         share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N',
         mem_type: '', reg_type: '', price: 0, paid: 0, tid: '', index: 5,
     },
     {
-        perid: 7, first_name: "Day", middle_name: "", last_name: "Membership", badge_name: "Just Person",
+        perid: 7, first_name: "Day", middle_name: "", last_name: "Membership", suffix: "", badge_name: "Just Person",
         address_1: "Unknown Location", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
         email_addr: 'abuse@aol.com', phone: '',
         share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N',
@@ -284,6 +315,7 @@ function add_new() {
     var new_first = add_first_field.value.trim();
     var new_middle = add_middle_field.value.trim();
     var new_last = add_last_field.value.trim();
+    var new_suffix = add_suffix_field.value.trim();
     var new_addr1 = add_addr1_field.value.trim();
     var new_addr2 = add_addr2_field.value.trim();
     var new_city = add_city_field.value.trim();
@@ -327,7 +359,8 @@ function add_new() {
                         { title: "ID", field: "perid", hozAlign: "right", tooltip: build_record_hover, width: 50, },
                         { title: "Last Name", field: "last_name", headerFilter: true, headerWordWrap: true, tooltip: true, },
                         { title: "First Name", field: "first_name", headerFilter: true, headerWordWrap: true, tooltip: true, },
-                        { title: "Middle Name", field: "middle_name", headerFilter: false, headerWordWrap: true, tooltip: true, headerSort: false, maxWidth: 60, width: 60 },
+                        { title: "Mdl Name", field: "middle_name", headerFilter: false, headerWordWrap: true, tooltip: true, headerSort: false, maxWidth: 50, width: 50 },
+                        { title: "Sfx", field: "suffix", headerFilter: false, headerWordWrap: true, tooltip: true, headerSort: false, maxWidth: 30, width: 30 },
                         { title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true, },
                         { title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true, },
                         { title: "Reg", field: "mem_type", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80, },
@@ -410,7 +443,8 @@ function add_new() {
         }
         var age = new_badgetype.replace(/.* /, '');
         var row = {
-            perid: new_perid, first_name: new_first, middle_name: new_middle, last_name: new_last, badge_name: new_badgename,
+            perid: new_perid, first_name: new_first, middle_name: new_middle, last_name: new_last, suffix: new_suffix,
+            badge_name: new_badgename,
             address_1: new_addr1, address_2: new_addr2, city: new_city, state: new_state, postal_code: new_postal_code,
             country: new_country, email_addr: new_email, phone: new_phone,
             share_reg: 'Y', contact_ok, new_contact, active: 'Y', banned: 'N',
@@ -456,26 +490,27 @@ function draw_cart_row(rownum) {
     } else {
         rowhtml += 'No Membership</div>';
     }
-    if (row['mem_type'] == 'standard oneday adult' || row['mem_type'].includes("upgrade")) {
-        seltxt = upgrade_select;
-        rowhtml += `
+    if (!freeze_cart) {
+        if (row['mem_type'] == 'standard oneday adult' || row['mem_type'].includes("upgrade")) {
+            seltxt = upgrade_select;
+            rowhtml += `
     <div class="col-sm-2 p-0 text-end"><button type="button" class="btn btn-small btn-info pt-0 pb-0 ps-1 pe-1" onclick="upgrade_membership_cart(` + rownum + ", 'cart-mt-" + rownum + `')">Upgrade</button></div>`
-    } else if (row['mem_type']== '') {
-        rowhtml += `
+        } else if (row['mem_type'] == '') {
+            rowhtml += `
         <div class="col-sm-2 p-0 text-end"><button type="button" class="btn btn-small btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mt-" + rownum + `')">Add</button></div >`
-    } else if (row['tid'] == '') {
-        rowhtml += `
+        } else if (row['tid'] == '') {
+            rowhtml += `
         <div class="col-sm-2 p-0 text-end"><button type="button" class="btn btn-small btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mt-" + rownum + `')">Chg</button></div >`
-    } else {
+        } else {
             rowhtml += `
     <div class="col-sm-2"></div>`
-    }
-    rowhtml += `        
+        }
+        rowhtml += `        
     <div class="col-sm-2 p-0 text-end"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="remove_from_cart(` + rownum + `)">Remove</button></div>
 </div>`;
 
-    if (row['reg_type'] == '' || row['tid'] == '' || row['mem_type'] == 'standard oneday adult' || row['mem_type'].includes('upgrade')) {
-        rowhtml += `
+        if (row['reg_type'] == '' || row['tid'] == '' || row['mem_type'] == 'standard oneday adult' || row['mem_type'].includes('upgrade')) {
+            rowhtml += `
 <div class="row">
     <div class="col-sm-auto ps-0 pe-1">` + ((row['reg_type'] == '' || row['mem_type'] == 'standard oneday adult') ? 'Add' : 'Chg') + `:</div>
     <div class="col-sm-auto ps-0 pe-0"><select id="cart-mt-` + rownum + `" name="cart-age">
@@ -483,6 +518,7 @@ function draw_cart_row(rownum) {
         </select>
     </div>
 </div>`;
+        }
     }
     rowhtml += `
 <div class="row">
@@ -502,8 +538,7 @@ function draw_cart() {
     var total_paid = 0;
     var row;
     var num_rows = 0;
-    var membership_rows = 0;
-    var unpaid_rows = 0;
+    var membership_rows = 0;  
     var needmembership_rows = 0;
     var html = `
 <div class="container-fluid">
@@ -513,6 +548,7 @@ function draw_cart() {
     <div class="col-sm-2 text-bg-primary">Paid</div>
 </row>
 `;
+    unpaid_rows = 0;
     for (rownum in cart) {
         num_rows++;
         row = cart[rownum]
@@ -547,9 +583,14 @@ function draw_cart() {
     }
     cart_div.innerHTML = html;
     startover_button.hidden = num_rows == 0;
-    if (needmembership_rows > 0 || membership_rows == 0) {
+    if (needmembership_rows > 0 || (membership_rows == 0 && unpaid_rows == 0)) {
         review_tab.disabled = true;
         review_button.hidden = true;
+    }
+    if (freeze_cart) {
+        review_tab.disabled = true;
+        review_button.hidden = true;
+        startover_button.hidden = true;
     }
 }
 
@@ -716,7 +757,8 @@ function find_record() {
                     { title: "ID", field: "perid", hozAlign: "right", tooltip: build_record_hover, width: 50, },
                     { title: "Last Name", field: "last_name", headerFilter: true, headerWordWrap: true, tooltip: true, },
                     { title: "First Name", field: "first_name", headerFilter: true, headerWordWrap: true, tooltip: true, },
-                    { title: "Middle Name", field: "middle_name", headerFilter: false, headerWordWrap: true, tooltip: true, headerSort: false, maxWidth: 60, width: 60 },
+                    { title: "Mdl Name", field: "middle_name", headerFilter: false, headerWordWrap: true, tooltip: true, headerSort: false, maxWidth: 50, width: 50 },
+                    { title: "Sfx", field: "suffix", headerFilter: false, headerWordWrap: true, tooltip: true, headerSort: false, maxWidth: 30, width: 30 },
                     { title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true, },
                     { title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true, },
                     { title: "Reg", field: "mem_type", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80, },
@@ -727,7 +769,7 @@ function find_record() {
                     { field: "index", visible: false, },
                 ],
             });
-            //id_div.innerHTML = "name search results";            
+            //id_div.innerHTML = "name search results";
         } else {
             id_div.innerHTML = 'No matching records found'
         }
@@ -735,8 +777,8 @@ function find_record() {
     }
 
     perid_search = perid_field.value;
-   
-    if (perid_search > 0) {       
+
+    if (perid_search > 0) {
         if (perid_search > 0) {
             html = '';
             for (row in result_data) {
@@ -781,31 +823,196 @@ function find_record() {
 function start_review() {
     // set tab to review-tab
     bootstrap.Tab.getOrCreateInstance(review_tab).show();
-  
+    review_tab.disabled = false;  
+}
+
+function review_update() {
+// loop over cart looking for changes in data table
+    var rownum = null;
+    var index;
+    var data_row
+    var el;
+    var field;
+    for (rownum in cart) {
+        index = cart[rownum]['index'];        
+        // update all the fields on the review page
+        for (field in result_data[index]) {
+            el = document.getElementById('c' + rownum + '-' + field);
+            if (el) {
+                if (result_data[index][field] != el.value) {
+                   // alert("updating  row " + rownum + ":" + index + ":" + field + " from '" + result_data[index][field] + "' to '" + el.value + "'");
+                    result_data[index][field] = el.value;
+                }
+            }
+        }
+
+    }
+    review_shown();
+}
+
+function review_nochanges() {
+    // set tab to review-tab
+    if (unpaid_rows == 0) {
+        bootstrap.Tab.getOrCreateInstance(print_tab).show();
+    } else {
+        bootstrap.Tab.getOrCreateInstance(pay_tab).show();
+    }
 }
 
 // tab shown events
 function find_shown(current, previous) {
     in_review = false;
+    freeze_cart = false;
     draw_cart();
 }
 
 function add_shown(current, previous) {
     in_review = false;
+    freeze_cart = false;
     draw_cart();
 }
 
 function review_shown(current, previous) {
+    // draw review section
+    var review_html = `
+<div id='reviewBody' class="container-fluid form-floating">
+  <form id='reviewForm' action='javascript: void (0); ' class="form-floating">`;
+    var rownum = null;
+    var row;
+    for (rownum in cart) {
+        row = cart[rownum];
+        review_html += `<div class="row">
+        <div class="col-sm-1 m-0 p-0">Mbr ` + (Number(rownum) + 1) + '</div>';
+        if (row['reg_type'] == '') {
+            review_html += '<div class="col-sm-8 text-bg-info">'
+        } else {
+            review_html += '<div class="col-sm-8 text-bg-success">'
+        }
+        if (row['reg_type'] != '') {
+            review_html += 'Membership: ' + row['mem_type'] + '</div>';
+        } else {
+            review_html += 'No Membership</div>';
+        }
+        
+        review_html += `
+    </div>
+    <input type="hidden" id='c` + rownum + `-index' value="` + row['index'] + `"/>
+    <div class="row mt-1">
+        <div class="col-sm-1 m-0 p-0">N:</div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <input type="text" name="c` + rownum + `-first_name" id='c` + rownum + `-first_name' size="22" maxlength="32" tabindex="1" value="` + row['first_name'] + `"/>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <input type="text" name="c` + rownum + `-middle_name" id='c` + rownum + `-middle_name' size="6" maxlength="32" tabindex="2" value="` + row['middle_name'] + `"/>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <input type="text" name="c` + rownum + `-last_name" id='c` + rownum + `-last_name' size="22" maxlength="32" tabindex="3" value="` + row['last_name'] + `"/>
+        </div>
+        <div class="col-sm-auto ms-0 me-0 p-0">
+            <input type="text" name="c` + rownum + `-suffix" id='c` + rownum + `-suffix' size="4" maxlength="4" tabindex="4" value="` + row['suffix'] + `"/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-1 m-0 p-0">BN:</div>
+        <div class="col-sm-auto ms-0 me-0 p-0">
+            <input type="text" name='c` + rownum + `-badge_name' id='c` + rownum + `-badge_name' size=64 maxlength="64" tabindex='5' value="` + row['badge_name'] + `"/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-1 m-0 p-0">EP:</div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <input type="text" name='c` + rownum + `-email_addr' id='c` + rownum + `-email_addr' size=50 maxlength="64" tabindex='5'  value="` + row['email_addr'] + `"/>
+        </div>
+         <div class="col-sm-auto ms-0 me-0 p-0">
+            <input type="text" name='c` + rownum + `-phone' id='c` + rownum + `-phone' size=15 maxlength="15" tabindex='5'  value="` + row['phone'] + `"/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-1 m-0 p-0">A1:</div>
+        <div class="col-sm-auto ms-0 me-0 p-0">
+            <input type="text" name='c` + rownum + `-address_1' id='c` + rownum + `-address_1' size=64 maxlength="64" tabindex='5'  value="` + row['address_1'] + `"/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-1 m-0 p-0">A2:</div>
+        <div class="col-sm-auto ms-0 me-0 p-0">
+            <input type="text" name='c` + rownum + `-address_2' id='c` + rownum + `-address_2' size=64 maxlength="64" tabindex='5'  value="` + row['address_2'] + `"/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-1 m-0 p-0">A3:</div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <input type="text" name="c` + rownum + `-city" id='c` + rownum + `-city' size="22" maxlength="32" tabindex="7" value="` + row['city'] + `"/>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <input type="text" name="c` + rownum + `-state" id='c` + rownum + `-state' size="2" maxlength="2" tabindex="8" value="` + row['state'] + `"/>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <input type="text" name="c` + rownum + `-postal_code" id='c` + rownum + `-postal_code' size="10" maxlength="10" tabindex="9" value="` + row['postal_code'] + `"/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-1 m-0 p-0 pt-2">A4:</div>
+        <div class="col-sm-auto ms-0 me-0 ps-0 pe-0 pt-2 pb-1">
+            <select name='c` + rownum + `-country' id='c` + rownum + `-country' tabindex='10'>
+                ` + country_select + `
+            </select>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-sm-1 m-0 p-0">Flags:</div>
+        <div class="col-sm-auto ms-0 me-2 p-0">Share Reg?</div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <select name='c` + rownum + `-share_reg' id='c` + rownum + `-share_reg' tabindex='11'>
+               <option value="Y" ` + (row['share_reg'] == 'Y' ? 'selected' : '')+ `>Y</option>
+               <option value="N" ` + (row['share_reg'] == 'N' ? 'selected' : '') + `>N</option>
+            </select>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">Share Reg?</div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <select name='c` + rownum + `-contact_ok' id='c` + rownum + `-contact_ok' tabindex='11'>
+                <option value="Y" ` + (row['contact_ok'] == 'Y' ? 'selected' : '') + `>Y</option>
+                <option value="N" ` + (row['contact_ok'] == 'N' ? 'selected' : '') + `>N</option>
+            </select>
+        </div>
+    </div>
+`;
+    }
+    review_html += `
+    <div class="row mt-2">
+        <div class="col-sm-1 m-0 p-0">&nbsp;</div>
+        <div class="col-sm-auto m-0 p-0">
+            <button class="btn btn-primary btn-small" type="button" id = "review-btn-update" onclick="review_update();">Update All</button>
+            <button class="btn btn-primary btn-small" type="button" id = "review-btn-nochanges" onclick="review_nochanges();">No Changes</button>
+        </div>
+    </div>
+  </form>
+</div>
+`
     in_review = true;
+    freeze_cart = false;
+    review_div.innerHTML = review_html;
     draw_cart();
 }
 
 function pay_shown(current, previous) {
     in_review = false;
+    freeze_cart = true;
+    pay_div.innerHTML = 'Pay coming soon';
     draw_cart();
 }
 
 function print_shown(current, previous) {
     in_review = false;
+    find_tab.disabled = true;
+    add_tab.disabled = true;
+    review_tab.disabled = true;
+    startover_button.hidden = true;
+    next_button.hidden = false;
+    freeze_cart = true;
+
+    print_div.innerHTML = 'Print coming soon';
+
     draw_cart();
+
 }

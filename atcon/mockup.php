@@ -131,45 +131,45 @@ while($priceL = fetch_safe_assoc($priceR)) {
                              <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="fname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>First Name</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="fname" id='fname' size="22" maxlength="32" tabindex="1"/>
+                                    <input type="text" name="fname" id='fname' size="22" maxlength="32" tabindex="1"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="mname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="mname" id='mname' size="8" maxlength="32" tabindex="2"/>
+                                    <input type="text" name="mname" id='mname' size="6" maxlength="32" tabindex="2"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="lname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Last Name</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="3"/>
+                                    <input type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="3"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="suffix" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="suffix" id='suffix' size="4" maxlength="4" tabindex="4"/>
+                                    <input type="text" name="suffix" id='suffix' size="4" maxlength="4" tabindex="4"/>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-12 ms-0 me-0 p-0">
                                     <label for="addr" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Address</span></label><br/>
-                                    <input class="form-control-sm" type="text" name='addr' id='addr' size=64 maxlength="64" tabindex='5'/>
+                                    <input type="text" name='addr' id='addr' size=64 maxlength="64" tabindex='5'/>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-12 ms-0 me-0 p-0">
                                     <label for="addr2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
-                                    <input class="form-control-sm" type="text" name='addr2' id='addr2' size=64 maxlength="64" tabindex='6'/>
+                                    <input type="text" name='addr2' id='addr2' size=64 maxlength="64" tabindex='6'/>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="city" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>City</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="city" id='city' size="22" maxlength="32" tabindex="7"/>
+                                    <input type="text" name="city" id='city' size="22" maxlength="32" tabindex="7"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>State</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="state" id='state' size="2" maxlength="2" tabindex="8"/>
+                                    <input type="text" name="state" id='state' size="2" maxlength="2" tabindex="8"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Zip</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="zip" id='zip' size="5" maxlength="10" tabindex="9"/>
+                                    <input type="text" name="zip" id='zip' size="10" maxlength="10" tabindex="9"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
@@ -189,17 +189,17 @@ while($priceL = fetch_safe_assoc($priceR)) {
                             <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="email1" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Email</span></label><br/>
-                                    <input class="form-control-sm" type="email" name="email" id='email' size="35" maxlength="64" tabindex="11"/>
+                                    <input type="email" name="email" id='email' size="50" maxlength="64" tabindex="11"/>
                                 </div>
-                                <div class="col-sm-6 ms-0 me-0 p-0">
+                                <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="phone" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="phone" id='phone' size="20" maxlength="15" tabindex="13"/>
+                                    <input type="text" name="phone" id='phone' size="15" maxlength="15" tabindex="13"/>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="badgename" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="badgename" id='badgename' size="35" maxlength="32"  placeholder='defaults to first and last name' tabindex="14"/>
+                                    <input type="text" name="badgename" id='badgename' size="35" maxlength="32"  placeholder='defaults to first and last name' tabindex="14"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Membership Type</span></label><br/>
@@ -232,13 +232,13 @@ while($priceL = fetch_safe_assoc($priceR)) {
                         </div>
                     </div>
                     <div class="tab-pane fade" id="review-pane" role="tabpanel" aria-labelledby="review-tab" tabindex="2">
-                        Review Data
+                        <div id="review-div">Review Data</div>
                     </div>
                     <div class="tab-pane fade" id="pay-pane" role="tabpanel" aria-labelledby="pay-tab" tabindex="3">
-                        Prrocess Payment
+                        <div id="pay-div">Process Payment</div>
                     </div>
                     <div class="tab-pane fade" id="print-pane" role="tabpanel" aria-labelledby="print-tab" tabindex="4">
-                        Print Badges
+                        <div id="print-div">Print Badges</div>
                     </div>
                  </div>
             </div>
@@ -249,8 +249,9 @@ while($priceL = fetch_safe_assoc($priceR)) {
                 <div class="col-sm-12 mt-3">
                     <button type="button" class="btn btn-success btn-small" id="complete_btn" onclick="complete_over();" hidden>Complete Transaction</button>
                     <button type="button" class="btn btn-primary btn-small" id="review_btn" onclick="start_review();" hidden>Review Data</button>
-                    <button type="button" class="btn btn-warning btn-small" id="startover_btn" onclick="start_over();" hidden>Start Over</button>
-                    <button type="button" class="btn btn-warning btn-small" id="void_btn" onclick="void ();" hidden>Void</button>
+                    <button type="button" class="btn btn-warning btn-small" id="startover_btn" onclick="start_over(1);" hidden>Start Over</button>
+                    <button type="button" class="btn btn-warning btn-small" id="void_btn" onclick="void();" hidden>Void</button>
+                    <button type="button" class="btn btn-primary btn-small" id="next_btn" onclick="start_over(0);" hidden>Next Customer</button>
                 </div>
             </div>
         </div>       
