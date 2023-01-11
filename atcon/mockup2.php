@@ -9,12 +9,12 @@ if (!isset($_SESSION['user'])) {
     exit(0);
 }
 
-$page = "Atcon Retail Store Mockup";
+$page = "Atcon Resturant POS Mockup";
 
-page_init($page, 'mockupRetail',
+page_init($page, 'mockupRest',
     /* css */ array('https://unpkg.com/tabulator-tables@5.4.3/dist/css/tabulator.min.css','css/atcon.css','css/registration.css','css/mockup.css'),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.4.3/dist/js/tabulator.min.js','js/atcon.js','js/mockup.js')
+                    'https://unpkg.com/tabulator-tables@5.4.3/dist/js/tabulator.min.js','js/atcon.js','js/mockup2.js')
     );
 
 $con = get_conf("con");
@@ -29,21 +29,26 @@ db_connect();
 
 $membershiptypes = array();
 $priceQ = <<<EOS
-SELECT id, memGroup, label, shortname, sort_order, price
+SELECT id, conid, memCategory, memType, memAge, memGroup, label, shortname, sort_order, price
 FROM memLabel
 WHERE
-    conid=?
+    ((conid=? AND memCategory != 'yearahead') OR (conid=? AND memCategory in ('yearahead', 'rollover')))
     AND atcon = 'Y'
     AND startdate >= ?
     AND enddate > ?
 ORDER BY sort_order, price DESC
 ;
 EOS;
-$priceR = dbSafeQuery($priceQ, "iss", array($conid, $startdate, $enddate));
+
+$memarray = array();
+$priceR = dbSafeQuery($priceQ, "iiss", array($conid, $conid + 1, $startdate, $enddate));
 while($priceL = fetch_safe_assoc($priceR)) {
-    $membershiptypes[] = array('memGroup' => $priceL['memGroup'], 'shortname' => $priceL['shortname'], 'price' => $priceL['price'], 'label' => $priceL['label']);
+    $memarray[] = $priceL;
 }
 
+echo "\n" . '<script type="text/javascript">' . "\n";
+echo 'var memLabelsJSON = `' . json_encode($memarray) . "`;\n";
+echo '</script>' . "\n";
 
 ?>
 <div id="pos" class="container-fluid">
@@ -52,10 +57,10 @@ while($priceL = fetch_safe_assoc($priceR)) {
             <div id="pos-tabs">
                  <ul class="nav nav-pills mb-2" id="tab-ul" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="find-tab" data-bs-toggle="pill" data-bs-target="#find-pane" type="button" role="tab" aria-controls="nav-find" aria-selected="true">Find People</button>
+                        <button class="nav-link active" id="find-tab" data-bs-toggle="pill" data-bs-target="#find-pane" type="button" role="tab" aria-controls="nav-find" aria-selected="true">Find</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="add-tab" data-bs-toggle="pill" data-bs-target="#add-pane" type="button" role="tab" aria-controls="nav-add" aria-selected="false">Add People</button>
+                        <button class="nav-link" id="add-tab" data-bs-toggle="pill" data-bs-target="#add-pane" type="button" role="tab" aria-controls="nav-add" aria-selected="false">Add/Edit</button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="review-tab" data-bs-toggle="pill" data-bs-target="#review-pane" type="button" role="tab" aria-controls="nav-review" aria-selected="false" disabled>Review Data</button>
@@ -79,26 +84,10 @@ while($priceL = fetch_safe_assoc($priceR)) {
                             </div>
                             <div class="row mt-1">
                                 <div class="col-sm-4">
-                                    Search by Name:
+                                    Search for:
                                 </div>
                                 <div class="col-sm-8">
-                                    <input type="text" id="find_name" name="find_name" maxlength="50" size="50" placeholder="Name or Portion of Name"/>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-4">
-                                    Search by Person id:
-                                </div>
-                                <div class="col-sm-8">
-                                    <input type="number" id="find_perid" name="find_perid" class="no-spinners" size="6" placeholder="Person #" />
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-4">
-                                    Search by Transaction id:
-                                </div>
-                                <div class="col-sm-8">
-                                    <input type="number" id="find_transid" name="find_transid" class="no-spinners" size="6" placeholder="Transaction #"/>
+                                    <input type="text" id="find_pattern" name="find_name" maxlength="50" size="50" placeholder="Name or Portion of Name, Perid or TransID"/>
                                 </div>
                             </div>
                             <div class="row mt-3">
@@ -204,9 +193,6 @@ while($priceL = fetch_safe_assoc($priceR)) {
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Membership Type</span></label><br/>
                                     <select id='memType' name='age' style="width:300px;" tabindex='15' title='Age as of <?php echo substr($condata['startdate'], 0, 10); ?> (the first day of the convention)'>
-                                        <?php foreach ($membershiptypes as $memType) { ?>
-                                            <option value='<?php echo $memType['memGroup'];?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price'];?>)</option>
-                                        <?php    } ?>
                                     </select>
                                 </div>
                             </div>
