@@ -250,7 +250,7 @@ while($priceL = fetch_safe_assoc($priceR)) {
                     <button type="button" class="btn btn-success btn-small" id="complete_btn" onclick="complete_over();" hidden>Complete Transaction</button>
                     <button type="button" class="btn btn-primary btn-small" id="review_btn" onclick="start_review();" hidden>Review Data</button>
                     <button type="button" class="btn btn-warning btn-small" id="startover_btn" onclick="start_over(1);" hidden>Start Over</button>
-                    <button type="button" class="btn btn-warning btn-small" id="void_btn" onclick="void();" hidden>Void</button>
+                    <button type="button" class="btn btn-warning btn-small" id="void_btn" onclick="void_trans();" hidden>Void</button>
                     <button type="button" class="btn btn-primary btn-small" id="next_btn" onclick="start_over(0);" hidden>Next Customer</button>
                 </div>
             </div>

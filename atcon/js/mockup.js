@@ -7,6 +7,8 @@ var cart_div = null;
 var cart_div = null;
 var in_review = false;
 var freeze_cart = false;
+var total_price = 0;
+var total_paid = 0;
 
 // cart items
 var membership_select = null;
@@ -124,7 +126,14 @@ window.onload = function initpagbe() {
     pay_tab.addEventListener('shown.bs.tab', pay_shown)
     print_tab.addEventListener('shown.bs.tab', print_shown)
 
+    //total_price = 70;
+    //total_paid = 0;
+    //bootstrap.Tab.getOrCreateInstance(pay_tab).show();
     draw_cart();
+}
+
+function void_trans() {
+    start_over(0);
 }
 
 function start_over(reset_all) {
@@ -172,49 +181,49 @@ var mockup_data = [
         address_1: "123 Any St", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19101-0000', country: 'USA',
         email_addr: 'john.q.public@gmail.com', phone: '215-555-2368',
         share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N',
-        mem_type: 'standard full adult', reg_type: 'adult', price: 75, paid: 75, tid: 11, index:0,
+        mem_type: 'standard full adult', reg_type: 'adult', price: 75, paid: 75, tid: 11, index: 0, printed: 0,
     },
     {
         perid: 2, first_name: "Jane", middle_name: "Q.", last_name: "Smith", suffix: "", badge_name: "Jane Smith",
         address_1: "123 Any St", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19101-0000', country: 'USA',
         email_addr: 'jane.q.public@gmail.com', phone: '215-555-2368',
         share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N',
-        mem_type: 'standard full adult', reg_type: 'adult', price: 75, paid: 75, tid: 11, index:1,
+        mem_type: 'standard full adult', reg_type: 'adult', price: 75, paid: 75, tid: 11, index: 1, printed: 0,
     },
     {
         perid: 3, first_name: "Amy", middle_name: "", last_name: "Jones", suffix: "", badge_name: "Lady Amy",
         address_1: "1023 Chestnut St", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
         email_addr: 'ladyamy@gmail.com', phone: '215-555-5432',
         share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N',
-        mem_type: 'standard full student', reg_type: 'student', price: 40, paid: 40, tid: 13, index:2,
+        mem_type: 'standard full student', reg_type: 'student', price: 40, paid: 40, tid: 13, index: 2, printed: 0,
     },
     {
         perid: 4, first_name: "John", middle_name: "", last_name: "Doe", suffix: "", badge_name: "Unknown Attendee",
         address_1: "Unknown Monument", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
         email_addr: 'lost@aol.com', phone: '',
         share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N',
-        mem_type: '', reg_type: '', price: 0, paid: 0, tid: '', index: 3,
+        mem_type: '', reg_type: '', price: 0, paid: 0, tid: '', index: 3, printed: 0,
     },
     {
         perid: 5, first_name: "Bad", middle_name: "", last_name: "Mewber", suffix: "", badge_name: "Baddie",
         address_1: "Unknown Location", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
         email_addr: 'abuse@aol.com', phone: '',
         share_reg: 'N', contact_ok: 'N', active: 'Y', banned: 'Y',
-        mem_type: '', reg_type: '', price: 0, paid: 0, tid: '', index: 4,
+        mem_type: '', reg_type: '', price: 0, paid: 0, tid: '', index: 4, printed: 0,
     },
     {
         perid: 6, first_name: "No", middle_name: "", last_name: "Membership", suffix: "", badge_name: "Just Person",
         address_1: "Unknown Location", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
         email_addr: 'abuse@aol.com', phone: '',
         share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N',
-        mem_type: '', reg_type: '', price: 0, paid: 0, tid: '', index: 5,
+        mem_type: '', reg_type: '', price: 0, paid: 0, tid: '', index: 5, printed: 0,
     },
     {
         perid: 7, first_name: "Day", middle_name: "", last_name: "Membership", suffix: "", badge_name: "Just Person",
         address_1: "Unknown Location", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
         email_addr: 'abuse@aol.com', phone: '',
         share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N',
-        mem_type: 'standard oneday adult', reg_type: 'Fri adult', price: 35, paid: 35, tid: '14', index: 6,
+        mem_type: 'standard oneday adult', reg_type: 'Fri adult', price: 35, paid: 35, tid: '14', index: 6, printed: 0,
     },
 ];
 var result_data = mockup_data;
@@ -534,8 +543,8 @@ function draw_cart_row(rownum) {
 }
 
 function draw_cart() {
-    var total_price = 0;
-    var total_paid = 0;
+    total_price = 0;
+    total_paid = 0;
     var row;
     var num_rows = 0;
     var membership_rows = 0;  
@@ -859,6 +868,96 @@ function review_nochanges() {
     }
 }
 
+function goto_print() {   
+    bootstrap.Tab.getOrCreateInstance(print_tab).show();    
+}
+
+function pay_type(ptype) {
+    var elcheckno = document.getElementById('pay-check-div');
+    var elccauth = document.getElementById('pay-ccauth-div');
+
+    elcheckno.hidden = ptype != 'check';
+    elccauth.hidden = ptype != 'credit';
+
+    if (ptype != 'check') {
+        document.getElementById('pay-checkno').value = null;
+    }
+    if (ptype != 'credit') {
+        document.getElementById('pay-ccauth').value = null;
+    }
+}
+
+function pay() {
+    var checked = false;
+    var elamt = document.getElementById('pay-amt');
+    var pay_amt = Number(elamt.value);
+    if (pay_amt <= 0) {
+        elamt.style.backgroundColor = 'var(--bs-warning)';
+        return;
+    }
+    elamt.style.backgroundColor = '';
+
+    var elptdiv = document.getElementById('pt-div');
+    elptdiv.style.backgroundColor = '';
+
+    var eldesc = document.getElementById('pay-desc');
+    if (document.getElementById('pt-discount').checked) {
+        var desc = eldesc.value;
+        if (desc == null || desc == '') {
+            eldesc.style.backgroundColor = 'var(--bs-warning)';
+            return;
+        } else {
+            eldesc.style.backgroundColor = '';
+        }
+        checked = true;
+    } else {
+        eldesc.style.backgroundColor = '';
+    }
+
+    if (document.getElementById('pt-check').checked) {
+        var elcheckno = document.getElementById('pay-checkno');
+        var checkno = elcheckno.value;
+        if (checkno == null || checkno == '') {
+            elcheckno.style.backgroundColor = 'var(--bs-warning)';
+            return;
+        } else {
+            elcheckno.style.backgroundColor = '';
+        }
+        checked = true;
+    }
+    if (document.getElementById('pt-credit').checked) {
+        var elccauth = document.getElementById('pay-ccauth');
+        var ccauth = elccauth.value;
+        if (ccauth == null || ccauth == '') {
+            elccauth.style.backgroundColor = 'var(--bs-warning)';
+            return;
+        } else {
+            elccauth.style.backgroundColor = '';
+        }
+        checked = true;
+    }
+
+    if (document.getElementById('pt-cash').checked) {
+        checked = true;
+    }
+
+   
+    if (!checked) {
+        elptdiv.style.backgroundColor = 'var(--bs-warning)';
+        return;
+    }
+
+    for (rownum in cart) {
+        if (cart[rownum]['paid'] < cart[rownum]['price']) {
+            amt = Math.min(pay_amt, cart[rownum]['price'] - cart[rownum]['paid']);
+            cart[rownum]['paid'] += amt;
+            pay_amt -= amt;
+            if (pay_amt <= 0) break;
+        }
+    }
+
+    pay_shown();
+}
 // tab shown events
 function find_shown(current, previous) {
     in_review = false;
@@ -876,7 +975,8 @@ function review_shown(current, previous) {
     // draw review section
     var review_html = `
 <div id='reviewBody' class="container-fluid form-floating">
-  <form id='reviewForm' action='javascript: void (0); ' class="form-floating">`;
+  <form id='reviewForm' action='javascript: return false; ' class="form-floating">
+`;
     var rownum = null;
     var row;
     for (rownum in cart) {
@@ -998,8 +1098,64 @@ function review_shown(current, previous) {
 function pay_shown(current, previous) {
     in_review = false;
     freeze_cart = true;
-    pay_div.innerHTML = 'Pay coming soon';
     draw_cart();
+    if (total_paid == total_price) {
+        // nothing more to pay       
+        print_tab.disabled = false;
+        next_button.hidden = false;
+        bootstrap.Tab.getOrCreateInstance(print_tab).show();
+    } else {
+        var total_amount_due = total_price - total_paid;
+
+         var pay_html = `
+<div id='reviewBody' class="container-fluid form-floating">
+  <form id='reviewForm' action='javascript: return false; ' class="form-floating">
+    <div class="row">
+        <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0">` + total_amount_due + `</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2 ms-0 me-2 p-0">Amount Paid:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-amt" name-"paid-amt" value="` + total_amount_due + `" size="6"/></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
+        <div class="col-sm-auto m-0 mt-2 p-0 ms-0 me-2 mb-2 p-0" id="pt-div">
+            <input type="radio" id="pt-credit" name="payment_type" value="credit" onchange='pay_type("credit");'/>
+            <label for="pt-credit">Credit Cart</label>
+            &nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" id="pt-check" name="payment_type" value="check" onchange='pay_type("check");'/>
+            <label for="pt-check">Check</label>
+            &nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" id="pt-cash" name="payment_type" value="cash" onchange='pay_type("cash");'/>
+            <label for="pt-cash">Cash</label>
+            &nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" id="pt-discount" name="payment_type" value="discount" onchange='pay_type("discount");'/>
+            <label for="pt-discount">Discount</label>
+        </div>
+    </div>
+    <div class="row" id="pay-check-div" hidden>
+        <div class="col-sm-2 ms-0 me-2 p-0">Check Number:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="8" maxlength="10" name="pay-checkno" id="pay-checkno"/></div>
+    </div>
+    <div class="row" id="pay-ccauth-div" hidden>
+        <div class="col-sm-2 ms-0 me-2 p-0">CC Auth Code:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="15" maxlength="16" name="pay-ccauth" id="pay-ccauth"/></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2 ms-0 me-2 p-0">Description:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="60" maxlength="64" name="pay-desc" id="pay-desc"/></div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-small" type="button" id = "pay-btn-pay" onclick="pay();">Confirm Pay</button>
+        </div>
+    </div>
+  </form>
+</div>
+`;
+
+        pay_div.innerHTML = pay_html;
+        void_button.hidden = false;
+    }
 }
 
 function print_shown(current, previous) {
