@@ -126,9 +126,9 @@ window.onload = function initpagbe() {
     pay_tab.addEventListener('shown.bs.tab', pay_shown)
     print_tab.addEventListener('shown.bs.tab', print_shown)
 
-    //total_price = 70;
-    //total_paid = 0;
-    //bootstrap.Tab.getOrCreateInstance(pay_tab).show();
+    //add_to_cart(0);
+    //add_to_cart(1);
+    //bootstrap.Tab.getOrCreateInstance(print_tab).show();
     draw_cart();
 }
 
@@ -526,10 +526,11 @@ function draw_cart_row(rownum) {
 ` + seltxt + `
         </select>
     </div>
-</div>`;
+`;
         }
     }
     rowhtml += `
+</div>
 <div class="row">
     <div class="col-sm-8">` + row['badge_name'] + `</div>
     <div class="col-sm-2 text-end">` + row['price'] + `</div>
@@ -889,6 +890,8 @@ function pay_type(ptype) {
 
 function pay() {
     var checked = false;
+    var rownum = null;
+
     var elamt = document.getElementById('pay-amt');
     var pay_amt = Number(elamt.value);
     if (pay_amt <= 0) {
@@ -958,6 +961,28 @@ function pay() {
 
     pay_shown();
 }
+
+function print_badge(index) {
+    var rownum = null;
+    
+    var pt_html = '';
+    var row = null;
+
+    if (index >= 0) {
+        row = result_data[index];
+        row['printed']++;
+        pt_html += '<br/>' + row['badge_name'] + ' printed';
+    } else {
+        for (rownum in cart) {
+            row = result_data[cart[rownum]['index']];
+            row['printed']++;
+            pt_html += '<br/>' + row['badge_name'] + ' printed';
+        }
+    }
+    print_shown();
+    document.getElementById('pt-status').innerHTML = pt_html;
+}
+
 // tab shown events
 function find_shown(current, previous) {
     in_review = false;
@@ -1108,8 +1133,8 @@ function pay_shown(current, previous) {
         var total_amount_due = total_price - total_paid;
 
          var pay_html = `
-<div id='reviewBody' class="container-fluid form-floating">
-  <form id='reviewForm' action='javascript: return false; ' class="form-floating">
+<div id='payBody' class="container-fluid form-floating">
+  <form id='payForm' action='javascript: return false; ' class="form-floating">
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0">` + total_amount_due + `</div>
@@ -1166,9 +1191,39 @@ function print_shown(current, previous) {
     startover_button.hidden = true;
     next_button.hidden = false;
     freeze_cart = true;
-
-    print_div.innerHTML = 'Print coming soon';
-
     draw_cart();
+
+    var print_html = `<div id='printBody' class="container-fluid form-floating">
+`;
+    var rownum;
+    for (rownum in cart) {
+        print_html += `
+    <div class="row">
+        <div class="col-sm-2 ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-small" type="button" id = "pay-print-` + cart[rownum]['index'] + `" onclick="print_badge(` + cart[rownum]['index'] + `);">Print</button>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">            
+            <span class="text-bg-success"> Membership: ` + cart[rownum]['mem_type'] + `</span> (Times Printed: ` +
+            cart[rownum]['printed'] + `)<br/>
+              ` + cart[rownum]['badge_name'] + '/' + (cart[rownum]['first_name'] + ' ' + cart[rownum]['last_name']).trim() + `
+        </div>
+     </div>`;
+    }
+
+    print_html += `
+    <div class="row mt-4">
+        <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-small" type="button" id = "pay-print-all" onclick="print_badge(-1);">Print All</button>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-sm-12 m-0 mt-4 p-0" id="pt-status"></div>
+    </div>
+</div>`;
+
+    print_div.innerHTML = print_html;
+
+   
 
 }
