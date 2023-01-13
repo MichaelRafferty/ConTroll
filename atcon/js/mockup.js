@@ -154,7 +154,7 @@ function start_over(reset_all) {
 
     // reset data to call up
     if (reset_all) {
-        result_data = mockup_data;
+        result_data = mockup_data.slice(0);
         max_index = result_data.length;
     }
 
@@ -226,7 +226,7 @@ var mockup_data = [
         mem_type: 'standard oneday adult', reg_type: 'Fri adult', price: 35, paid: 35, tid: '14', index: 6, printed: 0,
     },
 ];
-var result_data = mockup_data;
+var result_data = mockup_data.slice(0);
 var max_index = result_data.length;
 
 function build_record_hover(e, cell, onRendered) {

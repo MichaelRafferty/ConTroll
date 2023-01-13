@@ -117,6 +117,10 @@ echo '</script>' . "\n";
                                     </div>
                                 </div>
                             </div>
+                             <input type="hidden" name="perinfo-index" id="perinfo-index" />
+                             <input type="hidden" name="perinfo-perid" id="perinfo-perid" />
+                             <input type="hidden" name="membership-memid" id="membership-memid" />
+                             <input type="hidden" name="membership-index" id="membership-index" />
                              <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="fname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>First Name</span></label><br/>
@@ -192,14 +196,22 @@ echo '</script>' . "\n";
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Membership Type</span></label><br/>
-                                    <select id='memType' name='age' style="width:300px;" tabindex='15' title='Age as of <?php echo substr($condata['startdate'], 0, 10); ?> (the first day of the convention)'>
-                                    </select>
+                                    <div id="ae_mem_select"></div>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-auto mt-2 ms-0 me-0 p-0">
                                     Include in annual reminder postcards, future Philcon emails and surveys? 
                                     <select id="contact_ok" name="contact_ok" tabindex='16'>
+                                        <option value="Y" selected>Yes</option>
+                                        <option value="N">No</option>
+                                    </select>
+                                </div>
+                            </div>
+                              <div class="row">
+                                <div class="col-sm-auto mt-2 ms-0 me-0 p-0">
+                                    Allow search by member to find you on website? 
+                                    <select id="share_reg" name="share_reg" tabindex='16'>
                                         <option value="Y" selected>Yes</option>
                                         <option value="N">No</option>
                                     </select>
