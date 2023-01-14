@@ -134,7 +134,7 @@ function page_init($title, $tab, $css, $js) {
                                 <a class="nav-link navitem <?php echo $tab == "mockupRetail" ? "active" : ""; ?>" <?php echo $tab == "mockupRetail" ? 'aria-current="page"' : ""; ?> href="mockup.php">Retail POS Mockup</a>
                             </li>
                             <li>
-                                <a class="nav-link navitem <?php echo $tab == "mockupRest" ? "active" : ""; ?>" <?php echo $tab == "mockupRest" ? 'aria-current="page"' : ""; ?> href="mockup2.php">Resturant POS Mockup</a>
+                                <a class="nav-link navitem <?php echo $tab == "mockupRest" ? "active" : ""; ?>" <?php echo $tab == "mockupRest" ? 'aria-current="page"' : ""; ?> href="mockup2.php">Restaurant POS Mockup</a>
                             </li>
                             <?php  } ?>
                             <li>
