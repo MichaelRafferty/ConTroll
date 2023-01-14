@@ -41,7 +41,6 @@ var memLabel = null;
 // add new person fields
 var add_index_field = null;
 var add_perid_field = null;
-var add_memId_field = null;
 var add_memIndex_field = null;
 var add_first_field = null;
 var add_middle_field = null;
@@ -320,7 +319,6 @@ window.onload = function initpage() {
     // add people
     add_index_field = document.getElementById("perinfo-index");
     add_perid_field = document.getElementById("perinfo-perid");
-    add_memId_field = document.getElementById("membership-memid");
     add_memIndex_field = document.getElementById("membership-index");
     add_first_field = document.getElementById("fname");
     add_middle_field = document.getElementById("mname");
@@ -474,7 +472,6 @@ function edit_from_cart(index) {
     // set perinfo values
     add_index_field.value = cartrow['index'];
     add_perid_field.value = cartrow['perid'];   
-    add_memId_field.value = '';
     add_memIndex_field.value = '';
     add_first_field.value = cartrow['first_name'];
     add_middle_field.value = cartrow['middle_name'];
@@ -500,7 +497,6 @@ function edit_from_cart(index) {
         add_mem_select.innerHTML = add_mt_dataentry;
         document.getElementById("ae_mem_sel").innerHTML = membership_select;
     } else {
-        add_memId_field.value = result_membership[mem_index]['memId'];
         add_memIndex_field.value = mem_index;
         if (Number(result_membership[mem_index]['tid']) > 0) {
             // already paid, just display the lael
@@ -571,9 +567,8 @@ function clear_add() {
 }
 
 function add_new() {
-    var new_index = add_index_field.value.trim();    
-    var new_perid = add_perid_field.value.trim();
-    var new_memId = add_memId_field.value.trim();
+    var edit_index = add_index_field.value.trim();    
+    var edit_perid = add_perid_field.value.trim();
     var new_memindex = add_memIndex_field.value.trim();
     var new_first = add_first_field.value.trim();
     var new_middle = add_middle_field.value.trim();
@@ -596,8 +591,8 @@ function add_new() {
     var new_contact = add_contact_field.value.trim();
     var new_share = add_share_field.value.trim();
 
-    if (add_mode == false && new_index != '') { // update perinfo/meminfo and cart and cart
-        var row = result_perinfo[new_index];
+    if (add_mode == false && edit_index != '') { // update perinfo/meminfo and cart and cart
+        var row = result_perinfo[edit_index];
         row['first_name'] = new_first;
         row['middle_name'] = new_middle;
         row['last_name'] = new_last;
@@ -623,8 +618,8 @@ function add_new() {
                 var ind = result_membership.length;
                 result_membership.push({ index: ind, printed: 0 });
                 mrow = result_membership[ind];
-                mrow['perid'] = new_perid;
-                mrow['pindex'] = new_index;
+                mrow['perid'] = edit_perid;
+                mrow['pindex'] = edit_index;
             }
             var mi_row = find_memLabel(new_badgememId);
             mrow['price'] = mi_row['price'];
@@ -737,13 +732,6 @@ function add_new() {
             add_postal_code_field.style.backgroundColor = '';
         }
 
-        ////if (new_badgetype == '') {
-        ////    missing_fields++;
-        ////    add_badgetype_field.style.backgroundColor = 'var(--bs-warning)';
-        ////} else {
-        ////    add_badgetype_field.style.backgroundColor = '';
-        ////}
-
         if (missing_fields > 0) {
             if (add_results_table != null) {
                 add_results_table.destroy();
@@ -759,23 +747,32 @@ function add_new() {
     </div>`;
             return;
         }
-        var age = new_badgetype.replace(/.* /, '');
+        ////var age = new_badgetype.replace(/.* /, '');
         var row = {
             perid: new_perid, first_name: new_first, middle_name: new_middle, last_name: new_last, suffix: new_suffix,
             badge_name: new_badgename,
             address_1: new_addr1, address_2: new_addr2, city: new_city, state: new_state, postal_code: new_postal_code,
             country: new_country, email_addr: new_email, phone: new_phone,
-            share_reg: 'Y', contact_ok, new_contact, active: 'Y', banned: 'N',
-            mem_type: new_badgetype.replace(/_/g, ' '), reg_type: age, price: new_price, paid: 0, tid: 0, index: max_index,
+            share_reg: 'Y', contact_ok, new_contact, active: 'Y', banned: 'N', index: result_perinfo.length,
+
         };
+        var memId = document.getElementById("ae_mem_sel").value;
+        var mi_row = find_memLabel(memId);
+        var mrow = {
+            perid: new_perid,
+            reg_type: mi_row[''], price: mi_row['price'], paid: 0, tid: '', index: result_membership.length, printed: 0,
+            memCategory: mi_row['memCategory'], memType: mi_row['memType'], memAge: mi_row['memAge'],
+            shortname: mi_row['shortname'], memId: memId, label: mi_row['label'], pindex: result_perinfo.length,
+        }
+        ////        mem_type: new_badgetype.replace(/_/g, ' '), reg_type: age, price: new_price, paid: 0, tid: 0, index: max_index,
         new_perid--;
-        max_index++;
 
         add_first_field.value = "";
         add_middle_field.value = "";
         add_email_field.value = "";
         add_phone_field.value = "";
         result_perinfo.push(row);
+        result_membership.push(mrow);
         cart.push(row['index']);
         cart_perid.push(row['perid']);
         draw_cart();

@@ -119,7 +119,6 @@ echo '</script>' . "\n";
                             </div>
                              <input type="hidden" name="perinfo-index" id="perinfo-index" />
                              <input type="hidden" name="perinfo-perid" id="perinfo-perid" />
-                             <input type="hidden" name="membership-memid" id="membership-memid" />
                              <input type="hidden" name="membership-index" id="membership-index" />
                              <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
