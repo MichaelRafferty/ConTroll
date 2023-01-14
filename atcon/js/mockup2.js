@@ -229,7 +229,7 @@ function find_primary_membership_by_perid(perid) {
     return mem_index;
 }
 
-window.onload = function initpagbe() {
+window.onload = function initpage() {
     // map the memIds and labels for the pre-coded memberships.  Doing it now because it depends on what the datbase sends.
     // tabls
 
@@ -360,9 +360,7 @@ window.onload = function initpagbe() {
     pay_tab.addEventListener('shown.bs.tab', pay_shown)
     print_tab.addEventListener('shown.bs.tab', print_shown)
 
-    //add_to_cart(0);
-    //add_to_cart(1);
-    //bootstrap.Tab.getOrCreateInstance(print_tab).show();
+    clear_add();
     draw_cart();
 }
 
@@ -399,6 +397,7 @@ function start_over(reset_all) {
     pay_tab.disabled = true;
     print_tab.disabled = true;
     next_button.hidden = true;
+    void_button.hidden = true;
     in_review = false;
 
     clear_add();
@@ -1355,6 +1354,8 @@ function pay_type(ptype) {
 function pay() {
     var checked = false;
     var rownum = null;
+    var mrows = null;
+    var mrownum = null;
 
     var elamt = document.getElementById('pay-amt');
     var pay_amt = Number(elamt.value);
@@ -1415,11 +1416,16 @@ function pay() {
     }
 
     for (rownum in cart) {
-        if (cart[rownum]['paid'] < cart[rownum]['price']) {
-            amt = Math.min(pay_amt, cart[rownum]['price'] - cart[rownum]['paid']);
-            cart[rownum]['paid'] += amt;
-            pay_amt -= amt;
-            if (pay_amt <= 0) break;
+        mrows = find_memberships_by_perid(result_perinfo[cart[rownum]]['perid']);
+        for (mrownum in mrows) {
+            mrow = result_membership[mrows[mrownum]['index']];
+
+            if (mrow['paid'] < mrow['price']) {
+                amt = Math.min(pay_amt, mrow['price'] - mrow['paid']);
+                mrow['paid'] += amt;
+                pay_amt -= amt;
+                if (pay_amt <= 0) break;
+            }
         }
     }
 
@@ -1428,18 +1434,21 @@ function pay() {
 
 function print_badge(index) {
     var rownum = null;
+    var mrow = null;
+    var row = null;
     
     var pt_html = '';
-    var row = null;
 
     if (index >= 0) {
         row = result_perinfo[index];
-        row['printed']++;
+        mrow = find_primary_membership_by_perid(row['perid']);
+        result_membership[mrow]['printed']++;
         pt_html += '<br/>' + row['badge_name'] + ' printed';
     } else {
         for (rownum in cart) {
             row = result_perinfo[cart[rownum]];
-            row['printed']++;
+            mrow = find_primary_membership_by_perid(row['perid']);
+            result_membership[mrow]['printed']++;
             pt_html += '<br/>' + row['badge_name'] + ' printed';
         }
     }
@@ -1470,17 +1479,13 @@ function review_shown(current, previous) {
     var row;
     for (rownum in cart) {
         row = result_perinfo[cart[rownum]];
+        mrow = find_primary_membership_by_perid(row['perid']);
         review_html += `<div class="row">
         <div class="col-sm-1 m-0 p-0">Mbr ` + (Number(rownum) + 1) + '</div>';
-        if (row['reg_type'] == '') {
-            review_html += '<div class="col-sm-8 text-bg-info">'
+        if (mrow == null) {
+            review_html += '<div class="col-sm-8 text-bg-info">No Membership</div>';
         } else {
-            review_html += '<div class="col-sm-8 text-bg-success">'
-        }
-        if (row['reg_type'] != '') {
-            review_html += 'Membership: ' + row['mem_type'] + '</div>';
-        } else {
-            review_html += 'No Membership</div>';
+            review_html += '<div class="col-sm-8 text-bg-success">Membership: ' + result_membership[mrow]['label'] + '</div>';
         }
         
         review_html += `
@@ -1605,7 +1610,7 @@ function pay_shown(current, previous) {
     </div>
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Paid:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-amt" name-"paid-amt" value="` + total_amount_due + `" size="6"/></div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-amt" name-"paid-amt size="6"/></div>
     </div>
     <div class="row">
         <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
@@ -1654,6 +1659,7 @@ function print_shown(current, previous) {
     review_tab.disabled = true;
     startover_button.hidden = true;
     next_button.hidden = false;
+    void_button.hidden = true;
     freeze_cart = true;
     draw_cart();
 
@@ -1663,14 +1669,15 @@ function print_shown(current, previous) {
     var crow;
     for (rownum in cart) {
         crow = result_perinfo[cart[rownum]];
+        mrow = find_primary_membership_by_perid(crow['perid']);
         print_html += `
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">
             <button class="btn btn-primary btn-small" type="button" id = "pay-print-` + cart[rownum]['index'] + `" onclick="print_badge(` + crow['index'] + `);">Print</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">            
-            <span class="text-bg-success"> Membership: ` + crow['mem_type'] + `</span> (Times Printed: ` +
-            crow['printed'] + `)<br/>
+            <span class="text-bg-success"> Membership: ` + result_membership[mrow]['label'] + `</span> (Times Printed: ` +
+            result_membership[mrow]['printed'] + `)<br/>
               ` + crow['badge_name'] + '/' + (crow['first_name'] + ' ' + crow['last_name']).trim() + `
         </div>
      </div>`;
