@@ -20,32 +20,36 @@ ol_page_init($condata['label'] . ' Registration Check');
     <?php
 if($lname == "" or $fname == "") {
     ?>
-     <div id='newBadge' class="container-fluid">
-         <form method="GET">
+     <form method="GET">
+        <div id='chkBadge' class="container-fluid form-floating m-1">        
              <div class="row" style="width:100%;">
                  <div class="col-12 ms-0 me-0 p-0">
                      <p>Please provide the last name and at least the first initial of the first name.</p>
                  </div>
              </div>
              <div class="row" style="width:100%;">
-                 <div class="col-1 ms-0 me-0 p-0">
-                    <label for="fname" class="form-label-sm"><span class="text-dark"><span class='text-info'>*</span>First Name:</span></label>
+                 <div class="col-sm-auto mt-2 ms-1 me-1 p-0">
+                    <label for="fname" class="form-label-sm">
+                     <span class="text-dark"><span class='text-info'>*</span>First Name:</span>
+                    </label>
                  </div>
-                 <div class="col-2 ms-0 me-0 p-0">
+                 <div class="col-sm-auto mt-2 ms-1 me-0 p-0">
                      <input class="form-control-sm" type="text" name="fname" id='fname' size="12" maxlength="32" tabindex="1"/>
                  </div>
-                 <div class="col-1 ms-0 me-0 p-0">
-                    <label for="lname" class="form-label-sm"><span class="text-dark"><span class='text-info'>*</span>Last Name:</span></label>
+                 <div class="col-auto mt-2 ms-1 me-1 p-0">
+                    <label for="lname" class="form-label-sm">
+                     <span class="text-dark"><span class='text-info'>*</span>Last Name:</span>
+                    </label>
                  </div>
-                 <div class="col-3 ms-0 me-0 p-0">
+                 <div class="col-sm-auto mt-2 ms-1 me-1 p-0">
                      <input class="form-control-sm" type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="2"/>
                  </div>
-                 <div class="col-1 ms-0 me-0 p-0">
+                 <div class="col-sm-1 ms-1 me-1 mt-2 p-0">
                      <input type='submit' value='Search' />
                  </div>
-             </div>
-         </form>
-     </div>
+             </div> 
+        </div>        
+     </form>
     <?php
 } else {
     $fname .= '%';
@@ -78,23 +82,23 @@ EOS;
 
     $numbadges = count($results);
     ?>
-    <div id='newBadge' class="container-fluid">
+    <div id='showBadge' class="container-fluid">
         <div class="row" style="width:100%;">
             <div class="col-12 ms-0 me-0 p-0">
                 <p>Your search for <?php echo $fname . " " . $lname; ?> found <?php echo$numbadges; ?> Badge<?php if ($numbadges != 1) { echo "s"; } ?>.</p>
             </div>
         </div>
         <div class="row" style="width:100%;">
-             <div class="col-2 ms-0 me-0 p-0">
+             <div class="col-sm-2 ms-0 me-0 p-0">
                  <strong>Last Name</strong>
              </div>
-            <div class="col-1 ms-0 me-0 p-0">
+            <div class="col-sm-1 ms-0 me-0 p-0">
                  <strong>FI</strong>
              </div>
-             <div class="col-1 ms-0 me-0 p-0">
+             <div class="col-sm-1 ms-0 me-0 p-0">
                  <strong>MI</strong>
              </div>
-             <div class="col-1 ms-0 me-0 p-0">
+             <div class="col-sm-1 ms-0 me-0 p-0">
                  <strong>Zip</strong>
              </div>
         </div> 
@@ -102,16 +106,16 @@ EOS;
   foreach($results as $row) {
             ?>
             <div class="row" style="width:100%;">
-                 <div class="col-2 ms-0 me-0 p-0">
+                 <div class="col-sm-2 ms-0 me-0 p-0">
                       <?php echo $row['last_name'];?>
                  </div>
-                <div class="col-1 ms-0 me-0 p-0">
+                <div class="col-sm-1 ms-0 me-0 p-0">
                     <?php echo $row['fi'];?>
                 </div>
-                <div class="col-1 ms-0 me-0 p-0">
+                <div class="col-sm-1 ms-0 me-0 p-0">
                     <?php echo $row['mi'];?>
                 </div>
-                <div class="col-1 ms-0 me-0 p-0">
+                <div class="col-sm-1 ms-0 me-0 p-0">
                      <?php echo $row['zip'];?>
                 </div>
             </div> 
@@ -119,25 +123,38 @@ EOS;
   }
             ?>
     </div>
-
-
     <?php } ?>
-For hotel information and directions please see <a href="<?php echo $con['hotelwebsite']; ?>">
-        the <?php echo $con['conname']; ?> hotel page
-    </a>
-    <br />
-    <hr />
+    <div id='footer' class="container-fluid m-2">
+        <div class="row">
+            <div class="col-sm-12">
+                <hr/>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-auto p-0">
+                For hotel information and directions please see 
+                <a href="<?php echo $con['hotelwebsite']; ?>">the <?php echo $con['conname']; ?> hotel page</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-auto p-0">
+                <a href="<?php echo $con['policy'];?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.
+            </div>
+        </div>
+          <div class="row">
+            <div class="col-sm-auto p-0">
+              For more information about <?php echo $con['conname']; ?> please email
+              <a href="mailto:<?php echo $con['infoemail']; ?>"><?php echo $con['infoemail']; ?></a>.
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-auto p-0">
+                For questions about <?php echo $con['conname']; ?> Registration, email
+                <a href="mailto:<?php echo $con['regemail']; ?>"><?php echo $con['regemail']; ?></a>.
+            </div>
+        </div>
+    </div>
 
-    <p class="text-body">
-        <a href="<?php echo $con['policy'];?>" target="_blank">
-            Click here for the <?php echo $con['policytext']; ?>
-        </a>.<br />
-        For more information about <?php echo $con['conname']; ?> please email <a href="mailto:<?php echo $con['infoemail']; ?>">
-            <?php echo $con['infoemail']; ?>
-        </a>.<br />
-        For questions about <?php echo $con['conname']; ?> Registration, email <a href="mailto:<?php echo $con['regemail']; ?>">
-            <?php echo $con['regemail']; ?>
-        </a>.
-    </p>
+   
 </body>
 </html>

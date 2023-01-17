@@ -15,13 +15,6 @@ var anotherBadge = null;
 // newBadge = bootstrap 5 modal for the add badge modal popop
 var newBadge = null;
 
-//function flashSect2(sect, i, max) {
-//  if(i < max) { 
-//    $(sect).toggleClass('highlight');
-//    setTimeout(function() { flashSect2(sect, i+1, max); }, 600);
-//  }
-//}
-
 function setPrice(group, price, shortname) {
     prices[group]= price;
     badges['agecount'][group] = 0;
@@ -255,8 +248,10 @@ function makePurchase($token, $label) {
     var postdata = badges['badges'];
     if (postdata.length == 0) {
         alert("You don't have any badges to buy, please add some badges");
-        newBadge.show();
-        return false;
+        if (newBadge != null) {
+            newBadge.show();
+        }
+        return false;        
     }
 
     $.ajax({
@@ -272,28 +267,47 @@ function makePurchase($token, $label) {
 }
 
 function newBadgeModalOpen() {
-    newBadge.show();
+    if (newBadge != null) {
+        newBadge.show();
+    }
 }
 
 function newBadgeModalClose() {
-    newBadge.hide();
+    if (newBadge != null) {
+        newBadge.hide();
+    }
 }
 
 function anotherBadgeModalOpen() {
-    anotherBadge.show();
+    if (anotherBadge != null) {
+        anotherBadge.show();
+    }
 }
 
 function anotherBadgeModalClose() {
-    anotherBadge.hide();
+    if (anotherBadge != null) {
+        anotherBadge.hide();
+    }
 }
 
 function togglePopup() {
-    anotherBadge.hide();
-    newBadge.show();
+    if (anotherBadge != null) {
+        anotherBadge.hide();
+    }
+    if (newBadge != null) {
+        newBadge.show();
+    }
 }
 
 window.onload = function () {
-    anotherBadge = new bootstrap.Modal(document.getElementById('anotherBadge'), { focus: true, backdrop: 'static' });
-    newBadge = new bootstrap.Modal(document.getElementById('newBadge'), { focus: true, backdrop: 'static' });
-    newBadge.show();
+    var badge_modal = document.getElementById('anotherBadge');
+    if (badge_modal != null) {
+        anotherBadge = new bootstrap.Modal(badge_modal, { focus: true, backdrop: 'static' });
+    }
+
+    var new_badge = document.getElementById('newBadge');
+    if (new_badge != null) {
+        newBadge = new bootstrap.Modal(new_badge, { focus: true, backdrop: 'static' });
+        newBadge.show();
+    }
 }
