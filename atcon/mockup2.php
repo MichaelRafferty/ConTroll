@@ -74,7 +74,7 @@ echo '</script>' . "\n";
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="review-tab" data-bs-toggle="pill" data-bs-target="#review-pane" type="button" role="tab" aria-controls="nav-review" aria-selected="false" disabled>Review Data</button>
                     </li>
-                     <li class="nav-item" role="presentation">
+                     <li class="nav-item" role="presentation"<?php if ($mode != 'cashier') { echo ' style="display:none;"'; } ?>>
                         <button class="nav-link" id="pay-tab" data-bs-toggle="pill" data-bs-target="#pay-pane" type="button" role="tab" aria-controls="nav-pay" aria-selected="false" disabled>Payment</button>
                     </li>
                       <li class="nav-item" role="presentation">

@@ -1600,7 +1600,15 @@ function review_nochanges() {
     if (unpaid_rows == 0) {
         goto_print();
     } else {
-        bootstrap.Tab.getOrCreateInstance(pay_tab).show();
+        if (find_unpaid_button != null) {
+            bootstrap.Tab.getOrCreateInstance(pay_tab).show();
+        } else {
+            next_button.hidden = false;
+            startover_button.hidden = true;
+            document.getElementById('review-btn-update').hidden = true;
+            document.getElementById('review-btn-nochanges').hidden = true;
+            document.getElementById('review_status').innerHTML = 'Completed: Send customer to cashier';
+        }
     }
 }
 
@@ -1897,6 +1905,9 @@ function review_shown(current, previous) {
             <button class="btn btn-primary btn-small" type="button" id="review-btn-update" onclick="review_update();">Update All</button>
             <button class="btn btn-primary btn-small" type="button" id="review-btn-nochanges" onclick="review_nochanges();">No Changes</button>
         </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12" id="review_status"></div>
     </div>
   </form>
 </div>
