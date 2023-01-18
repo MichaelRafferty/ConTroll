@@ -8,10 +8,17 @@ if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
     exit(0);
 }
-
+$tab = 'mockupCheckin';
 $page = "Atcon POS Mockup";
+if (isset($_GET['mode'])) {
+    $mode = $_GET['mode'];
+    if ($mode == 'cashier') {
+        $tab = 'mockupCashier';
+    }
+}
+$page = "Atcon POS Mockup ($mode)";
 
-page_init($page, 'mockupRest',
+page_init($page, $tab,
     /* css */ array('https://unpkg.com/tabulator-tables@5.4.3/dist/css/tabulator.min.css','css/atcon.css','css/registration.css','css/mockup.css'),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
                     'https://unpkg.com/tabulator-tables@5.4.3/dist/js/tabulator.min.js','js/atcon.js','js/mockup2.js')
@@ -19,6 +26,7 @@ page_init($page, 'mockupRest',
 
 $con = get_conf("con");
 $conid=$con['id'];
+$label = $con['label'];
 $startdate = $conid . '-11-01';
 $enddate = $conid . '-11-02';
 $method='manager';
@@ -48,6 +56,7 @@ while($priceL = fetch_safe_assoc($priceR)) {
 
 echo "\n" . '<script type="text/javascript">' . "\n";
 echo 'var memLabelsJSON = `' . json_encode($memarray) . "`;\n";
+echo "var conid = '$label';\n";
 echo '</script>' . "\n";
 
 ?>
@@ -92,9 +101,12 @@ echo '</script>' . "\n";
                             </div>
                             <div class="row mt-3">
                                 <div class="col-sm-4">
+                                      <?php if ($mode == 'cashier') { ?>
+                                    <button type="button" class="btn btn-small btn-primary" id="find_unpaid_btn" onclick="find_record('unpaid');" hidden>Find Unpaid Transactions</button>
+                                    <?php } ?>
                                 </div>
                                 <div class="col-sm-8">
-                                    <button type="button" class="btn btn-small btn-primary" id="find_search_btn" onclick="find_record();">Find Record</button>
+                                    <button type="button" class="btn btn-small btn-primary" id="find_search_btn" onclick="find_record('search');">Find Record</button>
                                 </div>
                             </div>
                             <div class="row mt-3">

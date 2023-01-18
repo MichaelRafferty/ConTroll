@@ -131,17 +131,17 @@ function page_init($title, $tab, $css, $js) {
                                 <a class="nav-link navitem <?php echo $tab == "admin" ? "active" : ""; ?>" <?php echo $tab == "admin" ? 'aria-current="page"' : ""; ?> href="admin.php">Administrator</a>
                             </li>
                             <li>
-                                <a class="nav-link navitem <?php echo $tab == "mockupRetail" ? "active" : ""; ?>" <?php echo $tab == "mockupRetail" ? 'aria-current="page"' : ""; ?> href="mockup.php">Retail POS Mockup</a>
+                                <a class="nav-link navitem <?php echo $tab == "mockupCheckin" ? "active" : ""; ?>" <?php echo $tab == "mockupCheckin" ? 'aria-current="page"' : ""; ?> href="mockup2.php">Check-in POS Mockup</a>
                             </li>
                             <li>
-                                <a class="nav-link navitem <?php echo $tab == "mockupRest" ? "active" : ""; ?>" <?php echo $tab == "mockupRest" ? 'aria-current="page"' : ""; ?> href="mockup2.php">Restaurant POS Mockup</a>
+                                <a class="nav-link navitem <?php echo $tab == "mockupCashier" ? "active" : ""; ?>" <?php echo $tab == "mockupCashier" ? 'aria-current="page"' : ""; ?> href="mockup2.php?mode=cashier">Cashier POS Mockup</a>
                             </li>
                             <?php  } ?>
                             <li>
-                                <a class="nav-link navitem" <?php echo $ariainfo; ?> href="index.php?action=change_passwd">Change Password</a>
+                                <a class="nav-link navitem" <?php echo $tab == "change_password" ? "active" : ""; ?>" <?php echo $tab == "change_password" ? 'aria-current="page"' : ""; ?> href="index.php?action=change_passwd">Change Password</a>
                             </li>
                             <li>
-                                <a class="nav-link navitem" <?php echo $ariainfo; ?> href="index.php?action=logout">Logout</a>
+                                <a class="nav-link navitem" <?php echo $tab == "logout" ? "active" : ""; ?>" <?php echo $tab == "logout" ? 'aria-current="page"' : ""; ?> href="index.php?action=logout">Logout</a>
                             </li>
                         </ul>
                     </div>

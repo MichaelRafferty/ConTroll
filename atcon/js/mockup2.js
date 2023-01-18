@@ -4,7 +4,6 @@ var startover_button = null;
 var review_button = null;
 var next_button = null;
 var cart_div = null;
-var cart_div = null;
 var in_review = false;
 var freeze_cart = false;
 var total_price = 0;
@@ -37,6 +36,7 @@ var search_field = null;
 var find_result_table = null;
 var number_search = null;
 var memLabel = null;
+var find_unpaid_button = null;
 
 // add new person fields
 var add_index_field = null;
@@ -76,6 +76,9 @@ var country_select = null;
 
 // pay items
 var pay_div = null;
+var pay_button_pay = null;
+var pay_button_rcpt = null;
+var pay_button_print = null;
 
 // print items
 var print_div = null;
@@ -84,6 +87,7 @@ var print_arr = null;
 // Data tables
 var datatbl = new Array();
 var cart = new Array();
+var cart_pmt = new Array();
 var cart_perid = new Array();
 var new_perid = -1;
 
@@ -92,142 +96,6 @@ var filt_cat = null;  // array
 var filt_age = null;  // array
 var filt_type = null; // array
 var filt_shortname_regexp = null; // regexp item;
-
-    // result data
-var mockup_perinfo = [
-    {
-        perid: 1, first_name: "John", middle_name: "Q.", last_name: "Smith", suffix: "", badge_name: "John Smith",
-        address_1: "123 Any St", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19101-0000', country: 'USA',
-        email_addr: 'john.q.public@gmail.com', phone: '215-555-2368',
-        share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 0,
-    },
-    {
-        perid: 2, first_name: "Jane", middle_name: "Q.", last_name: "Smith", suffix: "", badge_name: "Jane Smith",
-        address_1: "123 Any St", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19101-0000', country: 'USA',
-        email_addr: 'jane.q.public@gmail.com', phone: '215-555-2368',
-        share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 1,
-    },
-    {
-        perid: 3, first_name: "Amy", middle_name: "", last_name: "Jones", suffix: "", badge_name: "Lady Amy",
-        address_1: "1023 Chestnut St", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
-        email_addr: 'ladyamy@gmail.com', phone: '215-555-5432',
-        share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 2,
-    },
-    {
-        perid: 4, first_name: "John", middle_name: "", last_name: "Doe", suffix: "", badge_name: "Unknown Attendee",
-        address_1: "Unknown Monument", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
-        email_addr: 'lost@aol.com', phone: '',
-        share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 3,
-    },
-    {
-        perid: 5, first_name: "Bad", middle_name: "", last_name: "Member", suffix: "", badge_name: "Baddie",
-        address_1: "Unknown Location", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
-        email_addr: 'abuse@aol.com', phone: '',
-        share_reg: 'N', contact_ok: 'N', active: 'Y', banned: 'Y', index: 4,
-    },
-    {
-        perid: 6, first_name: "No", middle_name: "", last_name: "Membership", suffix: "", badge_name: "Just Person",
-        address_1: "Unknown Location", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
-        email_addr: 'abuse@aol.com', phone: '',
-        share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 5,
-    },
-    {
-        perid: 7, first_name: "Day", middle_name: "", last_name: "Membership", suffix: "", badge_name: "Just Person",
-        address_1: "Unknown Location", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
-        email_addr: 'abuse@aol.com', phone: '',
-        share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 6,
-    },
-];
-
-var mockup_membership = [
-    {
-        perid: 1, 
-        reg_type: 'adult', price: 75, paid: 75, tid: 11, index: 0, printed: 0,
-        memCategory: 'standard', memType: 'full', memAge: 'adult', shortname: 'General', pindex: 0,
-        memId: null, label: null,
-    },
-    {
-        perid: 2, 
-        reg_type: 'adult', price: 75, paid: 75, tid: 11, index: 1, printed: 0,
-        memCategory: 'standard', memType: 'full', memAge: 'adult', shortname: 'General', pindex: 1,
-        memId: null, label: null,
-    },
-    {
-        perid: 3, 
-        reg_type: 'student', price: 40, paid: 40, tid: 13, index: 2, printed: 0,
-        memCategory: 'standard', memType: 'full', memAge: 'student', shortname: 'Student', pindex: 2,
-        memId: null, label: null,
-    },
-    {
-        perid: 7,
-        reg_type: 'Fri adult', price: 35, paid: 35, tid: '14', index: 3, printed: 0,
-        memCategory: 'standard', memType: 'oneday', memAge: 'adult', shortname: 'Fri General', pindex: 6,
-        memId: null, label: null,
-    },
-];
-
-// search memLabel functions
-function mem_filter(cur, idx, arr) {
-    if (filt_cat != null) {
-        if (!filt_cat.includes(cur['memCategory'].toLowerCase()))
-            return false;
-    }
-    if (filt_type != null) {
-        if (!filt_type.includes(cur['memType'].toLowerCase()))
-            return false;
-    }
-    if (filt_age != null) {
-        if (!filt_age.includes(cur['memAge'].toLowerCase()))
-            return false;
-    }
-    if (filt_shortname_regexp != null) {
-        if (!filt_shortname_regexp.test(cur['shortname']))
-            return false;
-    }
-
-    return true;
-}
-
-var find_memid = null;
-function memLabel_filter(cur, idx, arr) {
-    return cur['id'] == find_memid;
-}
-
-function find_memLabel(id) {
-    find_memid = id;
-    var match = memLabels.filter(memLabel_filter);
-    if (match.length > 0)
-        return match[0];
-    return null;
-}
-
-// search result_membership functions
-var find_perid = null;
-function rm_perid_filter(cur, idx, arr) {
-    return cur['perid'] == find_perid;
-}
-
-function find_memberships_by_perid(perid) {
-    find_perid = perid;
-    var match = result_membership.filter(rm_perid_filter);
-    return match;
-}
-
-function find_primary_membership_by_perid(perid) {
-    var regitems = find_memberships_by_perid(perid);
-    var mem_index = null;
-    for (item in regitems) {
-        memtype = regitems[item]['memCategory'];
-        if (memtype == 'upgrade' || memtype == 'rollover' || memtype == 'freebie') {
-            mem_index = regitems[item]['index'];
-            break;
-        }
-        if (memtype == 'standard') {
-            mem_index = regitems[item]['index'];
-        }
-    }
-    return mem_index;
-}
 
 window.onload = function initpage() {
     // map the memIds and labels for the pre-coded memberships.  Doing it now because it depends on what the datbase sends.
@@ -316,6 +184,7 @@ window.onload = function initpage() {
     // find people
     pattern_field = document.getElementById("find_pattern");
     id_div = document.getElementById("find_results");
+    find_unpaid_button = document.getElementById("find_unpaid_btn");
 
     // add people
     add_index_field = document.getElementById("perinfo-index");
@@ -341,14 +210,14 @@ window.onload = function initpage() {
     clearadd_button = document.getElementById("clearadd-btn");
     add_results_div = document.getElementById("add_results");
     add_mem_select = document.getElementById("ae_mem_select");
-  
+
     // review items
     review_div = document.getElementById('review-div');
     country_select = document.getElementById('country').innerHTML;
 
     // pay items
     pay_div = document.getElementById('pay-div');
-
+ 
     // print itmes
     print_div = document.getElementById('print-div');
 
@@ -363,6 +232,178 @@ window.onload = function initpage() {
     draw_cart();
 }
 
+    // result data
+var mockup_perinfo = [
+    {
+        perid: 1, first_name: "John", middle_name: "Q.", last_name: "Smith", suffix: "", badge_name: "John Smith",
+        address_1: "123 Any St", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19101-0000', country: 'USA',
+        email_addr: 'john.q.public@gmail.com', phone: '215-555-2368',
+        share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 0,
+    },
+    {
+        perid: 2, first_name: "Jane", middle_name: "Q.", last_name: "Smith", suffix: "", badge_name: "Jane Smith",
+        address_1: "123 Any St", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19101-0000', country: 'USA',
+        email_addr: 'jane.q.public@gmail.com', phone: '215-555-2368',
+        share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 1,
+    },
+    {
+        perid: 3, first_name: "Amy", middle_name: "", last_name: "Jones", suffix: "", badge_name: "Lady Amy",
+        address_1: "1023 Chestnut St", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
+        email_addr: 'ladyamy@gmail.com', phone: '215-555-5432',
+        share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 2,
+    },
+    {
+        perid: 4, first_name: "John", middle_name: "", last_name: "Doe", suffix: "", badge_name: "Unknown Attendee",
+        address_1: "Unknown Monument", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
+        email_addr: 'lost@aol.com', phone: '',
+        share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 3,
+    },
+    {
+        perid: 5, first_name: "Bad", middle_name: "", last_name: "Member", suffix: "", badge_name: "Baddie",
+        address_1: "Unknown Location", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
+        email_addr: 'abuse@aol.com', phone: '',
+        share_reg: 'N', contact_ok: 'N', active: 'Y', banned: 'Y', index: 4,
+    },
+    {
+        perid: 6, first_name: "No", middle_name: "", last_name: "Membership", suffix: "", badge_name: "Just Person",
+        address_1: "Unknown Location", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
+        email_addr: 'abuse@aol.com', phone: '',
+        share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 5,
+    },
+    {
+        perid: 7, first_name: "Day", middle_name: "", last_name: "Membership", suffix: "", badge_name: "Just Person",
+        address_1: "Unknown Location", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
+        email_addr: 'abuse@aol.com', phone: '',
+        share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 6,
+    },
+    {
+        perid: 8, first_name: "Unpaid", middle_name: "A", last_name: "Membership", suffix: "", badge_name: "Unpaid A",
+        address_1: "Unknown Location", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103', country: 'USA',
+        email_addr: 'abuse@aol.com', phone: '215-555-2368',
+        share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 7,
+    },
+    {
+        perid: 9, first_name: "Unpaid", middle_name: "B", last_name: "Membership", suffix: "", badge_name: "Unpaid B",
+        address_1: "Unknown Location", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103', country: 'USA',
+        email_addr: 'abuse@aol.com', phone: '215-555-2368',
+        share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 8,
+    },
+    {
+        perid: 10, first_name: "Different", middle_name: "", last_name: "Unpaid", suffix: "", badge_name: "DIfferent Unpaid",
+        address_1: "Unknown Location", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103', country: 'USA',
+        email_addr: 'abuse@aol.com', phone: '215-555-2368',
+        share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 9,
+    },
+];
+
+var mockup_membership = [
+    {
+        perid: 1, 
+        reg_type: 'adult', price: 75, paid: 75, tid: 11, index: 0, printed: 0,
+        memCategory: 'standard', memType: 'full', memAge: 'adult', shortname: 'General', pindex: 0,
+        memId: null, label: null,
+    },
+    {
+        perid: 2, 
+        reg_type: 'adult', price: 75, paid: 75, tid: 11, index: 1, printed: 0,
+        memCategory: 'standard', memType: 'full', memAge: 'adult', shortname: 'General', pindex: 1,
+        memId: null, label: null,
+    },
+    {
+        perid: 3, 
+        reg_type: 'student', price: 40, paid: 40, tid: 13, index: 2, printed: 0,
+        memCategory: 'standard', memType: 'full', memAge: 'student', shortname: 'Student', pindex: 2,
+        memId: null, label: null,
+    },
+    {
+        perid: 7,
+        reg_type: 'Fri adult', price: 35, paid: 35, tid: '14', index: 3, printed: 0,
+        memCategory: 'standard', memType: 'oneday', memAge: 'adult', shortname: 'Fri General', pindex: 6,
+        memId: null, label: null,
+    },
+    {
+        perid: 8,
+        reg_type: 'adult', price: 75, paid: 0, tid: '15', index: 4, printed: 0,
+        memCategory: 'standard', memType: 'full', memAge: 'adult', shortname: 'General', pindex: 7,
+        memId: null, label: null,
+    },
+    {
+        perid: 9,
+        reg_type: 'student', price: 40, paid: 0, tid: '15', index: 5, printed: 0,
+        memCategory: 'standard', memType: 'full', memAge: 'student', shortname: 'Student', pindex: 8,
+        memId: null, label: null,
+    },
+    {
+        perid: 10,
+        reg_type: 'adult', price: 75, paid: 0, tid: '16', index: 6, printed: 0,
+        memCategory: 'standard', memType: 'full', memAge: 'adult', shortname: 'General', pindex: 9,
+        memId: null, label: null,
+    },
+];
+
+// search memLabel functions
+function mem_filter(cur, idx, arr) {
+    if (filt_cat != null) {
+        if (!filt_cat.includes(cur['memCategory'].toLowerCase()))
+            return false;
+    }
+    if (filt_type != null) {
+        if (!filt_type.includes(cur['memType'].toLowerCase()))
+            return false;
+    }
+    if (filt_age != null) {
+        if (!filt_age.includes(cur['memAge'].toLowerCase()))
+            return false;
+    }
+    if (filt_shortname_regexp != null) {
+        if (!filt_shortname_regexp.test(cur['shortname']))
+            return false;
+    }
+
+    return true;
+}
+
+var find_memid = null;
+function memLabel_filter(cur, idx, arr) {
+    return cur['id'] == find_memid;
+}
+
+function find_memLabel(id) {
+    find_memid = id;
+    var match = memLabels.filter(memLabel_filter);
+    if (match.length > 0)
+        return match[0];
+    return null;
+}
+
+// search result_membership functions
+var find_perid = null;
+function rm_perid_filter(cur, idx, arr) {
+    return cur['perid'] == find_perid;
+}
+
+function find_memberships_by_perid(perid) {
+    find_perid = perid;
+    var match = result_membership.filter(rm_perid_filter);
+    return match;
+}
+
+function find_primary_membership_by_perid(perid) {
+    var regitems = find_memberships_by_perid(perid);
+    var mem_index = null;
+    for (item in regitems) {
+        memtype = regitems[item]['memCategory'];
+        if (memtype == 'upgrade' || memtype == 'rollover' || memtype == 'freebie') {
+            mem_index = regitems[item]['index'];
+            break;
+        }
+        if (memtype == 'standard') {
+            mem_index = regitems[item]['index'];
+        }
+    }
+    return mem_index;
+}
+
 function void_trans() {
     start_over(0);
 }
@@ -371,7 +412,11 @@ function start_over(reset_all) {
     // empty cart
     cart = new Array();
     cart_perid = new Array();
+    cart_pmt = new Array();
     freeze_cart = false;
+    if (find_unpaid_button != null) {
+        find_unpaid_button.hidden = false;
+    }
     // empty search strings and results
     pattern_field.value = "";
     if (find_result_table != null) {
@@ -397,6 +442,9 @@ function start_over(reset_all) {
     print_tab.disabled = true;
     next_button.hidden = true;
     void_button.hidden = true;
+    pay_button_pay = null;
+    pay_button_rcpt = null;
+    pay_button_print = null;
     in_review = false;
 
     clear_add();
@@ -1070,6 +1118,26 @@ function draw_cart_row(rownum) {
     return rowhtml;
 }
 
+function draw_cart_pmtrow(prow) {
+ //   index: cart_pmt.length, amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
+
+    var pmt = cart_pmt[prow];
+    code = '';
+    if (pmt['type'] == 'Check') {
+        code = pmt['checkno'];
+    } else if (pmt['type'] == 'Credit Card') {
+        code = pmt['ccauth'];
+    }
+    var html = `<div class="row">
+    <div class="col-sm-2 p-0">` + pmt['type'] + `</div>
+    <div class="col-sm-6 p-0">` + pmt['desc'] + `</div>
+    <div class="col-sm-2 p-0">` + code + `</div>
+    <div class="col-sm-2 text-end">` + pmt['amt'] + `</div>
+</div>
+`;
+    return html;
+}
+
 function draw_cart() {
     total_price = 0;
     total_paid = 0;
@@ -1080,8 +1148,8 @@ function draw_cart() {
 <div class="container-fluid">
 <div class="row">
     <div class="col-sm-8 text-bg-primary">Member</div>
-    <div class="col-sm-2 text-bg-primary">Price</div>
-    <div class="col-sm-2 text-bg-primary">Paid</div>
+    <div class="col-sm-2 text-bg-primary text-end">Price</div>
+    <div class="col-sm-2 text-bg-primary text-end">Paid</div>
 </div>
 `;
     unpaid_rows = 0;
@@ -1090,11 +1158,30 @@ function draw_cart() {
         html += draw_cart_row(rownum);   
     }
     html += `<div class="row">
-    <div class="col-sm-8 text-end">Totals:</div>
-    <div class="col-sm-2 text-end">` + total_price + `</div>
-    <div class="col-sm-2 text-end">` + total_paid + `</div>
+    <div class="col-sm-8 p-0 text-end">Total:</div>
+    <div class="col-sm-2 text-end">$` + total_price + `</div>
+    <div class="col-sm-2 text-end">$` + total_paid + `</div>
 </div>
 `;
+    if (cart_pmt.length > 0) {
+        html += `
+<div class="row mt-3">
+    <div class="col-sm-8 text-bg-primary">Payment</div>
+    <div class="col-sm-2 text-bg-primary">Code</div>
+    <div class="col-sm-2 text-bg-primary text-end">Amount</div>
+</div>
+`;
+        var total_pmt = 0;
+        for (var prow in cart_pmt) {
+            html += draw_cart_pmtrow(prow);
+            total_pmt += Number(cart_pmt[prow]['amt']);
+        }
+        html += `<div class="row">
+    <div class="col-sm-8 p-0 text-end">Payment Total:</div>
+    <div class="col-sm-4 text-end">$` + total_pmt + `</div>
+</div>
+`;
+    }
     if (needmembership_rows > 0) {
         var person = needmembership_rows > 1 ? " people" : " person";
         var need = needmembership_rows > 1 ? "need memberships" : "needs a membership";
@@ -1103,8 +1190,10 @@ function draw_cart() {
     </div>
 `;
     } else if (num_rows > 0) {
-        review_button.hidden = in_review;
+        review_button.hidden = in_review;       
     }
+    html += '</div>'; // ending the container fluid
+    //console.log(html);
     cart_div.innerHTML = html;
     startover_button.hidden = num_rows == 0;
     if (needmembership_rows > 0 || (membership_rows == 0 && unpaid_rows == 0)) {
@@ -1115,6 +1204,9 @@ function draw_cart() {
         review_tab.disabled = true;
         review_button.hidden = true;
         startover_button.hidden = true;
+    }
+    if (find_unpaid_button != null) {
+        find_unpaid_button.hidden = num_rows > 0;
     }
 }
 
@@ -1210,19 +1302,30 @@ function draw_record(row, first) {
 
 function addCartIcon(cell, formatterParams, onRendered) { //plain text value
     var html = '';
-    if (cell.getRow().getData().banned == 'Y') {
+    var banned = cell.getRow().getData().banned;
+    if (banned == undefined) {
+        var tid = Number(cell.getRow().getData().tid);
+        html = '<button type="button" class="btn btn-sm btn-success p-0" onclick="add_unpaid(' + tid + ')">Pay</button > ';
+        return html;
+    }
+    if (banned == 'Y') {
         return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0">B</button>';
     } else if (cart_perid.includes(cell.getRow().getData().perid) == false) {
-        html = '<button type="button" class="btn btn-sm btn-success p-0" onclick=add_to_cart(' +
-            cell.getRow().getData().index + ')>Add</button>';
+        html = '<button type="button" class="btn btn-sm btn-success p-0" onclick="add_to_cart(' +
+            cell.getRow().getData().index + ')">Add</button>';
         var tid = cell.getRow().getData().tid;
         if (tid != '' && tid != undefined && tid != null) {
-            html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" onclick=add_to_cart(' + (-tid) + ')>Tran</button>';
+            html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" onclick="add_to_cart(' + (-tid) + ')">Tran</button>';
         }
         return html;
     }
     return '<span style="font-size: 75%;">In Cart';
 };
+
+function add_unpaid(tid) {
+    add_to_cart(-Number(tid));
+    bootstrap.Tab.getOrCreateInstance(pay_tab).show();
+}
 
 function upgrade_membership_cart(rownum, selectname) {
     var select = document.getElementById(selectname);
@@ -1262,7 +1365,7 @@ function add_membership_cart(rownum, selectname) {
     draw_cart();
 }
 
-function find_record() {
+function find_record(find_type) {
     if (find_result_table != null) {
         find_result_table.destroy();
         find_result_table = null;
@@ -1271,7 +1374,77 @@ function find_record() {
 
     datatbl = new Array();
     id_div.innerHTML = "";
-   
+
+    if (find_type == 'unpaid') {
+        var mdatatbl = result_membership.filter(function (e) { return Number(e['paid']) != Number(e['price']); });
+        if (mdatatbl.length == 0) { // no unpaid records
+            id_div.innerHTML = 'No unpaid records found';
+            return;
+        }
+        var trantbl = new Array();
+        // loop over unpaid memberships and find differing transactions
+        for (var mrow in mdatatbl) {
+            var tid = mdatatbl[mrow]['tid'];
+            if (!trantbl.includes(tid)) {
+                trantbl.push(tid);
+            }
+        }
+        if (trantbl.length == 1) { // only 1 row, add it to the card and go to pay tab
+            var tid = trantbl[0];
+            for (var row in result_membership) {
+                if (result_membership[row]['tid'] == tid) {
+                    var index = result_membership[row]['pindex'];
+                    add_to_cart(index);
+                }
+            }
+            bootstrap.Tab.getOrCreateInstance(pay_tab).show();
+            return;
+        }
+        // multiple entries unpaid, display table to choose which one
+        for (var trow in trantbl) {
+            var tid = trantbl[trow];
+            var price = 0;
+            var paid = 0;
+            var names = '';
+            var num_mem = 0;
+            var prowindex = 0;
+            var prow = null;
+            for (var mrow in result_membership) {
+                if (result_membership[mrow]['tid'] == tid) {
+                    prowindex = result_membership[mrow]['pindex'];
+                    prow = result_perinfo[prowindex];
+                    num_mem++;
+                    price += Number(result_membership[mrow]['price']);
+                    paid += Number(result_membership[mrow]['paid']);         
+                    if (names != '') {
+                        names += '; ';
+                    }
+                    names += (prow['last_name'] + ', ' + prow['first_name'] + ' ' + prow['middle_name'] + ' ' + prow['suffix']).replace(/\s+/g, ' ').trim();
+                }
+            }
+            
+            var row = { tid: tid, names: names, num_mem: num_mem, price: price, paid: paid, index: trow };
+            datatbl.push(row);
+        }
+        find_result_table = new Tabulator('#find_results', {
+            maxHeight: "600px",
+            data: datatbl,
+            layout: "fitColumns",
+            initialSort: [
+                { column: "names", dir: "asc" },
+            ],
+            columns: [             
+                { title: "TID", field: "tid", headerFilter: true, headerWordWrap: true, width: 50, maxWidth: 50, hozAlign: 'right', },
+                { title: "Names", field: "names", headerFilter: true, headerSort: true, headerWordWrap: true, tooltip: true, },
+                { title: "#M", field: "num_mem", minWidth: 30, maxWidth: 30, headerSort: false, hozAlign: 'right', },
+                { title: "Price", field: "price", maxWidth: 50, minWidth: 50, headerSort: false, hozAlign: 'right', },
+                { title: "Paid", field: "paid", maxWidth: 50, minWidth: 50, headerSort: false, hozAlign: 'right', },
+                { title: "Cart", width: 40, formatter: addCartIcon, headerSort: false, },
+                { field: "index", visible: false, },
+            ],
+        });
+        return;
+    }
     name_search = find_pattern.value.toLowerCase().trim();
     if (name_search == null)
         name_search = '';
@@ -1318,8 +1491,7 @@ function find_record() {
                 data: datatbl,
                 layout: "fitColumns",
                 initialSort: [
-                    { column: "fullname", dir: "asc" },
-                    { column: "badge_name", dir: "asc" },
+                    { column: "fullname", dir: "asc" },                   
                     ],
                 columns: [
                     { field: "perid", visible: false, },
@@ -1337,7 +1509,14 @@ function find_record() {
                 ],
             });
         } else {
-            id_div.innerHTML = 'No matching records found'
+            id_div.innerHTML = `<div class="container-fluid">
+<div class="row mt-3">
+    <div class="col-sm-4">No matching records found</div>
+    <div class="col-sm-auto"><button class="btn btn-primary btn-small" type="button" id="not_found_add_new" onclick="not_found_add_new();">Add New Person</button>
+    </div>
+</div>
+</div>
+`;
         }
         return;
     }
@@ -1369,7 +1548,6 @@ function find_record() {
             html += `
 </div>`;
             id_div.innerHTML = html;
-            id_div.innerHTML = html;
         } else {
             id_div.innerHTML = 'No matching records found'
         }
@@ -1378,6 +1556,13 @@ function find_record() {
     }
 
     id_div.innerHTML = "No search criteria specified";
+}
+
+function not_found_add_new() {
+    id_div.innerHTML = '';
+    pattern_field.value = '';
+
+    bootstrap.Tab.getOrCreateInstance(add_tab).show();
 }
 
 function start_review() {
@@ -1444,6 +1629,10 @@ function pay() {
     var rownum = null;
     var mrows = null;
     var mrownum = null;
+    var ccauth = null;
+    var checkno = null;
+    var desc = null;
+    var ptype = null;
 
     var elamt = document.getElementById('pay-amt');
     var pay_amt = Number(elamt.value);
@@ -1458,7 +1647,8 @@ function pay() {
 
     var eldesc = document.getElementById('pay-desc');
     if (document.getElementById('pt-discount').checked) {
-        var desc = eldesc.value;
+        ptype = 'Discount';
+        desc = eldesc.value;
         if (desc == null || desc == '') {
             eldesc.style.backgroundColor = 'var(--bs-warning)';
             return;
@@ -1471,8 +1661,9 @@ function pay() {
     }
 
     if (document.getElementById('pt-check').checked) {
+        ptype = 'Check';
         var elcheckno = document.getElementById('pay-checkno');
-        var checkno = elcheckno.value;
+        checkno = elcheckno.value;
         if (checkno == null || checkno == '') {
             elcheckno.style.backgroundColor = 'var(--bs-warning)';
             return;
@@ -1482,8 +1673,9 @@ function pay() {
         checked = true;
     }
     if (document.getElementById('pt-credit').checked) {
+        ptype = 'Credit Card';
         var elccauth = document.getElementById('pay-ccauth');
-        var ccauth = elccauth.value;
+        ccauth = elccauth.value;
         if (ccauth == null || ccauth == '') {
             elccauth.style.backgroundColor = 'var(--bs-warning)';
             return;
@@ -1494,6 +1686,7 @@ function pay() {
     }
 
     if (document.getElementById('pt-cash').checked) {
+        ptype = 'Cash';
         checked = true;
     }
 
@@ -1501,6 +1694,12 @@ function pay() {
     if (!checked) {
         elptdiv.style.backgroundColor = 'var(--bs-warning)';
         return;
+    }
+    if (pay_amt > 0) {
+        var prow = {
+            index: cart_pmt.length, amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
+        };
+        cart_pmt.push(prow);
     }
 
     for (rownum in cart) {
@@ -1518,6 +1717,31 @@ function pay() {
     }
 
     pay_shown();
+}
+
+function print_receipt() {
+    var d = new Date();
+
+    var html = 'Receipt for payment to ' + conid + ' at ' + d.toLocaleString() + `
+<div class="container-fluid">
+<div class="row mt-3">
+    <div class="col-sm-8 text-bg-primary">Payment</div>
+    <div class="col-sm-2 text-bg-primary">Code</div>
+    <div class="col-sm-2 text-bg-primary text-end">Amount</div>
+</div>
+`;
+    var total_pmt = 0;
+    for (var prow in cart_pmt) {
+        html += draw_cart_pmtrow(prow);
+        total_pmt += Number(cart_pmt[prow]['amt']);
+    }
+    html += `<div class="row">
+    <div class="col-sm-8 p-0 text-end">Payment Total:</div>
+    <div class="col-sm-4 text-end">$` + total_pmt + `</div>
+</div>
+</div>
+`;
+        document.getElementById('pay_status').innerHTML = html;
 }
 
 function print_badge(index) {
@@ -1670,8 +1894,8 @@ function review_shown(current, previous) {
     <div class="row mt-2">
         <div class="col-sm-1 m-0 p-0">&nbsp;</div>
         <div class="col-sm-auto m-0 p-0">
-            <button class="btn btn-primary btn-small" type="button" id = "review-btn-update" onclick="review_update();">Update All</button>
-            <button class="btn btn-primary btn-small" type="button" id = "review-btn-nochanges" onclick="review_nochanges();">No Changes</button>
+            <button class="btn btn-primary btn-small" type="button" id="review-btn-update" onclick="review_update();">Update All</button>
+            <button class="btn btn-primary btn-small" type="button" id="review-btn-nochanges" onclick="review_nochanges();">No Changes</button>
         </div>
     </div>
   </form>
@@ -1691,16 +1915,25 @@ function pay_shown(current, previous) {
         // nothing more to pay       
         print_tab.disabled = false;
         next_button.hidden = false;
-        goto_print();
+        if (pay_button_pay != null) { 
+            pay_button_pay.hidden = true;
+            pay_button_rcpt.hidden = false;
+            pay_button_print.hidden = false;
+        }        
     } else {
+        if (pay_button_pay != null) {
+            pay_button_pay.hidden = false;
+            pay_button_rcpt.hidden = true;
+            pay_button_print.hidden = true;
+        }
         var total_amount_due = total_price - total_paid;
 
-         var pay_html = `
+        var pay_html = `
 <div id='payBody' class="container-fluid form-floating">
   <form id='payForm' action='javascript: return false; ' class="form-floating">
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0">` + total_amount_due + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0">$` + total_amount_due + `</div>
     </div>
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Paid:</div>
@@ -1734,14 +1967,26 @@ function pay_shown(current, previous) {
     <div class="row mt-3">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id = "pay-btn-pay" onclick="pay();">Confirm Pay</button>
+            <button class="btn btn-primary btn-small" type="button" id="pay-btn-pay" onclick="pay();">Confirm Pay</button>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-small" type="button" id="pay-btn-rcpt" onclick="print_receipt();" hidden>Print Receipt</button>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-small" type="button" id="pay-btn-print" onclick="goto_print();" hidden>Print Badges</button>
         </div>
     </div>
   </form>
+    <div class="row mt-4">
+        <div class="col-sm-12 p-0" id="pay_status"></div>
+    </div>
 </div>
 `;
 
         pay_div.innerHTML = pay_html;
+        pay_button_pay = document.getElementById('pay-btn-pay');
+        pay_button_rcpt = document.getElementById('pay-btn-rcpt');
+        pay_button_print = document.getElementById('pay-btn-print');
         void_button.hidden = false;
     }
 }
@@ -1775,7 +2020,7 @@ function print_shown(current, previous) {
         print_html += `
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id = "pay-print-` + cart[rownum]['index'] + `" onclick="print_badge(` + crow['index'] + `);">Print</button>
+            <button class="btn btn-primary btn-small" type="button" id="pay-print-` + cart[rownum]['index'] + `" onclick="print_badge(` + crow['index'] + `);">Print</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">            
             <span class="text-bg-success"> Membership: ` + result_membership[mrow]['label'] + `</span> (Times Printed: ` +
@@ -1789,7 +2034,7 @@ function print_shown(current, previous) {
     <div class="row mt-4">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id = "pay-print-all" onclick="print_badge(-1);">Print All</button>
+            <button class="btn btn-primary btn-small" type="button" id="pay-print-all" onclick="print_badge(-1);">Print All</button>
         </div>
     </div>
     <div class="row mt-4">
