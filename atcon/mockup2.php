@@ -10,8 +10,11 @@ if (!isset($_SESSION['user'])) {
 }
 $tab = 'mockupCheckin';
 $page = "Atcon POS Mockup";
+$mode = 'checkin';
 if (isset($_GET['mode'])) {
-    $mode = $_GET['mode'];
+    if ($_GET['mode'] == 'cashier') {
+        $mode = 'cashier';
+    }
     if ($mode == 'cashier') {
         $tab = 'mockupCashier';
     }
