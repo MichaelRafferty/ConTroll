@@ -9,7 +9,7 @@ if (!isset($_SESSION['user'])) {
     exit(0);
 }
 
-$page = "Atcon Resturant POS Mockup";
+$page = "Atcon POS Mockup";
 
 page_init($page, 'mockupRest',
     /* css */ array('https://unpkg.com/tabulator-tables@5.4.3/dist/css/tabulator.min.css','css/atcon.css','css/registration.css','css/mockup.css'),

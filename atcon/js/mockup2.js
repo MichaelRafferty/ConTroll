@@ -79,6 +79,7 @@ var pay_div = null;
 
 // print items
 var print_div = null;
+var print_arr = null;
 
 // Data tables
 var datatbl = new Array();
@@ -119,7 +120,7 @@ var mockup_perinfo = [
         share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 3,
     },
     {
-        perid: 5, first_name: "Bad", middle_name: "", last_name: "Mewber", suffix: "", badge_name: "Baddie",
+        perid: 5, first_name: "Bad", middle_name: "", last_name: "Member", suffix: "", badge_name: "Baddie",
         address_1: "Unknown Location", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19103-0000', country: 'USA',
         email_addr: 'abuse@aol.com', phone: '',
         share_reg: 'N', contact_ok: 'N', active: 'Y', banned: 'Y', index: 4,
@@ -419,7 +420,7 @@ function build_record_hover(e, cell, onRendered) {
     }
     hover_text += 'Badge Name: ' + data['badge_name'] + '<br/>' +
         'Email: ' + data['email_addr'] + '<br/>' + 'Phone: ' + data['phone'] + '<br/>' +
-        'Active:' + data['active'] + ' Contact?:' + data['contact_ok'] + ' Share?:' + data['share_reg'] + ' Banned:' + data['banned'] + '<br/>' +
+        'Active:' + data['active'] + ' Contact?:' + data['contact_ok'] + ' Share?:' + data['share_reg'] + '<br/>' +
         'Membership: ' + data['reg_type'] + '<br/>';
 
     return hover_text;
@@ -428,7 +429,7 @@ function build_record_hover(e, cell, onRendered) {
 function add_to_cart(index) {
     if (index >= 0) {
         if (result_perinfo[index]['banned'] == 'Y') {
-            alert("Please as " + (result_perinfo[index]['first_name'] + ' ' + result_perinfo[index]['last_name']).trim() +" to talk to the Registration Administrator, you cannot add them at this time.")
+            alert("Please ask " + (result_perinfo[index]['first_name'] + ' ' + result_perinfo[index]['last_name']).trim() +" to talk to the Registration Administrator, you cannot add them at this time.")
             return;
         }
         if (cart_perid.includes(result_perinfo[index]['perid']) == false) {
@@ -442,7 +443,7 @@ function add_to_cart(index) {
             if (result_membership[row]['tid'] == index) {
                 prow = result_membership[row]['pindex'];
                 if (result_perinfo[prow]['banned'] == 'Y') {
-                    alert("Please as " + (result_perinfo[prow]['first_name'] + ' ' + result_perinfo[prow]['last_name']).trim() + " to talk to the Registration Administrator, you cannot add them at this time.")
+                    alert("Please ask " + (result_perinfo[prow]['first_name'] + ' ' + result_perinfo[prow]['last_name']).trim() + " to talk to the Registration Administrator, you cannot add them at this time.")
                     return;
                 } else if (cart_perid.includes(result_perinfo[prow]['perid']) == false) {
                     cart.push(result_perinfo[prow]['index']);
@@ -637,7 +638,36 @@ function add_new() {
             mrow['label'] = mi_row['label'];
         }
 
-        clear_add();
+        add_first_field.value = "";
+        add_middle_field.value = "";
+        add_email_field.value = "";
+        add_phone_field.value = "";
+        add_badgename_field.value = "";
+        add_index_field.value = "";
+        add_perid_field.value = "";
+        add_memIndex_field.value = "";
+        add_header.innerHTML = `
+<div class="col-sm-12 text-bg-primary mb-2">
+        <div class="text-bg-primary m-2">
+            Add New Person and Membership
+        </div>
+    </div>`;
+        add_first_field.style.backgroundColor = '';
+        add_last_field.style.backgroundColor = '';
+        add_addr1_field.style.backgroundColor = '';
+        add_city_field.style.backgroundColor = '';
+        add_state_field.style.backgroundColor = '';
+        add_postal_code_field.style.backgroundColor = '';
+        add_mem_select.innerHTML = add_mt_dataentry;
+        add_mem_select.style.backgroundColor = '';
+        document.getElementById("ae_mem_sel").innerHTML = membership_select;
+        if (add_results_table != null) {
+            add_results_table.destroy();
+            add_results_table = null;
+            add_results_div.innerHTML = "";
+        };
+        addnew_button.innerHTML = "Add to Cart";
+        clearadd_button.innerHTML = 'Clear Add Person Form';
         draw_cart();
         return;
     }
@@ -646,14 +676,37 @@ function add_new() {
     var rownum;
     var matchcount = 0;
     var matches = new Array();
-    var namematch = new RegExp(('^' + new_first + '.*' + new_last + '$').toLowerCase());
+    var namematch = new RegExp((new_first + '.*' + new_last).toLowerCase(), 'i');
 
     if (addnew_button.innerHTML == 'Add to Cart') {
         for (rownum in result_perinfo) {
             row = result_perinfo[rownum];
-
-            if (namematch.test((row['first_name'] + ' ' + row['last_name']).toLowerCase())) {
-                matches.push(row);
+            var sourcestring = (row['first_name'] + ' ' + row['last_name']).toLowerCase();
+            if (namematch.test(sourcestring)) {
+                var matchrow = JSON.parse(JSON.stringify(row));  // horrible way to make an independent copy of an associative array
+                matchrow['fullname'] = (row['last_name'] + ', ' + row['first_name'] + ' ' + row['middle_name'] + ' ' + row['suffix']).replace(/\s+/g, ' ').trim();
+                var primmem = find_primary_membership_by_perid(matchrow['perid']);
+                if (primmem != null) {
+                    matchrow['reg_label'] = result_membership[primmem]['label'];
+                    var tid = result_membership[primmem]['tid'];
+                    if (tid != '') {
+                        var other = false;
+                        var mperid = matchrow['perid'];
+                        for (var mem in result_membership) {
+                            if (result_membership[mem]['perid'] != mperid && result_membership[mem]['tid'] == tid) {
+                                other = true;
+                                break;
+                            }
+                        }
+                        if (other) {
+                            matchrow['tid'] = tid;
+                        }
+                    }
+                } else {
+                    matchrow['reg_label'] = 'No Membership';
+                    matchrow['reg_tid'] = '';
+                }
+                matches.push(matchrow);
                 matchcount++;
             }
         }
@@ -665,25 +718,23 @@ function add_new() {
             maxHeight: "600px",
             data: matches,
             layout: "fitColumns",
+            initialSort: [
+                { column: "fullname", dir: "asc" },
+                { column: "badge_name", dir: "asc" },
+            ],
             columns: [
-                {
-                    title: 'Potential Matches, use "Cart" column to selct or press "Add New" to add your new record',
-                    columns: [
-                        { title: "ID", field: "perid", hozAlign: "right", tooltip: build_record_hover, width: 50, },
-                        { title: "Last Name", field: "last_name", headerFilter: true, headerWordWrap: true, tooltip: true, },
-                        { title: "First Name", field: "first_name", headerFilter: true, headerWordWrap: true, tooltip: true, },
-                        { title: "Mdl Name", field: "middle_name", headerFilter: false, headerWordWrap: true, tooltip: true, headerSort: false, maxWidth: 50, width: 50 },
-                        { title: "Sfx", field: "suffix", headerFilter: false, headerWordWrap: true, tooltip: true, headerSort: false, maxWidth: 30, width: 30 },
-                        { title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true, },
-                        { title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true, },
-                        { title: "Reg", field: "mem_type", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80, },
-                        {
-                            title: "Cart", width: 45, hozAlign: "center", headerFilter: false, headerSort: false,
-                            cellClick: addCartClick, formatter: addCartIcon,
-                        },
-                        { field: "index", visible: false, },
-                    ],
-                },
+                { field: "perid", visible: false, },
+                { title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover, },
+                { field: "last_name", visible: false, },
+                { field: "first_name", visible: false, },
+                { field: "middle_name", visible: false, },
+                { field: "suffix", visible: false, },
+                { title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true, },
+                { title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70 },
+                { title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true, },
+                { title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80, },
+                { title: "Cart", width: 70, headerFilter: false, headerSort: false, formatter: addCartIcon, },
+                { field: "index", visible: false, },
             ],
         });
         addnew_button.innerHTML = "Add New";
@@ -771,6 +822,7 @@ function add_new() {
         add_middle_field.value = "";
         add_email_field.value = "";
         add_phone_field.value = "";
+        add_badgename_field.value = "";
         result_perinfo.push(row);
         result_membership.push(mrow);
         cart.push(row['index']);
@@ -945,7 +997,9 @@ function draw_cart_row(rownum) {
 ` + membership_select + `
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-madd-" + rownum + `')">Add</button></div>`;
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-madd-" + rownum + `')">Add</button>
+        </div>
+    </div>`;
     }
 
     // add in remainder of cart:
@@ -964,7 +1018,7 @@ function draw_cart_row(rownum) {
 ` + upgrade_select + `
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mupg-" + rownum + `')">Add</button></div >
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mupg-" + rownum + `')">Add</button></div >
 </div>
 `;
     }
@@ -984,7 +1038,7 @@ function draw_cart_row(rownum) {
 ` + yearahead_select + `
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mya-" + rownum + `')">Add</button></div >
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mya-" + rownum + `')">Add</button></div >
 </div>
 `;
     }
@@ -1003,7 +1057,7 @@ function draw_cart_row(rownum) {
 ` + addon_select + `
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-maddon-" + rownum + `')">Add</button></div >
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-maddon-" + rownum + `')">Add</button></div >
 </div>
 `;
     }
@@ -1066,6 +1120,11 @@ function draw_cart() {
 
 function draw_record(row, first) {
     var data = result_perinfo[row];
+    var prim = find_primary_membership_by_perid(data['perid']);
+    var label = "No Membership";
+    if (prim != null) {
+        label = result_membership[prim]['label'];
+    }
     var html = `
 <div class="container-fluid">
     <div class="row mt-2">
@@ -1076,8 +1135,13 @@ function draw_record(row, first) {
     html += `</div>
         <div class="col-sm-9">`;
     if (cart_perid.includes(data['perid']) == false) {
-        html += `
+        if (data['banned'] == 'Y') {
+            html += `
+            <button class="btn btn-danger btn-small" id="add_btn_1" onclick="add_to_cart(` + row + `);">B</button>`;
+        } else {
+            html += `
             <button class="btn btn-success btn-small" id="add_btn_1" onclick="add_to_cart(` + row + `);">Add to Cart</button>`;
+        }
     } else {
         html += `
             <i>In Cart</i>`
@@ -1135,29 +1199,30 @@ function draw_record(row, first) {
        <div class="col-sm-auto">Active: ` + data['active'] + `</div>
        <div class="col-sm-auto">Contact OK: ` + data['contact_ok'] + `</div>
        <div class="col-sm-auto">Share Reg: ` + data['share_reg'] + `</div>
-       <div class="col-sm-auto">Banned: ` + data['banned'] + `</div>
     </div>
     <div class="row">
        <div class="col-sm-3">Membership Type:</div>
-       <div class="col-sm-9">` + data['mem_type'] + `</div>
+       <div class="col-sm-9">` + label + `</div>
     </div>
 `;
     return html;
 }
 
 function addCartIcon(cell, formatterParams, onRendered) { //plain text value
+    var html = '';
     if (cell.getRow().getData().banned == 'Y') {
         return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0">B</button>';
     } else if (cart_perid.includes(cell.getRow().getData().perid) == false) {
-        return '<button type="button" class="btn btn-sm btn-success p-0">Add</button>';
+        html = '<button type="button" class="btn btn-sm btn-success p-0" onclick=add_to_cart(' +
+            cell.getRow().getData().index + ')>Add</button>';
+        var tid = cell.getRow().getData().tid;
+        if (tid != '' && tid != undefined && tid != null) {
+            html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" onclick=add_to_cart(' + (-tid) + ')>Tran</button>';
+        }
+        return html;
     }
     return '<span style="font-size: 75%;">In Cart';
 };
-
-function addCartClick(e, cell) {
-    var index = cell.getRow().getData().index;
-    add_to_cart(index);
-}
 
 function upgrade_membership_cart(rownum, selectname) {
     var select = document.getElementById(selectname);
@@ -1216,10 +1281,33 @@ function find_record() {
         // mockup of name search results
         for (rowindex in result_perinfo) {
             var row = result_perinfo[rowindex];
-            var sourcestring = row['last_name'] + ' ' + row['first_name'] + ' ' + row['badge_name'] + ' ' + row['email_addr'];
+            var sourcestring = row['first_name'] + ' ' + row['last_name'] + ' ' + row['badge_name'] + ' ' + row['email_addr'];
          
             if (ns_regexp.test(sourcestring)) {
-                datatbl.push(row);
+                var matchrow = JSON.parse(JSON.stringify(row));  // horrible way to make an independent copy of an associative array
+                matchrow['fullname'] = (row['last_name'] + ', ' + row['first_name'] + ' ' + row['middle_name'] + ' ' + row['suffix']).replace(/\s+/g, ' ').trim();
+                var primmem = find_primary_membership_by_perid(matchrow['perid']);
+                if (primmem != null) {
+                    matchrow['reg_label'] = result_membership[primmem]['label'];
+                    var tid = result_membership[primmem]['tid'];
+                    if (tid != '') {
+                        var other = false;
+                        var mperid = matchrow['perid'];
+                        for (var mem in result_membership) {
+                            if (result_membership[mem]['perid'] != mperid && result_membership[mem]['tid'] == tid) {
+                                other = true;
+                                break;
+                            }
+                        }
+                        if (other) {
+                            matchrow['tid'] = tid;
+                        }                        
+                    }
+                } else {
+                    matchrow['reg_label'] = 'No Membership';
+                    matchrow['reg_tid'] = '';
+                }
+                datatbl.push(matchrow);
             }
          }
 
@@ -1229,23 +1317,25 @@ function find_record() {
                 maxHeight: "600px",
                 data: datatbl,
                 layout: "fitColumns",
+                initialSort: [
+                    { column: "fullname", dir: "asc" },
+                    { column: "badge_name", dir: "asc" },
+                    ],
                 columns: [
-                    { title: "ID", field: "perid", hozAlign: "right", tooltip: build_record_hover, width: 50, },
-                    { title: "Last Name", field: "last_name", headerFilter: true, headerWordWrap: true, tooltip: true, },
-                    { title: "First Name", field: "first_name", headerFilter: true, headerWordWrap: true, tooltip: true, },
-                    { title: "Mdl Name", field: "middle_name", headerFilter: false, headerWordWrap: true, tooltip: true, headerSort: false, maxWidth: 50, width: 50 },
-                    { title: "Sfx", field: "suffix", headerFilter: false, headerWordWrap: true, tooltip: true, headerSort: false, maxWidth: 30, width: 30 },
+                    { field: "perid", visible: false, },
+                    { title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover, },
+                    { field: "last_name", visible: false, },
+                    { field: "first_name", visible: false, },
+                    { field: "middle_name", visible: false, },
+                    { field: "suffix", visible: false, },
                     { title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true, },
+                    { title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70 },
                     { title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true, },
-                    { title: "Reg", field: "mem_type", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80, },
-                    {
-                        title: "Cart", width: 45, hozAlign: "center", headerFilter: false, headerSort: false,
-                        cellClick: addCartClick, formatter: addCartIcon,
-                    },
+                    { title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80, },
+                    { title: "Cart", width: 70, headerFilter: false, headerSort: false, formatter: addCartIcon, },
                     { field: "index", visible: false, },
                 ],
             });
-            //id_div.innerHTML = "name search results";
         } else {
             id_div.innerHTML = 'No matching records found'
         }
@@ -1323,13 +1413,14 @@ function review_update() {
 function review_nochanges() {
     // set tab to review-tab
     if (unpaid_rows == 0) {
-        bootstrap.Tab.getOrCreateInstance(print_tab).show();
+        goto_print();
     } else {
         bootstrap.Tab.getOrCreateInstance(pay_tab).show();
     }
 }
 
-function goto_print() {   
+function goto_print() {  
+    print_arr = null;
     bootstrap.Tab.getOrCreateInstance(print_tab).show();    
 }
 
@@ -1438,14 +1529,20 @@ function print_badge(index) {
 
     if (index >= 0) {
         row = result_perinfo[index];
-        mrow = find_primary_membership_by_perid(row['perid']);
-        result_membership[mrow]['printed']++;
+        mrow = find_primary_membership_by_perid(row['perid']);        
+        if (print_arr.includes(index)) {
+            result_membership[mrow]['printed']++;
+            print_arr = print_arr.filter(function (el) { return el != index });
+        }
         pt_html += '<br/>' + row['badge_name'] + ' printed';
     } else {
         for (rownum in cart) {
             row = result_perinfo[cart[rownum]];
             mrow = find_primary_membership_by_perid(row['perid']);
-            result_membership[mrow]['printed']++;
+            if (print_arr.includes(row['index'])) {        
+                result_membership[mrow]['printed']++;
+                print_arr = print_arr.filter(function (el) { return el != mrow });
+            }
             pt_html += '<br/>' + row['badge_name'] + ' printed';
         }
     }
@@ -1594,7 +1691,7 @@ function pay_shown(current, previous) {
         // nothing more to pay       
         print_tab.disabled = false;
         next_button.hidden = false;
-        bootstrap.Tab.getOrCreateInstance(print_tab).show();
+        goto_print();
     } else {
         var total_amount_due = total_price - total_paid;
 
@@ -1613,7 +1710,7 @@ function pay_shown(current, previous) {
         <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
         <div class="col-sm-auto m-0 mt-2 p-0 ms-0 me-2 mb-2 p-0" id="pt-div">
             <input type="radio" id="pt-credit" name="payment_type" value="credit" onchange='pay_type("credit");'/>
-            <label for="pt-credit">Credit Cart</label>
+            <label for="pt-credit">Credit Card</label>
             &nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" id="pt-check" name="payment_type" value="check" onchange='pay_type("check");'/>
             <label for="pt-check">Check</label>
             &nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" id="pt-cash" name="payment_type" value="cash" onchange='pay_type("cash");'/>
@@ -1658,6 +1755,11 @@ function print_shown(current, previous) {
     next_button.hidden = false;
     void_button.hidden = true;
     freeze_cart = true;
+    var new_print = false;
+    if (print_arr == null) {
+        new_print = true;
+        print_arr = new Array();
+    }
     draw_cart();
 
     var print_html = `<div id='printBody' class="container-fluid form-floating">
@@ -1667,6 +1769,9 @@ function print_shown(current, previous) {
     for (rownum in cart) {
         crow = result_perinfo[cart[rownum]];
         mrow = find_primary_membership_by_perid(crow['perid']);
+        if (new_print) {
+            print_arr.push(crow['index']);
+        }
         print_html += `
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">
