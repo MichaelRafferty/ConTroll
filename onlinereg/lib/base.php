@@ -4,6 +4,8 @@ require_once(__DIR__ . "/../../lib/db_functions.php");
 
 function redirect_https() {
     $ini = get_conf('reg');
+    echo $ini['https'];
+    echo $_SERVER['HTTPS'];
     if ($ini['https'] <> 0) {
         if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
             header("HTTP/1.1 301 Moved Permanently");

@@ -31,7 +31,6 @@ $conf = get_conf('con');
         $alley_show = ['requested' => 0, 'authorized' => 0, 'purchased' => 0];
         $dealer6_show = ['requested' => 0, 'authorized' => 0, 'purchased' => 0];
         $dealer10_show = ['requested' => 0, 'authorized' => 0, 'purchased' => 0];
-        $virtual_show = ['requested' => 0, 'authorized' => 0, 'purchased' => 0];
         $showQ = "SELECT type, sum(requested) as requested, sum(authorized) as authorized, sum(purchased) as purchased from vendor_show WHERE conid=$conid group by type;";
         $showR = dbQuery($showQ);
         while($showLine = fetch_safe_assoc($showR)) {
@@ -39,7 +38,6 @@ $conf = get_conf('con');
                 case 'alley': $alley_show = $showLine; break;
                 case 'dealer_6': $dealer6_show = $showLine; break;
                 case 'dealer_10': $dealer10_show = $showLine; break;
-                case 'virtual': $virtual_show = $showLine; break;
             }
         }
     ?>
@@ -56,9 +54,6 @@ $conf = get_conf('con');
     New: <?php echo $dealer10_show['requested'] - $dealer10_show['authorized']; ?>
     Pending: <?php echo $dealer10_show['authorized'] - $dealer10_show['purchased']; ?>
     Purchased: <?php echo $dealer10_show['purchased']; ?>
-    <br/>
-    <span class='blocktitle'>Virtual Vendor Registration:</span>
-    New: <?php echo $virtual_show['requested']; ?> Purchased: <?php echo $virtual_show['purchased']; ?>
     <br/>
   </div>
   <div id='searchResults' class='half right'>
@@ -91,7 +86,6 @@ $conf = get_conf('con');
                 <th>Vendor Email</th>
                 <th>Dealer Info</th>
                 <th>Alley Info</th>
-                <th>Virtual</th>
                 <th>View</th>
                 <th>Password Reset</th>
             </tr>
@@ -99,7 +93,7 @@ $conf = get_conf('con');
                        
   <?php
     $vendorQ = "SELECT V.id, V.name, V.website, V.email"
-            . ", request_dealer, request_artistalley, request_fanac, request_virtual"
+            . ", request_dealer, request_artistalley, request_fanac"
             . ", SA.requested as A_req, SA.authorized as A_auth, SA.purchased as A_purch"
             . ", SD.requested as D_req, SD.authorized as D_auth, SD.purchased as D_purch"
             . ", SD10.requested as T_req, SD10.authorized as T_auth, SD10.purchased as T_purch"
@@ -109,7 +103,7 @@ $conf = get_conf('con');
             . " LEFT JOIN vendor_show as SD on SD.vendor=V.id AND SD.type='dealer_6' and SD.conid=$conid"
             . " LEFT JOIN vendor_show as SD10 on SD10.vendor=V.id AND SD10.type='dealer_10' and SD10.conid=$conid"
             . " LEFT JOIN vendor_show as SV on SV.vendor=V.id AND SV.type='virtual' and SV.conid=$conid"
-            . " WHERE request_dealer or request_artistalley or request_fanac or request_virtual"
+            . " WHERE request_dealer or request_artistalley or request_fanac"
             . ";";
 
 
@@ -127,7 +121,9 @@ $conf = get_conf('con');
                 else if ($vendor['D_auth'] > 0) echo $vendor['D_auth'] . " 6' authorized";
                 else if ($vendor['T_purch'] > 0) echo $vendor['T_purch'] . " 10'";
                 else if ($vendor['T_auth'] > 0) echo $vendor['T_auth'] . " 10' authorized";
-                else if ($vendor['D_req'] > 0) echo "requested " . $vendor['D_req'];
+                else if (($vendor['D_req'] > 0) and ($vendor['T_req'] > 0)) echo "requested " . $vendor['D_req'] . " 6' & " . $vendor['T_req'] . " 10'";
+                else if ($vendor['D_req'] > 0) echo "requested " . $vendor['D_req'] . " 6'";
+                else if ($vendor['T_req'] > 0) echo "requested " . $vendor['T_req'] . " 10'";
                 else { echo ""; }
                 } else { echo "N/R"; }
             ?></td>
@@ -136,14 +132,6 @@ $conf = get_conf('con');
                 else if ($vendor['A_auth'] > 0) echo $vendor['A_auth'] . " authorized";
                 else if ($vendor['A_req'] > 0 ) echo "requested " . $vendor['A_req'];
                 else { echo ""; }
-                } else { echo "N/R"; }
-            ?></td>
-            <td><?php if($vendor['request_virtual']) {
-                if($vendor['V_purch'] > 0) echo $vendor['V_type'];
-                else if ($vendor['V_auth'] > 0) echo $vendor['V_auth'] . " authorized";
-                else { 
-                    echo "requested " . $vendor['V_req'];
-                }
                 } else { echo "N/R"; }
             ?></td>
             <td><button onclick="authorize(<?php echo $vendor['id'];?>);">View</button></td>
@@ -181,7 +169,8 @@ $conf = get_conf('con');
                 <td><input type='number' name='d10Purch' id='d10Purch'/></td>
             </tr>
         </table>
-    <button onclick='updateVendor();'>Update Vendor</button><br/>
+    <button onclick='updateVendor();'>Update Vendor</button>
+    <button onclick='resetPWForm();'>Reset Password</button><br/>
     </form>
   </div>
 </div>
