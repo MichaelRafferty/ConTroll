@@ -1,5 +1,5 @@
 <?php
-// onlinereg - base.php - base functions for online reg
+// vendor - base.php - base functions for vendor reg
 require_once(__DIR__ . "/../../lib/db_functions.php");
 
 function redirect_https() {
@@ -15,7 +15,7 @@ function redirect_https() {
     return $ini;
 }
 
-function ol_page_init($title) {
+function vendor_page_init($title) {
 echo <<<EOF
 <!DOCTYPE html>
 <html lang="en">

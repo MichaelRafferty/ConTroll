@@ -5,13 +5,13 @@
 /config/
 /Composer/
 /google_client/
-
-# Visual Studio Stuff
-/.vs/
 /BalticonReg.phpproj
 /BalticonReg.sln
 /BalticonReg.phpproj.user
-/google_client
+/google_client/
+/google-api-php-client--PHP8.0/
+# Visual Studio Stuff
+/.vs/
 dead
 .htaccess
 /launchSettings.json

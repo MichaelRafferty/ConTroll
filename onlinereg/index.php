@@ -1,4 +1,5 @@
 <?php
+// Online Reg - index.php - Main page for online con registration
 require_once("lib/base.php");
 $ini = redirect_https();
 
@@ -39,7 +40,13 @@ $onsitesale = $startdate->format("l, F j");
 ?>
  <body class="regPaybody">
     <div class="container-fluid">
-        <?php if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') { ?>
+        <?php if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') {
+                  if (array_key_exists('logoalt', $ini)) {
+                      $altstring=$ini['logoalt'];
+                  } else {
+                      $altstring = 'Logo';
+                  }
+         ?>
         <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring ;?>"/>
         <?php }
                if(array_key_exists('logotext', $ini) && $ini['logotext'] != '') { ?>
