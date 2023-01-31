@@ -29,29 +29,43 @@ while($price = fetch_safe_assoc($priceR)) {
 vendor_page_init($condata['label'] . ' Vendor Registration')
 ?>
 <body id="vendorPortalBody">
-     <div class="container-fluid">
-        <?php if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') { 
-         if (array_key_exists('logoalt', $ini)) {
-                      $altstring=$ini['logoalt'];
-                  } else {
-                      $altstring = 'Logo';
-                  }
-         ?>
-        <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring ;?>"/>
-        <?php }
-              if(array_key_exists('logotext', $ini) && $ini['logotext'] != '') { ?>
-        <div style='display:inline-block' class='display-1'><?php echo $ini['logotext']; ?></div>
-        <?php } ?>
-    </div>
-   
-<h1>Vendor Portal</h1>
-<p>Welcome to the <?php echo $con['label']?> Portal <br/>
-From here you can create and manage accounts for Artists and Dealers.</p>
-
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-12 p-0">
+                <?php if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') { 
+                        if (array_key_exists('logoalt', $ini)) {
+                            $altstring=$ini['logoalt'];
+                        } else {
+                            $altstring = 'Logo';
+                        }
+                ?>
+                <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring ;?>"/>
+                <?php }
+                    if (array_key_exists('logotext', $ini) && $ini['logotext'] != '') {
+                        echo $ini['logotext']; 
+                    } ?>
+            </div>
+        </div>
+        <div class="row">
+             <div class="col-sm-12 mt-2">
+                <h1>Vendor Portal</h1>
+                <p>Welcome to the <?php echo $con['label']?> Verndor Portal.</p>
+            </div>
+        </div>
+        <div class"row">
+            <div class="col-sm-12">
+                 <p>From here you can create and manage accounts for <?php echo $vendor['artventortext']; ?>.</p>
+            </div>    
+        </div>
 <?php
 if($vendor['test']==1) {
 ?>
-    <h2 class='warn'>This Page is for test purposes only</h2>
+        <div class"row">
+            <div class="col-sm-12">
+                <h2 class='warn'>This Page is for test purposes only</h2>
+            </div>
+        </div>
+    </div>
 <?php
 }
 
@@ -90,41 +104,134 @@ if(isset($_SESSION['id'])) {
     }
 }
 
-?>
-<?php if(!$in_session) { ?>
-<div id='registration'>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-sm-12">
-                <p>This form creates an account on the <?php echo $con['conname']; ?> vendor site. <?php echo $vendor['addlaccounttext']?></p>
+if (!$in_session) { ?>
+    <div id='registration' class="modal modal-lg fade" tabindex="-1" aria-labelledby="New Vendor" aria-hidden="true">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-12">
+                    <p>This form creates an account on the <?php echo $con['conname']; ?> vendor site. <?php echo $vendor['addlaccounttext']?></p>
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-12">
-                <p> Please provide us with information we can use to evaluate if you qualify and how you would fit in the selection of <?php echo $vendor['artventortext'] at  <?php echo $con['conname']; ?>.<br/>Creating an account does not guarantee space.</p>
+            <div class="row">
+                <div class="col-sm-12">
+                    <p> Please provide us with information we can use to evaluate if you qualify and how you would fit in the selection of <?php echo $vendor['artventortext'] ?> at <?php echo $con['conname']; ?>.<br/>Creating an account does not guarantee space.</p>
+                </div>
             </div>
+            <form id='vendor_reg' action='javascript:void(0)'>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="name" title='This is the name that we will register your space under.'> *Name: </label>
+                    </div>
+                    <div class="col-sm-auto p-0 ms-0 me-0">
+                        <input type='text' name='name' id="name" maxlength="64" size="50"/><br/>
+                        <span class='small'>Dealer, Artist, or Store name</span>
+                    </div>
+                    
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="email" title='Your email address is used for contact and login purposes.'> *Email/Login: </label>
+                    </div>
+                    <div class="col-sm-auto p-0 ms-0 me-0">
+                        <input type='text' name='email' id="email" maxlength="64" size="50"/><br/>
+                        <span class='small'>For Contact and Login</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="pw1"> *Password: </label>
+                    </div>
+                    <div class="col-sm-auto p-0 ms-0 me-0">
+                        <input id='pw1' type='password' name='password'/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="pw2"> *Confirm Password: </label>
+                    </div>
+                    <div class="col-sm-auto p-0 ms-0 me-0">
+                        <input id='pw2' type='password' name='password2'/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="website" title='Please enter your web site, Etsy site, social media site, or other appropriate URL.'>Website: </label>
+                    </div>
+                    <div class="col-sm-auto p-0 ms-0 me-0">
+                        <input id='website' type='text' size="64" name='website'/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="description"> Description: </label>
+                    </div>
+                    <div class="col-sm-auto p-0 ms-0 me-0">
+                        <textarea name='description' rows=5 cols=64></textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 p-0 ms-0 me-0 pe-2 text-end">
+                        <input type='checkbox' name='publicity'/>
+                    </div>
+                    <div class="col-sm-auto p-0 ms-0 me-0">                        
+                        <label>Check if we may use your information to publicize your attendence at <?php echo $con['conname']; ?>, if you're coming?</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="addr" title='Please enter your web site, Etsy site, social media site, or other appropriate URL.'>Website: </label>
+                    </div>
+                    <div class="col-sm-auto p-0 ms-0 me-0">
+                        <input id='website' type='text' size="64" name='website'/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="addr" title='Street Address'> *Address </label>
+                    </div>
+                    <div class="col-sm-auto p-0 ms-0 me-0">
+                        <input id='addr' type='text' size="64" name='addr'/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="addr2" title='Company Name'> Company </label>
+                    </div>
+                    <div class="col-sm-auto p-0 ms-0 me-0">
+                        <input id='addr2' type='text' size="64" name='addr2'/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="city"> *City: </label>
+                    </div>
+                    <div class="col-sm-auto p-0 ms-0 me-0">
+                        <input id='city' type='text' size="32" name='city'/>
+                    </div>
+                    <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
+                        <label for="state"> *State: </label>
+                    </div>
+                    <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
+                        <input id='state' type='text' size="2" maxlength="2" name='state'/>
+                    </div>
+                    <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
+                        <label for="zip"> *Zip: </label>
+                    </div>
+                    <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
+                        <input id='zip' type='text' size="11" maxlength="11" name='zip'/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2"></div>
+                    <div class="col-sm-auto p-0 ms-0 me-0">
+                        <input type='submit' onclick='register();'/>
+                    </div>
+                </div>
+            </form>
+                <br/><span class='warn small'>Completing this application does not guarantee space.</span>
         </div>
-   
-    <form id='vendor_reg' action='javascript:void(0)'>
-        <label title='This is the name that we will register your space under'>Name: <input type='text' name='name' class='required'></input><br/><span class='small'>Dealer, Artist, or Store name</span></label><br/>
-        <label title='Your email address is used for contact and login purposes.'>Email/Login: <input type='email' name='email' size='20' class='required'></input><br/><span class='small'>For Contact and Login</span></label><br/>
-        <label>Password: <input id='pw1' type='password' name='password' class='required'></input></label><br/>
-        <label>Repeat Password: <input type='password' name='password2' class='required'></input></label><br/>
-        <label title='Please enter your web site, Etsy site, social media site, or other appropriate URL.'>Website: <input type='text' name='website' class='optional'></input><br/></label><br/>
-        <label>Description: <textarea name='description' rows=5 cols=40 class='optional'></textarea><br/></label><br/>
-        <label><input type='checkbox' name='publicity'/>Check if we may use your information to publicize<br/>your attendence at Balticon if you're coming?</label>
-        <br/>
-        <br/>
-        <label>Address:<input type='text' name='addr'/></label><br/>
-        <label>Company:<input type='text' name='addr2'></label><br/>
-        <label>City:<input type='text' name='city' size=10/></label>
-        <label>State:<input type='text' name='state' size=2/></label>
-        <label>Zip:<input type='text' name='zip' size=5/></label><br/>
-        <input type='submit' onclick='register();'></input>
-    </form>
-    <br/><span class='warn small'>Completing this application does not guarantee space.</span>
-</div>
-<script>
+    </div>
+    <script>
     $(function() {
         $('#registration').dialog({
             title: "New Vendor Registration",
@@ -134,7 +241,7 @@ if(isset($_SESSION['id'])) {
             modal: true
         });
     });
-</script>
+    </script>
 <div id='signin'>
     Please log in to continue to the Portal.
 
