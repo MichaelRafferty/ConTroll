@@ -60,6 +60,7 @@ while($priceL = fetch_safe_assoc($priceR)) {
 echo "\n" . '<script type="text/javascript">' . "\n";
 echo 'var memLabelsJSON = `' . json_encode($memarray) . "`;\n";
 echo "var conid = '$label';\n";
+echo "var printerid = '" . $_SESSION['printer'] . "';\n";
 echo '</script>' . "\n";
 
 ?>

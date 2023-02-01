@@ -2021,6 +2021,11 @@ function print_shown(current, previous) {
 
     var print_html = `<div id='printBody' class="container-fluid form-floating">
 `;
+    if (printerid == '') {
+        print_html += 'No printer selected, unable to print badges.  Please log out and back in with the proper printer selected.</div>';
+        print_div.innerHTML = print_html;
+        return;
+    }
     var rownum;
     var crow;
     for (rownum in cart) {
