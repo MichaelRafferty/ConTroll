@@ -1309,7 +1309,8 @@ function addCartIcon(cell, formatterParams, onRendered) { //plain text value
         return html;
     }
     if (banned == 'Y') {
-        return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0">B</button>';
+        return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="add_to_cart(' +
+            cell.getRow().getData().index + ')">B</button>';
     } else if (cart_perid.includes(cell.getRow().getData().perid) == false) {
         html = '<button type="button" class="btn btn-sm btn-success p-0" onclick="add_to_cart(' +
             cell.getRow().getData().index + ')">Add</button>';
