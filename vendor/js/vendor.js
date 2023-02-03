@@ -1,4 +1,5 @@
-var discount_memcost=55;
+var discount_memcost = 55;
+var registration = null;
 
 function virtual_req() {
     $.ajax({
@@ -308,5 +309,24 @@ function openInvoice(invoice, count, price, type="") {
         $('#virtual_table_sub').val(price);
         $('#virtual_invoice').dialog('open');
         break;
+    }
+}
+
+function registrationModalOpen() {
+    if (registration != null) {
+        registration.show();
+    }
+}
+
+function registrationModalClose() {
+    if (registration != null) {
+        registrion.hide();
+    }
+}
+
+window.onload = function () {
+    var id = document.getElementById('registration');
+    if (id != null) {
+        registration = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
 }

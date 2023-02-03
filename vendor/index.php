@@ -28,6 +28,7 @@ while($price = fetch_safe_assoc($priceR)) {
 
 vendor_page_init($condata['label'] . ' Vendor Registration')
 ?>
+
 <body id="vendorPortalBody">
     <div class="container-fluid">
         <div class="row">
@@ -105,156 +106,182 @@ if(isset($_SESSION['id'])) {
 }
 
 if (!$in_session) { ?>
-    <div id='registration' class="modal modal-lg fade" tabindex="-1" aria-labelledby="New Vendor" aria-hidden="true">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-sm-12">
-                    <p>This form creates an account on the <?php echo $con['conname']; ?> vendor site. <?php echo $vendor['addlaccounttext']?></p>
+<!-- Registgration Modal Popup -->
+<div id='registration' class="modal modal-xl fade" tabindex="-1" aria-labelledby="New Vendor" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: lightcyan;">
+                <div class="modal-title">
+                    <strong>New Vendor Registration</strong>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 4px; background-color: lightcyan;">
+                <div class="container-fluid form-floating" style="background-color: lightcyan;">
+                    <form id="registrionForm" action="javascript:void(0);" class="form-floating">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <p>This form creates an account on the <?php echo $con['conname']; ?> vendor site. <?php echo $vendor['addlaccounttext']?></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <p> Please provide us with information we can use to evaluate if you qualify and how you would fit in the selection of <?php echo $vendor['artventortext'] ?> at <?php echo $con['conname']; ?>.<br/>Creating an account does not guarantee space.</p>
+                        </div>
+                    </div>
+                        <div class="row mt-1">
+                            <div class="col-sm-2">
+                                <label for="name" title='This is the name that we will register your space under.'> *Name: </label>
+                            </div>
+                            <div class="col-sm-auto p-0 ms-0 me-0">
+                                <input class="form-control-sm" type='text' name='name' id="name" maxlength="64" size="50" tabindex="1" required/><br/>
+                                <span class='small'>Dealer, Artist, or Store name</span>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-sm-2">
+                                <label for="email" title='Your email address is used for contact and login purposes.'> *Email/Login: </label>
+                            </div>
+                            <div class="col-sm-auto p-0 ms-0 me-0">
+                                <input class="form-control-sm" type='email' name='email' id="email" maxlength="64" size="50" required/><br/>
+                                <span class='small'>For Contact and Login</span>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-sm-2">
+                                <label for="pw1"> *Password: </label>
+                            </div>
+                            <div class="col-sm-auto p-0 ms-0 me-0">
+                                <input class="form-control-sm" id='pw1' type='password' name='password' required/>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-sm-2">
+                                <label for="pw2"> *Confirm Password: </label>
+                            </div>
+                            <div class="col-sm-auto p-0 ms-0 me-0">
+                                <input class="form-control-sm" id='pw2' type='password' name='password2' required/>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-sm-2">
+                                <label for="website" title='Please enter your web site, Etsy site, social media site, or other appropriate URL.'>Website: </label>
+                            </div>
+                            <div class="col-sm-auto p-0 ms-0 me-0">
+                                <input class="form-control-sm" id='website' type='text' size="64" name='website'/>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-sm-2">
+                                <label for="description">*Description: </label>
+                            </div>
+                            <div class="col-sm-auto p-0 ms-0 me-0">
+                                <textarea class="form-control-sm" name='description' rows=5 cols=64 required></textarea>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-sm-2 p-0 ms-0 me-0 pe-2 text-end">
+                                <input class="form-control-sm" type='checkbox' name='publicity'/>
+                            </div>
+                            <div class="col-sm-auto p-0 ms-0 me-0">                        
+                                <label>Check if we may use your information to publicize your attendence at <?php echo $con['conname']; ?>, if you're coming?</label>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-sm-2">
+                                <label for="addr" title='Street Address'> *Address </label>
+                            </div>
+                            <div class="col-sm-auto p-0 ms-0 me-0">
+                                <input class="form-control-sm" id='addr' type='text' size="64" name='addr' required/>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-sm-2">
+                                <label for="addr2" title='Company Name'> Company </label>
+                            </div>
+                            <div class="col-sm-auto p-0 ms-0 me-0">
+                                <input class="form-control-sm" id='addr2' type='text' size="64" name='addr2'/>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-sm-2">
+                                <label for="city"> *City: </label>
+                            </div>
+                            <div class="col-sm-auto p-0 ms-0 me-0">
+                                <input class="form-control-sm" id='city' type='text' size="32" name='city' required/>
+                            </div>
+                            <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
+                                <label for="state"> *State: </label>
+                            </div>
+                            <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
+                                <input class="form-control-sm" id='state' type='text' size="2" maxlength="2" name='state' required/>
+                            </div>
+                            <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
+                                <label for="zip"> *Zip: </label>
+                            </div>
+                            <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
+                                <input class="form-control-sm" id='zip' type='text' size="11" maxlength="11" name='zip' required/>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-sm-2"></div>
+                            <div class="col-sm-auto p-0 ms-0 me-0">
+                                <input type='submit' onclick='register();'/>
+                            </div>
+                        </div>
+                    </form>
+                        <br/><span class='warn small'>Completing this application does not guarantee space.</span>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-sm-12">
-                    <p> Please provide us with information we can use to evaluate if you qualify and how you would fit in the selection of <?php echo $vendor['artventortext'] ?> at <?php echo $con['conname']; ?>.<br/>Creating an account does not guarantee space.</p>
-                </div>
-            </div>
-            <form id='vendor_reg' action='javascript:void(0)'>
-                <div class="row">
-                    <div class="col-sm-2">
-                        <label for="name" title='This is the name that we will register your space under.'> *Name: </label>
-                    </div>
-                    <div class="col-sm-auto p-0 ms-0 me-0">
-                        <input type='text' name='name' id="name" maxlength="64" size="50"/><br/>
-                        <span class='small'>Dealer, Artist, or Store name</span>
-                    </div>
-                    
-                </div>
-                <div class="row">
-                    <div class="col-sm-2">
-                        <label for="email" title='Your email address is used for contact and login purposes.'> *Email/Login: </label>
-                    </div>
-                    <div class="col-sm-auto p-0 ms-0 me-0">
-                        <input type='text' name='email' id="email" maxlength="64" size="50"/><br/>
-                        <span class='small'>For Contact and Login</span>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-2">
-                        <label for="pw1"> *Password: </label>
-                    </div>
-                    <div class="col-sm-auto p-0 ms-0 me-0">
-                        <input id='pw1' type='password' name='password'/>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-2">
-                        <label for="pw2"> *Confirm Password: </label>
-                    </div>
-                    <div class="col-sm-auto p-0 ms-0 me-0">
-                        <input id='pw2' type='password' name='password2'/>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-2">
-                        <label for="website" title='Please enter your web site, Etsy site, social media site, or other appropriate URL.'>Website: </label>
-                    </div>
-                    <div class="col-sm-auto p-0 ms-0 me-0">
-                        <input id='website' type='text' size="64" name='website'/>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-2">
-                        <label for="description"> Description: </label>
-                    </div>
-                    <div class="col-sm-auto p-0 ms-0 me-0">
-                        <textarea name='description' rows=5 cols=64></textarea>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-2 p-0 ms-0 me-0 pe-2 text-end">
-                        <input type='checkbox' name='publicity'/>
-                    </div>
-                    <div class="col-sm-auto p-0 ms-0 me-0">                        
-                        <label>Check if we may use your information to publicize your attendence at <?php echo $con['conname']; ?>, if you're coming?</label>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-2">
-                        <label for="addr" title='Please enter your web site, Etsy site, social media site, or other appropriate URL.'>Website: </label>
-                    </div>
-                    <div class="col-sm-auto p-0 ms-0 me-0">
-                        <input id='website' type='text' size="64" name='website'/>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-2">
-                        <label for="addr" title='Street Address'> *Address </label>
-                    </div>
-                    <div class="col-sm-auto p-0 ms-0 me-0">
-                        <input id='addr' type='text' size="64" name='addr'/>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-2">
-                        <label for="addr2" title='Company Name'> Company </label>
-                    </div>
-                    <div class="col-sm-auto p-0 ms-0 me-0">
-                        <input id='addr2' type='text' size="64" name='addr2'/>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-2">
-                        <label for="city"> *City: </label>
-                    </div>
-                    <div class="col-sm-auto p-0 ms-0 me-0">
-                        <input id='city' type='text' size="32" name='city'/>
-                    </div>
-                    <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
-                        <label for="state"> *State: </label>
-                    </div>
-                    <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
-                        <input id='state' type='text' size="2" maxlength="2" name='state'/>
-                    </div>
-                    <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
-                        <label for="zip"> *Zip: </label>
-                    </div>
-                    <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
-                        <input id='zip' type='text' size="11" maxlength="11" name='zip'/>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-2"></div>
-                    <div class="col-sm-auto p-0 ms-0 me-0">
-                        <input type='submit' onclick='register();'/>
-                    </div>
-                </div>
-            </form>
-                <br/><span class='warn small'>Completing this application does not guarantee space.</span>
         </div>
     </div>
-    <script>
-    $(function() {
-        $('#registration').dialog({
-            title: "New Vendor Registration",
-            autoOpen: false,
-            width: 500,
-            height: 700,
-            modal: true
-        });
-    });
-    </script>
-<div id='signin'>
-    Please log in to continue to the Portal.
-
-    <form id='vendor-signin' method='POST'>
-        <label>Email/Login: <input type='email' name='email' size='20' class='required'></input></label><br/>
-        <label>Password: <input type='password' name='password' class='required'></input></label>
-        <input type='submit' value='signin'></input> or <a href='javascript:void(0)' onclick="$('#registration').dialog('open');">Sign Up</a>
-    </form>
 </div>
-<button onclick='resetPassword()'>Reset Password</button>
+<!-- signin form (at body level) -->
+<div id='signin'>
+    <div class="container-fluid form-floating">
+        <div class="row mb-2">
+            <div class="col-sm-auto">
+                <h4>Please log in to continue to the Portal.</h4>
+            </div>
+        </div>
+        <form id='vendor-signin' method='POST'>
+            <div class="row mt-1">
+                <div class="col-sm-1">
+                    <label for="email">*Email/Login: </label>
+                </div>
+                <div class="col-sm-auto">
+                    <input class="form-control-sm" type='email' name='email' size='40'/>
+                </div>
+            </div>
+            <div class="row mt-1">
+                <div class="col-sm-1">
+                    <label for="password">*Password: </label>
+                </div>
+                <div class="col-sm-auto">
+                    <input class="form-control-sm" type='password' name='password1' size="40"/>
+                </div>
+            </div>   
+            <div class="row mt-2">
+                <div class="col-sm-1"></div>
+                <div class="col-sm-auto">
+                    <input type='submit' class="btn btn-small btn-primary" value='signin'/> or <a href='javascript:void(0)' onclick="registrationModalOpen();">Sign Up</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div id='resetpw'>
+    <div class="container-fluid">
+        <div class="row mt-4">
+            <div class="col-sm-auto">
+                <button class="btn btn-small btn-primary" onclick='resetPassword()'>Reset Password</button>
+            </div>
+        </div>
+    </div>
+</div>
 <?php } else { 
-$vendorQ = "SELECT name, email, website, description, request_dealer, request_artistalley, request_fanac need_new FROM vendors WHERE id=$vendor;";
-$info = fetch_safe_assoc(dbQuery($vendorQ));
+$vendorQ = "SELECT name, email, website, description, request_dealer, request_artistalley, request_fanac need_new FROM vendors WHERE id=?;";
+$info = fetch_safe_assoc(dbSafeQuery($vendorQ, 'i', array($vendor)));
 
 if($info['need_new']) {
 ?>
