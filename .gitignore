@@ -19,3 +19,11 @@ dead
 /onlinereg/javascript/d3-7.js
 /onlinereg/images/balticon56.png
 /onlinereg/images/balticon57.png
+/.idea/.gitignore
+/.idea/BalticonReg.iml
+/.idea/modules.xml
+/.idea/php.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/sqldialects.xml
+/.idea/vcs.xml
+/.idea/workspace.xml
