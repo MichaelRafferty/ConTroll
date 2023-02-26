@@ -17,3 +17,11 @@ dead
 /launchSettings.json
 /onlinereg/newbadge.html
 /onlinereg/javascript/d3-7.js
+/.idea/.gitignore
+/.idea/BalticonReg.iml
+/.idea/modules.xml
+/.idea/php.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/sqldialects.xml
+/.idea/vcs.xml
+/.idea/workspace.xml
