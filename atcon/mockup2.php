@@ -1,8 +1,6 @@
 <?php
 
 require("lib/base.php");
-require_once("lib/mockup_db_functions.php");
-require_once(__DIR__ . "/../lib/ajax_functions.php");
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
@@ -182,7 +180,7 @@ echo '</script>' . "\n";
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
                                     <select name='country' id="country" tabindex='10'>
-                                        <option value="USA" default='true'>United States</option>
+                                        <option value="USA" selected>United States</option>
                                         <option value="CAN">Canada</option>
                                     <?php
                                     $fh = fopen("lib/countryCodes.csv","r");
@@ -196,7 +194,7 @@ echo '</script>' . "\n";
                             </div>
                             <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="email1" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Email</span></label><br/>
+                                    <label for="email" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Email</span></label><br/>
                                     <input type="email" name="email" id='email' size="50" maxlength="64" tabindex="11"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">

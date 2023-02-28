@@ -525,16 +525,6 @@ function newUser($email, $sub){
     }
 }
 
-function check_atcon($user, $passwd, $level, $conid) {
-    $u = sql_safe($user);
-    $p = sql_safe($passwd);
-
-    $q = "SELECT id FROM atcon_auth WHERE perid=? and passwd=? and conid=? and auth=?;";
-    $r = dbSafeQuery($q, 'isis', array($u, $p, $conid, $level));
-    if($r->num_rows > 0) { return true; }
-    else { return false; }
-}
-
 function get_username($user) {
     $u = sql_safe($user);
     error_log($user);

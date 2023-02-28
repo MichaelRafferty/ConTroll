@@ -1,21 +1,26 @@
 <?php
-session_start();
 ## Pull INI for variables
-$ini = parse_ini_file(__DIR__ . "/../../config/reg_conf.ini", true);
-date_default_timezone_set("America/New_York");
+global $db_ini;
+if (!$db_ini) {
+    $db_ini = parse_ini_file(__DIR__ . '/../../config/reg_conf.ini', true);
+}
 
-if ($ini['reg']['https'] <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-        header("HTTP/1.1 301 Moved Permanently");
-        header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
+if ($db_ini['reg']['https'] <> 0) {
+    if (!isset($_SERVER['HTTPS']) or $_SERVER['HTTPS'] != 'on') {
+        header('HTTP/1.1 301 Moved Permanently');
+        header('Location: https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']);
         exit();
     }
 }
 
-function get_conf($type) {
-    global $ini;
-    return array_key_exists($type, $ini) ? $ini[$type] : null;
-}
+require_once(__DIR__ . '/../../lib/db_functions.php');
+require_once(__DIR__ . '/../../lib/ajax_functions.php');
+db_connect();
+
+require_once("login.php");
+session_start();
+
+date_default_timezone_set("America/New_York");
 
 function isWebRequest()
 {
@@ -85,6 +90,7 @@ function page_init($title, $tab, $css, $js) {
     if(isset($js) && $js != null) { foreach ($js as $script) {
 ?><script src='<?php echo $script; ?>'
         type='text/javascript'></script><?php
+
     }}
     ?>
 </head>
@@ -503,9 +509,7 @@ function check_atcon($user, $passwd, $method) {
         in_array($method, $perms)) { return true; }
 
     #error_log($user); error_log($passwd); error_log($method);
-    $access = callHome("login.php", "POST", "user=".$user."&passwd=".$passwd);
-    #var_error_log($access);
-    $access = json_decode($access,true);
+    $access = login($user, $passwd);
     #echo var_dump($access);
     if($access === false || $access['success']==0) { return false; }
     $perms = $access['auth'];
@@ -599,24 +603,5 @@ function passwdForm() {
     </div>
 </div>
 <?php
-}
-
-// Function web_error_log($string)
-// $string = string to write to file $logdest with added newline at end
-function web_error_log($string) {
-    global $logdest;
-
-    error_log(date("Y-m-d H:i:s") . ": " . $string . "\n", 3, $logdest);
-}
-// Function var_error_log()
-// $object = object to be dumped to the PHP error log
-// the object is walked and written to the PHP error log using var_dump and a redirect of the output buffer.
-function var_error_log( $object=null ){
-    global $logdest;
-    ob_start();                    // start buffer capture
-    var_dump( $object );           // dump the values
-    $contents = ob_get_contents(); // put the buffer into a variable
-    ob_end_clean();                // end capture
-    error_log( $contents . "\n", 3, $logdest);        // log contents of the result of var_dump( $object )
 }
 ?>
