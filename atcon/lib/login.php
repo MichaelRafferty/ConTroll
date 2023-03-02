@@ -1,8 +1,5 @@
 <?php
-function login($user, $passwd): array {
-    $con = get_con();
-    $conid = $con['id'];
-
+function login($user, $passwd, $conid): array {
     //error_log("login.php");
 
     if (isset($user) && isset($passwd)) {

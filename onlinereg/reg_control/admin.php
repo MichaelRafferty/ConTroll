@@ -10,11 +10,11 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 }
 
 page_init($page,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.4.2/dist/css/tabulator.min.css',
+    /* css */ array('https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css',
                     'css/base.css',
                    ),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.4.2/dist/js/tabulator.min.js',
+                    'https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js',
                     '/javascript/d3.js',
                     'js/base.js',
                     'js/admin.js',

@@ -502,14 +502,14 @@ function paymentDialogs() {
 }
 
 $perms = array();
-function check_atcon($user, $passwd, $method) {
+function check_atcon($user, $passwd, $method, $conid) {
     global $perms;
     if(isset($_SESSION['user']) && $user==$_SESSION['user'] &&
         isset($_SESSION['passwd']) && $passwd==$_SESSION['passwd'] &&
         in_array($method, $perms)) { return true; }
 
     #error_log($user); error_log($passwd); error_log($method);
-    $access = login($user, $passwd);
+    $access = login($user, $passwd, $conid);
     #echo var_dump($access);
     if($access === false || $access['success']==0) { return false; }
     $perms = $access['auth'];
