@@ -42,9 +42,18 @@ if(isset($_POST) && isset($_POST['user']) && isset($_POST['passwd'])) {
             $values[] = $newpw;
             $first = false;
         }
-        if($_POST['artshow'] == 'true') {
+        if($_POST['artinventory'] == 'true') {
             if(!$first) { $updateQ .= ","; }
-            $updateQ .= " (?, 'artshow', ?, ?)";
+            $updateQ .= " (?, 'artinventory', ?, ?)";
+            $datatypes .= 'iis';
+            $values[] = $updateUser;
+            $values[] = $conid;
+            $values[] = $newpw;
+            $first = false;
+        }
+        if($_POST['artsales'] == 'true') {
+            if(!$first) { $updateQ .= ","; }
+            $updateQ .= " (?, 'artsales', ?, ?)";
             $datatypes .= 'iis';
             $values[] = $updateUser;
             $values[] = $conid;
