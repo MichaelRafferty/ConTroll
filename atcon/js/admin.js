@@ -63,7 +63,7 @@ function updateUser(user) {
             updateUser: user,
             data_entry: $('#user'+user+'data_entry').is(':checked'),
             register: $('#user'+user+'cashier').is(':checked'),
-            ertinventory: $('#user'+user+'artinventory').is(':checked'),
+            artinventory: $('#user'+user+'artinventory').is(':checked'),
             artsales: $('#user'+user+'artsales').is(':checked'),
             manager: $('#user'+user+'manager').is(':checked')
         },
