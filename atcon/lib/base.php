@@ -16,8 +16,6 @@ if ($db_ini['reg']['https'] <> 0) {
 require_once(__DIR__ . '/../../lib/db_functions.php');
 require_once(__DIR__ . '/../../lib/ajax_functions.php');
 db_connect();
-
-require_once("login.php");
 session_start();
 
 date_default_timezone_set("America/New_York");
@@ -65,6 +63,7 @@ function ageDialog($con)
 function page_init($title, $tab, $css, $js) {
     $con = get_conf('con');
     $label = $con['label'];
+    global $perms;
     if(isWebRequest()) {
 ?>
 <!DOCTYPE html>
@@ -98,8 +97,7 @@ function page_init($title, $tab, $css, $js) {
     <?php
     page_head($title);
     //con_info();
-    if(isset($_SESSION['user'])) {
-    $perms = $_SESSION['perms'];
+    if(isset($_SESSION['userhash'])) {
     ?>
     <div class="container-fluid">
         <div class="row">
@@ -502,20 +500,22 @@ function paymentDialogs() {
 }
 
 $perms = array();
-function check_atcon($user, $passwd, $method, $conid) {
+function check_atcon($method, $conid) {
     global $perms;
-    if(isset($_SESSION['user']) && $user==$_SESSION['user'] &&
-        isset($_SESSION['passwd']) && $passwd==$_SESSION['passwd'] &&
-        in_array($method, $perms)) { return true; }
-
-    #error_log($user); error_log($passwd); error_log($method);
-    $access = login($user, $passwd, $conid);
-    #echo var_dump($access);
-    if($access === false || $access['success']==0) { return false; }
-    $perms = $access['auth'];
-    $_SESSION['perms'] = $perms;
-    if ($method == 'login')
-        return true;
+    if (count($perms) == 0) {
+        $q = <<<EOS
+SELECT a.auth
+FROM atcon_user u 
+JOIN atcon_auth a ON (a.authuser = u.id)
+WHERE u.perid=? AND u.userhash=? AND u.conid=?;
+EOS;
+        $r = dbSafeQuery($q, 'ssi', array($_SESSION['user'], $_SESSION['userhash'], $conid));
+        if ($r->num_rows > 0) {
+            while ($l = fetch_safe_assoc($r)) {
+                array_push($perms, $l['auth']);
+            }
+        }
+    }
     return in_array($method, $perms);
 }
 
