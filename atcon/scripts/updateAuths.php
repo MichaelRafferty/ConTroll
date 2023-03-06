@@ -1,6 +1,5 @@
 <?php
 require("../lib/base.php");
-require("../lib/ajax_functions.php");
 
 if(isset($_POST) && count($_POST)>0) {
     $method='POST';

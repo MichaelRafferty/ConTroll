@@ -38,11 +38,12 @@ $method='manager';
         Perid: <input name='perid'/><br/>
         Passwd: <input type='password' name='newpw'/><br/>
         <table>
-            <tr><th>Reg Checkin</th><th>Cashier</th><th>Artshow</th><th>Admin</th></tr>
+            <tr><th>Reg Checkin</th><th>Cashier</th><th>Art Inventory</th><th>Art Sales</th><th>Admin</th></tr>
             <tr>
                 <td><input name='data_entry' type='checkbox'/></td>
                 <td><input name='register' type='checkbox'/></td>
-                <td><input name='artshow' type='checkbox'/></td>
+                <td><input name='artinventory' type='checkbox'/></td>
+                <td><input name='artsales' type='checkbox'/></td>
                 <td><input name='manager' type='checkbox'/></td>
             </tr>
         </table>
@@ -53,8 +54,11 @@ $method='manager';
   <table>
     <thead>
         <tr>
-        <th>perid</th><th>Name</th><th>Reg Checkin</th><th>Cashier</th>
-        <th>Artshow</th><th>Admin</th><th>Update</th>
+        <th>perid</th><th>Name</th>
+        <th>Reg Checkin</th><th>Cashier</th>
+        <th>Art Inventory</th><th>Art Sales</th>
+        <th>Admin</th>
+        <th>Update</th>
         </tr>
     </thead>
     <tbody id='users'>

@@ -29,8 +29,13 @@ function addUsers(userlist) {
         row.append($(document.createElement('td'))
                 .append($(document.createElement('input'))
                     .attr('type', 'checkbox')
-                    .attr('checked', userlist[u]['artshow'])
-                    .attr('id', 'user' + u + 'artshow')));
+                    .attr('checked', userlist[u]['artinventory'])
+                    .attr('id', 'user' + u + 'artinventory')));
+        row.append($(document.createElement('td'))
+                .append($(document.createElement('input'))
+                    .attr('type', 'checkbox')
+                    .attr('checked', userlist[u]['artsales'])
+                    .attr('id', 'user' + u + 'artsales')));
         row.append($(document.createElement('td'))
                 .append($(document.createElement('input'))
                     .attr('type', 'checkbox')
@@ -58,7 +63,8 @@ function updateUser(user) {
             updateUser: user,
             data_entry: $('#user'+user+'data_entry').is(':checked'),
             register: $('#user'+user+'cashier').is(':checked'),
-            artshow: $('#user'+user+'artshow').is(':checked'),
+            artinventory: $('#user'+user+'artinventory').is(':checked'),
+            artsales: $('#user'+user+'artsales').is(':checked'),
             manager: $('#user'+user+'manager').is(':checked')
         },
         success: function (data, textstatus, jqxhr) { 

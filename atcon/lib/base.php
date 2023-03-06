@@ -142,6 +142,10 @@ function page_init($title, $tab, $css, $js) {
                             <li>
                                 <a class="nav-link navitem <?php echo $tab == "mockupCashier" ? "active" : ""; ?>" <?php echo $tab == "mockupCashier" ? 'aria-current="page"' : ""; ?> href="mockup2.php?mode=cashier">Cashier POS Mockup</a>
                             </li>
+                            <li>
+                                <a class="nav-link navitem <?php echo $tab == "atconArtInventory" ? "active" : ""; ?>" <?php echo $tab == "atconArtInventory" ? 'aria-current="page"' : ""; ?> href="newArtInventory.php?mode=inventory">Art Invetory Dev</a>
+                            </li>
+
                             <?php  } ?>
                             <li>
                                 <a class="nav-link navitem" <?php echo $tab == "change_password" ? "active" : ""; ?>" <?php echo $tab == "change_password" ? 'aria-current="page"' : ""; ?> href="index.php?action=change_passwd">Change Password</a>
