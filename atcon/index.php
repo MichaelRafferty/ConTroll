@@ -1,6 +1,5 @@
 <?php
 require("lib/base.php");
-require_once('lib/login.php');
 
 $method='index';
 $con = get_conf("con");
@@ -32,7 +31,7 @@ $page = "Atcon Registration Site Login";
 
 page_init($page, 'index',
     /* css */ array(),
-    /* js  */ array()
+    /* js  */ array('js/index.js')
     );
 
 
@@ -48,29 +47,29 @@ if(isset($_GET['action']) && $_GET['action']=='logout') {
 if(!isset($_SESSION['user'])) {
 ?>
 <div class="container-fluid mt-4">
-    <form method='POST'>
+    <form method='POST' class="form-floating">
         <div class="row">
-            <div class="col-sm-2">
-                User Badge Id:
-            </div>
-            <div class="col-sm-4">
-                 <input type='number' name='user' class="no-spinners" style="width: 80px;" min="1", max="999999" />
+            <div class="col-sm-6">
+                <div class='form-floating mb-3'>
+                    <input type='number' name='user' class="no-spinners form-control" min="1" max="999999" placeholder="Your badge number"  style="width:150px;" required/>
+                    <label for="user">User Badge Id:</label>
+                </div>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-2">
-                Password:
-            </div>
-            <div class="col-sm-4">
-                <input type='password' name='passwd' />
+            <div class="col-sm-6">
+                <div class='form-floating mb-3'>
+                    <input type='password' name='passwd' class="form-control" placeholder="Assigned Password" required/>
+                    <label for='passwd'>Password:</label>
+                </div>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-2">
-                Badge Printer Number:
-            </div>
-            <div class="col-sm-4">
-                 <input type='number' name='printer' class="no-spinners" style="width: 40px;" min="0", max="99" />
+            <div class="col-sm-6">
+                <div class="form-floating mb-3">
+                    <input type='number' name='printer' class="no-spinners form-control" min="0" max="99" placeholder='Look on printer for number' style="width:200px;"/>
+                    <label for="printer">Badge Printer Number:</label>
+                </div>
             </div>
         </div>
         <div class="row">
@@ -83,39 +82,90 @@ if(!isset($_SESSION['user'])) {
 <?php
 
 } else if(isset($_GET['action']) && $_GET['action']=='change_passwd') {?>
+    <input type="hidden" name='idval' id='idval' value="<?php echo $_SESSION['userhash']; ?>"
     <div class='container-fluid mt-4'>
-        <form method='POST'>
-            <div class='row'>
-                <div class='col-sm-2'>
-                    Old Password:
-                </div>
-                <div class='col-sm-4'>
-                    <input type='password' name='old'/>
+        <div class='row'>
+            <div class='col-sm-6'>
+                <div class='form-floating mb-3'>
+                    <input type='password' name='old_password' id="old_password" class='form-control' placeholder="Existing Password" required/>
+                    <label for="old_password">Current Password:</label>
                 </div>
             </div>
-            <div class='row'>
-                <div class='col-sm-2'>
-                    New Password:
-                </div>
-                <div class='col-sm-4'>
-                    <input type='password' name='new'/>
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-sm-2'>
-                    Confirm New Password:
-                </div>
-                <div class='col-sm-4'>
-                    <input type='password' name='confirm_new'/>
+        </div>
+        <div class='row'>
+            <div class='col-sm-6'>
+                <div class='form-floating mb-3'>
+                    <input type='password' name='new_password' id="new_password" class='form-control' placeholder='New Password' required/>
+                    <label for='new_password'>New Password:</label>
                 </div>
             </div>
-            <div class='row'>
-                <div class='col-sm-2 mt-2'>
-                    <input type='submit' value='Login'/>
+        </div>
+        <div class='row'>
+            <div class='col-sm-6'>
+                <div class='form-floating mb-3'>
+                    <input type='password' name='confirm_new' id="confirm_new" class='form-control' placeholder='Confirm New Password' required/>
+                    <label for='confirm_new'>Confirm New Password:</label>
                 </div>
             </div>
-        </form>
+        </div>
+        <div class='row'>
+            <div class='col-sm-2 mt-2'>
+                <button type="button" class="btn btn-primary btn-sm" id="change_pw_btn" onclick="change_pw();">Change Password</button>
+            </div>
+            <div class='col-sm-auto mt-2' id='result_message'></div>
+        </div>
     </div>
-<?php } ?>
+<?php } else if (isset($_POST) && isset($_POST['old']) && $_POST['old']=='') {
+    echo "In Change Password Submit";
+}
+function login($user, $passwd, $conid): array {
+    //error_log("login.php");
+
+    if (isset($user) && isset($passwd)) {
+        $passwd = trim($passwd);
+        $q = <<<EOS
+SELECT a.auth, u.userhash, u.passwd
+FROM atcon_user u 
+JOIN atcon_auth a ON (a.authuser = u.id)
+WHERE u.perid=? AND u.conid=?;
+EOS;
+        $r = dbSafeQuery($q, 'si', array($user, $conid));
+        $upasswd = null;
+        if ($r->num_rows > 0) {
+            $response['success'] = 1;
+            $auths = array();
+            while ($l = fetch_safe_assoc($r)) {
+                $auths[] = $l['auth'];
+                $response['userhash'] = $l['userhash'];
+                if ($upasswd == null) {
+                    $upasswd = $l['passwd'];
+                    if ($upasswd != $passwd && !password_verify($passwd, $upasswd)) {
+                        $response['success'] = 0;
+                        return($response);
+                    }
+                }
+            }
+            $response['auth'] = $auths;
+            if ($passwd == $upasswd) /* update old style password */ {
+                $dbpasswd = password_hash($passwd, PASSWORD_DEFAULT);
+                $q = <<<EOS
+UPDATE atcon_user
+SET passwd = ?
+WHERE perid = ? AND conid = ?;
+EOS;
+
+                $r = dbSafeCmd($q, 'sii', array($dbpasswd, $user, $conid));
+                $response['updated'] = $r;
+            }
+        } else {
+            $response['success'] = 0;
+        }
+    } else {
+        $response['success'] = 0;
+    }
+
+    return ($response);
+}
+?>
 </body>
 </html>
