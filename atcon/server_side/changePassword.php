@@ -7,10 +7,13 @@ $con = get_conf("con");
 $conid=$con['id'];
 $check_auth=false;
 if(isset($_POST) && isset($_POST['user']) && isset($_POST['passwd']) && isset($_POST['newpasswd'])) {
-    $user = $_POST['user'];
+    $user = $_SESSION['user'];
     $passwd = $_POST['passwd'];
     $newpw = $_POST['newpasswd'];
-    $checkQ = "SELECT * from atcon_auth where perid=? and passwd=?;";
+    $checkQ = <<<EOS
+SELECT passwd from atcon_user where perid=? and conid=?;
+EOS;
+
     $checkR = dbSafeQuery($checkQ, 'is', array($user, $passwd));
     if(isset($checkR) && $checkR != null && $checkR->num_rows >= 1) {
         $updateQ = "UPDATE atcon_auth SET passwd=? WHERE perid=?;";
