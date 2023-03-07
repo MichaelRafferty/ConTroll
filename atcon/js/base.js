@@ -203,19 +203,3 @@ function showAlert(str) {
     $('#alertInner').empty().html(str);
     $('#alert').show();
 }
-
-function pw_script(formname) {
-    if($("#newpw1").val() == $("#newpw2").val()) {
-        $.ajax({
-            method: "GET",
-            url: "scripts/changePassword.php",
-            data: $(formname).serialize(),
-            success: function(data, textstatus, jqXhr) {
-                alert(data['message']);
-            }
-        });
-    } else {
-        alert("Newly entered passwords differ");
-    }
-}
-
