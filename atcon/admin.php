@@ -7,7 +7,15 @@ if (!isset($_SESSION['user'])) {
     exit(0);
 }
 
+$con = get_conf('con');
+$conid = $con['id'];
+$method = 'manager';
 $page = "Atcon Administration";
+
+if (!check_atcon($method, $conid)) {
+    header('Location: /index.php');
+    exit(0);
+}
 
 page_init($page, 'admin',
     /* css */ array('css/registration.css'),

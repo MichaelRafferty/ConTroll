@@ -6,8 +6,17 @@ if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
     exit(0);
 }
+
+$con = get_conf('con');
+$conid = $con['id'];
+$method = 'manager';
+
+if (!check_atcon($method, $conid)) {
+    header('Location: /index.php');
+    exit(0);
+}
+
 $tab = 'mockupCheckin';
-$page = "Atcon POS Mockup";
 $mode = 'checkin';
 if (isset($_GET['mode'])) {
     if ($_GET['mode'] == 'cashier') {

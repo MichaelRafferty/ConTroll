@@ -5,18 +5,20 @@ if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
     exit(0);
 }
-
+$con = get_conf('con');
+$conid = $con['id'];
+$method = 'cashier';
 $page = "Register";
+
+if (!check_atcon($method, $conid)) {
+    header('Location: /index.php');
+    exit(0);
+}
 
 page_init($page, 'printform',
     /* css */ array('css/registration.css','css/atcon.css'),
     /* js  */ array('js/atcon.js')
     );
-
-$con = get_conf("con");
-$conid=$con['id'];
-$method='cashier';
-
 ?>
 
 <form id='newBadge' action='javascript:void(0);'>

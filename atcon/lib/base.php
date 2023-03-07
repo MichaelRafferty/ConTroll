@@ -112,12 +112,12 @@ function page_init($title, $tab, $css, $js) {
                         <ul class="navbar-nav me-auto p-0">
                             <?php if (in_array('data_entry', $perms)) { ?>
                             <li>
-                                <a class="nav-link navitem <?php echo $tab == "checkin" ? "active" : ""; ?>" <?php echo $tab == "checkin" ? 'aria-current="page"' : ""; ?> href="checkin.php">Reg Check In</a>
+                                <a class="nav-link navitem <?php echo $tab == "checkin" ? "active" : ""; ?>" <?php echo $tab == "checkin" ? 'aria-current="page"' : ""; ?> href="regpos.php">Reg Check In</a>
                             </li>
                             <?php  }
                       if (in_array('cashier', $perms)) { ?>
                             <li>
-                                <a class="nav-link navitem <?php echo $tab == "cashier" ? "active" : ""; ?>" <?php echo $tab == "cashier" ? 'aria-current="page"' : ""; ?> href="register.php">Reg Cashier</a>
+                                <a class="nav-link navitem <?php echo $tab == "cashier" ? "active" : ""; ?>" <?php echo $tab == "cashier" ? 'aria-current="page"' : ""; ?> href="regpos.php?mode=cashier">Reg Cashier</a>
                             </li>
                             <?php  }
                       if (in_array('artshow', $perms)) { ?>
