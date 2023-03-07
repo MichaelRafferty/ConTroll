@@ -104,7 +104,7 @@ function change_pw() {
             new: new_password.value,
         };
         $.ajax({
-            url: '/lib/change_password.php',
+            url: '/scripts/changePassword.php',
             type: "POST",
             data: postData,
             success: changeSucess,
@@ -131,6 +131,7 @@ function changeSucess(data, textStatus, jqXHR) {
         data_json = JSON.parse(data);
     } catch (error) {
         console.log(error);
+        return;
     }
 
     //console.log(data_json);
@@ -151,6 +152,7 @@ function changeSucess(data, textStatus, jqXHR) {
 //  warn: (black on yellow-orange) bg-warning
 //  success: (white on green) bg-success
 function show_message(message, type) {
+    "use strict";
     if (message_div.classList.contains('bg-danger')) {
         message_div.classList.remove('bg-danger');
     }
@@ -163,15 +165,15 @@ function show_message(message, type) {
     if (message_div.classList.contains('text-white')) {
         message_div.classList.remove('text-white');
     }
-    if (type == 'error') {
+    if (type === 'error') {
         message_div.classList.add('bg-danger');
         message_div.classList.add('text-white');
     }
-    if (type == 'success') {
+    if (type === 'success') {
         message_div.classList.add('bg-success');
         message_div.classList.add('text-white');
     }
-    if (type == 'warn') {
+    if (type === 'warn') {
         message_div.classList.add('bg-warning');
     }
     message_div.innerHTML = message;
