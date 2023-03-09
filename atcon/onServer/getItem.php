@@ -29,7 +29,8 @@ $itemQ = <<<EOS
 SELECT V.name, S.art_key, I.item_key, concat(S.art_key, '-', I.item_key) as id,
     I.title, I.type, I.status, I.location, I.quantity, I.original_qty, 
     concat(I.quantity, '/', I.original_qty) as qty,
-    I.min_price, I.sale_price, I.final_price, I.bidder, I.conid, I.time_updated
+    I.min_price, I.sale_price, I.final_price, I.bidder, I.conid, 
+    SUBSTRING(I.time_updated,6,11) as time_updated
 FROM artItems I
 JOIN artshow S ON (S.id=I.artshow)
 JOIN artist A ON (A.id=S.artid)
