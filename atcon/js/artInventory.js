@@ -3,6 +3,8 @@ var find_tab = null;
 
 //buttons
 var startover_button;
+var inventory_update_button;
+var location_change_button;
 
 //find item fields
 var artist_field = null;
@@ -21,6 +23,7 @@ var actionlist = new Array();
 //counters
 var need_location = 0;
 var need_count = 0;
+var locations_changed = 0;
 
 //mode
 manager=true;
@@ -37,16 +40,18 @@ window.onload = function init_page() {
 
     //buttons
     startover_button = document.getElementById("startover_btn");
+    inventory_update_button = document.getElementById("inventory_btn");
+    location_change_button = document.getElementById("location_change_btn");
 
     start_over();
     }
 
 function start_over() {
+    actionlist=new Array();
+
     init_table();
     init_locations();
     init_cart();
-
-    actionlist=new Array();
 
     //disable tabs...
 
@@ -57,6 +62,7 @@ function start_over() {
 function init_cart() {
     need_location = 0;
     need_count = 0;
+    locations_changed = 0;
     cart = new Array();
     cart_items = new Array();
     draw_cart();
@@ -69,6 +75,20 @@ function init_table() {
     }
     id_div.innerHTML = "";
     datatbl = new Array();
+}
+
+function inventory() {
+    var script = 'onServer/inventory.php';
+    $.ajax({
+            method: "POST",
+            url: script,
+            data: "actions=" + JSON.stringify(actionlist),
+            success: function(data, textStatus, jqXhr) {
+                //$('#test').empty().append(JSON.stringify(data, null, 2));
+                
+                start_over();
+                }
+            });
 }
 
 function init_locations() {
@@ -115,8 +135,8 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
         case 'NFS':
             // inventory or check out
             if(mode == 'inventory') {
-                html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'inventory\')">Inv</button>';
-                html += '<button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'check out\')">Out</button>';
+                html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button>';
+                html += '<button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Check Out\')">Out</button>';
             }
             // manager can remove from show
             if(manager) {
@@ -127,7 +147,7 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
         case 'Not In Show':
         default:
             // must check in
-            html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'check in\')">In</button>';
+            html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Check In\')">In</button>';
     }
     if(html == '') { 
         html += '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'alert\')">N/A</button>';
@@ -166,6 +186,7 @@ function build_table(tableData) {
                 { title: 'Artist', field: 'name', headerWordWrap: true, headerFilter: true, tooltip: true},
                 { title: 'Item', field: 'title', headerWordWrap: true, headerFilter: true, tooltip: true},
                 { title: 'Status', field: 'status', headerWordWrap: true, headerFilter: true, tooltip: true},
+                { title: 'Updated', field: 'time_updated', headerWordWrap: true, headerFilter: true, tooltip: true},
                 { title: 'Loc.', field: 'location', width: 50, headerWordWrap: true, headerFilter: true, tooltip: true},
                 {field: 'index', visible: false,},
                 { title: 'Qty.', field: 'qty', width: 50, headerSort: false, tooltip: true},
@@ -218,6 +239,7 @@ function remove_from_cart(index) {
 
 function add_to_cart(index, action) {
     var item = datatbl[index];
+    actionlist.push(create_action(action, item.id, null));
     $('#test').empty().append(action + '\n' + JSON.stringify(item, null, 2));
 
     if (cart_items.includes(item['id']) == false) {
@@ -229,7 +251,9 @@ function add_to_cart(index, action) {
     }
 
     switch(action) {
-    case 'check in':
+    case 'Check In':
+    case 'Inventory':
+    case 'Check Out':
         //ready for checkin?
         //does item have location?
         if(item['location'] == "") {
@@ -249,6 +273,11 @@ function add_to_cart(index, action) {
     draw_cart();
 }
 
+function changed_loc() { 
+    locations_changed++; 
+    location_change_button.hidden = (locations_changed == 0);
+}
+
 function draw_cart_row(rownum) {
     var item = cart[rownum];
     var html = `
@@ -261,7 +290,7 @@ function draw_cart_row(rownum) {
 `;
     var trailing_html = '</div></div>';
 
-    var location_select = '<select '
+    var location_select = '<select onchange="changed_loc();"'
     if(item['need_location']) { location_select += 'class="bg-warning" '; }
     location_select += 'id="loc_' + item['id'] + '">';
     if(item['location'] == "") {
@@ -335,7 +364,19 @@ function draw_cart_row(rownum) {
     return html + action_html + trailing_html;
 }
 
-function update_loc(row, loc) {
+function change_locs() {
+    for (row in cart) {
+        var item = cart[row]['id'];
+        var new_loc = document.getElementById('loc_' + item).value;
+        if(new_loc != cart[row]['location']) {
+            update_loc(row, new_loc, false);
+        }
+    }
+
+    draw_cart();
+}
+
+function update_loc(row, loc, redraw=true) {
     var item = cart[row]['id'];
     if(loc == undefined) { loc = document.getElementById('loc_' + item).value; }
     console.log("Shift " + item + " to " + loc);
@@ -353,7 +394,7 @@ function update_loc(row, loc) {
         }
     }
 
-    draw_cart();
+    if(redraw) { draw_cart(); }
 }
 
 
@@ -363,7 +404,55 @@ function confirm_count(row) {
     draw_cart();
 }
 
+function toggle_visibility(id) {
+    var element = document.getElementById(id);
+    var element_show = document.getElementById(id + "_show");
+    var element_hide = document.getElementById(id + "_hide");
+
+    if(element.style.display == "none") {
+        element.style.display = "block";
+        element_hide.style.display = "inline";
+        element_show.style.display = "none";
+    } else {
+        element.style.display = "none";
+        element_hide.style.display = "none";
+        element_show.style.display = "inline";
+    }
+
+}
+
+function draw_notes() {
+    var html = `<div onclick="toggle_visibility('artInventory_pending')">` + actionlist.length + ` Pending Actions
+    <span id="artInventory_pending_show">show</span><span id="artInventory_pending_hide" style="display: none">hide</span>
+    <div id="artInventory_pending" class="text-info" style="display: none"><ul>`;
+
+    for (action in actionlist) {
+        html += "<li>" + actionlist[action]['action'] + " " + actionlist[action]['item'] 
+        switch(actionlist[action]['action']){
+            case "Set Location": 
+                html += " to " + actionlist[action]['value']
+                break;
+            case "Check In":
+            default:
+                break;
+        }
+        html += '</li>';
+
+    }
+        
+    html += `</ul></div>`;
+    if(need_count > 0) {
+        html += "<div>Please Confirm current quantity for " + need_count + " items.</div>";
+    }
+    if(need_location > 0) {
+        html += "<div>Please set locations for " + need_location + " items.</div>";
+    }
+
+    return html;
+}
+
 function draw_cart() {
+    locations_changed = 0;
     num_rows = 0;
     var html = `
 <div class="container-fluid">
@@ -378,11 +467,23 @@ function draw_cart() {
         html += draw_cart_row(rownum);
     }
 
+    if(actionlist.length > 0) {
+        html += `
+<div class="row">
+    <div class="col-sm-12 text-bg-secondary">Notes</div>
+</div>
+`;
+
+        html += draw_notes();
+    }
+
     html += '</div>' //end container-fluid
     cart_div.innerHTML=html;
 
     //clear buttons
     startover_button.hidden = num_rows == 0;
+    inventory_update_button.hidden = !((num_rows > 0) & (need_count == 0) & (need_location == 0));
+    location_change_button.hidden = (locations_changed == 0);
 }
 
 function create_action(action, item, value) {

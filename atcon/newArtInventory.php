@@ -80,7 +80,23 @@ echo $conid;
                                     Artist #:
                                 </div>
                                 <div class="col-sm-3">
-                                    <input type="number" id="artist_num_lookup" name="artist" min=100 max=300 placeholder="Artist #"/>
+                                    <?php
+$artistQ = <<<EOS
+SELECT S.art_key, V.name 
+FROM artshow S
+JOIN artist A ON A.id=S.artid
+JOIN vendors V on V.id=A.vendor
+WHERE S.conid=?
+EOS;
+$artistR = dbSafeQuery($artistQ, 'i', array($conid));
+                                    ?>
+                                    <select id="artist_num_lookup" name="artist" min=100 max=300 placeholder="Artist #">
+                                        <?php 
+while($artist = fetch_safe_assoc($artistR)) {
+    echo "<option value='" . $artist['art_key'] . "'>". $artist['art_key'] . " - " . $artist['name'] . "</option>";
+}
+                                        ?>
+                                    </select>
                                 </div>
                                 <div class="col-sm-2">
                                     Item #:
@@ -112,8 +128,8 @@ echo $conid;
             <div id="cart"></div>
             <div class="row">
                 <div class="col-sm-12 mt-3">
-                    <button type="button" class="btn btn-success btn-small" id="complete_btn" onclick="complete_over();" hidden>Complete Transaction</button>
-                    <button type="button" class="btn btn-primary btn-small" id="review_btn" onclick="start_review();" hidden>Review Data</button>
+                    <button type="button" class="btn btn-success btn-small" id="inventory_btn" onclick="inventory();" hidden>Update Inventory</button>
+                    <button type="button" class="btn btn-success btn-small" id="location_change_btn" onclick="change_locs();" hidden>Set Changed Locations</button>
                     <button type="button" class="btn btn-warning btn-small" id="startover_btn" onclick="start_over();">Start Over</button>
                     <button type="button" class="btn btn-warning btn-small" id="void_btn" onclick="void_trans();" hidden>Void</button>
                     <button type="button" class="btn btn-primary btn-small" id="next_btn" onclick="start_over(0);" hidden>Next Customer</button>
