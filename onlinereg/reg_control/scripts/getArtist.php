@@ -35,11 +35,11 @@ $artistQ = <<<EOS
 SELECT A.id, vendor, login, ship_addr, ship_addr2, ship_city, ship_state, ship_zip, ship_country, agent, agent_request
 FROM artist A
 LEFT OUTER JOIN artshow S ON (S.artid=A.id)
-WHERE artist=?;
+WHERE artist=? and conid=?;
 EOS;
 
 $person = fetch_safe_assoc(dbSafeQuery($perQ, 'ii', array($conid, $perid)));
-$artist = fetch_safe_assoc(dbSafeQuery($artistQ, 'i', array($perid)));
+$artist = fetch_safe_assoc(dbSafeQuery($artistQ, 'ii', array($perid, $conid)));
 
 $agent = null;
 if(isset($artist['agent']) && $artist['agent']!="") {
