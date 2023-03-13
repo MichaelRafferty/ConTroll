@@ -74,6 +74,7 @@ if ($_POST && $_POST['ajax_request_action']) {
     $ajax_request_action = $_POST['ajax_request_action'];
 }
 if ($ajax_request_action == '' ) {
+    RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
 if (!check_atcon($method, $conid)) {

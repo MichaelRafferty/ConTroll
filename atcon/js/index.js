@@ -6,6 +6,9 @@
 //      Logout
 //      Change Password
 
+//import Jquery from 'Jquery';
+//import JqueryUI from 'Jquery UI';
+
 // Change Password Support
 // Placeholders for field elements
 var change_passwd_btn = null;
@@ -108,11 +111,7 @@ function change_pw() {
             type: "POST",
             data: postData,
             success: changeSucess,
-            error: function(jqXHR, exception) {
-                message = JSON.stringify(jqXHR);
-                show_message(message,  'error');
-                change_passwd_btn.disabled = false;
-            }
+            error: showAjaxError,
         });
     } else {
         // reenable the button to allow them to correct the error
@@ -143,38 +142,4 @@ function changeSucess(data, textStatus, jqXHR) {
         show_message(JSON.stringify(data), 'warn');
     }
     change_passwd_btn.disabled = false;
-}
-
-// show_message:
-// apply colors to the message div and place the text in the div, first clearing any existing class colors
-// type:
-//  error: (white on red) bg-danger
-//  warn: (black on yellow-orange) bg-warning
-//  success: (white on green) bg-success
-function show_message(message, type) {
-    "use strict";
-    if (message_div.classList.contains('bg-danger')) {
-        message_div.classList.remove('bg-danger');
-    }
-    if (message_div.classList.contains('bg-success')) {
-        message_div.classList.remove('bg-sucess');
-    }
-    if (message_div.classList.contains('bg-warning')) {
-        message_div.classList.remove('bg-warning');
-    }
-    if (message_div.classList.contains('text-white')) {
-        message_div.classList.remove('text-white');
-    }
-    if (type === 'error') {
-        message_div.classList.add('bg-danger');
-        message_div.classList.add('text-white');
-    }
-    if (type === 'success') {
-        message_div.classList.add('bg-success');
-        message_div.classList.add('text-white');
-    }
-    if (type === 'warn') {
-        message_div.classList.add('bg-warning');
-    }
-    message_div.innerHTML = message;
 }

@@ -18,60 +18,48 @@ if (!check_atcon($method, $conid)) {
 }
 
 page_init($page, 'admin',
-    /* css */ array('css/registration.css'),
-    /* js  */ array('js/admin.js')
+    /* css */ array('https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css',
+                    'https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator_bootstrap5.min.css',
+                    'css/registration.css'),
+    /* js  */ array('https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js',
+                    'js/admin.js')
     );
-
-$con = get_conf("con");
-$conid=$con['id'];
-$method='manager';
 
 //var_dump($_SESSION);
 //echo $conid;
 
 ?>
-<script>
-  $(function() {
-    $('#addUser').dialog({
-        title: "New User",
-        autoOpen: false,
-        width: 500,
-        height: 300,
-        modal: true
-    });
-  });
-</script>
-<div id='addUser'>
-    <form id='addUserForm' action='javascript:void(0);'>
-        Perid: <input name='perid'/><br/>
-        Passwd: <input type='password' name='newpw'/><br/>
-        <table>
-            <tr><th>Reg Checkin</th><th>Cashier</th><th>Art Inventory</th><th>Art Sales</th><th>Admin</th></tr>
-            <tr>
-                <td><input name='data_entry' type='checkbox'/></td>
-                <td><input name='register' type='checkbox'/></td>
-                <td><input name='artinventory' type='checkbox'/></td>
-                <td><input name='artsales' type='checkbox'/></td>
-                <td><input name='manager' type='checkbox'/></td>
-            </tr>
-        </table>
-        <input onclick='addUser()' type='Submit' value='Add Person'/>
-    </form>
+<div class='container-fluid mt-4'>
+    <div class="row">
+        <div class="col-sm-auto table-bordered table-sm" id="userTab"></div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-sm-4">
+            <button type='button' class='btn btn-secondary btn-sm' id='add_user_btn' onclick='addUser();'>Add User</button>
+            <button type='button' class='btn btn-secondary btn-sm' id='undo_btn' onclick='undo();' disabled>Undo</button>
+            <button type='button' class='btn btn-secondary btn-sm' id='redo_btn' onclick='redo();' disabled>Redo</button>
+            <button type='button' class='btn btn-primary btn-sm' id='save_btn' onclick='save();' disabled>Save</button>
+        </div>
+    </div>
 </div>
-<div id='main'>
-  <table>
-    <thead>
-        <tr>
-        <th>perid</th><th>Name</th>
-        <th>Reg Checkin</th><th>Cashier</th>
-        <th>Art Inventory</th><th>Art Sales</th>
-        <th>Admin</th>
-        <th>Update</th>
-        </tr>
-    </thead>
-    <tbody id='users'>
-    </tbody>
-  </table>
-    <button onclick='$("#addUser").dialog("open");' class='bigButton'>Add User</button>
+<div id='addUser' class='container-fluid mt-4' hidden>
+    <div class='row'>
+        <div class='col-sm-6'>
+            <div class='form-floating mb-3'>
+                <input type='text' name='name_search' id='name_search' class='form-control' oninput="search_name_changed();"
+                       placeholder='First and Last Name Fragment' required/>
+                <label for='name_search'>User to Add: (Type parts of first and last name or enter the perid):</label>
+            </div>
+        </div>
+    </div>
+    <div class='row mb-2'>
+        <div class='col-sm-4'>
+            <button type='button' class='btn btn-primary btn-sm' id='search_btn' onclick='search();'>Search Users</button>
+        </div>
+    </div>
+    <div class='row mt-2'>
+        <div class='col-sm-auto table-bordered table-sm' id='searchTab'></div>
+    </div>
 </div>
+<div id="result_message" class="mt-4 p-2"></div>
 <pre id='test'></pre>
