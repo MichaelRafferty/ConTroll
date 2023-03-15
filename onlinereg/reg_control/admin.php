@@ -11,6 +11,7 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 
 page_init($page,
     /* css */ array('https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css',
+                //  'https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator_bootstrap5.min.css',
                     'css/base.css',
                    ),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
@@ -64,7 +65,7 @@ $conid=$con['id'];
     ?>
     <ul class="nav nav-tabs mb-3" id="admin-tab" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="userr-tab" data-bs-toggle="pill" data-bs-target="#users-pane" type="button" role="tab" aria-controls="nav-users" aria-selected="true" onclick="settab('users-pane');">Users</button>
+            <button class="nav-link active" id="users-tab" data-bs-toggle="pill" data-bs-target="#users-pane" type="button" role="tab" aria-controls="nav-users" aria-selected="true" onclick="settab('users-pane');">Users</button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="consetup-tab" data-bs-toggle="pill" data-bs-target="#consetup-pane" type="button" role="tab" aria-controls="nav-consetup" aria-selected="false" onclick="settab('consetup-pane');">Current Convention Setup</button>
