@@ -22,9 +22,10 @@ date_default_timezone_set("America/New_York");
 
 function isWebRequest()
 {
-return isset($_SERVER) && isset($_SERVER['HTTP_USER_AGENT']);
+    return isset($_SERVER) && isset($_SERVER['HTTP_USER_AGENT']);
 }
 
+/*
 function ageDialog($con)
 {
     $ageListR = callHome("ageList.php", "POST", "con=" . $con['id']);
@@ -51,54 +52,56 @@ function ageDialog($con)
         </select>
         <input type='submit' id='getAgeSubmit' value='Set Age'
             onclick='addBadgeAddon($("#getAgeAction").val(),
-                                   $("#getAgeBadgeId").val(), 
+                                   $("#getAgeBadgeId").val(),
                                    $("#getAgeBadgeWhich").val(),
-                                   $("#getAgeSelect").val(), true); 
+                                   $("#getAgeSelect").val(), true);
                      $("#getAge").dialog("close");
                      return false;' />
     </form>
 </div>
 <?php }
-
-function page_init($title, $tab, $css, $js) {
+*/
+function page_init($title, $tab, $css, $js)
+{
     $con = get_conf('con');
     $label = $con['label'];
     global $perms;
-    if(isWebRequest()) {
-?>
+    if (isWebRequest()) {
+        ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <title>
-     <?php echo $title . ' -- ' . $label; ?> Reg
+        <?php echo $title . ' -- ' . $label; ?> Reg
     </title>
     <link href='/css/jquery-ui-1.13.1.css' rel='stylesheet' type='text/css' />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous" />
     <link href="css/base.css" rel='stylesheet' type='text/css' />
-    <?php  if(isset($css) && $css != null) { 
-        foreach ($css as $sheet) { ?>
+        <?php  if (isset($css) && $css != null) {
+            foreach ($css as $sheet) { ?>
     <link href='<?php echo $sheet; ?>' rel=stylesheet type='text/css' />
-    <?php }
-    } ?>
+            <?php }
+        } ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
     <script type='text/javascript' src='/js/jquery-min-3.60.js'></script>
     <script type='text/javascript' src='/js/jquery-ui.min-1.13.1.js'></script>
     <script type='text/javascript' src='/js/base.js'></script>
-    <?php
-    if(isset($js) && $js != null) { foreach ($js as $script) {
-?><script src='<?php echo $script; ?>'
+        <?php
+        if (isset($js) && $js != null) {
+            foreach ($js as $script) {
+                ?><script src='<?php echo $script; ?>'
         type='text/javascript'></script><?php
-
-    }}
-    ?>
+            }
+        }
+        ?>
 </head>
 <body>
-    <?php
-    page_head($title);
+        <?php
+        page_head($title);
     //con_info();
-    if(isset($_SESSION['userhash'])) {
-    ?>
+        if (isset($_SESSION['userhash'])) {
+            ?>
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-10 text-bg-primary">
@@ -115,22 +118,22 @@ function page_init($title, $tab, $css, $js) {
                                 <a class="nav-link navitem <?php echo $tab == "checkin" ? "active" : ""; ?>" <?php echo $tab == "checkin" ? 'aria-current="page"' : ""; ?> href="regpos.php">Reg Check In</a>
                             </li>
                             <?php  }
-                      if (in_array('cashier', $perms)) { ?>
+                            if (in_array('cashier', $perms)) { ?>
                             <li>
                                 <a class="nav-link navitem <?php echo $tab == "cashier" ? "active" : ""; ?>" <?php echo $tab == "cashier" ? 'aria-current="page"' : ""; ?> href="regpos.php?mode=cashier">Reg Cashier</a>
                             </li>
                             <?php  }
-                      if (in_array('artshow', $perms)) { ?>
+                            if (in_array('artshow', $perms)) { ?>
                             <li>
                                 <a class="nav-link navitem <?php echo $tab == "artshow" ? "active" : ""; ?>" <?php echo $tab == "artshow" ? 'aria-current="page"' : ""; ?> href="artsales.php">Artshow Cashier</a>
                             </li>
                             <?php  }
-                      if (in_array('data-entry', $perms) || in_array('cashier', $perms)) { ?>
+                            if (in_array('data-entry', $perms) || in_array('cashier', $perms)) { ?>
                             <li>
                                 <a class="nav-link navitem <?php echo $tab == "printform" ? "active" : ""; ?>" <?php echo $tab == "printform" ? 'aria-current="page"' : ""; ?> href="printform.php">Printform</a>
                             </li>
                             <?php  }
-                      if (in_array('manager', $perms)) { ?>
+                            if (in_array('manager', $perms)) { ?>
                             <li>
                                 <a class="nav-link navitem <?php echo $tab == "admin" ? "active" : ""; ?>" <?php echo $tab == "admin" ? 'aria-current="page"' : ""; ?> href="admin.php">Administrator</a>
                             </li>
@@ -161,15 +164,16 @@ function page_init($title, $tab, $css, $js) {
             </div>
         </div>
     </div>
-    <?php
+            <?php
+        }
+    } else {
+        page_head($title);
     }
-  } else {
-    page_head($title);
-  }
 }
 
-function page_head($title) {
-    $con=get_conf('con');
+function page_head($title)
+{
+    $con = get_conf('con');
     $label = $con['label'];
     ?>
     <div id='titlebar' class="container-fluid bg-primary text-white">
@@ -180,7 +184,8 @@ function page_head($title) {
     <?php
 }
 
-function con_info() {
+function con_info()
+{
     $con = get_conf("con");
 ##        $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."';");
 ##        $badgeCount = fetch_safe_array($count_res);
@@ -204,6 +209,7 @@ function con_info() {
     <?php
 }
 
+/*
 function callHome($script, $method, $data) {
 #print("<br/>" . $script ." :" . strtoupper($method) . " :'". $data . "'<br/>");
     $access = get_conf('user');
@@ -234,18 +240,22 @@ function callHome($script, $method, $data) {
 
     return($result);
 }
+*/
 
-function page_foot($title) {
+function page_foot($title)
+{
     ?>
 </body>
 </html>
-<?php
+    <?php
 }
 
-function paymentDialogs() {
-  $con = get_conf('con');
-  $taxRate = array_key_exists('taxRate', $con) ? $con['taxRate'] : 0;
-?>
+function paymentDialogs()
+{
+ /* obsolete method, to be phased out, only used by art sales right now */
+    $con = get_conf('con');
+    $taxRate = array_key_exists('taxRate', $con) ? $con['taxRate'] : 0;
+    ?>
 <script>
     $(function() {
     $('#getAge').dialog({
@@ -308,7 +318,7 @@ function paymentDialogs() {
 <style>
     ui-dialog { padding: .3em; }
 </style>
-<?php ageDialog($con); ?>
+    <?php ageDialog($con); ?>
 <div id='signature' class='dialog'>
     <div id='signatureHolder'></div>
     <button id='signaturePrint' class='bigButton'
@@ -500,11 +510,12 @@ function paymentDialogs() {
         </div>
         </form>
 </div>
-<?php
+    <?php
 }
 
-$perms = array();
-function check_atcon($method, $conid) {
+$perms = [];
+function check_atcon($method, $conid)
+{
     global $perms;
     if (count($perms) == 0) {
         $q = <<<EOS
@@ -513,7 +524,7 @@ FROM atcon_user u
 JOIN atcon_auth a ON (a.authuser = u.id)
 WHERE u.perid=? AND u.userhash=? AND u.conid=?;
 EOS;
-        $r = dbSafeQuery($q, 'ssi', array($_SESSION['user'], $_SESSION['userhash'], $conid));
+        $r = dbSafeQuery($q, 'ssi', [$_SESSION['user'], $_SESSION['userhash'], $conid]);
         if ($r->num_rows > 0) {
             while ($l = fetch_safe_assoc($r)) {
                 array_push($perms, $l['auth']);
@@ -522,7 +533,7 @@ EOS;
     }
     return in_array($method, $perms);
 }
-
+/*
 function initReceipt() {
   $con = get_conf('con');
   $width = 30;
@@ -588,7 +599,7 @@ function closeReceipt($info) {
 
   return $return;
 }
-
+*/
 function RenderErrorAjax($message_error)
 {
     global $return500errors;
@@ -605,6 +616,7 @@ function Render500ErrorAjax($message_error)
     header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
     echo "$message_error";
 }
+/*
 function passwdForm() {
 ?>
 <div id='passwordWrap'>
@@ -624,4 +636,5 @@ function passwdForm() {
 </div>
 <?php
 }
+*/
 ?>

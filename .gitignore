@@ -4,11 +4,13 @@
 
 /config/
 /Composer/
+/Composer
 /google_client/
 /BalticonReg.phpproj
 /BalticonReg.sln
 /BalticonReg.phpproj.user
 /google_client/
+/google_client
 /google-api-php-client--PHP8.0/
 # Visual Studio Stuff
 /.vs/
@@ -19,20 +21,7 @@ dead
 /onlinereg/javascript/d3-7.js
 /onlinereg/images/balticon56.png
 /onlinereg/images/balticon57.png
+/.idea/
 /.idea/.gitignore
-/.idea/BalticonReg.iml
-/.idea/modules.xml
-/.idea/php.xml
-/.idea/inspectionProfiles/Project_Default.xml
-/.idea/sqldialects.xml
-/.idea/vcs.xml
-/.idea/workspace.xml
-/.idea/dataSources/0f2676da-0348-42cb-9db3-cc42a923806a.xml
-/.idea/dataSources.local.xml
-/.idea/dataSources.xml
-/.idea/dataSources/0f2676da-0348-42cb-9db3-cc42a923806a/storage_v2/_src_/schema/information_schema.FNRwLQ.meta
-/.idea/dataSources/0f2676da-0348-42cb-9db3-cc42a923806a/storage_v2/_src_/schema/performance_schema.kIw0nw.meta
-/.idea/dataSources/0f2676da-0348-42cb-9db3-cc42a923806a/storage_v2/_src_/schema/reg.lLgBAA.meta
-/.idea/dataSources/0f2676da-0348-42cb-9db3-cc42a923806a/storage_v2/_src_/schema/reg.lLgBAA.zip
-/.idea/jsLibraryMappings.xml
+
 /atcon/scripts/obsolete/

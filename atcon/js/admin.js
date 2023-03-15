@@ -32,14 +32,15 @@ $(document).ready(function() {
     searchdiv = document.getElementById('addUser');
     search_field = document.getElementById('name_search');
 
-    loadInitialData();
+    loadInitialData('all');
 });
 
-function loadInitialData() {
+function loadInitialData(loadtype) {
     'use strict';
 
     var postData = {
-        ajax_request_action: 'authUsers',
+        ajax_request_action: 'loadData',
+        load_type: loadtype
     };
     $.ajax({
         method: "POST",
@@ -334,7 +335,7 @@ function save() {
             if (data['message'] !== undefined) {
                 show_message(data['message'], 'success');
             }
-            loadInitialData();
+            loadInitialData('users');
         },
         error: showAjaxError,
     });

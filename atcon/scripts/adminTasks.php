@@ -11,11 +11,16 @@ global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
 
-// authUsers: return an array of objects of valid users of ATCON with their permission atoms
-function authUsers($conid) : void
+// loadData:
+//  users or all: return an array of objects of valid users of ATCON with their permission atoms
+//  printers or all: return an array of server and printers
+function loadData($conid) : void
 {
-    $users = array();
-    $query = <<<EOS
+    $loadtypes = $_POST['load_type'];
+    $response['load_type'] = $loadtypes;
+    if ($loadtypes == 'all' || $loadtypes == 'users') {
+        $users = array();
+        $query = <<<EOS
 SELECT perid, concat(P.first_name, ' ', P.last_name) as name, A.auth
 FROM atcon_user U
 LEFT OUTER JOIN atcon_auth A ON (A.authuser = U.id)
@@ -23,28 +28,61 @@ JOIN perinfo P ON (P.id=U.perid)
 WHERE conid=?
 ORDER BY perid, auth;
 EOS;
-    $userQ = dbSafeQuery($query, 'i', array($conid));
-    while ($user = fetch_safe_assoc($userQ)) {
-        $perid = $user['perid'];
-        if (isset($users[$perid])) {
-            $users[$perid][$user['auth']] = true;
-        } else {
-            $users[$perid] = array(
-                'id' => $perid,
-                'name' => $user['name'],
-                'delete' => "🗑", //html_entity_decode("&#x1F5D1;"),
-            );
-            $users[$perid][$user['auth']] = true;
+        $userQ = dbSafeQuery($query, 'i', array($conid));
+        while ($user = fetch_safe_assoc($userQ)) {
+            $perid = $user['perid'];
+            if (isset($users[$perid])) {
+                $users[$perid][$user['auth']] = true;
+            } else {
+                $users[$perid] = array(
+                    'id' => $perid,
+                    'name' => $user['name'],
+                    'delete' => "🗑", //html_entity_decode("&#x1F5D1;"),
+                );
+                $users[$perid][$user['auth']] = true;
+            }
         }
+        mysqli_free_result($userQ);
+        $data = array();
+        foreach ($users as $user) {
+            $data[] = $user;
+        }
+        $response['users'] = $data;
+        $response['userid'] = $_SESSION['user'];
     }
-    mysqli_free_result($userQ);
-    $data = array();
-    foreach ($users as $user){
-        $data[] = $user;
-    }
-    $response['users'] = $data;
-    $response['userid'] = $_SESSION['user'];
+    if ($loadtypes == 'all' || $loadtypes == 'printers') {
+        $servers = array();
+        $printers = array();
 
+        $serverSQL = <<<EOS
+SELECT name, address, location, active
+FROM servers
+UNION
+SELECT g.name, g.address, '' as location, 0 as active
+FROM printservers.servers g
+LEFT OUTER JOIN servers s ON (g.name = s.name)
+WHERE s.name IS NULL
+ORDER BY active DESC, name ASC;
+EOS;
+        $serverQ = dbQuery($serverSQL);
+        while ($server = fetch_safe_assoc($serverQ)) {
+            $servers[] = $server;
+        }
+        $response['servers'] = $servers;
+
+        $printersSQl = <<<EOS
+SELECT serverName, printerName, printerType, p.active
+FROM printers p
+JOIN servers s ON (p.serverName = s.name)
+WHERE s.active = 1
+ORDER BY printerType, printerName;
+EOS;
+        $printerQ = dbQuery($printersSQl);
+        while ($printer = fetch_safe_assoc($printerQ)) {
+            $printers[] = $printer;
+        }
+        $response['printers'] = $printers;
+    }
     ajaxSuccess($response);
 }
 
@@ -282,8 +320,8 @@ if (!check_atcon($method, $conid)) {
     exit();
 }
 switch ($ajax_request_action) {
-    case 'authUsers':
-        authUsers($conid);
+    case 'loadData':
+        loadData($conid);
         break;
     case 'searchUsers':
         searchUsers($conid);
