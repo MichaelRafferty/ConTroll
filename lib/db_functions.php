@@ -1,4 +1,5 @@
 <?php
+
 // This is now a common db_functions for all of the reg sections including:
 //      onlinereg
 //      reg_control
@@ -18,7 +19,8 @@ $logdest = $log['web'];
 
 // Function web_error_log($string)
 // $string = string to write to file $logdest with added newline at end
-function web_error_log($string) {
+function web_error_log($string): void
+{
     global $logdest;
 
     error_log(date("Y-m-d H:i:s") . ": " . $string . "\n", 3, $logdest);
@@ -26,17 +28,19 @@ function web_error_log($string) {
 // Function var_error_log()
 // $object = object to be dumped to the PHP error log
 // the object is walked and written to the PHP error log using var_dump and a redirect of the output buffer.
-function var_error_log( $object=null ){
+function var_error_log($object = null): void
+{
     global $logdest;
     ob_start();                    // start buffer capture
-    var_dump( $object );           // dump the values
+    var_dump($object);           // dump the values
     $contents = ob_get_contents(); // put the buffer into a variable
     ob_end_clean();                // end capture
-    error_log( $contents . "\n", 3, $logdest);        // log contents of the result of var_dump( $object )
+    error_log($contents . "\n", 3, $logdest);        // log contents of the result of var_dump( $object )
 }
 
 // Common function to log a mysql error
-function log_mysqli_error($query, $additional_error_message) {
+function log_mysqli_error($query, $additional_error_message):void
+{
     global $dbObject;
     $result = "";
     error_log("mysql query error in {$_SERVER["SCRIPT_FILENAME"]}");
@@ -45,7 +49,7 @@ function log_mysqli_error($query, $additional_error_message) {
     }
     $errno = $dbObject->errno;
     if (!empty($errno)) {
-        $query_error = "Error (". $dbObject->errno .") " . $dbObject->error.  ")";
+        $query_error = "Error (" . $dbObject->errno . ") " . $dbObject->error .  ")";
         error_log($query_error);
         $result = $query_error . "<br>\n";
     }
@@ -56,7 +60,8 @@ function log_mysqli_error($query, $additional_error_message) {
     echo $result;
 }
 
-function db_connect() {
+function db_connect():bool
+{
     global $dbObject;
     global $db_ini;
 
@@ -71,11 +76,12 @@ function db_connect() {
             $db_ini['mysql']['user'],
             $db_ini['mysql']['password'],
             $db_ini['mysql']['db_name'],
-            $port);
+            $port
+        );
 
-        if($dbObject->connect_errno) {
-            echo "Failed to connect to MySQL: (" . $dbObject->connect_errno .") " . $dbObject->connect_error;
-            error_log("Failed to connect to MySQL: (" . $dbObject->connect_errno .") " . $dbObject->connect_error);
+        if ($dbObject->connect_errno) {
+            echo "Failed to connect to MySQL: (" . $dbObject->connect_errno . ") " . $dbObject->connect_error;
+            error_log("Failed to connect to MySQL: (" . $dbObject->connect_errno . ") " . $dbObject->connect_error);
         }
 
         // for mysql with non standard sql_mode (from zambia point of view) temporarily force ours
@@ -98,16 +104,18 @@ function db_connect() {
             }
         }
     }
+    return true;
 }
 
 // dbSafeQuery - using prepare safely perform a db operation
 // This should replace all database calls to dbQuery that use variable data in their query string
 //
-function dbSafeQuery($query, $typestr, $value_arr) {
+function dbSafeQuery($query, $typestr, $value_arr)
+{
     global $dbObject;
-    $res=null;
-    $stmt=null;
-    if(!is_null($dbObject)) {
+    $res = null;
+    $stmt = null;
+    if (!is_null($dbObject)) {
         try {
             // prepare the query and check its syntax (parse)
             $stmt = $dbObject->prepare($query);
@@ -138,8 +146,7 @@ function dbSafeQuery($query, $typestr, $value_arr) {
                 log_mysqli_error($query, "Result Error");
                 return false;
             }
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             log_mysqli_error("", $e->getMessage());
             return false;
         }
@@ -155,11 +162,12 @@ function dbSafeQuery($query, $typestr, $value_arr) {
 // returns the id of the created row
 // This should replace all database calls to dbInsert that use variable data in their SQL string
 //
-function dbSafeInsert($sql, $typestr, $value_arr) {
+function dbSafeInsert($sql, $typestr, $value_arr)
+{
     global $dbObject;
-    $stmt=null;
-    $id=null;
-    if(!is_null($dbObject)) {
+    $stmt = null;
+    $id = null;
+    if (!is_null($dbObject)) {
         try {
             // prepare the sql statement and check its syntax (parse)
             $stmt = $dbObject->prepare($sql);
@@ -186,8 +194,7 @@ function dbSafeInsert($sql, $typestr, $value_arr) {
 
             // get the inserted id
             $id = $dbObject->insert_id;
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             log_mysqli_error("", $e->getMessage());
             return false;
         }
@@ -203,11 +210,12 @@ function dbSafeInsert($sql, $typestr, $value_arr) {
 // returns the number of rows modified/deleted (actually changed a value)
 // This should replace all database calls to db functions that use variable data in their SQL string
 //
-function dbSafeCmd($sql, $typestr, $value_arr) {
+function dbSafeCmd($sql, $typestr, $value_arr)
+{
     global $dbObject;
-    $stmt=null;
-    $numrows=null;
-    if(!is_null($dbObject)) {
+    $stmt = null;
+    $numrows = null;
+    if (!is_null($dbObject)) {
         try {
             // prepare the sql statement and check its syntax (parse)
             $stmt = $dbObject->prepare($sql);
@@ -234,8 +242,7 @@ function dbSafeCmd($sql, $typestr, $value_arr) {
 
             // get the number of rows affected
             $numrows = $dbObject->affected_rows;
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             log_mysqli_error("", $e->getMessage());
             return false;
         }
@@ -250,10 +257,11 @@ function dbSafeCmd($sql, $typestr, $value_arr) {
 // returns the number of rows modified/deleted (actually changed a value)
 // This should replace all database calls to db functions that use variable data in their SQL string
 //
-function dbCmd($sql) {
+function dbCmd($sql)
+{
     global $dbObject;
-    $numrows=null;
-    if(!is_null($dbObject)) {
+    $numrows = null;
+    if (!is_null($dbObject)) {
         try {
             // execute the command
             $res = $dbObject->query($sql);
@@ -263,8 +271,7 @@ function dbCmd($sql) {
             }
             // get the number of rows affected
             $numrows = $dbObject->affected_rows;
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             log_mysqli_error("", $e->getMessage());
             return false;
         }
@@ -275,13 +282,20 @@ function dbCmd($sql) {
         return false;
     }
 }
-function dbQuery($query) {
+function dbQuery($query)
+{
     global $dbObject;
-    $res=null;
-    if(!is_null($dbObject)) {
-        $res = $dbObject->query($query);
-        if($dbObject->errno) {
-            log_mysqli_error($query, "Query Error");
+    $res = null;
+    if (!is_null($dbObject)) {
+        try {
+            // execute the command
+            $res = $dbObject->query($query);
+            if ($res === false || $dbObject->errno) {
+                log_mysqli_error($query, "Query Error");
+                return false;
+            }
+        } catch (Exception $e) {
+            log_mysqli_error($query, $e->getMessage());
             return false;
         }
         return $res;
@@ -292,12 +306,13 @@ function dbQuery($query) {
     }
 }
 
-function dbInsert($query) {
+function dbInsert($query)
+{
     global $dbObject;
-    if(!is_null($dbObject)) {
+    if (!is_null($dbObject)) {
         $res = $dbObject->query($query);
         $id = $dbObject->insert_id;
-        if($dbObject->errno) {
+        if ($dbObject->errno) {
             log_mysqli_error($query, "Insert Error");
             return false;
         }
@@ -311,15 +326,18 @@ function dbInsert($query) {
 
 
 
-function dbPrepare($query) {
+function dbPrepare($query)
+{
     global $dbObject;
-    if(!is_null($dbObject)) {
+    if (!is_null($dbObject)) {
         $res = $dbObject->prepare($query);
-        if(!$res) {
-            echo "Prepare Failed: (". $dbObject->errno . ") " . $dbObject->error;
-            error_log("Prepare Failed: (". $dbObject->errno . ") " . $dbObject->error);
+        if (!$res) {
+            echo "Prepare Failed: (" . $dbObject->errno . ") " . $dbObject->error;
+            error_log("Prepare Failed: (" . $dbObject->errno . ") " . $dbObject->error);
             return false;
-        } else { return $res; }
+        } else {
+            return $res;
+        }
     } else {
         echo "ERROR: DB Connection Not Open";
         error_log("ERROR: DB Connection Not Open");
@@ -327,31 +345,39 @@ function dbPrepare($query) {
     }
 }
 
-function sql_safe($string) {
+function sql_safe($string)
+{
     global $dbObject;
     return $dbObject->escape_string($string);
 }
 
-function register($email, $sub, $name) {
+function register($email, $sub, $name)
+{
     global $dbObject;
+
+    if (is_null($dbObject)) {
+        return false;
+    }
     $email = $dbObject->escape_string($email);
     $sub = $dbObject->escape_string($sub);
     $name = $dbObject->escape_string($name);
-    if(is_null($dbObject)) {return false;}
     $query = "INSERT INTO user (email, google_sub, name, new) values ('$email', '$sub', '$name', 'Y');";
     $res = $dbObject->query($query);
     $id = $dbObject->insert_id;
-    if($res && $id>0) { return $id; }
-    if($dbObject->errno) {
-        echo "<p>Query Error (". $dbObject->errno .") " . $dbObject->error ."</p>";
+    if ($res && $id > 0) {
+        return $id;
+    }
+    if ($dbObject->errno) {
+        echo "<p>Query Error (" . $dbObject->errno . ") " . $dbObject->error . "</p>";
         echo "<p>$query</p>";
         return false;
     }
     return $res;
 }
 
-function getPages($sub) {
-    $res = array();
+function getPages($sub)
+{
+    $res = [];
     $sql = <<<EOS
 SELECT DISTINCT A.id, A.name, A.display
 FROM user U
@@ -360,17 +386,20 @@ JOIN auth A ON (A.id = UA.auth_id)
 WHERE U.google_sub = ? AND A.page='Y'
 ORDER BY A.id;
 EOS;
-    $auths = dbSafeQuery($sql, 's', array($sub));
-    if(!$auths) { return false; }
-    while($new_auth = fetch_safe_assoc($auths)) {
+    $auths = dbSafeQuery($sql, 's', [$sub]);
+    if (!$auths) {
+        return false;
+    }
+    while ($new_auth = fetch_safe_assoc($auths)) {
         $res[count($res)] = $new_auth;
     }
     return $res;
 }
 
 
-function getAuthsById($id) {
-    $res = array();
+function getAuthsById($id)
+{
+    $res = [];
     $sql = <<<EOS
 SELECT A.name
 FROM user U
@@ -379,16 +408,19 @@ JOIN auth A ON (A.id = UA.auth_id)
 WHERE U.id = ?
 ORDER BY A.id;
 EOS;
-    $auths = dbSafeQuery($sql, 's', array($id));
-    if(!$auths) { return false; }
-    while($new_auth = fetch_safe_assoc($auths)) {
+    $auths = dbSafeQuery($sql, 's', [$id]);
+    if (!$auths) {
+        return false;
+    }
+    while ($new_auth = fetch_safe_assoc($auths)) {
         $res[count($res)] = $new_auth['name'];
     }
     return $res;
 }
 
-function getAuths($sub) {
-    $res = array();
+function getAuths($sub)
+{
+    $res = [];
     $sql = <<<EOS
 SELECT A.name
 FROM user U
@@ -397,17 +429,22 @@ JOIN auth A ON (A.id = UA.auth_id)
 WHERE U.google_sub = ?
 ORDER BY A.id;
 EOS;
-    $auths = dbSafeQuery($sql, 's', array($sub));
-    if(!$auths) { return false; }
-    while($new_auth = fetch_safe_assoc($auths)) {
+    $auths = dbSafeQuery($sql, 's', [$sub]);
+    if (!$auths) {
+        return false;
+    }
+    while ($new_auth = fetch_safe_assoc($auths)) {
         $res[count($res)] = $new_auth['name'];
     }
     return $res;
 }
 
-function checkAuth($sub, $name) {
-    if(!isset($sub) || !$sub) { return false; }
-    $res = array();
+function checkAuth($sub, $name)
+{
+    if (!isset($sub) || !$sub) {
+        return false;
+    }
+    $res = [];
     $sql = <<<EOS
 SELECT A.name
 FROM user U
@@ -416,44 +453,70 @@ JOIN auth A ON (A.id = UA.auth_id)
 WHERE U.google_sub = ? AND A.name=?
 ORDER BY A.id;
 EOS;
-    $auths = dbSafeQuery($sql, 'ss', array($sub, $name));
-    if(!$auths) { return false; }
-    while($new_auth = $auths->fetch_array(MYSQLI_ASSOC)) {
+    $auths = dbSafeQuery($sql, 'ss', [$sub, $name]);
+    if (!$auths) {
+        return false;
+    }
+    while ($new_auth = $auths->fetch_array(MYSQLI_ASSOC)) {
         $res[count($res)] = $new_auth['name'];
     }
     return $res;
 }
 
-function checkUser($sub) {
-    if(!isset($sub) || !$sub) { return false; }
-    $res = dbSafeQuery("SELECT email FROM user WHERE google_sub=?;", 's', array($sub));
-    if(!$res || $res->num_rows <= 0) { return false; }
-    else { return true; }
+function checkUser($sub): bool
+{
+    if (!isset($sub) || !$sub) {
+        return false;
+    }
+    $res = dbSafeQuery("SELECT email FROM user WHERE google_sub=?;", 's', [$sub]);
+    if (!$res || $res->num_rows <= 0) {
+        return false;
+    } else {
+        return true;
+    }
 }
 
-function getUsers($new=null) {
-    $res = array();
+function getUsers($new = null)
+{
+    $res = [];
     $query = "SELECT id, name, email FROM user";
-    if($new === true) { $query .= " WHERE new='Y'"; }
-    if($new === false) { $query .= " WHERE new='N'"; }
+    if ($new === true) {
+        $query .= " WHERE new='Y'";
+    }
+    if ($new === false) {
+        $query .= " WHERE new='N'";
+    }
     $users = dbQuery($query . ';');
-    if(!$users) { return false; }
-    while($next_user = fetch_safe_assoc($users)) {
+    if (!$users) {
+        return false;
+    }
+    while ($next_user = fetch_safe_assoc($users)) {
         $res[count($res)] = $next_user;
     }
     return $res;
 }
 
-function db_close() {
+function db_close(): void
+{
     global $dbObject;
-    if(!is_null($dbObject)) { $dbObject->close(); $dbObject=null; }
+    if (!is_null($dbObject)) {
+        $dbObject->close();
+        $dbObject = null;
+    }
 }
 
-function fetch_safe_assoc($res) {
-    if (is_null($res)) { return null; }
-    if ($res === false) { return null; }
+function fetch_safe_assoc($res)
+{
+    if (is_null($res)) {
+        return null;
+    }
+    if ($res === false) {
+        return null;
+    }
     $assoc = $res->fetch_assoc();
-    if (is_null($assoc)) { return null; }
+    if (is_null($assoc)) {
+        return null;
+    }
     foreach ($assoc as $key => $value) {
         if (!is_null($value)) {
             $assoc[$key] = htmlentities($value, ENT_QUOTES);
@@ -462,11 +525,18 @@ function fetch_safe_assoc($res) {
     return $assoc;
 }
 
-function fetch_safe_array($res) {
-    if (is_null($res)) { return null; }
-    if ($res === false) { return null; }
+function fetch_safe_array($res)
+{
+    if (is_null($res)) {
+        return null;
+    }
+    if ($res === false) {
+        return null;
+    }
     $assoc = $res->fetch_row();
-    if (is_null($assoc)) { return null; }
+    if (is_null($assoc)) {
+        return null;
+    }
     foreach ($assoc as $key => $value) {
         if (!is_null($value)) {
             $assoc[$key] = htmlentities($value, ENT_QUOTES);
@@ -475,18 +545,21 @@ function fetch_safe_array($res) {
     return $assoc;
 }
 
-function get_conf($name) {
-  global $db_ini;
-  return $db_ini[$name];
-}
-
-function get_con() {
+function get_conf($name)
+{
     global $db_ini;
-    return fetch_safe_assoc(dbSafeQuery("SELECT * FROM conlist WHERE id=?;", 'i', array($db_ini['con']['id'])));
+    return $db_ini[$name];
 }
 
-function get_user($sub) {
-    $res = fetch_safe_assoc(dbSafeQuery("SELECT * FROM user WHERE google_sub=?;", 's', array($sub)));
+function get_con()
+{
+    global $db_ini;
+    return fetch_safe_assoc(dbSafeQuery("SELECT * FROM conlist WHERE id=?;", 'i', [$db_ini['con']['id']]));
+}
+
+function get_user($sub)
+{
+    $res = fetch_safe_assoc(dbSafeQuery("SELECT * FROM user WHERE google_sub=?;", 's', [$sub]));
     return $res['id'];
 }
 
@@ -510,39 +583,19 @@ dbQuery($query);
 }
  */
 
-function newUser($email, $sub){
-    if(!isset($sub) || !isset($email) || !$sub || !$email) {
+function newUser($email, $sub):bool
+{
+    if (!isset($sub) || !isset($email) || !$sub || !$email) {
         return false;
     }
-    $userR = dbSafeQuery("SELECT id,google_sub,email FROM user WHERE email=?;", 's', array($email));
-    if(!$userR || $userR->num_rows!=1) {
+    $userR = dbSafeQuery("SELECT id,google_sub,email FROM user WHERE email=?;", 's', [$email]);
+    if (!$userR || $userR->num_rows != 1) {
         return false;
     }
     $user = fetch_safe_assoc($userR);
-    if($user['google_sub'] == '') {
+    if ($user['google_sub'] == '') {
         $id = $user['id'];
         dbQuery("UPDATE user SET google_sub='$sub' WHERE id='$id';");
     }
+    return true;
 }
-
-function get_username($user) {
-    $u = sql_safe($user);
-    error_log($user);
-    $q = "SELECT first_name, last_name FROM perinfo WHERE id = ?;";
-    $r = dbSafeQuery($q, 's', array($user));
-    if ($r->num_rows <= 0)
-        return $u;
-
-    $ret = '';
-    $res = fetch_safe_assoc($r);
-    if ($res['first_name'] != '')
-        $ret = $res['first_name'];
-    if ( $res['last_name'] != '') {
-        if ($ret != '')
-            $ret .= ' ';
-        $ret .= $res['last_name'];
-    }
-    return $ret;
-}
-
-?>
