@@ -37,7 +37,7 @@ function google_init($mode) {
   session_start();
 
   // bypass for testing on Development PC
-  if (stripos(__DIR__, "C:\\Websites\\") !== false) {
+  if (stripos(__DIR__, "/Volumes/Dock_Disk/") !== false) {
       $token_data = array();
       $token_data['email'] = 'syd.weinstein@philcon.org'; // 'todd.dashoff@philcon.org'; // 
       $token_data['sub'] = '114007818392249665998'; //  '123'; //
