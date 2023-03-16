@@ -84,7 +84,7 @@ function db_connect():bool
             error_log("Failed to connect to MySQL: (" . $dbObject->connect_errno . ") " . $dbObject->connect_error);
         }
 
-        // for mysql with non standard sql_mode (from zambia point of view) temporarily force ours
+        // for mysql with nonstandard sql_mode (from zambia point of view) temporarily force ours
         $sql = "SET sql_mode='" .  $db_ini['mysql']['sql_mode'] . "';";
         $success = $dbObject -> query($sql);
         if (!$success) {
@@ -306,11 +306,15 @@ function dbQuery($query)
     }
 }
 
-function dbInsert($query)
+function dbInsert($query):int|bool
 {
     global $dbObject;
     if (!is_null($dbObject)) {
         $res = $dbObject->query($query);
+        if ($res === false) {
+            log_mysqli_error($query, 'Insert Error');
+            return false;
+        }
         $id = $dbObject->insert_id;
         if ($dbObject->errno) {
             log_mysqli_error($query, "Insert Error");
@@ -375,7 +379,7 @@ function register($email, $sub, $name)
     return $res;
 }
 
-function getPages($sub)
+function getPages($sub):array|bool
 {
     $res = [];
     $sql = <<<EOS
@@ -391,13 +395,13 @@ EOS;
         return false;
     }
     while ($new_auth = fetch_safe_assoc($auths)) {
-        $res[count($res)] = $new_auth;
+        $res[] = $new_auth;
     }
     return $res;
 }
 
 
-function getAuthsById($id)
+function getAuthsById($id): array|bool
 {
     $res = [];
     $sql = <<<EOS
@@ -413,12 +417,12 @@ EOS;
         return false;
     }
     while ($new_auth = fetch_safe_assoc($auths)) {
-        $res[count($res)] = $new_auth['name'];
+        $res[] = $new_auth['name'];
     }
     return $res;
 }
 
-function getAuths($sub)
+function getAuths($sub): array|bool
 {
     $res = [];
     $sql = <<<EOS
@@ -434,12 +438,12 @@ EOS;
         return false;
     }
     while ($new_auth = fetch_safe_assoc($auths)) {
-        $res[count($res)] = $new_auth['name'];
+        $res[] = $new_auth['name'];
     }
     return $res;
 }
 
-function checkAuth($sub, $name)
+function checkAuth($sub, $name): array|bool
 {
     if (!isset($sub) || !$sub) {
         return false;
@@ -458,7 +462,7 @@ EOS;
         return false;
     }
     while ($new_auth = $auths->fetch_array(MYSQLI_ASSOC)) {
-        $res[count($res)] = $new_auth['name'];
+        $res[] = $new_auth['name'];
     }
     return $res;
 }
@@ -476,7 +480,7 @@ function checkUser($sub): bool
     }
 }
 
-function getUsers($new = null)
+function getUsers($new = null):array|bool
 {
     $res = [];
     $query = "SELECT id, name, email FROM user";
@@ -491,7 +495,7 @@ function getUsers($new = null)
         return false;
     }
     while ($next_user = fetch_safe_assoc($users)) {
-        $res[count($res)] = $next_user;
+        $res[] = $next_user;
     }
     return $res;
 }
