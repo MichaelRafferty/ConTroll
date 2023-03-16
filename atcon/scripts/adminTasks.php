@@ -1,4 +1,5 @@
 <?php
+
 // library AJAX Processor: adminTasks.php
 // Balticon Registration System
 // Author: Syd Weinstein
@@ -14,12 +15,12 @@ $return500errors = true;
 // loadData:
 //  users or all: return an array of objects of valid users of ATCON with their permission atoms
 //  printers or all: return an array of server and printers
-function loadData($conid) : void
+function loadData($conid): void
 {
     $loadtypes = $_POST['load_type'];
     $response['load_type'] = $loadtypes;
     if ($loadtypes == 'all' || $loadtypes == 'users') {
-        $users = array();
+        $users = [];
         $query = <<<EOS
 SELECT perid, concat(P.first_name, ' ', P.last_name) as name, A.auth
 FROM atcon_user U
@@ -28,22 +29,22 @@ JOIN perinfo P ON (P.id=U.perid)
 WHERE conid=?
 ORDER BY perid, auth;
 EOS;
-        $userQ = dbSafeQuery($query, 'i', array($conid));
+        $userQ = dbSafeQuery($query, 'i', [$conid]);
         while ($user = fetch_safe_assoc($userQ)) {
             $perid = $user['perid'];
             if (isset($users[$perid])) {
                 $users[$perid][$user['auth']] = true;
             } else {
-                $users[$perid] = array(
+                $users[$perid] = [
                     'id' => $perid,
                     'name' => $user['name'],
                     'delete' => "🗑", //html_entity_decode("&#x1F5D1;"),
-                );
+                ];
                 $users[$perid][$user['auth']] = true;
             }
         }
         mysqli_free_result($userQ);
-        $data = array();
+        $data = [];
         foreach ($users as $user) {
             $data[] = $user;
         }
@@ -51,8 +52,8 @@ EOS;
         $response['userid'] = $_SESSION['user'];
     }
     if ($loadtypes == 'all' || $loadtypes == 'printers') {
-        $servers = array();
-        $printers = array();
+        $servers = [];
+        $printers = [];
 
         $serverSQL = <<<EOS
 SELECT name, address, location, active
@@ -62,7 +63,7 @@ SELECT g.name, g.address, '' as location, 0 as active
 FROM printservers.servers g
 LEFT OUTER JOIN servers s ON (g.name = s.name)
 WHERE s.name IS NULL
-ORDER BY active DESC, name ASC;
+ORDER BY active DESC, name;
 EOS;
         $serverQ = dbQuery($serverSQL);
         while ($server = fetch_safe_assoc($serverQ)) {
@@ -87,9 +88,11 @@ EOS;
 }
 
 
-// searchUsers: given a search string, return a list of potential users who match that string for first/middle/last name or badge_name.
+// searchUsers: given a search string, return a list of potential users
+//      who match that string for first/middle/last name or badge_name.
 // if the search string is numeric, use the perid as the search parameter
-function searchUsers($conid):void {
+function searchUsers($conid): void
+{
     if (!isset($_POST['search_string'])) {
         ajaxError('No Data');
     }
@@ -105,7 +108,7 @@ LEFT OUTER JOIN atcon_user a ON (a.perid = p.id and a.conid = ?)
 WHERE a.id is NULL AND p.id = ?
 EOS;
         $typestr = 'ii';
-        $params = array($conid, $search_string);
+        $params = [$conid, $search_string];
     } else {
         $searchSql = <<<EOS
 SELECT p.id, first_name, last_name, badge_name, email_addr
@@ -116,20 +119,20 @@ WHERE a.id is NULL AND
 EOS;
         $search_string = '%' . str_replace(' ', '%', $search_string) . '%';
         $typestr = 'iss';
-        $params = array($conid, $search_string, $search_string);
+        $params = [$conid, $search_string, $search_string];
     }
 
     $res = dbSafeQuery($searchSql, $typestr, $params);
     if (!$res) {
-        ajaxSuccess(array(
+        ajaxSuccess([
             'args' => $_POST,
             'query' => $searchSql,
-            'error' => 'query failed'));
+            'error' => 'query failed']);
         exit();
     }
-    $results = array();
+    $results = [];
     while ($row = fetch_safe_assoc($res)) {
-        array_push($results, $row);
+        $results[] = $row;
     }
     mysqli_free_result($res);
 
@@ -140,11 +143,12 @@ EOS;
 }
 
 // updateUsers - update the atcon_user and atcon_auth tables to match the data array passed
-function updateUsers($conid):void {
+function updateUsers($conid): void
+{
     if (!isset($_POST['data'])) {
         ajaxError('No Data');
     }
-    $del_rows = 0;
+    //$del_rows = 0; // Set by non if protected dbSafeCmd below.
     $add_rows = 0;
     $upd_rows = 0;
     $perm_rows = 0;
@@ -154,7 +158,7 @@ function updateUsers($conid):void {
     var_error_log($data);
 
     // first find all rows to delete (those not in the data array or this user)
-    $savelist = array();
+    $savelist = [];
     $savelist[] = $_SESSION['user']; // not allowed to delete yourself
     foreach ($data as $row) {
         if (is_numeric($row['id'])) {
@@ -167,7 +171,7 @@ DELETE FROM atcon_user
 WHERE perid NOT IN ($no_delete) AND conid = ?
 EOS;
     web_error_log("updateUsers($conid):\nsql:\n$deleteSQL");
-    $del_rows = dbSafeCmd($deleteSQL, 'i', array($conid));
+    $del_rows = dbSafeCmd($deleteSQL, 'i', [$conid]);
 
     // now work on the rows to add - find these by selecting auth_user for the rows
     // idmap maps perid to id ($idmap[perid] = id
@@ -176,8 +180,8 @@ SELECT perid, id
 FROM atcon_user
 WHERE conid = ?
 EOS;
-    $idmap = array();
-    $res = dbSafeQuery($existingSQL, 'i', array($conid));
+    $idmap = [];
+    $res = dbSafeQuery($existingSQL, 'i', [$conid]);
     while ($user = fetch_safe_assoc($res)) {
         $idmap[strval($user['perid'])] = $user['id'];
     }
@@ -204,7 +208,7 @@ EOS;
     foreach ($data as $row) {
         if (!array_key_exists(strval($row['id']), $idmap)) {
             // not in existing rows, add atcon_user data
-            $newid = dbSafeInsert($insSQL, 'ii', array($row['id'], $conid));
+            $newid = dbSafeInsert($insSQL, 'ii', [$row['id'], $conid]);
             if ($newid > 0) {
                 $idmap[strval($user['id'])] = $newid;
                 $add_rows++;
@@ -215,16 +219,15 @@ EOS;
             $new_password = $row['new_password'];
             if ($new_password !== '' && $new_password !== '-') {
                 $encpasswd = password_hash($new_password, PASSWORD_DEFAULT);
-                $upd_rows += dbSafeCmd($updPasswdSQL, 'si', array($encpasswd, $idmap[intval($row['id'])]));
+                $upd_rows += dbSafeCmd($updPasswdSQL, 'si', [$encpasswd, $idmap[intval($row['id'])]]);
             }
         }
-
     }
     // update all empty user hashes
     dbCmd($updHashSQL);
 
     // now for the permissions, valid permissions are
-    $authlabels = array('manager', 'data_entry', 'cashier', 'artinventory', 'artsales');
+    $authlabels = ['manager', 'data_entry', 'cashier', 'artinventory', 'artsales'];
 
     $fetchAuthSQL = <<<EOS
 SELECT a.id, a.authuser, a.auth
@@ -233,16 +236,15 @@ JOIN atcon_auth a ON (u.id = a.authuser)
 WHERE u.conid = ?
 ORDER BY 1,2;
 EOS;
-    $res = dbSafeQuery($fetchAuthSQL, 'i', array($conid));
-    $users = array();
-    $auths = array();
+    $res = dbSafeQuery($fetchAuthSQL, 'i', [$conid]);
+    $users = [];
+    $auths = [];
     $id = "0";
     while ($auth = fetch_safe_assoc($res)) {
         if ($id != $auth['authuser']) {
             if ($id != "0") {
-
                 $users[strval($id)] = $auths;
-                $auths = array();
+                $auths = [];
             }
             $id = $auth['authuser'];
         }
@@ -274,7 +276,7 @@ EOS;
         if (array_key_exists(intval($id), $users)) {
             $auths = $users[intval($id)];
         } else {
-            $auths = array();
+            $auths = [];
         }
 
         // Now compare each auth against the data record
@@ -287,10 +289,10 @@ EOS;
             }
             if ($dbexists != $dataexists) {
                 if ($dbexists) { // in database, not in data row delete it.
-                    $perm_rows += dbSafeCmd($delAuthSQL, 's', array($auths[$auth]));
+                    $perm_rows += dbSafeCmd($delAuthSQL, 's', [$auths[$auth]]);
                 }
                 if ($dataexists) { // in web data, not in data row, add it
-                    $perm_rows += dbSafeCmd($addAuthSql, 'ss', array($id, $auth));
+                    $perm_rows += dbSafeCmd($addAuthSql, 'ss', [$id, $auth]);
                 }
             }
         }
@@ -310,7 +312,7 @@ $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
     $ajax_request_action = $_POST['ajax_request_action'];
 }
-if ($ajax_request_action == '' ) {
+if ($ajax_request_action == '') {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
