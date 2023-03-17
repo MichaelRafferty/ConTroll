@@ -20,6 +20,7 @@ function loadData($conid): void
     $loadtypes = $_POST['load_type'];
     $response['load_type'] = $loadtypes;
     if ($loadtypes == 'all' || $loadtypes == 'users') {
+        // load authorized users of ATCON along with their allowed roles
         $users = [];
         $query = <<<EOS
 SELECT perid, concat(P.first_name, ' ', P.last_name) as name, A.auth
@@ -52,18 +53,23 @@ EOS;
         $response['userid'] = $_SESSION['user'];
     }
     if ($loadtypes == 'all' || $loadtypes == 'printers') {
+        // first synchronize any changes to the global printer before loading the data.
+        // do not delete a server that disappeared, it may have moved local.
+        // do synchronize all printers on global servers that are loaded locally via stored procedure syncServerPrinters
+        dbCmd("CALL syncServerPrinters;");
+
         $servers = [];
         $printers = [];
 
         $serverSQL = <<<EOS
-SELECT name, address, location, active
+SELECT serverName, address, location, active
 FROM servers
 UNION
-SELECT g.name, g.address, '' as location, 0 as active
+SELECT g.serverName, g.address, '' as location, 0 as active
 FROM printservers.servers g
-LEFT OUTER JOIN servers s ON (g.name = s.name)
-WHERE s.name IS NULL
-ORDER BY active DESC, name;
+LEFT OUTER JOIN servers s ON (g.serverName = s.serverName)
+WHERE s.serverName IS NULL
+ORDER BY active DESC, serverName;
 EOS;
         $serverQ = dbQuery($serverSQL);
         while ($server = fetch_safe_assoc($serverQ)) {
@@ -72,9 +78,9 @@ EOS;
         $response['servers'] = $servers;
 
         $printersSQl = <<<EOS
-SELECT serverName, printerName, printerType, p.active
+SELECT p.serverName, p.printerName, p.printerType, p.active
 FROM printers p
-JOIN servers s ON (p.serverName = s.name)
+JOIN servers s ON (p.serverName = s.serverName)
 WHERE s.active = 1
 ORDER BY printerType, printerName;
 EOS;
@@ -210,7 +216,7 @@ EOS;
             // not in existing rows, add atcon_user data
             $newid = dbSafeInsert($insSQL, 'ii', [$row['id'], $conid]);
             if ($newid > 0) {
-                $idmap[strval($user['id'])] = $newid;
+                $idmap[strval($row['id'])] = $newid;
                 $add_rows++;
             }
         }
