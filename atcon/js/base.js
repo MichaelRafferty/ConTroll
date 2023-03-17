@@ -219,7 +219,7 @@ function show_message(message, type) {
         message_div.classList.remove('bg-danger');
     }
     if (message_div.classList.contains('bg-success')) {
-        message_div.classList.remove('bg-sucess');
+        message_div.classList.remove('bg-success');
     }
     if (message_div.classList.contains('bg-warning')) {
         message_div.classList.remove('bg-warning');
