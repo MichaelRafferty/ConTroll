@@ -62,10 +62,10 @@ EOS;
         $printers = [];
 
         $serverSQL = <<<EOS
-SELECT serverName, address, location, active
+SELECT serverName, address, location, active, local, '🗑' as `delete`
 FROM servers
 UNION
-SELECT g.serverName, g.address, '' as location, 0 as active
+SELECT g.serverName, g.address, '' as location, 0 as active, 0 as local,  '🗑' as `delete`
 FROM printservers.servers g
 LEFT OUTER JOIN servers s ON (g.serverName = s.serverName)
 WHERE s.serverName IS NULL
@@ -78,7 +78,7 @@ EOS;
         $response['servers'] = $servers;
 
         $printersSQl = <<<EOS
-SELECT p.serverName, p.printerName, p.printerType, p.active
+SELECT p.serverName, p.printerName, p.printerType, p.active,  '🗑' as `delete`
 FROM printers p
 JOIN servers s ON (p.serverName = s.serverName)
 WHERE s.active = 1

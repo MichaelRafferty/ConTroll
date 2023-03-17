@@ -77,12 +77,33 @@ page_init($page, 'admin',
         </div>
     </div>
     <div class='tab-pane fade' id='printers-pane' role='tabpanel' aria-labelledby='printers-tab' tabindex='0'>
-        <div class='container-fluid mt-4'>
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-sm-auto'><h2>Print Servers</h2></div>
+            </div>
             <div class='row'>
                 <div class='col-sm-auto table-bordered table-sm' id='serversTable'></div>
             </div>
+            <div class='row mt-2'>
+                <div class='col-sm-4'>
+                    <button type='button' class='btn btn-secondary btn-sm' id='servers_add_btn' onclick='printers.addServer();'>Add Server</button>
+                    <button type='button' class='btn btn-secondary btn-sm' id='servers_undo_btn' onclick='printers.undo_server();' disabled>Undo</button>
+                    <button type='button' class='btn btn-secondary btn-sm' id='servers_redo_btn' onclick='printers.redo_server();' disabled>Redo</button>
+                </div>
+            </div>
+            <div class='row mt-2'>
+                <div class='col-sm-auto'><h2>Printers</h2></div>
+            </div>
             <div class='row'>
                 <div class='col-sm-auto table-bordered table-sm' id='printersTable'></div>
+            </div>
+            <div class='row mt-2'>
+                <div class='col-sm-4'>
+                    <button type='button' class='btn btn-secondary btn-sm' id='printers_add_btn' onclick='printers.addPrinter();'>Add Printer</button>
+                    <button type='button' class='btn btn-secondary btn-sm' id='printers_undo_btn' onclick='printers.undo_printer();' disabled>Undo</button>
+                    <button type='button' class='btn btn-secondary btn-sm' id='printers_redo_btn' onclick='printers.redo_printer();' disabled>Redo</button>
+                    <button type='button' class='btn btn-primary btn-sm' id='printers_save_btn' onclick='printers.save();' disabled>Save</button>
+                </div>
             </div>
         </div>
     </div>

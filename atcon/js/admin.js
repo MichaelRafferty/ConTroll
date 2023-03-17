@@ -132,7 +132,7 @@ class Users {
             this.searchdiv.hidden = true;
             this.addbtn.disabled = false;
         }
-        this.savebtn.disabled = false;
+        this.savebtn.disabled = true;
         this.savebtn.innerHTML = 'Save';
 
         this.userlist = new Tabulator ('#userTab', {
@@ -299,6 +299,186 @@ function users_changed(data) {
     users.changed();
 }
 
+class Printers {
+    constructor(servers, printers) {
+        // Search tabulator elements
+        this.serverlist = null;
+        this.printerlist = null;
+
+        // Users HTML elements
+        this.addbtn = document.getElementById('printers_add_btn');
+        this.printers_savebtn = document.getElementById('printers_save_btn');
+        this.printers_undobtn = document.getElementById('printers_undo_btn');
+        this.printers_redobtn = document.getElementById('printers_redo_btn');
+        this.printers_addbtn = document.getElementById('printers_add_btn');
+        this.servers_addbtn = document.getElementById('servers_add_btn');
+        this.servers_undobtn = document.getElementById('servers_undo_btn');
+        this.servers_redobtn = document.getElementById('servers_redo_btn');
+
+        // load initial data
+        this.loadPrinters(servers, printers);
+        this.dirty = false;
+        this.serverNameToDelete = null;
+    }
+
+    loadPrinters(servers, printers) {
+        'use strict';
+
+        if (this.serverlist !== null) {
+            this.serverlist.destroy();
+            this.serverlist = null;
+        }
+
+        if (this.printerlist !== null) {
+            this.printerlist.destroy();
+            this.printerlist = null;
+        }
+
+        this.serverlist = new Tabulator ('#serversTable', {
+            data: servers,
+            index: "serverName",
+            layout: "fitData",
+            maxHeight: "300px",
+            movableRows: false,
+            history: true,
+            columns: [
+                { title: "Local", field: "local", headerSort: true, formatter: "tickCross" },
+                { title: "Server", field: "serverName", headerSort: true, headerFilter: true  },
+                { title: "Address", field: "address", headerSort: true, headerFilter:true },
+                { title: "Location", field: "location", headerSort: false, headerFilter:true,  },
+                { title: "Active", field: "active", headerSort: false, formatter: "tickCross", cellClick: invertTickCross, headerFilter:true },
+                { title: "Delete", field: "delete", headerSort: false, hozAlign: "center", cellClick: function (e, cell) {
+                        printersDeleteServer(cell.getRow().getCell('serverName').getValue());
+                        cell.getRow().delete();
+                    }
+                },
+            ],
+        });
+        this.serverlist.on("dataChanged", printers_changed);
+
+        this.printers_savebtn.disabled = true;
+        this.printers_savebtn.innerHTML = 'Save';
+
+        this.printerlist = new Tabulator ('#printersTable', {
+            data: printers,
+            layout: "fitData",
+            maxHeight: "300px",
+            movableRows: false,
+            history: true,
+            columns: [
+                { title: "Server", field: "serverName", headerSort: true, headerFilter: true  },
+                { title: "Printer", field: "printerName", headerSort: true, headerFilter:true },
+                { title: "Type", field: "printerType", headerSort: true, headerFilter:true,
+                    editor: "list", editorParams: {
+                            values: ["generic", "receipt", "badge"],
+                            defaultValue: "generic",
+                            emptyValue: "generic",
+                        }
+                    },
+                { title: "Active", field: "active", headerSort: false, formatter: "tickCross", cellClick: invertTickCross, headerFilter:true },
+                { title: "Delete", field: "delete", headerSort: false, hozAlign: "center", cellClick: function (e, cell) { cell.getRow().delete(); } },
+            ],
+        });
+        this.printerlist.on("dataChanged", printers_changed);
+    }
+
+    deleteServer(serverName) {
+        var rows = this.printerlist.searchRows("serverName","=", serverName);
+        rows.forEach(function (currentValue, index, arr) { currentValue.delete(); });
+    }
+    
+    // servers editing
+    // process press of undo button
+    undo_server() {
+        'use strict';
+        this.serverlist.undo();
+
+        if (this.serverlist.getHistoryUndoSize() <= 0) {
+            this.servers_undobtn.disabled = true;
+            this.dirty = false;
+            this.printers_savebtn.innerHTML = "Save";
+            this.printers_savebtn.disabled = true;
+        }
+        if (this.serverlist.getHistoryRedoSize() > 0) {
+            this.servers_redobtn.disabled = false;
+        }
+    }
+
+    // process press of redo button
+    redo_server() {
+        'use strict';
+        this.serverlist.redo();
+
+        if (this.serverlist.getHistoryUndoSize() > 0) {
+            this.servers_undobtn.disabled = false;
+            if (this.dirty === false) {
+                this.dirty = true;
+                this.printers_savebtn.innerHTML = "Save*";
+                this.printers_savebtn.disabled = false;
+            }
+        }
+
+        if (this.serverlist.getHistoryRedoSize() <= 0) {
+            this.servers_redobtn.disabled = true;
+        }
+    }
+
+    // printers editing
+    // process press of undo button
+    undo_printer() {
+        'use strict';
+        this.printerlist.undo();
+
+        if (this.printerlist.getHistoryUndoSize() <= 0) {
+            this.printers_undobtn.disabled = true;
+            this.dirty = false;
+            this.printers_savebtn.innerHTML = "Save";
+            this.printers_savebtn.disabled = true;
+        }
+        if (this.printerlist.getHistoryRedoSize() > 0) {
+            this.printers_redobtn.disabled = false;
+        }
+    }
+
+    // process press of redo button
+    redo_printer() {
+        'use strict';
+        this.printerlist.redo();
+
+        if (this.printerlist.getHistoryUndoSize() > 0) {
+            this.printers_undobtn.disabled = false;
+            if (this.dirty === false) {
+                this.dirty = true;
+                this.printers_savebtn.innerHTML = "Save*";
+                this.printers_savebtn.disabled = false;
+            }
+        }
+
+        if (this.printerlist.getHistoryRedoSize() <= 0) {
+            this.servers_redobtn.disabled = true;
+        }
+    }
+    changed() {
+        this.dirty = true;
+        this.printers_savebtn.innerHTML = "Save*";
+        this.printers_savebtn.disabled = false;
+        if (this.serverlist.getHistoryUndoSize() > 0) {
+            this.servers_undobtn.disabled = false;
+        }
+        if (this.printerlist.getHistoryUndoSize() > 0) {
+            this.printers_undobtn.disabled = false;
+        }
+    }
+}
+
+// external call to Users functions: when tabulator calls the function, the this pointer is wrong
+function printers_changed(data) {
+    printers.changed();
+}
+function printersDeleteServer(serverName) {
+    printers.deleteServer(serverName);
+}
+
 //  load/refresh the data from the server.  Which items are refreshed depends on the loadtype field
 //  Possible loadtypes:
 //      all
@@ -323,15 +503,15 @@ function loadInitialData(loadtype) {
                 userid = data['userid'];
                 users = new Users(data['users']);
             }
-            /*
             if (data['servers'] !== undefined)
-                loadServers(data['servers']);
-            if (data['printers'] !== undefined)
-                loadPrinters(data['printers']);
-             */
+                printers = new Printers(data['servers'], data['printers']);
         },
         error: showAjaxError,
     });
+}
+
+function settab(pane) {
+    show_message('', '');
 }
 
 // Useful tabulator functions (formatters, invert toggle)
@@ -361,5 +541,10 @@ function invertTickCross(e,cell) {
     if (value === undefined) {
         value = false;
     }
+    if (value === 0 || Number(value) === 0)
+        value = false;
+    else if (value === "1" || Number(value) > 0)
+        value = true;
+
     cell.setValue(!value, true);
 }
