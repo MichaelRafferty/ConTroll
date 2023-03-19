@@ -1,5 +1,5 @@
 <?php
-require("lib/base.php");
+require_once "lib/base.php";
 
 $method='index';
 $con = get_conf("con");
@@ -84,7 +84,7 @@ if(!isset($_SESSION['user'])) {
 } else if(isset($_GET['action']) && $_GET['action']=='change_passwd') {?>
     <input type="hidden" name='idval' id='idval' value="<?php echo $_SESSION['userhash']; ?>"
     <div class='container-fluid mt-4'>
-        <div class='row'>
+        <div class='row mt-4'>
             <div class='col-sm-6'>
                 <div class='form-floating mb-3'>
                     <input type='password' name='old_password' id="old_password" class='form-control' placeholder="Existing Password" required/>

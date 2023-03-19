@@ -421,7 +421,7 @@ class Printers {
                 { title: "Printer", field: "printerName", editor: "input", editable: printerLocalonly, minWidth: 150, headerSort: true, headerFilter:true },
                 { title: "Type", field: "printerType", headerSort: true, headerFilter:true,
                     editor: "list", editorParams: {
-                            values: ["generic", "receipt", "badge"],
+                            values: ["generic", "receipt", "badge450", "badge330"],
                             defaultValue: "generic",
                             emptyValue: "generic",
                         }

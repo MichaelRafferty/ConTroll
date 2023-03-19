@@ -1,6 +1,6 @@
 <?php
 
-require("lib/base.php");
+require_once "lib/base.php";
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");

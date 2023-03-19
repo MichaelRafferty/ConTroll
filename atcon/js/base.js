@@ -195,6 +195,17 @@ function getForm(formObj, formUrl, succFunc, errFunc) {
     });
 }
 */
+
+// convert url parameters to associative array
+function URLparamsToArray(urlargs) {
+    const params = new URLSearchParams(urlargs);
+    const result = {};
+    for (const [key, value] of params) {
+        result[key] = value;
+    }
+    return result;
+}
+
 function showError(str) {
     $('#test').empty().append(str);
 }
@@ -204,6 +215,7 @@ function showAlert(str) {
     $('#alert').show();
 }
 
+message_div = null;
 // show_message:
 // apply colors to the message div and place the text in the div, first clearing any existing class colors
 // type:
@@ -243,6 +255,9 @@ function show_message(message, type) {
         message_div.classList.add('bg-warning');
     }
     message_div.innerHTML = message;
+}
+function clear_message() {
+    show_message('', '');
 }
 
 function showAjaxError(data, textStatus, jqXHR) {

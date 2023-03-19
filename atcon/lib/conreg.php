@@ -78,6 +78,7 @@ function init_file($printer) {
 
 function init_ps() {
     $tempfile = tempnam(sys_get_temp_dir(), "badgePrn");
+    web_error_log("Writing to $tempfile");
     if(!$tempfile) {
         $response['error'] = "Unable to get unique file";
         $response['error_message'] = error_get_last();
@@ -332,6 +333,8 @@ function print_badge($queue, $tempfile) {
 
 function print_ps($queue, $tempfile) {
     $printerName = "label" . $queue;
+    // turbo 450 -o PageSize=30252_Address
+    // turbo 330 -o PageSize=w82h248  -o orientation-requested=5
     $result = exec("lpr -P $printerName -o PageSize=30252_Address $tempfile");
     return $result;
 }

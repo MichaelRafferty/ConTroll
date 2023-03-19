@@ -527,7 +527,7 @@ EOS;
         $r = dbSafeQuery($q, 'ssi', [$_SESSION['user'], $_SESSION['userhash'], $conid]);
         if ($r->num_rows > 0) {
             while ($l = fetch_safe_assoc($r)) {
-                array_push($perms, $l['auth']);
+                $perms[] = $l['auth'];
             }
         }
     }
