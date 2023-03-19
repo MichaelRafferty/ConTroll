@@ -62,10 +62,10 @@ EOS;
         $printers = [];
 
         $serverSQL = <<<EOS
-SELECT serverName, address, location, active, local, '🗑' as `delete`
+SELECT serverName, address, location, active, local, IF(local = 1, '🗑', '') as `delete`, serverName as oldServerName
 FROM servers
 UNION
-SELECT g.serverName, g.address, '' as location, 0 as active, 0 as local,  '🗑' as `delete`
+SELECT g.serverName, g.address, '' as location, 0 as active, 0 as local,  '' as `delete`, g.serverName as oldServerName
 FROM printservers.servers g
 LEFT OUTER JOIN servers s ON (g.serverName = s.serverName)
 WHERE s.serverName IS NULL
@@ -78,11 +78,11 @@ EOS;
         $response['servers'] = $servers;
 
         $printersSQl = <<<EOS
-SELECT p.serverName, p.printerName, p.printerType, p.active,  '🗑' as `delete`
+SELECT p.serverName, p.printerName, p.printerType, p.active, IF(s.local = 1, '🗑', '') as `delete`
 FROM printers p
 JOIN servers s ON (p.serverName = s.serverName)
 WHERE s.active = 1
-ORDER BY printerType, printerName;
+ORDER BY s.local DESC, serverName, printerType, printerName;
 EOS;
         $printerQ = dbQuery($printersSQl);
         while ($printer = fetch_safe_assoc($printerQ)) {
@@ -307,6 +307,153 @@ EOS;
     $response['message'] = "$del_rows Deleted, $add_rows Added, $upd_rows Updated, $perm_rows Permissions Updated";
     ajaxSuccess($response);
 }
+
+// updatePrinters - update the servers and printers tables to match the data passed
+function updatePrinters($conid): void
+{
+    if (!isset($_POST['printers']) || !isset($_POST['servers'])) {
+        ajaxError('No Data');
+    }
+
+    $printers = $_POST['printers'];
+    $servers = $_POST['servers'];
+    web_error_log('updatePrinters: Servers:');
+    var_error_log($servers);
+    web_error_log('updatePrinters: Printers:');
+    var_error_log($printers);
+
+    $servers_updated = 0;
+    $servers_added = 0;
+    $printers_deleted = 0;
+    $printers_updated = 0;
+    $printers_added = 0;
+
+    // First Update Servers
+    // Necessary to update servers before we delete them due to on cascade delete
+    $updateLocalSQL = <<<EOS
+UPDATE servers
+SET serverName = ?, address = ?, location = ?, active = ?
+WHERE serverName = ? and local = 1;
+EOS;
+    $updateGlobalSQL = <<<EOS
+UPDATE servers
+SET location = ?, active = ?
+WHERE serverName = ? and local = 0;
+EOS;
+    $insertLocalSQL = <<<EOS
+INSERT servers(serverName, address, location, active, local)
+VALUES (?,?,?,?, 1);
+EOS;
+    foreach ($servers as $row) {
+        $active = $row['active'];
+        if ($active === 'true' || ($active !== 'false' && (int)$active > 0))
+            $active = 1;
+        else
+            $active = 0;
+
+        $local = $row['local'];
+        if ($local === 'true' || $local > 0)
+            $local = 1;
+        else
+            $local = 0;
+
+        if (array_key_exists('oldServerName', $row) && $row['oldServerName'] != '') { // existing server, update it
+            if ($local == 1) {
+                $servers_updated += dbSafeCmd($updateLocalSQL, 'sssis', array($row['serverName'], $row['address'], $row['location'], $active, $row['oldServerName']));
+            } else {
+                $servers_updated += dbSafeCmd($updateGlobalSQL, 'sis', array($row['location'], $active, $row['oldServerName']));
+            }
+        } else { // new server add it
+            if ($local == 1) {
+                $servers_added = dbSafeCmd($insertLocalSQL, 'sssi', array($row['serverName'], $row['address'], $row['location'], $active));
+            }
+        }
+    }
+
+    // Delete all servers not in list of servers passed in servers array
+    $savelist = [];
+    foreach ($servers as $row) {
+        if (isset($row['serverName'])) {
+            $savelist[] = sql_safe($row['serverName']);
+        }
+        if (isset($row['oldServerName'])) {
+            $savelist[] = sql_safe($row['oldServerName']);
+        }
+    }
+    $no_delete = "'" . implode("','", $savelist) . "'";
+    $deleteSQL = <<<EOS
+DELETE FROM servers
+WHERE serverName NOT IN ($no_delete) AND local = 1;
+EOS;
+    web_error_log("updatePrinters($conid):\nsql:\n$deleteSQL");
+    $servers_deleted = dbCmd($deleteSQL);
+    web_error_log("$servers_deleted deleted from servers");
+
+    // now update printers
+    $existing = array();
+    $existingPrintersSQL = <<<EOS
+SELECT p.serverName, p.printerName, s.local
+FROM printers p
+JOIN servers s ON (p.serverName = s.serverName)
+EOS;
+    $existingQ = dbQuery($existingPrintersSQL);
+    while ($printer = fetch_safe_assoc($existingQ)) {
+        $existing[$printer['serverName'] . ':::' . $printer['printerName']] = $printer['local'];
+    }
+
+    $updateLocalPrinterSQL = <<<EOS
+UPDATE printers
+SET printerName = ?, printerType=?, active=?
+WHERE serverName = ? and printerName = ?
+EOS;
+    $updateGlobalPrinterSQL = <<<EOS
+UPDATE printers
+SET printerType=?, active=?
+WHERE serverName = ? and printerName = ?
+EOS;
+    $insertPrinterSQL = <<<EOS
+INSERT INTO printers(serverName, printerName, printerType, active)
+VALUES (?,?,?,?);
+EOS;
+
+    foreach ($printers as $row) {
+        $key = $row['serverName'] . ':::' . $row['printerName'];
+        $active = $row['active'];
+        if ($active === 'true' || ($active !== "false" && (int) $active > 0))
+            $active = 1;
+        else
+            $active = 0;
+
+        if (array_key_exists($key, $existing)) { // this printer is both in the post and in the database, update it
+            $existing[$key] = 0; // mark it updated
+            if (array_key_exists('delete', $row) && $row['delete'] == '') { // global printer
+                $printers_updated += dbSafeCmd($updateGlobalPrinterSQL, 'siss', array($row['printerType'], $active, $row['serverName'], $row['printerName']));
+            } else {
+                $printers_updated += dbSafeCmd($updateLocalPrinterSQL, 'ssiss', array($row['printerName'], $row['printerType'], $active, $row['serverName'], $row['printerName']));
+            }
+        } else { // insert new printer
+            $printers_added += dbSafeCmd($insertPrinterSQL, 'sssi', array($row['serverName'], $row['printerName'], $row['printerType'], $active));
+        }
+    }
+
+    $deleteSQL = <<<EOS
+DELETE FROM printers
+WHERE serverName = ? AND printerName = ?;
+EOS;
+
+    // Now delete any printers within existing whose value is still 1 (not updated and local)
+    foreach ($existing as $key => $value) {
+        if ($value == 1) { // local and not updated
+            $keys = explode(':::', $key);
+            $printers_deleted += dbSafeCmd($deleteSQL, 'ss', array($keys[0], $keys[1]));
+        }
+    }
+
+    $response['message'] = "$servers_deleted Servers deleted, $servers_updated Servers Updated, $servers_added Servers added<br/>" .
+        "$printers_deleted Printers deleted, $printers_updated Printers updated, $printers_added Printers Added";
+    ajaxSuccess($response);
+}
+
 // outer ajax wrapper
 // method - permission required to access this AJAX function
 // action - passed in from the javascript
@@ -336,6 +483,9 @@ switch ($ajax_request_action) {
         break;
     case 'updateUsers':
         updateUsers($conid);
+        break;
+    case 'updatePrinters':
+        updatePrinters($conid);
         break;
     default:
         $message_error = 'Internal error.';

@@ -7,8 +7,6 @@ var message_div = null;
 // classes
 var users = null;
 var printers = null;
-
-var anydirty = false;
 var userid = null;
 
 // search screen
@@ -19,12 +17,27 @@ window.onload = (function() {
     loadInitialData('all');
 });
 
+window.onbeforeunload = function() {
+    var $message = ''
+
+    if (users !== null && users.dirty)  {
+        $message += 'You have unsaved changes in the Users tab. ';
+    }
+    if (printers !== null && printers.dirty) {
+        $message += 'You have unsaved changes in the Printers tab. ';
+    }
+    if ($message !== '') {
+        return $message + "If you leave this page, you will lose them.";
+    }
+    return null;
+}
+
 class Users {
     constructor(users) {
         // Search tabulator elements
         this.userlist = null;
         this.addlist = null;
-        
+
         // Users HTML elements
         this.savebtn = document.getElementById('users_save_btn');
         this.undobtn = document.getElementById('users_undo_btn');
@@ -33,7 +46,7 @@ class Users {
         this.searchbtn = document.getElementById('users_search_btn');
         this.searchdiv = document.getElementById('addUser');
         this.search_field = document.getElementById('name_search');
-        
+
         // load initial data
         this.loadUsers(users);
         this.dirty = false;
@@ -43,7 +56,7 @@ class Users {
     undo() {
         'use strict';
         this.userlist.undo();
-        
+
         if (this.userlist.getHistoryUndoSize() <= 0) {
             this.undobtn.disabled = true;
             this.dirty = false;
@@ -59,7 +72,7 @@ class Users {
     redo() {
         'use strict';
         this.userlist.redo();
-        
+
         if (this.userlist.getHistoryUndoSize() > 0) {
             this.undobtn.disabled = false;
             if (this.dirty === false) {
@@ -68,7 +81,7 @@ class Users {
                 this.savebtn.disabled = false;
             }
         }
-        
+
         if (this.userlist.getHistoryRedoSize() <= 0) {
             this.redobtn.disabled = true;
         }
@@ -96,20 +109,6 @@ class Users {
         }
     }
 
-    // tabulator formatter to blank out the field if the row is this user
-    blankIfMe(cell, formatterParams, onRendered) {
-        "use strict";
-
-        //cell - the cell component
-        //formatterParams - parameters set for the column
-        //onRendered - function to call when the formatter has been rendered
-
-        if (cell.getRow().getCell('id').getValue() === userid) {
-            return '';
-        }
-        return cell.getValue();
-    }
-
     // tabulator formatted to create an add button based on the id (perid) column of the search table
     tabAddButton(cell, formatterParams, onRendered) {
         "use strict";
@@ -135,7 +134,7 @@ class Users {
         this.savebtn.disabled = true;
         this.savebtn.innerHTML = 'Save';
 
-        this.userlist = new Tabulator ('#userTab', {
+        this.userlist = new Tabulator('#userTab', {
             data: users,
             index: "id",
             layout: "fitData",
@@ -143,19 +142,54 @@ class Users {
             movableRows: false,
             history: true,
             columns: [
-                { title: "perid", field: "id", headerSort: true, width: 150,  },
-                { title: "Name", field: "name", headerSort: true, headerFilter:true },
-                { title: "Check-In", field: "data_entry", headerSort: false, formatter: "tickCross", cellClick: invertTickCross, headerFilter:true, headerWordWrap: true },
-                { title: "Cashier", field: "cashier", headerSort: false, formatter: "tickCross", cellClick: invertTickCross, headerFilter:true },
-                { title: "Art Inven", field: "artinventory", headerSort: false, formatter: "tickCross", cellClick: invertTickCross, headerFilter:true, headerWordWrap: true },
-                { title: "Art Sales", field: "artsales", headerSort: false, formatter: "tickCross", cellClick: invertTickCross, headerFilter:true, headerWordWrap: true },
-                { title: "Admin", field: "manager", headerSort: false, formatter: "tickCross", cellClick: this.invertnotme, headerFilter: true },
-                { title: "Optional New Password", field: 'new_password',  headerSort: false, editor: 'input', headerFilter:false, headerWordWrap: true, minWidth: 200, formatter: tabPasswordFormatter },
-                { title: "Delete", field: "delete", headerSort: false, hozAlign: "center", cellClick: function (e, cell) {
+                {title: "perid", field: "id", headerSort: true, width: 150,},
+                {title: "Name", field: "name", headerSort: true, headerFilter: true},
+                {
+                    title: "Check-In",
+                    field: "data_entry",
+                    headerSort: false,
+                    formatter: "tickCross",
+                    cellClick: invertTickCross,
+                    headerFilter: true,
+                    headerWordWrap: true
+                },
+                {title: "Cashier", field: "cashier", headerSort: false, formatter: "tickCross", cellClick: invertTickCross, headerFilter: true},
+                {
+                    title: "Art Inven",
+                    field: "artinventory",
+                    headerSort: false,
+                    formatter: "tickCross",
+                    cellClick: invertTickCross,
+                    headerFilter: true,
+                    headerWordWrap: true
+                },
+                {
+                    title: "Art Sales",
+                    field: "artsales",
+                    headerSort: false,
+                    formatter: "tickCross",
+                    cellClick: invertTickCross,
+                    headerFilter: true,
+                    headerWordWrap: true
+                },
+                {title: "Admin", field: "manager", headerSort: false, formatter: "tickCross", cellClick: this.invertnotme, headerFilter: true},
+                {
+                    title: "Optional New Password",
+                    field: 'new_password',
+                    headerSort: false,
+                    editor: 'input',
+                    headerFilter: false,
+                    headerWordWrap: true,
+                    minWidth: 200,
+                    formatter: tabPasswordFormatter
+                },
+                {
+                    title: "Delete", field: "delete", headerSort: false, hozAlign: "center", cellClick: function (e, cell) {
                         if (cell.getRow().getCell('id').getValue() !== userid) {
                             cell.getRow().delete();
                         }
-                    }, formatter: this.blankIfMe },
+                    }, formatter: this.blankIfMe
+                },
             ],
         });
         this.userlist.on("dataChanged", users_changed);
@@ -190,7 +224,7 @@ class Users {
             method: "POST",
             url: "scripts/adminTasks.php",
             data: postData,
-            success: function(data, textstatus, jqxhr) {
+            success: function (data, textstatus, jqxhr) {
                 users.showSearch(data);
             },
             error: showAjaxError,
@@ -222,7 +256,7 @@ class Users {
         show_message(data['message'], 'success');
         this.searchbtn.innerHTML = 'Close Search';
 
-        this.addlist = new Tabulator ('#searchTab', {
+        this.addlist = new Tabulator('#searchTab', {
             data: data['data'],
             index: "id",
             layout: "fitData",
@@ -230,12 +264,12 @@ class Users {
             movableRows: false,
             history: false,
             columns: [
-                { title: "perid", field: "id", headerSort: true, width: 150,  },
-                { title: "First Name", field: "first_name", headerSort: true, headerFilter:true },
-                { title: "Last Name", field: "last_name", headerSort: true, headerFilter:true },
-                { title: "Badge Name", field: "badge_name", headerSort: true, headerFilter:true },
-                { title: "Email Address", field: "email_addr", headerSort: true, headerFilter:true },
-                { title: "Add", headerSort: false, hozAlign: "center", formatter: this.tabAddButton, minWidth:50},
+                {title: "perid", field: "id", headerSort: true, width: 150,},
+                {title: "First Name", field: "first_name", headerSort: true, headerFilter: true},
+                {title: "Last Name", field: "last_name", headerSort: true, headerFilter: true},
+                {title: "Badge Name", field: "badge_name", headerSort: true, headerFilter: true},
+                {title: "Email Address", field: "email_addr", headerSort: true, headerFilter: true},
+                {title: "Add", headerSort: false, hozAlign: "center", formatter: this.tabAddButton, minWidth: 50},
             ],
         });
     }
@@ -278,7 +312,7 @@ class Users {
             method: "POST",
             url: "scripts/adminTasks.php",
             data: postData,
-            success: function(data, textstatus, jqxhr) {
+            success: function (data, textstatus, jqxhr) {
                 if (data['error'] !== undefined) {
                     show_message(data['error'], 'error');
                     this.savebtn.disabled = false;
@@ -292,9 +326,23 @@ class Users {
             error: showAjaxError,
         });
     }
+
+// tabulator formatter to blank out the field if the row is not a local server
+    blankIfMe(cell, formatterParams, onRendered) {
+        "use strict";
+
+        //cell - the cell component
+        //formatterParams - parameters set for the column
+        //onRendered - function to call when the formatter has been rendered
+
+        if (cell.getRow().getCell('id').getValue() === userid) {
+            return '';
+        }
+        return cell.getValue();
+    }
 }
 
-// external call to Users functions: when tabulator calls the function, the this pointer is wrong
+// external call to Users functions: when tabulator calls the function, the 'this' pointer is wrong
 function users_changed(data) {
     users.changed();
 }
@@ -343,15 +391,18 @@ class Printers {
             history: true,
             columns: [
                 { title: "Local", field: "local", headerSort: true, formatter: "tickCross" },
-                { title: "Server", field: "serverName", headerSort: true, headerFilter: true  },
-                { title: "Address", field: "address", headerSort: true, headerFilter:true },
-                { title: "Location", field: "location", headerSort: false, headerFilter:true,  },
+                { title: "Server", field: "serverName", editor: 'input', editable: localonly, minWidth: 150, headerSort: true, headerFilter: true  },
+                { title: "Address", field: "address", editor: 'input', editable: localonly, headerSort: true, headerFilter:true,  },
+                { title: "Location", field: "location", editor: 'input', minWidth: 200, headerSort: false, headerFilter:true,  },
                 { title: "Active", field: "active", headerSort: false, formatter: "tickCross", cellClick: invertTickCross, headerFilter:true },
                 { title: "Delete", field: "delete", headerSort: false, hozAlign: "center", cellClick: function (e, cell) {
-                        printersDeleteServer(cell.getRow().getCell('serverName').getValue());
-                        cell.getRow().delete();
-                    }
+                        if (localonly(cell)) {
+                            printersDeleteServer(cell.getRow().getCell('serverName').getValue());
+                            cell.getRow().delete();
+                        }
+                    },
                 },
+                { field: "oldServerName", visible: false, }
             ],
         });
         this.serverlist.on("dataChanged", printers_changed);
@@ -366,8 +417,8 @@ class Printers {
             movableRows: false,
             history: true,
             columns: [
-                { title: "Server", field: "serverName", headerSort: true, headerFilter: true  },
-                { title: "Printer", field: "printerName", headerSort: true, headerFilter:true },
+                { title: "Server", field: "serverName", editor: "list", editorParams: { valuesLookup: localServersList, }, editable: printerLocalonly, minWidth: 150, headerSort: true, headerFilter: 'input'  },
+                { title: "Printer", field: "printerName", editor: "input", editable: printerLocalonly, minWidth: 150, headerSort: true, headerFilter:true },
                 { title: "Type", field: "printerType", headerSort: true, headerFilter:true,
                     editor: "list", editorParams: {
                             values: ["generic", "receipt", "badge"],
@@ -376,7 +427,13 @@ class Printers {
                         }
                     },
                 { title: "Active", field: "active", headerSort: false, formatter: "tickCross", cellClick: invertTickCross, headerFilter:true },
-                { title: "Delete", field: "delete", headerSort: false, hozAlign: "center", cellClick: function (e, cell) { cell.getRow().delete(); } },
+                {
+                    title: "Delete", field: "delete", headerSort: false, hozAlign: "center", cellClick: function (e, cell) {
+                        if (printerLocalonly(cell)) {
+                            cell.getRow().delete();
+                        }
+                    },
+                }
             ],
         });
         this.printerlist.on("dataChanged", printers_changed);
@@ -386,7 +443,7 @@ class Printers {
         var rows = this.printerlist.searchRows("serverName","=", serverName);
         rows.forEach(function (currentValue, index, arr) { currentValue.delete(); });
     }
-    
+
     // servers editing
     // process press of undo button
     undo_server() {
@@ -469,14 +526,71 @@ class Printers {
             this.printers_undobtn.disabled = false;
         }
     }
+
+    addServer() {
+        this.serverlist.addData([{local:true, serverName: "NewServer", address:"", location:"", active: false, delete: '🗑'}], true);
+    }
+
+    addPrinter() {
+        this.printerlist.addData([{serverName: "New Server", printerName: "NewPrinter", printerType: "generic", active: false, delete: '🗑'}], true);
+    }
+
+    // save the servers and printers table and refresh it
+    save() {
+        "use strict";
+
+        this.printers_savebtn.disabled = true;
+        // build the dataset of the table
+        var servers = this.serverlist.getData();
+        var printers = this.printerlist.getData();
+        var postData = {
+            ajax_request_action: 'updatePrinters',
+            servers: servers,
+            printers: printers,
+        };
+        $.ajax({
+            method: "POST",
+            url: "scripts/adminTasks.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (data['error'] !== undefined) {
+                    show_message(data['error'], 'error');
+                    this.savebtn.disabled = false;
+                    return;
+                }
+                if (data['message'] !== undefined) {
+                    show_message(data['message'], 'success');
+                }
+                loadInitialData('printers');
+            },
+            error: showAjaxError,
+        });
+    }
 }
 
-// external call to Users functions: when tabulator calls the function, the this pointer is wrong
+// external call to Users functions: when tabulator calls the function, the 'this' pointer is wrong
 function printers_changed(data) {
     printers.changed();
 }
 function printersDeleteServer(serverName) {
     printers.deleteServer(serverName);
+}
+
+// Check if this server is of type local, used to limit actions to local servers only
+function localonly(cell) {
+    var local = cell.getRow().getCell('local').getValue();
+    return local === true || Number(local) === 1;
+}
+
+// Check if the server for this printer is of type local, used to limit actions to local printers only
+function printerLocalonly(cell) {
+    var server = cell.getRow().getCell('serverName').getValue();
+    var rows = printers.serverlist.searchRows("serverName", "=", server);
+    if (rows[0] !== undefined) {
+        var local = rows[0].getCell('local').getValue();
+        return local === true || Number(local) === 1;
+    }
+    return true;
 }
 
 //  load/refresh the data from the server.  Which items are refreshed depends on the loadtype field
@@ -501,10 +615,22 @@ function loadInitialData(loadtype) {
             }
             if (data['userid'] !== undefined) {
                 userid = data['userid'];
-                users = new Users(data['users']);
+                if (users == null) {
+                    users = new Users(data['users']);
+                } else {
+                    users.loadUsers(users);
+                    users.dirty = false;
+                }
             }
-            if (data['servers'] !== undefined)
-                printers = new Printers(data['servers'], data['printers']);
+            if (data['servers'] !== undefined) {
+                if (printers == null) {
+                    printers = new Printers(data['servers'], data['printers']);
+                } else {
+                    printers.loadPrinters(data['servers'], data['printers']);
+                    printers.dirty = false;
+                    printers.serverNameToDelete = null;
+                }
+            }
         },
         error: showAjaxError,
     });
@@ -534,6 +660,15 @@ function tabPasswordFormatter(cell, formatterParams, onRendered) {
     return '******';
 }
 
+function localServersList() {
+    var servers = printers.serverlist.getData();
+    var distinctServers = new Array();
+    for (var i = 0; i < servers.length; i++) {
+        if (servers[i]['local'] === true || Number(servers[i]['local']) === 1)
+            distinctServers[servers[i]['serverName']] = 1;
+    }
+    return Object.keys(distinctServers);
+}
 function invertTickCross(e,cell) {
     'use strict';
 
