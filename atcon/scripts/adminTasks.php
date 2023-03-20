@@ -160,8 +160,8 @@ function updateUsers($conid): void
     $perm_rows = 0;
 
     $data = $_POST['data'];
-    web_error_log("updateUsers:");
-    var_error_log($data);
+    //web_error_log("updateUsers:");
+    //var_error_log($data);
 
     // first find all rows to delete (those not in the data array or this user)
     $savelist = [];
@@ -176,7 +176,7 @@ function updateUsers($conid): void
 DELETE FROM atcon_user
 WHERE perid NOT IN ($no_delete) AND conid = ?
 EOS;
-    web_error_log("updateUsers($conid):\nsql:\n$deleteSQL");
+    //web_error_log("updateUsers($conid):\nsql:\n$deleteSQL");
     $del_rows = dbSafeCmd($deleteSQL, 'i', [$conid]);
 
     // now work on the rows to add - find these by selecting auth_user for the rows
@@ -261,8 +261,8 @@ EOS;
     }
     mysqli_free_result($res);
 
-    web_error_log("Current Auth Dump");
-    var_error_log($users);
+    //web_error_log("Current Auth Dump");
+    //var_error_log($users);
 
     $delAuthSQL = <<<EOS
 DELETE FROM atcon_auth
@@ -317,10 +317,10 @@ function updatePrinters($conid): void
 
     $printers = $_POST['printers'];
     $servers = $_POST['servers'];
-    web_error_log('updatePrinters: Servers:');
-    var_error_log($servers);
-    web_error_log('updatePrinters: Printers:');
-    var_error_log($printers);
+    //web_error_log('updatePrinters: Servers:');
+    //var_error_log($servers);
+    //web_error_log('updatePrinters: Printers:');
+    //var_error_log($printers);
 
     $servers_updated = 0;
     $servers_added = 0;
@@ -385,9 +385,9 @@ EOS;
 DELETE FROM servers
 WHERE serverName NOT IN ($no_delete) AND local = 1;
 EOS;
-    web_error_log("updatePrinters($conid):\nsql:\n$deleteSQL");
+    //web_error_log("updatePrinters($conid):\nsql:\n$deleteSQL");
     $servers_deleted = dbCmd($deleteSQL);
-    web_error_log("$servers_deleted deleted from servers");
+    //web_error_log("$servers_deleted deleted from servers");
 
     // now update printers
     $existing = array();

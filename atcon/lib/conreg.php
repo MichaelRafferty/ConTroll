@@ -78,7 +78,7 @@ function init_file($printer) {
 
 function init_ps() {
     $tempfile = tempnam(sys_get_temp_dir(), "badgePrn");
-    web_error_log("Writing to $tempfile");
+    //web_error_log("Writing to $tempfile");
     if(!$tempfile) {
         $response['error'] = "Unable to get unique file";
         $response['error_message'] = error_get_last();
