@@ -32,7 +32,7 @@ $stylemod = array(
  **** "lbl" == Dymo LabelWriter SE450
  ** $mods is an array of controls to pull back
  */
-function printMod($type, $mods) {
+function printMod($type, $mods):string {
   global $stylemod;
   $ret = '';
   foreach($mods as $mod) {
@@ -56,90 +56,68 @@ $badgeTypes = array(
     'NoRights' => 'N'
 );
 
-function lookupType($type) {
+function lookupType($type):string {
     global $badgeTypes;
     return $badgeTypes[$type];
 }
 
-function init_file($printer) {
-    switch($printer) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-            return init_ps();
-        case 'old4':
-        case 'old5':
-            return init_se450();
+function init_file($printer):string {
+    if ($printer[0] == 'None' && $printer[2] == '') {
+        $response['error'] = "You have no printer defined, you cannot print a badge.";
+        ajaxSuccess($response);
+        exit();
     }
-    return null;
-}
-
-function init_ps() {
-    $tempfile = tempnam(sys_get_temp_dir(), "badgePrn");
+    $tempfile = tempnam(sys_get_temp_dir(), 'badgePrn');
     //web_error_log("Writing to $tempfile");
-    if(!$tempfile) {
-        $response['error'] = "Unable to get unique file";
+    if (!$tempfile) {
+        $response['error'] = 'Unable to get unique file';
         $response['error_message'] = error_get_last();
         //var_error_log($response);
         ajaxSuccess($response);
         exit();
     }
 
-    if(!copy(dirname(__FILE__) . "/init.ps", $tempfile)) {
-        $response['error'] = "Unable to copy init.ps file";
-        $response['error_message'] = error_get_last();
-        //var_error_log($response);
-        ajaxSuccess($response);
-        exit();
-    }
+    $printerType = $printer[3];
+    switch($printerType) {
+        case "badgese450":
+            $temp = fopen($tempfile, 'w');
+            if (!$temp) {
+                $response['error'] = 'Unable to get open file';
+                $response['error_message'] = error_get_last();
+                ajaxSuccess($response);
+                exit();
+            }
 
+            $ctrlLine = printMod('lbl',
+                array('Reset', '38cpl', 'Landscape', 'Truncate', 'VertStrtPt97'));
+            fwrite($temp, $ctrlLine);
+            fclose($temp);
+            break;
+        default:
+            if (!copy(dirname(__FILE__) . '/init.ps', $tempfile)) {
+                $response['error'] = 'Unable to copy init.ps file';
+                $response['error_message'] = error_get_last();
+                //var_error_log($response);
+                ajaxSuccess($response);
+                exit();
+            }
+    }
     return $tempfile;
 }
 
-function init_se450() {
-    $tempfile = tempnam(sys_get_temp_dir(), "badgePrn");
-    if(!$tempfile) {
-        $response['error'] = "Unable to get unique file";
-        $response['error_message'] = error_get_last();
-        ajaxSuccess($response);
-        exit();
-    }
-
-    $temp = fopen($tempfile, "w");
-    if(!$temp) {
-        $response['error'] = "Unable to get open file";
-        $response['error_message'] = error_get_last();
-        ajaxSuccess($response);
-        exit();
-    }
-
-    $ctrlLine = printMod('lbl',
-        array('Reset', '38cpl', 'Landscape', 'Truncate', 'VertStrtPt97'));
-    fwrite($temp, $ctrlLine);
-    fclose($temp);
-
-    return $tempfile;
-}
-
-function write_badge($badge, $tempfile, $printer) {
-    switch($printer) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-            write_ps($badge, $tempfile);
-            break;
-        case 'old4':
-        case 'old5':
-            write_se450($badge, $tempfile);
-            break;
+function write_badge($badge, $tempfile, $printer):void {
+$printerType = $printer[3];
+switch ($printerType) {
+    case 'badgese450':
+        write_se450($badge, $tempfile);
+        break;
+    default:
+        write_ps($badge, $tempfile);
+        break;
     }
 }
 
-function write_ps($badge, $tempfile) {
+function write_ps($badge, $tempfile): void {
     $temp = fopen($tempfile, "a");
     if(!$temp) {
         $response['error'] = "Unable to get open file";
@@ -182,8 +160,6 @@ function write_ps($badge, $tempfile) {
     //info line
     $type = lookupType($badge['category']);
     $id = $badge['id'];
-    $age = "";
-    $day = "";
 
     if($badge['age'] == 'youth') { $type = 'Y'; }
 
@@ -195,7 +171,7 @@ function write_ps($badge, $tempfile) {
             . "2 copy moveto\n"
             . "firstline setfont\n"
             . "($day) show\n\n");
-    } else { $day = ""; }
+    }
 
     fwrite($temp, "72 20\n"
         . "2 copy moveto\n"
@@ -236,7 +212,7 @@ function write_ps($badge, $tempfile) {
     fclose($temp);
 }
 
-function write_se450($badge, $tempfile) {
+function write_se450($badge, $tempfile):void {
     $temp = fopen($tempfile, "a");
     if(!$temp) {
         $response['error'] = "Unable to get open file";
@@ -273,8 +249,6 @@ function write_se450($badge, $tempfile) {
     //info line
     $type = lookupType($badge['category']);
     $id = $badge['id'];
-    $age = "";
-    $day = "";
 
     if($badge['age'] == 'youth') {
         $type='Y';
@@ -313,38 +287,33 @@ function write_se450($badge, $tempfile) {
     fclose($temp);
 }
 
+// print_badge: printer contains array(4) of display name, server, queue name (printer), printer type
+function print_badge($printer, $tempfile): string|false
+{
+    $queue = $printer[2];
+    if ($queue == '0') return 0; // this token is the temp file only print queue
 
-function print_badge($queue, $tempfile) {
-    switch($queue) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-            return print_ps($queue, $tempfile);
+    $server = $printer[1];
+    $printerType = $printer[3];
+    $options = '';
+    switch ($printerType) {
+        // turbo 330 -o PageSize=w82h248  -o orientation-requested=5
+        case 'badge330':
+            $options = '-o PageSize=w82h248 -o orientation-requested=5';
             break;
-        case 'old4':
-        case 'old5':
-            return print_se450($queue, $tempfile);
+        // turbo 450 -o PageSize=30252_Address
+        case 'badge450':
+            $options = '-o PageSize=30252_Address';
+            break;
+        default:
             break;
     }
-}
-
-
-function print_ps($queue, $tempfile) {
-    $printerName = "label" . $queue;
-    // turbo 450 -o PageSize=30252_Address
-    // turbo 330 -o PageSize=w82h248  -o orientation-requested=5
-    $result = exec("lpr -P $printerName -o PageSize=30252_Address $tempfile");
+    // all the extra stuff for exec is for debugging issues.
+    $command = "lpr -H$server -P $queue $options $tempfile";
+    $output = [];
+    $result_code = 0;
+    $result = exec($command,$output,$result_code);
+    //web_error_log("executing command '$command' returned '$result', code: $result_code");
+    //var_error_log($output);
     return $result;
 }
-
-
-function print_se450($queue, $tempfile) {
-    $printerName = "label" . $queue;
-    $result = exec("lp -d $printerName $tempfile");
-    return $result;
-}
-
-
-?>

@@ -14,8 +14,8 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 function printBadge($conid) {
-    if ($_SESSION['printer'] >= 0) {
-        $printer = $_SESSION['printer'];
+    if (isset($_SESSION['badgePrinter'])) {
+        $printer = $_SESSION['badgePrinter'];
         $params = $_POST['params'];
         $badge['type'] = $params['type'];
         $badge['badge_name'] = $params['badge_name'];

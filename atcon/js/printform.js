@@ -28,7 +28,11 @@ function printTestLabel() {
                     show_message(data['message'], 'success');
                 }
                 if (data['error'] !== undefined) {
-                    show_message(data['message'], 'error');
+                    var msg = data['error'];
+                    if (data['error_message'] !== undefined) {
+                        msg += "<br/>" + $data['error_message'];
+                    }
+                    show_message(msg, 'error');
                 }
             },
             error: showAjaxError,

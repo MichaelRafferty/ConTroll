@@ -97,91 +97,104 @@ function page_init($title, $tab, $css, $js)
         ?>
 </head>
 <body>
-        <?php
-        page_head($title);
-    //con_info();
+    <div class="container-fluid bg-primary text-white">
+        <div class="row">
+            <div class="col-sm-9">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <h1 class='title'>
+                                    <?php echo $label; ?> Registration <?php echo $title; ?> page
+                            </h1>
+                        </div>
+                    </div>
+            <?php
         if (isset($_SESSION['userhash'])) {
             ?>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-sm-10 text-bg-primary">
-                <nav class="navbar navbar-dark bg-primary navbar-expand-lg">
-                    <div>
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                    </div>
-                    <div class="collapse navbar-collapse" id="navbarNav">
-                        <ul class="navbar-nav me-auto p-0">
-                            <?php if (in_array('data_entry', $perms)) { ?>
-                            <li>
-                                <a class="nav-link navitem <?php echo $tab == "checkin" ? "active" : ""; ?>" <?php echo $tab == "checkin" ? 'aria-current="page"' : ""; ?> href="regpos.php">Reg Check In</a>
-                            </li>
-                            <?php  }
-                            if (in_array('cashier', $perms)) { ?>
-                            <li>
-                                <a class="nav-link navitem <?php echo $tab == "cashier" ? "active" : ""; ?>" <?php echo $tab == "cashier" ? 'aria-current="page"' : ""; ?> href="regpos.php?mode=cashier">Reg Cashier</a>
-                            </li>
-                            <?php  }
-                            if (in_array('artshow', $perms)) { ?>
-                            <li>
-                                <a class="nav-link navitem <?php echo $tab == "artshow" ? "active" : ""; ?>" <?php echo $tab == "artshow" ? 'aria-current="page"' : ""; ?> href="artsales.php">Artshow Cashier</a>
-                            </li>
-                            <?php  }
-                            if (in_array('data-entry', $perms) || in_array('cashier', $perms)) { ?>
-                            <li>
-                                <a class="nav-link navitem <?php echo $tab == "printform" ? "active" : ""; ?>" <?php echo $tab == "printform" ? 'aria-current="page"' : ""; ?> href="printform.php">Printform</a>
-                            </li>
-                            <?php  }
-                            if (in_array('manager', $perms)) { ?>
-                            <li>
-                                <a class="nav-link navitem <?php echo $tab == "admin" ? "active" : ""; ?>" <?php echo $tab == "admin" ? 'aria-current="page"' : ""; ?> href="admin.php">Administrator</a>
-                            </li>
-                            <li>
-                                <a class="nav-link navitem <?php echo $tab == "mockupCheckin" ? "active" : ""; ?>" <?php echo $tab == "mockupCheckin" ? 'aria-current="page"' : ""; ?> href="mockup2.php">Check-in POS Mockup</a>
-                            </li>
-                            <li>
-                                <a class="nav-link navitem <?php echo $tab == "mockupCashier" ? "active" : ""; ?>" <?php echo $tab == "mockupCashier" ? 'aria-current="page"' : ""; ?> href="mockup2.php?mode=cashier">Cashier POS Mockup</a>
-                            </li>
-                            <li>
-                                <a class="nav-link navitem <?php echo $tab == "atconArtInventory" ? "active" : ""; ?>" <?php echo $tab == "atconArtInventory" ? 'aria-current="page"' : ""; ?> href="newArtInventory.php?mode=inventory">Art Invetory Dev</a>
-                            </li>
+                    <div class="row">
+                        <div class="col-sm-12 text-bg-primary">
+                            <nav class="navbar navbar-dark bg-primary navbar-expand-lg">
+                                <div>
+                                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                                        <span class="navbar-toggler-icon"></span>
+                                    </button>
+                                </div>
+                                <div class="collapse navbar-collapse" id="navbarNav">
+                                    <ul class="navbar-nav me-auto p-0">
+                                        <?php if (in_array('data_entry', $perms)) { ?>
+                                        <li>
+                                            <a class="nav-link navitem <?php echo $tab == "checkin" ? "active" : ""; ?>" <?php echo $tab == "checkin" ? 'aria-current="page"' : ""; ?> href="regpos.php">Reg Check In</a>
+                                        </li>
+                                        <?php  }
+                                        if (in_array('cashier', $perms)) { ?>
+                                        <li>
+                                            <a class="nav-link navitem <?php echo $tab == "cashier" ? "active" : ""; ?>" <?php echo $tab == "cashier" ? 'aria-current="page"' : ""; ?> href="regpos.php?mode=cashier">Reg Cashier</a>
+                                        </li>
+                                        <?php  }
+                                        if (in_array('artshow', $perms)) { ?>
+                                        <li>
+                                            <a class="nav-link navitem <?php echo $tab == "artshow" ? "active" : ""; ?>" <?php echo $tab == "artshow" ? 'aria-current="page"' : ""; ?> href="artsales.php">Artshow Cashier</a>
+                                        </li>
+                                        <?php  }
+                                        if (in_array('data-entry', $perms) || in_array('cashier', $perms)) { ?>
+                                        <li>
+                                            <a class="nav-link navitem <?php echo $tab == "printform" ? "active" : ""; ?>" <?php echo $tab == "printform" ? 'aria-current="page"' : ""; ?> href="printform.php">Printform</a>
+                                        </li>
+                                        <?php  }
+                                        if (in_array('manager', $perms)) { ?>
+                                        <li>
+                                            <a class="nav-link navitem <?php echo $tab == "admin" ? "active" : ""; ?>" <?php echo $tab == "admin" ? 'aria-current="page"' : ""; ?> href="admin.php">Administrator</a>
+                                        </li>
+                                        <li>
+                                            <a class="nav-link navitem <?php echo $tab == "mockupCheckin" ? "active" : ""; ?>" <?php echo $tab == "mockupCheckin" ? 'aria-current="page"' : ""; ?> href="mockup2.php">Check-in Mockup</a>
+                                        </li>
+                                        <li>
+                                            <a class="nav-link navitem <?php echo $tab == "mockupCashier" ? "active" : ""; ?>" <?php echo $tab == "mockupCashier" ? 'aria-current="page"' : ""; ?> href="mockup2.php?mode=cashier">Cashier Mockup</a>
+                                        </li>
+                                        <li>
+                                            <a class="nav-link navitem <?php echo $tab == "atconArtInventory" ? "active" : ""; ?>" <?php echo $tab == "atconArtInventory" ? 'aria-current="page"' : ""; ?> href="newArtInventory.php?mode=inventory">Art Invetory Dev</a>
+                                        </li>
 
-                            <?php  } ?>
-                            <li>
-                                <a class="nav-link navitem" <?php echo $tab == "change_password" ? "active" : ""; ?>" <?php echo $tab == "change_password" ? 'aria-current="page"' : ""; ?> href="index.php?action=change_passwd">Change Password</a>
-                            </li>
-                            <li>
-                                <a class="nav-link navitem" <?php echo $tab == "logout" ? "active" : ""; ?>" <?php echo $tab == "logout" ? 'aria-current="page"' : ""; ?> href="index.php?action=logout">Logout</a>
-                            </li>
-                        </ul>
+                                        <?php  } ?>
+                                        <li>
+                                            <a class="nav-link navitem" <?php echo $tab == "change_password" ? "active" : ""; ?>" <?php echo $tab == "change_password" ? 'aria-current="page"' : ""; ?> href="index.php?action=change_passwd">Change Password</a>
+                                        </li>
+                                        <li>
+                                            <a class="nav-link navitem" <?php echo $tab == "logout" ? "active" : ""; ?>" <?php echo $tab == "logout" ? 'aria-current="page"' : ""; ?> href="index.php?action=logout">Logout</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </nav>
+                        </div>
                     </div>
-                </nav>
+                </div>
             </div>
-            <div class="col-sm-2 text-bg-primary">              
+            <div class="col-sm-3 text-bg-primary align-self-end">
                 User: <?php echo $_SESSION['user']; ?><br/>
-                Printer: <?php echo $_SESSION['printer']; ?>
+                Badge: <?php echo $_SESSION['badgePrinter'][0]; ?><br/>
+                Receipt: <?php echo $_SESSION['receiptPrinter'][0]; ?><br/>
+                General: <?php echo $_SESSION['genericPrinter'][0]; ?>
             </div>
         </div>
     </div>
-            <?php
+    <?php
+        } else {
+            ?>
+                </div>
+            </div>
+        </div>
+    </div>
+        <?php
         }
     } else {
-        page_head($title);
+        ?>
+        <div id='titlebar' class="container-fluid bg-primary text-white">
+            <h1 class='title'>
+                <?php echo $label; ?> Registration <?php echo $title; ?> page
+            </h1>
+        </div>
+        <?php
     }
-}
-
-function page_head($title)
-{
-    $con = get_conf('con');
-    $label = $con['label'];
-    ?>
-    <div id='titlebar' class="container-fluid bg-primary text-white">
-        <h1 class='title'>
-            <?php echo $label; ?> Registration <?php echo $title; ?> page
-        </h1>
-    </div>
-    <?php
 }
 
 function con_info()

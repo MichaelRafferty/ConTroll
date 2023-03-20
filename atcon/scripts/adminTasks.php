@@ -76,6 +76,7 @@ EOS;
             $servers[] = $server;
         }
         $response['servers'] = $servers;
+        mysqli_free_result($serverQ);
 
         $printersSQl = <<<EOS
 SELECT p.serverName, p.printerName, p.printerType, p.active, IF(s.local = 1, '🗑', '') as `delete`
@@ -89,6 +90,7 @@ EOS;
             $printers[] = $printer;
         }
         $response['printers'] = $printers;
+        mysqli_free_result($printerQ);
     }
     ajaxSuccess($response);
 }
@@ -400,7 +402,7 @@ EOS;
     while ($printer = fetch_safe_assoc($existingQ)) {
         $existing[$printer['serverName'] . ':::' . $printer['printerName']] = $printer['local'];
     }
-
+    mysqli_free_result($existingQ);
     $updateLocalPrinterSQL = <<<EOS
 UPDATE printers
 SET printerName = ?, printerType=?, active=?
