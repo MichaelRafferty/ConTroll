@@ -1,5 +1,5 @@
 <?php
-require("conreg.php");
+require("badgePrintFunctions.php");
 
 
 $test_base = array(

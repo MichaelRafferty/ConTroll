@@ -6,7 +6,7 @@
 // Perform tasks under the printform page about ATCON users
 
 require_once('../lib/base.php');
-require_once('../lib/conreg.php');
+require_once('../lib/badgePrintFunctions.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
