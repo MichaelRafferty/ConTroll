@@ -1538,23 +1538,23 @@ function find_record(find_type) {
         }
    
         var first = true;
-        for (row in result_membership) {
-            if (result_membership[row]['tid'] == number_search) {
-                prow = result_membership[row]['pindex'];
-                html += draw_record(prow, first);
-                first = false;
-            }
+    for (row in result_membership) {
+        if (result_membership[row]['tid'] == number_search) {
+            prow = result_membership[row]['pindex'];
+            html += draw_record(prow, first);
+            first = false;
         }
-        if (html != '') {
-            html += `
-</div>`;
-            id_div.innerHTML = html;
-        } else {
-            id_div.innerHTML = 'No matching records found'
-        }
-
-        return;
     }
+    if (html != '') {
+        html += `
+</div>`;
+        id_div.innerHTML = html;
+    } else {
+        id_div.innerHTML = 'No matching records found'
+    }
+
+    return;
+}
 
     id_div.innerHTML = "No search criteria specified";
 }

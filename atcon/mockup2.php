@@ -31,7 +31,7 @@ $page = "Atcon POS Mockup ($mode)";
 page_init($page, $tab,
     /* css */ array('https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css','css/atcon.css','css/registration.css'),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js','js/atcon.js','js/mockup2.js')
+                    'https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js','js/mockup2.js')
     );
 
 $con = get_conf("con");
@@ -67,7 +67,7 @@ while($priceL = fetch_safe_assoc($priceR)) {
 echo "\n" . '<script type="text/javascript">' . "\n";
 echo 'var memLabelsJSON = `' . json_encode($memarray) . "`;\n";
 echo "var conid = '$label';\n";
-echo "var printerid = '" . $_SESSION['printer'] . "';\n";
+echo "var printerid = '" . $_SESSION['badgePrinter'][0] . "';\n";
 echo '</script>' . "\n";
 
 ?>

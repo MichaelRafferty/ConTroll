@@ -1,6 +1,6 @@
 <?php
 
-require("lib/base.php");
+require_once "lib/base.php";
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
@@ -9,7 +9,7 @@ if (!isset($_SESSION['user'])) {
 
 $con = get_conf('con');
 $conid = $con['id'];
-$tab = 'Checkin';
+$tab = 'checkin';
 $mode = 'checkin';
 $method='data_entry';
 if (isset($_GET['mode'])) {
@@ -18,7 +18,7 @@ if (isset($_GET['mode'])) {
         $method='cashier';
     }
     if ($mode == 'cashier') {
-        $tab = 'Cashier';
+        $tab = 'cashier';
     }
 }
 $page = "Atcon POS ($tab)";
@@ -31,43 +31,8 @@ if (!check_atcon($method, $conid)) {
 page_init($page, $tab,
     /* css */ array('https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css','css/atcon.css','css/registration.css'),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js','js/atcon.js','js/mockup2.js')
+                    'https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js','js/pos.js')
     );
-
-$label = $con['label'];
-$startdate = $conid . '-11-01';
-$enddate = $conid . '-11-02';
-$method='manager';
-db_connect();
-
-//var_dump($_SESSION);
-//echo $conid;
-
-$membershiptypes = array();
-$priceQ = <<<EOS
-SELECT id, conid, memCategory, memType, memAge, memGroup, label, shortname, sort_order, price
-FROM memLabel
-WHERE
-    ((conid=? AND memCategory != 'yearahead') OR (conid=? AND memCategory in ('yearahead', 'rollover')))
-    AND atcon = 'Y'
-    AND startdate >= ?
-    AND enddate > ?
-ORDER BY sort_order, price DESC
-;
-EOS;
-
-$memarray = array();
-$priceR = dbSafeQuery($priceQ, "iiss", array($conid, $conid + 1, $startdate, $enddate));
-while($priceL = fetch_safe_assoc($priceR)) {
-    $memarray[] = $priceL;
-}
-
-echo "\n" . '<script type="text/javascript">' . "\n";
-echo 'var memLabelsJSON = `' . json_encode($memarray) . "`;\n";
-echo "var conid = '$label';\n";
-echo "var printerid = '" . $_SESSION['printer'] . "';\n";
-echo '</script>' . "\n";
-
 ?>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
@@ -274,4 +239,5 @@ echo '</script>' . "\n";
             </div>
         </div>       
     </div>
+    <div id='result_message' class='mt-4 p-2'></div>
 <pre id='test'></pre>
