@@ -175,7 +175,7 @@ EOS;
     } else {
             // name match
         $name_search = '%' . preg_replace('/  */', '%', $name_search) . '%';
-        web_error_log("match string: $name_search");
+        //web_error_log("match string: $name_search");
         $searchSQLP = <<<EOS
 SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
     p.address, p.addr_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,

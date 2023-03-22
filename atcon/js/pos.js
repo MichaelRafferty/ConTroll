@@ -89,6 +89,8 @@ var datatbl = new Array();
 var cart = new Array();
 var cart_pmt = new Array();
 var cart_perid = new Array();
+var result_info = new Array();
+var result_membership = new Array();
 var new_perid = -1;
 var memList = null;
 var catList = null;
@@ -344,6 +346,7 @@ function void_trans() {
 }
 
 function start_over(reset_all) {
+    clear_message();
     // empty cart
     cart = new Array();
     cart_perid = new Array();
@@ -363,10 +366,10 @@ function start_over(reset_all) {
 
     // reset data to call up
     if (reset_all) {
-        result_perinfo = mockup_perinfo.slice(0);
-        result_membership = mockup_membership.slice(0);
-        max_perinfo_index = result_perinfo.length;
-        max_membership_index = result_membership.length;
+        result_perinfo = new Array();
+        result_membership = new Array();
+        max_perinfo_index = 0;
+        max_membership_index = 0;
     }
 
     // reset tabs to initial values
