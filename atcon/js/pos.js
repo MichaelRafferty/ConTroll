@@ -1312,7 +1312,7 @@ function find_record(find_type) {
     id_div.innerHTML = "";
     clear_message();
     name_search = find_pattern.value.toLowerCase().trim();
-    if (name_search == null || name_search == '') {
+    if ((name_search == null || name_search == '') && find_type == '') {
         show_message("No search criteria specified", "warn");
         return;
     }
