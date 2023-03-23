@@ -67,7 +67,7 @@ page_init($page, $tab,
                             </div>
                             <div class="row mt-1">
                                 <div class="col-sm-4">
-                                    Search for:
+                                    <label for="find_pattern" >Search for:</label>
                                 </div>
                                 <div class="col-sm-8">
                                     <input type="text" id="find_pattern" name="find_name" maxlength="50" size="50" placeholder="Name or Portion of Name, Perid or TransID"/>

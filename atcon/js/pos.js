@@ -14,14 +14,13 @@ var membership_select = null;
 var upgrade_select = null;
 var yearahead_select = null;
 var addon_select = null;
-var result_perinfo = null;
-var result_membership = null;
-var max_perinfo_index = null;
-var max_membership_index = null;
 var unpaid_rows = 0;
 var num_rows = 0;
 var membership_rows = 0;
 var needmembership_rows = 0;
+var cart_membership = [];
+var cart_perinfo = [];
+var cart_perinfo_map = [];
 
 // tab fields
 var find_tab = null;
@@ -32,11 +31,11 @@ var print_tab = null;
 
 // find people fields
 var id_div = null;
-var search_field = null;
 var find_result_table = null;
 var number_search = null;
 var memLabel = null;
 var find_unpaid_button = null;
+var find_perid = null;
 
 // add new person fields
 var add_index_field = null;
@@ -85,14 +84,15 @@ var print_div = null;
 var print_arr = null;
 
 // Data Items
-var datatbl = new Array();
-var cart = new Array();
-var cart_pmt = new Array();
-var cart_perid = new Array();
-var result_info = new Array();
-var result_membership = new Array();
+var unpaid_table = [];
+var cart = [];
+var cart_pmt = [];
+var cart_perid = [];
+var result_membership = [];
+var result_perinfo = [];
 var new_perid = -1;
 var memList = null;
+var memListMap = null;
 var catList = null;
 var ageList = null;
 var typeList = null;
@@ -111,6 +111,9 @@ var filt_shortname_regexp = null; // regexp item;
 var startdate = null;
 var enddate = null;
 
+// initialization
+// lookup all DOM elements
+// ask to load mappimg tables
 window.onload = function initpage() {
     // set up the constants for objects on the screen
 
@@ -198,40 +201,49 @@ window.onload = function initpage() {
     });
 }
 
+
+// load mapping tables from database to javascript arrayy
+// also retrieve session data about printers
 function loadInitialData(data) {
     // map the memIds and labels for the pre-coded memberships.  Doing it now because it depends on what the datbase sends.
     // tabls
     conlabel =  data['label'];
     conid = data['conid'];
-    badgePrinterAvailable = data['badgePrinter'] == 'true';
-    receiptPrinterAvailable = data['receiptPrinter'] == 'true';
+    badgePrinterAvailable = data['badgePrinter'] === 'true';
+    receiptPrinterAvailable = data['receiptPrinter'] === 'true';
     startdate = data['startdate'];
     enddate = data['enddate'];
     memList = data['memLabels'];
     catList = data['memCategories'];
     ageList = data['ageList'];
-    typeLst = data['memTypes'];
+    typeList = data['memTypes'];
 
-
+    // build memListMap from memList
+    memListMap = [];
+    var index = 0;
+    while (index < memList.length) {
+        memListMap[memList[index]['id']] = row;
+        index++;
+    }
 
     // build membership_select options
-    filt_excat = new Array('upgrade', 'yearahead', 'add-on', 'addon');
+    filt_excat = ['upgrade', 'yearahead', 'add-on', 'addon'];
     filt_cat = null;
     filt_type = null;
     filt_age = null;
     filt_shortname_regexp = null;
-    match = memList.filter(mem_filter);
+    var match = memList.filter(mem_filter);
     membership_select = '';
-    for (row in match) {
+    for (var row in match) {
         membership_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + "</option>\n";
     }
     // upgrade_select
-    file_excat = null;
+    filt_excat = null;
     filt_cat = new Array('upgrade')
     filt_shortname_regexp = null;
     match = memList.filter(mem_filter);
     upgrade_select = '';
-    for (row in match) {
+    for (var row in match) {
         upgrade_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + "</option>\n";
     }
     // yearahead_select
@@ -239,11 +251,11 @@ function loadInitialData(data) {
     filt_shortname_regexp = null;
     match = memList.filter(mem_filter);
     yearahead_select = '';
-    for (row in match) {
+    for (var row in match) {
         yearahead_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + "</option>\n";
     }
     // addon_select
-    filt_cat = new Array('addon', 'add-on')
+    filt_cat = ['addon', 'add-on']
     filt_shortname_regexp = null;
     match = memList.filter(mem_filter);
     addon_select = '';
@@ -252,21 +264,25 @@ function loadInitialData(data) {
     }
 
     // set up initial values
-    result_perinfo = new Array();
-    result_membership = new Array();
-    max_perinfo_index = result_perinfo.length;
-    max_membership_index = result_membership.length;
+    result_perinfo = [];
+    result_membership = [];
 
-
+    // set starting stages of left and right windows
     clear_add();
     draw_cart();
+}
+
+// make_copy(associative array)
+// javascript passes by reference, can't slice an associative array, so you need to do a horrible JSON kludge
+function make_copy(arr) {
+    return JSON.parse(JSON.stringify(arr));  // horrible way to make an independent copy of an associative array
 }
 
     // result data format (People)
     //    perid: 1, first_name: "John", middle_name: "Q.", last_name: "Smith", suffix: "", badge_name: "John Smith",
     //    address_1: "123 Any St", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19101-0000', country: 'USA',
     //    email_addr: 'john.q.public@gmail.com', phone: '215-555-2368',
-    //   share_reg: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 0,
+    //   share_reg_ok: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 0,
 
     // result data format (Membership)
     //  perid: 1,
@@ -275,6 +291,12 @@ function loadInitialData(data) {
     // memId: null, label: null,
 
 // search memLabel functions
+// mem_filter - select specific rows from memList based on
+//  filt_cat: memCategories to include
+//  filt_type: memTypes to include
+//  filt_age: ageList to include
+//  filt_shortname_regexp: filter on shortname field
+//  lastly, if it passes everything else filt_excat: anything except this list of memCategories
 function mem_filter(cur, idx, arr) {
     if (filt_cat != null) {
         if (!filt_cat.includes(cur['memCategory'].toLowerCase()))
@@ -300,35 +322,31 @@ function mem_filter(cur, idx, arr) {
     return true;
 }
 
-var find_memid = null;
-function memLabel_filter(cur, idx, arr) {
-    return cur['id'] == find_memid;
-}
-
+// map id to MemLabel entry
 function find_memLabel(id) {
-    find_memid = id;
-    var match = memList.filter(memLabel_filter);
-    if (match.length > 0)
-        return match[0];
-    return null;
+    if (memListMap[id] === undefined) {
+        return null;
+    }
+    return memList[memListMap[id]];
 }
 
 // search result_membership functions
-var find_perid = null;
+// filter to return a single perid from result_membership.filter
 function rm_perid_filter(cur, idx, arr) {
     return cur['perid'] == find_perid;
 }
 
-function find_memberships_by_perid(perid) {
+// map perid to result_membership row
+function find_memberships_by_perid(tbl, perid) {
     find_perid = perid;
-    var match = result_membership.filter(rm_perid_filter);
-    return match;
+    return tbl.filter(rm_perid_filter);
 }
 
-function find_primary_membership_by_perid(perid) {
-    var regitems = find_memberships_by_perid(perid);
+// given a perid, find it''s primary membership in the result_membership array
+function find_primary_membership_by_perid(tbl, perid) {
+    var regitems = find_memberships_by_perid(tbl, perid);
     var mem_index = null;
-    for (item in regitems) {
+    for (var item in regitems) {
         memtype = regitems[item]['memCategory'];
         if (memtype == 'upgrade' || memtype == 'rollover' || memtype == 'freebie') {
             mem_index = regitems[item]['index'];
@@ -341,16 +359,22 @@ function find_primary_membership_by_perid(perid) {
     return mem_index;
 }
 
+// void transaction - needs to be written to actually void out a transaction in progress
+// TODO: write this
 function void_trans() {
     start_over(0);
 }
 
+// if no memberships or payments have been added to the database, this will reset for the next customer
+// TODO: add how to tell if it's allowed to be shown as enabled
 function start_over(reset_all) {
     clear_message();
     // empty cart
-    cart = new Array();
-    cart_perid = new Array();
-    cart_pmt = new Array();
+    cart = [];
+    cart_membership = [];
+    cart_perinfo = [];
+    cart_perid = [];
+    cart_pmt = [];
     freeze_cart = false;
     if (find_unpaid_button != null) {
         find_unpaid_button.hidden = false;
@@ -362,15 +386,11 @@ function start_over(reset_all) {
         find_result_table = null;
     }
     id_div.innerHTML = "";
-    datatbl = new Array();
+    unpaid_table = null;
 
     // reset data to call up
-    if (reset_all) {
-        result_perinfo = new Array();
-        result_membership = new Array();
-        max_perinfo_index = 0;
-        max_membership_index = 0;
-    }
+    result_perinfo = [];
+    result_membership = [];
 
     // reset tabs to initial values
     find_tab.disabled = false;
@@ -392,10 +412,11 @@ function start_over(reset_all) {
     draw_cart();
 }
 
+// show the full perinfo record as a hover in the table
 function build_record_hover(e, cell, onRendered) {
-    data = cell.getData();
+    var data = cell.getData();
     //console.log(data);
-    hover_text = (data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name']).trim() + '<br/>' +
+    var hover_text = (data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name']).trim() + '<br/>' +
         data['address_1'] + '<br/>';
     if (data['address_2'] != '') {
         hover_text += data['address_2'] + '<br/>';
@@ -406,12 +427,13 @@ function build_record_hover(e, cell, onRendered) {
     }
     hover_text += 'Badge Name: ' + data['badge_name'] + '<br/>' +
         'Email: ' + data['email_addr'] + '<br/>' + 'Phone: ' + data['phone'] + '<br/>' +
-        'Active:' + data['active'] + ' Contact?:' + data['contact_ok'] + ' Share?:' + data['share_reg'] + '<br/>' +
+        'Active:' + data['active'] + ' Contact?:' + data['contact_ok'] + ' Share?:' + data['share_reg_ok'] + '<br/>' +
         'Membership: ' + data['reg_type'] + '<br/>';
 
     return hover_text;
 }
 
+// add search person/transaction from result_perinfo record to the cart
 function add_to_cart(index) {
     if (index >= 0) {
         if (result_perinfo[index]['banned'] == 'Y') {
@@ -419,42 +441,84 @@ function add_to_cart(index) {
             return;
         }
         if (cart_perid.includes(result_perinfo[index]['perid']) == false) {
-            cart.push(result_perinfo[index]['index']);
-            cart_perid.push(result_perinfo[index]['perid'])
+            var perid = result_perinfo[index]['perid'];
+            cart_perinfo.push(make_copy(result_perinfo[index]));
+            cart_perid.push(perid)
+            var mrows = find_memberships_by_perid(result_membership, perid);
+            for (var mrownum in mrows) {
+                cart_membership.push(make_copy(mrows[mrownum]));
+            }
         }
     } else {
         var row;
         index = -index;
         for (row in result_membership) {
             if (result_membership[row]['tid'] == index) {
-                prow = result_membership[row]['pindex'];
+                var prow = result_membership[row]['pindex'];
+                var perid = result_perinfo[prow]['perid'];
                 if (result_perinfo[prow]['banned'] == 'Y') {
                     alert("Please ask " + (result_perinfo[prow]['first_name'] + ' ' + result_perinfo[prow]['last_name']).trim() + " to talk to the Registration Administrator, you cannot add them at this time.")
                     return;
-                } else if (cart_perid.includes(result_perinfo[prow]['perid']) == false) {
-                    cart.push(result_perinfo[prow]['index']);
-                    cart_perid.push(result_perinfo[prow]['perid']);
+                } else if (cart_perid.includes(perid) == false) {
+                    cart_perinfo.push(make_copy(result_perinfo[prow]));
+                    cart_perid.push(perid)
+                    var mrows = find_memberships_by_perid(result_membership, perid);
+                    for (var mrownum in mrows) {
+                        cart_membership.push(make_copy(mrows[mrownum]));
+                    }
                 }
             }
         }
     }
+    cart_renumber();
     draw_cart();
 }
 
-function remove_from_cart(index) {
-    cart.splice(index, 1);
+// remove person and all of their memberships from the cart
+function remove_from_cart(perid) {
+    var index = cart_perinfo_map[perid];
+    var mrows = find_memberships_by_perid(cart_membership, perid);
+    for (var mrownum in mrows) {
+        var splicerow = mrows[mrownum]['index'];
+        cart_membership.splice(mrows[mrownum]['index'], 1);
+    }
+    cart_perinfo.splice(index, 1);
     cart_perid.splice(index, 1);
+    // splices loses me the index number for the cross-reference, so the cart needs renumbering
+    cart_renumber();
     draw_cart();
 }
 
+// remove single membership item from the cart (leaving other memberships and person information
 function delete_membership(index) {
-    result_membership.splice(index, 1);
+    cart_membership.splice(index, 1);
+    cart_renumber();
     draw_cart();
 }
 
+// rebuild the indicies in the cart_perinfo and cart_membership tables
+// for shoprt cut reasons indicies are used to allow usage of the filter functions built into javascript
+// this rebuilds the index and perinfo cross reference maps.  It needs to be called whenever the number of items in cart is changed.
+// TODO: Determine if it should be done before every draw_cart call and be part of draw_cart.
+function cart_renumber() {
+    var index;
+    cart_perinfo_map = [];
+    for (index = 0; index < cart_perinfo.length; index++) {
+        cart_perinfo[index]['index'] = index;
+        cart_perinfo_map[cart_perinfo[index]['perid']]  = index;
+    }
+
+    for (index = 0; index < cart_membership.length; index++) {
+        cart_membership[index]['index'] = index;
+        cart_membership[index]['pindex'] = cart_perinfo_map[cart_membership['perid']];
+    }
+}
+
+// populate the add/edit screen from a cart item, and switch to add/edit
+// TODO: needs testing and debugging with split cart structures
 function edit_from_cart(index) {
     clear_add();
-    cartrow = result_perinfo[cart[index]];
+    var cartrow = cart_perinfo[cart[index]];
 
     // set perinfo values
     add_index_field.value = cartrow['index'];
@@ -474,10 +538,10 @@ function edit_from_cart(index) {
     add_phone_field.value = cartrow['phone'];
     add_badgename_field.value = cartrow['badge_name'];
     add_contact_field.value = cartrow['contact_ok'];
-    add_share_field.value = cartrow['share_reg'];
+    add_share_field.value = cartrow['share_reg_ok'];
 
     // membership items - see if there is a membership item in the member list for this row
-    var mem_index = find_primary_membership_by_perid(cartrow['perid']);
+    var mem_index = find_primary_membership_by_perid(cart_membership, cartrow['perid']);
    
     if (mem_index == null) {
         // none found put in select
@@ -485,14 +549,14 @@ function edit_from_cart(index) {
         document.getElementById("ae_mem_sel").innerHTML = membership_select;
     } else {
         add_memIndex_field.value = mem_index;
-        if (Number(result_membership[mem_index]['tid']) > 0) {
+        if (Number(cart_membership[mem_index]['tid']) > 0) {
             // already paid, just display the lael
-            add_mem_select.innerHTML = result_membership[mem_index]['label'];
+            add_mem_select.innerHTML = cart_membership[mem_index]['label'];
         } else {
             add_mem_select.innerHTML = add_mt_dataentry;
             var mtel = document.getElementById("ae_mem_sel");
             mtel.innerHTML = membership_select;
-            mtel.value = result_membership[mem_index]['memId'];
+            mtel.value = cart_membership[mem_index]['memId'];
         }
     }
     // set page values
@@ -508,6 +572,7 @@ function edit_from_cart(index) {
     bootstrap.Tab.getOrCreateInstance(add_tab).show();
 }
 
+// Clear the add/edit screen back to completely empty (startup)
 function clear_add() {
     // first map the memId's for the existing'
     add_index_field.value = "";
@@ -540,6 +605,7 @@ function clear_add() {
     add_city_field.style.backgroundColor = '';
     add_state_field.style.backgroundColor = '';
     add_postal_code_field.style.backgroundColor = '';
+    add_email_field.style.backgroundColor = '';
     add_mem_select.innerHTML = add_mt_dataentry;
     add_mem_select.style.backgroundColor = '';
     document.getElementById("ae_mem_sel").innerHTML = membership_select;
@@ -547,12 +613,15 @@ function clear_add() {
         add_results_table.destroy();
         add_results_table = null;
         add_results_div.innerHTML = "";
-    };
+    }
     addnew_button.innerHTML = "Add to Cart";
     clearadd_button.innerHTML = 'Clear Add Person Form';
     add_mode = true;
 }
 
+// add record from the add/edit screen to the cart.  If it's already in the cart, update the cart record.
+// TODO: change to use cart perinfo/membership structures
+// TODO: make email required, instruct using x for declined email
 function add_new() {
     var edit_index = add_index_field.value.trim();    
     var edit_perid = add_perid_field.value.trim();
@@ -573,7 +642,7 @@ function add_new() {
     var bt_field = document.getElementById("ae_mem_sel");
     var new_badgememId = null;
     if (bt_field) {
-        new_badgememId = bt_field.value.trim();;
+        new_badgememId = bt_field.value.trim();
     }
     var new_contact = add_contact_field.value.trim();
     var new_share = add_share_field.value.trim();
@@ -593,9 +662,9 @@ function add_new() {
         row['country'] = new_country;
         row['email_addr'] = new_email;
         row['phone'] = new_phone;
-        row['share_reg'] = new_share;
+        row['share_reg_ok'] = new_share;
         row['contact_ok'] = new_contact;
-        row['share_reg'] = new_share;
+        row['share_reg_ok'] = new_share;
         row['active'] = 'Y';
         if (new_badgememId != null) {
             var mrow = null;
@@ -624,6 +693,7 @@ function add_new() {
             mrow['label'] = mi_row['label'];
         }
 
+        // clear the fields that should not be preserved between adds.  Allowing a second person to be added using most of the same data as default.
         add_first_field.value = "";
         add_middle_field.value = "";
         add_email_field.value = "";
@@ -644,6 +714,7 @@ function add_new() {
         add_city_field.style.backgroundColor = '';
         add_state_field.style.backgroundColor = '';
         add_postal_code_field.style.backgroundColor = '';
+        add_email_field.style.backgroundColor = '';
         add_mem_select.innerHTML = add_mt_dataentry;
         add_mem_select.style.backgroundColor = '';
         document.getElementById("ae_mem_sel").innerHTML = membership_select;
@@ -651,7 +722,7 @@ function add_new() {
             add_results_table.destroy();
             add_results_table = null;
             add_results_div.innerHTML = "";
-        };
+        }
         addnew_button.innerHTML = "Add to Cart";
         clearadd_button.innerHTML = 'Clear Add Person Form';
         draw_cart();
@@ -661,7 +732,7 @@ function add_new() {
     // see if they already exist (if add to cart)
     var rownum;
     var matchcount = 0;
-    var matches = new Array();
+    var matches = [];
     var namematch = new RegExp((new_first + '.*' + new_last).toLowerCase(), 'i');
 
     if (addnew_button.innerHTML == 'Add to Cart') {
@@ -669,9 +740,9 @@ function add_new() {
             row = result_perinfo[rownum];
             var sourcestring = (row['first_name'] + ' ' + row['last_name']).toLowerCase();
             if (namematch.test(sourcestring)) {
-                var matchrow = JSON.parse(JSON.stringify(row));  // horrible way to make an independent copy of an associative array
+                var matchrow = make_copy(row);  // horrible way to make an independent copy of an associative array
                 matchrow['fullname'] = (row['last_name'] + ', ' + row['first_name'] + ' ' + row['middle_name'] + ' ' + row['suffix']).replace(/\s+/g, ' ').trim();
-                var primmem = find_primary_membership_by_perid(matchrow['perid']);
+                var primmem = find_primary_membership_by_perid(result_membership, matchrow['perid']);
                 if (primmem != null) {
                     matchrow['reg_label'] = result_membership[primmem]['label'];
                     var tid = result_membership[primmem]['tid'];
@@ -769,13 +840,20 @@ function add_new() {
             add_postal_code_field.style.backgroundColor = '';
         }
 
+        if (new_email == '') {
+            missing_fields++;
+            add_email_field.style.backgroundColor = 'var(--bs-warning)';
+        } else {
+            add_email_field.style.backgroundColor = '';
+        }
+
         if (missing_fields > 0) {
             if (add_results_table != null) {
                 add_results_table.destroy();
                 add_results_table = null;
                 add_results_div.includes = "";
                 addnew_button.innerHTML = "Add to Cart";
-            };
+            }
             add_header.innerHTML = `
 <div class="col-sm-12 text-bg-warning mb-2">
         <div class="text-bg-warning m-2">
@@ -790,7 +868,7 @@ function add_new() {
             badge_name: new_badgename,
             address_1: new_addr1, address_2: new_addr2, city: new_city, state: new_state, postal_code: new_postal_code,
             country: new_country, email_addr: new_email, phone: new_phone,
-            share_reg: 'Y', contact_ok, new_contact, active: 'Y', banned: 'N', index: result_perinfo.length,
+            share_reg_ok: 'Y', contact_ok:'Y', new_contact:'Y', active: 'Y', banned: 'N', index: result_perinfo.length,
 
         };
         var memId = document.getElementById("ae_mem_sel").value;
@@ -819,7 +897,7 @@ function add_new() {
             add_results_table = null;
             add_results_div.innerHTML = "";
             addnew_button.innerHTML = "Add to Cart";
-        };
+        }
         add_header.innerHTML = `
 <div class="col-sm-12 text-bg-primary mb-2">
         <div class="text-bg-primary m-2">
@@ -829,8 +907,9 @@ function add_new() {
     }
 }
 
+// format all of the memberships for one record in the cart
 function draw_cart_row(rownum) {
-    var row = result_perinfo[cart[rownum]];
+    var row = cart_perinfo[rownum];
     var membername = (row['first_name'] + ' ' + row['middle_name'] + ' ' + row['last_name']).trim();
     var mrow;
     var rowlabel;
@@ -844,89 +923,90 @@ function draw_cart_row(rownum) {
     var yearahead_eligible = false;
     var upgrade_eligible = false;
     var col1 = '';
+    var perid = row['perid'];
 
-    // now loop over the memberships
-    for (membership in result_membership) {
-        if (result_membership[membership]['perid'] == row['perid']) {
-            mem_is_membership = false;
-            mrow = result_membership[membership];
-            col1 = (Number(mrow['tid']) > 0 || freeze_cart) ? '&nbsp;' :
-                '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
-                membership + ')" >X</button >';
-            
-            switch (mrow['memCategory']) {
-                case 'standard':
-                    yearahead_eligible = true;
-                    if (mrow['memType'] == 'oneday')
-                        upgrade_eligible = true;
-                    // no break - fall through
-                case 'freebie':
-                    mem_is_membership = true;
-                    membership_html += `
-    <div class="row">
-        <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
-    </div>
-`;
-                    break;
-                case 'upgrade':
-                    mem_is_membership = true;
-                    yearahead_eligible = true;
-                    upgrade_eligible = false;
-                    upgrade_html += `
-    <div class="row">
-        <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
-    </div>
-`;
-                    break;
-                case 'yearahead':
-                    yearahead_html += `
-    <div class="row">
-        <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
-    </div>
-`;
-                    break;
-                case 'rollver':
-                    membership_found = true;
-                    yearahead_eligible = true;
-                    rollover_html += `
-    <div class="row">
-        <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
-    </div>
-`;
-                    break;
-                case 'addon':
-                case 'add-on':
-                    rowlabel = 'Addon:';
-                    addon_html += `
-    <div class="row">
-        <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
-    </div>
-`;
-                    break;
-            }
+    // now loop over the memberships, sorting them by groups
+    var mrows = find_memberships_by_perid(cart_membership, perid);
+    for (var mrownum in mrows) {
+        var mrow = mrows[mrownum];
 
-            total_price += Number(mrow['price']);
-            total_paid += Number(mrow['paid']);
-            if (mem_is_membership)
+        mem_is_membership = false;
+        col1 = (Number(mrow['tid']) > 0 || freeze_cart) ? '&nbsp;' :
+            '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
+            mrow['index'] + ')" >X</button >';
+
+        switch (mrow['memCategory']) {
+            case 'standard':
+                yearahead_eligible = true;
+                if (mrow['memType'] == 'oneday')
+                    upgrade_eligible = true;
+                // no break - fall through
+            case 'freebie':
+                mem_is_membership = true;
+                membership_html += `
+    <div class="row">
+        <div class="col-sm-1 p-0">` + col1 + `</div>
+        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
+        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
+        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
+    </div>
+`;
+                break;
+            case 'upgrade':
+                mem_is_membership = true;
+                yearahead_eligible = true;
+                upgrade_eligible = false;
+                upgrade_html += `
+    <div class="row">
+        <div class="col-sm-1 p-0">` + col1 + `</div>
+        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
+        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
+        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
+    </div>
+`;
+                break;
+            case 'yearahead':
+                yearahead_html += `
+    <div class="row">
+        <div class="col-sm-1 p-0">` + col1 + `</div>
+        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
+        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
+        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
+    </div>
+`;
+                break;
+            case 'rollver':
                 membership_found = true;
-            if (mrow['paid'] != mrow['price']) {
-                unpaid_rows++;
-            }
+                yearahead_eligible = true;
+                rollover_html += `
+    <div class="row">
+        <div class="col-sm-1 p-0">` + col1 + `</div>
+        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
+        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
+        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
+    </div>
+`;
+                break;
+            case 'addon':
+            case 'add-on':
+                rowlabel = 'Addon:';
+                addon_html += `
+    <div class="row">
+        <div class="col-sm-1 p-0">` + col1 + `</div>
+        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
+        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
+        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
+    </div>
+`;
+                break;
+        }
+
+        total_price += Number(mrow['price']);
+        total_paid += Number(mrow['paid']);
+        if (mem_is_membership)
+            membership_found = true;
+        if (mrow['paid'] != mrow['price']) {
+            unpaid_rows++;
         }
     }
     // first row - member name, remove button
@@ -939,13 +1019,13 @@ function draw_cart_row(rownum) {
     rowhtml += membername + '</div>';
     if (!freeze_cart) {
         rowhtml += `
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="edit_from_cart(` + rownum + `)">Edit</button></div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="remove_from_cart(` + rownum + `)">Remove</button></div>
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="edit_from_cart(` + perid + `)">Edit</button></div>
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="remove_from_cart(` + perid + `)">Remove</button></div>
 `;
     }
     rowhtml += '</div>'; // end of member name row
 
-    // second row - badge namee
+    // second row - badge name
     rowhtml += `
     <div class="row">
         <div class="col-sm-3 p-0">Badge Name:</div>
@@ -1009,13 +1089,14 @@ function draw_cart_row(rownum) {
 `;
     }
 
-    if (yearahead_html != '') {
-        rowhtml += `<div class="row">
+    if (yearahead_select != '') {
+        if (yearahead_html != '') {
+            rowhtml += `<div class="row">
             <div class="col-sm-auto p-0">Next Year:</div>
 </div>
 ` + yearahead_html;
-    } else if (yearahead_eligible && !freeze_cart) {
-        rowhtml += `<div class="row">
+        } else if (yearahead_eligible && !freeze_cart) {
+            rowhtml += `<div class="row">
             <div class="col-sm-auto p-0">Next Year:</div>
 </div>
 <div class="row">
@@ -1027,16 +1108,18 @@ function draw_cart_row(rownum) {
         <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mya-" + rownum + `')">Add</button></div >
 </div>
 `;
+        }
     }
 
-    if (addon_html != '' || !freeze_cart) {
-        rowhtml += `<div class="row">
+    if (addon_select != '') {
+        if (addon_html != '' || !freeze_cart) {
+            rowhtml += `<div class="row">
             <div class="col-sm-auto p-0">Add Ons:</div>
 </div>
 ` + addon_html;
-    }
-    if (!freeze_cart) {
-        rowhtml += `
+        }
+        if (!freeze_cart) {
+            rowhtml += `
 <div class="row">
         <div class="col-sm-1 p-0">&nbsp;</div>
         <div class="col-sm-9 p-0"><select id="cart-maddon-` + rownum + `" name="cart-addid">
@@ -1046,6 +1129,7 @@ function draw_cart_row(rownum) {
         <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-maddon-" + rownum + `')">Add</button></div >
 </div>
 `;
+        }
     }
 
     if (membership_found)
@@ -1056,26 +1140,29 @@ function draw_cart_row(rownum) {
     return rowhtml;
 }
 
+
+// draw a payment row in the cart
 function draw_cart_pmtrow(prow) {
  //   index: cart_pmt.length, amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
 
     var pmt = cart_pmt[prow];
-    code = '';
+    var code = '';
     if (pmt['type'] == 'Check') {
         code = pmt['checkno'];
     } else if (pmt['type'] == 'Credit Card') {
         code = pmt['ccauth'];
     }
-    var html = `<div class="row">
+    return`<div class="row">
     <div class="col-sm-2 p-0">` + pmt['type'] + `</div>
     <div class="col-sm-6 p-0">` + pmt['desc'] + `</div>
     <div class="col-sm-2 p-0">` + code + `</div>
     <div class="col-sm-2 text-end">` + pmt['amt'] + `</div>
 </div>
 `;
-    return html;
 }
 
+
+// draw/update by redrawing the entire cart
 function draw_cart() {
     total_price = 0;
     total_paid = 0;
@@ -1091,7 +1178,7 @@ function draw_cart() {
 </div>
 `;
     unpaid_rows = 0;
-    for (rownum in cart) {
+    for (rownum in cart_perinfo) {
         num_rows++;     
         html += draw_cart_row(rownum);   
     }
@@ -1148,9 +1235,10 @@ function draw_cart() {
     }
 }
 
+// find_record found rows from search.  Display them in the non table format used by transaction and perid search, or a single row match for string.
 function draw_record(row, first) {
     var data = result_perinfo[row];
-    var prim = find_primary_membership_by_perid(data['perid']);
+    var prim = find_primary_membership_by_perid(result_membership, data['perid']);
     var label = "No Membership";
     if (prim != null) {
         label = result_membership[prim]['label'];
@@ -1228,7 +1316,7 @@ function draw_record(row, first) {
        <div class="col-sm-3"></div>
        <div class="col-sm-auto">Active: ` + data['active'] + `</div>
        <div class="col-sm-auto">Contact OK: ` + data['contact_ok'] + `</div>
-       <div class="col-sm-auto">Share Reg: ` + data['share_reg'] + `</div>
+       <div class="col-sm-auto">Share Reg: ` + data['share_reg_ok'] + `</div>
     </div>
     <div class="row">
        <div class="col-sm-3">Membership Type:</div>
@@ -1238,6 +1326,8 @@ function draw_record(row, first) {
     return html;
 }
 
+// tabulator formatter for the add cart column, displays the "add" record and "trans" to add the tranaction to the card as appropriate
+// filters for ones already in the cart, and statuses that should not be allowed to be added to the cart
 function addCartIcon(cell, formatterParams, onRendered) { //plain text value
     var html = '';
     var banned = cell.getRow().getData().banned;
@@ -1259,13 +1349,16 @@ function addCartIcon(cell, formatterParams, onRendered) { //plain text value
         return html;
     }
     return '<span style="font-size: 75%;">In Cart';
-};
+}
 
+// select the row (tid) from the unpaid list and add it to the cart, switch to the payment tab (used by find unpaid)
+// marks it as a tid (not perid) add by inverting it.  (add_to_cart will deal with the inversion)
 function add_unpaid(tid) {
     add_to_cart(-Number(tid));
     bootstrap.Tab.getOrCreateInstance(pay_tab).show();
 }
 
+// TODO: Is this an orphan? Probably is because rownum is passed and row is changed and row is never set.
 function upgrade_membership_cart(rownum, selectname) {
     var select = document.getElementById(selectname);
     var badgetype = select.value.trim();
@@ -1279,18 +1372,20 @@ function upgrade_membership_cart(rownum, selectname) {
     draw_cart();
 }
 
+// add selected membership as a new item in the card under this perid.
+// TODO: debug to use cart perinfo/membership structures
 function add_membership_cart(rownum, selectname) {
     var select = document.getElementById(selectname);
     var membership = find_memLabel(select.value.trim());
-    var row = result_perinfo[cart[rownum]];
+    var row = cart_perinfo[rownum];
    
-    result_membership.push({
+    cart_membership.push({
         perid: row['perid'],
         reg_type: membership['memType'],
         price: membership['price'],
         paid: 0,
         tid: '',
-        index: result_membership.length,
+        index: cart_membership.length,
         printed: 0,
         memCategory: membership['memCategory'],
         memType: membership['memType'],
@@ -1304,6 +1399,13 @@ function add_membership_cart(rownum, selectname) {
     draw_cart();
 }
 
+// search the online database for a set of records matching the criteria
+// find_type: empty: search for membrerships
+//              unpaid: return all unpaid
+//  possible meanings of find_pattern
+//      numeric: search for tid or perid matches
+//      alphanumeric: search for names in name, badge_name, email_address fields
+//
 function find_record(find_type) {
     if (find_result_table != null) {
         find_result_table.destroy();
@@ -1311,7 +1413,7 @@ function find_record(find_type) {
     }
     id_div.innerHTML = "";
     clear_message();
-    name_search = find_pattern.value.toLowerCase().trim();
+    var name_search = pattern_field.value.toLowerCase().trim();
     if ((name_search == null || name_search == '') && find_type == '') {
         show_message("No search criteria specified", "warn");
         return;
@@ -1341,18 +1443,29 @@ function find_record(find_type) {
     });
 }
 
+// successful return from 2 AXAJ call - processes found records
+// unpaid: one record: put it in the cart and go to pay screen
+//      multiple records: show table of records with pay icons
+// normal:
+//      single row: display record
+//      multiple rows: display table of records with add/trans buttons
 function found_record(data) {
     var find_type = data['find_type'];
     result_perinfo = data['perinfo'];
     result_membership = data['membership'];
+    name_search = data['name_search'];
 
+    // unpaid search: Only used by Cashier
+    // zero found: status message
+    // 1 found: add it to cart and go to pay
+    // 2 or more found: display a table of transactions
     if (find_type == 'unpaid') {
         if (result_membership.length == 0) { // no unpaid records
             id_div.innerHTML = 'No unpaid records found';
             return;
         }
-        var trantbl = new Array();
-        // loop over unpaid memberships and find differing transactions
+        var trantbl = [];
+        // loop over unpaid memberships and finding distinct transactions (should this move to a second SQL query?)
         for (var mrow in result_membership) {
             var tid = result_membership[mrow]['tid'];
             if (!trantbl.includes(tid)) {
@@ -1370,7 +1483,9 @@ function found_record(data) {
             bootstrap.Tab.getOrCreateInstance(pay_tab).show();
             return;
         }
-        datatbl = new Array();
+
+        // build the data table for tabulator
+        unpaid_table = [];
         // multiple entries unpaid, display table to choose which one
         for (var trow in trantbl) {
             var tid = trantbl[trow];
@@ -1395,11 +1510,12 @@ function found_record(data) {
             }
             
             var row = { tid: tid, names: names, num_mem: num_mem, price: price, paid: paid, index: trow };
-            datatbl.push(row);
+            unpaid_table.push(row);
         }
+        // and instantiate the table into the find_results DOM object (div)
         find_result_table = new Tabulator('#find_results', {
             maxHeight: "600px",
-            data: datatbl,
+            data: unpaid_table,
             layout: "fitColumns",
             initialSort: [
                 { column: "names", dir: "asc" },
@@ -1416,11 +1532,11 @@ function found_record(data) {
         });
         return;
     }
-
+    // not unpaid search... mark the type of the primary membership in the person row for the table
     // find primary membership for each result_perinfo record
     for (rowindex in result_perinfo) {
         var row = result_perinfo[rowindex];
-        var primmem = find_primary_membership_by_perid(row['perid']);
+        var primmem = find_primary_membership_by_perid(result_membership, row['perid']);
         if (primmem != null) {
             row['reg_label'] = result_membership[primmem]['label'];
             var tid = result_membership[primmem]['tid'];
@@ -1443,33 +1559,43 @@ function found_record(data) {
         }
     }
 
-    if (isNaN(name_search)) {
-        if (result_perinfo.length > 0) {
-            // table
-            find_result_table = new Tabulator('#find_results', {
-                maxHeight: "600px",
-                data: result_perinfo,
-                layout: "fitColumns",
-                initialSort: [
-                    { column: "fullname", dir: "asc" },                   
-                    ],
-                columns: [
-                    { field: "perid", visible: false, },
-                    { title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover, },
-                    { field: "last_name", visible: false, },
-                    { field: "first_name", visible: false, },
-                    { field: "middle_name", visible: false, },
-                    { field: "suffix", visible: false, },
-                    { title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true, },
-                    { title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70 },
-                    { title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true, },
-                    { title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80, },
-                    { title: "Cart", width: 80, headerFilter: false, headerSort: false, formatter: addCartIcon, },
-                    { field: "index", visible: false, },
-                ],
-            });
-        } else {
-            id_div.innerHTML = `<div class="container-fluid">
+    // string search, returning more than one row show tabulator table
+    if (isNaN(name_search) && result_perinfo.length > 1)  {
+        // table
+        find_result_table = new Tabulator('#find_results', {
+            maxHeight: "600px",
+            data: result_perinfo,
+            layout: "fitColumns",
+            initialSort: [
+                {column: "fullname", dir: "asc"},
+            ],
+            columns: [
+                {field: "perid", visible: false,},
+                {title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
+                {field: "last_name", visible: false,},
+                {field: "first_name", visible: false,},
+                {field: "middle_name", visible: false,},
+                {field: "suffix", visible: false,},
+                {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
+                {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80,},
+                {title: "Cart", width: 80, headerFilter: false, headerSort: false, formatter: addCartIcon,},
+                {field: "index", visible: false,},
+            ],
+        });
+    } else if (result_perinfo.length > 0) {  // one row string, or all perinfo/tid searches, display in record format
+        number_search = Number(name_search);
+        html = '';
+        for (row in result_perinfo) {
+            html += draw_record(row, false);
+        }
+        html += '</div>';
+        id_div.innerHTML = html;
+        return;
+    }
+    // no rows show the diagnostic
+    id_div.innerHTML = `<div class="container-fluid">
 <div class="row mt-3">
     <div class="col-sm-4">No matching records found</div>
     <div class="col-sm-auto"><button class="btn btn-primary btn-small" type="button" id="not_found_add_new" onclick="not_found_add_new();">Add New Person</button>
@@ -1477,41 +1603,10 @@ function found_record(data) {
 </div>
 </div>
 `;
-        }
-        return;
-    }
-
-    if (result_perinfo.length > 0) {
-        number_search = Number(name_search);
-        html = '';
-        for (row in result_perinfo) {
-            if (result_perinfo[row]['perid'] == number_search) {
-                html += draw_record(row, false);
-            }
-        }
-        if (html != '') {
-            html += '</div>';
-            id_div.innerHTML = html;
-            return;
-        }
-        var first = true;
-        for (row in result_membership) {
-            if (result_membership[row]['tid'] == number_search) {
-                prow = result_membership[row]['pindex'];
-                html += draw_record(prow, first);
-                first = false;
-            }
-        }
-        if (html != '') {
-            html += `
-</div>`;
-            id_div.innerHTML = html;
-            return;
-        }
-    }
     id_div.innerHTML = id_div.innerHTML = 'No matching records found'
 }
 
+// when searching, if clicking on the add new button, switch to the add/edit tab
 function not_found_add_new() {
     id_div.innerHTML = '';
     pattern_field.value = '';
@@ -1519,12 +1614,14 @@ function not_found_add_new() {
     bootstrap.Tab.getOrCreateInstance(add_tab).show();
 }
 
+// switch to the review tab when the review button is clicked
 function start_review() {
     // set tab to review-tab
     bootstrap.Tab.getOrCreateInstance(review_tab).show();
     review_tab.disabled = false;  
 }
 
+// create the review data screen from the cart
 function review_update() {
 // loop over cart looking for changes in data table
     var rownum = null;
@@ -1532,10 +1629,10 @@ function review_update() {
     var data_row
     var el;
     var field;
-    for (rownum in cart) {
+    for (rownum in cart_perinfo) {
         index = cart[rownum];        
         // update all the fields on the review page
-        for (field in result_perinfo[index]) {
+        for (field in cart_perinfo[index]) {
             el = document.getElementById('c' + rownum + '-' + field);
             if (el) {
                 if (result_perinfo[index][field] != el.value) {
@@ -1549,28 +1646,40 @@ function review_update() {
     review_shown();
 }
 
+// no changes button presssed:
+// if everything is paid, go to print.  If cashier (has a find_unpaid button), to go Pay, else put up the diagnostic
+//      to ask them to move on to the cashier.
+// TODO: add TID to send customer to cashier
+// TODO: Add saving the transaction prior to going to message or Pay screens
 function review_nochanges() {
     // set tab to review-tab
     if (unpaid_rows == 0) {
         goto_print();
-    } else {
-        if (find_unpaid_button != null) {
-            bootstrap.Tab.getOrCreateInstance(pay_tab).show();
-        } else {
-            next_button.hidden = false;
-            startover_button.hidden = true;
-            document.getElementById('review-btn-update').hidden = true;
-            document.getElementById('review-btn-nochanges').hidden = true;
-            document.getElementById('review_status').innerHTML = 'Completed: Send customer to cashier';
-        }
+        return;
     }
+
+    // TODO add save transaction steps here
+
+    // Once saved, move them to next step
+    if (find_unpaid_button != null) {
+        bootstrap.Tab.getOrCreateInstance(pay_tab).show();
+    } else {
+        next_button.hidden = false;
+        startover_button.hidden = true;
+        document.getElementById('review-btn-update').hidden = true;
+        document.getElementById('review-btn-nochanges').hidden = true;
+        document.getElementById('review_status').innerHTML = 'Completed: Send customer to cashier';
+    }
+
 }
 
+// change tab to the print screen
 function goto_print() {  
     print_arr = null;
     bootstrap.Tab.getOrCreateInstance(print_tab).show();    
 }
 
+// TODO: ??? (what is tihs, is it named right)
 function pay_type(ptype) {
     var elcheckno = document.getElementById('pay-check-div');
     var elccauth = document.getElementById('pay-ccauth-div');
@@ -1586,6 +1695,8 @@ function pay_type(ptype) {
     }
 }
 
+// Process a payment against the transaction
+// TODO: enter payment into system
 function pay() {
     var checked = false;
     var rownum = null;
@@ -1664,10 +1775,10 @@ function pay() {
         cart_pmt.push(prow);
     }
 
-    for (rownum in cart) {
-        mrows = find_memberships_by_perid(result_perinfo[cart[rownum]]['perid']);
-        for (mrownum in mrows) {
-            mrow = result_membership[mrows[mrownum]['index']];
+    for (rownum in cart_perinfo) {
+        var mrows = find_memberships_by_perid(cart_membership, result_perinfo[cart[rownum]]['perid']);
+        for (var mrownum in mrows) {
+            var mrow = mrows[mrownum];
 
             if (mrow['paid'] < mrow['price']) {
                 amt = Math.min(pay_amt, mrow['price'] - mrow['paid']);
@@ -1681,6 +1792,9 @@ function pay() {
     pay_shown();
 }
 
+// Create a receipt and send it to the receipt printer
+// TODO: If no receipt printer specified (or generic printer), then warn about temp file only
+// TODO: Actually send the data to the selected receipt printer
 function print_receipt() {
     var d = new Date();
 
@@ -1706,6 +1820,9 @@ function print_receipt() {
         document.getElementById('pay_status').innerHTML = html;
 }
 
+// Send one or all of the badges to the printer
+// TODO: actually send the badge to the printerr
+// TODO: Add warning if no printer, that it will only create the temp files on the server
 function print_badge(index) {
     var rownum = null;
     var mrow = null;
@@ -1715,18 +1832,18 @@ function print_badge(index) {
 
     if (index >= 0) {
         row = result_perinfo[index];
-        mrow = find_primary_membership_by_perid(row['perid']);        
+        mrow = find_primary_membership_by_perid(result_membership, row['perid']);
         if (print_arr.includes(index)) {
             result_membership[mrow]['printed']++;
             print_arr = print_arr.filter(function (el) { return el != index });
         }
         pt_html += '<br/>' + row['badge_name'] + ' printed';
     } else {
-        for (rownum in cart) {
-            row = result_perinfo[cart[rownum]];
-            mrow = find_primary_membership_by_perid(row['perid']);
+        for (rownum in cart_perinfo) {
+            row = cart_perinfo[rownum];
+            mrow = find_primary_membership_by_perid(result_membership, row['perid']);
             if (print_arr.includes(row['index'])) {        
-                result_membership[mrow]['printed']++;
+                cart_membership[mrow]['printed']++;
                 print_arr = print_arr.filter(function (el) { return el != mrow });
             }
             pt_html += '<br/>' + row['badge_name'] + ' printed';
@@ -1736,7 +1853,7 @@ function print_badge(index) {
     document.getElementById('pt-status').innerHTML = pt_html;
 }
 
-// tab shown events
+// tab shown events - state mapping for which tab is shown
 function find_shown(current, previous) {
     in_review = false;
     freeze_cart = false;
@@ -1758,8 +1875,8 @@ function review_shown(current, previous) {
     var rownum = null;
     var row;
     for (rownum in cart) {
-        row = result_perinfo[cart[rownum]];
-        mrow = find_primary_membership_by_perid(row['perid']);
+        row = cart_perinfo[rownum];
+        mrow = find_primary_membership_by_perid(cart_membership, row['perid']);
         review_html += `<div class="row">
         <div class="col-sm-1 m-0 p-0">Mbr ` + (Number(rownum) + 1) + '</div>';
         if (mrow == null) {
@@ -1838,8 +1955,8 @@ function review_shown(current, previous) {
         <div class="col-sm-auto ms-0 me-2 p-0">Share Reg?</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <select name='c` + rownum + `-share_reg' id='c` + rownum + `-share_reg' tabindex='11'>
-               <option value="Y" ` + (row['share_reg'] == 'Y' ? 'selected' : '')+ `>Y</option>
-               <option value="N" ` + (row['share_reg'] == 'N' ? 'selected' : '') + `>N</option>
+               <option value="Y" ` + (row['share_reg_ok'] == 'Y' ? 'selected' : '')+ `>Y</option>
+               <option value="N" ` + (row['share_reg_ok'] == 'N' ? 'selected' : '') + `>N</option>
             </select>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">Share Reg?</div>
@@ -1892,6 +2009,8 @@ function pay_shown(current, previous) {
             pay_button_print.hidden = true;
         }
         var total_amount_due = total_price - total_paid;
+
+        // draw the pay screen
 
         var pay_html = `
 <div id='payBody' class="container-fluid form-floating">
@@ -1968,10 +2087,11 @@ function print_shown(current, previous) {
     var new_print = false;
     if (print_arr == null) {
         new_print = true;
-        print_arr = new Array();
+        print_arr = [];
     }
     draw_cart();
 
+    // draw the print screen
     var print_html = `<div id='printBody' class="container-fluid form-floating">
 `;
     if (badgePrinter == false) {
@@ -1982,8 +2102,8 @@ function print_shown(current, previous) {
     var rownum;
     var crow;
     for (rownum in cart) {
-        crow = result_perinfo[cart[rownum]];
-        mrow = find_primary_membership_by_perid(crow['perid']);
+        crow = cart_perinfo[rownum];
+        mrow = find_primary_membership_by_perid(cart_membership, crow['perid']);
         if (new_print) {
             print_arr.push(crow['index']);
         }
@@ -2013,7 +2133,4 @@ function print_shown(current, previous) {
 </div>`;
 
     print_div.innerHTML = print_html;
-
-   
-
 }
