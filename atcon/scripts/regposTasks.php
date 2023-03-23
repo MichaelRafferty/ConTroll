@@ -127,6 +127,7 @@ function findRecord($conid):void {
     $response['find_type'] = $find_type;
     $response['name_search'] = $name_search;
 
+    $limit = 99999999;
     if ($find_type == 'unpaid') {
         $unpaidSQLP = <<<EOS
 SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
@@ -173,7 +174,13 @@ EOS;
         $rp = dbSafeQuery($searchSQLP, 'iii', array($conid, $name_search, $name_search));
         $rm = dbSafeQuery($searchSQLM, 'iii', array($conid, $name_search, $name_search));
     } else {
+        if ($find_type == 'addnew') {
+            $jointype = 'LEFT OUTER JOIN';
+        } else {
+            $jointype = 'JOIN';
+        }
             // name match
+        $limit = 50; // only return 50 people's memberships
         $name_search = '%' . preg_replace('/ +/', '%', $name_search) . '%';
         //web_error_log("match string: $name_search");
         $searchSQLP = <<<EOS
@@ -181,22 +188,29 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
     TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname
-FROM reg r
-JOIN perinfo p ON (p.id = r.perid)
-WHERE r.conid = ? AND (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
-ORDER BY last_name, first_name;
+FROM perinfo p
+$jointype reg r ON (p.id = r.perid)
+WHERE IFNULL(r.conid, ?) = ? AND (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
+ORDER BY last_name, first_name LIMIT $limit;
 EOS;
         $searchSQLM = <<<EOS
+WITH limitedp AS (
+    SELECT DISTINCT p.id, p.first_name, p.last_name
+    FROM perinfo p
+    $jointype reg r ON (p.id = r.perid)
+    WHERE IFNULL(r.conid, ?) = ? AND (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
+    ORDER BY last_name, first_name LIMIT $limit
+)
 SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_trans as tid, r.memid, 0 as printcount,
                 m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM reg r
-JOIN perinfo p ON (p.id = r.perid)
+JOIN limitedp p ON (p.id = r.perid)
 JOIN memLabel m ON (r.memId = m.id)
-WHERE r.conid = ? AND (LOWER(concat_ws(' ', p.first_name, p.middle_name, p.last_name)) LIKE ? OR LOWER(p.badge_name) LIKE ? OR LOWER(p.email_addr) LIKE ?)
+WHERE r.conid = ?
 ORDER BY create_trans;
 EOS;
-        $rp = dbSafeQuery($searchSQLP, 'isss', array($conid, $name_search, $name_search, $name_search));
-        $rm = dbSafeQuery($searchSQLM, 'isss', array($conid, $name_search, $name_search, $name_search));
+        $rp = dbSafeQuery($searchSQLP, 'iisss', array($conid, $conid, $name_search, $name_search, $name_search));
+        $rm = dbSafeQuery($searchSQLM, 'iisssi', array($conid, $conid, $name_search, $name_search, $name_search, $conid));
     }
 
     $perinfo = [];
@@ -210,7 +224,12 @@ EOS;
         $index++;
     }
     $response['perinfo'] = $perinfo;
-    $response['message'] = "$num_rows memberships found";
+    $status = "$num_rows memberships found";
+    if ($num_rows >= $limit) {
+        $response['warn'] = "$num_rows memberships found, limited to $limit, use different search criteria to refine your search.";
+    } else {
+        $response['message'] = "$num_rows memberships found";
+    }
     mysqli_free_result($rp);
 
     $membership = [];

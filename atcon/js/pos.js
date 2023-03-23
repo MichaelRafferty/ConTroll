@@ -65,7 +65,7 @@ var add_results_div = null;
 var add_mode = true;
 var add_mem_select = null;
 var add_mt_dataentry = `
-    <select id='ae_mem_sel' name='age' style="width:300px;" tabindex='15' title='Age as of <?php echo substr($condata[' startdate'], 0, 10); ?> (the first day of the convention)'>
+    <select id='ae_mem_sel' name='age' style="width:300px;" tabindex='15'>
     </select>
 `;
 
@@ -90,6 +90,8 @@ var cart_pmt = [];
 var cart_perid = [];
 var result_membership = [];
 var result_perinfo = [];
+var add_perinfo = [];
+var add_membership = [];
 var new_perid = -1;
 var memList = null;
 var memListMap = null;
@@ -222,7 +224,7 @@ function loadInitialData(data) {
     memListMap = [];
     var index = 0;
     while (index < memList.length) {
-        memListMap[memList[index]['id']] = row;
+        memListMap[memList[index]['id']] = index;
         index++;
     }
 
@@ -286,9 +288,9 @@ function make_copy(arr) {
 
     // result data format (Membership)
     //  perid: 1,
-    //  reg_type: 'adult', price: 75, paid: 75, tid: 11, index: 0, printed: 0,
+    //  price: 75, paid: 75, tid: 11, index: 0, printed: 0,
     //  memCategory: 'standard', memType: 'full', memAge: 'adult', shortname: 'General', pindex: 0,
-    // memId: null, label: null,
+    //  memId: null, label: null,
 
 // search memLabel functions
 // mem_filter - select specific rows from memList based on
@@ -342,6 +344,14 @@ function find_memberships_by_perid(tbl, perid) {
     return tbl.filter(rm_perid_filter);
 }
 
+// badge_name_default: build a default badge name if its empty
+function badge_name_default(badge_name, first_name, last_name) {
+    if (badge_name === undefined | badge_name === null || badge_name === '') {
+        var default_name = (first_name + ' ' + last_name).trim();
+        return '<i>' + default_name.replace(/ +/, ' ') + '</i>';
+    }
+    return badge_name;
+}
 // given a perid, find it''s primary membership in the result_membership array
 function find_primary_membership_by_perid(tbl, perid) {
     var regitems = find_memberships_by_perid(tbl, perid);
@@ -425,10 +435,10 @@ function build_record_hover(e, cell, onRendered) {
     if (data['country'] != '' && data['country'] != 'USA') {
         hover_text += data['country'] + '<br/>';
     }
-    hover_text += 'Badge Name: ' + data['badge_name'] + '<br/>' +
+    hover_text += 'Badge Name: ' + badge_name_default(data['badge_name'], data['first_name'], data['last_name']) + '<br/>' +
         'Email: ' + data['email_addr'] + '<br/>' + 'Phone: ' + data['phone'] + '<br/>' +
         'Active:' + data['active'] + ' Contact?:' + data['contact_ok'] + ' Share?:' + data['share_reg_ok'] + '<br/>' +
-        'Membership: ' + data['reg_type'] + '<br/>';
+        'Membership: ' + data['reg_label'] + '<br/>';
 
     return hover_text;
 }
@@ -440,10 +450,9 @@ function add_to_cart(index) {
             alert("Please ask " + (result_perinfo[index]['first_name'] + ' ' + result_perinfo[index]['last_name']).trim() +" to talk to the Registration Administrator, you cannot add them at this time.")
             return;
         }
-        if (cart_perid.includes(result_perinfo[index]['perid']) == false) {
+        if (cart_perinfo_map[result_perinfo[index]['perid']] === undefined) {
             var perid = result_perinfo[index]['perid'];
             cart_perinfo.push(make_copy(result_perinfo[index]));
-            cart_perid.push(perid)
             var mrows = find_memberships_by_perid(result_membership, perid);
             for (var mrownum in mrows) {
                 cart_membership.push(make_copy(mrows[mrownum]));
@@ -459,9 +468,8 @@ function add_to_cart(index) {
                 if (result_perinfo[prow]['banned'] == 'Y') {
                     alert("Please ask " + (result_perinfo[prow]['first_name'] + ' ' + result_perinfo[prow]['last_name']).trim() + " to talk to the Registration Administrator, you cannot add them at this time.")
                     return;
-                } else if (cart_perid.includes(perid) == false) {
+                } else if (cart_perinfo_map[perid] === undefined) {
                     cart_perinfo.push(make_copy(result_perinfo[prow]));
-                    cart_perid.push(perid)
                     var mrows = find_memberships_by_perid(result_membership, perid);
                     for (var mrownum in mrows) {
                         cart_membership.push(make_copy(mrows[mrownum]));
@@ -470,7 +478,6 @@ function add_to_cart(index) {
             }
         }
     }
-    cart_renumber();
     draw_cart();
 }
 
@@ -483,19 +490,17 @@ function remove_from_cart(perid) {
         cart_membership.splice(mrows[mrownum]['index'], 1);
     }
     cart_perinfo.splice(index, 1);
-    cart_perid.splice(index, 1);
     // splices loses me the index number for the cross-reference, so the cart needs renumbering
-    cart_renumber();
     draw_cart();
 }
 
 // remove single membership item from the cart (leaving other memberships and person information
 function delete_membership(index) {
     cart_membership.splice(index, 1);
-    cart_renumber();
     draw_cart();
 }
 
+// cart_renumber:
 // rebuild the indicies in the cart_perinfo and cart_membership tables
 // for shoprt cut reasons indicies are used to allow usage of the filter functions built into javascript
 // this rebuilds the index and perinfo cross reference maps.  It needs to be called whenever the number of items in cart is changed.
@@ -518,7 +523,7 @@ function cart_renumber() {
 // TODO: needs testing and debugging with split cart structures
 function edit_from_cart(index) {
     clear_add();
-    var cartrow = cart_perinfo[cart[index]];
+    var cartrow = cart_perinfo[cart_perinfo_map[index]];
 
     // set perinfo values
     add_index_field.value = cartrow['index'];
@@ -647,8 +652,8 @@ function add_new() {
     var new_contact = add_contact_field.value.trim();
     var new_share = add_share_field.value.trim();
 
-    if (add_mode == false && edit_index != '') { // update perinfo/meminfo and cart and cart
-        var row = result_perinfo[edit_index];
+    if (add_mode == false && edit_index != '') { // update perinfo/meminfo and cart_perinfo and cart_memberships
+        var row = cart_perinfo[edit_index];
         row['first_name'] = new_first;
         row['middle_name'] = new_middle;
         row['last_name'] = new_last;
@@ -669,11 +674,11 @@ function add_new() {
         if (new_badgememId != null) {
             var mrow = null;
             if (new_memindex != '') {
-                mrow = result_membership[new_memindex];
+                mrow = cart_membership[new_memindex];
             } else {
-                var ind = result_membership.length;
-                result_membership.push({ index: ind, printed: 0 });
-                mrow = result_membership[ind];
+                var ind = cart_membership.length;
+                cart_membership.push({ index: ind, printed: 0 });
+                mrow = cart_membership[ind];
                 mrow['perid'] = edit_perid;
                 mrow['pindex'] = edit_index;
             }
@@ -729,188 +734,257 @@ function add_new() {
         return;
     }
 
-    // see if they already exist (if add to cart)
-    var rownum;
-    var matchcount = 0;
-    var matches = [];
-    var namematch = new RegExp((new_first + '.*' + new_last).toLowerCase(), 'i');
-
-    if (addnew_button.innerHTML == 'Add to Cart') {
-        for (rownum in result_perinfo) {
-            row = result_perinfo[rownum];
-            var sourcestring = (row['first_name'] + ' ' + row['last_name']).toLowerCase();
-            if (namematch.test(sourcestring)) {
-                var matchrow = make_copy(row);  // horrible way to make an independent copy of an associative array
-                matchrow['fullname'] = (row['last_name'] + ', ' + row['first_name'] + ' ' + row['middle_name'] + ' ' + row['suffix']).replace(/\s+/g, ' ').trim();
-                var primmem = find_primary_membership_by_perid(result_membership, matchrow['perid']);
-                if (primmem != null) {
-                    matchrow['reg_label'] = result_membership[primmem]['label'];
-                    var tid = result_membership[primmem]['tid'];
-                    if (tid != '') {
-                        var other = false;
-                        var mperid = matchrow['perid'];
-                        for (var mem in result_membership) {
-                            if (result_membership[mem]['perid'] != mperid && result_membership[mem]['tid'] == tid) {
-                                other = true;
-                                break;
-                            }
-                        }
-                        if (other) {
-                            matchrow['tid'] = tid;
-                        }
-                    }
-                } else {
-                    matchrow['reg_label'] = 'No Membership';
-                    matchrow['reg_tid'] = '';
-                }
-                matches.push(matchrow);
-                matchcount++;
-            }
-        }
+    // we've done this ones already and are displaying the table, so just go add them
+    if (add_results_table != null) {
+        add_results_table.destroy();
+        add_results_table = null;
+        add_new_to_cart();
+        return;
     }
 
-    if (matchcount > 0) {
+    if (add_results_table != null) {
+        add_results_table.destroy();
+        add_results_table = null;
+    }
+    clear_message();
+    var name_search = (new_first + ' ' + new_last).toLowerCase().trim();
+    if (name_search == null || name_search == '') {
+        show_message("First name or Last Name specified", "warn");
+        return;
+    }
+
+    // load the initial data and the proceed to set up the rest of the system
+    var postData = {
+        ajax_request_action: 'findRecord',
+        find_type: 'addnew',
+        name_search: name_search,
+    };
+    $.ajax({
+        method: "POST",
+        url: "scripts/regposTasks.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['message'] !== undefined) {
+                show_message(data['message'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+            }
+            add_found(data);
+        },
+        error: showAjaxError,
+    });
+}
+
+// add_found: all the tasks post search for matching records for adding a record to the cart
+function add_found(data) {
+// see if they already exist (if add to cart)
+    add_perinfo = data['perinfo'];
+    add_membership = data['membership'];
+    var name_search = data['name_search'];
+    
+    if (add_membership.length > 0) {
+        // find primary membership for each add_perinfo record
+        for (rowindex in add_perinfo) {
+            var row = add_perinfo[rowindex];
+            var primmem = find_primary_membership_by_perid(add_membership, row['perid']);
+            if (primmem != null) {
+                row['reg_label'] = add_membership[primmem]['label'];
+                var tid = add_membership[primmem]['tid'];
+                if (tid != '') {
+                    var other = false;
+                    var mperid = row['perid'];
+                    for (var mem in add_membership) {
+                        if (add_membership[mem]['perid'] != mperid && add_membership[mem]['tid'] == tid) {
+                            other = true;
+                            break;
+                        }
+                    }
+                    if (other) {
+                        row['tid'] = tid;
+                    }
+                }
+            } else {
+                row['reg_label'] = 'No Membership';
+                row['reg_tid'] = '';
+            }
+        }
         // table
         add_results_table = new Tabulator('#add_results', {
             maxHeight: "600px",
-            data: matches,
+            data: add_perinfo,
             layout: "fitColumns",
             initialSort: [
-                { column: "fullname", dir: "asc" },
-                { column: "badge_name", dir: "asc" },
+                {column: "fullname", dir: "asc"},
+                {column: "badge_name", dir: "asc"},
             ],
             columns: [
-                { field: "perid", visible: false, },
-                { title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover, },
-                { field: "last_name", visible: false, },
-                { field: "first_name", visible: false, },
-                { field: "middle_name", visible: false, },
-                { field: "suffix", visible: false, },
-                { title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true, },
-                { title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70 },
-                { title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true, },
-                { title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80, },
-                { title: "Cart", width: 70, headerFilter: false, headerSort: false, formatter: addCartIcon, },
-                { field: "index", visible: false, },
+                {field: "perid", visible: false,},
+                {title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
+                {field: "last_name", visible: false,},
+                {field: "first_name", visible: false,},
+                {field: "middle_name", visible: false,},
+                {field: "suffix", visible: false,},
+                {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
+                {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80,},
+                {title: "Cart", width: 70, headerFilter: false, headerSort: false, formatter: addCartIcon,},
+                {field: "index", visible: false,},
             ],
         });
         addnew_button.innerHTML = "Add New";
+        return;
+    }
+    add_new_to_cart();
+}
+
+// add_new_to_cart - not in system or operator said they are really new, add them to the cart
+function add_new_to_cart() {
+    var edit_index = add_index_field.value.trim();
+    var edit_perid = add_perid_field.value.trim();
+    var new_memindex = add_memIndex_field.value.trim();
+    var new_first = add_first_field.value.trim();
+    var new_middle = add_middle_field.value.trim();
+    var new_last = add_last_field.value.trim();
+    var new_suffix = add_suffix_field.value.trim();
+    var new_addr1 = add_addr1_field.value.trim();
+    var new_addr2 = add_addr2_field.value.trim();
+    var new_city = add_city_field.value.trim();
+    var new_state = add_state_field.value.trim();
+    var new_postal_code = add_postal_code_field.value.trim();
+    var new_country = add_country_field.value.trim();
+    var new_email = add_email_field.value.trim();
+    var new_phone = add_phone_field.value.trim();
+    var new_badgename = add_badgename_field.value.trim();
+    var bt_field = document.getElementById("ae_mem_sel");
+    var new_badgememId = null;
+    if (bt_field) {
+        new_badgememId = bt_field.value.trim();
+    }
+    var new_contact = add_contact_field.value.trim();
+    var new_share = add_share_field.value.trim();
+
+    clear_message();
+    // look for missing data
+    // look for missing fields
+    var missing_fields = 0;
+    if (new_first == '') {
+        missing_fields++;
+        add_first_field.style.backgroundColor = 'var(--bs-warning)';
     } else {
-        // look for missing data
-        // look for missing fields
-        var missing_fields = 0;
-        if (new_first == '') {
-            missing_fields++;
-            add_first_field.style.backgroundColor = 'var(--bs-warning)';
-        } else {
-            add_first_field.style.backgroundColor = '';
-        }
-        if (new_last == '') {
-            missing_fields++;
-            add_last_field.style.backgroundColor = 'var(--bs-warning)';
-        } else {
-            add_last_field.style.backgroundColor = '';
-        }
+        add_first_field.style.backgroundColor = '';
+    }
+    if (new_last == '') {
+        missing_fields++;
+        add_last_field.style.backgroundColor = 'var(--bs-warning)';
+    } else {
+        add_last_field.style.backgroundColor = '';
+    }
 
-        if (new_addr1 == '') {
-            missing_fields++;
-            add_addr1_field.style.backgroundColor = 'var(--bs-warning)';
-        } else {
-            add_addr1_field.style.backgroundColor = '';
-        }
+    if (new_addr1 == '') {
+        missing_fields++;
+        add_addr1_field.style.backgroundColor = 'var(--bs-warning)';
+    } else {
+        add_addr1_field.style.backgroundColor = '';
+    }
 
-        if (new_city == '') {
-            missing_fields++;
-            add_city_field.style.backgroundColor = 'var(--bs-warning)';
-        } else {
-            add_city_field.style.backgroundColor = '';
-        }
+    if (new_city == '') {
+        missing_fields++;
+        add_city_field.style.backgroundColor = 'var(--bs-warning)';
+    } else {
+        add_city_field.style.backgroundColor = '';
+    }
 
-        if (new_state == '') {
-            missing_fields++;
-            add_state_field.style.backgroundColor = 'var(--bs-warning)';
-        } else {
-            add_state_field.style.backgroundColor = '';
-        }
+    if (new_state == '') {
+        missing_fields++;
+        add_state_field.style.backgroundColor = 'var(--bs-warning)';
+    } else {
+        add_state_field.style.backgroundColor = '';
+    }
 
-        if (new_postal_code == '') {
-            missing_fields++;
-            add_postal_code_field.style.backgroundColor = 'var(--bs-warning)';
-        } else {
-            add_postal_code_field.style.backgroundColor = '';
-        }
+    if (new_postal_code == '') {
+        missing_fields++;
+        add_postal_code_field.style.backgroundColor = 'var(--bs-warning)';
+    } else {
+        add_postal_code_field.style.backgroundColor = '';
+    }
 
-        if (new_email == '') {
-            missing_fields++;
-            add_email_field.style.backgroundColor = 'var(--bs-warning)';
-        } else {
-            add_email_field.style.backgroundColor = '';
-        }
+    if (new_email == '') {
+        missing_fields++;
+        add_email_field.style.backgroundColor = 'var(--bs-warning)';
+    } else {
+        add_email_field.style.backgroundColor = '';
+    }
 
-        if (missing_fields > 0) {
-            if (add_results_table != null) {
-                add_results_table.destroy();
-                add_results_table = null;
-                add_results_div.includes = "";
-                addnew_button.innerHTML = "Add to Cart";
-            }
-            add_header.innerHTML = `
+    if (missing_fields > 0) {
+        if (add_results_table != null) {
+            add_results_table.destroy();
+            add_results_table = null;
+            add_results_div.includes = "";
+            addnew_button.innerHTML = "Add to Cart";
+        }
+        add_header.innerHTML = `
 <div class="col-sm-12 text-bg-warning mb-2">
         <div class="text-bg-warning m-2">
             Add New Person and Membership (* = Required Data)
         </div>
     </div>`;
-            return;
-        }
-        ////var age = new_badgetype.replace(/.* /, '');
-        var row = {
-            perid: new_perid, first_name: new_first, middle_name: new_middle, last_name: new_last, suffix: new_suffix,
-            badge_name: new_badgename,
-            address_1: new_addr1, address_2: new_addr2, city: new_city, state: new_state, postal_code: new_postal_code,
-            country: new_country, email_addr: new_email, phone: new_phone,
-            share_reg_ok: 'Y', contact_ok:'Y', new_contact:'Y', active: 'Y', banned: 'N', index: result_perinfo.length,
+        return;
+    }
 
-        };
-        var memId = document.getElementById("ae_mem_sel").value;
-        var mi_row = find_memLabel(memId);
-        var mrow = {
-            perid: new_perid,
-            reg_type: mi_row[''], price: mi_row['price'], paid: 0, tid: '', index: result_membership.length, printed: 0,
-            memCategory: mi_row['memCategory'], memType: mi_row['memType'], memAge: mi_row['memAge'],
-            shortname: mi_row['shortname'], memId: memId, label: mi_row['label'], pindex: result_perinfo.length,
-        }
-        ////        mem_type: new_badgetype.replace(/_/g, ' '), reg_type: age, price: new_price, paid: 0, tid: 0, index: max_index,
-        new_perid--;
+    var row = {
+        perid: new_perid, first_name: new_first, middle_name: new_middle, last_name: new_last, suffix: new_suffix,
+        badge_name: new_badgename,
+        address_1: new_addr1, address_2: new_addr2, city: new_city, state: new_state, postal_code: new_postal_code,
+        country: new_country, email_addr: new_email, phone: new_phone,
+        share_reg_ok: 'Y', contact_ok:'Y', new_contact:'Y', active: 'Y', banned: 'N', index: cart_perinfo.length,
 
-        add_first_field.value = "";
-        add_middle_field.value = "";
-        add_email_field.value = "";
-        add_phone_field.value = "";
-        add_badgename_field.value = "";
-        result_perinfo.push(row);
-        result_membership.push(mrow);
-        cart.push(row['index']);
-        cart_perid.push(row['perid']);
-        draw_cart();
-        if (add_results_table != null) {
-            add_results_table.destroy();
-            add_results_table = null;
-            add_results_div.innerHTML = "";
-            addnew_button.innerHTML = "Add to Cart";
-        }
-        add_header.innerHTML = `
+    };
+    var memId = document.getElementById("ae_mem_sel").value;
+    var mi_row = find_memLabel(memId);
+    var mrow = {
+        perid: new_perid,
+        price: mi_row['price'], paid: 0, tid: '', index: cart_membership.length, printed: 0,
+        memCategory: mi_row['memCategory'], memType: mi_row['memType'], memAge: mi_row['memAge'],
+        shortname: mi_row['shortname'], memId: memId, label: mi_row['label'], pindex: cart_perinfo.length,
+    }
+    new_perid--;
+
+    add_first_field.value = "";
+    add_middle_field.value = "";
+    add_email_field.value = "";
+    add_phone_field.value = "";
+    add_badgename_field.value = "";
+    cart_perinfo.push(make_copy(row));
+    cart_membership.push(make_copy(mrow));
+
+    draw_cart();
+    if (add_results_table != null) {
+        add_results_table.destroy();
+        add_results_table = null;
+        add_results_div.innerHTML = "";
+        addnew_button.innerHTML = "Add to Cart";
+    }
+    add_header.innerHTML = `
 <div class="col-sm-12 text-bg-primary mb-2">
         <div class="text-bg-primary m-2">
             Add New Person and Membership
         </div>
     </div>`;
-    }
 }
 
 // format all of the memberships for one record in the cart
 function draw_cart_row(rownum) {
     var row = cart_perinfo[rownum];
     var membername = (row['first_name'] + ' ' + row['middle_name'] + ' ' + row['last_name']).trim();
+    if (row['suffix'] != '') {
+        membername += ', ' + row['suffix'];
+    }
     var mrow;
     var rowlabel;
     var membership_found = false;
@@ -1029,7 +1103,7 @@ function draw_cart_row(rownum) {
     rowhtml += `
     <div class="row">
         <div class="col-sm-3 p-0">Badge Name:</div>
-        <div class="col-sm-auto p-0">` + row['badge_name'] + `</div>
+        <div class="col-sm-auto p-0">` + badge_name_default(row['badge_name'], row['first_name'], row['last_name']) + `</div>
     </div>
 `;  // end of second row - badge name
 
@@ -1164,6 +1238,7 @@ function draw_cart_pmtrow(prow) {
 
 // draw/update by redrawing the entire cart
 function draw_cart() {
+    cart_renumber(); // to keep indexing intact, renumber the index and pindex each time
     total_price = 0;
     total_paid = 0;
     num_rows = 0;
@@ -1235,7 +1310,7 @@ function draw_cart() {
     }
 }
 
-// find_record found rows from search.  Display them in the non table format used by transaction and perid search, or a single row match for string.
+// draw_record: find_record found rows from search.  Display them in the non table format used by transaction and perid search, or a single row match for string.
 function draw_record(row, first) {
     var data = result_perinfo[row];
     var prim = find_primary_membership_by_perid(result_membership, data['perid']);
@@ -1252,7 +1327,7 @@ function draw_record(row, first) {
     }
     html += `</div>
         <div class="col-sm-9">`;
-    if (cart_perid.includes(data['perid']) == false) {
+    if (cart_perinfo_map[data['perid']] === undefined) {
         if (data['banned'] == 'Y') {
             html += `
             <button class="btn btn-danger btn-small" id="add_btn_1" onclick="add_to_cart(` + row + `);">B</button>`;
@@ -1268,7 +1343,7 @@ function draw_record(row, first) {
         </div>
         <div class="row">
             <div class="col-sm-3">` + 'Badge Name:' + `</div>
-            <div class="col-sm-9">` + data['badge_name'] + `</div>
+            <div class="col-sm-9">` + badge_name_default(data['badge_name'], data['first_name'], data['last_name']) + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">Name:</div>
@@ -1339,7 +1414,7 @@ function addCartIcon(cell, formatterParams, onRendered) { //plain text value
     if (banned == 'Y') {
         return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="add_to_cart(' +
             cell.getRow().getData().index + ')">B</button>';
-    } else if (cart_perid.includes(cell.getRow().getData().perid) == false) {
+    } else if (cart_perinfo_map[cell.getRow().getData().perid] === undefined) {
         html = '<button type="button" class="btn btn-sm btn-success p-0" onclick="add_to_cart(' +
             cell.getRow().getData().index + ')">Add</button>';
         var tid = cell.getRow().getData().tid;
@@ -1381,7 +1456,6 @@ function add_membership_cart(rownum, selectname) {
    
     cart_membership.push({
         perid: row['perid'],
-        reg_type: membership['memType'],
         price: membership['price'],
         paid: 0,
         tid: '',
@@ -1436,6 +1510,9 @@ function find_record(find_type) {
             }
             if (data['message'] !== undefined) {
                 show_message(data['message'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
             }
             found_record(data);
         },
@@ -1587,8 +1664,13 @@ function found_record(data) {
     } else if (result_perinfo.length > 0) {  // one row string, or all perinfo/tid searches, display in record format
         number_search = Number(name_search);
         html = '';
+        var first = false;
+        if (result_perinfo.length > 1) {
+            first = true;
+        }
         for (row in result_perinfo) {
-            html += draw_record(row, false);
+            html += draw_record(row, first);
+            first = false;
         }
         html += '</div>';
         id_div.innerHTML = html;
@@ -1863,6 +1945,7 @@ function find_shown(current, previous) {
 function add_shown(current, previous) {
     in_review = false;
     freeze_cart = false;
+    clear_message();
     draw_cart();
 }
 
