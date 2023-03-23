@@ -196,7 +196,7 @@ page_init($page, $tab,
                               <div class="row">
                                 <div class="col-sm-auto mt-2 ms-0 me-0 p-0">
                                     Allow search by member to find you on website? 
-                                    <select id="share_reg" name="share_reg" tabindex='16'>
+                                    <select id="share_reg_ok" name="share_reg_ok" tabindex='16'>
                                         <option value="Y" selected>Yes</option>
                                         <option value="N">No</option>
                                     </select>

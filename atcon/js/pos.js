@@ -156,7 +156,7 @@ window.onload = function initpage() {
     add_phone_field = document.getElementById("phone");
     add_badgename_field = document.getElementById("badgename");
     add_contact_field = document.getElementById("contact_ok");
-    add_share_field = document.getElementById("share_reg");
+    add_share_field = document.getElementById("share_reg_ok");
     add_header = document.getElementById("add_header");
     addnew_button = document.getElementById("addnew-btn");
     clearadd_button = document.getElementById("clearadd-btn");
@@ -2035,12 +2035,12 @@ function review_shown(current, previous) {
         <div class="col-sm-1 m-0 p-0">Flags:</div>
         <div class="col-sm-auto ms-0 me-2 p-0">Share Reg?</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <select name='c` + rownum + `-share_reg' id='c` + rownum + `-share_reg' tabindex='11'>
+            <select name='c` + rownum + `-share_reg_ok' id='c` + rownum + `-share_reg_ok' tabindex='11'>
                <option value="Y" ` + (row['share_reg_ok'] == 'Y' ? 'selected' : '')+ `>Y</option>
                <option value="N" ` + (row['share_reg_ok'] == 'N' ? 'selected' : '') + `>N</option>
             </select>
         </div>
-        <div class="col-sm-auto ms-0 me-2 p-0">Share Reg?</div>
+        <div class="col-sm-auto ms-0 me-2 p-0">Contact OK?</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <select name='c` + rownum + `-contact_ok' id='c` + rownum + `-contact_ok' tabindex='11'>
                 <option value="Y" ` + (row['contact_ok'] == 'Y' ? 'selected' : '') + `>Y</option>
