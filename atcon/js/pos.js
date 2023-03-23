@@ -1707,19 +1707,17 @@ function start_review() {
 function review_update() {
 // loop over cart looking for changes in data table
     var rownum = null;
-    var index;
     var data_row
     var el;
     var field;
     for (rownum in cart_perinfo) {
-        index = cart[rownum];        
         // update all the fields on the review page
-        for (field in cart_perinfo[index]) {
+        for (field in cart_perinfo[rownum]) {
             el = document.getElementById('c' + rownum + '-' + field);
             if (el) {
-                if (result_perinfo[index][field] != el.value) {
-                   // alert("updating  row " + rownum + ":" + index + ":" + field + " from '" + result_perinfo[index][field] + "' to '" + el.value + "'");
-                    result_perinfo[index][field] = el.value;
+                if (cart_perinfo[rownum][field] != el.value) {
+                   // alert("updating  row " + rownum + ":" + rownum + ":" + field + " from '" + cart_perinfo[rownum][field] + "' to '" + el.value + "'");
+                    cart_perinfo[rownum][field] = el.value;
                 }
             }
         }
@@ -1858,7 +1856,7 @@ function pay() {
     }
 
     for (rownum in cart_perinfo) {
-        var mrows = find_memberships_by_perid(cart_membership, result_perinfo[cart[rownum]]['perid']);
+        var mrows = find_memberships_by_perid(cart_membership, cart_perinfo[cart[rownum]]['perid']);
         for (var mrownum in mrows) {
             var mrow = mrows[mrownum];
 
@@ -1913,17 +1911,17 @@ function print_badge(index) {
     var pt_html = '';
 
     if (index >= 0) {
-        row = result_perinfo[index];
-        mrow = find_primary_membership_by_perid(result_membership, row['perid']);
+        row = cart_perinfo[index];
+        mrow = find_primary_membership_by_perid(cart_membership, row['perid']);
         if (print_arr.includes(index)) {
-            result_membership[mrow]['printed']++;
+            cart_membership[mrow]['printed']++;
             print_arr = print_arr.filter(function (el) { return el != index });
         }
         pt_html += '<br/>' + row['badge_name'] + ' printed';
     } else {
         for (rownum in cart_perinfo) {
             row = cart_perinfo[rownum];
-            mrow = find_primary_membership_by_perid(result_membership, row['perid']);
+            mrow = find_primary_membership_by_perid(cart_membership, row['perid']);
             if (print_arr.includes(row['index'])) {        
                 cart_membership[mrow]['printed']++;
                 print_arr = print_arr.filter(function (el) { return el != mrow });
@@ -1957,7 +1955,7 @@ function review_shown(current, previous) {
 `;
     var rownum = null;
     var row;
-    for (rownum in cart) {
+    for (rownum in cart_perinfo) {
         row = cart_perinfo[rownum];
         mrow = find_primary_membership_by_perid(cart_membership, row['perid']);
         review_html += `<div class="row">
@@ -1965,7 +1963,7 @@ function review_shown(current, previous) {
         if (mrow == null) {
             review_html += '<div class="col-sm-8 text-bg-info">No Membership</div>';
         } else {
-            review_html += '<div class="col-sm-8 text-bg-success">Membership: ' + result_membership[mrow]['label'] + '</div>';
+            review_html += '<div class="col-sm-8 text-bg-success">Membership: ' + cart_membership[mrow]['label'] + '</div>';
         }
         
         review_html += `
@@ -2196,8 +2194,8 @@ function print_shown(current, previous) {
             <button class="btn btn-primary btn-small" type="button" id="pay-print-` + cart[rownum]['index'] + `" onclick="print_badge(` + crow['index'] + `);">Print</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">            
-            <span class="text-bg-success"> Membership: ` + result_membership[mrow]['label'] + `</span> (Times Printed: ` +
-            result_membership[mrow]['printed'] + `)<br/>
+            <span class="text-bg-success"> Membership: ` + cart_membership[mrow]['label'] + `</span> (Times Printed: ` +
+            cart_membership[mrow]['printed'] + `)<br/>
               ` + crow['badge_name'] + '/' + (crow['first_name'] + ' ' + crow['last_name']).trim() + `
         </div>
      </div>`;
