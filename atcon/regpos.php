@@ -34,6 +34,7 @@ page_init($page, $tab,
                     'https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js','js/pos.js')
     );
 ?>
+<div id="whoami" hidden><?php echo $_SESSION['user'];?></div>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
         <div class="col-sm-7">
@@ -186,7 +187,7 @@ page_init($page, $tab,
                             </div>
                             <div class="row">
                                 <div class="col-sm-auto mt-2 ms-0 me-0 p-0">
-                                    Include in annual reminder postcards, future Philcon emails and surveys? 
+                                    <label for="contact_ok">Include in annual reminder postcards, future Philcon emails and surveys?</label>
                                     <select id="contact_ok" name="contact_ok" tabindex='16'>
                                         <option value="Y" selected>Yes</option>
                                         <option value="N">No</option>
@@ -195,7 +196,7 @@ page_init($page, $tab,
                             </div>
                               <div class="row">
                                 <div class="col-sm-auto mt-2 ms-0 me-0 p-0">
-                                    Allow search by member to find you on website? 
+                                    <label for="share_reg_ok">Allow search by member to find you on website?</label>
                                     <select id="share_reg_ok" name="share_reg_ok" tabindex='16'>
                                         <option value="Y" selected>Yes</option>
                                         <option value="N">No</option>

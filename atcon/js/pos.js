@@ -20,7 +20,7 @@ var membership_rows = 0;
 var needmembership_rows = 0;
 var cart_membership = [];
 var cart_perinfo = [];
-var cart_perinfo_map = [];
+var cart_perinfo_map = {};
 
 // tab fields
 var find_tab = null;
@@ -101,6 +101,7 @@ var typeList = null;
 
 var conid = null;
 var conlabel = null;
+var user_id = 0;
 var badgePrinterAvailable = false;
 var receiptPrinterAvailable = false;
 
@@ -179,6 +180,9 @@ window.onload = function initpage() {
     review_tab.addEventListener('shown.bs.tab', review_shown)
     pay_tab.addEventListener('shown.bs.tab', pay_shown)
     print_tab.addEventListener('shown.bs.tab', print_shown)
+
+    // data items
+    user_id = Number(document.getElementById("whoami").innerHTML);
 
     // load the initial data and the proceed to set up the rest of the system
     var postData = {
@@ -274,6 +278,18 @@ function loadInitialData(data) {
     draw_cart();
 }
 
+// function map_access(obj, prop)
+//      access the map (object) with the property vaslue prop
+//   deals with difficult calling sequence to _map objects
+function map_access(obj, prop) {
+    return obj[prop];
+}
+
+// function map_set(obj, prop, value)
+//      inverse of map_access, sets the value of the property
+function map_set(obj, prop, value) {
+    obj[prop] = value;
+}
 // make_copy(associative array)
 // javascript passes by reference, can't slice an associative array, so you need to do a horrible JSON kludge
 function make_copy(arr) {
@@ -450,7 +466,7 @@ function add_to_cart(index) {
             alert("Please ask " + (result_perinfo[index]['first_name'] + ' ' + result_perinfo[index]['last_name']).trim() +" to talk to the Registration Administrator, you cannot add them at this time.")
             return;
         }
-        if (cart_perinfo_map[result_perinfo[index]['perid']] === undefined) {
+        if (map_access(cart_perinfo_map, result_perinfo[index]['perid']) === undefined) {
             var perid = result_perinfo[index]['perid'];
             cart_perinfo.push(make_copy(result_perinfo[index]));
             var mrows = find_memberships_by_perid(result_membership, perid);
@@ -468,7 +484,7 @@ function add_to_cart(index) {
                 if (result_perinfo[prow]['banned'] == 'Y') {
                     alert("Please ask " + (result_perinfo[prow]['first_name'] + ' ' + result_perinfo[prow]['last_name']).trim() + " to talk to the Registration Administrator, you cannot add them at this time.")
                     return;
-                } else if (cart_perinfo_map[perid] === undefined) {
+                } else if (map_access(cart_perinfo_map, perid) === undefined) {
                     cart_perinfo.push(make_copy(result_perinfo[prow]));
                     var mrows = find_memberships_by_perid(result_membership, perid);
                     for (var mrownum in mrows) {
@@ -483,7 +499,7 @@ function add_to_cart(index) {
 
 // remove person and all of their memberships from the cart
 function remove_from_cart(perid) {
-    var index = cart_perinfo_map[perid];
+    var index = map_access(cart_perinfo_map, perid);
     var mrows = find_memberships_by_perid(cart_membership, perid);
     for (var mrownum in mrows) {
         var splicerow = mrows[mrownum]['index'];
@@ -507,23 +523,22 @@ function delete_membership(index) {
 // TODO: Determine if it should be done before every draw_cart call and be part of draw_cart.
 function cart_renumber() {
     var index;
-    cart_perinfo_map = [];
+    cart_perinfo_map = {};
     for (index = 0; index < cart_perinfo.length; index++) {
         cart_perinfo[index]['index'] = index;
-        cart_perinfo_map[cart_perinfo[index]['perid']]  = index;
+        map_set(cart_perinfo_map, cart_perinfo[index]['perid'], index);
     }
 
     for (index = 0; index < cart_membership.length; index++) {
         cart_membership[index]['index'] = index;
-        cart_membership[index]['pindex'] = cart_perinfo_map[cart_membership['perid']];
+        cart_membership[index]['pindex'] = map_access(cart_perinfo_map, cart_membership[index]['perid']);
     }
 }
 
 // populate the add/edit screen from a cart item, and switch to add/edit
-// TODO: needs testing and debugging with split cart structures
-function edit_from_cart(index) {
+function edit_from_cart(perid) {
     clear_add();
-    var cartrow = cart_perinfo[cart_perinfo_map[index]];
+    var cartrow = cart_perinfo[map_access(cart_perinfo_map, perid)];
 
     // set perinfo values
     add_index_field.value = cartrow['index'];
@@ -1327,7 +1342,7 @@ function draw_record(row, first) {
     }
     html += `</div>
         <div class="col-sm-9">`;
-    if (cart_perinfo_map[data['perid']] === undefined) {
+    if (map_access(cart_perinfo_map, data['perid']) === undefined) {
         if (data['banned'] == 'Y') {
             html += `
             <button class="btn btn-danger btn-small" id="add_btn_1" onclick="add_to_cart(` + row + `);">B</button>`;
@@ -1414,7 +1429,7 @@ function addCartIcon(cell, formatterParams, onRendered) { //plain text value
     if (banned == 'Y') {
         return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="add_to_cart(' +
             cell.getRow().getData().index + ')">B</button>';
-    } else if (cart_perinfo_map[cell.getRow().getData().perid] === undefined) {
+    } else if (map_access(cart_perinfo_map, cell.getRow().getData().perid) === undefined) {
         html = '<button type="button" class="btn btn-sm btn-success p-0" onclick="add_to_cart(' +
             cell.getRow().getData().index + ')">Add</button>';
         var tid = cell.getRow().getData().tid;
@@ -1732,6 +1747,57 @@ function review_update() {
 // TODO: add TID to send customer to cashier
 // TODO: Add saving the transaction prior to going to message or Pay screens
 function review_nochanges() {
+    // submit the current card data to update the database, retrieve all TID's/PERID's/REGID's of inserted data
+    var postData = {
+        ajax_request_action: 'updateCartElements',
+        cart_perinfo: cart_perinfo,
+        cart_perinfo_map: cart_perinfo_map,
+        cart_membership: cart_membership,
+        user_id: user_id,
+    };
+    $.ajax({
+        method: "POST",
+        url: "scripts/regposTasks.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['message'] !== undefined) {
+                show_message(data['message'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'success');
+            }
+            reviewed_update_cart(data);
+        },
+        error: showAjaxError,
+    });
+}
+
+// reviewed_update_cart:
+//  all the data from the cart has been updated in the database, now apply the id's and proceed to the next step
+function reviewed_update_cart(data) {
+    // update cart elements
+    var updated_perinfo = data['updated_perinfo'];
+    for (var rownum in updated_perinfo) {
+        var newrow = updated_perinfo[rownum];
+        var cartrow = cart_perinfo[newrow['rownum']];
+        cartrow['perid'] = newrow['perid'];
+    }
+    var updated_membership = data['updated_membership'];
+    for (var rownum in updated_membership) {
+        var newrow = updated_membership[rownum];
+        var cartrow = cart_membership[newrow['rownum']];
+        cartrow['create_trans'] = newrow['create_trans'];
+        cartrow['id'] = newrow['id'];
+        cartrow['perid'] = newrow['perid'];
+    }
+
+    // redraw the cart with the new id's and maps.
+    draw_cart();
+
     // set tab to review-tab
     if (unpaid_rows == 0) {
         goto_print();
@@ -1991,7 +2057,7 @@ function review_shown(current, previous) {
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-1 m-0 p-0">EP:</div>
+        <div class="col-sm-1 m-0 p-0">EM:</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <input type="text" name='c` + rownum + `-email_addr' id='c` + rownum + `-email_addr' size=50 maxlength="64" tabindex='5'  value="` + row['email_addr'] + `"/>
         </div>

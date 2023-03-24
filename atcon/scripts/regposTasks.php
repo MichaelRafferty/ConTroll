@@ -224,7 +224,6 @@ EOS;
         $index++;
     }
     $response['perinfo'] = $perinfo;
-    $status = "$num_rows memberships found";
     if ($num_rows >= $limit) {
         $response['warn'] = "$num_rows memberships found, limited to $limit, use different search criteria to refine your search.";
     } else {
@@ -243,6 +242,149 @@ EOS;
     $response['membership'] = $membership;
     mysqli_free_result($rm);
     ajaxSuccess($response);
+}
+
+// updateCartElements:
+// update cart contents into the database
+//      create new perinfo records, update existing ones
+//      create new reg records, update existing ones
+//      create new transaction records if none exist for this reg record
+//  inputs:
+//      cart_perinfo: perinfo records in the cart
+//      cart_membership: membership records in the cart
+//      cart_perinfo_map: map of perid to rows in cart_perinfo
+//  Outputs:
+//      message/error/warn: appropriate diagnostics
+//      updated_perinfo: array of old rownum and new perid's
+//      updated_memberhip: array of old rownum, new id, new creat_trans id's
+function updateCartElements($conid): void
+{
+    $cart_perinfo = $_POST['cart_perinfo'];
+    $cart_perinfo_map = $_POST['cart_perinfo_map'];
+    $cart_membership = $_POST['cart_membership'];
+    $user_id = $_POST['user_id'];
+
+    $updated_perinfo = [];
+    $updated_membership = [];
+    $update_permap = [];
+    $error_message = '';
+
+    $per_ins = 0;
+    $per_upd = 0;
+    $reg_ins = 0;
+    $reg_upd = 0;
+
+    $insPerinfoSQL = <<<EOS
+INSERT INTO perinfo(last_name,first_name,middle_name,suffix,email_addr,phone,badge_name,address,addr_2,city,state,zip,country,contact_ok,share_reg_ok,banned,active,creation_date)
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N','Y',now());
+EOS;
+    $updPerinfoSQL = <<<EOS
+UPDATE perinfo SET
+    last_name=?,first_name=?,middle_name=?,suffix=?,email_addr=?,phone=?,badge_name=?,address=?,addr_2=?,city=?,state=?,zip=?,country=?,banned='N',update_date=NOW(),active='Y',contact_ok=?,share_reg_ok=?
+WHERE id = ?;
+EOS;
+    $insRegSQL = <<<EOS
+INSERT INTO reg(conid,perid,price,paid,create_user,memId,create_date)
+VALUES (?,?,?,?,?,?,now());
+EOS;
+    $updRegSQL = <<<EOS
+UPDATE reg SET price=?,paid=?,memId=?,change_date=now()
+WHERE id = ?;
+EOS;
+    $insTransactionSQL = <<<EOS
+INSERT INTO transaction(conid,perid,userid,price,paid,type,create_date)
+VALUES (?,?,?,?,?,'atcon',now());
+EOS;
+    $updTransactionSQL = <<<EOS
+UPDATE transaction SET
+        userid = ?,price = ?,paid = ?
+WHERE id = ?;
+EOS;
+    // update all perinfo records,
+    for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
+        $cartrow = $cart_perinfo[$row];
+        if ($cartrow['perid'] <= 0) {
+            // insert this row
+            $paramarray = array(
+                $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
+                $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],$cartrow['contact_ok'],$cartrow['share_reg_ok']
+            );
+            $typestr = 'sssssssssssssss';
+            $new_perid = dbSafeInsert($insPerinfoSQL, $typestr, $paramarray);
+            if ($new_perid === false) {
+                $error_message .= "Insert of person $row failed<BR/>";
+            } else {
+                $updated_perinfo[] = array('rownum' => $row, 'perid' => $new_perid);
+                $cart_perinfo_map[$new_perid] = $row;
+                $update_permap[$cartrow['perid']] = $new_perid;
+                $reg_ins++;
+            }
+        } else {
+            // update the row
+            $paramarray = array(
+                $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
+                $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],$cartrow['contact_ok'],$cartrow['share_reg_ok'],
+                $cartrow['perid']
+            );
+            $typestr = 'sssssssssssssi';
+            $reg_upd += dbSafeCmd($per_upd, $typestr, $paramarray);
+        }
+    }
+
+    // now update all reg records
+    for ($row = 0; $row < sizeof($cart_membership); $row++) {
+        $cartrow = $cart_membership[$row];
+        if (!array_key_exists('id', $cart_membership) || $cartrow['id'] <= 0) {
+            // insert the membership and transaction for it
+            if ($cartrow['perid'] <= 0) {
+                $cartrow['perid'] = $update_permap[$cartrow['perid']];
+            }
+            $paramarray = array($conid, $cartrow['perid'], $cartrow['price'], $cartrow['paid'], $user_id, $cartrow['memId']);
+            $typestr = 'iissii';
+            $new_regid = dbSafeInsert($insRegSQL, $typestr, $paramarray);
+            if ($new_regid === false) {
+                $error_message .= "Insert of membership $row failed<BR/>";
+            } else {
+                // now insert the transaction
+                $paramarray = array($conid, $cartrow['perid'], $user_id, $cartrow['price'], $cartrow['paid']);
+                $typestr = 'iiiss';
+                $new_transid = dbSafeInsert($insTransactionSQL, $typestr, $paramarray);
+                if ($new_transid === false) {
+                    $error_message .= "Insert of transaction $row failed<BR/>";
+                } else {
+                    $update_membership[] = array('rownum' => $row, 'perid' => $cartrow['perid'], 'id' => $new_regid, 'tid' => $new_transid);
+                }
+            }
+        } else {
+            // update reg and update/insert transaction
+            $paramarray = array($cartrow['price'], $cartrow['paid'], $cartrow['memId'], $cartrow['id']);
+            $typestr = 'ssii';
+            $reg_upd += dbSafeCmd($updRegSQL, $typestr, $paramarray);
+            if ($cartrow['tid'] == '' || $cartrow['tid'] <= 0) {
+                // no transaction associated with this reg, add one
+                $paramarray = array($conid, $cartrow['perid'], $user_id, $cartrow['price'], $cartrow['paid']);
+                $typestr = 'iiiss';
+                $new_transid = dbSafeInsert($insTransactionSQL, $typestr, $paramarray);
+                if ($new_transid === false) {
+                    $error_message .= "Insert of transaction $row failed<BR/>";
+                } else {
+                    $update_membership[] = array('rownum' => $row, 'perid' => $cartrow['perid'], 'id' => $cartrow['id'], 'tid' => $new_transid);
+                }
+            } else {
+            // update the transaction associated with this reg
+                $paramarray = array($user_id, $cartrow['price'], $cartrow['paid'], $cartrow['tid']);
+                $typestr = 'issi';
+                dbSafeCmd($updTransactionSQL, $typestr, $paramarray);
+            }
+        }
+    }
+
+    if ($error_message != '') {
+        $response['error'] = $error_message;
+        return;
+    }
+    $response['updated_perinfo'] = $updated_perinfo;
+    $response['updated_membership'] = $updated_membership;
 }
 
 // outer ajax wrapper
@@ -278,8 +420,8 @@ switch ($ajax_request_action) {
     case 'findRecord':
         findRecord($conid);
         break;
-    case 'updateUsers':
-        updateUsers($conid);
+    case 'updateCartElements':
+        updateCartElements($conid);
         break;
     case 'updatePrinters':
         updatePrinters($conid);
