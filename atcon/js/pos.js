@@ -569,8 +569,8 @@ function edit_from_cart(perid) {
         document.getElementById("ae_mem_sel").innerHTML = membership_select;
     } else {
         add_memIndex_field.value = mem_index;
-        if (Number(cart_membership[mem_index]['tid']) > 0) {
-            // already paid, just display the lael
+        if (Number(cart_membership[mem_index]['price']) == Number(cart_membership[mem_index]['paid'])) {
+            // already paid, just display the label
             add_mem_select.innerHTML = cart_membership[mem_index]['label'];
         } else {
             add_mem_select.innerHTML = add_mt_dataentry;
@@ -737,7 +737,9 @@ function add_new() {
         add_email_field.style.backgroundColor = '';
         add_mem_select.innerHTML = add_mt_dataentry;
         add_mem_select.style.backgroundColor = '';
-        document.getElementById("ae_mem_sel").innerHTML = membership_select;
+        add_mem_sel = document.getElementById("ae_mem_sel");
+        add_mem_sel.innerHTML = membership_select;
+        add_mem_sel.value = new_badgememId;
         if (add_results_table != null) {
             add_results_table.destroy();
             add_results_table = null;

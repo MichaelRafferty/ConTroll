@@ -140,7 +140,7 @@ WHERE r.conid = ? AND r.price != r.paid
 ORDER BY last_name, first_name;
 EOS;
         $unpaidSQLM = <<<EOS
-SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_trans as tid, r.memid, 0 as printcount,
+SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_trans as tid, r.memId, 0 as printcount,
                 m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM reg r
 JOIN perinfo p ON (p.id = r.perid)
@@ -163,7 +163,7 @@ WHERE r.conid = ? AND (r.create_trans = ? OR p.id = ?)
 ORDER BY last_name, first_name;
 EOS;
         $searchSQLM = <<<EOS
-SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_trans as tid, r.memid, 0 as printcount,
+SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_trans as tid, r.memId, 0 as printcount,
                 m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM reg r
 JOIN perinfo p ON (p.id = r.perid)
@@ -201,7 +201,7 @@ WITH limitedp AS (
     WHERE IFNULL(r.conid, ?) = ? AND (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
     ORDER BY last_name, first_name LIMIT $limit
 )
-SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_trans as tid, r.memid, 0 as printcount,
+SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_trans as tid, r.memId, 0 as printcount,
                 m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM reg r
 JOIN limitedp p ON (p.id = r.perid)
@@ -326,7 +326,7 @@ EOS;
                 $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],$cartrow['contact_ok'],$cartrow['share_reg_ok'],
                 $cartrow['perid']
             );
-            $typestr = 'sssssssssssssi';
+            $typestr = 'sssssssssssssssi';
             $reg_upd += dbSafeCmd($per_upd, $typestr, $paramarray);
         }
     }
