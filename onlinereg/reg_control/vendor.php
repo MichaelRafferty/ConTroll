@@ -98,7 +98,6 @@ $conf = get_conf('con');
             . ", SA.requested as A_req, SA.authorized as A_auth, SA.purchased as A_purch"
             . ", SD.requested as D_req, SD.authorized as D_auth, SD.purchased as D_purch"
             . ", SD10.requested as T_req, SD10.authorized as T_auth, SD10.purchased as T_purch"
-            . ", SV.requested as V_req, SV.authorized as V_auth, SV.purchased as V_purch"
             . " FROM vendors as V"
             . " LEFT JOIN vendor_show as SA on SA.vendor=V.id AND SA.type='alley' and SA.conid=$conid"
             . " LEFT JOIN vendor_show as SD on SD.vendor=V.id AND SD.type='dealer_6' and SD.conid=$conid"
