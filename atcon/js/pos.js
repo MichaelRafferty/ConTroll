@@ -1795,8 +1795,7 @@ function reviewed_update_cart(data) {
     var updated_perinfo = data['updated_perinfo'];
     for (var rownum in updated_perinfo) {
         var newrow = updated_perinfo[rownum];
-        var cartrow = cart_perinfo[newrow['rownum']];
-        cartrow['perid'] = newrow['perid'];
+        var cartrow = cart_perinfo[newrow['rownum']] = newrow['perid'];
     }
     var updated_membership = data['updated_membership'];
     for (var rownum in updated_membership) {
@@ -2253,7 +2252,7 @@ function print_shown(current, previous) {
     // draw the print screen
     var print_html = `<div id='printBody' class="container-fluid form-floating">
 `;
-    if (badgePrinter == false) {
+    if (badgePrinterAvailable == false) {
         print_html += 'No printer selected, unable to print badges.  Please log out and back in with the proper printer selected.</div>';
         print_div.innerHTML = print_html;
         return;

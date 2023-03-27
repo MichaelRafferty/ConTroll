@@ -267,15 +267,15 @@ function updateCartElements($conid): void
     $cart_membership = $_POST['cart_membership'];
     $user_id = $_POST['user_id'];
 
-    if (sizeof(cart_perinfo) <= 0) {
+    if (sizeof($cart_perinfo) <= 0) {
         ajaxError("No members where in the cart");
         return;
     }
     if (sizeof($cart_membership) <= 0) {
         ajaxError("No memberships were in the cart");
+        return;
     }
 
-    $master_perid = $cart_perinfo[0]['perid'];
     $updated_perinfo = [];
     $updated_membership = [];
     $update_permap = [];
@@ -285,6 +285,8 @@ function updateCartElements($conid): void
     $per_upd = 0;
     $reg_ins = 0;
     $reg_upd = 0;
+    $total_price = 0;
+    $total_paid = 0;
 
     $insPerinfoSQL = <<<EOS
 INSERT INTO perinfo(last_name,first_name,middle_name,suffix,email_addr,phone,badge_name,address,addr_2,city,state,zip,country,contact_ok,share_reg_ok,banned,active,creation_date)
@@ -296,25 +298,19 @@ UPDATE perinfo SET
 WHERE id = ?;
 EOS;
     $insRegSQL = <<<EOS
-INSERT INTO reg(conid,perid,price,paid,create_user,memId,create_date)
-VALUES (?,?,?,?,?,?,now());
+INSERT INTO reg(conid,perid,price,paid,create_user,create_trans,memId,create_date)
+VALUES (?,?,?,?,?,?,?,now());
 EOS;
     $updRegSQL = <<<EOS
 UPDATE reg SET price=?,paid=?,memId=?,change_date=now()
 WHERE id = ?;
 EOS;
-    $insTransactionSQL = <<<EOS
-INSERT INTO transaction(conid,perid,userid,price,paid,type,create_date)
-VALUES (?,?,?,?,?,'atcon',now());
+    $insHistory = <<<EOS
+INSERT INTO atcon_history(userid, tid, regid, action, notes)
+VALUES (?, ?, ?, 'attach', ?);
 EOS;
-    $updTransactionSQL = <<<EOS
-UPDATE transaction SET
-        userid = ?,price = ?,paid = ?
-WHERE id = ?;
-EOS;
-    // create the controlling transaction
-    // update all perinfo records,
-    for ($row = 0; $row < c; $row++) {
+    // insert/update all perinfo records,
+    for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         $cartrow = $cart_perinfo[$row];
         if ($cartrow['perid'] <= 0) {
             // insert this row
@@ -330,7 +326,8 @@ EOS;
                 $updated_perinfo[] = array('rownum' => $row, 'perid' => $new_perid);
                 $cart_perinfo_map[$new_perid] = $row;
                 $update_permap[$cartrow['perid']] = $new_perid;
-                $reg_ins++;
+                $cart_perinfo[$row]['perid'] = $new_perid;
+                $per_ins++;
             }
         } else {
             // update the row
@@ -340,64 +337,79 @@ EOS;
                 $cartrow['perid']
             );
             $typestr = 'sssssssssssssssi';
-            $reg_upd += dbSafeCmd($updPerinfoSQL, $typestr, $paramarray);
+            $per_upd += dbSafeCmd($updPerinfoSQL, $typestr, $paramarray);
         }
     }
 
-    // now update all reg records
+    // create the controlling transaction, in case the master perinfo needed insertion
+    $master_perid = $cart_perinfo[0]['perid'];
+    $notes = 'Pickup by: ' . trim($cart_perinfo[0]['first_name'] . ' ' . $cart_perinfo[0]['last_name']);
+    $insTransactionSQL = <<<EOS
+INSERT INTO transaction(conid,perid,userid,price,paid,type,create_date)
+VALUES (?,?,?,?,?,'atcon',now());
+EOS;
+    // now insert the master transaction
+    $paramarray = array($conid, $master_perid, $user_id, 0, 0);
+    $typestr = 'iiiss';
+    $master_transid = dbSafeInsert($insTransactionSQL, $typestr, $paramarray);
+    if ($master_transid === false) {
+        ajaxError('Unable to create master transaction');
+        return;
+    }
+    // now insert/update all reg records and compute the transaction price and paid fields
     for ($row = 0; $row < sizeof($cart_membership); $row++) {
         $cartrow = $cart_membership[$row];
+        $total_price += $cartrow['price'];
+        $total_paid += $cartrow['paid'];
         if (!array_key_exists('regid', $cartrow) || $cartrow['id'] <= 0) {
-            // insert the membership and transaction for it
+            // insert the membership
             if ($cartrow['perid'] <= 0) {
                 $cartrow['perid'] = $update_permap[$cartrow['perid']];
             }
-            $paramarray = array($conid, $cartrow['perid'], $cartrow['price'], $cartrow['paid'], $user_id, $cartrow['memId']);
-            $typestr = 'iissii';
+            $paramarray = array($conid, $cartrow['perid'], $cartrow['price'], $cartrow['paid'], $user_id, $master_transid, $cartrow['memId']);
+            $typestr = 'iissiii';
             $new_regid = dbSafeInsert($insRegSQL, $typestr, $paramarray);
             if ($new_regid === false) {
                 $error_message .= "Insert of membership $row failed<BR/>";
-            } else {
-                // now insert the transaction
-                $paramarray = array($conid, $cartrow['perid'], $user_id, $cartrow['price'], $cartrow['paid']);
-                $typestr = 'iiiss';
-                $new_transid = dbSafeInsert($insTransactionSQL, $typestr, $paramarray);
-                if ($new_transid === false) {
-                    $error_message .= "Insert of transaction $row failed<BR/>";
-                } else {
-                    $update_membership[] = array('rownum' => $row, 'perid' => $cartrow['perid'], 'id' => $new_regid, 'tid' => $new_transid);
-                }
             }
+            $updated_membership[] = array('rownum' => $row, 'perid' => $cartrow['perid'], 'create_trans' => $master_perid, 'id' => $new_regid);
+            $cartrow['regid'] = $new_regid;
+            $cart_membership[$row]['regid'] = $new_regid;
+            $reg_ins++;
         } else {
-            // update reg and update/insert transaction
+            // update membership
             $paramarray = array($cartrow['price'], $cartrow['paid'], $cartrow['memId'], $cartrow['regid']);
             $typestr = 'ssii';
             $reg_upd += dbSafeCmd($updRegSQL, $typestr, $paramarray);
-            if ($cartrow['tid'] == '' || $cartrow['tid'] <= 0) {
-                // no transaction associated with this reg, add one
-                $paramarray = array($conid, $cartrow['perid'], $user_id, $cartrow['price'], $cartrow['paid']);
-                $typestr = 'iiiss';
-                $new_transid = dbSafeInsert($insTransactionSQL, $typestr, $paramarray);
-                if ($new_transid === false) {
-                    $error_message .= "Insert of transaction $row failed<BR/>";
-                } else {
-                    $update_membership[] = array('rownum' => $row, 'perid' => $cartrow['perid'], 'id' => $cartrow['id'], 'tid' => $new_transid);
-                }
-            } else {
-            // update the transaction associated with this reg
-                $paramarray = array($user_id, $cartrow['price'], $cartrow['paid'], $cartrow['tid']);
-                $typestr = 'issi';
-                dbSafeCmd($updTransactionSQL, $typestr, $paramarray);
-            }
         }
+        // Now add the attach record for this item
+        $paramarray = array($user_id, $master_transid, $cartrow['regid'], $notes);
+        $typestr = 'iiis';
+        $new_history = dbSafeInsert($insHistory, $typestr, $paramarray);
+        if ($new_history === false) {
+            $error_message .= "Unable to attach membership " . $cartrow['regid'] . "<BR/>";
+        }
+    }
+    // update the transaction associated with this reg
+    $updTransactionSQL = <<<EOS
+UPDATE transaction
+SET price = ?, paid = ?
+WHERE id = ?
+EOS;
+    $paramarray = array($total_price, $total_paid, $master_transid);
+    $typestr = 'ssi';
+    if (dbSafeCmd($updTransactionSQL, $typestr, $paramarray) === false) {
+        $error_message .= "Update of master transaction failed";
     }
 
     if ($error_message != '') {
         $response['error'] = $error_message;
-        return;
+        ajaxSuccess($response);
     }
+    $response['message'] = "$per_ins members inserted, $per_upd members updated, $reg_ins memberships inserted, $reg_upd memberships updated";
     $response['updated_perinfo'] = $updated_perinfo;
     $response['updated_membership'] = $updated_membership;
+    ajaxSuccess($response);
 }
 
 // outer ajax wrapper
