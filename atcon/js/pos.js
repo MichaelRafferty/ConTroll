@@ -225,10 +225,10 @@ function loadInitialData(data) {
     typeList = data['memTypes'];
 
     // build memListMap from memList
-    memListMap = [];
+    memListMap = {};
     var index = 0;
     while (index < memList.length) {
-        memListMap[memList[index]['id']] = index;
+        map_set(memListMap, memList[index]['id'], index);
         index++;
     }
 
@@ -316,6 +316,9 @@ function make_copy(arr) {
 //  filt_shortname_regexp: filter on shortname field
 //  lastly, if it passes everything else filt_excat: anything except this list of memCategories
 function mem_filter(cur, idx, arr) {
+    if (cur['canSell'] == 0)
+        return false;
+
     if (filt_cat != null) {
         if (!filt_cat.includes(cur['memCategory'].toLowerCase()))
             return false;
@@ -342,10 +345,11 @@ function mem_filter(cur, idx, arr) {
 
 // map id to MemLabel entry
 function find_memLabel(id) {
-    if (memListMap[id] === undefined) {
+    var rownum = map_access(memListMap, id);
+    if (rownum === undefined) {
         return null;
     }
-    return memList[memListMap[id]];
+    return memList[rownum];
 }
 
 // search result_membership functions
@@ -373,7 +377,11 @@ function find_primary_membership_by_perid(tbl, perid) {
     var regitems = find_memberships_by_perid(tbl, perid);
     var mem_index = null;
     for (var item in regitems) {
-        memtype = regitems[item]['memCategory'];
+        var mi_row = find_memLabel(regitems[item]['memId']);
+        if (mi_row['conid'] != conid)
+            continue;
+
+        memtype = mi_row['memCategory'];
         if (memtype == 'upgrade' || memtype == 'rollover' || memtype == 'freebie') {
             mem_index = regitems[item]['index'];
             break;
@@ -692,7 +700,7 @@ function add_new() {
                 mrow = cart_membership[new_memindex];
             } else {
                 var ind = cart_membership.length;
-                cart_membership.push({ index: ind, printed: 0 });
+                cart_membership.push({ index: ind, printed: 0, tid: 0 });
                 mrow = cart_membership[ind];
                 mrow['perid'] = edit_perid;
                 mrow['pindex'] = edit_index;
@@ -1022,11 +1030,13 @@ function draw_cart_row(rownum) {
         var mrow = mrows[mrownum];
 
         mem_is_membership = false;
-        col1 = (Number(mrow['tid']) > 0 || freeze_cart) ? '&nbsp;' :
+        col1 = (Number(mrow['tid']) != 0 || freeze_cart) ? '&nbsp;' :
             '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
             mrow['index'] + ')" >X</button >';
-
-        switch (mrow['memCategory']) {
+        var category = mrow['memCategory'];
+        if (category == 'yearahead' && mrow['conid'] == conid)
+            category = 'standard'; // last years yearahead is this year's standard
+        switch (category) {
             case 'standard':
                 yearahead_eligible = true;
                 if (mrow['memType'] == 'oneday')
@@ -1066,7 +1076,7 @@ function draw_cart_row(rownum) {
     </div>
 `;
                 break;
-            case 'rollver':
+            case 'rollover':
                 membership_found = true;
                 yearahead_eligible = true;
                 rollover_html += `
@@ -1475,7 +1485,7 @@ function add_membership_cart(rownum, selectname) {
         perid: row['perid'],
         price: membership['price'],
         paid: 0,
-        tid: '',
+        tid: 0,
         index: cart_membership.length,
         printed: 0,
         memCategory: membership['memCategory'],

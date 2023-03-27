@@ -49,18 +49,21 @@ EOS;
 
     // get all the memLabels
     $priceQ = <<<EOS
-SELECT id, conid, memCategory, memType, memAge, memGroup, label, shortname, sort_order, price
+SELECT id, conid, memCategory, memType, memAge, memGroup, label, shortname, sort_order, price,
+    CASE 
+        WHEN (atcon != 'Y') THEN 0
+        WHEN (startdate > ?) THEN 0
+        WHEN (enddate <= ?) THEN 0
+        ELSE 1 
+    END AS canSell      
 FROM memLabel
 WHERE
-    ((conid=? AND memCategory != 'yearahead') OR (conid=? AND memCategory in ('yearahead', 'rollover')))
-    AND atcon = 'Y'
-    AND startdate <= ?
-    AND enddate > ?
+    conid IN (?, ?)
 ORDER BY sort_order, price DESC;
 EOS;
 
     $memarray = array();
-    $r = dbSafeQuery($priceQ, 'iiss', array($conid, $conid + 1, $searchdate, $searchdate));
+    $r = dbSafeQuery($priceQ, 'ssii', array($searchdate, $searchdate, $conid, $conid + 1));
     while ($l = fetch_safe_assoc($r)) {
         $memarray[] = $l;
     }
@@ -140,13 +143,13 @@ WHERE r.conid = ? AND r.price != r.paid
 ORDER BY last_name, first_name;
 EOS;
         $unpaidSQLM = <<<EOS
-SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_trans as tid, r.memId, 0 as printcount,
+SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_date, IFNULL(r.create_trans, -1) as tid, r.memId, 0 as printcount,
                 m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM reg r
 JOIN perinfo p ON (p.id = r.perid)
 JOIN memLabel m ON (r.memId = m.id)
 WHERE r.conid = ? AND r.price != r.paid
-ORDER BY create_trans;
+ORDER BY create_date DESC;
 EOS;
         $rp = dbSafeQuery($unpaidSQLP, 'i', array($conid));
         $rm = dbSafeQuery($unpaidSQLM, 'i', array($conid));
@@ -159,17 +162,17 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname
 FROM reg r
 JOIN perinfo p ON (p.id = r.perid)
-WHERE r.conid = ? AND (r.create_trans = ? OR p.id = ?)
+WHERE r.conid = ? AND (IFNULL(r.create_trans, -1) = ? OR p.id = ?)
 ORDER BY last_name, first_name;
 EOS;
         $searchSQLM = <<<EOS
-SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_trans as tid, r.memId, 0 as printcount,
+SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_date, IFNULL(r.create_trans, -1) as tid, r.memId, 0 as printcount,
                 m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM reg r
 JOIN perinfo p ON (p.id = r.perid)
 JOIN memLabel m ON (r.memId = m.id)
-WHERE r.conid = ? AND (r.create_trans = ? OR p.id = ?)
-ORDER BY create_trans;
+WHERE r.conid = ? AND (IFNULL(r.create_trans, -1) = ? OR p.id = ?)
+ORDER BY create_date DESC;
 EOS;
         $rp = dbSafeQuery($searchSQLP, 'iii', array($conid, $name_search, $name_search));
         $rm = dbSafeQuery($searchSQLM, 'iii', array($conid, $name_search, $name_search));
@@ -201,13 +204,13 @@ WITH limitedp AS (
     WHERE IFNULL(r.conid, ?) = ? AND (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
     ORDER BY last_name, first_name LIMIT $limit
 )
-SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_trans as tid, r.memId, 0 as printcount,
+SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_date, IFNULL(r.create_trans, -1) as tid, r.memId, 0 as printcount,
                 m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM reg r
 JOIN limitedp p ON (p.id = r.perid)
 JOIN memLabel m ON (r.memId = m.id)
 WHERE r.conid = ?
-ORDER BY create_trans;
+ORDER BY create_date DESC;
 EOS;
         $rp = dbSafeQuery($searchSQLP, 'iisss', array($conid, $conid, $name_search, $name_search, $name_search));
         $rm = dbSafeQuery($searchSQLM, 'iisssi', array($conid, $conid, $name_search, $name_search, $name_search, $conid));
@@ -264,6 +267,15 @@ function updateCartElements($conid): void
     $cart_membership = $_POST['cart_membership'];
     $user_id = $_POST['user_id'];
 
+    if (sizeof(cart_perinfo) <= 0) {
+        ajaxError("No members where in the cart");
+        return;
+    }
+    if (sizeof($cart_membership) <= 0) {
+        ajaxError("No memberships were in the cart");
+    }
+
+    $master_perid = $cart_perinfo[0]['perid'];
     $updated_perinfo = [];
     $updated_membership = [];
     $update_permap = [];
@@ -300,8 +312,9 @@ UPDATE transaction SET
         userid = ?,price = ?,paid = ?
 WHERE id = ?;
 EOS;
+    // create the controlling transaction
     // update all perinfo records,
-    for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
+    for ($row = 0; $row < c; $row++) {
         $cartrow = $cart_perinfo[$row];
         if ($cartrow['perid'] <= 0) {
             // insert this row
@@ -327,14 +340,14 @@ EOS;
                 $cartrow['perid']
             );
             $typestr = 'sssssssssssssssi';
-            $reg_upd += dbSafeCmd($per_upd, $typestr, $paramarray);
+            $reg_upd += dbSafeCmd($updPerinfoSQL, $typestr, $paramarray);
         }
     }
 
     // now update all reg records
     for ($row = 0; $row < sizeof($cart_membership); $row++) {
         $cartrow = $cart_membership[$row];
-        if (!array_key_exists('id', $cart_membership) || $cartrow['id'] <= 0) {
+        if (!array_key_exists('regid', $cartrow) || $cartrow['id'] <= 0) {
             // insert the membership and transaction for it
             if ($cartrow['perid'] <= 0) {
                 $cartrow['perid'] = $update_permap[$cartrow['perid']];
@@ -357,7 +370,7 @@ EOS;
             }
         } else {
             // update reg and update/insert transaction
-            $paramarray = array($cartrow['price'], $cartrow['paid'], $cartrow['memId'], $cartrow['id']);
+            $paramarray = array($cartrow['price'], $cartrow['paid'], $cartrow['memId'], $cartrow['regid']);
             $typestr = 'ssii';
             $reg_upd += dbSafeCmd($updRegSQL, $typestr, $paramarray);
             if ($cartrow['tid'] == '' || $cartrow['tid'] <= 0) {
