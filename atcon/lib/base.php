@@ -146,9 +146,6 @@ function page_init($title, $tab, $css, $js)
                                             <a class="nav-link navitem <?php echo $tab == "admin" ? "active" : ""; ?>" <?php echo $tab == "admin" ? 'aria-current="page"' : ""; ?> href="admin.php">Administrator</a>
                                         </li>
                                         <li>
-                                            <a class="nav-link navitem <?php echo $tab == "mockupCheckin" ? "active" : ""; ?>" <?php echo $tab == "mockupCheckin" ? 'aria-current="page"' : ""; ?> href="mockup2.php">Check-in Mockup</a>
-                                        </li>
-                                        <li>
                                             <a class="nav-link navitem <?php echo $tab == "mockupCashier" ? "active" : ""; ?>" <?php echo $tab == "mockupCashier" ? 'aria-current="page"' : ""; ?> href="mockup2.php?mode=cashier">Cashier Mockup</a>
                                         </li>
                                         <li>

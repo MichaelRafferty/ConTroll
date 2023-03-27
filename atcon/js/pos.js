@@ -1795,7 +1795,8 @@ function reviewed_update_cart(data) {
     var updated_perinfo = data['updated_perinfo'];
     for (var rownum in updated_perinfo) {
         var newrow = updated_perinfo[rownum];
-        var cartrow = cart_perinfo[newrow['rownum']] = newrow['perid'];
+        var cartrow = cart_perinfo[newrow['rownum']]
+        cartrow['perid'] = newrow['perid'];
     }
     var updated_membership = data['updated_membership'];
     for (var rownum in updated_membership) {
