@@ -361,7 +361,7 @@ EOS;
         $cartrow = $cart_membership[$row];
         $total_price += $cartrow['price'];
         $total_paid += $cartrow['paid'];
-        if (!array_key_exists('regid', $cartrow) || $cartrow['id'] <= 0) {
+        if (!array_key_exists('regid', $cartrow) || $cartrow['regid'] <= 0) {
             // insert the membership
             if ($cartrow['perid'] <= 0) {
                 $cartrow['perid'] = $update_permap[$cartrow['perid']];
@@ -409,6 +409,7 @@ EOS;
     $response['message'] = "$per_ins members inserted, $per_upd members updated, $reg_ins memberships inserted, $reg_upd memberships updated";
     $response['updated_perinfo'] = $updated_perinfo;
     $response['updated_membership'] = $updated_membership;
+    $response['master_tid'] = $master_transid;
     ajaxSuccess($response);
 }
 

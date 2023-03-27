@@ -1825,7 +1825,7 @@ function reviewed_update_cart(data) {
         startover_button.hidden = true;
         document.getElementById('review-btn-update').hidden = true;
         document.getElementById('review-btn-nochanges').hidden = true;
-        document.getElementById('review_status').innerHTML = 'Completed: Send customer to cashier';
+        document.getElementById('review_status').innerHTML = 'Completed: Send customer to cashier with id of ' + data['master_tid'];
     }
 
 }
@@ -1836,7 +1836,7 @@ function goto_print() {
     bootstrap.Tab.getOrCreateInstance(print_tab).show();    
 }
 
-// TODO: ??? (what is tihs, is it named right)
+// TODO: ??? (what is this, is it named right)
 function pay_type(ptype) {
     var elcheckno = document.getElementById('pay-check-div');
     var elccauth = document.getElementById('pay-ccauth-div');
