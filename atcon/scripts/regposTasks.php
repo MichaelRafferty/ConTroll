@@ -132,50 +132,147 @@ function findRecord($conid):void {
 
     $limit = 99999999;
     if ($find_type == 'unpaid') {
+        $withClause = <<<EOS
+WITH unpaids AS (
+/* first the unpaid transactions from regs with their create_trans */
+SELECT id, create_trans as tid
+FROM reg 
+WHERE price != paid AND conid = ?
+), tids AS (
+/* add in unpaids from transactions in attach records in atcon_history */
+SELECT u.id AS regid, CASE WHEN u.tid > IFNULL(h.tid, -999) THEN u.tid ELSE h.tid END AS tid
+FROM unpaids u
+LEFT OUTER JOIN atcon_history h ON (h.regid = u.id AND h.action = 'attach')
+), maxtids AS (
+/* find the most recent transaction (highest number) across each reg and the selected list of transactions */
+SELECT regid, MAX(tid) AS tid
+FROM tids
+GROUP BY regid
+), tidlist AS (
+/* and get each tid only once */
+SELECT DISTINCT tid 
+FROM maxtids
+), perids AS (
+/* now get all the perinfo ids that are mentioned in each of those tid records, from both reg, and from atcon_history */
+SELECT perid 
+FROM reg r
+JOIN tidlist t ON (t.tid = r.create_trans)
+UNION SELECT perid 
+FROM reg r
+JOIN atcon_history h on (h.regid = r.id)
+JOIN tidlist t ON (t.tid = h.tid)
+), uniqueperids AS (
+SELECT DISTINCT perid
+FROM perids
+)
+EOS;
         $unpaidSQLP = <<<EOS
-SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
+$withClause
+SELECT u.perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
 	p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
     TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname
-FROM reg r
-JOIN perinfo p ON (p.id = r.perid)
-WHERE r.conid = ? AND r.price != r.paid
+FROM uniqueperids u
+JOIN perinfo p ON (u.perid = p.id)
 ORDER BY last_name, first_name;
 EOS;
         $unpaidSQLM = <<<EOS
-SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_date, IFNULL(r.create_trans, -1) as tid, r.memId, 0 as printcount,
+$withClause
+, ridtid AS (
+SELECT id as regid, create_trans as tid
+FROM uniqueperids p
+JOIN reg r ON (r.perid = p.perid)
+UNION
+SELECT h.regid, h.tid
+FROM uniqueperids p
+JOIN reg r ON (r.perid = p.perid)
+JOIN atcon_history h ON (r.id = h.regid AND h.action = 'attach')
+), uniqrids AS (
+SELECT regid, MAX(tid) AS tid
+FROM ridtid
+GROUP BY regid
+)
+SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_date, u.tid, r.memId, COUNT(h.regid) as printcount,
                 m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
-FROM reg r
-JOIN perinfo p ON (p.id = r.perid)
+FROM uniqrids u
+JOIN reg r ON (r.id = u.regid)
 JOIN memLabel m ON (r.memId = m.id)
-WHERE r.conid = ? AND r.price != r.paid
+LEFT OUTER JOIN atcon_history h ON (r.id = h.regid AND h.action = 'print')
+WHERE r.conid = ?
+GROUP BY r.perid, r.id, r.conid, r.price, r.paid, r.create_date, u.tid, r.memId, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 ORDER BY create_date DESC;
 EOS;
         $rp = dbSafeQuery($unpaidSQLP, 'i', array($conid));
-        $rm = dbSafeQuery($unpaidSQLM, 'i', array($conid));
+        $rm = dbSafeQuery($unpaidSQLM, 'ii', array($conid, $conid));
     } else if (is_numeric($name_search)) {
         // this is perid, or transid
+        $withClause = <<<EOS
+WITH regt AS (
+/* first reg ids for this transaction  as specified as a number */
+SELECT id AS regid, create_trans as tid
+FROM reg 
+WHERE create_trans = ? AND conid = ?
+/* then add in reg ids from the attach transaction */
+UNION SELECT regid, tid
+FROM atcon_history h
+JOIN reg r ON (r.id = h.regid)
+WHERE tid = ? AND h.action = 'attach' AND r.conid = ?
+), regp AS (
+/* find the reg id's for this person */
+SELECT id AS regid
+FROM reg
+WHERE perid = ? AND conid = ?
+), regs AS (
+/* now get the transactions for these regids */
+SELECT rs.regid, create_trans as tid
+FROM regp rs
+JOIN reg r ON (r.id = rs.regid)
+UNION SELECT h.regid, tid
+FROM regp rs
+JOIN atcon_history h ON (h.regid = rs.regid AND h.action = 'attach')
+), maxtid AS (
+/* now take the most recent transaction */
+SELECT regid, MAX(tid) AS tid
+FROM regs
+GROUP BY regid
+), regpt AS (
+/* now get all the regids for these transactions */
+SELECT IFNULL(h.regid, r.id) AS regid, m.tid
+FROM maxtid m
+LEFT OUTER JOIN atcon_history h ON (h.tid = m.tid AND h.action = 'attach')
+LEFT OUTER JOiN reg r ON (r.create_trans = m.tid)
+), regids AS (
+/* and pull both sets together */
+SELECT regid FROM regt
+UNION SELECT regid FROM regpt
+)
+EOS;
         $searchSQLP = <<<EOS
+$withClause
 SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
     TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname
-FROM reg r
+FROM regids rs
+JOIN reg r ON (rs.regid = r.id)
 JOIN perinfo p ON (p.id = r.perid)
-WHERE r.conid = ? AND (IFNULL(r.create_trans, -1) = ? OR p.id = ?)
 ORDER BY last_name, first_name;
 EOS;
         $searchSQLM = <<<EOS
-SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_date, IFNULL(r.create_trans, -1) as tid, r.memId, 0 as printcount,
+$withClause
+SELECT DISTINCT r1.perid, r1.id as regid, r1.conid, r1.price, r1.paid, r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, COUNT(h.regid) as printcount,
                 m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
-FROM reg r
+FROM regids rs
+JOIN reg r ON (rs.regid = r.id)
 JOIN perinfo p ON (p.id = r.perid)
-JOIN memLabel m ON (r.memId = m.id)
-WHERE r.conid = ? AND (IFNULL(r.create_trans, -1) = ? OR p.id = ?)
+JOIN reg r1 ON (r1.perid = r.perid)
+JOIN memLabel m ON (r1.memId = m.id)
+LEFT OUTER JOIN atcon_history h ON (r1.id = h.regid AND h.action = 'print')
+GROUP BY r1.perid, r1.id, r1.conid, r1.price, r1.paid, r1.create_date, r1.memId, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup, IFNULL(r1.create_trans, -1)
 ORDER BY create_date DESC;
 EOS;
-        $rp = dbSafeQuery($searchSQLP, 'iii', array($conid, $name_search, $name_search));
-        $rm = dbSafeQuery($searchSQLM, 'iii', array($conid, $name_search, $name_search));
+        $rp = dbSafeQuery($searchSQLP, 'iiiiii', array($name_search, $conid, $name_search, $conid, $name_search, $conid));
+        $rm = dbSafeQuery($searchSQLM, 'iiiiii', array($name_search, $conid, $name_search, $conid, $name_search, $conid));
     } else {
         if ($find_type == 'addnew') {
             $jointype = 'LEFT OUTER JOIN';
@@ -198,18 +295,36 @@ ORDER BY last_name, first_name LIMIT $limit;
 EOS;
         $searchSQLM = <<<EOS
 WITH limitedp AS (
+/* first get the perid's for this name search */
     SELECT DISTINCT p.id, p.first_name, p.last_name
     FROM perinfo p
     $jointype reg r ON (p.id = r.perid)
     WHERE IFNULL(r.conid, ?) = ? AND (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
     ORDER BY last_name, first_name LIMIT $limit
+), regids AS (
+SELECT r.id AS regid
+FROM perinfo p
+JOIN reg r ON (r.perid = p.id)
+WHERE r.conid = ?
+), regtid AS (
+SELECT id as regid, create_trans as tid
+FROM regids rs
+JOIN reg r ON (r.id = rs.regid)
+UNION
+SELECT h.regid, h.tid
+FROM regids rs
+JOIN atcon_history h ON (h.regid = rs.regid)
+), maxtids AS (
+SELECT regid, MAX(tid) as tid
+FROM regtid
+GROUP BY regid
 )
-SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_date, IFNULL(r.create_trans, -1) as tid, r.memId, 0 as printcount,
+SELECT DISTINCT r.perid, t.regid, r.conid, r.price, r.paid, r.create_date, t.tid, r.memId, 0 as printcount,
                 m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
-FROM reg r
+FROM maxtids t
+JOIN reg r ON (r.id = t.regid)
 JOIN limitedp p ON (p.id = r.perid)
 JOIN memLabel m ON (r.memId = m.id)
-WHERE r.conid = ?
 ORDER BY create_date DESC;
 EOS;
         $rp = dbSafeQuery($searchSQLP, 'iisss', array($conid, $conid, $name_search, $name_search, $name_search));
