@@ -68,6 +68,57 @@ EOS;
             $checkOutR = dbSafeCmd($checkOutQ, 'iii', array($item[1], $conid, $item[0]));
             $log .= " changed $checkOutR";
             break;
+        case 'Set Bidder':
+            $log .= " to " . $action['value'];
+            $bidQ =<<<EOS
+UPDATE artItems I
+JOIN artshow S on S.id=I.artshow
+SET I.status='Bid', I.bidder=?
+WHERE I.item_key=? and I.conid=? and S.art_key=?;
+EOS;
+            $bidR = dbSafeCmd($bidQ, 'iiii', array($action['value'], $item[1], $conid, $item[0]));
+            $log .= " changed $bidR";
+            break;
+        case 'Set Bid': // currently not enforcing bid values
+            $log .= " to " . $action['value'];
+            $bidQ =<<<EOS
+UPDATE artItems I
+JOIN artshow S on S.id=I.artshow
+SET I.status='Bid', I.final_price=?
+WHERE I.item_key=? and I.conid=? and S.art_key=?;
+EOS;
+            $bidR = dbSafeCmd($bidQ, 'iiii', array($action['value'], $item[1], $conid, $item[0]));
+            break;
+        case 'Sell To Bidsheet':
+            $checkInQ = <<<EOS
+UPDATE artItems I 
+JOIN artshow S on S.id=I.artshow
+SET status='Sold Bid Sheet' 
+WHERE I.item_key=? and I.conid=? and S.art_key=?;
+EOS;
+            $checkInR = dbSafeCmd($checkInQ, 'iii', array($item[1], $conid, $item[0]));
+            $log .= " changed $checkInR";
+            break;
+        case 'Send To Auction':
+            $checkInQ = <<<EOS
+UPDATE artItems I 
+JOIN artshow S on S.id=I.artshow
+SET status='To Auction' 
+WHERE I.item_key=? and I.conid=? and S.art_key=?;
+EOS;
+            $checkInR = dbSafeCmd($checkInQ, 'iii', array($item[1], $conid, $item[0]));
+            $log .= " changed $checkInR";
+            break;
+        case 'Release':
+            $checkInQ = <<<EOS
+UPDATE artItems I 
+JOIN artshow S on S.id=I.artshow
+SET status='purchased/released' 
+WHERE I.item_key=? and I.conid=? and S.art_key=?;
+EOS;
+            $checkInR = dbSafeCmd($checkInQ, 'iii', array($item[1], $conid, $item[0]));
+            $log .= " changed $checkInR";
+            break;
         default:
             $log .= " => Unknown Action";
     }

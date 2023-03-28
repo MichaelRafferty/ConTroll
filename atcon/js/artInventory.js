@@ -84,7 +84,7 @@ function inventory() {
             url: script,
             data: "actions=" + JSON.stringify(actionlist),
             success: function(data, textStatus, jqXhr) {
-                //$('#test').empty().append(JSON.stringify(data, null, 2));
+                $('#test').empty().append(JSON.stringify(data['log'], null, 2));
                 
                 start_over();
                 }
@@ -123,15 +123,21 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
         case 'Quicksale/Sold':
             //sales or manager can release
             if(manager || (mode=='sales')) {
-                html += '<button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'release\')">Release</button>';
+                html += '<button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Release\')">Release</button>';
             }
             break;
         case 'BID':
-        case 'Checked In':
-            //sales can sell and inventory can confirm or check out
-            if(mode == 'sales') {
-                html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'sell\')">Sell</button>';
+            //inventory only
+            if(mode == 'inventory') {
+                html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button>';
             }
+            //manager can remove from show 
+            if(manager) {
+                html += '<button type="button" class="btn btn-sm btn-warning pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'remove\')">Remove</button>';
+            }
+            break;
+        case 'Checked In':
+            //sales can sell
         case 'NFS':
             // inventory or check out
             if(mode == 'inventory') {
@@ -161,6 +167,9 @@ function build_record_hover(e, cell, onRendered) {
     hover_text = data['id'] + '<br/>' + data['name'].trim() + '<br/>' 
     hover_text += data['title'].trim() + '<br/>';
     hover_text += data['status'].trim() + ' @ ' + data['location'] + '<br/>';
+    if(data['status'] == 'BID') { 
+        hover_text += 'by ' + data['bidder'] + ' @ $' + data['final_price'] + '<br/>';
+    }
     hover_text += 'updated: ' + data['time_updated'] + '<br/>';
 
     return hover_text
@@ -175,6 +184,10 @@ function build_table(tableData) {
         for (var trow in tableData) {
             var row = tableData[trow];
             row.index = trow;
+            row.prev_loc = row['location'];
+            row.prev_bid = row['final_price'];
+            row.prev_bidder = row['bidder'];
+            row.prev_status = row['status'];
             datatbl.push(row);
         }
         find_result_table = new Tabulator('#find_results', {
@@ -206,36 +219,54 @@ function find_item(action) {
 
     var script = 'onServer/getItem.php';
 
-    var itemList = $('#userDiv').data('items');
-    if(itemList == undefined) {
-        itemList = [];
-    }
-    if(itemList[artist+'_'+item] != undefined) {
-        alert("Item already in list");
-    } else {
-        $.ajax({
-            data: "artist="+artist+"&item="+item,
-            method: "GET",
-            url: script,
-            success: function(data, textStatus, jqXhr) {
-                if(data['noitem']!=undefined) {
-                    alert("No matching Item Found");
-                } else {
-                    build_table(data['items']);
-                    //$('#test').empty().append(JSON.stringify(data, null, 2));
-                }
+    $.ajax({
+        data: "artist="+artist+"&item="+item,
+        method: "GET",
+        url: script,
+        success: function(data, textStatus, jqXhr) {
+            if(data['noitem']!=undefined) {
+                alert("No matching Item Found");
+            } else {
+                build_table(data['items']);
+                //$('#test').empty().append(JSON.stringify(data, null, 2));
             }
-        });
-    }
-
+        }
+    });
 }
 
 function remove_from_cart(index) {
+    var key = cart_items[index]
+    var item = cart[index];
+
+    if(item['need_count']) { need_count--; }
+    if(item['need_location']) { need_location--; }
+    for (action in actionlist) {
+        while((actionlist.length>0) && actionlist[action]['item'] == key) {
+            switch(actionlist[action]['action']) {
+            case 'Set Location':
+                cart[index]['location']=cart[index]['prev_loc'];
+                break;
+            case 'Set Bid':
+                cart[index]['final_price']=cart[index]['prev_bid'];
+                break;
+            case 'Set Bidder':
+                cart[index]['bidder']=cart[index]['prev_bidder'];
+                break;
+            case 'Check In':
+            case 'Sell To Bidsheet':
+            case 'Send To Auction':
+                cart[index]['status']=cart[index]['prev_status'];
+                break;
+
+            }
+            actionlist.splice(action, 1);
+        }
+    }
+
     cart.splice(index, 1);
-    cart_perid.splice(index, 1);
+    cart_items.splice(index, 1);
     draw_cart();
 }
-
 
 function add_to_cart(index, action) {
     var item = datatbl[index];
@@ -266,6 +297,8 @@ function add_to_cart(index, action) {
             need_count++;
         }
         break;
+    case 'Release':
+        break;
     default:
         alert('not implemented');
     }
@@ -287,6 +320,7 @@ function draw_cart_row(rownum) {
     var action_html = `
     </div>
     <div class="col-sm-4">
+        <button type="button" class="btn btn-small btn-secondary p-0" onclick="remove_from_cart(`+rownum+`)">Remove</button><br/>
 `;
     var trailing_html = '</div></div>';
 
@@ -313,7 +347,7 @@ function draw_cart_row(rownum) {
                     + item['name'] + ': ' + item['title'] + '<br/>'
                     + 'Location: ' + location_select + '<br/>'
                     + 'NFS @ ' + item['status'] + '<br/>';
-                action_html += '<br/><br/>';
+                action_html += '<br/>';
                 if(item['need_location']) {
                     action_html += `<button class="btn btn-primary btn-small p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
                 } else {
@@ -327,13 +361,35 @@ function draw_cart_row(rownum) {
                 + item['name'] + ': ' + item['title'] + '<br/>'
                 + 'Location: ' + location_select + '<br/>'
                 + 'Art @ ' + item['status'] + '<br/>';
-            action_html += '<br/><br/>';
+            action_html += '<br/>';
             if(item['need_location']) {
                 action_html += `<button class="btn btn-primary btn-small p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
             } else {
                 action_html += `<button class="btn btn-info btn-small p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
             }
             action_html += '<br/>';
+            if(item['status'] == 'BID') {
+                action_html += `<button class="btn btn-success btn-small p-0" type="button" id="` + item['id'] + `"_to_bidsheet" onclick="update_bid(`+rownum+`,false,true);">To Bid Sheet</button><br/>`;
+            } else {
+                action_html += '<br/>'; 
+            }
+
+            var min_price=item['min_price'];
+            if(item['final_price'] != null) {
+                min_price = item['final_price'];
+            }
+            if(item['status'] == 'Quicksale/Sold') {
+                html += `Purchased by ` + item['bidder'] + ` @ $` + item['final_price'];
+            } else {
+                html += 'Bid ';
+                html += `<input type='number' min=0 id='bidder_` + item['id']
+                    + `' value="` + item['bidder'] + `" style="width: 7em"></input> @ $`
+                    + `<input type='number' min=`+min_price+` id='bid_` + item['id']
+                    + `' value="` + item['final_price'] + `" style="width: 7em"></input><br/>`
+                action_html += `<button class="btn btn-primary btn-small p-0" type="button" id="` + item['id'] + `"_update_bid" onclick="update_bid(`+rownum+`);">Bid</button>`;
+                action_html += `<button class="btn btn-secondary btn-small p-0" type="button" id="` + item['id'] + `"_to_auction" onclick="update_bid(`+rownum+`,true);">To Auction</button>`;
+            }
+            action_html += "<br/>"
             break;
         case 'print':
             html += item['id'] + '<br/>' 
@@ -345,7 +401,7 @@ function draw_cart_row(rownum) {
             } else {
                 html += item['quantity'] + ' @ ' + item['status'] + '<br/>';
             }
-            action_html += '<br/><br/>';
+            action_html += '<br/>';
             if(item['need_location']) {
                 action_html += `<button class="btn btn-primary btn-small p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
             } else {
@@ -370,6 +426,33 @@ function change_locs() {
         var new_loc = document.getElementById('loc_' + item).value;
         if(new_loc != cart[row]['location']) {
             update_loc(row, new_loc, false);
+        }
+    }
+
+    draw_cart();
+}
+
+function update_bid(row, to_auction=false, close=false) {
+    var item = cart[row]['id'];
+    var bidder = document.getElementById('bidder_' + item).value; 
+    var price = document.getElementById('bid_' + item).value; 
+    //check if valid
+    if(cart[row]['type'] != "art") {
+        alert("Item not in auction");
+    } else {
+        actionlist.push(create_action('Set Bidder', item, bidder));
+        actionlist.push(create_action('Set Bid', item, price));
+
+        cart[row]['bidder']=bidder;
+        cart[row]['final_price']=price;
+
+        if(to_auction) {
+            actionlist.push(create_action('Send To Auction', item));
+            cart[row]['status']='To Auction';
+        }
+        if(close) {
+            actionlist.push(create_action('Sell To Bidsheet', item));
+            cart[row]['status']='Sold To Bidsheet';
         }
     }
 
@@ -430,9 +513,12 @@ function draw_notes() {
         html += "<li>" + actionlist[action]['action'] + " " + actionlist[action]['item'] 
         switch(actionlist[action]['action']){
             case "Set Location": 
+            case "Set Bidder":
+            case "Set Bid":
                 html += " to " + actionlist[action]['value']
                 break;
             case "Check In":
+            case "To Auction":
             default:
                 break;
         }
