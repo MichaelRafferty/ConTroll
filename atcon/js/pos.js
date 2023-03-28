@@ -78,6 +78,7 @@ var pay_div = null;
 var pay_button_pay = null;
 var pay_button_rcpt = null;
 var pay_button_print = null;
+var pay_tid = null;
 
 // print items
 var print_div = null;
@@ -528,7 +529,6 @@ function delete_membership(index) {
 // rebuild the indicies in the cart_perinfo and cart_membership tables
 // for shoprt cut reasons indicies are used to allow usage of the filter functions built into javascript
 // this rebuilds the index and perinfo cross reference maps.  It needs to be called whenever the number of items in cart is changed.
-// TODO: Determine if it should be done before every draw_cart call and be part of draw_cart.
 function cart_renumber() {
     var index;
     cart_perinfo_map = {};
@@ -648,8 +648,6 @@ function clear_add() {
 }
 
 // add record from the add/edit screen to the cart.  If it's already in the cart, update the cart record.
-// TODO: change to use cart perinfo/membership structures
-// TODO: make email required, instruct using x for declined email
 function add_new() {
     var edit_index = add_index_field.value.trim();    
     var edit_perid = add_perid_field.value.trim();
@@ -1457,7 +1455,8 @@ function addCartIcon(cell, formatterParams, onRendered) { //plain text value
 // marks it as a tid (not perid) add by inverting it.  (add_to_cart will deal with the inversion)
 function add_unpaid(tid) {
     add_to_cart(-Number(tid));
-    bootstrap.Tab.getOrCreateInstance(pay_tab).show();
+    // force a new transaction for the payment as the cashier is not the same as the check-in in this case.
+    review_nochanges();
 }
 
 // TODO: Is this an orphan? Probably is because rownum is passed and row is changed and row is never set.
@@ -1488,6 +1487,7 @@ function add_membership_cart(rownum, selectname) {
         tid: 0,
         index: cart_membership.length,
         printed: 0,
+        conid: membership['conid'],
         memCategory: membership['memCategory'],
         memType: membership['memType'],
         memAge: membership['memAge'],
@@ -1515,7 +1515,7 @@ function find_record(find_type) {
     id_div.innerHTML = "";
     clear_message();
     var name_search = pattern_field.value.toLowerCase().trim();
-    if ((name_search == null || name_search == '') && find_type == '') {
+    if ((name_search == null || name_search == '') && find_type == 'search') {
         show_message("No search criteria specified", "warn");
         return;
     }
@@ -1819,6 +1819,7 @@ function reviewed_update_cart(data) {
     // TODO add save transaction steps here
 
     // Once saved, move them to next step
+    pay_tid = data['master_tid'];
     if (find_unpaid_button != null) {
         bootstrap.Tab.getOrCreateInstance(pay_tab).show();
     } else {
@@ -1826,9 +1827,8 @@ function reviewed_update_cart(data) {
         startover_button.hidden = true;
         document.getElementById('review-btn-update').hidden = true;
         document.getElementById('review-btn-nochanges').hidden = true;
-        document.getElementById('review_status').innerHTML = 'Completed: Send customer to cashier with id of ' + data['master_tid'];
+        document.getElementById('review_status').innerHTML = "Completed: Send customer to cashier with id of " + pay_tid;
     }
-
 }
 
 // change tab to the print screen
@@ -2145,6 +2145,11 @@ function review_shown(current, previous) {
     in_review = true;
     freeze_cart = false;
     review_div.innerHTML = review_html;
+    for (rownum in cart_perinfo) {
+        row = cart_perinfo[rownum];
+        selid = document.getElementById('c' + rownum + '-country');
+        selid.value = row['country'];
+    }
     draw_cart();
 }
 

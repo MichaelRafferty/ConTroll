@@ -135,9 +135,10 @@ function findRecord($conid):void {
         $withClause = <<<EOS
 WITH unpaids AS (
 /* first the unpaid transactions from regs with their create_trans */
-SELECT id, create_trans as tid
-FROM reg 
-WHERE price != paid AND conid = ?
+SELECT r.id, create_trans as tid
+FROM reg r
+JOIN memList m ON (m.id = r.memId)
+WHERE r.price != r.paid AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
 ), tids AS (
 /* add in unpaids from transactions in attach records in atcon_history */
 SELECT u.id AS regid, CASE WHEN u.tid > IFNULL(h.tid, -999) THEN u.tid ELSE h.tid END AS tid
@@ -179,7 +180,7 @@ EOS;
         $unpaidSQLM = <<<EOS
 $withClause
 , ridtid AS (
-SELECT id as regid, create_trans as tid
+SELECT r.id as regid, create_trans as tid
 FROM uniqueperids p
 JOIN reg r ON (r.perid = p.perid)
 UNION
@@ -192,36 +193,39 @@ SELECT regid, MAX(tid) AS tid
 FROM ridtid
 GROUP BY regid
 )
-SELECT DISTINCT r.perid, r.id as regid, r.conid, r.price, r.paid, r.create_date, u.tid, r.memId, COUNT(h.regid) as printcount,
+SELECT DISTINCT r.perid, r.id as regid, m.conid, r.price, r.paid, r.create_date, u.tid, r.memId, COUNT(h.regid) as printcount,
                 m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM uniqrids u
 JOIN reg r ON (r.id = u.regid)
 JOIN memLabel m ON (r.memId = m.id)
 LEFT OUTER JOIN atcon_history h ON (r.id = h.regid AND h.action = 'print')
-WHERE r.conid = ?
-GROUP BY r.perid, r.id, r.conid, r.price, r.paid, r.create_date, u.tid, r.memId, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
+WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
+GROUP BY r.perid, r.id, m.conid, r.price, r.paid, r.create_date, u.tid, r.memId, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 ORDER BY create_date DESC;
 EOS;
-        $rp = dbSafeQuery($unpaidSQLP, 'i', array($conid));
-        $rm = dbSafeQuery($unpaidSQLM, 'ii', array($conid, $conid));
+        $rp = dbSafeQuery($unpaidSQLP, 'ii', array($conid, $conid + 1));
+        $rm = dbSafeQuery($unpaidSQLM, 'iiii', array($conid, $conid + 1, $conid, $conid + 1));
     } else if (is_numeric($name_search)) {
         // this is perid, or transid
         $withClause = <<<EOS
 WITH regt AS (
 /* first reg ids for this transaction  as specified as a number */
-SELECT id AS regid, create_trans as tid
-FROM reg 
-WHERE create_trans = ? AND conid = ?
+SELECT r.id AS regid, create_trans as tid
+FROM reg r
+JOIN memLabel m ON (r.memId = m.id)
+WHERE create_trans = ? AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
 /* then add in reg ids from the attach transaction */
 UNION SELECT regid, tid
 FROM atcon_history h
 JOIN reg r ON (r.id = h.regid)
-WHERE tid = ? AND h.action = 'attach' AND r.conid = ?
+JOIN memLabel m ON (r.memId = m.id)
+WHERE tid = ? AND h.action = 'attach' AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
 ), regp AS (
 /* find the reg id's for this person */
-SELECT id AS regid
-FROM reg
-WHERE perid = ? AND conid = ?
+SELECT r.id AS regid
+FROM reg r
+JOIN memLabel m ON (r.memId = m.id)
+WHERE perid = ? AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
 ), regs AS (
 /* now get the transactions for these regids */
 SELECT rs.regid, create_trans as tid
@@ -260,7 +264,7 @@ ORDER BY last_name, first_name;
 EOS;
         $searchSQLM = <<<EOS
 $withClause
-SELECT DISTINCT r1.perid, r1.id as regid, r1.conid, r1.price, r1.paid, r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, COUNT(h.regid) as printcount,
+SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, COUNT(h.regid) as printcount,
                 m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM regids rs
 JOIN reg r ON (rs.regid = r.id)
@@ -268,11 +272,11 @@ JOIN perinfo p ON (p.id = r.perid)
 JOIN reg r1 ON (r1.perid = r.perid)
 JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN atcon_history h ON (r1.id = h.regid AND h.action = 'print')
-GROUP BY r1.perid, r1.id, r1.conid, r1.price, r1.paid, r1.create_date, r1.memId, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup, IFNULL(r1.create_trans, -1)
+GROUP BY r1.perid, r1.id, m.conid, r1.price, r1.paid, r1.create_date, r1.memId, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup, IFNULL(r1.create_trans, -1)
 ORDER BY create_date DESC;
 EOS;
-        $rp = dbSafeQuery($searchSQLP, 'iiiiii', array($name_search, $conid, $name_search, $conid, $name_search, $conid));
-        $rm = dbSafeQuery($searchSQLM, 'iiiiii', array($name_search, $conid, $name_search, $conid, $name_search, $conid));
+        $rp = dbSafeQuery($searchSQLP, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1));
+        $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1));
     } else {
         if ($find_type == 'addnew') {
             $jointype = 'LEFT OUTER JOIN';
@@ -290,7 +294,10 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname
 FROM perinfo p
 $jointype reg r ON (p.id = r.perid)
-WHERE IFNULL(r.conid, ?) = ? AND (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
+$jointype memList m ON (m.id = r.memId)
+WHERE 
+    (IFNULL(r.conid, ?) = ? OR (IFNULL(r.conid, ?) = ? AND m.memCategory in ('yearahead', 'rollover')))
+AND (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
 ORDER BY last_name, first_name LIMIT $limit;
 EOS;
         $searchSQLM = <<<EOS
@@ -299,15 +306,17 @@ WITH limitedp AS (
     SELECT DISTINCT p.id, p.first_name, p.last_name
     FROM perinfo p
     $jointype reg r ON (p.id = r.perid)
-    WHERE IFNULL(r.conid, ?) = ? AND (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
+    $jointype memList m ON (m.id = r.memId)
+    WHERE (IFNULL(r.conid, ?) = ? OR (IFNULL(r.conid, ?) = ? AND m.memCategory in ('yearahead', 'rollover'))) AND (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
     ORDER BY last_name, first_name LIMIT $limit
 ), regids AS (
 SELECT r.id AS regid
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id)
-WHERE r.conid = ?
+JOIN memList m ON (r.memId = m.id)
+WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
 ), regtid AS (
-SELECT id as regid, create_trans as tid
+SELECT r.id as regid, create_trans as tid
 FROM regids rs
 JOIN reg r ON (r.id = rs.regid)
 UNION
@@ -319,7 +328,7 @@ SELECT regid, MAX(tid) as tid
 FROM regtid
 GROUP BY regid
 )
-SELECT DISTINCT r.perid, t.regid, r.conid, r.price, r.paid, r.create_date, t.tid, r.memId, 0 as printcount,
+SELECT DISTINCT r.perid, t.regid, m.conid, r.price, r.paid, r.create_date, t.tid, r.memId, 0 as printcount,
                 m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM maxtids t
 JOIN reg r ON (r.id = t.regid)
@@ -327,8 +336,8 @@ JOIN limitedp p ON (p.id = r.perid)
 JOIN memLabel m ON (r.memId = m.id)
 ORDER BY create_date DESC;
 EOS;
-        $rp = dbSafeQuery($searchSQLP, 'iisss', array($conid, $conid, $name_search, $name_search, $name_search));
-        $rm = dbSafeQuery($searchSQLM, 'iisssi', array($conid, $conid, $name_search, $name_search, $name_search, $conid));
+        $rp = dbSafeQuery($searchSQLP, 'iiiisss', array($conid, $conid, $conid + 1, $conid + 1, $name_search, $name_search, $name_search));
+        $rm = dbSafeQuery($searchSQLM, 'iiiisssii', array($conid, $conid, $conid + 1, $conid + 1, $name_search, $name_search, $name_search, $conid, $conid + 1));
     }
 
     $perinfo = [];
@@ -481,7 +490,7 @@ EOS;
             if ($cartrow['perid'] <= 0) {
                 $cartrow['perid'] = $update_permap[$cartrow['perid']];
             }
-            $paramarray = array($conid, $cartrow['perid'], $cartrow['price'], $cartrow['paid'], $user_id, $master_transid, $cartrow['memId']);
+            $paramarray = array($cartrow['conid'], $cartrow['perid'], $cartrow['price'], $cartrow['paid'], $user_id, $master_transid, $cartrow['memId']);
             $typestr = 'iissiii';
             $new_regid = dbSafeInsert($insRegSQL, $typestr, $paramarray);
             if ($new_regid === false) {
