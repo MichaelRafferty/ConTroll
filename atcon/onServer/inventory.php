@@ -9,7 +9,7 @@ $perm='artinventory';
 $response['conid'] = $conid;
 $response['perm'] = $perm;
 
-$check_auth = check_atcon($_SESSION['user'], $_SESSION['passwd'], $perm, $conid);
+$check_auth = check_atcon($perm, $conid);
 if($check_auth == false) { 
     ajaxSuccess(array('error' => "Authentication Failure"));
 }

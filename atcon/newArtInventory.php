@@ -6,9 +6,12 @@ if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
     exit(0);
 }
+$con = get_conf("con");
+$conid=$con['id'];
+$label = $con['label'];
 $tab = 'Art Inventory';
 $page = "Atcon Art Inventory";
-$mode = 'inventory';
+$mode = 'artinventory';
 
 if (isset($_GET['mode'])) {
     if ($_GET['mode'] == 'sales') {
@@ -19,18 +22,19 @@ if (isset($_GET['mode'])) {
     }
 }
 
+if (!check_atcon($method, $conid)) {
+    header('Location: /index.php');
+    exit(0);
+}
 
 page_init($page, $tab,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css','css/atcon.css','css/registration.css','css/mockup.css'),
+    /* css */ array('https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css','css/atcon.css','css/registration.css'),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
                     'https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js','js/atcon.js','js/artInventory.js')
     );
 
 db_connect();
 
-$con = get_conf("con");
-$conid=$con['id'];
-$label = $con['label'];
 $conInfoQ = <<<EOS
 SELECT DATE(startdate) as start, DATE(enddate) as end
 FROM conlist
@@ -56,15 +60,11 @@ echo $conid;
 */
 
 ?>
+<div id="whoami" hidden><?php echo $_SESSION['user'];?></div>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
         <div class="col-sm-7">
             <div id="pos-tabs">
-                 <ul class="nav nav-pills mb-2" id="tab-ul" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="find-tab" data-bs-toggle="pill" data-bs-target="#find-pane" type="button" role="tab" aria-controls="nav-find" aria-selected="true">Find</button>
-                    </li>
-                </ul>
                 <div class="tab-content" id="find-content">          
                     <div class="tab-pane fade show active" id="find-pane" role="tabpanel" aria-labelledby="reg-tab" tabindex="0">
                         <div class="container-fluid">

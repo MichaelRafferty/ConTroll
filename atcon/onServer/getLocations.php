@@ -6,7 +6,7 @@ $response = array("post" => $_POST, "get" => $_GET, "session" => $_SESSION);
 $con = get_con();
 $conid=$con['id'];
 $perm='artinventory';
-$check_auth = check_atcon($_SESSION['user'], $_SESSION['passwd'], $perm, $conid);
+$check_auth = check_atcon($perm, $conid);
 if($check_auth == false) {
     ajaxSuccess(array('error' => "Authentication Failure"));
 }
