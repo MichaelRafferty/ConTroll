@@ -2044,7 +2044,6 @@ function add_badge_to_print(index) {
     return params;
 }
 // Send one or all of the badges to the printer
-// TODO: actually send the badge to the printer
 // TODO: Add warning if no printer, that it will only create the temp files on the server
 function print_badge(index) {
     var rownum = null;

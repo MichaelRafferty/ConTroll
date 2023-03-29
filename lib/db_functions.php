@@ -24,6 +24,7 @@ function web_error_log($string): void
     global $logdest;
 
     error_log(date("Y-m-d H:i:s") . ": " . $string . "\n", 3, $logdest);
+    error_log(date("Y-m-d H:i:s") . ": " . $string . "\n");
 }
 // Function var_error_log()
 // $object = object to be dumped to the PHP error log
@@ -45,7 +46,7 @@ function log_mysqli_error($query, $additional_error_message):void
     $result = "";
     error_log("mysql query error in {$_SERVER["SCRIPT_FILENAME"]}");
     if (!empty($query)) {
-        error_log($query);
+        web_error_log($query);
     }
     $errno = $dbObject->errno;
     if (!empty($errno)) {
@@ -81,14 +82,14 @@ function db_connect():bool
 
         if ($dbObject->connect_errno) {
             echo "Failed to connect to MySQL: (" . $dbObject->connect_errno . ") " . $dbObject->connect_error;
-            error_log("Failed to connect to MySQL: (" . $dbObject->connect_errno . ") " . $dbObject->connect_error);
+            web_error_log("Failed to connect to MySQL: (" . $dbObject->connect_errno . ") " . $dbObject->connect_error);
         }
 
         // for mysql with nonstandard sql_mode (from zambia point of view) temporarily force ours
         $sql = "SET sql_mode='" .  $db_ini['mysql']['sql_mode'] . "';";
         $success = $dbObject -> query($sql);
         if (!$success) {
-            error_log("failed setting sql mode on db connection");
+            web_error_log("failed setting sql mode on db connection");
             return false;
         }
 
@@ -99,7 +100,7 @@ function db_connect():bool
             $sql = "SET time_zone ='" .  $db_ini['mysql']['db_timezone'] . "';";
             $success = $dbObject -> query($sql);
             if (!$success) {
-                error_log("failed setting sql mode on db connection");
+                web_error_log("failed setting sql mode on db connection");
                 return false;
             }
         }
@@ -153,7 +154,7 @@ function dbSafeQuery($query, $typestr, $value_arr)
         return $res;
     } else {
         echo "ERROR: DB Connection Not Open";
-        error_log("ERROR: DB Connection Not Open");
+        web_error_log("ERROR: DB Connection Not Open");
         return false;
     }
 }
@@ -201,7 +202,7 @@ function dbSafeInsert($sql, $typestr, $value_arr)
         return $id;
     } else {
         echo "ERROR: DB Connection Not Open";
-        error_log("ERROR: DB Connection Not Open");
+        web_error_log("ERROR: DB Connection Not Open");
         return false;
     }
 }
@@ -249,7 +250,7 @@ function dbSafeCmd($sql, $typestr, $value_arr)
         return $numrows;
     } else {
         echo "ERROR: DB Connection Not Open";
-        error_log("ERROR: DB Connection Not Open");
+        web_error_log("ERROR: DB Connection Not Open");
         return false;
     }
 }
@@ -278,7 +279,7 @@ function dbCmd($sql)
         return $numrows;
     } else {
         echo "ERROR: DB Connection Not Open";
-        error_log("ERROR: DB Connection Not Open");
+        web_error_log("ERROR: DB Connection Not Open");
         return false;
     }
 }
@@ -301,7 +302,7 @@ function dbQuery($query)
         return $res;
     } else {
         echo "ERROR: DB Connection Not Open";
-        error_log("ERROR: DB Connection Not Open");
+        web_error_log("ERROR: DB Connection Not Open");
         return false;
     }
 }
@@ -323,7 +324,7 @@ function dbInsert($query):int|bool
         return $id;
     } else {
         echo "ERROR: DB Connection Not Open";
-        error_log("ERROR: DB Connection Not Open");
+        web_error_log("ERROR: DB Connection Not Open");
         return false;
     }
 }
@@ -337,14 +338,14 @@ function dbPrepare($query)
         $res = $dbObject->prepare($query);
         if (!$res) {
             echo "Prepare Failed: (" . $dbObject->errno . ") " . $dbObject->error;
-            error_log("Prepare Failed: (" . $dbObject->errno . ") " . $dbObject->error);
+            web_error_log("Prepare Failed: (" . $dbObject->errno . ") " . $dbObject->error);
             return false;
         } else {
             return $res;
         }
     } else {
         echo "ERROR: DB Connection Not Open";
-        error_log("ERROR: DB Connection Not Open");
+        web_error_log("ERROR: DB Connection Not Open");
         return false;
     }
 }
