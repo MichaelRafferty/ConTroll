@@ -309,11 +309,45 @@ function print_badge($printer, $tempfile): string|false
             break;
     }
     // all the extra stuff for exec is for debugging issues.
-    $command = "lpr -H$server -P $queue $options $tempfile";
+    $command = "lpr -H$server -P$queue $options < $tempfile";
     $output = [];
     $result_code = 0;
     $result = exec($command,$output,$result_code);
     //web_error_log("executing command '$command' returned '$result', code: $result_code");
     //var_error_log($output);
     return $result;
+}
+
+function print_receipt($printer, $receipt):string | false {
+    $queue = $printer[2];
+    if ($queue == '0') {
+        web_error_log($receipt);
+        return 0; // this token is the log only print queue
+    }
+
+    $tempfile = tempnam(sys_get_temp_dir(), 'rcptPrn');
+    //web_error_log("Writing to $tempfile");
+    if (!$tempfile) {
+        $response['error'] = 'Unable to get unique file';
+        $response['error_message'] = error_get_last();
+        //var_error_log($response);
+        ajaxSuccess($response);
+        exit();
+    }
+
+    $temp = fopen($tempfile, 'w');
+    fwrite($temp, $receipt);
+    fclose($temp);
+
+    $server = $printer[1];
+    $options = '';
+
+    // all the extra stuff for exec is for debugging issues.
+    // Temporarly save the output to a file to help with why it's dying
+    $command = "lpr -H$server -P$queue $options < $tempfile > /var/tmp/issue 2>&1";
+    $result_code = 0;
+    $result = exec($command,$output,$result_code);
+    web_error_log("executing command '$command' returned '$result', code: $result_code");
+    //var_error_log($output);
+    return $result_code;
 }

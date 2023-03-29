@@ -169,7 +169,7 @@ FROM perids
 EOS;
         $unpaidSQLP = <<<EOS
 $withClause
-SELECT u.perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
+SELECT DISTINCT u.perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
 	p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
     TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname
@@ -386,17 +386,20 @@ EOS;
 //      updated_memberhip: array of old rownum, new id, new creat_trans id's
 function updateCartElements($conid): void
 {
-    $cart_perinfo = $_POST['cart_perinfo'];
-    $cart_perinfo_map = $_POST['cart_perinfo_map'];
-    $cart_membership = $_POST['cart_membership'];
     $user_id = $_POST['user_id'];
-
+    if ($user_id != $_SESSION['user']) {
+        ajaxError("Invalid credentials passed");
+    }
+    $cart_perinfo = $_POST['cart_perinfo'];
     if (sizeof($cart_perinfo) <= 0) {
-        ajaxError("No members where in the cart");
+        ajaxError('No members are in the cart');
         return;
     }
+
+    $cart_perinfo_map = $_POST['cart_perinfo_map'];
+    $cart_membership = $_POST['cart_membership'];
     if (sizeof($cart_membership) <= 0) {
-        ajaxError("No memberships were in the cart");
+        ajaxError('No memberships are in the cart');
         return;
     }
 
@@ -537,6 +540,90 @@ EOS;
     ajaxSuccess($response);
 }
 
+// processPayment
+//  cart_membership: memberships to have payment applied
+//  new_payment: payment being added
+//  pay_tid: current master transaction
+function processPayment():void {
+    $user_id = $_POST['user_id'];
+    if ($user_id != $_SESSION['user']) {
+        ajaxError('Invalid credentials passed');
+    }
+
+    $master_tid = $_POST['pay_tid'];
+    if ($master_tid <= 0) {
+        ajaxError('No current transaction in process');
+    }
+
+    $cart_membership = $_POST['cart_membership'];
+    if (sizeof($cart_membership) <= 0) {
+        ajaxError('No memberships are in the cart');
+        return;
+    }
+
+    $new_payment = $_POST['new_payment'];
+    if (!array_key_exists('amt', $new_payment) || $new_payment['amt'] <= 0) {
+        ajaxError('invalid payment amount passed');
+        return;
+    }
+
+    $amt = $new_payment['amt'];
+    // validate that the payment ammount is not too large
+    $total_due = 0;
+    foreach ($cart_membership as $cart_row) {
+        $total_due += $cart_row['price'] - $cart_row['paid'];
+    }
+
+    if ($amt > $total_due) {
+        ajaxError('invalid payment amount passed');
+        return;
+    }
+
+    // now add the payment and process to which rows it applies
+    $upd_rows = 0;
+    $insPmtSQL = <<<EOS
+INSERT INTO payments(transid, type,category, description, source, amount, time, cc_approval_code, cashier)
+VALUES (?,?,'reg',?,'cashier',?,now(),?, ?);
+EOS;
+    $typestr = 'issssi';
+    if ($new_payment['type'] == 'check')
+        $desc = 'Check No: ' . $new_payment['checkno'] . '; ';
+    else
+        $desc = '';
+    $desc .= $new_payment['desc'];
+    $paramarray = array($master_tid, $new_payment['type'], $desc, $new_payment['amt'], $new_payment['ccauth'], $user_id);
+    $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
+    if ($new_pid === false) {
+        ajaxError("Error adding payment to database");
+        return;
+    }
+
+    $new_payment['id'] = $new_pid;
+    $response['prow'] = $new_payment;
+    $response['message'] = "1 payment added";
+$updPaymentSQL = <<<EOS
+UPDATE reg
+SET paid = ?
+WHERE id = ?;
+EOS;
+$typestr = 'si';
+    foreach ($cart_membership as $cart_row) {
+        $unpaid = $cart_row['price'] - $cart_row['paid'];
+        if ($unpaid > 0) {
+            $amt_paid = min($amt, $unpaid);
+            $cart_row['paid'] += $amt_paid;
+            $cart_membership[$cart_row['index']] = $cart_row;
+            $amt -= $amt_paid;
+            $upd_rows += dbSafeCmd($updPaymentSQL, $typestr, array($cart_row['paid'], $cart_row['regid']));
+            if ($amt <= 0)
+                break;
+        }
+    }
+
+    $response['message'] .= ", $upd_rows memberships updated.";
+    $response['cart_membership'] = $cart_membership;
+    ajaxSuccess($response);
+}
 // outer ajax wrapper
 // method - permission required to access this AJAX function
 // action - passed in from the javascript
@@ -573,8 +660,8 @@ switch ($ajax_request_action) {
     case 'updateCartElements':
         updateCartElements($conid);
         break;
-    case 'updatePrinters':
-        updatePrinters($conid);
+    case 'processPayment':
+        processPayment();
         break;
     default:
         $message_error = 'Internal error.';

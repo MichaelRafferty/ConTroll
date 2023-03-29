@@ -17,7 +17,7 @@ function printTestLabel() {
         var postData = {
             ajax_request_action: 'printBadge',
             badge: badge,
-            params: params,
+            params: [params],
         };
         $.ajax({
             method: "POST",

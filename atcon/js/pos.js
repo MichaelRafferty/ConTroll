@@ -1,3 +1,6 @@
+//TODO: allow removal of unpaid items in Database from cart, and find some way to mark them as deleted in the cart, stop showing or summing them and have the update routine
+//      deal with that.
+
 // cart fields
 var void_button = null;
 var startover_button = null;
@@ -216,8 +219,8 @@ function loadInitialData(data) {
     // tabls
     conlabel =  data['label'];
     conid = data['conid'];
-    badgePrinterAvailable = data['badgePrinter'] === 'true';
-    receiptPrinterAvailable = data['receiptPrinter'] === 'true';
+    badgePrinterAvailable = data['badgePrinter'] === true;
+    receiptPrinterAvailable = data['receiptPrinter'] === true;
     startdate = data['startdate'];
     enddate = data['enddate'];
     memList = data['memLabels'];
@@ -296,18 +299,6 @@ function map_set(obj, prop, value) {
 function make_copy(arr) {
     return JSON.parse(JSON.stringify(arr));  // horrible way to make an independent copy of an associative array
 }
-
-    // result data format (People)
-    //    perid: 1, first_name: "John", middle_name: "Q.", last_name: "Smith", suffix: "", badge_name: "John Smith",
-    //    address_1: "123 Any St", address_2: '', city: 'Philadelphia', state: 'PA', postal_code: '19101-0000', country: 'USA',
-    //    email_addr: 'john.q.public@gmail.com', phone: '215-555-2368',
-    //   share_reg_ok: 'Y', contact_ok: 'Y', active: 'Y', banned: 'N', index: 0,
-
-    // result data format (Membership)
-    //  perid: 1,
-    //  price: 75, paid: 75, tid: 11, index: 0, printed: 0,
-    //  memCategory: 'standard', memType: 'full', memAge: 'adult', shortname: 'General', pindex: 0,
-    //  memId: null, label: null,
 
 // search memLabel functions
 // mem_filter - select specific rows from memList based on
@@ -495,6 +486,7 @@ function add_to_cart(index) {
                     return;
                 } else if (map_access(cart_perinfo_map, perid) === undefined) {
                     cart_perinfo.push(make_copy(result_perinfo[prow]));
+                    map_set(cart_perinfo_map, perid, prow); // make a dummy entry to prevent adding it twice
                     var mrows = find_memberships_by_perid(result_membership, perid);
                     for (var mrownum in mrows) {
                         cart_membership.push(make_copy(mrows[mrownum]));
@@ -698,7 +690,7 @@ function add_new() {
                 mrow = cart_membership[new_memindex];
             } else {
                 var ind = cart_membership.length;
-                cart_membership.push({ index: ind, printed: 0, tid: 0 });
+                cart_membership.push({ index: ind, printcount: 0, tid: 0 });
                 mrow = cart_membership[ind];
                 mrow['perid'] = edit_perid;
                 mrow['pindex'] = edit_index;
@@ -776,7 +768,7 @@ function add_new() {
         return;
     }
 
-    // load the initial data and the proceed to set up the rest of the system
+    // look for matching records for this person being added to check for duplicates
     var postData = {
         ajax_request_action: 'findRecord',
         find_type: 'addnew',
@@ -971,8 +963,8 @@ function add_new_to_cart() {
     var memId = document.getElementById("ae_mem_sel").value;
     var mi_row = find_memLabel(memId);
     var mrow = {
-        perid: new_perid,
-        price: mi_row['price'], paid: 0, tid: '', index: cart_membership.length, printed: 0,
+        perid: new_perid, conid: mi_row['conid'],
+        price: mi_row['price'], paid: 0, tid: '', index: cart_membership.length, printcount: 0,
         memCategory: mi_row['memCategory'], memType: mi_row['memType'], memAge: mi_row['memAge'],
         shortname: mi_row['shortname'], memId: memId, label: mi_row['label'], pindex: cart_perinfo.length,
     }
@@ -1246,9 +1238,9 @@ function draw_cart_pmtrow(prow) {
 
     var pmt = cart_pmt[prow];
     var code = '';
-    if (pmt['type'] == 'Check') {
+    if (pmt['type'] == 'check') {
         code = pmt['checkno'];
-    } else if (pmt['type'] == 'Credit Card') {
+    } else if (pmt['type'] == 'credit') {
         code = pmt['ccauth'];
     }
     return`<div class="row">
@@ -1279,7 +1271,7 @@ function draw_cart() {
 `;
     unpaid_rows = 0;
     for (rownum in cart_perinfo) {
-        num_rows++;     
+        num_rows++;
         html += draw_cart_row(rownum);   
     }
     html += `<div class="row">
@@ -1459,22 +1451,7 @@ function add_unpaid(tid) {
     review_nochanges();
 }
 
-// TODO: Is this an orphan? Probably is because rownum is passed and row is changed and row is never set.
-function upgrade_membership_cart(rownum, selectname) {
-    var select = document.getElementById(selectname);
-    var badgetype = select.value.trim();
-    var price = Number(select.options[select.selectedIndex].innerHTML.replace(/.*\(/, '').replace(/\).*/, '').replace(/\$/, ''));
-
-    row['mem_type'] = badgetype.replace(/_/g, ' ');
-    row['reg_type'] = row['mem_type'].replace(/.* /, '');
-    row['price'] = price;
-    row['paid'] = 0;
-    row['tid'] = '';
-    draw_cart();
-}
-
 // add selected membership as a new item in the card under this perid.
-// TODO: debug to use cart perinfo/membership structures
 function add_membership_cart(rownum, selectname) {
     var select = document.getElementById(selectname);
     var membership = find_memLabel(select.value.trim());
@@ -1486,7 +1463,7 @@ function add_membership_cart(rownum, selectname) {
         paid: 0,
         tid: 0,
         index: cart_membership.length,
-        printed: 0,
+        printcount: 0,
         conid: membership['conid'],
         memCategory: membership['memCategory'],
         memType: membership['memType'],
@@ -1520,7 +1497,7 @@ function find_record(find_type) {
         return;
     }
 
-    // load the initial data and the proceed to set up the rest of the system
+    // search for matching names
     var postData = {
         ajax_request_action: 'findRecord',
         find_type: find_type,
@@ -1584,7 +1561,7 @@ function found_record(data) {
                     add_to_cart(index);
                 }
             }
-            bootstrap.Tab.getOrCreateInstance(pay_tab).show();
+            review_nochanges(); // build the master transaction and attach records
             return;
         }
 
@@ -1756,8 +1733,6 @@ function review_update() {
 // no changes button presssed:
 // if everything is paid, go to print.  If cashier (has a find_unpaid button), to go Pay, else put up the diagnostic
 //      to ask them to move on to the cashier.
-// TODO: add TID to send customer to cashier
-// TODO: Add saving the transaction prior to going to message or Pay screens
 function review_nochanges() {
     // submit the current card data to update the database, retrieve all TID's/PERID's/REGID's of inserted data
     var postData = {
@@ -1802,8 +1777,9 @@ function reviewed_update_cart(data) {
     for (var rownum in updated_membership) {
         var newrow = updated_membership[rownum];
         var cartrow = cart_membership[newrow['rownum']];
+        //array('rownum' => $row, 'perid' => $cartrow['perid'], 'create_trans' => $master_perid, 'id' => $new_regid);
         cartrow['create_trans'] = newrow['create_trans'];
-        cartrow['id'] = newrow['id'];
+        cartrow['regid'] = newrow['id'];
         cartrow['perid'] = newrow['perid'];
     }
 
@@ -1815,8 +1791,6 @@ function reviewed_update_cart(data) {
         goto_print();
         return;
     }
-
-    // TODO add save transaction steps here
 
     // Once saved, move them to next step
     pay_tid = data['master_tid'];
@@ -1837,8 +1811,8 @@ function goto_print() {
     bootstrap.Tab.getOrCreateInstance(print_tab).show();    
 }
 
-// TODO: ??? (what is this, is it named right)
-function pay_type(ptype) {
+// setPayType: shows/hides the appropriate fields for that payment type
+function setPayType(ptype) {
     var elcheckno = document.getElementById('pay-check-div');
     var elccauth = document.getElementById('pay-ccauth-div');
 
@@ -1854,7 +1828,6 @@ function pay_type(ptype) {
 }
 
 // Process a payment against the transaction
-// TODO: enter payment into system
 function pay() {
     var checked = false;
     var rownum = null;
@@ -1864,10 +1837,16 @@ function pay() {
     var checkno = null;
     var desc = null;
     var ptype = null;
+    var total_amount_due = total_price - total_paid;
 
+    // validate the payment entry: It must be >0 and <= amount due
+    //      a payment type must be specified
+    //      for check: the check number is required
+    //      for credit card: the auth code is required
+    //      for discount: description is required, it's optional otherwise
     var elamt = document.getElementById('pay-amt');
     var pay_amt = Number(elamt.value);
-    if (pay_amt <= 0) {
+    if (pay_amt <= 0 || pay_amt > total_amount_due) {
         elamt.style.backgroundColor = 'var(--bs-warning)';
         return;
     }
@@ -1878,7 +1857,7 @@ function pay() {
 
     var eldesc = document.getElementById('pay-desc');
     if (document.getElementById('pt-discount').checked) {
-        ptype = 'Discount';
+        ptype = 'discount';
         desc = eldesc.value;
         if (desc == null || desc == '') {
             eldesc.style.backgroundColor = 'var(--bs-warning)';
@@ -1892,7 +1871,7 @@ function pay() {
     }
 
     if (document.getElementById('pt-check').checked) {
-        ptype = 'Check';
+        ptype = 'check';
         var elcheckno = document.getElementById('pay-checkno');
         checkno = elcheckno.value;
         if (checkno == null || checkno == '') {
@@ -1904,7 +1883,7 @@ function pay() {
         checked = true;
     }
     if (document.getElementById('pt-credit').checked) {
-        ptype = 'Credit Card';
+        ptype = 'credit';
         var elccauth = document.getElementById('pay-ccauth');
         ccauth = elccauth.value;
         if (ccauth == null || ccauth == '') {
@@ -1917,11 +1896,10 @@ function pay() {
     }
 
     if (document.getElementById('pt-cash').checked) {
-        ptype = 'Cash';
+        ptype = 'cash';
         checked = true;
     }
 
-   
     if (!checked) {
         elptdiv.style.backgroundColor = 'var(--bs-warning)';
         return;
@@ -1930,33 +1908,57 @@ function pay() {
         var prow = {
             index: cart_pmt.length, amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
         };
-        cart_pmt.push(prow);
+        // process payment
+        var postData = {
+            ajax_request_action: 'processPayment',
+            cart_membership: cart_membership,
+            new_payment: prow,
+            user_id: user_id,
+            pay_tid: pay_tid,
+        };
+        $.ajax({
+            method: "POST",
+            url: "scripts/regposTasks.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (data['error'] !== undefined) {
+                    show_message(data['error'], 'error');
+                    return;
+                }
+                if (data['message'] !== undefined) {
+                    show_message(data['message'], 'success');
+                }
+                if (data['warn'] !== undefined) {
+                    show_message(data['warn'], 'success');
+                }
+                updatedPayment(data);
+            },
+            error: showAjaxError,
+        });
     }
+}
 
-    for (rownum in cart_perinfo) {
-        var mrows = find_memberships_by_perid(cart_membership, cart_perinfo[cart[rownum]]['perid']);
-        for (var mrownum in mrows) {
-            var mrow = mrows[mrownum];
-
-            if (mrow['paid'] < mrow['price']) {
-                amt = Math.min(pay_amt, mrow['price'] - mrow['paid']);
-                mrow['paid'] += amt;
-                pay_amt -= amt;
-                if (pay_amt <= 0) break;
-            }
-        }
-    }
-
-    pay_shown();
+// updatedPayment:
+//  payment entered into the database correctly, update the payment cart and the memberships with the updated paid amounts
+ function updatedPayment(data) {
+     if (data['prow']) {
+         cart_pmt.push(data['prow']);
+     }
+     if (data['cart_membership']) {
+         cart_membership = data['cart_membership'];
+     }
+     pay_shown();
 }
 
 // Create a receipt and send it to the receipt printer
 // TODO: If no receipt printer specified (or generic printer), then warn about temp file only
-// TODO: Actually send the data to the selected receipt printer
 function print_receipt() {
     var d = new Date();
-
-    var html = 'Receipt for payment to ' + conid + ' at ' + d.toLocaleString() + `
+    var payee = (cart_perinfo[0]['first_name'] + ' ' + cart_perinfo[0]['last_name']).trim();
+    // title row
+    var text = "\nReceipt for payment to " + conlabel + "\nat " + d.toLocaleString() + "\nBy: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid;
+    // title + heading
+    var html = text.replace(/\n/g, "<br/>") + `
 <div class="container-fluid">
 <div class="row mt-3">
     <div class="col-sm-8 text-bg-primary">Payment</div>
@@ -1964,10 +1966,24 @@ function print_receipt() {
     <div class="col-sm-2 text-bg-primary text-end">Amount</div>
 </div>
 `;
+    text += "\n\nPayment   Amount Description/Code\n";
+    const Dollars = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+    });
     var total_pmt = 0;
-    for (var prow in cart_pmt) {
-        html += draw_cart_pmtrow(prow);
-        total_pmt += Number(cart_pmt[prow]['amt']);
+    for (var rownum in cart_pmt) {
+        prow = cart_pmt[rownum];
+        html += draw_cart_pmtrow(rownum);
+        var dolamt = Dollars.format(prow['amt']);
+        var code = '';
+        if (prow['type'] == 'check') code = prow['checkno'];
+        if (prow['type'] == 'credit') code = prow['ccauth'];
+        //console.log('type length = ' + prow['type'].length);
+        //console.log('amt length = ' + dolamt.length);
+        text += prow['type'] + ' '.repeat(20-(prow['type'].length + dolamt.length)) + dolamt + ' ' + prow['desc'] + '/' + code + "\n";
+        total_pmt += Number(prow['amt']);
     }
     html += `<div class="row">
     <div class="col-sm-8 p-0 text-end">Payment Total:</div>
@@ -1975,38 +1991,128 @@ function print_receipt() {
 </div>
 </div>
 `;
-        document.getElementById('pay_status').innerHTML = html;
+    document.getElementById('pay_status').innerHTML = html;
+    dolamt = Dollars.format(total_pmt);
+    text += "Total" + ' '.repeat(15-dolamt.length) + dolamt + "\n\n";
+    console.log(text);
+    // now print the receipt
+    var postData = {
+        ajax_request_action: 'printReceipt',
+        receipt: text,
+    };
+    if (receiptPrinterAvailable) {
+        $.ajax({
+            method: "POST",
+            url: "scripts/printformTasks.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (data['error'] !== undefined) {
+                    show_message(data['error'], 'error');
+                    return;
+                }
+                if (data['message'] !== undefined) {
+                    show_message(data['message'], 'success');
+                }
+                if (data['warn'] !== undefined) {
+                    show_message(data['warn'], 'success');
+                }
+            },
+            error: showAjaxError,
+        });
+    } else {
+        show_message("Receipt printer not available, you must select a receipt printer at login");
+    }
 }
 
+// add_badge_to_print:
+//      create the parameters for a single badge
+//
+function add_badge_to_print(index) {
+    row = cart_perinfo[index];
+    mrow = find_primary_membership_by_perid(cart_membership, row['perid']);
+    printrow = cart_membership[mrow];
+
+    var params;
+    params['type'] = printrow['type'];
+    params['badge_name'] = row['badge_name'];
+    params['category'] = printrow['memCategory'];
+    params['badge_id'] = row['perid'];
+    params['day'] = 'Friday'; // need day calc here...
+    params['age'] = printrow['memAge'];
+    return $params;
+}
 // Send one or all of the badges to the printer
-// TODO: actually send the badge to the printerr
+// TODO: actually send the badge to the printer
 // TODO: Add warning if no printer, that it will only create the temp files on the server
 function print_badge(index) {
     var rownum = null;
     var mrow = null;
     var row = null;
-    
+
     var pt_html = '';
 
+    var params = [];
+    var badges = [];
     if (index >= 0) {
-        row = cart_perinfo[index];
-        mrow = find_primary_membership_by_perid(cart_membership, row['perid']);
-        if (print_arr.includes(index)) {
-            cart_membership[mrow]['printed']++;
-            print_arr = print_arr.filter(function (el) { return el != index });
-        }
-        pt_html += '<br/>' + row['badge_name'] + ' printed';
+        params.push(add_badge_to_print(index));
+        badges.push(index);
     } else {
         for (rownum in cart_perinfo) {
-            row = cart_perinfo[rownum];
-            mrow = find_primary_membership_by_perid(cart_membership, row['perid']);
-            if (print_arr.includes(row['index'])) {        
-                cart_membership[mrow]['printed']++;
-                print_arr = print_arr.filter(function (el) { return el != mrow });
-            }
-            pt_html += '<br/>' + row['badge_name'] + ' printed';
+            params.push(add_badge_to_print(rownum));
+            badges.push(rownum);
         }
     }
+    var postData = {
+        ajax_request_action: 'printBadge',
+        params: params,
+        badges: badges,
+    };
+    $.ajax({
+        method: "POST",
+        url: "scripts/printformTasks.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            PrintComnplete(data);
+        },
+        error: showAjaxError,
+    });
+}
+
+function PrintComplete(data) {
+    pt_html += '<br/>' + data['message'];
+    var badges = data['badges'];
+    var regs = [];
+    for (index in badges) {
+        if (print_arr.includes(index)) {
+            row = cart_perinfo[index];
+            mrow = find_primary_membership_by_perid(cart_membership, row['perid']);
+            cart_membership[mrow]['printcount']++;
+            print_arr = print_arr.filter(function (el) {
+                return el != index
+            });
+            regs.push({ regid: cart_membership[mrow]['regid'], printcount: cart_membership[mrow]['printcount']});
+        }
+    }
+    var postData = {
+            ajax_request_action: 'updatePrintcount',
+            regs: regs,
+        };
+    $.ajax({
+        method: "POST",
+        url: "scripts/regposTasks.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+        },
+        error: showAjaxError,
+    });
     print_shown();
     document.getElementById('pt-status').innerHTML = pt_html;
 }
@@ -2165,6 +2271,12 @@ function pay_shown(current, previous) {
             pay_button_pay.hidden = true;
             pay_button_rcpt.hidden = false;
             pay_button_print.hidden = false;
+            document.getElementById('pay-amt').value='';
+            document.getElementById('pay-desc').value='';
+            document.getElementById('pay-amt-due').innerHTML = '';
+            document.getElementById('pay-check-div').hidden = true;
+            document.getElementById('pay-ccauth-div').hidden = true;
+            void_button.hidden = true;
         }        
     } else {
         if (pay_button_pay != null) {
@@ -2181,7 +2293,7 @@ function pay_shown(current, previous) {
   <form id='payForm' action='javascript: return false; ' class="form-floating">
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0">$` + total_amount_due + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + total_amount_due + `</div>
     </div>
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Paid:</div>
@@ -2190,21 +2302,21 @@ function pay_shown(current, previous) {
     <div class="row">
         <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
         <div class="col-sm-auto m-0 mt-2 p-0 ms-0 me-2 mb-2 p-0" id="pt-div">
-            <input type="radio" id="pt-credit" name="payment_type" value="credit" onchange='pay_type("credit");'/>
+            <input type="radio" id="pt-credit" name="payment_type" value="credit" onchange='setPayType("credit");'/>
             <label for="pt-credit">Credit Card</label>
-            &nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" id="pt-check" name="payment_type" value="check" onchange='pay_type("check");'/>
+            <input type="radio" id="pt-check" name="payment_type" value="check" onchange='setPayType("check");'/>
             <label for="pt-check">Check</label>
-            &nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" id="pt-cash" name="payment_type" value="cash" onchange='pay_type("cash");'/>
+            <input type="radio" id="pt-cash" name="payment_type" value="cash" onchange='setPayType("cash");'/>
             <label for="pt-cash">Cash</label>
-            &nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" id="pt-discount" name="payment_type" value="discount" onchange='pay_type("discount");'/>
+            <input type="radio" id="pt-discount" name="payment_type" value="discount" onchange='setPayType("discount");'/>
             <label for="pt-discount">Discount</label>
         </div>
     </div>
-    <div class="row" id="pay-check-div" hidden>
+    <div class="row mb-2" id="pay-check-div" hidden>
         <div class="col-sm-2 ms-0 me-2 p-0">Check Number:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="8" maxlength="10" name="pay-checkno" id="pay-checkno"/></div>
     </div>
-    <div class="row" id="pay-ccauth-div" hidden>
+    <div class="row mb-2" id="pay-ccauth-div" hidden>
         <div class="col-sm-2 ms-0 me-2 p-0">CC Auth Code:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="15" maxlength="16" name="pay-ccauth" id="pay-ccauth"/></div>
     </div>
@@ -2258,14 +2370,14 @@ function print_shown(current, previous) {
     // draw the print screen
     var print_html = `<div id='printBody' class="container-fluid form-floating">
 `;
-    if (badgePrinterAvailable == false) {
+    if (badgePrinterAvailable === false) {
         print_html += 'No printer selected, unable to print badges.  Please log out and back in with the proper printer selected.</div>';
         print_div.innerHTML = print_html;
         return;
     }
     var rownum;
     var crow;
-    for (rownum in cart) {
+    for (rownum in cart_perinfo) {
         crow = cart_perinfo[rownum];
         mrow = find_primary_membership_by_perid(cart_membership, crow['perid']);
         if (new_print) {
@@ -2274,11 +2386,11 @@ function print_shown(current, previous) {
         print_html += `
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="pay-print-` + cart[rownum]['index'] + `" onclick="print_badge(` + crow['index'] + `);">Print</button>
+            <button class="btn btn-primary btn-small" type="button" id="pay-print-` + cart_perinfo[rownum]['index'] + `" onclick="print_badge(` + crow['index'] + `);">Print</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">            
             <span class="text-bg-success"> Membership: ` + cart_membership[mrow]['label'] + `</span> (Times Printed: ` +
-            cart_membership[mrow]['printed'] + `)<br/>
+            cart_membership[mrow]['printcount'] + `)<br/>
               ` + crow['badge_name'] + '/' + (crow['first_name'] + ' ' + crow['last_name']).trim() + `
         </div>
      </div>`;
