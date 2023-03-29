@@ -25,18 +25,24 @@ function printBadge($conid) {
         }
 
         foreach ($params as $param) {
+            $badge = [];
             $badge['type'] = $param['type'];
             $badge['badge_name'] = $param['badge_name'];
+            $badge['full_name'] = $param['full_name'];
             $badge['category'] = $param['category'];
             $badge['id'] = $param['badge_id'];
             $badge['day'] = $param['day'];
             $badge['age'] = $param['age'];
 
+            if ($badge['badge_name'] == '') {
+                $badge['badge_name'] = $badge['full_name'];
+            }
+
             if ($badge['type'] == 'full') {
                 $file_full = init_file($printer);
                 write_badge($badge, $file_full, $printer);
                 print_badge($printer, $file_full);
-                $response['message'] .= "Full badge for " . $badge['badge_name'] . " printed<br/>>";
+                $response['message'] .= "Full badge for " . $badge['badge_name'] . " printed<br/>";
             } else {
                 $file_1day = init_file($printer);
                 write_badge($badge, $file_1day, $printer);

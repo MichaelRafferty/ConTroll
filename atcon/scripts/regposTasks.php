@@ -328,12 +328,14 @@ SELECT regid, MAX(tid) as tid
 FROM regtid
 GROUP BY regid
 )
-SELECT DISTINCT r.perid, t.regid, m.conid, r.price, r.paid, r.create_date, t.tid, r.memId, 0 as printcount,
+SELECT DISTINCT r.perid, t.regid, m.conid, r.price, r.paid, r.create_date, t.tid, r.memId, COUNT(h.regid) as printcount,
                 m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM maxtids t
 JOIN reg r ON (r.id = t.regid)
 JOIN limitedp p ON (p.id = r.perid)
 JOIN memLabel m ON (r.memId = m.id)
+LEFT OUTER JOIN atcon_history h ON (r.id = h.regid AND h.action = 'print')
+GROUP BY r.perid, t.regid, m.conid, r.price, r.paid, r.create_date, t.tid, r.memId, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 ORDER BY create_date DESC;
 EOS;
         $rp = dbSafeQuery($searchSQLP, 'iiiisss', array($conid, $conid, $conid + 1, $conid + 1, $name_search, $name_search, $name_search));
@@ -635,6 +637,30 @@ if ($_POST && array_key_exists('nopay', $_POST)) {
     }
 }
 
+// updatePrintcount
+//      passed array of regid and print count
+//      updates database
+function updatePrintcount(): void {
+    if (array_key_exists('regs', $_POST)) {
+        $regs = $_POST['regs'];
+        $user_id = $_POST['user_id'];
+        if ($user_id != $_SESSION['user']) {
+            ajaxError('Invalid credentials passed');
+        }
+        $tid = $_POST['tid'];
+        $insertSQL = <<<EOS
+INSERT INTO atcon_history(userid, tid, regid, action)
+VALUES (?,?,?,'print');
+EOS;
+        $typestr = 'iii';
+
+        foreach ($regs as $reg) {
+            $paramarray = array($user_id, $tid, $reg['regid']);
+            $key = dbSafeInsert($insertSQL, $typestr,$paramarray);
+        }
+    }
+}
+
 $con = get_conf('con');
 $conid = $con['id'];
 $ajax_request_action = '';
@@ -663,6 +689,8 @@ switch ($ajax_request_action) {
     case 'processPayment':
         processPayment();
         break;
+    case 'updatePrintcount':
+        updatePrintcount();
     default:
         $message_error = 'Internal error.';
         RenderErrorAjax($message_error);

@@ -85,7 +85,7 @@ var pay_tid = null;
 
 // print items
 var print_div = null;
-var print_arr = null;
+var printed_obj = null;
 
 // Data Items
 var unpaid_table = [];
@@ -430,6 +430,7 @@ function start_over(reset_all) {
     pay_button_rcpt = null;
     pay_button_print = null;
     in_review = false;
+    pay_tid = null;
 
     clear_add();
     // set tab to find-tab
@@ -1766,6 +1767,7 @@ function review_nochanges() {
 // reviewed_update_cart:
 //  all the data from the cart has been updated in the database, now apply the id's and proceed to the next step
 function reviewed_update_cart(data) {
+    pay_tid = data['master_tid'];
     // update cart elements
     var updated_perinfo = data['updated_perinfo'];
     for (var rownum in updated_perinfo) {
@@ -1793,7 +1795,6 @@ function reviewed_update_cart(data) {
     }
 
     // Once saved, move them to next step
-    pay_tid = data['master_tid'];
     if (find_unpaid_button != null) {
         bootstrap.Tab.getOrCreateInstance(pay_tab).show();
     } else {
@@ -1807,7 +1808,7 @@ function reviewed_update_cart(data) {
 
 // change tab to the print screen
 function goto_print() {  
-    print_arr = null;
+    printed_obj = null;
     bootstrap.Tab.getOrCreateInstance(print_tab).show();    
 }
 
@@ -2032,14 +2033,15 @@ function add_badge_to_print(index) {
     mrow = find_primary_membership_by_perid(cart_membership, row['perid']);
     printrow = cart_membership[mrow];
 
-    var params;
-    params['type'] = printrow['type'];
+    var params = {};
+    params['type'] = printrow['memType'];
     params['badge_name'] = row['badge_name'];
+    params['full_name'] = (row['first_name']+' '+row['last_name']).trim();
     params['category'] = printrow['memCategory'];
     params['badge_id'] = row['perid'];
     params['day'] = 'Friday'; // need day calc here...
     params['age'] = printrow['memAge'];
-    return $params;
+    return params;
 }
 // Send one or all of the badges to the printer
 // TODO: actually send the badge to the printer
@@ -2048,8 +2050,6 @@ function print_badge(index) {
     var rownum = null;
     var mrow = null;
     var row = null;
-
-    var pt_html = '';
 
     var params = [];
     var badges = [];
@@ -2076,43 +2076,46 @@ function print_badge(index) {
                 show_message(data['error'], 'error');
                 return;
             }
-            PrintComnplete(data);
+            PrintComplete(data);
         },
         error: showAjaxError,
     });
 }
 
 function PrintComplete(data) {
-    pt_html += '<br/>' + data['message'];
+    var pt_html = '<br/>' + data['message'];
     var badges = data['badges'];
     var regs = [];
     for (index in badges) {
-        if (print_arr.includes(index)) {
+
+        if (map_access(printed_obj, index) == 0) {
             row = cart_perinfo[index];
             mrow = find_primary_membership_by_perid(cart_membership, row['perid']);
             cart_membership[mrow]['printcount']++;
-            print_arr = print_arr.filter(function (el) {
-                return el != index
-            });
+            map_set(printed_obj, index, 1);
             regs.push({ regid: cart_membership[mrow]['regid'], printcount: cart_membership[mrow]['printcount']});
         }
     }
-    var postData = {
+    if (regs.length > 0) {
+        var postData = {
             ajax_request_action: 'updatePrintcount',
             regs: regs,
+            user_id: user_id,
+            tid: pay_tid,
         };
-    $.ajax({
-        method: "POST",
-        url: "scripts/regposTasks.php",
-        data: postData,
-        success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
-                return;
-            }
-        },
-        error: showAjaxError,
-    });
+        $.ajax({
+            method: "POST",
+            url: "scripts/regposTasks.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (data['error'] !== undefined) {
+                    show_message(data['error'], 'error');
+                    return;
+                }
+            },
+            error: showAjaxError,
+        });
+    }
     print_shown();
     document.getElementById('pt-status').innerHTML = pt_html;
 }
@@ -2361,9 +2364,9 @@ function print_shown(current, previous) {
     void_button.hidden = true;
     freeze_cart = true;
     var new_print = false;
-    if (print_arr == null) {
+    if (printed_obj == null) {
         new_print = true;
-        print_arr = [];
+        printed_obj = {};
     }
     draw_cart();
 
@@ -2381,7 +2384,7 @@ function print_shown(current, previous) {
         crow = cart_perinfo[rownum];
         mrow = find_primary_membership_by_perid(cart_membership, crow['perid']);
         if (new_print) {
-            print_arr.push(crow['index']);
+            map_set(printed_obj, crow['index'], 0);
         }
         print_html += `
     <div class="row">
