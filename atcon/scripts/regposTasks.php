@@ -317,7 +317,7 @@ LEFT OUTER JOIN printcount h ON (r1.id = h.regid)
 LEFT OUTER JOIN notes i ON (r1.id = i.regid)
 ORDER BY create_date DESC;
 EOS;
-        web_error_log($searchSQLM);
+        //web_error_log($searchSQLM);
         $rp = dbSafeQuery($searchSQLP, 'iiiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search));
         $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1));
     } else {
