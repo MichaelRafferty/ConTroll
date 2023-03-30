@@ -292,7 +292,8 @@ function write_se450($badge, $tempfile):void {
 function print_badge($printer, $tempfile): string|false
 {
     $queue = $printer[2];
-    if ($queue == '0') return 0; // this token is the temp file only print queue
+    $name = $printer[0];
+    if ($queue == '0' || $name == 'None') return 0; // this token is the temp file only print queue
 
     $server = $printer[1];
     $printerType = $printer[3];
@@ -321,7 +322,8 @@ function print_badge($printer, $tempfile): string|false
 
 function print_receipt($printer, $receipt):string | false {
     $queue = $printer[2];
-    if ($queue == '0') {
+    $name = $printer[0];
+    if ($queue == '0' || $name == 'None') {
         web_error_log($receipt);
         return 0; // this token is the log only print queue
     }

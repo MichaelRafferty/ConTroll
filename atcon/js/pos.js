@@ -2044,7 +2044,6 @@ function pay() {
 }
 
 // Create a receipt and send it to the receipt printer
-// TODO: If no receipt printer specified (or generic printer), then warn about temp file only
 function print_receipt() {
     var d = new Date();
     var payee = (cart_perinfo[0]['first_name'] + ' ' + cart_perinfo[0]['last_name']).trim();
@@ -2139,7 +2138,6 @@ function add_badge_to_print(index) {
     return params;
 }
 // Send one or all of the badges to the printer
-// TODO: Add warning if no printer, that it will only create the temp files on the server
 function print_badge(index) {
     var rownum = null;
     var mrow = null;
