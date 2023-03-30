@@ -172,7 +172,8 @@ $withClause
 SELECT DISTINCT u.perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
 	p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
-    TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname
+    TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname,
+    p.open_notes, CASE WHEN p.admin_notes IS NOT NULL and p.admin_notes != '' THEN 1 ELSE 0 END AS has_admin_notes
 FROM uniqueperids u
 JOIN perinfo p ON (u.perid = p.id)
 ORDER BY last_name, first_name;
@@ -256,12 +257,22 @@ $withClause
 SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
-    TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname
+    TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname,
+    p.open_notes, CASE WHEN p.admin_notes IS NOT NULL and p.admin_notes != '' THEN 1 ELSE 0 END AS has_admin_notes
 FROM regids rs
 JOIN reg r ON (rs.regid = r.id)
 JOIN perinfo p ON (p.id = r.perid)
+UNION 
+SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
+    p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
+    p.share_reg_ok, p.contact_ok, p.active, p.banned,
+    TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname,
+    p.open_notes, CASE WHEN p.admin_notes IS NOT NULL and p.admin_notes != '' THEN 1 ELSE 0 END AS has_admin_notes
+FROM perinfo p
+WHERE id = ?
 ORDER BY last_name, first_name;
 EOS;
+        //web_error_log($searchSQLP);
         $searchSQLM = <<<EOS
 $withClause
 SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, COUNT(h.regid) as printcount,
@@ -275,15 +286,12 @@ LEFT OUTER JOIN atcon_history h ON (r1.id = h.regid AND h.action = 'print')
 GROUP BY r1.perid, r1.id, m.conid, r1.price, r1.paid, r1.create_date, r1.memId, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup, IFNULL(r1.create_trans, -1)
 ORDER BY create_date DESC;
 EOS;
-        $rp = dbSafeQuery($searchSQLP, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1));
+        $rp = dbSafeQuery($searchSQLP, 'iiiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search));
         $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1));
     } else {
-        if ($find_type == 'addnew') {
-            $jointype = 'LEFT OUTER JOIN';
-        } else {
-            $jointype = 'JOIN';
-        }
-            // name match
+        // this is the string search portion as the field is alphanumeric
+
+        // name match
         $limit = 50; // only return 50 people's memberships
         $name_search = '%' . preg_replace('/ +/', '%', $name_search) . '%';
         //web_error_log("match string: $name_search");
@@ -291,13 +299,11 @@ EOS;
 SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
-    TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname
+    TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname,
+    p.open_notes, CASE WHEN p.admin_notes IS NOT NULL and p.admin_notes != '' THEN 1 ELSE 0 END AS has_admin_notes
 FROM perinfo p
-$jointype reg r ON (p.id = r.perid)
-$jointype memList m ON (m.id = r.memId)
 WHERE 
-    (IFNULL(r.conid, ?) = ? OR (IFNULL(r.conid, ?) = ? AND m.memCategory in ('yearahead', 'rollover')))
-AND (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
+(LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
 ORDER BY last_name, first_name LIMIT $limit;
 EOS;
         $searchSQLM = <<<EOS
@@ -305,13 +311,11 @@ WITH limitedp AS (
 /* first get the perid's for this name search */
     SELECT DISTINCT p.id, p.first_name, p.last_name
     FROM perinfo p
-    $jointype reg r ON (p.id = r.perid)
-    $jointype memList m ON (m.id = r.memId)
-    WHERE (IFNULL(r.conid, ?) = ? OR (IFNULL(r.conid, ?) = ? AND m.memCategory in ('yearahead', 'rollover'))) AND (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
+    WHERE (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
     ORDER BY last_name, first_name LIMIT $limit
 ), regids AS (
 SELECT r.id AS regid
-FROM perinfo p
+FROM limitedp p
 JOIN reg r ON (r.perid = p.id)
 JOIN memList m ON (r.memId = m.id)
 WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
@@ -338,8 +342,8 @@ LEFT OUTER JOIN atcon_history h ON (r.id = h.regid AND h.action = 'print')
 GROUP BY r.perid, t.regid, m.conid, r.price, r.paid, r.create_date, t.tid, r.memId, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 ORDER BY create_date DESC;
 EOS;
-        $rp = dbSafeQuery($searchSQLP, 'iiiisss', array($conid, $conid, $conid + 1, $conid + 1, $name_search, $name_search, $name_search));
-        $rm = dbSafeQuery($searchSQLM, 'iiiisssii', array($conid, $conid, $conid + 1, $conid + 1, $name_search, $name_search, $name_search, $conid, $conid + 1));
+        $rp = dbSafeQuery($searchSQLP, 'sss', array($name_search, $name_search, $name_search));
+        $rm = dbSafeQuery($searchSQLM, 'sssii', array($name_search, $name_search, $name_search, $conid, $conid + 1));
     }
 
     $perinfo = [];
