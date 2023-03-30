@@ -20,6 +20,8 @@ function loadInitialData($conid, $con): void
     $response['conid'] = $conid;
     $response['badgePrinter'] = $_SESSION['badgePrinter'][0] != 'None';
     $response['receiptPrinter'] = $_SESSION['receiptPrinter'][0] != 'None';
+    $response['user_id'] = $_SESSION['user'];
+    $response['hasManager'] = check_atcon('manager', $conid);
     // get the start and end dates, and adjust for the memLabels based on the real dates versus today.
     $condatesSQL = <<<EOS
 SELECT startdate, enddate
@@ -127,6 +129,9 @@ function findRecord($conid):void {
     $find_type = $_POST['find_type'];
     $name_search = $_POST['name_search'];
 
+    // manager allowed to see admin notes, just note it as exists for non manager
+    $admin_notes_query = check_atcon('manager', $conid) ? 'p.admin_notes' : "CASE WHEN p.admin_notes IS NOT NULL and p.admin_notes != '' THEN 1 ELSE null END AS admin_notes";
+
     $response['find_type'] = $find_type;
     $response['name_search'] = $name_search;
 
@@ -173,7 +178,7 @@ SELECT DISTINCT u.perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.b
 	p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
     TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname,
-    p.open_notes, CASE WHEN p.admin_notes IS NOT NULL and p.admin_notes != '' THEN 1 ELSE 0 END AS has_admin_notes
+    p.open_notes, $admin_notes_query
 FROM uniqueperids u
 JOIN perinfo p ON (u.perid = p.id)
 ORDER BY last_name, first_name;
@@ -258,7 +263,7 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
     TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname,
-    p.open_notes, CASE WHEN p.admin_notes IS NOT NULL and p.admin_notes != '' THEN 1 ELSE 0 END AS has_admin_notes
+    p.open_notes, $admin_notes_query
 FROM regids rs
 JOIN reg r ON (rs.regid = r.id)
 JOIN perinfo p ON (p.id = r.perid)
@@ -267,7 +272,7 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
     TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname,
-    p.open_notes, CASE WHEN p.admin_notes IS NOT NULL and p.admin_notes != '' THEN 1 ELSE 0 END AS has_admin_notes
+    p.open_notes, $admin_notes_query
 FROM perinfo p
 WHERE id = ?
 ORDER BY last_name, first_name;
@@ -300,7 +305,7 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
     TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname,
-    p.open_notes, CASE WHEN p.admin_notes IS NOT NULL and p.admin_notes != '' THEN 1 ELSE 0 END AS has_admin_notes
+    p.open_notes, $admin_notes_query
 FROM perinfo p
 WHERE 
 (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)

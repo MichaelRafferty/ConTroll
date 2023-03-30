@@ -34,7 +34,6 @@ page_init($page, $tab,
                     'https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js','js/pos.js')
     );
 ?>
-<div id="whoami" hidden><?php echo $_SESSION['user'];?></div>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
         <div class="col-sm-7">
@@ -239,6 +238,23 @@ page_init($page, $tab,
                 </div>
             </div>
         </div>       
+    </div>
+    <!--- notes modal popup -->
+    <div class='modal' id='memberNotes' tabindex='-2' aria-labelledby='Member Notes' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header'>
+                    <div class='modal-title' id="memberNotesTitle">
+                        Member Notes
+                    </div>
+                </div>
+                <div class='modal-body' id="memberNotesBody">
+                </div>
+                <div class='modal-footer'>
+                    <button type='button'  class='btn btn-primary' data-bs-dismiss='modal'>Close</button>
+                </div>
+            </div>
+        </div>
     </div>
     <div id='result_message' class='mt-4 p-2'></div>
 <pre id='test'></pre>

@@ -103,9 +103,16 @@ var catList = null;
 var ageList = null;
 var typeList = null;
 
+// notes items
+var memberNotes = null;
+var memberNotesTitle = null;
+var memberNotesBody = null;
+
+// global items
 var conid = null;
 var conlabel = null;
 var user_id = 0;
+var hasManager = false;
 var badgePrinterAvailable = false;
 var receiptPrinterAvailable = false;
 
@@ -185,8 +192,11 @@ window.onload = function initpage() {
     pay_tab.addEventListener('shown.bs.tab', pay_shown)
     print_tab.addEventListener('shown.bs.tab', print_shown)
 
-    // data items
-    user_id = Number(document.getElementById("whoami").innerHTML);
+    // notes items
+    memberNotes = new bootstrap.Modal(document.getElementById('memberNotes'), { focus: true, backldrop: 'static' });
+    memberNotesTitle = document.getElementById('memberNotesTitle');
+    memberNotesBody = document.getElementById('memberNotesBody');
+
 
     // load the initial data and the proceed to set up the rest of the system
     var postData = {
@@ -219,6 +229,8 @@ function loadInitialData(data) {
     // tabls
     conlabel =  data['label'];
     conid = data['conid'];
+    user_id = data['user_id']
+    hasManager = data['hasManager'];
     badgePrinterAvailable = data['badgePrinter'] === true;
     receiptPrinterAvailable = data['receiptPrinter'] === true;
     startdate = data['startdate'];
@@ -840,6 +852,7 @@ function add_found(data) {
             ],
             columns: [
                 {field: "perid", visible: false,},
+                {field: "index",},
                 {title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                 {field: "last_name", visible: false,},
                 {field: "first_name", visible: false,},
@@ -849,6 +862,7 @@ function add_found(data) {
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80,},
+                {title: "Notes",formatter: perNotesIcons, headerSort: false, headerFilter: false, },
                 {title: "Cart", width: 70, headerFilter: false, headerSort: false, formatter: addCartIcon,},
                 {field: "index", visible: false,},
             ],
@@ -1121,7 +1135,21 @@ function draw_cart_row(rownum) {
     rowhtml += `
     <div class="row">
         <div class="col-sm-3 p-0">Badge Name:</div>
-        <div class="col-sm-auto p-0">` + badge_name_default(row['badge_name'], row['first_name'], row['last_name']) + `</div>
+        <div class="col-sm-5 p-0">` + badge_name_default(row['badge_name'], row['first_name'], row['last_name']) + `</div>
+        <div class="col-sm-2 p-0 text-center">`;
+    if (row['open_notes'] != null && row['open_notes'].length > 0) {
+        rowhtml += '<button type="button" class="btn btn-sm btn-secondary p-0" onclick="show_open_note(' + row['index'] + ', \'cart\')">Open Note</button>';
+    }
+    rowhtml += `</div>
+        <div class="col-sm-2 p-0 text-center">`;
+    if (row['admin_notes'] != null && row['admin_notes'].length > 0) {
+        if (hasManager) {
+            rowhtml += '<button type="button" class="btn btn-sm btn-warning p-0" onclick="show_admin_note(' + row['index'] + ', \'cart\')">Admin Note</button>';
+        } else {
+            rowhtml += ' <span class="bg-warning pt-1 pb-1"><strong>Admin Note</strong></span>';
+        }
+    }
+    rowhtml += `</div>
     </div>
 `;  // end of second row - badge name
 
@@ -1344,7 +1372,7 @@ function draw_record(row, first) {
         html += `<button class="btn btn-primary btn-small" id="add_btn_all" onclick="add_to_cart(-` + number_search + `);">Add All Cart</button>`;
     }
     html += `</div>
-        <div class="col-sm-9">`;
+        <div class="col-sm-5">`;
     if (map_access(cart_perinfo_map, data['perid']) === undefined) {
         if (data['banned'] == 'Y') {
             html += `
@@ -1357,7 +1385,23 @@ function draw_record(row, first) {
         html += `
             <i>In Cart</i>`
     }
-        html += `
+    html += `</div>
+        <div class="col-sm-2">`;
+    if (data['open_notes'] != null && data['open_notes'].length > 0) {
+        html += '<button type="button" class="btn btn-sm btn-secondary p-0" onclick="show_open_note(' + data['index'] + ', \'result\')">Open Note</button>';
+    }
+    html += `</div>
+        <div class="col-sm-2">`;
+    if (data['admin_notes'] != null && data['admin_notes'].length > 0) {
+        if (hasManager) {
+            html += '<button type="button" class="btn btn-sm btn-warning p-0" onclick="show_admin_note(' + data['index'] + ', \'result\')">Admin Note</button>';
+        } else {
+            html += ' <span class="bg-warning pt-1 pb-1"><strong>Admin Note</strong></span>';
+        }
+    }
+
+    html += `
+            </div>
         </div>
         <div class="row">
             <div class="col-sm-3">` + 'Badge Name:' + `</div>
@@ -1419,6 +1463,8 @@ function draw_record(row, first) {
     return html;
 }
 
+// tabulator perinfo formatters:
+
 // tabulator formatter for the add cart column, displays the "add" record and "trans" to add the tranaction to the card as appropriate
 // filters for ones already in the cart, and statuses that should not be allowed to be added to the cart
 function addCartIcon(cell, formatterParams, onRendered) { //plain text value
@@ -1442,6 +1488,50 @@ function addCartIcon(cell, formatterParams, onRendered) { //plain text value
         return html;
     }
     return '<span style="font-size: 75%;">In Cart';
+}
+
+// tabulator formatter for the notes, displays the "O" record and "A" notes for this person
+function perNotesIcons(cell, formatterParams, onRendered) { //plain text value
+    var index = cell.getRow().getData().index;
+    var prow = result_perinfo[index];
+    var html = "";
+    if (prow['open_notes'] != null && prow['open_notes'].length > 0) {
+        html += '<button type="button" class="btn btn-sm btn-secondary p-0" onclick="show_open_note(' + index + ', \'result\')">O</button>';
+    }
+    if (prow['admin_notes'] != null && prow['admin_notes'].length > 0) {
+        if (hasManager) {
+            html += '<button type="button" class="btn btn-sm btn-warning p-0" onclick="show_admin_note(' + index + ', \'result\')">A</button>';
+        } else {
+            html += ' <span class="bg-warning pt-1 pb-1"><strong>A</strong></span>';
+        }
+    }
+    return html;
+}
+
+// display the note popup with the requested notes
+function show_open_note(index, where) {
+    var prow = null;
+    if (where == 'cart') {
+        prow = cart_perinfo[index];
+    }
+    if (where == 'result') {
+        prow = result_perinfo[index];
+    }
+    memberNotesTitle.innerHTML = "Open Notes for " + prow['fullname'];
+    memberNotesBody.innerHTML = prow['open_notes'];
+    memberNotes.show();
+}
+function show_admin_note(index, where) {
+    var prow = null;
+    if (where == 'cart') {
+        prow = cart_perinfo[index];
+    }
+    if (where == 'result') {
+        prow = result_perinfo[index];
+    }
+    memberNotesTitle.innerHTML = "Admin Notes for " + prow['fullname'];
+    memberNotesBody.innerHTML = prow['admin_notes'];
+    memberNotes.show();
 }
 
 // select the row (tid) from the unpaid list and add it to the cart, switch to the payment tab (used by find unpaid)
@@ -1653,6 +1743,7 @@ function found_record(data) {
             ],
             columns: [
                 {field: "perid", visible: false,},
+                {field: "index", visible: false, },
                 {title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                 {field: "last_name", visible: false,},
                 {field: "first_name", visible: false,},
@@ -1662,6 +1753,7 @@ function found_record(data) {
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80,},
+                {title: "Note",width: 45, formatter: perNotesIcons, headerSort: false, headerFilter: false, },
                 {title: "Cart", width: 80, headerFilter: false, headerSort: false, formatter: addCartIcon,},
                 {field: "index", visible: false,},
             ],
