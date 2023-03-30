@@ -198,17 +198,30 @@ JOIN atcon_history h ON (r.id = h.regid AND h.action = 'attach')
 SELECT regid, MAX(tid) AS tid
 FROM ridtid
 GROUP BY regid
+), notes AS (
+SELECT h.regid, GROUP_CONCAT(CONCAT(h.userid, '@', h.logdate, ': ', h.notes) SEPARATOR '\n') AS reg_notes
+FROM unpaids m
+JOIN atcon_history h ON (m.id = h.regid)
+WHERE h.action = 'notes'
+GROUP BY h.regid
+), printcount AS (
+SELECT h.regid, COUNT(*) printcount
+FROM unpaids m
+JOIN atcon_history h ON (m.id = h.regid)
+WHERE h.action = 'print'
+GROUP BY h.regid
 )
-SELECT DISTINCT r.perid, r.id as regid, m.conid, r.price, r.paid, r.create_date, u.tid, r.memId, COUNT(h.regid) as printcount,
+SELECT DISTINCT r.perid, r.id as regid, m.conid, r.price, r.paid, r.create_date, u.tid, r.memId, h.printcount, i.reg_notes,
                 m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM uniqrids u
 JOIN reg r ON (r.id = u.regid)
 JOIN memLabel m ON (r.memId = m.id)
-LEFT OUTER JOIN atcon_history h ON (r.id = h.regid AND h.action = 'print')
+LEFT OUTER JOIN printcount h ON (r.id = h.regid)
+LEFT OUTER JOIN notes i ON (r.id = i.regid)
 WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
-GROUP BY r.perid, r.id, m.conid, r.price, r.paid, r.create_date, u.tid, r.memId, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 ORDER BY create_date DESC;
 EOS;
+        //web_error_log($unpaidSQLM);
         $rp = dbSafeQuery($unpaidSQLP, 'ii', array($conid, $conid + 1));
         $rm = dbSafeQuery($unpaidSQLM, 'iiii', array($conid, $conid + 1, $conid, $conid + 1));
     } else if (is_numeric($name_search)) {
@@ -280,17 +293,31 @@ EOS;
         //web_error_log($searchSQLP);
         $searchSQLM = <<<EOS
 $withClause
-SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, COUNT(h.regid) as printcount,
+, notes AS (
+SELECT h.regid, GROUP_CONCAT(CONCAT(h.userid, '@', h.logdate, ': ', h.notes) SEPARATOR '\n') AS reg_notes
+FROM regids m
+JOIN atcon_history h ON (m.regid = h.regid)
+WHERE h.action = 'notes'
+GROUP BY h.regid
+), printcount AS (
+SELECT h.regid, COUNT(*) printcount
+FROM regids m
+JOIN atcon_history h ON (m.regid = h.regid)
+WHERE h.action = 'print'
+GROUP BY h.regid
+)
+SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, h.printcount, i.reg_notes,
                 m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM regids rs
 JOIN reg r ON (rs.regid = r.id)
 JOIN perinfo p ON (p.id = r.perid)
 JOIN reg r1 ON (r1.perid = r.perid)
 JOIN memLabel m ON (r1.memId = m.id)
-LEFT OUTER JOIN atcon_history h ON (r1.id = h.regid AND h.action = 'print')
-GROUP BY r1.perid, r1.id, m.conid, r1.price, r1.paid, r1.create_date, r1.memId, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup, IFNULL(r1.create_trans, -1)
+LEFT OUTER JOIN printcount h ON (r1.id = h.regid)
+LEFT OUTER JOIN notes i ON (r1.id = i.regid)
 ORDER BY create_date DESC;
 EOS;
+        web_error_log($searchSQLM);
         $rp = dbSafeQuery($searchSQLP, 'iiiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search));
         $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1));
     } else {
@@ -336,15 +363,27 @@ JOIN atcon_history h ON (h.regid = rs.regid)
 SELECT regid, MAX(tid) as tid
 FROM regtid
 GROUP BY regid
+), notes AS (
+SELECT h.regid, GROUP_CONCAT(CONCAT(h.userid, '@', h.logdate, ': ', h.notes) SEPARATOR '\n') AS reg_notes
+FROM maxtids m
+JOIN atcon_history h ON (m.regid = h.regid)
+WHERE h.action = 'notes'
+GROUP BY h.regid
+), printcount AS (
+SELECT h.regid, COUNT(*) printcount
+FROM maxtids m
+JOIN atcon_history h ON (m.regid = h.regid)
+WHERE h.action = 'print'
+GROUP BY h.regid
 )
-SELECT DISTINCT r.perid, t.regid, m.conid, r.price, r.paid, r.create_date, t.tid, r.memId, COUNT(h.regid) as printcount,
-                m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
+SELECT DISTINCT r.perid, t.regid, m.conid, r.price, r.paid, r.create_date, t.tid, r.memId, pc.printcount,
+                m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup, n.reg_notes                
 FROM maxtids t
 JOIN reg r ON (r.id = t.regid)
 JOIN limitedp p ON (p.id = r.perid)
 JOIN memLabel m ON (r.memId = m.id)
-LEFT OUTER JOIN atcon_history h ON (r.id = h.regid AND h.action = 'print')
-GROUP BY r.perid, t.regid, m.conid, r.price, r.paid, r.create_date, t.tid, r.memId, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
+LEFT OUTER JOIN notes n ON (r.id = n.regid)
+LEFT OUTER JOIN printcount pc ON (r.id = pc.regid)
 ORDER BY create_date DESC;
 EOS;
         $rp = dbSafeQuery($searchSQLP, 'sss', array($name_search, $name_search, $name_search));
@@ -423,6 +462,7 @@ function updateCartElements($conid): void
     $per_upd = 0;
     $reg_ins = 0;
     $reg_upd = 0;
+    $reg_del = 0;
     $total_price = 0;
     $total_paid = 0;
 
@@ -441,6 +481,10 @@ VALUES (?,?,?,?,?,?,?,now());
 EOS;
     $updRegSQL = <<<EOS
 UPDATE reg SET price=?,paid=?,memId=?,change_date=now()
+WHERE id = ?;
+EOS;
+    $delRegSQL = <<<EOS
+DELETE FROM reg
 WHERE id = ?;
 EOS;
     $insHistory = <<<EOS
@@ -497,8 +541,10 @@ EOS;
     // now insert/update all reg records and compute the transaction price and paid fields
     for ($row = 0; $row < sizeof($cart_membership); $row++) {
         $cartrow = $cart_membership[$row];
-        $total_price += $cartrow['price'];
-        $total_paid += $cartrow['paid'];
+        if (!array_key_exists('todelete', $cartrow)) {
+            $total_price += $cartrow['price'];
+            $total_paid += $cartrow['paid'];
+        }
         if (!array_key_exists('regid', $cartrow) || $cartrow['regid'] <= 0) {
             // insert the membership
             if ($cartrow['perid'] <= 0) {
@@ -515,10 +561,17 @@ EOS;
             $cart_membership[$row]['regid'] = $new_regid;
             $reg_ins++;
         } else {
-            // update membership
-            $paramarray = array($cartrow['price'], $cartrow['paid'], $cartrow['memId'], $cartrow['regid']);
-            $typestr = 'ssii';
-            $reg_upd += dbSafeCmd($updRegSQL, $typestr, $paramarray);
+            if (array_key_exists('todelete', $cartrow)) {
+                // delete membership
+                $paramarray = array($cartrow['regid']);
+                $typestr = 'i';
+                $reg_del += dbSafeCmd($delRegSQL, $typestr, $paramarray);
+            } else {
+                // update membership
+                $paramarray = array($cartrow['price'], $cartrow['paid'], $cartrow['memId'], $cartrow['regid']);
+                $typestr = 'ssii';
+                $reg_upd += dbSafeCmd($updRegSQL, $typestr, $paramarray);
+            }
         }
         // Now add the attach record for this item
         $paramarray = array($user_id, $master_transid, $cartrow['regid'], $notes);
@@ -544,7 +597,7 @@ EOS;
         $response['error'] = $error_message;
         ajaxSuccess($response);
     }
-    $response['message'] = "$per_ins members inserted, $per_upd members updated, $reg_ins memberships inserted, $reg_upd memberships updated";
+    $response['message'] = "$per_ins members inserted, $per_upd members updated, $reg_ins memberships inserted, $reg_upd memberships updated, $reg_del memberships deleted";
     $response['updated_perinfo'] = $updated_perinfo;
     $response['updated_membership'] = $updated_membership;
     $response['master_tid'] = $master_transid;

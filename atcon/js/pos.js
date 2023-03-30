@@ -515,10 +515,17 @@ function add_to_cart(index) {
 function remove_from_cart(perid) {
     var index = map_access(cart_perinfo_map, perid);
     var mrows = find_memberships_by_perid(cart_membership, perid);
+    // need to splice backwards so the indicies don't change
+    var delrows = [];
+    var splicerow = null;
     for (var mrownum in mrows) {
-        var splicerow = mrows[mrownum]['index'];
-        cart_membership.splice(mrows[mrownum]['index'], 1);
+        splicerow = mrows[mrownum]['index'];
+        delrows.push(Number(splicerow));
     }
+    delrows = delrows.reverse();
+    for (splicerow in delrows)
+        cart_membership.splice(delrows[splicerow], 1);
+
     cart_perinfo.splice(index, 1);
     // splices loses me the index number for the cross-reference, so the cart needs renumbering
     draw_cart();
@@ -526,10 +533,13 @@ function remove_from_cart(perid) {
 
 // remove single membership item from the cart (leaving other memberships and person information
 function delete_membership(index) {
-    cart_membership.splice(index, 1);
+    if (cart_membership[index]['tid'] != '') {
+        cart_membership[index]['todelete'] = 1;
+    } else {
+        cart_membership.splice(index, 1);
+    }
     draw_cart();
 }
-
 // cart_renumber:
 // rebuild the indicies in the cart_perinfo and cart_membership tables
 // for shoprt cut reasons indicies are used to allow usage of the filter functions built into javascript
@@ -1033,11 +1043,23 @@ function draw_cart_row(rownum) {
     var mrows = find_memberships_by_perid(cart_membership, perid);
     for (var mrownum in mrows) {
         var mrow = mrows[mrownum];
+        if (mrow['todelete'] !== undefined)
+            continue;
 
         mem_is_membership = false;
-        col1 = (Number(mrow['tid']) != 0 || freeze_cart) ? '&nbsp;' :
+        col1 = (Number(mrow['paid']) != 0 || freeze_cart) ? '&nbsp;' :
             '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
             mrow['index'] + ')" >X</button >';
+        if (!freeze_cart) {
+            //alert (mrow['reg_notes'] !== undefined);
+            //alert (mrow['reg_notes'] !== null);
+            //alert (mrow['reg_notes'] !== '');
+            if (mrow['reg_notes'] !== undefined && mrow['reg_notes'] !== null && mrow['reg_notes'] !== '') {
+                col1 += '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "show_reg_note(' +
+                    mrow['index'] + ')" >N</button >';
+            }
+        }
+
         var category = mrow['memCategory'];
         if (category == 'yearahead' && mrow['conid'] == conid)
             category = 'standard'; // last years yearahead is this year's standard
@@ -1301,7 +1323,7 @@ function draw_cart() {
     unpaid_rows = 0;
     for (rownum in cart_perinfo) {
         num_rows++;
-        html += draw_cart_row(rownum);   
+        html += draw_cart_row(rownum);
     }
     html += `<div class="row">
     <div class="col-sm-8 p-0 text-end">Total:</div>
@@ -1531,6 +1553,14 @@ function show_admin_note(index, where) {
     }
     memberNotesTitle.innerHTML = "Admin Notes for " + prow['fullname'];
     memberNotesBody.innerHTML = prow['admin_notes'];
+    memberNotes.show();
+}
+
+function show_reg_note(index) {
+    var mrow = cart_membership[index];
+    var prow = cart_perinfo[mrow['pindex']];
+    memberNotesTitle.innerHTML = "Registration Notes for " + prow['fullname'] + '<br/>Membership: ' + mrow['label'];
+    memberNotesBody.innerHTML = mrow['reg_notes'];
     memberNotes.show();
 }
 
