@@ -656,7 +656,7 @@ EOS;
 
         foreach ($regs as $reg) {
             $paramarray = array($user_id, $tid, $reg['regid']);
-            $key = dbSafeInsert($insertSQL, $typestr,$paramarray);
+            dbSafeInsert($insertSQL, $typestr,$paramarray);
         }
     }
 }
@@ -691,6 +691,7 @@ switch ($ajax_request_action) {
         break;
     case 'updatePrintcount':
         updatePrintcount();
+        break;
     default:
         $message_error = 'Internal error.';
         RenderErrorAjax($message_error);

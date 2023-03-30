@@ -2013,10 +2013,13 @@ function print_receipt() {
                 }
                 if (data['message'] !== undefined) {
                     show_message(data['message'], 'success');
+                    return;
                 }
                 if (data['warn'] !== undefined) {
                     show_message(data['warn'], 'success');
+                    return;
                 }
+                clear_message();
             },
             error: showAjaxError,
         });
@@ -2082,11 +2085,9 @@ function print_badge(index) {
 }
 
 function PrintComplete(data) {
-    var pt_html = '<br/>' + data['message'];
     var badges = data['badges'];
     var regs = [];
     for (index in badges) {
-
         if (map_access(printed_obj, index) == 0) {
             row = cart_perinfo[index];
             mrow = find_primary_membership_by_perid(cart_membership, row['perid']);
@@ -2116,7 +2117,7 @@ function PrintComplete(data) {
         });
     }
     print_shown();
-    document.getElementById('pt-status').innerHTML = pt_html;
+    show_message(data['message'], 'success');
 }
 
 // tab shown events - state mapping for which tab is shown

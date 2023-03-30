@@ -48,6 +48,7 @@ $badgeTypes = array(
     'goh'      => 'G',
     'rollover' => 'R',
     'standard' => 'M',
+    'yearahead' => 'M',
     'premium'  => 'M',
     'test'     => 'X',
     'Attending' => 'A',

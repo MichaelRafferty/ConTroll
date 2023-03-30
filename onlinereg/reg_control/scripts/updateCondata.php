@@ -109,7 +109,11 @@ EOS;
         $yearahead_sortorder = 400;
         $rollover_sortorder = 500;
         foreach ($data as $row) {
-            $roworder = $row['sort_order'];
+            if (array_key_exists('sort_order', $row)) { // deal with table add rows now having sort order
+                $roworder = $row['sort_order'];
+            } else {
+                $roworder = 10;
+            }
             if (($roworder >= 0 && $roworder < 900) || ($roworder == -99999)) {
                 if ($row['memCategory'] == 'rollover') {
                     $roworder = $rollover_sortorder;
@@ -131,6 +135,7 @@ EOS;
                 $newid = dbSafeCmd($addSQL, $addtypes, $paramarray);
                 if ($newid)
                     $inserted++;
+            } else {
                 $paramarray = array($roworder,$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['price'],$row['startdate'],
                     $row['enddate'],$row['atcon'],$row['online'], $row['id']);
