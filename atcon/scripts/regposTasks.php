@@ -578,20 +578,22 @@ EOS;
                 $reg_upd += dbSafeCmd($updRegSQL, $typestr, $paramarray);
             }
         }
-        // Now add the attach record for this item
-        $paramarray = array($user_id, $master_transid, $cartrow['regid'], 'attach', $notes);
-        $typestr = 'iiiss';
-        $new_history = dbSafeInsert($insHistory, $typestr, $paramarray);
-        if ($new_history === false) {
-            $error_message .= "Unable to attach membership " . $cartrow['regid'] . "<BR/>";
-        }
-        // now if there is a new note for this row, add it now
-        if (array_key_exists('new_reg_note', $cartrow)) {
-            $paramarray = array($user_id, $master_transid, $cartrow['regid'], 'notes', $cartrow['new_reg_note']);
+        if (!array_key_exists('todelete', $cartrow)) {
+            // Now add the attach record for this item
+            $paramarray = array($user_id, $master_transid, $cartrow['regid'], 'attach', $notes);
             $typestr = 'iiiss';
             $new_history = dbSafeInsert($insHistory, $typestr, $paramarray);
             if ($new_history === false) {
-                $error_message .= 'Unable to add note to membership ' . $cartrow['regid'] . '<BR/>';
+                $error_message .= "Unable to attach membership " . $cartrow['regid'] . "<BR/>";
+            }
+            // now if there is a new note for this row, add it now
+            if (array_key_exists('new_reg_note', $cartrow)) {
+                $paramarray = array($user_id, $master_transid, $cartrow['regid'], 'notes', $cartrow['new_reg_note']);
+                $typestr = 'iiiss';
+                $new_history = dbSafeInsert($insHistory, $typestr, $paramarray);
+                if ($new_history === false) {
+                    $error_message .= 'Unable to add note to membership ' . $cartrow['regid'] . '<BR/>';
+                }
             }
         }
     }
