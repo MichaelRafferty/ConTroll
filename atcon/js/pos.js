@@ -1085,8 +1085,8 @@ function draw_cart_row(rownum) {
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
         <div class="col-sm-7 p-0">` + label + `</div>
-        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
 `;
                 break;
@@ -1098,8 +1098,8 @@ function draw_cart_row(rownum) {
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
         <div class="col-sm-7 p-0">` + label + `</div>
-        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
 `;
                 break;
@@ -1108,8 +1108,8 @@ function draw_cart_row(rownum) {
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
         <div class="col-sm-7 p-0">` + label + `</div>
-        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
 `;
                 break;
@@ -1120,8 +1120,8 @@ function draw_cart_row(rownum) {
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
         <div class="col-sm-7 p-0">` + label + `</div>
-        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
 `;
                 break;
@@ -1132,8 +1132,8 @@ function draw_cart_row(rownum) {
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
         <div class="col-sm-7 p-0">` + label + `</div>
-        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
 `;
                 break;
@@ -1307,7 +1307,7 @@ function draw_cart_pmtrow(prow) {
     <div class="col-sm-2 p-0">` + pmt['type'] + `</div>
     <div class="col-sm-6 p-0">` + pmt['desc'] + `</div>
     <div class="col-sm-2 p-0">` + code + `</div>
-    <div class="col-sm-2 text-end">` + pmt['amt'] + `</div>
+    <div class="col-sm-2 text-end">` + Number(pmt['amt']).toFixed(2) + `</div>
 </div>
 `;
 }
@@ -1335,13 +1335,13 @@ function draw_cart() {
         html += draw_cart_row(rownum);
     }
     html += `<div class="row">
-    total_price = Number(total_price.toFixed(2));
-    total_paid = Number(total_paid.toFixed(2));
     <div class="col-sm-8 p-0 text-end">Total:</div>
-    <div class="col-sm-2 text-end">$` + total_price + `</div>
-    <div class="col-sm-2 text-end">$` + total_paid + `</div>
+    <div class="col-sm-2 text-end">$` + Number(total_price).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">$` + Number(total_paid).toFixed(2) + `</div>
 </div>
 `;
+    total_price = Number(total_price.toFixed(2));
+    total_paid = Number(total_paid.toFixed(2));
     if (cart_pmt.length > 0) {
         html += `
 <div class="row mt-3">
@@ -1359,7 +1359,7 @@ function draw_cart() {
     <div class="col-sm-8 p-0 text-end">Payment Total:</div>`;
     total_pmt = Number(total_pmt.toFixed(2));
         html += `
-    <div class="col-sm-4 text-end">$` + total_pmt + `</div>
+    <div class="col-sm-4 text-end">$` + total_pmt.toFixed(2) + `</div>
 </div>
 `;
     }
