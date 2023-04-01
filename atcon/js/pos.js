@@ -541,7 +541,9 @@ function remove_from_cart(perid) {
 // remove single membership item from the cart (leaving other memberships and person information
 function delete_membership(index) {
     if (cart_membership[index]['tid'] != '') {
-        cart_membership[index]['todelete'] = 1;
+        if (confirm("Confirm delete for " + cart_membership[index]['label'])) {
+            cart_membership[index]['todelete'] = 1;
+        }
     } else {
         cart_membership.splice(index, 1);
     }
@@ -1055,7 +1057,7 @@ function draw_cart_row(rownum) {
             continue;
 
         mem_is_membership = false;
-        col1 = (Number(mrow['paid']) != 0 || mrow['printcount'] > 0 || freeze_cart) ? '&nbsp;' :
+        col1 = ((!hasManager && mrow['regid'] > 0) || (mrow['paid']) != 0 || mrow['printcount'] > 0 || freeze_cart) ? '&nbsp;' :
             '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
             mrow['index'] + ')" >X</button >';
 
