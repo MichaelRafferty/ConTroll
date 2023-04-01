@@ -257,4 +257,22 @@ page_init($page, $tab,
         </div>
     </div>
     <div id='result_message' class='mt-4 p-2'></div>
+    <!--- change membership modal popup -->
+    <div class='modal modal-lg' id='Change' tabindex='-2' aria-labelledby='Change' data-bs-backdrop='static' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header'>
+                    <div class='modal-title' id='ChangeTitle'>
+                        Change Membership Type
+                    </div>
+                </div>
+                <div class='modal-body' id='ChangeBody'>
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' id='close_change_button' class='btn btn-primary' onclick='save_membership_change();'>Change Membership</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id='result_message' class='mt-4 p-2'></div>
 <pre id='test'></pre>

@@ -99,6 +99,9 @@ var memListMap = null;
 var catList = null;
 var ageList = null;
 var typeList = null;
+var changeModal = null;
+var changeTitle = null;
+var changeBody = null;
 
 // notes items
 var notes = null;
@@ -201,6 +204,10 @@ window.onload = function initpage() {
     notesBody = document.getElementById('NotesBody');
     notesButton = document.getElementById('close_note_button');
 
+    // change membership
+    changeModal = new bootstrap.Modal(document.getElementById('Change'), { focus: true, backldrop: 'static' });
+    changeTitle = document.getElementById("ChangeTitle");
+    changeBody = document.getElementById("ChangeBody");
 
     // load the initial data and the proceed to set up the rest of the system
     var postData = {
@@ -260,26 +267,36 @@ function loadInitialData(data) {
     filt_shortname_regexp = null;
     var match = memList.filter(mem_filter);
     membership_select = '';
+    membership_selectlist = [];
     for (var row in match) {
-        membership_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
+        var option = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
+        membership_select += option;
+        membership_selectlist.push({price:  match[row]['price'], option: option});
     }
     // upgrade_select
     filt_excat = null;
     filt_cat = new Array('upgrade')
     filt_shortname_regexp = null;
     match = memList.filter(mem_filter);
-    upgrade_select = '';
+    upgrade_select = [];
     for (var row in match) {
-        upgrade_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
+        var label = match[row]['label'];
+        day = label.replace(/.*upgrade +(...).*/i, '$1').toLowerCase();
+        if (day.length > 3)
+            day = (match[row]['label']).toLowerCase().substr(0, 3);
+        upgrade_select[day] = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
     }
     // yearahead_select
     filt_cat = new Array('yearahead')
     filt_shortname_regexp = null;
     match = memList.filter(mem_filter);
     yearahead_select = '';
+    yearahead_selectlist = [];
     for (var row in match) {
-        yearahead_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
-    }
+        var option = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
+        yearahead_select += option;
+        yearahead_selectlist.push({price:  match[row]['price'], option: option});
+        }
     // addon_select
     filt_cat = ['addon', 'add-on']
     filt_shortname_regexp = null;
@@ -546,6 +563,55 @@ function delete_membership(index) {
     }
     draw_cart();
 }
+
+// change single membership item from the cart - only allow items of the same class with higher prices
+// var changeRow = null;
+function change_membership(index) {
+    changeRow = index;
+    mrow = cart_membership[index];
+    prow = cart_perinfo[mrow['pindex']];
+    changeTitle.innerHTML = "Change Membership Type for " + (prow['first_name'] + ' ' + prow['last_name']).trim();
+    var html = '<div id="ChangePrior">Current Membership ' + mrow['label'] + "</div>\n";
+    html += '<div id="ChangeTo">Change to:<br/><select name="change_membership_id" id="change_membership_id">' + "\n";
+    // build select list here
+    var optionrows = membership_selectlist;
+    if (mrow['memCategory'] == 'yearahead'&& mrow['conid'] != conid)
+        optionrows = yearahead_selectlist;
+    var price = mrow['price'];
+    for (var row in optionrows) {
+        if (optionrows[row]['price'] >= price)
+            html += optionrows[row]['option'];
+    }
+
+    html += "</select></div>\n";
+
+    changeBody.innerHTML = html;
+    changeModal.show();
+}
+// save_membership_change
+// update saved cart row with new memId
+function save_membership_change() {
+    if (changeRow == null)
+        return;
+
+    mrow = cart_membership[changeRow];
+    var newMemid = document.getElementById("change_membership_id").value;
+    mrow['memId'] = newMemid;
+
+    var mi_row = find_memLabel(newMemid);
+    mrow['memCategory'] = mi_row['memCategory'];
+    mrow['memType'] = mi_row['memType'];
+    mrow['memAge'] = mi_row['memAge'];
+    mrow['shortname'] = mi_row['shortname'];
+    mrow['label'] = mi_row['label'];
+    mrow['price'] = mi_row['price'];
+    ``
+    changeRow = null;
+    changeModal.hide();
+    draw_cart();
+}
+
+
 // cart_renumber:
 // rebuild the indicies in the cart_perinfo and cart_membership tables
 // for shoprt cut reasons indicies are used to allow usage of the filter functions built into javascript
@@ -1043,6 +1109,7 @@ function draw_cart_row(rownum) {
     var addon_html = '';
     var yearahead_eligible = false;
     var upgrade_eligible = false;
+    var day = null;
     var col1 = '';
     var perid = row['perid'];
 
@@ -1053,10 +1120,25 @@ function draw_cart_row(rownum) {
         if (mrow['todelete'] !== undefined)
             continue;
 
+        var category = mrow['memCategory'];
+        if (category == 'yearahead' && mrow['conid'] == conid)
+            category = 'standard'; // last years yearahead is this year's standard
+        var memType = mrow['memType'];
         mem_is_membership = false;
-        col1 = ((!hasManager && mrow['regid'] > 0) || (mrow['paid']) != 0 || mrow['printcount'] > 0 || freeze_cart) ? '&nbsp;' :
-            '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
-            mrow['index'] + ')" >X</button >';
+        // col1 choices
+        //  X = delete element from cart
+        var allow_delete = mrow['regid'] <=  0;
+        var allow_delete_mgr = hasManager && mrow['paid'] == 0 && mrow['printcount'] == 0;
+        var allow_change_mgr = hasManager && mrow['regid'] >0 && mrow['paid'] >= 0 && mrow['printcount'] == 0 && (category == 'standard' || category == 'yearahead') && memType == 'full';
+        col1 = '';
+        if (allow_delete || allow_delete_mgr) {
+            col1 += '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
+                mrow['index'] + ')" >X</button >';
+        }
+        if (allow_change_mgr) {
+            col1 += '<button type = "button" class="btn btn-small btn-warning pt-0 pb-0 ps-1 pe-1 m-0" onclick = "change_membership(' +
+                mrow['index'] + ')" >C</button >';
+        }
 
         var label = mrow['label'];
         if (!freeze_cart) {
@@ -1070,14 +1152,14 @@ function draw_cart_row(rownum) {
             label += ' <button type = "button" class="btn btn-small ' + btncolor + ' pt-0 pb-0 ps-1 pe-1 m-0" onclick = " +show_reg_note(' +
                     mrow['index'] + ', ' + notes_count + ')" >N:' + notes_count.toString() +  '</button >';
             }
-        var category = mrow['memCategory'];
-        if (category == 'yearahead' && mrow['conid'] == conid)
-            category = 'standard'; // last years yearahead is this year's standard
+
         switch (category) {
             case 'standard':
                 yearahead_eligible = true;
-                if (mrow['memType'] == 'oneday')
+                if (mrow['memType'] == 'oneday') {
                     upgrade_eligible = true;
+                    day = (mrow['label']).toLowerCase().substr(0, 3);
+                }
                 // no break - fall through
             case 'freebie':
                 mem_is_membership = true;
@@ -1094,6 +1176,7 @@ function draw_cart_row(rownum) {
                 mem_is_membership = true;
                 yearahead_eligible = true;
                 upgrade_eligible = false;
+                day = null;
                 upgrade_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
@@ -1232,7 +1315,16 @@ function draw_cart_row(rownum) {
 <div class="row">
         <div class="col-sm-1 p-0">&nbsp;</div>
         <div class="col-sm-9 p-0"><select id="cart-mupg-` + rownum + `" name="cart-addid">
-` + upgrade_select + `
+`;
+        // allow for mismatches to show the entire select, if matched, just use that onecol1
+        if (day !== null && upgrade_select[day] !== undefined) {
+            rowhtml += upgrade_select[day];
+        } else {
+            for (var upgrow in upgrade_select) {
+                rowhtml += upgrade_select[upgrow];
+            }
+        }
+        rowhtml += `
             </select>
         </div>
         <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mupg-" + rownum + `')">Add</button></div >

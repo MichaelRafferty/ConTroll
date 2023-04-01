@@ -208,12 +208,12 @@ JOIN atcon_history h ON (m.id = h.regid)
 WHERE h.action = 'print'
 GROUP BY h.regid
 )
-SELECT DISTINCT r.perid, r.id as regid, m.conid, r.price, r.paid, r.create_date, u.tid, r.memId, h.printcount,
+SELECT DISTINCT r.perid, r.id as regid, m.conid, r.price, r.paid, r.create_date, u.tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
                 n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM uniqrids u
 JOIN reg r ON (r.id = u.regid)
 JOIN memLabel m ON (r.memId = m.id)
-LEFT OUTER JOIN printcount h ON (r.id = h.regid)
+LEFT OUTER JOIN printcount pc ON (r.id = pc.regid)
 LEFT OUTER JOIN notes n ON (r.id = n.regid)
 WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
 ORDER BY create_date;
@@ -303,14 +303,14 @@ JOIN atcon_history h ON (m.regid = h.regid)
 WHERE h.action = 'print'
 GROUP BY h.regid
 )
-SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, h.printcount,
+SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, IFNULL(pc.printcount, 0) AS printcount,
                 n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM regids rs
 JOIN reg r ON (rs.regid = r.id)
 JOIN perinfo p ON (p.id = r.perid)
 JOIN reg r1 ON (r1.perid = r.perid)
 JOIN memLabel m ON (r1.memId = m.id)
-LEFT OUTER JOIN printcount h ON (r1.id = h.regid)
+LEFT OUTER JOIN printcount pc ON (r1.id = h.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
 ORDER BY create_date;
 EOS;
@@ -373,7 +373,7 @@ JOIN atcon_history h ON (m.regid = h.regid)
 WHERE h.action = 'print'
 GROUP BY h.regid
 )
-SELECT DISTINCT r.perid, t.regid, m.conid, r.price, r.paid, r.create_date, t.tid, r.memId, pc.printcount,
+SELECT DISTINCT r.perid, t.regid, m.conid, r.price, r.paid, r.create_date, t.tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
                 n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup             
 FROM maxtids t
 JOIN reg r ON (r.id = t.regid)
@@ -465,7 +465,7 @@ function updateCartElements($conid): void
 
     $insPerinfoSQL = <<<EOS
 INSERT INTO perinfo(last_name,first_name,middle_name,suffix,email_addr,phone,badge_name,address,addr_2,city,state,zip,country,contact_ok,share_reg_ok,open_notes,banned,active,creation_date)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N','Y',now());
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N','Y',now());
 EOS;
     $updPerinfoSQL = <<<EOS
 UPDATE perinfo SET
