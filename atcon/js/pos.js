@@ -104,9 +104,14 @@ var ageList = null;
 var typeList = null;
 
 // notes items
-var memberNotes = null;
-var memberNotesTitle = null;
-var memberNotesBody = null;
+var notes = null;
+var notesTitle = null;
+var notesBody = null;
+var notesButton = null;
+var notesIndex = null;
+var notesType = null;
+var notesLocation = null;
+var notesPriorValue = null;
 
 // global items
 var conid = null;
@@ -147,6 +152,7 @@ window.onload = function initpage() {
 
     // find people
     pattern_field = document.getElementById("find_pattern");
+    pattern_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') find_record('search'); });
     id_div = document.getElementById("find_results");
     find_unpaid_button = document.getElementById("find_unpaid_btn");
 
@@ -193,9 +199,10 @@ window.onload = function initpage() {
     print_tab.addEventListener('shown.bs.tab', print_shown)
 
     // notes items
-    memberNotes = new bootstrap.Modal(document.getElementById('memberNotes'), { focus: true, backldrop: 'static' });
-    memberNotesTitle = document.getElementById('memberNotesTitle');
-    memberNotesBody = document.getElementById('memberNotesBody');
+    notes = new bootstrap.Modal(document.getElementById('Notes'), { focus: true, backldrop: 'static' });
+    notesTitle = document.getElementById('NotesTitle');
+    notesBody = document.getElementById('NotesBody');
+    notesButton = document.getElementById('close_note_button');
 
 
     // load the initial data and the proceed to set up the rest of the system
@@ -257,7 +264,7 @@ function loadInitialData(data) {
     var match = memList.filter(mem_filter);
     membership_select = '';
     for (var row in match) {
-        membership_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + "</option>\n";
+        membership_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
     }
     // upgrade_select
     filt_excat = null;
@@ -266,7 +273,7 @@ function loadInitialData(data) {
     match = memList.filter(mem_filter);
     upgrade_select = '';
     for (var row in match) {
-        upgrade_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + "</option>\n";
+        upgrade_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
     }
     // yearahead_select
     filt_cat = new Array('yearahead')
@@ -274,7 +281,7 @@ function loadInitialData(data) {
     match = memList.filter(mem_filter);
     yearahead_select = '';
     for (var row in match) {
-        yearahead_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + "</option>\n";
+        yearahead_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
     }
     // addon_select
     filt_cat = ['addon', 'add-on']
@@ -282,7 +289,7 @@ function loadInitialData(data) {
     match = memList.filter(mem_filter);
     addon_select = '';
     for (row in match) {
-        addon_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + "</option>\n";
+        addon_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
     }
 
     // set up initial values
@@ -731,6 +738,7 @@ function add_new() {
             mrow['memType'] = mi_row['memType'];
             mrow['memAge'] = mi_row['memAge'];
             mrow['shortname'] = mi_row['shortname'];
+            mrow['printcount'] = 0;
             mrow['label'] = mi_row['label'];
         }
 
@@ -1047,19 +1055,22 @@ function draw_cart_row(rownum) {
             continue;
 
         mem_is_membership = false;
-        col1 = (Number(mrow['paid']) != 0 || freeze_cart) ? '&nbsp;' :
+        col1 = (Number(mrow['paid']) != 0 || mrow['printcount'] > 0 || freeze_cart) ? '&nbsp;' :
             '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
             mrow['index'] + ')" >X</button >';
-        if (!freeze_cart) {
-            //alert (mrow['reg_notes'] !== undefined);
-            //alert (mrow['reg_notes'] !== null);
-            //alert (mrow['reg_notes'] !== '');
-            if (mrow['reg_notes'] !== undefined && mrow['reg_notes'] !== null && mrow['reg_notes'] !== '') {
-                col1 += '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "show_reg_note(' +
-                    mrow['index'] + ')" >N</button >';
-            }
-        }
 
+        var label = mrow['label'];
+        if (!freeze_cart) {
+            var notes_count = 0;
+            if (mrow['reg_notes_count'] !== undefined && mrow['reg_notes_count'] !== null) {
+                notes_count = Number(mrow['reg_notes_count']);
+            }
+            var btncolor = 'btn-info';
+            if (mrow['new_reg_note'] !== undefined && mrow['new_reg_note'] !== '')
+                btncolor = 'btn-warning';
+            label += ' <button type = "button" class="btn btn-small ' + btncolor + ' pt-0 pb-0 ps-1 pe-1 m-0" onclick = " +show_reg_note(' +
+                    mrow['index'] + ', ' + notes_count + ')" >N:' + notes_count.toString() +  '</button >';
+            }
         var category = mrow['memCategory'];
         if (category == 'yearahead' && mrow['conid'] == conid)
             category = 'standard'; // last years yearahead is this year's standard
@@ -1074,7 +1085,7 @@ function draw_cart_row(rownum) {
                 membership_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
+        <div class="col-sm-7 p-0">` + label + `</div>
         <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
         <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
     </div>
@@ -1087,7 +1098,7 @@ function draw_cart_row(rownum) {
                 upgrade_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
+        <div class="col-sm-7 p-0">` + label + `</div>
         <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
         <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
     </div>
@@ -1097,7 +1108,7 @@ function draw_cart_row(rownum) {
                 yearahead_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
+        <div class="col-sm-7 p-0">` + label + `</div>
         <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
         <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
     </div>
@@ -1109,7 +1120,7 @@ function draw_cart_row(rownum) {
                 rollover_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
+        <div class="col-sm-7 p-0">` + label + `</div>
         <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
         <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
     </div>
@@ -1121,7 +1132,7 @@ function draw_cart_row(rownum) {
                 addon_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
+        <div class="col-sm-7 p-0">` + label + `</div>
         <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
         <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
     </div>
@@ -1159,17 +1170,16 @@ function draw_cart_row(rownum) {
         <div class="col-sm-3 p-0">Badge Name:</div>
         <div class="col-sm-5 p-0">` + badge_name_default(row['badge_name'], row['first_name'], row['last_name']) + `</div>
         <div class="col-sm-2 p-0 text-center">`;
-    if (row['open_notes'] != null && row['open_notes'].length > 0) {
-        rowhtml += '<button type="button" class="btn btn-sm btn-secondary p-0" onclick="show_open_note(' + row['index'] + ', \'cart\')">Open Note</button>';
+    if (!freeze_cart && row['open_notes'] != null && row['open_notes'].length > 0) {
+        rowhtml += '<button type="button" class="btn btn-sm btn-info p-0" onclick="show_perinfo_notes(' + row['index'] + ', \'cart\')">View Notes</button>';
     }
     rowhtml += `</div>
         <div class="col-sm-2 p-0 text-center">`;
-    if (row['admin_notes'] != null && row['admin_notes'].length > 0) {
-        if (hasManager) {
-            rowhtml += '<button type="button" class="btn btn-sm btn-warning p-0" onclick="show_admin_note(' + row['index'] + ', \'cart\')">Admin Note</button>';
-        } else {
-            rowhtml += ' <span class="bg-warning pt-1 pb-1"><strong>Admin Note</strong></span>';
-        }
+    if (hasManager && !freeze_cart) {
+        var btncolor = 'btn-secondary';
+        if (row['open_notes_pending'] !== undefined && row['open_notes_pending'] === 1)
+            btncolor = 'btn-warning';
+        rowhtml += '<button type="button" class="btn btn-sm ' + btncolor +  ' p-0" onclick="edit_perinfo_notes(' + row['index'] + ', \'cart\')">Edit Notes</button>';
     }
     rowhtml += `</div>
     </div>
@@ -1410,16 +1420,12 @@ function draw_record(row, first) {
     html += `</div>
         <div class="col-sm-2">`;
     if (data['open_notes'] != null && data['open_notes'].length > 0) {
-        html += '<button type="button" class="btn btn-sm btn-secondary p-0" onclick="show_open_note(' + data['index'] + ', \'result\')">Open Note</button>';
+        html += '<button type="button" class="btn btn-sm btn-info p-0" onclick="show_perinfo_notes(' + data['index'] + ', \'result\')">View Notes</button>';
     }
     html += `</div>
         <div class="col-sm-2">`;
-    if (data['admin_notes'] != null && data['admin_notes'].length > 0) {
-        if (hasManager) {
-            html += '<button type="button" class="btn btn-sm btn-warning p-0" onclick="show_admin_note(' + data['index'] + ', \'result\')">Admin Note</button>';
-        } else {
-            html += ' <span class="bg-warning pt-1 pb-1"><strong>Admin Note</strong></span>';
-        }
+    if (hasManager) {
+        html += ' <span class="bg-warning pt-1 pb-1"><strong>Edit Notes</strong></span>';
     }
 
     html += `
@@ -1518,50 +1524,137 @@ function perNotesIcons(cell, formatterParams, onRendered) { //plain text value
     var prow = result_perinfo[index];
     var html = "";
     if (prow['open_notes'] != null && prow['open_notes'].length > 0) {
-        html += '<button type="button" class="btn btn-sm btn-secondary p-0" onclick="show_open_note(' + index + ', \'result\')">O</button>';
+        html += '<button type="button" class="btn btn-sm btn-info p-0" onclick="show_perinfo_notes(' + index + ', \'result\')">O</button>';
     }
-    if (prow['admin_notes'] != null && prow['admin_notes'].length > 0) {
-        if (hasManager) {
-            html += '<button type="button" class="btn btn-sm btn-warning p-0" onclick="show_admin_note(' + index + ', \'result\')">A</button>';
-        } else {
-            html += ' <span class="bg-warning pt-1 pb-1"><strong>A</strong></span>';
-        }
+    if (hasManager) {
+        html += ' <button type="button" class="btn btn-sm btn-secondary p-0" onclick="edit_perinfo_notes(' + prow['index'] + ', \'result\')">E</button>';
     }
     return html;
 }
 
 // display the note popup with the requested notes
-function show_open_note(index, where) {
-    var prow = null;
+function show_perinfo_notes(index, where) {
+    notesLocation = null;
     if (where == 'cart') {
-        prow = cart_perinfo[index];
+        notesLocation = cart_perinfo[index];
+        notesType = 'PC';
     }
     if (where == 'result') {
-        prow = result_perinfo[index];
+        notesLocation = result_perinfo[index];
+        notesType = 'PR';
     }
-    memberNotesTitle.innerHTML = "Open Notes for " + prow['fullname'];
-    memberNotesBody.innerHTML = prow['open_notes'];
-    memberNotes.show();
+    if (notesLocation == null)
+        return;
+
+    notesIndex = index;
+
+    notesTitle.innerHTML = "Notes for " + notesLocation['fullname'];
+    notesBody.innerHTML = notesLocation['open_notes'].replace(/\n/g, '<br/>');
+    notesButton.innerHTML = "Close";
+    notes.show();
 }
-function show_admin_note(index, where) {
-    var prow = null;
+// edit_perinfo_notes: display in an editor the perinfo notes field
+// only managers can edit the notes
+function edit_perinfo_notes(index, where) {
+    if (!hasManager)
+        return;
+    notesLocation = null;
     if (where == 'cart') {
-        prow = cart_perinfo[index];
+        notesLocation = cart_perinfo[index];
+        notesType = 'PC';
     }
     if (where == 'result') {
-        prow = result_perinfo[index];
+        notesLocation = result_perinfo[index];
+        notesType = 'PR';
     }
-    memberNotesTitle.innerHTML = "Admin Notes for " + prow['fullname'];
-    memberNotesBody.innerHTML = prow['admin_notes'];
-    memberNotes.show();
+    if (notesLocation == null)
+        return;
+
+    notesIndex = index;
+    notesPriorValue = notesLocation['open_notes'];
+    if (notesPriorValue === null) {
+        notesPriorValue = '';
+    }
+
+    notesTitle.innerHTML = "Editing Notes for " + notesLocation['fullname'];
+    notesBody.innerHTML = '<textarea name="perinfoNote" class="form-control" id="perinfoNote" cols=60 wrap="soft" style="height:400px;">' +
+        notesPriorValue + "</textarea>";
+    notesButton.innerHTML = "Save and Close";
+    notes.show();
 }
 
-function show_reg_note(index) {
-    var mrow = cart_membership[index];
-    var prow = cart_perinfo[mrow['pindex']];
-    memberNotesTitle.innerHTML = "Registration Notes for " + prow['fullname'] + '<br/>Membership: ' + mrow['label'];
-    memberNotesBody.innerHTML = mrow['reg_notes'];
-    memberNotes.show();
+// show the registration element note, anyone can add a new note, so it needs a save and close button
+function show_reg_note(index, count) {
+    var bodyHTML = '';
+    notesLocation = cart_membership[index];
+    var prow = cart_perinfo[notesLocation['pindex']];
+
+    notesType = 'RC';
+    notesIndex = index;
+
+    if (count > 0) {
+        bodyHTML = notesLocation['reg_notes'].replace(/\n/g, '<br/>');
+    }
+    bodyHTML += '<br/>&nbsp;<br/>Enter/Update new note:<br/><input type="text" name="new_reg_note" id="new_reg_note" maxLength=64 size=60>'
+    notesTitle.innerHTML = "Registration Notes for " + prow['fullname'] + '<br/>Membership: ' + notesLocation['label'];
+    notesBody.innerHTML = bodyHTML;
+    if (notesLocation['new_reg_note'] !== undefined) {
+        document.getElementById('new_reg_note').value = notesLocation['new_reg_note'];
+    }
+    notesButton.innerHTML = "Save and Close";
+    notes.show();
+}
+
+// save_note
+//  save and update the note based on type
+function save_note() {
+    if (notesButton.innerHTML == "Save and Close") {
+        if (notesType == 'RC') {
+            notesLocation['new_reg_note'] = document.getElementById("new_reg_note").value;
+            draw_cart();
+        }
+        if (notesType == 'PC' && hasManager) {
+            notesLocation['open_notes'] = document.getElementById("perinfoNote").value;
+            notesLocation['open_notes_pending'] = 1;
+            draw_cart();
+        }
+        if (notesType == 'PR' && hasManager) {
+            var new_note = document.getElementById("perinfoNote").value;
+            if (new_note != notesPriorValue) {
+                notesLocation['open_notes'] = new_note;
+                // search for matching names
+                var postData = {
+                    ajax_request_action: 'updatePerinfoNote',
+                    perid: notesLocation['perid'],
+                    notes: notesLocation['open_notes'],
+                    user_id: user_id,
+                };
+                $.ajax({
+                    method: "POST",
+                    url: "scripts/regposTasks.php",
+                    data: postData,
+                    success: function (data, textstatus, jqxhr) {
+                        if (data['error'] !== undefined) {
+                            show_message(data['error'], 'error');
+                            return;
+                        }
+                        if (data['message'] !== undefined) {
+                            show_message(data['message'], 'success');
+                        }
+                        if (data['warn'] !== undefined) {
+                            show_message(data['warn'], 'warn');
+                        }
+                    },
+                    error: showAjaxError,
+                });
+            }
+        }
+    }
+    notesType = null;
+    notesLocation = null;
+    notesIndex = null;
+    notesPriorValue = null;
+    notes.hide();
 }
 
 // select the row (tid) from the unpaid list and add it to the cart, switch to the payment tab (used by find unpaid)

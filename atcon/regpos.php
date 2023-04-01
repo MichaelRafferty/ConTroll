@@ -240,18 +240,18 @@ page_init($page, $tab,
         </div>       
     </div>
     <!--- notes modal popup -->
-    <div class='modal' id='memberNotes' tabindex='-2' aria-labelledby='Member Notes' aria-hidden='true'>
+    <div class='modal modal-lg' id='Notes' tabindex='-2' aria-labelledby='Notes' data-bs-backdrop='static' aria-hidden='true'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header'>
-                    <div class='modal-title' id="memberNotesTitle">
+                    <div class='modal-title' id="NotesTitle">
                         Member Notes
                     </div>
                 </div>
-                <div class='modal-body' id="memberNotesBody">
+                <div class='modal-body' id="NotesBody">
                 </div>
                 <div class='modal-footer'>
-                    <button type='button'  class='btn btn-primary' data-bs-dismiss='modal'>Close</button>
+                    <button type='button' id="close_note_button" class='btn btn-primary' onclick="save_note();">Close</button>
                 </div>
             </div>
         </div>
