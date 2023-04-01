@@ -1,6 +1,3 @@
-//TODO: allow removal of unpaid items in Database from cart, and find some way to mark them as deleted in the cart, stop showing or summing them and have the update routine
-//      deal with that.
-
 // cart fields
 var void_button = null;
 var startover_button = null;
@@ -1338,6 +1335,8 @@ function draw_cart() {
         html += draw_cart_row(rownum);
     }
     html += `<div class="row">
+    total_price = Number(total_price.toFixed(2));
+    total_paid = Number(total_paid.toFixed(2));
     <div class="col-sm-8 p-0 text-end">Total:</div>
     <div class="col-sm-2 text-end">$` + total_price + `</div>
     <div class="col-sm-2 text-end">$` + total_paid + `</div>
@@ -1357,7 +1356,9 @@ function draw_cart() {
             total_pmt += Number(cart_pmt[prow]['amt']);
         }
         html += `<div class="row">
-    <div class="col-sm-8 p-0 text-end">Payment Total:</div>
+    <div class="col-sm-8 p-0 text-end">Payment Total:</div>`;
+    total_pmt = Number(total_pmt.toFixed(2));
+        html += `
     <div class="col-sm-4 text-end">$` + total_pmt + `</div>
 </div>
 `;
@@ -2170,52 +2171,20 @@ function pay() {
 
 // Create a receipt and send it to the receipt printer
 function print_receipt() {
+    // optional header text:
     var d = new Date();
     var payee = (cart_perinfo[0]['first_name'] + ' ' + cart_perinfo[0]['last_name']).trim();
-    // title row
-    var text = "\nReceipt for payment to " + conlabel + "\nat " + d.toLocaleString() + "\nBy: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid;
-    // title + heading
-    var html = text.replace(/\n/g, "<br/>") + `
-<div class="container-fluid">
-<div class="row mt-3">
-    <div class="col-sm-8 text-bg-primary">Payment</div>
-    <div class="col-sm-2 text-bg-primary">Code</div>
-    <div class="col-sm-2 text-bg-primary text-end">Amount</div>
-</div>
-`;
-    text += "\n\nPayment   Amount Description/Code\n";
-    const Dollars = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-        minimumFractionDigits: 2,
-    });
-    var total_pmt = 0;
-    for (var rownum in cart_pmt) {
-        prow = cart_pmt[rownum];
-        html += draw_cart_pmtrow(rownum);
-        var dolamt = Dollars.format(prow['amt']);
-        var code = '';
-        if (prow['type'] == 'check') code = prow['checkno'];
-        if (prow['type'] == 'credit') code = prow['ccauth'];
-        //console.log('type length = ' + prow['type'].length);
-        //console.log('amt length = ' + dolamt.length);
-        text += prow['type'] + ' '.repeat(20-(prow['type'].length + dolamt.length)) + dolamt + ' ' + prow['desc'] + '/' + code + "\n";
-        total_pmt += Number(prow['amt']);
-    }
-    html += `<div class="row">
-    <div class="col-sm-8 p-0 text-end">Payment Total:</div>
-    <div class="col-sm-4 text-end">$` + total_pmt + `</div>
-</div>
-</div>
-`;
-    document.getElementById('pay_status').innerHTML = html;
-    dolamt = Dollars.format(total_pmt);
-    text += "Total" + ' '.repeat(15-dolamt.length) + dolamt + "\n\n";
-    console.log(text);
-    // now print the receipt
+    var header_text = "\nReceipt for payment to " + conlabel + "\nat " + d.toLocaleString() + "\nBy: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid;
+    // optional footer text
+    var footer_text = '';
+    // server side will print the receipt
     var postData = {
         ajax_request_action: 'printReceipt',
-        receipt: text,
+        header: header_text,
+        prows: cart_perinfo,
+        mrows: cart_membership,
+        pmtrows: cart_pmt,
+        footer: footer_text,
     };
     if (receiptPrinterAvailable) {
         $.ajax({
@@ -2502,7 +2471,7 @@ function pay_shown(current, previous) {
             pay_button_rcpt.hidden = true;
             pay_button_print.hidden = true;
         }
-        var total_amount_due = total_price - total_paid;
+        var total_amount_due = (total_price - total_paid).toFixed(2);
 
         // draw the pay screen
 

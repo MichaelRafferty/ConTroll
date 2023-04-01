@@ -14,7 +14,7 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 // print a badge if the printer is defined, note queue 0 == make temp file only
-function printBadge($conid) {
+function printBadge():void {
     $response = array();
     $response['message'] = '';
     if (isset($_SESSION['badgePrinter'])) {
@@ -57,8 +57,61 @@ function printBadge($conid) {
 }
 
 // printReceipt: print the text receipt "text", if queue == 0, then just log the receipt
-function printReceipt($conid) {
-    $receipt = $_POST['receipt'];
+function printReceipt():void {
+    $header = $_POST['header'];
+    $prows = $_POST['prows'];
+    $mrows = $_POST['mrows'];
+    $pmtrows = $_POST['pmtrows'];
+    $footer = $_POST['footer'];
+
+    $dolfmt = new NumberFormatter("", NumberFormatter::CURRENCY);
+
+    // start with header
+    $receipt = $header . "\n";
+    // cart rows, only added to printout:
+    $already_paid = 0;
+    $total_due = 0;
+    foreach ($prows as $prow) {
+        $receipt .= "\nMember: " . trim($prow['first_name'] . ' ' . $prow['last_name']) . "\n";
+        $member_due = 0;
+        foreach ($mrows as $mrow) {
+            if ($mrow['perid'] == $prow['perid']) {
+                $receipt .= "   " . $mrow['label'] . ", " . $dolfmt->formatCurrency((float) $mrow['price'], 'USD') . "\n";
+                $already_paid += $mrow['paid'];
+                $member_due += $mrow['price'];
+            }
+        }
+        $member_due = (float)round($member_due, 2);
+        $receipt .= "   Subtotal: " . $dolfmt->formatCurrency((float) $member_due, 'USD') . "\n";
+        $total_due += $member_due;
+    }
+    $receipt .= " Total Due: " . $dolfmt->formatCurrency((float) $total_due, 'USD') . "\n\nPayment   Amount Description/Code\n";
+    $total_pmt = 0;
+    if ($already_paid > 0) {
+        $total_pmt += $already_paid;
+        $receipt .= sprintf("prior%15s Already Paid\n", $dolfmt->formatCurrency($already_paid, 'USD'));
+    }
+
+    foreach ($pmtrows as $pmtrow) {
+        $type = $pmtrow['type'];
+        $amtlen = 20 - mb_strlen($type);
+
+        $line = sprintf("%s%" . $amtlen . "s %s", $type, $dolfmt->formatCurrency($pmtrow['amt'], 'USD'), $pmtrow['desc']);
+        if ($type == 'check') {
+            $line .= ' /' . $pmtrow['checkno'];
+        }
+        if ($type == 'credit') {
+            $line .= ' /' . $pmtrow['ccauth'];
+        }
+        $receipt .= $line . "\n";
+        $total_pmt += $pmtrow['amt'];
+    }
+
+    $receipt .= "         ----------\n" . sprintf("total%15s Total Amount Paid", $dolfmt->formatCurrency($total_pmt, 'USD'));
+    if ($footer != '') {
+        $receipt .= "\n$footer";
+    }
+
     if (isset($_SESSION['receiptPrinter'])) {
         $printer = $_SESSION['receiptPrinter'];
         $result_code = print_receipt($printer, $receipt);
@@ -96,10 +149,10 @@ if (!check_atcon($method, $conid)) {
 }
 switch ($ajax_request_action) {
     case 'printBadge':
-        printBadge($conid);
+        printBadge();
         break;
     case 'printReceipt':
-        printReceipt($conid);
+        printReceipt();
         break;
     default:
         $message_error = 'Internal error.';

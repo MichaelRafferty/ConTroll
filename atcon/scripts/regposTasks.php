@@ -216,7 +216,7 @@ JOIN memLabel m ON (r.memId = m.id)
 LEFT OUTER JOIN printcount h ON (r.id = h.regid)
 LEFT OUTER JOIN notes n ON (r.id = n.regid)
 WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
-ORDER BY create_date DESC;
+ORDER BY create_date;
 EOS;
         //web_error_log($unpaidSQLM);
         $rp = dbSafeQuery($unpaidSQLP, 'ii', array($conid, $conid + 1));
@@ -312,7 +312,7 @@ JOIN reg r1 ON (r1.perid = r.perid)
 JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN printcount h ON (r1.id = h.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
-ORDER BY create_date DESC;
+ORDER BY create_date;
 EOS;
         //web_error_log($searchSQLM);
         $rp = dbSafeQuery($searchSQLP, 'iiiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search));
@@ -381,7 +381,7 @@ JOIN limitedp p ON (p.id = r.perid)
 JOIN memLabel m ON (r.memId = m.id)
 LEFT OUTER JOIN notes n ON (r.id = n.regid)
 LEFT OUTER JOIN printcount pc ON (r.id = pc.regid)
-ORDER BY create_date DESC;
+ORDER BY create_date;
 EOS;
         $rp = dbSafeQuery($searchSQLP, 'sss', array($name_search, $name_search, $name_search));
         $rm = dbSafeQuery($searchSQLM, 'sssii', array($name_search, $name_search, $name_search, $conid, $conid + 1));
@@ -647,14 +647,14 @@ function processPayment():void {
         return;
     }
 
-    $amt = $new_payment['amt'];
+    $amt = (float) $new_payment['amt'];
     // validate that the payment ammount is not too large
     $total_due = 0;
     foreach ($cart_membership as $cart_row) {
         $total_due += $cart_row['price'] - $cart_row['paid'];
     }
 
-    if ($amt > $total_due) {
+    if (round($amt,2) > round($total_due,2)) {
         ajaxError('invalid payment amount passed');
         return;
     }
