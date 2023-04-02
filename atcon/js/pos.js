@@ -503,16 +503,29 @@ function build_record_hover(e, cell, onRendered) {
 }
 
 // add search person/transaction from result_perinfo record to the cart
-function add_to_cart(index) {
+function add_to_cart(index, table) {
+    var rt = null;
+    var rm = null;
+
+    if (table == 'result') {
+        rt = result_perinfo;
+        rm = result_membership;
+    }
+
+    if (table == 'add') {
+        rt = add_perinfo;
+        rm = add_membership;
+    }
+
     if (index >= 0) {
-        if (result_perinfo[index]['banned'] == 'Y') {
-            alert("Please ask " + (result_perinfo[index]['first_name'] + ' ' + result_perinfo[index]['last_name']).trim() +" to talk to the Registration Administrator, you cannot add them at this time.")
+        if (rt[index]['banned'] == 'Y') {
+            alert("Please ask " + (result_perinfo[index]['first_name'] + ' ' + rt[index]['last_name']).trim() +" to talk to the Registration Administrator, you cannot add them at this time.")
             return;
         }
-        if (map_access(cart_perinfo_map, result_perinfo[index]['perid']) === undefined) {
-            var perid = result_perinfo[index]['perid'];
-            cart_perinfo.push(make_copy(result_perinfo[index]));
-            var mrows = find_memberships_by_perid(result_membership, perid);
+        if (map_access(cart_perinfo_map, rt[index]['perid']) === undefined) {
+            var perid = rt[index]['perid'];
+            cart_perinfo.push(make_copy(rt[index]));
+            var mrows = find_memberships_by_perid(rm, perid);
             for (var mrownum in mrows) {
                 cart_membership.push(make_copy(mrows[mrownum]));
             }
@@ -1052,6 +1065,7 @@ function add_found(data) {
             ],
         });
         addnew_button.innerHTML = "Add New";
+        add_edit_initial_state = $("#add-edit-form").serialize();
         return;
     }
     add_new_to_cart();
@@ -1601,17 +1615,17 @@ function draw_record(row, first) {
     <div class="row mt-2">
         <div class="col-sm-3">`;
     if (first) {
-        html += `<button class="btn btn-primary btn-small" id="add_btn_all" onclick="add_to_cart(-` + number_search + `);">Add All Cart</button>`;
+        html += `<button class="btn btn-primary btn-small" id="add_btn_all" onclick="add_to_cart(-` + number_search + `, 'result');">Add All Cart</button>`;
     }
     html += `</div>
         <div class="col-sm-5">`;
     if (map_access(cart_perinfo_map, data['perid']) === undefined) {
         if (data['banned'] == 'Y') {
             html += `
-            <button class="btn btn-danger btn-small" id="add_btn_1" onclick="add_to_cart(` + row + `);">B</button>`;
+            <button class="btn btn-danger btn-small" id="add_btn_1" onclick="add_to_cart(` + row + `, 'result');">B</button>`;
         } else {
             html += `
-            <button class="btn btn-success btn-small" id="add_btn_1" onclick="add_to_cart(` + row + `);">Add to Cart</button>`;
+            <button class="btn btn-success btn-small" id="add_btn_1" onclick="add_to_cart(` + row + `, 'result');">Add to Cart</button>`;
         }
     } else {
         html += `
@@ -1705,13 +1719,13 @@ function addCartIcon(cell, formatterParams, onRendered) { //plain text value
     }
     if (banned == 'Y') {
         return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="add_to_cart(' +
-            cell.getRow().getData().index + ')">B</button>';
+            cell.getRow().getData().index + ', \'' + formatterParams['t'] + '\')">B</button>';
     } else if (map_access(cart_perinfo_map, cell.getRow().getData().perid) === undefined) {
         html = '<button type="button" class="btn btn-sm btn-success p-0" onclick="add_to_cart(' +
-            cell.getRow().getData().index + ')">Add</button>';
+            cell.getRow().getData().index + ', \'' + formatterParams['t'] + '\')">Add</button>';
         var tid = cell.getRow().getData().tid;
         if (tid != '' && tid != undefined && tid != null) {
-            html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" onclick="add_to_cart(' + (-tid) + ')">Tran</button>';
+            html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" onclick="add_to_cart(' + (-tid) + ', \'' + formatterParams['t'] + '\')">Tran</button>';
         }
         return html;
     }
@@ -1870,7 +1884,7 @@ function save_note() {
 // select the row (tid) from the unpaid list and add it to the cart, switch to the payment tab (used by find unpaid)
 // marks it as a tid (not perid) add by inverting it.  (add_to_cart will deal with the inversion)
 function add_unpaid(tid) {
-    add_to_cart(-Number(tid));
+    add_to_cart(-Number(tid), 'result');
     // force a new transaction for the payment as the cashier is not the same as the check-in in this case.
     review_nochanges();
 }
@@ -1982,7 +1996,7 @@ function found_record(data) {
             for (var row in result_membership) {
                 if (result_membership[row]['tid'] == tid) {
                     var index = result_membership[row]['pindex'];
-                    add_to_cart(index);
+                    add_to_cart(index, 'result');
                 }
             }
             review_nochanges(); // build the master transaction and attach records
