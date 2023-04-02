@@ -650,7 +650,7 @@ function cart_renumber() {
 
 // common confirm add/edit screen dirty, if the tab isn't shown switch to it if direy
 function confirm_discard_add_edit(silent) {
-    if (!add_edit_dirty_check) // don't check if dirty, return ok to discard
+    if (!add_edit_dirty_check || freeze_cart) // don't check if dirty, or if the cart is frozed return ok to discard
         return true;
 
     add_edit_current_state = $("#add-edit-form").serialize();
@@ -671,6 +671,10 @@ function confirm_discard_add_edit(silent) {
 }
 
 function confirm_discard_cart_entry(index, silent) {
+    if (freeze_cart) {
+        return true;
+    }
+
     var dirty = false;
     if (index >= 0) {
         dirty = cart_perinfo[index]['dirty'] === true;
@@ -699,6 +703,7 @@ function confirm_discard_cart_entry(index, silent) {
 
 // event handler for beforeunload event, prevents leaving with unsaved data
 function check_all_unsaved(e) {
+    // data editing checks
     if (!confirm_discard_add_edit(true))  {
         e.preventDefault();
         e.returnValue="You have unsaved member changes, leave anyway";

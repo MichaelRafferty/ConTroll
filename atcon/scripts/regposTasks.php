@@ -134,7 +134,10 @@ function findRecord($conid):void {
 
     $limit = 99999999;
     if ($find_type == 'unpaid') {
-        $withClause = <<<EOS
+//
+// Find Unpaid on latest transaction ID for those records
+//
+        $withClauseUnpaid = <<<EOS
 WITH unpaids AS (
 /* first the unpaid transactions from regs with their create_trans */
 SELECT r.id, create_trans as tid
@@ -170,7 +173,7 @@ FROM perids
 )
 EOS;
         $unpaidSQLP = <<<EOS
-$withClause
+$withClauseUnpaid
 SELECT DISTINCT u.perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
 	p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
@@ -181,7 +184,7 @@ JOIN perinfo p ON (u.perid = p.id)
 ORDER BY last_name, first_name;
 EOS;
         $unpaidSQLM = <<<EOS
-$withClause
+$withClauseUnpaid
 , ridtid AS (
 SELECT r.id as regid, create_trans as tid
 FROM uniqueperids p
@@ -222,22 +225,24 @@ EOS;
         $rp = dbSafeQuery($unpaidSQLP, 'ii', array($conid, $conid + 1));
         $rm = dbSafeQuery($unpaidSQLM, 'iiii', array($conid, $conid + 1, $conid, $conid + 1));
     } else if (is_numeric($name_search)) {
-        // this is perid, or transid
+//
+// this is perid, or transid
+//
         $withClause = <<<EOS
-WITH regt AS (
-/* first reg ids for this transaction  as specified as a number */
+WITH regbytid AS (
+/* first reg ids for this create transaction as specified as a number */
 SELECT r.id AS regid, create_trans as tid
 FROM reg r
 JOIN memLabel m ON (r.memId = m.id)
 WHERE create_trans = ? AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
-/* then add in reg ids from the attach transaction */
+/* then add in reg ids for this attach transaction */
 UNION SELECT regid, tid
 FROM atcon_history h
 JOIN reg r ON (r.id = h.regid)
 JOIN memLabel m ON (r.memId = m.id)
 WHERE tid = ? AND h.action = 'attach' AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
-), regp AS (
-/* find the reg id's for this person */
+), regbyperid AS (
+/* is the number a perinfo?  find the reg id's for this person matching the number */
 SELECT r.id AS regid
 FROM reg r
 JOIN memLabel m ON (r.memId = m.id)
@@ -245,10 +250,10 @@ WHERE perid = ? AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahea
 ), regs AS (
 /* now get the transactions for these regids */
 SELECT rs.regid, create_trans as tid
-FROM regp rs
+FROM regbyperid rs
 JOIN reg r ON (r.id = rs.regid)
 UNION SELECT h.regid, tid
-FROM regp rs
+FROM regbyperid rs
 JOIN atcon_history h ON (h.regid = rs.regid AND h.action = 'attach')
 ), maxtid AS (
 /* now take the most recent transaction */
@@ -263,7 +268,7 @@ LEFT OUTER JOIN atcon_history h ON (h.tid = m.tid AND h.action = 'attach')
 LEFT OUTER JOiN reg r ON (r.create_trans = m.tid)
 ), regids AS (
 /* and pull both sets together */
-SELECT regid FROM regt
+SELECT regid FROM regbytid
 UNION SELECT regid FROM regpt
 )
 EOS;
@@ -310,7 +315,7 @@ JOIN reg r ON (rs.regid = r.id)
 JOIN perinfo p ON (p.id = r.perid)
 JOIN reg r1 ON (r1.perid = r.perid)
 JOIN memLabel m ON (r1.memId = m.id)
-LEFT OUTER JOIN printcount pc ON (r1.id = h.regid)
+LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
 ORDER BY create_date;
 EOS;
@@ -318,8 +323,9 @@ EOS;
         $rp = dbSafeQuery($searchSQLP, 'iiiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search));
         $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1));
     } else {
-        // this is the string search portion as the field is alphanumeric
-
+//
+// this is the string search portion as the field is alphanumeric
+//
         // name match
         $limit = 50; // only return 50 people's memberships
         $name_search = '%' . preg_replace('/ +/', '%', $name_search) . '%';
