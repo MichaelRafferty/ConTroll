@@ -95,6 +95,7 @@ page_init($page, $tab,
                         </div>
                     </div>
                     <div class="tab-pane fade" id="add-pane" role="tabpanel" aria-labelledby="add-tab" tabindex="1">
+                        <form id="add-edit-form" name="add-edit-form" onsubmit="return false;">
                          <div class="container-fluid">
                             <div class="row" id="add_header">
                                 <div class="col-sm-12 text-bg-primary mb-2">
@@ -213,6 +214,7 @@ page_init($page, $tab,
                                 </div>
                             </div>
                         </div>
+                        </form>
                     </div>
                     <div class="tab-pane fade" id="review-pane" role="tabpanel" aria-labelledby="review-tab" tabindex="2">
                         <div id="review-div">Review Data</div>

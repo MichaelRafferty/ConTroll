@@ -37,7 +37,7 @@ var memLabel = null;
 var find_unpaid_button = null;
 var find_perid = null;
 
-// add new person fields
+// add/edit person fields
 var add_index_field = null;
 var add_perid_field = null;
 var add_memIndex_field = null;
@@ -56,7 +56,6 @@ var add_phone_field = null;
 var add_badgename_field = null;
 var add_contact_field = null;
 var add_share_field = null;
-var add_mem_field = null;
 var add_header = null;
 var addnew_button = null;
 var clearadd_button = null;
@@ -68,6 +67,9 @@ var add_mt_dataentry = `
     <select id='ae_mem_sel' name='age' style="width:300px;" tabindex='15'>
     </select>
 `;
+var add_edit_dirty_check = false;
+var add_edit_initial_state = "";
+var add_edit_current_state = "";
 
 // review items
 var review_div = null;
@@ -156,7 +158,7 @@ window.onload = function initpage() {
     id_div = document.getElementById("find_results");
     find_unpaid_button = document.getElementById("find_unpaid_btn");
 
-    // add people
+    // add/edit people
     add_index_field = document.getElementById("perinfo-index");
     add_perid_field = document.getElementById("perinfo-perid");
     add_memIndex_field = document.getElementById("membership-index");
@@ -180,8 +182,10 @@ window.onload = function initpage() {
     clearadd_button = document.getElementById("clearadd-btn");
     add_results_div = document.getElementById("add_results");
     add_mem_select = document.getElementById("ae_mem_select");
+    add_edit_initial_state = $("#add-edit-form").serialize();
+    window.addEventListener("beforeunload", check_all_unsaved);
 
-    // review items
+        // review items
     review_div = document.getElementById('review-div');
     country_select = document.getElementById('country').innerHTML;
 
@@ -231,7 +235,6 @@ window.onload = function initpage() {
         error: showAjaxError,
     });
 }
-
 
 // load mapping tables from database to javascript arrayy
 // also retrieve session data about printers
@@ -427,6 +430,12 @@ function void_trans() {
 // if no memberships or payments have been added to the database, this will reset for the next customer
 // TODO: add how to tell if it's allowed to be shown as enabled
 function start_over(reset_all) {
+    if (!confirm_discard_add_edit(false))
+        return;
+
+    if (!confirm_discard_cart_entry(-1,false))
+        return;
+
     clear_message();
     // empty cart
     cart = [];
@@ -534,7 +543,14 @@ function add_to_cart(index) {
 
 // remove person and all of their memberships from the cart
 function remove_from_cart(perid) {
+    if (!confirm_discard_add_edit(false))
+        return;
+
     var index = map_access(cart_perinfo_map, perid);
+
+    if (!confirm_discard_cart_entry(index, false))
+        return;
+
     var mrows = find_memberships_by_perid(cart_membership, perid);
     // need to splice backwards so the indicies don't change
     var delrows = [];
@@ -557,6 +573,7 @@ function delete_membership(index) {
     if (cart_membership[index]['tid'] != '') {
         if (confirm("Confirm delete for " + cart_membership[index]['label'])) {
             cart_membership[index]['todelete'] = 1;
+            cart_perinfo[cart_membership['pindex']]['dirty'] = true;
         }
     } else {
         cart_membership.splice(index, 1);
@@ -605,7 +622,8 @@ function save_membership_change() {
     mrow['shortname'] = mi_row['shortname'];
     mrow['label'] = mi_row['label'];
     mrow['price'] = mi_row['price'];
-    ``
+    cart_perinfo_map[mrow['pindex']]['dirty'] = true;
+
     changeRow = null;
     changeModal.hide();
     draw_cart();
@@ -630,8 +648,78 @@ function cart_renumber() {
     }
 }
 
+// common confirm add/edit screen dirty, if the tab isn't shown switch to it if direy
+function confirm_discard_add_edit(silent) {
+    if (!add_edit_dirty_check) // don't check if dirty, return ok to discard
+        return true;
+
+    add_edit_current_state = $("#add-edit-form").serialize();
+    if (add_edit_initial_state == add_edit_current_state)
+        return true; // no changes found
+
+    if (silent)
+        return false;
+
+    // show the add/edit screen if it's hidden
+    bootstrap.Tab.getOrCreateInstance(add_tab).show();
+
+    if (!confirm("Discard current data in add/edit screen?")) {
+        return false; // confirm answered no, return not safe to discard
+    }
+
+    return true;
+}
+
+function confirm_discard_cart_entry(index, silent) {
+    var dirty = false;
+    if (index >= 0) {
+        dirty = cart_perinfo[index]['dirty'] === true;
+    } else {
+        for (var row in cart_perinfo) {
+            dirty ||= cart_perinfo[row]['dirty'] === true;
+        }
+    }
+
+    if (!dirty)
+        return true;
+
+    if (silent)
+        return false;
+
+    var msg = "Discard updated cart items?";
+    if (index >= 0)
+        msg = "Discard updated cart items for " + (cart_perinfo[index]['first_name'] + ' ' + cart_perinfo[index]['last_name']).trim();
+
+    if (!confirm(msg)) {
+        return false; // confirm answered no, return not safe to discard
+    }
+
+    return true;
+}
+
+// event handler for beforeunload event, prevents leaving with unsaved data
+function check_all_unsaved(e) {
+    if (!confirm_discard_add_edit(true))  {
+        e.preventDefault();
+        e.returnValue="You have unsaved member changes, leave anyway";
+        return;
+    }
+
+    if (!confirm_discard_cart_entry(-1, true)) {
+        e.preventDefault();
+        e.returnValue="You have unsaved cart changes, leave anyway";
+        return;
+    }
+
+    delete e['returnValue'];
+    return;
+}
+
 // populate the add/edit screen from a cart item, and switch to add/edit
 function edit_from_cart(perid) {
+    if (!confirm_discard_add_edit(false))
+            return;
+
     clear_add();
     var cartrow = cart_perinfo[map_access(cart_perinfo_map, perid)];
 
@@ -684,6 +772,9 @@ function edit_from_cart(perid) {
     addnew_button.innerHTML = "Update to Cart";
     clearadd_button.innerHTML = "Discard Update";
     add_mode = false;
+    add_edit_dirty_check = true;
+    add_edit_initial_state = $("#add-edit-form").serialize();
+    add_edit_current_state = "";
     bootstrap.Tab.getOrCreateInstance(add_tab).show();
 }
 
@@ -732,6 +823,9 @@ function clear_add() {
     addnew_button.innerHTML = "Add to Cart";
     clearadd_button.innerHTML = 'Clear Add Person Form';
     add_mode = true;
+    add_edit_dirty_check = true;
+    add_edit_initial_state = $("#add-edit-form").serialize();;
+    add_edit_current_state = "";
 }
 
 // add record from the add/edit screen to the cart.  If it's already in the cart, update the cart record.
@@ -779,6 +873,7 @@ function add_new() {
         row['contact_ok'] = new_contact;
         row['share_reg_ok'] = new_share;
         row['active'] = 'Y';
+        row['dirty'] = true;
         if (new_badgememId != null) {
             var mrow = null;
             if (new_memindex != '') {
@@ -841,11 +936,14 @@ function add_new() {
         }
         addnew_button.innerHTML = "Add to Cart";
         clearadd_button.innerHTML = 'Clear Add Person Form';
+        add_edit_dirty_check = true;
+        add_edit_initial_state = $("#add-edit-form").serialize();
+        add_edit_current_state = "";
         draw_cart();
         return;
     }
 
-    // we've done this ones already and are displaying the table, so just go add them
+    // we've searched this first/last name already and are displaying the table, so just go add the manually entered person
     if (add_results_table != null) {
         add_results_table.destroy();
         add_results_table = null;
@@ -853,14 +951,10 @@ function add_new() {
         return;
     }
 
-    if (add_results_table != null) {
-        add_results_table.destroy();
-        add_results_table = null;
-    }
     clear_message();
     var name_search = (new_first + ' ' + new_last).toLowerCase().trim();
     if (name_search == null || name_search == '') {
-        show_message("First name or Last Name specified", "warn");
+        show_message("First name or Last Name must be specified", "warn");
         return;
     }
 
@@ -1089,6 +1183,9 @@ function add_new_to_cart() {
             Add New Person and Membership
         </div>
     </div>`;
+    add_edit_dirty_check = true;
+    add_edit_initial_state = $("#add-edit-form").serialize();
+    add_edit_current_state = "";
 }
 
 // format all of the memberships for one record in the cart
@@ -1135,6 +1232,7 @@ function draw_cart_row(rownum) {
             col1 += '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
                 mrow['index'] + ')" >X</button >';
         }
+        // C = change membership type
         if (allow_change_mgr) {
             col1 += '<button type = "button" class="btn btn-small btn-warning pt-0 pb-0 ps-1 pe-1 m-0" onclick = "change_membership(' +
                 mrow['index'] + ')" >C</button >';
@@ -1706,11 +1804,13 @@ function save_note() {
     if (notesButton.innerHTML == "Save and Close") {
         if (notesType == 'RC') {
             notesLocation['new_reg_note'] = document.getElementById("new_reg_note").value;
+            cart_perinfo[notesLocation['pindex']]['dirty'] = true;
             draw_cart();
         }
         if (notesType == 'PC' && hasManager) {
             notesLocation['open_notes'] = document.getElementById("perinfoNote").value;
             notesLocation['open_notes_pending'] = 1;
+            notesLocation['dirty'] = true;
             draw_cart();
         }
         if (notesType == 'PR' && hasManager) {
@@ -2013,6 +2113,9 @@ function not_found_add_new() {
 
 // switch to the review tab when the review button is clicked
 function start_review() {
+    if (!confirm_discard_add_edit(false))
+        return;
+
     // set tab to review-tab
     bootstrap.Tab.getOrCreateInstance(review_tab).show();
     review_tab.disabled = false;  
