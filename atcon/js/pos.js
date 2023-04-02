@@ -539,6 +539,7 @@ function add_to_cart(index) {
         }
     }
     draw_cart();
+    clear_message();
 }
 
 // remove person and all of their memberships from the cart
@@ -831,6 +832,7 @@ function clear_add() {
     add_edit_dirty_check = true;
     add_edit_initial_state = $("#add-edit-form").serialize();;
     add_edit_current_state = "";
+    clear_message();
 }
 
 // add record from the add/edit screen to the cart.  If it's already in the cart, update the cart record.
@@ -1034,7 +1036,6 @@ function add_found(data) {
             ],
             columns: [
                 {field: "perid", visible: false,},
-                {field: "index",},
                 {title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                 {field: "last_name", visible: false,},
                 {field: "first_name", visible: false,},
@@ -1044,9 +1045,10 @@ function add_found(data) {
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80,},
-                {title: "Notes",formatter: perNotesIcons, headerSort: false, headerFilter: false, },
-                {title: "Cart", width: 70, headerFilter: false, headerSort: false, formatter: addCartIcon,},
+                {title: "Note", width: 45, headerSort: false, headerFilter: false, formatter: perNotesIcons, formatterParams: {t:"add"}, },
+                {title: "Cart", width: 80, headerFilter: false, headerSort: false, formatter: addCartIcon, formatterParams: {t:"add"},},
                 {field: "index", visible: false,},
+                {field: "open_notes", visible: false,},
             ],
         });
         addnew_button.innerHTML = "Add New";
@@ -1719,14 +1721,16 @@ function addCartIcon(cell, formatterParams, onRendered) { //plain text value
 // tabulator formatter for the notes, displays the "O" record and "A" notes for this person
 function perNotesIcons(cell, formatterParams, onRendered) { //plain text value
     var index = cell.getRow().getData().index;
-    var prow = result_perinfo[index];
+    var open_notes = cell.getRow().getData().open_notes;
     var html = "";
-    if (prow['open_notes'] != null && prow['open_notes'].length > 0) {
-        html += '<button type="button" class="btn btn-sm btn-info p-0" onclick="show_perinfo_notes(' + index + ', \'result\')">O</button>';
+    if (open_notes != null && open_notes.length > 0) {
+        html += '<button type="button" class="btn btn-sm btn-info p-0" onclick="show_perinfo_notes(' + index + ', \'' + formatterParams['t'] + '\')">O</button>';
     }
     if (hasManager) {
-        html += ' <button type="button" class="btn btn-sm btn-secondary p-0" onclick="edit_perinfo_notes(' + prow['index'] + ', \'result\')">E</button>';
+        html += ' <button type="button" class="btn btn-sm btn-secondary p-0" onclick="edit_perinfo_notes(' + index + ', \'' + formatterParams['t'] + '\')">E</button>';
     }
+    if (html == "")
+        html = "&nbsp;"; // blank draws nothing
     return html;
 }
 
@@ -1740,6 +1744,9 @@ function show_perinfo_notes(index, where) {
     if (where == 'result') {
         notesLocation = result_perinfo[index];
         notesType = 'PR';
+    }
+    if (where == 'add') {
+        notesLocation = add_perinfo[index];
     }
     if (notesLocation == null)
         return;
@@ -1764,6 +1771,9 @@ function edit_perinfo_notes(index, where) {
     if (where == 'result') {
         notesLocation = result_perinfo[index];
         notesType = 'PR';
+    }
+    if (where == 'add') {
+        notesLocation = add_perinfo[index];
     }
     if (notesLocation == null)
         return;
@@ -2021,7 +2031,7 @@ function found_record(data) {
                 { title: "#M", field: "num_mem", minWidth: 30, maxWidth: 30, headerSort: false, hozAlign: 'right', },
                 { title: "Price", field: "price", maxWidth: 50, minWidth: 50, headerSort: false, hozAlign: 'right', },
                 { title: "Paid", field: "paid", maxWidth: 50, minWidth: 50, headerSort: false, hozAlign: 'right', },
-                { title: "Cart", width: 40, formatter: addCartIcon, headerSort: false, },
+                { title: "Cart", width: 40, formatter: addCartIcon, formatterParams: {t:"unpaid"}, headerSort: false, },
                 { field: "index", visible: false, },
             ],
         });
@@ -2076,8 +2086,8 @@ function found_record(data) {
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80,},
-                {title: "Note",width: 45, formatter: perNotesIcons, headerSort: false, headerFilter: false, },
-                {title: "Cart", width: 80, headerFilter: false, headerSort: false, formatter: addCartIcon,},
+                {title: "Note",width: 45, headerSort: false, headerFilter: false, formatter: perNotesIcons, formatterParams: {t:"result"}, },
+                {title: "Cart", width: 80, headerFilter: false, headerSort: false, formatter: addCartIcon, formatterParams: {t:"result"},},
                 {field: "index", visible: false,},
             ],
         });
