@@ -235,7 +235,7 @@ EOS;
     dbCmd($updHashSQL);
 
     // now for the permissions, valid permissions are
-    $authlabels = ['manager', 'data_entry', 'cashier', 'artinventory', 'artsales'];
+    $authlabels = ['manager', 'data_entry', 'cashier', 'artinventory', 'artsales','vol_roll'];
 
     $fetchAuthSQL = <<<EOS
 SELECT a.id, a.authuser, a.auth

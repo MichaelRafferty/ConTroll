@@ -105,6 +105,12 @@ function page_init($title, $tab, $css, $js)
                                             <a class="nav-link navitem <?php echo $tab == "printform" ? "active" : ""; ?>" <?php echo $tab == "printform" ? 'aria-current="page"' : ""; ?> href="printform.php">Printform</a>
                                         </li>
                                         <?php  }
+                                        if (in_array('vol_roll', $perms)) { ?>
+                                            <li>
+                                                <a class="nav-link navitem <?php echo $tab == 'vol_roll' ? 'active' : ''; ?>" <?php echo $tab == 'vol_roll' ? 'aria-current="page"' : ''; ?>
+                                                   href="volRollover.php">Vol Rollover</a>
+                                            </li>
+                                        <?php }
                                         if (in_array('manager', $perms)) { ?>
                                         <li>
                                             <a class="nav-link navitem <?php echo $tab == "admin" ? "active" : ""; ?>" <?php echo $tab == "admin" ? 'aria-current="page"' : ""; ?> href="admin.php">Administrator</a>
