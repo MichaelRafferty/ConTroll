@@ -148,6 +148,5 @@ mysqli_free_result($dayQ);
     </form>
 </div>
 <div id='result_message' class='mt-4 p-2'></div>
-<pre id='test'></pre>
-</body>
-</html>
+<pre id='test'></pre><?php
+page_foot();

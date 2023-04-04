@@ -258,7 +258,6 @@ page_init($page, $tab,
             </div>
         </div>
     </div>
-    <div id='result_message' class='mt-4 p-2'></div>
     <!--- change membership modal popup -->
     <div class='modal modal-lg' id='Change' tabindex='-2' aria-labelledby='Change' data-bs-backdrop='static' aria-hidden='true'>
         <div class='modal-dialog'>
@@ -277,4 +276,6 @@ page_init($page, $tab,
         </div>
     </div>
     <div id='result_message' class='mt-4 p-2'></div>
-<pre id='test'></pre>
+</div>
+<pre id='test'></pre><?php
+page_foot();
