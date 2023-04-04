@@ -306,7 +306,7 @@ function dbQuery($query)
     }
 }
 
-function dbInsert($query):int|bool
+function dbInsert($query)#: int|bool
 {
     global $dbObject;
     if (!is_null($dbObject)) {
@@ -379,7 +379,7 @@ function register($email, $sub, $name)
     return $res;
 }
 
-function getPages($sub):array|bool
+function getPages($sub)#: array|bool
 {
     $res = [];
     $sql = <<<EOS
@@ -401,7 +401,7 @@ EOS;
 }
 
 
-function getAuthsById($id): array|bool
+function getAuthsById($id)#: array|bool
 {
     $res = [];
     $sql = <<<EOS
@@ -422,7 +422,7 @@ EOS;
     return $res;
 }
 
-function getAuths($sub): array|bool
+function getAuths($sub)#: array|bool
 {
     $res = [];
     $sql = <<<EOS
@@ -443,7 +443,7 @@ EOS;
     return $res;
 }
 
-function checkAuth($sub, $name): array|bool
+function checkAuth($sub, $name)#: array|bool
 {
     if (!isset($sub) || !$sub) {
         return false;
@@ -467,7 +467,7 @@ EOS;
     return $res;
 }
 
-function checkUser($sub): bool
+function checkUser($sub)#: bool
 {
     if (!isset($sub) || !$sub) {
         return false;
@@ -480,7 +480,7 @@ function checkUser($sub): bool
     }
 }
 
-function getUsers($new = null):array|bool
+function getUsers($new = null)#:array|bool
 {
     $res = [];
     $query = "SELECT id, name, email FROM user";
