@@ -20,6 +20,8 @@ function loadInitialData($conid, $con): void
     $response['conid'] = $conid;
     $response['badgePrinter'] = $_SESSION['badgePrinter'][0] != 'None';
     $response['receiptPrinter'] = $_SESSION['receiptPrinter'][0] != 'None';
+    $response['user_id'] = $_SESSION['user'];
+    $response['hasManager'] = check_atcon('manager', $conid);
     // get the start and end dates, and adjust for the memLabels based on the real dates versus today.
     $condatesSQL = <<<EOS
 SELECT startdate, enddate
@@ -132,7 +134,10 @@ function findRecord($conid):void {
 
     $limit = 99999999;
     if ($find_type == 'unpaid') {
-        $withClause = <<<EOS
+//
+// Find Unpaid on latest transaction ID for those records
+//
+        $withClauseUnpaid = <<<EOS
 WITH unpaids AS (
 /* first the unpaid transactions from regs with their create_trans */
 SELECT r.id, create_trans as tid
@@ -168,17 +173,18 @@ FROM perids
 )
 EOS;
         $unpaidSQLP = <<<EOS
-$withClause
+$withClauseUnpaid
 SELECT DISTINCT u.perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
 	p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
-    TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname
+    TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname,
+    p.open_notes
 FROM uniqueperids u
 JOIN perinfo p ON (u.perid = p.id)
 ORDER BY last_name, first_name;
 EOS;
         $unpaidSQLM = <<<EOS
-$withClause
+$withClauseUnpaid
 , ridtid AS (
 SELECT r.id as regid, create_trans as tid
 FROM uniqueperids p
@@ -192,36 +198,51 @@ JOIN atcon_history h ON (r.id = h.regid AND h.action = 'attach')
 SELECT regid, MAX(tid) AS tid
 FROM ridtid
 GROUP BY regid
+), notes AS (
+SELECT h.regid, GROUP_CONCAT(CONCAT(h.userid, '@', h.logdate, ': ', h.notes) SEPARATOR '\n') AS reg_notes, COUNT(*) AS reg_notes_count
+FROM unpaids m
+JOIN atcon_history h ON (m.id = h.regid)
+WHERE h.action = 'notes'
+GROUP BY h.regid
+), printcount AS (
+SELECT h.regid, COUNT(*) printcount
+FROM unpaids m
+JOIN atcon_history h ON (m.id = h.regid)
+WHERE h.action = 'print'
+GROUP BY h.regid
 )
-SELECT DISTINCT r.perid, r.id as regid, m.conid, r.price, r.paid, r.create_date, u.tid, r.memId, COUNT(h.regid) as printcount,
-                m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
+SELECT DISTINCT r.perid, r.id as regid, m.conid, r.price, r.paid, r.create_date, u.tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
+                n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM uniqrids u
 JOIN reg r ON (r.id = u.regid)
 JOIN memLabel m ON (r.memId = m.id)
-LEFT OUTER JOIN atcon_history h ON (r.id = h.regid AND h.action = 'print')
+LEFT OUTER JOIN printcount pc ON (r.id = pc.regid)
+LEFT OUTER JOIN notes n ON (r.id = n.regid)
 WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
-GROUP BY r.perid, r.id, m.conid, r.price, r.paid, r.create_date, u.tid, r.memId, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
-ORDER BY create_date DESC;
+ORDER BY create_date;
 EOS;
+        //web_error_log($unpaidSQLM);
         $rp = dbSafeQuery($unpaidSQLP, 'ii', array($conid, $conid + 1));
         $rm = dbSafeQuery($unpaidSQLM, 'iiii', array($conid, $conid + 1, $conid, $conid + 1));
     } else if (is_numeric($name_search)) {
-        // this is perid, or transid
+//
+// this is perid, or transid
+//
         $withClause = <<<EOS
-WITH regt AS (
-/* first reg ids for this transaction  as specified as a number */
+WITH regbytid AS (
+/* first reg ids for this create transaction as specified as a number */
 SELECT r.id AS regid, create_trans as tid
 FROM reg r
 JOIN memLabel m ON (r.memId = m.id)
 WHERE create_trans = ? AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
-/* then add in reg ids from the attach transaction */
+/* then add in reg ids for this attach transaction */
 UNION SELECT regid, tid
 FROM atcon_history h
 JOIN reg r ON (r.id = h.regid)
 JOIN memLabel m ON (r.memId = m.id)
 WHERE tid = ? AND h.action = 'attach' AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
-), regp AS (
-/* find the reg id's for this person */
+), regbyperid AS (
+/* is the number a perinfo?  find the reg id's for this person matching the number */
 SELECT r.id AS regid
 FROM reg r
 JOIN memLabel m ON (r.memId = m.id)
@@ -229,10 +250,10 @@ WHERE perid = ? AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahea
 ), regs AS (
 /* now get the transactions for these regids */
 SELECT rs.regid, create_trans as tid
-FROM regp rs
+FROM regbyperid rs
 JOIN reg r ON (r.id = rs.regid)
 UNION SELECT h.regid, tid
-FROM regp rs
+FROM regbyperid rs
 JOIN atcon_history h ON (h.regid = rs.regid AND h.action = 'attach')
 ), maxtid AS (
 /* now take the most recent transaction */
@@ -247,7 +268,7 @@ LEFT OUTER JOIN atcon_history h ON (h.tid = m.tid AND h.action = 'attach')
 LEFT OUTER JOiN reg r ON (r.create_trans = m.tid)
 ), regids AS (
 /* and pull both sets together */
-SELECT regid FROM regt
+SELECT regid FROM regbytid
 UNION SELECT regid FROM regpt
 )
 EOS;
@@ -256,34 +277,56 @@ $withClause
 SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
-    TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname
+    TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname,
+    p.open_notes
 FROM regids rs
 JOIN reg r ON (rs.regid = r.id)
 JOIN perinfo p ON (p.id = r.perid)
+UNION 
+SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
+    p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
+    p.share_reg_ok, p.contact_ok, p.active, p.banned,
+    TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname,
+    p.open_notes
+FROM perinfo p
+WHERE id = ?
 ORDER BY last_name, first_name;
 EOS;
+        //web_error_log($searchSQLP);
         $searchSQLM = <<<EOS
 $withClause
-SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, COUNT(h.regid) as printcount,
-                m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
+, notes AS (
+SELECT h.regid, GROUP_CONCAT(CONCAT(h.userid, '@', h.logdate, ': ', h.notes) SEPARATOR '\n') AS reg_notes, COUNT(*) AS reg_notes_count
+FROM regids m
+JOIN atcon_history h ON (m.regid = h.regid)
+WHERE h.action = 'notes'
+GROUP BY h.regid
+), printcount AS (
+SELECT h.regid, COUNT(*) printcount
+FROM regids m
+JOIN atcon_history h ON (m.regid = h.regid)
+WHERE h.action = 'print'
+GROUP BY h.regid
+)
+SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, IFNULL(pc.printcount, 0) AS printcount,
+                n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM regids rs
 JOIN reg r ON (rs.regid = r.id)
 JOIN perinfo p ON (p.id = r.perid)
 JOIN reg r1 ON (r1.perid = r.perid)
 JOIN memLabel m ON (r1.memId = m.id)
-LEFT OUTER JOIN atcon_history h ON (r1.id = h.regid AND h.action = 'print')
-GROUP BY r1.perid, r1.id, m.conid, r1.price, r1.paid, r1.create_date, r1.memId, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup, IFNULL(r1.create_trans, -1)
-ORDER BY create_date DESC;
+LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
+LEFT OUTER JOIN notes n ON (r1.id = n.regid)
+ORDER BY create_date;
 EOS;
-        $rp = dbSafeQuery($searchSQLP, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1));
+        //web_error_log($searchSQLM);
+        $rp = dbSafeQuery($searchSQLP, 'iiiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search));
         $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1));
     } else {
-        if ($find_type == 'addnew') {
-            $jointype = 'LEFT OUTER JOIN';
-        } else {
-            $jointype = 'JOIN';
-        }
-            // name match
+//
+// this is the string search portion as the field is alphanumeric
+//
+        // name match
         $limit = 50; // only return 50 people's memberships
         $name_search = '%' . preg_replace('/ +/', '%', $name_search) . '%';
         //web_error_log("match string: $name_search");
@@ -291,13 +334,11 @@ EOS;
 SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
-    TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname
+    TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname,
+    p.open_notes
 FROM perinfo p
-$jointype reg r ON (p.id = r.perid)
-$jointype memList m ON (m.id = r.memId)
 WHERE 
-    (IFNULL(r.conid, ?) = ? OR (IFNULL(r.conid, ?) = ? AND m.memCategory in ('yearahead', 'rollover')))
-AND (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
+(LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
 ORDER BY last_name, first_name LIMIT $limit;
 EOS;
         $searchSQLM = <<<EOS
@@ -305,13 +346,11 @@ WITH limitedp AS (
 /* first get the perid's for this name search */
     SELECT DISTINCT p.id, p.first_name, p.last_name
     FROM perinfo p
-    $jointype reg r ON (p.id = r.perid)
-    $jointype memList m ON (m.id = r.memId)
-    WHERE (IFNULL(r.conid, ?) = ? OR (IFNULL(r.conid, ?) = ? AND m.memCategory in ('yearahead', 'rollover'))) AND (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
+    WHERE (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
     ORDER BY last_name, first_name LIMIT $limit
 ), regids AS (
 SELECT r.id AS regid
-FROM perinfo p
+FROM limitedp p
 JOIN reg r ON (r.perid = p.id)
 JOIN memList m ON (r.memId = m.id)
 WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
@@ -327,17 +366,31 @@ JOIN atcon_history h ON (h.regid = rs.regid)
 SELECT regid, MAX(tid) as tid
 FROM regtid
 GROUP BY regid
+), notes AS (
+SELECT h.regid, GROUP_CONCAT(CONCAT(h.userid, '@', h.logdate, ': ', h.notes) SEPARATOR '\n') AS reg_notes, COUNT(*) AS reg_notes_count
+FROM maxtids m
+JOIN atcon_history h ON (m.regid = h.regid)
+WHERE h.action = 'notes'
+GROUP BY h.regid
+), printcount AS (
+SELECT h.regid, COUNT(*) printcount
+FROM maxtids m
+JOIN atcon_history h ON (m.regid = h.regid)
+WHERE h.action = 'print'
+GROUP BY h.regid
 )
-SELECT DISTINCT r.perid, t.regid, m.conid, r.price, r.paid, r.create_date, t.tid, r.memId, 0 as printcount,
-                m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
+SELECT DISTINCT r.perid, t.regid, m.conid, r.price, r.paid, r.create_date, t.tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
+                n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup             
 FROM maxtids t
 JOIN reg r ON (r.id = t.regid)
 JOIN limitedp p ON (p.id = r.perid)
 JOIN memLabel m ON (r.memId = m.id)
-ORDER BY create_date DESC;
+LEFT OUTER JOIN notes n ON (r.id = n.regid)
+LEFT OUTER JOIN printcount pc ON (r.id = pc.regid)
+ORDER BY create_date;
 EOS;
-        $rp = dbSafeQuery($searchSQLP, 'iiiisss', array($conid, $conid, $conid + 1, $conid + 1, $name_search, $name_search, $name_search));
-        $rm = dbSafeQuery($searchSQLM, 'iiiisssii', array($conid, $conid, $conid + 1, $conid + 1, $name_search, $name_search, $name_search, $conid, $conid + 1));
+        $rp = dbSafeQuery($searchSQLP, 'sss', array($name_search, $name_search, $name_search));
+        $rm = dbSafeQuery($searchSQLM, 'sssii', array($name_search, $name_search, $name_search, $conid, $conid + 1));
     }
 
     $perinfo = [];
@@ -412,16 +465,17 @@ function updateCartElements($conid): void
     $per_upd = 0;
     $reg_ins = 0;
     $reg_upd = 0;
+    $reg_del = 0;
     $total_price = 0;
     $total_paid = 0;
 
     $insPerinfoSQL = <<<EOS
-INSERT INTO perinfo(last_name,first_name,middle_name,suffix,email_addr,phone,badge_name,address,addr_2,city,state,zip,country,contact_ok,share_reg_ok,banned,active,creation_date)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N','Y',now());
+INSERT INTO perinfo(last_name,first_name,middle_name,suffix,email_addr,phone,badge_name,address,addr_2,city,state,zip,country,contact_ok,share_reg_ok,open_notes,banned,active,creation_date)
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N','Y',now());
 EOS;
     $updPerinfoSQL = <<<EOS
 UPDATE perinfo SET
-    last_name=?,first_name=?,middle_name=?,suffix=?,email_addr=?,phone=?,badge_name=?,address=?,addr_2=?,city=?,state=?,zip=?,country=?,banned='N',update_date=NOW(),active='Y',contact_ok=?,share_reg_ok=?
+    last_name=?,first_name=?,middle_name=?,suffix=?,email_addr=?,phone=?,badge_name=?,address=?,addr_2=?,city=?,state=?,zip=?,country=?,open_notes=?,banned='N',update_date=NOW(),active='Y',contact_ok=?,share_reg_ok=?
 WHERE id = ?;
 EOS;
     $insRegSQL = <<<EOS
@@ -432,20 +486,31 @@ EOS;
 UPDATE reg SET price=?,paid=?,memId=?,change_date=now()
 WHERE id = ?;
 EOS;
+    $delRegSQL = <<<EOS
+DELETE FROM reg
+WHERE id = ?;
+EOS;
     $insHistory = <<<EOS
 INSERT INTO atcon_history(userid, tid, regid, action, notes)
-VALUES (?, ?, ?, 'attach', ?);
+VALUES (?, ?, ?, ?, ?);
 EOS;
     // insert/update all perinfo records,
     for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         $cartrow = $cart_perinfo[$row];
+        if (array_key_exists('open_notes', $cartrow)) {
+            $open_notes = $cartrow['open_notes'];
+            if ($open_notes == '')
+                $open_notes = null;
+        } else
+            $open_notes = null;
         if ($cartrow['perid'] <= 0) {
             // insert this row
             $paramarray = array(
                 $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
-                $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],$cartrow['contact_ok'],$cartrow['share_reg_ok']
+                $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],
+                $cartrow['contact_ok'],$cartrow['share_reg_ok'],$open_notes
             );
-            $typestr = 'sssssssssssssss';
+            $typestr = 'ssssssssssssssss';
             $new_perid = dbSafeInsert($insPerinfoSQL, $typestr, $paramarray);
             if ($new_perid === false) {
                 $error_message .= "Insert of person $row failed<BR/>";
@@ -460,10 +525,11 @@ EOS;
             // update the row
             $paramarray = array(
                 $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
-                $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],$cartrow['contact_ok'],$cartrow['share_reg_ok'],
+                $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],$open_notes,
+                $cartrow['contact_ok'],$cartrow['share_reg_ok'],
                 $cartrow['perid']
             );
-            $typestr = 'sssssssssssssssi';
+            $typestr = 'ssssssssssssssssi';
             $per_upd += dbSafeCmd($updPerinfoSQL, $typestr, $paramarray);
         }
     }
@@ -486,8 +552,10 @@ EOS;
     // now insert/update all reg records and compute the transaction price and paid fields
     for ($row = 0; $row < sizeof($cart_membership); $row++) {
         $cartrow = $cart_membership[$row];
-        $total_price += $cartrow['price'];
-        $total_paid += $cartrow['paid'];
+        if (!array_key_exists('todelete', $cartrow)) {
+            $total_price += $cartrow['price'];
+            $total_paid += $cartrow['paid'];
+        }
         if (!array_key_exists('regid', $cartrow) || $cartrow['regid'] <= 0) {
             // insert the membership
             if ($cartrow['perid'] <= 0) {
@@ -504,17 +572,35 @@ EOS;
             $cart_membership[$row]['regid'] = $new_regid;
             $reg_ins++;
         } else {
-            // update membership
-            $paramarray = array($cartrow['price'], $cartrow['paid'], $cartrow['memId'], $cartrow['regid']);
-            $typestr = 'ssii';
-            $reg_upd += dbSafeCmd($updRegSQL, $typestr, $paramarray);
+            if (array_key_exists('todelete', $cartrow)) {
+                // delete membership
+                $paramarray = array($cartrow['regid']);
+                $typestr = 'i';
+                $reg_del += dbSafeCmd($delRegSQL, $typestr, $paramarray);
+            } else {
+                // update membership
+                $paramarray = array($cartrow['price'], $cartrow['paid'], $cartrow['memId'], $cartrow['regid']);
+                $typestr = 'ssii';
+                $reg_upd += dbSafeCmd($updRegSQL, $typestr, $paramarray);
+            }
         }
-        // Now add the attach record for this item
-        $paramarray = array($user_id, $master_transid, $cartrow['regid'], $notes);
-        $typestr = 'iiis';
-        $new_history = dbSafeInsert($insHistory, $typestr, $paramarray);
-        if ($new_history === false) {
-            $error_message .= "Unable to attach membership " . $cartrow['regid'] . "<BR/>";
+        if (!array_key_exists('todelete', $cartrow)) {
+            // Now add the attach record for this item
+            $paramarray = array($user_id, $master_transid, $cartrow['regid'], 'attach', $notes);
+            $typestr = 'iiiss';
+            $new_history = dbSafeInsert($insHistory, $typestr, $paramarray);
+            if ($new_history === false) {
+                $error_message .= "Unable to attach membership " . $cartrow['regid'] . "<BR/>";
+            }
+            // now if there is a new note for this row, add it now
+            if (array_key_exists('new_reg_note', $cartrow)) {
+                $paramarray = array($user_id, $master_transid, $cartrow['regid'], 'notes', $cartrow['new_reg_note']);
+                $typestr = 'iiiss';
+                $new_history = dbSafeInsert($insHistory, $typestr, $paramarray);
+                if ($new_history === false) {
+                    $error_message .= 'Unable to add note to membership ' . $cartrow['regid'] . '<BR/>';
+                }
+            }
         }
     }
     // update the transaction associated with this reg
@@ -533,7 +619,7 @@ EOS;
         $response['error'] = $error_message;
         ajaxSuccess($response);
     }
-    $response['message'] = "$per_ins members inserted, $per_upd members updated, $reg_ins memberships inserted, $reg_upd memberships updated";
+    $response['message'] = "$per_ins members inserted, $per_upd members updated, $reg_ins memberships inserted, $reg_upd memberships updated, $reg_del memberships deleted";
     $response['updated_perinfo'] = $updated_perinfo;
     $response['updated_membership'] = $updated_membership;
     $response['master_tid'] = $master_transid;
@@ -567,14 +653,14 @@ function processPayment():void {
         return;
     }
 
-    $amt = $new_payment['amt'];
+    $amt = (float) $new_payment['amt'];
     // validate that the payment ammount is not too large
     $total_due = 0;
     foreach ($cart_membership as $cart_row) {
         $total_due += $cart_row['price'] - $cart_row['paid'];
     }
 
-    if ($amt > $total_due) {
+    if (round($amt,2) > round($total_due,2)) {
         ajaxError('invalid payment amount passed');
         return;
     }
@@ -635,6 +721,69 @@ if ($_POST && array_key_exists('nopay', $_POST)) {
     }
 }
 
+// updatePrintcount
+//      passed array of regid and print count
+//      updates database
+function updatePrintcount(): void {
+    if (array_key_exists('regs', $_POST)) {
+        $regs = $_POST['regs'];
+        $user_id = $_POST['user_id'];
+        if ($user_id != $_SESSION['user']) {
+            ajaxError('Invalid credentials passed');
+        }
+        $tid = $_POST['tid'];
+        $insertSQL = <<<EOS
+INSERT INTO atcon_history(userid, tid, regid, action)
+VALUES (?,?,?,'print');
+EOS;
+        $typestr = 'iii';
+
+        foreach ($regs as $reg) {
+            $paramarray = array($user_id, $tid, $reg['regid']);
+            dbSafeInsert($insertSQL, $typestr,$paramarray);
+        }
+    }
+}
+
+// updatePerinfoNote:
+// update the open_notes for a specific perid
+//  inputs:
+//      notes: new note string
+//      perid: which person to update
+//      cart_perinfo_map: map of perid to rows in cart_perinfo
+//  Outputs:
+//      message/error/warn: appropriate diagnostics
+function updatePerinfoNote(): void
+{
+    $user_id = $_POST['user_id'];
+    if ($user_id != $_SESSION['user']) {
+        ajaxError('Invalid credentials passed');
+    }
+    $notes = $_POST['notes'];
+    if ($notes === '')
+        $notes = null;
+    $perid = $_POST['perid'];
+
+    if ($perid <= 0) {
+        ajaxError('Invalid person to update');
+        return;
+    }
+    $response = [];
+    
+    $updSQL = <<<EOS
+UPDATE perinfo
+SET open_notes = ?
+WHERE id = ?;
+EOS;
+    $num_upd = dbSafeCmd($updSQL, 'si', array($notes, $perid));
+    if ($num_upd === false) {
+        $response['error'] = "Unable to update notes";
+    } else {
+        $response['message'] ="Notes Updated";
+    }
+    ajaxSuccess($response);
+}
+
 $con = get_conf('con');
 $conid = $con['id'];
 $ajax_request_action = '';
@@ -662,6 +811,12 @@ switch ($ajax_request_action) {
         break;
     case 'processPayment':
         processPayment();
+        break;
+    case 'updatePrintcount':
+        updatePrintcount();
+        break;
+    case 'updatePerinfoNote':
+        updatePerinfoNote();
         break;
     default:
         $message_error = 'Internal error.';

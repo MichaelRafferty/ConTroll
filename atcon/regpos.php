@@ -34,7 +34,6 @@ page_init($page, $tab,
                     'https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js','js/pos.js')
     );
 ?>
-<div id="whoami" hidden><?php echo $_SESSION['user'];?></div>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
         <div class="col-sm-7">
@@ -96,6 +95,7 @@ page_init($page, $tab,
                         </div>
                     </div>
                     <div class="tab-pane fade" id="add-pane" role="tabpanel" aria-labelledby="add-tab" tabindex="1">
+                        <form id="add-edit-form" name="add-edit-form" onsubmit="return false;">
                          <div class="container-fluid">
                             <div class="row" id="add_header">
                                 <div class="col-sm-12 text-bg-primary mb-2">
@@ -214,6 +214,7 @@ page_init($page, $tab,
                                 </div>
                             </div>
                         </div>
+                        </form>
                     </div>
                     <div class="tab-pane fade" id="review-pane" role="tabpanel" aria-labelledby="review-tab" tabindex="2">
                         <div id="review-div">Review Data</div>
@@ -239,6 +240,41 @@ page_init($page, $tab,
                 </div>
             </div>
         </div>       
+    </div>
+    <!--- notes modal popup -->
+    <div class='modal modal-lg' id='Notes' tabindex='-2' aria-labelledby='Notes' data-bs-backdrop='static' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header'>
+                    <div class='modal-title' id="NotesTitle">
+                        Member Notes
+                    </div>
+                </div>
+                <div class='modal-body' id="NotesBody">
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' id="close_note_button" class='btn btn-primary' onclick="save_note();">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id='result_message' class='mt-4 p-2'></div>
+    <!--- change membership modal popup -->
+    <div class='modal modal-lg' id='Change' tabindex='-2' aria-labelledby='Change' data-bs-backdrop='static' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header'>
+                    <div class='modal-title' id='ChangeTitle'>
+                        Change Membership Type
+                    </div>
+                </div>
+                <div class='modal-body' id='ChangeBody'>
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' id='close_change_button' class='btn btn-primary' onclick='save_membership_change();'>Change Membership</button>
+                </div>
+            </div>
+        </div>
     </div>
     <div id='result_message' class='mt-4 p-2'></div>
 <pre id='test'></pre>

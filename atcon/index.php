@@ -160,7 +160,7 @@ EOS;
                     <option value=''>None</option>
                     <?php foreach ($printers as $key => $printer) {
                         if (mb_substr($printer['printerType'], 0, 7) == 'generic') {
-                            echo '<option value="' . $key . ':::' . $printer['address'] . ':-:' . $printer['printerName'] . '">' . $key . "</option>\n";
+                            echo '<option value="' . $key . ':::' . $printer['address'] . ':-:' . $printer['printerName'] . ':-:' . $printer['printerType'] . '">' . $key . "</option>\n";
                         }
                     } ?>
                 </select>

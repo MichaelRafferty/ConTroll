@@ -48,6 +48,7 @@ $badgeTypes = array(
     'goh'      => 'G',
     'rollover' => 'R',
     'standard' => 'M',
+    'yearahead' => 'M',
     'premium'  => 'M',
     'test'     => 'X',
     'Attending' => 'A',
@@ -291,7 +292,8 @@ function write_se450($badge, $tempfile):void {
 function print_badge($printer, $tempfile): string|false
 {
     $queue = $printer[2];
-    if ($queue == '0') return 0; // this token is the temp file only print queue
+    $name = $printer[0];
+    if (mb_substr($queue, 0, 1) == '0' || $name == 'None') return 0; // this token is the temp file only print queue
 
     $server = $printer[1];
     $printerType = $printer[3];
@@ -313,14 +315,15 @@ function print_badge($printer, $tempfile): string|false
     $output = [];
     $result_code = 0;
     $result = exec($command,$output,$result_code);
-    //web_error_log("executing command '$command' returned '$result', code: $result_code");
+    web_error_log("executing command '$command' returned '$result', code: $result_code");
     //var_error_log($output);
-    return $result;
+    return $result_code;
 }
 
 function print_receipt($printer, $receipt):string | false {
     $queue = $printer[2];
-    if ($queue == '0') {
+    $name = $printer[0];
+    if (mb_substr($queue, 0, 1) == '0' || $name == 'None') {
         web_error_log($receipt);
         return 0; // this token is the log only print queue
     }
@@ -344,7 +347,7 @@ function print_receipt($printer, $receipt):string | false {
 
     // all the extra stuff for exec is for debugging issues.
     // Temporarly save the output to a file to help with why it's dying
-    $command = "lpr -H$server -P$queue $options < $tempfile > /var/tmp/issue 2>&1";
+    $command = "lpr -H$server -P$queue $options < $tempfile";
     $result_code = 0;
     $result = exec($command,$output,$result_code);
     web_error_log("executing command '$command' returned '$result', code: $result_code");

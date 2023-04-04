@@ -1,6 +1,3 @@
-//TODO: allow removal of unpaid items in Database from cart, and find some way to mark them as deleted in the cart, stop showing or summing them and have the update routine
-//      deal with that.
-
 // cart fields
 var void_button = null;
 var startover_button = null;
@@ -40,7 +37,7 @@ var memLabel = null;
 var find_unpaid_button = null;
 var find_perid = null;
 
-// add new person fields
+// add/edit person fields
 var add_index_field = null;
 var add_perid_field = null;
 var add_memIndex_field = null;
@@ -59,7 +56,6 @@ var add_phone_field = null;
 var add_badgename_field = null;
 var add_contact_field = null;
 var add_share_field = null;
-var add_mem_field = null;
 var add_header = null;
 var addnew_button = null;
 var clearadd_button = null;
@@ -71,6 +67,9 @@ var add_mt_dataentry = `
     <select id='ae_mem_sel' name='age' style="width:300px;" tabindex='15'>
     </select>
 `;
+var add_edit_dirty_check = false;
+var add_edit_initial_state = "";
+var add_edit_current_state = "";
 
 // review items
 var review_div = null;
@@ -85,7 +84,7 @@ var pay_tid = null;
 
 // print items
 var print_div = null;
-var print_arr = null;
+var printed_obj = null;
 
 // Data Items
 var unpaid_table = [];
@@ -102,10 +101,25 @@ var memListMap = null;
 var catList = null;
 var ageList = null;
 var typeList = null;
+var changeModal = null;
+var changeTitle = null;
+var changeBody = null;
 
+// notes items
+var notes = null;
+var notesTitle = null;
+var notesBody = null;
+var notesButton = null;
+var notesIndex = null;
+var notesType = null;
+var notesLocation = null;
+var notesPriorValue = null;
+
+// global items
 var conid = null;
 var conlabel = null;
 var user_id = 0;
+var hasManager = false;
 var badgePrinterAvailable = false;
 var receiptPrinterAvailable = false;
 
@@ -140,10 +154,11 @@ window.onload = function initpage() {
 
     // find people
     pattern_field = document.getElementById("find_pattern");
+    pattern_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') find_record('search'); });
     id_div = document.getElementById("find_results");
     find_unpaid_button = document.getElementById("find_unpaid_btn");
 
-    // add people
+    // add/edit people
     add_index_field = document.getElementById("perinfo-index");
     add_perid_field = document.getElementById("perinfo-perid");
     add_memIndex_field = document.getElementById("membership-index");
@@ -167,8 +182,10 @@ window.onload = function initpage() {
     clearadd_button = document.getElementById("clearadd-btn");
     add_results_div = document.getElementById("add_results");
     add_mem_select = document.getElementById("ae_mem_select");
+    add_edit_initial_state = $("#add-edit-form").serialize();
+    window.addEventListener("beforeunload", check_all_unsaved);
 
-    // review items
+        // review items
     review_div = document.getElementById('review-div');
     country_select = document.getElementById('country').innerHTML;
 
@@ -185,8 +202,16 @@ window.onload = function initpage() {
     pay_tab.addEventListener('shown.bs.tab', pay_shown)
     print_tab.addEventListener('shown.bs.tab', print_shown)
 
-    // data items
-    user_id = Number(document.getElementById("whoami").innerHTML);
+    // notes items
+    notes = new bootstrap.Modal(document.getElementById('Notes'), { focus: true, backldrop: 'static' });
+    notesTitle = document.getElementById('NotesTitle');
+    notesBody = document.getElementById('NotesBody');
+    notesButton = document.getElementById('close_note_button');
+
+    // change membership
+    changeModal = new bootstrap.Modal(document.getElementById('Change'), { focus: true, backldrop: 'static' });
+    changeTitle = document.getElementById("ChangeTitle");
+    changeBody = document.getElementById("ChangeBody");
 
     // load the initial data and the proceed to set up the rest of the system
     var postData = {
@@ -211,7 +236,6 @@ window.onload = function initpage() {
     });
 }
 
-
 // load mapping tables from database to javascript arrayy
 // also retrieve session data about printers
 function loadInitialData(data) {
@@ -219,6 +243,8 @@ function loadInitialData(data) {
     // tabls
     conlabel =  data['label'];
     conid = data['conid'];
+    user_id = data['user_id']
+    hasManager = data['hasManager'];
     badgePrinterAvailable = data['badgePrinter'] === true;
     receiptPrinterAvailable = data['receiptPrinter'] === true;
     startdate = data['startdate'];
@@ -244,33 +270,43 @@ function loadInitialData(data) {
     filt_shortname_regexp = null;
     var match = memList.filter(mem_filter);
     membership_select = '';
+    membership_selectlist = [];
     for (var row in match) {
-        membership_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + "</option>\n";
+        var option = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
+        membership_select += option;
+        membership_selectlist.push({price:  match[row]['price'], option: option});
     }
     // upgrade_select
     filt_excat = null;
     filt_cat = new Array('upgrade')
     filt_shortname_regexp = null;
     match = memList.filter(mem_filter);
-    upgrade_select = '';
+    upgrade_select = [];
     for (var row in match) {
-        upgrade_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + "</option>\n";
+        var label = match[row]['label'];
+        day = label.replace(/.*upgrade +(...).*/i, '$1').toLowerCase();
+        if (day.length > 3)
+            day = (match[row]['label']).toLowerCase().substr(0, 3);
+        upgrade_select[day] = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
     }
     // yearahead_select
     filt_cat = new Array('yearahead')
     filt_shortname_regexp = null;
     match = memList.filter(mem_filter);
     yearahead_select = '';
+    yearahead_selectlist = [];
     for (var row in match) {
-        yearahead_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + "</option>\n";
-    }
+        var option = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
+        yearahead_select += option;
+        yearahead_selectlist.push({price:  match[row]['price'], option: option});
+        }
     // addon_select
     filt_cat = ['addon', 'add-on']
     filt_shortname_regexp = null;
     match = memList.filter(mem_filter);
     addon_select = '';
     for (row in match) {
-        addon_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + "</option>\n";
+        addon_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
     }
 
     // set up initial values
@@ -394,6 +430,12 @@ function void_trans() {
 // if no memberships or payments have been added to the database, this will reset for the next customer
 // TODO: add how to tell if it's allowed to be shown as enabled
 function start_over(reset_all) {
+    if (!confirm_discard_add_edit(false))
+        return;
+
+    if (!confirm_discard_cart_entry(-1,false))
+        return;
+
     clear_message();
     // empty cart
     cart = [];
@@ -430,6 +472,7 @@ function start_over(reset_all) {
     pay_button_rcpt = null;
     pay_button_print = null;
     in_review = false;
+    pay_tid = null;
 
     clear_add();
     // set tab to find-tab
@@ -460,16 +503,29 @@ function build_record_hover(e, cell, onRendered) {
 }
 
 // add search person/transaction from result_perinfo record to the cart
-function add_to_cart(index) {
+function add_to_cart(index, table) {
+    var rt = null;
+    var rm = null;
+
+    if (table == 'result') {
+        rt = result_perinfo;
+        rm = result_membership;
+    }
+
+    if (table == 'add') {
+        rt = add_perinfo;
+        rm = add_membership;
+    }
+
     if (index >= 0) {
-        if (result_perinfo[index]['banned'] == 'Y') {
-            alert("Please ask " + (result_perinfo[index]['first_name'] + ' ' + result_perinfo[index]['last_name']).trim() +" to talk to the Registration Administrator, you cannot add them at this time.")
+        if (rt[index]['banned'] == 'Y') {
+            alert("Please ask " + (result_perinfo[index]['first_name'] + ' ' + rt[index]['last_name']).trim() +" to talk to the Registration Administrator, you cannot add them at this time.")
             return;
         }
-        if (map_access(cart_perinfo_map, result_perinfo[index]['perid']) === undefined) {
-            var perid = result_perinfo[index]['perid'];
-            cart_perinfo.push(make_copy(result_perinfo[index]));
-            var mrows = find_memberships_by_perid(result_membership, perid);
+        if (map_access(cart_perinfo_map, rt[index]['perid']) === undefined) {
+            var perid = rt[index]['perid'];
+            cart_perinfo.push(make_copy(rt[index]));
+            var mrows = find_memberships_by_perid(rm, perid);
             for (var mrownum in mrows) {
                 cart_membership.push(make_copy(mrows[mrownum]));
             }
@@ -496,16 +552,31 @@ function add_to_cart(index) {
         }
     }
     draw_cart();
+    clear_message();
 }
 
 // remove person and all of their memberships from the cart
 function remove_from_cart(perid) {
+    if (!confirm_discard_add_edit(false))
+        return;
+
     var index = map_access(cart_perinfo_map, perid);
+
+    if (!confirm_discard_cart_entry(index, false))
+        return;
+
     var mrows = find_memberships_by_perid(cart_membership, perid);
+    // need to splice backwards so the indicies don't change
+    var delrows = [];
+    var splicerow = null;
     for (var mrownum in mrows) {
-        var splicerow = mrows[mrownum]['index'];
-        cart_membership.splice(mrows[mrownum]['index'], 1);
+        splicerow = mrows[mrownum]['index'];
+        delrows.push(Number(splicerow));
     }
+    delrows = delrows.reverse();
+    for (splicerow in delrows)
+        cart_membership.splice(delrows[splicerow], 1);
+
     cart_perinfo.splice(index, 1);
     // splices loses me the index number for the cross-reference, so the cart needs renumbering
     draw_cart();
@@ -513,9 +584,65 @@ function remove_from_cart(perid) {
 
 // remove single membership item from the cart (leaving other memberships and person information
 function delete_membership(index) {
-    cart_membership.splice(index, 1);
+    if (cart_membership[index]['tid'] != '') {
+        if (confirm("Confirm delete for " + cart_membership[index]['label'])) {
+            cart_membership[index]['todelete'] = 1;
+            cart_perinfo[cart_membership['pindex']]['dirty'] = true;
+        }
+    } else {
+        cart_membership.splice(index, 1);
+    }
     draw_cart();
 }
+
+// change single membership item from the cart - only allow items of the same class with higher prices
+// var changeRow = null;
+function change_membership(index) {
+    changeRow = index;
+    mrow = cart_membership[index];
+    prow = cart_perinfo[mrow['pindex']];
+    changeTitle.innerHTML = "Change Membership Type for " + (prow['first_name'] + ' ' + prow['last_name']).trim();
+    var html = '<div id="ChangePrior">Current Membership ' + mrow['label'] + "</div>\n";
+    html += '<div id="ChangeTo">Change to:<br/><select name="change_membership_id" id="change_membership_id">' + "\n";
+    // build select list here
+    var optionrows = membership_selectlist;
+    if (mrow['memCategory'] == 'yearahead'&& mrow['conid'] != conid)
+        optionrows = yearahead_selectlist;
+    var price = mrow['price'];
+    for (var row in optionrows) {
+        if (optionrows[row]['price'] >= price)
+            html += optionrows[row]['option'];
+    }
+
+    html += "</select></div>\n";
+
+    changeBody.innerHTML = html;
+    changeModal.show();
+}
+// save_membership_change
+// update saved cart row with new memId
+function save_membership_change() {
+    if (changeRow == null)
+        return;
+
+    mrow = cart_membership[changeRow];
+    var newMemid = document.getElementById("change_membership_id").value;
+    mrow['memId'] = newMemid;
+
+    var mi_row = find_memLabel(newMemid);
+    mrow['memCategory'] = mi_row['memCategory'];
+    mrow['memType'] = mi_row['memType'];
+    mrow['memAge'] = mi_row['memAge'];
+    mrow['shortname'] = mi_row['shortname'];
+    mrow['label'] = mi_row['label'];
+    mrow['price'] = mi_row['price'];
+    cart_perinfo_map[mrow['pindex']]['dirty'] = true;
+
+    changeRow = null;
+    changeModal.hide();
+    draw_cart();
+}
+
 
 // cart_renumber:
 // rebuild the indicies in the cart_perinfo and cart_membership tables
@@ -535,8 +662,83 @@ function cart_renumber() {
     }
 }
 
+// common confirm add/edit screen dirty, if the tab isn't shown switch to it if direy
+function confirm_discard_add_edit(silent) {
+    if (!add_edit_dirty_check || freeze_cart) // don't check if dirty, or if the cart is frozed return ok to discard
+        return true;
+
+    add_edit_current_state = $("#add-edit-form").serialize();
+    if (add_edit_initial_state == add_edit_current_state)
+        return true; // no changes found
+
+    if (silent)
+        return false;
+
+    // show the add/edit screen if it's hidden
+    bootstrap.Tab.getOrCreateInstance(add_tab).show();
+
+    if (!confirm("Discard current data in add/edit screen?")) {
+        return false; // confirm answered no, return not safe to discard
+    }
+
+    return true;
+}
+
+function confirm_discard_cart_entry(index, silent) {
+    if (freeze_cart) {
+        return true;
+    }
+
+    var dirty = false;
+    if (index >= 0) {
+        dirty = cart_perinfo[index]['dirty'] === true;
+    } else {
+        for (var row in cart_perinfo) {
+            dirty ||= cart_perinfo[row]['dirty'] === true;
+        }
+    }
+
+    if (!dirty)
+        return true;
+
+    if (silent)
+        return false;
+
+    var msg = "Discard updated cart items?";
+    if (index >= 0)
+        msg = "Discard updated cart items for " + (cart_perinfo[index]['first_name'] + ' ' + cart_perinfo[index]['last_name']).trim();
+
+    if (!confirm(msg)) {
+        return false; // confirm answered no, return not safe to discard
+    }
+
+    return true;
+}
+
+// event handler for beforeunload event, prevents leaving with unsaved data
+function check_all_unsaved(e) {
+    // data editing checks
+    if (!confirm_discard_add_edit(true))  {
+        e.preventDefault();
+        e.returnValue="You have unsaved member changes, leave anyway";
+        return;
+    }
+
+    if (!confirm_discard_cart_entry(-1, true)) {
+        e.preventDefault();
+        e.returnValue="You have unsaved cart changes, leave anyway";
+        return;
+    }
+
+    delete e['returnValue'];
+    return;
+}
+
 // populate the add/edit screen from a cart item, and switch to add/edit
 function edit_from_cart(perid) {
+    if (!confirm_discard_add_edit(false))
+            return;
+
     clear_add();
     var cartrow = cart_perinfo[map_access(cart_perinfo_map, perid)];
 
@@ -589,6 +791,9 @@ function edit_from_cart(perid) {
     addnew_button.innerHTML = "Update to Cart";
     clearadd_button.innerHTML = "Discard Update";
     add_mode = false;
+    add_edit_dirty_check = true;
+    add_edit_initial_state = $("#add-edit-form").serialize();
+    add_edit_current_state = "";
     bootstrap.Tab.getOrCreateInstance(add_tab).show();
 }
 
@@ -637,6 +842,10 @@ function clear_add() {
     addnew_button.innerHTML = "Add to Cart";
     clearadd_button.innerHTML = 'Clear Add Person Form';
     add_mode = true;
+    add_edit_dirty_check = true;
+    add_edit_initial_state = $("#add-edit-form").serialize();;
+    add_edit_current_state = "";
+    clear_message();
 }
 
 // add record from the add/edit screen to the cart.  If it's already in the cart, update the cart record.
@@ -684,6 +893,7 @@ function add_new() {
         row['contact_ok'] = new_contact;
         row['share_reg_ok'] = new_share;
         row['active'] = 'Y';
+        row['dirty'] = true;
         if (new_badgememId != null) {
             var mrow = null;
             if (new_memindex != '') {
@@ -708,6 +918,7 @@ function add_new() {
             mrow['memType'] = mi_row['memType'];
             mrow['memAge'] = mi_row['memAge'];
             mrow['shortname'] = mi_row['shortname'];
+            mrow['printcount'] = 0;
             mrow['label'] = mi_row['label'];
         }
 
@@ -745,11 +956,14 @@ function add_new() {
         }
         addnew_button.innerHTML = "Add to Cart";
         clearadd_button.innerHTML = 'Clear Add Person Form';
+        add_edit_dirty_check = true;
+        add_edit_initial_state = $("#add-edit-form").serialize();
+        add_edit_current_state = "";
         draw_cart();
         return;
     }
 
-    // we've done this ones already and are displaying the table, so just go add them
+    // we've searched this first/last name already and are displaying the table, so just go add the manually entered person
     if (add_results_table != null) {
         add_results_table.destroy();
         add_results_table = null;
@@ -757,14 +971,10 @@ function add_new() {
         return;
     }
 
-    if (add_results_table != null) {
-        add_results_table.destroy();
-        add_results_table = null;
-    }
     clear_message();
     var name_search = (new_first + ' ' + new_last).toLowerCase().trim();
     if (name_search == null || name_search == '') {
-        show_message("First name or Last Name specified", "warn");
+        show_message("First name or Last Name must be specified", "warn");
         return;
     }
 
@@ -848,11 +1058,14 @@ function add_found(data) {
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80,},
-                {title: "Cart", width: 70, headerFilter: false, headerSort: false, formatter: addCartIcon,},
+                {title: "Note", width: 45, headerSort: false, headerFilter: false, formatter: perNotesIcons, formatterParams: {t:"add"}, },
+                {title: "Cart", width: 80, headerFilter: false, headerSort: false, formatter: addCartIcon, formatterParams: {t:"add"},},
                 {field: "index", visible: false,},
+                {field: "open_notes", visible: false,},
             ],
         });
         addnew_button.innerHTML = "Add New";
+        add_edit_initial_state = $("#add-edit-form").serialize();
         return;
     }
     add_new_to_cart();
@@ -991,6 +1204,9 @@ function add_new_to_cart() {
             Add New Person and Membership
         </div>
     </div>`;
+    add_edit_dirty_check = true;
+    add_edit_initial_state = $("#add-edit-form").serialize();
+    add_edit_current_state = "";
 }
 
 // format all of the memberships for one record in the cart
@@ -1011,6 +1227,7 @@ function draw_cart_row(rownum) {
     var addon_html = '';
     var yearahead_eligible = false;
     var upgrade_eligible = false;
+    var day = null;
     var col1 = '';
     var perid = row['perid'];
 
@@ -1018,28 +1235,59 @@ function draw_cart_row(rownum) {
     var mrows = find_memberships_by_perid(cart_membership, perid);
     for (var mrownum in mrows) {
         var mrow = mrows[mrownum];
+        if (mrow['todelete'] !== undefined)
+            continue;
 
-        mem_is_membership = false;
-        col1 = (Number(mrow['tid']) != 0 || freeze_cart) ? '&nbsp;' :
-            '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
-            mrow['index'] + ')" >X</button >';
         var category = mrow['memCategory'];
         if (category == 'yearahead' && mrow['conid'] == conid)
             category = 'standard'; // last years yearahead is this year's standard
+        var memType = mrow['memType'];
+        mem_is_membership = false;
+        // col1 choices
+        //  X = delete element from cart
+        var allow_delete = mrow['regid'] <=  0;
+        var allow_delete_mgr = hasManager && mrow['paid'] == 0 && mrow['printcount'] == 0;
+        var allow_change_mgr = hasManager && mrow['regid'] >0 && mrow['paid'] >= 0 && mrow['printcount'] == 0 && (category == 'standard' || category == 'yearahead') && memType == 'full';
+        col1 = '';
+        if (allow_delete || allow_delete_mgr) {
+            col1 += '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
+                mrow['index'] + ')" >X</button >';
+        }
+        // C = change membership type
+        if (allow_change_mgr) {
+            col1 += '<button type = "button" class="btn btn-small btn-warning pt-0 pb-0 ps-1 pe-1 m-0" onclick = "change_membership(' +
+                mrow['index'] + ')" >C</button >';
+        }
+
+        var label = mrow['label'];
+        if (!freeze_cart) {
+            var notes_count = 0;
+            if (mrow['reg_notes_count'] !== undefined && mrow['reg_notes_count'] !== null) {
+                notes_count = Number(mrow['reg_notes_count']);
+            }
+            var btncolor = 'btn-info';
+            if (mrow['new_reg_note'] !== undefined && mrow['new_reg_note'] !== '')
+                btncolor = 'btn-warning';
+            label += ' <button type = "button" class="btn btn-small ' + btncolor + ' pt-0 pb-0 ps-1 pe-1 m-0" onclick = " +show_reg_note(' +
+                    mrow['index'] + ', ' + notes_count + ')" >N:' + notes_count.toString() +  '</button >';
+            }
+
         switch (category) {
             case 'standard':
                 yearahead_eligible = true;
-                if (mrow['memType'] == 'oneday')
+                if (mrow['memType'] == 'oneday') {
                     upgrade_eligible = true;
+                    day = (mrow['label']).toLowerCase().substr(0, 3);
+                }
                 // no break - fall through
             case 'freebie':
                 mem_is_membership = true;
                 membership_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
+        <div class="col-sm-7 p-0">` + label + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
 `;
                 break;
@@ -1047,12 +1295,13 @@ function draw_cart_row(rownum) {
                 mem_is_membership = true;
                 yearahead_eligible = true;
                 upgrade_eligible = false;
+                day = null;
                 upgrade_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
+        <div class="col-sm-7 p-0">` + label + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
 `;
                 break;
@@ -1060,9 +1309,9 @@ function draw_cart_row(rownum) {
                 yearahead_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
+        <div class="col-sm-7 p-0">` + label + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
 `;
                 break;
@@ -1072,9 +1321,9 @@ function draw_cart_row(rownum) {
                 rollover_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
+        <div class="col-sm-7 p-0">` + label + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
 `;
                 break;
@@ -1084,9 +1333,9 @@ function draw_cart_row(rownum) {
                 addon_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + mrow['label'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['price'] + `</div>
-        <div class="col-sm-2 text-end">` + mrow['paid'] + `</div>
+        <div class="col-sm-7 p-0">` + label + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
 `;
                 break;
@@ -1120,7 +1369,20 @@ function draw_cart_row(rownum) {
     rowhtml += `
     <div class="row">
         <div class="col-sm-3 p-0">Badge Name:</div>
-        <div class="col-sm-auto p-0">` + badge_name_default(row['badge_name'], row['first_name'], row['last_name']) + `</div>
+        <div class="col-sm-5 p-0">` + badge_name_default(row['badge_name'], row['first_name'], row['last_name']) + `</div>
+        <div class="col-sm-2 p-0 text-center">`;
+    if (!freeze_cart && row['open_notes'] != null && row['open_notes'].length > 0) {
+        rowhtml += '<button type="button" class="btn btn-sm btn-info p-0" onclick="show_perinfo_notes(' + row['index'] + ', \'cart\')">View Notes</button>';
+    }
+    rowhtml += `</div>
+        <div class="col-sm-2 p-0 text-center">`;
+    if (hasManager && !freeze_cart) {
+        var btncolor = 'btn-secondary';
+        if (row['open_notes_pending'] !== undefined && row['open_notes_pending'] === 1)
+            btncolor = 'btn-warning';
+        rowhtml += '<button type="button" class="btn btn-sm ' + btncolor +  ' p-0" onclick="edit_perinfo_notes(' + row['index'] + ', \'cart\')">Edit Notes</button>';
+    }
+    rowhtml += `</div>
     </div>
 `;  // end of second row - badge name
 
@@ -1172,7 +1434,16 @@ function draw_cart_row(rownum) {
 <div class="row">
         <div class="col-sm-1 p-0">&nbsp;</div>
         <div class="col-sm-9 p-0"><select id="cart-mupg-` + rownum + `" name="cart-addid">
-` + upgrade_select + `
+`;
+        // allow for mismatches to show the entire select, if matched, just use that onecol1
+        if (day !== null && upgrade_select[day] !== undefined) {
+            rowhtml += upgrade_select[day];
+        } else {
+            for (var upgrow in upgrade_select) {
+                rowhtml += upgrade_select[upgrow];
+            }
+        }
+        rowhtml += `
             </select>
         </div>
         <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mupg-" + rownum + `')">Add</button></div >
@@ -1247,7 +1518,7 @@ function draw_cart_pmtrow(prow) {
     <div class="col-sm-2 p-0">` + pmt['type'] + `</div>
     <div class="col-sm-6 p-0">` + pmt['desc'] + `</div>
     <div class="col-sm-2 p-0">` + code + `</div>
-    <div class="col-sm-2 text-end">` + pmt['amt'] + `</div>
+    <div class="col-sm-2 text-end">` + Number(pmt['amt']).toFixed(2) + `</div>
 </div>
 `;
 }
@@ -1272,14 +1543,16 @@ function draw_cart() {
     unpaid_rows = 0;
     for (rownum in cart_perinfo) {
         num_rows++;
-        html += draw_cart_row(rownum);   
+        html += draw_cart_row(rownum);
     }
     html += `<div class="row">
     <div class="col-sm-8 p-0 text-end">Total:</div>
-    <div class="col-sm-2 text-end">$` + total_price + `</div>
-    <div class="col-sm-2 text-end">$` + total_paid + `</div>
+    <div class="col-sm-2 text-end">$` + Number(total_price).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">$` + Number(total_paid).toFixed(2) + `</div>
 </div>
 `;
+    total_price = Number(total_price.toFixed(2));
+    total_paid = Number(total_paid.toFixed(2));
     if (cart_pmt.length > 0) {
         html += `
 <div class="row mt-3">
@@ -1294,8 +1567,10 @@ function draw_cart() {
             total_pmt += Number(cart_pmt[prow]['amt']);
         }
         html += `<div class="row">
-    <div class="col-sm-8 p-0 text-end">Payment Total:</div>
-    <div class="col-sm-4 text-end">$` + total_pmt + `</div>
+    <div class="col-sm-8 p-0 text-end">Payment Total:</div>`;
+    total_pmt = Number(total_pmt.toFixed(2));
+        html += `
+    <div class="col-sm-4 text-end">$` + total_pmt.toFixed(2) + `</div>
 </div>
 `;
     }
@@ -1340,23 +1615,35 @@ function draw_record(row, first) {
     <div class="row mt-2">
         <div class="col-sm-3">`;
     if (first) {
-        html += `<button class="btn btn-primary btn-small" id="add_btn_all" onclick="add_to_cart(-` + number_search + `);">Add All Cart</button>`;
+        html += `<button class="btn btn-primary btn-small" id="add_btn_all" onclick="add_to_cart(-` + number_search + `, 'result');">Add All Cart</button>`;
     }
     html += `</div>
-        <div class="col-sm-9">`;
+        <div class="col-sm-5">`;
     if (map_access(cart_perinfo_map, data['perid']) === undefined) {
         if (data['banned'] == 'Y') {
             html += `
-            <button class="btn btn-danger btn-small" id="add_btn_1" onclick="add_to_cart(` + row + `);">B</button>`;
+            <button class="btn btn-danger btn-small" id="add_btn_1" onclick="add_to_cart(` + row + `, 'result');">B</button>`;
         } else {
             html += `
-            <button class="btn btn-success btn-small" id="add_btn_1" onclick="add_to_cart(` + row + `);">Add to Cart</button>`;
+            <button class="btn btn-success btn-small" id="add_btn_1" onclick="add_to_cart(` + row + `, 'result');">Add to Cart</button>`;
         }
     } else {
         html += `
             <i>In Cart</i>`
     }
-        html += `
+    html += `</div>
+        <div class="col-sm-2">`;
+    if (data['open_notes'] != null && data['open_notes'].length > 0) {
+        html += '<button type="button" class="btn btn-sm btn-info p-0" onclick="show_perinfo_notes(' + data['index'] + ', \'result\')">View Notes</button>';
+    }
+    html += `</div>
+        <div class="col-sm-2">`;
+    if (hasManager) {
+        html += ' <span class="bg-warning pt-1 pb-1"><strong>Edit Notes</strong></span>';
+    }
+
+    html += `
+            </div>
         </div>
         <div class="row">
             <div class="col-sm-3">` + 'Badge Name:' + `</div>
@@ -1418,6 +1705,8 @@ function draw_record(row, first) {
     return html;
 }
 
+// tabulator perinfo formatters:
+
 // tabulator formatter for the add cart column, displays the "add" record and "trans" to add the tranaction to the card as appropriate
 // filters for ones already in the cart, and statuses that should not be allowed to be added to the cart
 function addCartIcon(cell, formatterParams, onRendered) { //plain text value
@@ -1430,23 +1719,172 @@ function addCartIcon(cell, formatterParams, onRendered) { //plain text value
     }
     if (banned == 'Y') {
         return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="add_to_cart(' +
-            cell.getRow().getData().index + ')">B</button>';
+            cell.getRow().getData().index + ', \'' + formatterParams['t'] + '\')">B</button>';
     } else if (map_access(cart_perinfo_map, cell.getRow().getData().perid) === undefined) {
         html = '<button type="button" class="btn btn-sm btn-success p-0" onclick="add_to_cart(' +
-            cell.getRow().getData().index + ')">Add</button>';
+            cell.getRow().getData().index + ', \'' + formatterParams['t'] + '\')">Add</button>';
         var tid = cell.getRow().getData().tid;
         if (tid != '' && tid != undefined && tid != null) {
-            html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" onclick="add_to_cart(' + (-tid) + ')">Tran</button>';
+            html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" onclick="add_to_cart(' + (-tid) + ', \'' + formatterParams['t'] + '\')">Tran</button>';
         }
         return html;
     }
     return '<span style="font-size: 75%;">In Cart';
 }
 
+// tabulator formatter for the notes, displays the "O" record and "A" notes for this person
+function perNotesIcons(cell, formatterParams, onRendered) { //plain text value
+    var index = cell.getRow().getData().index;
+    var open_notes = cell.getRow().getData().open_notes;
+    var html = "";
+    if (open_notes != null && open_notes.length > 0) {
+        html += '<button type="button" class="btn btn-sm btn-info p-0" onclick="show_perinfo_notes(' + index + ', \'' + formatterParams['t'] + '\')">O</button>';
+    }
+    if (hasManager) {
+        html += ' <button type="button" class="btn btn-sm btn-secondary p-0" onclick="edit_perinfo_notes(' + index + ', \'' + formatterParams['t'] + '\')">E</button>';
+    }
+    if (html == "")
+        html = "&nbsp;"; // blank draws nothing
+    return html;
+}
+
+// display the note popup with the requested notes
+function show_perinfo_notes(index, where) {
+    notesLocation = null;
+    if (where == 'cart') {
+        notesLocation = cart_perinfo[index];
+        notesType = 'PC';
+    }
+    if (where == 'result') {
+        notesLocation = result_perinfo[index];
+        notesType = 'PR';
+    }
+    if (where == 'add') {
+        notesLocation = add_perinfo[index];
+    }
+    if (notesLocation == null)
+        return;
+
+    notesIndex = index;
+
+    notesTitle.innerHTML = "Notes for " + notesLocation['fullname'];
+    notesBody.innerHTML = notesLocation['open_notes'].replace(/\n/g, '<br/>');
+    notesButton.innerHTML = "Close";
+    notes.show();
+}
+// edit_perinfo_notes: display in an editor the perinfo notes field
+// only managers can edit the notes
+function edit_perinfo_notes(index, where) {
+    if (!hasManager)
+        return;
+    notesLocation = null;
+    if (where == 'cart') {
+        notesLocation = cart_perinfo[index];
+        notesType = 'PC';
+    }
+    if (where == 'result') {
+        notesLocation = result_perinfo[index];
+        notesType = 'PR';
+    }
+    if (where == 'add') {
+        notesLocation = add_perinfo[index];
+    }
+    if (notesLocation == null)
+        return;
+
+    notesIndex = index;
+    notesPriorValue = notesLocation['open_notes'];
+    if (notesPriorValue === null) {
+        notesPriorValue = '';
+    }
+
+    notesTitle.innerHTML = "Editing Notes for " + notesLocation['fullname'];
+    notesBody.innerHTML = '<textarea name="perinfoNote" class="form-control" id="perinfoNote" cols=60 wrap="soft" style="height:400px;">' +
+        notesPriorValue + "</textarea>";
+    notesButton.innerHTML = "Save and Close";
+    notes.show();
+}
+
+// show the registration element note, anyone can add a new note, so it needs a save and close button
+function show_reg_note(index, count) {
+    var bodyHTML = '';
+    notesLocation = cart_membership[index];
+    var prow = cart_perinfo[notesLocation['pindex']];
+
+    notesType = 'RC';
+    notesIndex = index;
+
+    if (count > 0) {
+        bodyHTML = notesLocation['reg_notes'].replace(/\n/g, '<br/>');
+    }
+    bodyHTML += '<br/>&nbsp;<br/>Enter/Update new note:<br/><input type="text" name="new_reg_note" id="new_reg_note" maxLength=64 size=60>'
+    notesTitle.innerHTML = "Registration Notes for " + prow['fullname'] + '<br/>Membership: ' + notesLocation['label'];
+    notesBody.innerHTML = bodyHTML;
+    if (notesLocation['new_reg_note'] !== undefined) {
+        document.getElementById('new_reg_note').value = notesLocation['new_reg_note'];
+    }
+    notesButton.innerHTML = "Save and Close";
+    notes.show();
+}
+
+// save_note
+//  save and update the note based on type
+function save_note() {
+    if (notesButton.innerHTML == "Save and Close") {
+        if (notesType == 'RC') {
+            notesLocation['new_reg_note'] = document.getElementById("new_reg_note").value;
+            cart_perinfo[notesLocation['pindex']]['dirty'] = true;
+            draw_cart();
+        }
+        if (notesType == 'PC' && hasManager) {
+            notesLocation['open_notes'] = document.getElementById("perinfoNote").value;
+            notesLocation['open_notes_pending'] = 1;
+            notesLocation['dirty'] = true;
+            draw_cart();
+        }
+        if (notesType == 'PR' && hasManager) {
+            var new_note = document.getElementById("perinfoNote").value;
+            if (new_note != notesPriorValue) {
+                notesLocation['open_notes'] = new_note;
+                // search for matching names
+                var postData = {
+                    ajax_request_action: 'updatePerinfoNote',
+                    perid: notesLocation['perid'],
+                    notes: notesLocation['open_notes'],
+                    user_id: user_id,
+                };
+                $.ajax({
+                    method: "POST",
+                    url: "scripts/regposTasks.php",
+                    data: postData,
+                    success: function (data, textstatus, jqxhr) {
+                        if (data['error'] !== undefined) {
+                            show_message(data['error'], 'error');
+                            return;
+                        }
+                        if (data['message'] !== undefined) {
+                            show_message(data['message'], 'success');
+                        }
+                        if (data['warn'] !== undefined) {
+                            show_message(data['warn'], 'warn');
+                        }
+                    },
+                    error: showAjaxError,
+                });
+            }
+        }
+    }
+    notesType = null;
+    notesLocation = null;
+    notesIndex = null;
+    notesPriorValue = null;
+    notes.hide();
+}
+
 // select the row (tid) from the unpaid list and add it to the cart, switch to the payment tab (used by find unpaid)
 // marks it as a tid (not perid) add by inverting it.  (add_to_cart will deal with the inversion)
 function add_unpaid(tid) {
-    add_to_cart(-Number(tid));
+    add_to_cart(-Number(tid), 'result');
     // force a new transaction for the payment as the cashier is not the same as the check-in in this case.
     review_nochanges();
 }
@@ -1558,7 +1996,7 @@ function found_record(data) {
             for (var row in result_membership) {
                 if (result_membership[row]['tid'] == tid) {
                     var index = result_membership[row]['pindex'];
-                    add_to_cart(index);
+                    add_to_cart(index, 'result');
                 }
             }
             review_nochanges(); // build the master transaction and attach records
@@ -1607,7 +2045,7 @@ function found_record(data) {
                 { title: "#M", field: "num_mem", minWidth: 30, maxWidth: 30, headerSort: false, hozAlign: 'right', },
                 { title: "Price", field: "price", maxWidth: 50, minWidth: 50, headerSort: false, hozAlign: 'right', },
                 { title: "Paid", field: "paid", maxWidth: 50, minWidth: 50, headerSort: false, hozAlign: 'right', },
-                { title: "Cart", width: 40, formatter: addCartIcon, headerSort: false, },
+                { title: "Cart", width: 40, formatter: addCartIcon, formatterParams: {t:"unpaid"}, headerSort: false, },
                 { field: "index", visible: false, },
             ],
         });
@@ -1652,6 +2090,7 @@ function found_record(data) {
             ],
             columns: [
                 {field: "perid", visible: false,},
+                {field: "index", visible: false, },
                 {title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                 {field: "last_name", visible: false,},
                 {field: "first_name", visible: false,},
@@ -1661,7 +2100,8 @@ function found_record(data) {
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80,},
-                {title: "Cart", width: 80, headerFilter: false, headerSort: false, formatter: addCartIcon,},
+                {title: "Note",width: 45, headerSort: false, headerFilter: false, formatter: perNotesIcons, formatterParams: {t:"result"}, },
+                {title: "Cart", width: 80, headerFilter: false, headerSort: false, formatter: addCartIcon, formatterParams: {t:"result"},},
                 {field: "index", visible: false,},
             ],
         });
@@ -1702,6 +2142,9 @@ function not_found_add_new() {
 
 // switch to the review tab when the review button is clicked
 function start_review() {
+    if (!confirm_discard_add_edit(false))
+        return;
+
     // set tab to review-tab
     bootstrap.Tab.getOrCreateInstance(review_tab).show();
     review_tab.disabled = false;  
@@ -1766,6 +2209,7 @@ function review_nochanges() {
 // reviewed_update_cart:
 //  all the data from the cart has been updated in the database, now apply the id's and proceed to the next step
 function reviewed_update_cart(data) {
+    pay_tid = data['master_tid'];
     // update cart elements
     var updated_perinfo = data['updated_perinfo'];
     for (var rownum in updated_perinfo) {
@@ -1793,7 +2237,6 @@ function reviewed_update_cart(data) {
     }
 
     // Once saved, move them to next step
-    pay_tid = data['master_tid'];
     if (find_unpaid_button != null) {
         bootstrap.Tab.getOrCreateInstance(pay_tab).show();
     } else {
@@ -1807,7 +2250,7 @@ function reviewed_update_cart(data) {
 
 // change tab to the print screen
 function goto_print() {  
-    print_arr = null;
+    printed_obj = null;
     bootstrap.Tab.getOrCreateInstance(print_tab).show();    
 }
 
@@ -1951,54 +2394,21 @@ function pay() {
 }
 
 // Create a receipt and send it to the receipt printer
-// TODO: If no receipt printer specified (or generic printer), then warn about temp file only
 function print_receipt() {
+    // optional header text:
     var d = new Date();
     var payee = (cart_perinfo[0]['first_name'] + ' ' + cart_perinfo[0]['last_name']).trim();
-    // title row
-    var text = "\nReceipt for payment to " + conlabel + "\nat " + d.toLocaleString() + "\nBy: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid;
-    // title + heading
-    var html = text.replace(/\n/g, "<br/>") + `
-<div class="container-fluid">
-<div class="row mt-3">
-    <div class="col-sm-8 text-bg-primary">Payment</div>
-    <div class="col-sm-2 text-bg-primary">Code</div>
-    <div class="col-sm-2 text-bg-primary text-end">Amount</div>
-</div>
-`;
-    text += "\n\nPayment   Amount Description/Code\n";
-    const Dollars = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-        minimumFractionDigits: 2,
-    });
-    var total_pmt = 0;
-    for (var rownum in cart_pmt) {
-        prow = cart_pmt[rownum];
-        html += draw_cart_pmtrow(rownum);
-        var dolamt = Dollars.format(prow['amt']);
-        var code = '';
-        if (prow['type'] == 'check') code = prow['checkno'];
-        if (prow['type'] == 'credit') code = prow['ccauth'];
-        //console.log('type length = ' + prow['type'].length);
-        //console.log('amt length = ' + dolamt.length);
-        text += prow['type'] + ' '.repeat(20-(prow['type'].length + dolamt.length)) + dolamt + ' ' + prow['desc'] + '/' + code + "\n";
-        total_pmt += Number(prow['amt']);
-    }
-    html += `<div class="row">
-    <div class="col-sm-8 p-0 text-end">Payment Total:</div>
-    <div class="col-sm-4 text-end">$` + total_pmt + `</div>
-</div>
-</div>
-`;
-    document.getElementById('pay_status').innerHTML = html;
-    dolamt = Dollars.format(total_pmt);
-    text += "Total" + ' '.repeat(15-dolamt.length) + dolamt + "\n\n";
-    console.log(text);
-    // now print the receipt
+    var header_text = "\nReceipt for payment to " + conlabel + "\nat " + d.toLocaleString() + "\nBy: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid;
+    // optional footer text
+    var footer_text = '';
+    // server side will print the receipt
     var postData = {
         ajax_request_action: 'printReceipt',
-        receipt: text,
+        header: header_text,
+        prows: cart_perinfo,
+        mrows: cart_membership,
+        pmtrows: cart_pmt,
+        footer: footer_text,
     };
     if (receiptPrinterAvailable) {
         $.ajax({
@@ -2012,10 +2422,13 @@ function print_receipt() {
                 }
                 if (data['message'] !== undefined) {
                     show_message(data['message'], 'success');
+                    return;
                 }
                 if (data['warn'] !== undefined) {
                     show_message(data['warn'], 'success');
+                    return;
                 }
+                clear_message();
             },
             error: showAjaxError,
         });
@@ -2032,24 +2445,21 @@ function add_badge_to_print(index) {
     mrow = find_primary_membership_by_perid(cart_membership, row['perid']);
     printrow = cart_membership[mrow];
 
-    var params;
-    params['type'] = printrow['type'];
+    var params = {};
+    params['type'] = printrow['memType'];
     params['badge_name'] = row['badge_name'];
+    params['full_name'] = (row['first_name']+' '+row['last_name']).trim();
     params['category'] = printrow['memCategory'];
     params['badge_id'] = row['perid'];
     params['day'] = 'Friday'; // need day calc here...
     params['age'] = printrow['memAge'];
-    return $params;
+    return params;
 }
 // Send one or all of the badges to the printer
-// TODO: actually send the badge to the printer
-// TODO: Add warning if no printer, that it will only create the temp files on the server
 function print_badge(index) {
     var rownum = null;
     var mrow = null;
     var row = null;
-
-    var pt_html = '';
 
     var params = [];
     var badges = [];
@@ -2076,45 +2486,46 @@ function print_badge(index) {
                 show_message(data['error'], 'error');
                 return;
             }
-            PrintComnplete(data);
+            PrintComplete(data);
         },
         error: showAjaxError,
     });
 }
 
 function PrintComplete(data) {
-    pt_html += '<br/>' + data['message'];
     var badges = data['badges'];
     var regs = [];
     for (index in badges) {
-        if (print_arr.includes(index)) {
+        if (map_access(printed_obj, index) == 0) {
             row = cart_perinfo[index];
             mrow = find_primary_membership_by_perid(cart_membership, row['perid']);
             cart_membership[mrow]['printcount']++;
-            print_arr = print_arr.filter(function (el) {
-                return el != index
-            });
+            map_set(printed_obj, index, 1);
             regs.push({ regid: cart_membership[mrow]['regid'], printcount: cart_membership[mrow]['printcount']});
         }
     }
-    var postData = {
+    if (regs.length > 0) {
+        var postData = {
             ajax_request_action: 'updatePrintcount',
             regs: regs,
+            user_id: user_id,
+            tid: pay_tid,
         };
-    $.ajax({
-        method: "POST",
-        url: "scripts/regposTasks.php",
-        data: postData,
-        success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
-                return;
-            }
-        },
-        error: showAjaxError,
-    });
+        $.ajax({
+            method: "POST",
+            url: "scripts/regposTasks.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (data['error'] !== undefined) {
+                    show_message(data['error'], 'error');
+                    return;
+                }
+            },
+            error: showAjaxError,
+        });
+    }
     print_shown();
-    document.getElementById('pt-status').innerHTML = pt_html;
+    show_message(data['message'], 'success');
 }
 
 // tab shown events - state mapping for which tab is shown
@@ -2284,7 +2695,7 @@ function pay_shown(current, previous) {
             pay_button_rcpt.hidden = true;
             pay_button_print.hidden = true;
         }
-        var total_amount_due = total_price - total_paid;
+        var total_amount_due = (total_price - total_paid).toFixed(2);
 
         // draw the pay screen
 
@@ -2361,9 +2772,9 @@ function print_shown(current, previous) {
     void_button.hidden = true;
     freeze_cart = true;
     var new_print = false;
-    if (print_arr == null) {
+    if (printed_obj == null) {
         new_print = true;
-        print_arr = [];
+        printed_obj = {};
     }
     draw_cart();
 
@@ -2381,7 +2792,7 @@ function print_shown(current, previous) {
         crow = cart_perinfo[rownum];
         mrow = find_primary_membership_by_perid(cart_membership, crow['perid']);
         if (new_print) {
-            print_arr.push(crow['index']);
+            map_set(printed_obj, crow['index'], 0);
         }
         print_html += `
     <div class="row">

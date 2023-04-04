@@ -69,7 +69,7 @@ $(document).ready(function () {
         $('#newPersonForm :required').map(function (e) { $(this).removeClass('need');});
     });
 });
-
+/* obsolete
 function findToCreate(form) {
     if($("#init_full").val()=='') {
         var newName = prompt("Please Enter a name");
@@ -112,7 +112,7 @@ function findToAppend() {
 function appendNewPerson(data, textStatus, jqXHR) {
     appendPerson(data['results']);
 }
-
+*/
 function appendPerson(user) {
     var num = +$('#transactionForm').data('maxPeople')+1;
     var name = 'Person'+num;
@@ -228,7 +228,7 @@ function appendPerson(user) {
         }
     });
 }
-
+/* obsolete
 function createTransaction(user) {
     $('#searchResultHolder').empty();
     ajaxAction.reg_start({
@@ -297,7 +297,7 @@ function updatePersonCatch (data, textStatus, jqXHR) {
     var fun = $('#newPerson').data("callback");
     fun(data, textStatus, jqXHR);
 }
-
+*/
 function setTransaction(data, textStatus, jqXHR) {
     //$('#test').empty().append(JSON.stringify(data, null, 2));
     for (var i =2; i<=$('#transactionForm').data('maxPay'); i++) {
@@ -915,6 +915,7 @@ function showActions(prefix, acts, badgeId, transid) {
 
 }
 
+/*
 function getEdited(data, textStatus, jqXHR)  {
     editPerson(data['post'].prefix);
 
@@ -938,6 +939,7 @@ function fetchNewPerson(form) {
         }
     });
 }
+
 
 function fetchPerson(form) {
     var getData = $(form).serialize();
@@ -989,7 +991,7 @@ function getPerson(obj) {
 function getUpdated(data, textStatus, jqXhr) {
     getPerson(data['post']);
 }
-
+*/
 function loadNewPerson(data) {
     var user = data["new"];
     $('#newID').val(data["new"]['id']);
@@ -1071,7 +1073,7 @@ function loadOldPerson(objData) {
     $('#conflictFormOldPhone').append(objData['phone']);
 
 }
-
+/*
 function resolveConflict(data, textStatus, jqXhr) {
     //$('#test').empty().append(JSON.stringify(data, null, 2));
     if(data['error'] != null) {
@@ -1131,6 +1133,7 @@ function showEditPerson(data) {
     track("#editPersonForm");
     showBlock("#editPerson");
 }
+*/
 
 function printBadge(group, set) {
     var badgeList = $(group).data('badges');
