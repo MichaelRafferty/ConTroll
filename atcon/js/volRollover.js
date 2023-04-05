@@ -82,7 +82,6 @@ function make_copy(arr) {
 }
 
 // if no memberships or payments have been added to the database, this will reset for the next customer
-// TODO: add how to tell if it's allowed to be shown as enabled
 function start_over(reset_all) {
     clear_message();
     // empty cart
