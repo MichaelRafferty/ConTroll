@@ -549,7 +549,15 @@ function add_to_cart(index, table) {
             }
         }
     }
+
     draw_cart();
+    if (table == 'result') {
+        if (find_result_table !== null) {
+            find_result_table.replaceData(result_perinfo);
+        } else {
+            draw_as_records();
+        }
+    }
     clear_message();
 }
 
@@ -578,6 +586,12 @@ function remove_from_cart(perid) {
     cart_perinfo.splice(index, 1);
     // splices loses me the index number for the cross-reference, so the cart needs renumbering
     draw_cart();
+    if (find_result_table !== null) {
+        find_result_table.replaceData(result_perinfo);
+    } else {
+        draw_as_records();
+    }
+    clear_message();
 }
 
 // remove single membership item from the cart (leaving other memberships and person information
@@ -2105,17 +2119,7 @@ function found_record(data) {
         });
     } else if (result_perinfo.length > 0) {  // one row string, or all perinfo/tid searches, display in record format
         number_search = Number(name_search);
-        html = '';
-        var first = false;
-        if (result_perinfo.length > 1) {
-            first = true;
-        }
-        for (row in result_perinfo) {
-            html += draw_record(row, first);
-            first = false;
-        }
-        html += '</div>';
-        id_div.innerHTML = html;
+        draw_as_records();
         return;
     }
     // no rows show the diagnostic
@@ -2130,6 +2134,19 @@ function found_record(data) {
     id_div.innerHTML = id_div.innerHTML = 'No matching records found'
 }
 
+function draw_as_records() {
+    var html = '';
+    var first = false;
+    if (result_perinfo.length > 1) {
+        first = true;
+    }
+    for (row in result_perinfo) {
+        html += draw_record(row, first);
+        first = false;
+    }
+    html += '</div>';
+    id_div.innerHTML = html;
+}
 // when searching, if clicking on the add new button, switch to the add/edit tab
 function not_found_add_new() {
     id_div.innerHTML = '';
