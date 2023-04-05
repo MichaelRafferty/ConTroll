@@ -710,16 +710,6 @@ $typestr = 'si';
     $response['cart_membership'] = $cart_membership;
     ajaxSuccess($response);
 }
-// outer ajax wrapper
-// method - permission required to access this AJAX function
-// action - passed in from the javascript
-
-$method = 'cashier';
-if ($_POST && array_key_exists('nopay', $_POST)) {
-    if ($_POST['nopay'] == 'true') {
-        $method = 'data_entry';
-    }
-}
 
 // updatePrintcount
 //      passed array of regid and print count
@@ -782,6 +772,17 @@ EOS;
         $response['message'] ="Notes Updated";
     }
     ajaxSuccess($response);
+}
+
+// outer ajax wrapper
+// method - permission required to access this AJAX function
+// action - passed in from the javascript
+
+$method = 'cashier';
+if ($_POST && array_key_exists('nopay', $_POST)) {
+    if ($_POST['nopay'] == 'true') {
+        $method = 'data_entry';
+    }
 }
 
 $con = get_conf('con');

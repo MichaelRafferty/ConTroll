@@ -68,7 +68,7 @@ function page_init($title, $tab, $css, $js)
                     <div class="row">
                         <div class="col-sm-12">
                             <h1 class='title'>
-                                    <?php echo $label; ?> Registration <?php echo $title; ?> page
+                                    <?php echo $label; ?> Registration <?php echo $title; ?>
                             </h1>
                         </div>
                     </div>
@@ -161,7 +161,7 @@ function page_init($title, $tab, $css, $js)
     }
 }
 
-function page_foot($title)
+function page_foot()
 {
     ?>
 </body>
