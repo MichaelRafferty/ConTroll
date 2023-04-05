@@ -88,7 +88,6 @@ var printed_obj = null;
 
 // Data Items
 var unpaid_table = [];
-var cart = [];
 var cart_pmt = [];
 var cart_perid = [];
 var result_membership = [];
@@ -236,7 +235,7 @@ window.onload = function initpage() {
     });
 }
 
-// load mapping tables from database to javascript arrayy
+// load mapping tables from database to javascript array
 // also retrieve session data about printers
 function loadInitialData(data) {
     // map the memIds and labels for the pre-coded memberships.  Doing it now because it depends on what the datbase sends.
@@ -438,7 +437,6 @@ function start_over(reset_all) {
 
     clear_message();
     // empty cart
-    cart = [];
     cart_membership = [];
     cart_perinfo = [];
     cart_perid = [];
@@ -1916,7 +1914,7 @@ function add_membership_cart(rownum, selectname) {
 }
 
 // search the online database for a set of records matching the criteria
-// find_type: empty: search for membrerships
+// find_type: empty: search for memberships
 //              unpaid: return all unpaid
 //  possible meanings of find_pattern
 //      numeric: search for tid or perid matches
