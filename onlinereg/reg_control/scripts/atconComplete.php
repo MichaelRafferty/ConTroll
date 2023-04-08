@@ -90,7 +90,7 @@ EOS;
         while($badge = fetch_safe_assoc($badgeRes)) {
             $totalPrice += $badge['price']-$badge['paid'];
                 if($badge['price'] > $badge['paid']) { array_push($newBadges, $badge); }
-                else if($badge['action']=='pickup') {
+                else if($badge['action']=='print') {
                     array_push($oldBadges, $badge);
                 } else {
                     array_push($paidBadges, $badge);

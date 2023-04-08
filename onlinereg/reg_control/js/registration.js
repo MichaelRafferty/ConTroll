@@ -797,9 +797,7 @@ function showActions(prefix, acts, badgeId, transid) {
         if (act['action'] == 'notes') {
             $(elem).addClass("note");
         }
-        if (act['action'] == 'pickup' && act['atcon_key'] != transid) { printed += 1; }
-        if (act['action'] == 'reprint' && act['atcon_key'] != transid) { printed += 1; }
-        if (act['action'] == 'return' && act['atcon_key'] != transid) { printed -= 1; }
+        if (act['action'] == 'print' && act['atcon_key'] != transid) { printed += 1; }
 
         $(elem).prepend(newAct);
     }

@@ -27,8 +27,8 @@ SELECT P.first_name, P.middle_name, P.last_name, P.address, P.addr_2, P.city, P.
 FROM $page B
 JOIN perinfo P ON (P.id=B.perid)
 JOIN reg R ON (R.perid=P.id)
-LEFT OUTER JOIN atcon_badge A ON (A.badgeId=R.id)
-WHERE R.conid >= $mincon AND R.conid <=$conid AND A.action='pickup'
+LEFT OUTER JOIN atcon_history H ON (H.regid=R.id)
+WHERE R.conid >= $mincon AND R.conid <=$conid AND H.action='print'
 GROUP BY P.id
 ORDER BY con, status, P.id;
 EOS;
