@@ -26,26 +26,18 @@ $conid=$con['id'];
 $transid = $_POST['transid'];
 $badgeId = $_POST['id'];
 
-$atconQ = "SELECT id from atcon where transid=?;";
-$atconR = dbSafeQuery($atconQ, 'i', array($transid));
-if($atconR->num_rows > 0) {
-    $atcon=fetch_safe_assoc($atconR);
-    $atconid = $atcon['id'];
-    $attachQ = <<<EOQ
-INSERT IGNORE INTO atcon_badge(atconId, badgeId, action) 
-VALUES (?, ?, 'attach');
+$attachQ = <<<EOQ
+INSERT INTO atcon_history(userid, tid, regid, action)
+VALUES(?, ?, ?, 'attach');
 EOQ;
-    $rowid = dbSafeInsert($attachQ, 'ii', array($atconid, $badgeId));
-
-    $response['atconid'] = $atconid;
-}
-
+$rowid = dbSafeInsert($attachQ, 'iii', array($userid, $transid, $badgeId));
+// debug output only
+$response['history_id'] = $rowid;
 $actionQ = <<<EOQ
 SELECT * 
-FROM atcon_badge
+FROM atcon_history
 WHERE badgeId=? AND action !='attach';
 EOQ;
-
 $actionR = dbSafeQuery($actionQ, 'i', array($badgeId));
 
 $actions = array();

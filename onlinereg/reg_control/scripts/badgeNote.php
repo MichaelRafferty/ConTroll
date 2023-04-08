@@ -23,13 +23,15 @@ $userid = $userR['id'];
 $con = get_conf('con');
 $conid=$con['id'];
 
-$atconIdQ = "SELECT id FROM atcon WHERE conid=? AND transid=?;";
-$atconId = fetch_safe_assoc(dbSafeQuery($atconIdQ, 'ii', array($conid, $_POST['transid'])));
+$attachQ = "INSERT IGNORE INTO atcon_history(userid, tid, regid, action, notes)
+VALUES (?, ?, ?, ?, ?);";
+$attachR = dbSafeInsert($attachQ, 'iiiss', array($userid, $_POST['transid'], $_POST['badgeId'], 'notes', $user . ": " . $_POST['content']));
 
-$attachQ = "INSERT IGNORE INTO atcon_badge (atconId, badgeId, action, comment)  VALUES (?, ?, ?, ?);";
-$attachR = dbSafeInsert($attachQ, 'iiss', array($atconId['id'], $_POST['badgeId'], $_POST['type'], $user . ": " . $_POST['content']));
-
-$atconQ = "SELECT B.date, A.atcon_key, B.action, B.comment FROM atcon_badge as B, atcon as A WHERE A.id=B.atconId AND badgeId=? AND action != 'attach';";
+$atconQ = <<<EOS
+SELECT logdate, action, notes
+FROM atcon_history
+WHERE regid=? AND action != 'attach';
+EOS;
 $atconR = dbSafeQuery($atconQ, 'i', $_POST['badgeId']);
 $actions = array();
 if($atconR->num_rows > 0) while($act = fetch_safe_assoc($atconR)) {
