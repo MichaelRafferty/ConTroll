@@ -174,7 +174,7 @@ EOS;
                     $diffend = $breaktimeend - strtotime($priorcondata['enddate']);
                     $breakstart = date('Y-m-d', strtotime($currentcondata['startdate']) + $diffstart);
                     $breakend = date('Y-m-d', strtotime($currentcondata['enddate']) + $diffend + $day);
-                } else if (str_ends_with($breakstart, '-01')) {
+                } else if (mb_substr($breakstart, -3) ==  '-01')) {
                     // -01 (start of month) - same month, this year;
                     $yeartmp = date('Y', $breaktimestart) + 1;
                     $breakstart = $yeartmp . mb_substr($breakstart, 4);
@@ -191,10 +191,10 @@ EOS;
                     // between prior con start and prior con end + 1
                     // between twoprior con start and prior con end + 1
                     // arbitary date - make same day of week next year
-                    if (str_ends_with($breakend, '-01')) {
+                    if (mb_substr($breakend, -3) == '-01')) {
                         $yeartmp = date('Y', $breaktimeend) + 1;
                         $breakend = $yeartmp . mb_substr($breakend, 4);
-                    } else if (str_ends_with($breakend, '-31')) {
+                    } else if (mb_subtr($breakend, -3) == '-31')) {
                         $yeartmp = date('Y', $breaktimeend) + 1;
                         $breakend = $yeartmp . mb_substr($breakend, 4);
                     } else if ($breaktimeend >= strtotime($priorcondata['startdate']) && $breaktimeend <= (strtotime($priorcondata['enddate']) + $day)) {
