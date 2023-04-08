@@ -3,7 +3,8 @@ global $db_ini;
 
 function getSameDayNextYear($date)
 {
-    $current = DateTime::createFromFormat("Y-m-d", $date);
+    $current = DateTime::createFromFormat("Y-m-d", substr($date,0,10));
+    error_log("createFromFormat on $date\n");
     $next = new DateTime();
     $year = (int)$current->format('o') + 1;
     $week = (int)$current->format('W');
@@ -174,7 +175,7 @@ EOS;
                     $diffend = $breaktimeend - strtotime($priorcondata['enddate']);
                     $breakstart = date('Y-m-d', strtotime($currentcondata['startdate']) + $diffstart);
                     $breakend = date('Y-m-d', strtotime($currentcondata['enddate']) + $diffend + $day);
-                } else if (mb_substr($breakstart, -3) ==  '-01')) {
+                } else if (mb_substr($breakstart, -3) ==  '-01') {
                     // -01 (start of month) - same month, this year;
                     $yeartmp = date('Y', $breaktimestart) + 1;
                     $breakstart = $yeartmp . mb_substr($breakstart, 4);
@@ -191,10 +192,10 @@ EOS;
                     // between prior con start and prior con end + 1
                     // between twoprior con start and prior con end + 1
                     // arbitary date - make same day of week next year
-                    if (mb_substr($breakend, -3) == '-01')) {
+                    if (mb_substr($breakend, -3) == '-01') {
                         $yeartmp = date('Y', $breaktimeend) + 1;
                         $breakend = $yeartmp . mb_substr($breakend, 4);
-                    } else if (mb_subtr($breakend, -3) == '-31')) {
+                    } else if (mb_substr($breakend, -3) == '-31') {
                         $yeartmp = date('Y', $breaktimeend) + 1;
                         $breakend = $yeartmp . mb_substr($breakend, 4);
                     } else if ($breaktimeend >= strtotime($priorcondata['startdate']) && $breaktimeend <= (strtotime($priorcondata['enddate']) + $day)) {
