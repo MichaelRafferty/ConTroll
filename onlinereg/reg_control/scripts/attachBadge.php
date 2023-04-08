@@ -9,7 +9,7 @@ $perm = "registration";
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
 if($check_auth == false || (!checkAuth($check_auth['sub'], $perm) &&
-                            !checkAuth($checK_auth['sub'], 'atcon'))) {
+                            !checkAuth($check_auth['sub'], 'atcon'))) {
     $response['error'] = "Authentication Failed";
     ajaxSuccess($response);
     exit();
@@ -36,7 +36,7 @@ $response['history_id'] = $rowid;
 $actionQ = <<<EOQ
 SELECT * 
 FROM atcon_history
-WHERE badgeId=? AND action !='attach';
+WHERE regid=? AND action !='attach';
 EOQ;
 $actionR = dbSafeQuery($actionQ, 'i', array($badgeId));
 
