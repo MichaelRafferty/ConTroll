@@ -104,12 +104,11 @@ switch($_GET['method']) {
 SELECT Distinct R.perid, M.shortname as label, R.conid, M.memType
     , FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(min(T.complete_date))/900)*900) AS time
     , DATEDIFF(CURRENT_TIMESTAMP(), MIN(T.complete_date)) as diff
-FROM atcon A
-JOIN atcon_badge B ON (B.atconId=A.id)
-JOIN reg R ON (R.id=B.badgeId)
-JOIN transaction T ON (T.id=A.transid)
+FROM atcon_history H
+JOIN reg R ON (R.id=H.regid)
+JOIN transaction T ON (T.id=H.tid)
 JOIN memLabel M ON (M.id=R.memId)
-WHERE A.conid>=? AND (B.action = 'attach')
+WHERE R.conid>=? AND H.action = 'attach'
     $addlwhere
 GROUP BY R.perid, M.shortname, R.conid, M.memType ORDER BY time, M.memType;
 EOF;
@@ -147,8 +146,8 @@ SELECT M.id, M.shortname as label, COUNT(distinct R.perid) AS c
 FROM reg R
 JOIN memLabel M ON (M.id=R.memId)
 JOIN conlist C ON (C.id=R.conid)
-LEFT OUTER JOIN atcon_badge B ON (B.badgeId = R.id AND B.action!='attach')
-WHERE R.create_date < C.startdate and R.conid=? AND B.action is NULL
+LEFT OUTER JOIN atcon_history H ON (H.regid = R.id AND H.action!='attach')
+WHERE R.create_date < C.startdate and R.conid=? AND H.action is NULL
 GROUP BY M.shortname, M.id
 ORDER BY M.id;
 EOS;
@@ -164,20 +163,19 @@ EOS;
 
 # OLD WHERE CLAUSE: AND (B.action='attach')
         $histoQ = <<<EOS
-SELECT COUNT(distinct A.id) AS trans, COUNT(distinct B.badgeId) AS badge
+SELECT COUNT(distinct T.id) AS trans, COUNT(distinct R.id) AS badge
     , IF(T.complete_date is not null
     ,FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(T.complete_date)/900)*900)
     ,FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(T.create_date)/900)*900)) AS time
     , DATEDIFF(CURRENT_TIMESTAMP(), T.complete_date) AS diff
     , M.memType
-FROM atcon A
-JOIN conlist C ON (C.id=A.conid)
-JOIN atcon_badge B ON (B.atconid=A.id)
-JOIN transaction T ON (T.id=A.transid)
-JOIN reg R ON (R.id=B.badgeId)
+FROM conlist C
+JOIN transaction T ON (T.conid=C.id)
+JOIN atcon_history H ON (H.tid=T.id)
+JOIN reg R ON (R.id=H.regid)
 JOIN memList M ON (M.id=R.memId)
-WHERE A.conid=?
-    AND (B.action='pickup' or B.action='create' or B.action='upgrade')
+WHERE C.id=?
+    AND H.action='print'
     AND T.create_date >= C.startdate - INTERVAL 1 Day
 GROUP BY time, diff, memType ORDER BY time;
 EOS;
@@ -218,7 +216,7 @@ SELECT COUNT(distinct P.cashier) AS reg
     , FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(P.time)/900)*900) AS t
 FROM transaction T
 LEFT OUTER JOIN payments P ON (P.transid=T.id and P.cashier IS NOT NULL)
-LEFT OUTER JOIN atcon as A ON (A.transid=T.id and A.perid IS NOT NULL)
+LEFT OUTER JOIN atcon_history H ON (H.tid=T.i)
 WHERE T.conid=? AND time IS NOT NULL
 GROUP BY t;
 EOF;

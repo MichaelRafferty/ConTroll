@@ -41,18 +41,6 @@ array_push($values, $userid);
 $transid = dbSafeInsert($query, 'iiii', $values);
 $response['create_query'] = $query;
 $response['transid'] = $transid;
-
-$keyQ = "SELECT max(atcon_key) FROM atcon WHERE conid=? GROUP BY conid;";
-$keyR = fetch_safe_array(dbSafeQuery($keyQ, 'i', array($conid)));
-$max_Key = $keyR[0]+1;
-
-$atconQ = "INSERT INTO atcon (conid, atcon_key, transid, perid) VALUES (?, ?, ?, NULL);";
-
-$atconId = dbSafeInsert($atconQ, 'iii', array($conid, $max_Key, $transid));
-$atcon = fetch_safe_assoc(dbSafeQuery("SELECT * FROM atcon WHERE id=?", 'i', array($atconId)));
-
-$response['atcon'] = $atcon;
-
 $transQ = <<<EOQ
 SELECT T.id as tID, T.create_date as tCreate
     , T.complete_date as tComplete, T.notes as tNotes, P.banned

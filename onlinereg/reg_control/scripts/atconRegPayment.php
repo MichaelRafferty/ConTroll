@@ -37,11 +37,10 @@ $complete = false;
 
 $badgeListQ = <<<EOS
 SELECT DISTINCT R.id, M.label, (R.price-R.paid) AS remainder
-FROM atcon A
-JOIN atcon_badge B ON (B.atconId = A.id and action='attach')
-JOIN reg R ON (R.id = B.badgeId)
+FROM atcon_history H
+JOIN reg R ON (R.id = H.regid)
 JOIN memLabel M ON (M.id=R.memId)
-WHERE A.transid = ?;
+WHERE H.tid = ? AND H.action='attach';
 EOS;
 
 $total = 0;
@@ -49,7 +48,7 @@ $total = 0;
 $badgeListR = dbSafeQuery($badgeListQ, 'i', array($transid));
 $badgeList= array();
 while($badge = $badgeListR->fetch_assoc()) {
-    array_push($badgeList, $badge);
+    $badgeList[] = $badge;
     $total += $badge['remainder'];
 }
 
@@ -92,7 +91,7 @@ UPDATE transaction SET price=?, tax=0, withtax=?, paid=?
 WHERE id=?;
 EOS;
 
-dbSafeCmd($transQ, 'dddi', array($total, $total, $paid + $amount, $transid);
+dbSafeCmd($transQ, 'dddi', array($total, $total, $paid + $amount, $transid));
 
 $resultQ = "SELECT type, description, cc_approval_code, amount FROM payments where id=?;";
 $resultA = dbSafeQuery($resultQ, 'i', $payid);

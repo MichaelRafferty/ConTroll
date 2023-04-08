@@ -66,25 +66,22 @@ FROM transaction as T
 
 EOQ;
 
-$atconR = dbSafeQuery("SELECT id from atcon where transid=?;", 'i', array($transactionId));
+$atconR = dbSafeQuery("SELECT id from atcon_history where tid=?;", 'i', array($transactionId));
 if($atconR->num_rows == 1) {
     $atcon = fetch_safe_assoc($atconR);
     $atconId = $atcon['id'];
     $badgeQuery .= <<<EOQ
-JOIN atcon as A ON (A.transid=T.id)
-JOIN atcon_badge as B ON (B.atconid=A.id AND B.action='attach')
-JOIN reg as R ON (R.id = B.badgeId AND R.perid != T.perid
+JOIN atcon_history H ON (H.tid=T.id AND H.action='attach')
+JOIN reg as R ON (R.id = H.regid AND R.perid != T.perid
     AND (R.newperid != T.newperid OR T.newperid IS NULL))
 JOIN perinfo as P ON P.id=R.perid
 JOIN memList as M on M.id=R.memId
-
 EOQ;
 } else {
     $badgeQuery .= <<<EOQ
 JOIN reg as R ON (R.create_trans = T.id AND R.perid != T.perid AND R.newperid != T.newperid)
 JOIN perinfo as P on P.id=R.perid
 JOIN memList as M on M.id=R.memId
-
 EOQ;
 }
 $badgeQuery .= " WHERE T.id = ?;";
