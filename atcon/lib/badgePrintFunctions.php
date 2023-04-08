@@ -32,7 +32,8 @@ $stylemod = array(
  **** "lbl" == Dymo LabelWriter SE450
  ** $mods is an array of controls to pull back
  */
-function printMod($type, $mods):string {
+function printMod($type, $mods)//:string {
+{
   global $stylemod;
   $ret = '';
   foreach($mods as $mod) {
@@ -57,12 +58,14 @@ $badgeTypes = array(
     'NoRights' => 'N'
 );
 
-function lookupType($type):string {
+function lookupType($type)//:string {
+{
     global $badgeTypes;
     return $badgeTypes[$type];
 }
 
-function init_file($printer):string {
+function init_file($printer)//:string {
+{
     if ($printer[0] == 'None' && $printer[2] == '') {
         $response['error'] = "You have no printer defined, you cannot print a badge.";
         ajaxSuccess($response);
@@ -106,7 +109,8 @@ function init_file($printer):string {
     return $tempfile;
 }
 
-function write_badge($badge, $tempfile, $printer):void {
+function write_badge($badge, $tempfile, $printer)//:void {
+{
 $printerType = $printer[3];
 switch ($printerType) {
     case 'badgese450':
@@ -118,7 +122,8 @@ switch ($printerType) {
     }
 }
 
-function write_ps($badge, $tempfile): void {
+function write_ps($badge, $tempfile)//: void {
+{
     $temp = fopen($tempfile, "a");
     if(!$temp) {
         $response['error'] = "Unable to get open file";
@@ -213,7 +218,8 @@ function write_ps($badge, $tempfile): void {
     fclose($temp);
 }
 
-function write_se450($badge, $tempfile):void {
+function write_se450($badge, $tempfile)//:void {
+{
     $temp = fopen($tempfile, "a");
     if(!$temp) {
         $response['error'] = "Unable to get open file";
@@ -289,7 +295,7 @@ function write_se450($badge, $tempfile):void {
 }
 
 // print_badge: printer contains array(4) of display name, server, queue name (printer), printer type
-function print_badge($printer, $tempfile): string|false
+function print_badge($printer, $tempfile)//: string|false
 {
     $queue = $printer[2];
     $name = $printer[0];
@@ -320,7 +326,8 @@ function print_badge($printer, $tempfile): string|false
     return $result_code;
 }
 
-function print_receipt($printer, $receipt):string | false {
+function print_receipt($printer, $receipt)//:string | false {
+{
     $queue = $printer[2];
     $name = $printer[0];
     if (mb_substr($queue, 0, 1) == '0' || $name == 'None') {
