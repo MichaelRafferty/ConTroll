@@ -49,12 +49,12 @@ if (isset($_POST['type'])) {
 //      no reg for this person for conid + 1
 
 $validateSQL = <<<EOS
-SELECT DISTINCT r.id, r.perid, r.price, r.paid, m.label, m.memAge, m.memCategory, m.memType, r1.id AS nextid, m1.label as nextlabel, ab.action
+SELECT DISTINCT r.id, r.perid, r.price, r.paid, m.label, m.memAge, m.memCategory, m.memType, r1.id AS nextid, m1.label as nextlabel, H.action
 FROM reg r
 JOIN memList m ON (r.memId = m.id)
 LEFT OUTER JOIN reg r1 ON (r1.conid = ? AND r.perid = r1.perid)
 LEFT OUTER JOIN memList m1 ON (r1.memId = m1.id)
-LEFT OUTER JOIN atcon_badge ab ON (ab.badgeid = r.id and action = 'pickup')
+LEFT OUTER JOIN atcon_history H ON (H.regid = r.id and action = 'print')
 WHERE r.conid = ? AND r.id = ?
 EOS;
 $result = dbSafeQuery($validateSQL, 'iii', array($nextcon, $conid, $badgeid));
@@ -108,8 +108,8 @@ switch ($rolloverType) {
             ajaxSuccess($response);
             return false;
         }
-        if ($membership['action'] == 'pickup') {
-            $response['error'] = "Cannot rollover $badgeid ($perid) as it was already printed/picked up";
+        if ($membership['action'] == 'print') {
+            $response['error'] = "Cannot rollover $badgeid ($perid) as it was already printed";
             ajaxSuccess($response);
             return false;
         }

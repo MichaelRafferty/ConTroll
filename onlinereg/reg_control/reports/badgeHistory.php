@@ -24,10 +24,10 @@ if(!(isset($_GET) and isset($_GET['perid']))) {
 $perid = $_GET['perid'];
 
 $query = <<<EOS
-SELECT R.conid, R.perid, M.label, R.create_user, R.create_date, max(B.date)
+SELECT R.conid, R.perid, M.label, R.create_user, R.create_date, max(H.logdate) AS date
 FROM reg R
 JOIN memLabel M ON (M.id=R.memId)
-LEFT OUTER JOIN atcon_badge B ON (B.badgeId=R.id AND B.action='pickup')
+LEFT OUTER JOIN atcon_history H ON (H.regid=R.id AND H.action='print')
 WHERE R.conid >= ? and R.perid = ?
 GROUP BY R.conid, R.perid, M.label, R.create_user, R.create_date
 ORDER BY R.conid;
@@ -44,9 +44,9 @@ while($reportL = fetch_safe_array($reportR)) {
 }
 
 $secondQ = <<<EOS
-SELECT R.conid, A.date, A.action, A.comment
+SELECT R.conid, H.logdate as date, H.action, H.notes as comment
 FROM reg R
-JOIN atcon_badge A ON (A.badgeId=R.id)
+JOIN atcon_history H ON (H.regid=R.id)
 WHERE R.perid=?
 EOS;
 

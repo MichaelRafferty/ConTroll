@@ -383,9 +383,9 @@ EOS;
         </tbody>
         <tbody id="transactionFormPayments" class='noborder'>
         <tr>
-          <th class='formlabel'>Type</td>
-          <th class='formlabel' colspan=3>Description/Transaction Id</td>
-          <th class='formlabel'>Amount</td>
+          <th class='formlabel'>Type</th>
+          <th class='formlabel' colspan=3>Description/Transaction Id</th>
+          <th class='formlabel'>Amount</th>
           <th class='formlabel'></th>
         </tr>
         </tbody>
