@@ -28,14 +28,13 @@ $transid = sql_safe($_GET['id']);
 $totalPrice = 0;
 $badgeQ = <<<EOS
 SELECT DISTINCT R.id, M.label, R.price, R.paid, P.badge_name, CONCAT_WS(' ', first_name, last_name) AS full_name, S.action
-FROM atcon A
-JOIN atcon_badge B ON (B.atconId = A.id AND action='attach')
-JOIN reg R ON (R.id = B.badgeId)
+FROM atcon_history H
+JOIN reg R ON (R.id = H.regid)
 JOIN memLabel M ON (M.id=R.memId)
 JOIN perinfo P ON (P.id=R.perid)
-LEFT OUTER JOIN atcon_badge S ON (S.badgeId=R.id and S.action='pickup')
-WHERE A.transid = ?;
-
+LEFT OUTER JOIN atcon_history S ON (S.regid=R.id and S.action='print')
+WHERE H.tid = ? AND H.action = 'attach';
+EOS;
 $badgeRes = dbSafeQuery($badgeQ, 'i', array($transid));
 $paidBadges=array();
 $newBadges=array();
@@ -44,7 +43,7 @@ if($badgeRes) {
   while($badge = fetch_safe_assoc($badgeRes)) {
     $totalPrice += $badge['price']-$badge['paid'];
     if($badge['price'] > $badge['paid']) { array_push($newBadges, $badge); }
-    else if($badge['action']=='pickup') {
+    else if($badge['action']=='print') {
         array_push($oldBadges, $badge);
     } else {
         array_push($paidBadges, $badge);
@@ -74,10 +73,9 @@ if($totalPrice <= $totalPaid) {
   $query0 = "UPDATE transaction SET price=?, paid=?, complete_date=current_timestamp(), userid=? WHERE id=?;";
   $query1 = <<<EOS
 UPDATE reg R
-JOIN atcon_badge B ON (R.id=B.badgeId)
-JOIN atcon A ON (B.atconId = A.id)
+JOIN atcon_history H ON (R.id=H.regid)
 SET R.paid=R.price 
-WHERE A.transid=?;
+WHERE H.tid=?;
 EOS;
 
   dbSafeCmd($query0, 'ddii', array($totalPrice, $totalPaid, $userid, $transid));
