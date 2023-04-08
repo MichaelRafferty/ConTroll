@@ -4,7 +4,7 @@ global $db_ini;
 function getSameDayNextYear($date)
 {
     $current = DateTime::createFromFormat("Y-m-d", substr($date,0,10));
-    error_log("createFromFormat on $date\n");
+    //error_log("createFromFormat on $date\n");
     $next = new DateTime();
     $year = (int)$current->format('o') + 1;
     $week = (int)$current->format('W');
