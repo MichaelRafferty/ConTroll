@@ -627,7 +627,7 @@ function loadInitialData(loadtype) {
                 if (users == null) {
                     users = new Users(data['users']);
                 } else {
-                    users.loadUsers(users);
+                    users.loadUsers(data['users']);
                     users.dirty = false;
                 }
             }
