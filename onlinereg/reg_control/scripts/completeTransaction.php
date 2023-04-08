@@ -53,12 +53,11 @@ if ($transRes !== false && mysqli_num_rows($transRes) == 1) {
 
 $badgeQ = <<<EOS
 SELECT DISTINCT R.id, M.label, R.price, R.paid, P.badge_name
-FROM atcon A
-JOIN atcon_badge B ON (B.atconId = A.id and action='attach')
-JOIN reg R ON(R.id = B.badgeId)
+FROM atcon_history H 
+JOIN reg R ON (R.id = H.regid)
 JOIN memLabel as M ON M.id=R.memId
 JOIN perinfo as P on P.id=R.perid
-WHERE A.transid = ?;
+WHERE H.tid = ? AND action='attach';
 EOS;
 
 $badgeRes = dbSafeQuery($badgeQ, 'i', array($transid));
@@ -91,9 +90,8 @@ if($totalPrice <= $totalPaid) {
   $query0 = "UPDATE transaction SET price=?, paid=?, complete_date=current_timestamp(), userid=? WHERE id=?;";
   $query1 = <<<EOS
 UPDATE reg as R
-JOIN atcon_badge B ON (R.id=B.badgeId)
-JOIN atcon A ON (A.id = B.atconId)
-SET R.paid=R.price WHERE A.transid=?;
+JOIN atcon_history H ON (R.id=H.regid)
+SET R.paid=R.price WHERE H.tid=?;
 EOS;
   if (!$complete) {
       dbSafeCmd($query0, 'ddii', array($totalPrice, $totalPaid, $userid, $transid));

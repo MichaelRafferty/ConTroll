@@ -75,15 +75,15 @@ EOQ;
 } else if ($email_type == 'survey') {
     $emailQ = <<<EOQ
 SELECT Distinct P.email_addr AS email
-FROM atcon A
-JOIN atcon_badge B ON (B.atconId=A.id)
-JOIN reg R ON (R.id=B.badgeId)
-JOIN transaction T ON (T.id=A.transid)
+FROM reg R 
+JOIN atcon_history H ON (R.id=H.regid)
+JOIN reg R ON (R.id=H.regid)
+JOIN transaction T ON (T.id=H.tid)
 JOIN memLabel M ON (M.id=R.memId)
 JOIN perinfo P ON (R.perid = P.id)
-WHERE R.conid=$conid AND (B.action = 'attach')
+WHERE R.conid=? AND (H.action = 'attach')
 AND M.shortname not like '%cancel%' AND M.shortname not like '%Child%' AND M.shortname not like '% In Tow%'
-AND P.email_addr != '' AND R.conid = A.conid
+AND P.email_addr != ''
 ORDER BY P.email_addr;
 EOQ;
 
@@ -96,7 +96,7 @@ EOQ;
     exit();
 }
 
-$emailR = dbQuery($emailQ);
+$emailR = dbSafeQuery($emailQ, 'i', array($conid));
 $response['numEmails'] = $emailR->num_rows;
 
 $email_array=array();
