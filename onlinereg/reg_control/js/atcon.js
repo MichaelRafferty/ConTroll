@@ -842,7 +842,7 @@ function showActions(prefix, acts, badgeId, transid) {
 function getEdited(data, textStatus, jqXHR)  {
     editPerson(data['post'].prefix);
 
-    var script = "scripts/getTransaction.php;
+    var script = "scripts/getTransaction.php;";
   $.ajax({
     url: script,
     method: "GET",
