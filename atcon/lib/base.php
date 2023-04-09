@@ -100,7 +100,7 @@ function page_init($title, $tab, $css, $js)
                                             <a class="nav-link navitem <?php echo $tab == "artshow" ? "active" : ""; ?>" <?php echo $tab == "artshow" ? 'aria-current="page"' : ""; ?> href="artsales.php">Artshow Cashier</a>
                                         </li>
                                         <?php  }
-                                        if (in_array('data-entry', $perms) || in_array('cashier', $perms)) { ?>
+                                        if (in_array('manager', $perms)) { ?>
                                         <li>
                                             <a class="nav-link navitem <?php echo $tab == "printform" ? "active" : ""; ?>" <?php echo $tab == "printform" ? 'aria-current="page"' : ""; ?> href="printform.php">Printform</a>
                                         </li>
