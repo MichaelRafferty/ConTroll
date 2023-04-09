@@ -1935,7 +1935,8 @@ function add_membership_cart(rownum, selectname) {
         shortname: membership['shortname'],
         pindex: row['index'],
         memId: membership['id'],
-        label: membership['label']
+        label: membership['label'],
+        regid: -1,
     });
   
     draw_cart();
