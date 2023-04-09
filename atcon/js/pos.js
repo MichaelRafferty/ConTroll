@@ -1024,7 +1024,7 @@ function add_found(data) {
     add_membership = data['membership'];
     var name_search = data['name_search'];
     
-    if (add_membership.length > 0) {
+    if (add_perinfo.length > 0) {
         // find primary membership for each add_perinfo record
         for (rowindex in add_perinfo) {
             var row = add_perinfo[rowindex];
