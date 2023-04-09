@@ -20,18 +20,18 @@ $(document).ready(function() {
 
 
 function getList() {
-  var formUrl = 'scripts/getBsfsList.php';
+  var formUrl = 'scripts/getClubList.php';
   $.ajax({
     url: formUrl,
     method: "GET",
     success: function (data, textStatus, jqXHR) {
-      showBadgeList(data['bsfs']);
+      showBadgeList(data['club']);
     }
   });
 }
 function showBadgeList(data) {
-  $('#bsfsNames').empty();
-  var badgeList = d3.select("#bsfsNames").selectAll("tr").data(data)
+  $('#clubNames').empty();
+  var badgeList = d3.select("#clubNames").selectAll("tr").data(data)
     .enter().insert("tr", ":first-child").html(function(d) { return showPerson(d); });
 }
 
@@ -42,7 +42,7 @@ function showPerson(data) {
   var cont = false;
     ret+= "<td>"+data['name']+"</td>";
     ret+= "<td>";
-    ret+= bsfsTypeSelect(formid, data['type']);
+    ret+= clubTypeSelect(formid, data['type']);
     ret+="</td>";
     ret+= "<td>"
     ret+= "<input form='"+formid+"' type='text' size=4 value='"+data['year']
@@ -56,7 +56,7 @@ function showPerson(data) {
   return ret;
 }
 
-function bsfsTypeSelect(form, cur) {
+function clubTypeSelect(form, cur) {
   var ret="<select form='"+form+"' name='type'>";
     ret+="<option value='none'";
     if(cur== '') { ret+= " selected='selected'"; }
@@ -99,7 +99,7 @@ function findPerson(form) {
     });
 }
 function addPerson(userid) {
-  var formUrl = 'scripts/listBsfs.php';
+  var formUrl = 'scripts/listClub.php';
   var formData = 'perid='+userid.id;
 
   $.ajax({
@@ -114,7 +114,7 @@ function addPerson(userid) {
 
 function updateReg(form) {
   var formData = $(form).serialize();
-  var formUrl = "scripts/listBsfs.php"
+  var formUrl = "scripts/listClub.php"
 
   $.ajax({
     url: formUrl,
@@ -132,4 +132,3 @@ function updateReg(form) {
   });
 
 }
-

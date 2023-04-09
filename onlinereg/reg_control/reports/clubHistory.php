@@ -15,7 +15,7 @@ $conid=$con['id'];
 $mincon = $con['minComp'];
 
 header('Content-Type: application/csv');
-header('Content-Disposition: attachment; filename="bsfsHistory.csv"');
+header('Content-Disposition: attachment; filename="clubHistory.csv"');
 
 $query = <<<EOS
 SELECT P.first_name, P.middle_name, P.last_name, P.address, P.addr_2, P.city, P.state, P.zip, P.email_addr

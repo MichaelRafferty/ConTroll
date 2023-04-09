@@ -3,19 +3,19 @@ require_once "lib/base.php";
 //initialize google session
 $need_login = google_init("page");
 
-$page = "bsfs";
+$page = "club";
 if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
 
 page_init($page,
     /* css */ array('css/base.css',
-                    'css/bsfs.css'
+                    'css/club.css'
                    ),
     /* js  */ array('/javascript/d3.js',
                     'js/base.js',
                     'js/people.js',
-                    'js/bsfs.js'
+                    'js/club.js'
                    ),
               $need_login);
 
@@ -269,12 +269,12 @@ $(function() {
     </form>
     <button id='newPersonShow' onClick='$("#newPerson").show()'>New Person</button>
   </div>
-  <div id='bsfsList'><span class="blocktitle">Bsfs List</span>
-    <a class='showlink' id='bsfsListShowLink' href='javascript:void(0)'
-      onclick='showBlock("#bsfsList")'>(show)</a>
-    <a class='hidelink' id='bsfsListHideLink' href='javascript:void(0)'
-      onclick='hideBlock("#bsfsList")'>(hide)</a>
-    <table id='bsfsListForm'>
+  <div id='clubList'><span class="blocktitle">Club List</span>
+    <a class='showlink' id='clubListShowLink' href='javascript:void(0)'
+      onclick='showBlock("#clubList")'>(show)</a>
+    <a class='hidelink' id='clubListHideLink' href='javascript:void(0)'
+      onclick='hideBlock("#clubList")'>(hide)</a>
+    <table id='clubListForm'>
       <thead>
         <tr>
           <th>Name</th>
@@ -283,7 +283,7 @@ $(function() {
           <th>Update</th>
         </tr>
       </thead>
-      <tbody id='bsfsNames' class='scroll'>
+      <tbody id='clubNames' class='scroll'>
       </tbody>
     </table>
   </div>

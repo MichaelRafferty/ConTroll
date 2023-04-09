@@ -3,7 +3,7 @@ global $db_ini;
 require_once "../lib/base.php";
 
 $check_auth = google_init("ajax");
-$perm = "bsfs";
+$perm = "club";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
@@ -34,16 +34,16 @@ $year = '';
 if(isset($_POST['type'])) {$type=$_POST['type']; }
 if(isset($_POST['year'])) {$year=$_POST['year']; }
 
-$linkQ = "SELECT id FROM bsfs where perid=?;";
+$linkQ = "SELECT id FROM club where perid=?;";
 $linkR = dbSafeQuery($linkQ, 'i', array($perid));
 $linId = 0;
 if($linkR->num_rows >0) {
   $link = fetch_safe_assoc($linkR);
   $linId = $link['id'];
-  $linkQ = "UPDATE bsfs SET type=?, year=? WHERE id=?;";
+  $linkQ = "UPDATE club SET type=?, year=? WHERE id=?;";
   dbSafeCmd($linkQ, 'ssi', array($type, $year, $linId));
 } else {
-  $linkQ = "INSERT IGNORE INTO bsfs (perid, type, year) VALUES (?, ?, ?);";
+  $linkQ = "INSERT IGNORE INTO club (perid, type, year) VALUES (?, ?, ?);";
 
   $linID = dbSafeInsert($linkQ, 'ssi', array($perid, $type, $year));
 }

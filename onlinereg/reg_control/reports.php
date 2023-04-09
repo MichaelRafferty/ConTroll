@@ -29,7 +29,7 @@ $conid=$con['id'];
   <a href='reports/newMembers.php'>New Members</a><br/>
   <a href='reports/duplicates.php'>Duplicate Memberships</a><br/>
   <a href='reports/badgeTypes.php'>Badge Types</a><br/>
-  <a href='reports/bsfsHistory.php'><?PHP echo $control['clubname']; ?> History</a><br/>
+  <a href='reports/clubHistory.php'><?PHP echo $control['clubname']; ?> History</a><br/>
   <form action='reports/badgeHistory.php' method='GET'>
     Badge Hisory For:
     <input type='number' name='perid'/>
