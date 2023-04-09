@@ -134,7 +134,7 @@ function page_init($title, $tab, $css, $js)
                 </div>
             </div>
             <div class="col-sm-3 text-bg-primary align-self-end">
-                User: <?php echo $_SESSION['user']; ?><br/>
+                User: <?php echo $_SESSION['first_name'] . ' (' . $_SESSION['user'] . ')'; ?><br/>
                 Badge: <?php echo $_SESSION['badgePrinter'][0]; ?><br/>
                 Receipt: <?php echo $_SESSION['receiptPrinter'][0]; ?><br/>
                 General: <?php echo $_SESSION['genericPrinter'][0]; ?>

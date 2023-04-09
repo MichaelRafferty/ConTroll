@@ -14,6 +14,7 @@ if(!isset($_SESSION['userhash'])) {
         if ($access['success'] == 1) {
             $perms = $access['auth'];
             $_SESSION['user']=$_POST['user'];
+            $_SESSION['first_name'] = $access['first_name'];
             // printers passed as display_name:::server:-:printer:-:printer type
             // receipt printer
             if (isset($_POST['receipt_printer'])) {
@@ -219,9 +220,10 @@ function login($user, $passwd, $conid): array {
     if (isset($user) && isset($passwd)) {
         $passwd = trim($passwd);
         $q = <<<EOS
-SELECT a.auth, u.userhash, u.passwd
+SELECT a.auth, u.userhash, u.passwd, p.first_name
 FROM atcon_user u 
 JOIN atcon_auth a ON (a.authuser = u.id)
+JOIN perinfo p ON (u.perid = p.id)
 WHERE u.perid=? AND u.conid=?;
 EOS;
         $r = dbSafeQuery($q, 'si', array($user, $conid));
@@ -232,6 +234,7 @@ EOS;
             while ($l = fetch_safe_assoc($r)) {
                 $auths[] = $l['auth'];
                 $response['userhash'] = $l['userhash'];
+                $response['first_name'] = $l['first_name'];
                 if ($upasswd == null) {
                     $upasswd = $l['passwd'];
                     if ($upasswd != $passwd && !password_verify($passwd, $upasswd)) {
