@@ -107,10 +107,7 @@ function printReceipt():void {
         $total_pmt += $pmtrow['amt'];
     }
 
-    $receipt .= "         ----------\n" . sprintf("total%15s Total Amount Paid", $dolfmt->formatCurrency($total_pmt, 'USD'));
-    if ($footer != '') {
-        $receipt .= "\n$footer";
-    }
+    $receipt .= "         ----------\n" . sprintf("total%15s Total Amount Paid", $dolfmt->formatCurrency($total_pmt, 'USD')) . "\n$footer\n";
 
     if (isset($_SESSION['receiptPrinter'])) {
         $printer = $_SESSION['receiptPrinter'];
