@@ -31,7 +31,7 @@ if (!check_atcon($method, $conid)) {
 page_init($page, $tab,
     /* css */ array('https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css','css/atcon.css','css/registration.css'),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js','js/pos.js')
+                    'https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js','js/regpos.js')
     );
 ?>
 <div id="pos" class="container-fluid">
