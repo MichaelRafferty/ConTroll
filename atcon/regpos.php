@@ -259,7 +259,7 @@ page_init($page, $tab,
         </div>
     </div>
     <!--- change membership modal popup -->
-    <div class='modal modal-lg' id='Change' tabindex='-2' aria-labelledby='Change' data-bs-backdrop='static' aria-hidden='true'>
+    <div class='modal modal-lg' id='Change' tabindex='-2' aria-labelledby='Change' data-bs-backdrop='static' data-bs-keyboard='false' aria-hidden='true'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header'>
@@ -270,6 +270,7 @@ page_init($page, $tab,
                 <div class='modal-body' id='ChangeBody'>
                 </div>
                 <div class='modal-footer'>
+                    <button type='button' id='close_change_button' class='btn btn-secondary' onclick='changeModal.hide();'>Keep Current Membership</button>
                     <button type='button' id='close_change_button' class='btn btn-primary' onclick='save_membership_change();'>Change Membership</button>
                 </div>
             </div>
