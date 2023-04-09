@@ -270,8 +270,26 @@ page_init($page, $tab,
                 <div class='modal-body' id='ChangeBody'>
                 </div>
                 <div class='modal-footer'>
-                    <button type='button' id='close_change_button' class='btn btn-secondary' onclick='changeModal.hide();'>Keep Current Membership</button>
+                    <button type='button' id='discard_change_button' class='btn btn-secondary' onclick='changeModal.hide();'>Keep Current Membership</button>
                     <button type='button' id='close_change_button' class='btn btn-primary' onclick='save_membership_change();'>Change Membership</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--- pay cash change modal popup -->
+    <div class='modal modal-lg' id='CashChange' tabindex='-2' aria-labelledby='CashChange' data-bs-backdrop='static' data-bs-keyboard='false' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header'>
+                    <div class='modal-title' id='CashChangeTitle'>
+                        Change due to Customer
+                    </div>
+                </div>
+                <div class='modal-body' id='CashChangeBody'>
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' id='discard_cash_button' class='btn btn-secondary' onclick='cashChangeModal.hide();'>Cancel Cash Payment</button>
+                    <button type='button' id='close_cash_button' class='btn btn-primary' onclick='pay("nomodal");'>Change given to Customer</button>
                 </div>
             </div>
         </div>

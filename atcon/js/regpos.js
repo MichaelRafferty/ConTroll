@@ -105,6 +105,9 @@ var typeList = null;
 var changeModal = null;
 var changeTitle = null;
 var changeBody = null;
+var cashChangeModal = null
+var cashChangeTitle = null;
+var cashChangeBody = null;
 
 // notes items
 var notes = null;
@@ -215,6 +218,11 @@ window.onload = function initpage() {
     changeModal = new bootstrap.Modal(document.getElementById('Change'), { focus: true, backldrop: 'static' });
     changeTitle = document.getElementById("ChangeTitle");
     changeBody = document.getElementById("ChangeBody");
+
+    // cash payment requires change
+    cashChangeModal = new bootstrap.Modal(document.getElementById('CashChange'), { focus: true, backldrop: 'static' });
+    cashChangeTitle = document.getElementById("CashChangeTitle");
+    cashChangeBody = document.getElementById("CashChangeBody");
 
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
 
@@ -2324,7 +2332,7 @@ function setPayType(ptype) {
 }
 
 // Process a payment against the transaction
-function pay() {
+function pay(nomodal) {
     var checked = false;
     var rownum = null;
     var mrows = null;
@@ -2335,6 +2343,10 @@ function pay() {
     var ptype = null;
     var total_amount_due = total_price - total_paid;
 
+    if (nomodal != '') {
+        cashChangeModal.hide();
+    }
+
     // validate the payment entry: It must be >0 and <= amount due
     //      a payment type must be specified
     //      for check: the check number is required
@@ -2343,9 +2355,19 @@ function pay() {
     var elamt = document.getElementById('pay-amt');
     var pay_amt = Number(elamt.value);
     if (pay_amt <= 0 || pay_amt > total_amount_due) {
-        elamt.style.backgroundColor = 'var(--bs-warning)';
-        return;
+        if (document.getElementById('pt-cash').checked) {
+            if (nomodal == '') {
+                cashChangeBody.innerHTML = "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + pay_amt.toFixed(2) +
+                    "<br/>Confirm change give to customer of $" + (pay_amt - total_amount_due).toFixed(2);
+                cashChangeModal.show();
+                return;
+            }
+        } else {
+            elamt.style.backgroundColor = 'var(--bs-warning)';
+            return;
+        }
     }
+
     elamt.style.backgroundColor = '';
 
     var elptdiv = document.getElementById('pt-div');
@@ -2401,6 +2423,14 @@ function pay() {
         return;
     }
     if (pay_amt > 0) {
+        var crow = null;
+        if (pay_amt > total_amount_due) {
+            change = pay_amt - total_amount_due;
+            pay_amt = total_amount_due;
+            crow = {
+                index: cart_pmt.length + 1, amt: change, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'change',
+            }
+        }
         var prow = {
             index: cart_pmt.length, amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
         };
@@ -2409,6 +2439,7 @@ function pay() {
             ajax_request_action: 'processPayment',
             cart_membership: cart_membership,
             new_payment: prow,
+            change: crow,
             user_id: user_id,
             pay_tid: pay_tid,
         };
@@ -2439,6 +2470,9 @@ function pay() {
  function updatedPayment(data) {
      if (data['prow']) {
          cart_pmt.push(data['prow']);
+     }
+     if (data['crow']) {
+         cart_pmt.push(data['crow']);
      }
      if (data['cart_membership']) {
          cart_membership = data['cart_membership'];
@@ -2795,7 +2829,7 @@ function pay_shown(current, previous) {
     <div class="row mt-3">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="pay-btn-pay" onclick="pay();">Confirm Pay</button>
+            <button class="btn btn-primary btn-small" type="button" id="pay-btn-pay" onclick="pay('');">Confirm Pay</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <button class="btn btn-primary btn-small" type="button" id="pay-btn-rcpt" onclick="print_receipt();" hidden>Print Receipt</button>

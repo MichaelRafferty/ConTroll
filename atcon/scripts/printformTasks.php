@@ -77,7 +77,8 @@ function printReceipt():void {
         foreach ($mrows as $mrow) {
             if ($mrow['perid'] == $prow['perid']) {
                 $receipt .= "   " . $mrow['label'] . ", " . $dolfmt->formatCurrency((float) $mrow['price'], 'USD') . "\n";
-                $already_paid += $mrow['paid'];
+                if (array_key_exists('prior_paid', $mrow))
+                    $already_paid += $mrow['prior_paid'];
                 $member_due += $mrow['price'];
             }
         }
@@ -85,7 +86,7 @@ function printReceipt():void {
         $receipt .= "   Subtotal: " . $dolfmt->formatCurrency((float) $member_due, 'USD') . "\n";
         $total_due += $member_due;
     }
-    $receipt .= " Total Due: " . $dolfmt->formatCurrency((float) $total_due, 'USD') . "\n\nPayment   Amount Description/Code\n";
+    $receipt .= "Total Due:   " . $dolfmt->formatCurrency((float) $total_due, 'USD') . "\n\nPayment   Amount Description/Code\n";
     $total_pmt = 0;
     if ($already_paid > 0) {
         $total_pmt += $already_paid;
@@ -107,7 +108,7 @@ function printReceipt():void {
         $total_pmt += $pmtrow['amt'];
     }
 
-    $receipt .= "         ----------\n" . sprintf("total%15s Total Amount Paid", $dolfmt->formatCurrency($total_pmt, 'USD')) . "\n$footer\n";
+    $receipt .= "         ----------\n" . sprintf("total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, 'USD')) . "\n$footer\n";
 
     if (isset($_SESSION['receiptPrinter'])) {
         $printer = $_SESSION['receiptPrinter'];

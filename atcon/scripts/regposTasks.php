@@ -211,7 +211,7 @@ JOIN atcon_history h ON (m.id = h.regid)
 WHERE h.action = 'print'
 GROUP BY h.regid
 )
-SELECT DISTINCT r.perid, r.id as regid, m.conid, r.price, r.paid, r.create_date, u.tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
+SELECT DISTINCT r.perid, r.id as regid, m.conid, r.price, r.paid, r.paid AS priorPaid, r.create_date, u.tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
                 n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
 FROM uniqrids u
 JOIN reg r ON (r.id = u.regid)
@@ -314,7 +314,7 @@ JOIN atcon_history h ON (m.regid = h.regid)
 WHERE h.action = 'attach'
 GROUP BY h.regid
 )
-SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, IFNULL(pc.printcount, 0) AS printcount,
+SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r.paid AS priorPaid, r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, IFNULL(pc.printcount, 0) AS printcount,
                 IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup, rs.tid as rstid
 FROM regids rs
 JOIN reg r ON (rs.regid = r.id)
@@ -387,7 +387,7 @@ JOIN atcon_history h ON (m.regid = h.regid)
 WHERE h.action = 'print'
 GROUP BY h.regid
 )
-SELECT DISTINCT r.perid, t.regid, m.conid, r.price, r.paid, r.create_date, t.tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
+SELECT DISTINCT r.perid, t.regid, m.conid, r.price, r.paid, r.paid AS priorPaid, r.create_date, t.tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
                 n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup             
 FROM maxtids t
 JOIN reg r ON (r.id = t.regid)
@@ -659,6 +659,10 @@ function processPayment():void {
     if (!array_key_exists('amt', $new_payment) || $new_payment['amt'] <= 0) {
         ajaxError('invalid payment amount passed');
         return;
+    }
+
+    if (array_key_exists('change', $_POST)) {
+        $response['crow'] = $_POST['change'];
     }
 
     $amt = (float) $new_payment['amt'];
