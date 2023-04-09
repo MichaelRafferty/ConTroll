@@ -28,6 +28,7 @@ var add_tab = null;
 var review_tab = null;
 var pay_tab = null;
 var print_tab = null;
+var current_tab = null;
 
 // find people fields
 var id_div = null;
@@ -70,6 +71,7 @@ var add_mt_dataentry = `
 var add_edit_dirty_check = false;
 var add_edit_initial_state = "";
 var add_edit_current_state = "";
+var add_edit_prior_tab = null;
 
 // review items
 var review_div = null;
@@ -138,7 +140,9 @@ window.onload = function initpage() {
     // set up the constants for objects on the screen
 
     find_tab = document.getElementById("find-tab");
+    current_tab = find_tab;
     add_tab = document.getElementById("add-tab");
+    add_edit_prior_tab = add_tab;
     review_tab = document.getElementById("review-tab");
     pay_tab = document.getElementById("pay-tab");
     print_tab = document.getElementById("print-tab");
@@ -211,6 +215,8 @@ window.onload = function initpage() {
     changeModal = new bootstrap.Modal(document.getElementById('Change'), { focus: true, backldrop: 'static' });
     changeTitle = document.getElementById("ChangeTitle");
     changeBody = document.getElementById("ChangeBody");
+
+    bootstrap.Tab.getOrCreateInstance(find_tab).show();
 
     // load the initial data and the proceed to set up the rest of the system
     var postData = {
@@ -806,6 +812,7 @@ function edit_from_cart(perid) {
     add_edit_dirty_check = true;
     add_edit_initial_state = $("#add-edit-form").serialize();
     add_edit_current_state = "";
+    add_edit_prior_tab = current_tab;
     bootstrap.Tab.getOrCreateInstance(add_tab).show();
 }
 
@@ -851,13 +858,18 @@ function clear_add() {
         add_results_table = null;
         add_results_div.innerHTML = "";
     }
-    addnew_button.innerHTML = "Add to Cart";
-    clearadd_button.innerHTML = 'Clear Add Person Form';
     add_mode = true;
     add_edit_dirty_check = true;
     add_edit_initial_state = $("#add-edit-form").serialize();;
     add_edit_current_state = "";
     clear_message();
+    if (clearadd_button.innerHTML != 'Clear Add Person Form') {
+        addnew_button.innerHTML = "Add to Cart";
+        clearadd_button.innerHTML = 'Clear Add Person Form';
+        // change back to the prior tab
+        bootstrap.Tab.getOrCreateInstance(add_edit_prior_tab).show();
+        add_edit_prior_tab = add_tab;
+    }
 }
 
 // add record from the add/edit screen to the cart.  If it's already in the cart, update the cart record.
@@ -972,6 +984,8 @@ function add_new() {
         add_edit_initial_state = $("#add-edit-form").serialize();
         add_edit_current_state = "";
         draw_cart();
+        bootstrap.Tab.getOrCreateInstance(add_edit_prior_tab).show();
+        add_edit_prior_tab = add_tab;
         return;
     }
 
@@ -2547,12 +2561,14 @@ function PrintComplete(data) {
 function find_shown(current, previous) {
     in_review = false;
     freeze_cart = false;
+    current_tab = find_tab;
     draw_cart();
 }
 
 function add_shown(current, previous) {
     in_review = false;
     freeze_cart = false;
+    current_tab = add_tab;
     clear_message();
     draw_cart();
 }
@@ -2676,6 +2692,7 @@ function review_shown(current, previous) {
 `
     in_review = true;
     freeze_cart = false;
+    current_tab = review_tab;
     review_div.innerHTML = review_html;
     for (rownum in cart_perinfo) {
         row = cart_perinfo[rownum];
@@ -2688,6 +2705,7 @@ function review_shown(current, previous) {
 function pay_shown(current, previous) {
     in_review = false;
     freeze_cart = true;
+    current_tab = pay_tab;
     draw_cart();
     if (total_paid == total_price) {
         // nothing more to pay       
@@ -2786,6 +2804,7 @@ function print_shown(current, previous) {
     next_button.hidden = false;
     void_button.hidden = true;
     freeze_cart = true;
+    current_tab = print_tab;
     var new_print = false;
     if (printed_obj == null) {
         new_print = true;
