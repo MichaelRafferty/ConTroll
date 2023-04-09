@@ -268,8 +268,8 @@ LEFT OUTER JOIN atcon_history h ON (h.tid = m.tid AND h.action = 'attach')
 LEFT OUTER JOiN reg r ON (r.create_trans = m.tid)
 ), regids AS (
 /* and pull both sets together */
-SELECT regid FROM regbytid
-UNION SELECT regid FROM regpt
+SELECT regid, tid FROM regbytid
+UNION SELECT regid, tid FROM regpt
 )
 EOS;
         $searchSQLP = <<<EOS
@@ -307,15 +307,22 @@ FROM regids m
 JOIN atcon_history h ON (m.regid = h.regid)
 WHERE h.action = 'print'
 GROUP BY h.regid
+), attachcount AS (
+SELECT h.regid, COUNT(*) attachcount
+FROM regids m
+JOIN atcon_history h ON (m.regid = h.regid)
+WHERE h.action = 'attach'
+GROUP BY h.regid
 )
 SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, IFNULL(pc.printcount, 0) AS printcount,
-                n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
+                IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup, rs.tid as rstid
 FROM regids rs
 JOIN reg r ON (rs.regid = r.id)
 JOIN perinfo p ON (p.id = r.perid)
 JOIN reg r1 ON (r1.perid = r.perid)
 JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
+LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
 WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
 ORDER BY create_date;

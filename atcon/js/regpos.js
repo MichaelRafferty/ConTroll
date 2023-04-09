@@ -2078,6 +2078,17 @@ function found_record(data) {
         });
         return;
     }
+    // sum print and attach counts
+    var print_count = 0;
+    var attach_count = 0;
+    var regtids = [];
+    for (rowindex in result_membership) {
+        print_count += Number(result_membership[rowindex]['printcount']);
+        attach_count += Number(result_membership[rowindex]['attachcount']);
+        if (!regtids.includes(result_membership[rowindex]['rstid'])) {
+            regtids.push(result_membership[rowindex]['rstid']);
+        }
+    }
     // not unpaid search... mark the type of the primary membership in the person row for the table
     // find primary membership for each result_perinfo record
     for (rowindex in result_perinfo) {
@@ -2133,6 +2144,18 @@ function found_record(data) {
             ],
         });
     } else if (result_perinfo.length > 0) {  // one row string, or all perinfo/tid searches, display in record format
+        if ((!isNaN(name_search)) && regtids.length == 1 && (attach_count > 0 || print_count > 0)) {
+            // only 1 transaction returned and it was search by numbrer, and it's been attached for payment before
+            // add it to the cart and go to payment
+            for (var row in result_membership) {
+                if (result_membership[row]['tid'] == tid) {
+                    var index = result_membership[row]['pindex'];
+                    add_to_cart(index, 'result');
+                }
+            }
+            review_nochanges(); // build the master transaction and attach records
+            return;
+        }
         number_search = Number(name_search);
         draw_as_records();
         return;
