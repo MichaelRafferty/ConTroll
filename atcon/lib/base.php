@@ -135,9 +135,29 @@ function page_init($title, $tab, $css, $js)
             </div>
             <div class="col-sm-3 text-bg-primary align-self-end">
                 User: <?php echo $_SESSION['first_name'] . ' (' . $_SESSION['user'] . ')'; ?><br/>
-                Badge: <?php echo $_SESSION['badgePrinter'][0]; ?><br/>
-                Receipt: <?php echo $_SESSION['receiptPrinter'][0]; ?><br/>
-                General: <?php echo $_SESSION['genericPrinter'][0]; ?>
+                <div id="page_head_printers">
+                    Badge: <?php echo $_SESSION['badgePrinter'][0]; ?>&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="base_changePrintersShow();">Chg</button><br/>
+                    Receipt: <?php echo $_SESSION['receiptPrinter'][0]; ?><br/>
+                    General: <?php echo $_SESSION['genericPrinter'][0]; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--- chnange printers modal popup -->
+    <div class='modal modal-lg' id='Base_changePrinters' tabindex='-5' aria-labelledby='Base_changePrinters' data-bs-backdrop='static' aria-hidden='true'>
+        <div class='modal-dialog modal-lg'>
+            <div class='modal-content'>
+                <div class='modal-header'>
+                    <div class='modal-title' id='Base_changePrintersTitle'>
+                        Change Printers
+                    </div>
+                </div>
+                <div class='modal-body' id='Base_changePrintersBody'>
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' id='base_DiscardChanges' class='btn btn-secondary' onclick='base_changePrintersModal.hide();'>Cancel Change Printers</button>
+                    <button type='button' id='base_ChangePrintersButton' class='btn btn-primary' onclick='base_changePrintersSubmit();'>Change Printers</button>
+                </div>
             </div>
         </div>
     </div>
@@ -468,5 +488,90 @@ function Render500ErrorAjax($message_error)
     // pages which know how to handle 500 errors are expected to format the error message appropriately.
     header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
     echo "$message_error";
+}
+function Draw_Printer_Select($col1width):string {
+    // get printer list for this location
+    $printerQ = <<<EOS
+SELECT p.serverName, p.printerName, p.printerType, p.codePage, s.location, s.address
+FROM printers p
+JOIN servers s ON (s.serverName = p.serverName)
+WHERE p.active = 1 and s.active = 1;
+EOS;
+    $printers = [];
+    $genericFound = false;
+    $receiptFound = false;
+    $printerR = dbQuery($printerQ);
+    while ($printer = fetch_safe_assoc($printerR)) {
+        $printers[$printer['serverName'] . ':' . $printer['printerName']] = $printer;
+        if (mb_substr($printer['printerType'], 0, 7) == 'generic') $genericFound = true;
+        if (mb_substr($printer['printerType'], 0, 7) == 'receipt') $receiptFound = true;
+    }
+    mysqli_free_result($printerR);
+
+    $html = <<<EOS
+    <div class='row'>
+            <div class='col-sm-$col1width'>
+                <label for='badge_printer'>Badge Printer:</label>
+            </div>
+            <div class='col-sm-auto'>
+                <select name='badge_printer' id='badge_printer'>
+                    <option value=''>None</option>
+EOS;
+    foreach ($printers as $key => $printer) {
+        if (mb_substr($printer['printerType'], 0, 5) == 'badge') {
+            $html .= '<option value="' . $key . ':::' . $printer['address'] . ':-:' . $printer['printerName'] . ':-:' . $printer['printerType'] . ':-:' . $printer['codePage'] . '">' . $key . "</option>\n";
+        }
+    }
+    $html .= <<<EOS
+                </select>
+            </div>
+        </div>
+        <div class='row mt-2'>
+            <div class='col-sm-$col1width'>
+                <label for='receipt_printer'>Receipt Printer:</label>
+            </div>
+            <div class='col-sm-auto'>
+                <select name='receipt_printer' id='receipt_printer'>
+                    <option value=''>None</option>
+ EOS;
+    foreach ($printers as $key => $printer) {
+        if (mb_substr($printer['printerType'], 0, 7) == 'receipt') {
+            $html .= '<option value="' . $key . ':::' . $printer['address'] . ':-:' . $printer['printerName'] . ':-:' . $printer['printerType'] . ':-:' . $printer['codePage'] . '">' . $key . "</option>\n";
+        }
+    }
+    foreach ($printers as $key => $printer) {
+        if (mb_substr($printer['printerType'], 0, 7) == 'generic') {
+            $html .=  '<option value="' . $key . ':::' . $printer['address'] . ':-:' . $printer['printerName'] . ':-:' . $printer['printerType'] . ':-:' . $printer['codePage'] . '">' . $key . "</option>\n";
+        }
+    }
+    $html .= <<<EOS
+                </select>
+            </div>
+        </div>
+EOS;
+    if ($genericFound) {
+        $html .= <<<EOS
+        <div class='row mt-2'>
+            <div class='col-sm-$col1width'>
+                <label for='generic_printer'>General Printer:</label>
+            </div>
+            <div class='col-sm-auto'>
+                <select name='generic_printer' id='generic_printer'>
+                    <option value=''>None</option>
+EOS;
+        foreach ($printers as $key => $printer) {
+            if (mb_substr($printer['printerType'], 0, 7) == 'generic') {
+                $html .= '<option value="' . $key . ':::' . $printer['address'] . ':-:' . $printer['printerName'] . ':-:' . $printer['printerType'] . ':-:' . $printer['codePage'] . '">' . $key . "</option>\n";
+            }
+        }
+        $html .= <<<EOS
+                </select>
+            </div>
+        </div>
+ EOS;
+    } else
+        $html .= '<input type="hidden" name="generic_printer" id="generic_printer" value=""/>';
+
+    return  $html;
 }
 ?>

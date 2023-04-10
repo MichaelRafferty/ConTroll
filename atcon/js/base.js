@@ -14,6 +14,163 @@ function test(method, formData, resultDiv) {
         }
     });
 }
+
+// convert url parameters to associative array
+function URLparamsToArray(urlargs) {
+    const params = new URLSearchParams(urlargs);
+    const result = {};
+    for (const [key, value] of params) {
+        result[key] = value;
+    }
+    return result;
+}
+
+function showError(str) {
+    $('#test').empty().append(str);
+}
+
+function showAlert(str) {
+    $('#alertInner').empty().html(str);
+    $('#alert').show();
+}
+
+message_div = null;
+// show_message:
+// apply colors to the message div and place the text in the div, first clearing any existing class colors
+// type:
+//  error: (white on red) bg-danger
+//  warn: (black on yellow-orange) bg-warning
+//  success: (white on green) bg-success
+function show_message(message, type) {
+    "use strict";
+    if (message_div === null ) {
+        message_div = document.getElementById('result_message');
+    }
+    if (message_div.classList.contains('bg-danger')) {
+        message_div.classList.remove('bg-danger');
+    }
+    if (message_div.classList.contains('bg-success')) {
+        message_div.classList.remove('bg-success');
+    }
+    if (message_div.classList.contains('bg-warning')) {
+        message_div.classList.remove('bg-warning');
+    }
+    if (message_div.classList.contains('text-white')) {
+        message_div.classList.remove('text-white');
+    }
+    if (message === undefined || message === '') {
+        message_div.innerHTML = '';
+        return;
+    }
+    if (type === 'error') {
+        message_div.classList.add('bg-danger');
+        message_div.classList.add('text-white');
+    }
+    if (type === 'success') {
+        message_div.classList.add('bg-success');
+        message_div.classList.add('text-white');
+    }
+    if (type === 'warn') {
+        message_div.classList.add('bg-warning');
+    }
+    message_div.innerHTML = message;
+}
+function clear_message() {
+    show_message('', '');
+}
+
+function showAjaxError(data, textStatus, jqXHR) {
+    'use strict';
+    if (data && data.responseText) {
+        show_message(data.responseText, 'error');
+    } else {
+        show_message('An error occurred on the server.', 'error');
+    }
+}
+
+// base_changePrinters:
+// open the modal popup and allow selecting new printers
+var base_changePrintersModal = null;
+var base_changePrintersBody = null;
+function base_changePrintersShow() {
+    if (base_changePrintersModal === null) {
+        base_changePrintersModal = new bootstrap.Modal(document.getElementById('Base_changePrinters'), {focus: true, backldrop: 'static'});
+        base_changePrintersBody = document.getElementById('Base_changePrintersBody');
+    }
+
+    // load the printer select list
+    var postData = {
+        ajax_request_action: 'printerSelectList',
+    };
+    $.ajax({
+        method: "POST",
+        url: "scripts/base_showPrinterSelect.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            base_changePrintersBody.innerHTML = data['selectList'];
+            base_changePrintersModal.show();
+        },
+        error: showAjaxError,
+    });
+}
+
+var page_head_printers_div = null;
+var badge_printer_select = null;
+var receipt_printer_select = null;
+var generic_printer_select = null;
+
+// base_changePrintersSubmit - update the printers in the session file and on the screen
+function base_changePrintersSubmit() {
+    if (page_head_printers_div === null) {
+        page_head_printers_div = document.getElementById("page_head_printers");
+        badge_printer_select = document.getElementById("badge_printer");
+        receipt_printer_select = document.getElementById("receipt_printer");
+        generic_printer_select = document.getElementById("generic_printer");
+    }
+
+    // get the three selected values
+    var badge_prntr = badge_printer_select.value;
+    var receipt_prntr = receipt_printer_select.value;
+    var generic_prntr = generic_printer_select.value;
+
+    // load the printer select list
+    var postData = {
+        ajax_request_action: 'printerSessionUpdate',
+        badge: badge_prntr,
+        receipt: receipt_prntr,
+        generic: generic_prntr,
+    };
+    $.ajax({
+        method: "POST",
+        url: "scripts/base_printerSessionUpdate.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            base_changePrinterDisplay(data);
+        },
+        error: showAjaxError,
+    });
+}
+
+// base_changePrinterDisplay
+//  data: receipt, generic, badge print strings
+function base_changePrinterDisplay(data) {
+    var html = 'Badge: ' + data['badge'] + '&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="base_changePrintersShow();">Chg</button><br/>' +
+    'Receipt: ' + data['receipt'] + '<br/>' +
+    'General: ' + data['generic'];
+
+    page_head_printers_div.innerHTML = html;
+    base_changePrintersModal.hide();
+}
+
+// obsolete code, soon to be dropped from the file
 /*
 function hideBlock(block) {
     $(block + "Form").hide();
@@ -195,76 +352,3 @@ function getForm(formObj, formUrl, succFunc, errFunc) {
     });
 }
 */
-
-// convert url parameters to associative array
-function URLparamsToArray(urlargs) {
-    const params = new URLSearchParams(urlargs);
-    const result = {};
-    for (const [key, value] of params) {
-        result[key] = value;
-    }
-    return result;
-}
-
-function showError(str) {
-    $('#test').empty().append(str);
-}
-
-function showAlert(str) {
-    $('#alertInner').empty().html(str);
-    $('#alert').show();
-}
-
-message_div = null;
-// show_message:
-// apply colors to the message div and place the text in the div, first clearing any existing class colors
-// type:
-//  error: (white on red) bg-danger
-//  warn: (black on yellow-orange) bg-warning
-//  success: (white on green) bg-success
-function show_message(message, type) {
-    "use strict";
-    if (message_div === null ) {
-        message_div = document.getElementById('result_message');
-    }
-    if (message_div.classList.contains('bg-danger')) {
-        message_div.classList.remove('bg-danger');
-    }
-    if (message_div.classList.contains('bg-success')) {
-        message_div.classList.remove('bg-success');
-    }
-    if (message_div.classList.contains('bg-warning')) {
-        message_div.classList.remove('bg-warning');
-    }
-    if (message_div.classList.contains('text-white')) {
-        message_div.classList.remove('text-white');
-    }
-    if (message === undefined || message === '') {
-        message_div.innerHTML = '';
-        return;
-    }
-    if (type === 'error') {
-        message_div.classList.add('bg-danger');
-        message_div.classList.add('text-white');
-    }
-    if (type === 'success') {
-        message_div.classList.add('bg-success');
-        message_div.classList.add('text-white');
-    }
-    if (type === 'warn') {
-        message_div.classList.add('bg-warning');
-    }
-    message_div.innerHTML = message;
-}
-function clear_message() {
-    show_message('', '');
-}
-
-function showAjaxError(data, textStatus, jqXHR) {
-    'use strict';
-    if (data && data.responseText) {
-        show_message(data.responseText, 'error');
-    } else {
-        show_message('An error occurred on the server.', 'error');
-    }
-}

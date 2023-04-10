@@ -16,39 +16,23 @@ if(!isset($_SESSION['userhash'])) {
             $_SESSION['user']=$_POST['user'];
             $_SESSION['first_name'] = $access['first_name'];
             // printers passed as display_name:::server:-:printer:-:printer type
-            // receipt printer
-            if (isset($_POST['receipt_printer'])) {
-                $pr = $_POST['receipt_printer'];
-                if ($pr != '') {
-                    $printer = explode(':::', $pr);
-                    $server = explode(':-:', $printer[1]);
-                    $_SESSION['receiptPrinter'] = array($printer[0], $server[0], $server[1], $server[2], $server[3]);
+            $printers = ['badge', 'receipt', 'generic'];
+            foreach ($printers as $prt) {
+                if (array_key_exists($prt . '_printer', $_POST)) {
+                    $pr = $_POST[$prt . '_printer'];
+                    if ($pr != '') {
+                        $printer = explode(':::', $pr);
+                        $server = explode(':-:', $printer[1]);
+                        $printer = array($printer[0], $server[0], $server[1], $server[2], $server[3]);
+                        $_SESSION[$prt . 'Printer'] = $printer;
+                    } else {
+                        $printer = array('None', '', '', '', 'UTF-8');
+                        $_SESSION[$prt . 'Printer'] = $printer;
+                    }
+                    $response[$prt] = $printer[0];
                 } else {
-                    $_SESSION['receiptPrinter'] = array('None', '', '', '', 'UTF-8');
-                }
-            }
-
-            // badge printer
-            if (isset($_POST['badge_printer'])) {
-                $pr = $_POST['badge_printer'];
-                if ($pr != '') {
-                    $printer = explode(':::', $pr);
-                    $server = explode(':-:', $printer[1]);
-                    $_SESSION['badgePrinter'] = array($printer[0], $server[0], $server[1], $server[2], $server[3]);
-                } else {
-                    $_SESSION['badgePrinter'] = array('None', '', '', '', 'PS');
-                }
-            }
-
-            // general printer
-            if (isset($_POST['generic_printer'])) {
-                $pr = $_POST['generic_printer'];
-                if ($pr != '') {
-                    $printer = explode(':::', $pr);
-                    $server = explode(':-:', $printer[1]);
-                    $_SESSION['genericPrinter'] = array($printer[0], $server[0], $server[1], $server[2], $server[3]);
-                } else {
-                    $_SESSION['genericPrinter'] = array('None', '', '', '', 'UTF-8');
+                    $_SESSION[$prt . 'Printer'] = array('None', '', '', '', 'UTF-8');
+                    $response[$prt] = 'None';
                 }
             }
 
@@ -57,7 +41,9 @@ if(!isset($_SESSION['userhash'])) {
     } else {
         unset($_SESSION['user']);
         unset($_SESSION['userhash']);
-        unset($_SESSION['printer']);
+        unset($_SESSION['badgePrinter']);
+        unset($_SESSION['reeiptPrinter']);
+        unset($_SESSION['genericPrinter']);
         unset($_SESSION['perms']);
     }
 } else {
@@ -81,22 +67,6 @@ if(isset($_GET['action']) && $_GET['action']=='logout') {
 
 if(!isset($_SESSION['user'])) {
     // get printer list for this location
-    $printerQ = <<<EOS
-SELECT p.serverName, p.printerName, p.printerType, p.codePage, s.location, s.address
-FROM printers p
-JOIN servers s ON (s.serverName = p.serverName)
-WHERE p.active = 1 and s.active = 1;
-EOS;
-    $printers = [];
-    $genericFound = false;
-    $receiptFound = false;
-    $printerR = dbQuery($printerQ);
-    while ($printer = fetch_safe_assoc($printerR)) {
-        $printers[$printer['serverName'] . ':' . $printer['printerName']] = $printer;
-        if (mb_substr($printer['printerType'], 0, 7) == 'generic') $genericFound = true;
-        if (mb_substr($printer['printerType'], 0, 7) == 'receipt') $receiptFound = true;
-    }
-    mysqli_free_result($printerR);
 ?>
 <div class="container-fluid mt-4">
     <form method='POST' class="form-floating">
@@ -116,58 +86,7 @@ EOS;
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-sm-2">
-                <label for='badge_printer'>Badge Printer:</label>
-            </div>
-            <div class="col-sm-auto">
-                <select name="badge_printer" id="badge_printer">
-                    <option value="">None</option>
-                    <?php foreach ($printers as $key => $printer) {
-                       if (mb_substr($printer['printerType'], 0, 5) == 'badge') {
-                           echo '<option value="' . $key . ':::' . $printer['address'] . ':-:' . $printer['printerName'] . ':-:' . $printer['printerType'] . ':-:' . $printer['codePage'] . '">' . $key . "</option>\n";
-                       }
-                    } ?>
-                </select>
-            </div>
-        </div>
-        <div class='row mt-2'>
-            <div class='col-sm-2'>
-                <label for='receipt_printer'>Receipt Printer:</label>
-            </div>
-            <div class='col-sm-auto'>
-                <select name='receipt_printer' id='receipt_printer'>
-                    <option value=''>None</option>
-                    <?php foreach ($printers as $key => $printer) {
-                        if (mb_substr($printer['printerType'], 0, 7) == 'receipt') {
-                            echo '<option value="' . $key . ':::' . $printer['address'] . ':-:' . $printer['printerName'] . ':-:' . $printer['printerType'] . ':-:' . $printer['codePage'] . '">' . $key . "</option>\n";
-                        }
-                    }
-                    foreach ($printers as $key => $printer) {
-                        if (mb_substr($printer['printerType'], 0, 7) == 'generic') {
-                            echo '<option value="' . $key . ':::' . $printer['address'] . ':-:' . $printer['printerName'] . ':-:' . $printer['printerType'] . ':-:' . $printer['codePage'] . '">' . $key . "</option>\n";
-                        }
-                    } ?>
-                </select>
-            </div>
-        </div>
-        <?php if ($genericFound) { ?>
-        <div class='row mt-2'>
-            <div class='col-sm-2'>
-                <label for='generic_printer'>General Printer:</label>
-            </div>
-            <div class='col-sm-auto'>
-                <select name='generic_printer' id='generic_printer'>
-                    <option value=''>None</option>
-                    <?php foreach ($printers as $key => $printer) {
-                        if (mb_substr($printer['printerType'], 0, 7) == 'generic') {
-                            echo '<option value="' . $key . ':::' . $printer['address'] . ':-:' . $printer['printerName'] . ':-:' . $printer['printerType'] . ':-:' . $printer['codePage'] . '">' . $key . "</option>\n";
-                        }
-                    } ?>
-                </select>
-            </div>
-        </div>
-        <?php } else echo '<input type="hidden" name="generic_printer" id="generic_printer" value=""/>' ?>
+        <?PHP echo Draw_Printer_Select(2); ?>
         <div class="row mt-4">
             <div class="col-sm-auto">
                 <button type='submit' class="btn btn-primary">Login</button>
