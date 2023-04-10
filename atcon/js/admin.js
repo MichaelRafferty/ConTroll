@@ -430,19 +430,35 @@ class Printers {
                 { title: "Printer", field: "printerName", editor: "input", editable: printerLocalonly, minWidth: 150, headerSort: true, headerFilter:true },
                 { title: "Type", field: "printerType", headerSort: true, headerFilter:true,
                     editor: "list", editorParams: {
-                            values: ["generic", "receipt", "badge450", "badge330"],
+                            values: ["generic", "receipt", "badge"],
                             defaultValue: "generic",
                             emptyValue: "generic",
                         }
                     },
+                { title: "Code Page", field: "codePage", headerSort: true, headerFilter:true,
+                    editor: "list", editorParams: {
+                        values: ["PS", "HPCL", "Dymo4xxPS", "Dymo3xxPS", "DymoSEL", "Windows-1252", "ASCII", "7bit", "8bit", "UTF-8", "UTF-16"],
+                        defaultValue: "ASCII",
+                        emptyValue: "ASCII",
+                    }
+                },
                 { title: "Active", field: "active", headerSort: false, formatter: "tickCross", cellClick: invertTickCross, headerFilter:true },
+                { title: "Printer Test", formatter: function (cell, onRendered, sucess, cancelCallback, editorParams) {
+                    if (cell.getRow().getCell('active').getValue() != 1) { return ""; }
+                    return '<button type="button" class="btn btn-sm btn-secondary p-0" onclick="printers.printTest(\'' +
+                        cell.getRow().getCell('serverName').getValue().trim() + '\',\'' +
+                        cell.getRow().getCell('printerName').getValue().trim() + '\',\'' +
+                        cell.getRow().getCell('printerType').getValue().trim() + '\',\'' +
+                        cell.getRow().getCell('codePage').getValue().trim() + '\')">Test</button>';
+                    },
+                },
                 {
                     title: "Delete", field: "delete", headerSort: false, hozAlign: "center", cellClick: function (e, cell) {
                         if (printerLocalonly(cell)) {
                             cell.getRow().delete();
                         }
                     },
-                }
+                },
             ],
         });
         this.printerlist.on("dataChanged", printers_changed);
@@ -571,6 +587,31 @@ class Printers {
                     show_message(data['message'], 'success');
                 }
                 loadInitialData('printers');
+            },
+            error: showAjaxError,
+        });
+    }
+
+    printTest(server, printer, type, codepage) {
+        var postData = {
+            ajax_request_action: 'printTest',
+            server: server,
+            printer: printer,
+            type: type,
+            codepage: codepage
+        };
+        $.ajax({
+            method: "POST",
+            url: "scripts/adminTasks.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (data['error'] !== undefined) {
+                    show_message(data['error'], 'error');
+                    return;
+                }
+                if (data['message'] !== undefined) {
+                    show_message(data['message'], 'success');
+                }
             },
             error: showAjaxError,
         });

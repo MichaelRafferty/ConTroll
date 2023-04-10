@@ -6,6 +6,7 @@
 // Perform tasks under the admin page about ATCON users
 
 require_once('../lib/base.php');
+require_once('../lib/badgePrintFunctions.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -79,7 +80,7 @@ EOS;
         mysqli_free_result($serverQ);
 
         $printersSQl = <<<EOS
-SELECT p.serverName, p.printerName, p.printerType, p.active, IF(s.local = 1, '🗑', '') as `delete`
+SELECT p.serverName, p.printerName, p.printerType, p.codePage, p.active, IF(s.local = 1, '🗑', '') as `delete`
 FROM printers p
 JOIN servers s ON (p.serverName = s.serverName)
 WHERE s.active = 1
@@ -405,17 +406,17 @@ EOS;
     mysqli_free_result($existingQ);
     $updateLocalPrinterSQL = <<<EOS
 UPDATE printers
-SET printerName = ?, printerType=?, active=?
+SET printerName = ?, printerType=?, codePage=?, active=?
 WHERE serverName = ? and printerName = ?
 EOS;
     $updateGlobalPrinterSQL = <<<EOS
 UPDATE printers
-SET printerType=?, active=?
+SET printerType=?, codePage=?, active=?
 WHERE serverName = ? and printerName = ?
 EOS;
     $insertPrinterSQL = <<<EOS
-INSERT INTO printers(serverName, printerName, printerType, active)
-VALUES (?,?,?,?);
+INSERT INTO printers(serverName, printerName, printerType, codePage, active)
+VALUES (?,?,?,?,?);
 EOS;
 
     foreach ($printers as $row) {
@@ -429,12 +430,12 @@ EOS;
         if (array_key_exists($key, $existing)) { // this printer is both in the post and in the database, update it
             $existing[$key] = 0; // mark it updated
             if (array_key_exists('delete', $row) && $row['delete'] == '') { // global printer
-                $printers_updated += dbSafeCmd($updateGlobalPrinterSQL, 'siss', array($row['printerType'], $active, $row['serverName'], $row['printerName']));
+                $printers_updated += dbSafeCmd($updateGlobalPrinterSQL, 'ssiss', array($row['printerType'], $row['codePage'], $active, $row['serverName'], $row['printerName']));
             } else {
-                $printers_updated += dbSafeCmd($updateLocalPrinterSQL, 'ssiss', array($row['printerName'], $row['printerType'], $active, $row['serverName'], $row['printerName']));
+                $printers_updated += dbSafeCmd($updateLocalPrinterSQL, 'sssiss', array($row['printerName'], $row['printerType'], $row['codePage'], $active, $row['serverName'], $row['printerName']));
             }
         } else { // insert new printer
-            $printers_added += dbSafeCmd($insertPrinterSQL, 'sssi', array($row['serverName'], $row['printerName'], $row['printerType'], $active));
+            $printers_added += dbSafeCmd($insertPrinterSQL, 'ssssi', array($row['serverName'], $row['printerName'], $row['printerType'], $row['codePage'], $active));
         }
     }
 
@@ -453,6 +454,115 @@ EOS;
 
     $response['message'] = "$servers_deleted Servers deleted, $servers_updated Servers Updated, $servers_added Servers added<br/>" .
         "$printers_deleted Printers deleted, $printers_updated Printers updated, $printers_added Printers Added";
+    ajaxSuccess($response);
+}
+
+// printTest: print a test page/badge to check printer format/issues
+// server: print server name
+// printer: printer queue name
+// type: type of the prionter
+// codepage: encoding of the printer
+function printTest($conid):void {
+    if (array_key_exists("server", $_POST)) {
+        $server = $_POST['server'];
+    } else {
+        ajaxError("No server specified");
+    }
+    if (array_key_exists('printer', $_POST)) {
+        $printer = $_POST['printer'];
+    } else {
+        ajaxError('No printer specified');
+    }
+    if (array_key_exists('type', $_POST)) {
+        $type = $_POST['type'];
+    } else {
+        ajaxError('No type specified');
+    }
+    if (array_key_exists('codepage', $_POST)) {
+        $codepage = $_POST['codepage'];
+    } else {
+        ajaxError('No codepage specified');
+    }
+
+    $p = ["Test", $server, $printer, $codepage];
+    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+    $dolamt = $dolfmt->formatCurrency(123456.78, 'USD');
+
+    switch($type) {
+        case 'receipt':
+            $receipt = <<<EOR
+
+This is a test receipt.
+The first line is blank.
+It is designed to show the 
+character set compliance:
+Dollars: $dolamt
+Special Character:
+EUR: €
+CENT: ¢
+Pound: £
+A grave: À
+E^: Ê
+c,: ç
+o:: ö	
+tm: ™
+rg: ®
+cr: ©
+deg: °
+
+End of receipt test,
+there is a trailing blank line
+
+EOR;
+            print_receipt($p, $receipt);
+            break;
+
+        case 'badge':
+            $badge = [];
+            $badge['type'] = 'test';
+            $badge['badge_name'] = 'Test Badge Name';
+            $badge['full_name'] = 'Test Full Name';
+            $badge['category'] = 'test';
+            $badge['id'] = '00000';
+            $badge['day'] = 'Mon';
+            $badge['age'] = 'Any';
+            $file_full = init_file($p);
+            write_badge($badge, $file_full, $p);
+            print_badge($p, $file_full);
+            break;
+        case 'generic':
+            $generic = <<<EOR
+
+This is a test for generic printers.  It is designed with longer lines than the receipt test.
+The first line is blank.
+It is designed to show the character set compliance:
+Dollars: $dolamt
+Special Characters:
+EUR: €
+CENT: ¢
+Pound: £
+A grave: À
+E^: Ê
+c,: ç
+o:: ö	
+tm: ™
+rg: ®
+cr: ©
+deg: °
+
+End of generic test, there is a trailing blank line
+
+EOR;
+            print_receipt($p, $generic);
+            break;
+
+        default:
+            $response['error'] = "Invalid printer type received";
+            ajaxSuccess($response);
+            return;
+    }
+
+    $response['message'] = "Printed test page for printer type $type using encoding $codepage to $server:$printer";
     ajaxSuccess($response);
 }
 
@@ -488,6 +598,9 @@ switch ($ajax_request_action) {
         break;
     case 'updatePrinters':
         updatePrinters($conid);
+        break;
+    case 'printTest':
+        printTest($conid);
         break;
     default:
         $message_error = 'Internal error.';

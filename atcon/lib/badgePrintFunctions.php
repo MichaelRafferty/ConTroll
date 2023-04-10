@@ -83,7 +83,7 @@ function init_file($printer)//:string {
 
     $printerType = $printer[3];
     switch($printerType) {
-        case "badgese450":
+        case "DymoSEL":
             $temp = fopen($tempfile, 'w');
             if (!$temp) {
                 $response['error'] = 'Unable to get open file';
@@ -109,16 +109,15 @@ function init_file($printer)//:string {
     return $tempfile;
 }
 
-function write_badge($badge, $tempfile, $printer)//:void {
-{
-$printerType = $printer[3];
-switch ($printerType) {
-    case 'badgese450':
-        write_se450($badge, $tempfile);
-        break;
-    default:
-        write_ps($badge, $tempfile);
-        break;
+function write_badge($badge, $tempfile, $printer):void {
+    $printerType = $printer[3];
+    switch ($printerType) {
+        case 'DymoSEL':
+            write_se450($badge, $tempfile);
+            break;
+        default:
+            write_ps($badge, $tempfile);
+            break;
     }
 }
 
@@ -298,19 +297,20 @@ function write_se450($badge, $tempfile)//:void {
 function print_badge($printer, $tempfile)//: string|false
 {
     $queue = $printer[2];
+    $codepage = $printer[3];
     $name = $printer[0];
     if (mb_substr($queue, 0, 1) == '0' || $name == 'None') return 0; // this token is the temp file only print queue
 
     $server = $printer[1];
     $printerType = $printer[3];
     $options = '';
-    switch ($printerType) {
-        // turbo 330 -o PageSize=w82h248  -o orientation-requested=5
-        case 'badge330':
+    switch ($codepage) {
+        // turbo 330. et al, -o PageSize=w82h248  -o orientation-requested=5
+        case 'Dymo3xxPS':
             $options = '-o PageSize=w82h248 -o orientation-requested=5';
             break;
-        // turbo 450 -o PageSize=30252_Address
-        case 'badge450':
+        // turbo 450 et al, -o PageSize=30252_Address
+        case 'Dymo4xxPS':
             $options = '-o PageSize=30252_Address';
             break;
         default:
@@ -326,10 +326,32 @@ function print_badge($printer, $tempfile)//: string|false
     return $result_code;
 }
 
+// print receipt - used for both receipts and generic printouts
+// will do character set conversions as needed for the code pages
+// printer: printer control array (name, server, queue, codepage (encoding)
 function print_receipt($printer, $receipt)//:string | false {
 {
     $queue = $printer[2];
+    $server = $printer[1];
     $name = $printer[0];
+    $codepage = $printer[3];
+
+    switch ($codepage) {
+        case 'UTF-8':
+            break;
+
+        case 'ASCII':
+        case '7bit':
+        case '8bit':
+        case 'UTF-16':
+        $receipt = mb_convert_encoding($receipt, $codepage, 'UTF-8');
+            break;
+
+        default: // use Windows-1252 default
+            //$receipt = iconv('UTF-8', 'Windows-1252', $receipt);
+            $receipt = mb_convert_encoding($receipt, 'Windows-1252', 'UTF-8');
+    }
+
     if (mb_substr($queue, 0, 1) == '0' || $name == 'None') {
         web_error_log($receipt);
         return 0; // this token is the log only print queue
@@ -349,7 +371,6 @@ function print_receipt($printer, $receipt)//:string | false {
     fwrite($temp, $receipt);
     fclose($temp);
 
-    $server = $printer[1];
     $options = '';
 
     // all the extra stuff for exec is for debugging issues.
