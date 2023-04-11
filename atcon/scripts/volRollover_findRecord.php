@@ -48,14 +48,14 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id)
-LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ? and rn.memId = ?)
+LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ?)
 JOIN memLabel m ON (r.memId = m.id)
-LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id)
+LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id and mn.memCategory in ('upgrade', 'rollover', 'freebie', 'standard', 'yearahead'))
 WHERE p.id = ? AND r.conid = ? AND m.memCategory in ('upgrade', 'rollover', 'freebie', 'standard', 'yearahead')
 ORDER BY r.id;
 EOS;
     //web_error_log($searchSQLM);
-    $r = dbSafeQuery($searchSQL, 'iiii', array($conid + 1, $rollover_memId, $name_search, $conid));
+    $r = dbSafeQuery($searchSQL, 'iii', array($conid + 1, $name_search, $conid));
 } else {
 //
 // this is the string search portion as the field is alphanumeric
@@ -72,15 +72,15 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id)
-LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ? and rn.memId = ?)
+LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ?)
 JOIN memLabel m ON (r.memId = m.id)
-LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id)
+LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id and mn.memCategory in ('upgrade', 'rollover', 'freebie', 'standard', 'yearahead'))
 WHERE r.conid = ? AND (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
 AND  m.memCategory in ('upgrade', 'rollover', 'freebie', 'standard', 'yearahead')
 ORDER BY last_name, first_name
 LIMIT $limit;
 EOS;
-    $r = dbSafeQuery($searchSQL, 'iiisss', array($conid + 1, $rollover_memId, $conid, $name_search, $name_search, $name_search));
+    $r = dbSafeQuery($searchSQL, 'iisss', array($conid + 1, $conid, $name_search, $name_search, $name_search));
 }
 // now process the search results
 $perinfo = [];
