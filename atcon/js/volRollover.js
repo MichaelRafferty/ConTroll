@@ -41,7 +41,7 @@ window.onload = function initpage() {
     };
     $.ajax({
         method: "POST",
-        url: "scripts/volRolloverTasks.php",
+        url: "scripts/volRollover_loadInitialData.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
             if (data['error'] !== undefined) {
@@ -154,7 +154,7 @@ function rollover_member(index) {
     };
     $.ajax({
         method: "POST",
-        url: "scripts/volRolloverTasks.php",
+        url: "scripts/volRollover_rolloverMember.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
             if (data['error'] !== undefined) {
@@ -369,7 +369,7 @@ function find_record() {
     };
     $.ajax({
         method: "POST",
-        url: "scripts/volRolloverTasks.php",
+        url: "scripts/volRollover_findRecord.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
             if (data['error'] !== undefined) {
