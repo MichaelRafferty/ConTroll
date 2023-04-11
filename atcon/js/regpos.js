@@ -219,7 +219,7 @@ window.onload = function initpage() {
     };
     $.ajax({
         method: "POST",
-        url: "scripts/regpos_LoadInitialData.php",
+        url: "scripts/regpos_loadInitialData.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
             if (data['error'] !== undefined) {
