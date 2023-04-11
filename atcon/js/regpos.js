@@ -103,17 +103,10 @@ var catList = null;
 var ageList = null;
 var typeList = null;
 var changeModal = null;
-var changeTitle = null;
-var changeBody = null;
-var cashChangeModal = null
-var cashChangeTitle = null;
-var cashChangeBody = null;
+var cashChangeModal = null;
 
 // notes items
 var notes = null;
-var notesTitle = null;
-var notesBody = null;
-var notesButton = null;
 var notesIndex = null;
 var notesType = null;
 var notesLocation = null;
@@ -210,19 +203,12 @@ window.onload = function initpage() {
 
     // notes items
     notes = new bootstrap.Modal(document.getElementById('Notes'), { focus: true, backldrop: 'static' });
-    notesTitle = document.getElementById('NotesTitle');
-    notesBody = document.getElementById('NotesBody');
-    notesButton = document.getElementById('close_note_button');
 
     // change membership
     changeModal = new bootstrap.Modal(document.getElementById('Change'), { focus: true, backldrop: 'static' });
-    changeTitle = document.getElementById("ChangeTitle");
-    changeBody = document.getElementById("ChangeBody");
 
     // cash payment requires change
     cashChangeModal = new bootstrap.Modal(document.getElementById('CashChange'), { focus: true, backldrop: 'static' });
-    cashChangeTitle = document.getElementById("CashChangeTitle");
-    cashChangeBody = document.getElementById("CashChangeBody");
 
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
 
@@ -630,7 +616,7 @@ function change_membership(index) {
     changeRow = index;
     mrow = cart_membership[index];
     prow = cart_perinfo[mrow['pindex']];
-    changeTitle.innerHTML = "Change Membership Type for " + (prow['first_name'] + ' ' + prow['last_name']).trim();
+
     var html = '<div id="ChangePrior">Current Membership ' + mrow['label'] + "</div>\n";
     html += '<div id="ChangeTo">Change to:<br/><select name="change_membership_id" id="change_membership_id">' + "\n";
     // build select list here
@@ -644,9 +630,9 @@ function change_membership(index) {
     }
 
     html += "</select></div>\n";
-
-    changeBody.innerHTML = html;
     changeModal.show();
+    document.getElementById("ChangeTitle").innerHTML = "Change Membership Type for " + (prow['first_name'] + ' ' + prow['last_name']).trim();
+    document.getElementById("ChangeBody").innerHTML = html;
 }
 // save_membership_change
 // update saved cart row with new memId
@@ -1818,10 +1804,10 @@ function show_perinfo_notes(index, where) {
 
     notesIndex = index;
 
-    notesTitle.innerHTML = "Notes for " + notesLocation['fullname'];
-    notesBody.innerHTML = notesLocation['open_notes'].replace(/\n/g, '<br/>');
-    notesButton.innerHTML = "Close";
     notes.show();
+    document.getElementById('NotesTitle').innerHTML = "Notes for " + notesLocation['fullname'];
+    document.getElementById('NotesBody').innerHTML = notesLocation['open_notes'].replace(/\n/g, '<br/>');
+    document.getElementById('close_note_button').innerHTML = "Close";
 }
 // edit_perinfo_notes: display in an editor the perinfo notes field
 // only managers can edit the notes
@@ -1849,11 +1835,11 @@ function edit_perinfo_notes(index, where) {
         notesPriorValue = '';
     }
 
-    notesTitle.innerHTML = "Editing Notes for " + notesLocation['fullname'];
-    notesBody.innerHTML = '<textarea name="perinfoNote" class="form-control" id="perinfoNote" cols=60 wrap="soft" style="height:400px;">' +
-        notesPriorValue + "</textarea>";
-    notesButton.innerHTML = "Save and Close";
     notes.show();
+    document.getElementById('NotesTitle').innerHTML = "Editing Notes for " + notesLocation['fullname'];
+    document.getElementById('NotesBody').innerHTML = '<textarea name="perinfoNote" class="form-control" id="perinfoNote" cols=60 wrap="soft" style="height:400px;">' +
+        notesPriorValue + "</textarea>";
+    document.getElementById('close_note_button').innerHTML = "Save and Close";
 }
 
 // show the registration element note, anyone can add a new note, so it needs a save and close button
@@ -1869,19 +1855,21 @@ function show_reg_note(index, count) {
         bodyHTML = notesLocation['reg_notes'].replace(/\n/g, '<br/>');
     }
     bodyHTML += '<br/>&nbsp;<br/>Enter/Update new note:<br/><input type="text" name="new_reg_note" id="new_reg_note" maxLength=64 size=60>'
-    notesTitle.innerHTML = "Registration Notes for " + prow['fullname'] + '<br/>Membership: ' + notesLocation['label'];
-    notesBody.innerHTML = bodyHTML;
+
+    notes.show();
+    document.getElementById('NotesTitle').innerHTML = "Registration Notes for " + prow['fullname'] + '<br/>Membership: ' + notesLocation['label'];
+    document.getElementById('NotesBody').innerHTML = bodyHTML;
     if (notesLocation['new_reg_note'] !== undefined) {
         document.getElementById('new_reg_note').value = notesLocation['new_reg_note'];
     }
-    notesButton.innerHTML = "Save and Close";
-    notes.show();
+    document.getElementById('close_note_button').innerHTML = "Save and Close";
+
 }
 
 // save_note
 //  save and update the note based on type
 function save_note() {
-    if (notesButton.innerHTML == "Save and Close") {
+    if (document.getElementById('close_note_button').innerHTML == "Save and Close") {
         if (notesType == 'RC') {
             notesLocation['new_reg_note'] = document.getElementById("new_reg_note").value;
             cart_perinfo[notesLocation['pindex']]['dirty'] = true;
@@ -2374,9 +2362,9 @@ function pay(nomodal) {
     if (pay_amt <= 0 || pay_amt > total_amount_due) {
         if (document.getElementById('pt-cash').checked) {
             if (nomodal == '') {
-                cashChangeBody.innerHTML = "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + pay_amt.toFixed(2) +
-                    "<br/>Confirm change give to customer of $" + (pay_amt - total_amount_due).toFixed(2);
                 cashChangeModal.show();
+                document.getElementById("CashChangeBody").innerHTML = "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + pay_amt.toFixed(2) +
+                    "<br/>Confirm change give to customer of $" + (pay_amt - total_amount_due).toFixed(2);
                 return;
             }
         } else {
@@ -2633,14 +2621,14 @@ function PrintComplete(data) {
 }
 
 // tab shown events - state mapping for which tab is shown
-function find_shown(current, previous) {
+function find_shown() {
     in_review = false;
     freeze_cart = false;
     current_tab = find_tab;
     draw_cart();
 }
 
-function add_shown(current, previous) {
+function add_shown() {
     in_review = false;
     freeze_cart = false;
     current_tab = add_tab;
@@ -2648,7 +2636,7 @@ function add_shown(current, previous) {
     draw_cart();
 }
 
-function review_shown(current, previous) {
+function review_shown() {
     // draw review section
     var review_html = `
 <div id='reviewBody' class="container-fluid form-floating">
@@ -2777,7 +2765,7 @@ function review_shown(current, previous) {
     draw_cart();
 }
 
-function pay_shown(current, previous) {
+function pay_shown() {
     in_review = false;
     freeze_cart = true;
     current_tab = pay_tab;
@@ -2870,7 +2858,7 @@ function pay_shown(current, previous) {
     }
 }
 
-function print_shown(current, previous) {
+function print_shown() {
     in_review = false;
     find_tab.disabled = true;
     add_tab.disabled = true;
@@ -2891,7 +2879,7 @@ function print_shown(current, previous) {
     var print_html = `<div id='printBody' class="container-fluid form-floating">
 `;
     if (badgePrinterAvailable === false) {
-        print_html += 'No printer selected, unable to print badges.  Please log out and back in with the proper printer selected.</div>';
+        print_html += 'No printer selected, unable to print badges.  Please use the "Chg" button in the banner to select the proper printers.</div>';
         print_div.innerHTML = print_html;
         return;
     }

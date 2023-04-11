@@ -118,24 +118,12 @@ function base_changePrintersShow() {
     });
 }
 
-var page_head_printers_div = null;
-var badge_printer_select = null;
-var receipt_printer_select = null;
-var generic_printer_select = null;
-
 // base_changePrintersSubmit - update the printers in the session file and on the screen
 function base_changePrintersSubmit() {
-    if (page_head_printers_div === null) {
-        page_head_printers_div = document.getElementById("page_head_printers");
-        badge_printer_select = document.getElementById("badge_printer");
-        receipt_printer_select = document.getElementById("receipt_printer");
-        generic_printer_select = document.getElementById("generic_printer");
-    }
-
-    // get the three selected values
-    var badge_prntr = badge_printer_select.value;
-    var receipt_prntr = receipt_printer_select.value;
-    var generic_prntr = generic_printer_select.value;
+    // get the three selected values, use the DOM directly as Modal changes the values and they can't be cached
+    var badge_prntr = document.getElementById("badge_printer").value;
+    var receipt_prntr = document.getElementById("receipt_printer").value;
+    var generic_prntr = document.getElementById("generic_printer").value;
     base_changePrintersModal.hide();
 
     // load the printer select list
@@ -167,7 +155,14 @@ function base_changePrinterDisplay(data) {
     'Receipt: ' + data['receipt'] + '<br/>' +
     'General: ' + data['generic'];
 
-    page_head_printers_div.innerHTML = html;
+    document.getElementById("page_head_printers").innerHTML = html;
+    if (typeof current_tab !== 'undefined') {
+        badgePrinterAvailable = data['badge'] !== 'None';
+        receiptPrinterAvailable = data['receipt'] !== 'None';
+        if (current_tab == print_tab) {
+            print_shown();
+        }
+    }
 }
 
 // base_toggleManager:
@@ -191,12 +186,13 @@ function base_toggleManager() {
         base_password_modal_error_div = document.getElementById("base_password_modal_error");
 
         base_managerOverrideModal = new bootstrap.Modal(document.getElementById('base_managerOverride'), {focus: true, backldrop: 'static'});
-        base_managerPassword = document.getElementById("base_managerPassword");
     }
 
     if (base_manager_enabled === false) {
         // use modal popup to ask for password
         base_managerOverrideModal.show();
+        base_managerPassword = document.getElementById("base_managerPassword");
+        base_managerPassword.style.backgroundColor = '';
         return;
     }
     base_manager_enabled = false;
@@ -269,6 +265,7 @@ function base_managerOverrideComplete(data) {
         base_toggle.classList.remove("btn-warning");
         base_toggle.classList.add("btn-primary");
         base_managerOverrideModal.hide();
+        return;
     }
     base_managerPassword.style.backgroundColor = '';
 }

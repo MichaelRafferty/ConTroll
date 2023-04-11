@@ -259,7 +259,7 @@ page_init($page, $tab,
         </div>
     </div>
     <!--- change membership modal popup -->
-    <div class='modal modal-lg' id='Change' tabindex='-2' aria-labelledby='Change' data-bs-backdrop='static' data-bs-keyboard='false' aria-hidden='true'>
+    <div class='modal modal-lg' id='Change' tabindex='-3' aria-labelledby='Change' data-bs-backdrop='static' data-bs-keyboard='false' aria-hidden='true'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header'>
@@ -277,7 +277,7 @@ page_init($page, $tab,
         </div>
     </div>
     <!--- pay cash change modal popup -->
-    <div class='modal modal-lg' id='CashChange' tabindex='-2' aria-labelledby='CashChange' data-bs-backdrop='static' data-bs-keyboard='false' aria-hidden='true'>
+    <div class='modal modal-lg' id='CashChange' tabindex='-4' aria-labelledby='CashChange' data-bs-backdrop='static' data-bs-keyboard='false' aria-hidden='true'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header'>
