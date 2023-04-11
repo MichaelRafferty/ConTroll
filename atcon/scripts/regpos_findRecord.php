@@ -123,7 +123,8 @@ WHERE h.action = 'print'
 GROUP BY h.regid
 )
 SELECT DISTINCT r.perid, r.id as regid, m.conid, r.price, r.paid, r.paid AS priorPaid, r.create_date, u.tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
-                n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup
+                n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, m.memGroup,
+                CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label
 FROM uniqrids u
 JOIN reg r ON (r.id = u.regid)
 JOIN memLabel m ON (r.memId = m.id)
@@ -134,7 +135,7 @@ ORDER BY create_date;
 EOS;
     //web_error_log($unpaidSQLM);
     $rp = dbSafeQuery($unpaidSQLP, 'ii', array($conid, $conid + 1));
-    $rm = dbSafeQuery($unpaidSQLM, 'iiii', array($conid, $conid + 1, $conid, $conid + 1));
+    $rm = dbSafeQuery($unpaidSQLM, 'iiiii', array($conid, $conid + 1, $conid, $conid, $conid + 1));
 } else if (is_numeric($name_search)) {
 //
 // this is perid, or transid
@@ -226,7 +227,8 @@ WHERE h.action = 'attach'
 GROUP BY h.regid
 )
 SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r.paid AS priorPaid, r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, IFNULL(pc.printcount, 0) AS printcount,
-                IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup, rs.tid as rstid
+                IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, m.memGroup, rs.tid as rstid,
+                CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label
 FROM regids rs
 JOIN reg r ON (rs.regid = r.id)
 JOIN perinfo p ON (p.id = r.perid)
@@ -240,7 +242,7 @@ ORDER BY create_date;
 EOS;
     //web_error_log($searchSQLM);
     $rp = dbSafeQuery($searchSQLP, 'iiiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search));
-    $rm = dbSafeQuery($searchSQLM, 'iiiiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid + 1));
+    $rm = dbSafeQuery($searchSQLM, 'iiiiiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid, $conid + 1));
 } else {
 //
 // this is the string search portion as the field is alphanumeric
@@ -299,7 +301,8 @@ WHERE h.action = 'print'
 GROUP BY h.regid
 )
 SELECT DISTINCT r.perid, t.regid, m.conid, r.price, r.paid, r.paid AS priorPaid, r.create_date, t.tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
-                n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.label, m.shortname, m.memGroup             
+                n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, m.memGroup,
+                CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label          
 FROM maxtids t
 JOIN reg r ON (r.id = t.regid)
 JOIN limitedp p ON (p.id = r.perid)
@@ -309,7 +312,7 @@ LEFT OUTER JOIN printcount pc ON (r.id = pc.regid)
 ORDER BY create_date;
 EOS;
     $rp = dbSafeQuery($searchSQLP, 'sss', array($name_search, $name_search, $name_search));
-    $rm = dbSafeQuery($searchSQLM, 'sssii', array($name_search, $name_search, $name_search, $conid, $conid + 1));
+    $rm = dbSafeQuery($searchSQLM, 'sssiii', array($name_search, $name_search, $name_search, $conid, $conid + 1, $conid));
 }
 
 $perinfo = [];

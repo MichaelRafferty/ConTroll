@@ -74,7 +74,9 @@ if (time() < strtotime($startdate) || strtotime($enddate) +24*60*60 < time()) {
 
 // get all the memLabels
 $priceQ = <<<EOS
-SELECT id, conid, memCategory, memType, memAge, memGroup, label, shortname, sort_order, price,
+SELECT id, conid, memCategory, memType, memAge, memGroup,
+       CASE WHEN conid = ? THEN label ELSE concat(conid, ' ', label) END AS label, 
+       shortname, sort_order, price,
     CASE 
         WHEN (atcon != 'Y') THEN 0
         WHEN (startdate > ?) THEN 0
@@ -88,7 +90,7 @@ ORDER BY sort_order, price DESC;
 EOS;
 
 $memarray = array();
-$r = dbSafeQuery($priceQ, 'ssii', array($searchdate, $searchdate, $conid, $conid + 1));
+$r = dbSafeQuery($priceQ, 'issii', array($conid, $searchdate, $searchdate, $conid, $conid + 1));
 while ($l = fetch_safe_assoc($r)) {
     $memarray[] = $l;
 }
