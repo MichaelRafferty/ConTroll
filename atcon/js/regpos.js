@@ -1353,9 +1353,19 @@ function draw_cart_row(rownum) {
 `;
                 break;
             case 'rollover':
-                membership_found = true;
-                yearahead_eligible = true;
-                rollover_html += `
+                if (mrow['conid'] > conid) {
+                    yearahead_html += `
+    <div class="row">
+        <div class="col-sm-1 p-0">` + col1 + `</div>
+        <div class="col-sm-7 p-0">` + label + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
+    </div>
+    `;
+                } else {
+                    membership_found = true;
+                    yearahead_eligible = true;
+                    rollover_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
         <div class="col-sm-7 p-0">` + label + `</div>
@@ -1363,6 +1373,7 @@ function draw_cart_row(rownum) {
         <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
 `;
+                }
                 break;
             case 'addon':
             case 'add-on':
