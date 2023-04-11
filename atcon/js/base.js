@@ -170,6 +170,65 @@ function base_changePrinterDisplay(data) {
     base_changePrintersModal.hide();
 }
 
+// base_toggleManager:
+//  toggle the manager enabled setting
+var base_manager_enabled = false;
+var page_banner = null;
+var base_navitem = null;
+var base_toggle = null;
+var base_nav_div = null;
+var base_user_div = null;
+function base_toggleManager() {
+    if (base_navitem === null) {
+        page_banner = document.getElementById("page_banner");
+        base_navitem = document.getElementById("base_navbar");
+        base_toggle = document.getElementById("base_toggleMgr");
+        base_nav_div = document.getElementById("base_nav_div");
+        base_user_div = document.getElementById("base_user_div");
+    }
+    if (base_manager_enabled === false) {
+        base_manager_enabled = true;
+        // make navbar background warning (yellow)
+        page_banner.classList.remove("bg-primary")
+        page_banner.classList.remove("text-white")
+        base_nav_div.classList.remove("bg-primary");
+        base_user_div.classList.remove("bg-primary");
+        base_user_div.classList.remove("text-bg-primary");
+        base_navitem.classList.remove("bg-primary");
+        base_navitem.classList.remove("navbar-dark");
+        page_banner.classList.add("bg-warning");
+        base_nav_div.classList.add("bg-warning");
+        base_user_div.classList.add("bg-warning");
+        base_navitem.classList.add("bg-warning");
+        base_toggle.innerHTML = "Disable Mgr";
+        base_toggle.classList.remove("btn-warning");
+        base_toggle.classList.add("btn-primary");
+
+    } else {
+        base_manager_enabled = false;
+        // restore normal primary navbar)
+        page_banner.classList.remove("bg-warning");
+        base_user_div.classList.remove("bg-warning");
+        base_nav_div.classList.remove("bg-warning");
+        base_navitem.classList.remove("bg-warning");
+        page_banner.classList.add("bg-primary");
+        page_banner.classList.add("text-white");
+        base_user_div.classList.add("bg-primary");
+        base_user_div.classList.add("text-bg-primary");
+        base_nav_div.classList.add("bg-primary");
+        base_navitem.classList.add("bg-primary");
+        base_navitem.classList.add("navbar-dark");
+        base_toggle.innerHTML = "Enable Mgr";
+        base_toggle.classList.remove("btn-primary");
+        base_toggle.classList.add("btn-warning");
+    }
+    if (typeof cart_perinfo) {
+        // is there a cart element
+        if (cart_perinfo.length > 0)
+            draw_cart();
+    }
+}
+
 // obsolete code, soon to be dropped from the file
 /*
 function hideBlock(block) {

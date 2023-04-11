@@ -450,6 +450,9 @@ function start_over(reset_all) {
         return;
 
     clear_message();
+    if (base_manager_enabled) {
+        base_toggleManager();
+    }
     // empty cart
     cart_membership = [];
     cart_perinfo = [];
@@ -1280,8 +1283,8 @@ function draw_cart_row(rownum) {
         // col1 choices
         //  X = delete element from cart
         var allow_delete = mrow['regid'] <=  0;
-        var allow_delete_mgr = hasManager && mrow['paid'] == 0 && mrow['printcount'] == 0;
-        var allow_change_mgr = hasManager && mrow['regid'] >0 && mrow['paid'] >= 0 && mrow['printcount'] == 0 && (category == 'standard' || category == 'yearahead') && memType == 'full';
+        var allow_delete_mgr = hasManager && base_manager_enabled && mrow['paid'] == 0 && mrow['printcount'] == 0;
+        var allow_change_mgr = hasManager && base_manager_enabled && mrow['regid'] >0 && mrow['paid'] >= 0 && mrow['printcount'] == 0 && (category == 'standard' || category == 'yearahead') && memType == 'full';
         col1 = '';
         if (allow_delete || allow_delete_mgr) {
             col1 += '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
@@ -1410,7 +1413,7 @@ function draw_cart_row(rownum) {
     }
     rowhtml += `</div>
         <div class="col-sm-2 p-0 text-center">`;
-    if (hasManager && !freeze_cart) {
+    if (hasManager && base_manager_enabled && !freeze_cart) {
         var btncolor = 'btn-secondary';
         if (row['open_notes_pending'] !== undefined && row['open_notes_pending'] === 1)
             btncolor = 'btn-warning';
@@ -1672,7 +1675,7 @@ function draw_record(row, first) {
     }
     html += `</div>
         <div class="col-sm-2">`;
-    if (hasManager) {
+    if (hasManager && base_manager_enabled) {
         html += ' <span class="bg-warning pt-1 pb-1"><strong>Edit Notes</strong></span>';
     }
 
@@ -1771,11 +1774,14 @@ function perNotesIcons(cell, formatterParams, onRendered) { //plain text value
     var index = cell.getRow().getData().index;
     var open_notes = cell.getRow().getData().open_notes;
     var html = "";
-    if (open_notes != null && open_notes.length > 0) {
+    if (open_notes != null && open_notes.length > 0 && !(base_manager_enabled && hasManager)) {
         html += '<button type="button" class="btn btn-sm btn-info p-0" onclick="show_perinfo_notes(' + index + ', \'' + formatterParams['t'] + '\')">O</button>';
     }
-    if (hasManager) {
-        html += ' <button type="button" class="btn btn-sm btn-secondary p-0" onclick="edit_perinfo_notes(' + index + ', \'' + formatterParams['t'] + '\')">E</button>';
+    if (hasManager && base_manager_enabled) {
+        var btnclass = "btn-secondary";
+        if (open_notes != null && open_notes.length > 0)
+            btnclass = "btn-info";
+        html += ' <button type="button" class="btn btn-sm ' + btnclass + ' p-0" onclick="edit_perinfo_notes(' + index + ', \'' + formatterParams['t'] + '\')">E</button>';
     }
     if (html == "")
         html = "&nbsp;"; // blank draws nothing
@@ -1809,7 +1815,7 @@ function show_perinfo_notes(index, where) {
 // edit_perinfo_notes: display in an editor the perinfo notes field
 // only managers can edit the notes
 function edit_perinfo_notes(index, where) {
-    if (!hasManager)
+    if (!hasManager || !base_manager_enabled)
         return;
     notesLocation = null;
     if (where == 'cart') {
@@ -1870,13 +1876,13 @@ function save_note() {
             cart_perinfo[notesLocation['pindex']]['dirty'] = true;
             draw_cart();
         }
-        if (notesType == 'PC' && hasManager) {
+        if (notesType == 'PC' && hasManager && base_manager_enabled) {
             notesLocation['open_notes'] = document.getElementById("perinfoNote").value;
             notesLocation['open_notes_pending'] = 1;
             notesLocation['dirty'] = true;
             draw_cart();
         }
-        if (notesType == 'PR' && hasManager) {
+        if (notesType == 'PR' && hasManager && base_manager_enabled) {
             var new_note = document.getElementById("perinfoNote").value;
             if (new_note != notesPriorValue) {
                 notesLocation['open_notes'] = new_note;

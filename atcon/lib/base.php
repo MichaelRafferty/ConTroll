@@ -61,7 +61,7 @@ function page_init($title, $tab, $css, $js)
         ?>
 </head>
 <body>
-    <div class="container-fluid bg-primary text-white">
+    <div class="container-fluid bg-primary text-white" id="page_banner">
         <div class="row">
             <div class="col-sm-9">
                 <div class="container-fluid">
@@ -76,8 +76,8 @@ function page_init($title, $tab, $css, $js)
         if (isset($_SESSION['userhash'])) {
             ?>
                     <div class="row">
-                        <div class="col-sm-12 text-bg-primary">
-                            <nav class="navbar navbar-dark bg-primary navbar-expand-lg">
+                        <div class="col-sm-12 text-bg-primary" id="base_nav_div">
+                            <nav class="navbar navbar-dark bg-primary navbar-expand-lg" id="base_navbar">
                                 <div>
                                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                                         <span class="navbar-toggler-icon"></span>
@@ -133,8 +133,12 @@ function page_init($title, $tab, $css, $js)
                     </div>
                 </div>
             </div>
-            <div class="col-sm-3 text-bg-primary align-self-end">
-                User: <?php echo $_SESSION['first_name'] . ' (' . $_SESSION['user'] . ')'; ?><br/>
+            <div class="col-sm-3 text-bg-primary align-self-end" id="base_user_div">
+                User: <?php echo $_SESSION['first_name'] . ' (' . $_SESSION['user'] . ')';
+                if (in_array('manager', $perms)) {
+                    echo '&nbsp; <button type="button" class="btn btn-sm btn-warning p-0" id="base_toggleMgr" onclick="base_toggleManager();">Enable Mgr</button>';
+                }
+                ?><br/>
                 <div id="page_head_printers">
                     Badge: <?php echo $_SESSION['badgePrinter'][0]; ?>&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="base_changePrintersShow();">Chg</button><br/>
                     Receipt: <?php echo $_SESSION['receiptPrinter'][0]; ?><br/>
