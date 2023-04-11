@@ -231,7 +231,7 @@ class Users {
         };
         $.ajax({
             method: "POST",
-            url: "scripts/adminTasks.php",
+            url: "scripts/admin_searchUsers.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
                 users.showSearch(data);
@@ -319,7 +319,7 @@ class Users {
         };
         $.ajax({
             method: "POST",
-            url: "scripts/adminTasks.php",
+            url: "scripts/admin_updateUsers.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
                 if (data['error'] !== undefined) {
@@ -425,6 +425,7 @@ class Printers {
             maxHeight: "300px",
             movableRows: false,
             history: true,
+            index: 'serverName',
             columns: [
                 { title: "Server", field: "serverName", editor: "list", editorParams: { valuesLookup: localServersList, }, editable: printerLocalonly, minWidth: 150, headerSort: true, headerFilter: 'input'  },
                 { title: "Printer", field: "printerName", editor: "input", editable: printerLocalonly, minWidth: 150, headerSort: true, headerFilter:true },
@@ -575,7 +576,7 @@ class Printers {
         };
         $.ajax({
             method: "POST",
-            url: "scripts/adminTasks.php",
+            url: "scripts/admin_updatePrinters.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
                 if (data['error'] !== undefined) {
@@ -593,16 +594,19 @@ class Printers {
     }
 
     printTest(server, printer, type, codepage) {
+        var serverData = this.serverlist.searchData('serverName', '=', server);
+        var serverRow = serverData[0];
+
         var postData = {
             ajax_request_action: 'printTest',
-            server: server,
+            server: serverRow.address,
             printer: printer,
             type: type,
             codepage: codepage
         };
         $.ajax({
             method: "POST",
-            url: "scripts/adminTasks.php",
+            url: "scripts/admin_printTest.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
                 if (data['error'] !== undefined) {
@@ -657,7 +661,7 @@ function loadInitialData(loadtype) {
     };
     $.ajax({
         method: "POST",
-        url: "scripts/adminTasks.php",
+        url: "scripts/admin_loadData.php",
         data: postData,
         success: function(data, textstatus, jqxhr) {
             if (data['message'] !== undefined) {
