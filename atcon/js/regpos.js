@@ -2505,7 +2505,7 @@ function print_receipt() {
     if (receiptPrinterAvailable) {
         $.ajax({
             method: "POST",
-            url: "scripts/printformTasks.php",
+            url: "scripts/regpos_printReceipt.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
                 if (data['error'] !== undefined) {
@@ -2571,7 +2571,7 @@ function print_badge(index) {
     };
     $.ajax({
         method: "POST",
-        url: "scripts/printformTasks.php",
+        url: "scripts/regpos_printBadge.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
             if (data['error'] !== undefined) {

@@ -21,7 +21,7 @@ function printTestLabel() {
         };
         $.ajax({
             method: "POST",
-            url: "scripts/printformTasks.php",
+            url: "scripts/printform_printBadge.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
                 if (data['message'] !== undefined) {
