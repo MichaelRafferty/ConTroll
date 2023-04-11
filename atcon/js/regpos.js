@@ -2525,7 +2525,7 @@ function print_receipt() {
             error: showAjaxError,
         });
     } else {
-        show_message("Receipt printer not available, you must select a receipt printer at login");
+        show_message("Receipt printer not available, Please use the \"Chg\" button in the banner to select the proper printers.");
     }
 }
 
@@ -2879,7 +2879,7 @@ function print_shown() {
     var print_html = `<div id='printBody' class="container-fluid form-floating">
 `;
     if (badgePrinterAvailable === false) {
-        print_html += 'No printer selected, unable to print badges.  Please use the "Chg" button in the banner to select the proper printers.</div>';
+        print_html += 'No printer selected, unable to print badges.  </div>';
         print_div.innerHTML = print_html;
         return;
     }
