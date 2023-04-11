@@ -165,6 +165,33 @@ function page_init($title, $tab, $css, $js)
             </div>
         </div>
     </div>
+    <!--- enable manager ovderrides modal popup -->
+    <div class='modal modal-lg' id='base_managerOverride' tabindex='-6' aria-labelledby='base_managerOverride' data-bs-backdrop='static' aria-hidden='true'>
+        <div class='modal-dialog modal-lg'>
+            <div class='modal-content'>
+                <div class='modal-header'>
+                    <div class='modal-title' id='base_managerOverrideTitle'>
+                        Confirm password to enable manager overrides
+                    </div>
+                </div>
+                <div class='modal-body' id='base_managerOverrideBody'>
+                    <div class="row">
+                        <div class='col-sm-3'>
+                            <label for='base_managerPassword'>Password:</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <input type='password' id='base_managerPassword' name='base_managerPassword' size='40 class='form-control' placeholder='Manager Password' required/>
+                        </div>
+                    </div>
+                    <div id="base_password_modal_error"></div>
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' id='base_managerOverrideCancel' class='btn btn-secondary' onclick='base_managerOverrideModal.hide();'>Cancel</button>
+                    <button type='button' id='base_managerOverrideButton' class='btn btn-warning' onclick='base_managerOverrideSubmit();'>Enable Manager Overide</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <?php
         } else {
             ?>

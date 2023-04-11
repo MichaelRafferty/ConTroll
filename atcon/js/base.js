@@ -34,7 +34,7 @@ function showAlert(str) {
     $('#alert').show();
 }
 
-message_div = null;
+var message_div = null;
 // show_message:
 // apply colors to the message div and place the text in the div, first clearing any existing class colors
 // type:
@@ -136,6 +136,7 @@ function base_changePrintersSubmit() {
     var badge_prntr = badge_printer_select.value;
     var receipt_prntr = receipt_printer_select.value;
     var generic_prntr = generic_printer_select.value;
+    base_changePrintersModal.hide();
 
     // load the printer select list
     var postData = {
@@ -167,7 +168,6 @@ function base_changePrinterDisplay(data) {
     'General: ' + data['generic'];
 
     page_head_printers_div.innerHTML = html;
-    base_changePrintersModal.hide();
 }
 
 // base_toggleManager:
@@ -178,6 +178,9 @@ var base_navitem = null;
 var base_toggle = null;
 var base_nav_div = null;
 var base_user_div = null;
+var base_managerOverrideModal = null;
+var base_managerPassword = null;
+var base_password_modal_error_div = null;
 function base_toggleManager() {
     if (base_navitem === null) {
         page_banner = document.getElementById("page_banner");
@@ -185,8 +188,70 @@ function base_toggleManager() {
         base_toggle = document.getElementById("base_toggleMgr");
         base_nav_div = document.getElementById("base_nav_div");
         base_user_div = document.getElementById("base_user_div");
+        base_password_modal_error_div = document.getElementById("base_password_modal_error");
+
+        base_managerOverrideModal = new bootstrap.Modal(document.getElementById('base_managerOverride'), {focus: true, backldrop: 'static'});
+        base_managerPassword = document.getElementById("base_managerPassword");
     }
+
     if (base_manager_enabled === false) {
+        // use modal popup to ask for password
+        base_managerOverrideModal.show();
+        return;
+    }
+    base_manager_enabled = false;
+    // restore normal primary navbar)
+    page_banner.classList.remove("bg-warning");
+    base_user_div.classList.remove("bg-warning");
+    base_nav_div.classList.remove("bg-warning");
+    base_navitem.classList.remove("bg-warning");
+    page_banner.classList.add("bg-primary");
+    page_banner.classList.add("text-white");
+    base_user_div.classList.add("bg-primary");
+    base_user_div.classList.add("text-bg-primary");
+    base_nav_div.classList.add("bg-primary");
+    base_navitem.classList.add("bg-primary");
+    base_navitem.classList.add("navbar-dark");
+    base_toggle.innerHTML = "Enable Mgr";
+    base_toggle.classList.remove("btn-primary");
+    base_toggle.classList.add("btn-warning");
+
+    if (typeof cart_perinfo) {
+        // is there a cart element
+        if (cart_perinfo.length > 0)
+            draw_cart();
+    }
+}
+
+function base_managerOverrideSubmit() {
+    // validate the password
+    var passwd = base_managerPassword.value;
+    if (passwd.length <= 0) {
+        base_managerPassword.style.backgroundColor = 'var(--bs-warning)';
+        return;
+    }
+
+    var postData = {
+        ajax_request_action: 'managerPasswordVerify',
+        passwd: passwd,
+    };
+    $.ajax({
+        method: "POST",
+        url: "scripts/base_managerPasswordVerify.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                base_password_modal_error_div.innerHTML = "Error: " + data['error'];
+                return;
+            }
+            base_managerOverrideComplete(data);
+        },
+        error: showAjaxError,
+    });
+}
+
+function base_managerOverrideComplete(data) {
+    if (data['manager'] === true) {
         base_manager_enabled = true;
         // make navbar background warning (yellow)
         page_banner.classList.remove("bg-primary")
@@ -203,30 +268,9 @@ function base_toggleManager() {
         base_toggle.innerHTML = "Disable Mgr";
         base_toggle.classList.remove("btn-warning");
         base_toggle.classList.add("btn-primary");
-
-    } else {
-        base_manager_enabled = false;
-        // restore normal primary navbar)
-        page_banner.classList.remove("bg-warning");
-        base_user_div.classList.remove("bg-warning");
-        base_nav_div.classList.remove("bg-warning");
-        base_navitem.classList.remove("bg-warning");
-        page_banner.classList.add("bg-primary");
-        page_banner.classList.add("text-white");
-        base_user_div.classList.add("bg-primary");
-        base_user_div.classList.add("text-bg-primary");
-        base_nav_div.classList.add("bg-primary");
-        base_navitem.classList.add("bg-primary");
-        base_navitem.classList.add("navbar-dark");
-        base_toggle.innerHTML = "Enable Mgr";
-        base_toggle.classList.remove("btn-primary");
-        base_toggle.classList.add("btn-warning");
+        base_managerOverrideModal.hide();
     }
-    if (typeof cart_perinfo) {
-        // is there a cart element
-        if (cart_perinfo.length > 0)
-            draw_cart();
-    }
+    base_managerPassword.style.backgroundColor = '';
 }
 
 // obsolete code, soon to be dropped from the file
