@@ -233,7 +233,7 @@ window.onload = function initpage() {
     };
     $.ajax({
         method: "POST",
-        url: "scripts/regposTasks.php",
+        url: "scripts/regpos_LoadInitialData.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
             if (data['error'] !== undefined) {
@@ -1020,7 +1020,7 @@ function add_new() {
     };
     $.ajax({
         method: "POST",
-        url: "scripts/regposTasks.php",
+        url: "scripts/regpos_findRecord.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
             if (data['error'] !== undefined) {
@@ -1889,7 +1889,7 @@ function save_note() {
                 };
                 $.ajax({
                     method: "POST",
-                    url: "scripts/regposTasks.php",
+                    url: "scripts/regpos_updatePerinfoNote.php",
                     data: postData,
                     success: function (data, textstatus, jqxhr) {
                         if (data['error'] !== undefined) {
@@ -1978,7 +1978,7 @@ function find_record(find_type) {
     };
     $.ajax({
         method: "POST",
-        url: "scripts/regposTasks.php",
+        url: "scripts/regpos_findRecord.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
             if (data['error'] !== undefined) {
@@ -2248,7 +2248,7 @@ function review_nochanges() {
     };
     $.ajax({
         method: "POST",
-        url: "scripts/regposTasks.php",
+        url: "scripts/regpos_updateCartElements.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
             if (data['error'] !== undefined) {
@@ -2445,7 +2445,7 @@ function pay(nomodal) {
         };
         $.ajax({
             method: "POST",
-            url: "scripts/regposTasks.php",
+            url: "scripts/regpos_processPayment.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
                 if (data['error'] !== undefined) {
@@ -2600,7 +2600,7 @@ function PrintComplete(data) {
         };
         $.ajax({
             method: "POST",
-            url: "scripts/regposTasks.php",
+            url: "scripts/regpos_updatePrintcount.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
                 if (data['error'] !== undefined) {
