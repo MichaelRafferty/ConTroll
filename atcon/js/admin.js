@@ -100,12 +100,12 @@ class Users {
     }
 
     // invert TickCross cell only if the row is not this user
-    invertnotme(cell) {
+    invertnotme(e, cell) {
         'use strict';
 
         var me = cell.getRow().getCell('id').getValue();
         if (me !== userid) {
-            invertTickCross(cell);
+            invertTickCross(e, cell);
         }
     }
 
