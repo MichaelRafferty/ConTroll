@@ -217,6 +217,11 @@ function base_toggleManager() {
         if (cart_perinfo.length > 0)
             draw_cart();
     }
+    if (typeof current_tab !== 'undefined') {
+        if (current_tab == pay_tab) {
+            pay_shown();
+        }
+    }
 }
 
 function base_managerOverrideSubmit() {
@@ -272,6 +277,11 @@ function base_managerOverrideComplete(data) {
             // is there a cart element
             if (cart_perinfo.length > 0)
                 draw_cart();
+        }
+        if (typeof current_tab !== 'undefined') {
+            if (current_tab == pay_tab) {
+                pay_shown();
+            }
         }
         return;
     }

@@ -83,6 +83,7 @@ var pay_button_pay = null;
 var pay_button_rcpt = null;
 var pay_button_print = null;
 var pay_tid = null;
+var discount_mode = 'none';
 
 // print items
 var print_div = null;
@@ -252,6 +253,9 @@ function loadInitialData(data) {
     catList = data['memCategories'];
     ageList = data['ageList'];
     typeList = data['memTypes'];
+    discount_mode = data['discount'];
+    if (discount_mode === undefined || discount_mode === null || discount_mode == '')
+        discount_mode = 'none';
 
     // build memListMap from memList
     memListMap = {};
@@ -2821,8 +2825,16 @@ function pay_shown() {
             <label for="pt-check">Check</label>
             <input type="radio" id="pt-cash" name="payment_type" value="cash" onchange='setPayType("cash");'/>
             <label for="pt-cash">Cash</label>
+`;
+        if (discount_mode != "none") {
+            if (discount_mode == 'any' || (discount_mode == 'manager' && hasManager) || (discount_mode == 'active' && hasManager && base_manager_enabled)) {
+                pay_html += `
             <input type="radio" id="pt-discount" name="payment_type" value="discount" onchange='setPayType("discount");'/>
             <label for="pt-discount">Discount</label>
+`;
+            }
+        }
+        pay_html += `
         </div>
     </div>
     <div class="row mb-2" id="pay-check-div" hidden>

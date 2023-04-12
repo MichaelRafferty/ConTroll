@@ -20,6 +20,7 @@ if ($_POST && array_key_exists('nopay', $_POST)) {
 }
 
 $con = get_conf('con');
+$atcon = get_conf('atcon');
 $conid = $con['id'];
 $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
@@ -41,6 +42,7 @@ if (!check_atcon($method, $conid)) {
 
 $response['label'] = $con['label'];
 $response['conid'] = $conid;
+$response['discount'] = $atcon['discount'];
 $response['badgePrinter'] = $_SESSION['badgePrinter'][0] != 'None';
 $response['receiptPrinter'] = $_SESSION['receiptPrinter'][0] != 'None';
 $response['user_id'] = $_SESSION['user'];

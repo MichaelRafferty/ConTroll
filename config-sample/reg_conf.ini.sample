@@ -52,12 +52,21 @@ server="https://reg.philcon.org/"
 logoimage="philcon2022.png"
 logotext="Tagline not alt=text"
 onsiteopen="3:00 PM"
+[atcon]
+; valid types are
+; 	manager - requires manager logged in
+;	active - manager override enabled
+;	any - any POS user can handle discount
+;	none - disable the discount type of payment
+discount=active
 [vendor]
 test=0
 open=1
 artshow = "artshow2020philcon.org"
 alley = "artshow2020philcon.org"
 dealer = "dealer2020philcon.org"
+addlaccounttext = ""
+artventortext = "vendors"
 [client]
 path = "/home/psfs_reg/reg.philcon.org/reg_control"
 [google]
@@ -111,10 +120,6 @@ suspended=1
 close=0
 max_failures=10
 url="https://reg.philcon.org/artshow"
-[user]
-server="https://atcon.philcon.org/server_side"
-user="online_atcon"
-passwd="online_atcon"
 [control]
 clubperm='psfs'
 clubname='PSFS'
