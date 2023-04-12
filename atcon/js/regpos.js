@@ -2287,6 +2287,7 @@ function reviewed_update_cart(data) {
         var newrow = updated_perinfo[rownum];
         var cartrow = cart_perinfo[newrow['rownum']]
         cartrow['perid'] = newrow['perid'];
+        cartrow['dirty'] = false;
     }
     var updated_membership = data['updated_membership'];
     for (var rownum in updated_membership) {
@@ -2296,6 +2297,7 @@ function reviewed_update_cart(data) {
         cartrow['create_trans'] = newrow['create_trans'];
         cartrow['regid'] = newrow['id'];
         cartrow['perid'] = newrow['perid'];
+        cartrow['dirty'] = false;
     }
 
     // redraw the cart with the new id's and maps.
