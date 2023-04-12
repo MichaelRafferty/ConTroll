@@ -2250,6 +2250,7 @@ function review_update() {
                 if (cart_perinfo[rownum][field] != el.value) {
                    // alert("updating  row " + rownum + ":" + rownum + ":" + field + " from '" + cart_perinfo[rownum][field] + "' to '" + el.value + "'");
                     cart_perinfo[rownum][field] = el.value;
+                    cart_perinfo[rownum]['dirty'] = true;
                 }
             }
         }
