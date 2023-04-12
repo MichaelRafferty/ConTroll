@@ -60,7 +60,9 @@ page_init($page, 'index',
 if(isset($_GET['action']) && $_GET['action']=='logout') {
     unset($_SESSION['user']);
     unset($_SESSION['userhash']);
-    unset($_SESSION['printer']);
+    unset($_SESSION['badgePrinter']);
+    unset($_SESSION['reeiptPrinter']);
+    unset($_SESSION['genericPrinter']);
     unset($_SESSION['perms']);
     echo "<script>window.location.href=window.location.pathname</script>";
 }
@@ -175,6 +177,23 @@ EOS;
 
                 $r = dbSafeCmd($q, 'sii', array($dbpasswd, $user, $conid));
                 $response['updated'] = $r;
+            }
+            if ($response['userhash'] == '' || $response['userhash'] == 'null' || $response['userhash'] == null) {
+                // update userhash and retrieve it again for login
+                $q = <<<EOS
+UPDATE atcon_user
+SET userhash = MD5(concat(id, perid))
+WHERE userhash IS NULL;
+EOS;
+                $r = dbCmd($q);
+                $q = <<<EOS
+SELECT u.userhash
+FROM atcon_user u 
+WHERE u.perid=? AND u.conid=?;
+EOS;
+                $r = dbSafeQuery($q, 'si', array($user, $conid));
+                $l = fetch_safe_assoc($r);
+                $response['userhash'] = $l['userhash'];
             }
         } else {
             $response['success'] = 0;
