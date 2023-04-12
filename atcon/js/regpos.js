@@ -2384,18 +2384,21 @@ function pay(nomodal) {
     elptdiv.style.backgroundColor = '';
 
     var eldesc = document.getElementById('pay-desc');
-    if (document.getElementById('pt-discount').checked) {
-        ptype = 'discount';
-        desc = eldesc.value;
-        if (desc == null || desc == '') {
-            eldesc.style.backgroundColor = 'var(--bs-warning)';
-            return;
+    var elptdisc = document.getElementById('pt-discount');
+    if (elptdisc != null) {
+        if (document.getElementById('pt-discount').checked) {
+            ptype = 'discount';
+            desc = eldesc.value;
+            if (desc == null || desc == '') {
+                eldesc.style.backgroundColor = 'var(--bs-warning)';
+                return;
+            } else {
+                eldesc.style.backgroundColor = '';
+            }
+            checked = true;
         } else {
             eldesc.style.backgroundColor = '';
         }
-        checked = true;
-    } else {
-        eldesc.style.backgroundColor = '';
     }
 
     if (document.getElementById('pt-check').checked) {
