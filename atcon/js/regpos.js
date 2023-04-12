@@ -2237,6 +2237,7 @@ function review_update() {
 
     }
     review_shown();
+    review_nochanges();
 }
 
 // no changes button presssed:

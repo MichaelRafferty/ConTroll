@@ -181,7 +181,7 @@ class Users {
                     headerFilter: true,
                     headerWordWrap: true
                 },
-                {title: "Admin", field: "manager", headerSort: false, formatter: "tickCross", cellClick: this.invertnotme, headerFilter: true},
+                {title: "Mgr", field: "manager", headerSort: false, formatter: "tickCross", cellClick: this.invertnotme, headerFilter: true},
                 {
                     title: "Optional New Password",
                     field: 'new_password',
