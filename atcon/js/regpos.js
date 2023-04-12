@@ -2800,6 +2800,10 @@ function pay_shown() {
         var pay_html = `
 <div id='payBody' class="container-fluid form-floating">
   <form id='payForm' action='javascript: return false; ' class="form-floating">
+    <div class="row pb-2">
+        <div class="col-sm-2 ms-0 me-2 p-0">For Transaction:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"> ` + pay_tid + `</div>
+    </div>
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + total_amount_due + `</div>
