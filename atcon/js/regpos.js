@@ -2683,8 +2683,9 @@ function review_shown() {
     <div class="row">
         <div class="col-sm-1 m-0 p-0">EM:</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name='c` + rownum + `-email_addr' id='c` + rownum + `-email_addr' size=50 maxlength="64" tabindex='5'  value="` + row['email_addr'] + `"/>
+            <input type="text" name='c` + rownum + `-email_addr' id='c` + rownum + `-email_addr' size=45 maxlength="64" tabindex='5'  value="` + row['email_addr'] + `"/>
         </div>
+        <div class="col-sm-auto m-0 ps-2 pe-2">PH:</div>
          <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-phone' id='c` + rownum + `-phone' size=15 maxlength="15" tabindex='5'  value="` + row['phone'] + `"/>
         </div>
