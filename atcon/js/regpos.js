@@ -602,7 +602,7 @@ function delete_membership(index) {
     if (cart_membership[index]['tid'] != '') {
         if (confirm("Confirm delete for " + cart_membership[index]['label'])) {
             cart_membership[index]['todelete'] = 1;
-            cart_perinfo[cart_membership['pindex']]['dirty'] = true;
+            cart_perinfo[cart_membership[index]['pindex']]['dirty'] = true;
         }
     } else {
         cart_membership.splice(index, 1);
