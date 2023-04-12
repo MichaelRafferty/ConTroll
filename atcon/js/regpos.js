@@ -76,6 +76,19 @@ var add_edit_prior_tab = null;
 // review items
 var review_div = null;
 var country_select = null;
+var review_missing_items = 0;
+var review_required_fields = ['first_name', 'last_name', 'email_addr', 'address_1', 'city', 'state', 'postal_code' ];
+var review_prompt_fields = ['phone'];
+var review_editable_fields = [
+    'first_name', 'middle_name', 'last_name', 'suffix',
+    'badge_name',
+    'email_addr', 'phone',
+    'address_1',
+    'address_2',
+    'city', 'state', 'postal_code',
+    'share_reg_ok', 'contact_ok'
+];
+
 
 // pay items
 var pay_div = null;
@@ -2227,9 +2240,11 @@ function review_update() {
     var data_row
     var el;
     var field;
+    var fieldno
     for (rownum in cart_perinfo) {
         // update all the fields on the review page
-        for (field in cart_perinfo[rownum]) {
+        for (fieldno in review_editable_fields) {
+            field = review_editable_fields[fieldno];
             el = document.getElementById('c' + rownum + '-' + field);
             if (el) {
                 if (cart_perinfo[rownum][field] != el.value) {
@@ -2241,13 +2256,24 @@ function review_update() {
 
     }
     review_shown();
-    review_nochanges();
+    if (review_missing_items > 0) {
+        setTimeout(review_nochanges, 100);
+    } else {
+        review_nochanges();
+    }
 }
 
 // no changes button presssed:
 // if everything is paid, go to print.  If cashier (has a find_unpaid button), to go Pay, else put up the diagnostic
 //      to ask them to move on to the cashier.
 function review_nochanges() {
+    // first check to see if any required fields still exist
+    if (review_missing_items > 0) {
+        if (!confirm("Proceed ignoring check for " + review_missing_items.toString() + " missing data items (shown in yellow)?")) {
+            return false; // confirm answered no, return not safe to discard
+        }
+    }
+
     // submit the current card data to update the database, retrieve all TID's/PERID's/REGID's of inserted data
     var postData = {
         ajax_request_action: 'updateCartElements',
@@ -2648,6 +2674,7 @@ function add_shown() {
 
 function review_shown() {
     // draw review section
+    review_missing_items = 0;
     var review_html = `
 <div id='reviewBody' class="container-fluid form-floating">
   <form id='reviewForm' action='javascript: return false; ' class="form-floating">
@@ -2656,6 +2683,25 @@ function review_shown() {
     var row;
     for (rownum in cart_perinfo) {
         row = cart_perinfo[rownum];
+        // look up missing fields
+        colors = {};
+        for (fieldno in review_required_fields) {
+            var field = review_required_fields[fieldno];
+            if (row[field] == null || row[field] == '') {
+                review_missing_items++;
+                map_set(colors, field, 'var(--bs-warning)');
+            } else {
+                map_set(colors, field, '');
+            }
+        }
+        for (fieldno in review_prompt_fields) {
+            var field = review_prompt_fields[fieldno];
+            if (row[field] == null || row[field] == '') {
+                map_set(colors, field, 'var(--bs-info)');
+            } else {
+                map_set(colors, field, '');
+            }
+        }
         mrow = find_primary_membership_by_perid(cart_membership, row['perid']);
         review_html += `<div class="row">
         <div class="col-sm-1 m-0 p-0">Mbr ` + (Number(rownum) + 1) + '</div>';
@@ -2671,13 +2717,17 @@ function review_shown() {
     <div class="row mt-1">
         <div class="col-sm-1 m-0 p-0">N:</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-first_name" id='c` + rownum + `-first_name' size="22" maxlength="32" tabindex="1" value="` + row['first_name'] + `"/>
+            <input type="text" name="c` + rownum + `-first_name" id='c` + rownum + `-first_name' size="22" maxlength="32" tabindex="1" value="` + row['first_name'] +
+            '" style="background-color:' + map_access(colors, 'first_name') + ';' +
+            `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <input type="text" name="c` + rownum + `-middle_name" id='c` + rownum + `-middle_name' size="6" maxlength="32" tabindex="2" value="` + row['middle_name'] + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-last_name" id='c` + rownum + `-last_name' size="22" maxlength="32" tabindex="3" value="` + row['last_name'] + `"/>
+            <input type="text" name="c` + rownum + `-last_name" id='c` + rownum + `-last_name' size="22" maxlength="32" tabindex="3" value="` + row['last_name'] +
+            '" style="background-color:' + map_access(colors, 'last_name') + ';' +
+            `"/>
         </div>
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name="c` + rownum + `-suffix" id='c` + rownum + `-suffix' size="4" maxlength="4" tabindex="4" value="` + row['suffix'] + `"/>
@@ -2692,17 +2742,23 @@ function review_shown() {
     <div class="row">
         <div class="col-sm-1 m-0 p-0">EM:</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name='c` + rownum + `-email_addr' id='c` + rownum + `-email_addr' size=45 maxlength="64" tabindex='5'  value="` + row['email_addr'] + `"/>
+            <input type="text" name='c` + rownum + `-email_addr' id='c` + rownum + `-email_addr' size=45 maxlength="64" tabindex='5'  value="` + row['email_addr'] +
+            '" style="background-color:' + map_access(colors, 'email_addr') + ';' +
+            `"/>
         </div>
         <div class="col-sm-auto m-0 ps-2 pe-2">PH:</div>
          <div class="col-sm-auto ms-0 me-0 p-0">
-            <input type="text" name='c` + rownum + `-phone' id='c` + rownum + `-phone' size=15 maxlength="15" tabindex='5'  value="` + row['phone'] + `"/>
+            <input type="text" name='c` + rownum + `-phone' id='c` + rownum + `-phone' size=15 maxlength="15" tabindex='5'  value="` + row['phone'] +
+            '" style="background-color:' + map_access(colors, 'phone') + ';' +
+            `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-1 m-0 p-0">A1:</div>
         <div class="col-sm-auto ms-0 me-0 p-0">
-            <input type="text" name='c` + rownum + `-address_1' id='c` + rownum + `-address_1' size=64 maxlength="64" tabindex='5'  value="` + row['address_1'] + `"/>
+            <input type="text" name='c` + rownum + `-address_1' id='c` + rownum + `-address_1' size=64 maxlength="64" tabindex='5'  value="` + row['address_1'] +
+            '" style="background-color:' + map_access(colors, 'address_1') + ';' +
+            `"/>
         </div>
     </div>
     <div class="row">
@@ -2714,13 +2770,19 @@ function review_shown() {
     <div class="row">
         <div class="col-sm-1 m-0 p-0">A3:</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-city" id='c` + rownum + `-city' size="22" maxlength="32" tabindex="7" value="` + row['city'] + `"/>
+            <input type="text" name="c` + rownum + `-city" id='c` + rownum + `-city' size="22" maxlength="32" tabindex="7" value="` + row['city'] +
+            '" style="background-color:' + map_access(colors, 'city') + ';' +
+            `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-state" id='c` + rownum + `-state' size="2" maxlength="2" tabindex="8" value="` + row['state'] + `"/>
+            <input type="text" name="c` + rownum + `-state" id='c` + rownum + `-state' size="2" maxlength="2" tabindex="8" value="` + row['state'] +
+            '" style="background-color:' + map_access(colors, 'state') + ';' +
+            `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-postal_code" id='c` + rownum + `-postal_code' size="10" maxlength="10" tabindex="9" value="` + row['postal_code'] + `"/>
+            <input type="text" name="c` + rownum + `-postal_code" id='c` + rownum + `-postal_code' size="10" maxlength="10" tabindex="9" value="` + row['postal_code'] +
+            '" style="background-color:' + map_access(colors, 'postal_code') + ';' +
+            `"/>
         </div>
     </div>
     <div class="row">
