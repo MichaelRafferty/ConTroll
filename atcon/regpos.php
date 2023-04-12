@@ -9,6 +9,7 @@ if (!isset($_SESSION['user'])) {
 
 $con = get_conf('con');
 $conid = $con['id'];
+$conname = $con['conname'];
 $tab = 'checkin';
 $mode = 'checkin';
 $method='data_entry';
@@ -187,7 +188,7 @@ page_init($page, $tab,
                             </div>
                             <div class="row">
                                 <div class="col-sm-auto mt-2 ms-0 me-0 p-0">
-                                    <label for="contact_ok">Include in annual reminder postcards, future Philcon emails and surveys?</label>
+                                    <label for="contact_ok">Include in annual reminder postcards, future <?php echo $conname; ?> emails and surveys?</label>
                                     <select id="contact_ok" name="contact_ok" tabindex='16'>
                                         <option value="Y" selected>Yes</option>
                                         <option value="N">No</option>

@@ -44,6 +44,7 @@ $con = get_conf("con");
 $reg = get_conf("reg");
 $emailconf = get_conf("email");
 $conid=$con['id'];
+$conname = $con['conname'];
 $email_type = $_POST['type'];
 
 if ($email_type == 'reminder') {
@@ -71,7 +72,7 @@ ORDER BY email;
 EOQ;
     $email_text = MarketingEmail_TEXT($reg['test']);
     $email_html = MarketingEmail_HTML($reg['test']);
-    $email_subject = "We miss you! Please come back to Philcon";
+    $email_subject = "We miss you! Please come back to $conname";
 } else if ($email_type == 'survey') {
     $emailQ = <<<EOQ
 SELECT Distinct P.email_addr AS email
