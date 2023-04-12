@@ -227,6 +227,8 @@ function base_managerOverrideSubmit() {
         return;
     }
 
+    // clear the password field for the next popup
+    base_managerPassword.value = '';
     var postData = {
         ajax_request_action: 'managerPasswordVerify',
         passwd: passwd,
@@ -265,6 +267,12 @@ function base_managerOverrideComplete(data) {
         base_toggle.classList.remove("btn-warning");
         base_toggle.classList.add("btn-primary");
         base_managerOverrideModal.hide();
+
+        if (typeof cart_perinfo) {
+            // is there a cart element
+            if (cart_perinfo.length > 0)
+                draw_cart();
+        }
         return;
     }
     base_managerPassword.style.backgroundColor = '';
