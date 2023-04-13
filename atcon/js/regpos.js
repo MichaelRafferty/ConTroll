@@ -133,6 +133,8 @@ var user_id = 0;
 var hasManager = false;
 var badgePrinterAvailable = false;
 var receiptPrinterAvailable = false;
+var non_primary_categories = ['add-on', 'addon', 'cancel', 'club', 'bsfs'];
+var upgradable_types = ['one-day', 'oneday', 'virtual'];
 
 // filter criteria
 var filt_excat = null; // array of exclude category
@@ -279,7 +281,9 @@ function loadInitialData(data) {
     }
 
     // build membership_select options
-    filt_excat = ['upgrade', 'yearahead', 'add-on', 'addon'];
+
+    filt_excat = non_primary_categories.splice(0);
+    filt_excat.push('upgrade', 'yearahead');
     filt_cat = null;
     filt_type = null;
     filt_age = null;
@@ -288,9 +292,11 @@ function loadInitialData(data) {
     membership_select = '';
     membership_selectlist = [];
     for (var row in match) {
-        var option = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
-        membership_select += option;
-        membership_selectlist.push({price:  match[row]['price'], option: option});
+        if (match[row]['conid'] == conid) {
+            var option = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
+            membership_select += option;
+            membership_selectlist.push({price: match[row]['price'], option: option});
+        }
     }
     // upgrade_select
     filt_excat = null;
@@ -425,14 +431,12 @@ function find_primary_membership_by_perid(tbl, perid) {
         if (mi_row['conid'] != conid)
             continue;
 
-        memtype = mi_row['memCategory'];
-        if (memtype == 'upgrade' || memtype == 'rollover' || memtype == 'freebie') {
-            mem_index = regitems[item]['index'];
-            break;
-        }
-        if (memtype == 'standard' || memtype == 'yearahead') {
-            mem_index = regitems[item]['index'];
-        }
+        var memCat = mi_row['memCategory'];
+        if (non_primary_categories.includes(mi_row['memCategory']))
+            continue;
+
+        mem_index = regitems[item]['index'];
+        break;
     }
     return mem_index;
 }
@@ -503,7 +507,8 @@ function start_over(reset_all) {
 function build_record_hover(e, cell, onRendered) {
     var data = cell.getData();
     //console.log(data);
-    var hover_text = (data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name']).trim() + '<br/>' +
+    var hover_text = 'Person id: ' + data['perid'] + '<br/>' +
+        (data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name']).trim() + '<br/>' +
         data['address_1'] + '<br/>';
     if (data['address_2'] != '') {
         hover_text += data['address_2'] + '<br/>';
@@ -1312,30 +1317,14 @@ function draw_cart_row(rownum) {
                     mrow['index'] + ', ' + notes_count + ')" >N:' + notes_count.toString() +  '</button >';
             }
 
-        switch (category) {
-            case 'standard':
-                yearahead_eligible = true;
-                if (mrow['memType'] == 'oneday') {
-                    upgrade_eligible = true;
-                    day = (mrow['label']).toLowerCase().substr(0, 3);
-                }
-                // no break - fall through
-            case 'freebie':
-                mem_is_membership = true;
-                membership_html += `
-    <div class="row">
-        <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + label + `</div>
-        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
-        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
-    </div>
-`;
-                break;
-            case 'upgrade':
-                mem_is_membership = true;
-                yearahead_eligible = true;
-                upgrade_eligible = false;
-                day = null;
+        if (!non_primary_categories.includes(category) && mrow['conid'] == conid) { // this is the current year membership
+            if (mrow['memType'] == 'oneday') {
+                upgrade_eligible = true;
+                day = (mrow['label']).toLowerCase().substr(0, 3);
+            }
+            mem_is_membership = mrow['memCategory'] != 'cancel';
+            yearahead_eligible = true;
+            if (mrow['memCategory'] == 'upgrade') {
                 upgrade_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
@@ -1344,9 +1333,8 @@ function draw_cart_row(rownum) {
         <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
 `;
-                break;
-            case 'yearahead':
-                yearahead_html += `
+            } else {
+                membership_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
         <div class="col-sm-7 p-0">` + label + `</div>
@@ -1354,9 +1342,24 @@ function draw_cart_row(rownum) {
         <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
 `;
-                break;
-            case 'rollover':
-                if (mrow['conid'] > conid) {
+            }
+        } else {
+            switch (category) {
+                case 'upgrade':
+                    mem_is_membership = true;
+                    yearahead_eligible = true;
+                    upgrade_eligible = false;
+                    day = null;
+                    upgrade_html += `
+    <div class="row">
+        <div class="col-sm-1 p-0">` + col1 + `</div>
+        <div class="col-sm-7 p-0">` + label + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
+    </div>
+    `;
+                    break;
+                case 'yearahead':
                     yearahead_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
@@ -1365,31 +1368,31 @@ function draw_cart_row(rownum) {
         <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
     `;
-                } else {
-                    membership_found = true;
-                    yearahead_eligible = true;
-                    rollover_html += `
+                    break;
+                case 'rollover': // can't get here if current con id
+                    yearahead_eligible = false;
+                    yearahead_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
         <div class="col-sm-7 p-0">` + label + `</div>
         <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
         <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
-`;
-                }
-                break;
-            case 'addon':
-            case 'add-on':
-                rowlabel = 'Addon:';
-                addon_html += `
+    `;
+                    break;
+                case 'addon':
+                case 'add-on':
+                    rowlabel = 'Addon:';
+                    addon_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
         <div class="col-sm-7 p-0">` + label + `</div>
         <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
         <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
-`;
-                break;
+    `;
+                    break;
+            }
         }
 
         total_price += Number(mrow['price']);
