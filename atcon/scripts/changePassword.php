@@ -66,7 +66,6 @@ EOS;
 // outer ajax wrapper
 // method - permission required to access this AJAX function
 // action - passed in from the javascript
-$method = 'manager';
 $con = get_conf('con');
 $conid = $con['id'];
 $ajax_request_action = '';
@@ -77,7 +76,9 @@ if ($ajax_request_action == '' ) {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
-if (!check_atcon($method, $conid)) {
+if (!(check_atcon('manager', $conid) || check_atcon('data_entry', $conid) || check_atcon('cashier', $conid) ||
+    check_atcon('manager', $conid) || check_atcon('vol_roll', $conid) ||
+    check_atcon('artshow', $conid) || check_atcon('artinventory', $conid))) {
     $message_error = 'No permission.';
     RenderErrorAjax($message_error);
     exit();
