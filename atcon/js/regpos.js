@@ -282,7 +282,7 @@ function loadInitialData(data) {
 
     // build membership_select options
 
-    filt_excat = non_primary_categories.splice(0);
+    filt_excat = non_primary_categories.slice(0);
     filt_excat.push('upgrade', 'yearahead');
     filt_cat = null;
     filt_type = null;
@@ -1317,7 +1317,7 @@ function draw_cart_row(rownum) {
                     mrow['index'] + ', ' + notes_count + ')" >N:' + notes_count.toString() +  '</button >';
             }
 
-        if (!non_primary_categories.includes(category) && mrow['conid'] == conid) { // this is the current year membership
+        if ((!non_primary_categories.includes(category)) && mrow['conid'] == conid) { // this is the current year membership
             if (upgradable_types.includes(mrow['memType'])) {
                 upgrade_eligible = true;
                 if (mrow['memType'] == 'oneday' || mrow['memType'] == 'one-day') {
