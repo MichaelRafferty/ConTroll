@@ -1318,9 +1318,11 @@ function draw_cart_row(rownum) {
             }
 
         if (!non_primary_categories.includes(category) && mrow['conid'] == conid) { // this is the current year membership
-            if (mrow['memType'] == 'oneday') {
+            if (upgradable_types.includes(mrow['memType'])) {
                 upgrade_eligible = true;
-                day = (mrow['label']).toLowerCase().substr(0, 3);
+                if (mrow['memType'] == 'oneday' || mrow['memType'] == 'one-day') {
+                    day = (mrow['label']).toLowerCase().substr(0, 3);
+                }
             }
             mem_is_membership = mrow['memCategory'] != 'cancel';
             yearahead_eligible = true;
