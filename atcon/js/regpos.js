@@ -94,6 +94,7 @@ var review_editable_fields = [
 var pay_div = null;
 var pay_button_pay = null;
 var pay_button_rcpt = null;
+var pay_button_ercpt = null;
 var pay_button_print = null;
 var pay_tid = null;
 var discount_mode = 'none';
@@ -492,6 +493,7 @@ function start_over(reset_all) {
     void_button.hidden = true;
     pay_button_pay = null;
     pay_button_rcpt = null;
+    pay_button_ercpt = null;
     pay_button_print = null;
     in_review = false;
     pay_tid = null;
@@ -2528,7 +2530,7 @@ function pay(nomodal) {
 }
 
 // Create a receipt and send it to the receipt printer
-function print_receipt() {
+function print_receipt(receipt_type) {
     // optional header text:
     var d = new Date();
     var payee = (cart_perinfo[0]['first_name'] + ' ' + cart_perinfo[0]['last_name']).trim();
@@ -2543,8 +2545,9 @@ function print_receipt() {
         mrows: cart_membership,
         pmtrows: cart_pmt,
         footer: footer_text,
+        receipt_type: receipt_type,
     };
-    if (receiptPrinterAvailable) {
+    if (receiptPrinterAvailable || receipt_type == 'email') {
         $.ajax({
             method: "POST",
             url: "scripts/regpos_printReceipt.php",
@@ -2856,6 +2859,9 @@ function pay_shown() {
         if (pay_button_pay != null) { 
             pay_button_pay.hidden = true;
             pay_button_rcpt.hidden = false;
+            if (cart_perinfo[0]['email_addr'].length > 2) {
+                pay_button_ercpt.hidden = false;
+            }
             pay_button_print.hidden = false;
             document.getElementById('pay-amt').value='';
             document.getElementById('pay-desc').value='';
@@ -2868,6 +2874,7 @@ function pay_shown() {
         if (pay_button_pay != null) {
             pay_button_pay.hidden = false;
             pay_button_rcpt.hidden = true;
+            pay_button_ercpt.hidden = true;
             pay_button_print.hidden = true;
         }
         var total_amount_due = (total_price - total_paid).toFixed(2);
@@ -2927,7 +2934,10 @@ function pay_shown() {
             <button class="btn btn-primary btn-small" type="button" id="pay-btn-pay" onclick="pay('');">Confirm Pay</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="pay-btn-rcpt" onclick="print_receipt();" hidden>Print Receipt</button>
+            <button class="btn btn-primary btn-small" type="button" id="pay-btn-ercpt" onclick="print_receipt('email');" hidden>Email Receipt</button>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-small" type="button" id="pay-btn-rcpt" onclick="print_receipt('print');" hidden>Print Receipt</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <button class="btn btn-primary btn-small" type="button" id="pay-btn-print" onclick="goto_print();" hidden>Print Badges</button>
@@ -2943,6 +2953,7 @@ function pay_shown() {
         pay_div.innerHTML = pay_html;
         pay_button_pay = document.getElementById('pay-btn-pay');
         pay_button_rcpt = document.getElementById('pay-btn-rcpt');
+        pay_button_ercpt = document.getElementById('pay-btn-ercpt');
         pay_button_print = document.getElementById('pay-btn-print');
         void_button.hidden = false;
     }

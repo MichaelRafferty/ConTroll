@@ -7,19 +7,15 @@
 
 require_once('../lib/base.php');
 require_once('../lib/badgePrintFunctions.php');
+require_once('../../lib/email__load_methods.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
+$response = [];
 
 $method = 'cashier';
-if ($_POST && array_key_exists('nopay', $_POST)) {
-    if ($_POST['nopay'] == 'true') {
-        $method = 'data_entry';
-    }
-}
-
 $con = get_conf('con');
 $conid = $con['id'];
 $ajax_request_action = '';
@@ -42,6 +38,10 @@ $prows = $_POST['prows'];
 $mrows = $_POST['mrows'];
 $pmtrows = $_POST['pmtrows'];
 $footer = $_POST['footer'];
+if (array_key_exists('receipt_type', $_POST))
+    $receipt_type = $_POST['receipt_type'];
+else
+    $receipt_type = 'print';
 
 $dolfmt = new NumberFormatter("", NumberFormatter::CURRENCY);
 
@@ -61,8 +61,8 @@ foreach ($prows as $prow) {
             $member_due += $mrow['price'];
         }
     }
-    $member_due = (float)round($member_due, 2);
-    $receipt .= "   Subtotal: " . $dolfmt->formatCurrency((float) $member_due, 'USD') . "\n";
+    $member_due = round($member_due, 2);
+    $receipt .= "   Subtotal: " . $dolfmt->formatCurrency($member_due, 'USD') . "\n";
     $total_due += $member_due;
 }
 $receipt .= "Total Due:   " . $dolfmt->formatCurrency((float) $total_due, 'USD') . "\n\nPayment   Amount Description/Code\n";
@@ -89,15 +89,42 @@ foreach ($pmtrows as $pmtrow) {
 
 $receipt .= "         ----------\n" . sprintf("total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, 'USD')) . "\n$footer\n";
 
-if (isset($_SESSION['receiptPrinter'])) {
-    $printer = $_SESSION['receiptPrinter'];
-    $result_code = print_receipt($printer, $receipt);
-} else {
-    web_error_log($receipt);
-    $result_code = 0;
+if ($receipt_type == 'print') {
+    if (isset($_SESSION['receiptPrinter'])) {
+        $printer = $_SESSION['receiptPrinter'];
+        $result_code = print_receipt($printer, $receipt);
+    } else {
+        web_error_log($receipt);
+        $result_code = 0;
+    }
+    if ($result_code == 0)
+        $response['message'] = 'receipt print queued';
+    else
+        $response['error'] = "Error code $result_code queuing receipt";
 }
-if ($result_code == 0)
-    $response['message'] = 'receipt print queued';
-else
-    $response['error'] = "Error code $result_code queuing receipt";
+if ($receipt_type == 'email') {
+    load_email_procs();
+    $person = $prows[0];
+    if (array_key_exists('email_addr', $person)) {
+        $email_addr = $person['email_addr'];
+        if (!filter_var($email_addr, FILTER_VALIDATE_EMAIL)) {
+            $response['error'] = "Unable to email receipt, email address of '$email_addr' is not in the valid format.";
+        } else { // valid email, send the email
+            $return_arr = send_email($con['regadminemail'], $email_addr, null, $header, $receipt, null);
+            if (array_key_exists('error_code', $return_arr)) {
+                $error_code = $return_arr['error_code'];
+            } else {
+                $error_code = null;
+            }
+            if (array_key_exists('email_error', $return_arr)) {
+                $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error-code';
+            } else {
+                $response['message'] = "Receipt sent to $email_addr";
+            }
+        }
+    } else {
+        $response['error'] = "Unable to email receipt, no email address in the first person in the cart";
+    }
+}
+
 ajaxSuccess($response);
