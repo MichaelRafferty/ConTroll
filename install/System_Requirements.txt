@@ -40,7 +40,7 @@ System Requirements for Reg
     Reg sends emails. It needs a way to send them.  It does not impliment a queue, so if a provider cannot accept the email, it is lost.
     The tob level lib directory has a PHP file email__load_methods.php that calls the appropriate provider based on the configuration file.
     The following email interfaces are provided:
-        email_mta.php: Local host MTA via the PHP built-in function mail().
+        email_mta.php: Local host MTA via the PHP built-in function mail(). NOTE: this only support text email, to support text and html configure symphony for mta access)
         email_awsses.php: Uses the Amazon Simple Email Service API to send emails via Amazon SES
-        email_symphony.php: Uses the Sympony add-on to PHP to talk to multiple typs of transports
+        email_symphony.php: Uses the Sympony add-on to PHP to talk to multiple typs of transports including the local mta.
         email_file.php: test harness that writes to a file in a path specified in the configuration file.  No actual email is sent.
