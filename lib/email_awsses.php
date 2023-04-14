@@ -71,8 +71,8 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
     }
 
     if (!is_null($htmlbody)) {
-    $Body['Html'] = array(
-        'Data' => $htmlbody
+        $Body['Html'] = array(
+            'Data' => $htmlbody
         );
     }
 

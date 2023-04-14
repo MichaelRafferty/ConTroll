@@ -126,7 +126,9 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
         // text body
         $email->text($textbody);
         // html body
-        $email->html($htmlbody);
+        if ($htmlbody !== null) {
+            $email->html($htmlbody);
+        }
         // now send it
         $mailer->send($email);
     }
