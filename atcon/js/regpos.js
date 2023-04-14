@@ -133,7 +133,7 @@ var user_id = 0;
 var hasManager = false;
 var badgePrinterAvailable = false;
 var receiptPrinterAvailable = false;
-var non_primary_categories = ['add-on', 'addon', 'cancel', 'club', 'bsfs'];
+var non_primary_categories = ['add-on', 'addon', 'cancel'];
 var upgradable_types = ['one-day', 'oneday', 'virtual'];
 
 // filter criteria
