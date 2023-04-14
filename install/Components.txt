@@ -1,0 +1,41 @@
+Components to the Reg System by Directory:
+
+atcon: On site registration system
+    css: css files specific to atcon
+    js: client side javascript for atcon pages, named by page involved
+    lib: common routines for atcon usage, not used by other modules
+    ps: postscript files for basdges
+    scripts: server side functions called by javascript via ajax
+
+Composer: symlink to current version of Google API
+
+config: text configuration files
+
+config-sample: prototypes of the configuration files for copying to config and building your configuration
+
+crons: shell scripts of jobs to schedule
+
+crons-sample; prototypes of the scheduled jobs
+
+google_client: symlink to the current version of the google client for PHP8
+
+lib: system wide functions (used by all subsystems)
+
+onlinereg: web based registration (precon and can be used atcon with limitations)
+    css: css files specific to online web registration
+    images: images used by online web registration
+    javascript: client side javascript
+    lib: common functions used by onlinereg and reg_control
+    reg_control: Administrtion and Reporting for the Reg System
+        css: css specific to reg_control
+        js: client side javascript
+        lib: common functions for reg_control
+        reports: server side functions that produce reports
+        scripts: server side functions called by javascript via ajax
+    scripts:  server side functions called by javascript via ajax
+
+scripts: global scripts used by the system
+
+scripts-sample: prototype scripts to copy
+
+vendor: dealer/artshow registration

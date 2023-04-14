@@ -1,0 +1,26 @@
+System Requirements for Reg
+
+1. PHP 7.4 or higher, preferrably PHP 8.1 or higher
+    a. Requires packages
+        cgi-fpm/cgi-fcgi as required by your web server
+        curl
+        date
+        hash
+        iconv
+        intl
+        json
+        mbstring
+        mysqli (8.x or higher)
+        Phar
+        session
+        for debugging: Xdebug
+
+2. Mysql 8.0 or higher (Tested with 8.0.32), Also works with MariaDB 10.11 or higher
+
+3. Webserver of choice
+   a. Tested with:
+    Apache: cgi-fpm
+    Caddy
+
+4. For Reg_Control
+    Google Client APIs for verifying identity (login)
