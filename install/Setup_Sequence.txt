@@ -1,0 +1,54 @@
+Setting up Reg on a new system
+
+This set of instructions is high level.  It expects you know how to create databases in the database server and can set up your web server.
+It also expects you to know how to fetch/update files from GitHub. The software and these instructions reside in the repository
+    https://github.com/MichaelRafferty/BalticonReg
+
+1.  Make sure all prerequisites in System_Requirements.txt are satisified by your system.
+
+2.  Decide what account is going to host Reg.  These instructions will create two complete systems: reg and reg-test.
+    a. create said account and create two directories under it: one for reg and one for reg-test
+    b. retrieve the production tree to reg and the test tree to reg-test.
+
+3. Create the two databases in your database server
+    a. suggested names are reg and reg_test
+    b. load the print servers schema into each database
+        i.  order of load is:
+            schema
+            servers
+            printers
+            routines
+    c.  load the reg schema into each database
+        i. load tables without foreign keys first:
+            auth
+            conlist
+            memCategories
+            memTypes
+            perinfo
+            reg_staff_stats
+            routines
+            servers
+            user
+            vendors
+        ii. load tables with foreign keys
+            ageList
+            artist
+            artshow_reg
+            memlist
+            oauth_links
+            oauth_people
+            atcon_user
+            atcon_auth
+            reg_badgelist
+            reg_club
+            user_auth
+            vendor_reg
+            newperson   (NOTE: Newperson refers to transaction, you might have to do it's foreign key separately as transaction also references a different field in newperson)
+            transaction
+            paymewnts
+            vendor_show
+            reg
+            atcon_history
+            artshow
+            artItems
+            artsales
