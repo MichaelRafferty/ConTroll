@@ -1,3 +1,5 @@
+CREATE DATABASE  IF NOT EXISTS "reg" /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `reg`;
 -- MySQL dump 10.13  Distrib 8.0.31, for macos12 (x86_64)
 --
 -- Host: localhost    Database: reg
@@ -25,8 +27,9 @@ DROP TABLE IF EXISTS `printers`;
 CREATE TABLE `printers` (
   `serverName` varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
   `printerName` varchar(16) COLLATE utf8mb4_general_ci NOT NULL,
-  `printerType` enum('generic','receipt','badge450','badge330') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'generic',
+  `printerType` enum('generic','receipt','badge') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'generic',
   `active` int NOT NULL DEFAULT '0',
+  `codePage` enum('PS','HPCL','Dymo4xxPS','Dymo3xxPS','DymoSEL','Windows-1252','ASCII','7bit','8bit','UTF-8','UTF-16') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Windows-1252',
   PRIMARY KEY (`serverName`,`printerName`),
   CONSTRAINT `printers_server` FOREIGN KEY (`serverName`) REFERENCES `servers` (`serverName`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -41,4 +44,4 @@ CREATE TABLE `printers` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-03-27 14:20:12
+-- Dump completed on 2023-04-14 10:05:36

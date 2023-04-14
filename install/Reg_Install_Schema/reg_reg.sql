@@ -1,3 +1,5 @@
+CREATE DATABASE  IF NOT EXISTS "reg" /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `reg`;
 -- MySQL dump 10.13  Distrib 8.0.31, for macos12 (x86_64)
 --
 -- Host: localhost    Database: reg
@@ -45,13 +47,14 @@ CREATE TABLE `reg` (
   KEY `reg_newperid_fk` (`newperid`),
   KEY `reg_pickup_trans_fk` (`pickup_trans`),
   KEY `reg_create_trans_fk` (`create_trans`),
+  KEY `reg_memId_fk` (`memId`),
   CONSTRAINT `reg_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `reg_create_trans_fk` FOREIGN KEY (`create_trans`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `reg_memId_fk` FOREIGN KEY (`memId`) REFERENCES `memList` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `reg_newperid_fk` FOREIGN KEY (`newperid`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `reg_oldperid_fk` FOREIGN KEY (`oldperid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `reg_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `reg_pickup_trans_fk` FOREIGN KEY (`pickup_trans`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=82106 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=82233 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -63,4 +66,4 @@ CREATE TABLE `reg` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-03-27 14:20:12
+-- Dump completed on 2023-04-14 10:05:37

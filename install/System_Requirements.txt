@@ -1,7 +1,7 @@
 System Requirements for Reg
 
-1. PHP 7.4 or higher, preferrably PHP 8.1 or higher
-    a. Requires packages
+1.  PHP 7.4 or higher, preferrably PHP 8.1 or higher
+    a.  Requires packages
         cgi-fpm/cgi-fcgi as required by your web server
         curl
         date
@@ -15,12 +15,32 @@ System Requirements for Reg
         session
         for debugging: Xdebug
 
-2. Mysql 8.0 or higher (Tested with 8.0.32), Also works with MariaDB 10.11 or higher
+2.  Mysql 8.0 or higher (Tested with 8.0.32), Also works with MariaDB 10.11 or higher
 
-3. Webserver of choice
-   a. Tested with:
+3.  Webserver of choice
+   a.   Tested with:
     Apache: cgi-fpm
     Caddy
 
-4. For Reg_Control
+4.  For Reg_Control
     Google Client APIs for verifying identity (login)
+
+5.  For Credit Card providers
+    The top level lib directory has a PHP file cc__load_methods.php that calls the appropriate provider for credit cards based on the confiuration file.
+    The current supported providers are:
+        Square API: via cc_square.php
+        ConvergePay API: via cc_convergepay.php (Depreciated, no longer used by any known Convention using Reg)
+    Two test harness providers are provided:
+        cc_test.php: Allows selecting pass/fail at checkout time/call time to test paths
+        cc_bypass.php: Bypasses all checking entirely, always returns true.
+
+    You can extend the list of providers by using the existing Square as a prototype and providing equivalent function call entry points for your new provider.
+
+6.  Email MTA Access:
+    Reg sends emails. It needs a way to send them.  It does not impliment a queue, so if a provider cannot accept the email, it is lost.
+    The tob level lib directory has a PHP file email__load_methods.php that calls the appropriate provider based on the configuration file.
+    The following email interfaces are provided:
+        email_mta.php: Local host MTA via the PHP built-in function mail().
+        email_awsses.php: Uses the Amazon Simple Email Service API to send emails via Amazon SES
+        email_symphony.php: Uses the Sympony add-on to PHP to talk to multiple typs of transports
+        email_file.php: test harness that writes to a file in a path specified in the configuration file.  No actual email is sent.

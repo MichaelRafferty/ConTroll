@@ -18,21 +18,25 @@ USE `reg`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `servers`
+-- Table structure for table `club`
 --
 
-DROP TABLE IF EXISTS `servers`;
+DROP TABLE IF EXISTS `club`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `servers` (
-  `serverName` varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
-  `address` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
-  `location` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `active` int NOT NULL DEFAULT '0',
-  `local` int NOT NULL DEFAULT '0',
-  PRIMARY KEY (`serverName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `club` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `perid` int DEFAULT NULL,
+  `type` enum('inactive','eternal','life','child','annual','none') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `year` year DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `psfs_perid_fk` (`perid`),
+  CONSTRAINT `psfs_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=277 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+/*!40000 ALTER TABLE `club` DISABLE KEYS */;
+/*!40000 ALTER TABLE `club` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -43,4 +47,4 @@ CREATE TABLE `servers` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-04-14 10:05:38
+-- Dump completed on 2023-04-14 10:05:36

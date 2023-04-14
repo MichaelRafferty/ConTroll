@@ -1,8 +1,8 @@
-CREATE DATABASE  IF NOT EXISTS "reg" /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `reg`;
+CREATE DATABASE  IF NOT EXISTS "printservers" /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `printservers`;
 -- MySQL dump 10.13  Distrib 8.0.31, for macos12 (x86_64)
 --
--- Host: localhost    Database: reg
+-- Host: localhost    Database: printservers
 -- ------------------------------------------------------
 -- Server version	8.0.32
 
@@ -27,12 +27,10 @@ DROP TABLE IF EXISTS `servers`;
 CREATE TABLE `servers` (
   `serverName` varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
   `address` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
-  `location` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `active` int NOT NULL DEFAULT '0',
-  `local` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`serverName`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -43,4 +41,4 @@ CREATE TABLE `servers` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-04-14 10:05:38
+-- Dump completed on 2023-04-14  9:57:48
