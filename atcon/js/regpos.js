@@ -1296,12 +1296,12 @@ function draw_cart_row(rownum) {
         var allow_delete_mgr = hasManager && base_manager_enabled && mrow['paid'] == 0 && mrow['printcount'] == 0;
         var allow_change_mgr = hasManager && base_manager_enabled && mrow['regid'] >0 && mrow['paid'] >= 0 && mrow['printcount'] == 0 && (category == 'standard' || category == 'yearahead') && memType == 'full';
         col1 = '';
-        if (allow_delete || allow_delete_mgr) {
+        if ((allow_delete || allow_delete_mgr) && !freeze_cart) {
             col1 += '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
                 mrow['index'] + ')" >X</button >';
         }
         // C = change membership type
-        if (allow_change_mgr) {
+        if (allow_change_mgr && !freeze_cart) {
             col1 += '<button type = "button" class="btn btn-small btn-warning pt-0 pb-0 ps-1 pe-1 m-0" onclick = "change_membership(' +
                 mrow['index'] + ')" >C</button >';
         }
@@ -2333,6 +2333,18 @@ function reviewed_update_cart(data) {
         cartrow['perid'] = newrow['perid'];
         cartrow['dirty'] = false;
     }
+
+    // delete all rows from cart marked for delete
+    var delrows = [];
+    var splicerow = null;
+    for (rownum in cart_membership) {
+        if (cart_membership[rownum]['todelete'] == 1) {
+            delrows.push(rownum);
+        }
+    }
+    delrows = delrows.reverse();
+    for (splicerow in delrows)
+        cart_membership.splice(delrows[splicerow], 1);
 
     // redraw the cart with the new id's and maps.
     draw_cart();
