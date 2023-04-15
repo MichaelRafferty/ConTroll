@@ -79,13 +79,18 @@ function clear_message() {
     show_message('', '');
 }
 
-function showAjaxError(data, textStatus, jqXHR) {
+function showAjaxError(jqXHR, textStatus, errorThrown) {
     'use strict';
-    if (data && data.responseText) {
-        show_message(data.responseText, 'error');
+    var message = '';
+    if (jqXHR && jqXHR.responseText) {
+        message = jqXHR.responseText;
     } else {
-        show_message('An error occurred on the server.', 'error');
+        message = 'An error occurred on the server.';
     }
+    if (textStatus != '' && textStatus != 'error')
+        message += '<BR/>' + textStatus;
+    message += '<BR/>Error Thrown: ' + errorThrown;
+    show_message(message, 'error');
 }
 
 // base_changePrinters:

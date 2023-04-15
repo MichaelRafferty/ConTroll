@@ -111,7 +111,10 @@ function change_pw() {
             type: "POST",
             data: postData,
             success: changeSucess,
-            error: showAjaxError,
+            error: function (jqXHR, textstatus, errorThrown) {
+                change_passwd_btn.disabled = false;
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            }
         });
     } else {
         // reenable the button to allow them to correct the error
