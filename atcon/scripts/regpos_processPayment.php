@@ -12,7 +12,6 @@ global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
 
-$method = 'cashier';
 if ($_POST && array_key_exists('nopay', $_POST)) {
     if ($_POST['nopay'] == 'true') {
         $method = 'data_entry';
@@ -29,7 +28,7 @@ if ($ajax_request_action != 'processPayment') {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
-if (!check_atcon($method, $conid)) {
+if (!check_atcon('cashier', $conid)) {
     $message_error = 'No permission.';
     RenderErrorAjax($message_error);
     exit();
