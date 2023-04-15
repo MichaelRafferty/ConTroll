@@ -107,6 +107,8 @@ function deleteicon(cell, formattParams, onRendered) {
 
 function deleterow(e, row) {
     var count = row.getCell("uses").getValue();
-    if (count == 0)
-        row.delete();
+    if (count == 0) {
+        row.getCell("to_delete").setValue(1);
+        row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
+    }
 }

@@ -62,36 +62,40 @@ EOS;
     case "memlist":
         $data = $_POST['tabledata'];
         // find keys to delete (somehow)
-        $keys = array();
-        $keys[$conid] = '';
-        $keys[$nextconid] = '';
+        $delete_keys = array();
+        $delete_keys[$conid] = '';
+        $delete_keys[$nextconid] = '';
         $first = array();
         $first[$conid] = true;
         $first[$nextconid] = true;
         foreach ($data as $row ) {
-            $cid = $row['conid'];
-            $id = $row['id'];
-            if (array_key_exists($cid, $first)) {
-                $keys[$cid] .= ($first[$cid] ? "'" : ",'") . sql_safe($row['id']) . "'";
-                $first[$cid] = false;
+            //$cidfound[$row['conid']] = true;
+            if (array_key_exists('to_delete', $row)) {
+                if ($row['to_delete'] == 1) {
+                    $cid = $row['conid'];
+                    $id = $row['id'];
+                    if (array_key_exists($cid, $first)) {
+                        $delete_keys[$cid] .= ($first[$cid] ? "'" : ",'") . sql_safe($row['id']) . "'";
+                        $first[$cid] = false;
+                    }
+                }
             }
         }
-        //error_log("Keys to keep =");
-        //var_error_log($keys);
+        error_log("Keys to delete =");
+        var_error_log($delete_keys);
         $deleted = 0;
         $inserted = 0;
         $updated = 0;
-        $delSQL = "DELETE FROM memList WHERE (conid = ? AND memCategory != 'yearahead'";
-        if ($keys[$conid] != '') {
-            $delSQL .= " AND id NOT IN (" . $keys[$conid] . ")";
+        if ($delete_keys[$conid] != '') {
+            $delSQL = "DELETE FROM memList WHERE conid = ? AND id IN (" . $delete_keys[$conid] . ");";
+            web_error_log("conid: $conid, delSQL = /$delSQL/");
+            $deleted += dbSafeCmd($delSQL,  'i', array($conid));
         }
-        $delSQL .= ") OR (conid = ? AND memCategory in ('rollover', 'yearahead')";
-        if ($keys[$nextconid] != '') {
-            $delSQL .= " AND id NOT IN (" . $keys[$nextconid] . ")";
+        if ($delete_keys[$nextconid] != '') {
+            $delSQL = 'DELETE FROM memList WHERE conid = ? AND id IN (' . $delete_keys[$nextconid] . ');';
+            web_error_log("conid: $nextconid, delSQL = /$delSQL/");
+            $deleted += dbSafeCmd($delSQL, 'i', array($nextconid));
         }
-        $delSQL .= ");";
-        //web_error_log("Delsql = /$delSQL/, types 'ii', values: $conid, $nextconid");
-        $deleted += dbSafeCmd($delSQL, 'ii', array($conid, $nextconid));
 
         $addSQL = <<<EOS
 INSERT INTO memList(conid,sort_order,memCategory,memType,memAge,label,price,startdate,enddate,atcon,online)

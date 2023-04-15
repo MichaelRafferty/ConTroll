@@ -185,7 +185,8 @@ class consetup {
                     { title: "Name", field: "name", headerSort: false, width: 100, editor: "input", editorParams: { elementAttributes: { maxlength: "10" } }, validator: "required" },
                     { title: "Label", field: "label", headerSort: false, width: 350, editor: "input", editorParams: { elementAttributes: { maxlength: "40" } }, validator: "required" },
                     { title: "Start Date", field: "startdate", width: 100, headerSort: false, editor: "date", validator: "required" },
-                    { title: "End Date", field: "enddate", width: 100, headerSort: false, editor: "date", validator: "required" }
+                    { title: "End Date", field: "enddate", width: 100, headerSort: false, editor: "date", validator: "required" },
+                    { field: "to_delete", visible: false, }
                 ],
             });
         }
@@ -254,6 +255,7 @@ class consetup {
                             deleterow(e, cell.getRow());
                         }
                     },
+                    { field: "to_delete", visible: false, },
                 ],
 
             });
@@ -305,6 +307,7 @@ class consetup {
                         { title: "End", field: "newend", width: 100, editor: "date", validator: "required" },
                     ],
                 },
+                { field: "to_delete", visible: false, }
             ]
         });
 
@@ -533,7 +536,7 @@ class consetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
-                    if ('error' in data && data['error'] != '') {
+                    if (data['error'] != undefined) {
                         showError(data['error']);
                         // reset save button
                         if (data['year'] == 'current') {
@@ -561,7 +564,7 @@ class consetup {
     };
 
     saveMemListComplete(data, textStatus, jhXHR) {
-        if ('error' in data && data['error'] != '') {
+        if (data['error'] != undefined) {
             showError(data['error']);
             this.#memlist_savebtn.innerHTML = "Save Changes*";
             this.#memlist_savebtn.disabled = false;
@@ -616,7 +619,7 @@ class consetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
-                    if ('error' in data && data['error'] != '') {
+                    if (data['error'] != undefined) {
                         showError(data['error']);
                         // reset save button
                         if (data['year'] == 'current') {
@@ -645,7 +648,7 @@ class consetup {
 
     saveBreakListComplete(data, textStatus, jhXHR) {
         var success;
-        if ('error' in data && data['error'] != '') {
+        if (data['error'] != undefined) {
             showError(data['error']);
             return false;
         } else {
@@ -701,7 +704,7 @@ class consetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
-                    if ('error' in data && data['error'] != '') {
+                    if (data['error'] != undefined) {
                         showError(data['error'])
                         // reset save button
                         if (data['year'] == 'current') {
