@@ -43,7 +43,7 @@ $data = $_POST['data'];
 //web_error_log("updateUsers:");
 //var_error_log($data);
 
-// first find all rows to delete (those not in the data array or this user)
+// first find all the  rows to delete (those not in the data array or this user)
 $savelist = [];
 $savelist[] = $_SESSION['user']; // not allowed to delete yourself
 foreach ($data as $row) {
@@ -120,7 +120,7 @@ SELECT a.id, a.authuser, a.auth
 FROM atcon_user u
 JOIN atcon_auth a ON (u.id = a.authuser)
 WHERE u.conid = ?
-ORDER BY 1,2;
+ORDER BY 2,3;
 EOS;
 $res = dbSafeQuery($fetchAuthSQL, 'i', [$conid]);
 $users = [];
