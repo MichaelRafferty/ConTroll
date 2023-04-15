@@ -15,8 +15,7 @@ $return500errors = true;
 $con = get_conf('con');
 $conid = $con['id'];
 
-if (!(check_atcon('data-entry', $conid) || check_atcon('cashier', $conid) || check_atcon('vol_roll', $conid) ||
-        check_atcon('maanager', $conid) || check_atcon('artshow', $conid) || check_atcon('artinventory', $conid))) {
+if (!check_atcon('any', $conid)) {
     $message_error = 'No permission.';
     RenderErrorAjax($message_error);
     exit();
