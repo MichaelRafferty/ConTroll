@@ -14,11 +14,6 @@ $return500errors = true;
 
 $method = 'cashier';
 $method2 = 'data_entry';
-if ($_POST && array_key_exists('nopay', $_POST)) {
-    if ($_POST['nopay'] == 'true') {
-        $method = 'data_entry';
-    }
-}
 
 $con = get_conf('con');
 $conid = $con['id'];

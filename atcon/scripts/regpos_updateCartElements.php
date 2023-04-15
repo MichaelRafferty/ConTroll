@@ -13,11 +13,7 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 $method = 'cashier';
-if ($_POST && array_key_exists('nopay', $_POST)) {
-    if ($_POST['nopay'] == 'true') {
-        $method = 'data_entry';
-    }
-}
+$method2 = 'data_entry';
 
 $con = get_conf('con');
 $conid = $con['id'];
@@ -29,7 +25,7 @@ if ($ajax_request_action != 'updateCartElements') {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
-if (!check_atcon($method, $conid)) {
+if (!(check_atcon($method, $conid) || check_atcon($method2, $conid))) {
     $message_error = 'No permission.';
     RenderErrorAjax($message_error);
     exit();
