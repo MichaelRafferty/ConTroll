@@ -12,9 +12,6 @@ global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
 
-$method = 'cashier';
-$method2 = 'data_entry';
-
 $con = get_conf('con');
 $conid = $con['id'];
 $ajax_request_action = '';
@@ -25,7 +22,8 @@ if ($ajax_request_action != 'updatePrintcount') {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
-if (!(check_atcon($method, $conid) || check_atcon($method2, $conid))) {
+
+if (!(check_atcon('cashier', $conid) || check_atcon('data_entry', $conid))) {
     $message_error = 'No permission.';
     RenderErrorAjax($message_error);
     exit();

@@ -13,13 +13,6 @@ global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
 
-$method = 'cashier';
-if ($_POST && array_key_exists('nopay', $_POST)) {
-    if ($_POST['nopay'] == 'true') {
-        $method = 'data_entry';
-    }
-}
-
 $con = get_conf('con');
 $conid = $con['id'];
 $ajax_request_action = '';
@@ -30,7 +23,8 @@ if ($ajax_request_action != 'printBadge') {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
-if (!check_atcon($method, $conid)) {
+
+if (!(check_atcon('cashier', $conid) || check_atcon('data_entry', $conid))) {
     $message_error = 'No permission.';
     RenderErrorAjax($message_error);
     exit();
