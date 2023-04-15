@@ -501,6 +501,9 @@ EOS;
             }
         }
     }
+    if ($method == 'any') {
+        return sizeof($perms) > 0;
+    }
     return in_array($method, $perms);
 }
 
