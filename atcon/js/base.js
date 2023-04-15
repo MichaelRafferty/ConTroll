@@ -118,6 +118,7 @@ function base_changePrintersShow() {
             }
             base_changePrintersBody.innerHTML = data['selectList'];
             base_changePrintersModal.show();
+            clear_message();
         },
         error: showAjaxError,
     });
@@ -148,6 +149,7 @@ function base_changePrintersSubmit() {
                 return;
             }
             base_changePrinterDisplay(data);
+            clear_message();
         },
         error: showAjaxError,
     });
