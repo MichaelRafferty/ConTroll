@@ -37,31 +37,42 @@ $updated = 0;
 $deleted = 0;
 $sortorder = 10;
 
-// build list of keys to still exist
-$keys = '';
+// build list of keys to delete
+$delete_keys = '';
 $first = true;
 foreach ($data as $row ) {
-    $keys .= ($first ? "'" : ",'") . sql_safe($row[$keyfield]) . "'";
-    $first = false;
+    if (array_key_exists('to_delete', $row)) {
+        if ($row['to_delete'] == 1) {
+            $delete_keys .= ($first ? "'" : ",'") . sql_safe($row[$keyfield]) . "'";
+            $first = false;
+        }
+    }
 }
 
-//error_log("Keys to keep = ($keys)");
+web_error_log("Keys to delete = ($delete_keys)");
 switch ($action) {
     case 'nextage':
         $year = $nextconid;
     case 'curage':
-        $delsql = "DELETE FROM ageList WHERE conid = ? AND ageType not in ( $keys );";
+        if ($delete_keys != '') {
+            $delsql = "DELETE FROM ageList WHERE conid = ? AND ageType in ( $delete_keys );";
+            web_error_log("Delete sql = /$delsql/");
+            $deleted += dbSafeCmd($delsql, 'i', array($year));
+        }
         $addupdsql = <<<EOS
 INSERT INTO ageList(conid, ageType, label, shortname, sortorder)
 VALUES(?,?,?,?,?)
 ON DUPLICATE KEY UPDATE label=?, shortname=?, sortorder=?
 EOS;
         $instypes = 'isssissi';
-        //error_log("Delete sql = /$delsql/");
-        $deleted += dbSafeCmd($delsql, 'i', array($year));
+
         // now the inserts and updates, rows effected = 1 for insert or 2 for update
         $sort_order = 10;
         foreach ($data as $row ) {
+            if (array_key_exists('to_delete', $row)) {
+                if ($row['to_delete'] == 1)
+                    continue;
+            }
             $roworder = $row['sortorder'];
             if ($roworder >= 0 && $roworder < 900) {
                 $roworder = $sort_order;
@@ -89,18 +100,24 @@ EOS;
         break;
     case 'memtype':
         // first the deletes
-        $delsql = "DELETE FROM memTypes WHERE memType not in ( $keys );";
+        if ($delete_keys != '') {
+            $delsql = "DELETE FROM memTypes WHERE memType in ( $delete_keys );";
+            web_error_log("Delete sql = /$delsql/");
+            $deleted += dbCmd($delsql);
+        }
         $addupdsql = <<<EOS
 INSERT INTO memTypes(memType, active, sortorder)
 VALUES(?,?,?)
 ON DUPLICATE KEY UPDATE active=?, sortorder=?
 EOS;
         $instypes = 'ssisi';
-        //error_log("Delete sql = /$delsql/");
-        $deleted += dbCmd($delsql);
         // now the inserts and updates, rows effected = 1 for insert or 2 for update
         $sort_order = 10;
         foreach ($data as $row ) {
+            if (array_key_exists('to_delete', $row)) {
+                if ($row['to_delete'] == 1)
+                    continue;
+            }
             $roworder = $row['sortorder'];
             if ($roworder >= 0 && $roworder < 900) {
                 $roworder = $sort_order;
@@ -124,18 +141,25 @@ EOS;
         }
         break;
     case 'category':
-        $delsql = "DELETE FROM memCategories WHERE memCategory not in ( $keys );";
+        // first the deletes
+        if ($delete_keys != '') {
+            $delsql = "DELETE FROM memCategories WHERE memCategory in ( $delete_keys );";
+            web_error_log("Delete sql = /$delsql/");
+            $deleted += dbCmd($delsql);
+        }
         $addupdsql = <<<EOS
 INSERT INTO memCategories(memCategory, active, sortorder)
 VALUES(?,?,?)
 ON DUPLICATE KEY UPDATE active=?, sortorder=?
 EOS;
         $instypes = 'ssisi';
-        //error_log("Delete sql = /$delsql/");
-        $deleted += dbCmd($delsql);
         // now the inserts and updates, rows effected = 1 for insert or 2 for update
         $sort_order = 10;
         foreach ($data as $row ) {
+            if (array_key_exists('to_delete', $row)) {
+                if ($row['to_delete'] == 1)
+                    continue;
+            }
             $roworder = $row['sortorder'];
             if ($roworder >= 0 && $roworder < 900) {
                 $roworder = $sort_order;

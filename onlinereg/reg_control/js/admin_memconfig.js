@@ -240,6 +240,7 @@ class memsetup {
                         deleterow(e, cell.getRow());
                     }
                 },
+                { field: "to_delete", visible: false, }
             ]
         });
 
@@ -283,6 +284,7 @@ class memsetup {
                         deleterow(e, cell.getRow());
                     }
                 },
+                { field: "to_delete", visible: false, }
             ],
         });
 
@@ -329,6 +331,7 @@ class memsetup {
                         deleterow(e, cell.getRow());
                     }
                 },
+                { field: "to_delete", visible: false, }
             ],
         });
 
@@ -374,6 +377,7 @@ class memsetup {
                         deleterow(e, cell.getRow());
                     }
                 },
+                { field: "to_delete", visible: false, }
             ],
         });
 
