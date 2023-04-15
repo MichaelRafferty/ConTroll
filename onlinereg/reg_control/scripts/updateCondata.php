@@ -157,7 +157,35 @@ EOS;
         else
             $year = $nextconid;
 
-        // first create any missing agelist entries
+        // create next + 1 year conlist entry if it doesn't exist
+        $sql = 'SELECT id FROM conlist WHERE id = ?';
+        $r = dbSafeQuery($sql, 'i', array($year + 1));
+        if ($r->num_rows == 0) {
+            $sql = <<<EOS
+INSERT INTO conlist(id, name, label, startdate, enddate, create_date)
+SELECT
+	id + 1 as id,
+    CASE
+		WHEN id > 900 THEN REPLACE(name, MOD(id, 100), MOD(id + 1, 100))
+        ELSE REPLACE(name, id, id + 1)
+	END AS name,
+    REPLACE(label, id, id + 1) as label,
+    CASE
+		WHEN WEEK(startdate) = WEEK(date_add(startdate, INTERVAL 52 WEEK)) then DATE_ADD(startdate, INTERVAL 52 WEEK)
+        ELSE DATE_ADD(startdate, INTERVAL 53 WEEK)
+	END AS startdate,
+    CASE
+		WHEN WEEK(enddate) = WEEK(DATE_ADD(enddate, INTERVAL 52 WEEK)) THEN DATE_ADD(enddate, INTERVAL 52 WEEK)
+        ELSE DATE_ADD(enddate, INTERVAL 53 WEEK)
+	END AS enddate,
+    NOW() AS create_date
+FROM conlist
+WHERE id = ?;
+EOS;
+            $newid = dbSafeInsert($sql, 'i', array($year));
+        }
+
+        // now create any missing agelist entries
         $inssql = <<<EOS
 INSERT INTO ageList(conid, ageType, label, shortname, sortorder)
 SELECT ?, a1.ageType, a1.label, a1.shortname, a1.sortorder
@@ -166,8 +194,8 @@ LEFT OUTER JOIN ageList a2 ON (a2.conid = ? AND a2.ageType = a1.ageType)
 WHERE a1.conid = ? and a2.conid IS NULL;
 EOS;
         $paramarray = array($year + 1, $year + 1, $year);
-        //web_error_log("$inssql, types='ii',params:");
-        //var_error_log($paramarray);
+        web_error_log("$inssql, types='ii',params:");
+        var_error_log($paramarray);
         $numages = 0;
         $numages = dbSafeCmd($inssql, 'iii', $paramarray);
         if ($numages === false) {
@@ -183,8 +211,8 @@ FROM memList
 WHERE conid >= ?;
 EOS;
         $paramarray = array($year);
-        //web_error_log("$tmpsql, types='i',params:");
-        //var_error_log($paramarray);
+        web_error_log("$tmpsql, types='i',params:");
+        var_error_log($paramarray);
         $numrows = dbSafeCmd($tmpsql, 'i', $paramarray);
         if ($numrows === false) {
             $response['error'] = 'Error creating temporary table, see logs';
@@ -218,8 +246,8 @@ EOS;
                 $row['oldstart'], // m.startdate
                 $row['oldend'] // m.enddate
             );
-            //web_error_log("$inssql, $typelist, params:");
-            //var_error_log($paramarray);          
+            web_error_log("$inssql, $typelist, params:");
+            var_error_log($paramarray);
             $numrows += dbSafeCmd($inssql, $typelist, $paramarray);
         }
         $response['success'] = "ageList updated: $numages added, memList updated: $numrows added";
