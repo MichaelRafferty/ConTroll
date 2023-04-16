@@ -233,7 +233,7 @@ page_init($page, $tab,
             <div id="cart"></div>
             <div class="row">
                 <div class="col-sm-12 mt-3">
-                    <button type="button" class="btn btn-success btn-small" id="complete_btn" onclick="complete_over();" hidden>Complete Transaction</button>
+                    <button type="button" class="btn btn-primary btn-small" id="cart_no_changes_btn" onclick="review_nochanges();" hidden>No Changes</button>
                     <button type="button" class="btn btn-primary btn-small" id="review_btn" onclick="start_review();" hidden>Review Data</button>
                     <button type="button" class="btn btn-warning btn-small" id="startover_btn" onclick="start_over(1);" hidden>Start Over</button>
                     <button type="button" class="btn btn-warning btn-small" id="void_btn" onclick="void_trans();" hidden>Void</button>

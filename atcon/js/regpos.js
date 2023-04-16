@@ -169,7 +169,7 @@ window.onload = function initpage() {
     startover_button = document.getElementById("startover_btn");
     review_button = document.getElementById("review_btn");
     next_button = document.getElementById("next_btn");
-    complete_button = document.getElementById("complete_btn");
+    cart_nochanges_button = document.getElementById("cart_no_changes_btn");
 
     // find people
     pattern_field = document.getElementById("find_pattern");
@@ -1972,7 +1972,7 @@ function save_note() {
 function add_unpaid(tid) {
     add_to_cart(-Number(tid), 'result');
     // force a new transaction for the payment as the cashier is not the same as the check-in in this case.
-    review_nochanges();
+    added_payable_trans_to_cart();
 }
 
 // add selected membership as a new item in the card under this perid.
@@ -2091,7 +2091,7 @@ function found_record(data) {
                     add_to_cart(index, 'result');
                 }
             }
-            review_nochanges(); // build the master transaction and attach records
+            added_payable_trans_to_cart(); // build the master transaction and attach records
             return;
         }
 
@@ -2223,7 +2223,7 @@ function found_record(data) {
                     add_to_cart(index, 'result');
                 }
             }
-            review_nochanges(); // build the master transaction and attach records
+            added_payable_trans_to_cart();
             return;
         }
         number_search = Number(name_search);
@@ -2267,7 +2267,7 @@ function not_found_add_new() {
 function start_review() {
     if (!confirm_discard_add_edit(false))
         return;
-
+    cart_nochanges_button.hidden = true;
     // set tab to review-tab
     bootstrap.Tab.getOrCreateInstance(review_tab).show();
     review_tab.disabled = false;  
@@ -2304,6 +2304,21 @@ function review_update() {
     }
 }
 
+function added_payable_trans_to_cart() {
+    // clear any search remains
+    if (add_results_table != null) {
+        add_results_table.destroy();
+        add_results_table = null;
+    }
+    if (find_result_table != null) {
+        find_result_table.destroy();
+        find_result_table = null;
+    }
+    id_div.innerHTML = '';
+    cart_nochanges_button.hidden = false;
+}
+
+
 // no changes button presssed:
 // if everything is paid, go to print.  If cashier (has a find_unpaid button), to go Pay, else put up the diagnostic
 //      to ask them to move on to the cashier.
@@ -2315,6 +2330,7 @@ function review_nochanges() {
         }
     }
 
+    cart_nochanges_button.hidden = 'true';
     // submit the current card data to update the database, retrieve all TID's/PERID's/REGID's of inserted data
     var postData = {
         ajax_request_action: 'updateCartElements',
