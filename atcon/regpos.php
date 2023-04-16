@@ -210,7 +210,7 @@ page_init($page, $tab,
                             </div>
                             <div class="row">
                                 <div class="col-sm-12 mt-3">
-                                    <button type="button" class="btn btn-primary btn-small" id="addnew-btn" onclick="add_new();">Add to Cart</button>
+                                    <button type="button" class="btn btn-primary btn-small" id="addnew-btn" name="find_btn" onclick="add_new();">Add to Cart</button>
                                     <button type="button" class="btn btn-secondary btn-small" id="clearadd-btn" onclick="clear_add();">Clear Add Person Form</button>
                                 </div>
                             </div>

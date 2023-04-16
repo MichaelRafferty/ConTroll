@@ -2018,6 +2018,7 @@ function find_record(find_type) {
         find_type: find_type,
         name_search: name_search,
     };
+    $("button[name='find_btn']").attr("disabled", true);
     $.ajax({
         method: "POST",
         url: "scripts/regpos_findRecord.php",
@@ -2034,8 +2035,12 @@ function find_record(find_type) {
                 show_message(data['warn'], 'warn');
             }
             found_record(data);
+            $("button[name='find_btn']").attr("disabled", false);
         },
-        error: showAjaxError,
+        error: function (jqXHR, textstatus, errorThrown) {
+            $("button[name='find_btn']").attr("disabled", false);
+            showAjaxError(jqXHR, textstatus, errorThrown);
+        }
     });
 }
 
