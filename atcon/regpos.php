@@ -77,11 +77,11 @@ page_init($page, $tab,
                             <div class="row mt-3">
                                 <div class="col-sm-4">
                                       <?php if ($mode == 'cashier') { ?>
-                                    <button type="button" class="btn btn-small btn-primary" id="find_unpaid_btn" onclick="find_record('unpaid');" hidden>Find Unpaid Transactions</button>
+                                    <button type="button" class="btn btn-small btn-primary" id="find_unpaid_btn" name="find_btn" onclick="find_record('unpaid');" hidden>Find Unpaid Transactions</button>
                                     <?php } ?>
                                 </div>
                                 <div class="col-sm-8">
-                                    <button type="button" class="btn btn-small btn-primary" id="find_search_btn" onclick="find_record('search');">Find Record</button>
+                                    <button type="button" class="btn btn-small btn-primary" id="find_search_btn" name="find_btn" onclick="find_record('search');">Find Record</button>
                                 </div>
                             </div>
                             <div class="row mt-3">

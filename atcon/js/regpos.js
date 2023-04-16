@@ -1036,6 +1036,7 @@ function add_new() {
         find_type: 'addnew',
         name_search: name_search,
     };
+    $("button[name='find_btn']").attr("disabled", true);
     $.ajax({
         method: "POST",
         url: "scripts/regpos_findRecord.php",
@@ -1043,6 +1044,7 @@ function add_new() {
         success: function (data, textstatus, jqxhr) {
             if (data['error'] !== undefined) {
                 show_message(data['error'], 'error');
+                $("button[name='find_btn']").attr("disabled", false);
                 return;
             }
             if (data['message'] !== undefined) {
@@ -1052,8 +1054,12 @@ function add_new() {
                 show_message(data['warn'], 'warn');
             }
             add_found(data);
+            $("button[name='find_btn']").attr("disabled", false);
         },
-        error: showAjaxError,
+        error: function (jqXHR, textstatus, errorThrown) {
+            $("button[name='find_btn']").attr("disabled", false);
+            showAjaxError(jqXHR, textstatus, errorThrown);
+        }
     });
 }
 
@@ -1111,16 +1117,18 @@ function add_found(data) {
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80,},
                 {title: "Note", width: 45, headerSort: false, headerFilter: false, formatter: perNotesIcons, formatterParams: {t:"add"}, },
-                {title: "Cart", width: 80, headerFilter: false, headerSort: false, formatter: addCartIcon, formatterParams: {t:"add"},},
+                {title: "Cart", width: 100, headerFilter: false, headerSort: false, formatter: addCartIcon, formatterParams: {t:"add"},},
                 {field: "index", visible: false,},
                 {field: "open_notes", visible: false,},
             ],
         });
         addnew_button.innerHTML = "Add New";
         add_edit_initial_state = $("#add-edit-form").serialize();
+        $("button[name='find_btn']").attr("disabled", false);
         return;
     }
     add_new_to_cart();
+
 }
 
 // add_new_to_cart - not in system or operator said they are really new, add them to the cart
@@ -2181,7 +2189,7 @@ function found_record(data) {
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80,},
                 {title: "Note",width: 45, headerSort: false, headerFilter: false, formatter: perNotesIcons, formatterParams: {t:"result"}, },
-                {title: "Cart", width: 80, headerFilter: false, headerSort: false, formatter: addCartIcon, formatterParams: {t:"result"},},
+                {title: "Cart", width: 100, headerFilter: false, headerSort: false, formatter: addCartIcon, formatterParams: {t:"result"},},
                 {field: "index", visible: false,},
             ],
         });
