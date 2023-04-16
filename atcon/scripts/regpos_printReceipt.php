@@ -1,5 +1,4 @@
 <?php
-
 // library AJAX Processor: printform_printReceipt.php
 // Balticon Registration System
 // Author: Syd Weinstein
@@ -49,6 +48,7 @@ $receipt = $header . "\n";
 // cart rows, only added to printout:
 $already_paid = 0;
 $total_due = 0;
+
 foreach ($prows as $prow) {
     $receipt .= "\nMember: " . trim($prow['first_name'] . ' ' . $prow['last_name']) . "\n";
     $member_due = 0;
@@ -102,27 +102,31 @@ if ($receipt_type == 'print') {
         $response['error'] = "Error code $result_code queuing receipt";
 }
 if ($receipt_type == 'email') {
-    load_email_procs();
-    $person = $prows[0];
-    if (array_key_exists('email_addr', $person)) {
-        $email_addr = $person['email_addr'];
-        if (!filter_var($email_addr, FILTER_VALIDATE_EMAIL)) {
-            $response['error'] = "Unable to email receipt, email address of '$email_addr' is not in the valid format.";
-        } else { // valid email, send the email
-            $return_arr = send_email($con['regadminemail'], $email_addr, null, $header, $receipt, null);
-            if (array_key_exists('error_code', $return_arr)) {
-                $error_code = $return_arr['error_code'];
-            } else {
-                $error_code = null;
-            }
-            if (array_key_exists('email_error', $return_arr)) {
-                $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error-code';
-            } else {
-                $response['message'] = "Receipt sent to $email_addr";
+    if (!array_key_exists('email_addrs', $_POST)) {
+        $response['error'] = "No email recipeints specified";
+    } else {
+        load_email_procs();
+        $emails = $_POST['email_addrs'];
+        foreach ($emails as $email_addr) {
+            if (!filter_var($email_addr, FILTER_VALIDATE_EMAIL)) {
+                $response['error'] = "Unable to email receipt, email address of '$email_addr' is not in the valid format.";
+            } else { // valid email, send the email
+                $return_arr = send_email($con['regadminemail'], $email_addr, null, $header, $receipt, null);
+                if (array_key_exists('error_code', $return_arr)) {
+                    $error_code = $return_arr['error_code'];
+                } else {
+                    $error_code = null;
+                }
+                if (array_key_exists('email_error', $return_arr)) {
+                    $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error-code';
+                } else {
+                    if (array_key_exists('message', $response))
+                        $response['message'] .= "<br/>Receipt sent to $email_addr";
+                    else
+                        $response['message'] = "Receipt sent to $email_addr";
+                }
             }
         }
-    } else {
-        $response['error'] = "Unable to email receipt, no email address in the first person in the cart";
     }
 }
 

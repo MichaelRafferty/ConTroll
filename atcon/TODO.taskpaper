@@ -1,22 +1,8 @@
-Bugs:
-- don't allow blank queries
-Questions:
-- Preregistered?
-  Paid/Participant/Staff
-  Unsure (either paid or not there)
-  No (been to BaltiCon before?)
-- Pickup or pay?
-- Existing person or new?
+Current task list:
+    different workflow for cashier trans/badgeid lookup:
+        go to cart, in unlocked mode, with a no changes button on the bottom
+        if a change is made in the cart, put back review data
+        no changes takes you to pay/print as appropriate
 
-Paths:
-- Easy: prereg -> just print
-- Medium: Existing and will pay -> determine purchase, send to cashier
-- Hard: First timer -> enter info, determine purchase, send to cashier
-- Nightmare: Not in system but thinks they paid -> search name variants else trouble desk
-- Combination
-
-Options:
-- Preregistered (1 or more)
-- Individual Purchase
-- Multiple Purchase
-- 
+Future Features:
+    Void Button

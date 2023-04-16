@@ -95,6 +95,7 @@ var pay_div = null;
 var pay_button_pay = null;
 var pay_button_rcpt = null;
 var pay_button_ercpt = null;
+var receeiptEmailAddresse_div = null;
 var pay_button_print = null;
 var pay_tid = null;
 var discount_mode = 'none';
@@ -145,6 +146,8 @@ var filt_type = null; // array of types to include
 var filt_shortname_regexp = null; // regexp item;
 var startdate = null;
 var enddate = null;
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // initialization
 // lookup all DOM elements
@@ -494,7 +497,9 @@ function start_over(reset_all) {
     pay_button_pay = null;
     pay_button_rcpt = null;
     pay_button_ercpt = null;
+    receeiptEmailAddresses_div = null;
     pay_button_print = null;
+    var ema
     in_review = false;
     pay_tid = null;
 
@@ -2504,24 +2509,33 @@ function pay(nomodal) {
             user_id: user_id,
             pay_tid: pay_tid,
         };
+        pay_button_pay.disabled = true;
         $.ajax({
             method: "POST",
             url: "scripts/regpos_processPayment.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
-                if (data['error'] !== undefined) {
+                var stop = true;
+                clear_message();
+                if (typeof data == 'string') {
+                    show_message(data, 'error');
+                } else if (data['error'] !== undefined) {
                     show_message(data['error'], 'error');
-                    return;
-                }
-                if (data['message'] !== undefined) {
+                } else if (data['message'] !== undefined) {
                     show_message(data['message'], 'success');
-                }
-                if (data['warn'] !== undefined) {
+                    stop = false;
+                } else if (data['warn'] !== undefined) {
                     show_message(data['warn'], 'success');
+                    stop = false;
                 }
-                updatedPayment(data);
+                if (!stop)
+                    updatedPayment(data);
+                pay_button_pay.disabled = false;
             },
-            error: showAjaxError,
+            error: function (jqXHR, textstatus, errorThrown) {
+                pay_button_pay.disabled = false;
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            },
         });
     }
 }
@@ -2541,8 +2555,10 @@ function pay(nomodal) {
      pay_shown();
 }
 
+var last_receipt_type = '';
 // Create a receipt and send it to the receipt printer
 function print_receipt(receipt_type) {
+    last_receipt_type = receipt_type;
     // optional header text:
     var d = new Date();
     var payee = (cart_perinfo[0]['first_name'] + ' ' + cart_perinfo[0]['last_name']).trim();
@@ -2558,28 +2574,41 @@ function print_receipt(receipt_type) {
         pmtrows: cart_pmt,
         footer: footer_text,
         receipt_type: receipt_type,
+        email_addrs: emailAddreesRecipients,
     };
     if (receiptPrinterAvailable || receipt_type == 'email') {
+        if (receipt_type == 'email')
+            pay_button_ercpt.disabled = true;
+        else
+            pay_button_rcpt.disabled = true;
+
         $.ajax({
             method: "POST",
             url: "scripts/regpos_printReceipt.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
-                if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
-                    return;
-                }
-                if (data['message'] !== undefined) {
-                    show_message(data['message'], 'success');
-                    return;
-                }
-                if (data['warn'] !== undefined) {
-                    show_message(data['warn'], 'success');
-                    return;
-                }
                 clear_message();
+                if (typeof data == "string") {
+                    show_message(data,  'error');
+                } else if (data['error'] !== undefined) {
+                    show_message(data['error'], 'error');
+                } else if (data['message'] !== undefined) {
+                    show_message(data['message'], 'success');
+                } else if (data['warn'] !== undefined) {
+                    show_message(data['warn'], 'success');
+                }
+                if (last_receipt_type == 'email')
+                    pay_button_ercpt.disabled = false;
+                else
+                    pay_button_rcpt.disabled = false;
             },
-            error: showAjaxError,
+            error: function (jqXHR, textstatus, errorThrown) {
+                if (last_receipt_type == 'email')
+                    pay_button_ercpt.disabled = false;
+                else
+                    pay_button_rcpt.disabled = false;
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            }
         });
     } else {
         show_message("Receipt printer not available, Please use the \"Chg\" button in the banner to select the proper printers.");
@@ -2859,6 +2888,33 @@ function review_shown() {
     draw_cart();
 }
 
+var emailAddreesRecipients = [];
+var last_email_row = '';
+function toggleRecipientEmail(row) {
+    var emailCheckbox = document.getElementById('emailAddr_' + row.toString());
+    var email_address = cart_perinfo[row]['email_addr'];
+    if (emailCheckbox.checked) {
+        if (!emailAddreesRecipients.includes(email_address)) {
+            emailAddreesRecipients.push(email_address);
+        }
+    } else {
+        if (emailAddreesRecipients.includes(email_address)) {
+            for (var index=0; index < emailAddreesRecipients.length; index++) {
+                if (emailAddreesRecipients[index] == email_address)
+                    emailAddreesRecipients.splice(index,  1);
+            }
+        }
+    }
+    pay_button_ercpt.disabled = emailAddreesRecipients.length == 0;
+}
+
+function checkbox_check() {
+    var emailCheckbox = document.getElementById('emailAddr_' + last_email_row.toString());
+    emailCheckbox.checked = true;
+    pay_button_ercpt.hidden = false;
+    pay_button_ercpt.disabled = false;
+}
+
 function pay_shown() {
     in_review = false;
     freeze_cart = true;
@@ -2871,8 +2927,27 @@ function pay_shown() {
         if (pay_button_pay != null) { 
             pay_button_pay.hidden = true;
             pay_button_rcpt.hidden = false;
-            if (cart_perinfo[0]['email_addr'].length > 2) {
+            var email_html = '';
+            var email_count = 0;
+            last_email_row = -1;
+            for (var rownum in cart_perinfo) {
+                if (emailRegex.test(cart_perinfo[rownum]['email_addr'])) {
+                    email_html += '<div class="row"><div class="col-sm-1 text-end pe-2"><input type="checkbox" id="emailAddr_' + rownum.toString() +
+                        '" name="receiptEmailAddrList" onclick="toggleRecipientEmail(' + rownum.toString() + ')"/></div><div class="col-sm-8">' +
+                        '<label for="emailAddr_' + rownum.toString() + '">' + cart_perinfo[rownum]['email_addr'] + '</label></div></div>';
+                    email_count++;
+                    last_email_row = rownum;
+                }
+            }
+            if (email_html.length > 2) {
                 pay_button_ercpt.hidden = false;
+                pay_button_ercpt.disabled = true;
+                receeiptEmailAddresses_div.innerHTML = '<div class="row mt-2"><div class="col-sm-9 p-0">Email receipt to:</div></div>' +
+                    email_html;
+                if (email_count == 1) {
+                    emailAddreesRecipients.push(cart_perinfo[last_email_row]['email_addr']);
+                    setTimeout(checkbox_check, 100);
+                }
             }
             pay_button_print.hidden = false;
             document.getElementById('pay-amt').value='';
@@ -2887,6 +2962,8 @@ function pay_shown() {
             pay_button_pay.hidden = false;
             pay_button_rcpt.hidden = true;
             pay_button_ercpt.hidden = true;
+            pay_button_ercpt.disabled = true;
+            receeiptEmailAddresses_div.innerHTML = '';
             pay_button_print.hidden = true;
         }
         var total_amount_due = (total_price - total_paid).toFixed(2);
@@ -2946,7 +3023,7 @@ function pay_shown() {
             <button class="btn btn-primary btn-small" type="button" id="pay-btn-pay" onclick="pay('');">Confirm Pay</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="pay-btn-ercpt" onclick="print_receipt('email');" hidden>Email Receipt</button>
+            <button class="btn btn-primary btn-small" type="button" id="pay-btn-ercpt" onclick="print_receipt('email');" hidden disabled>Email Receipt</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <button class="btn btn-primary btn-small" type="button" id="pay-btn-rcpt" onclick="print_receipt('print');" hidden>Print Receipt</button>
@@ -2955,6 +3032,7 @@ function pay_shown() {
             <button class="btn btn-primary btn-small" type="button" id="pay-btn-print" onclick="goto_print();" hidden>Print Badges</button>
         </div>
     </div>
+    <div id="receeiptEmailAddresses" class="container-fluid"></div>
   </form>
     <div class="row mt-4">
         <div class="col-sm-12 p-0" id="pay_status"></div>
@@ -2966,6 +3044,8 @@ function pay_shown() {
         pay_button_pay = document.getElementById('pay-btn-pay');
         pay_button_rcpt = document.getElementById('pay-btn-rcpt');
         pay_button_ercpt = document.getElementById('pay-btn-ercpt');
+        receeiptEmailAddresses_div = document.getElementById('receeiptEmailAddresses');
+        receeiptEmailAddresses_div.innerHTML = '';
         pay_button_print = document.getElementById('pay-btn-print');
         void_button.hidden = false;
     }
