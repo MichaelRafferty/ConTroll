@@ -2661,7 +2661,6 @@ function print_badge(index) {
         url: "scripts/regpos_printBadge.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            $("button[name='print_btn']").attr("disabled", false);
             if (data['error'] !== undefined) {
                 show_message(data['error'], 'error');
                 return;
@@ -2708,6 +2707,7 @@ function PrintComplete(data) {
             error: showAjaxError,
         });
     }
+    $("button[name='print_btn']").attr("disabled", false);
     print_shown();
     show_message(data['message'], 'success');
 }
