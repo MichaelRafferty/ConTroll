@@ -2655,18 +2655,24 @@ function print_badge(index) {
         params: params,
         badges: badges,
     };
+    $("button[name='print_btn']").attr("disabled", true);
     $.ajax({
         method: "POST",
         url: "scripts/regpos_printBadge.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
+            $("button[name='print_btn']").attr("disabled", false);
             if (data['error'] !== undefined) {
                 show_message(data['error'], 'error');
                 return;
             }
             PrintComplete(data);
         },
-        error: showAjaxError,
+        error: function (jqXHR, textstatus, errorThrown) {
+            $("button[name='print_btn']").attr("disabled", false);
+            pay_button_pay.disabled = false;
+            showAjaxError(jqXHR, textstatus, errorThrown);
+        },
     });
 }
 
@@ -3087,7 +3093,7 @@ function print_shown() {
         print_html += `
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="pay-print-` + cart_perinfo[rownum]['index'] + `" onclick="print_badge(` + crow['index'] + `);">Print</button>
+            <button class="btn btn-primary btn-small" type="button" id="pay-print-` + cart_perinfo[rownum]['index'] + `" name="print_btn" onclick="print_badge(` + crow['index'] + `);">Print</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">            
             <span class="text-bg-success"> Membership: ` + cart_membership[mrow]['label'] + `</span> (Times Printed: ` +
@@ -3101,7 +3107,7 @@ function print_shown() {
     <div class="row mt-4">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="pay-print-all" onclick="print_badge(-1);">Print All</button>
+            <button class="btn btn-primary btn-small" type="button" id="pay-print-all" name="print_btn" onclick="print_badge(-1);">Print All</button>
         </div>
     </div>
     <div class="row mt-4">
