@@ -24,7 +24,7 @@ if ($ajax_request_action != 'updatePerinfoNote') {
 }
 
 // at present ony a manager can update a perinfo note
-if (!(check_atcon('manager', $conid)) {
+if (!check_atcon('manager', $conid)) {
     $message_error = 'No permission.';
     RenderErrorAjax($message_error);
     exit();

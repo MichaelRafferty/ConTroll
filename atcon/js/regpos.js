@@ -1844,7 +1844,9 @@ function show_perinfo_notes(index, where) {
     notes.show();
     document.getElementById('NotesTitle').innerHTML = "Notes for " + notesLocation['fullname'];
     document.getElementById('NotesBody').innerHTML = notesLocation['open_notes'].replace(/\n/g, '<br/>');
-    document.getElementById('close_note_button').innerHTML = "Close";
+    var notes_btn = document.getElementById('close_note_button');
+    notes_btn.innerHTML = "Close";
+    notes_btn.disabled = false;
 }
 // edit_perinfo_notes: display in an editor the perinfo notes field
 // only managers can edit the notes
@@ -1876,7 +1878,9 @@ function edit_perinfo_notes(index, where) {
     document.getElementById('NotesTitle').innerHTML = "Editing Notes for " + notesLocation['fullname'];
     document.getElementById('NotesBody').innerHTML = '<textarea name="perinfoNote" class="form-control" id="perinfoNote" cols=60 wrap="soft" style="height:400px;">' +
         notesPriorValue + "</textarea>";
-    document.getElementById('close_note_button').innerHTML = "Save and Close";
+    var notes_btn = document.getElementById('close_note_button');
+    notes_btn.innerHTML = "Save and Close";
+    notes_btn.disabled = false;
 }
 
 // show the registration element note, anyone can add a new note, so it needs a save and close button
@@ -1899,8 +1903,9 @@ function show_reg_note(index, count) {
     if (notesLocation['new_reg_note'] !== undefined) {
         document.getElementById('new_reg_note').value = notesLocation['new_reg_note'];
     }
-    document.getElementById('close_note_button').innerHTML = "Save and Close";
-
+    var notes_btn = document.getElementById('close_note_button');
+    notes_btn.innerHTML = "Save and Close";
+    notes_btn.disabled = false;
 }
 
 // save_note
@@ -1929,6 +1934,7 @@ function save_note() {
                     notes: notesLocation['open_notes'],
                     user_id: user_id,
                 };
+                document.getElementById('close_note_button').disabled = true;
                 $.ajax({
                     method: "POST",
                     url: "scripts/regpos_updatePerinfoNote.php",
@@ -1936,6 +1942,7 @@ function save_note() {
                     success: function (data, textstatus, jqxhr) {
                         if (data['error'] !== undefined) {
                             show_message(data['error'], 'error');
+                            document.getElementById('close_note_button').disabled = falser;
                             return;
                         }
                         if (data['message'] !== undefined) {
@@ -1945,7 +1952,10 @@ function save_note() {
                             show_message(data['warn'], 'warn');
                         }
                     },
-                    error: showAjaxError,
+                    error: function (jqXHR, textstatus, errorThrown) {
+                        document.getElementById('close_note_button').disabled = false;
+                        showAjaxError(jqXHR, textstatus, errorThrown);
+                    }
                 });
             }
         }
