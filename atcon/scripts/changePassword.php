@@ -20,7 +20,7 @@ if ($ajax_request_action != 'change_passwd' ) {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
-if (!(check_atcon('any', $conid))) {
+if (!check_atcon('any', $conid)) {
     $message_error = 'No permission.';
     RenderErrorAjax($message_error);
     exit();
