@@ -2106,6 +2106,7 @@ function found_record(data) {
             var num_mem = 0;
             var prowindex = 0;
             var prow = null;
+            var mperid = -1;
             for (var mrow in result_membership) {
                 if (result_membership[mrow]['tid'] == tid) {
                     prowindex = result_membership[mrow]['pindex'];
@@ -2113,10 +2114,14 @@ function found_record(data) {
                     num_mem++;
                     price += Number(result_membership[mrow]['price']);
                     paid += Number(result_membership[mrow]['paid']);
-                    if (names != '') {
-                        names += '; ';
+                    // show each name only once
+                    if (mperid != result_membership[mrow]['perid']) {
+                        if (names != '') {
+                            names += '; ';
+                        }
+                        names += (prow['last_name'] + ', ' + prow['first_name'] + ' ' + prow['middle_name'] + ' ' + prow['suffix']).replace(/\s+/g, ' ').trim();
+                        mperid = result_membership[mrow]['perid'];
                     }
-                    names += (prow['last_name'] + ', ' + prow['first_name'] + ' ' + prow['middle_name'] + ' ' + prow['suffix']).replace(/\s+/g, ' ').trim();
                 }
             }
             
@@ -2137,7 +2142,7 @@ function found_record(data) {
                 { title: "#M", field: "num_mem", minWidth: 30, maxWidth: 30, headerSort: false, hozAlign: 'right', },
                 { title: "Price", field: "price", maxWidth: 50, minWidth: 50, headerSort: false, hozAlign: 'right', },
                 { title: "Paid", field: "paid", maxWidth: 50, minWidth: 50, headerSort: false, hozAlign: 'right', },
-                { title: "Cart", width: 40, formatter: addCartIcon, formatterParams: {t:"unpaid"}, headerSort: false, },
+                { title: "Cart", width: 50, formatter: addCartIcon, formatterParams: {t:"unpaid"}, headerSort: false, },
                 { field: "index", visible: false, },
             ],
         });
