@@ -3024,7 +3024,7 @@ function pay_shown() {
 <div id='payBody' class="container-fluid form-floating">
   <form id='payForm' action='javascript: return false; ' class="form-floating">
     <div class="row pb-2">
-        <div class="col-sm-auto ms-0 me-2 p-0">New Payment Trsansaction ID: ` + pay_tid + `</div>
+        <div class="col-sm-auto ms-0 me-2 p-0">New Payment Transaction ID: ` + pay_tid + `</div>
     </div>
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
