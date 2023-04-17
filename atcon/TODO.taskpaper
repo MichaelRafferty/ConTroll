@@ -1,8 +1,5 @@
 Current task list:
-    different workflow for cashier trans/badgeid lookup:
-        go to cart, in unlocked mode, with a no changes button on the bottom
-        if a change is made in the cart, put back review data
-        no changes takes you to pay/print as appropriate
+    Empty
 
 Future Features:
     Void Button

@@ -133,6 +133,7 @@ var conid = null;
 var conlabel = null;
 var user_id = 0;
 var hasManager = false;
+var isCashier = false;
 var badgePrinterAvailable = false;
 var receiptPrinterAvailable = false;
 var non_primary_categories = ['add-on', 'addon', 'cancel'];
@@ -176,6 +177,7 @@ window.onload = function initpage() {
     pattern_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') find_record('search'); });
     id_div = document.getElementById("find_results");
     find_unpaid_button = document.getElementById("find_unpaid_btn");
+    isCashier = find_unpaid_button !== undefined && find_unpaid_button !== null;
 
     // add/edit people
     add_index_field = document.getElementById("perinfo-index");
@@ -235,7 +237,7 @@ window.onload = function initpage() {
     // load the initial data and the proceed to set up the rest of the system
     var postData = {
         ajax_request_action: 'loadInitialData',
-        nopay: find_unpaid_button == null,
+        nopay: !isCashier,
     };
     $.ajax({
         method: "POST",
@@ -470,7 +472,7 @@ function start_over(reset_all) {
     cart_perid = [];
     cart_pmt = [];
     freeze_cart = false;
-    if (find_unpaid_button != null) {
+    if (isCashier) {
         find_unpaid_button.hidden = false;
     }
     // empty search strings and results
@@ -1306,15 +1308,15 @@ function draw_cart_row(rownum) {
         // col1 choices
         //  X = delete element from cart
         var allow_delete = mrow['regid'] <=  0;
-        var allow_delete_mgr = hasManager && base_manager_enabled && mrow['paid'] == 0 && mrow['printcount'] == 0;
-        var allow_change_mgr = hasManager && base_manager_enabled && mrow['regid'] >0 && mrow['paid'] >= 0 && mrow['printcount'] == 0 && (category == 'standard' || category == 'yearahead') && memType == 'full';
+        var allow_delete_priv = isCashier && mrow['paid'] == 0 && mrow['printcount'] == 0;
+        var allow_change_priv = isCashier && mrow['regid'] >0 && mrow['paid'] >= 0 && mrow['printcount'] == 0 && (category == 'standard' || category == 'yearahead') && memType == 'full';
         col1 = '';
-        if ((allow_delete || allow_delete_mgr) && !freeze_cart) {
+        if ((allow_delete || allow_delete_priv) && !freeze_cart) {
             col1 += '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
                 mrow['index'] + ')" >X</button >';
         }
         // C = change membership type
-        if (allow_change_mgr && !freeze_cart) {
+        if (allow_change_priv && !freeze_cart) {
             col1 += '<button type = "button" class="btn btn-small btn-warning pt-0 pb-0 ps-1 pe-1 m-0" onclick = "change_membership(' +
                 mrow['index'] + ')" >C</button >';
         }
@@ -1668,7 +1670,7 @@ function draw_cart() {
         review_button.hidden = true;
         startover_button.hidden = true;
     }
-    if (find_unpaid_button != null) {
+    if (isCashier) {
         find_unpaid_button.hidden = num_rows > 0;
     }
 }
@@ -2405,7 +2407,7 @@ function reviewed_update_cart(data) {
     }
 
     // Once saved, move them to next step
-    if (find_unpaid_button != null) {
+    if (isCashier) {
         bootstrap.Tab.getOrCreateInstance(pay_tab).show();
     } else {
         next_button.hidden = false;
@@ -2966,6 +2968,10 @@ function checkbox_check() {
 }
 
 function pay_shown() {
+    if (!isCashier) {
+        show_message("You do not have permission to handle payments", "warning");
+        return;
+    }
     in_review = false;
     freeze_cart = true;
     current_tab = pay_tab;
