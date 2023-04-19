@@ -76,20 +76,20 @@ SET character_set_client = @saved_cs_client;
 /*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'REAL_AS_FLOAT,PIPES_AS_CONCAT,ANSI_QUOTES,IGNORE_SPACE,ONLY_FULL_GROUP_BY,ANSI,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-CREATE DEFINER="root"@"localhost" PROCEDURE "syncServerPrinters"()
+DELIMITER $$
+CREATE PROCEDURE "syncServerPrinters"()
 BEGIN
 
 	UPDATE servers ls LEFT OUTER JOIN printservers.servers gs ON (gs.serverName = ls.serverName)
-    SET local = CASE 
-			WHEN gs.serverName IS NULL THEN 1
-			ELSE 0
+	SET local = CASE
+					WHEN gs.serverName IS NULL THEN 1
+					ELSE 0
 		END;
-        
-    CREATE TEMPORARY TABLE del_printers 
+
+	CREATE TEMPORARY TABLE del_printers
 	SELECT lp.serverName, lp.printerName FROM printers lp
-	JOIN printservers.servers gs ON (gs.serverName = lp.serverName)
-	LEFT OUTER JOIN printservers.printers gp ON (lp.serverName = gp.serverName AND lp.printerName = gp.printerName)
+												  JOIN printservers.servers gs ON (gs.serverName = lp.serverName)
+												  LEFT OUTER JOIN printservers.printers gp ON (lp.serverName = gp.serverName AND lp.printerName = gp.printerName)
 	WHERE gp.serverName is null;
 
 	DELETE p FROM printers p JOIN del_printers d
@@ -97,18 +97,24 @@ BEGIN
 
 	DROP TEMPORARY TABLE del_printers;
 
+	INSERT INTO servers(serverName, address, location, active, local)
+	SELECT P.serverName, P.address, '', '0', 0
+	FROM printservers.servers P
+			 LEFT OUTER JOIN servers S ON (P.servername = S.servername)
+	WHERE S.servername IS NULL;
+
 	INSERT INTO printers(serverName, printerName, printerType, active)
 	SELECT s.serverName, s.printerName, s.printerType, 0
 	FROM printservers.printers s
-	LEFT OUTER JOIN printers p ON (p.serverName = s.serverName AND p.printerName = s.printerName)
+			 LEFT OUTER JOIN printers p ON (p.serverName = s.serverName AND p.printerName = s.printerName)
 	WHERE p.printerName IS NULL;
 
-	UPDATE printers p 
-	JOIN printservers.printers s ON (p.serverName = s.serverName AND p.printerName = s.printerName)
+	UPDATE printers p
+		JOIN printservers.printers s ON (p.serverName = s.serverName AND p.printerName = s.printerName)
 	SET p.printerType = s.printerType
 	WHERE s.printerType != p.printertype;
 
-END ;;
+END$$
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
