@@ -116,7 +116,7 @@ function page_init($title, $tab, $css, $js)
                                             <a class="nav-link navitem <?php echo $tab == "admin" ? "active" : ""; ?>" <?php echo $tab == "admin" ? 'aria-current="page"' : ""; ?> href="admin.php">Administrator</a>
                                         </li>
                                         <li>
-                                            <a class="nav-link navitem <?php echo $tab == "atconArtInventory" ? "active" : ""; ?>" <?php echo $tab == "atconArtInventory" ? 'aria-current="page"' : ""; ?> href="newArtInventory.php?mode=inventory">Art Invetory Dev</a>
+                                            <a class="nav-link navitem <?php echo $tab == "atconArtInventory" ? "active" : ""; ?>" <?php echo $tab == "atconArtInventory" ? 'aria-current="page"' : ""; ?> href="artInventory.php?mode=inventory">Art Invetory Dev</a>
                                         </li>
 
                                         <?php  } ?>
@@ -288,7 +288,7 @@ function paymentDialogs()
 <style>
     ui-dialog { padding: .3em; }
 </style>
-    <?php ageDialog($con); ?>
+    <?php //ageDialog($con); ?>
 <div id='signature' class='dialog'>
     <div id='signatureHolder'></div>
     <button id='signaturePrint' class='bigButton'
