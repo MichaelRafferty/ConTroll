@@ -113,7 +113,7 @@ foreach ($data as $row) {
 dbCmd($updHashSQL);
 
 // now for the permissions, valid permissions are
-$authlabels = ['manager', 'data_entry', 'cashier', 'artinventory', 'artsales','vol_roll'];
+$authlabels = ['manager', 'data_entry', 'cashier', 'artinventory', 'artshow', 'artsales','vol_roll'];
 
 $fetchAuthSQL = <<<EOS
 SELECT a.id, a.authuser, a.auth

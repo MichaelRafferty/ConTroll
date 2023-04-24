@@ -8,14 +8,23 @@ if (!isset($_SESSION['user'])) {
     exit(0);
 }
 
-page_init($page, 'artshow',
-     /* css */ array('css/atcon.css'),
-    /* js  */ array('js/artsales.js')
-    );
-
 $con = get_conf("con");
 $conid=$con['id'];
-$method='artshow';
+$label=$con['label'];
+$tab = 'Art Sales';
+$page = 'Atcon Art Sales';
+$mode='sales';
+$method='artsales';
+
+if (!check_atcon($method, $conid)) {
+    header('Location: /index.php');
+    exit(0);
+}
+
+page_init($page, 'artshow',
+     /* css */ array('css/atcon.css'),
+    /* js  */ array('js/artsales.js', 'js/base.js')
+    );
 
 ?>
 <script>
@@ -84,7 +93,6 @@ if(isset($_GET['id'])) {
         onclick='fetchAnon();'>Non-member Purchase
     </button>
     <hr/>
-    <?php passwdForm(); ?>
 </div>
 <?php paymentDialogs(); ?>
 <div id='main'>

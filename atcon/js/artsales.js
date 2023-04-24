@@ -8,7 +8,7 @@ function setUser(data, textStatus, jqXHR) {
         $("#test").empty().append(data['error']); 
         return false;
     }
-    /* $('#test').empty().append(JSON.stringify(data, null, 2)); */
+    $('#test').empty().append(JSON.stringify(data, null, 2));
     $('#userPerid').empty().append(data['id']);
     $('#userName').empty().append(data['name']);
     if(data['badge'] != undefined && data['badge'] != '') {

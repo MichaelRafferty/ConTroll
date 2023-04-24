@@ -173,6 +173,15 @@ class Users {
                     headerWordWrap: true
                 },
                 {
+                    title: "Art Show",
+                    field: "artshow",
+                    headerSort: false,
+                    formatter: "tickCross",
+                    cellClick: invertTickCross,
+                    headerFilter: true,
+                    headerWordWrap: true
+                },
+                {
                     title: "Vol-Roll",
                     field: "vol_roll",
                     headerSort: false,

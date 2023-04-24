@@ -308,6 +308,7 @@ function showBlock(block) {
     $(block + "ShowLink").hide();
     $(block + "HideLink").show();
 }
+*/
 
 function addShowHide(block, id) {
     var show = $(document.createElement("a"));
@@ -476,4 +477,3 @@ function getForm(formObj, formUrl, succFunc, errFunc) {
       }
     });
 }
-*/
