@@ -342,7 +342,7 @@ function loadInitialData(data) {
     result_membership = [];
 
     // set starting stages of left and right windows
-    clear_add();
+    clear_add(1);
     draw_cart();
 }
 
@@ -450,7 +450,36 @@ function find_primary_membership_by_perid(tbl, perid) {
 // void transaction - needs to be written to actually void out a transaction in progress
 // TODO: write this
 function void_trans() {
-    start_over(0);
+    var postData = {
+        ajax_request_action: 'voidPayment',
+        user_id: user_id,
+        pay_tid: pay_tid,
+        cart_membership: cart_membership,
+    };
+    $("button[name='void_btn']").attr("disabled", true);
+    $.ajax({
+        method: "POST",
+        url: "scripts/regpos_voidPayment.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                $("button[name='find_btn']").attr("disabled", false);
+                return;
+            }
+            if (data['message'] !== undefined) {
+                show_message(data['message'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+            }
+            start_over(0);
+        },
+        error: function (jqXHR, textstatus, errorThrown) {
+            $("button[name='void_btn']").attr("disabled", false);
+            showAjaxError(jqXHR, textstatus, errorThrown);
+        }
+    });
 }
 
 // if no memberships or payments have been added to the database, this will reset for the next customer
@@ -462,7 +491,9 @@ function start_over(reset_all) {
     if (!confirm_discard_cart_entry(-1,false))
         return;
 
-    clear_message();
+    if (reset_all > 0)
+        clear_message();
+
     if (base_manager_enabled) {
         base_toggleManager();
     }
@@ -505,7 +536,7 @@ function start_over(reset_all) {
     in_review = false;
     pay_tid = null;
 
-    clear_add();
+    clear_add(reset_all);
     // set tab to find-tab
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
 
@@ -785,7 +816,7 @@ function edit_from_cart(perid) {
     if (!confirm_discard_add_edit(false))
             return;
 
-    clear_add();
+    clear_add(1);
     var cartrow = cart_perinfo[map_access(cart_perinfo_map, perid)];
 
     // set perinfo values
@@ -845,7 +876,7 @@ function edit_from_cart(perid) {
 }
 
 // Clear the add/edit screen back to completely empty (startup)
-function clear_add() {
+function clear_add(reset_all) {
     // first map the memId's for the existing'
     add_index_field.value = "";
     add_perid_field.value = "";
@@ -890,7 +921,8 @@ function clear_add() {
     add_edit_dirty_check = true;
     add_edit_initial_state = $("#add-edit-form").serialize();;
     add_edit_current_state = "";
-    clear_message();
+    if (reset_all > 0)
+        clear_message();
     if (clearadd_button.innerHTML != 'Clear Add Person Form') {
         addnew_button.innerHTML = "Add to Cart";
         clearadd_button.innerHTML = 'Clear Add Person Form';
@@ -961,6 +993,7 @@ function add_new() {
             mrow['price'] = mi_row['price'];
             if (!('paid' in mrow)) {
                 mrow['paid'] = 0;
+                mrow['priorPaid'] = 0;
             }
             if (!('tid' in mrow)) {
                 mrow['tid'] = '';
@@ -2463,7 +2496,7 @@ function pay(nomodal) {
     //      for discount: description is required, it's optional otherwise
     var elamt = document.getElementById('pay-amt');
     var pay_amt = Number(elamt.value);
-    if (pay_amt <= 0 || pay_amt > total_amount_due) {
+    if (pay_amt > 0 && pay_amt > total_amount_due) {
         if (document.getElementById('pt-cash').checked) {
             if (nomodal == '') {
                 cashChangeModal.show();
@@ -2475,6 +2508,10 @@ function pay(nomodal) {
             elamt.style.backgroundColor = 'var(--bs-warning)';
             return;
         }
+    }
+    if (pay_amt <= 0) {
+        elamt.style.backgroundColor = 'var(--bs-warning)';
+        return;
     }
 
     elamt.style.backgroundColor = '';
@@ -3103,7 +3140,13 @@ function pay_shown() {
         receeiptEmailAddresses_div = document.getElementById('receeiptEmailAddresses');
         receeiptEmailAddresses_div.innerHTML = '';
         pay_button_print = document.getElementById('pay-btn-print');
-        void_button.hidden = false;
+        if (cart_pmt.length > 0) {
+            void_button.hidden = false;
+            startover_button.hidden = true;
+        } else {
+            void_button.hidden = true;
+            startover_button.hidden = false;
+        }
     }
 }
 
