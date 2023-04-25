@@ -39,6 +39,14 @@ if (array_key_exists('regs', $_POST)) {
         ajaxError('Invalid credentials passed');
     }
     $tid = $_POST['tid'];
+    // mark transaction complete
+    $updCompleteSQL = <<<EOS
+UPDATE transaction
+SET complete_date = NOW()
+WHERE id = ?;
+EOS;
+    $completed = dbSafeCmd($updCompleteSQL, 'i', array($tid));
+
     $insertSQL = <<<EOS
 INSERT INTO atcon_history(userid, tid, regid, action)
 VALUES (?,?,?,'print');

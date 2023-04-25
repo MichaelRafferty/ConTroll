@@ -71,6 +71,8 @@ if (round($amt,2) > round($total_due,2)) {
     return;
 }
 
+$complete = round($amt,2) == round($total_due,2);
+
 // now add the payment and process to which rows it applies
 $upd_rows = 0;
 $insPmtSQL = <<<EOS
@@ -112,6 +114,17 @@ foreach ($cart_membership as $cart_row) {
     }
 }
 
-$response['message'] .= ", $upd_rows memberships updated.";
+$completed = 0;
+if ($complete) {
+    // payment is in full, mark transaction complete
+    $updCompleteSQL = <<<EOS
+UPDATE transaction
+SET complete_date = NOW()
+WHERE id = ?;
+EOS;
+    $completed = dbSafeCmd($updCompleteSQL, 'i', array($master_tid));
+}
+
+$response['message'] .= ", $upd_rows memberships updated" . $completed == 1 ? ", transaction completed." : ".";
 $response['cart_membership'] = $cart_membership;
 ajaxSuccess($response);
