@@ -212,12 +212,12 @@ EOS;
 
         $staffQ = <<<EOF
 SELECT COUNT(distinct P.cashier) AS reg
-    , COUNT(distinct A.perid) AS de
+    , COUNT(distinct T.userid) AS de
     , FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(P.time)/900)*900) AS t
 FROM transaction T
 LEFT OUTER JOIN payments P ON (P.transid=T.id and P.cashier IS NOT NULL)
-LEFT OUTER JOIN atcon_history H ON (H.tid=T.i)
-WHERE T.conid=? AND time IS NOT NULL
+JOIN atcon_history H ON (H.tid=T.id)
+WHERE T.conid=?
 GROUP BY t;
 EOF;
         $staffR = dbSafeQuery($staffQ, 'i', array($conid));
