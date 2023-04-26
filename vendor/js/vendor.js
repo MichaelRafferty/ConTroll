@@ -50,14 +50,58 @@ function dealer_req() {
     });
 }
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const fieldlist = ["name", "email", "pw1", "pw2", "description", "addr", "city", "state", "zip"];
 function register() {
-    if(!$("#vendor_reg").valid()) { 
-        alert("Please correct problems with the form");
+    // replace validator with direct validation as it doesn't work well with bootstrap
+    var valid = true;
+
+
+    for (var fieldnum in fieldlist) {
+        var field = document.getElementById(fieldlist[fieldnum]);
+        switch (fieldlist[fieldnum]) {
+            case 'email':
+                if (emailRegex.test(field.value)) {
+                    field.style.backgroundColor = '';
+                } else {
+                    field.style.backgroundColor = 'var(--bs-warning)';
+                    valid = false;
+                }
+                break;
+            case 'pw1':
+                var field2 = document.getElementById("pw2");
+                if (field.value == field2.value && field.value.length >= 4) {
+                    field.style.backgroundColor = '';
+                } else {
+                    field.style.backgroundColor = 'var(--bs-warning)';
+                    valid = false;
+                }
+                break;
+            case 'pw2':
+                var field2 = document.getElementById("pw1");
+                if (field.value == field2.value && field.value.length >= 4) {
+                    field.style.backgroundColor = '';
+                } else {
+                    field.style.backgroundColor = 'var(--bs-warning)';
+                    valid = false;
+                }
+                break;
+            default:
+                if (field.value.length > 1) {
+                    field.style.backgroundColor = '';
+                } else {
+                    field.style.backgroundColor = 'var(--bs-warning)';
+                    valid = false;
+                }
+        }
+    }
+    if (!valid)
         return null;
-    } 
+
+    //
     $.ajax({
         url: 'scripts/registerVendor.php',
-        data: $('#vendor_reg').serialize(),
+        data: $('#registrationForm').serialize(),
         method: 'POST',
         success: function(data, textstatus, jqXHR) {
             if(data['status'] == 'error') {
@@ -65,7 +109,7 @@ function register() {
             } else {
                 alert("Thank you for registering for an account with the Balticon Vendors portal.  Please login to your account to request space.");
                 console.log(data);
-                $('#registration').dialog('close');
+                registrationModalClose();
             }
         }
     });
@@ -320,7 +364,7 @@ function registrationModalOpen() {
 
 function registrationModalClose() {
     if (registration != null) {
-        registrion.hide();
+        registration.hide();
     }
 }
 

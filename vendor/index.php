@@ -118,7 +118,7 @@ if (!$in_session) { ?>
             </div>
             <div class="modal-body" style="padding: 4px; background-color: lightcyan;">
                 <div class="container-fluid form-floating" style="background-color: lightcyan;">
-                    <form id="registrionForm" action="javascript:void(0);" class="form-floating">
+                    <form id="registrationForm" name="registrionForm" action="javascript:void(0);" class="form-floating">
                     <div class="row">
                         <div class="col-sm-12">
                             <p>This form creates an account on the <?php echo $con['conname']; ?> vendor site. <?php echo $vendor['addlaccounttext']?></p>
@@ -126,7 +126,8 @@ if (!$in_session) { ?>
                     </div>
                     <div class="row">
                         <div class="col-sm-12">
-                            <p> Please provide us with information we can use to evaluate if you qualify and how you would fit in the selection of <?php echo $vendor['artventortext'] ?> at <?php echo $con['conname']; ?>.<br/>Creating an account does not guarantee space.</p>
+                            <p> Please provide us with information we can use to evaluate if you qualify and how you would fit in the selection of <?php
+                                echo $vendor['artventortext'] ?> at <?php echo $con['conname']; ?>.<br/>Creating an account does not guarantee space.</p>
                         </div>
                     </div>
                         <div class="row mt-1">
@@ -176,7 +177,7 @@ if (!$in_session) { ?>
                                 <label for="description">*Description: </label>
                             </div>
                             <div class="col-sm-auto p-0 ms-0 me-0">
-                                <textarea class="form-control-sm" name='description' rows=5 cols=64 required></textarea>
+                                <textarea class="form-control-sm" id="description" name='description' rows=5 cols=64 required></textarea>
                             </div>
                         </div>
                         <div class="row mt-1">
@@ -706,4 +707,3 @@ if($drR->num_rows >= 1) {
 <?php }} ?>
 </body>
 </html>
-
