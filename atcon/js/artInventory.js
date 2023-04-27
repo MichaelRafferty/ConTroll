@@ -25,9 +25,6 @@ var need_location = 0;
 var need_count = 0;
 var locations_changed = 0;
 
-//mode
-manager=true;
-
 window.onload = function init_page() {
     //tabs
     find_tab = document.getElementById('find_tab');
@@ -128,7 +125,7 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
             break;
         case 'BID':
             //inventory only
-            if(mode == 'inventory') {
+            if(mode == 'artinventory') {
                 html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button>';
             }
             //manager can remove from show 
@@ -140,7 +137,7 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
             //sales can sell
         case 'NFS':
             // inventory or check out
-            if(mode == 'inventory') {
+            if(mode == 'artinventory') {
                 html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button>';
                 html += '<button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Check Out\')">Out</button>';
             }
@@ -273,14 +270,6 @@ function add_to_cart(index, action) {
     actionlist.push(create_action(action, item.id, null));
     $('#test').empty().append(action + '\n' + JSON.stringify(item, null, 2));
 
-    if (cart_items.includes(item['id']) == false) {
-        cart_items.push(item['id']);
-        cart.push(item);
-    } else {
-        alert('item is already in the cart');
-        return;
-    }
-
     switch(action) {
     case 'Check In':
     case 'Inventory':
@@ -301,8 +290,17 @@ function add_to_cart(index, action) {
         break;
     default:
         alert('not implemented');
+        return; 
     }
         
+    if (cart_items.includes(item['id']) == false) {
+        cart_items.push(item['id']);
+        cart.push(item);
+    } else {
+        alert('item is already in the cart');
+        return;
+    }
+
     draw_cart();
 }
 

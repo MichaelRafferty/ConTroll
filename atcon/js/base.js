@@ -296,7 +296,6 @@ function base_managerOverrideComplete(data) {
 }
 
 // obsolete code, soon to be dropped from the file
-/*
 function hideBlock(block) {
     $(block + "Form").hide();
     $(block + "ShowLink").show();
@@ -308,7 +307,6 @@ function showBlock(block) {
     $(block + "ShowLink").hide();
     $(block + "HideLink").show();
 }
-*/
 
 function addShowHide(block, id) {
     var show = $(document.createElement("a"));
