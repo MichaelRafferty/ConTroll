@@ -62,7 +62,7 @@ foreach ($values as $key=>$value) {
   $query.= ", $key='$value'";
 }
 if($artid == "") {
-  $query = "INSERT INTO artist $query;";
+  $query = "INSERT IGNORE INTO artist $query;";
   $artid = dbInsert($query);
 } else {
   $query = "UPDATE artist $query WHERE id=$artid;";

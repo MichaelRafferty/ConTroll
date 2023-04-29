@@ -160,7 +160,9 @@ $onsitesale = $startdate->format("l, F j");
                             </div>
                             <div class="row">
                                 <div col="col-12-sm">
-                                    <p class="text-body">Contact Information (We will never share your information without your consent).</p>
+                                    <p class="text-body">Contact Information 
+                                     (<a href='<?php echo $con['privacypolicy'];?>' target='_blank'><?php echo $con['privacytext'];?></a>).</p>
+
                                 </div>
                             </div>
 

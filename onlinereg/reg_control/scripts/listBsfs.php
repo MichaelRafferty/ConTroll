@@ -45,7 +45,7 @@ if($linkR->num_rows >0) {
 } else {
   $linkQ = "INSERT IGNORE INTO bsfs (perid, type, year) VALUES (?, ?, ?);";
 
-  $linID = dbSafeInsert($linkQ, 'ssi', array($linId, $type, $year));
+  $linID = dbSafeInsert($linkQ, 'ssi', array($perid, $type, $year));
 }
 $response['link']=$linId;
 
