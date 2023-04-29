@@ -97,12 +97,10 @@ $conf = get_conf('con');
             . ", SA.requested as A_req, SA.authorized as A_auth, SA.purchased as A_purch"
             . ", SD.requested as D_req, SD.authorized as D_auth, SD.purchased as D_purch"
             . ", SD10.requested as T_req, SD10.authorized as T_auth, SD10.purchased as T_purch"
-            . ", SV.requested as V_req, SV.authorized as V_auth, SV.purchased as V_purch, SV.virtual_type as V_type"
             . " FROM vendors as V"
             . " LEFT JOIN vendor_show as SA on SA.vendor=V.id AND SA.type='alley' and SA.conid=$conid"
             . " LEFT JOIN vendor_show as SD on SD.vendor=V.id AND SD.type='dealer_6' and SD.conid=$conid"
             . " LEFT JOIN vendor_show as SD10 on SD10.vendor=V.id AND SD10.type='dealer_10' and SD10.conid=$conid"
-            . " LEFT JOIN vendor_show as SV on SV.vendor=V.id AND SV.type='virtual' and SV.conid=$conid"
             . " WHERE request_dealer or request_artistalley or request_fanac"
             . ";";
 
@@ -110,7 +108,7 @@ $conf = get_conf('con');
     $vendorList = dbQuery($vendorQ);
 
     while($vendor = fetch_safe_assoc($vendorList)) {
-        if($vendor['A_req']+$vendor['D_req']+$vendor['T_req']+$vendor['V_req']==0) continue;
+        if($vendor['A_req']+$vendor['D_req']+$vendor['T_req']==0) continue;
   ?>
         <tr>
             <td><?php echo $vendor['name']; ?></td>

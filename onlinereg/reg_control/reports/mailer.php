@@ -22,7 +22,7 @@ $query = "SELECT DISTINCT concat_ws(' ', P.first_name, P.middle_name, P.last_nam
     . " FROM perinfo as P JOIN reg as R ON R.perid=P.id"
     . " WHERE R.conid >$conid-5"
     . " AND P.address IS NOT NULL and P.last_name IS NOT NULL"
-    . " AND P.banned != 'Y' AND P.active = 'Y'"
+    . " AND P.banned != 'Y'"
     . " AND P.address != '' AND P.address != '\N' AND P.zip != 0"
     . " GROUP BY P.address, P.city, P.state, P.zip"
     . " ORDER BY concat_ws(',', P.last_name, P.first_name, P.middle_name)"

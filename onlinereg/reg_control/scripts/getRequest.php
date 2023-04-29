@@ -57,4 +57,3 @@ $response['results'] = $results;
 
 ajaxSuccess($response);
 ?>
-

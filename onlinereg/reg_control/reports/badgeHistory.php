@@ -26,7 +26,7 @@ $perid = $_GET['perid'];
 $query = <<<EOS
 SELECT R.conid, R.perid, M.label, R.create_user, R.create_date, max(H.logdate) AS date
 FROM reg R
-JOIN memLabel M ON (M.id=R.memId)
+JOIN memList M ON (M.id=R.memId)
 LEFT OUTER JOIN atcon_history H ON (H.regid=R.id AND H.action='print')
 WHERE R.conid >= ? and R.perid = ?
 GROUP BY R.conid, R.perid, M.label, R.create_user, R.create_date
