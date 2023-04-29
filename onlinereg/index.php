@@ -17,8 +17,8 @@ FROM memLabel
 WHERE
     conid=?
     AND online = 'Y'
-    AND startdate < current_timestamp()
-    AND enddate >= current_timestamp()
+    AND startdate <= current_timestamp()
+    AND enddate > current_timestamp()
 ORDER BY sort_order, price DESC
 ;
 EOS;

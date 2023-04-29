@@ -415,6 +415,10 @@ page_init($page,
                 onclick='hideBlock("#addPerson")'>(hide)</a>
             <br/>
             <form id="addPersonForm" name="addPerson" method="POST" action="javascript:void(0)">
+                <input type="hidden" name="share_reg" value="Y"/>
+                <input type="hidden" name="contact_ok" value="Y"/>
+                <input type="hidden" name="active" value="Y"/>
+                <input type="hidden" name="banned" value="N"/>               
                 <table class='formalign'>
                     <tbody id='addPersonFormName'>
                         <tr>
@@ -477,7 +481,7 @@ page_init($page,
                             <td class='formfield' colspan=2><input type="text" name="phone" size=10/></td>
                             <td></td>
                         </tr>
-                    </tbody>
+                    </tbody>                     
                     <tfoot id="addPersonFormButtons">
                         <tr>
                             <td colspan=5>

@@ -14,7 +14,7 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     exit();
 }
 
-$con=get_con();
+$con=get_cON ();
 $conid= $con['id'];
 
 $badgeQ = <<<EOS
@@ -25,7 +25,7 @@ SELECT R.create_date, R.change_date, R.price, R.paid, R.id AS badgeId, P.id AS p
     , CONCAT_WS('-', M.memCategory, M.memType, M.memAge) as memTyp
     , M.memCategory AS category, M.memType AS type, M.memAge AS age, M.label
 FROM reg R
-JOIN memLabel M ON(M.id=R.memId)
+JOIN memLabel M ON (M.id=R.memId)
 LEFT OUTER JOIN perinfo P ON (P.id=R.perid)
 LEFT OUTER JOIN newperson NP ON (NP.id=R.newperid)
 WHERE R.conid=?;
@@ -40,8 +40,130 @@ while($badge = fetch_safe_assoc($badgeA)) {
     array_push($badges, $badge);
 }
 
-
 $response['badges'] = $badges;
 
+$catQ = <<<EOS
+WITH listitems AS (
+    SELECT M.memCategory, count(*) occurs
+    FROM reg R
+    JOIN memLabel M ON (M.id=R.memId)
+    WHERE R.conid=?
+    GROUP BY M.memCategory
+), totalrow AS (
+    SELECT SUM(occurs) AS total
+    FROM listitems
+)
+SELECT memCategory, occurs, 100 * occurs / total AS percent
+FROM listitems
+JOIN totalrow
+ORDER BY memCategory;
+EOS;
+
+$categories = array();
+$catA = dbSafeQuery($catQ, 'i', array($conid));
+while($cat = fetch_safe_assoc($catA)) {
+    array_push($categories, $cat);
+}
+
+$response['categories'] = $categories;
+
+$typeQ = <<<EOS
+WITH listitems AS (
+    SELECT M.memType, count(*) occurs
+    FROM reg R
+    JOIN memLabel M ON (M.id=R.memId)
+    WHERE R.conid=?
+    GROUP BY M.memType
+), totalrow AS (
+    SELECT SUM(occurs) AS total
+    FROM listitems
+)
+SELECT memType, occurs, 100 * occurs / total AS percent
+FROM listitems
+JOIN totalrow
+ORDER BY memType;
+EOS;
+
+$types = array();
+$typeA = dbSafeQuery($typeQ, 'i', array($conid));
+while($type = fetch_safe_assoc($typeA)) {
+    array_push($types, $type);
+}
+
+$response['types'] = $types;
+
+$labelQ = <<<EOS
+WITH listitems AS (
+    SELECT M.label, count(*) occurs
+    FROM reg R
+    JOIN memLabel M ON (M.id=R.memId)
+    WHERE R.conid=?
+    GROUP BY M.label
+), totalrow AS (
+    SELECT SUM(occurs) AS total
+    FROM listitems
+)
+SELECT label, occurs, 100 * occurs / total AS percent
+FROM listitems
+JOIN totalrow
+ORDER BY label;
+EOS;
+
+$labels = array();
+$labelA = dbSafeQuery($labelQ, 'i', array($conid));
+while($label = fetch_safe_assoc($labelA)) {
+    array_push($labels, $label);
+}
+
+$response['labels'] = $labels;
+
+$ageQ = <<<EOS
+WITH listitems AS (
+    SELECT M.memAge, count(*) occurs
+    FROM reg R
+    JOIN memLabel M ON (M.id=R.memId)
+    WHERE R.conid=?
+    GROUP BY M.memAge
+), totalrow AS (
+    SELECT SUM(occurs) AS total
+    FROM listitems
+)
+SELECT memAge, occurs, 100 * occurs / total AS percent
+FROM listitems
+JOIN totalrow
+ORDER BY memAge;
+EOS;
+
+$ages = array();
+$ageA = dbSafeQuery($ageQ, 'i', array($conid));
+while($age = fetch_safe_assoc($ageA)) {
+    array_push($ages, $age);
+}
+
+$response['ages'] = $ages;
+
+$paidQ = <<<EOS
+WITH listitems AS (
+    SELECT R.paid, count(*) occurs
+    FROM reg R
+    WHERE R.conid=?
+    GROUP BY R.paid
+), totalrow AS (
+    SELECT SUM(occurs) AS total
+    FROM listitems
+)
+SELECT paid, occurs, 100 * occurs / total AS percent
+FROM listitems
+JOIN totalrow
+ORDER BY paid;
+EOS;
+
+$paids = array();
+$paidA = dbSafeQuery($paidQ, 'i', array($conid));
+while($paid = fetch_safe_assoc($paidA)) {
+    array_push($paids, $paid);
+}
+
+$response['paids'] = $paids;
 ajaxSuccess($response);
 ?>

@@ -190,19 +190,23 @@ function appendPerson(user) {
 
 
 function createTransaction(user) {
-  $('#searchResultHolder').empty();
-  $.ajax({
-    url: "scripts/reg_start.php",
-    type: "POST",
-    data: "perid=" + user['id'],
-    success: setTransaction,
-    error: function(data, textStatus, jqXHR) { showError(JSON.stringify(data, null, 2)); return false; }
-  });
+    var script = "scripts/reg_start.php";
+    $('#searchResultHolder').empty();
+    $.ajax({
+        url: script,
+        type: "POST",
+        data: "perid=" + user['id'],
+        success: setTransaction,
+        error: function (jqXHR, textStatus, jqXHR) {
+            showError("ERROR in " + script + ": " + textStatus, jqXHR);
+            return false;
+        }
+    });
 }
 
 function createTransactionNewPerson(data, textStatus, jqXHR) {
-  createTransaction(data);
-  $('#newPerson').hide();
+    createTransaction(data);
+    $('#newPerson').hide();
 }
 
 function checkForReg(form) {
@@ -236,16 +240,17 @@ function checkForReg(form) {
                                 return false;
                             }
                         }
-                        var formData = "newID="+data['new']['id'];
+                        var formData = "newID=" + data['new']['id'];
+                        var formurl = "scripts/addPersonFromConflict.php";
 
                         $.ajax({
                             data: formData,
                             method: "POST",
-                            url: "scripts/addPersonFromConflict.php",
+                            url: formurl ,
                             success: updatePersonCatch,
                             error: function (jqXHR, textStatus, errorThrown) {
-                            showError(JSON.stringify(jqXHR));
-                            return false;
+                                showError("ERROR in " + formurl + ": " + textStatus, jqXHR);
+                                return false;
                             }
                         });
                     return false;
@@ -434,11 +439,12 @@ function setBadge(prefix, id, paid, price, badgeType, cost, locked, label) {
         data: data,
         url: script,
         success: function(data, textstatus, jqXHR) {
-            if(data['error'] && data['error']!='') { showError(JSON.stringify(data['error'])); }
+            if('error' in data && data['error']!='') { showError(data['error']); }
             showActions(prefix, data['actions'], id, transid);
         },
-        error: function(jqXHR, textStatus, errorThrown) { 
-            showError(JSON.stringify(data)); return false; 
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in " + script + ": " + textStatus, jqXHR);            
+            return false; 
         }
 
     });
@@ -446,14 +452,18 @@ function setBadge(prefix, id, paid, price, badgeType, cost, locked, label) {
 
 
 function editPerson(prefix) {
-var id = $("#" + prefix + "Id").val()
+    var id = $("#" + prefix + "Id").val();
+    var script = "scripts/editPerson.php";
 
   $.ajax({
-    url: "scripts/editPerson.php",
+    url: script,
     method: "GET",
     data: "id="+id+"&prefix="+prefix,
     success: fillEditPersonDialog,
-    error: function(jqXHR, textstatus, errortext) { showError(JSON.stringify(jqXHR)); }
+      error: function (jqXHR, textstatus, errortext) {
+          showError("ERROR in " + script + ": " + textStatus, jqXHR);
+          return false;
+      }
   });
 }
 
@@ -564,14 +574,15 @@ function updateBadge(formName, badgeLabel, script) {
     data: postData,
     success: function(data, textStatus, jqXHR) {
       var bData = data['badgeInfo'];
-      if(data['error'] && data['error']!='') { showError(data['error']); return false;}
+      if('error' in data && data['error']!='') { showError(data['error']); return false;}
       setBadge(formName+badgeLabel+"Badge", bData['id'], bData['paid'], bData['price'],
         bData['memId']+'-'+bData['memCategory']+'-'+bData['memType']+'-'+bData['memAge'],
         bData['cost'], bData['label']);
       return false;
     },
     error: function(JqXHR, textStatus, errorThrown) {
-      showError("ERROR in " + script + ": " + textStatus);
+        showError("ERROR in " + script + ": " + textStatus, jqXHR);
+        return false;
     }
   });
 
@@ -670,16 +681,18 @@ function makePayment(type) {
         postData += "&track="+encodeURIComponent($('#creditTrack').val());
     }
 
+    var script = "scripts/atconRegPayment.php";
     $.ajax({
-        url: "scripts/atconRegPayment.php",
+        url: script,
         method: "POST",
         data: postData,
         error: function(jqXHR, textStatus, errorThrown) { 
-            showError(JSON.stringify(jqXHR, null, 2)); 
+            showError("ERROR in " + script + ": " + textStatus, jqXHR);
+            return false;
         },
         success: function(data, textStatus, jqXHR) {
             //$('#test').empty().append(JSON.stringify(data, null, 2)); 
-            if(data['error'] && data['error']!='') { showError(data['error']); }
+            if('error' in data && data['error']!='') { showError(data['error']); }
             addPayment("transactionForm", data['result']);
             var paid = +$("#transactionForm").data('paid');
             if(!isNaN(data['result']['amount'])) { 
@@ -772,8 +785,9 @@ function completeTransaction (trans) {
         $('#finalDialog').dialog('open');
         return false;
       },
-      error: function(JqXHR, textStatus, errorThrown) {
-        showError("ERROR in " + script + ":\n" + JSON.stringify(jqXHR, null, 2));
+        error: function (JqXHR, textStatus, errorThrown) {
+            showError("ERROR in " + script + ": " + textStatus, jqXHR);
+            return false;      
       }
     });
 }
@@ -791,10 +805,13 @@ function addBadgeNote(type, badgeId, prefix, note) {
     data: formdata,
     method: "POST",
     success: function(data, textstatus, jqXHR) {
-      if(data['error'] && data['error']!='') { showError(JSON.stringify(data['error'])); }
+      if('error' in data && data['error']!='') { showError(JSON.stringify(data['error'])); }
       showActions(prefix, data['actions'], badgeId, transid);
     },
-    error: function(jqXHR, textStatus, errorThrown) { showError(JSON.stringify(data)); return false; }
+      error: function (jqXHR, textStatus, errorThrown) {
+          showError("ERROR in " + formurl + ": " + textStatus, jqXHR);
+          return false;
+      }
   });
 }
 
@@ -823,14 +840,18 @@ function showActions(prefix, acts, badgeId, transid) {
 }
 
 function getEdited(data, textStatus, jqXHR)  {
-  editPerson(data['post'].prefix);
+    editPerson(data['post'].prefix);
 
+    var script = "scripts/getTransaction.php;
   $.ajax({
-    url: "scripts/getTransaction.php",
+    url: script,
     method: "GET",
     data: "id="+$('#transactionForm').data('id'),
     success: setTransaction,
-    error: function(jqXHR, textStatus, errorThrown) { showError(JSON.stringify(data)); return false; }
+      error: function (jqXHR, textStatus, errorThrown) {
+          showError("ERROR in " + script + ": " + textStatus, jqXHR);
+          return false;
+      }
   });
 }
 

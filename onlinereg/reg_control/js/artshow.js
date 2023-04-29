@@ -55,11 +55,11 @@ function getArtist(perid) {
       } else {
         loadPerson(data['person'], data['badge'], data['artist'], data['vendor'], data['agent']);
       }
-      //showError(JSON.stringify(data));
+      //showError('trace:', data);
       return false;
     },
-    error: function(qXHR, textStatus, errorThrown) {
-      showError("ERROR in " + formUrl + ": " + textStatus);
+    error: function(jqXHR, textStatus, errorThrown) {
+      showError('ERROR in ' + formUrl + ": " + textStatus, jqXHR);
       return false;
     }
   });
@@ -108,12 +108,12 @@ function loadPerson(per, badge, artist, vendor, agent) {
      data: "artid="+artist['id'],
      url: "scripts/artDetails.php",
      success: function(data, textStatus, jqXHR) {
-       showError(JSON.stringify(data));
+       //showError('trace:', data);
        showArtshow(data);
        return false;
      },
-     error: function(qXHR, textStatus, errorThrown) {
-       showError("ERROR in " + formUrl + ": " + textStatus);
+     error: function(jqXHR, textStatus, errorThrown) {
+       showError("ERROR in " + formUrl + ": " + textStatus, jqXHR);
        return false;
      }
    });
@@ -123,12 +123,12 @@ function loadPerson(per, badge, artist, vendor, agent) {
      data: "artid="+artist['id'],
      url: "scripts/artHistory.php",
      success: function(data, textStatus, jqXHR) {
-       //showError(JSON.stringify(data));
+       //showError('trace:', data);
        showHistory(data['history']);
        return false;
      },
-     error: function(qXHR, textStatus, errorThrown) {
-       showError("ERROR in " + formUrl + ": " + textStatus);
+     error: function(jqXHR, textStatus, errorThrown) {
+       showError("ERROR in " + formUrl + ": " + textStatus, jqXHR);
        return false;
      }
   });
@@ -192,7 +192,7 @@ function getCurrentShow() {
             +"</td>";
           return ret;
         });
-      //showError(JSON.stringify(data));
+      //showError('trace:', data);
       return false;
     },
     error: function(qXHR, textStatus, errorThrown) {
@@ -210,15 +210,15 @@ function addArtist() {
     data: formdata,
     url: formUrl,
     success: function(data, textStatus, jqXHR) {
-      //showError(JSON.stringify(data));
+      //showError('trace:', data);
       $('#newArtist').dialog('close');
       location.reload();
       //getArtist({id : $('#newperid').val()});
       //getCurrentShow();
       return false;
     },
-    error: function(qXHR, textStatus, errorThrown) {
-      showError("ERROR in " + formUrl + ": " + textStatus);
+    error: function(jqXHR, textStatus, errorThrown) {
+      showError("ERROR in " + formUrl + ": " + textStatus, jqXHR);
       return false;
     }
   });
@@ -232,13 +232,13 @@ function updateAssignment() {
     data: formdata,
     url: formUrl,
     success: function(data, textStatus, jqXHR) {
-      //showError(JSON.stringify(data));
+      //showError('trace:', data);
       getArtist({id: $('#perid').val()});
       getCurrentShow();
       return false;
     },
-    error: function(qXHR, textStatus, errorThrown) {
-      showError("ERROR in " + formUrl + ": " + textStatus);
+    error: function(jqXHR, textStatus, errorThrown) {
+      showError("ERROR in " + formUrl + ": " + textStatus, jqXHR);
       return false;
     }
   });
@@ -255,8 +255,8 @@ function sendEmail(id) {
       if(data['error']!=null) { showError(data['error']); }
       showAlert("To: " + data['to'] + "<br/>" + data['body']['Data']);
     },
-    error: function(qXHR, textStatus, errorThrown) {
-      showError("ERROR in " + formUrl + ": " + textStatus);
+    error: function(jqXHR, textStatus, errorThrown) {
+      showError("ERROR in " + formUrl + ": " + textStatus, jqXHR);
       return false;
     }
   });
@@ -274,10 +274,10 @@ function showControl(id) {
         success: function(data, textStatus, jqXHR) {
             if(data['error']!=null) { showError(data['error']); }
             //showAlert("To: " + data['to'] + "<br/>" + data['body']['Data']);
-            showError(JSON.stringify(data, null, 2));
+            showError('trace:', data);
         },
-        error: function(qXHR, textStatus, errorThrown) {
-            showError("ERROR in " + formUrl + ": " + textStatus);
+        error: function(jqXHR, textStatus, errorThrown) {
+            showError("ERROR in " + formUrl + ": " + textStatus, jqXHR);
             return false;
         }
     });

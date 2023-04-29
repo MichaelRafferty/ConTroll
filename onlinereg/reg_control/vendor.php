@@ -31,7 +31,6 @@ $conf = get_conf('con');
         $alley_show = ['requested' => 0, 'authorized' => 0, 'purchased' => 0];
         $dealer6_show = ['requested' => 0, 'authorized' => 0, 'purchased' => 0];
         $dealer10_show = ['requested' => 0, 'authorized' => 0, 'purchased' => 0];
-        $virtual_show = ['requested' => 0, 'authorized' => 0, 'purchased' => 0];
         $showQ = "SELECT type, sum(requested) as requested, sum(authorized) as authorized, sum(purchased) as purchased from vendor_show WHERE conid=$conid group by type;";
         $showR = dbQuery($showQ);
         while($showLine = fetch_safe_assoc($showR)) {
@@ -39,7 +38,6 @@ $conf = get_conf('con');
                 case 'alley': $alley_show = $showLine; break;
                 case 'dealer_6': $dealer6_show = $showLine; break;
                 case 'dealer_10': $dealer10_show = $showLine; break;
-                case 'virtual': $virtual_show = $showLine; break;
             }
         }
     ?>
@@ -56,9 +54,6 @@ $conf = get_conf('con');
     New: <?php echo $dealer10_show['requested'] - $dealer10_show['authorized']; ?>
     Pending: <?php echo $dealer10_show['authorized'] - $dealer10_show['purchased']; ?>
     Purchased: <?php echo $dealer10_show['purchased']; ?>
-    <br/>
-    <span class='blocktitle'>Virtual Vendor Registration:</span>
-    New: <?php echo $virtual_show['requested']; ?> Purchased: <?php echo $virtual_show['purchased']; ?>
     <br/>
   </div>
   <div id='searchResults' class='half right'>
@@ -91,7 +86,6 @@ $conf = get_conf('con');
                 <th>Vendor Email</th>
                 <th>Dealer Info</th>
                 <th>Alley Info</th>
-                <th>Virtual</th>
                 <th>View</th>
                 <th>Password Reset</th>
             </tr>
@@ -125,7 +119,9 @@ $conf = get_conf('con');
                 else if ($vendor['D_auth'] > 0) echo $vendor['D_auth'] . " 6' authorized";
                 else if ($vendor['T_purch'] > 0) echo $vendor['T_purch'] . " 10'";
                 else if ($vendor['T_auth'] > 0) echo $vendor['T_auth'] . " 10' authorized";
-                else if ($vendor['D_req'] > 0) echo "requested " . $vendor['D_req'];
+                else if (($vendor['D_req'] > 0) and ($vendor['T_req'] > 0)) echo "requested " . $vendor['D_req'] . " 6' & " . $vendor['T_req'] . " 10'";
+                else if ($vendor['D_req'] > 0) echo "requested " . $vendor['D_req'] . " 6'";
+                else if ($vendor['T_req'] > 0) echo "requested " . $vendor['T_req'] . " 10'";
                 else { echo ""; }
                 } else { echo "N/R"; }
             ?></td>
@@ -171,7 +167,8 @@ $conf = get_conf('con');
                 <td><input type='number' name='d10Purch' id='d10Purch'/></td>
             </tr>
         </table>
-    <button onclick='updateVendor();'>Update Vendor</button><br/>
+    <button onclick='updateVendor();'>Update Vendor</button>
+    <button onclick='resetPWForm();'>Reset Password</button><br/>
     </form>
   </div>
 </div>

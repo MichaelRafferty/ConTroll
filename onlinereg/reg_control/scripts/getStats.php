@@ -89,8 +89,7 @@ CREATE TEMPORARY TABLE history (id INT auto_increment PRIMARY KEY)
             , count(CASE WHEN paid>0 THEN R.id ELSE NULL END) as cnt_paid
         FROM reg R
         JOIN conlist C ON (R.conid=C.id)
-        WHERE (R.memType IS NULL OR (R.memType != 'B' and R.memType != 'V'))
-           AND C.id>=?
+        WHERE C.id>=?
         GROUP BY R.conid, year(C.enddate), datediff(C.enddate, R.create_date)
         WITH ROLLUP) r
         ORDER BY conid, year, diff;
@@ -244,14 +243,14 @@ EOF;
         $query = <<<EOF
 SELECT memCategory AS cat, memType AS type, memAge AS age, label, cnt
 FROM (
-    SELECT COUNT(R.id) AS cnt, M.sort_order, M.memCategory, M.memType, M.memAge, M.shortname as label
+    SELECT COUNT(R.id) AS cnt, M.sort_order, M.memCategory, M.memType, M.memAge, M.shortname AS label, SUM(R.paid) AS paid
     FROM reg R
     JOIN memLabel M ON (M.id=R.memId)
     WHERE R.conid=?
     GROUP BY M.sort_order, M.memCategory, M.memType, M.memAge, M.shortname
     ) m
 WHERE memCategory is NOT NULL
-ORDER BY sort_order ASC, memCategory DESC, memType ASC, memAge ASC;
+ORDER BY paid DESC, sort_order ASC, memCategory DESC, memType ASC, memAge ASC;
 EOF;
         $response['query'] = $query;
         $res = dbSafeQuery($query, 'i', array($conid));

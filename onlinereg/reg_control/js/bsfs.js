@@ -126,7 +126,7 @@ function updateReg(form) {
       return false;
     },
     error: function (jqXHR, textStatus, errorThrown) {
-      showError(JSON.stringify(jqXHR));
+      showError("ERROR in " + script + ": " + textStatus, jqXHR)
       return false;
     }
   });

@@ -20,37 +20,53 @@ $conid=$con['id'];
 
 $vendor =sql_safe($_POST['vendor']);
 
+if(is_numeric($_POST['alleyRequest'])) { 
+$auth = $_POST['alleyAuth']; 
+$purch = $_POST['alleyPurch'];
+if(!is_numeric($auth)) { $auth = 0;}
+if(!is_numeric($purch)) { $purch = 0;}
 $updateAlley="INSERT INTO vendor_show (vendor, conid, type, requested, authorized, purchased) VALUES"
     . "('$vendor','$conid','alley','".sql_safe($_POST['alleyRequest'])."'"
-    . ",'".sql_safe($_POST['alleyAuth'])."'"
-    . ",'".sql_safe($_POST['alleyPurch'])."')"
+    . ",'".sql_safe($auth)."'"
+    . ",'".sql_safe($purch)."')"
     . " ON DUPLICATE KEY UPDATE"
     . " requested='".sql_safe($_POST['alleyRequest'])."'"
-    . ", authorized='".sql_safe($_POST['alleyAuth'])."'"
-    . ", purchased='".sql_safe($_POST['alleyPurch'])."';";
+    . ", authorized='".sql_safe($auth)."'"
+    . ", purchased='".sql_safe($purch)."';";
 dbQuery($updateAlley);
+}
 
-$updateDealer="INSERT INTO vendor_show (vendor, conid, type, requested, authorized, purchased) VALUES"
+if(is_numeric($_POST['dealerRequest'])) { 
+$auth = $_POST['dealerAuth']; 
+$purch = $_POST['dealerPurch'];
+if(!is_numeric($auth)) { $auth = 0;}
+if(!is_numeric($purch)) { $purch = 0;}
+$updateAlley="INSERT INTO vendor_show (vendor, conid, type, requested, authorized, purchased) VALUES"
     . "('$vendor','$conid','dealer_6','".sql_safe($_POST['dealerRequest'])."'"
-    . ",'".sql_safe($_POST['dealerAuth'])."'"
-    . ",'".sql_safe($_POST['dealerPurch'])."')"
+    . ",'".sql_safe($auth)."'"
+    . ",'".sql_safe($purch)."')"
     . " ON DUPLICATE KEY UPDATE"
     . " requested='".sql_safe($_POST['dealerRequest'])."'"
-    . ", authorized='".sql_safe($_POST['dealerAuth'])."'"
-    . ", purchased='".sql_safe($_POST['dealerPurch'])."';";
-dbQuery($updateDealer);
+    . ", authorized='".sql_safe($auth)."'"
+    . ", purchased='".sql_safe($purch)."';";
+dbQuery($updateAlley);
+}
 
-$updateD10="INSERT INTO vendor_show  (vendor, conid, type, requested, authorized, purchased) VALUES"
+if(is_numeric($_POST['d10Request'])) { 
+$auth = $_POST['d10Auth']; 
+$purch = $_POST['d10Purch'];
+if(!is_numeric($auth)) { $auth = 0;}
+if(!is_numeric($purch)) { $purch = 0;}
+$updateAlley="INSERT INTO vendor_show (vendor, conid, type, requested, authorized, purchased) VALUES"
     . "('$vendor','$conid','dealer_10','".sql_safe($_POST['d10Request'])."'"
-    . ",'".sql_safe($_POST['d10Auth'])."'"
-    . ",'".sql_safe($_POST['d10Purch'])."')"
+    . ",'".sql_safe($auth)."'"
+    . ",'".sql_safe($purch)."')"
     . " ON DUPLICATE KEY UPDATE"
     . " requested='".sql_safe($_POST['d10Request'])."'"
-    . ", authorized='".sql_safe($_POST['d10Auth'])."'"
-    . ", purchased='".sql_safe($_POST['d10Purch'])."';";
-dbQuery($updateD10);
-
-
+    . ", authorized='".sql_safe($auth)."'"
+    . ", purchased='".sql_safe($purch)."';";
+dbQuery($updateAlley);
+}
 
 $query = "SELECT V.id as id, name, website, description, publicity"
         . ", A.requested as alleyRequest, A.authorized as alleyAuth, A.purchased as alleyPurch"

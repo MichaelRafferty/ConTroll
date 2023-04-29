@@ -47,7 +47,7 @@ $response["badgeInfo"]=$badgeInfo;
 $badge_resQ = <<<EOS
 SELECT concat_ws('-', id, memCategory, memType, memAge) as type, price, label
 FROM memList
-WHERE conid=? and atcon='Y' and current_timestamp() < enddate and current_timestamp() > startdate
+WHERE conid=? and atcon='Y' and current_timestamp() < enddate and current_timestamp() >= startdate
 ORDER BY sort_order, memType, memAge ASC;
 EOS;
 

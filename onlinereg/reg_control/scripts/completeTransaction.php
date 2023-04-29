@@ -40,7 +40,7 @@ if ($transRes !== false && mysqli_num_rows($transRes) == 1) {
     $transArr = fetch_safe_assoc($transRes);
     if ($transArr['price'] == $transArr['paid']) {
         if ((!isset($transArr['complete_date'])) || $transArr['complete_date'] == '') {
-            $rows = dbSafeCmd("UPDATE SET complete_date = now() where id = ?;", 'i', array($transid));
+            $rows = dbSafeCmd("UPDATE transaction SET complete_date = now() where id = ?;", 'i', array($transid));
             if ($rows != 1) {
                 $response['error'] = "Unable to compelte transaction";
             }

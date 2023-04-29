@@ -136,7 +136,7 @@ function page_init($title, $css, $js, $auth) {
     <meta charset="utf-8"/>
     <title><?php echo $title . '--' . $db_ini['con']['conname']?> Reg</title>
     <link href='/css/jquery-ui-1.13.1.css' rel='stylesheet' type='text/css' />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous"/>
   
     <?php
     if(isset($css) && $css != null) { foreach ($css as $sheet) {
@@ -147,7 +147,7 @@ function page_init($title, $css, $js, $auth) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
     <script type='text/javascript' src='/javascript/jquery-min-3.60.js'></script>
     <script type='text/javascript' src='/javascript/jquery-ui.min-1.13.1.js'></script>
-    <?PHP
+    <?php
     if(isset($js) && $js != null) { foreach ($js as $script) {
         ?><script src='<?php echo $script; ?>' 
                 type='text/javascript'></script><?php
@@ -164,21 +164,26 @@ function page_init($title, $css, $js, $auth) {
 
 function page_head($title, $auth) {
     global $db_ini;
-?>
-    <div id='titlebar'>
-        <a id='login' class='right button' 
-            <?php if($auth==null) {
-                ?>href='index.php?logout'>Login<?php
-            } else { 
-                ?>href='?logout'>Logout <?php echo $auth['email']; 
-            } ?>
-        </a>
-        <h1 class='title'>
-            <?php echo $db_ini['con']['conname']?> Reg Controller <?php echo $title; ?> page
-        </h1>
-    </div>
+    ?>
+
+    <div class="container-fluid">
+        <div class="row titlebar" id='titlebar'>
+            <div class="col-sm-9">
+                <h1 class='title'>
+                    <?php echo $db_ini['con']['conname']?> Reg Controller <?php echo $title; ?> page
+                </h1>
+            </div>
+            <div class="col-sm-3">
+                <button class="btn btn-light" id="login" style="float: right;" onclick="window.location.href='<?php echo $auth == null ? "index.php?logout" : "?logout"; ?>'">
+                    <?php echo $auth == null ? "Login" : "Logout " . $auth['email']; ?>
+                </button>
+            </div>         
+        </div>
     <?php if ($db_ini['reg']['test']==1) { ?>
-    <h2 class='text-danger'><strong>This Page is for test purposes only</strong></h2>
+
+        <div class="row">
+            <h2 class='text-danger'><strong>This Page is for test purposes only</strong></h2>
+        </div>   
     <?php } ?>
 <?php
 }
@@ -188,22 +193,24 @@ function con_info($auth) {
         $con = get_con();
         $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."';");
         $badgeCount = fetch_safe_array($count_res);
-        $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."' AND price <= paid;");
+        $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."' AND price <= ifnull(paid,0);");
         $unlockCount = fetch_safe_array($count_res);
   
-        ?>
-    <div id='regInfo'>
-        <span id='regInfoCon' class='left'>
-        Con: <span class='blocktitle'> <?php echo $con['label']; ?> </span>
-        <small><?php 
-            echo $badgeCount[0] . " Badges (" . 
-                $unlockCount[0] . " Ready)";
-        ?></small>
-        </span>
-    </div>
-        <?php
-    } else { 
-        ?><div id='regInfo'>Please log in for convention information.</div><?php
+?>
+
+        <div class="row" id='regInfo'>
+            <div class="col-sm-auto">
+                <span id='regInfoCon' class='left'>Con: 
+                    <span class='blocktitle'> <?php echo $con['label']; ?> </span>
+                    <small><?php echo $badgeCount[0] . " Badges (" . $unlockCount[0] . " Ready)"; ?></small>
+                </span>
+            </div>       
+        </div>
+    <?php } else { ?>
+        <div class="row" id='regInfo'>
+            <div class="col-sm-auto">Please log in for convention information.</div>
+        </div>
+    <?php
     }
 }
 
@@ -213,32 +220,42 @@ function tab_bar($auth, $page) {
     } else {
         $page_list = array();
     }
+    $active = $page == "Home" ? "active" : "";
+    $ariainfo = $page == "Home" ? 'aria-current="page"' : '';
+
     ?>
-    <div class='tabbar'>
-        <span class='
-            <?php if($page=="Home") { 
-                echo 'activeTab'; 
-            } else { 
-                echo 'tab'; 
-            }?>'>
-            <a href="index.php">Home</a></span><?php
-        for($i = 0 ; $i < count($page_list); $i++) {
-            $pageInfo = $page_list[$i];
-            $p = $pageInfo['name'];
-            $d = $pageInfo['display'];
-            $thisTab = ($p == $page);
-            ?><span class='<?php 
-            if($thisTab) { echo "activeTab"; } else { echo "tab"; }
-            ?>'><a href='<?php echo $p . ".php";?>'><?php echo $d; ?></a>
-        </span><?php
-        }
-    ?>
-    </div>
+
+        <nav class="navbar navbar-light navitem navbar-expand-lg mb-2">
+            <div>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto p-0">
+                    <li>
+                         <a class="nav-link navitem <?php echo $active; ?>" <?php echo $ariainfo; ?> href="index.php">Home</a>
+                    </li> 
+                    <?php foreach ($page_list as $pageInfo) {
+                        $p = $pageInfo['name'];
+                        $d = $pageInfo['display'];
+                        $active = $page == $p ? "active" : "";
+                        $ariainfo = $page == $p ? 'aria-current="page"' : '';
+                    ?>
+                    <li>
+                         <a class="nav-link navitem <?php echo $active; ?>" <?php echo $ariainfo; ?> href="<?php echo $p; ?>.php"><?php echo $d; ?></a>
+                    </li>
+                    <?php  } ?>
+                </ul>
+            </div>
+        </nav>
     <?php
 }
 
 function page_foot($title) {
     ?>
+
+    </div>
 </body>
 </html>
 <?php

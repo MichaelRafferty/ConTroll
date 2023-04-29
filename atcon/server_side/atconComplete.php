@@ -84,12 +84,12 @@ JOIN atcon A ON (A.id=B.atconid)
 SET R.paid=R.price
 WHERE A.transid=?;
 EOS;
-  
+
   dbSafeCmd($query0, 'ddii', array($totalPrice, $totalPrice, $userid, $transid));
   dbSafeCmd($query1, 'i', array($transid));
   $response['success']='true';
 
-  $badgeRes = dbQuery($badgeQ);
+  $badgeRes = dbSafeQuery($badgeQ, 'i', array($transid));
   $paidBadges=array();
   $newBadges=array();
   $oldBadges=array();

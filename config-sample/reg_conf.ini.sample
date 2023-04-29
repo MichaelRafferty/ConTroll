@@ -5,6 +5,8 @@ user=""
 password=""
 db_name=""
 sql_mode='STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION'
+db_timezone='US/Eastern'
+php_timezone='AMERICA/NEW_YORK'
 [con]
 label="Philcon 2022"
 conname="Philcon"
@@ -28,6 +30,7 @@ addlpickuptext="The hotel has free parking. You can find information at <a href=
 hotelwebsite="https://philcon.org/hotel"
 hotelname="The Doubletree by Hilton Hotel, Cherry Hill/Philadelphia"
 hoteladdr="2349 Marlton Pike West, Cherry Hill, New Jersey, 08002"
+survey_url="https://link-to-post-convention-survey"
 id="2022"
 taxRate=6
 minComp="2021"
