@@ -6,6 +6,9 @@
 /Composer/
 /Composer
 /google_client/
+
+# Visual Studio Stuff
+/.vs/
 /BalticonReg.phpproj
 /BalticonReg.sln
 /BalticonReg.phpproj.user
@@ -26,3 +29,11 @@ dead
 
 /atcon/scripts/obsolete/
 /google_client/
+/.idea/.gitignore
+/.idea/BalticonReg.iml
+/.idea/modules.xml
+/.idea/php.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/sqldialects.xml
+/.idea/vcs.xml
+/.idea/workspace.xml

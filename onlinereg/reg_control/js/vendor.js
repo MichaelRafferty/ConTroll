@@ -10,6 +10,11 @@ function resetPw(vendor) {
     });
 }
 
+function resetPWForm() {
+var vendorId = $('#vendorId').val();
+resetPw(vendorId);
+}
+
 function authorize(vendor) { 
     $.ajax({
         url: 'scripts/getVendorReq.php',
@@ -61,3 +66,28 @@ function updateVendor() {
     });
 }
 
+function findPerson(form) {
+    var getData = $(form).serialize();
+    $.ajax({
+        url: 'scripts/findPerson.php',
+        method: "GET",
+        data: getData,
+        success: function (data, textStatus, jqXhr) {
+            if(data['error'] != undefined) { console.log(data['error']); }
+            displaySearchResults(data, getVendor)
+        }
+    });
+}
+
+function getVendor(perid) {
+    $.ajax({
+        url: 'scripts/getVendor.php',
+        method: "GET",
+        data: "perid="+perid.id,
+        success: function(data, textStatus, jqXHR) {
+            console.log(data);
+            if('vendor' in data){ authorize(data['vendor']); }
+            else { alert("No Vendor Exists"); }
+        }
+    });
+}
