@@ -111,15 +111,21 @@ function page_init($title, $tab, $css, $js)
                                                    href="volRollover.php">Vol Rollover</a>
                                             </li>
                                         <?php }
+                                        if (in_array('artinventory', $perms)) { 
+                                        ?>
+                                        <li>
+                                            <a class="nav-link navitem <?php echo $tab == "atconArtInventory" ? "active" : ""; ?>" <?php echo $tab == "atconArtInventory" ? 'aria-current="page"' : ""; ?> href="artInventory.php?mode=inventory">Art Invetory</a>
+                                        </li>
+                                        <?php  } 
                                         if (in_array('manager', $perms)) { ?>
+                                        <li>
+                                            <a class="nav-link navitem <?php echo $tab == "artsales" ? "active" : ""; ?>" <?php echo $tab == "artsales" ? 'aria-current="page"' : "" ?> href="newArtSales.php?mode=sales">New Art Show Cashier</a>
+                                        </li>
                                         <li>
                                             <a class="nav-link navitem <?php echo $tab == "admin" ? "active" : ""; ?>" <?php echo $tab == "admin" ? 'aria-current="page"' : ""; ?> href="admin.php">Administrator</a>
                                         </li>
-                                        <li>
-                                            <a class="nav-link navitem <?php echo $tab == "atconArtInventory" ? "active" : ""; ?>" <?php echo $tab == "atconArtInventory" ? 'aria-current="page"' : ""; ?> href="artInventory.php?mode=inventory">Art Invetory Dev</a>
-                                        </li>
-
-                                        <?php  } ?>
+                                        <?php  } 
+                                        ?>
                                         <li>
                                             <a class="nav-link navitem" <?php echo $tab == "change_password" ? "active" : ""; ?>" <?php echo $tab == "change_password" ? 'aria-current="page"' : ""; ?> href="index.php?action=change_passwd">Change Password</a>
                                         </li>
