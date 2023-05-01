@@ -132,14 +132,6 @@ $conf = get_conf('con');
                 else { echo ""; }
                 } else { echo "N/R"; }
             ?></td>
-            <td><?php if($vendor['request_virtual']) {
-                if($vendor['V_purch'] > 0) echo $vendor['V_type'];
-                else if ($vendor['V_auth'] > 0) echo $vendor['V_auth'] . " authorized";
-                else { 
-                    echo "requested " . $vendor['V_req'];
-                }
-                } else { echo "N/R"; }
-            ?></td>
             <td><button onclick="authorize(<?php echo $vendor['id'];?>);">View</button></td>
             <td><button onclick="resetPw(<?php echo $vendor['id'];?>)">Reset PW</button></td>
         </tr>
