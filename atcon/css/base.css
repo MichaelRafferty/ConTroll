@@ -185,7 +185,7 @@ input.need {
 }
 
 input:placeholder-shown {
-    font-size: 80%;
+    font-style: italic;
 }
 
 /* hide up/down arrows ("spinners") on input fields marked type="number" */
