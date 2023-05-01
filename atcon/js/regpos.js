@@ -2856,38 +2856,38 @@ function review_shown() {
     <div class="row mt-1">
         <div class="col-sm-1 m-0 p-0">N:</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-first_name" id='c` + rownum + `-first_name' size="22" maxlength="32" tabindex="1" value="` + row['first_name'] +
+            <input type="text" name="c` + rownum + `-first_name" id='c` + rownum + `-first_name' size="22" maxlength="32" placeholder="First Name" tabindex="1" value="` + row['first_name'] +
             '" style="background-color:' + map_access(colors, 'first_name') + ';' +
             `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-middle_name" id='c` + rownum + `-middle_name' size="6" maxlength="32" tabindex="2" value="` + row['middle_name'] + `"/>
+            <input type="text" name="c` + rownum + `-middle_name" id='c` + rownum + `-middle_name' size="6" maxlength="32" placeholder="Middle" tabindex="2" value="` + row['middle_name'] + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-last_name" id='c` + rownum + `-last_name' size="22" maxlength="32" tabindex="3" value="` + row['last_name'] +
+            <input type="text" name="c` + rownum + `-last_name" id='c` + rownum + `-last_name' size="22" maxlength="32" placeholder="Last Name" tabindex="3" value="` + row['last_name'] +
             '" style="background-color:' + map_access(colors, 'last_name') + ';' +
             `"/>
         </div>
         <div class="col-sm-auto ms-0 me-0 p-0">
-            <input type="text" name="c` + rownum + `-suffix" id='c` + rownum + `-suffix' size="4" maxlength="4" tabindex="4" value="` + row['suffix'] + `"/>
+            <input type="text" name="c` + rownum + `-suffix" id='c` + rownum + `-suffix' size="4" maxlength="4" placeholder="Sfx" tabindex="4" value="` + row['suffix'] + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-1 m-0 p-0">BN:</div>
         <div class="col-sm-auto ms-0 me-0 p-0">
-            <input type="text" name='c` + rownum + `-badge_name' id='c` + rownum + `-badge_name' size=64 maxlength="64" tabindex='5' value="` + row['badge_name'] + `"/>
+            <input type="text" name='c` + rownum + `-badge_name' id='c` + rownum + `-badge_name' size=64 maxlength="64" placeholder="defaults to first and last name" tabindex='5' value="` + row['badge_name'] + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-1 m-0 p-0">EM:</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name='c` + rownum + `-email_addr' id='c` + rownum + `-email_addr' size=45 maxlength="64" tabindex='5'  value="` + row['email_addr'] +
+            <input type="text" name='c` + rownum + `-email_addr' id='c` + rownum + `-email_addr' size=45 maxlength="64" placeholder="Email Address" tabindex='5'  value="` + row['email_addr'] +
             '" style="background-color:' + map_access(colors, 'email_addr') + ';' +
             `"/>
         </div>
         <div class="col-sm-auto m-0 ps-2 pe-2">PH:</div>
          <div class="col-sm-auto ms-0 me-0 p-0">
-            <input type="text" name='c` + rownum + `-phone' id='c` + rownum + `-phone' size=15 maxlength="15" tabindex='5'  value="` + row['phone'] +
+            <input type="text" name='c` + rownum + `-phone' id='c` + rownum + `-phone' size=15 maxlength="15" placeholder="Phone Number" tabindex='5'  value="` + row['phone'] +
             '" style="background-color:' + map_access(colors, 'phone') + ';' +
             `"/>
         </div>
@@ -2895,7 +2895,7 @@ function review_shown() {
     <div class="row">
         <div class="col-sm-1 m-0 p-0">A1:</div>
         <div class="col-sm-auto ms-0 me-0 p-0">
-            <input type="text" name='c` + rownum + `-address_1' id='c` + rownum + `-address_1' size=64 maxlength="64" tabindex='5'  value="` + row['address_1'] +
+            <input type="text" name='c` + rownum + `-address_1' id='c` + rownum + `-address_1' size=64 maxlength="64" placeholder="Street Address" tabindex='5'  value="` + row['address_1'] +
             '" style="background-color:' + map_access(colors, 'address_1') + ';' +
             `"/>
         </div>
@@ -2903,23 +2903,23 @@ function review_shown() {
     <div class="row">
         <div class="col-sm-1 m-0 p-0">A2:</div>
         <div class="col-sm-auto ms-0 me-0 p-0">
-            <input type="text" name='c` + rownum + `-address_2' id='c` + rownum + `-address_2' size=64 maxlength="64" tabindex='5'  value="` + row['address_2'] + `"/>
+            <input type="text" name='c` + rownum + `-address_2' id='c` + rownum + `-address_2' size=64 maxlength="64" placeholder="2nd line of Address (if needed, such as comoany)" tabindex='5'  value="` + row['address_2'] + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-1 m-0 p-0">A3:</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-city" id='c` + rownum + `-city' size="22" maxlength="32" tabindex="7" value="` + row['city'] +
+            <input type="text" name="c` + rownum + `-city" id='c` + rownum + `-city' size="22" maxlength="32" placeholder="City" tabindex="7" value="` + row['city'] +
             '" style="background-color:' + map_access(colors, 'city') + ';' +
             `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-state" id='c` + rownum + `-state' size="2" maxlength="2" tabindex="8" value="` + row['state'] +
+            <input type="text" name="c` + rownum + `-state" id='c` + rownum + `-state' size="2" maxlength="2" placeholder="ST" tabindex="8" value="` + row['state'] +
             '" style="background-color:' + map_access(colors, 'state') + ';' +
             `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-postal_code" id='c` + rownum + `-postal_code' size="10" maxlength="10" tabindex="9" value="` + row['postal_code'] +
+            <input type="text" name="c` + rownum + `-postal_code" id='c` + rownum + `-postal_code' size="10" maxlength="10" placeholder="Postal Code" tabindex="9" value="` + row['postal_code'] +
             '" style="background-color:' + map_access(colors, 'postal_code') + ';' +
             `"/>
         </div>

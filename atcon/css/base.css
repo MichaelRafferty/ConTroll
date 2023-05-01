@@ -184,6 +184,10 @@ input.need {
     border-color: #f00;
 }
 
+input:placeholder-shown {
+    font-size: 80%;
+}
+
 /* hide up/down arrows ("spinners") on input fields marked type="number" */
 .no-spinners {
     -moz-appearance: textfield;
