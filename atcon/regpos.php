@@ -154,10 +154,8 @@ page_init($page, $tab,
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
                                     <select name='country' id="country" tabindex='10'>
-                                        <option value="USA" selected>United States</option>
-                                        <option value="CAN">Canada</option>
                                     <?php
-                                    $fh = fopen("lib/countryCodes.csv","r");
+                                    $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
                                     while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
                                         echo "<option value='".$data[1]."'>".$data[0]."</option>";
                                     }

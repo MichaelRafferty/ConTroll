@@ -148,10 +148,8 @@ $onsitesale = $startdate->format("l, F j");
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
                                     <select name='country' tabindex='10'>
-                                        <option value="USA" default='true'>United States</option>
-                                        <option value="CAN">Canada</option>
                                     <?php
-                      $fh = fopen("countryCodes.csv","r");
+                      $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
                       while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
                           echo "<option value='".$data[1]."'>".$data[0]."</option>";
                       }
@@ -399,7 +397,7 @@ $onsitesale = $startdate->format("l, F j");
                              <div class="col-sm-auto ms-0 me-0 p-0">
                                   <select id='cc_country' class='ccdata' required='required' name='country' size=1>
                                       <?php
-                                      $fh = fopen("countryCodes.csv","r");
+                                      $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
                                       while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
                                           echo "<option value='".$data[1]."'>".$data[0]."</option>";
                                       }
