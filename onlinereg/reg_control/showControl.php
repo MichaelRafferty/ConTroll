@@ -34,10 +34,10 @@ $artR = dbSafeQuery($artQ, 'ii', array($conid, $id));
 $artist = fetch_safe_assoc($artR);
 
 
-function getInfo($pin, $id) {
+function getInfo($id, $conid) {
   global $con;
   $artshowQ = "SELECT * FROM artshow WHERE id=? AND conid=?;";
-  $artshowR = dbSafeQuery($artshowQ, 'ii', array($pin, $id));
+  $artshowR = dbSafeQuery($artshowQ, 'ii', array($id, $conid));
   $artshowInfo = fetch_safe_assoc($artshowR);
   $perid = $artshowInfo['perid'];
   $artid = $artshowInfo['artid'];
@@ -62,10 +62,10 @@ function getInfo($pin, $id) {
 
 function getArtwork($id) {
     $artQ = <<<EOS
-SELECT I.item_key, I.title, I.type, I.status, I.material, I.original_qty, I.quantity, I.min_price, I.sale_price
+SELECT I.item_key, I.title, I.type, I.status, I.material, I.original_qty, I.quantity, I.min_price, I.sale_price,
     I.final_price, concat_ws(' ', P.first_name, P.last_name) as name, P.email_addr
 FROM artItems as I
-LEFT JOIN perinfo P (ON P.id=I.bidder)
+LEFT JOIN perinfo P ON P.id=I.bidder
 WHERE artshow=?;
 EOS;
     #print($artQ);
@@ -93,7 +93,7 @@ EOS;
 <body>
 <h2> Art Control Sheet for <?php echo $artist['art_name']; ?></h2>
 <h4>Artist & Agent Information</h4>
-<?php $info = getInfo($artist['id'], $id); 
+<?php $info = getInfo($artist['id'], $conid); 
 #var_dump($info); 
 ?>
   <p>Artist Number: <?php echo $info['artshow']['art_key']; ?><br/>
