@@ -169,7 +169,7 @@ $conf = get_conf('con');
             <td class='formfield'><input type='text' name='ship_zip' id='ship_zip' size=10/></td>
             <td class='formfield'><select id='ship_country' name='ship_country' size=1 width=20>
               <?php
-              $fh = fopen("lib/countryCodes.csv","r");
+              $fh = fopen(__DIR__ . '/../../lib/countryCodes.csv', 'r');
               while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
                 echo "<option value='".$data[1]."'>".$data[0]."</option>";
               }

@@ -6,6 +6,7 @@ require_once("../lib/cc__load_methods.php");
 
 $cc = get_conf('cc');
 $con = get_conf('con');
+$conid = $con['id'];
 $vendor = get_conf('vendor');
 $reg = get_conf('reg');
 load_cc_procs();
@@ -259,7 +260,7 @@ if (!$in_session) { ?>
                     <label for="password">*Password: </label>
                 </div>
                 <div class="col-sm-auto">
-                    <input class="form-control-sm" type='password' name='password1' size="40"/>
+                    <input class="form-control-sm" type='password' name='password' size="40"/>
                 </div>
             </div>   
             <div class="row mt-2">
@@ -280,7 +281,10 @@ if (!$in_session) { ?>
         </div>
     </div>
 </div>
-<?php } else { 
+<?php
+    return;
+}
+// this section is for 'in-session' management
 $vendorQ = "SELECT name, email, website, description, request_dealer, request_artistalley, request_fanac need_new FROM vendors WHERE id=?;";
 $info = fetch_safe_assoc(dbSafeQuery($vendorQ, 'i', array($vendor)));
 
@@ -295,327 +299,373 @@ if($info['need_new']) {
     </form>
 <?php
 } else {
+    // modals for each section
 ?>
-<div id='updateProfile'>
-    <form id='vendor_update' action='javascript:void(0)'>
-        <label>Website: <input type='text' name='website' value='<?php echo $info['website'];?>'></input></label>
-        <label>Description: <textarea name='description' rows=5 cols=40><?php echo $info['description'];?></textarea></label><br/>
-        <input type='submit' onClick='updateProfile()' value='Update'></input>
-    </form>
-</div>
-<div id='changePassword'>
-    <form id='changepw' action='javascript:void(0)'>
-        <label>Old Password: <input type='password' id='oldPw' name='oldPassword'></input></label><br/>
-        <label>New Password: <input type='password' id='pw2' name='password'></input></label><br/>
-        <label>Re-enter Password: <input type='password' name='password2'></input></label><br/>
-        <input type='submit' onClick='changePassword()' value='Change'></input>
-    </form>
-</div>
-<div id='dealer_req'>
-    <p class='warn'>Please make sure your profile contains a good description of what you will be vending and a link for our staff to see what you sell if at all possible.</p>
-    <form id='dealer_req_form' action='javascript:void(0)'>
-        <label>How many 6x6 spaces are you requesting? <select name='dealer_6'><option>0</option><option>1</option><option>2</option></select><br/> $<?php echo $price_list['dealer_6']; ?> per space.
-        <br/>
-        <label>How many 10x10 spaces are you requesting? <select name='dealer_10'><option>0</option><option>1</option><option>2</option></select><br/> $<?php echo $price_list['dealer_10']; ?> per space.
-        <br/>
-        <br/>
-        You will be able to identify people for the free memberships<br/> and purchase discounted memberships later, if your request <br/>is approved.<br/>
-        <input type='submit' onclick='dealer_req();'></input><input type='reset'></input>
-    </form>
-    <br/><span class='warn small'>Completing this application does not guarantee space.</span>
-</div>
-<div id='alley_req'>
-    <p class='warn'>Please make sure your profile contains a good description of your art and a link for our staff to see it if at all possible.</p>
-    <form id='alley_req_form' action='javascript:void(0)'>
-        <label>How many tables are you requesting? <select name='alley_tables'><option>1</option><option>2</option></select><br/> $<?php echo $price_list['alley']; ?> per table.
-        <br/>
-        <br/>
-        You will have an option to purchase discounted memberships<br/> later, if your request is approved.<br/>
-        <input type='submit' onclick='alley_req();'></input><input type='reset'></input>
-    </form>
-    <br/><span class='warn small'>Completing this application does not guarantee space.</span>
-</div>
-<?php /*
-<div id='virtual_req'>
-    <p class='warn'>Please make sure your profile contains a good description of what you're selling and a link for our staff to see it if at all possible.</p>
-    <form id='virtual_req_form' action='javascript:void(0)'>
-        Joining the virtual vendor space costs $<?php echo $price_list['virtual']; ?>.<br/>
-        <br/>
-        <br/>
-        <input type='submit' onclick='virtual_req();'></input><input type='reset'></input>
-    </form>
-    <br/><span class='warn small'>Completing this application does not guarantee space.</span>
-</div>
-*/ ?>
-<div id='alley_invoice'>
-    <?php echo $info['name'];?> you are approved for <span id='alley_count'></span> <span id='alley_size'></span> Artist Alley Tables at $<span id='alley_price'></span>.  You may purchase 1 discounted membership per table at $<span id='alley_mem_price'></span>, anyone working the table must have a mebership to the convention.
+    <div id='updateProfile' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Update Vendor Profile' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header' style='background-color: lightcyan;'>
+                    <div class='modal-title'>
+                        <strong>Update Vendor Profile</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <form id='vendor_update' action='javascript:void(0)'>
+                        <label>Website: <input type='text' name='website' value='<?php echo $info['website'];?>'></input></label>
+                        <label>Description: <textarea name='description' rows=5 cols=40><?php echo $info['description'];?></textarea></label><br/>
+                        <input type='submit' onClick='updateProfile()' value='Update'></input>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id='changePassword' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Change Vendor Account Password' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header' style='background-color: lightcyan;'>
+                    <div class='modal-title'>
+                        <strong>Change Vendor Account Password</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <form id='changepw' action='javascript:void(0)'>
+                        <label>Old Password: <input type='password' id='oldPw' name='oldPassword'></input></label><br/>
+                        <label>New Password: <input type='password' id='pw2' name='password'></input></label><br/>
+                        <label>Re-enter Password: <input type='password' name='password2'></input></label><br/>
+                        <input type='submit' onClick='changePassword()' value='Change'></input>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id='dealer_req' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request Dealer Space' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header' style='background-color: lightcyan;'>
+                    <div class='modal-title'>
+                        <strong>Request Dealer Space</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <p class='warn'>Please make sure your profile contains a good description of what you will be vending and a link for our staff to see what
+                        you sell if at all possible.</p>
+                    <form id='dealer_req_form' action='javascript:void(0)'>
+                        <label>How many 6x6 spaces are you requesting? <select name='dealer_6'>
+                                <option>0</option>
+                                <option>1</option>
+                                <option>2</option>
+                            </select><br/> $<?php echo $price_list['dealer_6']; ?> per space.
+                            <br/>
+                            <label>How many 10x10 spaces are you requesting? <select name='dealer_10'>
+                                    <option>0</option>
+                                    <option>1</option>
+                                    <option>2</option>
+                                </select><br/> $<?php echo $price_list['dealer_10']; ?> per space.
+                                <br/>
+                                <br/>
+                                You will be able to identify people for the free memberships<br/> and purchase discounted memberships later, if your request
+                                <br/>is approved.<br/>
+                                <input type='submit' onclick='dealer_req();'></input><input type='reset'></input>
+                    </form>
+                    <br/><span class='warn small'>Completing this application does not guarantee space.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id='alley_req' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request Artist Alley Space' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header' style='background-color: lightcyan;'>
+                    <div class='modal-title'>
+                        <strong>Request Artist Alley Space</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <p class='warn'>Please make sure your profile contains a good description of your art and a link for our staff to see it if at all
+                        possible.</p>
+                    <form id='alley_req_form' action='javascript:void(0)'>
+                        <label>How many tables are you requesting? <select name='alley_tables'>
+                                <option>1</option>
+                                <option>2</option>
+                            </select><br/> $<?php echo $price_list['alley']; ?> per table.
+                            <br/>
+                            <br/>
+                            You will have an option to purchase discounted memberships<br/> later, if your request is approved.<br/>
+                            <input type='submit' onclick='alley_req();'></input><input type='reset'></input>
+                    </form>
+                    <br/><span class='warn small'>Completing this application does not guarantee space.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id='virtual_req' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request Virtual Vendor Space' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header' style='background-color: lightcyan;'>
+                    <div class='modal-title'>
+                        <strong>Request Virtual; Vendor Space</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
 
-    <hr/>
-    <form id='alley_invoice_form' action='javascript:void(0);'>
-        <span class='blocktitle'>Vendor Information</span><br/>
-        Please fill out this section with information on the vendor or store.
-        <input type='hidden' name='vendor' id='alley_id' value='<?php echo $vendor;?>'/> <br/>
-        Name: <input type='text' name='name' id='alley_name' value='<?php echo $info['name'];?>'/>
-        Email: <input type='text' name='email' id='alley_email' value='<?php echo $info['email'];?>'/>
-        Address: <input type='text' name='address'/><br/>
-        City: <input type='text' name='city'/> State: <input type='text' name='state' size=3/> Zip: <input type='text' name='zip' size=6/><br/>
-        
-        <br/>
-        Maryland Retail Tax ID: <input type='text' name='taxid'></input><br/>
-        (If you have one.  If you do not, Balticon will get you a temporary ID for this event.)<br/>
-        <br/>
-        Subtotal for Spaces $<span id='alley_invoice_cost'></span><br/>
-        Membership costs will be calculated below.
-        <input type='hidden' id='alley_table_cost' name='table_sub'/>
-        <input type='hidden' id='alley_item_count' name='table_count'/>
-        Special Requests (electricity, same location as last year, etc.  We will try, but cannot guarantee, to honor your request):<br/>
-        <textarea name='requests'></textarea>
-        <hr/>
-        As an Arist Alley artist you have the option to be included in our marketing materials.
-        <label><input type='checkbox' name='alley_bsfan'></input>List me in the BSFan Program Book</label><br/>
-        <label><input type='checkbox' name='alley_website'></input>List me on the Website</label><br/>
-        <label><input type='checkbox' name='alley_some'></input>List me on social media</label><br/>
-        <label><input type='checkbox' name='alley_prog'></input>I want to participate in Programing</label><br/>
-        <label><input type='checkbox' name='alley_demo'></input>I am interested in presenting a lecture or workshop</label><br/>
-        <hr/>
-        Discount Memberships: <span id='alley_membership_count'></span><br/>
-        <label><input type='checkbox' name='alley_mem1_have' onchange='$("#alley_mem1").toggle(); updateMemCount("mem1", this);'></input>I expect to recieve a membership from another source, if this changes I will contact the artist alley coordinator.  I understand everyone staffing the table needs a membership.</label>
-        <div id='alley_mem1'>
-            Name: 
-            <input type='text' name='alley_mem1_fname' size=15/>
-            <input type='text' name='alley_mem1_mname' size=10/>
-            <input type='text' name='alley_mem1_lname' size=15/>
-            <br/>
-            Badge Name: <input type='text' name='alley_mem1_bname'/><br/>
-            Address: <input type='text' name='alley_mem1_address'/><br/>
-            Company: <input type='text' name='alley_mem1_addr2'/><br/>
-            City: <input type='text' name='alley_mem1_city'/> State: <input type='text' name='alley_mem1_state' size=3/> Zip: <input type='text' name='alley_mem1_zip' size=6/><br/>
+                    <p class='warn'>Please make sure your profile contains a good description of what you're selling and a link for our staff to see it if at
+                        all possible.</p>
+                    <form id='virtual_req_form' action='javascript:void(0)'>
+                        Joining the virtual vendor space costs $<?php echo $price_list['virtual']; ?>.<br/>
+                        <br/>
+                        <br/>
+                        <input type='submit' onclick='virtual_req();'></input><input type='reset'></input>
+                    </form>
+                    <br/><span class='warn small'>Completing this application does not guarantee space.</span>
+                </div>
+            </div>
         </div>
-        <br/>
-        <label id='alley_mem2_need'><input type='checkbox' name='alley_mem2_have' onchange='$("#alley_mem2").toggle(); updateMemCount("mem2", this);'></input>I do not need a second membership or expect to recieve a membership from another source, if this changes I will contact the artist alley coordinator.  I understand everyone staffing the table needs a membership.</label>
-        <div id='alley_mem2'>
-            Name: 
-            <input type='text' name='alley_mem2_fname' size=15/>
-            <input type='text' name='alley_mem2_mname' size=10/>
-            <input type='text' name='alley_mem2_lname' size=15/>
-            <br/>
-            Badge Name: <input type='text' name='alley_mem2_bname'/><br/>
-            Address: <input type='text' name='alley_mem2_address'/><br/>
-            Company: <input type='text' name='alley_mem2_addr2'/><br/>
-            City: <input type='text' name='alley_mem2_city'/> State: <input type='text' name='alley_mem2_state' size=3/> Zip: <input type='text' name='alley_mem2_zip' size=6/><br/>
-        </div>
-        <hr/>
-        Subtotal for Memberships $<span id='alley_member_cost'></span><br/>
-        Total: $<span id='alley_total_cost'></span><br/>
-        <input type='hidden' id='alley_mem_cost' name='mem_cost'/>
-        <input type='hidden' id='alley_mem_count' name='mem_cnt'/>
-        <input type='hidden' id='alley_member_total' name='mem_total'/>
-        <input type='hidden' id='alley_total' name='total'/>
-        Payment Information:
-      <?php
-        if($ini['test']==1) {
-      ?>
-      <h2 class='warn'>This won't charge your credit card, or do anything else.</h2>
-      <?php
-         }
-      ?>
+    </div>
+    <div id='alley_invoice' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Artist Alley Invoice' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header' style='background-color: lightcyan;'>
+                    <div class='modal-title'>
+                        <strong>Artist Alley Invoice</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <?php echo $info['name']; ?> you are approved for <span id='alley_count'></span> <span id='alley_size'></span> Artist Alley Tables at $<span
+                        id='alley_price'></span>. You may purchase 1 discounted membership per table at $<span id='alley_mem_price'></span>, anyone working the
+                    table must have a mebership to the convention.
 
-      First Name: <input type='text' name='fname' required='required'/><br/>
-      Last Name: <input type='text' name='lname' required='required'/><br/>
-      Street <input type='text' name='street' required='required'/>
-      City: <input type='text' name='city'/> State: <input type='text' name='state' size=3/> Zip: <input type='text' name='zip' size=6/><br/>
-      Country: <select class='ccdata' required='required' name='country' size=1>
-        <?php
-        $fh = fopen("countryCodes.csv","r");
-        while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-          echo "<option value='".$data[1]."'>".$data[0]."</option>";
-        }
-        fclose($fh);
-        ?>
-      </select>
-      <br/>
-      </select>
-      <br/>
-      We Accept<br/>
-      <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/><br/>
-    <hr/>
-    Please wait for the email, and don't click the submit more than once.
-    <?php draw_cc_html($cc,"--",1); ?>
-    <input type='reset'></input>
+                    <hr/>
+                    <form id='alley_invoice_form' action='javascript:void(0);'>
+                        <span class='blocktitle'>Vendor Information</span><br/>
+                        Please fill out this section with information on the vendor or store.
+                        <input type='hidden' name='vendor' id='alley_id' value='<?php echo $vendor; ?>'/> <br/>
+                        Name: <input type='text' name='name' id='alley_name' value='<?php echo $info['name']; ?>'/>
+                        Email: <input type='text' name='email' id='alley_email' value='<?php echo $info['email']; ?>'/>
+                        Address: <input type='text' name='address'/><br/>
+                        City: <input type='text' name='city'/> State: <input type='text' name='state' size=3/> Zip: <input type='text' name='zip' size=6/><br/>
 
+                        <br/>
+                        Maryland Retail Tax ID: <input type='text' name='taxid'></input><br/>
+                        (If you have one. If you do not, Balticon will get you a temporary ID for this event.)<br/>
+                        <br/>
+                        Subtotal for Spaces $<span id='alley_invoice_cost'></span><br/>
+                        Membership costs will be calculated below.
+                        <input type='hidden' id='alley_table_cost' name='table_sub'/>
+                        <input type='hidden' id='alley_item_count' name='table_count'/>
+                        Special Requests (electricity, same location as last year, etc. We will try, but cannot guarantee, to honor your request):<br/>
+                        <textarea name='requests'></textarea>
+                        <hr/>
+                        As an Arist Alley artist you have the option to be included in our marketing materials.
+                        <label><input type='checkbox' name='alley_bsfan'></input>List me in the BSFan Program Book</label><br/>
+                        <label><input type='checkbox' name='alley_website'></input>List me on the Website</label><br/>
+                        <label><input type='checkbox' name='alley_some'></input>List me on social media</label><br/>
+                        <label><input type='checkbox' name='alley_prog'></input>I want to participate in Programing</label><br/>
+                        <label><input type='checkbox' name='alley_demo'></input>I am interested in presenting a lecture or workshop</label><br/>
+                        <hr/>
+                        Discount Memberships: <span id='alley_membership_count'></span><br/>
+                        <label><input type='checkbox' name='alley_mem1_have' onchange='$("#alley_mem1").toggle(); updateMemCount("mem1", this);'></input>I
+                            expect to recieve a membership from another source, if this changes I will contact the artist alley coordinator. I understand
+                            everyone staffing the table needs a membership.</label>
+                        <div id='alley_mem1'>
+                            Name:
+                            <input type='text' name='alley_mem1_fname' size=15/>
+                            <input type='text' name='alley_mem1_mname' size=10/>
+                            <input type='text' name='alley_mem1_lname' size=15/>
+                            <br/>
+                            Badge Name: <input type='text' name='alley_mem1_bname'/><br/>
+                            Address: <input type='text' name='alley_mem1_address'/><br/>
+                            Company: <input type='text' name='alley_mem1_addr2'/><br/>
+                            City: <input type='text' name='alley_mem1_city'/> State: <input type='text' name='alley_mem1_state' size=3/> Zip: <input type='text'
+                                                                                                                                                     name='alley_mem1_zip'
+                                                                                                                                                     size=6/><br/>
+                        </div>
+                        <br/>
+                        <label id='alley_mem2_need'><input type='checkbox' name='alley_mem2_have'
+                                                           onchange='$("#alley_mem2").toggle(); updateMemCount("mem2", this);'></input>I do not need a second
+                            membership or expect to recieve a membership from another source, if this changes I will contact the artist alley coordinator. I
+                            understand everyone staffing the table needs a membership.</label>
+                        <div id='alley_mem2'>
+                            Name:
+                            <input type='text' name='alley_mem2_fname' size=15/>
+                            <input type='text' name='alley_mem2_mname' size=10/>
+                            <input type='text' name='alley_mem2_lname' size=15/>
+                            <br/>
+                            Badge Name: <input type='text' name='alley_mem2_bname'/><br/>
+                            Address: <input type='text' name='alley_mem2_address'/><br/>
+                            Company: <input type='text' name='alley_mem2_addr2'/><br/>
+                            City: <input type='text' name='alley_mem2_city'/> State: <input type='text' name='alley_mem2_state' size=3/> Zip: <input type='text'
+                                                                                                                                                     name='alley_mem2_zip'
+                                                                                                                                                     size=6/><br/>
+                        </div>
+                        <hr/>
+                        Subtotal for Memberships $<span id='alley_member_cost'></span><br/>
+                        Total: $<span id='alley_total_cost'></span><br/>
+                        <input type='hidden' id='alley_mem_cost' name='mem_cost'/>
+                        <input type='hidden' id='alley_mem_count' name='mem_cnt'/>
+                        <input type='hidden' id='alley_member_total' name='mem_total'/>
+                        <input type='hidden' id='alley_total' name='total'/>
+                        Payment Information:
+                        <?php
+                        if ($ini['test'] == 1) {
+                            ?>
+                            <h2 class='warn'>This won't charge your credit card, or do anything else.</h2>
+                            <?php
+                        }
+                        ?>
 
-    </form>
-</div>
-<div id='dealer_invoice'>
-    <?php echo $info['name'];?> you are approved for <span id='dealer_count'></span> <span id='dealer_size'></span> spaces at $<span id='dealer_price'></span>.  Each space comes with one membership. <br/> 
-    You may request up to two additional memberships at $55.
-    <hr/>
-    <form id='dealer_invoice_form' action='javascript:void(0);'>
-        <span class='blocktitle'>Vendor Information</span><br/>
-        Please fill out this section with information on the vendor or store.
-        <input type='hidden' name='vendor' id='dealer_id' value='<?php echo $vendor;?>'/> <br/>
-        Name: <input type='text' name='name' id='dealer_name' value='<?php echo $info['name'];?>'/>
-        Email: <input type='text' name='email' id='dealer_email' value='<?php echo $info['email'];?>'/>
-        Address: <input type='text' name='address'/><br/>
-        City: <input type='text' name='city'/> State: <input type='text' name='state' size=3/> Zip: <input type='text' name='zip' size=6/><br/>
-        
-        <br/>
-        Maryland Retail Tax ID: <input type='text' name='taxid'></input><br/>
-        (If you have one.  If you do not, Balticon will get you a temporary ID for this event.)<br/>
-        <br/>
-        Cost for Spaces $<span id='dealer_space_cost'></span><br/>
-        <input type='hidden' id='dealer_space_sub' name='table_sub'/>
-        <input type='hidden' id='dealer_cost' name='total'/>
-        <input type='hidden' id='dealer_type' name='type'/>
-        <input type='hidden' id='dealer_item_count' name='count'/>
-        Special Requests:<br/>
-        <textarea name='requests'></textarea>
-        <hr/>
-        Included Memberships: <span id='dealer_mem_count'></span>
-        <input type='hidden' id='dealer_free_mem' name='free_mem_count'/>
-        <div id='dealer_mem1'>
-            Name: 
-            <input type='text' name='dealer_mem1_fname'/ size=15>
-            <input type='text' name='dealer_mem1_mname'/ size=10>
-            <input type='text' name='dealer_mem1_lname'/ size=15>
-            <br/>
-            Badge Name: <input type='text' name='dealer_mem1_bname'/><br/>
-            Address: <input type='text' name='dealer_mem1_address'/><br/>
-            Company: <input type='text' name='dealer_mem1_addr2'/><br/>
-            City: <input type='text' name='dealer_mem1_city'/> State: <input type='text' name='dealer_mem1_state' size=3/> Zip: <input type='text' name='dealer_mem1_zip' size=6/><br/>
+                        First Name: <input type='text' name='fname' required='required'/><br/>
+                        Last Name: <input type='text' name='lname' required='required'/><br/>
+                        Street <input type='text' name='street' required='required'/>
+                        City: <input type='text' name='city'/> State: <input type='text' name='state' size=3/> Zip: <input type='text' name='zip' size=6/><br/>
+                        Country: <select class='ccdata' required='required' name='country' size=1>
+                            <?php
+                            $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
+                            while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {
+                                echo "<option value='" . $data[1] . "'>" . $data[0] . "</option>";
+                            }
+                            fclose($fh);
+                            ?>
+                        </select>
+                        <br/>
+                        </select>
+                        <br/>
+                        We Accept<br/>
+                        <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/><br/>
+                        <hr/>
+                        Please wait for the email, and don't click the submit more than once.
+                        <?php draw_cc_html($cc, "--", 1); ?>
+                        <input type='reset'></input>
+                    </form>
+                </div>
+            </div>
         </div>
-        <br/>
-        <div id='dealer_mem2'>
-            Name: 
-            <input type='text' name='dealer_mem2_fname'/ size=15>
-            <input type='text' name='dealer_mem2_mname'/ size=10>
-            <input type='text' name='dealer_mem2_lname'/ size=15>
-            <br/>
-            Badge Name: <input type='text' name='dealer_mem2_bname'/><br/>
-            Address: <input type='text' name='dealer_mem2_address'/><br/>
-            Company: <input type='text' name='dealer_mem2_addr2'/><br/>
-            City: <input type='text' name='dealer_mem2_city'/> State: <input type='text' name='dealer_mem2_state' size=3/> Zip: <input type='text' name='dealer_mem2_zip' size=6/><br/>
-        </div>
-        Select number of additional memberships at $<span 'dealer_mem_price'>55</span>:
-        <select id='dealer_num_paid' name='dealer_num_paid' onchange='updateDealerPaid()'>
-            <option value='0'>0</option>
-            <option value='1'>1</option>
-            <option value='2'>2</option>
-        </select>
-        <div id='dealer_paid1'>
-            Name: 
-            <input type='text' name='dealer_paid1_fname'/ size=15>
-            <input type='text' name='dealer_paid1_mname'/ size=10>
-            <input type='text' name='dealer_paid1_lname'/ size=15>
-            <br/>
-            Badge Name: <input type='text' name='dealer_paid1_bname'/><br/>
-            Address: <input type='text' name='dealer_paid1_address'/><br/>
-            Company: <input type='text' name='dealer_paid1_addr2'/><br/>
-            City: <input type='text' name='dealer_paid1_city'/> State: <input type='text' name='dealer_paid1_state' size=3/> Zip: <input type='text' name='dealer_paid1_zip' size=6/><br/>
-        </div>
-        <br/>
-        <div id='dealer_paid2'>
-            Name: 
-            <input type='text' name='dealer_paid2_fname'/ size=15>
-            <input type='text' name='dealer_paid2_mname'/ size=10>
-            <input type='text' name='dealer_paid2_lname'/ size=15>
-            <br/>
-            Badge Name: <input type='text' name='dealer_paid2_bname'/><br/>
-            Address: <input type='text' name='dealer_paid2_address'/><br/>
-            Company: <input type='text' name='dealer_paid2_addr2'/><br/>
-            City: <input type='text' name='dealer_paid2_city'/> State: <input type='text' name='dealer_paid2_state' size=3/> Zip: <input type='text' name='dealer_paid2_zip' size=6/><br/>
-        </div>
-        Cost for Memberships: $<span id='dealer_mem_cost'>0</span>
-        <input type='hidden' id='dealer_paid_mem_count' name='mem_cnt'/>
-        <hr/>
-        Total: <span id='dealer_invoice_cost'></span>
-        Payment Information:
-      <?php
-        if($ini['test']==1) {
-      ?>
-      <h2 class='warn'>This won't charge your credit card, or do anything else.</h2>
-      <?php
-         }
-      ?>
-      <br/>
-      We Accept<br/>
-      <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/><br/>
-    <hr/>
-    Please wait for the email, and don't click the submit more than once.
-    <?php draw_cc_html($cc,"--",2); ?>
-    <input type='reset'></input>
+    </div>
+    <div id='dealer_invoice' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Dealer Invoice' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header' style='background-color: lightcyan;'>
+                    <div class='modal-title'>
+                        <strong>Dealer Invoice</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <?php echo $info['name']; ?> you are approved for <span id='dealer_count'></span> <span id='dealer_size'></span> spaces at $<span
+                        id='dealer_price'></span>. Each space comes with one membership. <br/>
+                    You may request up to two additional memberships at $55.
+                    <hr/>
+                    <form id='dealer_invoice_form' action='javascript:void(0);'>
+                        <span class='blocktitle'>Vendor Information</span><br/>
+                        Please fill out this section with information on the vendor or store.
+                        <input type='hidden' name='vendor' id='dealer_id' value='<?php echo $vendor; ?>'/> <br/>
+                        Name: <input type='text' name='name' id='dealer_name' value='<?php echo $info['name']; ?>'/>
+                        Email: <input type='text' name='email' id='dealer_email' value='<?php echo $info['email']; ?>'/>
+                        Address: <input type='text' name='address'/><br/>
+                        City: <input type='text' name='city'/> State: <input type='text' name='state' size=3/> Zip: <input type='text' name='zip' size=6/><br/>
 
-    </form>
-</div>
-<script>
-    $(function() {
-        $('#dealer_req').dialog({
-            title: "Dealer Space Request",
-            autoOpen: false,
-            width: 500,
-            height: 450,
-            modal: true
-        });
-        $('#alley_req').dialog({
-            title: "Artist Alley Request",
-            autoOpen: false,
-            width: 500,
-            height: 350,
-            modal: true
-        });
-        <?php /* 
-        $('#virtual_req').dialog({
-            title: "Virtual Vendor Space Request",
-            autoOpen: false,
-            width: 500,
-            height: 350,
-            modal: true
-        });
-        */ ?>
-    });
-    $(function() {
-        $('#dealer_invoice').dialog({
-            title: "Dealers Room Invoice",
-            autoOpen: false,
-            width: 600,
-            height: 800,
-            modal: true
-        });
-        $('#alley_invoice').dialog({
-            title: "Artist Alley Invoice",
-            autoOpen: false,
-            width: 600,
-            height: 800,
-            modal: true
-        });
-        <?php /*
-        $('#virtual_invoice').dialog({
-            title: "Virtual Vendor Invoice",
-            autoOpen: false,
-            width: 600,
-            height: 800,
-            modal: true
-        });
-        */ ?>
-    });
-    $(function() {
-        $('#updateProfile').dialog({
-            title: 'Update Profile',
-            autoOpen: false,
-            width: 500,
-            height: 300,
-            modal: true
-        });
-        $('#changePassword').dialog({
-            title: 'Change Password',
-            autoOpen: false,
-            width: 500,
-            height: 300,
-            modal: true
-        });
-    });
-</script>
-<div id='main'>
+                        <br/>
+                        Maryland Retail Tax ID: <input type='text' name='taxid'></input><br/>
+                        (If you have one. If you do not, Balticon will get you a temporary ID for this event.)<br/>
+                        <br/>
+                        Cost for Spaces $<span id='dealer_space_cost'></span><br/>
+                        <input type='hidden' id='dealer_space_sub' name='table_sub'/>
+                        <input type='hidden' id='dealer_cost' name='total'/>
+                        <input type='hidden' id='dealer_type' name='type'/>
+                        <input type='hidden' id='dealer_item_count' name='count'/>
+                        Special Requests:<br/>
+                        <textarea name='requests'></textarea>
+                        <hr/>
+                        Included Memberships: <span id='dealer_mem_count'></span>
+                        <input type='hidden' id='dealer_free_mem' name='free_mem_count'/>
+                        <div id='dealer_mem1'>
+                            Name:
+                            <input type='text' name='dealer_mem1_fname'/ size=15>
+                            <input type='text' name='dealer_mem1_mname'/ size=10>
+                            <input type='text' name='dealer_mem1_lname'/ size=15>
+                            <br/>
+                            Badge Name: <input type='text' name='dealer_mem1_bname'/><br/>
+                            Address: <input type='text' name='dealer_mem1_address'/><br/>
+                            Company: <input type='text' name='dealer_mem1_addr2'/><br/>
+                            City: <input type='text' name='dealer_mem1_city'/> State: <input type='text' name='dealer_mem1_state' size=3/> Zip: <input
+                                type='text' name='dealer_mem1_zip' size=6/><br/>
+                        </div>
+                        <br/>
+                        <div id='dealer_mem2'>
+                            Name:
+                            <input type='text' name='dealer_mem2_fname'/ size=15>
+                            <input type='text' name='dealer_mem2_mname'/ size=10>
+                            <input type='text' name='dealer_mem2_lname'/ size=15>
+                            <br/>
+                            Badge Name: <input type='text' name='dealer_mem2_bname'/><br/>
+                            Address: <input type='text' name='dealer_mem2_address'/><br/>
+                            Company: <input type='text' name='dealer_mem2_addr2'/><br/>
+                            City: <input type='text' name='dealer_mem2_city'/> State: <input type='text' name='dealer_mem2_state' size=3/> Zip: <input
+                                type='text' name='dealer_mem2_zip' size=6/><br/>
+                        </div>
+                        Select number of additional memberships at $<span 'dealer_mem_price'>55</span>:
+                        <select id='dealer_num_paid' name='dealer_num_paid' onchange='updateDealerPaid()'>
+                            <option value='0'>0</option>
+                            <option value='1'>1</option>
+                            <option value='2'>2</option>
+                        </select>
+                        <div id='dealer_paid1'>
+                            Name:
+                            <input type='text' name='dealer_paid1_fname'/ size=15>
+                            <input type='text' name='dealer_paid1_mname'/ size=10>
+                            <input type='text' name='dealer_paid1_lname'/ size=15>
+                            <br/>
+                            Badge Name: <input type='text' name='dealer_paid1_bname'/><br/>
+                            Address: <input type='text' name='dealer_paid1_address'/><br/>
+                            Company: <input type='text' name='dealer_paid1_addr2'/><br/>
+                            City: <input type='text' name='dealer_paid1_city'/> State: <input type='text' name='dealer_paid1_state' size=3/> Zip: <input
+                                type='text' name='dealer_paid1_zip' size=6/><br/>
+                        </div>
+                        <br/>
+                        <div id='dealer_paid2'>
+                            Name:
+                            <input type='text' name='dealer_paid2_fname'/ size=15>
+                            <input type='text' name='dealer_paid2_mname'/ size=10>
+                            <input type='text' name='dealer_paid2_lname'/ size=15>
+                            <br/>
+                            Badge Name: <input type='text' name='dealer_paid2_bname'/><br/>
+                            Address: <input type='text' name='dealer_paid2_address'/><br/>
+                            Company: <input type='text' name='dealer_paid2_addr2'/><br/>
+                            City: <input type='text' name='dealer_paid2_city'/> State: <input type='text' name='dealer_paid2_state' size=3/> Zip: <input
+                                type='text' name='dealer_paid2_zip' size=6/><br/>
+                        </div>
+                        Cost for Memberships: $<span id='dealer_mem_cost'>0</span>
+                        <input type='hidden' id='dealer_paid_mem_count' name='mem_cnt'/>
+                        <hr/>
+                        Total: <span id='dealer_invoice_cost'></span>
+                        Payment Information:
+                        <?php
+                        if ($ini['test'] == 1) {
+                            ?>
+                            <h2 class='warn'>This won't charge your credit card, or do anything else.</h2>
+                            <?php
+                        }
+                        ?>
+                        <br/>
+                        We Accept<br/>
+                        <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/><br/>
+                        <hr/>
+                        Please wait for the email, and don't click the submit more than once.
+                        <?php draw_cc_html($cc, "--", 2); ?>
+                        <input type='reset'></input>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end of modals, start of main body -->
+<div>
 <h3>Welcome to the Portal Page for <?php echo $info['name'];?></h3>
 <button onclick='$("#updateProfile").dialog("open");'>View/Change Profile</button>
 <button onclick='$("#changePassword").dialog("open");'>Change Password</button>
@@ -704,6 +754,6 @@ if($drR->num_rows >= 1) {
 </div>
 </div>
 <a href='?logout'>Logout</a>
-<?php }} ?>
+<?php } ?>
 </body>
 </html>

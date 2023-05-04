@@ -246,10 +246,8 @@ $(function() {
         </td>
         <td colspan=3>
           <select id='country' name='country' size=1 width=20>
-            <option value='USA' default=true>United States</option>
-            <option value='CAN'>Canada</option>
             <?php
-            $fh = fopen("lib/countryCodes.csv","r");
+            $fh = fopen(__DIR__ . '/../../lib/countryCodes.csv', 'r');
             while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
               echo "<option value='".$data[1]."'>".$data[0]."</option>";
             }

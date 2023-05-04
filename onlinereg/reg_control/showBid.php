@@ -26,7 +26,7 @@ $conid = $con['id'];
 
 $query = <<<EOS
 SELECT v.name artist_name, ats.art_key artist_id, i.title work_name, i.item_key work_id, i.material, i.min_price, i.sale_price, i.type
-JOIN artshow ats
+FROM artshow ats
 JOIN artItems i ON (ats.id = i.artshow)
 JOIN artist a ON (a.id = ats.artid)
 JOIN vendors v ON (v.id = a.vendor)
