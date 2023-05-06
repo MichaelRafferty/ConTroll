@@ -34,7 +34,7 @@ CREATE TABLE `reg` (
   `change_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `pickup_date` datetime DEFAULT NULL,
   `price` float NOT NULL,
-  `paid` int DEFAULT '0',
+  `paid` float DEFAULT '0',
   `create_trans` int DEFAULT NULL,
   `pickup_trans` int DEFAULT NULL,
   `locked` enum('N','Y') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
