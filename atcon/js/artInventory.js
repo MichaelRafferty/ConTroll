@@ -200,7 +200,7 @@ function build_table(tableData) {
                 { title: 'Loc.', field: 'location', width: 50, headerWordWrap: true, headerFilter: true, tooltip: true},
                 {field: 'index', visible: false,},
                 { title: 'Qty.', field: 'qty', width: 50, headerSort: false, tooltip: true},
-                { title: 'Cart', width: 101, hozAlign: "center", headerFilter: false, headerSort: false, formatter: addInventoryIcon, },
+                { title: 'Actions', width: 101, hozAlign: "center", headerFilter: false, headerSort: false, formatter: addInventoryIcon, },
             ],
         });
     } else { 

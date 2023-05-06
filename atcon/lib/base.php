@@ -114,7 +114,7 @@ function page_init($title, $tab, $css, $js)
                                         if (in_array('artinventory', $perms)) { 
                                         ?>
                                         <li>
-                                            <a class="nav-link navitem <?php echo $tab == "atconArtInventory" ? "active" : ""; ?>" <?php echo $tab == "atconArtInventory" ? 'aria-current="page"' : ""; ?> href="artInventory.php?mode=inventory">Art Invetory</a>
+                                            <a class="nav-link navitem <?php echo $tab == "atconArtInventory" ? "active" : ""; ?>" <?php echo $tab == "atconArtInventory" ? 'aria-current="page"' : ""; ?> href="artInventory.php?mode=inventory">Art Inventory</a>
                                         </li>
                                         <?php  } 
                                         if (in_array('manager', $perms)) { ?>
