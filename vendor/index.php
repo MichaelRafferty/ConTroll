@@ -45,23 +45,25 @@ vendor_page_init($condata['label'] . ' Vendor Registration')
     <div class="row">
         <div class="col-sm-12 mt-2">
             <h1>Vendor Portal</h1>
-            <p>Welcome to the <?php echo $con['label'] ?> Verndor Portal.</p>
         </div>
     </div>
-    <div class
-    "row">
-    <div class="col-sm-12">
-        <p>From here you can create and manage your account for <?php echo $vendor['artventortext']; ?>.</p>
+    <div class="row p-1">
+        <div class="col-sm-auto">
+            Welcome to the <?php echo $con['label'] ?> Verndor Portal.
+        </div>
     </div>
-</div>
+    <div class=row">
+        <div class="col-sm-12">
+            From here you can create and manage your account for <?php echo $vendor['artventortext']; ?>.
+        </div>
+    </div>
 <?php
 if ($vendor['test'] == 1) {
     ?>
-    <div class"row">
-    <div class="col-sm-12">
-        <h2 class='warn'>This Page is for test purposes only</h2>
-    </div>
-    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <h2 class='warn'>This Page is for test purposes only</h2>
+        </div>
     </div>
     <?php
 }
@@ -852,24 +854,24 @@ if ($info['need_new']) {
     <!-- end of modals, start of main body -->
     <div class='container-fluid'>
         <div class="row p-1">
-            <div class="col-sm-12">
+            <div class="col-sm-12 p-0">
                 <h3>Welcome to the Portal Page for <?php echo $info['name']; ?></h3>
             </div>
         </div>
         <div class="row p-1">
-            <div class="col-sm-auto">
+            <div class="col-sm-auto p-0">
                 <button class="btn btn-secondary" onclick='update_profile.show();'>View/Change your profile</button>
                 <button class='btn btn-secondary' onclick='changePassword.show();'>Change your password</button>
                 <button class="btn btn-secondary" onclick="window.location='?logout';">Logout</button>
             </div>
         </div>
         <div class="row p-1 pt-4">
-            <div class="col-sm-12">
+            <div class="col-sm-12 p-0">
                 <h3>Vendor Spaces</h3>
             </div>
         </div>
         <div class="row p-1">
-            <div class="col-sm-12"><?php
+            <div class="col-sm-12 p-0"><?php
                 echo $con['label']; ?> has multiple types of spaces for vendors. If you select a type for which you aren't qualified we will alert groups
                 managing other spaces.
             </div>
@@ -877,18 +879,18 @@ if ($info['need_new']) {
 <!-- Do we want to include parties? --!>
 <?php if (array_key_exists('virtual', $price_list)) { ?>
         <div class="row p-1 pt-4">
-            <div class="col-sm-12">
+            <div class="col-sm-12 p-0">
                 <h3>Virtual Vendor</h3>
             </div>
         </div>
         <div class='row p-1'>
-            <div class='col-sm-12'><?php
+            <div class="col-sm-12 p-0"><?php
                 echo $con['label']; ?> will host a virtual vendors space. Participating in that space costs $<?php echo $price_list['virtual']; ?>
                 and vendors who participate will get ???.
             </div>
         </div>
         <div class="row p-1">
-            <div class="col-sm-auto">
+            <div class="col-sm-auto p-0">
         <?php
             $aaQ = "SELECT requested, authorized, purchased, price, paid, transid FROM vendor_show WHERE type='virtual' and vendor = ? and conid=?;";
             $aaR = dbSafeQuery($aaQ, 'ii', array($vendor, $conid));
@@ -915,12 +917,12 @@ if ($info['need_new']) {
     <div class="row p-0"><div class="col-sm-12 p-0"><hr/></div></div>
 <?php } ?>
         <div class="row p-1 pt-4">
-            <div class="col-sm-12">
+            <div class="col-sm-12 p-0">
                 <h3>Artist Alley</h3>
             </div>
         </div>
         <div class="row p-1">
-            <div class="col-sm-12"><?php
+            <div class="col-sm-12 p-0"><?php
                 echo $con['label']; ?> hosts an Artist Alley to enable artists to directly interact with Balticon members. These tables cost
                 $<?php echo $price_list['alley']; ?>, and are the 5th floor Atrium, a central space open to all convention members for the duration of the
                 convention and are not secured at night. We expect artists to usually have someone at their table from 10am through 6pm, although short absences
@@ -929,7 +931,7 @@ if ($info['need_new']) {
             </div>
         </div>
         <iv class="row p-1">
-            <div class="col-sm-auto">
+            <div class="col-sm-auto p-0">
             <?php
             $aaQ = "SELECT requested, authorized, purchased, price, paid, transid FROM vendor_show WHERE type='alley' and vendor = ? and conid=?;";
             $aaR = dbSafeQuery($aaQ, 'ii', array($vendor, $conid));
@@ -955,12 +957,12 @@ if ($info['need_new']) {
         </iv>
         <div class="row p-0"><div class="col-sm-12 p-0"><hr/></div></div>
         <div class="row pt-4 p-1">
-            <div class="col-sm-auto">
+            <div class="col-sm-auto p-0">
                 <h3>Dealers Room</h3>
             </div>
         </div>
         <div class="row p-1">
-            <div class="col-sm-12">
+            <div class="col-sm-12 p-0">
                 The primary space for vendors at <?php echo $con['label']; ?> are the Dealers Rooms, two adjacent rooms on the 5th floor. Space in these rooms
                 are predominately sold as 1 or 2 6x6 spaces for $<?php echo $price_list['dealer_6']; ?> each coordinate with the head of the dealers room if you
                 want more than 2 spaces. Each space comes with a table/chair (if desired) and a membership, additional memberships will be available at a
@@ -969,7 +971,7 @@ if ($info['need_new']) {
             </div>
         </div>
         <div class="row p-1">
-            <div class="col-sm-auto"><?php
+            <div class="col-sm-auto p-0"><?php
             $drQ = "SELECT type, requested, authorized, purchased, price, paid, transid FROM vendor_show WHERE type in ('dealer_6', 'dealer_10') and vendor = ? and conid=?;";
             $drR = dbSafeQuery($drQ, 'ii', array($vendor, $conid));
             $dealer_info = NULL;
