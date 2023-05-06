@@ -1,5 +1,14 @@
 var discount_memcost = 55;
 var registration = null;
+var registration = null;
+var dealer_req = null;
+var alley_req = null;
+var virtual_req = null;
+var dealer_invoice = null;
+var alley_invoice = null;
+var virtual_invoice = null;
+var update_profile = null;
+var changePassword = null;
 
 function virtual_req() {
     $.ajax({
@@ -372,5 +381,37 @@ window.onload = function () {
     var id = document.getElementById('registration');
     if (id != null) {
         registration = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+    }
+    id = document.getElementById('dealer_req');
+    if (id != null) {
+        dealer_req = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+    }
+    id = document.getElementById('alley_req');
+    if (id != null) {
+        alley_req = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+    }
+    id = document.getElementById('virtual_req');
+    if (id != null) {
+        virtual_req = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+    }
+    id = document.getElementById('dealer_invoice');
+    if (id != null) {
+        dealer_invoice = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+    }
+    id = document.getElementById('alley_invoice');
+    if (id != null) {
+        alley_invoice = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+    }
+    id = document.getElementById('virtual_invoice_req');
+    if (id != null) {
+        virtual_invoice = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+    }
+    id = document.getElementById('update_profile');
+    if (id != null) {
+        update_profile = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+    }
+    id = document.getElementById('changePassword');
+    if (id != null) {
+        changePassword = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
 }
