@@ -1,6 +1,5 @@
 var discount_memcost = 55;
 var registration = null;
-var registration = null;
 var dealer_req = null;
 var alley_req = null;
 var virtual_req = null;
@@ -8,26 +7,33 @@ var dealer_invoice = null;
 var alley_invoice = null;
 var virtual_invoice = null;
 var update_profile = null;
-var changePassword = null;
+var change_password = null;
 
-function virtual_req() {
+function virtualReq() {
     $.ajax({
         url: 'scripts/requestVirtual.php',
         data: $('#virtual_req_form').serialize(),
         method: 'POST',
-        success: function(data, textstatus, jqXHR) {
-            if(data['status']=='error') {
-                alert(data['message']);
-            } else {
-                //alert("Thank you for your interest in Joining our virtual " + data['virtual'] + " space. Your .");
-                console.log(data)
-                openInvoice('virtual',1,20);
+        success: function (data, textstatus, jqxhr) {
+            console.log(data);
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
             }
-        }
+            if (data['message'] !== undefined) {
+                show_message(data['message'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'success');
+            }
+            virtual_req.hide();
+            openInvoice('virtual', data['requested'], data['price']);
+        },
+        error: showAjaxError
     });
 }
 
-function alley_req() {
+function alleyReq() {
     $.ajax({
         url: 'scripts/requestAlley.php',
         data: $('#alley_req_form').serialize(),
@@ -43,7 +49,7 @@ function alley_req() {
     });
 }
 
-function dealer_req() {
+function dealerReq() {
     $.ajax({
         url: 'scripts/requestDealer.php',
         data: $('#dealer_req_form').serialize(),
@@ -325,7 +331,7 @@ function openInvoice(invoice, count, price, type="") {
         $('#dealer_paid1').hide(); 
         $('#dealer_paid2').hide(); 
 
-        $('#dealer_invoice').dialog('open');
+        dealer_invoice.show();
         break;
       case 'alley':
         $('#alley_count').text(count);
@@ -346,7 +352,7 @@ function openInvoice(invoice, count, price, type="") {
         $('#alley_total').val(cost+mem_cost);
         $('#alley_total_cost').text(cost+mem_cost);
         
-        $('#alley_invoice').dialog('open');
+        alley_invoice.show();
     
         if(count < 2) {
             $('#alley_mem2_need').hide();
@@ -360,7 +366,7 @@ function openInvoice(invoice, count, price, type="") {
         $('#virtual_total').val(price);
         $('#virtual_table_count').val(1);
         $('#virtual_table_sub').val(price);
-        $('#virtual_invoice').dialog('open');
+        virtual_invoice.show();
         break;
     }
 }
@@ -412,6 +418,65 @@ window.onload = function () {
     }
     id = document.getElementById('changePassword');
     if (id != null) {
-        changePassword = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+        change_password = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
+}
+
+var message_div = null;
+// show_message:
+// apply colors to the message div and place the text in the div, first clearing any existing class colors
+// type:
+//  error: (white on red) bg-danger
+//  warn: (black on yellow-orange) bg-warning
+//  success: (white on green) bg-success
+function show_message(message, type) {
+    "use strict";
+    if (message_div === null ) {
+        message_div = document.getElementById('result_message');
+    }
+    if (message_div.classList.contains('bg-danger')) {
+        message_div.classList.remove('bg-danger');
+    }
+    if (message_div.classList.contains('bg-success')) {
+        message_div.classList.remove('bg-success');
+    }
+    if (message_div.classList.contains('bg-warning')) {
+        message_div.classList.remove('bg-warning');
+    }
+    if (message_div.classList.contains('text-white')) {
+        message_div.classList.remove('text-white');
+    }
+    if (message === undefined || message === '') {
+        message_div.innerHTML = '';
+        return;
+    }
+    if (type === 'error') {
+        message_div.classList.add('bg-danger');
+        message_div.classList.add('text-white');
+    }
+    if (type === 'success') {
+        message_div.classList.add('bg-success');
+        message_div.classList.add('text-white');
+    }
+    if (type === 'warn') {
+        message_div.classList.add('bg-warning');
+    }
+    message_div.innerHTML = message;
+}
+function clear_message() {
+    show_message('', '');
+}
+
+function showAjaxError(jqXHR, textStatus, errorThrown) {
+    'use strict';
+    var message = '';
+    if (jqXHR && jqXHR.responseText) {
+        message = jqXHR.responseText;
+    } else {
+        message = 'An error occurred on the server.';
+    }
+    if (textStatus != '' && textStatus != 'error')
+        message += '<BR/>' + textStatus;
+    message += '<BR/>Error Thrown: ' + errorThrown;
+    show_message(message, 'error');
 }

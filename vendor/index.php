@@ -13,8 +13,6 @@ load_cc_procs();
 
 $condata = get_con();
 
-session_start();
-
 $in_session = false;
 $forcePassword = false;
 $regserver = $reg['server'];
@@ -590,6 +588,7 @@ if ($info['need_new']) {
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
                         <form id='virtual_req_form' action='javascript:void(0)'>
+                            <input type="hidden" name="virtual" value="virtual"/>
                             <div class='row p-0 bg-warning'>
                                 <div class='col-sm-12 p-2'>
                                     Please make sure your profile contains a good description of what you will be selling and a link for our staff to see it if at all possible.
@@ -861,7 +860,7 @@ if ($info['need_new']) {
         <div class="row p-1">
             <div class="col-sm-auto p-0">
                 <button class="btn btn-secondary" onclick='update_profile.show();'>View/Change your profile</button>
-                <button class='btn btn-secondary' onclick='changePassword.show();'>Change your password</button>
+                <button class='btn btn-secondary' onclick='change_password.show();'>Change your password</button>
                 <button class="btn btn-secondary" onclick="window.location='?logout';">Logout</button>
             </div>
         </div>
@@ -1002,6 +1001,7 @@ if ($info['need_new']) {
             ?>
             </div>
         </div>
+        <div id='result_message' class='mt-4 p-2'></div>
     </div>
 <?php } ?>
 </body>
