@@ -1,41 +1,44 @@
 <?php
-if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
 
-require_once "../lib/ajax_functions.php";
-require_once "../lib/db_functions.php";
+// library AJAX Processor: requestVirtual.php
+// Balticon Registration System
+// Author: Syd Weinstein
+// enter a space request for the virtual dealers area
 
+require_once('../lib/base.php');
+$ini = redirect_https();
+
+require_once('../../lib/email__load_methods.php');
+
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
 require_once "../lib/email.php";
-require_once "../../../aws-api/aws-autoloader.php";
-
-use Aws\Ses\SesClient;
-use Aws\Ses\Exception\SesException;
-
 
 $response = array("post" => $_POST, "get" => $_GET);
-session_start();
-db_connect();
-
-global $con;
 
 $vendor = $_SESSION['id'];
-$con = get_con();
+$con = get_conf('con');
 $conid=$con['id'];
 
 $response['conid'] = $conid;
 $info = get_conf('vendor');
 
-$itemCheckQ = "SELECT total, registered, max_per FROM vendor_reg WHERE conid=$conid and type='virtual';";
-
-$itemCheckR = dbQuery($itemCheckQ);
+// get limits on the vendor registraiton
+$itemCheckQ = "SELECT total, registered, max_per, price_full FROM vendor_reg WHERE conid=? and type='virtual';";
+$itemCheckR = dbSafeQuery($itemCheckQ, 'i', array($conid));
+if ($itemCheckR->num_rows != 1) {
+    $response['error'] = 'Virtual Vendor Spaces are not configured';
+    ajaxSuccess($response);
+    return;
+}
 $itemCheck = fetch_safe_assoc($itemCheckR);
 
+// mark that this vendor requested virtual space, and limit them to the max allowed
 $requested = 1;
-$type = sql_safe($_POST['virtual']);
+$type = $_POST['virtual'];
 
 if($requested > $itemCheck['max_per']) { $requested = $itemCheck['max_per']; }
 if($itemCheck['registered'] + $requested > $itemCheck['total']) {
@@ -43,56 +46,42 @@ if($itemCheck['registered'] + $requested > $itemCheck['total']) {
 }
 
 $response['virtual'] = $type;
+$response['requested'] = $requested;
+$response['price'] = $itemCheck['price_full'];
+// add the request to the system
+$v_update = "UPDATE vendors SET request_virtual=true WHERE id=?;";
+dbSafeCmd($v_update, 'i', array($vendor));
+// update the space request list in the system
+$req_insert = <<<EOS
+INSERT IGNORE INTO vendor_show (vendor, conid, type, requested, authorized)
+VALUES (?, ?, 'virtual', ?, ?);
+EOS;
+dbSafeInsert($req_insert, 'iiii', array($vendor, $conid, $requested, $requested));
 
-$v_update = "UPDATE vendors SET request_virtual=true WHERE id=$vendor;";
-$req_insert = "INSERT IGNORE INTO vendor_show (vendor, conid, type, requested, authorized)"
-    . " VALUES ($vendor, $conid, 'virtual', $requested, $requested);";
-
-dbQuery($v_update); dbQuery($req_insert);
-
-
-$v_query = "SELECT email FROM vendors where id=$vendor;";
-$v_email = fetch_safe_assoc(dbQuery($v_query))['email'];
-
+// send them an email
+$v_query = "SELECT email FROM vendors where id=?;";
+$r_email = fetch_safe_assoc(dbSafeQuery($v_query, 'i', array($vendor)));
+$v_email = $r_email['email'];
 $response['email']=$v_email;
 
-
-$amazonCred = get_conf('email');
-$awsClient = SesClient::factory(array(
-    'key'=>$amazonCred['aws_access_key_id'],
-    'secret'=>$amazonCred['aws_secret_access_key'],
-    'region'=>'us-east-1',
-    'version'=>'2010-12-01'
-));
-
+load_email_procs();
 
 $email = "no send attempt or a failure";
+$email_body = request('Virtual Vendor Space', $vendor);
+$return_arr = send_email($con['regadminemail'], $v_email, $info['alley'], "Virtual Vendor Request", $email_body, null);
 
-try {
-    $email = $awsClient->sendEmail(array(
-      'Source' => 'regadmin@bsfs.org',
-      'Destination' => array(
-        'ToAddresses' => array($v_email, $info['alley'])
-      ),
-      'Message' => array(
-        'Subject' => array(
-          'Data' => "Virtual Vendor Request"
-        ),
-        'Body' => array(
-          'Text' => array(
-            'Data' => request('Virtual Vendor Space', $vendor)
-          ) // HTML
-        )
-      )// ReplyToAddresses or ReturnPath
-    ));
-    $email_error = "none";
-    $success = "success";
-    $data = "success";
-} catch (AwsException $e) {
-    $email = $e.getAwsErrorType();
-    $email_error = $e.getAwsErrorCode();
-    $success="error";
-    $data=$e.__toString();
+if (array_key_exists('error_code', $return_arr)) {
+    $error_code = $return_arr['error_code'];
+} else {
+    $error_code = null;
+}
+if (array_key_exists('email_error', $return_arr)) {
+    $response['error'] = 'Unable to send request email, error: ' . $return_arr['email_error'] . ', Code: $error-code';
+} else {
+    if (array_key_exists('message', $response))
+        $response['message'] .= "<br/>Request sent for $v_email";
+    else
+        $response['message'] = "Request sent for $v_email";
 }
 
 ajaxSuccess($response);
