@@ -1,5 +1,50 @@
 // vim: ts=4 sw=4 expandtab
 
+// map class - create/map/unmap object values
+// deals with dynamic names for properties easily when you can't use dot notation
+class map {
+    #map_obj = null;
+
+    constructor() {
+        this.#map_obj = {};
+    }
+
+    // isSet - is the property set
+    isSet(prop) {
+        return this.#map_obj.hasOwnProperty(prop);
+    }
+
+    // get - return the value of a property
+    get(prop) {
+        if (this.isSet(prop))
+            return this.#map_obj[prop];
+        return undefined;
+    }
+
+    // set: set the property to a value
+    set(prop, value) {
+        this.#map_obj[prop] = value;
+    }
+
+    // remove property from object
+    clear(prop) {
+        if (this.isSet(prop)) {
+            delete this.#map_obj[prop];
+        }
+    }
+
+    // for ajax use - get entire map
+    getMap() {
+        return make_copy(this.#map_obj);
+    }
+}
+
+// make_copy(associative array)
+// javascript passes by reference, can't slice an associative array, so you need to do a horrible JSON kludge
+function make_copy(arr) {
+    return JSON.parse(JSON.stringify(arr));  // horrible way to make an independent copy of an associative array
+}
+
 function test(method, formData, resultDiv) {
     $.ajax({
         url: "scripts/authEcho.php",
@@ -96,8 +141,6 @@ function showAjaxError(jqXHR, textStatus, errorThrown) {
 // dayFromLabel(label)
 // return the full day name from a memList/memLabel label.
 function dayFromLabel(label) {
-    var day = '';
-
     var pattern_fa = /^mon\s.*$/i;
     var pattern_ff = /^monday.*$/i;
     var pattern_ma = /.*\s+mon\s.*$/i;
@@ -280,10 +323,10 @@ function base_toggleManager() {
     base_toggle.classList.remove("btn-primary");
     base_toggle.classList.add("btn-warning");
 
-    if (typeof cart_perinfo) {
+    if (typeof cart) {
         // is there a cart element
-        if (cart_perinfo.length > 0)
-            draw_cart();
+        if (cart.getCartLength() > 0)
+            cart.drawCart();
     }
     if (typeof current_tab !== 'undefined') {
         if (current_tab == pay_tab) {
@@ -341,10 +384,10 @@ function base_managerOverrideComplete(data) {
         base_toggle.classList.add("btn-primary");
         base_managerOverrideModal.hide();
 
-        if (typeof cart_perinfo) {
+        if (typeof cart) {
             // is there a cart element
-            if (cart_perinfo.length > 0)
-                draw_cart();
+            if (cart.getCartLength() > 0)
+                cart.drawCart();
         }
         if (typeof current_tab !== 'undefined') {
             if (current_tab == pay_tab) {
@@ -383,7 +426,7 @@ function addShowHide(block, id) {
     show.append("(show)");
     hide.append("(hide)");
     block.append(" ").append(show).append(" ").append(hide);
-    container = $(document.createElement("form"));
+    var container = $(document.createElement("form"));
     container.attr('id',id+"Form");
     container.attr('name', id);
     block.append(container);
@@ -406,6 +449,7 @@ function displaySearchResults(data, callback) {
       setTitle.append(resultSet);
       resDiv.append(setTitle)
       var resContainer = addShowHide(resDiv, resultSet);
+      var result;
       for (result in data["results"][resultSet]) {
         var user = data["results"][resultSet][result];
         var userDiv = $(document.createElement("div"));
@@ -413,7 +457,7 @@ function displaySearchResults(data, callback) {
         userDiv.attr('userid', user['id']);
         userDiv.data('obj', data["results"][resultSet][result]);
         userDiv.addClass('button').addClass('searchResult').addClass('half');
-        flags = $(document.createElement("div"));
+        var flags = $(document.createElement("div"));
         flags.addClass('right').addClass('half').addClass('notice');
         userDiv.append(flags);
         if(user['label']) { userDiv.append(user['label']+"<br/>"+"<hr/>"); }
@@ -450,7 +494,7 @@ function submitForm(formObj, formUrl, succFunc, errFunc) {
         succFunc = function(data, textStatus, jsXhr) {
             $('#test').empty().append(JSON.stringify(data, null, 2));
         }
-    };
+    }
 
     $.ajax({
       url: formUrl,
@@ -463,9 +507,9 @@ function submitForm(formObj, formUrl, succFunc, errFunc) {
    });
 }
 
-var tracker = new Array();
+var tracker = [];
 function track(formName) {
-    tracker[formName] = new Object;
+    tracker[formName] = {};
     $(formName + " :input").each(function() {
         tracker[formName][$(this).attr('name')] = false;
         $(this).on("change", function () {
@@ -491,7 +535,7 @@ function submitUpdateForm(formObj, formUrl, succFunc, errFunc) {
       succFunc = function(data, textStatus, jqXHR) {
         $('#test').empty().append(JSON.stringify(data));
         }
-    };
+    }
     $.ajax({
       url: formUrl,
       type: "POST",
@@ -524,7 +568,7 @@ function getForm(formObj, formUrl, succFunc, errFunc) {
       succFunc = function(data, textStatus, jqXHR) {
         $('#test').empty().append(JSON.stringify(data, null, 2));
         }
-    };
+    }
     $.ajax({
       url: formUrl,
       type: "GET",
