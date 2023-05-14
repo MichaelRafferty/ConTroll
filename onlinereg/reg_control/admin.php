@@ -122,7 +122,9 @@ $conid=$con['id'];
         foreach($sets_num as $n => $set) {
             $a = false;  // start as false, if there are no items in the set as a safeguard
             foreach ($set as $value) {
-                if (array_key_exists($value, $user_auth[$user['id']])) {
+                //web_error_log("userid = ". $user['id'] . " and value = $value"); 
+                if (array_key_exists($user['id'], $user_auth) && ($value != '') 
+                    && array_key_exists($value, $user_auth[$user['id']])) {
                     $a = true;  // first granted perm will set it to true
                 } else {
                     $a = false;  // first not granted perm will clear it to false and end the looping over the set
