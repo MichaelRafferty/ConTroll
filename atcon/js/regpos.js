@@ -2270,7 +2270,7 @@ function found_record(data) {
         return;
     }
     // no rows show the diagnostic
-    id_div.innerHTML = `<div class="container-fluid">
+    id_div.innerHTML = `"container-fluid"><div class=
 <div class="row mt-3">
     <div class="col-sm-4">No matching records found</div>
     <div class="col-sm-auto"><button class="btn btn-primary btn-small" type="button" id="not_found_add_new" onclick="not_found_add_new();">Add New Person</button>

@@ -1,6 +1,7 @@
 <?php
 // vendor - base.php - base functions for vendor reg
 require_once(__DIR__ . "/../../lib/db_functions.php");
+require_once(__DIR__ . '/../../lib/ajax_functions.php');
 
 function redirect_https() {
     $ini = get_conf('reg');
@@ -12,6 +13,9 @@ function redirect_https() {
         }
     }
     db_connect();
+    session_start();
+
+    date_default_timezone_set('America/New_York');
     return $ini;
 }
 

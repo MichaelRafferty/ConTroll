@@ -143,7 +143,12 @@ if ($master_transid === false) {
 for ($row = 0; $row < sizeof($cart_membership); $row++) {
     $cartrow = $cart_membership[$row];
     if (!array_key_exists('todelete', $cartrow)) {
+        if ($cartrow['price'] == '')
+            $cartrow['price'] = 0;
         $total_price += $cartrow['price'];
+
+        if ($cartrow['paid'] == '')
+            $cartrow['paid'] = 0;
         $total_paid += $cartrow['paid'];
     }
     if (!array_key_exists('regid', $cartrow) || $cartrow['regid'] <= 0) {
