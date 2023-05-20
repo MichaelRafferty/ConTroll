@@ -93,6 +93,67 @@ function showAjaxError(jqXHR, textStatus, errorThrown) {
     show_message(message, 'error');
 }
 
+// dayFromLabel(label)
+// return the full day name from a memList/memLabel label.
+function dayFromLabel(label) {
+    var day = '';
+
+    var pattern_fa = /^mon\s.*$/i;
+    var pattern_ff = /^monday.*$/i;
+    var pattern_ma = /.*\s+mon\s.*$/i;
+    var pattern_mf = /.*\s+monday.*$/i;
+    if (pattern_fa.test(label) || pattern_ff.test(label) || pattern_ma.test(label) || pattern_mf.test(label))
+        return "Monday;"
+    
+    pattern_fa = /^tue\s.*$/i;
+    pattern_ff = /^tueday.*$/i;
+    pattern_ma = /.*\s+tue\s.*$/i;
+    pattern_mf = /.*\s+tueday.*$/i;
+    if (pattern_fa.test(label) || pattern_ff.test(label) || pattern_ma.test(label) || pattern_mf.test(label))
+        return "Tuesday;"
+
+    
+    pattern_fa = /^wed\s.*$/i;
+    pattern_ff = /^wednesday.*$/i;
+    pattern_ma = /.*\s+wed\s.*$/i;
+    pattern_mf = /.*\s+wednesday.*$/i;
+    if (pattern_fa.test(label) || pattern_ff.test(label) || pattern_ma.test(label) || pattern_mf.test(label))
+        return "Wednesday;"
+
+    pattern_fa = /^thu\s.*$/i;
+    var pattern_faa = /^thur\s.*$/i;
+    pattern_ff = /^thursday.*$/i;
+    pattern_ma = /.*\s+thu\s.*$/i;
+    var pattern_maa = /.*\s+thur\s.*$/i;
+    pattern_mf = /.*\s+thursday.*$/i;
+    if (pattern_fa.test(label) || pattern_faa.test(label) || pattern_ff.test(label) ||
+        pattern_ma.test(label) || pattern_maa.test(label) || pattern_mf.test(label))
+        return "Thursday;"
+
+    pattern_fa = /^fri\s.*$/i;
+    pattern_ff = /^friday.*$/i;
+    pattern_ma = /.*\s+fri\s.*$/i;
+    pattern_mf = /.*\s+friday.*$/i;
+    if (pattern_fa.test(label) || pattern_ff.test(label) || pattern_ma.test(label) || pattern_mf.test(label))
+        return "Friday;"
+
+    pattern_fa = /^sat\s.*$/i;
+    pattern_ff = /^saturday.*$/i;
+    pattern_ma = /.*\s+sat\s.*$/i;
+    pattern_mf = /.*\s+saturday.*$/i;
+    if (pattern_fa.test(label) || pattern_ff.test(label) || pattern_ma.test(label) || pattern_mf.test(label))
+        return "Saturday;"
+
+    pattern_fa = /^sun\s.*$/i;
+    pattern_ff = /^sunday.*$/i;
+    pattern_ma = /.*\s+sun\s.*$/i;
+    pattern_mf = /.*\s+sunday.*$/i;
+    if (pattern_fa.test(label) || pattern_ff.test(label) || pattern_ma.test(label) || pattern_mf.test(label))
+        return "Sunday;"
+
+    return "";
+}
+
 // base_changePrinters:
 // open the modal popup and allow selecting new printers
 var base_changePrintersModal = null;
