@@ -61,7 +61,7 @@ It also expects you to know how to fetch/update files from GitHub. The software 
             ii. user (at least for your first reg_control user)
             iii. user_auth (at least to add the admin role to your first reg_control user)
 
-5. Copy or create the folloing files in your config directory
+5. Copy or create the following files in your config directory
     a. aws.phar: use ours or get a newer copy from AWS (Ours is in the config-sample directory)
     b. copy config-sample/reg_conf.ini.sample to reg_conf.ini and edit all of the sections for your needs
         i. Mimimim just to get the gui working:
@@ -81,13 +81,18 @@ It also expects you to know how to fetch/update files from GitHub. The software 
         b. make sure all of the url's are authorized to use google authentication
             i. (your online reg URL))/reg_control
             ii. (your online reg test system URL)/reg_control
+    4. Since the printservers database is used to hold the loanable Pi print servers, you will need to grant select access to it's tables to your reg databas user
+        GRANT SELECT ON printservers.servers TO '(reg_db_user)'@'(dbhost)';
+        GRANT SELECT ON printservers.printers TO '(reg_db_user)'@'(dbhost)';
 
 6. Set up your web server to server PHP FCGI for the following URL types, for both the test and the production systems
     a. reg.(domain)  => .../reg/onlinereg
     b. atcon.(domain) => .../reg/atcon
-    TODO: add remaining subsystems here (is vendor staying independent?)
-    c. reg-test.(domain) => .../reg_test/onlinereg
-    d. atcon-test.(domain) => .../reg_test/atcon
+    c. vendor.(domain) => .../reg/vendor
+    TODO: add remaining subsystems here
+    d. reg-test.(domain) => .../reg_test/onlinereg
+    e. atcon-test.(domain) => .../reg_test/atcon
+    f. vendor-test.(domain) => .../reg_test/vendor
 
 7. use reg_control's admin or the database directly to set up:
     a. users
@@ -99,3 +104,33 @@ It also expects you to know how to fetch/update files from GitHub. The software 
     b. In the database, create the entries for the manager in:
         i. atcon_user
         ii. atcon_auth (at least assign the manager permission)
+
+9. If you are running the balticon reg system, it needs to access the perinfo, reg, and memList tables.  You'll need to know the zambia_db_user
+    and the host the database is on. The host is usually 'localhost';  The parens are not part of the sequnce below, just showing what you need
+    to substitute.
+    a. Grant select and update to the zambia user for perinfo:
+        GRANT SELECT ON perinfo TO '(zanbia_db_user)'@'(databasehost);
+        GRANT UPDATE ON perinfo TO '(zanbia_db_user)'@'(databasehost);
+    b. Grant select only to reg and memList:
+        GRANT SELECT ON reg to '(zanbia_db_user)'@'(databasehost);
+        GRANT SELECT ON memList to '(zanbia_db_user)'@'(databasehost);
+
+10. Set up the backup scripts in cron
+    a. Create the scripts directory and copy the backup_mysql script from the scripts-sample directory to it.
+    b. Set the variables at the top for your install
+        DEST=full absolute path to the destination for the backups files.  Suggested is a directory called backups at the same level as scripts directory
+        D=`/bin/date +%Y_%m_%d_%H` export D
+        DBNAME=name of your registration database
+        DBHOSTNAME=host name for the database server
+        DBUSERID=database user id
+        DBPASSWORD=database password
+        DBPORT=this is usually 3306 for mysql, but could differ on your local server depending on how it was set up
+    c. test the backup script by executing it manually
+    d. make the crons and cronlog directory at the same level as the scripts directory
+    e. copy the bkup.sh file from crons-sample to your crons directory
+    f. set the variable for the install directory
+        DIR=absolute path to the install directory (the one containing crons and scripts)
+    g. add an entry to your crontab to call this script at the frequence of backups you prefer, suggested is every day
+        crontab -e
+        6 0 * * * /bin/sh /path-to-production-install-directory/crons/bkup.sh
+        8 0 * * * /bin/sh /path-to-test-install-directory/crons/bkup.sh

@@ -63,6 +63,10 @@ $amt = (float) $new_payment['amt'];
 // validate that the payment ammount is not too large
 $total_due = 0;
 foreach ($cart_membership as $cart_row) {
+    if ($cart_row['price'] == '')
+        $cart_row['price'] = 0;
+    if ($cart_row['paid'] == '')
+        $cart_row['paid'] = 0;
     $total_due += $cart_row['price'] - $cart_row['paid'];
 }
 
@@ -102,6 +106,10 @@ WHERE id = ?;
 EOS;
 $typestr = 'si';
 foreach ($cart_membership as $cart_row) {
+    if ($cart_row['price'] == '')
+        $cart_row['price'] = 0;
+    if ($cart_row['paid'] == '')
+        $cart_row['paid'] = 0;
     $unpaid = $cart_row['price'] - $cart_row['paid'];
     if ($unpaid > 0) {
         $amt_paid = min($amt, $unpaid);

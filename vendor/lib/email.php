@@ -1,5 +1,4 @@
-<?php 
-  require_once("db_functions.php");
+<?php
   require_once("artshow.php");
 function vendorReset($passwd, $dest) {
 
@@ -173,4 +172,3 @@ For questions about Balticon Registration, email registration@balticon.org.";
 
 return $body;
 }
-
