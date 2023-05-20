@@ -61,6 +61,8 @@ onsiteopen="3:00 PM"
 ;	any - any POS user can handle discount
 ;	none - disable the discount type of payment
 discount=active
+; endtext = text to put at the botom of the receipt.
+endtext=
 [vendor]
 test=0
 open=1
