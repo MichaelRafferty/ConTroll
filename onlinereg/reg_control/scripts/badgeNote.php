@@ -18,7 +18,7 @@ if($check_auth == false || (!checkAuth($check_auth['sub'], $perm) &&
 $user = $check_auth['email'];
 $response['user'] = $user;
 $userQ = "SELECT id FROM user WHERE email=?;";
-$userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', $user));
+$userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', array($user)));
 $userid = $userR['id'];
 $con = get_conf('con');
 $conid=$con['id'];
@@ -32,7 +32,7 @@ SELECT logdate, action, notes
 FROM atcon_history
 WHERE regid=? AND action != 'attach';
 EOS;
-$atconR = dbSafeQuery($atconQ, 'i', $_POST['badgeId']);
+$atconR = dbSafeQuery($atconQ, 'i', array($_POST['badgeId']));
 $actions = array();
 if($atconR->num_rows > 0) while($act = fetch_safe_assoc($atconR)) {
     array_push($actions, $act);

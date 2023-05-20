@@ -791,8 +791,8 @@ function showActions(prefix, acts, badgeId, transid) {
     if (acts.length > 0) for (act_num in acts) {
         var act = acts[act_num];
         var newAct = $(document.createElement('li')).append(
-            act['action'] + "(" + act['atcon_key'] + ") ... " + act['date'] +
-            " ... " + act['comment']);
+            act['action'] + "(" + act['tid'] + ") ... " + act['logdate'] +
+            " ... " + act['notes']);
 
         if (act['action'] == 'notes') {
             $(elem).addClass("note");

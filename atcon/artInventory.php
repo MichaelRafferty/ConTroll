@@ -74,7 +74,7 @@ echo $conid;
                                 <div class="col-sm-2">
                                     Artist #:
                                 </div>
-                                <div class="col-sm-3">
+                                <div class="col-sm-4">
                                     <?php
 $artistQ = <<<EOS
 SELECT S.art_key, V.name 
@@ -94,10 +94,9 @@ while($artist = fetch_safe_assoc($artistR)) {
                                     </select>
                                 </div>
                                 <div class="col-sm-2">
-                                    Item #:
+                                <!---find by location--->
                                 </div>
-                                <div class="col-sm-3">
-                                    <input type="number" id="item_num_lookup" name="item" min=0 max=100 placeholder="Item #"/>
+                                <div class="col-sm-2">
                                 </div>
                             </div>
                             <div class="row mt-3">

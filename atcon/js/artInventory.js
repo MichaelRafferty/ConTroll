@@ -8,7 +8,6 @@ var location_change_button;
 
 //find item fields
 var artist_field = null;
-var item_field = null;
 var find_result_table = null;
 var id_div = null;
 var cart_div = null;
@@ -32,7 +31,6 @@ window.onload = function init_page() {
     //find people
     id_div = document.getElementById("find_results");
     artist_field = document.getElementById('artist_num_lookup');
-    item_field = document.getElementById('item_num_lookup');
     cart_div = document.getElementById('cart');
 
     //buttons
@@ -212,12 +210,11 @@ function build_table(tableData) {
 
 function find_item(action) {
     var artist = artist_field.value;
-    var item = item_field.value;  
 
     var script = 'onServer/getItem.php';
 
     $.ajax({
-        data: "artist="+artist+"&item="+item,
+        data: "artist="+artist,
         method: "GET",
         url: script,
         success: function(data, textStatus, jqXhr) {
