@@ -34,6 +34,7 @@ if (!check_atcon($method, $conid)) {
 //  printers or all: return an array of server and printers
 $loadtypes = $_POST['load_type'];
 $response['load_type'] = $loadtypes;
+$response['conid'] = $conid;
 if ($loadtypes == 'all' || $loadtypes == 'users') {
     // load authorized users of ATCON along with their allowed roles
     $users = [];
