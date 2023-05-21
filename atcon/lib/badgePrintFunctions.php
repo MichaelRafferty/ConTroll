@@ -352,11 +352,6 @@ function print_receipt($printer, $receipt)//:string | false {
             $receipt = mb_convert_encoding($receipt, 'Windows-1252', 'UTF-8');
     }
 
-    if (mb_substr($queue, 0, 1) == '0' || $name == 'None') {
-        web_error_log($receipt);
-        return 0; // this token is the log only print queue
-    }
-
     $tempfile = tempnam(sys_get_temp_dir(), 'rcptPrn');
     //web_error_log("Writing to $tempfile");
     if (!$tempfile) {
@@ -370,6 +365,11 @@ function print_receipt($printer, $receipt)//:string | false {
     $temp = fopen($tempfile, 'w');
     fwrite($temp, $receipt);
     fclose($temp);
+
+    if (mb_substr($queue, 0, 1) == '0' || $name == 'None') {
+        web_error_log($receipt);
+        return 0; // this token is the log only print queue
+    }
 
     $options = '';
 
