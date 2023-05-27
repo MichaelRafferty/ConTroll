@@ -35,10 +35,10 @@ FROM artItems I
 JOIN artshow S ON (S.id=I.artshow)
 JOIN artist A ON (A.id=S.artid)
 JOIN vendors V on (V.id=A.vendor)
-WHERE S.art_key=?
+WHERE S.art_key=? AND S.conid=?
 EOS;
-$itemI = 'i';
-$itemP = array($artist);
+$itemI = 'ii';
+$itemP = array($artist, $conid);
 
 if($item == '') {
     $itemQ .= ";";

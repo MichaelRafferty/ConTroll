@@ -81,7 +81,7 @@ SELECT S.art_key, V.name
 FROM artshow S
 JOIN artist A ON A.id=S.artid
 JOIN vendors V on V.id=A.vendor
-WHERE S.conid=?
+WHERE S.conid=? ORDER BY S.art_key
 EOS;
 $artistR = dbSafeQuery($artistQ, 'i', array($conid));
                                     ?>

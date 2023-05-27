@@ -116,6 +116,10 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
             }
             break;
         case 'Quicksale/Sold':
+            //inventory
+            if(mode == 'artinventory') {
+                html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button>';
+            }
             //sales or manager can release
             if(manager || (mode=='sales')) {
                 html += '<button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Release\')">Release</button>';
