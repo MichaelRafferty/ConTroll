@@ -12,6 +12,7 @@ global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
 
+
 $method = 'vol_roll';
 $con = get_conf('con');
 $conid = $con['id'];
@@ -45,13 +46,18 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
     TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname,
-    p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname
+    p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname,
+    CASE 
+        WHEN m.memCategory is null THEN 'no membership'
+        WHEN m.memCategory in ({$con['rollover_eligible']}) THEN 'eligible'
+        ELSE m.memCategory
+    END AS memCategory
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id)
 LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ?)
 JOIN memLabel m ON (r.memId = m.id)
-LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id and mn.memCategory in ('upgrade', 'rollover', 'freebie', 'standard', 'yearahead'))
-WHERE p.id = ? AND r.conid = ? AND m.memCategory in ('upgrade', 'rollover', 'freebie', 'standard', 'yearahead')
+LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id)
+WHERE p.id = ? AND r.conid = ?
 ORDER BY r.id;
 EOS;
     //web_error_log($searchSQLM);
@@ -69,18 +75,23 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
     TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname,
-    p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname
+    p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname,
+    CASE
+        WHEN m.memCategory is null THEN 'no membership'
+        WHEN m.memCategory in ({$con['rollover_eligible']}) THEN 'eligible'
+        ELSE m.memCategory
+    END AS memCategory
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id)
 LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ?)
 JOIN memLabel m ON (r.memId = m.id)
-LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id and mn.memCategory in ('upgrade', 'rollover', 'freebie', 'standard', 'yearahead'))
+LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id)
 WHERE r.conid = ? AND (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
-AND  m.memCategory in ('upgrade', 'rollover', 'freebie', 'standard', 'yearahead')
 ORDER BY last_name, first_name
 LIMIT $limit;
 EOS;
     $r = dbSafeQuery($searchSQL, 'iisss', array($conid + 1, $conid, $name_search, $name_search, $name_search));
+
 }
 // now process the search results
 $perinfo = [];
