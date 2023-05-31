@@ -169,8 +169,8 @@ function write_ps($badge, $tempfile)//: void {
     if($badge['age'] == 'youth') { $type = 'Y'; }
 
     if(strtolower($badge['type'])=='oneday') {
-        $day = date("D");
-        #$day = substr($badge['day'], 0, 3);
+        #$day = date("D");
+        $day = substr($badge['day'], 0, 3);
         fwrite($temp, ""
             . "16 4\n"
             . "2 copy moveto\n"
