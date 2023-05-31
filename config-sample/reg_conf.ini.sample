@@ -39,6 +39,7 @@ minComp="2021"
 compLen="150"
 conLen="3"
 server="https://reg.philcon.org/"
+rollover_eligible="'upgrade', 'rollover', 'freebie', 'standard', 'yearahead', 'discount'"
 [reg]
 https=1
 test=0
