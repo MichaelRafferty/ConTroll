@@ -11,7 +11,7 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 }
 
 page_init("Badge List",
-    /* css */ array('https://unpkg.com/tabulator-tables@5.5..0/dist/css/tabulator.min.css',
+    /* css */ array('https://unpkg.com/tabulator-tables@5.5.0/dist/css/tabulator.min.css',
                     'css/base.css',
                     'css/table.css',
                     'css/reg_admin.css'
