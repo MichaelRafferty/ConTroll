@@ -9,10 +9,19 @@ var virtual_invoice = null;
 var update_profile = null;
 var change_password = null;
 
-function virtualReq() {
+// Space Request - call scripts/spaceRequest.php to add a request record
+function spaceReq(space, spacename, spacetitle) {
+    console.log("spaceReq called for " + space + ' on ' + spacename);
+    var opt = document.getElementById(spacename);
+    console.log(opt);
+    console.log(opt.value);
+    dataobj = {
+        spaceid: space,
+        quantity: opt.value,
+    };
     $.ajax({
-        url: 'scripts/requestVirtual.php',
-        data: $('#virtual_req_form').serialize(),
+        url: 'sccripts/spaceReq.php',
+        data: dataobj,
         method: 'POST',
         success: function (data, textstatus, jqxhr) {
             console.log(data);
@@ -26,12 +35,11 @@ function virtualReq() {
             if (data['warn'] !== undefined) {
                 show_message(data['warn'], 'success');
             }
-            virtual_req.hide();
-            openInvoice('virtual', data['requested'], data['price']);
         },
         error: showAjaxError
-    });
+    })
 }
+
 
 function alleyReq() {
     $.ajax({
@@ -131,10 +139,6 @@ function register() {
 }
 
 function updateProfile() {
-    if(!$("#vendor_update").valid()) { 
-        alert("Please correct problems with the form");
-        return null;
-    } 
     $.ajax({
         url: 'scripts/updateProfile.php',
         data: $('#vendor_update').serialize(),
@@ -144,17 +148,17 @@ function updateProfile() {
                 alert(data['message']);
             } else {
                 console.log(data);
-                $('#updateProfile').dialog('close');
+                update_profile.hide();
             }
         }
     });
 }
 
-function forceChangePassword() {
-    if(!$("#changepw").valid()) { 
-        alert("Please correct problems with the form");
-        return null;
-    } 
+function changePassword(field) {
+    if (document.getElementById('pw2').value != document.getElementById('pw').value) {
+        alert("New passwords do not match");
+        return;
+    }
     $.ajax({
         url: 'scripts/changePassword.php',
         data: $('#changepw').serialize(),
@@ -165,26 +169,6 @@ function forceChangePassword() {
             } else {
                 console.log(data);
                 location.reload();
-            }
-        }
-    });
-}
-
-function changePassword() {
-    if(!$("#changepw").valid()) { 
-        alert("Please correct problems with the form");
-        return null;
-    } 
-    $.ajax({
-        url: 'scripts/changePassword.php',
-        data: $('#changepw').serialize(),
-        method: 'POST',
-        success: function(data, textstatus, jqXHR) {
-            if(data['status'] == 'error') {
-                alert(data['message']);
-            } else {
-                console.log(data);
-                $('#changePassword').dialog('close');
             }
         }
     });

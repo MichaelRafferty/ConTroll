@@ -1,21 +1,20 @@
 <?php
 // Vendor - index.php - Main page for vendor registration
 require_once("lib/base.php");
-$ini = redirect_https();
 require_once("../lib/cc__load_methods.php");
 
 $cc = get_conf('cc');
 $con = get_conf('con');
 $conid = $con['id'];
-$vendor = get_conf('vendor');
-$reg = get_conf('reg');
+$vendor_conf = get_conf('vendor');
+$ini = get_conf('reg');
 load_cc_procs();
 
 $condata = get_con();
 
 $in_session = false;
 $forcePassword = false;
-$regserver = $reg['server'];
+$regserver = $ini['server'];
 
 $reg_link = "<a href='$regserver'>Convention Registration</a>";
 
@@ -52,11 +51,11 @@ vendor_page_init($condata['label'] . ' Vendor Registration')
     </div>
     <div class=row">
         <div class="col-sm-12">
-            From here you can create and manage your account for <?php echo $vendor['artventortext']; ?>.
+            From here you can create and manage your account for <?php echo $vendor_conf['artventortext']; ?>.
         </div>
     </div>
 <?php
-if ($vendor['test'] == 1) {
+if ($vendor_conf['test'] == 1) {
     ?>
     <div class="row">
         <div class="col-sm-12">
@@ -123,13 +122,13 @@ if (!$in_session) { ?>
                             <div class="row">
                                 <div class="col-sm-12">
                                     <p>This form creates an account on the <?php echo $con['conname']; ?> vendor
-                                        site. <?php echo $vendor['addlaccounttext'] ?></p>
+                                        site. <?php echo $vendor_conf['addlaccounttext'] ?></p>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
                                     <p> Please provide us with information we can use to evaluate if you qualify and how you would fit in the selection of <?php
-                                        echo $vendor['artventortext'] ?> at <?php echo $con['conname']; ?>.<br/>Creating an account does not guarantee space.
+                                        echo $vendor_conf['artventortext'] ?> at <?php echo $con['conname']; ?>.<br/>Creating an account does not guarantee space.
                                     </p>
                                 </div>
                             </div>
@@ -186,10 +185,10 @@ if (!$in_session) { ?>
                             </div>
                             <div class="row mt-1">
                                 <div class="col-sm-2 p-0 ms-0 me-0 pe-2 text-end">
-                                    <input class="form-control-sm" type='checkbox' name='publicity'/>
+                                    <input class="form-control-sm" type='checkbox' id='publicity' name='publicity'/>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <label>Check if we may use your information to publicize your attendence at <?php echo $con['conname']; ?>, if you're
+                                    <label for='publicity'>Check if we may use your information to publicize your attendence at <?php echo $con['conname']; ?>, if you're
                                         coming?</label>
                                 </div>
                             </div>
@@ -253,7 +252,7 @@ if (!$in_session) { ?>
                         <label for="email">*Email/Login: </label>
                     </div>
                     <div class="col-sm-auto">
-                        <input class="form-control-sm" type='email' name='email' size='40'/>
+                        <input class="form-control-sm" type='email' name='email' id='email' size='40'/>
                     </div>
                 </div>
                 <div class="row mt-1">
@@ -261,14 +260,14 @@ if (!$in_session) { ?>
                         <label for="password">*Password: </label>
                     </div>
                     <div class="col-sm-auto">
-                        <input class="form-control-sm" type='password' name='password' size="40"/>
+                        <input class="form-control-sm" type='password' id='password' name='password' size="40"/>
                     </div>
                 </div>
                 <div class="row mt-2">
                     <div class="col-sm-1"></div>
                     <div class="col-sm-auto">
-                        <input type='submit' class="btn btn-primary" value='signin'/> or <a href='javascript:void(0)'
-                                                                                                      onclick="registrationModalOpen();">Sign Up</a>
+                        <input type='submit' class="btn btn-primary" value='signin'/> or
+                            <a href='javascript:void(0)' onclick="registrationModalOpen();">Sign Up</a>
                     </div>
                 </div>
             </form>
@@ -283,34 +282,51 @@ if (!$in_session) { ?>
             </div>
         </div>
     </div>
+    </body>
+</html>
     <?php
     return;
 }
 // this section is for 'in-session' management
-$priceR = dbSafeQuery('SELECT type, price_full FROM vendor_reg WHERE conid=?;', 'i', array($condata['id']));
-$price_list = array();
-while ($price = fetch_safe_assoc($priceR)) {
-    $price_list[$price['type']] = $price['price_full'];
+$spaceR = dbSafeQuery('SELECT id, shortname, name, description, includedMemberships  FROM vendorSpaces WHERE conid=? ORDER BY shortname', 'i', array($condata['id']));
+$space_list = array();
+$spaces = array();
+while ($space = fetch_safe_assoc($spaceR)) {
+    $space_list[$space['id']] = $space;
+    $spaces[$space['shortname']] = $space['id'];
+}
+foreach ($space_list AS $shortname => $space) {
+    $priceR = dbSafeQuery('SELECT spaceId, code, description, units, price, requestable FROM vendorSpacePrices WHERE spaceId=?;', 'i', array($space['id']));
+    $price_list = array();
+    while ($price = fetch_safe_assoc($priceR)) {
+        $price_list[$price['code']] = $price;
+    }
+    $space_list[$space['id']]['prices'] = $price_list;
 }
 $vendorQ = <<<EOS
-SELECT name, email, website, description, addr, addr2, city, state, zip, publicity, request_dealer,
-       request_artistalley, request_fanac, request_virtual, need_new
+SELECT name, email, website, description, addr, addr2, city, state, zip, publicity, need_new
 FROM vendors
 WHERE id=?;
 EOS;
 
 $info = fetch_safe_assoc(dbSafeQuery($vendorQ, 'i', array($vendor)));
 if ($info['need_new']) {
-    ?>
-    <p>You need to change your password.</p>
-    <form id='needchangepw' action='javascript:void(0)'>
-        <label>Old Password: <input type='password' id='oldPw' name='oldPassword'/></label><br/>
-        <label>New Password: <input type='password' id='pw2' name='password'/></label><br/>
-        <label>Re-enter Password: <input type='password' name='password2'/></label><br/>
-        <input type='submit' onClick='forceChangePassword()' value='Change'/>
-    </form>
-    <?php
-} else {
+    drawChangePassword('You need to change your password.', 2, true);
+    return;
+}
+
+$vendorSQ = <<<EOS
+SELECT id, conid, vendorid, spaceid, requested, approved, purchased, price, paid, transid, membershipCredits
+FROM vendor_space
+WHERE vendorId = ? and conid = ?;
+EOS;
+
+$vendorSR = dbSafeQuery($vendorSQ, 'ii', array($vendor, $condata['id']));
+$vendor_spacelist = array();
+while ($space = fetch_safe_assoc($vendorSR)) {
+    $vendor_spacelist[$space['spaceid']] = $space;
+}
+
     // modals for each section
     ?>
     <div id='update_profile' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Update Vendor Profile' aria-hidden='true'>
@@ -330,7 +346,7 @@ if ($info['need_new']) {
                                     <label for='name'>Name:</label>
                                 </div>
                                 <div class='col-sm-10 p-0'>
-                                    <input type='text' name='name' value='<?php echo $info['name']; ?>' required/>
+                                    <input type='text' name='name' id='name' value='<?php echo $info['name']; ?>' required/>
                                 </div>
                             </div>
                             <div class="row p-1">
@@ -338,7 +354,7 @@ if ($info['need_new']) {
                                     <label for="website">Website:</label>
                                 </div>
                                 <div class="col-sm-10 p-0">
-                                    <input type='text' name='website' value='<?php echo $info['website']; ?>' required/>
+                                    <input type='text' name='website' id='website' value='<?php echo $info['website']; ?>' required/>
                                 </div>
                             </div>
                             <div class='row p-1'>
@@ -346,12 +362,12 @@ if ($info['need_new']) {
                                     <label for='description'>Description:</label>
                                 </div>
                                 <div class='col-sm-10 p-0'>
-                                    <textarea name='description' rows=5 cols=60><?php echo $info['description']; ?></textarea>
+                                    <textarea name='description' id='description' rows=5 cols=60><?php echo $info['description']; ?></textarea>
                                 </div>
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2 p-0 ms-0 me-0 pe-2 text-end'>
-                                    <input class='form-control-sm' type='checkbox' <?php echo $info['publicity'] != 0 ? 'checked' : ''; ?> name='publicity'/>
+                                    <input class='form-control-sm' type='checkbox' <?php echo $info['publicity'] != 0 ? 'checked' : ''; ?> name='publicity' id="publicity"/>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <label>Check if we may use your information to publicize your attendence at <?php echo $con['conname']; ?></label>
@@ -415,34 +431,8 @@ if ($info['need_new']) {
                     <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class='container-fluid'>
-                        <form id='changepw' action='javascript:void(0)'>
-                            <div class="row p-1">
-                                <div class="col-sm-3 p-0">
-                                    <label for="oldPw">Old Password:</label>
-                                </div>
-                                <div class="col-sm-9 p-0">
-                                    <input type='password' id='oldPw' name='oldPassword'/>
-                                </div>
-                            </div>
-                            <div class='row p-1'>
-                                <div class='col-sm-3 p-0'>
-                                    <label for='pw2'>New Password:</label>
-                                </div>
-                                <div class='col-sm-9 p-0'>
-                                    <input type='password' id='pw2' name='password'/>
-                                </div>
-                            </div>
-                            <div class='row p-1'>
-                                <div class='col-sm-3 p-0'>
-                                    <label for='rpw2'>Re-enter Password:</label>
-                                </div>
-                                <div class='col-sm-9 p-0'>
-                                    <input type='password' id='rpw2' name='password2'/>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
+                    <?php drawChangePassword('', 3, false);
+                    ?>
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
@@ -451,77 +441,86 @@ if ($info['need_new']) {
             </div>
         </div>
     </div>
-    <div id='dealer_req' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request Dealer Space' aria-hidden='true'>
-        <div class='modal-dialog'>
-            <div class='modal-content'>
-                <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title'>
-                        <strong>Request Dealer Space</strong>
-                    </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-                </div>
-                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class="container-fluid">
-                        <form id='dealer_req_form' action='javascript:void(0)'>
-                            <div class='row p-0 bg-warning'>
-                                <div class="col-sm-12 p-2">
-                                    Please make sure your profile contains a good description of what you will be vending and a link for our staff to see what
-                                    you sell if at all possible.
-                                </div>
-                            </div>
-                            <div class="row p-1">
-                                <div class="col-sm-auto p-0 pe-2">
-                                    <label for="dealer_6">How many 6x6 spaces are you requesting?</label>
-                                </div>
-                                <div class="col-sm-auto p-0">
-                                    <select name='dealer_6'>
-                                        <option>0</option>
-                                        <option>1</option>
-                                        <option>2</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row p-1">
-                                <div class="col-sm-12">
-                                    $<?php echo $price_list['dealer_6']; ?> per space.
-                                </div>
-                            </div>
-                            <div class="row p-1 pt-4">
-                                <div class="col-sm-auto p-0 pe-2">
-                                    <label for="dealer_10">How many 10x10 spaces are you requesting?</label>
-                                </div>
-                                <div class="col-sm-auto p-0">
-                                    <select name='dealer_10'>
-                                        <option>0</option>
-                                        <option>1</option>
-                                        <option>2</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class='row p-1'>
-                                <div class='col-sm-12'>
-                                    $<?php echo $price_list['dealer_10']; ?> per space.
-                                </div>
-                            </div>
-                            <div class='row p-1 pt-4 pb-3'>
-                                <div class='col-sm-12'>
-                                    You will be able to identify people for the free memberships and purchase discounted memberships later, if your request is
-                                    approved.
-                                </div>
-                            </div>
-                            <div class="row p-0 bg-warning">
-                                <div class='col-sm-auto p-2'>Completing this application does not guarantee space.</div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' onClick='dealerReq()'>Request Space</button>
-                </div>
+
+    <!-- now for the top of the form -->
+     <div class='container-fluid'>
+        <div class='row p-1'>
+            <div class='col-sm-12 p-0'>
+                <h3>Welcome to the Portal Page for <?php echo $info['name']; ?></h3>
             </div>
         </div>
+        <div class="row p-1">
+            <div class="col-sm-auto p-0">
+                <button class="btn btn-secondary" onclick='update_profile.show();'>View/Change your profile</button>
+                <button class='btn btn-secondary' onclick='change_password.show();'>Change your password</button>
+                <button class="btn btn-secondary" onclick="window.location='?logout';">Logout</button>
+            </div>
+        </div>
+        <div class="row p-1 pt-4">
+            <div class="col-sm-12 p-0">
+                <h3>Vendor Spaces</h3>
+            </div>
+        </div>
+        <div class="row p-1">
+            <div class="col-sm-12 p-0"><?php
+                echo $con['label']; ?> has multiple types of spaces for vendors. If you select a type for which you aren't qualified we will alert groups
+                managing other spaces.
+            </div>
+        </div>
+<?php
+    foreach ($spaces AS $spacename => $spaceid) {
+        $space = $space_list[$spaceid];
+        if (array_key_exists($space['shortname'] . '_details', $vendor_conf)) {
+            $description = $vendor_conf[$space['shortname'] . '_details'];
+        } else {
+            $description = $space['description'];
+        }
+        if (array_key_exists($spaceid, $vendor_spacelist)) {
+            $vendor_space = $vendor_spacelist[$spaceid];
+        } else
+            $vendor_space = null;
+
+        // first the modals
+        draw_request_modal($space);
+
+        // now the fixed text
+        ?>
+        <div class="row pt-4 p-1">
+            <div class="col-sm-auto p-0">
+                <h3><?php echo $space['name'];?></h3>
+            </div>
+        </div>
+        <div class="row p-1">
+            <div class="col-sm-12 p-0">
+                <?php echo $description;?>
+            </div>
+        </div>
+        <div class="row p-1">
+            <div class="col-sm-auto p-0"><?php
+        if ($vendor_space !== null) {
+            if ($vendor_space['approved'] > $vendor_space['purchased']) {
+                ?>
+                <button class="btn btn-primary"
+                        onclick="openInvoice($space['shortname'], <?php echo($vendor_space['approved'] - $vendor_space['purchased']); ?>, <?php
+                        echo $price_list[$vendor_space['type']]; ?>, '<?php echo $vendor_space['type']; ?>')">
+                    Pay $space['shortname'] Invoice</button> <?php
+            } else if ($vendor_space['requested'] > $vendor_space['approved']) {
+                echo 'Request Pending Authorization.';
+            } else {
+                echo 'Registered for ' . $vendor_space['purchased'];
+            }
+        } else {
+            ?>
+            <button class="btn btn-primary" onclick='<?php echo $space['shortname']; ?>_req.show();'>Request <?php echo $space['name']; ?> Space</button><?php
+        }
+        ?>
+            </div>
+        </div>
+        <?php } ?>
+        <div id='result_message' class='mt-4 p-2'></div>
     </div>
+
+<?php if (false) { ?>
     <div id='alley_req' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request Artist Alley Space' aria-hidden='true'>
         <div class='modal-dialog'>
             <div class='modal-content'>
@@ -545,7 +544,7 @@ if ($info['need_new']) {
                                     <label for="alley_tables">How many tables are you requesting?</label>
                                 </div>
                                 <div class='col-sm-auto p-0'>
-                                    <select name='alley_tables'>
+                                    <select name='alley_tables' id="alley_tables">
                                         <option>1</option>
                                         <option>2</option>
                                     </select>
@@ -850,33 +849,12 @@ if ($info['need_new']) {
             </div>
         </div>
     </div>
+    <?php } ?>
     <!-- end of modals, start of main body -->
-    <div class='container-fluid'>
-        <div class="row p-1">
-            <div class="col-sm-12 p-0">
-                <h3>Welcome to the Portal Page for <?php echo $info['name']; ?></h3>
-            </div>
-        </div>
-        <div class="row p-1">
-            <div class="col-sm-auto p-0">
-                <button class="btn btn-secondary" onclick='update_profile.show();'>View/Change your profile</button>
-                <button class='btn btn-secondary' onclick='change_password.show();'>Change your password</button>
-                <button class="btn btn-secondary" onclick="window.location='?logout';">Logout</button>
-            </div>
-        </div>
-        <div class="row p-1 pt-4">
-            <div class="col-sm-12 p-0">
-                <h3>Vendor Spaces</h3>
-            </div>
-        </div>
-        <div class="row p-1">
-            <div class="col-sm-12 p-0"><?php
-                echo $con['label']; ?> has multiple types of spaces for vendors. If you select a type for which you aren't qualified we will alert groups
-                managing other spaces.
-            </div>
-        </div>
-<!-- Do we want to include parties? --!>
-<?php if (array_key_exists('virtual', $price_list)) { ?>
+
+<?php if (false) {
+    // Do we want to include virtual?
+    if (array_key_exists('virtual', $price_list)) { ?>
         <div class="row p-1 pt-4">
             <div class="col-sm-12 p-0">
                 <h3>Virtual Vendor</h3>
@@ -914,26 +892,29 @@ if ($info['need_new']) {
             </div>
         </div>
     <div class="row p-0"><div class="col-sm-12 p-0"><hr/></div></div>
-<?php } ?>
+<?php
+    // end virtual
+    }
+
+    // artist alley or equivalent
+    if (array_key_exists('alleyspace', $vendor_conf) && $vendor_conf['alleyspace'] != '') { ?>
         <div class="row p-1 pt-4">
             <div class="col-sm-12 p-0">
-                <h3>Artist Alley</h3>
+                <h3><?php echo $vendor_conf['alleyspace'];?></h3>
             </div>
         </div>
         <div class="row p-1">
-            <div class="col-sm-12 p-0"><?php
-                echo $con['label']; ?> hosts an Artist Alley to enable artists to directly interact with Balticon members. These tables cost
-                $<?php echo $price_list['alley']; ?>, and are the 5th floor Atrium, a central space open to all convention members for the duration of the
-                convention and are not secured at night. We expect artists to usually have someone at their table from 10am through 6pm, although short absences
-                are acceptable for panel participation, etc. We encourage artists to engage in their craft at their table to attract potential customers.
+            <div class="col-sm-12 p-0">
+                <?php echo $con['label']; ?> hosts an <?php echo $vendor_conf['alleyspace'];?> to enable artists to directly interact with <?php echo $con['label']; ?> members. These tables cost
+                $<?php echo $price_list['alley']; ?>, and are in the <?php echo $vendor_conf['alleywhere'];?>, <?php echo $vendor_conf['alleydetails'];?> We encourage artists to engage in their craft at their table to attract potential customers.
                 A membership is required to run the table, one discounted membership is available per table.
             </div>
         </div>
-        <iv class="row p-1">
+        <div class="row p-1">
             <div class="col-sm-auto p-0">
             <?php
             $aaQ = "SELECT requested, authorized, purchased, price, paid, transid FROM vendor_show WHERE type='alley' and vendor = ? and conid=?;";
-            $aaR = dbSafeQuery($aaQ, 'ii', array($vendor, $conid));
+            $aaR = dbSafeQuery($aaQ, 'ii', array($vendor_conf, $conid));
             $alley_info = NULL;
             if ($aaR->num_rows >= 1) {
                 $alley_info = fetch_safe_assoc($aaR);
@@ -949,15 +930,20 @@ if ($info['need_new']) {
                 }
             } else {
                 ?>
-                <button class="btn btn-primary" onclick="alley_req.show();">Request Artist Alley</button><?php
+                <button class="btn btn-primary" onclick="alley_req.show();">Request <?php echo $vendor_conf['alleyspace'];?></button><?php
             }
             ?>
             </div>
-        </iv>
+        </div>
         <div class="row p-0"><div class="col-sm-12 p-0"><hr/></div></div>
+<?php
+    } // end artist alley equivalent
+
+    // do we want dealers?
+    if (array_key_exists('dealersspace', $vendor_conf) && $vendor_conf['dealersspace'] != '') { ?>
         <div class="row pt-4 p-1">
             <div class="col-sm-auto p-0">
-                <h3>Dealers Room</h3>
+                <h3><?php echo $vendor_conf['dealersspace'];?></h3>
             </div>
         </div>
         <div class="row p-1">
@@ -1003,6 +989,143 @@ if ($info['need_new']) {
         </div>
         <div id='result_message' class='mt-4 p-2'></div>
     </div>
-<?php } ?>
+<?php
+  // end dealers
+  }
+} // end else of needs_new
+    ?>
 </body>
 </html>
+
+<?php
+// drawChangePassword - make it common code to draw change password prompts
+function drawChangePassword($title, $width, $drawbutton) {
+    $html = '';
+    if ($title != '') {
+        $html = <<<EOH
+    <div class='row'>
+        <div class='col-sm-12'>$title</div>
+    </div>
+EOH;
+        }
+    $html .= <<<EOH
+    <div class='container-fluid'>
+        <form id='changepw' action='javascript:void(0)'>
+        <div class='row'>
+            <div class='col-sm-$width'>
+                <label for='oldPw'>Old Password:</label>
+            </div>
+            <div class='col-sm-8'>
+                <input type='password' id='oldPw' name='oldPassword' required/>
+            </div>
+        </div>
+        <div class='row'>
+            <div class='col-sm-$width'>
+                <label for='pw'>new Password:</label>
+            </div>
+            <div class='col-sm-8'>
+                <input type='password' id='pw' name='password' required/>
+            </div>
+        </div>
+        <div class='row'>
+            <div class='col-sm-$width'>
+                <label for='pw2'>Re-enter Password:</label>
+            </div>
+            <div class='col-sm-8'>
+                <input type='password' id='pw2' name='password2' required/>
+            </div>
+        </div>
+EOH;
+    if ($drawbutton) {
+        $html .= <<<EOH
+        <div class='row mt-2'>
+            <div class='col-sm-$width'></div>
+            <div class='col-sm-8'>
+                <button class='btn btn-sm btn-primary' onClick='changePassword()'>Change Password</button>
+            </div>
+        </div>
+        </form>
+    </div>
+    </body>
+</html>
+EOH;
+    } else {
+        $html .= <<<EOH
+        </form>
+    </div>
+EOH;
+    }
+    echo $html;
+}
+
+function draw_request_modal($space) {
+    $spacename = $space['shortname'];
+    $spacetitle = $space['name'];
+    $spaceid = $space['id'];
+    $spacereq = $spacename . '_req';
+    $spaceform = $spacename . '_req_form';
+    if (array_key_exists('prices', $space)) {
+        $prices = $space['prices'];
+    } else {
+        $prices = array();
+    }
+
+    $options = '<option value="0">No Space Requested</option>';
+    foreach ($prices as $priceid => $price) {
+        $options .= "\n<option value='" . $price['code'] . "'>" . $price['description'] . ' for ' . $price['price'] . "</option>";
+    }
+
+    $html = <<<EOH
+    <div id='$spacereq' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request $spacetitle Space' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title'>
+                        <strong>Request $spacetitle Space</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <div class='container-fluid'>
+                        <form id='$spaceform' action='javascript:void(0)'>
+                            <div class='row p-0 bg-warning'>
+                                <div class='col-sm-12 p-2'>
+                                    Please make sure your profile contains a good description of what you will be vending and a link for our staff to see what
+                                    you sell if at all possible.
+                                </div>
+                            </div>
+                            <div class='row p-1'>
+                                <div class='col-sm-auto p-0 pe-2'>
+                                    <label for='$spacename'>How many spaces are you requesting?</label>
+                                </div>
+                                <div class='col-sm-auto p-0'>
+                                    <select name='$spacename' id='$spacename'>
+                                        $options
+                                    </select>
+                                </div>
+                            </div>
+                            <div class='row p-1 pt-4 pb-3'>
+                                <div class='col-sm-12'>
+                                    You will be able to identify people for the free memberships and purchase discounted memberships later, if your request is
+                                    approved.
+                                </div>
+                            </div>
+                            <div class="row p-0 bg-warning">
+                                <div class='col-sm-auto p-2'>Completing this application does not guarantee space.</div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                    <button class='btn btn-sm btn-primary' onClick="spaceReq($spaceid, '$spacename', '$spacetitle')">Request $spacetitle Space</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+    $spacereq = new bootstrap.Modal(document.getElementById('$spacereq'), { focus: true, backdrop: 'static' });
+    </script>
+EOH;
+    echo $html;
+}
