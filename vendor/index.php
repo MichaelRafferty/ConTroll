@@ -296,7 +296,7 @@ while ($space = fetch_safe_assoc($spaceR)) {
     $spaces[$space['shortname']] = $space['id'];
 }
 foreach ($space_list AS $shortname => $space) {
-    $priceR = dbSafeQuery('SELECT spaceId, code, description, units, price, requestable FROM vendorSpacePrices WHERE spaceId=?;', 'i', array($space['id']));
+    $priceR = dbSafeQuery('SELECT id, spaceId, code, description, units, price, requestable FROM vendorSpacePrices WHERE spaceId=?;', 'i', array($space['id']));
     $price_list = array();
     while ($price = fetch_safe_assoc($priceR)) {
         $price_list[$price['code']] = $price;
@@ -316,15 +316,15 @@ if ($info['need_new']) {
 }
 
 $vendorSQ = <<<EOS
-SELECT id, conid, vendorid, spaceid, requested, approved, purchased, price, paid, transid, membershipCredits
-FROM vendor_space
+SELECT *
+FROM vw_VendorSpace
 WHERE vendorId = ? and conid = ?;
 EOS;
 
 $vendorSR = dbSafeQuery($vendorSQ, 'ii', array($vendor, $condata['id']));
 $vendor_spacelist = array();
 while ($space = fetch_safe_assoc($vendorSR)) {
-    $vendor_spacelist[$space['spaceid']] = $space;
+    $vendor_spacelist[$space['id']] = $space;
 }
 
     // modals for each section
@@ -461,13 +461,14 @@ while ($space = fetch_safe_assoc($vendorSR)) {
                 <h3>Vendor Spaces</h3>
             </div>
         </div>
+<?php   if (count($spaces) > 1)  { ?>
         <div class="row p-1">
             <div class="col-sm-12 p-0"><?php
                 echo $con['label']; ?> has multiple types of spaces for vendors. If you select a type for which you aren't qualified we will alert groups
                 managing other spaces.
             </div>
         </div>
-<?php
+<?php   }
     foreach ($spaces AS $spacename => $spaceid) {
         $space = $space_list[$spaceid];
         if (array_key_exists($space['shortname'] . '_details', $vendor_conf)) {
@@ -477,11 +478,14 @@ while ($space = fetch_safe_assoc($vendorSR)) {
         }
         if (array_key_exists($spaceid, $vendor_spacelist)) {
             $vendor_space = $vendor_spacelist[$spaceid];
-        } else
+            $item_requested = $vendor_space['item_requested'];
+        } else {
             $vendor_space = null;
+            $item_requested = null;
+        }
 
         // first the modals
-        draw_request_modal($space);
+        draw_request_modal($space, $item_requested);
 
         // now the fixed text
         ?>
@@ -495,19 +499,24 @@ while ($space = fetch_safe_assoc($vendorSR)) {
                 <?php echo $description;?>
             </div>
         </div>
-        <div class="row p-1">
+        <div class="row p-1 mt-2" id="<?php echo $space['shortname']; ?>_div">
             <div class="col-sm-auto p-0"><?php
         if ($vendor_space !== null) {
-            if ($vendor_space['approved'] > $vendor_space['purchased']) {
+            if ($vendor_space['item_purchased']) {
+                echo "You are registered for " . $vendor_space['purchased_description'] . "\n";
+            } else if ($vendor_space['item_approved']) {
                 ?>
                 <button class="btn btn-primary"
                         onclick="openInvoice($space['shortname'], <?php echo($vendor_space['approved'] - $vendor_space['purchased']); ?>, <?php
                         echo $price_list[$vendor_space['type']]; ?>, '<?php echo $vendor_space['type']; ?>')">
                     Pay $space['shortname'] Invoice</button> <?php
-            } else if ($vendor_space['requested'] > $vendor_space['approved']) {
-                echo 'Request Pending Authorization.';
+            } else if ($vendor_space['item_requested']) {
+                echo 'Request pending authorization for ' . $vendor_space['requested_description'] . ".\n";?>
+            </div>
+            <div class="col-sm-auto ms-4 p-0"> <button class='btn btn-primary' onclick='<?php echo $space['shortname']; ?>_req.show();'>Change/Cancel  <?php echo $space['name']; ?> Space</button><?php
             } else {
-                echo 'Registered for ' . $vendor_space['purchased'];
+                 ?>
+            <button class="btn btn-primary" onclick='<?php echo $space['shortname']; ?>_req.show();'>Request <?php echo $space['name']; ?> Space</button><?php
             }
         } else {
             ?>
@@ -521,96 +530,6 @@ while ($space = fetch_safe_assoc($vendorSR)) {
     </div>
 
 <?php if (false) { ?>
-    <div id='alley_req' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request Artist Alley Space' aria-hidden='true'>
-        <div class='modal-dialog'>
-            <div class='modal-content'>
-                <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title'>
-                        <strong>Request Artist Alley Space</strong>
-                    </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-                </div>
-                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class='container-fluid'>
-                        <form id='alley_req_form' action='javascript:void(0)'>
-                            <div class='row p-0 bg-warning'>
-                                <div class='col-sm-12 p-2'>
-                                    Please make sure your profile contains a good description of what you will be vending and a link for our staff to see what
-                                    you sell if at all possible.
-                                </div>
-                            </div>
-                            <div class="row p-1">
-                                <div class="col-sm-auto p-0 pe-2">
-                                    <label for="alley_tables">How many tables are you requesting?</label>
-                                </div>
-                                <div class='col-sm-auto p-0'>
-                                    <select name='alley_tables' id="alley_tables">
-                                        <option>1</option>
-                                        <option>2</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class='row p-1'>
-                                <div class='col-sm-12'>
-                                    $<?php echo $price_list['alley']; ?> per table.
-                                </div>
-                            </div>
-                            <div class='row p-1 pt-4 pb-3'>
-                                <div class='col-sm-12'>
-                                    You will be able to identify people for the free memberships and purchase discounted memberships later, if your request
-                                    is
-                                    approved.
-                                </div>
-                            </div>
-                            <div class='row p-0 bg-warning'>
-                                <div class='col-sm-auto p-2'>Completing this application does not guarantee space.</div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' onClick='alleyReq()'>Request Space</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div id='virtual_req' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request Virtual Vendor Space' aria-hidden='true'>
-        <div class='modal-dialog'>
-            <div class='modal-content'>
-                <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title'>
-                        <strong>Request Virtual; Vendor Space</strong>
-                    </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-                </div>
-                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class='container-fluid'>
-                        <form id='virtual_req_form' action='javascript:void(0)'>
-                            <input type="hidden" name="virtual" value="virtual"/>
-                            <div class='row p-0 bg-warning'>
-                                <div class='col-sm-12 p-2'>
-                                    Please make sure your profile contains a good description of what you will be selling and a link for our staff to see it if at all possible.
-                                </div>
-                            </div>
-                            <div class='row p-1 pt-2 pb-2'>
-                                <div class='col-sm-12'>
-                                    Joining the virtual vendor space costs $<?php echo $price_list['virtual']; ?>.
-                                </div>
-                            </div>
-                            <div class='row p-0 bg-warning'>
-                                <div class='col-sm-auto p-2'>Completing this application does not guarantee space.</div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' onClick='virtualReq()'>Request Space</button>
-                </div>
-            </div>
-        </div>
-    </div>
     <div id='alley_invoice' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Artist Alley Invoice' aria-hidden='true'>
         <div class='modal-dialog'>
             <div class='modal-content'>
@@ -881,8 +800,11 @@ while ($space = fetch_safe_assoc($vendorSR)) {
                         Pay Virtual Vendor Space Invoice</button> <?php
                 } else if ($virtual_info['requested'] > $virtual_info['authorized']) {
                     echo "Request Pending Authorization.";
-                } else {
+                } else if ($virtul_info['requested'] > 0) {
                     echo "Registered for " . $virtual_info['purchased'];
+                } else {
+                ?>
+                <button class='btn btn-primary' onclick='virtual_req.show();'>Request Virtual Vendor</button><?php
                 }
             } else {
                 ?>
@@ -1058,7 +980,9 @@ EOH;
     echo $html;
 }
 
-function draw_request_modal($space) {
+function draw_request_modal($space, $item_requested) {
+    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+
     $spacename = $space['shortname'];
     $spacetitle = $space['name'];
     $spaceid = $space['id'];
@@ -1070,9 +994,15 @@ function draw_request_modal($space) {
         $prices = array();
     }
 
-    $options = '<option value="0">No Space Requested</option>';
+    if ($item_requested) {
+        $title = "Chance/Cancel";
+        $options = '<option value="-1">Cancel Space Request</option>';
+    } else {
+        $title = "Request";
+        $options = '<option value="0">No Space Requested</option>';
+    }
     foreach ($prices as $priceid => $price) {
-        $options .= "\n<option value='" . $price['code'] . "'>" . $price['description'] . ' for ' . $price['price'] . "</option>";
+        $options .= "\n<option value='" . $price['id'] . "'" . ($price['id'] == $item_requested ? ' selected' : '') . '>' . $price['description'] . ' for ' . $dolfmt->formatCurrency($price['price'], 'USD') . "</option>";
     }
 
     $html = <<<EOH
@@ -1081,7 +1011,7 @@ function draw_request_modal($space) {
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
                     <div class='modal-title'>
-                        <strong>Request $spacetitle Space</strong>
+                        <strong>$title $spacetitle Space</strong>
                     </div>
                     <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                 </div>
@@ -1118,7 +1048,7 @@ function draw_request_modal($space) {
                 </div>
                 <div class="modal-footer">
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' onClick="spaceReq($spaceid, '$spacename', '$spacetitle')">Request $spacetitle Space</button>
+                    <button class='btn btn-sm btn-primary' onClick="spaceReq($spaceid, '$spacename', '$spacetitle', $spacereq)">$title $spacetitle Space</button>
                 </div>
             </div>
         </div>

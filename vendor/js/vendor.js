@@ -10,17 +10,21 @@ var update_profile = null;
 var change_password = null;
 
 // Space Request - call scripts/spaceRequest.php to add a request record
-function spaceReq(space, spacename, spacetitle) {
+function spaceReq(space, spacename, spacetitle, spaceReq) {
     console.log("spaceReq called for " + space + ' on ' + spacename);
     var opt = document.getElementById(spacename);
     console.log(opt);
     console.log(opt.value);
+    if (opt.value == 0) {
+        alert("Select an amount of space to resquest");
+        return;
+    }
     dataobj = {
         spaceid: space,
-        quantity: opt.value,
+        priceid: opt.value,
     };
     $.ajax({
-        url: 'sccripts/spaceReq.php',
+        url: 'scripts/spaceReq.php',
         data: dataobj,
         method: 'POST',
         success: function (data, textstatus, jqxhr) {
@@ -29,11 +33,13 @@ function spaceReq(space, spacename, spacetitle) {
                 show_message(data['error'], 'error');
                 return;
             }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
+            if (data['success'] !== undefined) {
+                show_message(data['success'], 'success');
+                spaceReq.hide();
+                document.getElementById(data['div']).innerHTML = "<div class='col-sm-auto'><button class='btn btn-primary' onClick='location.reload()'>Click here to refresh page to update status</button></div>";
             }
             if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'success');
+                show_message(data['warn'], 'warn');
             }
         },
         error: showAjaxError
