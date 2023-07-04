@@ -9,9 +9,13 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 }
 
 page_init($page,
-    /* css */ array('css/base.css'
+    /* css */ array('https://unpkg.com/tabulator-tables@5.5.0/dist/css/tabulator.min.css',
+                    'css/base.css'
                    ),
-    /* js  */ array('/javascript/d3.js',
+    /* js  */ array(
+                    //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
+                    'https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js',
+                    //'/javascript/d3.js',
                     'js/base.js',
                     'js/vendor.js'
                    ),
@@ -21,162 +25,125 @@ $con = get_con();
 $conid = $con['id'];
 
 $conf = get_conf('con');
-
+// first the modals for use by the script
 ?>
-<div id='main'>
-  <div id='currentNumbers' class='half'>
-    <span class='blocktitle'>Artist Alley Registrations:</span>
-    <?php
-        // initialize arrays in case select returns 0 rows
-        $alley_show = ['requested' => 0, 'authorized' => 0, 'purchased' => 0];
-        $dealer6_show = ['requested' => 0, 'authorized' => 0, 'purchased' => 0];
-        $dealer10_show = ['requested' => 0, 'authorized' => 0, 'purchased' => 0];
-        $showQ = "SELECT type, sum(requested) as requested, sum(authorized) as authorized, sum(purchased) as purchased from vendor_show WHERE conid=$conid group by type;";
-        $showR = dbQuery($showQ);
-        while($showLine = fetch_safe_assoc($showR)) {
-            switch($showLine['type']) {
-                case 'alley': $alley_show = $showLine; break;
-                case 'dealer_6': $dealer6_show = $showLine; break;
-                case 'dealer_10': $dealer10_show = $showLine; break;
-            }
-        }
-    ?>
-    New: <?php echo $alley_show['requested'] - $alley_show['authorized']; ?>
-    Pending: <?php echo $alley_show['authorized'] - $alley_show['purchased']; ?>
-    Purchased: <?php echo $alley_show['purchased']; ?>
-    <br/>
-    <span class='blocktitle'>Dealers Room 6' Registrations:</span>
-    New: <?php echo $dealer6_show['requested'] - $dealer6_show['authorized']; ?>
-    Pending: <?php echo $dealer6_show['authorized'] - $dealer6_show['purchased']; ?>
-    Purchased: <?php echo $dealer6_show['purchased']; ?>
-    <br/>
-    <span class='blocktitle'>Dealers Room 10' Registrations:</span>
-    New: <?php echo $dealer10_show['requested'] - $dealer10_show['authorized']; ?>
-    Pending: <?php echo $dealer10_show['authorized'] - $dealer10_show['purchased']; ?>
-    Purchased: <?php echo $dealer10_show['purchased']; ?>
-    <br/>
-  </div>
-  <div id='searchResults' class='half right'>
-    <span class='blocktitle'>Search Results</span>
-    <span id="resultCount"> </span>
-    <div id='searchResultHolder'>
+<div id='update_profile' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Update Vendor Profile' aria-hidden='true' style="--bs-modal-width: 80%;">
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong>Update Vendor Profile</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <form id='vendor_update' action='javascript:void(0)'>
+                        <input type="hidden" name="vendorId" id="ev_vendorId" value="">
+                        <div class='row p-1'>
+                            <div class='col-sm-2 p-0'>
+                                <label for='ev_name'>Name:</label>
+                            </div>
+                            <div class='col-sm-10 p-0'>
+                                <input class='form-control-sm' type='text' name='name' id='ev_name' size='64' required/>
+                            </div>
+                        </div>
+                        <div class='row p-1'>
+                            <div class='col-sm-2 p-0'>
+                                <label for='ev_email'>Email:</label>
+                            </div>
+                            <div class='col-sm-10 p-0'>
+                                <input class='form-control-sm' type='text' name='email' id='ev_email' size='64' required/>
+                            </div>
+                        </div>
+                        <div class='row p-1'>
+                            <div class='col-sm-2 p-0'>
+                                <label for='ev_website'>Website:</label>
+                            </div>
+                            <div class='col-sm-10 p-0'>
+                                <input class='form-control-sm' type='text' name='website' id='ev_website' required/>
+                            </div>
+                        </div>
+                        <div class='row p-1'>
+                            <div class='col-sm-2 p-0'>
+                                <label for='ev_description'>Description:</label>
+                            </div>
+                            <div class='col-sm-10 p-0'>
+                                <textarea class='form-control-sm' name='description' id='ev_description' rows=5 cols=60></textarea>
+                            </div>
+                        </div>
+                        <div class='row mt-1'>
+                            <div class='col-sm-2 p-0 ms-0 me-0 pe-2 text-end'>
+                                <input class='form-control-sm' type='checkbox' name='publicity' id="ev_publicity"/>
+                            </div>
+                            <div class='col-sm-auto p-0 ms-0 me-0'>
+                                <label for="ev_publicity">Check if we may use your information to publicize your attendence at <?php echo $conf['conname']; ?></label>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-sm-2">
+                                <label for="ev_addr" title='Street Address'>Address </label>
+                            </div>
+                            <div class="col-sm-auto p-0 ms-0 me-0">
+                                <input class="form-control-sm" id='ev_addr' type='text' size="64" name='addr' required/>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-sm-2">
+                                <label for="ev_addr2" title='Company Name'>Company/ Address line 2:</label>
+                            </div>
+                            <div class="col-sm-auto p-0 ms-0 me-0">
+                                <input class="form-control-sm" id='ev_addr2' type='text' size="64" name='addr2'/>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-sm-2">
+                                <label for="ev_city">City: </label>
+                            </div>
+                            <div class="col-sm-auto p-0 ms-0 me-0">
+                                <input class="form-control-sm" id='ev_city' type='text' size="32" name=' city' required/>
+                            </div>
+                            <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
+                                <label for="ev_state"> State: </label>
+                            </div>
+                            <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
+                                <input class="form-control-sm" id='ev_state' type='text' size="2" maxlength="2" name='state' required/>
+                            </div>
+                            <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
+                                <label for="ev_zip"> Zip: </label>
+                            </div>
+                            <div class="col-sm-auto p-0 ms-0 me-0 ps-1 pb-2">
+                                <input class="form-control-sm" id='ev_zip' type='text' size="11" maxlength="11" name='zip' required/>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' onClick='updateProfile()'>Update</button>
+            </div>
+        </div>
     </div>
-  </div>
-<div class='half'>
-  <div id="searchPerson"><span class="blocktitle">Search Person</span>
-    <a class='showlink' id='searchPersonShowLink' href='javascript:void(0)'
-      onclick='showBlock("#searchPerson")'>(show)</a>
-    <a class='hidelink' id='searchPersonHideLink' href='javascript:void(0)'
-      onclick='hideBlock("#searchPerson")'>(hide)</a>
-    <form class='inline' id="findPerson" method="GET" action="javascript:void(0)">
-      Name: <input type="text" name="full_name" id="findPersonFullName"/>
-      <input type="submit" value="Find" onClick='findPerson("#findPerson")'/>
-    </form>
-  </div>
-  <div id='vendorList'><span class='blocktitle'>Vendor List</span>
-    <a class='showlink' id='vendorListShowLink' href='javascript:void(0)'
-        onclick='showBlock("#vendorList")'>(show)</a>
-    <a class='hidelink' id='vendorListHideLink' href='javascript:void(0)'
-        onclick='hideBlock("#vendorList")'>(hide)</a>
-    <table id='vendorListT'>
-        <thead>
-            <tr>
-                <th>Vendor Name</th>
-                <th>Vendor Website</th>
-                <th>Vendor Email</th>
-                <th>Dealer Info</th>
-                <th>Alley Info</th>
-                <th>View</th>
-                <th>Password Reset</th>
-            </tr>
-        </thead>
-                       
-  <?php
-    $vendorQ = "SELECT V.id, V.name, V.website, V.email"
-            . ", request_dealer, request_artistalley, request_fanac"
-            . ", SA.requested as A_req, SA.authorized as A_auth, SA.purchased as A_purch"
-            . ", SD.requested as D_req, SD.authorized as D_auth, SD.purchased as D_purch"
-            . ", SD10.requested as T_req, SD10.authorized as T_auth, SD10.purchased as T_purch"
-            . " FROM vendors as V"
-            . " LEFT JOIN vendor_show as SA on SA.vendor=V.id AND SA.type='alley' and SA.conid=$conid"
-            . " LEFT JOIN vendor_show as SD on SD.vendor=V.id AND SD.type='dealer_6' and SD.conid=$conid"
-            . " LEFT JOIN vendor_show as SD10 on SD10.vendor=V.id AND SD10.type='dealer_10' and SD10.conid=$conid"
-            . " WHERE request_dealer or request_artistalley or request_fanac"
-            . ";";
-
-
-    $vendorList = dbQuery($vendorQ);
-
-    while($vendor = fetch_safe_assoc($vendorList)) {
-        if($vendor['A_req']+$vendor['D_req']+$vendor['T_req']==0) continue;
-  ?>
-        <tr>
-            <td><?php echo $vendor['name']; ?></td>
-            <td><?php echo $vendor['website']; ?></td>
-            <td><?php echo $vendor['email']; ?></td>
-            <td><?php if($vendor['request_dealer']) {
-                if($vendor['D_purch'] > 0) echo $vendor['D_purch'] . " 6'";
-                else if ($vendor['D_auth'] > 0) echo $vendor['D_auth'] . " 6' authorized";
-                else if ($vendor['T_purch'] > 0) echo $vendor['T_purch'] . " 10'";
-                else if ($vendor['T_auth'] > 0) echo $vendor['T_auth'] . " 10' authorized";
-                else if (($vendor['D_req'] > 0) and ($vendor['T_req'] > 0)) echo "requested " . $vendor['D_req'] . " 6' & " . $vendor['T_req'] . " 10'";
-                else if ($vendor['D_req'] > 0) echo "requested " . $vendor['D_req'] . " 6'";
-                else if ($vendor['T_req'] > 0) echo "requested " . $vendor['T_req'] . " 10'";
-                else { echo ""; }
-                } else { echo "N/R"; }
-            ?></td>
-            <td><?php if($vendor['request_artistalley']) {
-                if($vendor['A_purch'] > 0) echo $vendor['A_purch'];
-                else if ($vendor['A_auth'] > 0) echo $vendor['A_auth'] . " authorized";
-                else if ($vendor['A_req'] > 0 ) echo "requested " . $vendor['A_req'];
-                else { echo ""; }
-                } else { echo "N/R"; }
-            ?></td>
-            <td><button onclick="authorize(<?php echo $vendor['id'];?>);">View</button></td>
-            <td><button onclick="resetPw(<?php echo $vendor['id'];?>)">Reset PW</button></td>
-        </tr>
-  <?php } ?>
-    </table>
-  </div>
-  <div id='vendorDetails'><span class="blocktitle">Vendor Details</span>
-     <a class='showlink' id='artistShowLink' href='javascript:void(0)'
-      onclick='showBlock("#vendorDetails")'>(show)</a>
-    <a class='hidelink' id='artistHideLink' href='javascript:void(0)'
-      onclick='hideBlock("#vendorDetails")'>(hide)</a>
-    <form id='vendorUpdate' action='javascript:void(0)'>
-        <input type='hidden' name='vendor' id='vendorId'/>
-        Name: <input type='text' name='name' id='vendorName'/><br/>
-        Website: <input type='text' name='website' id='vendorWebsite'/><br/>
-        Description: <textarea name='description' id='vendorDesc'></textarea><br/>
-        <table>
-            <tr><th>Artist Alley</th><td>Requested</td><td>Authorized</td><td>Paid</td><td/></tr>
-            <tr><td>Tables</td>
-                <td><input type='number' name='alleyRequest' id='alleyRequest'/></td>
-                <td><input type='number' name='alleyAuth' id='alleyAuth'/></td>
-                <td><input type='number' name='alleyPurch' id='alleyPurch'/></td>
-            </tr>
-            <tr><th>Dealers</th><td>Requested</td><td>Authorized</td><td>Paid</td><td/></tr>
-            <tr><td>6x6 spaces</td>
-                <td><input type='number' name='dealerRequest' id='dealerRequest'/></td>
-                <td><input type='number' name='dealerAuth' id='dealerAuth'/></td>
-                <td><input type='number' name='dealerPurch' id='dealerPurch'/></td>
-            </tr>
-            <tr><td>10x10 spaces</td>
-                <td><input type='number' name='d10Request' id='d10Request'/></td>
-                <td><input type='number' name='d10Auth' id='d10Auth'/></td>
-                <td><input type='number' name='d10Purch' id='d10Purch'/></td>
-            </tr>
-        </table>
-    <button onclick='updateVendor();'>Update Vendor</button>
-    <button onclick='resetPWForm();'>Reset Password</button><br/>
-    </form>
-  </div>
 </div>
-
-</div>
-<pre id='test'></pre>
-<div id='alert' class='popup'>
-    <div id='alertInner'>
+    <div class="row">
+        <div class="col-sm-12">
+            <div id='summary-div'></div>
+        </div>
     </div>
-    <button class='center' onclick='$("#alert").hide();'>Close</button>
-</div>
+    <div class='row'>
+        <div class='col-sm-12'>
+            <div id="VendorList">Vendor List Placeholder</div>
+        </div>
+    </div>
+    <div class='row mt-4'>
+        <div class='col-sm-12'>
+            <div id="SpaceDetail">Space Detail Placeholder</div>
+        </div>
+    </div>
+    <div id='result_message' class='mt-4 p-2'></div>
+    <pre id='test'></pre>
+<?php
+
+page_foot($page);
+?>

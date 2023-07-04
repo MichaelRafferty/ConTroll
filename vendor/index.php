@@ -346,7 +346,15 @@ while ($space = fetch_safe_assoc($vendorSR)) {
                                     <label for='name'>Name:</label>
                                 </div>
                                 <div class='col-sm-10 p-0'>
-                                    <input type='text' name='name' id='name' value='<?php echo $info['name']; ?>' required/>
+                                    <input class='form-control-sm' type='text' name='name' id='name' size='64' value='<?php echo $info['name']; ?>' required/>
+                                </div>
+                            </div>
+                            <div class='row p-1'>
+                                <div class='col-sm-2 p-0'>
+                                    <label for='emai'>Email:</label>
+                                </div>
+                                <div class='col-sm-10 p-0'>
+                                    <input class='form-control-sm' type='text' name='email' id='email' size='64' value='<?php echo $info['email']; ?>' required/>
                                 </div>
                             </div>
                             <div class="row p-1">
@@ -354,7 +362,7 @@ while ($space = fetch_safe_assoc($vendorSR)) {
                                     <label for="website">Website:</label>
                                 </div>
                                 <div class="col-sm-10 p-0">
-                                    <input type='text' name='website' id='website' value='<?php echo $info['website']; ?>' required/>
+                                    <input class='form-control-sm' type='text' name='website' id='website' value='<?php echo $info['website']; ?>' required/>
                                 </div>
                             </div>
                             <div class='row p-1'>
@@ -362,7 +370,7 @@ while ($space = fetch_safe_assoc($vendorSR)) {
                                     <label for='description'>Description:</label>
                                 </div>
                                 <div class='col-sm-10 p-0'>
-                                    <textarea name='description' id='description' rows=5 cols=60><?php echo $info['description']; ?></textarea>
+                                    <textarea class="form-control-sm" name='description' id='description' rows=5 cols=60><?php echo $info['description']; ?></textarea>
                                 </div>
                             </div>
                             <div class='row mt-1'>
@@ -563,7 +571,7 @@ while ($space = fetch_safe_assoc($vendorSR)) {
                         <input type='hidden' id='alley_table_cost' name='table_sub'/>
                         <input type='hidden' id='alley_item_count' name='table_count'/>
                         Special Requests (electricity, same location as last year, etc. We will try, but cannot guarantee, to honor your request):<br/>
-                        <textarea name='requests'></textarea>
+                        <textarea  name='requests'></textarea>
                         <hr/>
                         As an Arist Alley artist you have the option to be included in our marketing materials.
                         <label><input type='checkbox' name='alley_bsfan'/>List me in the BSFan Program Book</label><br/>
