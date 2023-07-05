@@ -266,7 +266,7 @@ function show_message(message, type) {
         message_div.classList.add('bg-warning');
     }
     message_div.innerHTML = message;
-}j
+}
 
 function showAlert(str) {
     $('#alertInner').empty().html(str);

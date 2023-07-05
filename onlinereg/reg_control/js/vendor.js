@@ -97,7 +97,15 @@ function edit(e, cell) {
 
 function resetpw(e, cell) {
     vendor = cell.getRow().getCell("id").getValue();
-    return resetPW(vendor);
+    $.ajax({
+        url: 'scripts/setPassword.php',
+        method: "POST",
+        data: { 'vendorId': vendor },
+        success: function (data, textStatus, jqXhr) {
+            if(data['error'] != undefined) { console.log(data['error']); }
+            alert(data['password']);
+        }
+    });
 }
 
 // draw_vendor
@@ -217,18 +225,6 @@ function updateProfile() {
 }
 
 /* existing functions from vendor.js
-function resetPw(vendor) {
-    $.ajax({
-        url: 'scripts/setPassword.php',
-        method: "GET",
-        data: 'vendor=' + vendor,
-        success: function (data, textStatus, jqXhr) {
-            if(data['error'] != undefined) { console.log(data['error']); }
-            alert(data['password']);
-        }
-    });
-}
-
 function resetPWForm() {
 var vendorId = $('#vendorId').val();
 resetPw(vendorId);
