@@ -88,7 +88,7 @@ function approvalbutton(cell, formatterParams, onRendered) {
     if (pur == null)
         pur = 0;
 
-    if (pur >= app)
+    if (pur >= app && app > 0)
         return '';
 
     return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Approve</button>';
@@ -133,7 +133,7 @@ function approval(e, cell) {
     if (pur == null)
         pur = 0;
 
-    if (pur >= app)
+    if (pur >= app && app > 0)
         return '';
 
     approveReq(data);
@@ -156,6 +156,7 @@ function resetpw(e, cell) {
 // update the VendorList div with the table of vendors
 function draw_vendor(data) {
     if (vendortable !== null) {
+        vendortable.destroy();
         vendortable = null;
     }
     vendortable = new Tabulator('#VendorList', {
@@ -184,6 +185,7 @@ function draw_vendor(data) {
 // update the space detail section from the detail portion of the returned data
 function draw_spaces(data) {
     if (spacestable !== null) {
+        spacestable.destroy();
         spacestable = null;
     }
 
