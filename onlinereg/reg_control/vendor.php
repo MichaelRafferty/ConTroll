@@ -126,6 +126,62 @@ $conf = get_conf('con');
         </div>
     </div>
 </div>
+<div id='approve_space' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Approve Vendor Space Request' aria-hidden='true' style='--bs-modal-width: 80%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong>Approve Vendor Space Request</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <form id='space_request' action='javascript:void(0)'>
+                        <input type='hidden' name='vendorId' id='sr_vendorId' value=''>
+                        <input type='hidden' name='spaceId' id='sr_spaceId' value=''>
+                        <input type='hidden' name='id' id='sr_id' value=''>
+                        <input type='hidden' name='operation' id='operation' value='approve'>
+                        <div class='row p-1'>
+                            <div class='col-sm-2 p-0'>Name:</div>
+                            <div class='col-sm-10 p-0' id="sr_name"></div>
+                        </div>
+                        <div class='row p-1'>
+                            <div class='col-sm-2 p-0'>Email:</div>
+                            <div class='col-sm-10 p-0' id="sr_email"></div>
+                        </div>
+                        <div class='row p-1'>
+                            <div class='col-sm-2 p-0'>Website:</div>
+                            <div class='col-sm-10 p-0' id="sr_website"></div>
+                        </div>
+                        <div class='row p-1'>
+                            <div class='col-sm-2 p-0'>Space:</div>
+                            <div class='col-sm-10 p-0' id='sr_spaceName'></div>
+                        </div>
+                        <div class='row p-1'>
+                            <div class='col-sm-4 p-0'>Requested:</div>
+                            <div class='col-sm-6 p-0'>Approved:</div>
+                        </div>
+                        <div class="row">
+                            <div class='col-sm-1 p-0'>Units</div>
+                            <div class='col-sm-3 p-0'>Description</div>
+                            <div class='col-sm-6 p-0'>Approved Space</div>
+                        </div>
+                        <div class='row'>
+                            <div class='col-sm-1 p-0' id='sr_reqUnits'></div>
+                            <div class='col-sm-3 p-0' id="sr_reqDescription"></div>
+                            <div class='col-sm-6 p-0' id="sr_appOption"></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' onClick='approveSpace()'>Approve</button>
+            </div>
+        </div>
+    </div>
+</div>
     <div class="row">
         <div class="col-sm-12">
             <div id='summary-div'></div>

@@ -2,10 +2,16 @@ var summaryDiv = null;
 var vendortable = null;
 var spacestable = null;
 var update_profile = null;
+var approve_space = null;
+var price_lists = null;
 $(document).ready(function () {
     id = document.getElementById('update_profile');
     if (id != null) {
         update_profile = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+    }
+    id = document.getElementById('approve_space');
+    if (id != null) {
+        approve_space = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
     getData();
 });
@@ -27,6 +33,7 @@ function draw(data, textStatus, jqXHR) {
     draw_summary(data);
     draw_vendor(data);
     draw_spaces(data);
+    price_lists = data['price_list'];
 }
 
 // summary status at the top of the screen
@@ -68,6 +75,22 @@ function resetpwbutton(cell, formatterParams, onRendered) {
 }
 
 function approvalbutton(cell, formatterParams, onRendered) {
+    var data = cell.getData();
+    var req = data['requested_units'];
+    if (req == null)
+        return '';
+
+    var app = data['approved_units'];
+    if (app == null)
+        app = 0;
+
+    var pur = data['purchased_units'];
+    if (pur == null)
+        pur = 0;
+
+    if (pur >= app)
+        return '';
+
     return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Approve</button>';
 }
 
@@ -93,6 +116,27 @@ function build_record_hover(e, cell, onRendered) {
 function edit(e, cell) {
     vendor = cell.getRow().getData();
     return editVendor(vendor);
+}
+
+function approval(e, cell) {
+    var data = cell.getData();
+    var req = data['requested_units'];
+
+    if (req == null)
+        return '';
+
+    var app = data['approved_units'];
+    if (app == null)
+        app = 0;
+
+    var pur = data['purchased_units'];
+    if (pur == null)
+        pur = 0;
+
+    if (pur >= app)
+        return '';
+
+    approveReq(data);
 }
 
 function resetpw(e, cell) {
@@ -180,7 +224,7 @@ function draw_spaces(data) {
                             { title: "Description", field: "purchased_description", headerSort:false, headerFilter: false, },
                         ]
                     },
-                    {title: "", formatter: approvalbutton, hozAlign: "center", cellClick: edit, headerSort: false,},
+                    {title: "", formatter: approvalbutton, hozAlign: "center", cellClick: approval, headerSort: false,},
                ]
             }
         ]
@@ -224,60 +268,41 @@ function updateProfile() {
     });
 }
 
-/* existing functions from vendor.js
-function resetPWForm() {
-var vendorId = $('#vendorId').val();
-resetPw(vendorId);
+// process approving requested units
+function approveReq(data) {
+    // populate the space in the approval form
+    document.getElementById('sr_vendorId').value = data.vendorId;
+    document.getElementById('sr_spaceId').value = data.spaceId;
+    document.getElementById('sr_id').value = data.id;
+    document.getElementById('sr_name').innerHTML = data.vendorName;
+    document.getElementById('sr_email').innerHTML = data.email;
+    document.getElementById('sr_website').innerHTML = data.website;
+    document.getElementById('sr_spaceName').innerHTML = data.spaceName;
+    document.getElementById('sr_reqUnits').innerHTML = data.requested_units;
+    document.getElementById('sr_reqDescription').innerHTML = data.requested_description;
+    document.getElementById('sr_appOption').innerHTML = "\n" + '<select name="sr_approved" id="sr_approved"><option value="0">Not Approved</option>' + price_lists[data.spaceId] + "</select>\n";
+    if (data.item_approved)
+        document.getElementById('sr_approved').value = data.item_approved;
+    // make the form visible
+    approve_space.show();
 }
 
-function authorize(vendor) { 
+// handle the space approval
+function approveSpace() {
     $.ajax({
-        url: 'scripts/getVendorReq.php',
-        method: "GET",
-        data: 'vendor='+vendor,
-        success: function (data, textStatus, jqXhr) {
-            if(data['error'] != undefined) { console.log(data['error']); }
-            $('#vendorId').val(data['id']);
-            $('#vendorName').val(data['name']);
-            $('#vendorWebsite').val(data['website']);
-            $('#vendorDesc').val(data['description']);
-            $('#alleyRequest').val(data['alleyRequest']);
-            $('#alleyAuth').val(data['alleyAuth']);
-            $('#alleyPurch').val(data['alleyPurch']);
-            $('#dealerRequest').val(data['dealerRequest']);
-            $('#dealerAuth').val(data['dealerAuth']);
-            $('#dealerPurch').val(data['dealerPurch']);
-            $('#d10Request').val(data['d10Request']);
-            $('#d10Auth').val(data['d10Auth']);
-            $('#d10Purch').val(data['d10Purch']);
-            console.log(data);
+        url: 'scripts/updateVendorSpace.php',
+        data: $('#space_request').serialize(),
+        method: 'POST',
+        success: function(data, textstatus, jqXHR) {
+            if(data['error']) {
+                show_message($data['error'], 'error');
+            } else {
+                console.log(data);
+                if (data['success'])
+                    show_message(data['success'], 'success');
+                approve_space.hide();
+                getData();
+            }
         }
     });
 }
-
-function updateVendor() { 
-    var formData = $('#vendorUpdate').serialize();
-    $.ajax({
-        url: 'scripts/setVendorReq.php',
-        method: "POST",
-        data: formData,
-        success: function (data, textStatus, jqXhr) {
-            if(data['error'] != undefined) { console.log(data['error']); }
-            $('#vendorId').val(data['id']);
-            $('#vendorName').val(data['name']);
-            $('#vendorWebsite').val(data['website']);
-            $('#vendorDesc').val(data['description']);
-            $('#alleyRequest').val(data['alleyRequest']);
-            $('#alleyAuth').val(data['alleyAuth']);
-            $('#alleyPurch').val(data['alleyPurch']);
-            $('#dealerRequest').val(data['dealerRequest']);
-            $('#dealerAuth').val(data['dealerAuth']);
-            $('#dealerPurch').val(data['dealerPurch']);
-            $('#d10Request').val(data['d10Request']);
-            $('#d10Auth').val(data['d10Auth']);
-            $('#d10Purch').val(data['d10Purch']);
-            console.log(data);
-        }
-    });
-}
-*/

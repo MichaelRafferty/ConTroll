@@ -1,25 +1,53 @@
 <?php
 global $db_ini;
 
-require_once "../lib/base.php";
+require_once '../lib/base.php';
+$check_auth = google_init('ajax');
+$perm = 'vendor';
 
-$check_auth = google_init("ajax");
-$perm = "vendor";
+$response = array('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
-
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
 
-$con = get_conf('con');
-$conid=$con['id'];
+$con = get_con();
+$conid = $con['id'];
 
-$vendor =sql_safe($_POST['vendor']);
+if (!(array_key_exists('vendorId', $_POST) && array_key_exists('spaceId',$_POST) && array_key_exists('id',$_POST) && array_key_exists('operation',$_POST))) {
+      ajaxError('No Data');
+      return;
+}
 
+$vendorId = $_POST['vendorId'];
+$spaceId = $_POST['spaceId'];
+$vsID = $_POST['id'];
+$operation = $_POST['operation'];
+
+if ($operation == 'approve') {
+    $updateQ = <<<EOS
+UPDATE vendor_space
+SET item_approved = ?
+WHERE id = ?
+EOS;
+    $approved = $_POST['sr_approved'];
+    if ($approved == 0)
+        $approved = null;
+    $numRows = dbSafeCmd($updateQ, 'ii', array($approved, $vsID));
+    if ($numRows == 1)
+        $response['success'] = 'Space Approved';
+    else if ($numRows == 0)
+        $response['success'] = 'Nothing to update';
+    else
+        $response['error'] = 'Error occured updated database';
+
+    ajaxSuccess($response);
+    return;
+}
+
+/*
 if(is_numeric($_POST['alleyRequest'])) { 
 $auth = $_POST['alleyAuth']; 
 $purch = $_POST['alleyPurch'];
@@ -85,3 +113,4 @@ else { $response=fetch_safe_assoc($resp); }
 
 ajaxSuccess($response);
 ?>
+*/

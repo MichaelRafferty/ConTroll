@@ -64,10 +64,10 @@ $response['summary'] = $spaces;
 $details = array();
 $detailQ = <<<EOS
 SELECT vs.id, vendorId, v.name as vendorName, v.website, v.email,
-       vs.name as spaceName, vs.requested_units, vs.requested_code, vs.requested_description, vs.approved_units, vs.approved_code, vs.approved_description, vs.purchased_units, vs.purchased_code, vs.purchased_description
+       vs.spaceId, vs.name as spaceName, vs.item_requested, vs.requested_units, vs.requested_code, vs.requested_description, vs.item_approved, vs.approved_units, vs.approved_code, vs.approved_description, vs.item_purchased, vs.purchased_units, vs.purchased_code, vs.purchased_description
 FROM vw_VendorSpace vs
 JOIN vendors v ON (vs.vendorId = v.id)
-WHERE vs.conid = ?
+WHERE vs.conid = ? AND vs.requested_units IS NOT NULL
 ORDER BY v.name, vs.name
 EOS;
 
@@ -85,6 +85,30 @@ while($detailL = fetch_safe_assoc($detailR)) {
 }
 
 $response['detail'] = $details;
+
+// build option lists for each space
+//
+$dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+
+$priceR = dbQuery('SELECT id, spaceId, code, description, units, price, requestable FROM vendorSpacePrices ORDER BY spaceId, price;');
+$price_list = array();
+$currentSpaceId = -999;
+$prices='';
+while ($price = fetch_safe_assoc($priceR)) {
+    if ($price['spaceId'] != $currentSpaceId) {
+        if ($currentSpaceId != -999) {
+            $price_list[$currentSpaceId] = $prices;
+        }
+        $currentSpaceId = $price['spaceId'];
+        $prices = '';
+    }
+    $prices .= "<option value='" . $price['id'] . "'>(" . $price['units'] . ' units) ' . $price['description'] . ' for ' . $dolfmt->formatCurrency($price['price'], 'USD') . "</option>\n";
+}
+if ($prices != '')
+    $price_list[$currentSpaceId] = $prices;
+
+
+$response['price_list'] = $price_list;
 
 ajaxSuccess($response);
 ?>

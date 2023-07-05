@@ -288,6 +288,7 @@ if (!$in_session) { ?>
     return;
 }
 // this section is for 'in-session' management
+// build spaces array
 $spaceR = dbSafeQuery('SELECT id, shortname, name, description, includedMemberships  FROM vendorSpaces WHERE conid=? ORDER BY shortname', 'i', array($condata['id']));
 $space_list = array();
 $spaces = array();
@@ -295,6 +296,7 @@ while ($space = fetch_safe_assoc($spaceR)) {
     $space_list[$space['id']] = $space;
     $spaces[$space['shortname']] = $space['id'];
 }
+// built price lists
 foreach ($space_list AS $shortname => $space) {
     $priceR = dbSafeQuery('SELECT id, spaceId, code, description, units, price, requestable FROM vendorSpacePrices WHERE spaceId=?;', 'i', array($space['id']));
     $price_list = array();
