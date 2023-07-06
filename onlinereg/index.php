@@ -83,7 +83,7 @@ $onsitesale = $startdate->format("l, F j");
         </div>           
     </div>
     <!--- New Badge Modal Popup -->
-    <div class="modal modal-lg fade" id="newBadge" tabindex="-1" aria-labelledby="New Membership" aria-hidden="true">
+    <div class="modal modal-lg fade" id="newBadge" tabindex="-1" aria-labelledby="New Membership" aria-hidden="true" style='--bs-modal-width: 80%;'>
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header" style="background-color: #b0c4de;">
