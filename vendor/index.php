@@ -79,13 +79,13 @@ if (isset($_SESSION['id'])) {
         }
         $in_session = true;
     }
-} else if (isset($_POST['email']) and isset($_POST['password'])) {
+} else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
     //handle login
-    $login = strtolower(sql_safe($_POST['email']));
+    $login = strtolower(sql_safe($_POST['si_email']));
     $loginQ = "SELECT id, password, need_new FROM vendors WHERE email=?;";
     $loginR = dbSafeQuery($loginQ, 's', array($login));
     while ($result = fetch_safe_assoc($loginR)) {
-        if (password_verify($_POST['password'], $result['password'])) {
+        if (password_verify($_POST['si_password'], $result['password'])) {
             $_SESSION['id'] = $result['id'];
             $_SESSION['artist'] = 0;
             $_SESSION['dealer'] = 0;
@@ -107,7 +107,7 @@ if (isset($_SESSION['id'])) {
 
 if (!$in_session) { ?>
     <!-- Registgration Modal Popup -->
-    <div id='registration' class="modal modal-xl fade" tabindex="-1" aria-labelledby="New Vendor" aria-hidden="true">
+    <div id='registration' class="modal modal-xl fade" tabindex="-1" aria-labelledby="New Vendor" aria-hidden="true" style='--bs-modal-width: 80%;'>
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class='modal-header bg-primary text-bg-primary'>
@@ -249,18 +249,18 @@ if (!$in_session) { ?>
             <form id='vendor-signin' method='POST'>
                 <div class="row mt-1">
                     <div class="col-sm-1">
-                        <label for="email">*Email/Login: </label>
+                        <label for="si_email">*Email/Login: </label>
                     </div>
                     <div class="col-sm-auto">
-                        <input class="form-control-sm" type='email' name='email' id='email' size='40'/>
+                        <input class="form-control-sm" type='email' name='si_email' id='si_email' size='40' required/>
                     </div>
                 </div>
                 <div class="row mt-1">
                     <div class="col-sm-1">
-                        <label for="password">*Password: </label>
+                        <label for="si_password">*Password: </label>
                     </div>
                     <div class="col-sm-auto">
-                        <input class="form-control-sm" type='password' id='password' name='password' size="40"/>
+                        <input class="form-control-sm" type='password' id='si_password' name='si_password' size="40" required/>
                     </div>
                 </div>
                 <div class="row mt-2">
@@ -271,6 +271,7 @@ if (!$in_session) { ?>
                     </div>
                 </div>
             </form>
+            <div id='result_message' class='mt-4 p-2'></div>
         </div>
     </div>
     <div id='resetpw'>

@@ -183,16 +183,15 @@ function changePassword(field) {
 function resetPassword() {
     var email = prompt('What is your login email?');
     $.ajax({
-        method: 'GET',
+        method: 'POST',
         url: 'scripts/resetPassword.php',
         data: {'login' : email},
         success: function(data, textStatus, jqXhr) {
-            if(data['status'] == 'error') {
-                alert(data['message']);
+            if(data['error']) {
+                show_message(data['error'], 'error');
             } else {
                 console.log(data);
-                $('#notes').empty().html("<p>A password reset email has been sent to " + data['email'] + " please change your password as soon as you login.<br/>" +
-                    "Please check your spam folder, but if you did not receive an email, or have any other problems, please contact artshow@bsfs.org for assistance.</p>");
+                show_message(data['message'], 'success');
             }
         }
     });
