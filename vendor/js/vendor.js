@@ -1,26 +1,50 @@
 var discount_memcost = 55;
 var registration = null;
-var dealer_req = null;
-var alley_req = null;
-var virtual_req = null;
-var dealer_invoice = null;
-var alley_invoice = null;
-var virtual_invoice = null;
+var vendor_request = null;
+var vendor_invoice = null;
 var update_profile = null;
 var change_password = null;
 
+// openReq - update the modal for this space
+function openReq(spaceid, cancel) {
+    console.log("open request modal for id =" + spaceid);
+    var space = vendor_spaces[spaceid];
+    if (!space)
+        return;
+    console.log(space);
+
+    // build option list
+    var options = "<option value='-1'>" + (cancel ? 'Cancel' : 'No') + " Space Requested</option>\n";
+    var prices = space.prices;
+    var price_keys = Object.keys(prices).sort();
+    for (var priceid in price_keys) {
+        var price = prices[price_keys[priceid]];
+        options += "<option value='" + price.id + "'>" + price.description + ' for ' + Number(price.price).toFixed(2) + "</option>\n";
+    }
+
+    // update fields
+    document.getElementById("vendor_req_title").innerHTML = "<strong>" + (cancel ? 'Change/Cancel ' : '') + space.name + ' Space Request</strong>';
+    document.getElementById("vendor_req_btn").innerHTML = (cancel ? "Change/Cancel " : "Request ") + space.name + ' Space';
+    var selection = document.getElementById('vendor_req_price_id');
+    selection.innerHTML = options;
+    if (cancel) selection.value = cancel;
+    document.getElementById('vendor_req_btn').setAttribute('onClick', "spaceReq(" + space.id + ',' + cancel + ')');
+    vendor_request.show();
+}
+
 // Space Request - call scripts/spaceRequest.php to add a request record
-function spaceReq(space, spacename, spacetitle, spaceReq) {
-    console.log("spaceReq called for " + space + ' on ' + spacename);
-    var opt = document.getElementById(spacename);
+function spaceReq(spaceId, cancel) {
+    console.log("spaceReq called for " + spaceId);
+
+    var opt = document.getElementById('vendor_req_price_id');
     console.log(opt);
     console.log(opt.value);
-    if (opt.value == 0) {
+    if (opt.value <= 0 && !cancel) {
         alert("Select an amount of space to resquest");
         return;
     }
     dataobj = {
-        spaceid: space,
+        spaceid: spaceId,
         priceid: opt.value,
     };
     $.ajax({
@@ -35,7 +59,7 @@ function spaceReq(space, spacename, spacetitle, spaceReq) {
             }
             if (data['success'] !== undefined) {
                 show_message(data['success'], 'success');
-                spaceReq.hide();
+                vendor_request.hide();
                 document.getElementById(data['div']).innerHTML = "<div class='col-sm-auto'><button class='btn btn-primary' onClick='location.reload()'>Click here to refresh page to update status</button></div>";
             }
             if (data['warn'] !== undefined) {
@@ -44,39 +68,6 @@ function spaceReq(space, spacename, spacetitle, spaceReq) {
         },
         error: showAjaxError
     })
-}
-
-
-function alleyReq() {
-    $.ajax({
-        url: 'scripts/requestAlley.php',
-        data: $('#alley_req_form').serialize(),
-        method: 'POST',
-        success: function(data, textstatus, jqXHR) {
-            if(data['status']=='error') {
-                alert(data['message']);
-            } else {
-                alert("you requested " + data['alley'] + " tables.  Thank you for your interest, your request has been sent to the artist alley coordinator who may contact you with more questions.");
-                console.log(data)
-            }
-        }
-    });
-}
-
-function dealerReq() {
-    $.ajax({
-        url: 'scripts/requestDealer.php',
-        data: $('#dealer_req_form').serialize(),
-        method: 'POST',
-        success: function(data, textstatus, jqXHR) {
-            if(data['status']=='error') {
-                alert(data['message']);
-            } else {
-                alert("you requested " + data['dealer_6'] + " 6x6 spaces and " + data['dealer_10'] + " 10x10 spaces.  Thank you for your interest, your request has been sent to the dealers room coordinator who may contact you with more questions.");
-                console.log(data)
-            }
-        }
-    });
 }
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -294,6 +285,8 @@ function updateDealerPaid() {
 }
 
 function openInvoice(invoice, count, price, type="") {
+    vendor_invoice.show();
+    /*
     switch(invoice) {
       case 'dealer':
         var t_size = 0;
@@ -358,6 +351,8 @@ function openInvoice(invoice, count, price, type="") {
         virtual_invoice.show();
         break;
     }
+
+     */
 }
 
 function registrationModalOpen() {
@@ -377,38 +372,28 @@ window.onload = function () {
     if (id != null) {
         registration = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
-    id = document.getElementById('dealer_req');
+
+    id = document.getElementById('vendor_req');
     if (id != null) {
-        dealer_req = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+        vendor_request = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
-    id = document.getElementById('alley_req');
+
+    id = document.getElementById('vendor_invoice');
     if (id != null) {
-        alley_req = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+        vendor_invoice = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
-    id = document.getElementById('virtual_req');
-    if (id != null) {
-        virtual_req = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-    }
-    id = document.getElementById('dealer_invoice');
-    if (id != null) {
-        dealer_invoice = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-    }
-    id = document.getElementById('alley_invoice');
-    if (id != null) {
-        alley_invoice = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-    }
-    id = document.getElementById('virtual_invoice_req');
-    if (id != null) {
-        virtual_invoice = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-    }
+
     id = document.getElementById('update_profile');
     if (id != null) {
         update_profile = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
+
     id = document.getElementById('changePassword');
     if (id != null) {
         change_password = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
+
+    //console.log(vendor_spaces);
 }
 
 var message_div = null;

@@ -290,22 +290,37 @@ if (!$in_session) { ?>
 }
 // this section is for 'in-session' management
 // build spaces array
-$spaceR = dbSafeQuery('SELECT id, shortname, name, description, includedMemberships  FROM vendorSpaces WHERE conid=? ORDER BY shortname', 'i', array($condata['id']));
+$spaceR = dbSafeQuery('SELECT id, shortname, name, description  FROM vendorSpaces WHERE conid=? ORDER BY shortname', 'i', array($condata['id']));
 $space_list = array();
 $spaces = array();
+// output the data for the scripts to use
+
 while ($space = fetch_safe_assoc($spaceR)) {
     $space_list[$space['id']] = $space;
     $spaces[$space['shortname']] = $space['id'];
 }
+
 // built price lists
 foreach ($space_list AS $shortname => $space) {
-    $priceR = dbSafeQuery('SELECT id, spaceId, code, description, units, price, requestable FROM vendorSpacePrices WHERE spaceId=?;', 'i', array($space['id']));
+    $priceQ = <<<EOS
+SELECT id, spaceId, code, description, units, price, includedMemberships, additionalMemberships, requestable
+FROM vendorSpacePrices
+WHERE spaceId=?
+ORDER BY units;
+EOS;
+    $priceR = dbSafeQuery($priceQ, 'i', array($space['id']));
     $price_list = array();
     while ($price = fetch_safe_assoc($priceR)) {
-        $price_list[$price['code']] = $price;
+        $price_list[$price['units']] = $price;
     }
     $space_list[$space['id']]['prices'] = $price_list;
 }
+
+?>
+<script type='text/javascript'>
+var vendor_spaces = <?php echo json_encode($space_list) ?>;
+</script>
+<?php
 $vendorQ = <<<EOS
 SELECT name, email, website, description, addr, addr2, city, state, zip, publicity, need_new
 FROM vendors
@@ -452,221 +467,61 @@ while ($space = fetch_safe_assoc($vendorSR)) {
             </div>
         </div>
     </div>
-
-    <!-- now for the top of the form -->
-     <div class='container-fluid'>
-        <div class='row p-1'>
-            <div class='col-sm-12 p-0'>
-                <h3>Welcome to the Portal Page for <?php echo $info['name']; ?></h3>
-            </div>
-        </div>
-        <div class="row p-1">
-            <div class="col-sm-auto p-0">
-                <button class="btn btn-secondary" onclick='update_profile.show();'>View/Change your profile</button>
-                <button class='btn btn-secondary' onclick='change_password.show();'>Change your password</button>
-                <button class="btn btn-secondary" onclick="window.location='?logout';">Logout</button>
-            </div>
-        </div>
-        <div class="row p-1 pt-4">
-            <div class="col-sm-12 p-0">
-                <h3>Vendor Spaces</h3>
-            </div>
-        </div>
-<?php   if (count($spaces) > 1)  { ?>
-        <div class="row p-1">
-            <div class="col-sm-12 p-0"><?php
-                echo $con['label']; ?> has multiple types of spaces for vendors. If you select a type for which you aren't qualified we will alert groups
-                managing other spaces.
-            </div>
-        </div>
-<?php   }
-    foreach ($spaces AS $spacename => $spaceid) {
-        $space = $space_list[$spaceid];
-        if (array_key_exists($space['shortname'] . '_details', $vendor_conf)) {
-            $description = $vendor_conf[$space['shortname'] . '_details'];
-        } else {
-            $description = $space['description'];
-        }
-        if (array_key_exists($spaceid, $vendor_spacelist)) {
-            $vendor_space = $vendor_spacelist[$spaceid];
-            $item_requested = $vendor_space['item_requested'];
-        } else {
-            $vendor_space = null;
-            $item_requested = null;
-        }
-
-        // first the modals
-        draw_request_modal($space, $item_requested);
-
-        // now the fixed text
-        ?>
-        <div class="row pt-4 p-1">
-            <div class="col-sm-auto p-0">
-                <h3><?php echo $space['name'];?></h3>
-            </div>
-        </div>
-        <div class="row p-1">
-            <div class="col-sm-12 p-0">
-                <?php echo $description;?>
-            </div>
-        </div>
-        <div class="row p-1 mt-2" id="<?php echo $space['shortname']; ?>_div">
-            <div class="col-sm-auto p-0"><?php
-        if ($vendor_space !== null) {
-            if ($vendor_space['item_purchased']) {
-                echo "You are registered for " . $vendor_space['purchased_description'] . "\n";
-            } else if ($vendor_space['item_approved']) {
-                ?>
-                <button class="btn btn-primary"
-                        onclick="openInvoice($space['shortname'], <?php echo($vendor_space['approved'] - $vendor_space['purchased']); ?>, <?php
-                        echo $price_list[$vendor_space['type']]; ?>, '<?php echo $vendor_space['type']; ?>')">
-                    Pay $space['shortname'] Invoice</button> <?php
-            } else if ($vendor_space['item_requested']) {
-                echo 'Request pending authorization for ' . $vendor_space['requested_description'] . ".\n";?>
-            </div>
-            <div class="col-sm-auto ms-4 p-0"> <button class='btn btn-primary' onclick='<?php echo $space['shortname']; ?>_req.show();'>Change/Cancel  <?php echo $space['name']; ?> Space</button><?php
-            } else {
-                 ?>
-            <button class="btn btn-primary" onclick='<?php echo $space['shortname']; ?>_req.show();'>Request <?php echo $space['name']; ?> Space</button><?php
-            }
-        } else {
-            ?>
-            <button class="btn btn-primary" onclick='<?php echo $space['shortname']; ?>_req.show();'>Request <?php echo $space['name']; ?> Space</button><?php
-        }
-        ?>
-            </div>
-        </div>
-        <?php } ?>
-        <div id='result_message' class='mt-4 p-2'></div>
-    </div>
-
-<?php if (false) { ?>
-    <div id='alley_invoice' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Artist Alley Invoice' aria-hidden='true'>
+    <!-- request -->
+    <div id='vendor_req' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request $spacetitle Space' aria-hidden='true'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title'>
-                        <strong>Artist Alley Invoice</strong>
+                    <div class='modal-title' id="vendor_req_title">
+                        <strong>Vendor Space Request</strong>
                     </div>
                     <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <?php echo $info['name']; ?> you are approved for <span id='alley_count'></span> <span id='alley_size'></span> Artist Alley Tables at $<span
-                        id='alley_price'></span>. You may purchase 1 discounted membership per table at $<span id='alley_mem_price'></span>, anyone working the
-                    table must have a mebership to the convention.
-
-                    <hr/>
-                    <form id='alley_invoice_form' action='javascript:void(0);'>
-                        <span class='blocktitle'>Vendor Information</span><br/>
-                        Please fill out this section with information on the vendor or store.
-                        <input type='hidden' name='vendor' id='alley_id' value='<?php echo $vendor; ?>'/> <br/>
-                        Name: <input type='text' name='name' id='alley_name' value='<?php echo $info['name']; ?>'/>
-                        Email: <input type='text' name='email' id='alley_email' value='<?php echo $info['email']; ?>'/>
-                        Address: <input type='text' name='address'/><br/>
-                        City: <input type='text' name='city'/> State: <input type='text' name='state' size=3/> Zip: <input type='text' name='zip' size=6/><br/>
-
-                        <br/>
-                        Maryland Retail Tax ID: <input type='text' name='taxid'/><br/>
-                        (If you have one. If you do not, Balticon will get you a temporary ID for this event.)<br/>
-                        <br/>
-                        Subtotal for Spaces $<span id='alley_invoice_cost'></span><br/>
-                        Membership costs will be calculated below.
-                        <input type='hidden' id='alley_table_cost' name='table_sub'/>
-                        <input type='hidden' id='alley_item_count' name='table_count'/>
-                        Special Requests (electricity, same location as last year, etc. We will try, but cannot guarantee, to honor your request):<br/>
-                        <textarea  name='requests'></textarea>
-                        <hr/>
-                        As an Arist Alley artist you have the option to be included in our marketing materials.
-                        <label><input type='checkbox' name='alley_bsfan'/>List me in the BSFan Program Book</label><br/>
-                        <label><input type='checkbox' name='alley_website'/>List me on the Website</label><br/>
-                        <label><input type='checkbox' name='alley_some'/>List me on social media</label><br/>
-                        <label><input type='checkbox' name='alley_prog'/>I want to participate in Programing</label><br/>
-                        <label><input type='checkbox' name='alley_demo'/>I am interested in presenting a lecture or workshop</label><br/>
-                        <hr/>
-                        Discount Memberships: <span id='alley_membership_count'></span><br/>
-                        <label><input type='checkbox' name='alley_mem1_have' onchange='$("#alley_mem1").toggle(); updateMemCount("mem1", this);'/>I
-                            expect to recieve a membership from another source, if this changes I will contact the artist alley coordinator. I understand
-                            everyone staffing the table needs a membership.</label>
-                        <div id='alley_mem1'>
-                            Name:
-                            <input type='text' name='alley_mem1_fname' size=15/>
-                            <input type='text' name='alley_mem1_mname' size=10/>
-                            <input type='text' name='alley_mem1_lname' size=15/>
-                            <br/>
-                            Badge Name: <input type='text' name='alley_mem1_bname'/><br/>
-                            Address: <input type='text' name='alley_mem1_address'/><br/>
-                            Company: <input type='text' name='alley_mem1_addr2'/><br/>
-                            City: <input type='text' name='alley_mem1_city'/> State: <input type='text' name='alley_mem1_state' size=3/> Zip: <input type='text'
-                                                                                                                                                     name='alley_mem1_zip'
-                                                                                                                                                     size=6/><br/>
-                        </div>
-                        <br/>
-                        <label id='alley_mem2_need'><input type='checkbox' name='alley_mem2_have'
-                                                           onchange='$("#alley_mem2").toggle(); updateMemCount("mem2", this);'/>I do not need a second
-                            membership or expect to recieve a membership from another source, if this changes I will contact the artist alley coordinator. I
-                            understand everyone staffing the table needs a membership.</label>
-                        <div id='alley_mem2'>
-                            Name:
-                            <input type='text' name='alley_mem2_fname' size=15/>
-                            <input type='text' name='alley_mem2_mname' size=10/>
-                            <input type='text' name='alley_mem2_lname' size=15/>
-                            <br/>
-                            Badge Name: <input type='text' name='alley_mem2_bname'/><br/>
-                            Address: <input type='text' name='alley_mem2_address'/><br/>
-                            Company: <input type='text' name='alley_mem2_addr2'/><br/>
-                            City: <input type='text' name='alley_mem2_city'/> State: <input type='text' name='alley_mem2_state' size=3/> Zip: <input type='text'
-                                                                                                                                                     name='alley_mem2_zip'
-                                                                                                                                                     size=6/><br/>
-                        </div>
-                        <hr/>
-                        Subtotal for Memberships $<span id='alley_member_cost'></span><br/>
-                        Total: $<span id='alley_total_cost'></span><br/>
-                        <input type='hidden' id='alley_mem_cost' name='mem_cost'/>
-                        <input type='hidden' id='alley_mem_count' name='mem_cnt'/>
-                        <input type='hidden' id='alley_member_total' name='mem_total'/>
-                        <input type='hidden' id='alley_total' name='total'/>
-                        Payment Information:
-                        <?php
-                        if ($ini['test'] == 1) {
-                            ?>
-                            <h2 class='warn'>This won't charge your credit card, or do anything else.</h2>
-                            <?php
-                        }
-                        ?>
-
-                        First Name: <input type='text' name='fname' required='required'/><br/>
-                        Last Name: <input type='text' name='lname' required='required'/><br/>
-                        Street <input type='text' name='street' required='required'/>
-                        City: <input type='text' name='city'/> State: <input type='text' name='state' size=3/> Zip: <input type='text' name='zip' size=6/><br/>
-                        Country: <select class='ccdata' required='required' name='country' size=1>
-                            <?php
-                            $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-                            while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {
-                                echo "<option value='" . $data[1] . "'>" . $data[0] . "</option>";
-                            }
-                            fclose($fh);
-                            ?>
-                        </select>
-                        <br/>
-                        </select>
-                        <br/>
-                        We Accept<br/>
-                        <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/><br/>
-                        <hr/>
-                        Please wait for the email, and don't click the submit more than once.
-                        <?php draw_cc_html($cc, "--", 1); ?>
-                        <input type='reset'/>
-                    </form>
+                    <div class='container-fluid'>
+                        <form id='vendor_req_form' action='javascript:void(0)'>
+                            <div class='row p-0 bg-warning'>
+                                <div class='col-sm-12 p-2'>
+                                    Please make sure your profile contains a good description of what you will be vending and a link for our staff to see what
+                                    you sell if at all possible.
+                                </div>
+                            </div>
+                            <div class='row p-1'>
+                                <div class='col-sm-auto p-0 pe-2'>
+                                    <label for='vendor_req_price_id'>How many spaces are you requesting?</label>
+                                </div>
+                                <div class='col-sm-auto p-0'>
+                                    <select name='vendor_req_price_id' id='vendor_req_price_id'>
+                                        <option value='-1'>No Space Requested</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class='row p-1 pt-4 pb-3'>
+                                <div class='col-sm-12'>
+                                    You will be able to identify people for the included memberships (if any) and purchase up to the allowed number of discounted memberships later, if your request is
+                                    approved.
+                                </div>
+                            </div>
+                            <div class='row p-0 bg-warning'>
+                                <div class='col-sm-auto p-2'>Completing this application does not guarantee space.</div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                    <button class='btn btn-sm btn-primary' id='vendor_req_btn' onClick="spaceReq(0, 0)">Request Vendor Space</button>
                 </div>
             </div>
         </div>
     </div>
-    <div id='dealer_invoice' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Dealer Invoice' aria-hidden='true'>
+    <!-- invoice -->
+    <div id='vendor_invoice' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Vendor Invoice' aria-hidden='true' style='--bs-modal-width: 80%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title'>
-                        <strong>Dealer Invoice</strong>
+                    <div class='modal-title' id="vendor_invoice_title">
+                        <strong>Vendor Invoice</strong>
                     </div>
                     <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                 </div>
@@ -771,7 +626,7 @@ while ($space = fetch_safe_assoc($vendorSR)) {
                         <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/><br/>
                         <hr/>
                         Please wait for the email, and don't click the submit more than once.
-                        <?php draw_cc_html($cc, "--", 2); ?>
+                        <?php draw_cc_html($cc, '--', 2); ?>
                         <input type='reset'/>
 
                     </form>
@@ -779,154 +634,90 @@ while ($space = fetch_safe_assoc($vendorSR)) {
             </div>
         </div>
     </div>
-    <?php } ?>
-    <!-- end of modals, start of main body -->
 
-<?php if (false) {
-    // Do we want to include virtual?
-    if (array_key_exists('virtual', $price_list)) { ?>
-        <div class="row p-1 pt-4">
-            <div class="col-sm-12 p-0">
-                <h3>Virtual Vendor</h3>
-            </div>
-        </div>
+    <!-- now for the top of the form -->
+     <div class='container-fluid'>
         <div class='row p-1'>
-            <div class="col-sm-12 p-0"><?php
-                echo $con['label']; ?> will host a virtual vendors space. Participating in that space costs $<?php echo $price_list['virtual']; ?>
-                and vendors who participate will get ???.
+            <div class='col-sm-12 p-0'>
+                <h3>Welcome to the Portal Page for <?php echo $info['name']; ?></h3>
             </div>
         </div>
         <div class="row p-1">
             <div class="col-sm-auto p-0">
-        <?php
-            $aaQ = "SELECT requested, authorized, purchased, price, paid, transid FROM vendor_show WHERE type='virtual' and vendor = ? and conid=?;";
-            $aaR = dbSafeQuery($aaQ, 'ii', array($vendor, $conid));
-            $virtual_info = NULL;
-            if ($aaR->num_rows >= 1) {
-                $virtual_info = fetch_safe_assoc($aaR);
-                if ($virtual_info['authorized'] > $virtual_info['purchased']) {
-                    ?>
-                    <button class="btn btn-primary"
-                            onclick="openInvoice('virtual', <?php echo($virtual_info['authorized'] - $virtual_info['purchased']); ?>, <?php echo $price_list['virtual']; ?>)">
-                        Pay Virtual Vendor Space Invoice</button> <?php
-                } else if ($virtual_info['requested'] > $virtual_info['authorized']) {
-                    echo "Request Pending Authorization.";
-                } else if ($virtul_info['requested'] > 0) {
-                    echo "Registered for " . $virtual_info['purchased'];
-                } else {
-                ?>
-                <button class='btn btn-primary' onclick='virtual_req.show();'>Request Virtual Vendor</button><?php
-                }
-            } else {
-                ?>
-            <button class="btn btn-primary" onclick='virtual_req.show();'>Request Virtual Vendor</button><?php
-            }
-            ?>
+                <button class="btn btn-secondary" onclick='update_profile.show();'>View/Change your profile</button>
+                <button class='btn btn-secondary' onclick='change_password.show();'>Change your password</button>
+                <button class="btn btn-secondary" onclick="window.location='?logout';">Logout</button>
             </div>
         </div>
-    <div class="row p-0"><div class="col-sm-12 p-0"><hr/></div></div>
-<?php
-    // end virtual
-    }
-
-    // artist alley or equivalent
-    if (array_key_exists('alleyspace', $vendor_conf) && $vendor_conf['alleyspace'] != '') { ?>
         <div class="row p-1 pt-4">
             <div class="col-sm-12 p-0">
-                <h3><?php echo $vendor_conf['alleyspace'];?></h3>
+                <h3>Vendor Spaces</h3>
             </div>
         </div>
+<?php   if (count($spaces) > 1)  { ?>
         <div class="row p-1">
-            <div class="col-sm-12 p-0">
-                <?php echo $con['label']; ?> hosts an <?php echo $vendor_conf['alleyspace'];?> to enable artists to directly interact with <?php echo $con['label']; ?> members. These tables cost
-                $<?php echo $price_list['alley']; ?>, and are in the <?php echo $vendor_conf['alleywhere'];?>, <?php echo $vendor_conf['alleydetails'];?> We encourage artists to engage in their craft at their table to attract potential customers.
-                A membership is required to run the table, one discounted membership is available per table.
+            <div class="col-sm-12 p-0"><?php
+                echo $con['label']; ?> has multiple types of spaces for vendors. If you select a type for which you aren't qualified we will alert groups
+                managing other spaces.
             </div>
         </div>
-        <div class="row p-1">
-            <div class="col-sm-auto p-0">
-            <?php
-            $aaQ = "SELECT requested, authorized, purchased, price, paid, transid FROM vendor_show WHERE type='alley' and vendor = ? and conid=?;";
-            $aaR = dbSafeQuery($aaQ, 'ii', array($vendor_conf, $conid));
-            $alley_info = NULL;
-            if ($aaR->num_rows >= 1) {
-                $alley_info = fetch_safe_assoc($aaR);
-                if ($alley_info['authorized'] > $alley_info['purchased']) {
-                    ?>
-                    <button class="btn btn-primary"
-                            onclick="openInvoice('alley', <?php echo($alley_info['authorized'] - $alley_info['purchased']); ?>, <?php echo $price_list['alley']; ?>)">
-                        Pay Artist Alley Invoice</button> <?php
-                } else if ($alley_info['requested'] > $alley_info['authorized']) {
-                    echo "Request Pending Authorization.";
-                } else {
-                    echo "Registered for " . $alley_info['purchased'];
-                }
-            } else {
-                ?>
-                <button class="btn btn-primary" onclick="alley_req.show();">Request <?php echo $vendor_conf['alleyspace'];?></button><?php
-            }
-            ?>
-            </div>
-        </div>
-        <div class="row p-0"><div class="col-sm-12 p-0"><hr/></div></div>
-<?php
-    } // end artist alley equivalent
+<?php   }
+    foreach ($spaces AS $spacename => $spaceid) {
+        $space = $space_list[$spaceid];
+        if (array_key_exists($space['shortname'] . '_details', $vendor_conf)) {
+            $description = $vendor_conf[$space['shortname'] . '_details'];
+        } else {
+            $description = $space['description'];
+        }
+        if (array_key_exists($spaceid, $vendor_spacelist)) {
+            $vendor_space = $vendor_spacelist[$spaceid];
+            $item_requested = $vendor_space['item_requested'];
+        } else {
+            $vendor_space = null;
+            $item_requested = null;
+        }
 
-    // do we want dealers?
-    if (array_key_exists('dealersspace', $vendor_conf) && $vendor_conf['dealersspace'] != '') { ?>
+        // now the fixed text
+        ?>
         <div class="row pt-4 p-1">
             <div class="col-sm-auto p-0">
-                <h3><?php echo $vendor_conf['dealersspace'];?></h3>
+                <h3><?php echo $space['name'];?></h3>
             </div>
         </div>
         <div class="row p-1">
             <div class="col-sm-12 p-0">
-                The primary space for vendors at <?php echo $con['label']; ?> are the Dealers Rooms, two adjacent rooms on the 5th floor. Space in these rooms
-                are predominately sold as 1 or 2 6x6 spaces for $<?php echo $price_list['dealer_6']; ?> each coordinate with the head of the dealers room if you
-                want more than 2 spaces. Each space comes with a table/chair (if desired) and a membership, additional memberships will be available at a
-                discounted rate. Dealers spaces are expected to be attended while the rooms are open Friday 2pm - 7pm, Saturday 10am - 7pm, Sunday 10am - 7pm,
-                and Monday 10am - 2pm.
+                <?php echo $description;?>
             </div>
         </div>
-        <div class="row p-1">
+        <div class="row p-1 mt-2" id="<?php echo $space['shortname']; ?>_div">
             <div class="col-sm-auto p-0"><?php
-            $drQ = "SELECT type, requested, authorized, purchased, price, paid, transid FROM vendor_show WHERE type in ('dealer_6', 'dealer_10') and vendor = ? and conid=?;";
-            $drR = dbSafeQuery($drQ, 'ii', array($vendor, $conid));
-            $dealer_info = NULL;
-            if ($drR->num_rows >= 1) {
-                while ($dealer_hold = fetch_safe_assoc($drR)) {
-                    if ($dealer_hold['type'] == 'dealer_10' && $dealer_hold['authorized'] != "0") {
-                        $dealer_info = $dealer_hold;
-                    } else if ($dealer_hold['type'] == 'dealer_6' && $dealer_info == null) {
-                        $dealer_info = $dealer_hold;
-                    }
-                }
-
-                if ($dealer_info['authorized'] > $dealer_info['purchased']) {
-                    ?>
-                    <button class="btn btn-primary"
-                            onclick="openInvoice('dealer', <?php echo($dealer_info['authorized'] - $dealer_info['purchased']); ?>, <?php
-                            echo $price_list[$dealer_info['type']]; ?>, '<?php echo $dealer_info['type']; ?>')">
-                        Pay Dealers Room Invoice</button> <?php
-                } else if ($dealer_info['requested'] > $dealer_info['authorized']) {
-                    echo "Request Pending Authorization.";
-                } else {
-                    echo "Registered for " . $dealer_info['purchased'];
-                }
-            } else {
+        if ($vendor_space !== null) {
+            if ($vendor_space['item_purchased']) {
+                echo "You are registered for " . $vendor_space['purchased_description'] . "\n";
+            } else if ($vendor_space['item_approved']) {
                 ?>
-                <button class="btn btn-primary" onclick='dealer_req.show();'>Request Dealers Space</button><?php
+                <button class="btn btn-primary"
+                        onclick="openInvoice(<?php echo "'" . $space['shortname'] . "', " . $vendor_space['item_approved'] . ', ' . $vendor_space['item_approved'] . ', ' .
+                            $price_list[$vendor_space['id']]['id'] . ', ' . $vendor_space['id']; ?>)">
+                    Pay <?php echo $space['name']; ?> Invoice</button> <?php
+            } else if ($vendor_space['item_requested']) {
+                echo 'Request pending authorization for ' . $vendor_space['requested_description'] . ".\n";?>
+            </div>
+            <div class="col-sm-auto ms-4 p-0"> <button class='btn btn-primary' onclick='openReq(<?php echo $spaceid . ", " . $vendor_space['item_requested'];?>);'>Change/Cancel  <?php echo $space['name']; ?> Space</button><?php
+            } else {
+                 ?>
+            <button class="btn btn-primary" onclick='openReq(<?php echo $spaceid; ?>, 0);'>Request <?php echo $space['name']; ?> Space</button><?php
             }
+        } else {
             ?>
+            <button class="btn btn-primary" onclick='openReq(<?php echo $spaceid; ?>, 0);'>Request <?php echo $space['name']; ?> Space</button><?php
+        }
+        ?>
             </div>
         </div>
+        <?php } ?>
         <div id='result_message' class='mt-4 p-2'></div>
     </div>
-<?php
-  // end dealers
-  }
-} // end else of needs_new
-    ?>
 </body>
 </html>
 
@@ -988,85 +779,5 @@ EOH;
     </div>
 EOH;
     }
-    echo $html;
-}
-
-function draw_request_modal($space, $item_requested) {
-    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
-
-    $spacename = $space['shortname'];
-    $spacetitle = $space['name'];
-    $spaceid = $space['id'];
-    $spacereq = $spacename . '_req';
-    $spaceform = $spacename . '_req_form';
-    if (array_key_exists('prices', $space)) {
-        $prices = $space['prices'];
-    } else {
-        $prices = array();
-    }
-
-    if ($item_requested) {
-        $title = "Chance/Cancel";
-        $options = '<option value="-1">Cancel Space Request</option>';
-    } else {
-        $title = "Request";
-        $options = '<option value="0">No Space Requested</option>';
-    }
-    foreach ($prices as $priceid => $price) {
-        $options .= "\n<option value='" . $price['id'] . "'" . ($price['id'] == $item_requested ? ' selected' : '') . '>' . $price['description'] . ' for ' . $dolfmt->formatCurrency($price['price'], 'USD') . "</option>";
-    }
-
-    $html = <<<EOH
-    <div id='$spacereq' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request $spacetitle Space' aria-hidden='true'>
-        <div class='modal-dialog'>
-            <div class='modal-content'>
-                <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title'>
-                        <strong>$title $spacetitle Space</strong>
-                    </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-                </div>
-                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class='container-fluid'>
-                        <form id='$spaceform' action='javascript:void(0)'>
-                            <div class='row p-0 bg-warning'>
-                                <div class='col-sm-12 p-2'>
-                                    Please make sure your profile contains a good description of what you will be vending and a link for our staff to see what
-                                    you sell if at all possible.
-                                </div>
-                            </div>
-                            <div class='row p-1'>
-                                <div class='col-sm-auto p-0 pe-2'>
-                                    <label for='$spacename'>How many spaces are you requesting?</label>
-                                </div>
-                                <div class='col-sm-auto p-0'>
-                                    <select name='$spacename' id='$spacename'>
-                                        $options
-                                    </select>
-                                </div>
-                            </div>
-                            <div class='row p-1 pt-4 pb-3'>
-                                <div class='col-sm-12'>
-                                    You will be able to identify people for the free memberships and purchase discounted memberships later, if your request is
-                                    approved.
-                                </div>
-                            </div>
-                            <div class="row p-0 bg-warning">
-                                <div class='col-sm-auto p-2'>Completing this application does not guarantee space.</div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' onClick="spaceReq($spaceid, '$spacename', '$spacetitle', $spacereq)">$title $spacetitle Space</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <script type="text/javascript">
-    $spacereq = new bootstrap.Modal(document.getElementById('$spacereq'), { focus: true, backdrop: 'static' });
-    </script>
-EOH;
     echo $html;
 }
