@@ -75,11 +75,8 @@ foreach ($badges as $badge) {
         'memId'=>$memId[$badge['age']]
         );
 
-      if($badge['age'] != 'adult' && $badge['age'] != 'military' && $badge['age'] != 'youth' && $badge['age'] != 'child' && $badge['age'] != 'kit') {
-          $badge['age']='all';
-      }
-
-      if($badge['share'] == "") { $badge['share'] = 'Y'; }
+      if ($badge['share'] == "") { $badge['share'] = 'Y'; }
+      if ($badge['contact'] == "") { $badge['contact'] = 'Y'; }
 
 // see if there is an exact match
 
@@ -168,6 +165,7 @@ EOS;
 
       $newid = dbSafeInsert($insertQ, 'sssssssssssssssi', $value_arr);
       $people[$count]['newid']=$newid;
+      $people[$count]['perid'] = $id;
 
       $newid_list .= "id='$newid' OR ";
 
@@ -201,7 +199,7 @@ foreach($people as $person) {
     $badge_data = array(
       $condata['id'],
       $person['newid'],
-      $id,
+      $person['perid'],
       $transid,
       $person['price'],
       $person['memId'],
