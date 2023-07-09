@@ -290,7 +290,15 @@ if (!$in_session) { ?>
 }
 // this section is for 'in-session' management
 // build spaces array
-$spaceR = dbSafeQuery('SELECT id, shortname, name, description  FROM vendorSpaces WHERE conid=? ORDER BY shortname', 'i', array($condata['id']));
+$spaceQ = <<<EOS
+SELECT v.id, v.shortname, v.name, v.description, v.unitsAvailable, v.memId, m.price AS memPrice
+FROM vendorSpaces v
+JOIN memList m ON (v.memId = m.id)
+WHERE v.conid=?
+ORDER BY shortname;
+EOS;
+
+$spaceR =  dbSafeQuery($spaceQ, 'i', array($condata['id']));
 $space_list = array();
 $spaces = array();
 // output the data for the scripts to use
@@ -311,16 +319,13 @@ EOS;
     $priceR = dbSafeQuery($priceQ, 'i', array($space['id']));
     $price_list = array();
     while ($price = fetch_safe_assoc($priceR)) {
-        $price_list[$price['units']] = $price;
+        $units = strval($price['units'] + 0);
+        $price_list[$units] = $price;
     }
     $space_list[$space['id']]['prices'] = $price_list;
 }
 
-?>
-<script type='text/javascript'>
-var vendor_spaces = <?php echo json_encode($space_list) ?>;
-</script>
-<?php
+// get this vendor
 $vendorQ = <<<EOS
 SELECT name, email, website, description, addr, addr2, city, state, zip, publicity, need_new
 FROM vendors
@@ -332,6 +337,21 @@ if ($info['need_new']) {
     drawChangePassword('You need to change your password.', 2, true);
     return;
 }
+
+// load the country codes for the option pulldown
+$fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
+$countryOptions = '';
+while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
+    $countryOptions .=  "<option value='".$data[1]."'>".$data[0]."</option>\n";
+}
+fclose($fh);
+?>
+<script type='text/javascript'>
+var vendor_spaces = <?php echo json_encode($space_list); ?>;
+var vendor_info = <?php echo json_encode($info); ?>;
+var country_options = <?php echo json_encode($countryOptions); ?>;
+</script>
+<?php
 
 $vendorSQ = <<<EOS
 SELECT *
@@ -526,115 +546,215 @@ while ($space = fetch_safe_assoc($vendorSR)) {
                     <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <?php echo $info['name']; ?> you are approved for <span id='dealer_count'></span> <span id='dealer_size'></span> spaces at $<span
-                        id='dealer_price'></span>. Each space comes with one membership. <br/>
-                    You may request up to two additional memberships at $55.
+                    <div class="container-fluid form-floating">
+                    <div class="row">
+                        <div class="col-sm-12" id="vendor_inv_approved_for"></div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-12' id='vendor_inv_included'></div>
+                    </div>
                     <hr/>
-                    <form id='dealer_invoice_form' action='javascript:void(0);'>
-                        <span class='blocktitle'>Vendor Information</span><br/>
-                        Please fill out this section with information on the vendor or store.
-                        <input type='hidden' name='vendor' id='dealer_id' value='<?php echo $vendor; ?>'/> <br/>
-                        Name: <input type='text' name='name' id='dealer_name' value='<?php echo $info['name']; ?>'/>
-                        Email: <input type='text' name='email' id='dealer_email' value='<?php echo $info['email']; ?>'/>
-                        Address: <input type='text' name='address'/><br/>
-                        City: <input type='text' name='city'/> State: <input type='text' name='state' size=3/> Zip: <input type='text' name='zip' size=6/><br/>
-
-                        <br/>
-                        Maryland Retail Tax ID: <input type='text' name='taxid'/><br/>
-                        (If you have one. If you do not, Balticon will get you a temporary ID for this event.)<br/>
-                        <br/>
-                        Cost for Spaces $<span id='dealer_space_cost'></span><br/>
-                        <input type='hidden' id='dealer_space_sub' name='table_sub'/>
-                        <input type='hidden' id='dealer_cost' name='total'/>
-                        <input type='hidden' id='dealer_type' name='type'/>
-                        <input type='hidden' id='dealer_item_count' name='count'/>
-                        Special Requests:<br/>
-                        <textarea name='requests'></textarea>
+                    <form id='vendor_invoice_form' class="form-floating" action='javascript:void(0);'>
+                        <input type='hidden' name='vendor' id='vendor_inv_id' value='<?php echo $vendor; ?>'/>
+                        <input type='hidden' name='item_purchased' id='vendor_inv_item_id'/>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <strong>Vendor Information</strong>
+                                <p>Please fill out this section with information on the vendor or store.  Changes made to the Vendor Information part of this form will update your profile.</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-2">
+                                <label for="vendor_inv_name">Name:</label>
+                            </div>
+                            <div class="col-sm-10 p-0">
+                                <input class="form-control-sm" type='text' name='name' id='vendor_inv_name' value='<?php echo $info['name'];  ?>' size="64" required/>
+                            </div>
+                        </div>
+                        <div class='row'>
+                            <div class='col-sm-2'>
+                                <label for='vendor_inv_email'>Email:</label>
+                            </div>
+                            <div class='col-sm-10 p-0'>
+                                <input class='form-control-sm' type='text' name='email' id='vendor_inv_email' value='<?php echo $info['email']; ?>' size="64" required/>
+                            </div>
+                        </div>
+                        <div class='row'>
+                            <div class='col-sm-2'>
+                                <label for='vendor_inv_addr'>Address:</label>
+                            </div>
+                            <div class='col-sm-10 p-0'>
+                                <input class='form-control-sm' type='text' name='addr' id='vendor_inv_addr' value='<?php echo $info['addr']; ?>' size='64' required/>
+                            </div>
+                        </div>
+                        <div class='row'>
+                            <div class='col-sm-2'>
+                                <label for='vendor_inv_addr2'>Company/ Addr2:</label>
+                            </div>
+                            <div class='col-sm-10 p-0'>
+                                <input class='form-control-sm' type='text' name='addr2' id='vendor_inv_addr2' value='<?php echo $info['addr2']; ?>' size='64'/>
+                            </div>
+                        </div>
+                        <div class='row'>
+                            <div class='col-sm-2'>
+                                <label for='vendor_inv_city'>City: </label>
+                            </div>
+                            <div class='col-sm-auto p-0 me-0'>
+                                <input class='form-control-sm' id='vendor_inv_city' type='text' size='32' value='<?php echo $info['city']; ?>' name=' city' required/>
+                            </div>
+                            <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
+                                <label for='vendor_inv_state'> State: </label>
+                            </div>
+                            <div class='col-sm-auto p-0 ms-0 me-0 ps-1'>
+                                <input class='form-control-sm' id='vendor_inv_state' type='text' size='2' maxlength='2' value='<?php echo $info['state']; ?>'
+                                       name='state' required/>
+                            </div>
+                            <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
+                                <label for='vendor_inv_zip'> Zip: </label>
+                            </div>
+                            <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
+                                <input class='form-control-sm' id='vendor_inv_zip' type='text' size='11' maxlength='11' value='<?php echo $info['zip']; ?>' name='zip'
+                                       required/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-2">
+                                <label for="vendor_inv_taxid"><?php echo $vendor_conf['taxidlabel']; ?>:</label>
+                            </div>
+                            <div class="col-sm-10 p-0">
+                                <input class='form-control-sm' type='text' name='taxid'/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12"><?php echo $vendor_conf['taxidextra']; ?></div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-sm-12">
+                                Cost for Spaces $<span id='dealer_space_cost'></span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-2">
+                                <label for="vendor_inv_requests">Special Requests:</label>
+                            </div>
+                            <div class="col-sm-10 p-0">
+                                 <textarea class='form-control-sm' name='requests' cols="64" rows="5"></textarea>
+                            </div>
+                        </div>
                         <hr/>
-                        Included Memberships: <span id='dealer_mem_count'></span>
-                        <input type='hidden' id='dealer_free_mem' name='free_mem_count'/>
-                        <div id='dealer_mem1'>
-                            Name:
-                            <input type='text' name='dealer_mem1_fname'/ size=15>
-                            <input type='text' name='dealer_mem1_mname'/ size=10>
-                            <input type='text' name='dealer_mem1_lname'/ size=15>
-                            <br/>
-                            Badge Name: <input type='text' name='dealer_mem1_bname'/><br/>
-                            Address: <input type='text' name='dealer_mem1_address'/><br/>
-                            Company: <input type='text' name='dealer_mem1_addr2'/><br/>
-                            City: <input type='text' name='dealer_mem1_city'/> State: <input type='text' name='dealer_mem1_state' size=3/> Zip: <input
-                                type='text' name='dealer_mem1_zip' size=6/><br/>
+                        <div id="vendor_inv_included_mbr"></div>
+                        <div id="vendor_inv_additional_mbr"></div>
+                        <div class="row">
+                            <div class="col-sm-2">
+                                Cost for Memberships:
+                            </div>
+                            <div class="col-sm-10 p-0">
+                                $<span id='vendor_inv_mbr_cost'>0</span>
+                            </div>
                         </div>
-                        <br/>
-                        <div id='dealer_mem2'>
-                            Name:
-                            <input type='text' name='dealer_mem2_fname'/ size=15>
-                            <input type='text' name='dealer_mem2_mname'/ size=10>
-                            <input type='text' name='dealer_mem2_lname'/ size=15>
-                            <br/>
-                            Badge Name: <input type='text' name='dealer_mem2_bname'/><br/>
-                            Address: <input type='text' name='dealer_mem2_address'/><br/>
-                            Company: <input type='text' name='dealer_mem2_addr2'/><br/>
-                            City: <input type='text' name='dealer_mem2_city'/> State: <input type='text' name='dealer_mem2_state' size=3/> Zip: <input
-                                type='text' name='dealer_mem2_zip' size=6/><br/>
-                        </div>
-                        Select number of additional memberships at $<span 'dealer_mem_price'>55</span>:
-                        <select id='dealer_num_paid' name='dealer_num_paid' onchange='updateDealerPaid()'>
-                            <option value='0'>0</option>
-                            <option value='1'>1</option>
-                            <option value='2'>2</option>
-                        </select>
-                        <div id='dealer_paid1'>
-                            Name:
-                            <input type='text' name='dealer_paid1_fname'/ size=15>
-                            <input type='text' name='dealer_paid1_mname'/ size=10>
-                            <input type='text' name='dealer_paid1_lname'/ size=15>
-                            <br/>
-                            Badge Name: <input type='text' name='dealer_paid1_bname'/><br/>
-                            Address: <input type='text' name='dealer_paid1_address'/><br/>
-                            Company: <input type='text' name='dealer_paid1_addr2'/><br/>
-                            City: <input type='text' name='dealer_paid1_city'/> State: <input type='text' name='dealer_paid1_state' size=3/> Zip: <input
-                                type='text' name='dealer_paid1_zip' size=6/><br/>
-                        </div>
-                        <br/>
-                        <div id='dealer_paid2'>
-                            Name:
-                            <input type='text' name='dealer_paid2_fname'/ size=15>
-                            <input type='text' name='dealer_paid2_mname'/ size=10>
-                            <input type='text' name='dealer_paid2_lname'/ size=15>
-                            <br/>
-                            Badge Name: <input type='text' name='dealer_paid2_bname'/><br/>
-                            Address: <input type='text' name='dealer_paid2_address'/><br/>
-                            Company: <input type='text' name='dealer_paid2_addr2'/><br/>
-                            City: <input type='text' name='dealer_paid2_city'/> State: <input type='text' name='dealer_paid2_state' size=3/> Zip: <input
-                                type='text' name='dealer_paid2_zip' size=6/><br/>
-                        </div>
-                        Cost for Memberships: $<span id='dealer_mem_cost'>0</span>
-                        <input type='hidden' id='dealer_paid_mem_count' name='mem_cnt'/>
                         <hr/>
-                        Total: <span id='dealer_invoice_cost'></span>
-                        Payment Information:
-                        <?php
-                        if ($ini['test'] == 1) {
-                            ?>
-                            <h2 class='warn'>This won't charge your credit card, or do anything else.</h2>
-                            <?php
-                        }
-                        ?>
-                        <br/>
-                        We Accept<br/>
-                        <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/><br/>
+                        <div class="row">
+                            <div class="col-sm-auto">
+                                Total: <span id='vendor_inv_cost'></span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                Payment Information:
+                            </div>
+                        </div>
+                         <div class='row'>
+                             <div class='col-sm-2'>
+                                 <label for='cc_fname'>
+                                     Name:
+                                 </label>
+                             </div>
+                             <div class='col-sm-auto pe-0'>
+                                 <input type='text' name='cc_fname' class='ccdata' id='cc_fname' required='required' placeholder='First Name' size="32" maxlength="32"/>
+                             </div>
+                             <div class='col-sm-auto'>
+                                 <input type='text' name='cc_lname' id='cc_lname' required='required' class='ccdata' placeholder='Last Name' size='32' maxlength='32'/>
+                             </div>
+                         </div>
+                         <div class='row'>
+                             <div class='col-sm-2'>
+                                 <label for='cc_street'>
+                                     Street:
+                                 </label>
+                             </div>
+                             <div class='col-sm-auto'>
+                                 <input type='text' id='cc_street' required='required' name='cc_street' size='64' maxlength='64'/>
+                             </div>
+                         </div>
+                         <div class='row'>
+                             <div class='col-sm-2'>
+                                 <label for='cc_city'>City:</label>
+                             </div>
+                             <div class='col-sm-auto'>
+                                 <input type='text' id='cc_city' required='required' size='35' name='cc_city' maxlength='64'/>
+                             </div>
+                             <div class='col-sm-auto ps-0 pe-0'>
+                                 <label for='cc_state'>State:</label>
+                             </div>
+                             <div class='col-sm-auto'>
+                                 <input type='text' id='cc_state' size=2 maxlength="2" required='required' name='cc_state/'>
+                             </div>
+                             <div class='col-sm-auto ps-0 pe-0'>
+                                 <label for='cc_zip'>Zip:</label>
+                             </div>
+                             <div class='col-sm-auto'>
+                                 <input type='text' id='cc_zip' required='required' size=10 maxlength="10" name='cc_zip/'>
+                             </div>
+                         </div>
+                         <div class='row'>
+                             <div class='col-sm-2'>
+                                 <label for='cc_country'>Country:</label>
+                             </div>
+                             <div class='col-sm-auto'>
+                                  <select id='cc_country' required='required' name='cc_country' size=1>
+                                      <?php echo $countryOptions; ?>
+                                  </select>
+                             </div>
+                         </div>
+                         <div class="row">
+                             <div class="col-sm-2">
+                                 <label for="cc_email">Email:</label>
+                             </div>
+                             <div class="col-sm-auto">
+                                  <input type='email' id='cc_email' name='cc_email' size="35" maxlength="64"/>
+                             </div>
+                         </div>
+                         <div class='row'>
+                            <div class='col-sm-12'>
+                                <?php if ($ini['test'] == 1) {
+                                    ?>
+                                    <h2 class='warn'>This won't charge your credit card, or do anything else.</h2>
+                                    <?php
+                                }
+                                ?>
+                                <br/>
+                                We Accept<br/>
+                                <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/>
+                            </div>
+                        </div>
                         <hr/>
-                        Please wait for the email, and don't click the submit more than once.
-                        <?php draw_cc_html($cc, '--', 2); ?>
-                        <input type='reset'/>
-
+                        <div class="row">
+                            <div class="col-sm-auto">
+                                Please wait for the email, and don't click the "Purchase" button more than once.
+                            </div>
+                        </div>
+                        <div class='row'>
+                            <div class='col-sm-12'>
+                                <?php draw_cc_html($cc, '--', 2); ?>
+                                <input type='reset'/>
+                            </div>
+                        </div>
                     </form>
+                </div>
                 </div>
             </div>
         </div>
     </div>
-
     <!-- now for the top of the form -->
      <div class='container-fluid'>
         <div class='row p-1'>
@@ -697,8 +817,7 @@ while ($space = fetch_safe_assoc($vendorSR)) {
             } else if ($vendor_space['item_approved']) {
                 ?>
                 <button class="btn btn-primary"
-                        onclick="openInvoice(<?php echo "'" . $space['shortname'] . "', " . $vendor_space['item_approved'] . ', ' . $vendor_space['item_approved'] . ', ' .
-                            $price_list[$vendor_space['id']]['id'] . ', ' . $vendor_space['id']; ?>)">
+                        onclick="openInvoice(<?php echo "'" . $space['id'] . "', " . $vendor_space['approved_units']; ?>)">
                     Pay <?php echo $space['name']; ?> Invoice</button> <?php
             } else if ($vendor_space['item_requested']) {
                 echo 'Request pending authorization for ' . $vendor_space['requested_description'] . ".\n";?>

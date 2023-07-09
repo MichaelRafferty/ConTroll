@@ -20,8 +20,6 @@ $vendor_conf = get_conf('vendor');
 
 $response['conid'] = $conid;
 
-$info = get_conf('vendor');
-
 // validate that the items passed are the VendorSpace id and the VendorSpacePrice id
 if (!array_key_exists('spaceid', $_POST)) {
     ajaxError('Invalid arguments');
