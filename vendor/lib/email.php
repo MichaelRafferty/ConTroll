@@ -15,8 +15,8 @@ function request($access,$price, $vendorId, $address) {
     $conf = get_conf("con");
     $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
-    $vendorQ = "SELECT name, website, description FROM vendors WHERE id=$vendorId";
-    $vendor = fetch_safe_assoc(dbQuery($vendorQ));
+    $vendorQ = "SELECT name, website, description FROM vendors WHERE id=?";
+    $vendor = fetch_safe_assoc(dbSafeQuery($vendorQ, 'i', $vendorId));
 
     if (array_key_exists('price', $price)) {
         $body = $vendor['name'] . ",\n" .
@@ -32,6 +32,49 @@ function request($access,$price, $vendorId, $address) {
         "We are sorry you had to cancel your space request in the $access.\n" .
         "\nIf you have any questions please contact the $access staff at $address.\n\nThank you\n";
     }
+
+    return $body;
+}
+
+function payment($results) {
+    $buyer = $results['buyer'];
+    $vendor = $results['vendor'];
+    $space = $results['space'];
+
+    $conf = get_conf('con');
+    $vendor_conf = get_conf('vendor');
+    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+
+    $body = "Dear " . trim($buyer['fname'] . ' ' . $buyer['lname']) . ":\n\n" .
+        "Here is your receipt for payment of " . $dolfmt->formatCurrency($results['approved_amt'], 'USD') . ' for ' . $conf['label'] . ' ' . $space['name'] . "\n\n" .
+        "RECEIPT FOR PAYMENT TO: " . $conf['label'] . ' on ' . date('m/d/Y h:i:s A', time()) . "\n\n" .
+        "Vendor: \n" .
+        $vendor['name'] . "\n" .
+        $vendor['addr'] . "\n";
+        if ($vendor['addr2'] && $vendor['addr2'] != '')
+            $body .= $vendor['addr2'] . "\n";
+        $body .= $vendor['city'] . ', ' . $vendor['state'] . ' ' . $vendor['zip'] . "\n\n" .
+            "Space: " . $space['name'] . ' (' . $space['description'] . ') with up to ' . $space['includedMemberships'] . ' included memberships and up to ' . $space['additionalMemberships'] . " additional memberships\n" .
+            $vendor_conf['taxidlabel'] . ': ' . $results['taxid'] . "\n\n" .
+            "Price for Space: " . $dolfmt->formatCurrency($space['price'], 'USD') . "\n\n" .
+            "Special Requests:\n" . $results['specialrequests'] . "\n\n";
+
+        $body .= "Memberships purchased at this time:\n\n";
+        foreach ($results['formbadges'] as $badge) {
+            if ($badge['type'] == 'i')
+                $body .= "Included membership " . $badge['index'] . ":\n     ";
+            else
+                $body .= "Additional membership ". $badge['index'] . ": for " . $dolfmt->formatCurrency($badge['price'], 'USD') .  "\n     ";
+            $body .= $badge['fname'] . ' ' . ltrim($badge['mname'] . ' ') . $badge['lname'] . ' ' . $badge['suffix'] . "\n     " .
+                $badge['addr'] . "\n     ";
+            if ($badge['addr2'] && $badge['addr2'] != '')
+                $body .= $badge['addr2'] . "\n     ";
+            $body .= $badge['city'] . ', ' . $badge['state'] . ' ' . $badge['zip'] . ' ' . $badge['country'] . "\n     " .
+                'Badgename: ' . $badge['badgename'] . "\n\n";
+        }
+
+        $body .= "Total amount: " . $dolfmt->formatCurrency($results['total'], 'USD') . "\n\n" .
+            "If you have any questions please contact the " . $space['name'] . ' staff at ' . $vendor_conf[$space['shortname']]  . ".\n\nThank you\n";
 
     return $body;
 }

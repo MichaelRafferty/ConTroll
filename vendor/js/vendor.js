@@ -204,7 +204,7 @@ function openInvoice(spaceId, units) {
         " memberships included and " +
         (price.additionalMemberships > 0 ? "the " : "no ") + "right to purchase " +
         (price.additionalMemberships > 0 ? "up to " +  price.additionalMemberships  : "no") +
-        " additional memberships at a reduced rate of $" + Number(space.memPrice).toFixed(2) + ".</p>";
+        " additional memberships at a reduced rate of $" + Number(space.additionalMemPrice).toFixed(2) + ".</p>";
     document.getElementById('dealer_space_cost').innerHTML = Number(price.price).toFixed(2);
     document.getElementById('vendor_inv_cost').innerHTML = Number(price.price).toFixed(2);
     document.getElementById('vendor_inv_item_id').value = price.id
@@ -383,7 +383,7 @@ function updateCost(spaceId, units, item) {
     var price = space.prices[units];
     var fname = document.getElementById('fname_a_' + item).value;
     var cost = 0;
-    additional_cost[item] = fname == '' ? 0 : Number(space.memPrice);
+    additional_cost[item] = fname == '' ? 0 : Number(space.additionalMemPrice);
     for (var num in additional_cost) {
         cost += additional_cost[num];
     }
@@ -417,11 +417,11 @@ function makePurchase(token, label) {
                 submitId.disabled = false;
             } else if (data['status'] == 'success') {
                 //alert('call succeeded');
-                alert(message);
-                alert("Welcome to Balticon 56's Vendor Space. You may contact dealers@balticon.org or artist_alley@balticon.org with any questions.  One of our coordinators will be in touch to help you get setup.");
+                alert(data['message']);
+                alert("Welcome to " + config['label'] + " Vendor Space. You may contact " + config['vemail'] + " with any questions.  One of our coordinators will be in touch to help you get setup.");
                 location.reload();
             } else {
-                alert('There was an unexpected error, please email dealers@balticon.org or artist_alley@balticon.org to let us know.  Thank you.');
+                alert('There was an unexpected error, please email ' + config['vemail'] + 'to let us know.  Thank you.');
                 var submitId = document.getElementById(purchase_label);
                 submitId.disabled = false;
             }

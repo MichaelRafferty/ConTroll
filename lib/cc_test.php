@@ -52,12 +52,18 @@ function cc_charge_purchase($results, $ccauth) {
 		ajaxSuccess(array('status'=>'error','data'=>'Something thinks this is a real charge method'));
 		exit();
 	}
+    if (array_key_exists('vendor', $results)) {
+        $category = 'vendor';
+    } else {
+        $category = 'reg';
+    }
 	switch($_POST['ccnum'][0]) {
 		case '1': // success
 			$rtn['amount'] = $results['total'];
 			$rtn['txnfields'] =  array('transid','type','category','description', 'source','amount', 'txn_time', 'cc','cc_txn_id','cc_approval_code','receipt_id');
 			$rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 's', 's', 's', 's', 's');
-			$rtn['tnxdata'] = array($results['transid'],'credit','reg', 'test registration', 'online', $results['total'], '00-00-00 00:00:00',$_POST['ccnum'][0],'txn id','000000','txn_id');
+			$rtn['tnxdata'] = array($results['transid'],'credit',$category, 'test registration', 'online', $results['total'], '00-00-00 00:00:00',$_POST['ccnum'][0],'txn id','000000','txn_id');
+            $rtn['url'] = 'no test receipt';
 			return $rtn;
 		default: 
 			ajaxSuccess(array('status'=>'error','data'=>'bad CC number'));

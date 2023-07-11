@@ -130,7 +130,7 @@ function cc_charge_purchase($results, $ccauth) {
     //  a. create payment object with order id and payment amount plus credit card nonce
     //  b. pass payment to payment processor
     // 3. parse return results to return the proper information
-    // failure fall through
+    // failure fall throughx
 
     // base order
     $body = new CreateOrderRequest;
@@ -145,9 +145,10 @@ function cc_charge_purchase($results, $ccauth) {
     $custbadge = $results['badges'][0];
     $order->setCustomerId($con['id'] . '-' . $custbadge['badge']);
     $order_lineitems = [];
+    $lineid = 0;
 
     // add order lines
-    $lineid = 0;
+
     foreach ($results['badges'] as $badge) {
         $item = new OrderLineItem ('1');
         $item->setUid('badge' . ($lineid + 1));
@@ -158,6 +159,17 @@ function cc_charge_purchase($results, $ccauth) {
         $order_lineitems[$lineid] = $item;
         $lineid++;
     }
+    if (array_key_exists('spaceName', $results)) {
+        $item = new OrderLineItem ('1');
+        $item->setUid('vendor-space');
+        $item->setName($results['spaceName'] . ':' . $results['spaceDescription']);
+        $item->setBasePriceMoney(new Money);
+        $item->getBasePriceMoney()->setAmount(results['spacePrice'] * 100);
+        $item->getBasePriceMoney()->setCurrency(Currency::USD);
+        $order_lineitems[$lineid] = $item;
+        $lineid++;
+    }
+
     $order->setLineItems($order_lineitems);
 
     // pass order to square and get order id
@@ -266,13 +278,19 @@ function cc_charge_purchase($results, $ccauth) {
     $txtime = $payment->getCreatedAt();
     $receipt_number = $payment->getReceiptNumber();
 
+    if (array_key_exists('vendor', $results)) {
+        $category = 'vendor';
+    } else {
+        $category = 'reg';
+    }
+
     $rtn = array();
     $rtn['amount'] = $approved_amt;
     $rtn['txnfields'] = array('transid','type','category','description','source','amount',
         'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id');
     $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd',
             's', 's', 's', 's', 's', 's', 's', 's');
-    $rtn['tnxdata'] = array($results['transid'],'credit','reg',$desc,'online',$approved_amt,
+    $rtn['tnxdata'] = array($results['transid'],'credit',$category,$desc,'online',$approved_amt,
         $txtime,$last4,$results['nonce'],$id,$auth,$receipt_url,$status,$receipt_number);
     $rtn['url'] = $receipt_url;
     $rtn['rid'] = $receipt_number;

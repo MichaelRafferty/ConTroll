@@ -291,9 +291,10 @@ if (!$in_session) { ?>
 // this section is for 'in-session' management
 // build spaces array
 $spaceQ = <<<EOS
-SELECT v.id, v.shortname, v.name, v.description, v.unitsAvailable, v.memId, m.price AS memPrice
+SELECT v.id, v.shortname, v.name, v.description, v.unitsAvailable, v.includedMemId, v.additionalMemId, mi.price AS includedMemPrice, ma.price AS additionalMemPrice
 FROM vendorSpaces v
-JOIN memList m ON (v.memId = m.id)
+JOIN memList mi ON (v.includedMemId = mi.id)
+JOIN memList ma ON (v.additionalMemId = ma.id)
 WHERE v.conid=?
 ORDER BY shortname;
 EOS;
@@ -345,8 +346,14 @@ while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
     $countryOptions .=  "<option value='".$data[1]."'>".$data[0]."</option>\n";
 }
 fclose($fh);
+
+$config_vars = array();
+$config_vars['label'] = $con['label'];
+$config_vars['vemail'] = $vendor_conf[$space['shortname']];
 ?>
+
 <script type='text/javascript'>
+var config = <?php echo json_encode($config_vars); ?>;
 var vendor_spaces = <?php echo json_encode($space_list); ?>;
 var vendor_info = <?php echo json_encode($info); ?>;
 var country_options = <?php echo json_encode($countryOptions); ?>;
@@ -670,10 +677,10 @@ while ($space = fetch_safe_assoc($vendorSR)) {
                                  </label>
                              </div>
                              <div class='col-sm-auto pe-0'>
-                                 <input type='text' name='cc_fname' class='ccdata' id='cc_fname' required='required' placeholder='First Name' size="32" maxlength="32"/>
+                                 <input type='text' name='cc_fname' id='cc_fname' required='required' placeholder='First Name' size="32" maxlength="32" />
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' name='cc_lname' id='cc_lname' required='required' class='ccdata' placeholder='Last Name' size='32' maxlength='32'/>
+                                 <input type='text' name='cc_lname' id='cc_lname' required='required'  placeholder='Last Name' size='32' maxlength='32'/>
                              </div>
                          </div>
                          <div class='row'>
@@ -683,7 +690,7 @@ while ($space = fetch_safe_assoc($vendorSR)) {
                                  </label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_street' required='required' name='cc_street' size='64' maxlength='64'/>
+                                 <input type='text' id='cc_street' required='required' name='cc_addr' size='64' maxlength='64' value='<?php echo $info['addr']; ?>'/>
                              </div>
                          </div>
                          <div class='row'>
@@ -691,19 +698,19 @@ while ($space = fetch_safe_assoc($vendorSR)) {
                                  <label for='cc_city'>City:</label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_city' required='required' size='35' name='cc_city' maxlength='64'/>
+                                 <input type='text' id='cc_city' required='required' size='35' name='cc_city' maxlength='64' value='<?php echo $info['city']; ?>'/>
                              </div>
                              <div class='col-sm-auto ps-0 pe-0'>
                                  <label for='cc_state'>State:</label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_state' size=2 maxlength="2" required='required' name='cc_state/'>
+                                 <input type='text' id='cc_state' size=2 maxlength="2" required='required' name='cc_state' value='<?php echo $info['state']; ?>'/>
                              </div>
                              <div class='col-sm-auto ps-0 pe-0'>
                                  <label for='cc_zip'>Zip:</label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_zip' required='required' size=10 maxlength="10" name='cc_zip/'>
+                                 <input type='text' id='cc_zip' required='required' size=10 maxlength="10" name='cc_zip' value='<?php echo $info['zip']; ?>'/>
                              </div>
                          </div>
                          <div class='row'>
@@ -721,7 +728,7 @@ while ($space = fetch_safe_assoc($vendorSR)) {
                                  <label for="cc_email">Email:</label>
                              </div>
                              <div class="col-sm-auto">
-                                  <input type='email' id='cc_email' name='cc_email' size="35" maxlength="64"/>
+                                  <input type='email' id='cc_email' name='cc_email' size="35" maxlength="64" value='<?php echo $info['email']; ?>' />
                              </div>
                          </div>
                          <div class='row'>
