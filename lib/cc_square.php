@@ -164,7 +164,7 @@ function cc_charge_purchase($results, $ccauth) {
         $item->setUid('vendor-space');
         $item->setName($results['spaceName'] . ':' . $results['spaceDescription']);
         $item->setBasePriceMoney(new Money);
-        $item->getBasePriceMoney()->setAmount(results['spacePrice'] * 100);
+        $item->getBasePriceMoney()->setAmount($results['spacePrice'] * 100);
         $item->getBasePriceMoney()->setCurrency(Currency::USD);
         $order_lineitems[$lineid] = $item;
         $lineid++;
