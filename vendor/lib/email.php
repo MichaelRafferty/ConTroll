@@ -16,7 +16,7 @@ function request($access,$price, $vendorId, $address) {
     $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
     $vendorQ = "SELECT name, website, description FROM vendors WHERE id=?";
-    $vendor = fetch_safe_assoc(dbSafeQuery($vendorQ, 'i', $vendorId));
+    $vendor = fetch_safe_assoc(dbSafeQuery($vendorQ, 'i', array($vendorId)));
 
     if (array_key_exists('price', $price)) {
         $body = $vendor['name'] . ",\n" .

@@ -218,7 +218,7 @@ function openInvoice(spaceId, units) {
             // name fields
             html += `
 <div class="row mt-4">
-    <div class="col-sm-auto p-0">Included Member ` + (mnum+1) + `:</div>
+    <div class="col-sm-auto p-0">Included Member ` + (mnum + 1) + `:</div>
 </div>
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
@@ -289,15 +289,16 @@ function openInvoice(spaceId, units) {
 </div>
 `;
         }
-        html += "<hr/>";
+    }
+    html += "<hr/>";
 
         // now build the additional memberships
-        if (price.additionalMemberships > 0) {
-            html += "<input type='hidden' name='addl_mem_count' value='" + price.additionalMemberships + "'>\n" +
-                "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Additional Memberships: (" + price.additionalMemberships + ")</strong></div></div>";
-            for (var mnum = 0; mnum < price.additionalMemberships; mnum++) {
-                // name fields
-                html += `
+    if (price.additionalMemberships > 0) {
+        html += "<input type='hidden' name='addl_mem_count' value='" + price.additionalMemberships + "'>\n" +
+            "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Additional Memberships: (" + price.additionalMemberships + ")</strong></div></div>";
+        for (var mnum = 0; mnum < price.additionalMemberships; mnum++) {
+            // name fields
+            html += `
 <div class="row mt-4">
     <div class="col-sm-auto p-0">Additional Member ` + (mnum + 1) + `:</div>
 </div>
@@ -320,8 +321,8 @@ function openInvoice(spaceId, units) {
     </div>
 </div>
 `;
-                // address fields
-                html += `
+            // address fields
+            html += `
 <div class="row">
     <div class="col-sm-12 ms-0 me-0 p-0">
         <label for="addr_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Address</span></label><br/>
@@ -369,10 +370,9 @@ function openInvoice(spaceId, units) {
     </div>
 </div>
 `;
-            }
         }
-        html += "<hr/>";
     }
+    html += "<hr/>";
     document.getElementById("vendor_inv_included_mbr").innerHTML = html;
     vendor_invoice.show();
 }
