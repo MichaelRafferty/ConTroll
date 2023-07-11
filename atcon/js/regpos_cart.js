@@ -1004,7 +1004,7 @@ class regpos_cart {
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
-            <input type="text" name='c` + rownum + `-badge_name' id='c` + rownum + `-badge_name' size=64 maxlength="64" placeholder="defaults to first and last name" tabindex='5' value="` + row['badge_name'] + `"/>
+            <input type="text" name='c` + rownum + `-badge_name' id='c` + rownum + `-badge_name' size=64 maxlength="64" placeholder="Badgename: defaults to first and last name" tabindex='5' value="` + row['badge_name'] + `"/>
         </div>
     </div>
     <div class="row">
