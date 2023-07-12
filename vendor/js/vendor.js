@@ -139,7 +139,8 @@ function openReq(spaceid, cancel) {
     var price_keys = Object.keys(prices).sort();
     for (var priceid in price_keys) {
         var price = prices[price_keys[priceid]];
-        options += "<option value='" + price.id + "'>" + price.description + ' for ' + Number(price.price).toFixed(2) + "</option>\n";
+        if (price.requestable == 1)
+            options += "<option value='" + price.id + "'>" + price.description + ' for ' + Number(price.price).toFixed(2) + "</option>\n";
     }
 
     // update fields
@@ -189,10 +190,10 @@ function spaceReq(spaceId, cancel) {
         error: showAjaxError
     })
 }
-function openInvoice(spaceId, units) {
-    console.log("spaceid: " + spaceId + ", units: " + units);
+function openInvoice(spaceId, sortorder) {
+    console.log("spaceid: " + spaceId + ", sortorder: " + sortorder);
     var space = vendor_spaces[spaceId];
-    var price = space.prices[units];
+    var price = space.prices[sortorder];
     console.log(space);
     console.log(price);
 
@@ -305,7 +306,7 @@ function openInvoice(spaceId, units) {
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="fname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>First Name</span></label><br/>
-        <input class="form-control-sm" type="text" name="fname_a_` + mnum + `" id="fname_a_` + mnum + `" size="22" maxlength="32" onchange="updateCost(` + spaceId + ',' + units + ',' + mnum + `)"/>
+        <input class="form-control-sm" type="text" name="fname_a_` + mnum + `" id="fname_a_` + mnum + `" size="22" maxlength="32" onchange="updateCost(` + spaceId + ",'" + sortorder + "'," + mnum + `)"/>
     </div>
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="mname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
@@ -378,9 +379,9 @@ function openInvoice(spaceId, units) {
 }
 
 // update Cost for Memberships and total Cost when an additional member is started
-function updateCost(spaceId, units, item) {
+function updateCost(spaceId, sortorder, item) {
     var space = vendor_spaces[spaceId];
-    var price = space.prices[units];
+    var price = space.prices[sortorder];
     var fname = document.getElementById('fname_a_' + item).value;
     var cost = 0;
     additional_cost[item] = fname == '' ? 0 : Number(space.additionalMemPrice);

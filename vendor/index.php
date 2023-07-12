@@ -312,16 +312,16 @@ while ($space = fetch_safe_assoc($spaceR)) {
 // built price lists
 foreach ($space_list AS $shortname => $space) {
     $priceQ = <<<EOS
-SELECT id, spaceId, code, description, units, price, includedMemberships, additionalMemberships, requestable
+SELECT id, spaceId, code, description, units, price, includedMemberships, additionalMemberships, requestable, sortOrder
 FROM vendorSpacePrices
 WHERE spaceId=?
-ORDER BY units;
+ORDER BY sortOrder;
 EOS;
     $priceR = dbSafeQuery($priceQ, 'i', array($space['id']));
     $price_list = array();
     while ($price = fetch_safe_assoc($priceR)) {
-        $units = strval($price['units'] + 0);
-        $price_list[$units] = $price;
+        $sortorder = substr('0000000000' . strval($price['sortOrder']), -6);
+        $price_list[$sortorder] = $price;
     }
     $space_list[$space['id']]['prices'] = $price_list;
 }
@@ -824,7 +824,7 @@ while ($space = fetch_safe_assoc($vendorSR)) {
             } else if ($vendor_space['item_approved']) {
                 ?>
                 <button class="btn btn-primary"
-                        onclick="openInvoice(<?php echo "'" . $space['id'] . "', " . $vendor_space['approved_units']; ?>)">
+                        onclick="openInvoice(<?php echo "'" . $space['id'] . "', '" . substr('0000000000' . $vendor_space['approved_sort'], -6); ?>')">
                     Pay <?php echo $space['name']; ?> Invoice</button> <?php
             } else if ($vendor_space['item_requested']) {
                 echo 'Request pending authorization for ' . $vendor_space['requested_description'] . ".\n";?>
