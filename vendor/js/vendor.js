@@ -64,7 +64,7 @@ function register() {
             if(data['status'] == 'error') {
                 alert(data['message']);
             } else {
-                alert("Thank you for registering for an account with the Balticon Vendors portal.  Please login to your account to request space.");
+                alert("Thank you for registering for an account with the " + config['label'] + " Vendors portal.  Please login to your account to request space.");
                 console.log(data);
                 registrationModalClose();
             }

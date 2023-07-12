@@ -46,7 +46,7 @@ vendor_page_init($condata['label'] . ' Vendor Registration')
     </div>
     <div class="row p-1">
         <div class="col-sm-auto">
-            Welcome to the <?php echo $con['label'] ?> Verndor Portal.
+            Welcome to the <?php echo $con['label'] ?> Vendor Portal.
         </div>
     </div>
     <div class=row">
@@ -369,7 +369,7 @@ EOS;
 $vendorSR = dbSafeQuery($vendorSQ, 'ii', array($vendor, $condata['id']));
 $vendor_spacelist = array();
 while ($space = fetch_safe_assoc($vendorSR)) {
-    $vendor_spacelist[$space['id']] = $space;
+    $vendor_spacelist[$space['spaceId']] = $space;
 }
 
     // modals for each section
