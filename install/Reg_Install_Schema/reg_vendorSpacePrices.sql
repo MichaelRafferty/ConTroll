@@ -16,21 +16,27 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `reg_staff_stats`
+-- Table structure for table `vendorSpacePrices`
 --
 
-DROP TABLE IF EXISTS `reg_staff_stats`;
+DROP TABLE IF EXISTS `vendorSpacePrices`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `reg_staff_stats` (
-  `id` int NOT NULL,
-  `time` datetime NOT NULL,
-  `data_entry` int NOT NULL,
-  `cashier` int NOT NULL,
-  `badgers` int NOT NULL,
-  `line_length` int NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `vendorSpacePrices` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `spaceId` int NOT NULL,
+  `code` varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
+  `description` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
+  `units` decimal(4,2) DEFAULT '1.00',
+  `price` decimal(8,2) NOT NULL,
+  `includedMemberships` int NOT NULL DEFAULT '0',
+  `additionalMemberships` int NOT NULL DEFAULT '0',
+  `requestable` tinyint DEFAULT '1',
+  `sortOrder` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `vendorSpacePrices_space` (`spaceId`),
+  CONSTRAINT `vendorSpacePrices_space` FOREIGN KEY (`spaceId`) REFERENCES `vendorSpaces` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -42,4 +48,4 @@ CREATE TABLE `reg_staff_stats` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-07-13 17:52:24
+-- Dump completed on 2023-07-13 17:52:25

@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS "reg" /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `reg`;
 -- MySQL dump 10.13  Distrib 8.0.31, for macos12 (x86_64)
 --
 -- Host: localhost    Database: reg
@@ -38,9 +36,9 @@ CREATE TABLE `artist` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `vendor` (`vendor`),
   UNIQUE KEY `artist` (`artist`),
-  CONSTRAINT `artist_artist_fk` FOREIGN KEY (`artist`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `artist_vendor_fk` FOREIGN KEY (`vendor`) REFERENCES `vendors` (`id`) ON UPDATE CASCADE
+  CONSTRAINT `artist_artist_fk` FOREIGN KEY (`artist`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -51,4 +49,4 @@ CREATE TABLE `artist` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-04-14 10:05:37
+-- Dump completed on 2023-07-13 17:52:24
