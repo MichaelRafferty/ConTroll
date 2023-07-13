@@ -53,7 +53,7 @@ SELECT DISTINCT P.email_addr AS email
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
 JOIN memList M ON (R.memId = M.id)
-WHERE R.conid=$conid AND R.paid=R.price AND P.email_addr LIKE '%@%' AND P.contact_ok='Y' AND M.label != 'rollover-cancel'
+WHERE R.conid=? AND R.paid=R.price AND P.email_addr LIKE '%@%' AND P.contact_ok='Y' AND M.label != 'rollover-cancel'
 ORDER BY email;
 EOQ;
 
@@ -66,7 +66,7 @@ EOQ;
 SELECT DISTINCT p.email_addr AS email
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id AND r.conid = $priorcon)
-LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = $conid)
+LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
 WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' and r2.id IS NULL AND r.price > 0
 ORDER BY email;
 EOQ;
