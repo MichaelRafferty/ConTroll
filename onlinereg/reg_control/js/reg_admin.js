@@ -212,10 +212,22 @@ function draw_stats(data) {
 }
 
 function transferbutton(cell, formatterParams, onRendered) {
-    return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Transfer</button>';
+    if (cell.getRow().getCell("price").getValue() > 0 && cell.getRow().getCell("paid").getValue() > 0)
+        return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Transfer</button>';
+    if (cell.getRow().getCell("price").getValue() == 0 && cell.getRow().getCell("paid").getValue() == 0)
+        return '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Transfer</button>';
+    return "";
 }
 
 function transfer(e, cell) {
+    if (cell.getRow().getCell("price").getValue() > 0 && cell.getRow().getCell("paid").getValue() == 0)
+        return;
+
+    if (cell.getRow().getCell("price").getValue() == 0) {
+        if (confirm("This is a free badge, really transfer it?\n(Is it an included vendor badge or similar situation?)") == false)
+            returm;
+    }
+
     badgeid = cell.getRow().getCell("badgeId").getValue();
     return transferBadge(badgeid);
 }
@@ -260,7 +272,7 @@ function getData() {
         method: "GET",
         success: draw,
         error: function (jqXHR, textStatus, errorThrown) {
-            showError("ERROR in " + script + ": " + textStatus, jqXHR);
+            showError("ERROR in getBadges: " + textStatus, jqXHR);
             return false;
         }
     })
@@ -270,7 +282,7 @@ function getData() {
 function transferBadge(badge) {
     var newId = prompt('Please enter the Perid of the person you are transferring TO');
 
-    if (newID == null || newID == '')
+    if (newId == null || newId == '')
         return;
 
     var formData = { 'badge': badge, 'perid': newId };
@@ -278,11 +290,18 @@ function transferBadge(badge) {
         url: 'scripts/transferBadge.php',
         data: formData,
         method: 'POST',
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in transferBadge: " + textStatus, jqXHR);
+            return false;
+        },
         success: function (data, textStatus, jqXHR) {
+            console.log(data);
             if (data.error != '') {
                 $('#test').empty().append(JSON.stringify(data));
                 alert(data.error);
             } else {
+                if (data.message)
+                    alert(data.message);
                 getData();
             }
         }
