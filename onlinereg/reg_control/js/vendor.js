@@ -236,6 +236,8 @@ function draw_spaces(data) {
 // editVendor - Populate edit vendor modal with current data
 function editVendor(vendor) {
     console.log(vendor);
+    document.getElementById('vendorAddEditTitle').innerHTML = "Update Vendor Profile";
+    document.getElementById('vendorAddUpdatebtn').innerHTML = "Update";
     document.getElementById("ev_name").value = vendor.name;
     document.getElementById("ev_email").value = vendor.email;
     document.getElementById("ev_website").value = vendor.website;
@@ -247,6 +249,24 @@ function editVendor(vendor) {
     document.getElementById("ev_zip").value = vendor.zip;
     document.getElementById("ev_publicity").checked = vendor.publicity == 1;
     document.getElementById("ev_vendorId").value = vendor.id;
+    update_profile.show();
+}
+
+// add a new vendor to the vendors table
+function addNewVendor() {
+    document.getElementById('vendorAddEditTitle').innerHTML = "Add New Vendor";
+    document.getElementById('vendorAddUpdatebtn').innerHTML = "Add";
+    document.getElementById("ev_name").value = '';
+    document.getElementById("ev_email").value = '';
+    document.getElementById("ev_website").value = '';
+    document.getElementById("ev_description").value = '';
+    document.getElementById("ev_addr").value = '';
+    document.getElementById("ev_addr2").value = '';
+    document.getElementById("ev_city").value = '';
+    document.getElementById("ev_state").value = '';
+    document.getElementById("ev_zip").value = '';
+    document.getElementById("ev_publicity").checked = true;
+    document.getElementById("ev_vendorId").value = -1;
     update_profile.show();
 }
 

@@ -32,7 +32,7 @@ $conf = get_conf('con');
         <div class='modal-content'>
             <div class='modal-header bg-primary text-bg-primary'>
                 <div class='modal-title'>
-                    <strong>Update Vendor Profile</strong>
+                    <strong id='vendorAddEditTitle'>Update Vendor Profile</strong>
                 </div>
                 <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
             </div>
@@ -121,7 +121,7 @@ $conf = get_conf('con');
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' onClick='updateProfile()'>Update</button>
+                <button class='btn btn-sm btn-primary' id='vendorAddUpdatebtn' onClick='updateProfile()'>Update</button>
             </div>
         </div>
     </div>
@@ -192,9 +192,19 @@ $conf = get_conf('con');
             <div id="VendorList">Vendor List Placeholder</div>
         </div>
     </div>
+    <div class='row'>
+        <div class='col-sm-12'>
+            <button class="btn btn-secondary" id="addVendorBtn" onclick="addNewVendor();">Add New Vendor</button>
+        </div>
+    </div>
     <div class='row mt-4'>
         <div class='col-sm-12'>
             <div id="SpaceDetail">Space Detail Placeholder</div>
+        </div>
+    </div>
+    <div class='row'>
+        <div class='col-sm-12'>
+            <button class='btn btn-secondary' id='addVendorSpaceBtn' onclick="addNewSpace();">Add New Vendor Space</button>
         </div>
     </div>
     <div id='result_message' class='mt-4 p-2'></div>

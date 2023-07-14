@@ -23,7 +23,8 @@ if (!array_key_exists('vendorId', $_POST)) {
 }
 $vendor = $_POST['vendorId'];
 
-$updateQ = <<<EOS
+if ($vendor > 0) {
+    $updateQ = <<<EOS
 UPDATE vendors
 SET name=?, email=?, website=?, description=?, publicity=?, addr=?, addr2=?, city=?, state=?, zip=?
 WHERE id=?
@@ -48,7 +49,31 @@ EOS;
     else if ($numrows == 0)
         $response['success'] = "Nothing to update";
     else
-        $response['error'] = 'Error encounted updating profile';
+        $response['error'] = 'Error encountered updating profile';
+} else {
+    $updateQ = <<<EOS
+INSERT INTO vendors(name, email, website, description, publicity, addr, addr2, city, state, zip)
+VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+EOS;
+    $publicity = $_POST['publicity'] == 'on';
+    $updateArr = array(
+        $_POST['name'],
+        $_POST['email'],
+        $_POST['website'],
+        $_POST['description'],
+        $publicity,
+        $_POST['addr'],
+        $_POST['addr2'],
+        $_POST['city'],
+        $_POST['state'],
+        $_POST['zip']
+    );
+    $newid = dbSafeCmd($updateQ, 'ssssisssss', $updateArr);
+    if ($newid)
+        $response['success'] = 'Vendor Added';
+    else
+        $response['error'] = 'Error encountered adding vendor';
+}
 
 ajaxSuccess($response);
 ?>
