@@ -18,7 +18,7 @@ $regserver = $ini['server'];
 
 $reg_link = "<a href='$regserver'>Convention Registration</a>";
 
-vendor_page_init($condata['label'] . ' Vendor Registration')
+vendor_page_init($condata['label'] . ' Vendor Registration');
 ?>
 
 <body id="vendorPortalBody">
@@ -44,6 +44,13 @@ vendor_page_init($condata['label'] . ' Vendor Registration')
             <h1>Vendor Portal</h1>
         </div>
     </div>
+    <?php
+if ($vendor_conf['open'] == 0) { ?>
+    <p class='text-primary'>The vendor portal is currently closed. Please check the website to determine when it will open or try again tomorrow.</p>
+    <?php
+    exit;
+}
+ ?>
     <div class="row p-1">
         <div class="col-sm-auto">
             Welcome to the <?php echo $con['label'] ?> Vendor Portal.
