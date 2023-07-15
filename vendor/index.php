@@ -536,6 +536,16 @@ while ($space = fetch_safe_assoc($vendorSR)) {
                                     approved.
                                 </div>
                             </div>
+<?php
+if (array_key_exists('reg_disclaimer',$vendor_conf) && $vendor_conf['reg_disclaimer'] != '') {
+?>                          <div class='row p-1 pt-4 pb-3'>
+                                <div class='col-sm-12'>
+                                    <?php echo $vendor_conf['reg_disclaimer'] . "\n"; ?>
+                                </div>
+                            </div>
+<?php
+}
+?>
                             <div class='row p-0 bg-warning'>
                                 <div class='col-sm-auto p-2'>Completing this application does not guarantee space.</div>
                             </div>
@@ -752,6 +762,16 @@ while ($space = fetch_safe_assoc($vendorSR)) {
                             </div>
                         </div>
                         <hr/>
+                        <?php
+if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclaimer'] != '') {
+?>                          <div class='row p-1 pt-4 pb-3'>
+                                <div class='col-sm-12'>
+                                    <?php echo $vendor_conf['pay_disclaimer'] . "\n"; ?>
+                                </div>
+                            </div>
+<?php
+}
+?>
                         <div class="row">
                             <div class="col-sm-auto">
                                 Please wait for the email, and don't click the "Purchase" button more than once.
