@@ -30,7 +30,7 @@ CREATE TABLE `atcon_auth` (
   KEY `atcon_authuser_fk` (`authuser`),
   CONSTRAINT `atcon_auth_user` FOREIGN KEY (`authuser`) REFERENCES `atcon_user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `atcon_authuser_fk` FOREIGN KEY (`authuser`) REFERENCES `atcon_user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=91 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=91 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
