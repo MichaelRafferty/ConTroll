@@ -225,16 +225,19 @@ function draw_spaces(data) {
                     {title: "Requested", columns: [
                             { title: "Units", field: "requested_units", headerSort:false, headerFilter: false, },
                             { title: "Description", field: "requested_description", headerSort:false, headerFilter: false, },
+                            { title: "Timestamp", field: "time_requested", headerSort:true, headerFilter: false },
                         ]
                     },
                     {title: "Approved", columns: [
                             { title: "Units", field: "approved_units", headerSort:false, headerFilter: false, },
                             { title: "Description", field: "approved_description", headerSort:false, headerFilter: false, },
+                            { title: "Timestamp", field: "time_approved", headerSort:true, headerFilter: false },
                         ]
                     },
                     {title: "Purchased", columns: [
                             { title: "Units", field: "purchased_units", headerSort:false, headerFilter: false, },
                             { title: "Description", field: "purchased_description", headerSort:false, headerFilter: false, },
+                            { title: "Timestamp", field: "time_purchased", headerSort:true, headerFilter: false },
                         ]
                     },
                     {title: "", formatter: approvalbutton, hozAlign: "center", cellClick: approval, headerSort: false,},

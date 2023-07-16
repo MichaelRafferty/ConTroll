@@ -74,16 +74,16 @@ if ($vendorspace === null || $vendorspace === false) {
 if ($vendorspace['id'] < 0) {
     if ($priceid > 0) {
         // insert a new record because its a new request
-        $insertQ = "INSERT INTO vendor_space(conid, vendorId, spaceId, item_requested) VALUES(?, ?, ?, ?);";
+        $insertQ = "INSERT INTO vendor_space(conid, vendorId, spaceId, item_requested, time_requested) VALUES(?, ?, ?, ?, now());";
         $rowid = dbSafeInsert($insertQ, "iiii", array($conid, $vendor, $spaceid, $priceid));
     }
 } else if ($priceid > 0) {
     // update for new/changed item
-    $updateQ = "UPDATE vendor_space SET item_requested = ? WHERE id = ?;";
+    $updateQ = "UPDATE vendor_space SET item_requested = ?, time_requested = now() WHERE id = ?;";
     $numrows = dbSafeCmd($updateQ, "ii", array($priceid, $vendorspace['id']));
 } else {
     // clear cancelled item
-    $updateQ = 'UPDATE vendor_space SET item_requested = NULL WHERE id = ?;';
+    $updateQ = 'UPDATE vendor_space SET item_requested = NULL, time_requested = NULL WHERE id = ?;';
     $numrows = dbSafeCmd($updateQ, 'i', array($vendorspace['id']));
 }
 

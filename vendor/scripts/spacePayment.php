@@ -352,7 +352,7 @@ if ($numrows != 1) {
 // vendor_space
 $vendorUQ = <<<EOS
 UPDATE vendor_space
-SET item_purchased = ?, paid=?, transid = ?, membershipCredits = 0
+SET item_purchased = ?, paid=?, transid = ?, membershipCredits = 0, time_purchased = now()
 WHERE conid = ? AND spaceId = ? AND vendorId = ?
 EOS;
 $num_rows = dbSafeCmd($vendorUQ, 'idiiii', array($priceId, $totprice, $transid, $conid, $space['spaceId'], $venId));

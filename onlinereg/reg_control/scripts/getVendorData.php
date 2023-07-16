@@ -64,7 +64,9 @@ $response['summary'] = $spaces;
 $details = array();
 $detailQ = <<<EOS
 SELECT vs.id, vendorId, v.name as vendorName, v.website, v.email,
-       vs.spaceId, vs.name as spaceName, vs.item_requested, vs.requested_units, vs.requested_code, vs.requested_description, vs.item_approved, vs.approved_units, vs.approved_code, vs.approved_description, vs.item_purchased, vs.purchased_units, vs.purchased_code, vs.purchased_description
+       vs.spaceId, vs.name as spaceName, vs.item_requested, vs.time_requested, vs.requested_units, vs.requested_code, vs.requested_description,
+       vs.item_approved, vs.time_approved, vs.approved_units, vs.approved_code, vs.approved_description,
+       vs.item_purchased, vs.time_purchased, vs.purchased_units, vs.purchased_code, vs.purchased_description
 FROM vw_VendorSpace vs
 JOIN vendors v ON (vs.vendorId = v.id)
 WHERE vs.conid = ? AND vs.requested_units IS NOT NULL

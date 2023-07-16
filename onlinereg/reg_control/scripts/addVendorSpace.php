@@ -32,20 +32,25 @@ $operation = $_POST['state'];
 
 // first the vendor space
 $insertVS = <<<EOS
-INSERT INTO vendor_space(conid, vendorId, spaceId, item_requested, item_approved, item_purchased, price, paid, transid)
-VALUES (?,?,?,?,?,?,?,?,?);
+INSERT INTO vendor_space(conid, vendorId, spaceId, item_requested, time_requested, item_approved, time_approved, item_purchased, time_purchased, price, paid, transid)
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
 
-$dataTypes = 'iiiiiiddi';
-$values = array($conid, $vendorId, $spaceId, $spacePriceId, null, null, null, null, null);
+$dataTypes = 'iiiisisisddi';
+$values = array($conid, $vendorId, $spaceId, $spacePriceId, date('y-m-d h:i:s', time()), null, null, null, null, null, null, null);
 
-if ($operation == 'A' || $operation == 'P')
-    $values[4] = $spacePriceId;
+$transid = null;
+$payid = null;
+if ($operation == 'A' || $operation == 'P') {
+    $values[5] = $spacePriceId;
+    $values[6] = date('y-m-d h:i:s', time());
+}
 
 if ($operation == 'P') {
-    $values[5] = $spacePriceId;
-    $values[6] = $_POST['price'];
-    $values[7] = $_POST['payment'];
+    $values[7] = $spacePriceId;
+    $values[8] = date('y-m-d h:i:s', time());
+    $values[9] = $_POST['price'];
+    $values[10] = $_POST['payment'];
 
     $desc = "Check No: " . $_POST['checkno'] . " for " . $_POST['included'] . 'I/' . $_POST['additional']  . 'A// ' . $_POST['description'];;
 
@@ -62,7 +67,7 @@ INSERT INTO payments(transid, type, category, description, source, amount, time,
 VALUES (?, 'check', 'vendor', ?, 'reg_control', ?, now(), ?);
 EOS;
     $payid = dbSafeInsert($insertP, 'isdi', array($transid, $desc, $_POST['payment'], $user));
-    $values[8] = $transid;
+    $values[11] = $transid;
 }
 
 $vsid = dbSafeInsert($insertVS, $dataTypes, $values);

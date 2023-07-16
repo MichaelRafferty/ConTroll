@@ -32,13 +32,17 @@ $operation = $_POST['operation'];
 if ($operation == 'approve') {
     $updateQ = <<<EOS
 UPDATE vendor_space
-SET item_approved = ?
+SET item_approved = ?, time_approved = ?
 WHERE id = ?
 EOS;
     $approved = $_POST['sr_approved'];
-    if ($approved == 0)
+    if ($approved == 0) {
         $approved = null;
-    $numRows = dbSafeCmd($updateQ, 'ii', array($approved, $vsID));
+        $time_approved = null;
+    } else {
+        $time_approved = date('y-m-d h:i:s', time());
+    }
+    $numRows = dbSafeCmd($updateQ, 'isi', array($approved, $time_approved, $vsID));
     if ($numRows == 1) {
         $response['success'] = 'Space Approved';
         // now send that vendor an email telling them their space is approved
