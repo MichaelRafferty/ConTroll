@@ -25,7 +25,7 @@ DROP TABLE IF EXISTS `club`;
 CREATE TABLE `club` (
   `id` int NOT NULL AUTO_INCREMENT,
   `perid` int DEFAULT NULL,
-  `type` enum('inactive','eternal','life','child','annual','none') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `type` enum('inactive','eternal','life','child','annual','none') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `year` year DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `psfs_perid_fk` (`perid`),
