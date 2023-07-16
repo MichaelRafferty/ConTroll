@@ -67,9 +67,21 @@ endtext=
 [vendor]
 test=0
 open=1
-artshow = "artshow2020philcon.org"
-alley = "artshow2020philcon.org"
-dealer = "dealer2020philcon.org"
+
+
+test=1
+open=1
+#vendors: email address for generic vendor emails
+#vendorsite: url to vendor website
+vendors="dealers@sydweinstein.net"By submitting this request for space, I acknowledge and agree that Philcon 2023 and the Philadelphia Science Fiction Society will not
+vendorsite="http://vendor"
+taxidlabel="NJ Sales Tax ID"
+taxidextra=
+reg_disclaimer=""
+pay_disclaimer=""
+artshow="artshow2020philcon.org"
+alley="artshow2020philcon.org"
+dealer="dealer2020philcon.org"
 addlaccounttext = ""
 artventortext = "vendors"
 [client]
