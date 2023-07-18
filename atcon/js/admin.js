@@ -121,6 +121,13 @@ class Users {
         return '<button type="button" class="btn btn-sm btn-secondary p-0" onclick="users.addSearchRow(' + id + ')">Add</button >';
     }
 
+    // there are issues mapping the header filter to the rows, as tick cross filtering would need to be tri state, (true, false, any).
+    tickCrossFilterEval(headerValue, rowValue, rowData, filterParams) {
+        console.log("Header Value: " + headerValue + ", rowValue = " + rowValue);
+        return true;
+    }
+
+    tickCrossFilterSelect
     // create the tabulator users table and load it with the 'users' data
     loadUsers(users) {
         'use strict';
@@ -150,17 +157,17 @@ class Users {
                     headerSort: false,
                     formatter: "tickCross",
                     cellClick: invertTickCross,
-                    headerFilter: true,
+                    headerFilter: "tickCross", headerFilterParams:{ tristate: true },
                     headerWordWrap: true
                 },
-                {title: "Cashier", field: "cashier", headerSort: false, formatter: "tickCross", cellClick: invertTickCross, headerFilter: true},
+                {title: "Cashier", field: "cashier", headerSort: false, formatter: "tickCross", cellClick: invertTickCross, headerFilter: "tickCross", headerFilterParams:{ tristate: true }, },
                 {
                     title: "Art Inven",
                     field: "artinventory",
                     headerSort: false,
                     formatter: "tickCross",
                     cellClick: invertTickCross,
-                    headerFilter: true,
+                    headerFilter: "tickCross", headerFilterParams:{ tristate: true },
                     headerWordWrap: true
                 },
                 {
@@ -169,7 +176,7 @@ class Users {
                     headerSort: false,
                     formatter: "tickCross",
                     cellClick: invertTickCross,
-                    headerFilter: true,
+                    headerFilter: "tickCross", headerFilterParams:{ tristate: true },
                     headerWordWrap: true
                 },
                 {
@@ -178,7 +185,7 @@ class Users {
                     headerSort: false,
                     formatter: "tickCross",
                     cellClick: invertTickCross,
-                    headerFilter: true,
+                    headerFilter: "tickCross", headerFilterParams:{ tristate: true },
                     headerWordWrap: true
                 },
                 {
@@ -187,10 +194,10 @@ class Users {
                     headerSort: false,
                     formatter: "tickCross",
                     cellClick: invertTickCross,
-                    headerFilter: true,
+                    headerFilter: "tickCross", headerFilterParams:{ tristate: true },
                     headerWordWrap: true
                 },
-                {title: "Mgr", field: "manager", headerSort: false, formatter: "tickCross", cellClick: this.invertnotme, headerFilter: true},
+                {title: "Mgr", field: "manager", headerSort: false, formatter: "tickCross", cellClick: this.invertnotme, headerFilter: "tickCross", headerFilterParams:{ tristate: true }, },
                 {
                     title: "Optional New Password",
                     field: 'new_password',
