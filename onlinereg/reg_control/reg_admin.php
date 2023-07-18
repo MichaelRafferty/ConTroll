@@ -74,6 +74,7 @@ page_init("Badge List",
         </div>
         <?php } ?>
     </div>
+    <div id='result_message' class='mt-4 p-2'></div>
 </div>
 <pre id='test'>
 </pre>

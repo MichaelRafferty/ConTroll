@@ -240,7 +240,7 @@ function draw_badges(data) {
         data: data['badges'],
         layout: "fitDataTable",
         pagination: true,
-        paginationSize: 25,
+        paginationSize: 10,
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         columns: [
             { title: "perid", field: "perid", visible: false },
@@ -296,13 +296,15 @@ function transferBadge(badge) {
         },
         success: function (data, textStatus, jqXHR) {
             console.log(data);
-            if (data.error != '') {
-                $('#test').empty().append(JSON.stringify(data));
-                alert(data.error);
+            if (data.error) {
+                show_message(data.error, 'error');
+            } else if (data.warning != '') {
+                show_message(data.warning, 'warn');
             } else {
-                if (data.message)
-                    alert(data.message);
                 getData();
+                if (data.message)
+                    show_message(data.message, 'success');
+
             }
         }
     });
