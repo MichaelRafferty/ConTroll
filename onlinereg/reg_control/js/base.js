@@ -226,6 +226,10 @@ function showError(str, data = null) {
     }
 }
 
+function clear_message() {
+    show_message('', '');
+}
+
 var message_div = null;
 // show_message:
 // apply colors to the message div and place the text in the div, first clearing any existing class colors
