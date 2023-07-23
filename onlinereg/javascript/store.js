@@ -19,27 +19,28 @@ var coupon = null;
 var memSummaryDiv = null;
 var totalCostDiv = null;
 
-$.fn.serializeObject = function()
-{
-    var o = {};
-    var a = this.serializeArray();
-    $.each(a, function() {
-        if (o[this.name] !== undefined) {
-            if (!o[this.name].push) {
-                o[this.name] = [o[this.name]];
-            }
-            o[this.name].push(this.value || '');
-        } else {
-            o[this.name] = this.value || '';
-        }
-    });
-    return o;
-};
+// convert a form post string to an arrray
+// convert url parameters to associative array
+function URLparamsToArray(urlargs, doTrim = false) {
+    const params = new URLSearchParams(urlargs);
+    const result = {};
+    for (const [key, value] of params) {
+        if (doTrim)
+            result[key] = value.trim();
+        else
+            result[key] = value;
+    }
+    return result;
+}
 
+// process the form for validation and add to the badge array if valud
+function process(formRef) {
+    var valid = true;
+    var formData = URLparamsToArray($(formRef).serialize(), true);
 
-function process(formObj) {
-    var valid = true; 
-    if ($('#email1').val() == '' || $('#email2').val() == '' || $('#email1').val() != $('#email2').val()) {
+    // validation
+    // emails must not be blank and must match
+    if (formData['email1'] == '' || formData['#email2'] == '' || formData['#email1'] != formData['#email2']) {
         $('#email1').addClass('need');
         $('#email2').addClass('need');
         valid = false;
@@ -48,101 +49,106 @@ function process(formObj) {
         $('#email2').removeClass('need');
     }
 
-    if ($('#fname').val() == '') { valid = false; $('#fname').addClass('need'); }
-    else { $('#fname').removeClass('need'); }
-    if ($('#lname').val() == '') { valid = false; $('#lname').addClass('need'); }
-    else { $('#lname').removeClass('need'); }
-    if($('#addr').val()=='') { valid = false; $('#addr').addClass('need'); }
-    else { $('#addr').removeClass('need'); }
-    if($('#city').val()=='') { valid = false; $('#city').addClass('need'); }
-    else { $('#city').removeClass('need'); }
-    if($('#state').val()=='') { valid = false; $('#state').addClass('need'); }
-    else { $('#state').removeClass('need'); }
-    if($('#zip').val()=='') { valid = false; $('#zip').addClass('need'); }
-    else { $('#zip').removeClass('need'); }
-    if($('#age').val()=='') { valid = false; $('#age').addClass('need'); }
-    else { $('#age').removeClass('need'); }
+    // first name is required
+    if (formData['#fname'] == '') {
+        valid = false;
+        $('#fname').addClass('need');
+    } else {
+        $('#fname').removeClass('need');
+    }
 
-    if (!valid) { return false; }
+    // last name is required
+    if (formData['#lname'] == '') {
+        valid = false;
+        $('#lname').addClass('need');
+    } else {
+        $('#lname').removeClass('need');
 
+    }
 
-    var formData = formObj.serializeObject();
-  
+    // address 1 is required, address 2 is optional
+    if(formData['#addr'] =='') {
+        valid = false;
+        $('#addr').addClass('need');
+    } else {
+        $('#addr').removeClass('need');
+    }
+
+    // city/state/zip required
+    if (formData['#city'] =='') {
+        valid = false;
+        $('#city').addClass('need');
+    } else {
+        $('#city').removeClass('need');
+    }
+
+    if (formData['#state'] =='') {
+        valid = false;
+        $('#state').addClass('need');
+    } else {
+        $('#state').removeClass('need');
+    }
+
+    if (formData['#zip']=='') {
+        valid = false;
+        $('#zip').addClass('need');
+    } else {
+        $('#zip').removeClass('need');
+    }
+
+    // a membership type is required
+    if (formData['#age'] =='') {
+        valid = false;
+        $('#age').addClass('need');
+    } else {
+        $('#age').removeClass('need');
+    }
+
+    // don't continue to process if any are missing
+    if (!valid)
+        return false;
+
+    // clear for next use: first name, middle name, last name, suffix (entire name field set), and the badgename.  To make virtual easier, clear the email addresses.
     $('#fname').val('');
     $('#mname').val('');
     $('#lname').val('');
     $('#suffix').val('');
-    $('#suffix').val('');
+    $('#email1').val('');
+    $('#email2').val('');
     $('#badgename').val('');
-
-    // reference to badge_list area of screen
-    var badgeList = $('#badge_list');
-    // reference to tolal cost on screen
-    var total = $('#total');
 
     badges['count'] +=  1;
     badges['agecount'][formData['age']] += 1;
     //badges['total'] += prices[formData['age']];
-    badges['badges'].push($.extend(true, {}, formData));
+    badges['badges'].push(formData);
 
     repriceCart();
   
-  var badgename = formData['badgename'];
-  if(formData['badgename']=='') { 
-    badgename = formData['fname']+" "+formData['lname']; 
-  }
+    var badgename = formData['badgename'];
+    if(formData['badgename']=='') {
+    badgename = (formData['fname']+" "+formData['lname']).trim();
+    }
 
-  var name = formData['fname'] + " " + formData['mname'] + " " 
-    + formData['lname'] + " " + formData['suffix'];
+    var name = formData['fname'] + " " + formData['mname'] + " " + formData['lname'] + " " + formData['suffix'];
 
-  var option = $(document.createElement('option'))
-    .append(name)
-    .data('info', formData)
-    .attr('value', name);
-  $("#personList").append(option);
+    // add this person to the "who is paying" "person" list
+    var option = $(document.createElement('option'))
+        .append(name)
+        .data('info', formData)
+        .attr('value', name);
+    $("#personList").append(option);
 
-    if ($("#personList").val() == undefined) { $("#personList").val(name); }
+    // and make it select the first item on the list
+    if ($("#personList").val() == undefined) {
+        $("#personList").val(name);
+    }
 
-    var thisid = 'badge' + badges['count'];
-    // blocks for each badge
-    var badgeDiv = $(document.createElement('div'))
-        .attr('id', thisid)
-        .data('index', badges['count'] - 1)
-        .attr('class', 'container-fluid border border-2 border-dark');
-
-    var optDiv = $(document.createElement('div'))
-        .addClass('col-1')
-        .append($(document.createElement('button'))
-            .append('X')
-            .data('index', thisid)
-            .addClass("btn btn-sm btn-secondary")
-            .on('click', function () { removeBadge($(this).data('index')); })
-    );
-
-    var blockDiv = $(document.createElement('div'))
-        .addClass('row');
-    var labelDiv = $(document.createElement('div'))
-        .addClass('col-3 p-0 m-0');
-       
+    // build badge block in Badges list
     var group_text = formData['age'].split('_');
     var age_text = group_text[group_text.length -1];
     var age_color = 'text-white';
-    if (age_text != 'adult' && age_text != 'military' && age_text != 'child' && age_text != 'youth' && age_text != 'kit' && age_text != 'student') {
+    if (age_text != 'adult' && age_text != 'military' && age_text != 'child' && age_text != 'youth' && age_text != 'kit' && age_text != 'student')
         age_color = 'text-black';
-        labelDiv.addClass('unknown');
-    } else {
-        labelDiv.addClass(age_text)
-    }
-
-    var badgeDetails = $(document.createElement('div'))
-        .addClass('col-8')
-        .html("<p class='text-body'>Full Name:<br/><strong>" + name + "<br/></strong>Badge Name:<br/><strong>" + badgename + "</strong></p>");
-
-    badgeDiv.append(blockDiv);
-    blockDiv.append(labelDiv);
-    blockDiv.append(badgeDetails);
-    blockDiv.append(optDiv);
-
     var labeldivtext = shortnames[formData['age']];
     var addon = '';
     if (age_text == 'unknown')
@@ -150,25 +156,40 @@ function process(formObj) {
     if (group_text[0] == 'addon')
         addon += "<br/>&nbsp;Add On to<br/>&nbsp;Membership";
 
-    labelDiv.html('<h4><span class="badge ' + age_color + '"' + age_text + '">' + labeldivtext + '</span></h4>' + addon);
+    var bdivid="badge" + badges['count'];
+    var html = "<div id='" + bdivid + "' data-index='" + (badges['count'] - 1) + "' class='container-fluid border border-2 border-dark'>\n" +
+        "  <div class='row'>\n" +
+        "    <div class='col-sm-3 p-0 m-0 " + age_text + "'>\n" +
+        "      <h4><span class='badge " + age_color + ' ' + age_text + "'>" + labeldivtext + "</span></h4>" + addon + "\n" +
+        "    </div>\n" +
+        "    <div class='col-sm-8'>\n" +
+        "      <p class='text-body'>Full Name:<br/><strong>" + name + "</strong><br/>Badge Name:<br/><strong>" + badgename + "</strong></p>\n" +
+        "    </div>\n" +
+        "    <div class='col-sm-1'>\n" +
+        "      <button class='btn btn-sm btn-secondary' onclick='removeBadge(" + '"' +  bdivid + '"' + ")'>X</button>\n" +
+        "    </div>\n" +
+        "  </div>\n" +
+        "</div>\n";
 
-    $('#badge_list').append(badgeDiv);
+    $('#badge_list').append(html);
 
+    // set the fields for the paid by fields
     updateAddr();
+    // for the another badge modal, update his name
     $('#oldBadgeName').empty().append(name);
+
+    // toggle the modals from newBadgeto anotherBadge
     newBadgeModalClose();
     anotherBadgeModalOpen();
 }
 
-function removeBadge(index) {
-    var toRemove = $('#'+index);
-    var i = toRemove.data('index');
+function removeBadge(bdivid) {
+    var toRemove = document.getElementById(bdivid);
+    var i = toRemove.getAttribute('data-index');
     var badge_age = badges['badges'][i]['age'];
 
     badges['agecount'][badge_age] -= 1;
     badges['count'] -= 1;
-    //badges['total'] -= prices[badge_age];
-
     repriceCart();
 
     badges['badges'][i]={};
@@ -198,17 +219,6 @@ function toggleAddr() {
     $('.ccdata').attr('readonly', false);
 }
 
-function buildBadgeDiv(b) {
-  var badgeDiv = "Name: " + b['fname'] + " " +b['mname'] + " " + b['lname'] + " " + b['suffix'] + "<br/>";
-
-  badgeDiv += "Badge Name: ";
-  if(b['badgename']=="") { badgeDiv += b['fname'] + " " + b['lname']; }
-  else { badgeDiv += b['badgename']; }
-  badgeDiv += "<br/>";
-  badgeDiv += b['age'] + " ($" + b['price'] + ")";
-  return badgeDiv;
-}
-
 function mp_ajax_error(JqXHR, textStatus, errorThrown) {
     alert("ERROR! " + textStatus + ' ' + errorThrown);
     $('#' + $purchase_label).removeAttr("disabled");
@@ -221,14 +231,15 @@ function mp_ajax_success(data, textStatus, jqXHR) {
     } else if (data['status'] == 'echo') {
         console.log(data);
     } else {
-        window.location.href = "receipt.php?trans=" + data['trans'];
+        // for now, allow me to repeat submit it.
+        //window.location.href = "receipt.php?trans=" + data['trans'];
         $('#' + $purchase_label).removeAttr("disabled");
     }
 }
     
-function makePurchase($token, $label) {
-    if ($label != '') {
-        $purchase_label = $label;
+function makePurchase(token, label) {
+    if (label != '') {
+        purchase_label = label;
     }
 
     $('#' + $purchase_label).attr("disabled", "disabled");
@@ -240,13 +251,17 @@ function makePurchase($token, $label) {
         }
         return false;        
     }
-
+    var data = {
+        badges: badges,
+        nonce: token,
+        purchaseform: URLparamsToArray($('#purchaseForm').serialize()),
+        couponCode: coupon.getCouponCode(),
+    }
+    console.log("MP Data");
+    console.log(data);
     $.ajax({
         url: "scripts/makePurchase.php",
-        data: $('#purchaseForm').serialize()
-            + "&total=" + badges['total']
-            + "&badgeList=" + JSON.stringify(postdata)
-            + "&nonce=" + $token,
+        data: data,
         method: 'POST',
         success: mp_ajax_success,
         error: mp_ajax_error
@@ -299,16 +314,37 @@ function repriceCart() {
     var html = '';
     var nbrs = badges['agecount'];
     var total = 0;
-    for (var row in mtypes) {
-        var mbrtype = mtypes[row];
-        var num = 0;
+    var cartDiscountable = false;
+
+    if (coupon.isCouponActive()) {
+        // first compute un-discounted cart total to get is it sufficient for the discount
+        var primarymemberships = 0;
+        for (var row in mtypes) {
+            var mbrtype = mtypes[row];
+            var num = 0;
+            if (nbrs[mbrtype['memGroup']] > 0) {
+                num = nbrs[mbrtype['memGroup']];
+                if (mbrtype['memGroup'])
+                    primarymemberships += num;
+                total += num * Number(mbrtype['price']).toFixed(2)
+            }
+        }
+        if (total >= coupon.getMinCart() && total <= coupon.getMaxCart() && primarymemberships >= coupon.getMinMemberships()  && primarymemberships <= coupon.getMaxMemberships())
+            cartDiscountable = true;
+        // reset total for below
+        total = 0;
+    }
+
+    for (row in mtypes) {
+        mbrtype = mtypes[row];
+        num = 0;
         if (nbrs[mbrtype['memGroup']] > 0) {
             num = nbrs[mbrtype['memGroup']];
         }
         // need to set num here
-        if (mbrtype['discount'] > 0) {
+        if (mbrtype['discountable'] && cartDiscountable) {
             html += mbrtype['shortname'] + ' Memberships: ' + num + ' x (' + mbrtype['price'] + ' - ' + mbrtype['discount'] + ' = ' + Number(mbrtype['price'] - mbrtype['discount']).toFixed(2) + ')'  + '<br/>';
-            total += num * Number(mbrtype['price'] - mbrtype['discount']).toFixed(2)
+            total += num * (Number(mbrtype['price']) - Number(mbrtype['discount'])).toFixed(2)
         } else {
             html += mbrtype['shortname'] + ' Memberships: ' + num + ' x ' + mbrtype['price'] + '<br/>';
             total += num * Number(mbrtype['price']).toFixed(2)
@@ -316,7 +352,15 @@ function repriceCart() {
     }
     memSummaryDiv.innerHTML = html;
     badges['total'] = total;
-    totalCostDiv.innerHTML = "Total Cost: $" + total.toFixed(2);
+
+    html = '';
+    if (cartDiscountable)  {
+        var cartDiscount = coupon.CartDiscount(total);
+        if (cartDiscount > 0) {
+            html = '<br/>Cart Discount: ' + Number(cartDiscount).toFixed(2) + '<br/>Net Cost: ' + Number(total - cartDiscount).toFixed(2);
+        }
+    }
+    totalCostDiv.innerHTML = "Total Cost: $" + Number(total).toFixed(2) + html;
 }
 
 function togglePopup() {

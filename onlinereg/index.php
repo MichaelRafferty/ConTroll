@@ -1,12 +1,11 @@
 <?php
 // Online Reg - index.php - Main page for online con registration
 require_once("lib/base.php");
-$ini = redirect_https();
-
 require_once("../lib/cc__load_methods.php");
 
 $cc = get_conf('cc');
 $con = get_conf('con');
+$ini = get_conf('reg');
 load_cc_procs();
 
 $condata = get_con();
@@ -78,7 +77,7 @@ $onsitesale = $startdate->format("l, F j");
                     <button type="button" onclick="anotherBadgeModalClose();">Review and Pay</button>
                 </div>
             </div>
-        </div>           
+        </div>
     </div>
       <!--- add coupon modal popup -->
       <div class='modal modal-lg' id='addCoupon' tabindex='-2' aria-labelledby='Add Coupon' aria-hidden='true'>
@@ -117,7 +116,7 @@ $onsitesale = $startdate->format("l, F j");
                 <div class="modal-header" style="background-color: #b0c4de;">
                     <div class="modal-title">
                         <strong>New Membership</strong>
-                       
+
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -193,7 +192,7 @@ $onsitesale = $startdate->format("l, F j");
                             </div>
                             <div class="row">
                                 <div col="col-12-sm">
-                                    <p class="text-body">Contact Information 
+                                    <p class="text-body">Contact Information
                                      (<a href='<?php echo $con['privacypolicy'];?>' target='_blank'><?php echo $con['privacytext'];?></a>).</p>
 
                                 </div>
@@ -264,7 +263,7 @@ $onsitesale = $startdate->format("l, F j");
                             </div>
                              <div class="row">
                                 <div class="col-sm-12">
-                                    <input type='submit' onclick='process($("#newBadgeForm"));' value='Add Membership To Cart'/>
+                                    <input type='submit' onclick='process("#newBadgeForm");' value='Add Membership To Cart'/>
                                     <input type='submit' onclick='newBadgeModalClose();' value='Cancel'/>
                                     <input type='reset'/>
                                 </div>
@@ -312,7 +311,7 @@ $onsitesale = $startdate->format("l, F j");
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <input type='submit' onclick='process($("#newBadgeForm"));' value='Add Membership To Cart'/>
+                                    <input type='submit' onclick='process("#newBadgeForm");' value='Add Membership To Cart'/>
                                     <input type='submit' onclick='newBadgeModalClose();' value='Review and Pay'/>
                                     <input type='reset'/>
                                 </div>
@@ -323,9 +322,9 @@ $onsitesale = $startdate->format("l, F j");
             </div>
         </div>
     </div>
-    
+
     <!--- Main body of the page -->
-    
+
      <div class="container-fluid form-floating">
          <div class="row">
              <div class="col-sm-6 p-2 border border-2 border-primary">
@@ -459,11 +458,11 @@ $onsitesale = $startdate->format("l, F j");
                              </div>
                          </div>
                      </div>
-                 </form>               
+                 </form>
                  <p class="text-body">We Accept</p>
                  <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/><br/>
 <?php
-      if($ini['test']==1) {
+      if($db_ini['test']==1) {
 ?>
                  <h2 class='text-danger'><strong>This won't charge your credit card.<br/>It also won't get you badges.</strong></h2>
     <?php

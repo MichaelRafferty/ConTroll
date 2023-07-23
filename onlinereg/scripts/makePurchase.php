@@ -1,13 +1,20 @@
 <?php
-require_once(__DIR__ . "/../../lib/db_functions.php");
-require_once(__DIR__ . "/../../lib/ajax_functions.php");
+require_once('../lib/base.php');
 require_once(__DIR__ . "/../../lib/log.php");
 require_once("../../lib/cc__load_methods.php");
 require_once("../../lib/email__load_methods.php");
 require_once "../lib/email.php";
 
-if(!isset($_POST) || !isset($_POST['badgeList'])) {
-    ajaxSuccess(array('status'=>'error', 'error'=>"Error: No Badges")); exit();
+if(!isset($_POST) || !isset($_POST['badgelist'])) {
+    ajaxSuccess(array('status'=>'error', 'error'=>"Error: No Info Passed")); exit();
+}
+
+// input parameters
+$badgestruct =($_POST['badges'];
+$badges = $badgestruct['badges'];
+if (count($badges) == 0)) {
+    ajaxSuccess(array('status' => 'error', 'error' => 'Error: No Badges Entered'));
+    exit();
 }
 
 db_connect();
@@ -40,7 +47,6 @@ while($priceL = fetch_safe_assoc($priceR)) {
   $counts[$priceL['memGroup']] = 0;
 }
 
-$badges = json_decode($_POST['badgeList'], true);
 $people = array();
 
 $total = 0;

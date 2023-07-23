@@ -38,6 +38,59 @@ class Coupon {
         }
     }
 
+    // get functions
+
+    isCouponActive() {
+        return this.#couponActive;
+    }
+    getMinMemberships() {
+        if (this.#curCoupon == null)
+            return 0;
+
+        if (this.#curCoupon['minMembersiphs'] == null)
+            return 0;
+
+        return this.#curCoupon['minMemberships'];
+    }
+
+    getMaxMemberships() {
+        if (this.#curCoupon == null)
+            return 999999999;
+
+        if (this.#curCoupon['maxMembersiphs'] == null)
+            return 999999999;
+
+        return this.#curCoupon['maxMemberships'];
+    }
+
+    getMinCart() {
+        if (this.#curCoupon == null)
+            return 0;
+
+        if (this.#curCoupon['minTransactions'] == null)
+            return 0;
+
+        return this.#curCoupon['minTransaction'];
+    }
+
+    getMaxCart() {
+        if (this.#curCoupon == null)
+            return 999999999;
+
+        if (this.#curCoupon['maxTransaction'] == null)
+            return 999999999;
+
+        return this.#curCoupon['maxTransaction'];
+    }
+
+    getCouponCode() {
+        if (this.#curCoupon == null)
+            return null;
+
+        return this.#curCoupon['code'];
+    }
+
+    // coupon modal area functions
     ModalOpen() {
         "use strict";
         if (this.#addCoupon != null) {
@@ -114,8 +167,6 @@ class Coupon {
         }
         this.#curCoupon = data['coupon'];
         this.ModalClose();
-        // recompute the coupon effects on the membership types
-        this.UpdateMtypes();
         // now apply the coupon to the screen
         // set coupon code
         this.#couponNameDiv.innerHTML = "<span style='color: red;'>" + this.#curCoupon['code'] + "</span>";
@@ -124,6 +175,8 @@ class Coupon {
         this.#couponHeader.innerHTML = "Change/Remove Coupon for Order";
         this.#addCouponBTN.innerHTML = "Change Coupon";
         this.#couponActive = true;
+        // recompute the coupon effects on the membership types
+        this.UpdateMtypes();
         repriceCart();
     }
 
@@ -184,27 +237,52 @@ class Coupon {
     UpdateMtypes() {
         for (var row in mtypes) {
             var mbrtype = mtypes[row];
-            if (this.#curCoupon == null || mbrtype['price'] == 0 || (mbrtype['memCategory'] != 'standard' && mbrtype['memCategory'] != 'virtual'))
-                mbrtype['discount'] = Number(0).toFixed(2);
-            else if (this.#curCoupon['couponType'] == '$off' || this.#curCoupon['couponType'] == '%off')
-                mbrtype['discount'] = Number(0).toFixed(2);
-            else if (this.#curCoupon['memId'] == null || this.#curCoupon['memId'] == mbrtype['id']) { // ok, we have a coupon type that applies to this row
-                var discount = Number(0).toFixed(2);
+            var primary = true; // if coupon is active, does this 'num' count toward min / max memberships
+            var discount = 0;
+            if ((!this.#couponActive) || mbrtype['price'] == 0 || (mbrtype['memCategory'] != 'standard' && mbrtype['memCategory'] != 'virtual')) {
+                discount = 0; // no discount if no coupon, price is 0 or its not a primary membership
+                primary = false;
+            } else if (this.#curCoupon['couponType'] == '$off' || this.#curCoupon['couponType'] == '%off') {
+                discount = 0; // cart type memberships don't discount rows
+            } else if (this.#curCoupon['memId'] == null || this.#curCoupon['memId'] == mbrtype['id']) { // ok, we have a coupon type that applies to this row
                 if (this.#curCoupon['couponType'] == 'price') {
-                    discount = Number(mbrtype['price']).toFixed(2) - Number(this.#curCoupon['discount']).toFixed(2);
+                    // set price for a specific membership type, set the discount to the difference between the real price and the 'coupon price'
+                    discount = Number(mbrtype['price']) - Number(this.#curCoupon['discount']);
                 } else if (this.#curCoupon['couponType'] == '$mem') {
-                    discount = Number(this.#curCoupon['discount']).toFixed(2);
+                    // flat $ discount on the primary membership
+                    discount = Number(this.#curCoupon['discount']);
                 } else if (this.#curCoupon['couponType'] == '%mem') {
-                    discount = (Number(mbrtype['price']) * Number(this.#curCoupon['discount']) / 100.0).toFixed(2);
+                    // % off primaary membership set price.
+                    discount = (Number(mbrtype['price']) * Number(this.#curCoupon['discount']) / 100.0);
                 }
-                if (Number(discount).toFixed(2) > Number(mbrtype['price']).toFixed(2)) {
-                    discount = Number(mbrtype['price']).toFixed(2);
+                // if the discount is > than the price limit it to the price.
+                if (Number(discount) > Number(mbrtype['price'])) {
+                    discount = Number(mbrtype['price']);
                 }
-                mbrtype['discount'] = discount;
-            } else
-                mbrtype['discount'] = discount;
+            }
+            mbrtype['primary'] = primary;
+            mbrtype['discount'] = Number(discount).toFixed(2);
+            mbrtype['discountable'] = discount > 0;
         }
         return;
+    }
+
+    CartDiscount(total) {
+        if (!this.#couponActive)
+            return 0;
+
+        var discount = 0;
+        if (this.#curCoupon['couponType'] == '$off') {
+            discount = this.#curCoupon['discount'];
+        } else if (this.#curCoupon['couponType'] == '%off') {
+            discount = Number(this.#curCoupon['discount']) * total;
+        }
+
+        if (discount > total) {
+            return total;
+        }
+
+        return discount;
     }
 
 // modal_message:

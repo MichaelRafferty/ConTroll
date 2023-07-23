@@ -1,6 +1,6 @@
 <?php
 require_once("lib/base.php");
-$ini = redirect_https();
+$ini = get_conf("reg");
 $condata = get_con();
 $con = get_conf('con');
 

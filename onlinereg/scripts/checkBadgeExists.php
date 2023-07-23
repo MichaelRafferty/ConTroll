@@ -1,13 +1,10 @@
 <?php
-require_once(__DIR__ . "/../../lib/db_functions.php");
-require_once(__DIR__ . "/../../lib/ajax_functions.php");
-
+require_once("../lib/base.php");
 
 if(!isset($_POST) || !isset($_POST['badge'])) {
     ajaxSuccess(array('status'=>'error', 'error'=>"Error: No Badge")); exit();
 }
 
-db_connect();
 $condata = get_con();
 $con = get_conf('con');
 
