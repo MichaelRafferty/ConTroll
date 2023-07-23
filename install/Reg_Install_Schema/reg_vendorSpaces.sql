@@ -16,21 +16,27 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `psfs`
+-- Table structure for table `vendorSpaces`
 --
 
-DROP TABLE IF EXISTS `psfs`;
+DROP TABLE IF EXISTS `vendorSpaces`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `psfs` (
+CREATE TABLE `vendorSpaces` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `perid` int DEFAULT NULL,
-  `type` enum('inactive','eternal','life','child','annual','none') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `year` year DEFAULT NULL,
+  `conid` int NOT NULL,
+  `shortname` varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
+  `name` varchar(128) COLLATE utf8mb4_general_ci NOT NULL,
+  `description` text COLLATE utf8mb4_general_ci,
+  `unitsAvailable` int NOT NULL DEFAULT '0',
+  `includedMemId` int NOT NULL,
+  `additionalMemId` int NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `psfs_perid_fk` (`perid`),
-  CONSTRAINT `psfs_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=277 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `vendorSpace_memList_i` (`includedMemId`),
+  KEY `vendorSpace_memList_a` (`additionalMemId`),
+  CONSTRAINT `vendorSpace_memList_a` FOREIGN KEY (`additionalMemId`) REFERENCES `memList` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `vendorSpace_memList_i` FOREIGN KEY (`includedMemId`) REFERENCES `memList` (`id`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -42,4 +48,4 @@ CREATE TABLE `psfs` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-03-27 14:20:12
+-- Dump completed on 2023-07-13 17:52:25

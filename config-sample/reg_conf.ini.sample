@@ -39,6 +39,7 @@ minComp="2021"
 compLen="150"
 conLen="3"
 server="https://reg.philcon.org/"
+rollover_eligible="'upgrade', 'rollover', 'freebie', 'standard', 'yearahead', 'discount'"
 [reg]
 https=1
 test=0
@@ -61,12 +62,26 @@ onsiteopen="3:00 PM"
 ;	any - any POS user can handle discount
 ;	none - disable the discount type of payment
 discount=active
+; endtext = text to put at the botom of the receipt.
+endtext=
 [vendor]
 test=0
 open=1
-artshow = "artshow2020philcon.org"
-alley = "artshow2020philcon.org"
-dealer = "dealer2020philcon.org"
+
+
+test=1
+open=1
+#vendors: email address for generic vendor emails
+#vendorsite: url to vendor website
+vendors="dealers@sydweinstein.net"By submitting this request for space, I acknowledge and agree that Philcon 2023 and the Philadelphia Science Fiction Society will not
+vendorsite="http://vendor"
+taxidlabel="NJ Sales Tax ID"
+taxidextra=
+reg_disclaimer=""
+pay_disclaimer=""
+artshow="artshow2020philcon.org"
+alley="artshow2020philcon.org"
+dealer="dealer2020philcon.org"
 addlaccounttext = ""
 artventortext = "vendors"
 [client]

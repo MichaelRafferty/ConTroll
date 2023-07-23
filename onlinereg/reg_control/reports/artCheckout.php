@@ -25,7 +25,7 @@ SELECT concat_ws('_', P.first_name, P.last_name)
 FROM artshow S 
 JOIN artist A ON (A.id=S.artid)
 JOIN perinfo P ON (P.id=A.artist)
-WHERE S.id=?;";
+WHERE S.id=?
 EOS;
 
 $nameR = fetch_safe_array(dbSafeQuery($nameQuery, 'i', array($artid)));
@@ -39,13 +39,13 @@ SELECT A.art_key, I.item_key, I.title,
     CASE I.quantity < I.original_qty
         WHEN true THEN I.original_qty - I.quantity
         ELSE 1 
-    END as number_sold
+    END as number_sold,
     CASE I.type
         WHEN 'art' THEN I.final_price
         ELSE I.sale_price
     END as item_price
 FROM artItems I
-JOIN artshow A ON (A.id=I.artshow)
+JOIN artshow A ON A.id=I.artshow
 WHERE I.artshow = ? AND (I.quantity < I.original_qty OR I.final_price IS NOT null OR status='Sold Bid Sheet');
 EOS;
 

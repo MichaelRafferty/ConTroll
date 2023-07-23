@@ -58,7 +58,7 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
 
             $dsn .= $emailconf['host'];
             $transport = Transport::fromDsn($dsn);
-            web_error_log("dsn = '$dsn'");
+            //web_error_log("dsn = '$dsn'");
         }
         catch (TransportExceptionInterface $e) {
             $return_arr['status'] = "error";

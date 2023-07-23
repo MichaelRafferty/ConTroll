@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS "reg" /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `reg`;
 -- MySQL dump 10.13  Distrib 8.0.31, for macos12 (x86_64)
 --
 -- Host: localhost    Database: reg
@@ -18,29 +16,27 @@ USE `reg`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `vendor_reg`
+-- Table structure for table `vendorSpacePrices`
 --
 
-DROP TABLE IF EXISTS `vendor_reg`;
+DROP TABLE IF EXISTS `vendorSpacePrices`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `vendor_reg` (
+CREATE TABLE `vendorSpacePrices` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `conid` int NOT NULL,
-  `type` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `total` int NOT NULL,
-  `registered` int DEFAULT '0',
-  `max_per` int DEFAULT '1',
-  `whole` int DEFAULT '1',
-  `price_full` int DEFAULT '0',
-  `price_1` int DEFAULT '0',
-  `price_2` int DEFAULT '0',
-  `price_3` int DEFAULT '0',
-  `virtual_type` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `spaceId` int NOT NULL,
+  `code` varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
+  `description` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
+  `units` decimal(4,2) DEFAULT '1.00',
+  `price` decimal(8,2) NOT NULL,
+  `includedMemberships` int NOT NULL DEFAULT '0',
+  `additionalMemberships` int NOT NULL DEFAULT '0',
+  `requestable` tinyint DEFAULT '1',
+  `sortOrder` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `conid` (`conid`,`type`),
-  CONSTRAINT `vendor_reg_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `vendorSpacePrices_space` (`spaceId`),
+  CONSTRAINT `vendorSpacePrices_space` FOREIGN KEY (`spaceId`) REFERENCES `vendorSpaces` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -52,4 +48,4 @@ CREATE TABLE `vendor_reg` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-04-14 10:05:37
+-- Dump completed on 2023-07-13 17:52:25

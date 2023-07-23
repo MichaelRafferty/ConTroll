@@ -246,9 +246,12 @@ function draw_record() {
         if (data['banned'] == 'Y') {
             html += `
             <button class="btn btn-danger btn-small" id="add_btn_1" onclick="rollover_member(0);">B</button>`;
-        } else {
+        } else if (data['memCategory'] == 'eligible') {
             html += `
             <button class="btn btn-success btn-small" id="add_btn_1" onclick="rollover_member(0);">Rollover</button>`;
+        } else {
+            html += `
+            <button class="btn btn-danger btn-small disabled" id="add_btn_1" onclick="javascript:void(0)">Not Eliglble: ` + data['memCategory'] + `</button>`;
         }
     } else {
         html += `
@@ -327,6 +330,7 @@ function addListIcon(cell, formatterParams, onRendered) { //plain text value
     var html = '';
     var banned = cell.getRow().getData().banned;
     var shortname = cell.getRow().getData().shortname;
+    var memCategory = cell.getRow().getData().memCategory;
     if (banned == undefined) {
         var tid = Number(cell.getRow().getData().tid);
         html = '<button type="button" class="btn btn-sm btn-success p-0" onclick="add_unpaid(' + tid + ')">Pay</button > ';
@@ -335,6 +339,8 @@ function addListIcon(cell, formatterParams, onRendered) { //plain text value
     if (banned == 'Y') {
         return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="rollover_member(' +
             cell.getRow().getData().index + ')">B</button>';
+    } else if (memCategory != 'eligible') {
+        return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0 disabled" onclick="javascript:void(0)">Not Eligible (' + memCategory + ')</button>';
     } else if (shortname === undefined || shortname === null) {
         html = '<button type="button" class="btn btn-sm btn-success p-0" onclick="rollover_member(' +
             cell.getRow().getData().index + ')">Rollover</button>';

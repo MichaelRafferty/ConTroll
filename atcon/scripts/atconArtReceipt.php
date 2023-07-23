@@ -1,6 +1,8 @@
 <?php
 require("../lib/base.php");
 
+$atcon_info = get_conf('atcon');
+
 function initReceipt() {
   $con = get_conf('con');
   $width = 30;
@@ -61,7 +63,7 @@ function closeReceipt($info) {
   $subCng = sprintf("%01.2f", $change);
   $pad = $width - strlen("Change:");
   $return .= "Change:" . sprintf("%${pad}s",$subCng) . "\n";
-  $return .= "\n\n\n\n\n";
+  $return .= "\n\n" . $atcon_info['endnote'] . "\n\n\n\n";
 
   return $return;
 }

@@ -19,9 +19,9 @@ if (!check_atcon('artinventory', $conid)) {
 }
 
 page_init($page, $tab,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css','css/atcon.css','css/registration.css'),
+    /* css */ array('https://unpkg.com/tabulator-tables@5.5.0/dist/css/tabulator.min.css','css/atcon.css','css/registration.css'),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js','js/atcon.js','js/artInventory.js')
+                    'https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js','js/atcon.js','js/artInventory.js')
     );
 
 db_connect();
@@ -81,7 +81,7 @@ SELECT S.art_key, V.name
 FROM artshow S
 JOIN artist A ON A.id=S.artid
 JOIN vendors V on V.id=A.vendor
-WHERE S.conid=?
+WHERE S.conid=? ORDER BY S.art_key
 EOS;
 $artistR = dbSafeQuery($artistQ, 'i', array($conid));
                                     ?>

@@ -10,12 +10,12 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 }
 
 page_init($page,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css',
-                //  'https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator_bootstrap5.min.css',
+    /* css */ array('https://unpkg.com/tabulator-tables@5.5.0/dist/css/tabulator.min.css',
+                //  'https://unpkg.com/tabulator-tables@5.5.0/dist/css/tabulator_bootstrap5.min.css',
                     'css/base.css',
                    ),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js',
+                    'https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js',
                     '/javascript/d3.js',
                     'js/base.js',
                     'js/admin.js',
@@ -122,7 +122,9 @@ $conid=$con['id'];
         foreach($sets_num as $n => $set) {
             $a = false;  // start as false, if there are no items in the set as a safeguard
             foreach ($set as $value) {
-                if (array_key_exists($value, $user_auth[$user['id']])) {
+                //web_error_log("userid = ". $user['id'] . " and value = $value"); 
+                if (array_key_exists($user['id'], $user_auth) && ($value != '') 
+                    && array_key_exists($value, $user_auth[$user['id']])) {
                     $a = true;  // first granted perm will set it to true
                 } else {
                     $a = false;  // first not granted perm will clear it to false and end the looping over the set

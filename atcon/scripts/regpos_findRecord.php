@@ -223,7 +223,7 @@ JOIN atcon_history h ON (m.regid = h.regid)
 WHERE h.action = 'attach'
 GROUP BY h.regid
 )
-SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r.paid AS priorPaid, r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, IFNULL(pc.printcount, 0) AS printcount,
+SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r1.paid AS priorPaid, r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, IFNULL(pc.printcount, 0) AS printcount,
                 IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, m.memGroup, rs.tid as rstid,
                 CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label
 FROM regids rs

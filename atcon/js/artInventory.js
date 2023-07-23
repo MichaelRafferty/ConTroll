@@ -116,6 +116,10 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
             }
             break;
         case 'Quicksale/Sold':
+            //inventory
+            if(mode == 'artinventory') {
+                html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button>';
+            }
             //sales or manager can release
             if(manager || (mode=='sales')) {
                 html += '<button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Release\')">Release</button>';
@@ -189,16 +193,17 @@ function build_table(tableData) {
             maxHeight: "600px",
             data: datatbl,
             layout: "fitColumns",
+            responsiveLayout:true,
             columns: [
-                { title: 'Key', field: 'id', hozAlign: "right", maxWidth: 50, headerWordWrap: true, headerFilter: true, tooltip: build_record_hover, },
-                { title: 'Artist', field: 'name', headerWordWrap: true, headerFilter: true, tooltip: true},
+                { title: 'Key', field: 'id', hozAlign: "right", width:65, headerWordWrap: true, headerFilter: true, tooltip: build_record_hover, responsive: 0},
+                { title: 'Artist', field: 'name', headerWordWrap: true, headerFilter: true, tooltip: true },
                 { title: 'Item', field: 'title', headerWordWrap: true, headerFilter: true, tooltip: true},
                 { title: 'Status', field: 'status', headerWordWrap: true, headerFilter: true, tooltip: true},
-                { title: 'Updated', field: 'time_updated', headerWordWrap: true, headerFilter: true, tooltip: true},
-                { title: 'Loc.', field: 'location', width: 50, headerWordWrap: true, headerFilter: true, tooltip: true},
+                { title: 'Updated', field: 'time_updated', headerWordWrap: true, headerFilter: true, tooltip: true, responsive: 2},
+                { title: 'Loc.', field: 'location', width: 40, headerWordWrap: true, headerFilter: true, tooltip: true},
                 {field: 'index', visible: false,},
-                { title: 'Qty.', field: 'qty', width: 50, headerSort: false, tooltip: true},
-                { title: 'Actions', width: 101, hozAlign: "center", headerFilter: false, headerSort: false, formatter: addInventoryIcon, },
+                { title: 'Qty.', field: 'qty', width: 40, headerSort: false, tooltip: true},
+                { title: 'Actions', minWidth: 125, hozAlign: "center", headerFilter: false, headerSort: false, formatter: addInventoryIcon, responsive:0},
             ],
         });
     } else { 
