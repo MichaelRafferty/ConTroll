@@ -5,8 +5,6 @@
 var badges = { 'count': 0, 'total': 0, 'agecount': [], 'badges': [] };
 // prices = array by ageType (memAge) of prices for badges
 var prices = {};
-// badgeref = array by ageType (memAge) of $# reference to html object
-var badgeref = {};
 var $purchase_label = 'purchase';
 // shortnames are the memLabel short names for the memAge
 var shortnames = {};
@@ -14,13 +12,12 @@ var shortnames = {};
 var anotherBadge = null;
 // newBadge = bootstrap 5 modal for the add badge modal popop
 var newBadge = null;
+// local variables for coupon processing
+var coupon = null;
 
-function setPrice(group, price, shortname) {
-    prices[group]= price;
-    badges['agecount'][group] = 0;
-    badgeref[group] = $('#' + group);
-    shortnames[group] = shortname;
-}
+// pricing area
+var memSummaryDiv = null;
+var totalCostDiv = null;
 
 $.fn.serializeObject = function()
 {
@@ -85,13 +82,10 @@ function process(formObj) {
 
     badges['count'] +=  1;
     badges['agecount'][formData['age']] += 1;
-    badges['total'] += prices[formData['age']];
+    //badges['total'] += prices[formData['age']];
     badges['badges'].push($.extend(true, {}, formData));
 
-    for (ageType in badgeref) {
-        badgeref[ageType].empty().text(badges['agecount'][ageType]);
-    }
-    total.empty().text(badges['total']);
+    repriceCart();
   
   var badgename = formData['badgename'];
   if(formData['badgename']=='') { 
@@ -132,8 +126,9 @@ function process(formObj) {
        
     var group_text = formData['age'].split('_');
     var age_text = group_text[group_text.length -1];
+    var age_color = 'text-white';
     if (age_text != 'adult' && age_text != 'military' && age_text != 'child' && age_text != 'youth' && age_text != 'kit' && age_text != 'student') {
-       //age_text = 'unknown';
+        age_color = 'text-black';
         labelDiv.addClass('unknown');
     } else {
         labelDiv.addClass(age_text)
@@ -149,20 +144,15 @@ function process(formObj) {
     blockDiv.append(optDiv);
 
     var labeldivtext = shortnames[formData['age']];
+    var addon = '';
     if (age_text == 'unknown')
         labeldivtext = 'Unknown';
-    //if (age_text == 'kit') {
-    //    labeldivtext = 'in tow';
-    //} else if (age_text == 'youth') {
-    //    labeldivtext = 'YA';
-    //}
-    labelDiv.html('<h4><span class="badge text-white"' + age_text + '">' + labeldivtext + '</span></h4>');
+    if (group_text[0] == 'addon')
+        addon += "<br/>&nbsp;Add On to<br/>&nbsp;Membership";
+
+    labelDiv.html('<h4><span class="badge ' + age_color + '"' + age_text + '">' + labeldivtext + '</span></h4>' + addon);
 
     $('#badge_list').append(badgeDiv);
-  //if(badgeDetails.width() > (badgeDiv.width()-65)) { 
-  //  badgeDiv.width(badgeDetails.width()+65);
-  //}
-
 
     updateAddr();
     $('#oldBadgeName').empty().append(name);
@@ -177,12 +167,9 @@ function removeBadge(index) {
 
     badges['agecount'][badge_age] -= 1;
     badges['count'] -= 1;
-    badges['total'] -= prices[badge_age];
+    //badges['total'] -= prices[badge_age];
 
-    for (ageType in badgeref) {
-        badgeref[ageType].empty().text(badges['agecount'][ageType]);
-    }
-    $('#total').empty().text(badges['total']);
+    repriceCart();
 
     badges['badges'][i]={};
     toRemove.remove();
@@ -290,6 +277,48 @@ function anotherBadgeModalClose() {
     }
 }
 
+function couponModalOpen() {
+    coupon.ModalOpen();
+}
+
+function couponModalClose() {
+    coupon.ModalClose();
+}
+
+function addCouponCode() {
+    coupon.AddCouponCode();
+}
+
+function removeCouponCode() {
+    coupon.RemoveCouponCode();
+}
+
+function repriceCart() {
+    //console.log(mtypes);
+    //console.log(badges);
+    var html = '';
+    var nbrs = badges['agecount'];
+    var total = 0;
+    for (var row in mtypes) {
+        var mbrtype = mtypes[row];
+        var num = 0;
+        if (nbrs[mbrtype['memGroup']] > 0) {
+            num = nbrs[mbrtype['memGroup']];
+        }
+        // need to set num here
+        if (mbrtype['discount'] > 0) {
+            html += mbrtype['shortname'] + ' Memberships: ' + num + ' x (' + mbrtype['price'] + ' - ' + mbrtype['discount'] + ' = ' + Number(mbrtype['price'] - mbrtype['discount']).toFixed(2) + ')'  + '<br/>';
+            total += num * Number(mbrtype['price'] - mbrtype['discount']).toFixed(2)
+        } else {
+            html += mbrtype['shortname'] + ' Memberships: ' + num + ' x ' + mbrtype['price'] + '<br/>';
+            total += num * Number(mbrtype['price']).toFixed(2)
+        }
+    }
+    memSummaryDiv.innerHTML = html;
+    badges['total'] = total;
+    totalCostDiv.innerHTML = "Total Cost: $" + total.toFixed(2);
+}
+
 function togglePopup() {
     if (anotherBadge != null) {
         anotherBadge.hide();
@@ -308,6 +337,20 @@ window.onload = function () {
     var new_badge = document.getElementById('newBadge');
     if (new_badge != null) {
         newBadge = new bootstrap.Modal(new_badge, { focus: true, backdrop: 'static' });
-        newBadge.show();
+        //newBadge.show();
     }
+
+    coupon = new Coupon();
+    memSummaryDiv = document.getElementById('memSummaryDiv');
+    totalCostDiv = document.getElementById('totalCostDiv');
+
+    for (var row in mtypes) {
+        var mbrtype = mtypes[row];
+        var group = mbrtype['memGroup'];
+        prices[group]= Number(mbrtype['price']);
+        badges['agecount'][group] = 0;
+        shortnames[group] = mbrtype['shortname'];
+    }
+
+    repriceCart();
 }

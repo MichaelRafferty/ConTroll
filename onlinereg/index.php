@@ -13,7 +13,7 @@ $condata = get_con();
 
 $membershiptypes = array();
 $priceQ = <<<EOS
-SELECT memGroup, label, shortname, sort_order, price
+SELECT id, memGroup, label, shortname, sort_order, price, memAge, memCategory
 FROM memLabel
 WHERE
     conid=?
@@ -25,9 +25,9 @@ ORDER BY sort_order, price DESC
 EOS;
 $priceR = dbSafeQuery($priceQ, "i", array($condata['id']));
 while($priceL = fetch_safe_assoc($priceR)) {
-    $membershiptypes[] = array('memGroup' => $priceL['memGroup'], 'shortname' => $priceL['shortname'], 'price' => $priceL['price'], 'label' => $priceL['label']);
+    $membershiptypes[] = $priceL;
 }
-
+$js = "var mtypes = " . json_encode($membershiptypes);
 $startdate = new DateTime($condata['startdate']);
 $enddate = new DateTime($condata['enddate']);
 $daterange = $startdate->format("F j-") . $enddate->format("j, Y");
@@ -36,15 +36,13 @@ $altstring = $con['org'] . '. ' . $condata['label'] . ' . ' . $daterange;
 $onsitesale = $startdate->format("l, F j");
 
 // overall header HTML and main body
-  ol_page_init($condata['label'] . ' Online Registration');
+  ol_page_init($condata['label'] . ' Online Registration', $js);
 ?>
- <body class="regPaybody">
+<body class="regPaybody">
     <div class="container-fluid">
         <?php if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') {
                   if (array_key_exists('logoalt', $ini)) {
                       $altstring=$ini['logoalt'];
-                  } else {
-                      $altstring = 'Logo';
                   }
          ?>
         <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring ;?>"/>
@@ -82,6 +80,36 @@ $onsitesale = $startdate->format("l, F j");
             </div>
         </div>           
     </div>
+      <!--- add coupon modal popup -->
+      <div class='modal modal-lg' id='addCoupon' tabindex='-2' aria-labelledby='Add Coupon' aria-hidden='true'>
+          <div class='modal-dialog'>
+              <div class='modal-content'>
+                  <div class='modal-header'>
+                      <div class='modal-title' id="couponHeader">
+                          Add Coupon to Order
+                      </div>
+                  </div>
+                  <div class='modal-body'>
+                      <div class="row">
+                          <div class="col-sm-auto p-0 ms-4 me-2">
+                              <label for="couponCode">Coupon Code:</label>
+                          </div>
+                          <div class="col-sm-auto p-0">
+                              <input type="text" size="16" maxlength="16" id="couponCode" name="couponCode"/>
+                          </div>
+                      </div>
+                      <div class="row">
+                          <div class="col-sm-12" id="couponMsgDiv"></div>
+                      </div>
+                  </div>
+                  <div class='modal-footer'>
+                      <button type='button' onclick='removeCouponCode();' id="removeCouponBTN" hidden>Remove Coupon</button>
+                      <button type='button' onclick='addCouponCode();' id="addCouponBTN">Add Coupon</button>
+                      <button type='button' onclick='couponModalClose();'>Cancel</button>
+                  </div>
+              </div>
+          </div>
+      </div>
     <!--- New Badge Modal Popup -->
     <div class="modal modal-lg fade" id="newBadge" tabindex="-1" aria-labelledby="New Membership" aria-hidden="true" style='--bs-modal-width: 80%;'>
         <div class="modal-dialog">
@@ -207,7 +235,7 @@ $onsitesale = $startdate->format("l, F j");
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Membership Type</span></label><br/>
-                                    <select id='memType' name='age' style="width:300px;" tabindex='15' title='Age as of <?php echo substr($condata['startdate'], 0, 10); ?> (the first day of the convention)'>
+                                    <select id='memType' name='age' style="width:500px;" tabindex='15' title='Age as of <?php echo substr($condata['startdate'], 0, 10); ?> (the first day of the convention)'>
                                         <?php foreach ($membershiptypes as $memType) { ?>
                                             <option value='<?php echo $memType['memGroup'];?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price'];?>)</option>
                                         <?php    } ?>
@@ -314,11 +342,7 @@ $onsitesale = $startdate->format("l, F j");
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-sm-12">
-                                 <?php foreach ($membershiptypes as $memType) { ?>
-                                    <?php echo $memType['shortname']; ?> Memberships <span id='<?php echo $memType['memGroup'];?>'>0</span> x $<?php echo $memType['price']; ?><br/>
-                                 <?php    } ?>
-                             </div>
+                             <div class="col-sm-12" id="memSummaryDiv"></div>
                          </div>
                          <div class="row">
                              <div class="col-sm-12 ms-0 me-0 p-0">
@@ -326,12 +350,17 @@ $onsitesale = $startdate->format("l, F j");
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-sm-8">
-                                Total Cost: $<span id='total'>0</span><br/>
+                             <div class="col-sm-4" id="totalCostDiv"></div>
+                             <div class="col-sm-auto ms-0 me-2" id="couponNameDiv"></div>
+                             <div class='col-sm-auto ms-auto me-2 p-0' id="addCouponDiv">
+                                 <button onclick='couponModalOpen();' id="couponBTN">Add Coupon</button>
                              </div>
-                             <div class="col-sm-auto ms-auto me-2 p-0">
+                             <div class="col-sm-auto ms-0 me-2 p-0">
                                   <button onclick='newBadgeModalOpen();'>Add Memberships</button>
                              </div>
+                         </div>
+                         <div class='row'>
+                             <div class="col-sm-12" id="couponDetailDiv"></div>
                          </div>
                          <div class="row">
                              <div class="col-sm-12 ms-0 me-0 p-0">
@@ -489,16 +518,5 @@ We will post a notice when online registration opens on the
 <p class="text-body"><a href="<?php echo $con['policy'];?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.<br/>
 For more information about <?php echo $con['conname']; ?> please email <a href="mailto:<?php echo $con['infoemail']; ?>"><?php echo $con['infoemail']; ?></a>.<br/>
 For questions about <?php echo $con['conname']; ?> Registration, email <a href="mailto:<?php echo $con['regemail']; ?>"><?php echo $con['regemail']; ?></a>.</p>
-
-<script>
-  <?php
-  foreach($membershiptypes as $memType) {
-    $grp = $memType['memGroup'];
-    $price = $memType['price'];
-    $shortname = $memType['shortname'];
-    echo "setPrice('$grp', $price, '$shortname');";
-  }
-  ?>
-</script>
 </body>
 </html>

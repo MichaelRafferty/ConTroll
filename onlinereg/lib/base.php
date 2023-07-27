@@ -15,8 +15,8 @@ function redirect_https() {
     return $ini;
 }
 
-function ol_page_init($title) {
-echo <<<EOF
+function ol_page_init($title, $js = '') {
+    echo <<<EOF
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,7 +31,15 @@ echo <<<EOF
     <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js' integrity='sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz' crossorigin='anonymous'></script>
     <script type='text/javascript' src='javascript/jquery-min-3.60.js'></script>
     <script type='text/javascript' src='javascript/jquery-ui.min-1.13.1.js'></script>
+    <script type='text/javascript' src='javascript/coupon.js'></script>
     <script type='text/javascript' src='javascript/store.js'></script>
-</head>
 EOF;
+    if ($js != '') {
+        echo <<<EOF
+<script type='text/javascript'>
+$js;
+</script>
+EOF;
+    }
+    echo "\n</head>\n";
 }
