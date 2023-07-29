@@ -47,7 +47,7 @@ class Coupon {
         if (this.#curCoupon == null)
             return 0;
 
-        if (this.#curCoupon['minMembersiphs'] == null)
+        if (this.#curCoupon['minMemberships'] == null)
             return 0;
 
         return this.#curCoupon['minMemberships'];

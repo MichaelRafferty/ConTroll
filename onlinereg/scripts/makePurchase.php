@@ -1,23 +1,27 @@
 <?php
 require_once('../lib/base.php');
-require_once(__DIR__ . "/../../lib/log.php");
+require_once("../../lib/log.php");
 require_once("../../lib/cc__load_methods.php");
+require_once("../../lib/coupon.php");
 require_once("../../lib/email__load_methods.php");
 require_once "../lib/email.php";
 
-if(!isset($_POST) || !isset($_POST['badgelist'])) {
+if (!isset($_POST) || !isset($_POST['badges'])) {
     ajaxSuccess(array('status'=>'error', 'error'=>"Error: No Info Passed")); exit();
 }
 
 // input parameters
-$badgestruct =($_POST['badges'];
+$badgestruct = $_POST['badges'];
+$couponCode = $_POST['couponCode'];
+$nonce = $_POST['nonce'];
+$purchaseform = $_POST['purchaseform'];
 $badges = $badgestruct['badges'];
-if (count($badges) == 0)) {
+
+if (count($badges) == 0) {
     ajaxSuccess(array('status' => 'error', 'error' => 'Error: No Badges Entered'));
     exit();
 }
 
-db_connect();
 $ccauth = get_conf('cc');
 load_cc_procs();
 load_email_procs();
@@ -26,7 +30,17 @@ $condata = get_con();
 $log = get_conf('log');
 $con = get_conf('con');
 logInit($log['reg']);
+//web_error_log("badgestruct");
+//var_error_log($badgestruct);
+//web_error_log("couponCode");
+//var_error_log($couponCode);
+//web_error_log("nonce");
+//var_error_log($nonce);
+//web_error_log("purchaseform");
+//var_error_log($purchaseform);
 
+
+// get the membership prices
 $prices = array();
 $memId = array();
 $priceQ = <<<EOQ
@@ -46,6 +60,23 @@ while($priceL = fetch_safe_assoc($priceR)) {
   $memId[$priceL['memGroup']] = $priceL['id'];
   $counts[$priceL['memGroup']] = 0;
 }
+;
+// get the coupon data, if any
+$coupon = null;
+if ($couponCode !== null && $couponCode != '') {
+    $result = load_coupon_data($couponCode);
+    if ($result['status'] == 'error') {
+        ajaxSuccess($result);
+        exit();
+    }
+    $coupon = $result['coupon'];
+    //web_error_log("coupon:");
+    //var_error_log($coupon);
+}
+
+
+ajaxSuccess(array('status' => 'echo', 'message' => 'testing'));
+exit();
 
 $people = array();
 
@@ -232,8 +263,6 @@ $badgeResults = array();
 while ($row = fetch_safe_assoc($all_badgeR)) {
   $badgeResults[count($badgeResults)] = $row;
 }
-
-
 
 $results = array(
   'transid' => $transid,

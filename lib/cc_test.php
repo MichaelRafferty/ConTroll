@@ -16,11 +16,11 @@
 function draw_cc_html($cc, $postal_code = "--") {
 ?>
 <p>This is a test site, it doesn't really take credit cards</p>
-Scenario: <select name='ccnum'>
+Scenario: <select name='ccnum' id="test_ccnum">
 	<option value=1>1 - Success</option>
 	<option value=2>2 - Failure</option>
 </select>
-<input type="submit" id="purchase" onclick="makePurchase()" value="Purchase">
+<input type="submit" id="purchase" onclick="makePurchase('test_ccnum', 'purchase')" value="Purchase">
 <?php
 };
 

@@ -16,7 +16,7 @@ function draw_cc_html($cc, $postal_code = "--") {
   
     <form id="payment-form">
         <div class="container-fluid overflow-hidden" id="card-container"></div>
-        <button id="card-button" type="button" onclick="makePurchase()">Purchase</button>
+        <button id="card-button" type="button" onclick="makePurchase('1', 'card-button')">Purchase</button>
     </form>
 <?php
 };

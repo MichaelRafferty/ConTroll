@@ -230,6 +230,7 @@ function mp_ajax_success(data, textStatus, jqXHR) {
         $('#' + $purchase_label).removeAttr("disabled");
     } else if (data['status'] == 'echo') {
         console.log(data);
+        $('#' + $purchase_label).removeAttr("disabled");
     } else {
         // for now, allow me to repeat submit it.
         //window.location.href = "receipt.php?trans=" + data['trans'];
@@ -239,7 +240,10 @@ function mp_ajax_success(data, textStatus, jqXHR) {
     
 function makePurchase(token, label) {
     if (label != '') {
-        purchase_label = label;
+        $purchase_label = label;
+    }
+    if (token == 'test_ccnum') {  // this is the test form
+        token = document.getElementById(token).value;
     }
 
     $('#' + $purchase_label).attr("disabled", "disabled");

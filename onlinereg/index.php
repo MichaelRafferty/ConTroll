@@ -462,7 +462,7 @@ $onsitesale = $startdate->format("l, F j");
                  <p class="text-body">We Accept</p>
                  <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/><br/>
 <?php
-      if($db_ini['test']==1) {
+      if($ini['test']==1) {
 ?>
                  <h2 class='text-danger'><strong>This won't charge your credit card.<br/>It also won't get you badges.</strong></h2>
     <?php
