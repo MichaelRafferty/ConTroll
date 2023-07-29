@@ -191,7 +191,7 @@ $onsitesale = $startdate->format("l, F j");
                                 </div>
                             </div>
                             <div class="row">
-                                <div col="col-12-sm">
+                                <div col="col-sm-12">
                                     <p class="text-body">Contact Information
                                      (<a href='<?php echo $con['privacypolicy'];?>' target='_blank'><?php echo $con['privacytext'];?></a>).</p>
 
@@ -443,17 +443,17 @@ $onsitesale = $startdate->format("l, F j");
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-12 ms-0 me-0 p-0">
+                             <div class="col-sm-12 ms-0 me-0 p-0">
                                  <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-12 ms-0 me-0 p-0">
+                             <div class="col-sm-12 ms-0 me-0 p-0">
                                    <?php draw_cc_html($cc); ?>
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-12 ms-0 me-0 p-0">
+                             <div class="col-sm-12 ms-0 me-0 p-0">
                                  <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
                              </div>
                          </div>
