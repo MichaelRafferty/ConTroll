@@ -43,7 +43,7 @@ function cc_charge_purchase($results, $ccauth) {
     //$con = get_conf('con');
     $reg = get_conf('reg');
 
-    if(!isset($_POST['ccnum'])) {
+    if(!isset($_POST['nonce'])) {
 		ajaxSuccess(array('status'=>'error','data'=>'missing CC information'));
 		exit();
 	}
@@ -57,12 +57,12 @@ function cc_charge_purchase($results, $ccauth) {
     } else {
         $category = 'reg';
     }
-	switch($_POST['ccnum'][0]) {
+	switch($_POST['nonce'][0]) {
 		case '1': // success
 			$rtn['amount'] = $results['total'];
 			$rtn['txnfields'] =  array('transid','type','category','description', 'source','amount', 'txn_time', 'cc','cc_txn_id','cc_approval_code','receipt_id');
 			$rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 's', 's', 's', 's', 's');
-			$rtn['tnxdata'] = array($results['transid'],'credit',$category, 'test registration', 'online', $results['total'], '00-00-00 00:00:00',$_POST['ccnum'][0],'txn id','000000','txn_id');
+			$rtn['tnxdata'] = array($results['transid'],'credit',$category, 'test registration', 'online', $results['total'], '00-00-00 00:00:00',$_POST['nonce'],'txn id','000000','txn_id');
             $rtn['url'] = 'no test receipt';
 			return $rtn;
 		default: 

@@ -16,6 +16,7 @@ $couponCode = $_POST['couponCode'];
 $nonce = $_POST['nonce'];
 $purchaseform = $_POST['purchaseform'];
 $badges = $badgestruct['badges'];
+$webtotal = $badgestruct['total'];
 
 if (count($badges) == 0) {
     ajaxSuccess(array('status' => 'error', 'error' => 'Error: No Badges Entered'));
@@ -43,8 +44,13 @@ logInit($log['reg']);
 // get the membership prices
 $prices = array();
 $memId = array();
+$counts = array();
+$discounts = array();
+$primary = array();
+$map = array();
+
 $priceQ = <<<EOQ
-SELECT m.id, m.memGroup, m.label, m.shortname, m.price
+SELECT m.id, m.memGroup, m.label, m.shortname, m.price, m.memCategory
 FROM memLabel m
 WHERE
     m.conid=?
@@ -53,14 +59,12 @@ WHERE
     AND enddate > current_timestamp()
 ;
 EOQ;
-$counts = array();
+$mtypes = array();
 $priceR = dbSafeQuery($priceQ, 'i', array($condata['id']));
 while($priceL = fetch_safe_assoc($priceR)) {
-  $prices[$priceL['memGroup']] = $priceL['price'];
-  $memId[$priceL['memGroup']] = $priceL['id'];
-  $counts[$priceL['memGroup']] = 0;
+    $mtypes[$priceL['id']] = $priceL;
 }
-;
+
 // get the coupon data, if any
 $coupon = null;
 if ($couponCode !== null && $couponCode != '') {
@@ -74,29 +78,73 @@ if ($couponCode !== null && $couponCode != '') {
     //var_error_log($coupon);
 }
 
+// now apply the price discount to the array
+if ($coupon !== null) {
+    $mtypes =  apply_coupon_data($mtypes, $coupon);
+}
 
-ajaxSuccess(array('status' => 'echo', 'message' => 'testing'));
-exit();
+
+foreach ($mtypes as $id => $priceL) {
+    $map[$priceL['id']] = $priceL['memGroup'];
+    $prices[$priceL['memGroup']] = $priceL['price'];
+    $memId[$priceL['memGroup']] = $priceL['id'];
+    $counts[$priceL['memGroup']] = 0;
+    if ($coupon !== null) {
+        $discounts[$priceL['memGroup']] = $priceL['discount'];
+        $primary[$priceL['memGroup']] = $priceL['primary'];
+    } else {
+        $primary[$priceL['memGroup']] = true;
+    }
+}
+
+$num_primary = 0;
+$total = 0;
+// compute the pre-discount total to see if the ca
+foreach ($badges as $badge) {
+    if(!isset($badge) || !isset($badge['age'])) { continue; }
+    if (array_key_exists($badge['age'], $counts)) {
+        if ($primary[$badge['age']]) {
+            $num_primary++;
+        }
+        $total += $prices[$badge['age']];
+        $counts[$badge['age']]++;
+    }
+}
+
+// now figure out if coupon applies
+$apply_discount = coupon_met($coupon, $total, $num_primary, $map, $counts);
 
 $people = array();
 
 $total = 0;
+$preDiscount = 0;
 $count = 0;
-
+$totalDiscount = 0;
 $newid_list = "";
 
-// check that we got valid total from the post before anything is inserted into the database
+// check that we got valid total from the post before anything is inserted into the database, the empty rows are deleted badges from the site
 foreach ($badges as $badge) {
     if(!isset($badge) || !isset($badge['age'])) { continue; }
     if (array_key_exists($badge['age'], $counts)) {
-        $total += $prices[$badge['age']];
+        $price = $prices[$badge['age']];
+        $preDiscount += $price;
+        if ($apply_discount) {
+            $price -= $discounts[$badge['age']];
+            $totalDiscount += $discounts[$badge['age']];
+        }
+        $total += $price;
     }
 }
+if ($apply_discount) {
+    $discount = apply_overall_discount($coupon, $total);
+    $total -= $discount;
+    $totalDiscount += $discount;
+}
 
-$total=round($total, 2);
+$total = round($total, 2);
 
-if($_POST['total'] != $total) {
-    error_log("bad total: post=" . $_POST['total'] . ", calc=" . $total);
+if($webtotal != $total) {
+    error_log("bad total: post=" . $webtotal . ", calc=" . $total);
     ajaxSuccess(array('status'=>'error', 'data'=>'Unable to process, bad total sent to Server'));
     exit();
 }
@@ -104,12 +152,12 @@ if($_POST['total'] != $total) {
 foreach ($badges as $badge) {
   if(!isset($badge) || !isset($badge['age'])) { continue; }
   if (array_key_exists($badge['age'], $counts)) {
-      $counts[$badge['age']]++;
-
       $people[$count] = array(
-        'info'=>$badge,
-        'price'=>$prices[$badge['age']],
-        'memId'=>$memId[$badge['age']]
+          'info'=>$badge,
+          'price'=>$prices[$badge['age']],
+          'memId'=>$memId[$badge['age']],
+          'coupon' => $coupon,
+          'discount' => $apply_discount ? $discounts[$badge['age']] : 0,
         );
 
       if ($badge['share'] == "") { $badge['share'] = 'Y'; }
@@ -214,11 +262,11 @@ EOS;
 }
 
 $transQ = <<<EOS
-INSERT INTO transaction(newperid, perid, price, type, conid)
-    VALUES(?, ?, ?, ?, ?);
+INSERT INTO transaction(newperid, perid, price, couponDiscount, type, conid, coupon)
+    VALUES(?, ?, ?, ?, ?, ?, ?);
 EOS;
 
-$transid= dbSafeInsert($transQ, "iidsi", array($people[0]['newid'], $id, $total, 'website', $condata['id']));
+$transid= dbSafeInsert($transQ, "iiddsii", array($people[0]['newid'], $id, $preDiscount, $totalDiscount, 'website', $condata['id'], $coupon));
 
 $newid_list .= "transid='$transid'";
 
@@ -227,10 +275,10 @@ $person_update = "UPDATE newperson SET transid='$transid' WHERE $newid_list;";
 dbQuery($person_update);
 
 $badgeQ = <<<EOS
-INSERT INTO reg(conid, newperid, perid, create_trans, price, memID)
-VALUES(?, ?, ?, ?, ?, ?);
+INSERT INTO reg(conid, newperid, perid, create_trans, price, couponDiscount, coupon, memID)
+VALUES(?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-$badge_types = "iiiidi";
+$badge_types = "iiiiddii";
 
 foreach($people as $person) {
     $badge_data = array(
@@ -239,6 +287,8 @@ foreach($people as $person) {
       $person['perid'],
       $transid,
       $person['price'],
+      $person['discount'],
+      $coupon,
       $person['memId'],
       );
 
@@ -270,7 +320,7 @@ $results = array(
   'price' => $total,
   'badges' => $badgeResults,
   'total' => $total,
-  'nonce' => $_POST['nonce']
+  'nonce' => $nonce,
   );
 
 //log requested badges
@@ -299,14 +349,14 @@ if($approved_amt == $total) {
     $txnUpdate .= "complete_date=current_timestamp(), ";
 }
 
-$txnUpdate .= "paid=? WHERE id=?;";
-$txnU = dbSafeCmd($txnUpdate, "di", array($approved_amt, $transid) );
+$txnUpdate .= "paid=?, couponDiscount = ? WHERE id=?;";
+$txnU = dbSafeCmd($txnUpdate, "ddi", array($approved_amt, $totalDiscount, $transid) );
 
-$regQ = "UPDATE reg SET paid=price WHERE create_trans=?;";
+$regQ = "UPDATE reg SET paid=price-couponDiscount WHERE create_trans=?;";
 dbSafeCmd($regQ, "i", array($transid));
 
 
-$return_arr = send_email($con['regadminemail'], trim($_POST['cc_email']), /* cc */ null, $condata['label']. " Online Registration Receipt",  getEmailBody($transid), /* htmlbody */ null);
+$return_arr = send_email($con['regadminemail'], trim($purchaseform['cc_email']), /* cc */ null, $condata['label']. " Online Registration Receipt",  getEmailBody($transid), /* htmlbody */ null);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];
