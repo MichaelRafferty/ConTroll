@@ -232,8 +232,7 @@ function mp_ajax_success(data, textStatus, jqXHR) {
         console.log(data);
         $('#' + $purchase_label).removeAttr("disabled");
     } else {
-        // for now, allow me to repeat submit it.
-        //window.location.href = "receipt.php?trans=" + data['trans'];
+        window.location.href = "receipt.php?trans=" + data['trans'];
         $('#' + $purchase_label).removeAttr("disabled");
     }
 }
@@ -385,7 +384,7 @@ window.onload = function () {
     var new_badge = document.getElementById('newBadge');
     if (new_badge != null) {
         newBadge = new bootstrap.Modal(new_badge, { focus: true, backdrop: 'static' });
-        //newBadge.show();
+        newBadge.show();
     }
 
     coupon = new Coupon();
