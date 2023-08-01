@@ -239,7 +239,7 @@ EOF;
         break;
     case "overview":
         $query = <<<EOF
-SELECT memCategory AS cat, memType AS type, memAge AS age, label, cnt
+SELECT memCategory AS cat, memType AS type, memAge AS age, label, SUM(cnt) AS cnt, SUM(paid) AS paid
 FROM (
     SELECT COUNT(R.id) AS cnt, M.sort_order, M.memCategory, M.memType, M.memAge, M.shortname AS label, SUM(R.paid) AS paid
     FROM reg R
@@ -248,7 +248,8 @@ FROM (
     GROUP BY M.sort_order, M.memCategory, M.memType, M.memAge, M.shortname
     ) m
 WHERE memCategory is NOT NULL
-ORDER BY paid DESC, sort_order ASC, memCategory DESC, memType ASC, memAge ASC;
+GROUP BY cat, memType, memAge, label
+ORDER BY paid DESC, memCategory DESC, memType ASC, memAge ASC;
 EOF;
         $response['query'] = $query;
         $res = dbSafeQuery($query, 'i', array($conid));
