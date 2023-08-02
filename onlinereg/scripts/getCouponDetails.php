@@ -12,7 +12,10 @@ $condata = get_con();
 $con = get_conf('con');
 
 $code = $_POST['code'];
+$serial = null;
+if (array_key_exists('serial', $_POST))
+    $serial = $_POST['serial'];
 
-$results = load_coupon_data($code);
+$results = load_coupon_data($code, $serial);
 ajaxSuccess($results);
 ?>

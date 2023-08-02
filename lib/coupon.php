@@ -2,7 +2,7 @@
 //  coupon.php - library of modules related to finding/repricing coupon based orders
 
 // retrieve the coupon data from the database
-function load_coupon_data($couponCode): array
+function load_coupon_data($couponCode, $serial = null): array
 {
     $con = get_conf('con');
 
@@ -12,23 +12,27 @@ function load_coupon_data($couponCode): array
     }
 
     $couponQ = <<<EOS
-SELECT c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.memId, c.minMemberships, c.maxMemberships, c.minTransaction, c.maxTransaction, c.maxRedemption,
-    count(t.id) AS redeemedCount, m.memAge, m.label,
-    CASE WHEN c.startDate > now() THEN 'early' ELSE null END as start, 
-    CASE WHEN c.endDate <= now() THEN 'expired' ELSE null END as end
+SELECT c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.memId, c.minMemberships, c.maxMemberships,
+       c.minTransaction, c.maxTransaction, c.maxRedemption,
+       count(t.id) AS redeemedCount, m.memAge, m.label,
+       CASE WHEN c.startDate > now() THEN 'early' ELSE null END as start, 
+       CASE WHEN c.endDate <= now() THEN 'expired' ELSE null END as end,
+       k.id as keyId, k.randId, k.usedBy
 FROM coupon c
 LEFT OUTER JOIN memList m ON (c.memId = m.id)
 LEFT OUTER JOIN transaction t ON (t.coupon = c.id and t.complete_date is not null)
-WHERE c.conid = ? AND code = ? AND oneUse = 0 /*AND c.startDate <= now() AND c.endDate >= now()*/
-GROUP BY c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.memId, c.minMemberships, c.maxMemberships, c.minTransaction, c.maxTransaction, c.maxRedemption, m.memAge, m.label
+LEFT OUTER JOIN couponKeys k ON (k.couponId = c.id and k.randId = ?)
+WHERE c.conid = ? AND code = ?
+GROUP BY c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.memId, c.minMemberships, c.maxMemberships,
+         c.minTransaction, c.maxTransaction, c.maxRedemption, m.memAge, m.label,
+         k.id, k.randId, k.usedBy, c.startDate, c.endDate
 ORDER BY c.startDate;
 EOS;
-    $res = dbSafeQuery($couponQ, 'is', array($con['id'], $couponCode));
+    $res = dbSafeQuery($couponQ, 'sis', array($serial, $con['id'], $couponCode));
     if ($res === false) {
         return array('status'=>'error', 'error'=>'Database Coupon Issue');
     }
 
-// for now, I am not supporting one use coupons, we'll get to that in a moment
     if ($res->num_rows == 0) {
         return array('status'=>'error', 'error'=>'Error: Coupon not found');
     }
@@ -36,22 +40,20 @@ EOS;
     $coupon = NULL;
     $ec = '';
     while ($l = fetch_safe_assoc($res)) {
-        if ($l['start'] == null and $l['end'] == null) {
+        // this coupon is valid now as it returns Early, NULL, expired as values in the query
+        if ($l['start'] == null and $l['end'] == null && $l['usedBy'] == null) {
             $coupon = $l;
-            $ec = '';
-            break;
+            return array('status'=>'success', 'coupon'=> $coupon);
         }
         if ($l['start'] != null)
             $ec = 'Coupon has not started yet, starts ' . $l['startDate'];
         if ($l['end'] != null)
             $ec = 'Coupon is expired';
+        if ($l['usedBy'] != null)
+            $ec = 'One use coupon has already been redeemed';
     }
 
-    if ($ec != '') {
-        return array('status'=>'error', 'error'=> $ec);
-    }
-
-    return array('status'=>'success', 'coupon'=> $coupon);
+    return array('status'=>'error', 'error'=> $ec);
 }
 
 // apply coupon data to mytpe array

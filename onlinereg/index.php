@@ -9,6 +9,20 @@ $ini = get_conf('reg');
 load_cc_procs();
 
 $condata = get_con();
+$urlCouponCode = null;
+$urlSerialNum = null;
+$serialHidden = 'hidden';
+if ($_GET["offer"]) {
+    $offer_code = $_GET["offer"];
+    $offer_code = base64_decode_url($offer_code);
+    if ($offer_code) {
+        $urlCouponCode = strtok($offer_code, '~!~');
+        $urlSerialNum = strtok('~!~');
+        if ($urlSerialNum) {
+            $serialHidden = '';
+        }
+    }
+}
 
 $membershiptypes = array();
 $priceQ = <<<EOS
@@ -89,12 +103,20 @@ $onsitesale = $startdate->format("l, F j");
                       </div>
                   </div>
                   <div class='modal-body'>
-                      <div class="row">
+                      <div class="row mb-1">
                           <div class="col-sm-auto p-0 ms-4 me-2">
                               <label for="couponCode">Coupon Code:</label>
                           </div>
                           <div class="col-sm-auto p-0">
-                              <input type="text" size="16" maxlength="16" id="couponCode" name="couponCode"/>
+                              <input type="text" size="16" maxlength="16" id="couponCode" name="couponCode" value="<?php echo $urlCouponCode; ?>"/>
+                          </div>
+                      </div>
+                      <div class='row mt-1 mb-1' id="serialDiv" <?php echo $serialHidden; ?>>
+                          <div class='col-sm-auto p-0 ms-4 me-2'>
+                              <label for='couponSerial'>Serial Number:</label>
+                          </div>
+                          <div class='col-sm-auto p-0'>
+                              <input type='text' size='16' maxlength='16' id='couponSerial' name='couponSerial' value="<?php echo $urlSerialNum; ?>"/>
                           </div>
                       </div>
                       <div class="row">

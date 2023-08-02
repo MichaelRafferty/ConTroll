@@ -384,12 +384,12 @@ window.onload = function () {
     var new_badge = document.getElementById('newBadge');
     if (new_badge != null) {
         newBadge = new bootstrap.Modal(new_badge, { focus: true, backdrop: 'static' });
-        newBadge.show();
     }
 
     coupon = new Coupon();
     memSummaryDiv = document.getElementById('memSummaryDiv');
     totalCostDiv = document.getElementById('totalCostDiv');
+
 
     for (var row in mtypes) {
         var mbrtype = mtypes[row];
@@ -398,6 +398,9 @@ window.onload = function () {
         badges['agecount'][group] = 0;
         shortnames[group] = mbrtype['shortname'];
     }
+
+    if (coupon.couponError() == false)
+        newBadge.show();
 
     repriceCart();
 }

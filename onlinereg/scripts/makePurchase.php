@@ -13,6 +13,7 @@ if (!isset($_POST) || !isset($_POST['badges'])) {
 // input parameters
 $badgestruct = $_POST['badges'];
 $couponCode = $_POST['couponCode'];
+$couponSerial = $_POST['couponSerial'];
 $nonce = $_POST['nonce'];
 $purchaseform = $_POST['purchaseform'];
 $badges = $badgestruct['badges'];
@@ -67,8 +68,8 @@ while($priceL = fetch_safe_assoc($priceR)) {
 
 // get the coupon data, if any
 $coupon = null;
-if ($couponCode !== null && $couponCode != '') {
-    $result = load_coupon_data($couponCode);
+if ($couponCode !== null) {
+    $result = load_coupon_data($couponCode, $couponSerial);
     if ($result['status'] == 'error') {
         ajaxSuccess($result);
         exit();
@@ -82,7 +83,6 @@ if ($couponCode !== null && $couponCode != '') {
 if ($coupon !== null) {
     $mtypes =  apply_coupon_data($mtypes, $coupon);
 }
-
 
 foreach ($mtypes as $id => $priceL) {
     $map[$priceL['id']] = $priceL['memGroup'];
@@ -355,6 +355,11 @@ $txnU = dbSafeCmd($txnUpdate, "ddi", array($approved_amt, $totalDiscount, $trans
 $regQ = "UPDATE reg SET paid=price-couponDiscount WHERE create_trans=?;";
 dbSafeCmd($regQ, "i", array($transid));
 
+// mark coupon used
+if ($coupon !== null && $coupon['keyId'] !== null) {
+    $cupQ = 'UPDATE couponKeys SET usedBy = ?, useTS = current_timestamp WHERE id = ?';
+    dbSafeCmd($cupq, 'ii', array($transid, $coupon['keyId']));
+}
 
 $return_arr = send_email($con['regadminemail'], trim($purchaseform['cc_email']), /* cc */ null, $condata['label']. " Online Registration Receipt",  getEmailBody($transid), /* htmlbody */ null);
 

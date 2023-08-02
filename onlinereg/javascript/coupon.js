@@ -4,7 +4,9 @@
 class Coupon {
 // coupon items
     #couponCode = null;
+    #couponSerial = null;
     #couponMsgDiv = null;
+    #serialDiv = null;
     #addCouponBTN = null;
     #couponBTN = null;
     #couponNameDiv = null;
@@ -12,6 +14,7 @@ class Coupon {
     #couponHeader = null;
     #removeCouponBTN = null;
     #addCoupon = null;
+    #couponError = false;
 
 // state items
     #couponActive = false;
@@ -25,7 +28,9 @@ class Coupon {
 // lookup all DOM elements
 // ask to load mapping table
         this.#couponCode = document.getElementById("couponCode");
+        this.#couponSerial = document.getElementById("couponSerial");
         this.#couponMsgDiv = document.getElementById("couponMsgDiv");
+        this.#serialDiv = document.getElementById("serialDiv");
         this.#couponNameDiv = document.getElementById("couponNameDiv");
         this.#couponDetailDiv = document.getElementById("couponDetailDiv");
         this.#addCouponBTN = document.getElementById("addCouponBTN");
@@ -36,9 +41,21 @@ class Coupon {
         if (coupon_modal != null) {
             this.#addCoupon = new bootstrap.Modal(coupon_modal, { focus: true, backdrop: 'static' });
         }
+
+        this.#couponCode.addEventListener('keyup', (e)=> { if (e.code === 'Enter') addCouponCode(); });
+        this.#couponSerial.addEventListener('keyup', (e)=> { if (e.code === 'Enter') addCouponCode(); });
+
+        if (this.#couponCode.value.length > 0) {
+            this.AddCouponCode();
+            this.#couponError = !this.#couponActive;
+        }
     }
 
     // get functions
+
+    couponError() {
+        return this.#couponError;
+    }
 
     isCouponActive() {
         return this.#couponActive;
@@ -94,11 +111,10 @@ class Coupon {
     ModalOpen() {
         "use strict";
         if (this.#addCoupon != null) {
-            this.#addCoupon.show();
             if (!this.#couponCode) {
                 return;
             }
-            this.#couponCode.addEventListener('keyup', (e)=> { if (e.code === 'Enter') addCouponCode(); });
+            this.#addCoupon.show();
             this.#addCouponBTN.disabled = false;
             this.#removeCouponBTN.hidden = !this.#couponActive;
             this.clear_modal_message();
@@ -110,6 +126,8 @@ class Coupon {
         if (this.#addCoupon != null) {
             this.#addCoupon.hide();
         }
+        if (badges['count'] == 0)
+        newBadge.show();
     }
 
     AddCouponCode() {
@@ -118,6 +136,9 @@ class Coupon {
             return;
 
         var couponCodeStr = this.#couponCode.value;
+        var couponSerialStr = this.#couponSerial.value;
+        if (couponSerialStr == '')
+            couponSerialStr = null;
 
         if (couponCodeStr == '') {
             this.show_modal_message('Please enter a coupon code', 'warn');
@@ -129,7 +150,7 @@ class Coupon {
         // validate the coupon code
         $.ajax({
             url: "scripts/getCouponDetails.php",
-            data: { code: couponCodeStr },
+            data: { code: couponCodeStr, serial: couponSerialStr },
             method: 'POST',
             success: this.VC_ajax_success,
             error: this.VC_ajax_error
@@ -165,8 +186,33 @@ class Coupon {
                 return;
             }
         }
+
+        if (data['coupon']['oneUse'] == 1) {
+            if (data['coupon']['randId'] == null) {
+                this.ModalOpen();
+                this.#serialDiv.hidden = false;
+                if (this.#couponSerial.value == '')
+                    this.show_modal_message("Please enter the one use serial number for this coupon", 'success');
+                else
+                    this.show_modal_message("Invalid serial number, please reenter", 'error');
+                return;
+            } else {
+                if (data['coupon']['usedBy'] != null) {
+                    this.ModalOpen();
+                    this.#serialDiv.hidden = false;
+                    console.log(this.#curCoupon);
+                    this.show_modal_message("This one use coupon has already been redeemed", 'error');
+                    return;
+                }
+            }
+        } else {
+            this.#serialDiv.hidden = true;
+        }
+
         this.#curCoupon = data['coupon'];
         this.ModalClose();
+        //console.log("coupon data:");
+        //console.log(this.#curCoupon);
         // now apply the coupon to the screen
         // set coupon code
         this.#couponNameDiv.innerHTML = "<span style='color: red;'>" + this.#curCoupon['code'] + "</span>";
@@ -178,11 +224,14 @@ class Coupon {
         // recompute the coupon effects on the membership types
         this.UpdateMtypes();
         repriceCart();
+        this.#couponError = false;
     }
 
     RemoveCouponCode() {
         "use strict";
         this.#couponCode.value = '';
+        this.#couponSerial.value = '';
+        this.#serialDiv.hidden = true;
         this.#couponNameDiv.innerHTML = "";
         this.#couponDetailDiv.innerHTML = "";
         this.#couponBTN.innerHTML = "Add Coupon";
