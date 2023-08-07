@@ -116,7 +116,7 @@ $onsitesale = $startdate->format("l, F j");
                               <label for='couponSerial'>Serial Number:</label>
                           </div>
                           <div class='col-sm-auto p-0'>
-                              <input type='text' size='16' maxlength='16' id='couponSerial' name='couponSerial' value="<?php echo $urlSerialNum; ?>"/>
+                              <input type='text' size='16' maxlength='36' id='couponSerial' name='couponSerial' value="<?php echo $urlSerialNum; ?>"/>
                           </div>
                       </div>
                       <div class="row">
@@ -403,7 +403,7 @@ $onsitesale = $startdate->format("l, F j");
                                      Name:
                                  </label>
                              </div>
-                             <div class="col-sm-auto ms-0 me-0 p-0">
+                             <div class="col-sm-auto ms-0 me-1 p-0">
                                  <input type='text' name='fname' class='ccdata' id='cc_fname' required='required' placeholder='First Name'/>
                              </div>
                              <div class="col-sm-auto ms-0 me-0 p-0">
@@ -469,7 +469,19 @@ $onsitesale = $startdate->format("l, F j");
                                  <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
                              </div>
                          </div>
-                         <div class="row">
+                         <div class="row" id="emptyCart">
+                             <div class="col-sm-12 ms-0 me-0 p-0">
+                                 Your cart does not contain any primnary memberships.  Please add memberships to the cart before checking out.
+                             </div>
+                         </div>
+                         <div class='row' id='noChargeCart' hidden>
+                             <div class='col-sm-12 ms-0 me'-0 p-0'>
+                                 No payment is required on your cart. Click "Purchase to" check out now or add more items to the cart using "Add Memberships".<br/>
+                                 <button id='ncpurchase' onclick="makePurchase('no-charge', 'purchase')">Purchase</button>&nbsp;
+                                 <button onclick='newBadgeModalOpen();'>Add Memberships</button>
+                             </div>
+                         </div>
+                         <div class="row" id='chargeCart' hidden>
                              <div class="col-sm-12 ms-0 me-0 p-0">
                                    <?php draw_cc_html($cc); ?>
                              </div>

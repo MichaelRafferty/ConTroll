@@ -188,7 +188,7 @@ class Coupon {
         }
 
         if (data['coupon']['oneUse'] == 1) {
-            if (data['coupon']['randId'] == null) {
+            if (data['coupon']['guid'] == null) {
                 this.ModalOpen();
                 this.#serialDiv.hidden = false;
                 if (this.#couponSerial.value == '')
