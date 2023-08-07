@@ -12,7 +12,7 @@ $condata = get_con();
 $urlCouponCode = null;
 $urlSerialNum = null;
 $serialHidden = 'hidden';
-if ($_GET["offer"]) {
+if (array_key_exists("offer", $_GET) && $_GET["offer"]) {
     $offer_code = $_GET["offer"];
     $offer_code = base64_decode_url($offer_code);
     if ($offer_code) {
