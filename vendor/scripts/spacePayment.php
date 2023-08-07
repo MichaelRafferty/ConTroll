@@ -43,6 +43,10 @@ $priceId = $_POST['item_purchased'];
 $specialRequests = $_POST['requests'];
 $taxid = $_POST['taxid'];
 
+$aggreeNone = false;
+if (array_key_exists('agreeNone', $_POST))
+    $aggreeNone = $_POST['agreeNone'] == 'on';
+
 // get the specific information allowed
 // get current vendor information
 $vendorQ = <<<EOS
@@ -207,8 +211,8 @@ if ($additionalMemberships > 0 && $includedMemberships < $space['includedMembers
     $valid = false;
 }
 
-if (($additionalMemberships + $includedMemberships == 0)) {
-    $missing_msg .= "You must buy at least one membership for your space";
+if (($additionalMemberships + $includedMemberships == 0) && !$aggreeNone) {
+    $missing_msg .= "You must buy at least one membership for your space or check the box at the top of the invoice noting that you are not purchasing any memberships at this time and acknowledge the need for memberships for all working in your space.";
     $valid = false;
 }
 

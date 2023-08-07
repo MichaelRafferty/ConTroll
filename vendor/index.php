@@ -571,14 +571,14 @@ if (array_key_exists('reg_disclaimer',$vendor_conf) && $vendor_conf['reg_disclai
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class="container-fluid form-floating">
-                    <div class="row">
-                        <div class="col-sm-12" id="vendor_inv_approved_for"></div>
-                    </div>
-                    <div class='row'>
-                        <div class='col-sm-12' id='vendor_inv_included'></div>
-                    </div>
-                    <hr/>
-                    <form id='vendor_invoice_form' class="form-floating" action='javascript:void(0);'>
+                    <form id='vendor_invoice_form' class='form-floating' action='javascript:void(0);'>
+                        <div class="row mb=2">
+                            <div class="col-sm-12" id="vendor_inv_approved_for"></div>
+                        </div>
+                        <div class='row'>
+                            <div class='col-sm-12' id='vendor_inv_included'></div>
+                        </div>
+                        <hr/>
                         <input type='hidden' name='vendor' id='vendor_inv_id' value='<?php echo $vendor; ?>'/>
                         <input type='hidden' name='item_purchased' id='vendor_inv_item_id'/>
                         <div class="row">
