@@ -1,6 +1,19 @@
 <?php
 //  coupon.php - library of modules related to finding/repricing coupon based orders
 
+// num_coupons = retrive the number of valid coupons active now
+function num_coupons() {
+    $con = get_conf('con');
+    $couponQ = <<<EOS
+SELECT COUNT(*) as num
+FROM coupon 
+WHERE conid = ?
+AND startDate <= now() AND endDate > now();
+EOS;
+    $c = fetch_safe_assoc(dbSafeQuery($couponQ, 'i', array($con['id'])));
+    return $c['num'];
+}
+
 // retrieve the coupon data from the database
 function load_coupon_data($couponCode, $serial = null): array
 {

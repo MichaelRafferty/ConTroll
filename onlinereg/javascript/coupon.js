@@ -28,26 +28,32 @@ class Coupon {
 // lookup all DOM elements
 // ask to load mapping table
         this.#couponCode = document.getElementById("couponCode");
-        this.#couponSerial = document.getElementById("couponSerial");
-        this.#couponMsgDiv = document.getElementById("couponMsgDiv");
-        this.#serialDiv = document.getElementById("serialDiv");
-        this.#couponNameDiv = document.getElementById("couponNameDiv");
-        this.#couponDetailDiv = document.getElementById("couponDetailDiv");
-        this.#addCouponBTN = document.getElementById("addCouponBTN");
-        this.#couponBTN = document.getElementById("couponBTN");
-        this.#couponHeader = document.getElementById("couponHeader");
-        this.#removeCouponBTN = document.getElementById("removeCouponBTN");
-        var coupon_modal = document.getElementById('addCoupon');
-        if (coupon_modal != null) {
-            this.#addCoupon = new bootstrap.Modal(coupon_modal, { focus: true, backdrop: 'static' });
-        }
+        if (this.#couponCode) {
+            this.#couponSerial = document.getElementById("couponSerial");
+            this.#couponMsgDiv = document.getElementById("couponMsgDiv");
+            this.#serialDiv = document.getElementById("serialDiv");
+            this.#couponNameDiv = document.getElementById("couponNameDiv");
+            this.#couponDetailDiv = document.getElementById("couponDetailDiv");
+            this.#addCouponBTN = document.getElementById("addCouponBTN");
+            this.#couponBTN = document.getElementById("couponBTN");
+            this.#couponHeader = document.getElementById("couponHeader");
+            this.#removeCouponBTN = document.getElementById("removeCouponBTN");
+            var coupon_modal = document.getElementById('addCoupon');
+            if (coupon_modal != null) {
+                this.#addCoupon = new bootstrap.Modal(coupon_modal, {focus: true, backdrop: 'static'});
+            }
 
-        this.#couponCode.addEventListener('keyup', (e)=> { if (e.code === 'Enter') addCouponCode(); });
-        this.#couponSerial.addEventListener('keyup', (e)=> { if (e.code === 'Enter') addCouponCode(); });
+            this.#couponCode.addEventListener('keyup', (e) => {
+                if (e.code === 'Enter') addCouponCode();
+            });
+            this.#couponSerial.addEventListener('keyup', (e) => {
+                if (e.code === 'Enter') addCouponCode();
+            });
 
-        if (this.#couponCode.value.length > 0) {
-            this.AddCouponCode();
-            this.#couponError = !this.#couponActive;
+            if (this.#couponCode.value.length > 0) {
+                this.AddCouponCode();
+                this.#couponError = !this.#couponActive;
+            }
         }
     }
 

@@ -2,6 +2,7 @@
 // Online Reg - index.php - Main page for online con registration
 require_once("lib/base.php");
 require_once("../lib/cc__load_methods.php");
+require_once("../lib/coupon.php");
 
 $cc = get_conf('cc');
 $con = get_conf('con');
@@ -12,18 +13,27 @@ $condata = get_con();
 $urlCouponCode = null;
 $urlSerialNum = null;
 $serialHidden = 'hidden';
-if (array_key_exists("offer", $_GET) && $_GET["offer"]) {
-    $offer_code = $_GET["offer"];
-    $offer_code = base64_decode_url($offer_code);
-    if ($offer_code) {
-        $urlCouponCode = strtok($offer_code, '~!~');
-        $urlSerialNum = strtok('~!~');
-        if ($urlSerialNum) {
-            $serialHidden = '';
+
+
+$numCoupons = num_coupons();
+if ($numCoupons == 0)
+    $costCols = 8;
+else {
+    $costCols = 4;
+
+    // only process offer on the command line if there is a valid set of coupons
+    if (array_key_exists('offer', $_GET) && $_GET['offer']) {
+        $offer_code = $_GET['offer'];
+        $offer_code = base64_decode_url($offer_code);
+        if ($offer_code) {
+            $urlCouponCode = strtok($offer_code, '~!~');
+            $urlSerialNum = strtok('~!~');
+            if ($urlSerialNum) {
+                $serialHidden = '';
+            }
         }
     }
 }
-
 $membershiptypes = array();
 $priceQ = <<<EOS
 SELECT id, memGroup, label, shortname, sort_order, price, memAge, memCategory
@@ -93,6 +103,7 @@ $onsitesale = $startdate->format("l, F j");
             </div>
         </div>
     </div>
+      <?php if ($numCoupons > 0) { ?>
       <!--- add coupon modal popup -->
       <div class='modal modal-lg' id='addCoupon' tabindex='-2' aria-labelledby='Add Coupon' aria-hidden='true'>
           <div class='modal-dialog'>
@@ -116,7 +127,7 @@ $onsitesale = $startdate->format("l, F j");
                               <label for='couponSerial'>Serial Number:</label>
                           </div>
                           <div class='col-sm-auto p-0'>
-                              <input type='text' size='16' maxlength='36' id='couponSerial' name='couponSerial' value="<?php echo $urlSerialNum; ?>"/>
+                              <input type='text' size='36' maxlength='36' id='couponSerial' name='couponSerial' value="<?php echo $urlSerialNum; ?>"/>
                           </div>
                       </div>
                       <div class="row">
@@ -131,6 +142,7 @@ $onsitesale = $startdate->format("l, F j");
               </div>
           </div>
       </div>
+          <?php } ?>
     <!--- New Badge Modal Popup -->
     <div class="modal modal-lg fade" id="newBadge" tabindex="-1" aria-labelledby="New Membership" aria-hidden="true" style='--bs-modal-width: 80%;'>
         <div class="modal-dialog">
@@ -371,11 +383,13 @@ $onsitesale = $startdate->format("l, F j");
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-sm-4" id="totalCostDiv"></div>
+                             <div class="col-sm-<?php echo $costCols; ?>" id="totalCostDiv"></div>
+                             <?php if ($numCoupons > 0) { ?>
                              <div class="col-sm-auto ms-0 me-2" id="couponNameDiv"></div>
                              <div class='col-sm-auto ms-auto me-2 p-0' id="addCouponDiv">
                                  <button onclick='couponModalOpen();' id="couponBTN">Add Coupon</button>
                              </div>
+                             <?php } ?>
                              <div class="col-sm-auto ms-0 me-2 p-0">
                                   <button onclick='newBadgeModalOpen();'>Add Memberships</button>
                              </div>
