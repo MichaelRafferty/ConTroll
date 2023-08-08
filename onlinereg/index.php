@@ -19,7 +19,7 @@ $numCoupons = num_coupons();
 if ($numCoupons == 0)
     $costCols = 8;
 else {
-    $costCols = 4;
+    $costCols = 6;
 
     // only process offer on the command line if there is a valid set of coupons
     if (array_key_exists('offer', $_GET) && $_GET['offer']) {
@@ -382,10 +382,41 @@ $onsitesale = $startdate->format("l, F j");
                                  <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
                              </div>
                          </div>
+                         <div id="subTotalDiv" hidden>
+                             <div class="row">
+                                 <div class="col-sm-12 ms-0 me-0 p-0" id="subTotalColdiv">
+                                     Subtotal before coupon: $0.00
+                                 </div>
+                             </div>
+                             <div class="row">
+                                 <div class='col-sm-12 ms-0 me-0 p-0'>
+                                     <hr style='height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;'/>
+                                 </div>
+                             </div>
+                         </div>
+                         <div id='couponDiv' hidden>
+                             <div class='row'>
+                                 <div class='col-sm-12 ms-0 me-0 p-0' id='couponDetailDiv'></div>
+                             </div>
+                             <div class='row mb-4'>
+                                 <div class='col-sm-12 ms-0 me-0 p-0' id="couponDiscount">
+                                     Coupon Discount: $0.00
+                                 </div>
+                             </div>
+                             <div class='row'>
+                                 <div class='col-sm-12 ms-0 me-0 p-0'>
+                                     <button onclick='couponModalOpen();' id='changeCouponBTN'>Change/Remove Coupon</button>
+                                 </div>
+                             </div>
+                             <div class='row'>
+                                 <div class='col-sm-12 ms-0 me-0 p-0'>
+                                     <hr style='height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;'/>
+                                 </div>
+                             </div>
+                         </div>
                          <div class="row">
                              <div class="col-sm-<?php echo $costCols; ?>" id="totalCostDiv"></div>
                              <?php if ($numCoupons > 0) { ?>
-                             <div class="col-sm-auto ms-0 me-2" id="couponNameDiv"></div>
                              <div class='col-sm-auto ms-auto me-2 p-0' id="addCouponDiv">
                                  <button onclick='couponModalOpen();' id="couponBTN">Add Coupon</button>
                              </div>
@@ -393,9 +424,6 @@ $onsitesale = $startdate->format("l, F j");
                              <div class="col-sm-auto ms-0 me-2 p-0">
                                   <button onclick='newBadgeModalOpen();'>Add Memberships</button>
                              </div>
-                         </div>
-                         <div class='row'>
-                             <div class="col-sm-12" id="couponDetailDiv"></div>
                          </div>
                          <div class="row">
                              <div class="col-sm-12 ms-0 me-0 p-0">

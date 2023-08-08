@@ -21,11 +21,11 @@ function load_coupon_data($couponCode, $serial = null): array
 
     // coupon code is required, as this works for a single specific coupon code
     if ($couponCode == null || $couponCode == '') {
-        return array('status'=>'error', 'error'=>'coupon code required and not passed');
+        return array('status' => 'error', 'error' => 'coupon code required and not passed');
     }
 
     $couponQ = <<<EOS
-SELECT c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.memId, c.minMemberships, c.maxMemberships,
+SELECT c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.memId, c.minMemberships, c.maxMemberships, c.limitMemberships,
        c.minTransaction, c.maxTransaction, c.maxRedemption,
        count(t.id) AS redeemedCount, m.memAge, m.label,
        CASE WHEN c.startDate > now() THEN 'early' ELSE null END as start, 
@@ -43,11 +43,11 @@ ORDER BY c.startDate;
 EOS;
     $res = dbSafeQuery($couponQ, 'sis', array($serial, $con['id'], $couponCode));
     if ($res === false) {
-        return array('status'=>'error', 'error'=>'Database Coupon Issue');
+        return array('status' => 'error', 'error' => 'Database Coupon Issue');
     }
 
     if ($res->num_rows == 0) {
-        return array('status'=>'error', 'error'=>'Error: Coupon not found');
+        return array('status' => 'error', 'error' => 'Error: Coupon not found');
     }
 
     $coupon = NULL;
@@ -56,7 +56,6 @@ EOS;
         // this coupon is valid now as it returns Early, NULL, expired as values in the query
         if ($l['start'] == null and $l['end'] == null && $l['usedBy'] == null) {
             $coupon = $l;
-            return array('status'=>'success', 'coupon'=> $coupon);
         }
         if ($l['start'] != null)
             $ec = 'Coupon has not started yet, starts ' . $l['startDate'];
@@ -66,7 +65,29 @@ EOS;
             $ec = 'One use coupon has already been redeemed';
     }
 
-    return array('status'=>'error', 'error'=> $ec);
+    if ($ec != '')
+        return array('status' => 'error', 'error' => $ec);
+
+    // if coupon contains a memId, make sure that memId is in list of things we can sell, refetch the mtype array
+    $result = array('status' => 'success', 'coupon' => $coupon);
+    if ($coupon['memId']) {
+        $priceQ = <<<EOS
+SELECT id, memGroup, label, shortname, sort_order, price, memAge, memCategory
+FROM memLabel
+WHERE
+    conid=? 
+    AND ((online = 'Y' AND startdate <= current_timestamp() AND enddate > current_timestamp()) OR (id = ?))
+ORDER BY sort_order, price DESC
+;
+EOS;
+        $priceR = dbSafeQuery($priceQ, 'ii', array($con['id'], $coupon['memId']));
+        while ($priceL = fetch_safe_assoc($priceR)) {
+            $membershiptypes[] = $priceL;
+        }
+        $result['mtypes'] = $membershiptypes;
+    }
+
+    return $result;
 }
 
 // apply coupon data to mytpe array
