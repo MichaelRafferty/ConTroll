@@ -48,7 +48,7 @@ function process(formRef) {
 
     // validation
     // emails must not be blank and must match
-    if (formData['email1'] == '' || formData['#email2'] == '' || formData['#email1'] != formData['#email2']) {
+    if (formData['email1'] == '' || formData['email2'] == '' || formData['email1'] != formData['email2']) {
         $('#email1').addClass('need');
         $('#email2').addClass('need');
         valid = false;
@@ -58,7 +58,7 @@ function process(formRef) {
     }
 
     // first name is required
-    if (formData['#fname'] == '') {
+    if (formData['fname'] == '') {
         valid = false;
         $('#fname').addClass('need');
     } else {
@@ -66,7 +66,7 @@ function process(formRef) {
     }
 
     // last name is required
-    if (formData['#lname'] == '') {
+    if (formData['lname'] == '') {
         valid = false;
         $('#lname').addClass('need');
     } else {
@@ -75,7 +75,7 @@ function process(formRef) {
     }
 
     // address 1 is required, address 2 is optional
-    if(formData['#addr'] =='') {
+    if(formData['addr'] =='') {
         valid = false;
         $('#addr').addClass('need');
     } else {
@@ -83,21 +83,21 @@ function process(formRef) {
     }
 
     // city/state/zip required
-    if (formData['#city'] =='') {
+    if (formData['city'] =='') {
         valid = false;
         $('#city').addClass('need');
     } else {
         $('#city').removeClass('need');
     }
 
-    if (formData['#state'] =='') {
+    if (formData['state'] =='') {
         valid = false;
         $('#state').addClass('need');
     } else {
         $('#state').removeClass('need');
     }
 
-    if (formData['#zip']=='') {
+    if (formData['zip']=='') {
         valid = false;
         $('#zip').addClass('need');
     } else {
@@ -105,11 +105,24 @@ function process(formRef) {
     }
 
     // a membership type is required
-    if (formData['#age'] =='') {
+    if (formData['age'] =='') {
         valid = false;
         $('#age').addClass('need');
     } else {
         $('#age').removeClass('need');
+    }
+
+    if (badges['agecount'][formData['age']] == null)
+        badges['agecount'][formData['age']] = 0;
+
+    // check if there are too many limited memberships in the cart
+    if (coupon.getMemGroup() == formData['age']) {
+        var cur = badges['agecount'][formData['age']];
+        var lim = coupon.getLimitMemberships();
+        if (badges['agecount'][formData['age']] >= coupon.getLimitMemberships()) {
+            alert("You already have the maximum numbero of badges of this membership type in your cart based on the coupon applied. You must choose a different membership type.");
+            valid = false;
+        }
     }
 
     // don't continue to process if any are missing
@@ -133,8 +146,8 @@ function process(formRef) {
     repriceCart();
   
     var badgename = formData['badgename'];
-    if(formData['badgename']=='') {
-    badgename = (formData['fname']+" "+formData['lname']).trim();
+    if (formData['badgename']=='') {
+        badgename = (formData['fname']+" "+formData['lname']).trim();
     }
 
     var name = formData['fname'] + " " + formData['mname'] + " " + formData['lname'] + " " + formData['suffix'];
@@ -163,6 +176,8 @@ function process(formRef) {
         labeldivtext = 'Unknown';
     if (group_text[0] == 'addon')
         addon += "<br/>&nbsp;Add On to<br/>&nbsp;Membership";
+    var re = /\-+/g;
+    labeldivtext = labeldivtext.replace(re, '-<br/>');
 
     var bdivid="badge" + badges['count'];
     var html = "<div id='" + bdivid + "' data-index='" + (badges['count'] - 1) + "' class='container-fluid border border-2 border-dark'>\n" +
@@ -304,11 +319,11 @@ function anotherBadgeModalClose() {
 }
 
 function couponModalOpen() {
-    coupon.ModalOpen();
+    coupon.ModalOpen(badges['count']);
 }
 
 function couponModalClose() {
-    coupon.ModalClose();
+    coupon.ModalClose(badges['count'] == 0);
 }
 
 function addCouponCode() {
@@ -335,7 +350,7 @@ function repriceCart() {
         var num = 0;
         if (nbrs[mbrtype['memGroup']] > 0) {
             num = nbrs[mbrtype['memGroup']];
-            if ((mbrtype['memCategory'] == 'standard' || mbrtype['memCagetory'] == 'virtual') && mbrtype['price'] > 0) {
+            if (mbrtype['primary']) {
                 primarymemberships += num;
                 if (coupon.isCouponActive()) {
                     if ((coupon.memId != null && coupon.memId == mbrtype['memId']) || coupon.memId == null)
@@ -444,10 +459,14 @@ window.onload = function () {
         prices[group]= Number(mbrtype['price']);
         badges['agecount'][group] = 0;
         shortnames[group] = mbrtype['shortname'];
+        mbrtype['primary'] = !(mbrtype['price'] == 0 || (mbrtype['memCategory'] != 'standard' && mbrtype['memCategory'] != 'virtual'));
+        mbrtype['discount'] = 0;
+        mbrtype['discountable'] = false;
     }
 
-    //if (coupon.couponError() == false)
-       // newBadge.show();
-
     repriceCart();
+
+    if (coupon.couponError() == false)
+        newBadge.show();
+
 }

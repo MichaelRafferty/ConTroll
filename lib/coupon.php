@@ -27,12 +27,12 @@ function load_coupon_data($couponCode, $serial = null): array
     $couponQ = <<<EOS
 SELECT c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.memId, c.minMemberships, c.maxMemberships, c.limitMemberships,
        c.minTransaction, c.maxTransaction, c.maxRedemption,
-       count(t.id) AS redeemedCount, m.memAge, m.label,
+       count(t.id) AS redeemedCount, m.memAge, m.shortname, m.memGroup, m.label,
        CASE WHEN c.startDate > now() THEN 'early' ELSE null END as start, 
        CASE WHEN c.endDate <= now() THEN 'expired' ELSE null END as end,
        k.id as keyId, k.guid, k.usedBy
 FROM coupon c
-LEFT OUTER JOIN memList m ON (c.memId = m.id)
+LEFT OUTER JOIN memLabel m ON (c.memId = m.id)
 LEFT OUTER JOIN transaction t ON (t.coupon = c.id and t.complete_date is not null)
 LEFT OUTER JOIN couponKeys k ON (k.couponId = c.id and k.guid = ?)
 WHERE c.conid = ? AND code = ?
