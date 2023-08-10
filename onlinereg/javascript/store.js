@@ -18,6 +18,8 @@ var coupon = null;
 // pricing area
 var memSummaryDiv = null;
 var totalCostDiv = null;
+var subTotalColDiv = null;
+var couponDiscountDiv = null;
 
 // checkout area
 var emptyCart = null;
@@ -323,6 +325,7 @@ function repriceCart() {
     var html = '';
     var nbrs = badges['agecount'];
     var total = 0;
+    var mbrtotal = 0;
     var cartDiscountable = false;
     var couponmemberships = 0;
     var primarymemberships = 0;
@@ -338,20 +341,26 @@ function repriceCart() {
                     if ((coupon.memId != null && coupon.memId == mbrtype['memId']) || coupon.memId == null)
                         couponmemberships += num;
                 }
-                total += num * Number(mbrtype['price']).toFixed(2)
+                mbrtotal += num * Number(mbrtype['price']).toFixed(2)
             }
+            total += num * Number(mbrtype['price']).toFixed(2);
         }
     }
 
     if (coupon.isCouponActive()) {
         // first compute un-discounted cart total to get is it sufficient for the discount
-        if (total >= coupon.getMinCart() && total <= coupon.getMaxCart() && primarymemberships >= coupon.getMinMemberships()  && primarymemberships <= coupon.getMaxMemberships())
+        if (mbrtotal >= coupon.getMinCart() && mbrtotal <= coupon.getMaxCart() && primarymemberships >= coupon.getMinMemberships()  && primarymemberships <= coupon.getMaxMemberships())
             cartDiscountable = true;
         // reset total for below
+        subTotalColDiv.innerHTML = '$' + Number(total).toFixed(2);
     }
 
     // now compute discountable totals
     total = 0;
+    var maxMbrDiscounts = coupon.getMaxMemberships();
+    var couponDiscounts = 0;
+    var thisDiscount = 0;
+    var itemtype = '';
     for (row in mtypes) {
         mbrtype = mtypes[row];
         num = 0;
@@ -359,25 +368,38 @@ function repriceCart() {
             num = nbrs[mbrtype['memGroup']];
         }
         // need to set num here
+        if (mbrtype['memCategory'] == 'add-on' || mbrtype['memCategory'] == 'addon')
+            itemtype = ' Add-ons: ';
+        else
+            itemtype = ' Memberships: ';
+
         if (mbrtype['discountable'] && cartDiscountable) {
-            html += mbrtype['shortname'] + ' Memberships: ' + num + ' x (' + mbrtype['price'] + ' - ' + mbrtype['discount'] + ' = ' + Number(mbrtype['price'] - mbrtype['discount']).toFixed(2) + ')'  + '<br/>';
-            total += num * (Number(mbrtype['price']) - Number(mbrtype['discount'])).toFixed(2)
+            if (maxMbrDiscounts >= num) {
+                thisDiscount = num * Number(mbrtype['discount']).toFixed(2);
+                couponDiscounts += thisDiscount;
+                maxMbrDiscounts -= num;
+            } else {
+                thisDiscount = maxMbrDiscounts * Number(mbrtype['discount']).toFixed(2);
+                couponDiscounts += thisDiscount;
+                maxMbrDiscounts = 0;
+            }
+            total += num * Number(mbrtype['price']).toFixed(2) - thisDiscount;
         } else {
-            html += mbrtype['shortname'] + ' Memberships: ' + num + ' x ' + mbrtype['price'] + '<br/>';
             total += num * Number(mbrtype['price']).toFixed(2)
         }
+        html += mbrtype['shortname'] + itemtype + num + ' x ' + mbrtype['price'] + '<br/>';
     }
     memSummaryDiv.innerHTML = html;
     badges['total'] = total;
 
     html = '';
     if (cartDiscountable)  {
-        var cartDiscount = coupon.CartDiscount(total);
-        if (cartDiscount > 0) {
-            html = '<br/>Cart Discount: ' + Number(cartDiscount).toFixed(2) + '<br/>Net Cost: ' + Number(total - cartDiscount).toFixed(2);
-        }
+        var cartDiscount = coupon.CartDiscount(mbrtotal);
+        couponDiscounts += cartDiscount;
+        total -= cartDiscount;
     }
-    totalCostDiv.innerHTML = "Total Cost: $" + Number(total).toFixed(2) + html;
+    couponDiscountDiv.innerHTML = "$" + Number(couponDiscounts).toFixed(2) + html;
+    totalCostDiv.innerHTML = "$" + Number(total).toFixed(2) + html;
 
     // now set the proper div for the payment
     emptyCart.hidden =  primarymemberships > 0;
@@ -412,6 +434,8 @@ window.onload = function () {
     coupon = new Coupon();
     memSummaryDiv = document.getElementById('memSummaryDiv');
     totalCostDiv = document.getElementById('totalCostDiv');
+    subTotalColDiv = document.getElementById('subTotalColDiv');
+    couponDiscountDiv = document.getElementById('couponDiscountDiv');
 
 
     for (var row in mtypes) {

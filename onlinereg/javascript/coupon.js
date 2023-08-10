@@ -14,7 +14,7 @@ class Coupon {
     #removeCouponBTN = null;
     #addCoupon = null;
     #couponError = false;
-    #subTotalDiv = null;
+    //#subTotalDiv = null;
     #couponDiv = null
     #couponDiscount = null;
 
@@ -39,7 +39,7 @@ class Coupon {
             this.#couponBTN = document.getElementById("couponBTN");
             this.#couponHeader = document.getElementById("couponHeader");
             this.#removeCouponBTN = document.getElementById("removeCouponBTN");
-            this.#subTotalDiv = document.getElementById("subTotalDiv");
+            //this.#subTotalDiv = document.getElementById("subTotalDiv");
             this.#couponDiv = document.getElementById("couponDiv");
             this.#couponDiscount = document.getElementById("couponDiscount");
             var coupon_modal = document.getElementById('addCoupon');
@@ -88,6 +88,16 @@ class Coupon {
             return 999999999;
 
         return this.#curCoupon['maxMemberships'];
+    }
+
+    getLimitMemberships() {
+        if (this.#curCoupon == null)
+            return 999999999;
+
+        if (this.#curCoupon['maxMembersiphs'] == null)
+            return 999999999;
+
+        return this.#curCoupon['limitMemberships'];
     }
 
     getMinCart() {
@@ -241,7 +251,7 @@ class Coupon {
         // set coupon code
         this.#couponDetailDiv.innerHTML = this.couponDetails();
         this.#couponDiv.hidden = false;
-        this.#subTotalDiv.hidden = false;
+        //this.#subTotalDiv.hidden = false;
         this.#couponBTN.hidden = true;
         this.#couponHeader.innerHTML = "Change/Remove Coupon for Order";
         this.#addCouponBTN.innerHTML = "Change Coupon";
@@ -259,7 +269,7 @@ class Coupon {
         this.#serialDiv.hidden = true;
         this.#couponDetailDiv.innerHTML = "";
         this.#couponDiv.hidden = true;
-        this.#subTotalDiv.hidden = true;
+        //this.#subTotalDiv.hidden = true;
         this.#couponBTN.hidden = false;
         this.#couponHeader.innerHTML = "Add Coupon to Order";
         this.#addCouponBTN.innerHTML = "Add Coupon";
@@ -276,32 +286,46 @@ class Coupon {
     //
     couponDetails() {
         var html = '';
+        var label = 'non zero dollar';
+
+        if (this.#curCoupon['couponType'] == '$mem' || this.#curCoupon['couponType'] == '%mem') {
+            html += "<li>This coupon only applies to memberships, not add-ons</li>";
+        }
+        if (this.#curCoupon['couponType'] == '$off' || this.#curCoupon['couponType'] == '%off') {
+            html += "<li>This coupon only applies to the cost of memberships in the cart, not add-ons</li>";
+        }
+        if (this.#curCoupon['couponType'] == 'price') {
+            label = this.#curCoupon['label'];
+            html += "<li>This coupon applies a special price of " + Number(this.#curCoupon['discount']).toFixed(2) + " to " +
+                label + " memberships in the cart.</li>";
+        }
         if (this.#curCoupon['minMemberships']) {
             if (this.#curCoupon['minMemberships'] > 1)
-                html += '<li>You must buy at least ' + this.#curCoupon['minMemberships'] + " non zero doller memberships</li>\n";
+                html += '<li>You must buy at least ' + this.#curCoupon['minMemberships'] + " " + label + " memberships</li>\n";
         }
         if (this.#curCoupon['maxMemberships']) {
-            html += '<li>This coupon will only discount up to ' + this.#curCoupon['maxMemberships'] + " non zero doller memberships</li>\n";
+            html += '<li>This coupon will only discount up to ' + this.#curCoupon['maxMemberships'] + " " + label + " memberships</li>\n";
         }
 
         if (this.#curCoupon['minTransaction']) {
             html += '<li>Your pre-discount cart value must be at least ' + this.#curCoupon['minTransaction'] + "</li>\n";
         }
         if (this.#curCoupon['maxTransaction']) {
-            html += '<li>And the discount will only apply to the first ' + this.#curCoupon['maxTransaction'] + " of the cart</li>\n";
+            html += '<li>The discount will only apply to the first ' + this.#curCoupon['maxTransaction'] + " of the cart</li>\n";
         }
         
         if (this.#curCoupon['memId']) {
+            html += '<li>Only valid on ';
+            var plural = 's'
             if (this.#curCoupon['limitMemberships']) {
-                html += '<li>Only valid on ';
-                var plural = 's'
                 if (this.#curCoupon['limitMemberships'] == 1) {
                     html += 'one ';
                     plural = '';
                 } else {
                     html += this.#curCoupon['limitMemberships'] + ' ';
                 }
-            }
+            } else
+                html += ''
             html += this.#curCoupon['label'] + ' membership' + plural + "</li>\n";
         }
 
