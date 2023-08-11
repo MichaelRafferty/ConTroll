@@ -21,7 +21,7 @@ function load_coupon_data($couponCode, $serial = null): array
 
     // coupon code is required, as this works for a single specific coupon code
     if ($couponCode == null || $couponCode == '') {
-        return array('status' => 'error', 'error' => 'coupon code required and not passed');
+        return array('status' => 'error', 'data' => 'coupon code required and not passed');
     }
 
     $couponQ = <<<EOS
@@ -43,11 +43,11 @@ ORDER BY c.startDate;
 EOS;
     $res = dbSafeQuery($couponQ, 'sis', array($serial, $con['id'], $couponCode));
     if ($res === false) {
-        return array('status' => 'error', 'error' => 'Database Coupon Issue');
+        return array('status' => 'error', 'data' => 'Database Coupon Issue');
     }
 
     if ($res->num_rows == 0) {
-        return array('status' => 'error', 'error' => 'Error: Coupon not found');
+        return array('status' => 'error', 'data' => 'Error: Coupon not found');
     }
 
     $coupon = NULL;
@@ -66,7 +66,7 @@ EOS;
     }
 
     if ($ec != '')
-        return array('status' => 'error', 'error' => $ec);
+        return array('status' => 'error', 'data' => $ec);
 
     // if coupon contains a memId, make sure that memId is in list of things we can sell, refetch the mtype array
     $result = array('status' => 'success', 'coupon' => $coupon);
@@ -99,7 +99,7 @@ function apply_coupon_data($mtypes, $coupon) {
         // first compute primary membership types
         if ($coupon['memId'] && $coupon['memId'] == $mbrtype['id']) {  // ok this is a forced primary
             $primary = true; // need a statement here, as combining the if's gets difficult
-        } else if ($mbrtype['price'] == 0 || ($mbrtype['memCategory'] != 'standard' && $coupon['memCategory'] != 'virtual')) {
+        } else if ($mbrtype['price'] == 0 || ($mbrtype['memCategory'] != 'standard' && $mbrtype['memCategory'] != 'virtual')) {
             $primary = false;
         }
 

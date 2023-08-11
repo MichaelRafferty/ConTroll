@@ -287,7 +287,7 @@ INSERT INTO transaction(newperid, perid, price, couponDiscount, type, conid, cou
     VALUES(?, ?, ?, ?, ?, ?, ?);
 EOS;
 
-$transid= dbSafeInsert($transQ, "iiddsii", array($people[0]['newid'], $id, $preDiscount, $totalDiscount, 'website', $condata['id'], $coupon));
+$transid= dbSafeInsert($transQ, "iiddsii", array($people[0]['newid'], $id, $preDiscount, $totalDiscount, 'website', $condata['id'], $coupon['id]']));
 
 $newid_list .= "transid='$transid'";
 
@@ -309,7 +309,7 @@ foreach($people as $person) {
       $transid,
       $person['price'],
       $person['discount'],
-      $coupon,
+      $coupon['id'],
       $person['memId'],
       );
 
