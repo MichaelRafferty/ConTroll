@@ -156,6 +156,22 @@ function cc_charge_purchase($results, $ccauth) {
         $order_lineitems[$lineid] = $item;
         $lineid++;
     }
+    if (array_key_exists('discount', $results)) {
+        $item = new OrderLineItem ('1');
+        $item->setUid('couponDiscount');
+        if (array_key_exists('coupon', $results)) {
+            $coupon = $results['coupon'];
+            $couponName = 'Coupon: ' . $coupon['code'] . " (" . $coupon['name'] . ")";
+        } else {
+            $couponName = "Coupon Applied";
+        }
+        $item->setName($couponName);
+        $item->setBasePriceMoney(new Money);
+        $item->getBasePriceMoney()->setAmount(-$results['discount'] * 100);
+        $item->getBasePriceMoney()->setCurrency(Currency::USD);
+        $order_lineitems[$lineid] = $item;
+        $lineid++;
+    }
 
     $order->setLineItems($order_lineitems);
 
