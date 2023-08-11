@@ -75,7 +75,8 @@ if ($couponCode !== null) {
         exit();
     }
     $coupon = $result['coupon'];
-    $mtypes = $result['mtypes'];
+    if (array_key_exists('mtypes', $result))
+        $mtypes = $result['mtypes'];
     //web_error_log("coupon:");
     //var_error_log($coupon);
 }

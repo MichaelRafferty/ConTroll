@@ -28,14 +28,14 @@ EOS;
     $body .= "Your Transaction number is $transid and Receipt number is " . $owner['payid'] . "\n";
 
     if ($owner['code'] != null) {
-        $body .= "A coupon of type " . $owner['code'] . "(" . $owner['nane'] . ") was applied to this transaction";
+        $body .= "A coupon of type " . $owner['code'] . " (" . $owner['name'] . ") was applied to this transaction";
         if ($owner['couponDiscount'] > 0)
             $body .= " for a savings of " . $owner['couponDiscount'];
         $body .= "\n";
     }
 
     $body .= "Your card was charged " . $owner['paid'] . " for this transaction" .
-        "\nMmemberships have been created for:\n\n";
+        "\nMemberships have been created for:\n\n";
 
     $badgeQ = <<<EOS
 SELECT NP.first_name, NP.last_name, M.label
@@ -107,13 +107,13 @@ EOS;
 
     $body .= "Your Transaction number is $transid\n";
     if ($owner['code'] != null) {
-        $body .= "A coupon of type " . $owner['code'] . "(" . $owner['name'] . ") was applied to this transaction";
+        $body .= "A coupon of type " . $owner['code'] . " (" . $owner['name'] . ") was applied to this transaction";
         if ($owner['couponDiscount'] > 0)
             $body .= " for a savings of " . $owner['$couponDiscount'];
         $body .= "\n";
     }
 
-     $body .= "and as there is no charge for this transaction, this is your receipt.\n\nIn response to your request memberships have been created for:\n\n";
+     $body .= "and as there is no charge for this transaction, this is your receipt.\n\nMemberships have been created for:\n\n";
 
     $badgeQ = <<<EOS
 SELECT NP.first_name, NP.last_name, M.label
