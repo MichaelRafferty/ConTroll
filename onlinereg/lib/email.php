@@ -35,7 +35,7 @@ EOS;
     }
 
     $body .= "Your card was charged " . $owner['paid'] . " for this transaction" .
-        "\nMemberships have been created for:\n\n";
+        "\n\nMemberships have been created for:\n\n";
 
     $badgeQ = <<<EOS
 SELECT NP.first_name, NP.last_name, M.label
