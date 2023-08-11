@@ -19,7 +19,7 @@ $ownerQ = <<<EOS
 SELECT NP.first_name, NP.last_name, T.complete_date, P.receipt_id as payid, P.receipt_url as url 
 FROM transaction T
 JOIN newperson NP ON (NP.id=T.newperid)
-JOIN payments P ON (P.transid=T.id)
+LEFT OUTER JOIN payments P ON (P.transid=T.id)
 WHERE T.id=?;
 EOS;
 
@@ -54,9 +54,14 @@ ol_page_init($condata['label'] . ' Registration Complete');
             </a> and we appologize for the confusion.
         </p>
 
-        <?php } else { ?>
+        <?php } else {
+      if ($owner['payid'] != null) { ?>
 Your transaction number is <?php echo $transid; ?> and receipt number is
-        <?php echo $owner['payid']; if ($owner['url'] != '') echo " (<a href='" . $owner['url'] . "'>" . $owner['url'] . "</a>)"; ?>.<br />
+        <?php echo $owner['payid']; if ($owner['url'] != '') echo " (<a href='" . $owner['url'] . "'>" . $owner['url'] . "</a>)";
+      } else {
+          ?>
+          Your transaction number is <?php echo $transid; ?> and as this transaction has no charge, your receipt has been emailed to you. <?php
+          } ?>.<br />
         <p>
             In response to your request memberships have been created for <ul>
                 <?php
@@ -89,7 +94,7 @@ while($badge = fetch_safe_assoc($badgeR)) {
         </p>
         <?php } else { ?>
         <p>
-            You should have two emails from <?php echo $con['regadminemail']; ?> containing the credit card transaction receipt and details of the memberships listed above. If you haven't received them in a few minutes please check your spam folder.
+            You should have an email from <?php echo $con['regadminemail']; ?> containing the transaction receipt and details of the memberships listed above. If you haven't received them in a few minutes please check your spam folder.
         </p>
         <?php } ?>
         <p>

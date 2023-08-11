@@ -287,7 +287,7 @@ INSERT INTO transaction(newperid, perid, price, couponDiscount, type, conid, cou
     VALUES(?, ?, ?, ?, ?, ?, ?);
 EOS;
 
-$transid= dbSafeInsert($transQ, "iiddsii", array($people[0]['newid'], $id, $preDiscount, $totalDiscount, 'website', $condata['id'], $coupon['id]']));
+$transid= dbSafeInsert($transQ, "iiddsii", array($people[0]['newid'], $id, $preDiscount, $totalDiscount, 'website', $condata['id'], $coupon['id']));
 
 $newid_list .= "transid='$transid'";
 
@@ -368,6 +368,7 @@ if ($total > 0) {
     $approved_amt = $rtn['amount'];
 } else {
     $approved_amt = 0;
+    $rtn = array('url' => '');
 }
 
 $txnUpdate = "UPDATE transaction SET ";
