@@ -282,6 +282,7 @@ function makePurchase(token, label) {
         nonce: token,
         purchaseform: URLparamsToArray($('#purchaseForm').serialize()),
         couponCode: coupon.getCouponCode(),
+        couponSerial: coupon.getCouponSerial(),
     }
     console.log("MP Data");
     console.log(data);

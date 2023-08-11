@@ -75,6 +75,7 @@ if ($couponCode !== null) {
         exit();
     }
     $coupon = $result['coupon'];
+    $mtypes = $result['mtypes'];
     //web_error_log("coupon:");
     //var_error_log($coupon);
 }
@@ -84,17 +85,19 @@ if ($coupon !== null) {
     $mtypes =  apply_coupon_data($mtypes, $coupon);
 }
 
-foreach ($mtypes as $id => $priceL) {
-    $map[$priceL['id']] = $priceL['memGroup'];
-    $prices[$priceL['memGroup']] = $priceL['price'];
-    $memId[$priceL['memGroup']] = $priceL['id'];
-    $counts[$priceL['memGroup']] = 0;
+foreach ($mtypes as $id => $mbrtype) {
+    $map[$mbrtype['id']] = $mbrtype['memGroup'];
+    $prices[$mbrtype['memGroup']] = $mbrtype['price'];
+    $memId[$mbrtype['memGroup']] = $mbrtype['id'];
+    $counts[$mbrtype['memGroup']] = 0;
+    $isprimary = (!$mbrtype['price'] == 0 || ($mbrtype['memCategory'] != 'standard' && $mbrtype['memCategory'] != 'virtual'));
     if ($coupon !== null) {
-        $discounts[$priceL['memGroup']] = $priceL['discount'];
-        $primary[$priceL['memGroup']] = $priceL['primary'];
-    } else {
-        $primary[$priceL['memGroup']] = true;
+        $discounts[$mbrtype['memGroup']] = $mbrtype['discount'];
+        if ($coupon['memId'] == $mbrtype['id']) {  // ok this is a forced primary
+            $isprimary = true; // need a statement here, as combining the if's gets difficult
+        }
     }
+    $primary[$mbrtype['memGroup']] = $isprimary;
 }
 
 $num_primary = 0;
@@ -120,7 +123,14 @@ $total = 0;
 $preDiscount = 0;
 $count = 0;
 $totalDiscount = 0;
+$maxMbrDiscounts = 0;
+if ($coupon != NULL) {
+    if (array_key_exists('maxMemberships', $coupon)) {
+        $maxMbrDiscounts = $coupon['maxMemberships'] != null ? $coupon['maxMemberships'] : 999999;
+    }
+}
 $newid_list = "";
+$origMaxMbrDiscounts = $maxMbrDiscounts;
 
 // check that we got valid total from the post before anything is inserted into the database, the empty rows are deleted badges from the site
 foreach ($badges as $badge) {
@@ -128,9 +138,12 @@ foreach ($badges as $badge) {
     if (array_key_exists($badge['age'], $counts)) {
         $price = $prices[$badge['age']];
         $preDiscount += $price;
-        if ($apply_discount) {
-            $price -= $discounts[$badge['age']];
-            $totalDiscount += $discounts[$badge['age']];
+        if ($apply_discount && $primary[$badge['age']]) {
+            if ($maxMbrDiscounts > 0) {
+                $price -= $discounts[$badge['age']];
+                $maxMbrDiscounts--;
+                $totalDiscount += $discounts[$badge['age']];
+            }
         }
         $total += $price;
     }
@@ -149,24 +162,31 @@ if($webtotal != $total) {
     exit();
 }
 
+$maxMbrDiscounts = $origMaxMbrDiscounts;
 foreach ($badges as $badge) {
   if(!isset($badge) || !isset($badge['age'])) { continue; }
   if (array_key_exists($badge['age'], $counts)) {
-      $people[$count] = array(
-          'info'=>$badge,
-          'price'=>$prices[$badge['age']],
-          'memId'=>$memId[$badge['age']],
-          'coupon' => $coupon,
-          'discount' => $apply_discount ? $discounts[$badge['age']] : 0,
-        );
+      $discount = 0;
+      if ($apply_discount && $primary[$badge['age']]) {
+          if ($maxMbrDiscounts > 0) {
+              $discount = $discounts[$badge['age']];
+              $maxMbrDiscounts--;
+          }
+          $people[$count] = array(
+              'info'=>$badge,
+              'price'=>$prices[$badge['age']],
+              'memId'=>$memId[$badge['age']],
+              'coupon' => $coupon,
+              'discount' => $discount,
+          );
 
-      if ($badge['share'] == "") { $badge['share'] = 'Y'; }
-      if ($badge['contact'] == "") { $badge['contact'] = 'Y'; }
+          if ($badge['share'] == "") { $badge['share'] = 'Y'; }
+          if ($badge['contact'] == "") { $badge['contact'] = 'Y'; }
 
 // see if there is an exact match
 
 // now resolve exact matches
-      $exactMsql = <<<EOF
+          $exactMsql = <<<EOF
 SELECT id
 FROM perinfo p
 WHERE
@@ -197,67 +217,68 @@ WHERE
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.country, ''))), '  *', ' ');
 EOF;
-      $value_arr = array(
-        trim($badge['fname']),
-        trim($badge['mname']),
-        trim($badge['lname']),
-        trim($badge['suffix']),
-        trim($badge['email1']),
-        trim($badge['phone']),
-        trim($badge['badgename']),
-        trim($badge['addr']),
-        trim($badge['addr2']),
-        trim($badge['city']),
-        trim($badge['state']),
-        trim($badge['zip']),
-        $badge['country']
-        );
-      $res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
-      if ($res !== false) {
-          if ($res->num_rows > 0) {
-              $match = fetch_safe_assoc($res);
-              $id = $match['id'];
+          $value_arr = array(
+              trim($badge['fname']),
+              trim($badge['mname']),
+              trim($badge['lname']),
+              trim($badge['suffix']),
+              trim($badge['email1']),
+              trim($badge['phone']),
+              trim($badge['badgename']),
+              trim($badge['addr']),
+              trim($badge['addr2']),
+              trim($badge['city']),
+              trim($badge['state']),
+              trim($badge['zip']),
+              $badge['country']
+          );
+          $res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
+          if ($res !== false) {
+              if ($res->num_rows > 0) {
+                  $match = fetch_safe_assoc($res);
+                  $id = $match['id'];
+              } else {
+                  $id = null;
+              }
           } else {
               $id = null;
           }
-      } else {
-          $id = null;
-      }
-      $value_arr = array(
-        trim($badge['lname']),
-        trim($badge['mname']),
-        trim($badge['fname']),
-        trim($badge['suffix']),
-        trim($badge['email1']),
-        trim($badge['phone']),
-        trim($badge['badgename']),
-        trim($badge['addr']),
-        trim($badge['addr2']),
-        trim($badge['city']),
-        trim($badge['state']),
-        trim($badge['zip']),
-        $badge['country'],
-        $badge['contact'] === null ? 'Y' :  $badge['contact'],
-        $badge['share'] === null ? 'Y' :  $badge['share'],
-        $id
-        );
+          $value_arr = array(
+              trim($badge['lname']),
+              trim($badge['mname']),
+              trim($badge['fname']),
+              trim($badge['suffix']),
+              trim($badge['email1']),
+              trim($badge['phone']),
+              trim($badge['badgename']),
+              trim($badge['addr']),
+              trim($badge['addr2']),
+              trim($badge['city']),
+              trim($badge['state']),
+              trim($badge['zip']),
+              $badge['country'],
+              $badge['contact'] === null ? 'Y' :  $badge['contact'],
+              $badge['share'] === null ? 'Y' :  $badge['share'],
+              $id
+          );
 
-      $insertQ = <<<EOS
+          $insertQ = <<<EOS
 INSERT INTO newperson(last_name, middle_name, first_name, suffix, email_addr, phone,
     badge_name, address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, perid)
     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 
-      $newid = dbSafeInsert($insertQ, 'sssssssssssssssi', $value_arr);
-      $people[$count]['newid']=$newid;
-      $people[$count]['perid'] = $id;
+          $newid = dbSafeInsert($insertQ, 'sssssssssssssssi', $value_arr);
+          $people[$count]['newid']=$newid;
+          $people[$count]['perid'] = $id;
 
-      $newid_list .= "id='$newid' OR ";
+          $newid_list .= "id='$newid' OR ";
 
-      $count++;
-  } else {
-      ajaxSuccess(array('status'=>'error', 'badges'=>$badges, 'error'=>"Error: invalid badge age category"));
-      exit();
+          $count++;
+      } else {
+          ajaxSuccess(array('status'=>'error', 'badges'=>$badges, 'error'=>"Error: invalid badge age category"));
+          exit();
+      }
   }
 }
 
@@ -300,7 +321,7 @@ SELECT R.id AS badge,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename
+    NP.id as id, R.price AS price, R.couponDiscount as discount, M.memAge AS age, NP.badge_name AS badgename
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
 JOIN memList M ON (M.id = R.memID)
@@ -315,34 +336,39 @@ while ($row = fetch_safe_assoc($all_badgeR)) {
 }
 
 $results = array(
-  'transid' => $transid,
-  'counts' => $counts,
-  'price' => $total,
-  'badges' => $badgeResults,
-  'total' => $total,
-  'nonce' => $nonce,
-  );
+    'transid' => $transid,
+    'counts' => $counts,
+    'price' => $total,
+    'badges' => $badgeResults,
+    'total' => $total,
+    'nonce' => $nonce,
+    'coupon' => $coupon,
+    'discount' => $totalDiscount,
+);
 
 //log requested badges
 logWrite(array('con'=>$condata['name'], 'trans'=>$transid, 'results'=>$results, 'request'=>$badges));
-
-$rtn = cc_charge_purchase($results, $ccauth);
-if ($rtn === null) {
-    ajaxSuccess(array('status'=>'error', 'data'=>'Credit card not approved'));
-    exit();
-}
+if ($total > 0) {
+    $rtn = cc_charge_purchase($results, $ccauth);
+    if ($rtn === null) {
+        ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
+        exit();
+    }
 
 //$tnx_record = $rtn['tnx'];
 
-$num_fields = sizeof($rtn['txnfields']);
-$val = array();
-for ($i = 0; $i < $num_fields; $i++) {
-    $val[$i] = '?';
+    $num_fields = sizeof($rtn['txnfields']);
+    $val = array();
+    for ($i = 0; $i < $num_fields; $i++) {
+        $val[$i] = '?';
+    }
+    $txnQ = "INSERT INTO payments(time," . implode(',', $rtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
+    $txnT = implode('', $rtn['tnxtypes']);
+    $txnid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
+    $approved_amt = $rtn['amount'];
+} else {
+    $approved_amt = 0;
 }
-$txnQ = "INSERT INTO payments(time," . implode(',', $rtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
-$txnT = implode('', $rtn['tnxtypes']);
-$txnid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
-$approved_amt =  $rtn['amount'];
 
 $txnUpdate = "UPDATE transaction SET ";
 if($approved_amt == $total) {
@@ -358,10 +384,17 @@ dbSafeCmd($regQ, "i", array($transid));
 // mark coupon used
 if ($coupon !== null && $coupon['keyId'] !== null) {
     $cupQ = 'UPDATE couponKeys SET usedBy = ?, useTS = current_timestamp WHERE id = ?';
-    dbSafeCmd($cupq, 'ii', array($transid, $coupon['keyId']));
+    dbSafeCmd($cupQ, 'ii', array($transid, $coupon['keyId']));
 }
 
-$return_arr = send_email($con['regadminemail'], trim($purchaseform['cc_email']), /* cc */ null, $condata['label']. " Online Registration Receipt",  getEmailBody($transid), /* htmlbody */ null);
+if ($total > 0) {
+    $body = getEmailBody($transid);
+}
+else {
+    $body = getNoChangeEmailBody($results);
+}
+
+$return_arr = send_email($con['regadminemail'], trim($purchaseform['cc_email']), /* cc */ null, $condata['label']. " Online Registration Receipt",  $body, /* htmlbody */ null);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];

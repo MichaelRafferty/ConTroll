@@ -128,6 +128,12 @@ class Coupon {
         return this.#curCoupon['code'];
     }
 
+    getCouponSerial() {
+        if (this.#curCoupon == null)
+            return null;
+
+        return this.#curCoupon['guid'];
+    }
     getMemGroup() {
         if (this.#curCoupon == null)
             return null;
@@ -400,7 +406,8 @@ class Coupon {
         if (this.#curCoupon['couponType'] == '$off') {
             discount = this.#curCoupon['discount'];
         } else if (this.#curCoupon['couponType'] == '%off') {
-            discount = Number(this.#curCoupon['discount']) * total;
+            var discountable = total > this.#curCoupon['maxTransaction'] ? this.#curCoupon['maxTransaction'] : total;
+            discount = Number(this.#curCoupon['discount']) * discountable;
         }
 
         if (discount > total) {

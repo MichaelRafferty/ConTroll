@@ -95,10 +95,15 @@ function apply_coupon_data($mtypes, $coupon) {
     foreach ($mtypes as $id => $mbrtype) {
         $primary = true; // if coupon is active, does this 'num' count toward min / max memberships
         $discount = 0;
-        if ($mbrtype['price'] == 0 || ($mbrtype['memCategory'] != 'standard' && $mbrtype['memCategory'] != 'virtual')) {
-            $discount = 0; // no discount if no coupon, price is 0 or its not a primary membership
+
+        // first compute primary membership types
+        if ($coupon['memId'] && $coupon['memId'] == $mbrtype['id']) {  // ok this is a forced primary
+            $primary = true; // need a statement here, as combining the if's gets difficult
+        } else if ($mbrtype['price'] == 0 || ($mbrtype['memCategory'] != 'standard' && $coupon-membrtype['memCategory'] != 'virtual')) {
             $primary = false;
-        } else if ($coupon['couponType'] == '$off' || $coupon['couponType'] == '%off') {
+        }
+
+        if ($coupon['couponType'] == '$off' || $coupon['couponType'] == '%off') {
             $discount = 0; // cart type memberships don't discount rows
         } else if ($coupon['memId'] == null || $coupon['memId'] == $mbrtype['id']) { // ok, we have a coupon type that applies to this row
             if ($coupon['couponType'] == 'price') {
@@ -136,10 +141,6 @@ function coupon_met(&$coupon, $total, $num_primary, $map, $counts) : bool
         if ($total < $coupon['minTransaction'])
             return false;
 
-    if ($coupon['maxTransaction'] !== null)
-        if ($total > $coupon['maxTransaction'])
-            return false;
-
     // now check primary membership counts
     if ($coupon['memId'] != null)
         $checknum = $counts[$map[$coupon['memId']]];
@@ -148,10 +149,6 @@ function coupon_met(&$coupon, $total, $num_primary, $map, $counts) : bool
 
     if ($coupon['minMemberships'])
         if ($checknum < $coupon['minMemberships'])
-            return false;
-
-    if ($coupon['maxMemberships'])
-        if ($checknum > $coupon['maxMemberships'])
             return false;
 
     // all tests pass
@@ -173,7 +170,8 @@ function apply_overall_discount($coupon, $total) {
     }
 
     if ($code == '%off') {
-        return round($total * $coupon['discount'] /100.0, 2);
+        $discountable = $total > $coupon['maxTransaction'] ? $coupon['maxTransaction'] : $total;
+        return round($discountable * $coupon['discount'] / 100.0, 2);
     }
 
     return 0;
