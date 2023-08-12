@@ -93,6 +93,8 @@ use Square\Models\CreateOrderResponse;
 use Square\Models\Order;
 use Square\Models\OrderSource;
 use Square\Models\OrderLineItem;
+use Square\Models\OrderLineItemDiscount;
+use Square\Models\OrderLineItemDiscountType;
 use Square\Models\Currency;
 use Square\Models\Money;
 use Square\Models\CreatePaymentRequest;
@@ -156,24 +158,28 @@ function cc_charge_purchase($results, $ccauth) {
         $order_lineitems[$lineid] = $item;
         $lineid++;
     }
+
+    $order->setLineItems($order_lineitems);
+
+    // now apply the coupon
     if (array_key_exists('discount', $results)) {
-        $item = new OrderLineItem ('1');
+        $item = new OrderLineItemDiscount ();
         $item->setUid('couponDiscount');
         if (array_key_exists('coupon', $results)) {
             $coupon = $results['coupon'];
-            $couponName = 'Coupon: ' . $coupon['code'] . " (" . $coupon['name'] . ")";
+            $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . ')';
         } else {
-            $couponName = "Coupon Applied";
+            $couponName = 'Coupon Applied';
         }
         $item->setName($couponName);
-        $item->setBasePriceMoney(new Money);
-        $item->getBasePriceMoney()->setAmount(-$results['discount'] * 100);
-        $item->getBasePriceMoney()->setCurrency(Currency::USD);
-        $order_lineitems[$lineid] = $item;
-        $lineid++;
+        $item->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
+        $money = new Money;
+        $money->setAmount($results['discount'] * 100);
+        $money->setCurrency(Currency::USD);
+        $item->setAmountMoney($money);
+        $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
+        $order->setDiscounts(array($item));
     }
-
-    $order->setLineItems($order_lineitems);
 
     // pass order to square and get order id
 
