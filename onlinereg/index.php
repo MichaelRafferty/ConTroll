@@ -207,7 +207,7 @@ $onsitesale = $startdate->format("l, F j");
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Membership Type</span></label><br/>
-                                    <select id='memType' name='age' style="width:300px;" tabindex='15' title='Age as of <?php echo substr($condata['startdate'], 0, 10); ?> (the first day of the convention)'>
+                                    <select id='memType' name='age' style="width:500px;" tabindex='15' title='Age as of <?php echo substr($condata['startdate'], 0, 10); ?> (the first day of the convention)'>
                                         <?php foreach ($membershiptypes as $memType) { ?>
                                             <option value='<?php echo $memType['memGroup'];?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price'];?>)</option>
                                         <?php    } ?>
@@ -251,7 +251,7 @@ $onsitesale = $startdate->format("l, F j");
                                     <p class="text-body">
                                         <label>
                                             <input type='checkbox' checked name='contact' id='contact' value='Y'/>
-                                            May we include you in our annual reminder postcards and future marketing or survey emails?
+                                            <?php echo $con['remindertext']; ?>
                                         </label>
                                         <span class='small'><a href='javascript:void(0)' onClick='$("#contactTip").toggle()'>(more info)</a></span>
                                         <div id='contactTip' class='padded highlight' style='display:none'>
