@@ -208,17 +208,22 @@ function cc_charge_purchase($results, $ccauth) {
     $pay_money->setAmount($results['total'] * 100);
     $pay_money->setCurrency(Currency::USD);
 
+//web_error_log("CALLED WITH " . $results['total']);
+//var_error_log($pay_money);
     $pbody = new CreatePaymentRequest(
         $results['nonce'],
         $payuuid,
         $pay_money
     );
+    $pbody->setAmountMoney($pay_money);
     $pbody->setAutocomplete(true);
     $pbody->setOrderID($corder->getId());
     $pbody->setCustomerId($con['id'] . '-' . $custbadge['badge']);
     $pbody->setLocationId($cc['location']);
     $pbody->setReferenceId($con['id'] . '-' . $results['transid']);
     $pbody->setNote('On-Line Registration');
+
+//var_error_log($pbody);
 
     try {
         $paymentsApi = $client->getPaymentsApi();
