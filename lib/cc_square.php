@@ -106,7 +106,7 @@ function cc_charge_purchase($results, $ccauth) {
     $con = get_conf('con');
     $client = new SquareClient([
         'accessToken' => $cc['token'],
-        'squareVersion' => $cc['apiversion'];
+        'squareVersion' => $cc['apiversion'],
         'environment' => $cc['env'],
     ]);
 
@@ -162,10 +162,10 @@ function cc_charge_purchase($results, $ccauth) {
     $order->setLineItems($order_lineitems);
 
     // now apply the coupon
-    if (array_key_exists('discount', $results)) {
+    if (array_key_exists('discount', $results) && $results['discount'] > 0) {
         $item = new OrderLineItemDiscount ();
         $item->setUid('couponDiscount');
-        if (array_key_exists('coupon', $results)) {
+        if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
             $coupon = $results['coupon'];
             $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . ')';
         } else {
