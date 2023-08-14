@@ -67,8 +67,6 @@ endtext=
 [vendor]
 test=0
 open=1
-
-
 test=1
 open=1
 #vendors: email address for generic vendor emails
@@ -94,11 +92,14 @@ client_id=""
 client_secret=""
 [cc]
 ; valid types are 'square', 'convergepay' or 'bypass' (Note: bypass is for testing only and requires localhost or test=1)
+; appid, token, location come from your square api setup
+; apiversion comes from the square api site and sdk
 type=square
 appid=""
 token=""
 env="production"
 location=""
+apiversion=""
 webpaysdk="https://web.squarecdn.com/v1/square.js"
 [log]
   web = "/home/psfs_reg/reglogs/web"

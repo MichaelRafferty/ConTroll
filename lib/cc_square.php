@@ -106,7 +106,7 @@ function cc_charge_purchase($results, $ccauth) {
     $con = get_conf('con');
     $client = new SquareClient([
         'accessToken' => $cc['token'],
-        'squareVersion' => '2022-02-16',
+        'squareVersion' => $cc['apiversion'];
         'environment' => $cc['env'],
     ]);
 
