@@ -9,6 +9,13 @@ It also expects you to know how to fetch/update files from GitHub. The software 
 2.  Decide what account is going to host Reg.  These instructions will create two complete systems: reg and reg-test.
     a. create said account and create two directories under it: one for reg and one for reg-test
     b. retrieve the production tree to reg and the test tree to reg-test.
+        git fetch origin master - for the reg tree
+        git fetch origin test - for the test tree
+    c. Run composer for each tree
+        cd {reg}/Composer
+        composer install
+        cd {regtest}/Composer
+        composer install
 
 3. Create the two databases in your database server
     a. suggested names are reg and reg_test
@@ -30,6 +37,7 @@ It also expects you to know how to fetch/update files from GitHub. The software 
             servers
             user
             vendors
+            vendorSpaces
         ii. load tables with foreign keys
             ageList
             artist
@@ -42,16 +50,18 @@ It also expects you to know how to fetch/update files from GitHub. The software 
             reg_badgelist
             reg_club
             user_auth
-            vendor_reg
+            vendorSpacePrices
             newperson   (NOTE: Newperson refers to transaction, you might have to do it's foreign key separately as transaction also references a different field in newperson)
             transaction
             paymewnts
-            vendor_show
+            vendor_space
             reg
             atcon_history
             artshow
             artItems
             artsales
+            coupon
+            couponKeys
 
 4. Populate the tables far enough to use the GUI to continue, or as far as you want.
     Necessary tables for the GUI:
