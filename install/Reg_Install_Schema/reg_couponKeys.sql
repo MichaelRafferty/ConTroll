@@ -16,20 +16,31 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `ageList`
+-- Table structure for table `couponKeys`
 --
 
-DROP TABLE IF EXISTS `ageList`;
+DROP TABLE IF EXISTS `couponKeys`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `ageList` (
-  `conid` int NOT NULL,
-  `ageType` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `label` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `shortname` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `sortorder` int NOT NULL,
-  PRIMARY KEY (`conid`,`ageType`),
-  CONSTRAINT `ageList_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE
+CREATE TABLE `couponKeys` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `couponId` int NOT NULL,
+  `guid` varchar(36) COLLATE utf8mb4_general_ci NOT NULL,
+  `perid` int DEFAULT NULL,
+  `notes` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `usedBy` int DEFAULT NULL,
+  `createTS` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `createBy` int DEFAULT NULL,
+  `useTS` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `couponkeys_couponid_fk` (`couponId`),
+  KEY `couponkey_usedby_fk` (`usedBy`),
+  KEY `couponkeys_createby_fk` (`createBy`),
+  KEY `couponkeys_perid_fk` (`perid`),
+  CONSTRAINT `couponkey_usedby_fk` FOREIGN KEY (`usedBy`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `couponkeys_couponid_fk` FOREIGN KEY (`couponId`) REFERENCES `coupon` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `couponkeys_createby_fk` FOREIGN KEY (`createBy`) REFERENCES `user` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `couponkeys_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

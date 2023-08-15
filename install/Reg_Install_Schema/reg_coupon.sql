@@ -16,26 +16,42 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `vendorSpaces`
+-- Table structure for table `coupon`
 --
 
-DROP TABLE IF EXISTS `vendorSpaces`;
+DROP TABLE IF EXISTS `coupon`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `vendorSpaces` (
+CREATE TABLE `coupon` (
   `id` int NOT NULL AUTO_INCREMENT,
   `conid` int NOT NULL,
-  `shortname` varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
-  `name` varchar(128) COLLATE utf8mb4_general_ci NOT NULL,
-  `description` text COLLATE utf8mb4_general_ci,
-  `unitsAvailable` int NOT NULL DEFAULT '0',
-  `includedMemId` int NOT NULL,
-  `additionalMemId` int NOT NULL,
+  `oneUse` int NOT NULL DEFAULT '0',
+  `code` varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `name` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `startDate` datetime NOT NULL DEFAULT '1900-01-01 00:00:00',
+  `endDate` datetime NOT NULL DEFAULT '2100-12-31 00:00:00',
+  `couponType` enum('$off','%off','$mem','%mem','price') COLLATE utf8mb4_general_ci NOT NULL DEFAULT '$mem',
+  `discount` decimal(8,2) NOT NULL DEFAULT '0.00',
+  `memId` int DEFAULT NULL,
+  `minMemberships` int DEFAULT NULL,
+  `maxMemberships` int DEFAULT NULL,
+  `limitMemberships` int DEFAULT NULL,
+  `minTransaction` decimal(8,2) DEFAULT NULL,
+  `maxTransaction` decimal(8,2) DEFAULT NULL,
+  `maxRedemption` int DEFAULT NULL,
+  `createTS` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `createBy` int DEFAULT NULL,
+  `updateTS` timestamp NULL DEFAULT NULL,
+  `updateBy` int DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `vendorSpace_memList_i` (`includedMemId`),
-  KEY `vendorSpace_memList_a` (`additionalMemId`),
-  CONSTRAINT `vendorSpace_memList_a` FOREIGN KEY (`additionalMemId`) REFERENCES `memList` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `vendorSpace_memList_i` FOREIGN KEY (`includedMemId`) REFERENCES `memList` (`id`) ON UPDATE CASCADE
+  KEY `coupon_conid_fk` (`conid`),
+  KEY `coupon_memid_fk` (`memId`),
+  KEY `coupon_createby_fk` (`createBy`),
+  KEY `coupon_updateby_fk` (`updateBy`),
+  CONSTRAINT `coupon_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `coupon_createby_fk` FOREIGN KEY (`createBy`) REFERENCES `user` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `coupon_memid_fk` FOREIGN KEY (`memId`) REFERENCES `memList` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `coupon_updateby_fk` FOREIGN KEY (`updateBy`) REFERENCES `user` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

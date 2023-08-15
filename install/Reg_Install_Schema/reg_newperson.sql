@@ -47,7 +47,7 @@ CREATE TABLE `newperson` (
   KEY `newperson_perid_fk` (`perid`),
   CONSTRAINT `newperson_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `newperson_transid_fk` FOREIGN KEY (`transid`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6262 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -59,4 +59,4 @@ CREATE TABLE `newperson` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-07-13 17:52:25
+-- Dump completed on 2023-08-15 13:48:36
