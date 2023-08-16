@@ -1,6 +1,7 @@
 <?php
 global $db_ini;
 require_once "../lib/base.php";
+require_once "../lib/sets.php";
 
 $check_auth = google_init("ajax");
 $perm = "admin";
@@ -16,19 +17,7 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
 
 // mapping of check boxes to authorizations (should this move to the database?)
 
-$sets = array(
-    'base' => array('overview'),
-    'admin' => array('admin'),
-    'comp_entry' => array('badge', 'search'),
-    'registration' => array('people', 'registration', 'search', 'badge'),
-    'reg_admin' => array('reg_admin', 'reports'),
-    'artshow_admin' => array('people', 'artist', 'artshow', 'art_control', 'art_sales', 'search', 'reports', 'vendor'),
-    'artshow' => array('art_control', 'search'),
-    'atcon' => array('monitor','atcon', 'atcon_checkin','atcon_register'),
-    'vendor' => array('people','search','reports','vendor'),
-    $db_ini['control']['clubperm'] => array($db_ini['control']['clubperm'], 'reports', 'search', 'people'),
-    'Virtual' => array('virtual')
-);
+$sets = get_admin_sets();
 $authQ = "Select name, id from auth;";
 $authR = dbQuery($authQ);
 
@@ -60,7 +49,7 @@ if (($_POST['action'] == 'update') or ($_POST['action'] == 'create')) {
     $user_auths[$auth_set['overview']] = 1;
 
     foreach ($sets as $n => $perms) {
-        if($_POST[$n] == "on") {
+        if (array_key_exists($n, $_POST) && $_POST[$n] == "on") {
             foreach($perms as $v) {
                 $user_auths[$auth_set[$v]] = 1;
             }

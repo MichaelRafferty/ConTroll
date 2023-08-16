@@ -1,6 +1,7 @@
 <?php
 global $db_ini;
 require_once "lib/base.php";
+require_once "lib/sets.php";
 //initialize google session
 $need_login = google_init("page");
 
@@ -16,7 +17,6 @@ page_init($page,
                    ),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
                     'https://unpkg.com/tabulator-tables@5.5.1/dist/js/tabulator.min.js',
-                    '/javascript/d3.js',
                     'js/base.js',
                     'js/admin.js',
                     'js/admin_consetup.js',
@@ -49,19 +49,7 @@ $conid=$con['id'];
     }
 
 
-    $sets = array(
-        'base' => array('overview'),
-        'admin' => array('admin'),
-        'comp_entry' => array('badge', 'search'),
-        'registration' => array('people', 'registration', 'search', 'badge'),
-        'reg_admin' => array('reg_admin', 'reports'),
-        'artshow_admin' => array('people', 'artist', 'artshow', 'art_control', 'art_sales', 'search', 'reports', 'vendor'),
-        'artshow' => array('art_control', 'search'),
-        'atcon' => array('monitor','atcon', 'atcon_checkin','atcon_register'),
-        'vendor' => array('people', 'search', 'reports', 'vendor'),
-        $db_ini['control']['clubperm'] => array($db_ini['control']['clubperm'], 'reports', 'search', 'people'),
-        'Virtual' => array('virtual')
-    );
+    $sets = get_admin_sets();
     ?>
     <ul class="nav nav-tabs mb-3" id="admin-tab" role="tablist">
         <li class="nav-item" role="presentation">
