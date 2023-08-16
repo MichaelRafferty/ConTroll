@@ -4,16 +4,17 @@ var type = null;
 var paid = null;
 var label = null;
 var age = null;
+var coupon = null;
 var typefilter = null;
 var catfilter = null;
 var agefilter = null;
-var paidfitler = null;
+var paidfilter = null;
 var labelfilter = null;
+var couponfilter = null;
 var transfer_modal = null;
 var find_result_table = null;
 var find_pattern_field = null;
 var testdiv = null;
-var transfer_from_id = 0;
 
 $(document).ready(function () {
     id = document.getElementById('transfer_to');
@@ -28,97 +29,173 @@ $(document).ready(function () {
 });
 
 function catclicked(e, cell) {
-    value = cell.getRow().getCell("memCategory").getValue();
-    if (cell.getElement().style.backgroundColor) {
-        badgetable.removeFilter("category", "in", catfilter);        
-        catfilter = catfilter.filter(arrayItem => arrayItem !== value);      
+    var filtercell = cell.getRow().getCell("memCategory");
+    var value = filtercell.getValue();
+    if (filtercell.getElement().style.backgroundColor) {
+        badgetable.removeFilter("category", "in", catfilter);
+        catfilter = catfilter.filter(arrayItem => arrayItem !== value);
         if (catfilter.length > 0) {
             badgetable.addFilter("category", "in", catfilter);
         }
-        cell.getElement().style.backgroundColor = "";
+        filtercell.getElement().style.backgroundColor = "";
     } else {
         if (catfilter.length > 0) {
-            badgetable.removeFilter("category", "in", catfilter);            
-        } 
+            badgetable.removeFilter("category", "in", catfilter);
+        }
         catfilter.push(value);
         badgetable.addFilter("category", "in", catfilter);
-        cell.getElement().style.backgroundColor = "#C0FFC0";
+        filtercell.getElement().style.backgroundColor = "#C0FFC0";
     }
 }
 
 function typeclicked(e, cell) {
-    value = cell.getRow().getCell("memType").getValue();
-    if (cell.getElement().style.backgroundColor) {
-        badgetable.removeFilter("type", "in", typefilter);        
-        typefilter = typefilter.filter(arrayItem => arrayItem !== value);        
+    var filtercell = cell.getRow().getCell("memType");
+    var value = filtercell.getValue();
+    if (filtercell.getElement().style.backgroundColor) {
+        badgetable.removeFilter("type", "in", typefilter);
+        typefilter = typefilter.filter(arrayItem => arrayItem !== value);
         if (typefilter.length > 0) {
             badgetable.addFilter("type", "in", typefilter);
         }
-        cell.getElement().style.backgroundColor = "";
+        filtercell.getElement().style.backgroundColor = "";
     } else {
         if (typefilter.length > 0) {
             badgetable.removeFilter("type", "in", typefilter);
         }
         typefilter.push(value);
         badgetable.addFilter("type", "in", typefilter);
-        cell.getElement().style.backgroundColor = "#C0FFC0";
+        filtercell.getElement().style.backgroundColor = "#C0FFC0";
     }
 }
 
 function ageclicked(e, cell) {
-    value = cell.getRow().getCell("memAge").getValue();
-    if (cell.getElement().style.backgroundColor) {
+    var filtercell = cell.getRow().getCell("memAge");
+    var value = filtercell.getValue();
+    if (filtercell.getElement().style.backgroundColor) {
         badgetable.removeFilter("age", "in", agefilter);
         agefilter = agefilter.filter(arrayItem => arrayItem !== value);
         if (agefilter.length > 0) {
             badgetable.addFilter("age", "in", agefilter);
         }
-        cell.getElement().style.backgroundColor = "";
+        filtercell.getElement().style.backgroundColor = "";
     } else {
         if (agefilter.length > 0) {
             badgetable.removeFilter("age", "in", agefilter);
         }
         agefilter.push(value);
         badgetable.addFilter("age", "in", agefilter);
-        cell.getElement().style.backgroundColor = "#C0FFC0";
+        filtercell.getElement().style.backgroundColor = "#C0FFC0";
     }
 }
 
 function paidclicked(e, cell) {
-    value = cell.getRow().getCell("paid").getValue();
-    if (cell.getElement().style.backgroundColor) {
+    var filtercell = cell.getRow().getCell("paid");
+    var value = filtercell.getValue();
+    if (filtercell.getElement().style.backgroundColor) {
         badgetable.removeFilter("paid", "in", paidfilter);
         paidfilter = paidfilter.filter(arrayItem => arrayItem !== value);
         if (paidfilter.length > 0) {
             badgetable.addFilter("paid", "in", paidfilter);
         }
-        cell.getElement().style.backgroundColor = "";
+        filtercell.getElement().style.backgroundColor = "";
     } else {
-        if (paid.length > 0) {
+        if (paidfilter.length > 0) {
             badgetable.removeFilter("paid", "in", paidfilter);
         }
         paidfilter.push(value);
         badgetable.addFilter("paid", "in", paidfilter);
-        cell.getElement().style.backgroundColor = "#C0FFC0";
-    }   
+        filtercell.getElement().style.backgroundColor = "#C0FFC0";
+    }
 }
 
 function labelclicked(e, cell) {
-    value = cell.getRow().getCell("label").getValue();
-    if (cell.getElement().style.backgroundColor) {
+    var filtercell = cell.getRow().getCell("label");
+    var value = filtercell.getValue();
+    if (filtercell.getElement().style.backgroundColor) {
         badgetable.removeFilter("label", "in", labelfilter);
         labelfilter = labelfilter.filter(arrayItem => arrayItem !== value);
         if (labelfilter.length > 0) {
             badgetable.addFilter("label", "in", labelfilter);
         }
-        cell.getElement().style.backgroundColor = "";
+        filtercell.getElement().style.backgroundColor = "";
     } else {
         if (labelfilter.length > 0) {
             badgetable.removeFilter("label", "in", labelfilter);
         }
         labelfilter.push(value);
         badgetable.addFilter("label", "in", labelfilter);
-        cell.getElement().style.backgroundColor = "#C0FFC0";
+        filtercell.getElement().style.backgroundColor = "#C0FFC0";
+    }
+}
+
+function couponclicked(e, cell) {
+    var filtercell = cell.getRow().getCell("name");
+    value = filtercell.getValue();
+    if (filtercell.getElement().style.backgroundColor) {
+        badgetable.removeFilter("name", "in", couponfilter);
+        couponfilter = couponfilter.filter(arrayItem => arrayItem !== value);
+        if (couponfilter.length > 0) {
+            badgetable.addFilter("name", "in", couponfilter);
+        }
+        filtercell.getElement().style.backgroundColor = "";
+    } else {
+        if (couponfilter.length > 0) {
+            badgetable.removeFilter("name", "in", couponfilter);
+        }
+        couponfilter.push(value);
+        badgetable.addFilter("name", "in", couponfilter);
+        filtercell.getElement().style.backgroundColor = "#C0FFC0";
+    }
+}
+
+function clearfilter() {
+    if (typefilter.length > 0) {
+        badgetable.removeFilter("type", "in", typefilter);
+        typefilter = [];
+        var rows = type.getRows();
+        for (var row of rows) {
+            row.getCell("memType").getElement().style.backgroundColor = "";
+        }
+    }
+    if (catfilter.length > 0) {
+        badgetable.removeFilter("category", "in", catfilter);
+        catfilter = [];
+        var rows = category.getRows();
+        for (var row of rows) {
+            row.getCell("memCategory").getElement().style.backgroundColor = "";
+        }
+    }
+    if (agefilter.length > 0) {
+        badgetable.removeFilter("age", "in", agefilter);
+        agefilter = [];
+        var rows = age.getRows();
+        for (var row of rows) {
+            row.getCell("memAge").getElement().style.backgroundColor = "";
+        }
+    }
+    if (paidfilter.length > 0) {
+        badgetable.removeFilter("paid", "in", paidfilter);
+        paidfilter = [];
+        var rows = paid.getRows();
+        for (var row of rows) {
+            row.getCell("paid").getElement().style.backgroundColor = "";
+        }
+    }
+    if (labelfilter.length > 0) {
+        badgetable.removeFilter("label", "in", labelfilter);
+        labelfilter = [];
+        var rows = label.getRows();
+        for (var row of rows) {
+            row.getCell("label").getElement().style.backgroundColor = "";
+        }
+    }
+    if (couponfilter.length > 0) {
+        badgetable.removeFilter("name", "in", couponfilter);
+        couponfilter = [];
+        var rows = coupon.getRows();
+        for (var row of rows) {
+            row.getCell("name").getElement().style.backgroundColor = "";
+        }
     }
 }
 
@@ -138,12 +215,11 @@ function draw_stats(data) {
                     { field: "percent", formatter: "progress", width: 100, headerSort: false, },
                     { field: "occurs", hozAlign: "right" },
                 ]
-            },            
+            },
         ],
     });
     category.on("cellClick", catclicked)
     catfilter = [];
-
     if (type !== null) {
         type.off("cellClick");
         type.destroy();
@@ -164,7 +240,6 @@ function draw_stats(data) {
     });
     type.on("cellClick", typeclicked);
     typefilter = [];
-
     if (age !== null) {
         age.off("cellClick");
         age.destroy();
@@ -226,7 +301,28 @@ function draw_stats(data) {
         ],
     });
     label.on("cellClick",  labelclicked);
-    labelfilter = [];       
+    labelfilter = [];
+
+    if (coupon !== null) {
+        coupon.off("cellClick");
+        coupon.destroy();
+        coupon = null;
+    }
+    coupon = new Tabulator('#coupon-table', {
+        data: data['coupons'],
+        layout: "fitDataTable",
+        columns: [
+            {
+                title: "Coupon", columns: [
+                    { field: "name" },
+                    { field: "percent", formatter: "progress", width: 100, headerSort: false, },
+                    { field: "occurs", hozAlign: "right" },
+                ]
+            },
+        ],
+    });
+    coupon.on("cellClick",  couponclicked);
+    couponfilter = [];
 }
 
 function transferbutton(cell, formatterParams, onRendered) {
@@ -409,7 +505,9 @@ function draw_badges(data) {
             { title: "Badge Name", field: "p_badge", headerSort: true, headerFilter: true },
             { title: "Membership Type", field: "label", headerSort: true, headerFilter: true, },
             { title: "Price", field: "price", hozAlign: "right", headerSort: true, headerFilter: true },
+            { title: "Discount", field: "couponDiscount", hozAlign: "right", headerSort: true, headerFilter: true, },
             { title: "Paid", field: "paid", hozAlign: "right", headerSort: true, headerFilter: true, },
+            { title: "Coupon", field: "name", headerSort: true, headerFilter: true, },
             { title: "Created", field: "create_date", headerSort: true, headerFilter: true },
             { title: "Changed", field: "change_date", headerSort: true, headerFilter: true },
             { field: "category", visible: false },
@@ -418,7 +516,7 @@ function draw_badges(data) {
             { field: "badgeId", visible: false },
             { field: "perid", visible: false },
             { title: "Transfer", formatter: transferbutton, hozAlign:"center", cellClick: transfer, headerSort: false },
-        ]       
+        ]
     });
 }
 

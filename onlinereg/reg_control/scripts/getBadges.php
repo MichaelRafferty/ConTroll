@@ -18,16 +18,18 @@ $con=get_cON ();
 $conid= $con['id'];
 
 $badgeQ = <<<EOS
-SELECT R.create_date, R.change_date, R.price, R.paid, R.id AS badgeId, P.id AS perid, NP.id AS np_id
+SELECT R.create_date, R.change_date, R.price, R.couponDiscount, R.paid, R.id AS badgeId, P.id AS perid, NP.id AS np_id
     , CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name, P.suffix) AS p_name
     , CONCAT_WS(' ', NP.first_name, NP.middle_name, NP.last_name, NP.suffix) AS np_name
     , P.badge_name AS p_badge, NP.badge_name AS np_badge
     , CONCAT_WS('-', M.memCategory, M.memType, M.memAge) as memTyp
     , M.memCategory AS category, M.memType AS type, M.memAge AS age, M.label
+    , ifnull(C.name, ' None ') as name
 FROM reg R
 JOIN memLabel M ON (M.id=R.memId)
 LEFT OUTER JOIN perinfo P ON (P.id=R.perid)
 LEFT OUTER JOIN newperson NP ON (NP.id=R.newperid)
+LEFT OUTER JOIN reg.coupon C on (C.id = R.coupon)
 WHERE R.conid=?;
 EOS;
 
@@ -165,5 +167,30 @@ while($paid = fetch_safe_assoc($paidA)) {
 }
 
 $response['paids'] = $paids;
+
+$couponQ = <<<EOS
+WITH listitems AS (
+    SELECT ifnull(C.name, ' None ') as name, count(*) occurs
+    FROM reg R
+    LEFT OUTER JOIN coupon C ON (C.id  = R.coupon)
+    WHERE R.conid=?
+    GROUP BY C.name
+), totalrow AS (
+    SELECT SUM(occurs) AS total
+    FROM listitems
+)
+SELECT name, occurs, 100 * occurs / total AS percent
+FROM listitems
+JOIN totalrow
+ORDER BY name;
+EOS;
+
+$coupons = array();
+$couponA = dbSafeQuery($couponQ, 'i', array($conid));
+while($coupon = fetch_safe_assoc($couponA)) {
+    array_push($coupons, $coupon);
+}
+
+$response['coupons'] = $coupons;
 ajaxSuccess($response);
 ?>
