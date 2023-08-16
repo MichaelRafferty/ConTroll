@@ -11,7 +11,7 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 page_init($page,
     /* css */ array('css/base.css'
                    ),
-    /* js  */ array('/javascript/d3.js',
+    /* js  */ array('js/d3.js',
                     'js/base.js',
                     'js/virtual.js'
                    ),

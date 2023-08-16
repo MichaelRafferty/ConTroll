@@ -15,7 +15,7 @@ page_init($page,
     /* js  */ array(
                     //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
                     'https://unpkg.com/tabulator-tables@5.5.1/dist/js/tabulator.min.js',
-                    //'/javascript/d3.js',
+                    //'js/d3.js',
                     'js/base.js',
                     'js/vendor.js'
                    ),

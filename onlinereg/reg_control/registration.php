@@ -12,7 +12,7 @@ page_init($page,
     /* css */ array('css/base.css',
                     'css/registration.css'
                    ),
-    /* js  */ array('/javascript/d3.js',
+    /* js  */ array('js/d3.js',
                     'js/base.js',
                     'js/people.js',
                     'js/registration.js'

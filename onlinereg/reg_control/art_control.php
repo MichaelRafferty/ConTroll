@@ -13,7 +13,7 @@ page_init($page,
                     'css/table.css',
                     'css/art_control.css'
                    ),
-    /* js  */ array('/javascript/d3.js',
+    /* js  */ array('js/d3.js',
                     'js/base.js',
                     'js/table.js',
                     'js/art_control.js'
