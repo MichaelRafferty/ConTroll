@@ -14,7 +14,7 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     exit();
 }
 
-$con=get_cON ();
+$con=get_conf();
 $conid= $con['id'];
 
 $badgeQ = <<<EOS
