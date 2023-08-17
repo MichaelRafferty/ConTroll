@@ -24,20 +24,18 @@ page_init("Badge List",
 ?>
 <div class="container-fluid">
     <div class="row">
-        <div class="col-sm-12 p-0 m-0">
+        <div class="col-sm-auto p-0 m-0 me-4">
             <h4>Coupons:</h4>
+        </div>
+        <div class="col-sm-auto p-0 m-0 me-4">
+            <button id='coupon-addrow' type='button' class='btn btn-secondary btn-sm' onclick='coupon.addrow();'>Add New</button>
+        </div>
+        <div class="col-sm-auto p-0 m-0 ms-4">
+            Click on "ID", "#Used" or "#Keys" cells to display additional details.
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto p-0 m-0" id="couponTable"></div>
-    </div>
-    <div class="row mt-2">
-        <div class="col-sm-12">
-            <button id="coupon-undo" type="button" class="btn btn-secondary btn-sm" onclick="coupon.undo();" disabled>Undo</button>
-            <button id="coupon-redo" type="button" class="btn btn-secondary btn-sm" onclick="coupon.redo();" disabled>Redo</button>
-            <button id="coupon-addrow" type="button" class="btn btn-secondary btn-sm" onclick="coupon.addrow();">Add New</button>
-            <button id="coupon-save" type="button" class="btn btn-primary btn-sm" onclick="coupon.save();" disabled>Save Changes</button>
-        </div>
     </div>
     <div class='row mt-2'>
         <div class='col-sm-auto p-0 m-0' id="detailTable"></div>

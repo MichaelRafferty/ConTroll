@@ -16,6 +16,13 @@ function keysClicked(e, cell) {
 
     coupons.keysClicked(cell);
 }
+
+function rulesClicked(e, cell) {
+    "use strict";
+
+    coupons.rulesClicked(cell);
+}
+
 window.onload = function initpage() {
     "use strict";
 
@@ -49,10 +56,14 @@ class Coupon {
 // coupon data
     #curCoupon = null;
 
+// DOM Objects
+    #detailsDIV = null;
+
 // initialization
     constructor() {
         "use strict";
         // dom elements
+        this.#detailsDIV = document.getElementById('detailTable');
     }
 
     initData(data) {
@@ -102,13 +113,14 @@ class Coupon {
         }
     }
 
+    rulesClicked(cell) {
+        this.#clearUsed(false);
+        this.#detailsDIV.innerHTML = this.#couponDetails(cell.getData());
+    }
     draw(couponArray) {
         "use strict";
 
-        if (this.#couponTable) {
-            this.#couponTable.destroy();
-            this.#couponTable = null;
-        }
+       this.#clearUsed(true);
 
         this.#couponTable = new Tabulator('#couponTable', {
             maxHeight: "500px",
@@ -121,7 +133,7 @@ class Coupon {
             layout: "fitDataTable",
             columns: [
                 {title: "Edit", formatter: this.#addEditIcon, hozAlign:"center", },
-                {title: "ID", field: "id", headerSort: true,},
+                {title: "ID", field: "id", headerSort: true, cellClick: rulesClicked, },
                 {title: "Code", field: "code", headerSort: true, headerFilter: true,},
                 {title: "Name", field: "name", headerSort: true, headerFilter: true,},
                 {title: "OneUse", field: "oneUse", headerSort: true, formatter: "tickCross", headerFilter: "tickCross", headerFilterParams: {tristate: true},},
@@ -132,6 +144,13 @@ class Coupon {
                 {title: "Ends", field: "dispEnd", headerSort: true, headerFilter: true,},
                 {title: "#Used", field: "full", headerSort: true, headerFilter: true, cellClick: usedClicked, },
                 {title: "#Keys", field: "keycount", cellClick: keysClicked, },
+                {field: "limitMemberships", visible: false, },
+                {field: "maxMemberships", visible: false, },
+                {field: "maxTransaction", visible: false, },
+                {field: "memId", visible: false, },
+                {field: "minMemberships", visible: false, },
+                {field: "minTransaction", visible: false, },
+                {field: "shortname", visible: false, },
             ]
         });
     }
@@ -144,20 +163,21 @@ class Coupon {
 
     // detail table items
 
-    #clearUsed() {
+    #clearUsed(all = false) {
         if (this.#detailTable != null) {
             this.#detailTable.destroy();
             this.#detailTable = null;
         }
-        this.#curCoupon = null;
+
+        if (all)
+            this.#curCoupon = null;
+
+        this.#detailsDIV.innerHTML = '';
     }
     #showUsed() {
         "use strict";
 
-        if (this.#detailTable != null) {
-            this.#detailTable.destroy();
-            this.#detailTable = null;
-        }
+        this.#clearUsed(false);
 
         if (this.#curCoupon == null)
             return;
@@ -185,10 +205,7 @@ class Coupon {
     #showKeys() {
         "use strict";
 
-        if (this.#detailTable != null) {
-            this.#detailTable.destroy();
-            this.#detailTable = null;
-        }
+        this.#clearUsed(false);
 
         if (this.#curCoupon == null)
             return;
@@ -258,7 +275,7 @@ class Coupon {
         if (keyData.length <= 0)
             return;
 
-        var label = "Key data for Coupon " + keyData[0]['CouponId'] + ": " + keyData[0]['code'] + "(" + keyData[0]['name'] + ")";
+        var label = "Key data for Coupon " + keyData[0]['couponId'] + ": " + keyData[0]['code'] + "(" + keyData[0]['name'] + ")";
         this.#detailTable = new Tabulator('#detailTable', {
             maxHeight: "500px",
             movableRows: false,
@@ -288,6 +305,57 @@ class Coupon {
                 },
             ],
         });
+    }
+
+    // couponDetails - a text line of the restrictions for this coupon
+    // fields: minMemberships, maxMemberships, minTransaction, maxTransaction, maxRedemption, redeemedCount
+    //
+    #couponDetails(coupon) {
+        var html = '';
+        var label = 'non zero dollar';
+
+        if (coupon['couponType'] == '$mem' || coupon['couponType'] == '%mem') {
+            html += "<li>This coupon only applies to memberships, not add-ons</li>";
+        }
+        if (coupon['couponType'] == '$off' || coupon['couponType'] == '%off') {
+            html += "<li>This coupon only applies to the cost of memberships in the cart, not add-ons</li>";
+        }
+        if (coupon['couponType'] == 'price') {
+            label = coupon['shortname'];
+            html += "<li>This coupon applies a special price of " + Number(coupon['discount']).toFixed(2) + " to " +
+                label + " memberships in the cart.</li>";
+        }
+        if (coupon['minMemberships']) {
+            if (coupon['minMemberships'] > 1)
+                html += '<li>You must buy at least ' + coupon['minMemberships'] + " " + label + " memberships</li>\n";
+        }
+        if (coupon['maxMemberships']) {
+            html += '<li>This coupon will only discount up to ' + coupon['maxMemberships'] + " " + label + " memberships</li>\n";
+        }
+
+        if (coupon['minTransaction']) {
+            html += '<li>Your pre-discount cart value must be at least ' + coupon['minTransaction'] + "</li>\n";
+        }
+        if (coupon['maxTransaction']) {
+            html += '<li>The discount will only apply to the first ' + coupon['maxTransaction'] + " of the cart</li>\n";
+        }
+
+        if (coupon['memId']) {
+            html += '<li>Only valid on ';
+            var plural = 's'
+            if (coupon['limitMemberships']) {
+                if (coupon['limitMemberships'] == 1) {
+                    html += 'one ';
+                    plural = '';
+                } else {
+                    html += coupon['limitMemberships'] + ' ';
+                }
+            } else
+                html += ''
+            html += coupon['shortname'] + ' membership' + plural + "</li>\n";
+        }
+
+        return "Coupon Details for coupon code '" + coupon['code'] + "': " + coupon['name'] + "\n<ul>\n" + html + "</ul>\n";
     }
 /*
     // get functions
