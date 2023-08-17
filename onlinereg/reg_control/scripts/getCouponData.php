@@ -8,6 +8,7 @@ $perm = "reg_admin";
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
 if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
+    $response['status'] = 'error';
     $response['error'] = "Authentication Failed";
     ajaxSuccess($response);
     exit();
@@ -48,7 +49,10 @@ EOS;
 
 $couponR = dbSafeQuery($couponQ, 'i', array($conid));
 if ($couponR == false) {
-    return array('status' => 'error', 'data' => 'Error: Error retrieving coupon list');
+    $response['status'] = 'error';
+    $response['error'] = 'Error: Error retrieving coupon list';
+    ajaxSuccess($response);
+    exit();
 }
 $coupons = array();
 while ($couponL = fetch_safe_assoc($couponR)) {

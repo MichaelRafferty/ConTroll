@@ -28,12 +28,19 @@ page_init("Badge List",
             <h4>Coupons:</h4>
         </div>
     </div>
-    <div class="col-row" id="couponTable"></div>
-    <div class="col-sm-12">
-        <button id="coupon-undo" type="button" class="btn btn-secondary btn-sm" onclick="coupon.undo();" disabled>Undo</button>
-        <button id="coupon-redo" type="button" class="btn btn-secondary btn-sm" onclick="coupon.redo();" disabled>Redo</button>
-        <button id="coupon-addrow" type="button" class="btn btn-secondary btn-sm" onclick="coupon.addrow();">Add New</button>
-        <button id="coupon-save" type="button" class="btn btn-primary btn-sm" onclick="coupon.save();" disabled>Save Changes</button>
+    <div class="row">
+        <div class="col-sm-auto p-0 m-0" id="couponTable"></div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-sm-12">
+            <button id="coupon-undo" type="button" class="btn btn-secondary btn-sm" onclick="coupon.undo();" disabled>Undo</button>
+            <button id="coupon-redo" type="button" class="btn btn-secondary btn-sm" onclick="coupon.redo();" disabled>Redo</button>
+            <button id="coupon-addrow" type="button" class="btn btn-secondary btn-sm" onclick="coupon.addrow();">Add New</button>
+            <button id="coupon-save" type="button" class="btn btn-primary btn-sm" onclick="coupon.save();" disabled>Save Changes</button>
+        </div>
+    </div>
+    <div class='row mt-2'>
+        <div class='col-sm-auto p-0 m-0' id="detailTable"></div>
     </div>
     <div id='result_message' class='mt-4 p-2'></div>
 </div>
