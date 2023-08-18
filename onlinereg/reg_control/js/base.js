@@ -1,4 +1,17 @@
 
+// convert a form post string to an arrray
+// convert url parameters to associative array
+function URLparamsToArray(urlargs, doTrim = false) {
+    const params = new URLSearchParams(urlargs);
+    const result = {};
+    for (const [key, value] of params) {
+        if (doTrim)
+            result[key] = value.trim();
+        else
+            result[key] = value;
+    }
+    return result;
+}
 function test(method, formData, resultDiv) {
     $.ajax({
         url: "scripts/authEcho.php",

@@ -56,10 +56,21 @@ page_init("Badge List",
                         </div>
                         <div class='row mb-1'>
                             <div class='col-sm-4'>
+                                <label for='form_couponType'>One Use Coupon:*</label>
+                            </div>
+                            <div class='col-sm-auto p-0'>
+                                <select name='oneUse' id='form_oneUse'>
+                                    <option value="0">No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class='row mb-1'>
+                            <div class='col-sm-4'>
                                 <label for='form_startDate'>Optional Starting Date:</label>
                             </div>
                             <div class='col-sm-auto p-0'>
-                                <input class='form-control-sm' type='datetime' name='startDate' id='form_startDate'/>
+                                <input class='form-control-sm' type='datetime-local' name='startDate' id='form_startDate'/>
                             </div>
                         </div>
                         <div class='row mb-1'>
@@ -67,7 +78,7 @@ page_init("Badge List",
                                 <label for='form_endDate'>Optional Ending Date:</label>
                             </div>
                             <div class='col-sm-auto p-0'>
-                                <input class='form-control-sm' type='datetime' name='endDate' id='form_endDate'/>
+                                <input class='form-control-sm' type='datetime-local' name='endDate' id='form_endDate'/>
                             </div>
                         </div>
                         <div class='row mb-1'>
@@ -134,16 +145,25 @@ page_init("Badge List",
                         </div>
                         <div class='row mb-1'>
                             <div class='col-sm-4'>
-                                <label for='form_minTransaction'>Discount maximum cart of $:</label>
+                                <label for='form_maxTransaction'>Discount maximum cart of $:</label>
                             </div>
                             <div class='col-sm-auto p-0'>
                                 <input class='form-control-sm' type='number' name='maxTransaction' id='form_maxTransaction' />
+                            </div>
+                        </div>
+                        <div class='row mb-1'>
+                            <div class='col-sm-4'>
+                                <label for='form_maxRedemption'>Maximum number of redemptions:</label>
+                            </div>
+                            <div class='col-sm-auto p-0'>
+                                <input class='form-control-sm' type='number' name='maxRedemption' id='form_maxRedemption' />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-sm-4"></div>
                             <div class="col-sm-auto p-0">
                                 <button id="form_submit" type="button" class="btn btn-primary btn-sm" onclick="coupons.UpdateCoupon();">Update Coupon</button>
+                                <button id="form_delete" type="button" class="btn btn-warning btn-sm" onclick="coupons.DeleteCoupon();">Delete Unused Coupon</button>
                                 <button id="form_cancel" type="button" class="btn btn-secondary btn-sm" onClick="coupons.HideEditModal();">Cancel</button>
                             </div>
                         </div>

@@ -35,8 +35,10 @@ window.onload = function initpage() {
         data: 'type=all',
         success: function (data, textStatus, jhXHR) {
             if (data['status'] == 'error')
-                show_message($data['error'], 'error');
+                show_message(data['error'], 'error');
             else {
+                if (data['message'])
+                    show_message(data['message'], 'success');
                 coupons.initData(data);
             }
         },
@@ -60,11 +62,13 @@ class Coupon {
     #detailsDIV = null;
     #editModal = null;
     #edit_form_updateBTN = null;
+    #edit_form_deleteBTN = null;
     #edit_form_couponId = null;
     #edit_coupon_preform = null;
     #edit_coupon_title = null
     #edit_form_code = null;
     #edit_form_name = null;
+    #edit_form_oneUse = null;
     #edit_form_startDate = null;
     #edit_form_endDate = null;
     #edit_form_couponType = null;
@@ -75,6 +79,7 @@ class Coupon {
     #edit_form_limitMemberships = null;
     #edit_form_minTransaction = null;
     #edit_form_maxTransaction = null;
+    #edit_form_maxRedemption = null;
 
 // initialization
     constructor() {
@@ -86,12 +91,14 @@ class Coupon {
             this.#editModal = new bootstrap.Modal(edit_modal, {focus: true, backdrop: 'static'});
         }
         this.#edit_form_updateBTN = document.getElementById('form_submit');
+        this.#edit_form_deleteBTN = document.getElementById('form_delete');
         this.#edit_coupon_title = document.getElementById('edit-coupon-title');
         // edit form input fields
         this.#edit_form_couponId = document.getElementById('form_couponId');
         this.#edit_coupon_preform = document.getElementById('edit_coupon_preform');
         this.#edit_form_code = document.getElementById('form_code');
         this.#edit_form_name = document.getElementById('form_name');
+        this.#edit_form_oneUse = document.getElementById('form_oneUse');
         this.#edit_form_startDate = document.getElementById('form_startDate');
         this.#edit_form_endDate = document.getElementById('form_endDate');
         this.#edit_form_couponType = document.getElementById('form_couponType');
@@ -102,6 +109,7 @@ class Coupon {
         this.#edit_form_limitMemberships = document.getElementById('form_limitMemberships');
         this.#edit_form_minTransaction = document.getElementById('form_minTransaction');
         this.#edit_form_maxTransaction = document.getElementById('form_maxTransaction');
+        this.#edit_form_maxRedemption = document.getElementById('form_maxRedemption');
     }
 
     initData(data) {
@@ -179,7 +187,8 @@ class Coupon {
                 {title: "Membership Type", field: "shortname", headerFilter: true, headerWordWrap: true,},
                 {title: "Starts", field: "dispStart", headerSort: true, headerFilter: true,},
                 {title: "Ends", field: "dispEnd", headerSort: true, headerFilter: true,},
-                {title: "#Used", field: "full", headerSort: true, headerFilter: true, cellClick: usedClicked, },
+                {title: "Max Redemption", headerWordWrap: true, field: "maxRedemption", headerSort: true, headerFilter: true, },
+                {title: "#Used", field: "redeemedCount", headerSort: true, headerFilter: true, cellClick: usedClicked, },
                 {title: "#Keys", field: "keycount", cellClick: keysClicked, },
                 {field: "limitMemberships", visible: false, },
                 {field: "maxMemberships", visible: false, },
@@ -202,13 +211,18 @@ class Coupon {
         this.#edit_form_updateBTN.innerHTML = "Update Coupon";
         this.#edit_coupon_title.innerHTML = "<strong>Edit Coupon</strong>";
         this.#edit_coupon_preform.innerHTML = "Editing Coupon " + coupon['id'] + ": " + coupon['code'] + "(" + coupon['name'] + ")";
-        this.#edit_form_couponId.value = coupon['od'];
+        this.#edit_form_couponId.value = coupon['id'];
         this.#edit_form_code.value = coupon['code'];
         this.#edit_form_name.value = coupon['name'];
+        this.#edit_form_oneUse.value = coupon['oneUse'];
         if (coupon['startDate'] != '1900-01-01 00:00:00')
             this.#edit_form_startDate.value = coupon['startDate'];
+        else
+            this.#edit_form_startDate.value = '';
         if (coupon['endDate'] != '2100-12-31 00:00:00')
             this.#edit_form_endDate.value = coupon['endDate'];
+        else
+            this.#edit_form_endDate.value = '';
         this.#edit_form_couponType.value = coupon['couponType'];
         this.#edit_form_discount.value = coupon['discount'];
         this.#edit_form_memId.value = coupon['memId'];
@@ -217,6 +231,9 @@ class Coupon {
         this.#edit_form_limitMemberships.value = coupon['limitMemberships'];
         this.#edit_form_minTransaction.value = coupon['minTransaction'];
         this.#edit_form_maxTransaction.value = coupon['maxTransaction'];
+        this.#edit_form_maxRedemption.value = coupon['maxRedemption'];
+
+        this.#edit_form_deleteBTN.hidden = coupon['redeemedCount'] > 0;
         
         this.#editModal.show();
     }
@@ -241,6 +258,9 @@ class Coupon {
         this.#edit_form_limitMemberships.value = "";
         this.#edit_form_minTransaction.value = "";
         this.#edit_form_maxTransaction.value = "";
+        this.#edit_form_maxRedemption.value = "";
+
+        this.#edit_form_deleteBTN.hidden = true;
 
         this.#editModal.show();
     }
@@ -252,8 +272,47 @@ class Coupon {
 
     // add/edit form submit button (add/update)
     UpdateCoupon() {
-        alert("asked to add/update");
-        this.#editModal.hide();
+        // check for missing fields
+        var anymissing = false;
+        var reqfields = new Array('code','name','discount');
+        for (var field of reqfields) {
+            var entry = document.getElementById('form_' + field);
+            if (entry.value.trim() == '') {
+                entry.style.backgroundColor = 'var(--bs-warning)';
+                anymissing = true;
+            } else {
+                entry.style.backgroundColor = '';
+            }
+        }
+
+        if (anymissing) {
+            alert("Not all required fields have values, cannot add coupon until corrected.");
+            return;
+        }
+
+        // ok build values
+        var data = URLparamsToArray($('#coupon_form').serialize());
+        var script = "scripts/updateCoupon.php";
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: data,
+            success: function (data, textStatus, jhXHR) {
+                if (data['status'] == 'error') {
+                    show_message(data['error'], 'error');
+                    coupons.HideEditModal();
+                } else {
+                    if (data['message'])
+                        show_message(data['message'], 'success');
+                    coupons.initData(data);
+                    coupons.HideEditModal();
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                return false;
+            }
+        });
     }
 
     // detail table items
@@ -285,8 +344,10 @@ class Coupon {
             data: data,
             success: function (data, textStatus, jhXHR) {
                 if (data['status'] == 'error')
-                    show_message($data['error'], 'error');
+                    show_message(data['error'], 'error');
                 else {
+                    if (data['message'])
+                        show_message(data['message'], 'success');
                     coupons.drawUsed(data);
                 }
             },
@@ -313,8 +374,10 @@ class Coupon {
             data: data,
             success: function (data, textStatus, jhXHR) {
                 if (data['status'] == 'error')
-                    show_message($data['error'], 'error');
+                    show_message(['error'], 'error');
                 else {
+                    if (data['message'])
+                        show_message(data['message'], 'success');
                     coupons.drawKeys(data);
                 }
             },
@@ -432,6 +495,9 @@ class Coupon {
         if (coupon['maxTransaction']) {
             html += '<li>The discount will only apply to the first ' + coupon['maxTransaction'] + " of the cart</li>\n";
         }
+        if (coupon['maxRedemption']) {
+            html += '<li>The coupon may only be used' + coupon['maxRedemption'] + " times</li>\n";
+        }
 
         if (coupon['memId']) {
             html += '<li>Only valid on ';
@@ -450,79 +516,35 @@ class Coupon {
 
         return "Coupon Details for coupon code '" + coupon['code'] + "': " + coupon['name'] + "\n<ul>\n" + html + "</ul>\n";
     }
-/*
-    // get functions
-    getMinMemberships() {
-        if (this.#curCoupon == null)
-            return 0;
 
-        if (this.#curCoupon['minMemberships'] == null)
-            return 0;
+    // delete coupon - if used count == 0 then allow delete
+    DeleteCoupon() {
+        var coupon = URLparamsToArray($('#coupon_form').serialize());
+        if (coupon['couponId'] == '' || coupon['couponId'] == 0) {
+            this.#editModal.hide();
+            return; // no coupon to delete
+        }
 
-        return this.#curCoupon['minMemberships'];
+        var script = "scripts/deleteCoupon.php";
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: coupon,
+            success: function (data, textStatus, jhXHR) {
+                if (data['status'] == 'error')
+                    show_message(data['error'], 'error');
+                else {
+                    if (data['message'])
+                        show_message(data['message'], 'success');
+                    coupons.initData(data);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                return false;
+            }
+        });
+
+        this.#editModal.hide();
     }
-
-    getMaxMemberships() {
-        if (this.#curCoupon == null)
-            return 999999999;
-
-        if (this.#curCoupon['maxMembersiphs'] == null)
-            return 999999999;
-
-        return this.#curCoupon['maxMemberships'];
-    }
-
-    getLimitMemberships() {
-        if (this.#curCoupon == null)
-            return 999999999;
-
-        if (this.#curCoupon['limitMemberships'] == null)
-            return 999999999;
-
-        return this.#curCoupon['limitMemberships'];
-    }
-
-    getMinCart() {
-        if (this.#curCoupon == null)
-            return 0;
-
-        if (this.#curCoupon['minTransactions'] == null)
-            return 0;
-
-        return this.#curCoupon['minTransaction'];
-    }
-
-    getMaxCart() {
-        if (this.#curCoupon == null)
-            return 999999999;
-
-        if (this.#curCoupon['maxTransaction'] == null)
-            return 999999999;
-
-        return this.#curCoupon['maxTransaction'];
-    }
-
-    getCouponCode() {
-        if (this.#curCoupon == null)
-            return null;
-
-        return this.#curCoupon['code'];
-    }
-    getCouponSerial() {
-        if (this.#curCoupon == null)
-            return null;
-
-        return this.#curCoupon['guid'];
-    }
-    getMemGroup() {
-        if (this.#curCoupon == null)
-            return null;
-
-        if (this.#curCoupon['memId'] == null)
-            return null;
-
-        return this.#curCoupon['memGroup'];
-    }
-
- */
 }
