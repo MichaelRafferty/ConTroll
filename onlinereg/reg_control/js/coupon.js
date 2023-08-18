@@ -161,7 +161,6 @@ class Coupon {
        this.#clearUsed(true);
 
         this.#couponTable = new Tabulator('#couponTable', {
-            maxHeight: "500px",
             movableRows: false,
             history: false,
             pagination: true,
@@ -336,7 +335,6 @@ class Coupon {
 
         var label = "Usage data for Coupon " + usageData[0]['CouponId'] + ": " + usageData[0]['code'] + "(" + usageData[0]['name'] + ")";
         this.#detailTable = new Tabulator('#detailTable', {
-            maxHeight: "500px",
             movableRows: false,
             history: false,
             pagination: true,
@@ -373,7 +371,6 @@ class Coupon {
 
         var label = "Key data for Coupon " + keyData[0]['couponId'] + ": " + keyData[0]['code'] + "(" + keyData[0]['name'] + ")";
         this.#detailTable = new Tabulator('#detailTable', {
-            maxHeight: "500px",
             movableRows: false,
             history: false,
             pagination: true,
