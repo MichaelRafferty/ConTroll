@@ -511,7 +511,7 @@ $onsitesale = $startdate->format("l, F j");
                          </div>
                          <div class="row" id="emptyCart">
                              <div class="col-sm-12 ms-0 me-0 p-0">
-                                 Your cart does not contain any primnary memberships.  Please add memberships to the cart before checking out.
+                                 Your cart does not contain any primary memberships.  Please add memberships to the cart before checking out.
                              </div>
                          </div>
                          <div class='row' id='noChargeCart' hidden>
