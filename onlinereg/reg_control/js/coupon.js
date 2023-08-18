@@ -58,12 +58,50 @@ class Coupon {
 
 // DOM Objects
     #detailsDIV = null;
+    #editModal = null;
+    #edit_form_updateBTN = null;
+    #edit_form_couponId = null;
+    #edit_coupon_preform = null;
+    #edit_coupon_title = null
+    #edit_form_code = null;
+    #edit_form_name = null;
+    #edit_form_startDate = null;
+    #edit_form_endDate = null;
+    #edit_form_couponType = null;
+    #edit_form_discount = null;
+    #edit_form_memId = null;
+    #edit_form_minMemberships = null;
+    #edit_form_maxMemberships = null;
+    #edit_form_limitMemberships = null;
+    #edit_form_minTransaction = null;
+    #edit_form_maxTransaction = null;
 
 // initialization
     constructor() {
         "use strict";
         // dom elements
         this.#detailsDIV = document.getElementById('detailTable');
+        var edit_modal = document.getElementById('edit_coupon');
+        if (edit_modal != null) {
+            this.#editModal = new bootstrap.Modal(edit_modal, {focus: true, backdrop: 'static'});
+        }
+        this.#edit_form_updateBTN = document.getElementById('form_submit');
+        this.#edit_coupon_title = document.getElementById('edit-coupon-title');
+        // edit form input fields
+        this.#edit_form_couponId = document.getElementById('form_couponId');
+        this.#edit_coupon_preform = document.getElementById('edit_coupon_preform');
+        this.#edit_form_code = document.getElementById('form_code');
+        this.#edit_form_name = document.getElementById('form_name');
+        this.#edit_form_startDate = document.getElementById('form_startDate');
+        this.#edit_form_endDate = document.getElementById('form_endDate');
+        this.#edit_form_couponType = document.getElementById('form_couponType');
+        this.#edit_form_discount = document.getElementById('form_discount');
+        this.#edit_form_memId = document.getElementById('form_memId');
+        this.#edit_form_minMemberships = document.getElementById('form_minMemberships');
+        this.#edit_form_maxMemberships = document.getElementById('form_maxMemberships');
+        this.#edit_form_limitMemberships = document.getElementById('form_limitMemberships');
+        this.#edit_form_minTransaction = document.getElementById('form_minTransaction');
+        this.#edit_form_maxTransaction = document.getElementById('form_maxTransaction');
     }
 
     initData(data) {
@@ -154,11 +192,69 @@ class Coupon {
             ]
         });
     }
+
+    // edit button on row
     EditCoupon(id) {
         "use strict";
 
-        console.log("asked to edit " + id);
-        console.log(this.#couponData[id]);
+        var coupon = this.#couponData[id];
+
+        // set initial values for edit
+        this.#edit_form_updateBTN.innerHTML = "Update Coupon";
+        this.#edit_coupon_title.innerHTML = "<strong>Edit Coupon</strong>";
+        this.#edit_coupon_preform.innerHTML = "Editing Coupon " + coupon['id'] + ": " + coupon['code'] + "(" + coupon['name'] + ")";
+        this.#edit_form_couponId.value = coupon['od'];
+        this.#edit_form_code.value = coupon['code'];
+        this.#edit_form_name.value = coupon['name'];
+        if (coupon['startDate'] != '1900-01-01 00:00:00')
+            this.#edit_form_startDate.value = coupon['startDate'];
+        if (coupon['endDate'] != '2100-12-31 00:00:00')
+            this.#edit_form_endDate.value = coupon['endDate'];
+        this.#edit_form_couponType.value = coupon['couponType'];
+        this.#edit_form_discount.value = coupon['discount'];
+        this.#edit_form_memId.value = coupon['memId'];
+        this.#edit_form_minMemberships.value = coupon['minMemberships'];
+        this.#edit_form_maxMemberships.value = coupon['maxMemberships'];
+        this.#edit_form_limitMemberships.value = coupon['limitMemberships'];
+        this.#edit_form_minTransaction.value = coupon['minTransaction'];
+        this.#edit_form_maxTransaction.value = coupon['maxTransaction'];
+        
+        this.#editModal.show();
+    }
+
+    // add new button at top of screen
+    // prepare editor form for editing a new coupon
+    AddNew() {
+        // set initial values for edit
+        this.#edit_form_updateBTN.innerHTML = "Add New Coupon";
+        this.#edit_coupon_title.innerHTML = "<strong>Add New Coupon</strong>";
+        this.#edit_coupon_preform.innerHTML = "";
+        this.#edit_form_couponId.value = "";
+        this.#edit_form_code.value = "";
+        this.#edit_form_name.value = "";
+        this.#edit_form_startDate.value = "";
+        this.#edit_form_endDate.value = "";
+        this.#edit_form_couponType.value = '$off';
+        this.#edit_form_discount.value = "";
+        this.#edit_form_memId.value = "";
+        this.#edit_form_minMemberships.value = "";
+        this.#edit_form_maxMemberships.value = "";
+        this.#edit_form_limitMemberships.value = "";
+        this.#edit_form_minTransaction.value = "";
+        this.#edit_form_maxTransaction.value = "";
+
+        this.#editModal.show();
+    }
+
+    // add/edit form cancel button
+    HideEditModal() {
+        this.#editModal.hide();
+    }
+
+    // add/edit form submit button (add/update)
+    UpdateCoupon() {
+        alert("asked to add/update");
+        this.#editModal.hide();
     }
 
     // detail table items
