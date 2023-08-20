@@ -36,32 +36,45 @@ It also expects you to know how to fetch/update files from GitHub. The software 
             routines
             servers
             user
-            vendors
-            vendorSpaces
+            vendors (NOTE vendors or art show only)
+            vendorSpaces (NOTE vendors or art show only)
         ii. load tables with foreign keys
             ageList
-            artist
-            artshow_reg
-            memlist
-            oauth_links
-            oauth_people
+            memList
             atcon_user
             atcon_auth
-            reg_badgelist
+            reg_badgeList
             reg_club
             user_auth
-            vendorSpacePrices
             newperson   (NOTE: Newperson refers to transaction, you might have to do it's foreign key separately as transaction also references a different field in newperson)
             transaction
-            paymewnts
-            vendor_space
+            payments
+            vendorSpacePrices (NOTE vendors or art show only)
+            vendor_space (NOTE vendors or art show only)
             reg
             atcon_history
-            artshow
-            artItems
-            artsales
+            artist (Note: belongs to artshow only)
+            artshow_reg (Note: belongs to artshow only)
+            artshow (Note: belongs to artshow only)
+            artItems (Note: belongs to artshow only)
+            artsales (Note: belongs to artshow only)
             coupon
             couponKeys
+
+	iii.
+	    add link from newperson to transactions:
+ALTER TABLE newperson ADD CONSTRAINT `newperson_transid_fk` FOREIGN KEY (`transid`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE;
+
+	iv. add routines and views
+            memLabel
+            syncServerPrinters
+
+
+	v. obsolete tables
+            reg_staff_stats
+            oauth_links
+            oauth_people
+
 
 4. Populate the tables far enough to use the GUI to continue, or as far as you want.
     Necessary tables for the GUI:
