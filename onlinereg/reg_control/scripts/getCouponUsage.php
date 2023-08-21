@@ -27,7 +27,7 @@ $couponQ = <<<EOS
 SELECT C.*, T.price, T.couponDiscount, T.paid, T.type, T.complete_date, P.last_name, P.first_name, P.badge_name
 FROM couponUsage C
 JOIN transaction T ON (T.id = C.transId)
-JOIN perinfo P ON (P.id = C.perid)
+LEFT OUTER JOIN perinfo P ON (P.id = C.perid)
 WHERE couponId = ? AND T.paid IS NOT NULL;
 EOS;
 
