@@ -516,7 +516,7 @@ $onsitesale = $startdate->format("l, F j");
                          </div>
                          <div class='row' id='noChargeCart' hidden>
                              <div class='col-sm-12 ms-0 me'-0 p-0'>
-                                 No payment is required on your cart. Click "Purchase to" check out now or add more items to the cart using "Add Memberships".<br/>
+                                 No payment is required on your cart. Click "Purchase" to check out now or add more items to the cart using "Add Memberships".<br/>
                                  <button id='ncpurchase' onclick="makePurchase('no-charge', 'purchase')">Purchase</button>&nbsp;
                                  <button onclick='newBadgeModalOpen();'>Add Memberships</button>
                              </div>
