@@ -445,7 +445,7 @@ class Coupon {
                 {
                     title: label, columns: [
                         {title: "Key ID", field: "id", hozAlign: "right", headerSort: true, headerFilter: false,},
-                        {title: "Create Timestamp", headerWordWrap: true, field: "createTS",  headerSort: true, },
+                        {title: "Create Timestamp", headerWordWrap: true, field: "createTS", headerSort: true, },
                         {title: "Create By", headerWordWrap: true, field: "createBy",  headerSort: true, headerFilter: true, },
                         {title: "Assigned To:", columns: [
                             {title: "Perid", field: "perid", hozAlign: "right", maxWidth:90, width:90, headerSort: true, headerFilter: true,},

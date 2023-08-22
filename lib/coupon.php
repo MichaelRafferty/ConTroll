@@ -21,7 +21,7 @@ function load_coupon_data($couponCode, $serial = null): array
 
     // coupon code is required, as this works for a single specific coupon code
     if ($couponCode == null || $couponCode == '') {
-        return array('status' => 'error', 'data' => 'coupon code required and not passed');
+        return array('status' => 'error', 'error' => 'coupon code required and not passed');
     }
 
     $couponQ = <<<EOS
@@ -43,11 +43,11 @@ ORDER BY c.startDate;
 EOS;
     $res = dbSafeQuery($couponQ, 'sis', array($serial, $con['id'], $couponCode));
     if ($res === false) {
-        return array('status' => 'error', 'data' => 'Database Coupon Issue');
+        return array('status' => 'error', 'error' => 'Database Coupon Issue');
     }
 
     if ($res->num_rows == 0) {
-        return array('status' => 'error', 'data' => 'Error: Coupon not found');
+        return array('status' => 'error', 'error' => 'Error: Coupon not found');
     }
 
     $coupon = NULL;
@@ -56,6 +56,8 @@ EOS;
         // this coupon is valid now as it returns Early, NULL, expired as values in the query
         if ($l['start'] == null and $l['end'] == null && $l['usedBy'] == null) {
             $coupon = $l;
+            $ec = '';
+            break;
         }
         if ($l['start'] != null)
             $ec = 'Coupon has not started yet, starts ' . $l['startDate'];
@@ -66,7 +68,12 @@ EOS;
     }
 
     if ($ec != '')
-        return array('status' => 'error', 'data' => $ec);
+        return array('status' => 'error', 'error' => $ec);
+
+    if ($coupon['maxRedemption']) {
+        if ($coupon['redeemedCount'] >= $coupon['maxRedemption'])
+            return array('status' => 'error', 'error' => 'Coupon has already reached its maximium number of redemptions');
+    }
 
     // if coupon contains a memId, make sure that memId is in list of things we can sell, refetch the mtype array
     $result = array('status' => 'success', 'coupon' => $coupon);
@@ -170,7 +177,11 @@ function apply_overall_discount($coupon, $total) {
     }
 
     if ($code == '%off') {
-        $discountable = $total > $coupon['maxTransaction'] ? $coupon['maxTransaction'] : $total;
+        if ($coupon['maxTransaction'] !== null)
+            $discountable = $total > $coupon['maxTransaction'] ? $coupon['maxTransaction'] : $total;
+        else
+            $discountable = $total;
+
         return round($discountable * $coupon['discount'] / 100.0, 2);
     }
 

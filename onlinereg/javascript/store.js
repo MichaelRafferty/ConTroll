@@ -365,7 +365,7 @@ function repriceCart() {
 
     if (coupon.isCouponActive()) {
         // first compute un-discounted cart total to get is it sufficient for the discount
-        if (mbrtotal >= coupon.getMinCart() && mbrtotal <= coupon.getMaxCart() && primarymemberships >= coupon.getMinMemberships()  && primarymemberships <= coupon.getMaxMemberships())
+        if (mbrtotal >= coupon.getMinCart() && primarymemberships >= coupon.getMinMemberships()  && primarymemberships <= coupon.getMaxMemberships())
             cartDiscountable = true;
         // reset total for below
         subTotalColDiv.innerHTML = '$' + Number(total).toFixed(2);

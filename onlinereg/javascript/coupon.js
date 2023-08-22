@@ -105,7 +105,7 @@ class Coupon {
         if (this.#curCoupon == null)
             return 0;
 
-        if (this.#curCoupon['minTransactions'] == null)
+        if (this.#curCoupon['minTransaction'] == null)
             return 0;
 
         return this.#curCoupon['minTransaction'];
@@ -211,7 +211,7 @@ class Coupon {
     vc_success(data) {
         "use strict";
 
-        if (data['error'] !== undefined) {
+        if (data['status'] == 'error') {
             this.show_modal_message(data['error'], 'error');
             this.#addCouponBTN.disabled = false;
             return;
@@ -317,16 +317,15 @@ class Coupon {
             html += "<li>This coupon applies a special price of " + Number(this.#curCoupon['discount']).toFixed(2) + " to " +
                 label + " memberships in the cart.</li>";
         }
-        if (this.#curCoupon['minMemberships']) {
-            if (this.#curCoupon['minMemberships'] > 1)
-                html += '<li>You must buy at least ' + this.#curCoupon['minMemberships'] + " " + label + " memberships</li>\n";
+        if (this.getMinMemberships() > 1) {
+            html += '<li>You must buy at least ' + this.getMinMemberships() + " " + label + " memberships</li>\n";
         }
         if (this.#curCoupon['maxMemberships']) {
             html += '<li>This coupon will only discount up to ' + this.#curCoupon['maxMemberships'] + " " + label + " memberships</li>\n";
         }
 
-        if (this.#curCoupon['minTransaction']) {
-            html += '<li>Your pre-discount cart value must be at least ' + this.#curCoupon['minTransaction'] + "</li>\n";
+        if (this.getMinCart()) {
+            html += '<li>Your pre-discount cart value must be at least ' + this.getMinCart() + "</li>\n";
         }
         if (this.#curCoupon['maxTransaction']) {
             html += '<li>The discount will only apply to the first ' + this.#curCoupon['maxTransaction'] + " of the cart</li>\n";
@@ -402,12 +401,16 @@ class Coupon {
         if (!this.#couponActive)
             return 0;
 
+        if (total < this.getMinCart()) {
+            return 0;
+        }
+
         var discount = 0;
         if (this.#curCoupon['couponType'] == '$off') {
             discount = this.#curCoupon['discount'];
         } else if (this.#curCoupon['couponType'] == '%off') {
-            var discountable = total > this.#curCoupon['maxTransaction'] ? this.#curCoupon['maxTransaction'] : total;
-            discount = Number(this.#curCoupon['discount']) * discountable;
+            var amountDiscountable = total > this.getMaxCart() ? this.getMaxCart() : total;
+            discount = Number(Number(this.#curCoupon['discount']) * amountDiscountable / 100).toFixed(2);
         }
 
         if (discount > total) {
