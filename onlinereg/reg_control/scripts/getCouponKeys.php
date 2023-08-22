@@ -26,7 +26,7 @@ $id = $_POST['id'];
 $couponQ = <<<EOS
 SELECT C.code, C.name, K.*, 
     PC.first_name, PC.last_name, PC.badge_name,
-    PU.first_name AS u_first_name, PU.last_name AS u_last_name, PU.badge_name AS u_badge_name
+    PU.id AS used_perid, PU.first_name AS u_first_name, PU.last_name AS u_last_name, PU.badge_name AS u_badge_name
 FROM coupon C
 JOIN couponKeys K ON (K.couponId = C.id)
 LEFT OUTER JOIN perinfo PC ON (PC.id = K.perid)
