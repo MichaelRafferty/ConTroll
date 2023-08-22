@@ -30,7 +30,8 @@ SELECT C.code, C.name, K.*,
 FROM coupon C
 JOIN couponKeys K ON (K.couponId = C.id)
 LEFT OUTER JOIN perinfo PC ON (PC.id = K.perid)
-LEFT OUTER JOIN perinfo PU ON (PU.id = K.usedBy)
+LEFT OUTER JOIN transaction T ON (T.id = K.usedBy)
+LEFT OUTER JOIN perinfo PU ON (T.perid = PU.id)
 WHERE C.id = ?;
 EOS;
 
