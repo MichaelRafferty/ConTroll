@@ -2138,6 +2138,8 @@ function checkbox_check() {
 //  in any case need to re-show the pay tab with the details
 function apply_coupon(cmd) {
     if (cmd == 'r') {
+        var curCoupon = coupon.getCouponId();
+        cart.clearCoupon(id);
         coupon = null;
         coupon_discount = Number(0).toFixed(2);
         cart_total = (cart.getTotalPrice() - cart.getTotalPaid()).toFixed(2);

@@ -26,6 +26,12 @@ class Coupon {
         return this.#couponActive;
     }
 
+    getCouponId() {
+        if (this.#curCoupon == null)
+            return null;
+
+        return this.#curCoupon['id'];
+    }
     getMinMemberships() {
         if (this.#curCoupon == null)
             return 0;

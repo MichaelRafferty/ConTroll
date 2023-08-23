@@ -540,6 +540,17 @@ class regpos_cart {
         }
     }
 
+    // Clear the coupon matching couponId from all rows in the cart
+    clearCoupon(couponId) {
+        for (var rownum in this.#membership_rows ) {
+            var mrow = this.#membership_rows[mrow];
+            if (mrow['coupon'] == couponId) {
+                mrow['coupon'] = null;
+                mrow['discount'] = 0;
+            }
+        }
+    }
+
 // format all of the memberships for one record in the cart
     #drawCartRow(rownum) {
         var row = this.#cart_perinfo[rownum];
