@@ -568,7 +568,6 @@ class regpos_cart {
         var yearahead_html = '';
         var addon_html = '';
         var yearahead_eligible = false;
-        var row_shown = true;
         var upgrade_eligible = false;
         var day = null;
         var col1 = '';
@@ -581,6 +580,7 @@ class regpos_cart {
             if (mrow['todelete'] !== undefined)
                 continue;
 
+            var row_shown = true;
             var category = mrow['memCategory'];
             if (category == 'yearahead' && mrow['conid'] == conid)
                 category = 'standard'; // last years yearahead is this year's standard
