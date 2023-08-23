@@ -128,9 +128,11 @@ ALTER TABLE newperson ADD CONSTRAINT `newperson_transid_fk` FOREIGN KEY (`transi
         i. atcon_user
         ii. atcon_auth (at least assign the manager permission)
 
-9. If you are running the balticon reg system, it needs to access the perinfo, reg, and memList tables.  You'll need to know the zambia_db_user
-    and the host the database is on. The host is usually 'localhost';  The parens are not part of the sequnce below, just showing what you need
-    to substitute.
+9. If you are running the balticon reg system, it needs to access the perinfo, reg, and memList tables to keep its copy of the program
+    participant information updated and in sync with the reg system.  Zambia pulls the membership and contact info for its program participants
+    and when a program participant updates their contact info in Zambia it pushs this change back to the reg system as well keeping them in sync.
+    You'll need to know the zambia_db_user and the host the database is on. The host is usually 'localhost';
+    The parens are not part of the sequnce below, just showing what you need to substitute.
     a. Grant select and update to the zambia user for perinfo:
         GRANT SELECT ON perinfo TO '(zanbia_db_user)'@'(databasehost);
         GRANT UPDATE ON perinfo TO '(zanbia_db_user)'@'(databasehost);
