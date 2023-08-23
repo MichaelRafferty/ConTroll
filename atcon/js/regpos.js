@@ -79,6 +79,12 @@ var pay_button_ercpt = null;
 var pay_button_print = null;
 var pay_tid = null;
 var discount_mode = 'none';
+var num_coupons = 0;
+var couponList = null;
+var couponSelect = null;
+var coupon = null;
+var coupon_discount = Number(0).toFixed(2);
+var cart_total = Number(0).toFixed(2);
 
 // print items
 var print_div = null;
@@ -276,6 +282,21 @@ function loadInitialData(data) {
             membership_select += option;
             membership_selectlist.push({price: match[row]['price'], option: option});
         }
+    }
+
+    // set up coupon items
+    num_coupons = data['num_coupons'];
+    couponList = data['couponList'];
+    // build coupon select
+    if (num_coupons <= 0) {
+        couponSelect = '';
+    } else {
+        couponSelect = '<select name="couponSelect" id="pay_couponSelect">' + "\n<option value=''>No Coupon</option>\n";
+        for (var row in couponList) {
+            var item = couponList[row];
+            couponSelect += "<option value='" + item['id'] + "'>" + item['code'] + ' (' + item['name'] + ")</option>\n";
+        }
+        couponSelect += "</select>\n";
     }
 
     cart.set_initialData(membership_select, membership_selectlist)
@@ -2111,6 +2132,26 @@ function checkbox_check() {
     pay_button_ercpt.disabled = false;
 }
 
+// apply_coupon - apply and compute the discount for a coupon, also show the rules for the coupon if applied
+//  a = apply coupon from select
+//  r = remove coupon
+//  in any case need to re-show the pay tab with the details
+function apply_coupon(cmd) {
+    if (cmd == 'r') {
+        coupon = null;
+        coupon_discount = Number(0).toFixed(2);
+        cart_total = (cart.getTotalPrice() - cart.getTotalPaid()).toFixed(2);
+        pay_shown();
+        return;
+    }
+    if (cmd == 'a') {
+        var couponId = document.getElementById("pay_couponSelect").value;
+        coupon = new Coupon();
+        coupon.LoadCoupon(couponId);
+    }
+    return;
+}
+
 function pay_shown() {
     if (!isCashier) {
         show_message("You do not have permission to handle payments", "warning");
@@ -2168,7 +2209,6 @@ function pay_shown() {
             pay_button_rcpt.hidden = true;
             pay_button_ercpt.hidden = true;
             pay_button_ercpt.disabled = true;
-            receeiptEmailAddresses_div.innerHTML = '';
             pay_button_print.hidden = true;
         }
         var total_amount_due = (cart.getTotalPrice() - cart.getTotalPaid()).toFixed(2);
@@ -2181,11 +2221,54 @@ function pay_shown() {
     <div class="row pb-2">
         <div class="col-sm-auto ms-0 me-2 p-0">New Payment Transaction ID: ` + pay_tid + `</div>
     </div>
-    <div class="row">
+    `;
+    if (num_coupons > 0 && !cart.priorCouponInCart()) { // cannot apply a coupon if one was already in the cart (and of course, there need to be valid coupons right now)
+        if (coupon == null) { // no coupon applied yet
+            pay_html += `
+    <div class="row mt-3">
+        <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+` + couponSelect + `
+        </div>
+        <div class="col-sm-auto ms-0 me-0 p-0">
+            <button class="btn btn-secondary btn-small" type="button" id="pay-btn-coupon" onclick="apply_coupon('a');">Apply Coupon</button>
+        </div>  
+    </div>
+`;
+        } else {
+            // reprice cart for the coupon
+
+
+            // now display the amount due
+            pay_html += `
+    <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
+        <div class="col-sm-auto ms-0 me-2 p-0">` + coupon.getNameString() + `</div>
+         <div class="col-sm-auto ms-0 me-0 p-0">
+            <button class="btn btn-secondary btn-small" type="button" id="pay-btn-coupon" onclick="apply_coupon('r');">Remove Coupon</button>
+        </div>  
+    </div>
+    <div class="row mt-1">
+        <div class="col-sm-1 ms-0 me-0">&nbsp;</div>
+        <div class="col-sm-11 ms-0 me-0 p-0">` + coupon.couponDetails() + `</div>
+    </div>
+    <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">Cart Total:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-cart-total">$` + cart_total + `</div>
+    </div>
+    <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">Coupon Disc.:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-cart-total">$` + coupon_discount + `</div>
+    </div>
+`;
+        }
+    }
+    pay_html += `
+    <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + total_amount_due + `</div>
     </div>
-    <div class="row">
+    <div class="row mt-2">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Paid:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-amt" name="paid-amt" size="6"/></div>
     </div>

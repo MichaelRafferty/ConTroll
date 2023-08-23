@@ -14,6 +14,27 @@ EOS;
     return $c['num'];
 }
 
+// retrieve list of coupons for atcon regs (not one-off)
+function load_coupon_list() {
+    $con = get_conf('con');
+    $couponQ = <<<EOS
+SELECT c.id, c.code, c.name
+FROM coupon c
+WHERE c.conid = ? AND c.oneUse = 0 AND c.startDate <= now() AND c.endDate > now()
+ORDER BY c.code;
+EOS;
+    $res = dbSafeQuery($couponQ, 'i', array($con['id']));
+    if ($res === false) {
+        return array(-1, null); // count, array of coupons
+    }
+    $coupons = [];
+    $num = $res->num_rows;
+    while ($l = fetch_safe_assoc($res)) {
+        $coupons[$l['id']] = $l;
+    }
+    return array($num, $coupons);
+}
+
 // retrieve the coupon data from the database
 function load_coupon_data($couponCode, $serial = null): array
 {
@@ -72,7 +93,7 @@ EOS;
 
     if ($coupon['maxRedemption']) {
         if ($coupon['redeemedCount'] >= $coupon['maxRedemption'])
-            return array('status' => 'error', 'error' => 'Coupon has already reached its maximium number of redemptions');
+            return array('status' => 'error', 'error' => 'Coupon has already reached its maximum number of redemptions');
     }
 
     // if coupon contains a memId, make sure that memId is in list of things we can sell, refetch the mtype array
@@ -97,6 +118,65 @@ EOS;
     return $result;
 }
 
+// retrieve the coupon details for a specific id
+function load_coupon_details($id): array
+{
+    $con = get_conf('con');
+
+    // coupon code is required, as this works for a single specific coupon code
+    if ($id == null) {
+        return array('status' => 'error', 'error' => 'coupon id required and not passed');
+    }
+
+    $couponQ = <<<EOS
+SELECT c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.memId, c.minMemberships, c.maxMemberships, c.limitMemberships,
+       c.minTransaction, c.maxTransaction, c.maxRedemption,
+       count(t.id) AS redeemedCount, m.memAge, m.shortname, m.memGroup, m.label,
+       CASE WHEN c.startDate > now() THEN 'early' ELSE null END as start, 
+       CASE WHEN c.endDate <= now() THEN 'expired' ELSE null END as end
+FROM coupon c
+LEFT OUTER JOIN memLabel m ON (c.memId = m.id)
+LEFT OUTER JOIN transaction t ON (t.coupon = c.id and t.complete_date is not null)
+WHERE c.conid = ? AND c.id = ?
+GROUP BY c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.memId, c.minMemberships, c.maxMemberships,
+         c.minTransaction, c.maxTransaction, c.maxRedemption, m.memAge, m.label, c.startDate, c.endDate
+EOS;
+    $res = dbSafeQuery($couponQ, 'ii', array($con['id'], $id));
+    if ($res === false) {
+        return array('status' => 'error', 'error' => 'Database Coupon Issue');
+    }
+
+    if ($res->num_rows == 0) {
+        return array('status' => 'error', 'error' => 'Error: Coupon not found');
+    }
+
+    $coupon = fetch_safe_assoc($res);
+    if ($coupon['maxRedemption']) {
+        if ($coupon['redeemedCount'] >= $coupon['maxRedemption'])
+            return array('status' => 'error', 'error' => 'Coupon has already reached its maximum number of redemptions');
+    }
+
+    // if coupon contains a memId, make sure that memId is in list of things we can sell, refetch the mtype array
+    $result = array('status' => 'success', 'coupon' => $coupon);
+    if ($coupon['memId']) {
+        $priceQ = <<<EOS
+SELECT id, memGroup, label, shortname, sort_order, price, memAge, memCategory
+FROM memLabel
+WHERE
+    conid=? 
+    AND ((atcon = 'Y' AND startdate <= current_timestamp() AND enddate > current_timestamp()) OR (id = ?))
+ORDER BY sort_order, price DESC
+;
+EOS;
+        $priceR = dbSafeQuery($priceQ, 'ii', array($con['id'], $coupon['memId']));
+        while ($priceL = fetch_safe_assoc($priceR)) {
+            $membershiptypes[] = $priceL;
+        }
+        $result['mtypes'] = $membershiptypes;
+    }
+
+    return $result;
+}
 // apply coupon data to mytpe array
 function apply_coupon_data($mtypes, $coupon) {
     foreach ($mtypes as $id => $mbrtype) {

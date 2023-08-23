@@ -97,8 +97,6 @@ class regpos_cart {
     }
 
     // simple get/set/hide/show methods
-
-
     setInReview() {
         this.#in_review = true;
     }
@@ -230,6 +228,15 @@ class regpos_cart {
 
     getCartPmt() {
         return make_copy(this.#cart_pmt);
+    }
+
+    priorCouponInCart() {
+        for (var rownum in this.#cart_membership) {
+            var mbrrow = this.#cart_membership[rownum];
+            if (mbrrow['coupon'])
+                return true;
+        }
+        return false;
     }
 
 
@@ -372,6 +379,10 @@ class regpos_cart {
                 cart_mrow['paid'] = 0;
                 cart_mrow['priorPaid'] = 0;
             }
+            if (!('couponDiscountDiv' in cart_mrow)) {
+                cart_mrow['couponDiscount'] = 0;
+                cart_mrow['coupon'] = null;
+            }
             if (!('tid' in cart_mrow)) {
                 cart_mrow['tid'] = '';
             }
@@ -430,6 +441,7 @@ class regpos_cart {
         this.#cart_membership.push({
             perid: row['perid'],
             price: membership['price'],
+            couponDiscount: 0,
             paid: 0,
             tid: 0,
             index: this.#cart_membership.length,
@@ -443,6 +455,7 @@ class regpos_cart {
             memId: membership['id'],
             label: membership['label'],
             regid: -1,
+            coupon: null,
         });
 
         cart.drawCart();
@@ -544,6 +557,7 @@ class regpos_cart {
         var yearahead_html = '';
         var addon_html = '';
         var yearahead_eligible = false;
+        var row_shown = true;
         var upgrade_eligible = false;
         var day = null;
         var col1 = '';
@@ -672,15 +686,20 @@ class regpos_cart {
     </div>
     `;
                         break;
+
+                    default:
+                        row_shown = false;
                 }
             }
 
-            this.#total_price += Number(mrow['price']);
-            this.#total_paid += Number(mrow['paid']);
-            if (mem_is_membership)
-                membership_found = true;
-            if (mrow['paid'] != mrow['price']) {
-                this.#unpaid_rows++;
+            if (row_shown) {
+                this.#total_price += Number(mrow['price']);
+                this.#total_paid += Number(mrow['paid']);
+                if (mem_is_membership)
+                    membership_found = true;
+                if (mrow['paid'] != mrow['price']) {
+                    this.#unpaid_rows++;
+                }
             }
         }
         // first row - member name, remove button

@@ -65,9 +65,11 @@ $total_due = 0;
 foreach ($cart_membership as $cart_row) {
     if ($cart_row['price'] == '')
         $cart_row['price'] = 0;
+    if ($cart_row['couponDiscount'] == '')
+        $cart_row['couponDiscount'] = 0;
     if ($cart_row['paid'] == '')
         $cart_row['paid'] = 0;
-    $total_due += $cart_row['price'] - $cart_row['paid'];
+    $total_due += $cart_row['price'] - ($cart_row['couponDiscount'] + $cart_row['paid']);
 }
 
 if (round($amt,2) > round($total_due,2)) {
@@ -108,9 +110,11 @@ $typestr = 'si';
 foreach ($cart_membership as $cart_row) {
     if ($cart_row['price'] == '')
         $cart_row['price'] = 0;
+    if ($cart_row['couponDiscount'] == '')
+        $cart_row['couponDiscount'] = 0;
     if ($cart_row['paid'] == '')
         $cart_row['paid'] = 0;
-    $unpaid = $cart_row['price'] - $cart_row['paid'];
+    $unpaid = $cart_row['price'] - ($cart_row['couponDiscount'] + $cart_row['paid']);
     if ($unpaid > 0) {
         $amt_paid = min($amt, $unpaid);
         $cart_row['paid'] += $amt_paid;

@@ -6,6 +6,7 @@
 // Retrieve load the mapping tables and session information into the javascript side
 
 require_once('../lib/base.php');
+require_once('../../lib/coupon.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -138,5 +139,10 @@ while ($l = fetch_safe_assoc($r)) {
 }
 mysqli_free_result($r);
 $response['ageList'] = $agearray;
+
+// coupons
+$ret = load_coupon_list();
+$response['num_coupons'] = $ret[0];
+$response['couponList'] = $ret[1];
 
 ajaxSuccess($response);
