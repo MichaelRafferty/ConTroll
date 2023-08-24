@@ -350,7 +350,7 @@ class Coupon {
     }
 
 
-    // AgeDiscount - compute discount on badges of this agev group
+    // UpdateMtypes (age types) - compute discount on badges of this age group
     // returns text string to add to display for discount in price
     UpdateMtypes() {
         for (var row in mtypes) {

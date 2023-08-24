@@ -158,6 +158,7 @@ class Coupon {
         this.#mtypes = data['mtypes'];
         this.#couponError = false;
         clear_message();
+        this.UpdateMtypes();
         pay_shown();
     }
 
@@ -212,7 +213,7 @@ class Coupon {
     }
 
 
-    // AgeDiscount - compute discount on badges of this agev group
+    // UpdateMtypes (age type) - compute discount on badges of this age group
     // returns text string to add to display for discount in price
     UpdateMtypes() {
         for (var row in this.#mtypes) {
@@ -253,32 +254,68 @@ class Coupon {
             mbrtype['primary'] = primary;
             mbrtype['discount'] = Number(discount).toFixed(2);
             mbrtype['discountable'] = discount > 0;
-            var group = mbrtype['memGroup'];
-            shortnames[group] = mbrtype['shortname'];
         }
         return;
     }
 
-    CartDiscount(total) {
+    // determine if the coupon's minimum requirements have been met
+    CouponMet() {
         if (!this.#couponActive)
-            return 0;
+            return false;
 
-        if (total < this.getMinCart()) {
-            return 0;
+        var numMemberships = cart.getCartLength(); // number of people in cart = number of primary memberships as each person needs a primary membership
+        if (numMemberships < this.getMinMemberships()); // check for min in cart;
+            return false;
+
+        var memberships = cart.getCartMembership();
+        var numMbrId = 0;
+        var mbrId = this.#curCoupon['memId'];
+        var mbrprice = 0;
+        for (var mrownum in memberships) {
+            var mrow = memberships[mrownum];
+            if (mrow['memId'] == mbrid) {
+                numMbrId++;
+                mbrprice += mrow['price'];
+            } else {
+                var mtype = mtypes[mrow['id']];
+                if(mtype['primary']) {
+                    mbrprice += mrow['price'];
+                }
+            }
         }
+
+        if (mbrprice < this.getMinCart()) // not enough purchased of primary memberships
+            return false;
+
+        return true;
+    }
+    CartDiscount() {
+        if (!this.CouponMet())
+            return 0;
 
         var discount = 0;
+        var cart_total_price = cart.getTotalPrice();
+
         if (this.#curCoupon['couponType'] == '$off') {
-            discount = this.#curCoupon['discount'];
+            discount = this.#curCoupon['discount'] < cart_total_price ? this.#curCoupon['discount'] : cart_total_price;
         } else if (this.#curCoupon['couponType'] == '%off') {
-            var amountDiscountable = total > this.getMaxCart() ? this.getMaxCart() : total;
+            var amountDiscountable = cart_total_price > this.getMaxCart() ? this.getMaxCart() : cart_total_price;
             discount = Number(Number(this.#curCoupon['discount']) * amountDiscountable / 100).toFixed(2);
+        } else { // compute it from the crt
+            var memberships = cart.getCartMembership();
+            var maxMbr = this.getMaxMemberships();
+            for (var mrownum in memberships) {
+                var mtype = mtypes[mrow['id']];
+                if(mtype['primary']) {
+                    discount += mtype['discount'];
+                }
+            }
         }
 
-        if (discount > total) {
-            return total;
+        if (discount > cart_total_price) {
+            return Number(cart_total_price).toFixed(2);
         }
 
-        return discount;
+        return discount.toFixed(2);
     }
 }

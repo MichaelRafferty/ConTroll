@@ -169,11 +169,22 @@ ORDER BY sort_order, price DESC
 ;
 EOS;
         $priceR = dbSafeQuery($priceQ, 'ii', array($con['id'], $coupon['memId']));
-        while ($priceL = fetch_safe_assoc($priceR)) {
-            $membershiptypes[] = $priceL;
-        }
-        $result['mtypes'] = $membershiptypes;
+    } else {
+        $priceQ = <<<EOS
+SELECT id, memGroup, label, shortname, sort_order, price, memAge, memCategory
+FROM memLabel
+WHERE
+    conid=? 
+    AND (atcon = 'Y' AND startdate <= current_timestamp() AND enddate > current_timestamp())
+ORDER BY sort_order, price DESC
+;
+EOS;
+        $priceR = dbSafeQuery($priceQ, 'i', array($con['id']));
     }
+    while ($priceL = fetch_safe_assoc($priceR)) {
+        $membershiptypes[$priceL['id']] = $priceL;
+    }
+    $result['mtypes'] = $membershiptypes;
 
     return $result;
 }

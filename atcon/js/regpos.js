@@ -2142,7 +2142,6 @@ function apply_coupon(cmd) {
         cart.clearCoupon(id);
         coupon = null;
         coupon_discount = Number(0).toFixed(2);
-        cart_total = (cart.getTotalPrice() - cart.getTotalPaid()).toFixed(2);
         pay_shown();
         return;
     }
@@ -2239,7 +2238,9 @@ function pay_shown() {
 `;
         } else {
             // reprice cart for the coupon
-
+            cart_total = (cart.getTotalPrice() - cart.getTotalPaid()).toFixed(2);
+            cart_discount = coupon.CartDiscount();
+            total_amount_due = (cart_total - cart_discount).toFixed(2);
 
             // now display the amount due
             pay_html += `
