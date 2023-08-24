@@ -78,7 +78,7 @@ class Coupon {
         if (this.#curCoupon['minMemberships'] == null)
             return 0;
 
-        return this.#curCoupon['minMemberships'];
+        return Number(this.#curCoupon['minMemberships']);
     }
 
     getMaxMemberships() {
@@ -88,7 +88,7 @@ class Coupon {
         if (this.#curCoupon['maxMembersiphs'] == null)
             return 999999999;
 
-        return this.#curCoupon['maxMemberships'];
+        return Number(this.#curCoupon['maxMemberships']);
     }
 
     getLimitMemberships() {
@@ -98,7 +98,7 @@ class Coupon {
         if (this.#curCoupon['limitMemberships'] == null)
             return 999999999;
 
-        return this.#curCoupon['limitMemberships'];
+        return Number(this.#curCoupon['limitMemberships']);
     }
 
     getMinCart() {
@@ -108,7 +108,7 @@ class Coupon {
         if (this.#curCoupon['minTransaction'] == null)
             return 0;
 
-        return this.#curCoupon['minTransaction'];
+        return Number(this.#curCoupon['minTransaction']);
     }
 
     getMaxCart() {
@@ -118,7 +118,7 @@ class Coupon {
         if (this.#curCoupon['maxTransaction'] == null)
             return 999999999;
 
-        return this.#curCoupon['maxTransaction'];
+        return Number(this.#curCoupon['maxTransaction']);
     }
 
     getCouponCode() {

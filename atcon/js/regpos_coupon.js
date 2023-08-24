@@ -30,7 +30,7 @@ class Coupon {
         if (this.#curCoupon == null)
             return null;
 
-        return this.#curCoupon['id'];
+        return Number(this.#curCoupon['id']);
     }
     getMinMemberships() {
         if (this.#curCoupon == null)
@@ -39,7 +39,7 @@ class Coupon {
         if (this.#curCoupon['minMemberships'] == null)
             return 0;
 
-        return this.#curCoupon['minMemberships'];
+        return Number(this.#curCoupon['minMemberships']);
     }
 
     getMaxMemberships() {
@@ -49,7 +49,7 @@ class Coupon {
         if (this.#curCoupon['maxMembersiphs'] == null)
             return 999999999;
 
-        return this.#curCoupon['maxMemberships'];
+        return Number(this.#curCoupon['maxMemberships']);
     }
 
     getLimitMemberships() {
@@ -59,7 +59,7 @@ class Coupon {
         if (this.#curCoupon['limitMemberships'] == null)
             return 999999999;
 
-        return this.#curCoupon['limitMemberships'];
+        return Number(this.#curCoupon['limitMemberships']);
     }
 
     getMinCart() {
@@ -69,7 +69,7 @@ class Coupon {
         if (this.#curCoupon['minTransaction'] == null)
             return 0;
 
-        return this.#curCoupon['minTransaction'];
+        return Number(this.#curCoupon['minTransaction']);
     }
 
     getMaxCart() {
@@ -79,7 +79,7 @@ class Coupon {
         if (this.#curCoupon['maxTransaction'] == null)
             return 999999999;
 
-        return this.#curCoupon['maxTransaction'];
+        return Number(this.#curCoupon['maxTransaction']);
     }
 
     getCouponCode() {
@@ -155,10 +155,20 @@ class Coupon {
         }
 
         this.#curCoupon = data['coupon'];
+        this.#couponActive = true;
         this.#mtypes = data['mtypes'];
         this.#couponError = false;
         clear_message();
         this.UpdateMtypes();
+        cart_total = (cart.getTotalPrice() - cart.getTotalPaid()).toFixed(2);
+        coupon_discount = coupon.CartDiscount();
+        var total_amount_due = (cart_total - coupon_discount).toFixed(2);
+
+        // add coupon discount as payment row
+        var prow = {
+            index: cart.getPmtLength(), amt: coupon_discount, ccauth: null, checkno: null, desc: 'Coupon: ' + coupon.getCouponCode(), type: 'discount',
+        };
+        cart.updatePmt({ prow: prow });
         pay_shown();
     }
 
@@ -264,7 +274,8 @@ class Coupon {
             return false;
 
         var numMemberships = cart.getCartLength(); // number of people in cart = number of primary memberships as each person needs a primary membership
-        if (numMemberships < this.getMinMemberships()); // check for min in cart;
+        var minMemberships = this.getMinMemberships();
+        if (numMemberships < minMemberships) // check for min in cart
             return false;
 
         var memberships = cart.getCartMembership();
@@ -273,12 +284,12 @@ class Coupon {
         var mbrprice = 0;
         for (var mrownum in memberships) {
             var mrow = memberships[mrownum];
-            if (mrow['memId'] == mbrid) {
+            if (mrow['memId'] == mbrId) {
                 numMbrId++;
                 mbrprice += mrow['price'];
             } else {
-                var mtype = mtypes[mrow['id']];
-                if(mtype['primary']) {
+                var mtype = this.#mtypes[mrow['memId']];
+                if (mtype['primary']) {
                     mbrprice += mrow['price'];
                 }
             }
@@ -303,10 +314,10 @@ class Coupon {
             discount = Number(Number(this.#curCoupon['discount']) * amountDiscountable / 100).toFixed(2);
         } else { // compute it from the crt
             var memberships = cart.getCartMembership();
-            var maxMbr = this.getMaxMemberships();
             for (var mrownum in memberships) {
-                var mtype = mtypes[mrow['id']];
-                if(mtype['primary']) {
+                var mrow = memberships[mrownum];
+                var mtype = this.#mtypes[mrow['memId']];
+                if (mtype['primary']) {
                     discount += mtype['discount'];
                 }
             }
@@ -316,6 +327,6 @@ class Coupon {
             return Number(cart_total_price).toFixed(2);
         }
 
-        return discount.toFixed(2);
+        return Number(discount).toFixed(2);
     }
 }

@@ -162,12 +162,17 @@ class regpos_cart {
 
     // get total price
     getTotalPrice() {
-        return this.#total_price;
+        return Number(this.#total_price);
     }
 
     // get total amount paid
     getTotalPaid() {
-        return this.#total_paid;
+        return Number(this.#total_paid);
+    }
+
+    // get total pmts in cart
+    getTotalPmt() {
+        return Number(this.#total_pmt);
     }
 
     // check if a person is in cart already
@@ -542,13 +547,26 @@ class regpos_cart {
 
     // Clear the coupon matching couponId from all rows in the cart
     clearCoupon(couponId) {
+        // clear the discount from the membership rows
         for (var rownum in this.#membership_rows ) {
-            var mrow = this.#membership_rows[mrow];
+            var mrow = this.#membership_rows[rownum];
             if (mrow['coupon'] == couponId) {
                 mrow['coupon'] = null;
                 mrow['discount'] = 0;
             }
         }
+        // remove the discount coupon from the payment
+        var delrows = [];
+        for (rownum in this.#cart_pmt) {
+            var prow = this.#cart_pmt[rownum];
+            if (prow['type'] == 'discount' && prow['desc'].substring(0, 7) == 'Coupon:') {
+                delrows.push(rownum);
+            }
+        }
+        // now delete the matching rows (in reverse order)
+        delrows = delrows.reverse();
+        for (rownum in delrows)
+            this.#cart_pmt.splice(delrows[rownum], 1);
     }
 
 // format all of the memberships for one record in the cart
@@ -706,9 +724,11 @@ class regpos_cart {
             if (row_shown) {
                 this.#total_price += Number(mrow['price']);
                 this.#total_paid += Number(mrow['paid']);
+                if (mrow['discount'])
+                    this.#total_paid += Number(mrow['discount']);
                 if (mem_is_membership)
                     membership_found = true;
-                if (mrow['paid'] != mrow['price']) {
+                if ((mrow['paid'] + mrow['discount']) != mrow['price']) {
                     this.#unpaid_rows++;
                 }
             }
@@ -907,14 +927,15 @@ class regpos_cart {
             num_rows++;
             html += this.#drawCartRow(rownum);
         }
+        this.#total_price = Number(this.#total_price.toFixed(2));
+        this.#total_paid = Number(this.#total_paid.toFixed(2));
         html += `<div class="row">
     <div class="col-sm-8 p-0 text-end">Total:</div>
     <div class="col-sm-2 text-end">$` + Number(this.#total_price).toFixed(2) + `</div>
     <div class="col-sm-2 text-end">$` + Number(this.#total_paid).toFixed(2) + `</div>
 </div>
 `;
-        this.#total_price = Number(this.#total_price.toFixed(2));
-        this.#total_paid = Number(this.#total_paid.toFixed(2));
+
         if (this.#cart_pmt.length > 0) {
             html += `
 <div class="row mt-3">
@@ -932,7 +953,7 @@ class regpos_cart {
     <div class="col-sm-8 p-0 text-end">Payment Total:</div>`;
             this.#total_pmt = Number(this.#total_pmt.toFixed(2));
             html += `
-    <div class="col-sm-4 text-end">$` + this.#total_pmt.toFixed(2) + `</div>
+    <div class="col-sm-4 text-end">$` + Number(this.#total_pmt).toFixed(2) + `</div>
 </div>
 `;
         }

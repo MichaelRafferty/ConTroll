@@ -191,6 +191,7 @@ window.onload = function initpage() {
 
     // pay items
     pay_div = document.getElementById('pay-div');
+    coupon = new Coupon();
 
     // print items
     print_div = document.getElementById('print-div');
@@ -1789,7 +1790,7 @@ function pay(nomodal) {
     var checkno = null;
     var desc = null;
     var ptype = null;
-    var total_amount_due = cart.getTotalPrice() - cart.getTotalPaid();
+    var total_amount_due = cart.getTotalPrice() - (cart.getTotalPaid() + Number(coupon_discount));
 
     if (nomodal != '') {
         cashChangeModal.hide();
@@ -2139,14 +2140,16 @@ function checkbox_check() {
 function apply_coupon(cmd) {
     if (cmd == 'r') {
         var curCoupon = coupon.getCouponId();
-        cart.clearCoupon(id);
+        cart.clearCoupon(curCoupon);
         coupon = null;
+        coupon = new Coupon();
         coupon_discount = Number(0).toFixed(2);
         pay_shown();
         return;
     }
     if (cmd == 'a') {
         var couponId = document.getElementById("pay_couponSelect").value;
+        coupon = null;
         coupon = new Coupon();
         coupon.LoadCoupon(couponId);
     }
@@ -2212,10 +2215,9 @@ function pay_shown() {
             pay_button_ercpt.disabled = true;
             pay_button_print.hidden = true;
         }
-        var total_amount_due = (cart.getTotalPrice() - cart.getTotalPaid()).toFixed(2);
+         var total_amount_due = (cart.getTotalPrice() - (cart.getTotalPaid() + Number(coupon_discount))).toFixed(2);
 
         // draw the pay screen
-
         var pay_html = `
 <div id='payBody' class="container-fluid form-floating">
   <form id='payForm' action='javascript: return false; ' class="form-floating">
@@ -2224,7 +2226,7 @@ function pay_shown() {
     </div>
     `;
     if (num_coupons > 0 && !cart.priorCouponInCart()) { // cannot apply a coupon if one was already in the cart (and of course, there need to be valid coupons right now)
-        if (coupon == null) { // no coupon applied yet
+        if (!coupon.isCouponActive()) { // no coupon applied yet
             pay_html += `
     <div class="row mt-3">
         <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
@@ -2237,11 +2239,6 @@ function pay_shown() {
     </div>
 `;
         } else {
-            // reprice cart for the coupon
-            cart_total = (cart.getTotalPrice() - cart.getTotalPaid()).toFixed(2);
-            cart_discount = coupon.CartDiscount();
-            total_amount_due = (cart_total - cart_discount).toFixed(2);
-
             // now display the amount due
             pay_html += `
     <div class="row mt-1">
@@ -2254,14 +2251,6 @@ function pay_shown() {
     <div class="row mt-1">
         <div class="col-sm-1 ms-0 me-0">&nbsp;</div>
         <div class="col-sm-11 ms-0 me-0 p-0">` + coupon.couponDetails() + `</div>
-    </div>
-    <div class="row mt-1">
-        <div class="col-sm-2 ms-0 me-2 p-0">Cart Total:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-cart-total">$` + cart_total + `</div>
-    </div>
-    <div class="row mt-1">
-        <div class="col-sm-2 ms-0 me-2 p-0">Coupon Disc.:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-cart-total">$` + coupon_discount + `</div>
     </div>
 `;
         }

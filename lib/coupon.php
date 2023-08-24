@@ -175,7 +175,6 @@ SELECT id, memGroup, label, shortname, sort_order, price, memAge, memCategory
 FROM memLabel
 WHERE
     conid=? 
-    AND (atcon = 'Y' AND startdate <= current_timestamp() AND enddate > current_timestamp())
 ORDER BY sort_order, price DESC
 ;
 EOS;
