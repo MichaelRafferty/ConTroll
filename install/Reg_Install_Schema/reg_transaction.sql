@@ -38,7 +38,7 @@ CREATE TABLE `transaction` (
   `type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `ticket_num` int DEFAULT NULL,
-  `change_due` float DEFAULT NULL,
+  `change_due` decimal(8,2) DEFAULT NULL,
   `coupon` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `transaction_conid_fk` (`conid`),

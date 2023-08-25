@@ -227,6 +227,10 @@ class regpos_cart {
         return make_copy(this.#cart_membership);
     }
 
+    getCartMembershipRef() {
+        return this.#cart_membership;
+    }
+
     getCartMap() {
         return this.#cart_perinfo_map.getMap();
     }

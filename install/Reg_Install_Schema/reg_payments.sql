@@ -29,7 +29,7 @@ CREATE TABLE `payments` (
   `category` enum('reg','artshow','other','vendor') COLLATE utf8mb4_general_ci DEFAULT NULL,
   `description` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `source` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `amount` float DEFAULT NULL,
+  `amount` decimal(8,2) DEFAULT NULL,
   `time` datetime DEFAULT NULL,
   `cc` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `nonce` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,

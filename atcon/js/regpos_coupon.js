@@ -167,9 +167,9 @@ class Coupon {
         // add coupon discount as payment row
         var prow = {
             index: cart.getPmtLength(), amt: coupon_discount, ccauth: null, checkno: null, desc: 'Coupon: ' + coupon.getCouponCode(), type: 'discount',
+            coupon: coupon.getCouponId(),
         };
-        cart.updatePmt({ prow: prow });
-        pay_shown();
+        pay('', prow);
     }
 
     // couponDetails - a text line of the restrictions for this coupon
@@ -273,10 +273,9 @@ class Coupon {
         if (!this.#couponActive)
             return false;
 
-        var numMemberships = cart.getCartLength(); // number of people in cart = number of primary memberships as each person needs a primary membership
+        var numMemberships = 0;
         var minMemberships = this.getMinMemberships();
-        if (numMemberships < minMemberships) // check for min in cart
-            return false;
+
 
         var memberships = cart.getCartMembership();
         var numMbrId = 0;
@@ -284,16 +283,21 @@ class Coupon {
         var mbrprice = 0;
         for (var mrownum in memberships) {
             var mrow = memberships[mrownum];
-            if (mrow['memId'] == mbrId) {
+            if (mrow['memId'] == mbrId && (mrow['coupon'] == null || mrow['coupon'] == '')) {
                 numMbrId++;
+                numMemberships++;
                 mbrprice += mrow['price'];
             } else {
                 var mtype = this.#mtypes[mrow['memId']];
-                if (mtype['primary']) {
+                if (mtype['primary'] && (mrow['coupon'] == null || mrow['coupon'] == '')) {
                     mbrprice += mrow['price'];
+                    numMemberships++;
                 }
             }
         }
+
+        if (numMemberships < minMemberships) // check for min in cart
+            return false;
 
         if (mbrprice < this.getMinCart()) // not enough purchased of primary memberships
             return false;
@@ -309,17 +313,20 @@ class Coupon {
 
         if (this.#curCoupon['couponType'] == '$off') {
             discount = this.#curCoupon['discount'] < cart_total_price ? this.#curCoupon['discount'] : cart_total_price;
+            // mark reg as coupon as coupon applied
         } else if (this.#curCoupon['couponType'] == '%off') {
             var amountDiscountable = cart_total_price > this.getMaxCart() ? this.getMaxCart() : cart_total_price;
             discount = Number(Number(this.#curCoupon['discount']) * amountDiscountable / 100).toFixed(2);
-        } else { // compute it from the crt
-            var memberships = cart.getCartMembership();
-            for (var mrownum in memberships) {
-                var mrow = memberships[mrownum];
-                var mtype = this.#mtypes[mrow['memId']];
-                if (mtype['primary']) {
-                    discount += mtype['discount'];
-                }
+        }
+        var memberships = cart.getCartMembershipRef();
+        for (var mrownum in memberships) {
+            var mrow = memberships[mrownum];
+            var mtype = this.#mtypes[mrow['memId']];
+            if (mtype['primary'] && (mrow['coupon'] == null || mrow['coupon'] == '') && mrow['couponDiscount'] == 0) {
+                var rowdiscount = mtype['discount']
+                mrow['couponDiscount'] = rowdiscount;
+                mrow['coupon'] = this.getCouponId();
+                discount += rowdiscount;
             }
         }
 
