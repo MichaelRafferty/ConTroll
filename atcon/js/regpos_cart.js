@@ -248,6 +248,17 @@ class regpos_cart {
         return false;
     }
 
+    getPriorDiscount() {
+        var priordiscount = 0;
+        for (var rownum in this.#cart_membership) {
+            var mrow = this.#cart_membership[rownum];
+            if (mrow['couponDiscount']) {
+                priordiscount += Number(mrow['couponDiscount']);
+            }
+        }
+
+        return priordiscount;
+    }
 
 // if no memberships or payments have been added to the database, this will reset for the next customer
 // TODO: verify how to tell if it's allowed to be shown as enabled
@@ -273,6 +284,10 @@ class regpos_cart {
             var mindex = this.#cart_membership.length;
             this.#cart_membership.push(make_copy(mrows[mrownum]));
             this.#cart_membership[mindex]['pindex'] = pindex;
+            if (this.#cart_membership[mindex]['couponDiscount'] === undefined)
+                this.#cart_membership[mindex]['couponDiscount'] = 0.00;
+            if (this.#cart_membership[mindex]['couponDiscount'] === undefined)
+                this.#cart_membership[mindex]['coupon'] = null;
         }
         this.drawCart();
     }
@@ -388,7 +403,7 @@ class regpos_cart {
                 cart_mrow['paid'] = 0;
                 cart_mrow['priorPaid'] = 0;
             }
-            if (!('couponDiscountDiv' in cart_mrow)) {
+            if (!('couponDiscount' in cart_mrow)) {
                 cart_mrow['couponDiscount'] = 0;
                 cart_mrow['coupon'] = null;
             }

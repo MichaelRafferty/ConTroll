@@ -85,7 +85,7 @@ var couponSelect = null;
 var coupon = null;
 var coupon_discount = Number(0).toFixed(2);
 var cart_total = Number(0).toFixed(2);
-
+var pay_prior_discount = null;
 // print items
 var print_div = null;
 var printed_obj = null;
@@ -474,6 +474,7 @@ function start_over(reset_all) {
     receeiptEmailAddresses_div = null;
     pay_button_print = null;
     pay_tid = null;
+    pay_prior_discount = null;
 
     clear_add(reset_all);
     // set tab to find-tab
@@ -2170,7 +2171,13 @@ function pay_shown() {
     cart.freeze();
     current_tab = pay_tab;
     cart.drawCart();
-    if (cart.getTotalPaid() == cart.getTotalPrice()) {
+
+    if (pay_prior_discount === null) {
+        pay_prior_discount = cart.getPriorDiscount();
+    }
+
+    var total_amount_due = cart.getTotalPrice() - (cart.getTotalPaid() + pay_prior_discount + Number(coupon_discount));
+    if (total_amount_due  < 0.01) { // allow for rounding error, no need to round here
         // nothing more to pay       
         print_tab.disabled = false;
         cart.showNext();
@@ -2196,7 +2203,7 @@ function pay_shown() {
             }
             if (email_html.length > 2) {
                 pay_button_ercpt.hidden = false;
-                pay_button_ercpt.disabled = true;
+                pay_button_ercpt.disabled = false;
                 receeiptEmailAddresses_div.innerHTML = '<div class="row mt-2"><div class="col-sm-9 p-0">Email receipt to:</div></div>' +
                     email_html;
                 if (email_count == 1) {
@@ -2211,7 +2218,9 @@ function pay_shown() {
             document.getElementById('pay-check-div').hidden = true;
             document.getElementById('pay-ccauth-div').hidden = true;
             cart.hideVoid();
-        }        
+        } else {
+            goto_print();
+        }
     } else {
         if (pay_button_pay != null) {
             pay_button_pay.hidden = false;
@@ -2220,7 +2229,6 @@ function pay_shown() {
             pay_button_ercpt.disabled = true;
             pay_button_print.hidden = true;
         }
-         var total_amount_due = (cart.getTotalPrice() - (cart.getTotalPaid() + Number(coupon_discount))).toFixed(2);
 
         // draw the pay screen
         var pay_html = `
@@ -2260,10 +2268,19 @@ function pay_shown() {
 `;
         }
     }
+    // add prior discounts to screen if any
+    if (pay_prior_discount > 0) {
+        pay_html += `
+    <div class="row mt-2">
+        <div class="col-sm-2 ms-0 me-2 p-0">Prior Discount:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(pay_prior_discount).toFixed(2) + `</div>
+    </div>
+`;
+    }
     pay_html += `
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + total_amount_due + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(total_amount_due).toFixed(2) + `</div>
     </div>
     <div class="row mt-2">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Paid:</div>
@@ -2329,7 +2346,7 @@ function pay_shown() {
         pay_button_pay = document.getElementById('pay-btn-pay');
         pay_button_rcpt = document.getElementById('pay-btn-rcpt');
         pay_button_ercpt = document.getElementById('pay-btn-ercpt');
-        var receeiptEmailAddresses_div = document.getElementById('receeiptEmailAddresses');
+        receeiptEmailAddresses_div = document.getElementById('receeiptEmailAddresses');
         if (receeiptEmailAddresses_div)
             receeiptEmailAddresses_div.innerHTML = '';
         pay_button_print = document.getElementById('pay-btn-print');

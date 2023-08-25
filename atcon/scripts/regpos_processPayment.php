@@ -55,7 +55,12 @@ if (!array_key_exists('amt', $new_payment) || $new_payment['amt'] <= 0) {
     return;
 }
 
-$coupon = $_POST['coupon'];
+if (array_key_exists('coupon', $_POST)) {
+    $coupon = $_POST['coupon'];
+}
+else {
+    $coupon = null;
+}
 
 if (array_key_exists('change', $_POST)) {
     $response['crow'] = $_POST['change'];
@@ -67,8 +72,13 @@ $total_due = 0;
 foreach ($cart_membership as $cart_row) {
     if ($cart_row['price'] == '')
         $cart_row['price'] = 0;
-    if ($cart_row['couponDiscount'] == '')
+
+    if (array_key_exists('couponDiscount', $cart_row)) {
+        if ($cart_row['couponDiscount'] == '')
+            $cart_row['couponDiscount'] = 0;
+    } else
         $cart_row['couponDiscount'] = 0;
+
     if ($cart_row['paid'] == '')
         $cart_row['paid'] = 0;
     $total_due += $cart_row['price'] - ($cart_row['couponDiscount'] + $cart_row['paid']);

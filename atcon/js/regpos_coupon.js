@@ -323,7 +323,7 @@ class Coupon {
             var mrow = memberships[mrownum];
             var mtype = this.#mtypes[mrow['memId']];
             if (mtype['primary'] && (mrow['coupon'] == null || mrow['coupon'] == '') && mrow['couponDiscount'] == 0) {
-                var rowdiscount = mtype['discount']
+                var rowdiscount = Number(mtype['discount']);
                 mrow['couponDiscount'] = rowdiscount;
                 mrow['coupon'] = this.getCouponId();
                 discount += rowdiscount;
