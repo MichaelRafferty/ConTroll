@@ -2157,6 +2157,10 @@ function apply_coupon(cmd) {
         var couponId = document.getElementById("pay_couponSelect").value;
         coupon = null;
         coupon = new Coupon();
+        if (couponId == '') {
+            show_message("Coupon cleared, no coupon applied", 'success');
+            return;
+        }
         coupon.LoadCoupon(couponId);
     }
     return;

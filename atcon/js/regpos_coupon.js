@@ -116,6 +116,7 @@ class Coupon {
     LoadCoupon(couponId) {
         "use strict";
 
+        clear_message();
         // get the coupon data
         var postData = {
             ajax_request_action: 'getCouponDetails',
@@ -157,19 +158,32 @@ class Coupon {
         this.#curCoupon = data['coupon'];
         this.#couponActive = true;
         this.#mtypes = data['mtypes'];
+        this.UpdateMtypes()
+        if (!this.CouponMet()) {
+            var errmsg = "Coupon conditions not met: <br/>" + this.couponDetails();
+            show_message(errmsg, 'warn');
+            this.#curCoupon = null;
+            this.#couponActive = null;
+            this.#mtypes = null;
+            return;
+        }
+
         this.#couponError = false;
         clear_message();
-        this.UpdateMtypes();
         cart_total = (cart.getTotalPrice() - cart.getTotalPaid()).toFixed(2);
         coupon_discount = coupon.CartDiscount();
         var total_amount_due = (cart_total - coupon_discount).toFixed(2);
 
-        // add coupon discount as payment row
-        var prow = {
-            index: cart.getPmtLength(), amt: coupon_discount, ccauth: null, checkno: null, desc: 'Coupon: ' + coupon.getCouponCode(), type: 'discount',
-            coupon: coupon.getCouponId(),
-        };
-        pay('', prow);
+        if (coupon_discount > 0) {
+            // add coupon discount as payment row
+            var prow = {
+                index: cart.getPmtLength(), amt: coupon_discount, ccauth: null, checkno: null, desc: 'Coupon: ' + coupon.getCouponCode(), type: 'discount',
+                coupon: coupon.getCouponId(),
+            };
+            pay('', prow);
+        } else {
+            show_message("Coupon did not produce a discount", 'warn');
+        }
     }
 
     // couponDetails - a text line of the restrictions for this coupon
@@ -289,9 +303,11 @@ class Coupon {
                 mbrprice += mrow['price'];
             } else {
                 var mtype = this.#mtypes[mrow['memId']];
-                if (mtype['primary'] && (mrow['coupon'] == null || mrow['coupon'] == '')) {
-                    mbrprice += mrow['price'];
-                    numMemberships++;
+                if (mtype) {
+                    if (mtype['primary'] && (mrow['coupon'] == null || mrow['coupon'] == '')) {
+                        mbrprice += mrow['price'];
+                        numMemberships++;
+                    }
                 }
             }
         }
