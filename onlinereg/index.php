@@ -571,7 +571,7 @@ $onsitesale = $startdate->format("l, F j");
 </p>
 <?php } else if($ini['suspended']==1) { ?>
 <p class="text-primary">
-<?php echo $con['conname']; ?> has temporarily suspended online registration <?php echo $ini['suspendreason']; ?> on our ability to host <?php echo $con['conname']; ?> this year.  Please see the <a href='<?php echo $ini['suspendmessage']; ?>'>Message from our Chair</a> for details.
+<?php echo $con['conname']; ?> has temporarily suspended online registration <?php echo $ini['suspendreason']; ?>
 </p>
 <?php } else if($ini['close']==1) { ?>
 <p class="text-primary">Preregistration for <?php echo $condata['label']; ?> is now closed.
