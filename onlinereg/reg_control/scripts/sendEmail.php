@@ -33,12 +33,6 @@ if (!array_key_exists('type', $_POST)) {
     exit();
 }
 
-if($_POST['action'] == "test") {
-    if($_POST['email']) { $email = $_POST['email']; }
-} else if($_POST['action']=="full") {
-    $test=false;
-}
-
 $response['test'] = $test;
 
 $con = get_conf("con");
@@ -48,6 +42,18 @@ $conid=$con['id'];
 $conname = $con['conname'];
 $code='';
 $email_type = $_POST['type'];
+
+if ($_POST['action'] == 'test' || $reg['test'] == 1) {
+    if ($_POST['email']) {
+        $email = $_POST['email'];
+    }
+} else if ($_POST['action'] == 'full') {
+    $test = false;
+}
+
+if ($email == null || $email == '') {
+    $email = $con['regadminemail'];
+}
 
 switch ($email_type) {
 case 'reminder':
