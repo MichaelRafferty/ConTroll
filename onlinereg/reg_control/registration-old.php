@@ -3,7 +3,7 @@ require_once "lib/base.php";
 //initialize google session
 $need_login = google_init("page");
 
-$page = "registration";
+$page = "registration-old";
 if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
