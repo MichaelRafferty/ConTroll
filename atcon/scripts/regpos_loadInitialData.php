@@ -85,7 +85,7 @@ ORDER BY sort_order, price DESC;
 EOS;
 
 $memarray = array();
-$r = dbSafeQuery($priceQ, 'issii', array($conid, $searchdate, $enddate, $conid, $conid + 1));
+$r = dbSafeQuery($priceQ, 'issii', array($conid, $searchdate, $searchdate, $conid, $conid + 1));
 while ($l = fetch_safe_assoc($r)) {
     $memarray[] = $l;
 }
