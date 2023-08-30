@@ -311,22 +311,27 @@ function dbInsert($query)#: int|bool
 {
     global $dbObject;
     if (!is_null($dbObject)) {
-        $res = $dbObject->query($query);
-        if ($res === false) {
-            log_mysqli_error($query, 'Insert Error');
-            return false;
-        }
-        $id = $dbObject->insert_id;
-        if ($dbObject->errno) {
-            log_mysqli_error($query, "Insert Error");
+        try {
+            $res = $dbObject->query($query);
+            if ($res === false) {
+                log_mysqli_error($query, 'Insert Error');
+                return false;
+            }
+            $id = $dbObject->insert_id;
+            if ($dbObject->errno) {
+                log_mysqli_error($query, "Insert Error");
+                return false;
+            }
+        } catch (Exception $e) {
+            log_mysqli_error($query, $e->getMessage());
             return false;
         }
         return $id;
     } else {
         echo "ERROR: DB Connection Not Open";
         web_error_log("ERROR: DB Connection Not Open");
-        return false;
     }
+    return false;
 }
 
 
