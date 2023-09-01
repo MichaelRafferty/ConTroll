@@ -63,34 +63,37 @@ class reg_cart {
         filt_excat = null;
         filt_cat = new Array('upgrade')
         filt_shortname_regexp = null;
+        filt_conid = [Number(conid)];
         var match = memList.filter(mem_filter);
         for (row in match) {
             var label = match[row]['label'];
             var day = label.replace(/.*upgrade +(...).*/i, '$1').toLowerCase();
             if (day.length > 3)
                 day = (match[row]['label']).toLowerCase().substring(0, 3);
-            this.#upgrade_select[day] = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
+            this.#upgrade_select[day] = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + ' (' + match[row]['enddate'] + ')' + "</option>\n";
         }
 
         // cart is only place to use yearahead_select, so build it.
         filt_cat = new Array('yearahead')
         filt_shortname_regexp = null;
+        filt_conid = [Number(conid) + 1];
         match = memList.filter(mem_filter);
         this.#yearahead_select = '';
         this.#yearahead_selectlist = [];
         for (row in match) {
-            var option = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
+            var option = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + ' (' + match[row]['enddate'] + ')' + "</option>\n";
             this.#yearahead_select += option;
             this.#yearahead_selectlist.push({price: match[row]['price'], option: option});
         }
 
         // cart is only place to use addon_select, so build it
-        filt_cat = ['addon', 'add-on']
+        filt_cat = ['addon', 'add-on'];
+        filt_conid = [Number(conid)];
         filt_shortname_regexp = null;
         match = memList.filter(mem_filter);
         this.#addon_select = '';
         for (row in match) {
-            this.#addon_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
+            this.#addon_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + ' (' + match[row]['enddate'] + ')' + "</option>\n";
         }
 
         this.drawCart();
@@ -499,7 +502,7 @@ class reg_cart {
             optionrows = this.#yearahead_selectlist;
         var price = mrow['price'];
         for (var row in optionrows) {
-            if (optionrows[row]['price'] >= price)
+            if (optionrows[row]['price'] >= price || Manager)
                 html += optionrows[row]['option'];
         }
 

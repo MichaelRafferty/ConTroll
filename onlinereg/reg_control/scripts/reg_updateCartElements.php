@@ -33,20 +33,21 @@ if ($ajax_request_action != 'updateCartElements') {
 }
 
 $user_id = $_POST['user_id'];
-if ($user_id != $_SESSION['user']) {
-ajaxError("Invalid credentials passed");
+if ($user_id != $_SESSION['user_id']) {
+    ajaxError("Invalid credentials passed");
+    return;
 }
 $cart_perinfo = $_POST['cart_perinfo'];
 if (sizeof($cart_perinfo) <= 0) {
-ajaxError('No members are in the cart');
-return;
+    ajaxError('No members are in the cart');
+    return;
 }
 
 $cart_perinfo_map = $_POST['cart_perinfo_map'];
 $cart_membership = $_POST['cart_membership'];
 if (sizeof($cart_membership) <= 0) {
-ajaxError('No memberships are in the cart');
-return;
+    ajaxError('No memberships are in the cart');
+    return;
 }
 
 $updated_perinfo = [];
@@ -82,10 +83,6 @@ EOS;
 $delRegSQL = <<<EOS
 DELETE FROM reg
 WHERE id = ?;
-EOS;
-$insHistory = <<<EOS
-INSERT INTO atcon_history(userid, tid, regid, action, notes)
-VALUES (?, ?, ?, ?, ?);
 EOS;
 // insert/update all perinfo records,
 for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
@@ -129,14 +126,14 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
 
 // create the controlling transaction, in case the master perinfo needed insertion
 $master_perid = $cart_perinfo[0]['perid'];
-$notes = 'Pickup by: ' . trim($cart_perinfo[0]['first_name'] . ' ' . $cart_perinfo[0]['last_name']);
+$tran_type = 'regctl-reg/' . $user_id;
 $insTransactionSQL = <<<EOS
 INSERT INTO transaction(conid,perid,userid,price,paid,type,create_date)
-VALUES (?,?,?,?,?,'atcon',now());
+VALUES (?,?,?,?,?,?,now());
 EOS;
 // now insert the master transaction
-$paramarray = array($conid, $master_perid, $user_id, 0, 0);
-$typestr = 'iiiss';
+$paramarray = array($conid, $master_perid, $user_id, 0, 0, $tran_type);
+$typestr = 'iiisss';
 $master_transid = dbSafeInsert($insTransactionSQL, $typestr, $paramarray);
 if ($master_transid === false) {
     ajaxError('Unable to create master transaction');
@@ -180,24 +177,6 @@ for ($row = 0; $row < sizeof($cart_membership); $row++) {
             $paramarray = array($cartrow['price'], $cartrow['paid'], $cartrow['memId'], $cartrow['regid']);
             $typestr = 'ssii';
             $reg_upd += dbSafeCmd($updRegSQL, $typestr, $paramarray);
-        }
-    }
-    if (!array_key_exists('todelete', $cartrow)) {
-        // Now add the attach record for this item
-        $paramarray = array($user_id, $master_transid, $cartrow['regid'], 'attach', $notes);
-        $typestr = 'iiiss';
-        $new_history = dbSafeInsert($insHistory, $typestr, $paramarray);
-        if ($new_history === false) {
-            $error_message .= "Unable to attach membership " . $cartrow['regid'] . "<BR/>";
-        }
-        // now if there is a new note for this row, add it now
-        if (array_key_exists('new_reg_note', $cartrow)) {
-            $paramarray = array($user_id, $master_transid, $cartrow['regid'], 'notes', $cartrow['new_reg_note']);
-            $typestr = 'iiiss';
-            $new_history = dbSafeInsert($insHistory, $typestr, $paramarray);
-            if ($new_history === false) {
-                $error_message .= 'Unable to add note to membership ' . $cartrow['regid'] . '<BR/>';
-            }
         }
     }
 }

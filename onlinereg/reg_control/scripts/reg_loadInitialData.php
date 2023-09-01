@@ -42,7 +42,7 @@ $response['conid'] = $conid;
 $response['discount'] = $atcon['discount'];
 $response['badgePrinter'] = false; //$_SESSION['badgePrinter'][0] != 'None';
 $response['receiptPrinter'] = false; //$_SESSION['receiptPrinter'][0] != 'None';
-$response['user_id'] = null; //$_SESSION['user'];
+$response['user_id'] = $_SESSION['user_id'];
 // do as if statement such that it can check for both database error and no rows returned
 $Manager = checkAuth($check_auth['sub'], 'reg_admin');
 if ($Manager !== false && sizeof($Manager) > 0)

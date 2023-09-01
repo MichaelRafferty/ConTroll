@@ -1,16 +1,27 @@
 <?php
 
-// library AJAX Processor: regpos_updatePerinfoNote.php
+// library AJAX Processor: reg_updatePerinfoNote.php
 // Balticon Registration System
 // Author: Syd Weinstein
 // Retrieve update open notes field in perinfo record
 
-require_once('../lib/base.php');
+require_once '../lib/base.php';
+
+$check_auth = google_init('ajax');
+$perm = 'registration';
+
+$response = array('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+
+if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
+    RenderErrorAjax('Authentication Failed');
+    exit();
+}
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
+
 
 $con = get_conf('con');
 $conid = $con['id'];
@@ -23,8 +34,15 @@ if ($ajax_request_action != 'updatePerinfoNote') {
     exit();
 }
 
+if (array_key_exists('user_id', $_SESSION)) {
+    $user_id = $_SESSION['user_id'];
+} else {
+    ajaxError('Invalid credentials passed');
+    return;
+}
+
 // at present ony a manager can update a perinfo note
-if (!check_atcon('manager', $conid)) {
+if (!checkAuth($check_auth['sub'], 'reg_admin')) {
     $message_error = 'No permission.';
     RenderErrorAjax($message_error);
     exit();
@@ -39,10 +57,6 @@ if (!check_atcon('manager', $conid)) {
 //  Outputs:
 //      message/error/warn: appropriate diagnostics
 
-$user_id = $_POST['user_id'];
-if ($user_id != $_SESSION['user']) {
-    ajaxError('Invalid credentials passed');
-}
 $notes = $_POST['notes'];
 if ($notes === '')
     $notes = null;
