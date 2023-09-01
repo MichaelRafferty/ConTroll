@@ -83,6 +83,7 @@ function google_init($mode) {
     ************************************************/
     if (!empty($_SESSION['id_token_token'])
           && isset($_SESSION['id_token_token'])
+          /*&& array_key_exists('refresh_token', $_SESSION['id_token_token']) */  // need a better check here, as this is breaking with 'no refresh token' error when > 900 seconds.
     ) {
         $client->setAccessToken($_SESSION['id_token_token']);
         $token_data = $client->verifyIdToken();
