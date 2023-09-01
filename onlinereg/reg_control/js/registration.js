@@ -45,7 +45,7 @@ var add_results_div = null;
 var add_mode = true;
 var add_mem_select = null;
 var add_mt_dataentry = `
-    <select id='ae_mem_sel' name='age' style="width:300px;" tabindex='15'>
+    <select id='ae_mem_sel' name='age' style="width:500px;" tabindex='15'>
     </select>
 `;
 var add_edit_dirty_check = false;
@@ -122,6 +122,7 @@ var filt_excat = null; // array of exclude category
 var filt_cat = null;  // array of categories to include
 var filt_age = null;  // array of ages to include
 var filt_type = null; // array of types to include
+var filt_conid = null; // array of conid's to include
 var filt_shortname_regexp = null; // regexp item;
 var startdate = null;
 var enddate = null;
@@ -259,12 +260,13 @@ function loadInitialData(data) {
     filt_cat = null;
     filt_type = null;
     filt_age = null;
+    filt_conid = [Number(conid)];
     filt_shortname_regexp = null;
     var match = memList.filter(mem_filter);
     membership_select = '';
     var membership_selectlist = [];
     for (var row in match) {
-        if (match[row]['conid'] == conid && (match[row]['canSell'] == 1 || Manager)) {
+        if (match[row]['canSell'] == 1 || Manager) {
             var option = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + ' (' + match[row]['enddate'] + ')' + "</option>\n";
             membership_select += option;
             membership_selectlist.push({price: match[row]['price'], option: option});
@@ -326,6 +328,10 @@ function mem_filter(cur, idx, arr) {
     }
     if (filt_excat != null) {
         if (filt_excat.includes(cur['memCategory'].toLowerCase()))
+            return false;
+    }
+    if (filt_conid != null) {
+        if (!filt_conid.includes(Number(cur['conid'])))
             return false;
     }
 
@@ -1058,12 +1064,12 @@ function draw_record(row, first) {
     var html = `
 <div class="container-fluid">
     <div class="row mt-2">
-        <div class="col-sm-3">`;
+        <div class="col-sm-3 pt-1 pb-1">`;
     if (first) {
         html += `<button class="btn btn-primary btn-small" id="add_btn_all" onclick="add_to_cart(-` + number_search + `, 'result');">Add All Cart</button>`;
     }
     html += `</div>
-        <div class="col-sm-5">`;
+        <div class="col-sm-5 pt-1 pb-1">`;
     if (cart.notinCart(data['perid'])) {
         if (data['banned'] == 'Y') {
             html += `
