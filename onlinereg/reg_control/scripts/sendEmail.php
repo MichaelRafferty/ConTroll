@@ -34,8 +34,6 @@ if (!array_key_exists('type', $_POST)) {
     exit();
 }
 
-$response['test'] = $test;
-
 $con = get_conf("con");
 $reg = get_conf("reg");
 $emailconf = get_conf("email");
@@ -55,6 +53,8 @@ if ($_POST['action'] == 'test' || $reg['test'] == 1) {
 if ($email == null || $email == '') {
     $email = $con['regadminemail'];
 }
+
+$response['test'] = $test;
 
 switch ($email_type) {
 case 'reminder':
@@ -242,6 +242,7 @@ if ($batchsize == 0  || $delay == 0)
 
 // bunch in groups of 10 to avoid throttle cutoff
 $i = 0;
+$numsent = 0;
 foreach ($email_array as $email) {
     $i++;
     $sendtext = $email_text;
@@ -259,15 +260,20 @@ foreach ($email_array as $email) {
         $sendtext = str_replace('#CouponCode#', $cc , $sendtext);
         $sendhtml = str_replace('#CouponCode#', $cc, $sendhtml);
     }
-    $return_arr = send_email($con['regadminemail'], trim($email['email']), /* cc */ null, $con['label'] . ": $email_subject",  $sendtext, $sendhtml);
+    try {
+        $return_arr = send_email($con['regadminemail'], trim($email['email']), /* cc */ null, $con['label'] . ": $email_subject", $sendtext, $sendhtml);
 
-    if ($return_arr['status'] == 'success') {
-        $data_array[] = array($email, "success");
-        web_error_log("sent $email_type email to " . $email['email']);
-    } else {
-        $data_array[] = array($email, $return_arr['email_error']);
-        $success = 'error';
-        web_error_log("failed $email_type email to " . $email['email']);
+        if ($return_arr['status'] == 'success') {
+            $data_array[] = array($email, "success");
+            web_error_log("sent $email_type email to " . $email['email']);
+            $numsent++;
+        } else {
+            $data_array[] = array($email, $return_arr['email_error']);
+            $success = 'error';
+            web_error_log("failed $email_type email to " . $email['email']);
+        }
+    } catch (Exception $e) {
+        web_error_log("Email to: " . trim($email['email']) . " failed, threw exception");
     }
 
     if ($i > $batchsize) {
@@ -279,6 +285,7 @@ foreach ($email_array as $email) {
 $response['status'] = 'success';
 $response['error'] = $data_array;
 $response['email_array'] = $email_array;
+$response['emails_sent'] = $numsent;
 
 ajaxSuccess($response);
 ?>
