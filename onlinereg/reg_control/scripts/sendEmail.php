@@ -4,6 +4,7 @@ global $db_ini;
 require_once "../lib/base.php";
 require_once "../lib/email.php";
 require_once(__DIR__ . "/../../../lib/email__load_methods.php");
+require_once(__DIR__ . "/../../../lib/global.php");
 
 $check_auth = google_init("ajax");
 $user_email = $check_auth['email'];
@@ -133,15 +134,16 @@ SELECT  p.email_addr as email, MIN(p.id) AS perid
     FROM perinfo p
     LEFT OUTER JOIN reg r1 ON (r1.perid = p.id and r1.conid = ?)
     LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
-    WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND r2.id IS NULL
+    LEFT OUTER JOIN reg r3 ON (r3.perid = p.id and r3.conid = ?)
+    WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND r2.id IS NULL AND r3.id IS NULL
     GROUP BY p.email_addr
 )
 SELECT ?, uuid_v4s(), people.perid, ?, ?
 FROM people;
 EOS;
-    $couponTypestr = 'iiiis';
+    $couponTypestr = 'iiiiis';
     $note = 'Autogen: ' . $code;
-    $couponParamArray = array($priorcon, $priorcon2, $couponid, $note, $userid);
+    $couponParamArray = array($conid, $priorcon, $priorcon2, $couponid, $note, $userid);
     $num_keys = dbSafeCmd($couponKeysCreate, $couponTypestr, $couponParamArray);
     if ($num_keys === false) {
         $response['error'] = 'Count not create couponKeys';
@@ -154,7 +156,8 @@ WITH people AS (
     FROM perinfo p
     LEFT OUTER JOIN reg r1 ON (r1.perid = p.id and r1.conid = ?)
     LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
-    WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND r2.id IS NULL
+        LEFT OUTER JOIN reg r3 ON (r3.perid = p.id and r3.conid = ?)
+    WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND r2.id IS NULL AND r3.id IS NULL
     GROUP BY p.email_addr
 )
 SELECT e.email, e.perid, p.first_name, p.last_name, k.guid
@@ -163,8 +166,8 @@ JOIN perinfo p ON (e.perid = p.id)
 JOIN couponKeys k ON (e.perid = k.perid AND k.couponId = ?)
 ORDER BY e.email;
 EOQ;
-    $typestr = 'iii';
-    $paramarray = array($priorcon, $priorcon2, $couponid);
+    $typestr = 'iiii';
+    $paramarray = array($conid, $priorcon, $priorcon2, $couponid);
     $email_text = ComeBackCouponEmail_TEXT($reg['test'], date_format($expires, 'M d, Y'));
     $email_html = ComeBackCouponEmail_HTML($reg['test'], date_format($expires, 'M d, Y'));
     $email_subject = "We miss you! Please come back to $conname";
@@ -215,7 +218,7 @@ $email_array=array();
 $data_array=array();
 
 if($test) {
-    $email_array[] = array('email' => $email, 'first_name' => 'First', 'last_name' => 'Last', 'guid' => com_create_guid());
+    $email_array[] = array('email' => $email, 'first_name' => 'First', 'last_name' => 'Last', 'guid' => guidv4());
 } else {
     while($addr = fetch_safe_assoc($emailR)) {
        $email_array[] = $addr;
