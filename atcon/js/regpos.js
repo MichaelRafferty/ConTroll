@@ -1099,7 +1099,7 @@ function draw_record(row, first) {
     html += `</div>
         <div class="col-sm-2">`;
     if (hasManager && base_manager_enabled) {
-        html += ' <span class="bg-warning pt-1 pb-1"><strong>Edit Notes</strong></span>';
+        html += '<button type="button" class="btn btn-sm btn-secondary p-0" onClick="edit_perinfo_notes(0, \'result\')">Edit Notes</button>';
     }
 
     html += `
