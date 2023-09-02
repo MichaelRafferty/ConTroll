@@ -242,13 +242,19 @@ class reg_cart {
         return make_copy(this.#cart_pmt);
     }
 
-    priorCouponInCart() {
+    allowAddCouponToCart() {
+        var anyUnpaid = false;
         for (var rownum in this.#cart_membership) {
             var mbrrow = this.#cart_membership[rownum];
             if (mbrrow['coupon'])
-                return true;
+                return false;
+            if ((!non_primary_categories.includes(mbrrow['memCategory'])) && mbrrow['conid'] == conid && mbrrow['price'] > 0 && mbrrow['paid'] != mbrrow['price'])
+                anyUnpaid = true;
         }
-        return false;
+        if (anyUnpaid == false)
+            return false;
+
+        return true;
     }
 
     getPriorDiscount() {

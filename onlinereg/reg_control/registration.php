@@ -1,5 +1,6 @@
 <?php
 require_once 'lib/base.php';
+require_once('../../lib/cc__load_methods.php');
 //initialize google session
 $need_login = google_init('page');
 
@@ -7,6 +8,7 @@ $page = 'registration';
 if (!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page('index.php');
 }
+load_cc_procs();
 
 page_init($page,
     /* css */ array('css/base.css',

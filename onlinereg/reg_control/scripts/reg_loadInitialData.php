@@ -5,6 +5,7 @@
 // Retrieve load the mapping tables and session information into the javascript side of the registration tab
 
 require_once '../lib/base.php';
+require_once('../../../lib/cc__load_methods.php');
 require_once('../../../lib/coupon.php');
 
 $check_auth = google_init('ajax');
@@ -34,6 +35,8 @@ if ($ajax_request_action != 'loadInitialData') {
     exit();
 }
 
+$cc = get_conf('cc');
+load_cc_procs();
 // loadInitialData:
 // Load all the mapping tables for the POS function
 
@@ -43,6 +46,7 @@ $response['discount'] = $atcon['discount'];
 $response['badgePrinter'] = false; //$_SESSION['badgePrinter'][0] != 'None';
 $response['receiptPrinter'] = false; //$_SESSION['receiptPrinter'][0] != 'None';
 $response['user_id'] = $_SESSION['user_id'];
+$response['cc_html'] = draw_cc_html($cc);
 // do as if statement such that it can check for both database error and no rows returned
 $Manager = checkAuth($check_auth['sub'], 'reg_admin');
 if ($Manager !== false && sizeof($Manager) > 0)

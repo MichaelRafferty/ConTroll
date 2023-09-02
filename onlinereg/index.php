@@ -523,7 +523,7 @@ $onsitesale = $startdate->format("l, F j");
                          </div>
                          <div class="row" id='chargeCart' hidden>
                              <div class="col-sm-12 ms-0 me-0 p-0">
-                                   <?php draw_cc_html($cc); ?>
+                                   <?php echo draw_cc_html($cc); ?>
                              </div>
                          </div>
                          <div class="row">

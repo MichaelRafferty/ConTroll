@@ -75,7 +75,6 @@ var pay_div = null;
 var pay_button_pay = null;
 var pay_button_rcpt = null;
 var pay_button_ercpt = null;
-var pay_button_print = null;
 var pay_tid = null;
 var discount_mode = 'none';
 var num_coupons = 0;
@@ -85,6 +84,8 @@ var coupon = null;
 var coupon_discount = Number(0).toFixed(2);
 var cart_total = Number(0).toFixed(2);
 var pay_prior_discount = null;
+var cc_html = '';
+var $purchase_label = 'purchase';
 
 // Data Items
 var unpaid_table = [];
@@ -241,6 +242,7 @@ function loadInitialData(data) {
     catList = data['memCategories'];
     ageList = data['ageList'];
     typeList = data['memTypes'];
+    cc_html = data['cc_html'];
     discount_mode = data['discount'];
     if (discount_mode === undefined || discount_mode === null || discount_mode == '')
         discount_mode = 'none';
@@ -431,9 +433,6 @@ function start_over(reset_all) {
     if (reset_all > 0)
         clear_message();
 
-    if (base_manager_enabled) {
-        base_toggleManager();
-    }
     // empty cart
     cart.startOver();
     if (isCashier) {
@@ -463,7 +462,6 @@ function start_over(reset_all) {
     pay_button_rcpt = null;
     pay_button_ercpt = null;
     receeiptEmailAddresses_div = null;
-    pay_button_print = null;
     pay_tid = null;
     pay_prior_discount = null;
 
@@ -1733,9 +1731,13 @@ function reviewed_update_cart(data) {
 function setPayType(ptype) {
     var elcheckno = document.getElementById('pay-check-div');
     var elccauth = document.getElementById('pay-ccauth-div');
+    var elonline = document.getElementById('pay-online-div');
+    var econfirm = document.getElementById('');
 
     elcheckno.hidden = ptype != 'check';
     elccauth.hidden = ptype != 'credit';
+    elonline.hidden = ptype != 'online';
+    pay_button_pay.disabled = ptype == 'online';
 
     if (ptype != 'check') {
         document.getElementById('pay-checkno').value = null;
@@ -1746,13 +1748,22 @@ function setPayType(ptype) {
 }
 
 // Process a payment against the transaction
-function pay(nomodal, prow = null) {
+function pay(nomodal, prow = null, nonce = null) {
     var checked = false;
     var ccauth = null;
     var checkno = null;
     var desc = null;
     var ptype = null;
     var total_amount_due = cart.getTotalPrice() - (cart.getTotalPaid() + Number(coupon_discount));
+    var pt_cash = document.getElementById('pt-cash').checked;
+    var pt_check = document.getElementById('pt-check').checked;
+    var pt_online = document.getElementById('pt-online').checked;
+    var pt_credit = document.getElementById('pt-credit').checked;
+    var pt_discount = document.getElementById('pt-discount');
+    if (pt_discount)
+        pt_discount = pt_discount.checked;
+    else
+        pt_discount = false;
 
     if (nomodal != '') {
         cashChangeModal.hide();
@@ -1767,7 +1778,7 @@ function pay(nomodal, prow = null) {
         var elamt = document.getElementById('pay-amt');
         var pay_amt = Number(elamt.value);
         if (pay_amt > 0 && pay_amt > total_amount_due) {
-            if (document.getElementById('pt-cash').checked) {
+            if (pt_cash) {
                 if (nomodal == '') {
                     cashChangeModal.show();
                     document.getElementById("CashChangeBody").innerHTML = "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + pay_amt.toFixed(2) +
@@ -1776,11 +1787,15 @@ function pay(nomodal, prow = null) {
                 }
             } else {
                 elamt.style.backgroundColor = 'var(--bs-warning)';
+                if (pt_online)
+                    $('#' + $purchase_label).removeAttr("disabled");
                 return;
             }
         }
         if (pay_amt <= 0) {
             elamt.style.backgroundColor = 'var(--bs-warning)';
+            if (pt_online)
+                $('#' + $purchase_label).removeAttr("disabled");
             return;
         }
 
@@ -1790,24 +1805,21 @@ function pay(nomodal, prow = null) {
         elptdiv.style.backgroundColor = '';
 
         var eldesc = document.getElementById('pay-desc');
-        var elptdisc = document.getElementById('pt-discount');
-        if (elptdisc != null) {
-            if (document.getElementById('pt-discount').checked) {
-                ptype = 'discount';
-                desc = eldesc.value;
-                if (desc == null || desc == '') {
-                    eldesc.style.backgroundColor = 'var(--bs-warning)';
-                    return;
-                } else {
-                    eldesc.style.backgroundColor = '';
-                }
-                checked = true;
+        if (pt_discount) {
+            ptype = 'discount';
+            desc = eldesc.value;
+            if (desc == null || desc == '') {
+                eldesc.style.backgroundColor = 'var(--bs-warning)';
+                return;
             } else {
                 eldesc.style.backgroundColor = '';
             }
+            checked = true;
+        } else {
+            eldesc.style.backgroundColor = '';
         }
 
-        if (document.getElementById('pt-check').checked) {
+        if (pt_check) {
             ptype = 'check';
             var elcheckno = document.getElementById('pay-checkno');
             checkno = elcheckno.value;
@@ -1819,7 +1831,8 @@ function pay(nomodal, prow = null) {
             }
             checked = true;
         }
-        if (document.getElementById('pt-credit').checked) {
+
+        if (pt_credit) {
             ptype = 'credit';
             var elccauth = document.getElementById('pay-ccauth');
             ccauth = elccauth.value;
@@ -1831,14 +1844,25 @@ function pay(nomodal, prow = null) {
             }
             checked = true;
         }
+        if (pt_online) {
+            ptype = 'online';
+            if (nonce == null) {
+                alert("Credit Card Processing Error: Unable to obtain nonce token");
+                $('#' + $purchase_label).removeAttr("disabled");
+                return;
+            }
+            checked = true;
+        }
 
-        if (document.getElementById('pt-cash').checked) {
+        if (pt_cash) {
             ptype = 'cash';
             checked = true;
         }
 
         if (!checked) {
             elptdiv.style.backgroundColor = 'var(--bs-warning)';
+            if (pt_online)
+                $('#' + $purchase_label).removeAttr("disabled");
             return;
         }
 
@@ -1853,7 +1877,7 @@ function pay(nomodal, prow = null) {
                 }
             }
             prow = {
-                index: cart.getPmtLength(), amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
+                index: cart.getPmtLength(), amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype, nonce: nonce,
             };
         }
     }
@@ -1864,6 +1888,7 @@ function pay(nomodal, prow = null) {
         new_payment: prow,
         coupon: prow['coupon'],
         change: crow,
+        nonce: nonce,
         user_id: user_id,
         pay_tid: pay_tid,
     };
@@ -1885,13 +1910,19 @@ function pay(nomodal, prow = null) {
             } else if (data['warn'] !== undefined) {
                 show_message(data['warn'], 'success');
                 stop = false;
+            } else if (data['status'] == 'error') {
+                show_message(data['data'], 'error');
             }
             if (!stop)
                 updatedPayment(data);
             pay_button_pay.disabled = false;
+            if (pt_online)
+                $('#' + $purchase_label).removeAttr("disabled");
         },
         error: function (jqXHR, textstatus, errorThrown) {
             pay_button_pay.disabled = false;
+            if (pt_online)
+                $('#' + $purchase_label).removeAttr("disabled");
             showAjaxError(jqXHR, textstatus, errorThrown);
         },
     });
@@ -2091,12 +2122,12 @@ function pay_shown() {
                     setTimeout(checkbox_check, 100);
                 }
             }
-            pay_button_print.hidden = false;
             document.getElementById('pay-amt').value='';
             document.getElementById('pay-desc').value='';
             document.getElementById('pay-amt-due').innerHTML = '';
             document.getElementById('pay-check-div').hidden = true;
             document.getElementById('pay-ccauth-div').hidden = true;
+            document.getElementById('pay-online-div').hidden = true;
             cart.hideVoid();
         }
     } else {
@@ -2105,7 +2136,6 @@ function pay_shown() {
             pay_button_rcpt.hidden = true;
             pay_button_ercpt.hidden = true;
             pay_button_ercpt.disabled = true;
-            pay_button_print.hidden = true;
         }
 
         // draw the pay screen
@@ -2116,7 +2146,7 @@ function pay_shown() {
         <div class="col-sm-auto ms-0 me-2 p-0">New Payment Transaction ID: ` + pay_tid + `</div>
     </div>
     `;
-    if (num_coupons > 0 && !cart.priorCouponInCart()) { // cannot apply a coupon if one was already in the cart (and of course, there need to be valid coupons right now)
+    if (num_coupons > 0 && cart.allowAddCouponToCart()) { // cannot apply a coupon if one was already in the cart (and of course, there need to be valid coupons right now)
         if (!coupon.isCouponActive()) { // no coupon applied yet
             pay_html += `
     <div class="row mt-3">
@@ -2168,7 +2198,9 @@ function pay_shown() {
         <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
         <div class="col-sm-auto m-0 mt-2 p-0 ms-0 me-2 mb-2 p-0" id="pt-div">
             <input type="radio" id="pt-credit" name="payment_type" value="credit" onchange='setPayType("credit");'/>
-            <label for="pt-credit">Credit Card</label>
+            <label for="pt-credit">Offline Credit Card</label>
+            <input type="radio" id="pt-online" name="payment_type" value="credit" onchange='setPayType("online");'/>
+            <label for="pt-online">Online Credit Card</label>
             <input type="radio" id="pt-check" name="payment_type" value="check" onchange='setPayType("check");'/>
             <label for="pt-check">Check</label>
             <input type="radio" id="pt-cash" name="payment_type" value="cash" onchange='setPayType("cash");'/>
@@ -2192,7 +2224,10 @@ function pay_shown() {
     <div class="row mb-2" id="pay-ccauth-div" hidden>
         <div class="col-sm-2 ms-0 me-2 p-0">CC Auth Code:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="15" maxlength="16" name="pay-ccauth" id="pay-ccauth"/></div>
-    </div>
+    </div>    
+    <div class="row mb-2" id="pay-online-div" hidden>
+        <div class="col-sm-12 ms-0 me-0 p-0">` + cc_html + `</div>  
+    </div>    
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">Description:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="60" maxlength="64" name="pay-desc" id="pay-desc"/></div>
@@ -2224,7 +2259,6 @@ function pay_shown() {
         receeiptEmailAddresses_div = document.getElementById('receeiptEmailAddresses');
         if (receeiptEmailAddresses_div)
             receeiptEmailAddresses_div.innerHTML = '';
-        pay_button_print = document.getElementById('pay-btn-print');
         if (cart.getPmtLength() > 0) {
             cart.showVoid();
             cart.hideStartOver();
@@ -2233,6 +2267,19 @@ function pay_shown() {
             cart.showStartOver();
         }
     }
+}
+
+// process online credit card payment
+function makePurchase(token, label) {
+    if (label != '') {
+        $purchase_label = label;
+    }
+    if (token == 'test_ccnum') {  // this is the test form
+        token = document.getElementById(token).value;
+    }
+
+    $('#' + $purchase_label).attr("disabled", "disabled");
+    pay('', null, token);
 }
 
 // items from base.js in atcon moved here

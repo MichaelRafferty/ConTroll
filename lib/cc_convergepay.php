@@ -21,7 +21,13 @@
 //
 
 function draw_cc_html($cc, $postal_code = "--") {
-?>
+    $options = '';
+    for ($yr = 0; $yr < 8; $yr++) {
+        $options .= "<option value='" . date('y', strtotime(date('Y', time()) . " + $yr year")) . "'>" .
+            date('Y', strtotime(date('Y', time()) . " + $yr year")) . "</option>\n";
+    }
+
+    $html = <<<EOS
    Exp Date: <select class='ccard' name='expmo' size=1 required='required'>
         <option value='01'>01 January</option>
         <option value='02'>02 February</option>
@@ -37,19 +43,25 @@ function draw_cc_html($cc, $postal_code = "--") {
         <option value='12'>12 December</option>
       </select> /
       <select class='ccard' name='expyr' size=1 required='required'>
-        <?php for ($yr = 0; $yr < 8; $yr++) { ?>
-        <option value='<?php
-                  echo date('y',strtotime(date('Y', time()) . " + $yr year"));
-                       ?>'><?php
-                  echo date('Y',strtotime(date('Y', time()) . " + $yr year"));
-            ?></option>
-        <?php } ?>
+        $options
       </select>
       <input type="submit" id="purchase" onclick="makePurchase()" value="Purchase">
       <br/>
-<?php
+EOS;
+    return $html;
 };
 function cc_charge_purchase($results, $ccauth) {
+    if (array_key_exists('user_perid', $_SESSION)) {
+        $user_perid = $_SESSION['user_perid'];
+    } else {
+        $user_perid = null;
+    }
+    if (array_key_exists('user_perid', $_SESSION)) {
+        $user_id = $_SESSION['user_id'];
+    } else {
+        $user_id = null;
+    }
+
     $cclink = get_conf('cc-connect');
 
     $ccsale = array(
@@ -82,7 +94,7 @@ function cc_charge_purchase($results, $ccauth) {
 
     //log request keys
     $log_resp = array_intersect_key($ccsale, array_flip($sale_log_keys));
-    logWrite(array('transid'=>$results['transid'], 'user'=>$userid, 'response'=>$log_resp));
+    logWrite(array('transid'=>$results['transid'], 'user'=>$_SESSION['user_id'], 'response'=>$log_resp));
 
     if(!isset($_POST['ccnum']) || !isset($_POST['cvv']) || 
         !isset($_POST['expmo'])|| !isset($_POST['expyr'])) {
@@ -149,7 +161,7 @@ function cc_charge_purchase($results, $ccauth) {
     $db_resp = array_intersect_key($resp_array, array_flip($db_keys));
 
     //log cc processor response
-    logWrite(array('transid'=>$results['transid'], 'user'=>$userid, 'response'=>$log_resp));
+    logWrite(array('transid'=>$results['transid'], 'user'=>$_SESSION['user_id'], 'response'=>$log_resp));
     
     if(isset($resp_array['errorCode'])) {
         ajaxSuccess(array('status'=>'error','data'=>$resp_array['errorMessage']));
@@ -163,11 +175,11 @@ function cc_charge_purchase($results, $ccauth) {
         ($resp_array['ssl_result_message']=='APPROVAL' or $resp_array['ssl_result_message']=='APPROVED' )) {
 
         $rtn['txnfields'] = array('transid','type','category','description','source','amount',
-            'txn_time', 'cc','cc_txn_id','cc_approval_code','receipt_id');
+            'txn_time', 'cc','cc_txn_id','cc_approval_code','receipt_id','cashier','userid');
         $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd',
-            's', 's', 's', 's', 's');
-        $rtn['tnxdata'] = array($results['transid']),'credit','reg',$db_resp['ssl_description'],'online',$db_resp['ssl_amount'],
-            $db_resp['ssl_txn_time'],$db_resp['ssl_card_number'],$db_resp['ssl_txn_id'],$db_resp['ssl_approval_code'],$db_resp['ssl_txn_id']);
+            's', 's', 's', 's', 's','i','i');
+        $rtn['tnxdata'] = array($results['transid'],'credit','reg',$db_resp['ssl_description'],'online',$db_resp['ssl_amount'],
+            $db_resp['ssl_txn_time'],$db_resp['ssl_card_number'],$db_resp['ssl_txn_id'],$db_resp['ssl_approval_code'],$db_resp['ssl_txn_id'],$user_perid, $user_id);
         $rtn['url'] = null;
         $rtn['rid'] = $db_resp['ssl_txn_id'];
         return $rtn;

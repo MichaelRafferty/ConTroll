@@ -16,20 +16,31 @@ require_once("global.php");
 //
 
 function draw_cc_html($cc, $postal_code = "--") {
-?>
+    $html = <<<EOS
 <p>This is a test site, it doesn't really take credit cards</p>
 Scenario: <select name='ccnum' id="test_ccnum">
 	<option value=1>1 - Success</option>
 	<option value=2>2 - Failure</option>
 </select>
 <input type="submit" id="purchase" onclick="makePurchase('test_ccnum', 'purchase')" value="Purchase">
-<?php
+EOS;
+    return $html;
 };
 
 function cc_charge_purchase($results, $ccauth) {
     $cc = get_conf('cc');
     //$con = get_conf('con');
     $reg = get_conf('reg');
+	if (array_key_exists('user_perid', $_SESSION)) {
+		$user_perid = $_SESSION['user_perid'];
+	} else {
+		$user_perid = null;
+	}
+	if (array_key_exists('user_perid', $_SESSION)) {
+		$user_id = $_SESSION['user_id'];
+	} else {
+		$user_id = null;
+	}
 
     if(!isset($_POST['nonce'])) {
 		ajaxSuccess(array('status'=>'error','data'=>'missing CC information'));
@@ -48,9 +59,9 @@ function cc_charge_purchase($results, $ccauth) {
 	switch($_POST['nonce'][0]) {
 		case '1': // success
 			$rtn['amount'] = $results['total'];
-			$rtn['txnfields'] =  array('transid','type','category','description', 'source','amount', 'txn_time', 'nonce','cc_txn_id','cc_approval_code','receipt_id');
-			$rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 's', 's', 's', 's', 's');
-			$rtn['tnxdata'] = array($results['transid'],'credit',$category, 'test registration', 'online', $results['total'], '00-00-00 00:00:00',$_POST['nonce'],'txn id','000000','txn_id');
+			$rtn['txnfields'] =  array('transid','type','category','description', 'source','amount', 'txn_time', 'nonce','cc_txn_id','cc_approval_code','receipt_id', 'cashier', 'userid');
+			$rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 's', 's', 's', 's', 's', 'i','i');
+			$rtn['tnxdata'] = array($results['transid'],'credit',$category, 'test registration', 'online', $results['total'], '00-00-00 00:00:00',$_POST['nonce'],'txn id','000000','txn_id', $user_perid, $user_id);
             $rtn['url'] = 'no test receipt';
 			return $rtn;
 		default: 

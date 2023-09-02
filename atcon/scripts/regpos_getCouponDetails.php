@@ -3,7 +3,7 @@
 // library AJAX Processor: regpos_getCouponData.php
 // Balticon Registration System
 // Author: Syd Weinstein
-// Get the coupon data for a specific coupon ID including mtype tables
+// Get the coupon data for all active coupons
 
 require_once('../lib/base.php');
 require_once('../../lib/coupon.php');

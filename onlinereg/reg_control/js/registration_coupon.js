@@ -123,7 +123,7 @@ class Coupon {
             couponId: couponId,
         };
         $.ajax({
-            url: "scripts/regpos_getCouponDetails.php",
+            url: "scripts/reg_getCouponDetails.php",
             data: postData,
             method: 'POST',
             success: this.VC_ajax_success,

@@ -1,12 +1,21 @@
 <?php
-
-// library AJAX Processor: regpos_getCouponData.php
+// library AJAX Processor: reg_getCouponData.php
 // Balticon Registration System
 // Author: Syd Weinstein
-// Get the coupon data for a specific coupon ID including mtype tables
+// Retrieve all the details for a specific coupomn
 
-require_once('../lib/base.php');
-require_once('../../lib/coupon.php');
+require_once '../lib/base.php';
+require_once('../../../lib/coupon.php');
+
+$check_auth = google_init('ajax');
+$perm = 'registration';
+
+$response = array('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+
+if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
+    RenderErrorAjax('Authentication Failed');
+    exit();
+}
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -18,16 +27,11 @@ $atcon = get_conf('atcon');
 $conid = $con['id'];
 $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
-$ajax_request_action = $_POST['ajax_request_action'];
+    $ajax_request_action = $_POST['ajax_request_action'];
 }
 if ($ajax_request_action != 'getCouponDetails') {
-RenderErrorAjax('Invalid calling sequence.');
-exit();
-}
-if (!(check_atcon('cashier', $conid))) {
-$message_error = 'No permission.';
-RenderErrorAjax($message_error);
-exit();
+    RenderErrorAjax('Invalid calling sequence.');
+    exit();
 }
 
 if(!isset($_POST) || !isset($_POST['couponId'])) {

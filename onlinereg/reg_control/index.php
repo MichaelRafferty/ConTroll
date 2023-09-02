@@ -17,11 +17,11 @@ if($need_login == false) {
 } else {
     # create the user session variable
     $user_email = $need_login['email'];
-    if (!(array_key_exists('user_email', $_SESSION) && $user_email == $_SESSION['user_email'] && array_key_exists('user_id', $_SESSION))) {
+    if (!(array_key_exists('user_email', $_SESSION) && $user_email == $_SESSION['user_email'] && array_key_exists('user_id', $_SESSION) && array_key_exists('user_perid', $_SESSION))) {
         $_SESSION['user_email'] = $user_email;
         // get the user id for database tracking
         $usergetQ = <<<EOS
-SELECT id
+SELECT id, perid
 FROM user
 WHERE email = ?;
 EOS;
@@ -31,9 +31,11 @@ EOS;
             $userL = fetch_safe_assoc($usergetR);
             if ($userL) {
                 $userid = $userL['id'];
+                $perid = $userL['perid'];
             }
         }
         $_SESSION['user_id'] = $userid;
+        $_SESSION['user_perid'] = $perid;
     }
     ?>
     <div id='main'>
@@ -46,8 +48,8 @@ EOS;
             <div class="row">
                 <div class="col-sm-auto">
                     If you need more access please email the appropriate person with the email and sub value listed below.<br/>
-                    If your user id below is blank, not all functions will work correctly for you,
-                    also email the appropriate person to have your user id updated.
+                    If your user id or user perid below is blank, not all functions will work correctly for you,
+                    also email the appropriate person to have your user id or user perid is updated.
                 </div>
             </div>
             <div class="row">
@@ -57,6 +59,7 @@ EOS;
                             //echo var_export($_SESSION['id_token_token']);
                             echo "Email: " . $need_login['email'] . "\n";
                             echo "User id: " . $_SESSION['user_id'] . "\n";
+                            echo "User perid: " . $_SESSION['user_perid'] . "\n";
                             echo "Sub: " . $need_login['sub'] . "\n";
                             echo "Google Check: " . date('c', $need_login['iat']) . "\n";
                             echo "Current Time: " . date('c') . "\n";

@@ -779,7 +779,7 @@ if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclai
                         </div>
                         <div class='row'>
                             <div class='col-sm-12'>
-                                <?php draw_cc_html($cc, '--', 2); ?>
+                                <?php echo draw_cc_html($cc, '--', 2); ?>
                                 <input type='reset'/>
                             </div>
                         </div>
