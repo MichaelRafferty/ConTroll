@@ -15,6 +15,7 @@ var transfer_modal = null;
 var find_result_table = null;
 var find_pattern_field = null;
 var testdiv = null;
+var conid = 0;
 
 $(document).ready(function () {
     id = document.getElementById('transfer_to');
@@ -325,27 +326,83 @@ function draw_stats(data) {
     couponfilter = [];
 }
 
-function transferbutton(cell, formatterParams, onRendered) {
-    if (cell.getRow().getCell("price").getValue() > 0 && cell.getRow().getCell("paid").getValue() > 0)
-        return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Transfer</button>';
-    if (cell.getRow().getCell("price").getValue() == 0 && cell.getRow().getCell("paid").getValue() == 0)
-        return '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Transfer</button>';
-    return "";
+function actionbuttons(cell, formatterParams, onRendered) {
+    var category = cell.getRow().getCell('category').getValue();
+    if (category == 'cancel')  // no actions can be taken on a cancelled membership
+        return "";
+
+    if (category == 'dealer') // dealer cannot be rolled over due to dealer allocation system, dealer transfers are only allowed to other workers for that dealer and have to be handled on-site by the dealer
+        return "";
+
+    var btns = "";
+    var row = cell.getRow();
+    var price = row.getCell("price").getValue();
+    var paid = row.getCell("paid").getValue();
+    var index = row.getIndex();
+
+    // transfer buttons
+    if ((category == 'addon' || category == 'add-on') && paid > 0) {
+        btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" onclick="transfer(' + index + ')">Transfer</button>';
+    } else if (price > 0 && paid > 0)
+        btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index + ')">Transfer</button>';
+    else if (price == 0 && paid == 0)
+        btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index +')">Transfer</button>';
+
+    // rollover buttons
+    if (price > 0 && paid > 0)
+        btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
+    else if (price == 0 && paid == 0)
+        btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
+    return btns;
+}
+
+// rollover - cancel his years badge and create it as a rollover in next yeers con
+function rollover(index) {
+    row = badgetable.getRow(index);
+    var confirm_msg = "Confirm rollover for " + row.getCell("p_name").getValue().trim() + "'s badge of type " + row.getCell("label").getValue() + " to " + (conid + 1) + '?';
+    if (confirm(confirm_msg)) {
+        $.ajax({
+            method: "POST",
+            url: "scripts/reg_adminRollover.php",
+            data: {  rollover: index, toconid: conid + 1},
+            success: function (data, textstatus, jqxhr) {
+                if (data['error'] !== undefined) {
+                    show_message(data['error'], 'error');
+                    return;
+                }
+                if (data['message'] !== undefined) {
+                    show_message(data['message'], 'success');
+                }
+                if (data['warn'] !== undefined) {
+                    show_message(data['warn'], 'warn');
+                }
+                getData();
+                if (data.message)
+                    show_message(data.message, 'success');
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in transferFindRecord: " + textStatus, jqXHR);
+            }
+        });
+    }
 }
 
 // transfer - get information to build modal popup to find person to transfer to
-function transfer(edit, cell) {
-    if (cell.getRow().getCell("price").getValue() > 0 && cell.getRow().getCell("paid").getValue() == 0)
+function transfer(index) {
+    row = badgetable.getRow(index);
+
+    if (row.getCell("price").getValue() > 0 && row.getCell("paid").getValue() == 0)
         return;
 
-    if (cell.getRow().getCell("price").getValue() == 0) {
+    if (row.getCell("price").getValue() == 0) {
         if (confirm("This is a free badge, really transfer it?\n(Is it an included vendor badge or similar situation?)") == false)
             returm;
     }
 
-    var badgeid = cell.getRow().getCell("badgeId").getValue();
-    var fullname = cell.getRow().getCell('p_name').getValue();
-    var badgename = cell.getRow().getCell('p_badge').getValue();
+    var badgeid = row.getCell("badgeId").getValue();
+    var fullname = row.getCell('p_name').getValue();
+    var badgename = row.getCell('p_badge').getValue();
+    var badgelabel = row.getCell('label').getValue();
 
     document.getElementById("transfer_name_search").value = '';
     if (find_result_table != null) {
@@ -353,6 +410,7 @@ function transfer(edit, cell) {
         find_result_table = null;
     }
     document.getElementById('transfer_from').innerHTML = fullname + '(' + badgename + ')';
+    document.getElementById('transfer_badge').innerHTML = badgelabel;
     document.getElementById('from_badgeid').value = badgeid;
     document.getElementById('transfer_search_results').innerHTML = '';
     test.innerHTML = '';
@@ -473,14 +531,15 @@ function transfer_found(data) {
                 {field: "perid", visible: false,},
                 {field: "index", visible: false,},
                 {field: "regcnt", visible: false,},
-                {title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
+                {title: "Name", field: "fullname", width: 200, headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                 {field: "last_name", visible: false,},
                 {field: "first_name", visible: false,},
                 {field: "middle_name", visible: false,},
                 {field: "suffix", visible: false,},
-                {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Badge Name", field: "badge_name", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 100, width: 100},
-                {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Email Address", field: "email_addr", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Current Badges", field: "regs", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Transfer", width: 90, headerFilter: false, headerSort: false, formatter: addTransferIcon, formatterParams: {t: "result"},},
                 {field: "index", visible: false,},
             ],
@@ -496,11 +555,11 @@ function draw_badges(data) {
     badgetable = new Tabulator('#badge-table', {
         data: data['badges'],
         layout: "fitDataTable",
+        index: "badgeId",
         pagination: true,
         paginationSize: 10,
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         columns: [
-            { title: "perid", field: "perid", visible: false },
             { title: "Person", field: "p_name", headerSort: true, headerFilter: true },
             { title: "Badge Name", field: "p_badge", headerSort: true, headerFilter: true },
             { title: "Membership Type", field: "label", headerSort: true, headerFilter: true, },
@@ -515,12 +574,13 @@ function draw_badges(data) {
             { field: "type", visible: false },
             { field: "badgeId", visible: false },
             { field: "perid", visible: false },
-            { title: "Transfer", formatter: transferbutton, hozAlign:"center", cellClick: transfer, headerSort: false },
+            { title: "Action", formatter: actionbuttons, hozAlign:"center", headerSort: false },
         ]
     });
 }
 
 function draw(data, textStatus, jqXHR) {
+    conid = Number(data['conid']);
     draw_stats(data);
     draw_badges(data);
 }
@@ -563,9 +623,7 @@ function transferBadge(to, banned) {
                 show_message(data.warning, 'warn');
             } else {
                 transfer_modal.hide();
-                console.log("about to call getdata");
                 getData();
-                console.log("after call getdata");
                 if (data.message)
                     show_message(data.message, 'success');
 

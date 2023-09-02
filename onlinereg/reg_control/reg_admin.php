@@ -37,9 +37,15 @@ page_init("Badge List",
                         <input type="hidden" name="from_badgeid" id="from_badgeid" value="">
                         <div class='row p-1'>
                             <div class='col-sm-2 p-0'>
+                                <label for='name'>Transfer Badge::</label>
+                            </div>
+                            <div class='col-sm-10 p-0' id="transfer_badge"></div>
+                        </div>
+                        <div class='row p-1'>
+                            <div class='col-sm-2 p-0'>
                                 <label for='name'>Transfer From::</label>
                             </div>
-                            <div class='col-sm-10 p-0' id="transfer_from"></div>
+                            <div class='col-sm-10 p-0' id='transfer_from'></div>
                         </div>
                         <div class='row p-1'>
                             <div class='col-sm-2 p-0'>

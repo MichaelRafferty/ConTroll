@@ -16,6 +16,7 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
 
 $con=get_conf('con');
 $conid= $con['id'];
+$response['conid'] = $conid;
 
 $badgeQ = <<<EOS
 SELECT R.create_date, R.change_date, R.price, R.couponDiscount, R.paid, R.id AS badgeId, P.id AS perid, NP.id AS np_id
