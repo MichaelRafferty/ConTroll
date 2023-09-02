@@ -635,8 +635,8 @@ class reg_cart {
             // col1 choices
             //  X = delete element from cart
             var allow_delete = mrow['regid'] <= 0;
-            var allow_delete_priv = isCashier && mrow['paid'] == 0 && mrow['printcount'] == 0;
-            var allow_change_priv = isCashier && mrow['regid'] > 0 && mrow['paid'] >= 0 && mrow['printcount'] == 0 &&
+            var allow_delete_priv = mrow['paid'] == 0 && mrow['printcount'] == 0;
+            var allow_change_priv = mrow['regid'] > 0 && mrow['paid'] >= 0 && mrow['printcount'] == 0 &&
                 (category == 'standard' || category == 'yearahead') && memType == 'full';
             col1 = '';
             if ((allow_delete || allow_delete_priv) && !this.#freeze_cart) {
@@ -1008,9 +1008,7 @@ class reg_cart {
             this.#review_button.hidden = true;
             this.hideStartOver();
         }
-        if (isCashier) {
-            find_unpaid_button.hidden = num_rows > 0;
-        }
+        find_unpaid_button.hidden = num_rows > 0;
     }
 
     // create the HTML of the cart into the review data block

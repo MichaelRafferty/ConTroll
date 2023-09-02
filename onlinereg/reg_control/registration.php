@@ -209,7 +209,7 @@ $conname = $con['conname'];
                         <div id="review-div">Review Data</div>
                     </div>
                     <div class="tab-pane fade" id="pay-pane" role="tabpanel" aria-labelledby="pay-tab" tabindex="3">
-                        <div id="pay-div">Process Payment</div>
+                        <div id="pay-div">No Payment Required, Proceed to Next Customer</div>
                     </div>
                  </div>
             </div>

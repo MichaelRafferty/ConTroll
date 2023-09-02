@@ -73,7 +73,6 @@ var review_editable_fields = [
 // pay items
 var pay_div = null;
 var pay_button_pay = null;
-var pay_button_rcpt = null;
 var pay_button_ercpt = null;
 var pay_tid = null;
 var discount_mode = 'none';
@@ -114,7 +113,6 @@ var conid = null;
 var conlabel = null;
 var user_id = 0;
 var Manager = false;
-var isCashier = false;
 var non_primary_categories = ['add-on', 'addon', 'cancel'];
 var upgradable_types = ['one-day', 'oneday', 'virtual'];
 
@@ -151,7 +149,6 @@ window.onload = function initpage() {
     pattern_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') find_record('search'); });
     id_div = document.getElementById("find_results");
     find_unpaid_button = document.getElementById("find_unpaid_btn");
-    isCashier = find_unpaid_button !== undefined && find_unpaid_button !== null;
 
     // add/edit people
     add_index_field = document.getElementById("perinfo-index");
@@ -208,7 +205,6 @@ window.onload = function initpage() {
     // load the initial data and the proceed to set up the rest of the system
     var postData = {
         ajax_request_action: 'loadInitialData',
-        nopay: !isCashier,
     };
     $.ajax({
         method: "POST",
@@ -435,9 +431,7 @@ function start_over(reset_all) {
 
     // empty cart
     cart.startOver();
-    if (isCashier) {
-        find_unpaid_button.hidden = false;
-    }
+    find_unpaid_button.hidden = false;
     // empty search strings and results
     pattern_field.value = "";
     if (find_result_table != null) {
@@ -459,7 +453,6 @@ function start_over(reset_all) {
     cart.hideNext();
     cart.hideVoid();
     pay_button_pay = null;
-    pay_button_rcpt = null;
     pay_button_ercpt = null;
     receeiptEmailAddresses_div = null;
     pay_tid = null;
@@ -1936,11 +1929,8 @@ function updatedPayment(data) {
     pay_shown();
 }
 
-var last_receipt_type = '';
-// Create a receipt and send it to the receipt printer
-function print_receipt(receipt_type) {
-    last_receipt_type = receipt_type;
-
+// Create a receipt and email it
+function email_receipt(receipt_type) {
     // header text
     var header_text = cart.receiptHeader(user_id, pay_tid);
     // optional footer text
@@ -1956,43 +1946,29 @@ function print_receipt(receipt_type) {
         receipt_type: receipt_type,
         email_addrs: emailAddreesRecipients,
     };
-    if (receiptPrinterAvailable || receipt_type == 'email') {
-        if (receipt_type == 'email')
-            pay_button_ercpt.disabled = true;
-        else
-            pay_button_rcpt.disabled = true;
-
-        $.ajax({
-            method: "POST",
-            url: "scripts/reg_printReceipt.php",
-            data: postData,
-            success: function (data, textstatus, jqxhr) {
-                clear_message();
-                if (typeof data == "string") {
-                    show_message(data,  'error');
-                } else if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
-                } else if (data['message'] !== undefined) {
-                    show_message(data['message'], 'success');
-                } else if (data['warn'] !== undefined) {
-                    show_message(data['warn'], 'success');
-                }
-                if (last_receipt_type == 'email')
-                    pay_button_ercpt.disabled = false;
-                else
-                    pay_button_rcpt.disabled = false;
-            },
-            error: function (jqXHR, textstatus, errorThrown) {
-                if (last_receipt_type == 'email')
-                    pay_button_ercpt.disabled = false;
-                else
-                    pay_button_rcpt.disabled = false;
-                showAjaxError(jqXHR, textstatus, errorThrown);
+    pay_button_ercpt.disabled = true;
+    $.ajax({
+        method: "POST",
+        url: "scripts/reg_emailReceipt.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            clear_message();
+            if (typeof data == "string") {
+                show_message(data,  'error');
+            } else if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+            } else if (data['message'] !== undefined) {
+                show_message(data['message'], 'success');
+            } else if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'success');
             }
-        });
-    } else {
-        show_message("Receipt printer not available, Please use the \"Chg\" button in the banner to select the proper printers.");
-    }
+            pay_button_ercpt.disabled = false;
+        },
+        error: function (jqXHR, textstatus, errorThrown) {
+            pay_button_ercpt.disabled = false;
+            showAjaxError(jqXHR, textstatus, errorThrown);
+        }
+    });
 }
 
 // tab shown events - state mapping for which tab is shown
@@ -2075,10 +2051,6 @@ function apply_coupon(cmd) {
 }
 
 function pay_shown() {
-    if (!isCashier) {
-        show_message("You do not have permission to handle payments", "warning");
-        return;
-    }
     cart.clearInReview();
     cart.freeze();
     current_tab = pay_tab;
@@ -2095,7 +2067,7 @@ function pay_shown() {
         if (pay_button_pay != null) {
             var rownum;
             pay_button_pay.hidden = true;
-            pay_button_rcpt.hidden = false;
+            pay_button_ercpt.hidden = false;
             var email_html = '';
             var email_count = 0;
             last_email_row = -1;
@@ -2133,7 +2105,6 @@ function pay_shown() {
     } else {
         if (pay_button_pay != null) {
             pay_button_pay.hidden = false;
-            pay_button_rcpt.hidden = true;
             pay_button_ercpt.hidden = true;
             pay_button_ercpt.disabled = true;
         }
@@ -2238,10 +2209,7 @@ function pay_shown() {
             <button class="btn btn-primary btn-small" type="button" id="pay-btn-pay" onclick="pay('');">Confirm Pay</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="pay-btn-ercpt" onclick="print_receipt('email');" hidden disabled>Email Receipt</button>
-        </div>
-        <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="pay-btn-rcpt" onclick="print_receipt('print');" hidden>Print Receipt</button>
+            <button class="btn btn-primary btn-small" type="button" id="pay-btn-ercpt" onclick="email_receipt('email');" hidden disabled>Email Receipt</button>
         </div>
     </div>
     <div id="receeiptEmailAddresses" class="container-fluid"></div>
@@ -2254,7 +2222,6 @@ function pay_shown() {
 
         pay_div.innerHTML = pay_html;
         pay_button_pay = document.getElementById('pay-btn-pay');
-        pay_button_rcpt = document.getElementById('pay-btn-rcpt');
         pay_button_ercpt = document.getElementById('pay-btn-ercpt');
         receeiptEmailAddresses_div = document.getElementById('receeiptEmailAddresses');
         if (receeiptEmailAddresses_div)
