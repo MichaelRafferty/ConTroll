@@ -17,6 +17,13 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     ajaxSuccess($response);
     exit();
 }
+
+if (!array_key_exists('user_id', $_SESSION)) {
+    ajaxError('Invalid credentials passed');
+    return;
+}
+$user_id = $_SESSION['user_id'];
+
 load_email_procs();
 
 $test = true;
@@ -93,6 +100,8 @@ EOQ;
 case 'comeback':
     $priorcon = $conid - 1;
     $priorcon2 = $conid - 2;
+    $expires = date_add(date_create(), DateInterval::createFromDateString('30 day'));
+    $code='ComeBack' . date_format(date_create(), 'Md');
 
     // create the coupon now
     // get the user id for createdby
@@ -101,24 +110,15 @@ SELECT id
 FROM user
 WHERE email = ?;
 EOS;
-    $userid = null;
-    $usergetR = dbSafeQuery($usergetQ, 's', array($user_email));
-    if ($usergetR !== false) {
-        $userL = fetch_safe_assoc($usergetR);
-        if ($userL) {
-            $userid = $userL['id'];
-        }
-    }
     // create the coupon for this comeback email
     $couponCreate = <<<EOS
 INSERT INTO coupon(conid, oneuse, code, name, startdate, enddate, coupontype, discount, createby)
 VALUES (?, 1, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), '%mem', 10.00, ?);
 EOS;
-    $expires = date_add(date_create(), DateInterval::createFromDateString('30 day'));
-    $code='ComeBack' . date_format(date_create(), 'Md');
+
     $name='Come Back 10% Off Exp ' . date_format($expires, 'M d');
     $couponTypestr = 'issi';
-    $couponParamArray = array($conid, $code, $name, $userid);
+    $couponParamArray = array($conid, $code, $name, $user_id);
     $couponid = dbSafeInsert($couponCreate, $couponTypestr, $couponParamArray);
     if ($couponid === false) {
         $response['error'] = 'Count not create coupon';
@@ -143,7 +143,7 @@ FROM people;
 EOS;
     $couponTypestr = 'iiiiis';
     $note = 'Autogen: ' . $code;
-    $couponParamArray = array($conid, $priorcon, $priorcon2, $couponid, $note, $userid);
+    $couponParamArray = array($conid, $priorcon, $priorcon2, $couponid, $note, $user_id);
     $num_keys = dbSafeCmd($couponKeysCreate, $couponTypestr, $couponParamArray);
     if ($num_keys === false) {
         $response['error'] = 'Count not create couponKeys';

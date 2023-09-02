@@ -55,14 +55,14 @@ SELECT c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.mem
 FROM coupon c
 LEFT OUTER JOIN memLabel m ON (c.memId = m.id)
 LEFT OUTER JOIN transaction t ON (t.coupon = c.id and t.complete_date is not null)
-LEFT OUTER JOIN couponKeys k ON (k.couponId = c.id and k.guid = ?)
-WHERE c.conid = ? AND code = ?
+LEFT OUTER JOIN couponKeys k ON (k.couponId = c.id and (k.guid = ? || k.guid = ?))
+WHERE  c.conid = ? AND (code = ? || k.guid = ?)
 GROUP BY c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.memId, c.minMemberships, c.maxMemberships,
          c.minTransaction, c.maxTransaction, c.maxRedemption, m.memAge, m.label,
          k.id, k.guid, k.usedBy, c.startDate, c.endDate
 ORDER BY c.startDate;
 EOS;
-    $res = dbSafeQuery($couponQ, 'sis', array($serial, $con['id'], $couponCode));
+    $res = dbSafeQuery($couponQ, 'ssiss', array($serial, $couponCode, $con['id'], $couponCode, $couponCode));
     if ($res === false) {
         return array('status' => 'error', 'error' => 'Database Coupon Issue');
     }
