@@ -358,30 +358,31 @@ function actionbuttons(cell, formatterParams, onRendered) {
 
 // rollover - cancel his years badge and create it as a rollover in next yeers con
 function rollover(index) {
-    row = badgetable.getRow(index);
+    var row = badgetable.getRow(index);
+    var perid = row.getCell('perid').getValue();
     var confirm_msg = "Confirm rollover for " + row.getCell("p_name").getValue().trim() + "'s badge of type " + row.getCell("label").getValue() + " to " + (conid + 1) + '?';
     if (confirm(confirm_msg)) {
         $.ajax({
             method: "POST",
-            url: "scripts/reg_adminRollover.php",
-            data: {  rollover: index, toconid: conid + 1},
+            url: "scripts/rolloverBadge.php",
+            data: {  badge: index, toconid: conid + 1, perid: perid, },
             success: function (data, textstatus, jqxhr) {
                 if (data['error'] !== undefined) {
                     show_message(data['error'], 'error');
                     return;
                 }
-                if (data['message'] !== undefined) {
-                    show_message(data['message'], 'success');
+                if (data['success'] !== undefined) {
+                    show_message(data['success'], 'success');
                 }
                 if (data['warn'] !== undefined) {
                     show_message(data['warn'], 'warn');
                 }
                 getData();
-                if (data.message)
-                    show_message(data.message, 'success');
+                if (data['success'] !== undefined)
+                    show_message(data.success, 'success');
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                showError("ERROR in transferFindRecord: " + textStatus, jqXHR);
+                showError("ERROR in rolloverBadge: " + textStatus, jqXHR);
             }
         });
     }
