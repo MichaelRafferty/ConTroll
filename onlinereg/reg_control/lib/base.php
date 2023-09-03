@@ -192,9 +192,9 @@ function page_head($title, $auth) {
 function con_info($auth) {
     if(is_array($auth) && checkAuth(array_key_exists('sub', $auth) ? $auth['sub'] : null, 'overview')) {
         $con = get_con();
-        $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."';");
+        $count_res = dbSafeQuery("select count(*) from reg where conid=?;", 'i', array($con['id']));
         $badgeCount = fetch_safe_array($count_res);
-        $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."' AND price <= ifnull(paid,0);");
+        $count_res = dbSafeQuery("select count(*) from reg where conid=? AND price <= (ifnull(paid,0) + ifnull(couponDiscount, 0));",'i', array($con['id']));
         $unlockCount = fetch_safe_array($count_res);
   
 ?>
