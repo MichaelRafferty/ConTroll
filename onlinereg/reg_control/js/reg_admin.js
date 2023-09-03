@@ -403,6 +403,7 @@ function transfer(index) {
     var fullname = row.getCell('p_name').getValue();
     var badgename = row.getCell('p_badge').getValue();
     var badgelabel = row.getCell('label').getValue();
+    var perid = row.getCell('perid').getValue();
 
     document.getElementById("transfer_name_search").value = '';
     if (find_result_table != null) {
@@ -412,6 +413,7 @@ function transfer(index) {
     document.getElementById('transfer_from').innerHTML = fullname + '(' + badgename + ')';
     document.getElementById('transfer_badge').innerHTML = badgelabel;
     document.getElementById('from_badgeid').value = badgeid;
+    document.getElementById('from_perid').value = perid;
     document.getElementById('transfer_search_results').innerHTML = '';
     test.innerHTML = '';
     transfer_modal.show();
@@ -605,7 +607,8 @@ function transferBadge(to, banned) {
     }
 
     var from = document.getElementById('from_badgeid').value;
-    var formData = { 'badge': from, 'perid': to };
+    var from_perid = document.getElementById('from_perid').value;
+    var formData = { 'badge': from, 'perid': to, 'from_perid' : from_perid};
     $.ajax({
         url: 'scripts/transferBadge.php',
         data: formData,

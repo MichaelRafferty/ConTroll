@@ -35,6 +35,7 @@ page_init("Badge List",
                 <div class='container-fluid'>
                     <form id="transfer-search" action='javascript:void(0)'>
                         <input type="hidden" name="from_badgeid" id="from_badgeid" value="">
+                        <input type="hidden" name="from_perid" id="from_perid" value="">
                         <div class='row p-1'>
                             <div class='col-sm-2 p-0'>
                                 <label for='name'>Transfer Badge::</label>
