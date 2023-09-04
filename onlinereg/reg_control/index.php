@@ -17,7 +17,10 @@ if($need_login == false) {
 } else {
     # create the user session variable
     $user_email = $need_login['email'];
-    if (!(array_key_exists('user_email', $_SESSION) && $user_email == $_SESSION['user_email'] && array_key_exists('user_id', $_SESSION) && array_key_exists('user_perid', $_SESSION))) {
+    if (!(array_key_exists('user_email', $_SESSION) && $user_email == $_SESSION['user_email']
+        && array_key_exists('user_id', $_SESSION) && $_SESSION['user_id'] != null
+        && array_key_exists('user_perid', $_SESSION) && $_SESSION['user_perid'] != null
+    )) {
         $_SESSION['user_email'] = $user_email;
         // get the user id for database tracking
         $usergetQ = <<<EOS
