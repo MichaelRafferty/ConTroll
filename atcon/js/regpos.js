@@ -2056,7 +2056,7 @@ function PrintComplete(data) {
     var regs = [];
     var index;
     for (index in badges) {
-        if (printed_obj.set(index) == 0) {
+        if (printed_obj.get(index) == 0) {
             var rparams = cart.addToPrintCount(index);
             printed_obj.set(index, 1);
             regs.push({ regid: rparams[0], printcount: rparams[1]});
