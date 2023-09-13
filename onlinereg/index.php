@@ -10,8 +10,8 @@ $ini = get_conf('reg');
 load_cc_procs();
 
 $condata = get_con();
-$urlCouponCode = null;
-$urlSerialNum = null;
+$urlCouponCode = '';
+$urlSerialNum = '';
 $serialHidden = 'hidden';
 
 
@@ -68,7 +68,7 @@ $onsitesale = $startdate->format("l, F j");
                       $altstring=$ini['logoalt'];
                   }
          ?>
-        <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring ;?>"/>
+        <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo str_replace('"', '\"', $altstring); ?>"/>
         <?php }
                if(array_key_exists('logotext', $ini) && $ini['logotext'] != '') { ?>
         <div style='display:inline-block' class='display-1'><?php echo $ini['logotext']; ?></div>
@@ -119,7 +119,7 @@ $onsitesale = $startdate->format("l, F j");
                               <label for="couponCode">Coupon Code:</label>
                           </div>
                           <div class="col-sm-auto p-0">
-                              <input type="text" size="16" maxlength="16" id="couponCode" name="couponCode" value="<?php echo $urlCouponCode; ?>"/>
+                              <input type="text" size="16" maxlength="16" id="couponCode" name="couponCode" value="<?php echo str_replace('"', '\"', $urlCouponCode); ?>"/>
                           </div>
                       </div>
                       <div class='row mt-1 mb-1' id="serialDiv" <?php echo $serialHidden; ?>>
@@ -127,7 +127,7 @@ $onsitesale = $startdate->format("l, F j");
                               <label for='couponSerial'>Serial Number:</label>
                           </div>
                           <div class='col-sm-auto p-0'>
-                              <input type='text' size='36' maxlength='36' id='couponSerial' name='couponSerial' value="<?php echo $urlSerialNum; ?>"/>
+                              <input type='text' size='36' maxlength='36' id='couponSerial' name='couponSerial' value="<?php echo str_replace('"', '\"', $urlSerialNum); ?>"/>
                           </div>
                       </div>
                       <div class="row">
@@ -212,7 +212,7 @@ $onsitesale = $startdate->format("l, F j");
                                     <?php
                       $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
                       while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-                          echo "<option value='".$data[1]."'>".$data[0]."</option>";
+                          echo '<option value="' . str_replace('"', '\"', $data[1]) . '">' .$data[0]. '</option>';
                       }
                       fclose($fh);
                                     ?>
@@ -227,7 +227,7 @@ $onsitesale = $startdate->format("l, F j");
                             <div class="row">
                                 <div col="col-sm-12">
                                     <p class="text-body">Contact Information
-                                     (<a href='<?php echo $con['privacypolicy'];?>' target='_blank'><?php echo $con['privacytext'];?></a>).</p>
+                                     (<a href="<?php echo str_replace('"', '\"', $con['privacypolicy']);?>" target='_blank'><?php echo $con['privacytext'];?></a>).</p>
 
                                 </div>
                             </div>
@@ -279,7 +279,7 @@ $onsitesale = $startdate->format("l, F j");
                                 <div class="col-sm-12 pt-4">
                                     <p class="text-body"><?php echo $con['conname']; ?> is entirely run by volunteers.
                                     If you're interested in helping us run the convention please email
-                                    <a href='mailto:<?php echo $con['volunteers']; ?>'><?php echo $con['volunteers']; ?></a>.
+                                    <a href="mailto:<?php echo str_replace('"', '\"', $con['volunteers']); ?>"><?php echo $con['volunteers']; ?></a>.
                                     </p>
                                 </div>
                             </div>
@@ -291,7 +291,7 @@ $onsitesale = $startdate->format("l, F j");
                             <div class="row">
                                 <div class="col-sm-12">
                                     <p class="text-body">
-                                    <a href="<?php echo $con['policy'];?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.
+                                    <a href="<?php echo str_replace('"', '\"', $con['policy']);?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.
                                     </p>
                                 </div>
                             </div>
@@ -489,7 +489,7 @@ $onsitesale = $startdate->format("l, F j");
                                       <?php
                                       $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
                                       while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-                                          echo "<option value='".$data[1]."'>".$data[0]."</option>";
+                                          echo '<option value="' . str_replace('"', '\"',$data[1]) . '">' . $data[0] . "</option>";
                                       }
                                       fclose($fh);
                                       ?>
@@ -544,7 +544,7 @@ $onsitesale = $startdate->format("l, F j");
     ?>
                  <p class="text-body"><?php echo $con['conname']; ?> memberships are not refundable, except in case of emergency.
                  For details and questions about transfers and rollovers to future conventions, please see
-                 <a href='<?php echo $con['regpolicy']; ?>'>The Registration Policies Page.</a></p>
+                 <a href="<?php echo str_replace('"', '\"', $con['regpolicy']); ?>">The Registration Policies Page.</a></p>
              </div>
              <div class="col-sm-6 p-2 border border-2 border-primary">
                  <div class="container-fluid">
@@ -576,8 +576,8 @@ $onsitesale = $startdate->format("l, F j");
 <?php } else if($ini['close']==1) { ?>
 <p class="text-primary">Preregistration for <?php echo $condata['label']; ?> is now closed.
 Badges will be available for purchase starting <?php echo $onsitesale; ?> by <?php echo $ini['onsiteopen'] . ' ' . $con['pickupareatext']; ?>
-<a href="<?php echo $con['hotelwebsite']; ?>"> <?php echo $con['hotelname']; ?></a>.
-Daily rates are posted on <a href="<?php echo $con['dailywebsite']; ?>">The <?php echo $con['conname']; ?> website</a></p>
+<a href="<?php echo str_replace('"', '\"', $con['hotelwebsite']); ?>"> <?php echo $con['hotelname']; ?></a>.
+Daily rates are posted on <a href="<?php echo str_replace('"', '\"', $con['dailywebsite']); ?>">The <?php echo $con['conname']; ?> website</a></p>
 <p class="text-body"><?php echo $con['addlpickuptext']; ?></p>
 
 <p class="text-body">We look forward to seeing you at <?php echo $con['conname']; ?>.</p>
@@ -585,11 +585,11 @@ Daily rates are posted on <a href="<?php echo $con['dailywebsite']; ?>">The <?ph
 <p class="text-primary">Online registration for <?php echo $condata['id']; ?> is not yet open. We aim to have online registration open 6 months before the convention.
 
 We will post a notice when online registration opens on the
-<a href="<?php echo $ini['registrationpage']; ?>">The <?php echo $con['conname']; ?> Registration Page</a>.  Mail-in forms are also available on that page.</p>
+<a href="<?php echo str_replace('"', '\"', $ini['registrationpage']); ?>">The <?php echo $con['conname']; ?> Registration Page</a>.  Mail-in forms are also available on that page.</p>
 
 <?php } ?>
-<p class="text-body"><a href="<?php echo $con['policy'];?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.<br/>
-For more information about <?php echo $con['conname']; ?> please email <a href="mailto:<?php echo $con['infoemail']; ?>"><?php echo $con['infoemail']; ?></a>.<br/>
-For questions about <?php echo $con['conname']; ?> Registration, email <a href="mailto:<?php echo $con['regemail']; ?>"><?php echo $con['regemail']; ?></a>.</p>
+<p class="text-body"><a href="<?php echo str_replace('"', '\"', $con['policy']);?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.<br/>
+For more information about <?php echo $con['conname']; ?> please email <a href="mailto:<?php echo str_replace('"', '\"', $con['infoemail']); ?>"><?php echo $con['infoemail']; ?></a>.<br/>
+For questions about <?php echo $con['conname']; ?> Registration, email <a href="mailto:<?php echo str_replace('"', '\"', $con['regemail']); ?>"><?php echo $con['regemail']; ?></a>.</p>
 </body>
 </html>
