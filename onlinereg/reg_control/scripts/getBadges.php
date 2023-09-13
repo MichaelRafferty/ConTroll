@@ -39,7 +39,7 @@ $response['query'] = $badgeQ;
 $badges = array();
 
 $badgeA = dbSafeQuery($badgeQ, 'i', array($conid));
-while($badge = fetch_safe_assoc($badgeA)) {
+while($badge = $badgeA->fetch_assoc()) {
     array_push($badges, $badge);
 }
 
@@ -64,7 +64,7 @@ EOS;
 
 $categories = array();
 $catA = dbSafeQuery($catQ, 'i', array($conid));
-while($cat = fetch_safe_assoc($catA)) {
+while($cat = $catA->fetch_assoc()) {
     array_push($categories, $cat);
 }
 
@@ -89,7 +89,7 @@ EOS;
 
 $types = array();
 $typeA = dbSafeQuery($typeQ, 'i', array($conid));
-while($type = fetch_safe_assoc($typeA)) {
+while($type = $typeA->fetch_assoc()) {
     array_push($types, $type);
 }
 
@@ -114,7 +114,7 @@ EOS;
 
 $labels = array();
 $labelA = dbSafeQuery($labelQ, 'i', array($conid));
-while($label = fetch_safe_assoc($labelA)) {
+while($label = $labelA->fetch_assoc()) {
     array_push($labels, $label);
 }
 
@@ -139,7 +139,7 @@ EOS;
 
 $ages = array();
 $ageA = dbSafeQuery($ageQ, 'i', array($conid));
-while($age = fetch_safe_assoc($ageA)) {
+while($age = $ageA->fetch_assoc()) {
     array_push($ages, $age);
 }
 
@@ -163,7 +163,7 @@ EOS;
 
 $paids = array();
 $paidA = dbSafeQuery($paidQ, 'i', array($conid));
-while($paid = fetch_safe_assoc($paidA)) {
+while($paid = $paidA->fetch_assoc()) {
     array_push($paids, $paid);
 }
 
@@ -188,7 +188,7 @@ EOS;
 
 $coupons = array();
 $couponA = dbSafeQuery($couponQ, 'i', array($conid));
-while($coupon = fetch_safe_assoc($couponA)) {
+while($coupon = $couponA->fetch_assoc()) {
     array_push($coupons, $coupon);
 }
 
