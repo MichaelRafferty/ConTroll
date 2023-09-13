@@ -152,7 +152,7 @@ EOS;
         if ($r->num_rows > 0) {
             $response['success'] = 1;
             $auths = array();
-            while ($l = fetch_safe_assoc($r)) {
+            while ($l = $r->fetch_assoc()) {
                 $auths[] = $l['auth'];
                 $response['userhash'] = $l['userhash'];
                 $response['first_name'] = $l['first_name'];
@@ -192,7 +192,7 @@ FROM atcon_user u
 WHERE u.perid=? AND u.conid=?;
 EOS;
                 $r = dbSafeQuery($q, 'si', array($user, $conid));
-                $l = fetch_safe_assoc($r);
+                $l = $r->fetch_assoc();
                 $response['userhash'] = $l['userhash'];
             }
         } else {
