@@ -117,7 +117,7 @@ FROM printers p
 JOIN servers s ON (p.serverName = s.serverName)
 EOS;
 $existingQ = dbQuery($existingPrintersSQL);
-while ($printer = fetch_safe_assoc($existingQ)) {
+while ($printer = $existingQ->fetch_assoc()) {
     $existing[$printer['serverName'] . ':::' . $printer['printerName']] = $printer['local'];
 }
 mysqli_free_result($existingQ);

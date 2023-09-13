@@ -53,7 +53,7 @@ EOS;
         RenderErrorAjax('Invalid User Parameters');
         exit();
     }
-    $checkL = fetch_safe_assoc($checkR);
+    $checkL = $checkR->fetch_assoc();
 
     // using the PHP password encryption, so only password_verify in PHP can validate the password
     if (!password_verify($oldpw, $checkL['passwd'])) {

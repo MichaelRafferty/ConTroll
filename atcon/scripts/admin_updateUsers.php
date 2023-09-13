@@ -68,7 +68,7 @@ WHERE conid = ?
 EOS;
 $idmap = [];
 $res = dbSafeQuery($existingSQL, 'i', [$conid]);
-while ($user = fetch_safe_assoc($res)) {
+while ($user = $res->fetch_assoc()) {
     $idmap[strval($user['perid'])] = $user['id'];
 }
 mysqli_free_result($res);
@@ -126,7 +126,7 @@ $res = dbSafeQuery($fetchAuthSQL, 'i', [$conid]);
 $users = [];
 $auths = [];
 $id = "0";
-while ($auth = fetch_safe_assoc($res)) {
+while ($auth = $res->fetch_assoc()) {
     if ($id != $auth['authuser']) {
         if ($id != "0") {
             $users[strval($id)] = $auths;
