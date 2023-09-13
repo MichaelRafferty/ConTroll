@@ -62,7 +62,7 @@ WHERE id=?;
 EOS;
 $r = dbSafeQuery($condatesSQL, 'i', array($conid));
 if ($r->num_rows == 1) {
-    $l = fetch_safe_assoc($r);
+    $l = $r->fetch_assoc();
     $startdate = $l['startdate'];
     $enddate = $l['enddate'];
     $response['startdate'] = $startdate;
@@ -101,7 +101,7 @@ EOS;
 
 $memarray = array();
 $r = dbSafeQuery($priceQ, 'iii', array($conid, $conid + 1, $conid));
-while ($l = fetch_safe_assoc($r)) {
+while ($l = $r->fetch_assoc()) {
     $memarray[] = $l;
 }
 mysqli_free_result($r);
@@ -117,7 +117,7 @@ EOS;
 
 $typearray = array();
 $r = dbQuery($memTypeSQL);
-while ($l = fetch_safe_assoc($r)) {
+while ($l = $r->fetch_assoc()) {
     $typearray[] = $l['memType'];
 }
 mysqli_free_result($r);
@@ -133,7 +133,7 @@ EOS;
 
 $catarray = array();
 $r = dbQuery($memCategorySQL);
-while ($l = fetch_safe_assoc($r)) {
+while ($l = $r->fetch_assoc()) {
     $catarray[] = $l['memCategory'];
 }
 mysqli_free_result($r);
@@ -149,7 +149,7 @@ EOS;
 
 $agearray = array();
 $r = dbSafeQuery($ageListSQL, 'i', array($conid));
-while ($l = fetch_safe_assoc($r)) {
+while ($l = $r->fetch_assoc()) {
     $agearray[] = $l;
 }
 mysqli_free_result($r);

@@ -10,7 +10,7 @@ FROM coupon
 WHERE conid = ?
 AND startDate <= now() AND endDate > now();
 EOS;
-    $c = fetch_safe_assoc(dbSafeQuery($couponQ, 'i', array($con['id'])));
+    $c = dbSafeQuery($couponQ, 'i', array($con['id']))->fetch_assoc();
     return $c['num'];
 }
 
@@ -29,7 +29,7 @@ EOS;
     }
     $coupons = [];
     $num = $res->num_rows;
-    while ($l = fetch_safe_assoc($res)) {
+    while ($l = $res->fetch_assoc()) {
         $coupons[$l['id']] = $l;
     }
     return array($num, $coupons);
@@ -56,7 +56,7 @@ FROM coupon c
 LEFT OUTER JOIN memLabel m ON (c.memId = m.id)
 LEFT OUTER JOIN transaction t ON (t.coupon = c.id and t.complete_date is not null)
 LEFT OUTER JOIN couponKeys k ON (k.couponId = c.id and (k.guid = ? || k.guid = ?))
-WHERE  c.conid = ? AND (code = ? || k.guid = ?)
+WHERE  c.conid = ? AND ((c.code = ?) || (IFNULL(k.guid,'') = ?))
 GROUP BY c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.memId, c.minMemberships, c.maxMemberships,
          c.minTransaction, c.maxTransaction, c.maxRedemption, m.memAge, m.label,
          k.id, k.guid, k.usedBy, c.startDate, c.endDate
@@ -73,7 +73,7 @@ EOS;
 
     $coupon = NULL;
     $ec = '';
-    while ($l = fetch_safe_assoc($res)) {
+    while ($l = $res->fetch_assoc()) {
         // this coupon is valid now as it returns Early, NULL, expired as values in the query
         if ($l['start'] == null and $l['end'] == null && $l['usedBy'] == null) {
             $coupon = $l;
@@ -109,7 +109,7 @@ ORDER BY sort_order, price DESC
 ;
 EOS;
         $priceR = dbSafeQuery($priceQ, 'ii', array($con['id'], $coupon['memId']));
-        while ($priceL = fetch_safe_assoc($priceR)) {
+        while ($priceL = $priceR->fetch_assoc()) {
             $membershiptypes[] = $priceL;
         }
         $result['mtypes'] = $membershiptypes;
@@ -150,7 +150,7 @@ EOS;
         return array('status' => 'error', 'error' => 'Error: Coupon not found');
     }
 
-    $coupon = fetch_safe_assoc($res);
+    $coupon = $res->fetch_assoc();
     if ($coupon['maxRedemption']) {
         if ($coupon['redeemedCount'] >= $coupon['maxRedemption'])
             return array('status' => 'error', 'error' => 'Coupon has already reached its maximum number of redemptions');
@@ -180,7 +180,7 @@ ORDER BY sort_order, price DESC
 EOS;
         $priceR = dbSafeQuery($priceQ, 'i', array($con['id']));
     }
-    while ($priceL = fetch_safe_assoc($priceR)) {
+    while ($priceL = $priceR->fetch_assoc()) {
         $membershiptypes[$priceL['id']] = $priceL;
     }
     $result['mtypes'] = $membershiptypes;
