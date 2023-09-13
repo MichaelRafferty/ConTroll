@@ -320,7 +320,7 @@ $perinfo = [];
 $index = 0;
 $perids = [];
 $num_rows = $rp->num_rows;
-while ($l = fetch_safe_assoc($rp)) {
+while ($l = $rp->fetch_assoc()) {
     $l['index'] = $index;
     $perinfo[] = $l;
     $perids[$l['perid']] = $index;
@@ -336,7 +336,7 @@ mysqli_free_result($rp);
 
 $membership = [];
 $index = 0;
-while ($l = fetch_safe_assoc($rm)) {
+while ($l = $rm->fetch_assoc()) {
     $l['pindex'] = $perids[$l['perid']];
     $l['index'] = $index;
     $membership[] = $l;
