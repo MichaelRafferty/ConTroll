@@ -239,16 +239,23 @@ EOF;
         break;
     case "overview":
         $query = <<<EOF
-SELECT memCategory AS cat, memType AS type, memAge AS age, label, cnt
-FROM (
-    SELECT COUNT(R.id) AS cnt, M.sort_order, M.memCategory, M.memType, M.memAge, M.shortname AS label, SUM(R.paid) AS paid
+WITH cats AS (
+ SELECT COUNT(R.id) AS cnt, M.memCategory, SUM(R.paid) AS paid
     FROM reg R
     JOIN memLabel M ON (M.id=R.memId)
     WHERE R.conid=?
-    GROUP BY M.sort_order, M.memCategory, M.memType, M.memAge, M.shortname
-    ) m
-WHERE memCategory is NOT NULL
-ORDER BY paid DESC, sort_order ASC, memCategory DESC, memType ASC, memAge ASC;
+    GROUP BY M.memCategory
+    ORDER BY paid DESC
+), orderedcats AS (
+	SELECT cnt, memCategory, paid, ROW_NUMBER() OVER (ORDER BY paid DESC) AS rownum
+    FROM cats
+)
+SELECT m.memCategory AS cat, m.memType AS type, m.memAge AS age, m.label, o.rownum, COUNT(r.id) AS cnt
+FROM orderedcats o
+JOIN memList m ON (m.memCategory = o.memCategory AND m.conid = 2023)
+join reg r ON (r.memId = m.id AND r.conid = 2023)
+GROUP BY m.memCategory, m.memType, m.memAge, m.label, o.rownum
+ORDER BY rownum, cnt DESC;
 EOF;
         $response['query'] = $query;
         $res = dbSafeQuery($query, 'i', array($conid));
