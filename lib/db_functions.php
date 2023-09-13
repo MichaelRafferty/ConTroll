@@ -361,6 +361,8 @@ function sql_safe($string)
     return $dbObject->escape_string($string);
 }
 
+// obsolete function register, lets delete it and see if we still need it
+/*
 function register($email, $sub, $name)
 {
     global $dbObject;
@@ -384,6 +386,7 @@ function register($email, $sub, $name)
     }
     return $res;
 }
+*/
 
 function getPages($sub)#: array|bool
 {
@@ -515,6 +518,7 @@ function db_close(): void
     }
 }
 
+// older style convert quotes association, to be phased out
 function fetch_safe_assoc($res)
 {
     if (is_null($res)) {

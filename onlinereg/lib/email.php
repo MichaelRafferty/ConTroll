@@ -16,7 +16,7 @@ LEFT OUTER JOIN coupon C ON (T.coupon = C.id)
 WHERE T.id=?
 ;
 EOS;
-    $owner = fetch_safe_assoc(dbSafeQuery($ownerQ, 'i', array($transid)));
+    $owner = dbSafeQuery($ownerQ, 'i', array($transid))->fetch_assoc();
 
     $body = trim($owner['first_name'] . " " . $owner['last_name']) . ",\n\n";
     $body .= "Thank you for registering for " . $condata['label'] . "!\n\n";
@@ -48,7 +48,7 @@ EOS;
 
     $badgeR = dbSafeQuery($badgeQ, 'i', array($transid));
 
-    while ($badge = fetch_safe_assoc($badgeR)) {
+    while ($badge = $badgeR->fetch_assoc()) {
         $body .= "     * " . $badge['first_name'] . " " . $badge['last_name']
             . " (" . $badge['label'] . ")\n\n";
     }
@@ -96,7 +96,7 @@ LEFT OUTER JOIN coupon C ON (T.coupon = C.id)
 WHERE T.id=?
 ;
 EOS;
-    $owner = fetch_safe_assoc(dbSafeQuery($ownerQ, 'i', array($transid)));
+    $owner = dbSafeQuery($ownerQ, 'i', array($transid))->fetch_assoc();
 
     $body = trim($owner['first_name'] . ' ' . $owner['last_name']) . ",\n\n";
     $body .= 'Thank you for registering for ' . $condata['label'] . "!\n\n";
@@ -126,7 +126,7 @@ EOS;
 
     $badgeR = dbSafeQuery($badgeQ, 'i', array($transid));
 
-    while ($badge = fetch_safe_assoc($badgeR)) {
+    while ($badge = $badgeR->fetch_assoc()) {
         $body .= '     * ' . $badge['first_name'] . ' ' . $badge['last_name']
             . ' (' . $badge['label'] . ")\n\n";
     }

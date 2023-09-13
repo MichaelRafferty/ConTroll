@@ -31,7 +31,7 @@ EOS;
   $transR = dbSafeQuery($transQ, 'ii', array($tid, $conid));
 
   $names = "<ul>\n";
-  while($trans = fetch_safe_assoc($transR)) {
+  while($trans = $transR->fetch_assoc()) {
     $names .= "\t<li>" . $trans['first_name'] . " " . $trans['last_name'];
     if($trans['badge_name'] != '') {$names .= " (" .$trans['badge_name'] . ")";}
     $names .= "</li>\n";
@@ -98,7 +98,7 @@ EOS;
   $transR = dbSafeQuery($transQ, 'ii', array($tid, $conid));
 
   $names = "";
-  while($trans = fetch_safe_assoc($transR)) {
+  while($trans = $transR->fetch_assoc()) {
     $names .= $trans['first_name'] . " " . $trans['last_name'] . " (" .$trans['badge_name'] . ")\n";
   }
 

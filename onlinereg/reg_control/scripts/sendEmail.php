@@ -220,7 +220,7 @@ $data_array=array();
 if($test) {
     $email_array[] = array('email' => $email, 'first_name' => 'First', 'last_name' => 'Last', 'guid' => guidv4());
 } else {
-    while($addr = fetch_safe_assoc($emailR)) {
+    while($addr =  $emailR->fetch_assoc()) {
        $email_array[] = $addr;
     }
 }
