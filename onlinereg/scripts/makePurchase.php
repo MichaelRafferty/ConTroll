@@ -75,7 +75,7 @@ WHERE
 EOQ;
 $mtypes = array();
 $priceR = dbSafeQuery($priceQ, 'i', array($condata['id']));
-while($priceL = fetch_safe_assoc($priceR)) {
+while($priceL = $priceR->fetch_assoc()) {
     $mtypes[$priceL['id']] = $priceL;
 }
 
@@ -256,7 +256,7 @@ EOF;
         $res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
         if ($res !== false) {
             if ($res->num_rows > 0) {
-                $match = fetch_safe_assoc($res);
+                $match = $res->fetch_assoc();
                 $id = $match['id'];
             } else {
                 $id = null;
@@ -355,7 +355,7 @@ EOS;
 $all_badgeR = dbSafeQuery($all_badgeQ, "i", array($transid));
 
 $badgeResults = array();
-while ($row = fetch_safe_assoc($all_badgeR)) {
+while ($row = $all_badgeR->fetch_assoc()) {
   $badgeResults[count($badgeResults)] = $row;
 }
 
