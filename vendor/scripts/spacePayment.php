@@ -50,7 +50,8 @@ SELECT name, email, website, description, addr, addr2, city, state, zip, publici
 FROM vendors
 WHERE id=?;
 EOS;
-$vendor = fetch_safe_assoc(dbSafeQuery($vendorQ, 'i', array($venId)));
+$vendorR = dbSafeQuery($vendorQ, 'i', array($venId));
+$vendor = $vendorR->fetch_assoc();
 
 // now the space  information for this item
 $spaceQ = <<<EOS
@@ -62,7 +63,8 @@ JOIN memList mi ON (v.includedMemId = mi.id)
 JOIN memList ma ON (v.additionalMemId = ma.id)
 WHERE vp.id = ?
 EOS;
-$space =  fetch_safe_assoc(dbSafeQuery($spaceQ, 'i', array($priceId)));
+$spaceR = dbSafeQuery($spaceQ, 'i', array($priceId));
+$space =  $spaceR->fetch_assoc();
 
 // get the buyer info
 $buyer['fname'] = $_POST['cc_fname'];
@@ -280,7 +282,7 @@ EOS;
 $all_badgeR = dbSafeQuery($all_badgeQ, 'i', array($transid));
 
 $badgeResults = array();
-while ($row = fetch_safe_assoc($all_badgeR)) {
+while ($row = $all_badgeR->fetch_assoc()) {
     $badgeResults[count($badgeResults)] = $row;
 }
 
@@ -449,7 +451,7 @@ EOF;
     $res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
     if ($res !== false) {
         if ($res->num_rows > 0) {
-            $match = fetch_safe_assoc($res);
+            $match = $res->fetch_assoc();
             $id = $match['id'];
         } else {
             $id = null;

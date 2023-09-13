@@ -52,7 +52,8 @@ FROM vendors v
 JOIN vw_VendorSpace vs ON (v.id = vs.vendorId AND vs.spaceId = ?)
 WHERE v.id = ?
 EOS;
-        $vendorL = fetch_safe_assoc(dbSafeQuery($vendorQ, 'ii', array($spaceId, $vendorId)));
+        $vendorR = dbSafeQuery($vendorQ, 'ii', array($spaceId, $vendorId));
+        $vendorL = $vendorR->fetch_assoc();
         $vendorname = $vendorL['name'];
         $spacename = $vendorL['spacename'];
         $desc = $vendorL['approved_description'];

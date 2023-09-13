@@ -25,8 +25,9 @@ if($_POST['oldPassword'] == $_POST['password']) {
     exit();
 }
 
-$testQ = "SELECT password FROM vendors WHERE id=$vendor;";
-$testPw = fetch_safe_assoc(dbQuery($testQ));
+$testQ = "SELECT password FROM vendors WHERE id=?;";
+$testR = dbSafeQuery($testQ, 'i', array($vendor));
+$testPw = $testR->fetch_assoc();
 
 if(!password_verify($_POST['oldPassword'], $testPw['password'])) {
     $response['status']='error';
