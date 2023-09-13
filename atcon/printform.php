@@ -34,7 +34,7 @@ ORDER BY sortorder;
 EOS;
 $ages = array();
 $ageQ = dbSafeQuery($ageSQL, 'i', array($conid));
-while ($l = fetch_safe_assoc($ageQ)) {
+while ($l = $ageQ->fetch_assoc()) {
     $ages[] = $l['ageType'];
 }
 mysqli_free_result($ageQ);
@@ -47,7 +47,7 @@ ORDER BY sortorder;
 EOS;
 $categories = array();
 $categoryQ = dbQuery($categorySQL);
-while ($l = fetch_safe_assoc($categoryQ)) {
+while ($l = $categoryQ->fetch_assoc()) {
     $categories[] = $l['memCategory'];
 }
 mysqli_free_result($categoryQ);
@@ -59,7 +59,7 @@ ORDER BY sortorder;
 EOS;
 $durations = array();
 $durationQ = dbQuery($durationSQL);
-while ($l = fetch_safe_assoc($durationQ)) {
+while ($l = $durationQ->fetch_assoc()) {
     $durations[] = $l['memType'];
 }
 mysqli_free_result($durationQ);
@@ -70,7 +70,7 @@ FROM conlist
 WHERE id = ?;
 EOS;
 $dayQ = dbSafeQuery($daySQL, 'i', array($conid));
-$l = fetch_safe_assoc($dayQ);
+$l = $dayQ->fetch_assoc();
 $day = strtotime($l['startdate']);
 $end = strtotime($l['enddate']);
 
