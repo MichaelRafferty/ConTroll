@@ -442,6 +442,6 @@ $response = array(
   //"email"=>$email_msg,
   "email_error"=>$error_code
 );
-var_error_log($response);
+//var_error_log($response);
 ajaxSuccess($response);
 ?>
