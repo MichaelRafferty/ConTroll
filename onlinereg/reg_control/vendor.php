@@ -30,7 +30,7 @@ $conf = get_conf('con');
 $vendorListQ = "SELECT id, name, website, city, state FROM vendors ORDER BY name, city, state;";
 $vendorListR = dbQuery($vendorListQ);
 $vendorList = array();
-while ($row = fetch_safe_assoc($vendorListR)) {
+while ($row = $vendorListR->fetch_assoc()) {
         $vendorList[] = $row;
 
 }
@@ -38,7 +38,7 @@ while ($row = fetch_safe_assoc($vendorListR)) {
 $spaceListQ = "SELECT id, shortname, name FROM vendorSpaces ORDER BY name;";
 $spaceListR = dbQuery($spaceListQ);
 $spaceList = array();
-while ($row = fetch_safe_assoc($spaceListR)) {
+while ($row = $spaceListR->fetch_assoc()) {
     $spaceList[] = $row;
 }
 
@@ -51,7 +51,7 @@ ORDER BY v.spaceId, v.sortOrder;
 EOS;
 $spacePriceListR = dbQuery($spacePriceListQ);
 $spacePriceList = array();
-while ($row = fetch_safe_assoc($spacePriceListR)) {
+while ($row = $spacePriceListR->fetch_assoc()) {
     $spacePriceList[] = $row;
 }
 // first the modals for use by the script
@@ -235,7 +235,8 @@ while ($row = fetch_safe_assoc($spacePriceListR)) {
                                     <option value="0">No Vendor Selected</option>
                                     <?php
                                     foreach ($vendorList AS $row) {
-                                        echo "<option value=" . $row['id'] . ">" . $row['name'] . " (" . $row['website'] . "), " . $row['city'] . ',' . $row['state'] . "</option>\n";
+                                        echo "<option value=" . str_replace('"', '\"', $row['id']) . ">" .
+                                            $row['name'] . " (" . $row['website'] . "), " . $row['city'] . ',' . $row['state'] . "</option>\n";
                                     }
                                     ?>
                                 </select>
@@ -250,7 +251,7 @@ while ($row = fetch_safe_assoc($spacePriceListR)) {
                                     <option value='0'>No Space Selected</option>
                                     <?php
                                     foreach ($spaceList as $row) {
-                                        echo '<option value=' . $row['id'] . '>' . $row['name'] . "</option>\n";
+                                        echo '<option value="' . str_replace('"', '\"', $row['id']) . '">' . $row['name'] . "</option>\n";
                                     }
                                     ?>
                                 </select>
