@@ -346,20 +346,22 @@ function repriceCart() {
     var couponmemberships = 0;
     var primarymemberships = 0;
 
-    for (var row in mtypes) {
-        var mbrtype = mtypes[row];
-        var num = 0;
-        if (nbrs[mbrtype['memGroup']] > 0) {
-            num = nbrs[mbrtype['memGroup']];
-            if (mbrtype['primary']) {
-                primarymemberships += num;
-                if (coupon.isCouponActive()) {
-                    if ((coupon.memId != null && coupon.memId == mbrtype['memId']) || coupon.memId == null)
-                        couponmemberships += num;
+    if (typeof mtypes != 'undefined') {
+        for (var row in mtypes) {
+            var mbrtype = mtypes[row];
+            var num = 0;
+            if (nbrs[mbrtype['memGroup']] > 0) {
+                num = nbrs[mbrtype['memGroup']];
+                if (mbrtype['primary']) {
+                    primarymemberships += num;
+                    if (coupon.isCouponActive()) {
+                        if ((coupon.memId != null && coupon.memId == mbrtype['memId']) || coupon.memId == null)
+                            couponmemberships += num;
+                    }
+                    mbrtotal += num * Number(mbrtype['price']).toFixed(2)
                 }
-                mbrtotal += num * Number(mbrtype['price']).toFixed(2)
+                total += num * Number(mbrtype['price']).toFixed(2);
             }
-            total += num * Number(mbrtype['price']).toFixed(2);
         }
     }
 
@@ -453,21 +455,22 @@ window.onload = function () {
     subTotalColDiv = document.getElementById('subTotalColDiv');
     couponDiscountDiv = document.getElementById('couponDiscountDiv');
 
+    if (typeof mtypes != 'undefined') { //v we got here from index (purchase a badge, not some other page)
+        for (var row in mtypes) {
+            var mbrtype = mtypes[row];
+            var group = mbrtype['memGroup'];
+            prices[group] = Number(mbrtype['price']);
+            badges['agecount'][group] = 0;
+            shortnames[group] = mbrtype['shortname'];
+            mbrtype['primary'] = !(mbrtype['price'] == 0 || (mbrtype['memCategory'] != 'standard' && mbrtype['memCategory'] != 'virtual'));
+            mbrtype['discount'] = 0;
+            mbrtype['discountable'] = false;
+        }
 
-    for (var row in mtypes) {
-        var mbrtype = mtypes[row];
-        var group = mbrtype['memGroup'];
-        prices[group]= Number(mbrtype['price']);
-        badges['agecount'][group] = 0;
-        shortnames[group] = mbrtype['shortname'];
-        mbrtype['primary'] = !(mbrtype['price'] == 0 || (mbrtype['memCategory'] != 'standard' && mbrtype['memCategory'] != 'virtual'));
-        mbrtype['discount'] = 0;
-        mbrtype['discountable'] = false;
+        repriceCart();
+
+        if (coupon.couponError() == false)
+            newBadge.show();
     }
-
-    repriceCart();
-
-    if (coupon.couponError() == false)
-        newBadge.show();
 
 }

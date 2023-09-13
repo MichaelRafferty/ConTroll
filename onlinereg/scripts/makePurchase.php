@@ -197,10 +197,10 @@ foreach ($badges as $badge) {
             'discount' => $discount,
         );
 
-        if ($badge['share'] == "") {
+        if (array_key_exists('share', $badge) && $badge['share'] == "") {
             $badge['share'] = 'Y';
         }
-        if ($badge['contact'] == "") {
+        if (array_key_exists('contact', $badge) && $badge['contact'] == "") {
             $badge['contact'] = 'Y';
         }
 
@@ -278,8 +278,8 @@ EOF;
             trim($badge['state']),
             trim($badge['zip']),
             $badge['country'],
-            $badge['contact'] === null ? 'Y' : $badge['contact'],
-            $badge['share'] === null ? 'Y' : $badge['share'],
+            array_key_exists('contact', $badge) ? $badge['contact'] : 'Y',
+            array_key_exists('share', $badge) ? $badge['share'] :'Y',
             $id
         );
 
@@ -433,7 +433,7 @@ if (array_key_exists('email_error', $return_arr)) {
     $error_msg = null;
 }
 
-ajaxSuccess(array(
+$response = array(
   "status"=>$return_arr['status'],
   "url"=>$rtn['url'],
   "data"=> $error_msg,
@@ -441,5 +441,7 @@ ajaxSuccess(array(
   "trans"=>$transid,
   //"email"=>$email_msg,
   "email_error"=>$error_code
-));
+);
+var_error_log($response);
+ajaxSuccess($response);
 ?>

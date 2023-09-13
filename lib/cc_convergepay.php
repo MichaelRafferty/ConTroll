@@ -51,14 +51,19 @@ EOS;
     return $html;
 };
 function cc_charge_purchase($results, $ccauth) {
-    if (array_key_exists('user_perid', $_SESSION)) {
-        $user_perid = $_SESSION['user_perid'];
+    if (isset($_SESSION)) {
+        if (array_key_exists('user_perid', $_SESSION)) {
+            $user_perid = $_SESSION['user_perid'];
+        } else {
+            $user_perid = null;
+        }
+        if (array_key_exists('user_id', $_SESSION)) {
+            $user_id = $_SESSION['user_id'];
+        } else {
+            $user_id = null;
+        }
     } else {
         $user_perid = null;
-    }
-    if (array_key_exists('user_perid', $_SESSION)) {
-        $user_id = $_SESSION['user_id'];
-    } else {
         $user_id = null;
     }
 

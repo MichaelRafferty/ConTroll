@@ -14,6 +14,9 @@ $transid = 0;
 if(isset($_GET) && isset($_GET['trans']) && is_numeric($_GET['trans'])) {
     $transid = $_GET['trans'];
 }
+if(isset($_POST) && isset($_POST['trans']) && is_numeric($_POST['trans'])) {
+    $transid = $_POST['trans'];
+}
 
 $ownerQ = <<<EOS
 SELECT NP.first_name, NP.last_name, T.complete_date, P.receipt_id as payid, P.receipt_url as url 
@@ -23,7 +26,7 @@ LEFT OUTER JOIN payments P ON (P.transid=T.id)
 WHERE T.id=?;
 EOS;
 
-$owner = fetch_safe_assoc(dbSafeQuery($ownerQ, 'i', array($transid)));
+$owner = dbSafeQuery($ownerQ, 'i', array($transid))->fetch_assoc();
 ol_page_init($condata['label'] . ' Registration Complete');
 ?>
 <body>
@@ -77,7 +80,7 @@ EOS;
 
 $badgeR = dbSafeQuery($badgeQ, 'i', array($transid));
 
-while($badge = fetch_safe_assoc($badgeR)) {
+while($badge = $badgeR->fetch_assoc()) {
                 ?>
                 <li>
                     <?php echo $badge['first_name'] . " " . $badge['last_name']
