@@ -47,7 +47,7 @@ ORDER BY sort_order, price DESC
 ;
 EOS;
 $priceR = dbSafeQuery($priceQ, "i", array($condata['id']));
-while($priceL = fetch_safe_assoc($priceR)) {
+while($priceL = $priceR->fetch_assoc()) {
     $membershiptypes[] = $priceL;
 }
 $js = "var mtypes = " . json_encode($membershiptypes);

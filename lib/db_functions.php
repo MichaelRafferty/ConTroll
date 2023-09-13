@@ -403,7 +403,7 @@ EOS;
     if (!$auths) {
         return false;
     }
-    while ($new_auth = fetch_safe_assoc($auths)) {
+    while ($new_auth = $auths->fetch_assoc()) {
         $res[] = $new_auth;
     }
     return $res;
@@ -425,7 +425,7 @@ EOS;
     if (!$auths) {
         return false;
     }
-    while ($new_auth = fetch_safe_assoc($auths)) {
+    while ($new_auth = $auths->fetch_assoc()) {
         $res[] = $new_auth['name'];
     }
     return $res;
@@ -446,7 +446,7 @@ EOS;
     if (!$auths) {
         return false;
     }
-    while ($new_auth = fetch_safe_assoc($auths)) {
+    while ($new_auth = $auths->fetch_assoc()) {
         $res[] = $new_auth['name'];
     }
     return $res;
@@ -503,7 +503,7 @@ function getUsers($new = null)#:array|bool
     if (!$users) {
         return false;
     }
-    while ($next_user = fetch_safe_assoc($users)) {
+    while ($next_user = $users->fetch_assoc()) {
         $res[] = $next_user;
     }
     return $res;
@@ -568,12 +568,14 @@ function get_conf($name)
 function get_con()
 {
     global $db_ini;
-    return fetch_safe_assoc(dbSafeQuery("SELECT * FROM conlist WHERE id=?;", 'i', [$db_ini['con']['id']]));
+    $r = dbSafeQuery("SELECT * FROM conlist WHERE id=?;", 'i', [$db_ini['con']['id']]);
+    return $r->fetch_assoc();
 }
 
 function get_user($sub)
 {
-    $res = fetch_safe_assoc(dbSafeQuery("SELECT * FROM user WHERE google_sub=?;", 's', [$sub]));
+    $r = dbSafeQuery("SELECT * FROM user WHERE google_sub=?;", 's', [$sub]);
+    $res = $r->fetch_assoc();
     return $res['id'];
 }
 
@@ -606,7 +608,7 @@ function newUser($email, $sub):bool
     if (!$userR || $userR->num_rows != 1) {
         return false;
     }
-    $user = fetch_safe_assoc($userR);
+    $user = $userR->fetch_assoc();
     if ($user['google_sub'] == '') {
         $id = $user['id'];
         dbQuery("UPDATE user SET google_sub='$sub' WHERE id='$id';");
