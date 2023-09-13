@@ -27,12 +27,15 @@ WHERE T.id=?;
 EOS;
 
 $owner = dbSafeQuery($ownerQ, 'i', array($transid))->fetch_assoc();
+if ($owner == null) {
+    $owner = array('first_name' => '', 'last_name' => '');
+}
 ol_page_init($condata['label'] . ' Registration Complete');
 ?>
 <body>
     <div class="container-fluid">
         <?php if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') { ?>
-        <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring ;?>"/>
+        <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo str_replace('"', '\"', $altstring);?>"/>
         <?php }
               if(array_key_exists('logotext', $ini) && $ini['logotext'] != '') { ?>       
         <div style='display:inline-block' class='display-1'><?php echo $ini['logotext']; ?></div>
@@ -52,15 +55,15 @@ ol_page_init($condata['label'] . ' Registration Complete');
   if($transid==0 or !isset($owner['complete_date']) or ($owner['complete_date'] == null)) {
         ?>
         <p>
-            Somehow you managed to get here without information on your purchase.  If you don't know how that happened please contact <a href='mailto:<?php echo $con['regemail']; ?>'>
-                <?php echo $con['regemail']; ?>
-            </a> and we appologize for the confusion.
+            Somehow you managed to get here without information on your purchase.
+            If you don't know how that happened please contact
+            <a href="mailto:<?php echo str_replace('"', '\"', $con['regemail']); ?>"><?php echo $con['regemail']; ?></a> and we appologize for the confusion.
         </p>
 
         <?php } else {
       if ($owner['payid'] != null) { ?>
 Your transaction number is <?php echo $transid; ?> and receipt number is
-        <?php echo $owner['payid']; if ($owner['url'] != '') echo " (<a href='" . $owner['url'] . "'>" . $owner['url'] . "</a>)";
+        <?php echo $owner['payid']; if ($owner['url'] != '') echo ' (<a href="' . str_replace('"', '\"', $owner['url']) . '">' . $owner['url'] . "</a>)";
       } else {
           ?>
           Your transaction number is <?php echo $transid; ?> and as this transaction has no charge, your receipt has been emailed to you. <?php
@@ -101,27 +104,27 @@ while($badge = $badgeR->fetch_assoc()) {
         </p>
         <?php } ?>
         <p>
-            Please contact <a href='mailto:<?php echo $con['regadminemail']; ?>'>
+            Please contact <a href="mailto:<?php echo str_replace('"', '\"', $con['regadminemail']); ?>">
                 <?php echo $con['regadminemail']; ?>
-            </a><?php if ($con['regadminemail'] <> $con['regemail']) {?> or <a href='mailto:<?php echo $con['regemail']; ?>'>
+            </a><?php if ($con['regadminemail'] <> $con['regemail']) {?> or <a href="mailto:<?php echo str_replace('"', '\"', $con['regemail']); ?>">
                 <?php echo $con['regadminemail']; ?>
             </a><?php }?> with any questions and we look forward to seeing you at <?php echo $condata['label']; ?>
         </p>
         <?php } ?>
     </div>
-    For hotel information and directions please see <a href="<?php echo $con['hotelwebsite']; ?>">
+    For hotel information and directions please see <a href="<?php echo str_replace('"', '\"', $con['hotelwebsite']); ?>">
         the <?php echo $con['conname']; ?> hotel page
     </a>
 
     <br />
     <hr />
-    <a href="<?php echo $con['policy'];?>" target="_blank">
+    <a href="<?php echo str_replace('"', '\"', $con['policy']);?>" target="_blank">
         Click here for the <?php echo $con['policytext']; ?>
     </a>.<br />
-    For more information about <?php echo $con['conname']; ?> please email <a href="mailto:<?php echo $con['infoemail']; ?>">
+    For more information about <?php echo $con['conname']; ?> please email <a href="mailto:<?php echo str_replace('"', '\"', $con['infoemail']); ?>">
         <?php echo $con['infoemail']; ?>
     </a>.<br />
-    For questions about <?php echo $con['conname']; ?> Registration, email <a href="mailto:<?php echo $con['regemail']; ?>">
+    For questions about <?php echo $con['conname']; ?> Registration, email <a href="mailto:<?php echo str_replace('"', '\"', $con['regemail']); ?>">
         <?php echo $con['regemail']; ?>
     </a>.<br />
 
