@@ -57,7 +57,7 @@ if($lname == "" or $fname == "") {
 SELECT P.last_name, SUBSTRING(P.first_name, 1, 1) AS fi, SUBSTRING(P.middle_name, 1, 1) AS mi, P.zip
 FROM reg R
 JOIN perinfo P ON (R.perid = P.id)
-WHERE P.share_reg_ok='Y' AND R.conid = ? AND P.first_name like ? AND P.last_name = ? AND R.price=R.paid;
+WHERE P.share_reg_ok='Y' AND R.conid = ? AND lower(P.first_name) like lower(?) AND lower(P.last_name) = lower(?) AND R.price=R.paid;
 EOS;
 
     $perR = dbSafeQuery($query, 'iss', array($condata['id'],  $fname, $lname));
@@ -66,17 +66,17 @@ EOS;
 SELECT NP.last_name, SUBSTRING(NP.first_name, 1, 1) as fi, SUBSTRING(NP.middle_name, 1, 1) as mi, NP.zip
 FROM reg R
 JOIN newperson NP ON (R.newperid = NP.id)
-WHERE R.perid is null AND NP.share_reg_ok='Y' AND R.conid =? AND NP.first_name like ? AND NP.last_name = ? AND R.price=R.paid;
+WHERE R.perid is null AND NP.share_reg_ok='Y' AND R.conid =? AND lower(NP.first_name) like lower(?) AND lower(NP.last_name) = lower(?) AND R.price=R.paid;
 EOS;
 
     $nperR = dbSafeQuery($newp_query, 'iss', array($condata['id'],  $fname, $lname));
 
     $results = array();
-    while($perR && $row = fetch_safe_assoc($perR)) {
+    while($perR && $row = $perR->fetch_assoc()) {
         array_push($results, $row);
     }
 
-    while($perR && $row = fetch_safe_assoc($nperR)) {
+    while($perR && $row = $nperR->fetch_assoc()) {
         array_push($results, $row);
     }
 
@@ -133,24 +133,24 @@ EOS;
         <div class="row">
             <div class="col-sm-auto p-0">
                 For hotel information and directions please see 
-                <a href="<?php echo $con['hotelwebsite']; ?>">the <?php echo $con['conname']; ?> hotel page</a>
+                <a href="<?php echo str_replace('"', '\"', $con['hotelwebsite']); ?>">the <?php echo $con['conname']; ?> hotel page</a>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-auto p-0">
-                <a href="<?php echo $con['policy'];?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.
+                <a href="<?php echo  str_replace('"', '\"', $con['policy']);?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.
             </div>
         </div>
           <div class="row">
             <div class="col-sm-auto p-0">
               For more information about <?php echo $con['conname']; ?> please email
-              <a href="mailto:<?php echo $con['infoemail']; ?>"><?php echo $con['infoemail']; ?></a>.
+              <a href="mailto:<?php echo str_replace('"', '\"', $con['infoemail']); ?>"><?php echo $con['infoemail']; ?></a>.
             </div>
         </div>
         <div class="row">
             <div class="col-sm-auto p-0">
                 For questions about <?php echo $con['conname']; ?> Registration, email
-                <a href="mailto:<?php echo $con['regemail']; ?>"><?php echo $con['regemail']; ?></a>.
+                <a href="mailto:<?php echo str_replace('"', '\"', $con['regemail']); ?>"><?php echo $con['regemail']; ?></a>.
             </div>
         </div>
     </div>
