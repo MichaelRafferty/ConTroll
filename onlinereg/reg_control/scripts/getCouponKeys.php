@@ -43,7 +43,7 @@ if ($couponR == false) {
     exit();
 }
 $couponKeys = array();
-while ($couponL = fetch_safe_assoc($couponR)) {
+while ($couponL = $couponR->fetch_assoc()) {
     $couponKeys[] = $couponL;
 }
 

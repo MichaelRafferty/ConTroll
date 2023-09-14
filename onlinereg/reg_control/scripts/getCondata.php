@@ -62,11 +62,11 @@ EOS;
 
 $result = dbSafeQuery($conlistSQL, 'i', array($id - 2));
 if($result->num_rows == 1) {
-    $twopriorcondata = fetch_safe_assoc($result);
+    $twopriorcondata = $result->fetch_assoc();
 }
 $result = dbSafeQuery($conlistSQL, 'i', array($id - 1));
 if($result->num_rows == 1) {
-    $priorcondata = fetch_safe_assoc($result);
+    $priorcondata = $result->fetch_assoc();
 }
 if (!array_key_exists('enddate', $twopriorcondata)) {
     if (array_key_exists('startdate', $priorcondata)) {
@@ -77,7 +77,7 @@ if (!array_key_exists('enddate', $twopriorcondata)) {
 }
 $result = dbSafeQuery($conlistSQL, 'i', array($id));
 if($result->num_rows == 1) {
-    $currentcondata = fetch_safe_assoc($result);
+    $currentcondata = $result->fetch_assoc();
     if ($type == 'all' || $type = 'conlist') {
     $response['conlist'] = $currentcondata;
     $response['conlist-type'] = 'actual';
@@ -106,7 +106,7 @@ EOS;
 
     $result = dbSafeQuery($sql, 'i', array($conid));
     if($result->num_rows == 1) {
-        $currentcondata = fetch_safe_assoc($result);
+        $currentcondata = $result->fetch_assoc();
         if ($type == 'all' || $type = 'conlist') {
             $response['conlist'] = $currentcondata;
             $response['conlist-type'] = 'proposed';
