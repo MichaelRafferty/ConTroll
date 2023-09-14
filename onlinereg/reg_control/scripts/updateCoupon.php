@@ -34,7 +34,7 @@ EOS;
 $userid = null;
 $usergetR = dbSafeQuery($usergetQ, 's', array($user_email));
 if ($usergetR !== false) {
-    $userL = fetch_safe_assoc($usergetR);
+    $userL = $usergetR->fetch_assoc();
     if ($userL) {
         $userid = $userL['id'];
     }
