@@ -559,9 +559,9 @@ EOS;
 EOS;
     foreach ($printers as $key => $printer) {
         if (mb_substr($printer['printerType'], 0, 5) == 'badge') {
-            $html .= '<option value="' . str_replace('"', '\"', $key) . ':::' . str_replace('"', '\"', $printer['address']) .
-                ':-:' . str_replace('"', '\"', $printer['printerName']) . ':-:' . str_replace('"', '\"', $printer['printerType']) .
-                ':-:' . str_replace('"', '\"', $printer['codePage']) . '">' . $key . "</option>\n";
+            $html .= '<option value="' . escape_quotes($key) . ':::' . escape_quotes($printer['address']) .
+                ':-:' . escape_quotes($printer['printerName']) . ':-:' . escape_quotes($printer['printerType']) .
+                ':-:' . escape_quotes($printer['codePage']) . '">' . $key . "</option>\n";
         }
     }
     $html .= <<<EOS
@@ -578,16 +578,16 @@ EOS;
  EOS;
     foreach ($printers as $key => $printer) {
         if (mb_substr($printer['printerType'], 0, 7) == 'receipt') {
-            '<option value="' . str_replace('"', '\"', $key) . ':::' . str_replace('"', '\"', $printer['address']) .
-            ':-:' . str_replace('"', '\"', $printer['printerName']) . ':-:' . str_replace('"', '\"', $printer['printerType']) .
-            ':-:' . str_replace('"', '\"', $printer['codePage']) . '">' . $key . "</option>\n";
+            '<option value="' . escape_quotes($key) . ':::' . escape_quotes($printer['address']) .
+            ':-:' . escape_quotes($printer['printerName']) . ':-:' . escape_quotes($printer['printerType']) .
+            ':-:' . escape_quotes($printer['codePage']) . '">' . $key . "</option>\n";
         }
     }
     foreach ($printers as $key => $printer) {
         if (mb_substr($printer['printerType'], 0, 7) == 'generic') {
-            '<option value="' . str_replace('"', '\"', $key) . ':::' . str_replace('"', '\"', $printer['address']) .
-            ':-:' . str_replace('"', '\"', $printer['printerName']) . ':-:' . str_replace('"', '\"', $printer['printerType']) .
-            ':-:' . str_replace('"', '\"', $printer['codePage']) . '">' . $key . "</option>\n";
+            '<option value="' . escape_quotes($key) . ':::' . escape_quotes($printer['address']) .
+            ':-:' . escape_quotes($printer['printerName']) . ':-:' . escape_quotes($printer['printerType']) .
+            ':-:' . escape_quotes($printer['codePage']) . '">' . $key . "</option>\n";
         }
     }
     $html .= <<<EOS
@@ -607,9 +607,9 @@ EOS;
 EOS;
         foreach ($printers as $key => $printer) {
             if (mb_substr($printer['printerType'], 0, 7) == 'generic') {
-                '<option value="' . str_replace('"', '\"', $key) . ':::' . str_replace('"', '\"', $printer['address']) .
-                ':-:' . str_replace('"', '\"', $printer['printerName']) . ':-:' . str_replace('"', '\"', $printer['printerType']) .
-                ':-:' . str_replace('"', '\"', $printer['codePage']) . '">' . $key . "</option>\n";
+                '<option value="' . escape_quotes($key) . ':::' . escape_quotes($printer['address']) .
+                ':-:' . escape_quotes($printer['printerName']) . ':-:' . escape_quotes($printer['printerType']) .
+                ':-:' . escape_quotes($printer['codePage']) . '">' . $key . "</option>\n";
             }
         }
         $html .= <<<EOS

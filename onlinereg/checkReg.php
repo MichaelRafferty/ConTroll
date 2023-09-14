@@ -133,24 +133,24 @@ EOS;
         <div class="row">
             <div class="col-sm-auto p-0">
                 For hotel information and directions please see 
-                <a href="<?php echo str_replace('"', '\"', $con['hotelwebsite']); ?>">the <?php echo $con['conname']; ?> hotel page</a>
+                <a href="<?php echo escape_quotes($con['hotelwebsite']); ?>">the <?php echo $con['conname']; ?> hotel page</a>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-auto p-0">
-                <a href="<?php echo  str_replace('"', '\"', $con['policy']);?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.
+                <a href="<?php echo  escape_quotes($con['policy']);?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.
             </div>
         </div>
           <div class="row">
             <div class="col-sm-auto p-0">
               For more information about <?php echo $con['conname']; ?> please email
-              <a href="mailto:<?php echo str_replace('"', '\"', $con['infoemail']); ?>"><?php echo $con['infoemail']; ?></a>.
+              <a href="mailto:<?php echo escape_quotes($con['infoemail']); ?>"><?php echo $con['infoemail']; ?></a>.
             </div>
         </div>
         <div class="row">
             <div class="col-sm-auto p-0">
                 For questions about <?php echo $con['conname']; ?> Registration, email
-                <a href="mailto:<?php echo str_replace('"', '\"', $con['regemail']); ?>"><?php echo $con['regemail']; ?></a>.
+                <a href="mailto:<?php echo escape_quotes($con['regemail']); ?>"><?php echo $con['regemail']; ?></a>.
             </div>
         </div>
     </div>

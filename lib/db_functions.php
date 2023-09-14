@@ -147,6 +147,9 @@ function dbSafeQuery($query, $typestr, $value_arr)
                 log_mysqli_error($query, "Result Error");
                 return false;
             }
+        } catch (\mysqli_sql_exception $e) {
+            log_mysqli_error($query, $e->getMessage());
+            return false;
         } catch (Exception $e) {
             log_mysqli_error("", $e->getMessage());
             return false;
@@ -195,6 +198,9 @@ function dbSafeInsert($sql, $typestr, $value_arr)
 
             // get the inserted id
             $id = $dbObject->insert_id;
+        } catch (\mysqli_sql_exception $e) {
+            log_mysqli_error($query, $e->getMessage());
+            return false;
         } catch (Exception $e) {
             log_mysqli_error("", $e->getMessage());
             return false;
@@ -243,6 +249,9 @@ function dbSafeCmd($sql, $typestr, $value_arr)
 
             // get the number of rows affected
             $numrows = $dbObject->affected_rows;
+        } catch (\mysqli_sql_exception $e) {
+            log_mysqli_error($query, $e->getMessage());
+            return false;
         } catch (Exception $e) {
             log_mysqli_error("", $e->getMessage());
             return false;
@@ -254,9 +263,9 @@ function dbSafeCmd($sql, $typestr, $value_arr)
         return false;
     }
 }
-// dbSafeCmd - using prepare safely perform an update/delete/multi-line insert operation
+// dbCmd - for sql commands without any ? in the command
 // returns the number of rows modified/deleted (actually changed a value)
-// This should replace all database calls to db functions that use variable data in their SQL string
+// NOTE: All queries built dynamically should use ? notation and use dbSafeCmd instead
 //
 function dbCmd($sql)
 {
@@ -272,6 +281,9 @@ function dbCmd($sql)
             }
             // get the number of rows affected
             $numrows = $dbObject->affected_rows;
+        } catch (\mysqli_sql_exception $e) {
+            log_mysqli_error($query, $e->getMessage());
+            return false;
         } catch (Exception $e) {
             log_mysqli_error("", $e->getMessage());
             return false;
@@ -283,6 +295,10 @@ function dbCmd($sql)
         return false;
     }
 }
+
+// dbQuery - sql SELECT with no ? parameters
+// NOTE: All queries built dynamically should use ? notation and use dbSafeQuery instead
+//
 function dbQuery($query)
 {
     global $dbObject;
@@ -295,6 +311,9 @@ function dbQuery($query)
                 log_mysqli_error($query, "Query Error");
                 return false;
             }
+        } catch (\mysqli_sql_exception $e) {
+            log_mysqli_error($query, $e->getMessage());
+            return false;
         } catch (Exception $e) {
             log_mysqli_error($query, $e->getMessage());
             return false;
@@ -307,6 +326,9 @@ function dbQuery($query)
     }
 }
 
+// dbInsert - insert a row into the database and return the new key field
+// NOTE: All inserts built dynamically should use ? notation and use dbSafeInsert instead
+//
 function dbInsert($query)#: int|bool
 {
     global $dbObject;
@@ -322,6 +344,9 @@ function dbInsert($query)#: int|bool
                 log_mysqli_error($query, "Insert Error");
                 return false;
             }
+        } catch (\mysqli_sql_exception $e) {
+            log_mysqli_error($query, $e->getMessage());
+            return false;
         } catch (Exception $e) {
             log_mysqli_error($query, $e->getMessage());
             return false;
@@ -355,6 +380,23 @@ function dbPrepare($query)
     }
 }
 
+// escape_quotes - change " to \" for use in HTML parameters
+// For use at location of actual data use
+//
+function escape_quotes($param) {
+    return str_replace('"', '\"', $param);
+}
+
+// escape_appos - change ' to \' for use in HTML parameters
+// For use at location of actual data use
+//
+function escape_appos($param) {
+    return str_replace("'", "\'", $param);
+}
+
+// Should NOT Be used going forward - Obsolete, use ? notation and the 'dbSafe' variants instead
+// also any encoding of data should be where it is needed to be used and not global to all queries
+//
 function sql_safe($string)
 {
     global $dbObject;
@@ -519,6 +561,7 @@ function db_close(): void
 }
 
 // older style convert quotes association, to be phased out
+// should be phased out and just use res->fetch_assoc() and proper escaping where data is used when needed
 function fetch_safe_assoc($res)
 {
     if (is_null($res)) {
@@ -539,6 +582,7 @@ function fetch_safe_assoc($res)
     return $assoc;
 }
 
+// obsolete method of escaping values, should be phased out and just use res->fetch_array() and proper escaping where data is used when needed
 function fetch_safe_array($res)
 {
     if (is_null($res)) {

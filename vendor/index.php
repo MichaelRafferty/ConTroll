@@ -398,7 +398,7 @@ while ($space = $vendorSR->fetch_assoc()) {
                                     <label for='name'>Name:</label>
                                 </div>
                                 <div class='col-sm-10 p-0'>
-                                    <input class='form-control-sm' type='text' name='name' id='name' size='64' value="<?php echo str_replace('"', '\"', $info['name']); ?>" required/>
+                                    <input class='form-control-sm' type='text' name='name' id='name' size='64' value="<?php echo escape_quotes($info['name']); ?>" required/>
                                 </div>
                             </div>
                             <div class='row p-1'>
@@ -406,7 +406,7 @@ while ($space = $vendorSR->fetch_assoc()) {
                                     <label for='emai'>Email:</label>
                                 </div>
                                 <div class='col-sm-10 p-0'>
-                                    <input class='form-control-sm' type='text' name='email' id='email' size='64' value="<?php echo str_replace('"', '\"', $info['email']); ?>" required/>
+                                    <input class='form-control-sm' type='text' name='email' id='email' size='64' value="<?php echo escape_quotes($info['email']); ?>" required/>
                                 </div>
                             </div>
                             <div class="row p-1">
@@ -414,7 +414,7 @@ while ($space = $vendorSR->fetch_assoc()) {
                                     <label for="website">Website:</label>
                                 </div>
                                 <div class="col-sm-10 p-0">
-                                    <input class='form-control-sm' type='text' name='website' id='website' value="<?php echo str_replace('"', '\"', $info['website']); ?>" required/>
+                                    <input class='form-control-sm' type='text' name='website' id='website' value="<?php echo escape_quotes($info['website']); ?>" required/>
                                 </div>
                             </div>
                             <div class='row p-1'>
@@ -438,7 +438,7 @@ while ($space = $vendorSR->fetch_assoc()) {
                                     <label for="addr" title='Street Address'>Address </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='addr' type='text' size="64" name='addr' value="<?php echo str_replace('"', '\"', $info['addr']); ?>" required/>
+                                    <input class="form-control-sm" id='addr' type='text' size="64" name='addr' value="<?php echo escape_quotes($info['addr']); ?>" required/>
                                 </div>
                             </div>
                             <div class="row mt-1">
@@ -446,7 +446,7 @@ while ($space = $vendorSR->fetch_assoc()) {
                                     <label for="addr2" title='Company Name'>Company/ Address line 2:</label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='addr2' type='text' size="64" value="<?php echo str_replace('"', '\"', $info['addr2']); ?>" name='addr2'/>
+                                    <input class="form-control-sm" id='addr2' type='text' size="64" value="<?php echo escape_quotes($info['addr2']); ?>" name='addr2'/>
                                 </div>
                             </div>
                             <div class="row mt-1">
@@ -454,20 +454,20 @@ while ($space = $vendorSR->fetch_assoc()) {
                                     <label for="city">City: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='city' type='text' size="32" value="<?php echo str_replace('"', '\"', $info['city']); ?>" name=' city' required/>
+                                    <input class="form-control-sm" id='city' type='text' size="32" value="<?php echo escape_quotes($info['city']); ?>" name=' city' required/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
                                     <label for="state"> State: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
-                                    <input class="form-control-sm" id='state' type='text' size="2" maxlength="2" value="<?php echo str_replace('"', '\"', $info['state']); ?>"
+                                    <input class="form-control-sm" id='state' type='text' size="2" maxlength="2" value="<?php echo escape_quotes($info['state']); ?>"
                                            name='state' required/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
                                     <label for="zip"> Zip: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0 ps-1 pb-2">
-                                    <input class="form-control-sm" id='zip' type='text' size="11" maxlength="11" value="<?php echo str_replace('"', '\"', $info['zip']); ?>" name='zip'
+                                    <input class="form-control-sm" id='zip' type='text' size="11" maxlength="11" value="<?php echo escape_quotes($info['zip']); ?>" name='zip'
                                            required/>
                                 </div>
                             </div>
@@ -592,7 +592,7 @@ if (array_key_exists('reg_disclaimer',$vendor_conf) && $vendor_conf['reg_disclai
                                 <label for="vendor_inv_name">Name:</label>
                             </div>
                             <div class="col-sm-10 p-0">
-                                <input class="form-control-sm" type='text' name='name' id='vendor_inv_name' value="<?php echo str_replace('"', '\"', $info['name']);  ?>" size="64" required/>
+                                <input class="form-control-sm" type='text' name='name' id='vendor_inv_name' value="<?php echo escape_quotes($info['name']);  ?>" size="64" required/>
                             </div>
                         </div>
                         <div class='row'>
@@ -600,7 +600,7 @@ if (array_key_exists('reg_disclaimer',$vendor_conf) && $vendor_conf['reg_disclai
                                 <label for='vendor_inv_email'>Email:</label>
                             </div>
                             <div class='col-sm-10 p-0'>
-                                <input class='form-control-sm' type='text' name='email' id='vendor_inv_email' value="<?php echo str_replace('"', '\"', $info['email']); ?>" size="64" required/>
+                                <input class='form-control-sm' type='text' name='email' id='vendor_inv_email' value="<?php echo escape_quotes($info['email']); ?>" size="64" required/>
                             </div>
                         </div>
                         <div class='row'>
@@ -608,7 +608,7 @@ if (array_key_exists('reg_disclaimer',$vendor_conf) && $vendor_conf['reg_disclai
                                 <label for='vendor_inv_addr'>Address:</label>
                             </div>
                             <div class='col-sm-10 p-0'>
-                                <input class='form-control-sm' type='text' name='addr' id='vendor_inv_addr' value="<?php echo str_replace('"', '\"', $info['addr']); ?>" size='64' required/>
+                                <input class='form-control-sm' type='text' name='addr' id='vendor_inv_addr' value="<?php echo escape_quotes($info['addr']); ?>" size='64' required/>
                             </div>
                         </div>
                         <div class='row'>
@@ -616,7 +616,7 @@ if (array_key_exists('reg_disclaimer',$vendor_conf) && $vendor_conf['reg_disclai
                                 <label for='vendor_inv_addr2'>Company/ Addr2:</label>
                             </div>
                             <div class='col-sm-10 p-0'>
-                                <input class='form-control-sm' type='text' name='addr2' id='vendor_inv_addr2' value="<?php echo str_replace('"', '\"', $info['addr2']); ?>" size='64'/>
+                                <input class='form-control-sm' type='text' name='addr2' id='vendor_inv_addr2' value="<?php echo escape_quotes($info['addr2']); ?>" size='64'/>
                             </div>
                         </div>
                         <div class='row'>
@@ -624,20 +624,20 @@ if (array_key_exists('reg_disclaimer',$vendor_conf) && $vendor_conf['reg_disclai
                                 <label for='vendor_inv_city'>City: </label>
                             </div>
                             <div class='col-sm-auto p-0 me-0'>
-                                <input class='form-control-sm' id='vendor_inv_city' type='text' size='32' value="<?php echo str_replace('"', '\"', $info['city']); ?>" name=' city' required/>
+                                <input class='form-control-sm' id='vendor_inv_city' type='text' size='32' value="<?php echo escape_quotes($info['city']); ?>" name=' city' required/>
                             </div>
                             <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
                                 <label for='vendor_inv_state'> State: </label>
                             </div>
                             <div class='col-sm-auto p-0 ms-0 me-0 ps-1'>
-                                <input class='form-control-sm' id='vendor_inv_state' type='text' size='2' maxlength='2' value="<?php echo str_replace('"', '\"', $info['state']); ?>"
+                                <input class='form-control-sm' id='vendor_inv_state' type='text' size='2' maxlength='2' value="<?php echo escape_quotes($info['state']); ?>"
                                        name='state' required/>
                             </div>
                             <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
                                 <label for='vendor_inv_zip'> Zip: </label>
                             </div>
                             <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
-                                <input class='form-control-sm' id='vendor_inv_zip' type='text' size='11' maxlength='11' value="<?php echo str_replace('"', '\"', $info['zip']); ?>" name='zip'
+                                <input class='form-control-sm' id='vendor_inv_zip' type='text' size='11' maxlength='11' value="<?php echo escape_quotes($info['zip']); ?>" name='zip'
                                        required/>
                             </div>
                         </div>
@@ -707,7 +707,7 @@ if (array_key_exists('reg_disclaimer',$vendor_conf) && $vendor_conf['reg_disclai
                                  </label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_street' required='required' name='cc_addr' size='64' maxlength='64' value="<?php echo str_replace('"', '\"', $info['addr']); ?>"/>
+                                 <input type='text' id='cc_street' required='required' name='cc_addr' size='64' maxlength='64' value="<?php echo escape_quotes($info['addr']); ?>"/>
                              </div>
                          </div>
                          <div class='row'>
@@ -715,19 +715,19 @@ if (array_key_exists('reg_disclaimer',$vendor_conf) && $vendor_conf['reg_disclai
                                  <label for='cc_city'>City:</label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_city' required='required' size='35' name='cc_city' maxlength='64' vaue="<?php echo str_replace('"', '\"', $info['city']); ?>"/>
+                                 <input type='text' id='cc_city' required='required' size='35' name='cc_city' maxlength='64' vaue="<?php echo escape_quotes($info['city']); ?>"/>
                              </div>
                              <div class='col-sm-auto ps-0 pe-0'>
                                  <label for='cc_state'>State:</label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_state' size=2 maxlength="2" required='required' name='cc_state' vaue="<?php echo str_replace('"', '\"', $info['state']); ?>"/>
+                                 <input type='text' id='cc_state' size=2 maxlength="2" required='required' name='cc_state' vaue="<?php echo escape_quotes($info['state']); ?>"/>
                              </div>
                              <div class='col-sm-auto ps-0 pe-0'>
                                  <label for='cc_zip'>Zip:</label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_zip' required='required' size=10 maxlength="10" name='cc_zip' vaue="<?php echo str_replace('"', '\"', $info['zip']); ?>"/>
+                                 <input type='text' id='cc_zip' required='required' size=10 maxlength="10" name='cc_zip' vaue="<?php echo escape_quotes($info['zip']); ?>"/>
                              </div>
                          </div>
                          <div class='row'>
@@ -745,7 +745,7 @@ if (array_key_exists('reg_disclaimer',$vendor_conf) && $vendor_conf['reg_disclai
                                  <label for="cc_email">Email:</label>
                              </div>
                              <div class="col-sm-auto">
-                                  <input type='email' id='cc_email' name='cc_email' size="35" maxlength="64" value="<?php echo str_replace('"', '\"', $info['email']); ?>"/>
+                                  <input type='email' id='cc_email' name='cc_email' size="35" maxlength="64" value="<?php echo escape_quotes($info['email']); ?>"/>
                              </div>
                          </div>
                          <div class='row'>

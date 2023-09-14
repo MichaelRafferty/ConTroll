@@ -235,7 +235,7 @@ while ($row = $spacePriceListR->fetch_assoc()) {
                                     <option value="0">No Vendor Selected</option>
                                     <?php
                                     foreach ($vendorList AS $row) {
-                                        echo "<option value=" . str_replace('"', '\"', $row['id']) . ">" .
+                                        echo "<option value=" . escape_quotes($row['id']) . ">" .
                                             $row['name'] . " (" . $row['website'] . "), " . $row['city'] . ',' . $row['state'] . "</option>\n";
                                     }
                                     ?>
@@ -251,7 +251,7 @@ while ($row = $spacePriceListR->fetch_assoc()) {
                                     <option value='0'>No Space Selected</option>
                                     <?php
                                     foreach ($spaceList as $row) {
-                                        echo '<option value="' . str_replace('"', '\"', $row['id']) . '">' . $row['name'] . "</option>\n";
+                                        echo '<option value="' . escape_quotes($row['id']) . '">' . $row['name'] . "</option>\n";
                                     }
                                     ?>
                                 </select>
