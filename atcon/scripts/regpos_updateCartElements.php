@@ -63,9 +63,15 @@ $insPerinfoSQL = <<<EOS
 INSERT INTO perinfo(last_name,first_name,middle_name,suffix,email_addr,phone,badge_name,address,addr_2,city,state,zip,country,contact_ok,share_reg_ok,open_notes,banned,active,creation_date)
 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N','Y',now());
 EOS;
+$existingQ = <<<EOS
+SELECT last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, address, addr_2, city, state, zip, country, open_notes, contact_ok, share_reg_ok, change_notes
+FROM perinfo
+WHERE id = ?;
+EOS;
 $updPerinfoSQL = <<<EOS
 UPDATE perinfo SET
-    last_name=?,first_name=?,middle_name=?,suffix=?,email_addr=?,phone=?,badge_name=?,address=?,addr_2=?,city=?,state=?,zip=?,country=?,open_notes=?,banned='N',update_date=NOW(),active='Y',contact_ok=?,share_reg_ok=?
+    last_name=?,first_name=?,middle_name=?,suffix=?,email_addr=?,phone=?,badge_name=?,address=?,addr_2=?,city=?,state=?,zip=?,country=?,
+    open_notes=?,banned='N',update_date=NOW(),active='Y',contact_ok=?,share_reg_ok=?,change_notes=?
 WHERE id = ?;
 EOS;
 $insRegSQL = <<<EOS
@@ -113,13 +119,47 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         }
     } else {
         // update the row
+        // first build the change log
+        $existingR = dbSafeQuery($existingQ, 'i', array($cartrow['perid']));
+        if ($existingR === false || $existingR->num_rows != 1) {
+            $response['status'] = 'error';
+            $response['error'] = 'Unable to update cart row: ' . $cartrow['perid'] . '/' . $cartrow['last_name'] . ', ' . $cartrow['first_name'];
+            ajaxSuccess($response);
+            return;
+        }
+        $existingP = $existingR->fetch_assoc();
+        $new_change_notes = $existingP['change_notes'];
+        if ($new_change_notes === null)
+            $new_change_notes = '';
+        // build additional items on new change notes
+        $changes = '';
+        foreach ($existingP as $field => $value) {
+            if ($field == 'perid' || $field == 'change_notes')
+                continue;
+
+            if ($field == 'zip')
+                $cartfield = 'postal_code';
+            else if ($field == 'address')
+                $cartfield = 'address_1';
+            else if ($field == 'addr_2')
+                $cartfield = 'address_2';
+            else
+                $cartfield = $field;
+
+            if ($value != $cartrow[$cartfield]) {
+                $changes .= $field . ' updated "' . $value . '" => "' . $cartrow[$cartfield] . '"' . "\n";
+            }
+        }
+        if ($changes != '')
+            $new_change_notes = "\natcon/regpos Updated " . date(DATE_RFC2822) . " by $user_id:\n$changes\n" . $new_change_notes;
+
         $paramarray = array(
             $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
             $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],$open_notes,
-            $cartrow['contact_ok'],$cartrow['share_reg_ok'],
+            $cartrow['contact_ok'],$cartrow['share_reg_ok'],$new_change_notes,
             $cartrow['perid']
         );
-        $typestr = 'ssssssssssssssssi';
+        $typestr = 'sssssssssssssssssi';
         $per_upd += dbSafeCmd($updPerinfoSQL, $typestr, $paramarray);
     }
 }
