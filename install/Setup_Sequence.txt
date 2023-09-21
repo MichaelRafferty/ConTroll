@@ -9,6 +9,13 @@ It also expects you to know how to fetch/update files from GitHub. The software 
 2.  Decide what account is going to host Reg.  These instructions will create two complete systems: reg and reg-test.
     a. create said account and create two directories under it: one for reg and one for reg-test
     b. retrieve the production tree to reg and the test tree to reg-test.
+        git fetch origin master - for the reg tree
+        git fetch origin test - for the test tree
+    c. Run composer for each tree
+        cd {reg}/Composer
+        composer install
+        cd {regtest}/Composer
+        composer install
 
 3. Create the two databases in your database server
     a. suggested names are reg and reg_test
@@ -25,44 +32,53 @@ It also expects you to know how to fetch/update files from GitHub. The software 
             memCategories
             memTypes
             perinfo
+            reg_staff_stats
+            routines
             servers
             user
             vendors (NOTE vendors or art show only)
+            vendorSpaces (NOTE vendors or art show only)
         ii. load tables with foreign keys
             ageList
-            memList
+            artist
+            artshow_reg
+            memlist
+            oauth_links
+            oauth_people
             atcon_user
             atcon_auth
-            reg_badgeList
+            reg_badgelist
             reg_club
             user_auth
-            newperson   (NOTE: newperson refers to transaction, you will have create that constraint in step iii after creating transaction)
+            newperson   (NOTE: Newperson refers to transaction, you might have to do it's foreign key separately as transaction also references a different field in newperson)
             transaction
             payments
+            vendorSpacePrices (NOTE vendors or art show only)
+            vendor_space (NOTE vendors or art show only)
             reg
             atcon_history
-            vendor_reg (NOTE: here and below vendors or art show only)
-            vendor_show
-            artist (NOTE: here and below art show only)
-            artshow_reg
-            artshow
-            artItems
-            artsales
+            artist (Note: belongs to artshow only)
+            artshow_reg (Note: belongs to artshow only)
+            artshow (Note: belongs to artshow only)
+            artItems (Note: belongs to artshow only)
+            artsales (Note: belongs to artshow only)
+            coupon
+            couponKeys
 
 	iii.
-	    add link from newperson to transactions: 
+	    add link from newperson to transactions:
 ALTER TABLE newperson ADD CONSTRAINT `newperson_transid_fk` FOREIGN KEY (`transid`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE;
 
 	iv. add routines and views
             memLabel
             syncServerPrinters
-	    
+
 
 	v. obsolete tables
             reg_staff_stats
             oauth_links
             oauth_people
-	    
+
 
 4. Populate the tables far enough to use the GUI to continue, or as far as you want.
     Necessary tables for the GUI:
@@ -116,9 +132,11 @@ ALTER TABLE newperson ADD CONSTRAINT `newperson_transid_fk` FOREIGN KEY (`transi
         i. atcon_user
         ii. atcon_auth (at least assign the manager permission)
 
-9. If you are running the balticon reg system, it needs to access the perinfo, reg, and memList tables.  You'll need to know the zambia_db_user
-    and the host the database is on. The host is usually 'localhost';  The parens are not part of the sequnce below, just showing what you need
-    to substitute.
+9. If you are running the balticon reg system, it needs to access the perinfo, reg, and memList tables to keep its copy of the program
+    participant information updated and in sync with the reg system.  Zambia pulls the membership and contact info for its program participants
+    and when a program participant updates their contact info in Zambia it pushs this change back to the reg system as well keeping them in sync.
+    You'll need to know the zambia_db_user and the host the database is on. The host is usually 'localhost';
+    The parens are not part of the sequnce below, just showing what you need to substitute.
     a. Grant select and update to the zambia user for perinfo:
         GRANT SELECT ON perinfo TO '(zanbia_db_user)'@'(databasehost);
         GRANT UPDATE ON perinfo TO '(zanbia_db_user)'@'(databasehost);

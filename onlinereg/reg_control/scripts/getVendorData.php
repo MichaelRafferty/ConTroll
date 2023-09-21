@@ -27,7 +27,7 @@ if(!$vendorR) {
 }
 
 $vendors = array();
-while ($vendorL = fetch_safe_assoc($vendorR)) {
+while ($vendorL = $vendorR->fetch_assoc()) {
     $vendors[] = $vendorL;
 }
 
@@ -54,7 +54,7 @@ if (!$spaceR) {
     exit();
 }
 
-while($spaceLine = fetch_safe_assoc($spaceR)) {
+while($spaceLine = $spaceR->fetch_assoc()) {
     $spaces[] = $spaceLine;
 }
 
@@ -82,7 +82,7 @@ if (!$detailR) {
     exit();
 }
 
-while($detailL = fetch_safe_assoc($detailR)) {
+while($detailL = $detailR->fetch_assoc()) {
     $details[] = $detailL;
 }
 
@@ -96,7 +96,7 @@ $priceR = dbQuery('SELECT id, spaceId, code, description, units, price, requesta
 $price_list = array();
 $currentSpaceId = -999;
 $prices='';
-while ($price = fetch_safe_assoc($priceR)) {
+while ($price = $priceR->fetch_assoc()) {
     if ($price['spaceId'] != $currentSpaceId) {
         if ($currentSpaceId != -999) {
             $price_list[$currentSpaceId] = $prices;

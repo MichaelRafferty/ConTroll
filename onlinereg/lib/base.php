@@ -1,22 +1,23 @@
 <?php
-// onlinereg - base.php - base functions for online reg
-require_once(__DIR__ . "/../../lib/db_functions.php");
-
-function redirect_https() {
-    $ini = get_conf('reg');
-    if ($ini['https'] <> 0) {
-        if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-            header("HTTP/1.1 301 Moved Permanently");
-            header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-            exit();
-        }
-    }
-    db_connect();
-    return $ini;
+global $db_ini;
+if (!$db_ini) {
+    $db_ini = parse_ini_file(__DIR__ . '/../../config/reg_conf.ini', true);
 }
 
-function ol_page_init($title) {
-echo <<<EOF
+if ($db_ini['reg']['https'] <> 0) {
+    if (!isset($_SERVER['HTTPS']) or $_SERVER['HTTPS'] != 'on') {
+        header('HTTP/1.1 301 Moved Permanently');
+        header('Location: https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']);
+        exit();
+    }
+}
+// onlinereg - base.php - base functions for online reg
+require_once(__DIR__ . "/../../lib/db_functions.php");
+require_once(__DIR__ . '/../../lib/ajax_functions.php');
+db_connect();
+
+function ol_page_init($title, $js = '') {
+    echo <<<EOF
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,7 +32,15 @@ echo <<<EOF
     <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js' integrity='sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz' crossorigin='anonymous'></script>
     <script type='text/javascript' src='javascript/jquery-min-3.60.js'></script>
     <script type='text/javascript' src='javascript/jquery-ui.min-1.13.1.js'></script>
+    <script type='text/javascript' src='javascript/coupon.js'></script>
     <script type='text/javascript' src='javascript/store.js'></script>
-</head>
 EOF;
+    if ($js != '') {
+        echo <<<EOF
+<script type='text/javascript'>
+$js;
+</script>
+EOF;
+    }
+    echo "\n</head>\n";
 }

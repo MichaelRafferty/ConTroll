@@ -47,7 +47,7 @@ WHERE conid=?
 ORDER BY perid, auth;
 EOS;
     $userQ = dbSafeQuery($query, 'i', [$conid]);
-    while ($user = fetch_safe_assoc($userQ)) {
+    while ($user = $userQ->fetch_assoc()) {
         $perid = $user['perid'];
         if (isset($users[$perid])) {
             $users[$perid][$user['auth']] = true;
@@ -88,7 +88,7 @@ WHERE s.serverName IS NULL
 ORDER BY active DESC, serverName;
 EOS;
     $serverQ = dbQuery($serverSQL);
-    while ($server = fetch_safe_assoc($serverQ)) {
+    while ($server = $serverQ->fetch_assoc()) {
         $servers[] = $server;
     }
     $response['servers'] = $servers;
@@ -102,7 +102,7 @@ WHERE s.active = 1
 ORDER BY s.local DESC, serverName, printerType, printerName;
 EOS;
     $printerQ = dbQuery($printersSQl);
-    while ($printer = fetch_safe_assoc($printerQ)) {
+    while ($printer = $printerQ->fetch_assoc()) {
         $printers[] = $printer;
     }
     $response['printers'] = $printers;

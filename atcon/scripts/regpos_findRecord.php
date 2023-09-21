@@ -48,7 +48,7 @@ WITH unpaids AS (
 SELECT r.id, create_trans as tid
 FROM reg r
 JOIN memList m ON (m.id = r.memId)
-WHERE r.price != r.paid AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
+WHERE (r.price + r.couponDiscount) != r.paid AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
 ), tids AS (
 /* add in unpaids from transactions in attach records in atcon_history */
 SELECT u.id AS regid, CASE WHEN u.tid > IFNULL(h.tid, -999) THEN u.tid ELSE h.tid END AS tid
@@ -117,9 +117,9 @@ JOIN atcon_history h ON (m.id = h.regid)
 WHERE h.action = 'print'
 GROUP BY h.regid
 )
-SELECT DISTINCT r.perid, r.id as regid, m.conid, r.price, r.paid, r.paid AS priorPaid, r.create_date, u.tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
+SELECT DISTINCT r.perid, r.id as regid, m.conid, r.price, r.couponDiscount, r.paid, r.paid AS priorPaid, r.create_date, u.tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
                 n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, m.memGroup,
-                CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label
+                CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label, r.coupon
 FROM uniqrids u
 JOIN reg r ON (r.id = u.regid)
 JOIN memLabel m ON (r.memId = m.id)
@@ -298,9 +298,9 @@ JOIN atcon_history h ON (m.regid = h.regid)
 WHERE h.action = 'print'
 GROUP BY h.regid
 )
-SELECT DISTINCT r.perid, t.regid, m.conid, r.price, r.paid, r.paid AS priorPaid, r.create_date, t.tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
+SELECT DISTINCT r.perid, t.regid, m.conid, r.price, r.couponDiscount, r.paid, r.paid AS priorPaid, r.create_date, t.tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
                 n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, m.memGroup,
-                CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label          
+                CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label, r.coupon      
 FROM maxtids t
 JOIN reg r ON (r.id = t.regid)
 JOIN limitedp p ON (p.id = r.perid)
@@ -317,7 +317,7 @@ $perinfo = [];
 $index = 0;
 $perids = [];
 $num_rows = $rp->num_rows;
-while ($l = fetch_safe_assoc($rp)) {
+while ($l = $rp->fetch_assoc()) {
     $l['index'] = $index;
     $perinfo[] = $l;
     $perids[$l['perid']] = $index;
@@ -333,7 +333,7 @@ mysqli_free_result($rp);
 
 $membership = [];
 $index = 0;
-while ($l = fetch_safe_assoc($rm)) {
+while ($l = $rm->fetch_assoc()) {
     $l['pindex'] = $perids[$l['perid']];
     $l['index'] = $index;
     $membership[] = $l;

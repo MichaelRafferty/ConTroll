@@ -11,7 +11,7 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 page_init($page,
     /* css */ array('css/base.css'
                    ),
-    /* js  */ array('/javascript/d3.js',
+    /* js  */ array('js/d3.js',
                     'js/base.js',
                     'js/artist.js'
                    ),
@@ -49,10 +49,15 @@ $conf = get_conf('con');
       onclick='hideBlock("#request")'>(hide)</a>
     <div id='requestForm'>
         <?php
-            $requestQ = "SELECT V.id, V.name, V.website, V.description"
-                . ", V.email, V.addr, V.addr2, V.city, V.state, V.zip"
-                . " FROM vendors as V LEFT JOIN artist as A on A.vendor=V.id WHERE V.request_artshow=true and A.id is null;";
-            $requestR = dbQuery($requestQ);
+            $requestQ = <<<EOS
+SELECT V.id, V.name, V.website, V.description, V.email, V.addr, V.addr2, V.city, V.state, V.zip
+FROM vendors V 
+LEFT OUTER JOIN vendor_space VS ON (V.id = VS.vendorId)
+LEFT OUTER JOIN vendorSpaces S ON (S.id = VS.spaceId)
+LEFT OUTER JOIN artist A ON (A.vendor=V.id)
+WHERE S.spaceType='artshow' and A.id is null AND S.conid = ?
+EOS;
+            $requestR = dbSafeQuery($requestQ, 'i', array($conid));
             ?><table>
             <tr><th style='width: 10%'>Name</th><th style='width: 40%'>Description</th><th style='width:40%'>Info</th></tr>
             <?php

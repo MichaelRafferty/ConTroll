@@ -51,7 +51,7 @@ WHERE id = ?;
 EOS;
     $priceR = dbSafeQuery($priceQ, 'i', array($spaceid));
 }
-$price = fetch_safe_assoc($priceR);
+$price = $priceR->fetch_assoc();
 if ($price === null || $price === false)  {
     ajaxError('Invalid arguments');
     return;
@@ -63,7 +63,7 @@ $response['div'] = $shortname . "_div";
 // see if there already is an entry for this space for this vendor
 $vendorQ = "SELECT id, item_requested, item_approved, item_purchased, price, paid, transid, membershipCredits FROM vw_VendorSpace WHERE conid = ? and spaceId = ? and vendorId = ?";
 $vendorR = dbSafeQuery($vendorQ, 'iii', array($conid, $spaceid, $vendor));
-$vendorspace = fetch_safe_assoc($vendorR);
+$vendorspace = $vendorR->fetch_assoc();
 if ($vendorspace === null || $vendorspace === false) {
     $vendorspace = array();
     $vendorspace['id'] = -1;
@@ -89,7 +89,7 @@ if ($vendorspace['id'] < 0) {
 
 $vendorQ = "SELECT email FROM vendors where id=?;";
 $vendorR = dbSafeQuery($vendorQ, 'i', array($vendor));
-$v_email = fetch_safe_assoc($vendorR)['email'];
+$v_email = $vendorR->fetch_assoc()['email'];
 
 $response['email']=$v_email;
 load_email_procs();

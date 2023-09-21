@@ -4,16 +4,18 @@ var type = null;
 var paid = null;
 var label = null;
 var age = null;
+var coupon = null;
 var typefilter = null;
 var catfilter = null;
 var agefilter = null;
-var paidfitler = null;
+var paidfilter = null;
 var labelfilter = null;
+var couponfilter = null;
 var transfer_modal = null;
 var find_result_table = null;
 var find_pattern_field = null;
 var testdiv = null;
-var transfer_from_id = 0;
+var conid = 0;
 
 $(document).ready(function () {
     id = document.getElementById('transfer_to');
@@ -28,97 +30,173 @@ $(document).ready(function () {
 });
 
 function catclicked(e, cell) {
-    value = cell.getRow().getCell("memCategory").getValue();
-    if (cell.getElement().style.backgroundColor) {
-        badgetable.removeFilter("category", "in", catfilter);        
-        catfilter = catfilter.filter(arrayItem => arrayItem !== value);      
+    var filtercell = cell.getRow().getCell("memCategory");
+    var value = filtercell.getValue();
+    if (filtercell.getElement().style.backgroundColor) {
+        badgetable.removeFilter("category", "in", catfilter);
+        catfilter = catfilter.filter(arrayItem => arrayItem !== value);
         if (catfilter.length > 0) {
             badgetable.addFilter("category", "in", catfilter);
         }
-        cell.getElement().style.backgroundColor = "";
+        filtercell.getElement().style.backgroundColor = "";
     } else {
         if (catfilter.length > 0) {
-            badgetable.removeFilter("category", "in", catfilter);            
-        } 
+            badgetable.removeFilter("category", "in", catfilter);
+        }
         catfilter.push(value);
         badgetable.addFilter("category", "in", catfilter);
-        cell.getElement().style.backgroundColor = "#C0FFC0";
+        filtercell.getElement().style.backgroundColor = "#C0FFC0";
     }
 }
 
 function typeclicked(e, cell) {
-    value = cell.getRow().getCell("memType").getValue();
-    if (cell.getElement().style.backgroundColor) {
-        badgetable.removeFilter("type", "in", typefilter);        
-        typefilter = typefilter.filter(arrayItem => arrayItem !== value);        
+    var filtercell = cell.getRow().getCell("memType");
+    var value = filtercell.getValue();
+    if (filtercell.getElement().style.backgroundColor) {
+        badgetable.removeFilter("type", "in", typefilter);
+        typefilter = typefilter.filter(arrayItem => arrayItem !== value);
         if (typefilter.length > 0) {
             badgetable.addFilter("type", "in", typefilter);
         }
-        cell.getElement().style.backgroundColor = "";
+        filtercell.getElement().style.backgroundColor = "";
     } else {
         if (typefilter.length > 0) {
             badgetable.removeFilter("type", "in", typefilter);
         }
         typefilter.push(value);
         badgetable.addFilter("type", "in", typefilter);
-        cell.getElement().style.backgroundColor = "#C0FFC0";
+        filtercell.getElement().style.backgroundColor = "#C0FFC0";
     }
 }
 
 function ageclicked(e, cell) {
-    value = cell.getRow().getCell("memAge").getValue();
-    if (cell.getElement().style.backgroundColor) {
+    var filtercell = cell.getRow().getCell("memAge");
+    var value = filtercell.getValue();
+    if (filtercell.getElement().style.backgroundColor) {
         badgetable.removeFilter("age", "in", agefilter);
         agefilter = agefilter.filter(arrayItem => arrayItem !== value);
         if (agefilter.length > 0) {
             badgetable.addFilter("age", "in", agefilter);
         }
-        cell.getElement().style.backgroundColor = "";
+        filtercell.getElement().style.backgroundColor = "";
     } else {
         if (agefilter.length > 0) {
             badgetable.removeFilter("age", "in", agefilter);
         }
         agefilter.push(value);
         badgetable.addFilter("age", "in", agefilter);
-        cell.getElement().style.backgroundColor = "#C0FFC0";
+        filtercell.getElement().style.backgroundColor = "#C0FFC0";
     }
 }
 
 function paidclicked(e, cell) {
-    value = cell.getRow().getCell("paid").getValue();
-    if (cell.getElement().style.backgroundColor) {
+    var filtercell = cell.getRow().getCell("paid");
+    var value = filtercell.getValue();
+    if (filtercell.getElement().style.backgroundColor) {
         badgetable.removeFilter("paid", "in", paidfilter);
         paidfilter = paidfilter.filter(arrayItem => arrayItem !== value);
         if (paidfilter.length > 0) {
             badgetable.addFilter("paid", "in", paidfilter);
         }
-        cell.getElement().style.backgroundColor = "";
+        filtercell.getElement().style.backgroundColor = "";
     } else {
-        if (paid.length > 0) {
+        if (paidfilter.length > 0) {
             badgetable.removeFilter("paid", "in", paidfilter);
         }
         paidfilter.push(value);
         badgetable.addFilter("paid", "in", paidfilter);
-        cell.getElement().style.backgroundColor = "#C0FFC0";
-    }   
+        filtercell.getElement().style.backgroundColor = "#C0FFC0";
+    }
 }
 
 function labelclicked(e, cell) {
-    value = cell.getRow().getCell("label").getValue();
-    if (cell.getElement().style.backgroundColor) {
+    var filtercell = cell.getRow().getCell("label");
+    var value = filtercell.getValue();
+    if (filtercell.getElement().style.backgroundColor) {
         badgetable.removeFilter("label", "in", labelfilter);
         labelfilter = labelfilter.filter(arrayItem => arrayItem !== value);
         if (labelfilter.length > 0) {
             badgetable.addFilter("label", "in", labelfilter);
         }
-        cell.getElement().style.backgroundColor = "";
+        filtercell.getElement().style.backgroundColor = "";
     } else {
         if (labelfilter.length > 0) {
             badgetable.removeFilter("label", "in", labelfilter);
         }
         labelfilter.push(value);
         badgetable.addFilter("label", "in", labelfilter);
-        cell.getElement().style.backgroundColor = "#C0FFC0";
+        filtercell.getElement().style.backgroundColor = "#C0FFC0";
+    }
+}
+
+function couponclicked(e, cell) {
+    var filtercell = cell.getRow().getCell("name");
+    value = filtercell.getValue();
+    if (filtercell.getElement().style.backgroundColor) {
+        badgetable.removeFilter("name", "in", couponfilter);
+        couponfilter = couponfilter.filter(arrayItem => arrayItem !== value);
+        if (couponfilter.length > 0) {
+            badgetable.addFilter("name", "in", couponfilter);
+        }
+        filtercell.getElement().style.backgroundColor = "";
+    } else {
+        if (couponfilter.length > 0) {
+            badgetable.removeFilter("name", "in", couponfilter);
+        }
+        couponfilter.push(value);
+        badgetable.addFilter("name", "in", couponfilter);
+        filtercell.getElement().style.backgroundColor = "#C0FFC0";
+    }
+}
+
+function clearfilter() {
+    if (typefilter.length > 0) {
+        badgetable.removeFilter("type", "in", typefilter);
+        typefilter = [];
+        var rows = type.getRows();
+        for (var row of rows) {
+            row.getCell("memType").getElement().style.backgroundColor = "";
+        }
+    }
+    if (catfilter.length > 0) {
+        badgetable.removeFilter("category", "in", catfilter);
+        catfilter = [];
+        var rows = category.getRows();
+        for (var row of rows) {
+            row.getCell("memCategory").getElement().style.backgroundColor = "";
+        }
+    }
+    if (agefilter.length > 0) {
+        badgetable.removeFilter("age", "in", agefilter);
+        agefilter = [];
+        var rows = age.getRows();
+        for (var row of rows) {
+            row.getCell("memAge").getElement().style.backgroundColor = "";
+        }
+    }
+    if (paidfilter.length > 0) {
+        badgetable.removeFilter("paid", "in", paidfilter);
+        paidfilter = [];
+        var rows = paid.getRows();
+        for (var row of rows) {
+            row.getCell("paid").getElement().style.backgroundColor = "";
+        }
+    }
+    if (labelfilter.length > 0) {
+        badgetable.removeFilter("label", "in", labelfilter);
+        labelfilter = [];
+        var rows = label.getRows();
+        for (var row of rows) {
+            row.getCell("label").getElement().style.backgroundColor = "";
+        }
+    }
+    if (couponfilter.length > 0) {
+        badgetable.removeFilter("name", "in", couponfilter);
+        couponfilter = [];
+        var rows = coupon.getRows();
+        for (var row of rows) {
+            row.getCell("name").getElement().style.backgroundColor = "";
+        }
     }
 }
 
@@ -138,12 +216,11 @@ function draw_stats(data) {
                     { field: "percent", formatter: "progress", width: 100, headerSort: false, },
                     { field: "occurs", hozAlign: "right" },
                 ]
-            },            
+            },
         ],
     });
     category.on("cellClick", catclicked)
     catfilter = [];
-
     if (type !== null) {
         type.off("cellClick");
         type.destroy();
@@ -164,7 +241,6 @@ function draw_stats(data) {
     });
     type.on("cellClick", typeclicked);
     typefilter = [];
-
     if (age !== null) {
         age.off("cellClick");
         age.destroy();
@@ -226,30 +302,109 @@ function draw_stats(data) {
         ],
     });
     label.on("cellClick",  labelclicked);
-    labelfilter = [];       
+    labelfilter = [];
+
+    if (coupon !== null) {
+        coupon.off("cellClick");
+        coupon.destroy();
+        coupon = null;
+    }
+    coupon = new Tabulator('#coupon-table', {
+        data: data['coupons'],
+        layout: "fitDataTable",
+        columns: [
+            {
+                title: "Coupon", columns: [
+                    { field: "name" },
+                    { field: "percent", formatter: "progress", width: 100, headerSort: false, },
+                    { field: "occurs", hozAlign: "right" },
+                ]
+            },
+        ],
+    });
+    coupon.on("cellClick",  couponclicked);
+    couponfilter = [];
 }
 
-function transferbutton(cell, formatterParams, onRendered) {
-    if (cell.getRow().getCell("price").getValue() > 0 && cell.getRow().getCell("paid").getValue() > 0)
-        return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Transfer</button>';
-    if (cell.getRow().getCell("price").getValue() == 0 && cell.getRow().getCell("paid").getValue() == 0)
-        return '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Transfer</button>';
-    return "";
+function actionbuttons(cell, formatterParams, onRendered) {
+    var category = cell.getRow().getCell('category').getValue();
+    if (category == 'cancel')  // no actions can be taken on a cancelled membership
+        return "";
+
+    if (category == 'dealer') // dealer cannot be rolled over due to dealer allocation system, dealer transfers are only allowed to other workers for that dealer and have to be handled on-site by the dealer
+        return "";
+
+    var btns = "";
+    var row = cell.getRow();
+    var price = row.getCell("price").getValue();
+    var paid = row.getCell("paid").getValue();
+    var index = row.getIndex();
+
+    // transfer buttons
+    if ((category == 'addon' || category == 'add-on') && paid > 0) {
+        btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" onclick="transfer(' + index + ')">Transfer</button>';
+    } else if (price > 0 && paid > 0)
+        btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index + ')">Transfer</button>';
+    else if (price == 0 && paid == 0)
+        btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index +')">Transfer</button>';
+
+    // rollover buttons
+    if (price > 0 && paid > 0)
+        btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
+    else if (price == 0 && paid == 0)
+        btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
+    return btns;
+}
+
+// rollover - cancel his years badge and create it as a rollover in next yeers con
+function rollover(index) {
+    var row = badgetable.getRow(index);
+    var perid = row.getCell('perid').getValue();
+    var confirm_msg = "Confirm rollover for " + row.getCell("p_name").getValue().trim() + "'s badge of type " + row.getCell("label").getValue() + " to " + (conid + 1) + '?';
+    if (confirm(confirm_msg)) {
+        $.ajax({
+            method: "POST",
+            url: "scripts/rolloverBadge.php",
+            data: {  badge: index, toconid: conid + 1, perid: perid, },
+            success: function (data, textstatus, jqxhr) {
+                if (data['error'] !== undefined) {
+                    show_message(data['error'], 'error');
+                    return;
+                }
+                if (data['success'] !== undefined) {
+                    show_message(data['success'], 'success');
+                }
+                if (data['warn'] !== undefined) {
+                    show_message(data['warn'], 'warn');
+                }
+                getData();
+                if (data['success'] !== undefined)
+                    show_message(data.success, 'success');
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in rolloverBadge: " + textStatus, jqXHR);
+            }
+        });
+    }
 }
 
 // transfer - get information to build modal popup to find person to transfer to
-function transfer(edit, cell) {
-    if (cell.getRow().getCell("price").getValue() > 0 && cell.getRow().getCell("paid").getValue() == 0)
+function transfer(index) {
+    row = badgetable.getRow(index);
+
+    if (row.getCell("price").getValue() > 0 && row.getCell("paid").getValue() == 0)
         return;
 
-    if (cell.getRow().getCell("price").getValue() == 0) {
+    if (row.getCell("price").getValue() == 0) {
         if (confirm("This is a free badge, really transfer it?\n(Is it an included vendor badge or similar situation?)") == false)
             returm;
     }
 
-    var badgeid = cell.getRow().getCell("badgeId").getValue();
-    var fullname = cell.getRow().getCell('p_name').getValue();
-    var badgename = cell.getRow().getCell('p_badge').getValue();
+    var badgeid = row.getCell("badgeId").getValue();
+    var fullname = row.getCell('p_name').getValue();
+    var badgename = row.getCell('p_badge').getValue();
+    var badgelabel = row.getCell('label').getValue();
+    var perid = row.getCell('perid').getValue();
 
     document.getElementById("transfer_name_search").value = '';
     if (find_result_table != null) {
@@ -257,7 +412,9 @@ function transfer(edit, cell) {
         find_result_table = null;
     }
     document.getElementById('transfer_from').innerHTML = fullname + '(' + badgename + ')';
+    document.getElementById('transfer_badge').innerHTML = badgelabel;
     document.getElementById('from_badgeid').value = badgeid;
+    document.getElementById('from_perid').value = perid;
     document.getElementById('transfer_search_results').innerHTML = '';
     test.innerHTML = '';
     transfer_modal.show();
@@ -377,14 +534,15 @@ function transfer_found(data) {
                 {field: "perid", visible: false,},
                 {field: "index", visible: false,},
                 {field: "regcnt", visible: false,},
-                {title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
+                {title: "Name", field: "fullname", width: 200, headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                 {field: "last_name", visible: false,},
                 {field: "first_name", visible: false,},
                 {field: "middle_name", visible: false,},
                 {field: "suffix", visible: false,},
-                {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Badge Name", field: "badge_name", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 100, width: 100},
-                {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Email Address", field: "email_addr", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Current Badges", field: "regs", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Transfer", width: 90, headerFilter: false, headerSort: false, formatter: addTransferIcon, formatterParams: {t: "result"},},
                 {field: "index", visible: false,},
             ],
@@ -400,16 +558,18 @@ function draw_badges(data) {
     badgetable = new Tabulator('#badge-table', {
         data: data['badges'],
         layout: "fitDataTable",
+        index: "badgeId",
         pagination: true,
         paginationSize: 10,
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         columns: [
-            { title: "perid", field: "perid", visible: false },
             { title: "Person", field: "p_name", headerSort: true, headerFilter: true },
             { title: "Badge Name", field: "p_badge", headerSort: true, headerFilter: true },
             { title: "Membership Type", field: "label", headerSort: true, headerFilter: true, },
             { title: "Price", field: "price", hozAlign: "right", headerSort: true, headerFilter: true },
+            { title: "Discount", field: "couponDiscount", hozAlign: "right", headerSort: true, headerFilter: true, },
             { title: "Paid", field: "paid", hozAlign: "right", headerSort: true, headerFilter: true, },
+            { title: "Coupon", field: "name", headerSort: true, headerFilter: true, },
             { title: "Created", field: "create_date", headerSort: true, headerFilter: true },
             { title: "Changed", field: "change_date", headerSort: true, headerFilter: true },
             { field: "category", visible: false },
@@ -417,12 +577,13 @@ function draw_badges(data) {
             { field: "type", visible: false },
             { field: "badgeId", visible: false },
             { field: "perid", visible: false },
-            { title: "Transfer", formatter: transferbutton, hozAlign:"center", cellClick: transfer, headerSort: false },
-        ]       
+            { title: "Action", formatter: actionbuttons, hozAlign:"center", headerSort: false },
+        ]
     });
 }
 
 function draw(data, textStatus, jqXHR) {
+    conid = Number(data['conid']);
     draw_stats(data);
     draw_badges(data);
 }
@@ -447,7 +608,8 @@ function transferBadge(to, banned) {
     }
 
     var from = document.getElementById('from_badgeid').value;
-    var formData = { 'badge': from, 'perid': to };
+    var from_perid = document.getElementById('from_perid').value;
+    var formData = { 'badge': from, 'perid': to, 'from_perid' : from_perid};
     $.ajax({
         url: 'scripts/transferBadge.php',
         data: formData,
@@ -465,9 +627,7 @@ function transferBadge(to, banned) {
                 show_message(data.warning, 'warn');
             } else {
                 transfer_modal.hide();
-                console.log("about to call getdata");
                 getData();
-                console.log("after call getdata");
                 if (data.message)
                     show_message(data.message, 'success');
 
