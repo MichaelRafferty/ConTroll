@@ -31,7 +31,8 @@ JOIN memLabel M ON (M.id=R.memId)
 LEFT OUTER JOIN perinfo P ON (P.id=R.perid)
 LEFT OUTER JOIN newperson NP ON (NP.id=R.newperid)
 LEFT OUTER JOIN coupon C on (C.id = R.coupon)
-WHERE R.conid=?;
+WHERE R.conid=?
+ORDER BY R.create_date DESC;
 EOS;
 
 $response['query'] = $badgeQ;
