@@ -6,6 +6,7 @@
 // Retrieve load the mapping tables and session information into the javascript side
 
 require_once('../lib/base.php');
+require_once('../../lib/coupon.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -47,7 +48,7 @@ WHERE id=?;
 EOS;
 $r = dbSafeQuery($condatesSQL, 'i', array($conid));
 if ($r->num_rows == 1) {
-    $l = fetch_safe_assoc($r);
+    $l = $r->fetch_assoc();
     $startdate = $l['startdate'];
     $enddate = $l['enddate'];
     $response['startdate'] = $startdate;
@@ -85,7 +86,7 @@ EOS;
 
 $memarray = array();
 $r = dbSafeQuery($priceQ, 'issii', array($conid, $searchdate, $searchdate, $conid, $conid + 1));
-while ($l = fetch_safe_assoc($r)) {
+while ($l = $r->fetch_assoc()) {
     $memarray[] = $l;
 }
 mysqli_free_result($r);
@@ -101,7 +102,7 @@ EOS;
 
 $typearray = array();
 $r = dbQuery($memTypeSQL);
-while ($l = fetch_safe_assoc($r)) {
+while ($l = $r->fetch_assoc()) {
     $typearray[] = $l['memType'];
 }
 mysqli_free_result($r);
@@ -117,7 +118,7 @@ EOS;
 
 $catarray = array();
 $r = dbQuery($memCategorySQL);
-while ($l = fetch_safe_assoc($r)) {
+while ($l = $r->fetch_assoc()) {
     $catarray[] = $l['memCategory'];
 }
 mysqli_free_result($r);
@@ -133,10 +134,15 @@ EOS;
 
 $agearray = array();
 $r = dbSafeQuery($ageListSQL, 'i', array($conid));
-while ($l = fetch_safe_assoc($r)) {
+while ($l = $r->fetch_assoc()) {
     $agearray[] = $l;
 }
 mysqli_free_result($r);
 $response['ageList'] = $agearray;
+
+// coupons
+$ret = load_coupon_list();
+$response['num_coupons'] = $ret[0];
+$response['couponList'] = $ret[1];
 
 ajaxSuccess($response);

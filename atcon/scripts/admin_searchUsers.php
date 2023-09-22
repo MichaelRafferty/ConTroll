@@ -71,7 +71,7 @@ if (!$res) {
     exit();
 }
 $results = [];
-while ($row = fetch_safe_assoc($res)) {
+while ($row = $res->fetch_assoc()) {
     $results[] = $row;
 }
 mysqli_free_result($res);

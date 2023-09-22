@@ -43,6 +43,10 @@ $priceId = $_POST['item_purchased'];
 $specialRequests = $_POST['requests'];
 $taxid = $_POST['taxid'];
 
+$aggreeNone = false;
+if (array_key_exists('agreeNone', $_POST))
+    $aggreeNone = $_POST['agreeNone'] == 'on';
+
 // get the specific information allowed
 // get current vendor information
 $vendorQ = <<<EOS
@@ -50,7 +54,8 @@ SELECT name, email, website, description, addr, addr2, city, state, zip, publici
 FROM vendors
 WHERE id=?;
 EOS;
-$vendor = fetch_safe_assoc(dbSafeQuery($vendorQ, 'i', array($venId)));
+$vendorR = dbSafeQuery($vendorQ, 'i', array($venId));
+$vendor = $vendorR->fetch_assoc();
 
 // now the space  information for this item
 $spaceQ = <<<EOS
@@ -62,7 +67,8 @@ JOIN memList mi ON (v.includedMemId = mi.id)
 JOIN memList ma ON (v.additionalMemId = ma.id)
 WHERE vp.id = ?
 EOS;
-$space =  fetch_safe_assoc(dbSafeQuery($spaceQ, 'i', array($priceId)));
+$spaceR = dbSafeQuery($spaceQ, 'i', array($priceId));
+$space =  $spaceR->fetch_assoc();
 
 // get the buyer info
 $buyer['fname'] = $_POST['cc_fname'];
@@ -207,8 +213,8 @@ if ($additionalMemberships > 0 && $includedMemberships < $space['includedMembers
     $valid = false;
 }
 
-if (($additionalMemberships + $includedMemberships == 0)) {
-    $missing_msg .= "You must buy at least one membership for your space";
+if (($additionalMemberships + $includedMemberships == 0) && !$aggreeNone) {
+    $missing_msg .= "You must buy at least one membership for your space or check the box at the top of the invoice noting that you are not purchasing any memberships at this time and acknowledge the need for memberships for all working in your space.";
     $valid = false;
 }
 
@@ -280,7 +286,7 @@ EOS;
 $all_badgeR = dbSafeQuery($all_badgeQ, 'i', array($transid));
 
 $badgeResults = array();
-while ($row = fetch_safe_assoc($all_badgeR)) {
+while ($row = $all_badgeR->fetch_assoc()) {
     $badgeResults[count($badgeResults)] = $row;
 }
 
@@ -449,7 +455,7 @@ EOF;
     $res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
     if ($res !== false) {
         if ($res->num_rows > 0) {
-            $match = fetch_safe_assoc($res);
+            $match = $res->fetch_assoc();
             $id = $match['id'];
         } else {
             $id = null;

@@ -200,12 +200,21 @@ function openInvoice(spaceId, sortorder) {
     // fill in the variable items
     document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + space.name + ' Invoice</strong>';
     document.getElementById('vendor_inv_approved_for').innerHTML = vendor_info.name + " you are approved for " + price.description;
-    document.getElementById('vendor_inv_included').innerHTML = "<p>This space comes with " +
+    var spaces = price.includedMemberships + price.additionalMemberships;
+    var html = "<p>This space comes with " +
         (price.includedMemberships > 0 ? price.includedMemberships : "no") +
         " memberships included and " +
         (price.additionalMemberships > 0 ? "the " : "no ") + "right to purchase " +
         (price.additionalMemberships > 0 ? "up to " +  price.additionalMemberships  : "no") +
         " additional memberships at a reduced rate of $" + Number(space.additionalMemPrice).toFixed(2) + ".</p>";
+    if (spaces > 0) {
+        html += "<p>All vendors must have a membership for everyone working in their space. Included and additional discounted memberships can only be purchased while paying for your space. " +
+            "If you do not purchase them now while paying your space invoice, you will have to purchase them at the current membership rates.</p>" +
+            "<p>If you are unsure who will be using the registrations please use the first name of ‘Provided’ and a last name of ‘At Con’. The on-site registration desk will update the membership to the name on their ID.</p>" +
+            "<p>Program participants do not need to buy memberships; however, we will confirm that they meet the requirements to waive the membership cost.  If they do not, they will need to purchase a membership on-site at the on-site rates.</p>" +
+            "<p><input type='checkbox' style='transform: scale(2);' name='agreeNone' id='add-new-comment'agreeNone'> &nbsp;&nbsp;If you do not wish to purchase any memberships at this time, check this box to acknowledge the requirement for memberships above.</p>"
+    }
+    document.getElementById('vendor_inv_included').innerHTML = html;
     document.getElementById('dealer_space_cost').innerHTML = Number(price.price).toFixed(2);
     document.getElementById('vendor_inv_cost').innerHTML = Number(price.price).toFixed(2);
     document.getElementById('vendor_inv_item_id').value = price.id
@@ -214,7 +223,7 @@ function openInvoice(spaceId, sortorder) {
     // now build the included memberships
     if (price.includedMemberships > 0) {
         html = "<input type='hidden' name='incl_mem_count' value='" + price.includedMemberships + "'>\n" +
-            "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Included Memberships: (" + price.includedMemberships + ")</strong></div></div>";
+            "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Included Memberships: (up to " + price.includedMemberships + ")</strong></div></div>";
         for (var mnum = 0; mnum < price.includedMemberships; mnum++) {
             // name fields
             html += `
@@ -296,7 +305,7 @@ function openInvoice(spaceId, sortorder) {
         // now build the additional memberships
     if (price.additionalMemberships > 0) {
         html += "<input type='hidden' name='addl_mem_count' value='" + price.additionalMemberships + "'>\n" +
-            "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Additional Memberships: (" + price.additionalMemberships + ")</strong></div></div>";
+            "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Additional Memberships: (up to " + price.additionalMemberships + ")</strong></div></div>";
         for (var mnum = 0; mnum < price.additionalMemberships; mnum++) {
             // name fields
             html += `
@@ -401,6 +410,10 @@ function makePurchase(token, label) {
     }
     if (!token)
         token = 'test';
+
+    if (token == 'test_ccnum') {  // this is the test form
+        token = document.getElementById(token).value;
+    }
 
     var submitId = document.getElementById(purchase_label);
     submitId.disabled = true;

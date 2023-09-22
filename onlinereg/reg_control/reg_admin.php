@@ -11,11 +11,11 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 }
 
 page_init("Badge List",
-    /* css */ array('https://unpkg.com/tabulator-tables@5.5.0/dist/css/tabulator.min.css',
+    /* css */ array('https://unpkg.com/tabulator-tables@5.5.1/dist/css/tabulator.min.css',
                     'css/base.css',
                     ),
     /* js  */ array(//'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js',
+                    'https://unpkg.com/tabulator-tables@5.5.1/dist/js/tabulator.min.js',
                     'js/base.js',
                     'js/reg_admin.js'),
                     $need_login);
@@ -35,11 +35,18 @@ page_init("Badge List",
                 <div class='container-fluid'>
                     <form id="transfer-search" action='javascript:void(0)'>
                         <input type="hidden" name="from_badgeid" id="from_badgeid" value="">
+                        <input type="hidden" name="from_perid" id="from_perid" value="">
+                        <div class='row p-1'>
+                            <div class='col-sm-2 p-0'>
+                                <label for='name'>Transfer Badge::</label>
+                            </div>
+                            <div class='col-sm-10 p-0' id="transfer_badge"></div>
+                        </div>
                         <div class='row p-1'>
                             <div class='col-sm-2 p-0'>
                                 <label for='name'>Transfer From::</label>
                             </div>
-                            <div class='col-sm-10 p-0' id="transfer_from"></div>
+                            <div class='col-sm-10 p-0' id='transfer_from'></div>
                         </div>
                         <div class='row p-1'>
                             <div class='col-sm-2 p-0'>
@@ -69,6 +76,12 @@ page_init("Badge List",
     </div>
 </div>
 <div class="container-fluid">
+    <div class="row mb-2">
+        <div class="col-sm-auto me-1 p-0">Click on a row to toggle filtering by that value</div>
+        <div class="col-sm-auto me-1 p-0">
+            <button class="btn btn-primary btn-sm" onclick="clearfilter();">Clear All Filters</button>
+        </div>
+    </div>
     <div class="row">
         <div class="col-sm-auto me-1 p-0">
             <div id="category-table"></div>
@@ -85,6 +98,9 @@ page_init("Badge List",
         <div class="col-sm-auto me-1 p-0">
             <div id="label-table"></div>
         </div>
+        <div class='col-sm-auto me-1 p-0'>
+            <div id='coupon-table'></div>
+        </div>
     </div>
     <div class="row">
         <div class="col-sm-auto p-0">
@@ -100,6 +116,9 @@ page_init("Badge List",
         </div>
         <div class="col-sm-auto p-2">
             <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')">Send Marketing Email</button>
+        </div>
+        <div class='col-sm-auto p-2'>
+            <button class='btn btn-primary btn-sm' onclick="sendEmail('comeback')">Send Come Back Email</button>
         </div>
         <div class="col-sm-auto p-2">
             <button class="btn btn-primary btn-sm" onclick="sendEmail('reminder')">Send Attendance Reminder Email</button>

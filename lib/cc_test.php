@@ -8,42 +8,46 @@
 // 
 // 
 
+require_once("global.php");
+
 // draw_cc_html - exposed function to draw the credit card HTML window
 //      $cc = array of [cc] section of ini file
 //      $postal_code = postal code to default for form, optional
 //
 
 function draw_cc_html($cc, $postal_code = "--") {
-?>
+    $html = <<<EOS
 <p>This is a test site, it doesn't really take credit cards</p>
-Scenario: <select name='ccnum'>
+Scenario: <select name='ccnum' id="test_ccnum">
 	<option value=1>1 - Success</option>
 	<option value=2>2 - Failure</option>
 </select>
-<input type="submit" id="purchase" onclick="makePurchase()" value="Purchase">
-<?php
+<input type="submit" id="purchase" onclick="makePurchase('test_ccnum', 'purchase')" value="Purchase">
+EOS;
+    return $html;
 };
-
-function guidv4($data = null) {
-    // Generate 16 bytes (128 bits) of random data or use the data passed into the function.
-    $data = $data ?? random_bytes(16);
-    assert(strlen($data) == 16);
-
-    // Set version to 0100
-    $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
-    // Set bits 6-7 to 10
-    $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
-
-    // Output the 36 character UUID.
-    return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
-}
 
 function cc_charge_purchase($results, $ccauth) {
     $cc = get_conf('cc');
     //$con = get_conf('con');
     $reg = get_conf('reg');
+	if (isset($_SESSION)) {
+		if (array_key_exists('user_perid', $_SESSION)) {
+			$user_perid = $_SESSION['user_perid'];
+		} else {
+			$user_perid = null;
+		}
+		if (array_key_exists('user_id', $_SESSION)) {
+			$user_id = $_SESSION['user_id'];
+		} else {
+			$user_id = null;
+		}
+	} else {
+		$user_perid = null;
+		$user_id = null;
+	}
 
-    if(!isset($_POST['ccnum'])) {
+    if(!isset($_POST['nonce'])) {
 		ajaxSuccess(array('status'=>'error','data'=>'missing CC information'));
 		exit();
 	}
@@ -57,12 +61,12 @@ function cc_charge_purchase($results, $ccauth) {
     } else {
         $category = 'reg';
     }
-	switch($_POST['ccnum'][0]) {
+	switch($_POST['nonce'][0]) {
 		case '1': // success
 			$rtn['amount'] = $results['total'];
-			$rtn['txnfields'] =  array('transid','type','category','description', 'source','amount', 'txn_time', 'cc','cc_txn_id','cc_approval_code','receipt_id');
-			$rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 's', 's', 's', 's', 's');
-			$rtn['tnxdata'] = array($results['transid'],'credit',$category, 'test registration', 'online', $results['total'], '00-00-00 00:00:00',$_POST['ccnum'][0],'txn id','000000','txn_id');
+			$rtn['txnfields'] =  array('transid','type','category','description', 'source','amount', 'txn_time', 'nonce','cc_txn_id','cc_approval_code','receipt_id', 'cashier', 'userid');
+			$rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 's', 's', 's', 's', 's', 'i','i');
+			$rtn['tnxdata'] = array($results['transid'],'credit',$category, 'test registration', 'online', $results['total'], '00-00-00 00:00:00',$_POST['nonce'],'txn id','000000','txn_id', $user_perid, $user_id);
             $rtn['url'] = 'no test receipt';
 			return $rtn;
 		default: 

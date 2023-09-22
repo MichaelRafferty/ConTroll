@@ -116,11 +116,11 @@ function buildOverTime(data) {
 
   var parseYear = d3.time.format("%Y").parse;
   data.forEach(function(d) {
-      d['year_int'] = +d['year'];
-      d['year'] = parseYear(d['year']);
-      d['conid'] = +d['conid'];
-      d['cnt_all'] = +d['cnt_all'];
-      d['cnt_paid'] = +d['cnt_paid'];
+      d['year_int'] = Number(d['year']);
+      d['year'] = parseYear(Number(d['year']).toString());
+      d['conid'] = Number(d['conid']);
+      d['cnt_all'] = Number(d['cnt_all']);
+      d['cnt_paid'] = Number(d['cnt_paid']);
 });
 
   var x = d3.time.scale().range([0,width]);
@@ -271,5 +271,3 @@ function buildDailyTrend(data, currDay, set) {
 
 
 }
-
-

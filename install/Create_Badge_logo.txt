@@ -1,0 +1,40 @@
+Printing Bagdges On-Site
+
+The ATCON portion of the system supports using Dymo label printers for printing badge labels.
+
+In the atcon/lib directory are a collection of postscript files that are used to print badges on the Dymo LabelWriter style printers.
+
+--- Non PHP Files in the atoocn/lib directory
+
+blank.ps:   A prototype Postscript file for print badges with no background (blank)
+init.ps:    The file that ATCON uses to actually print badges as it's header Postscript file.  Note: this defaults to blank, you need to copy your conventions
+            desired badge background file to this name.
+test*:      These files are scripts to test the printers by directly sending them to the printer
+
+--- Making your own badge print file:
+
+You will need a grayscale image file in roughtly a square shape of about 300 pixels high.
+These steps are a bit finicky, so please read carefully and make sure if you don't use Photoshop you understand what Photoshop is doing...
+
+In Photoshop or some other image editor scale/trim the file to that size
+1.  Set the opacity to 30%
+2.  Save the file as a PNG
+3.  Load the saved file into Photoshop (This is needed so the next step doesn't try to set the opacity in Postscript
+4.  Save the file 'as a copy' as a Photoshop EPS file
+    a. do not embed color profile or proof setup
+    b. set preview image to NONE
+5.  In a text editor edit the eps file written by Photoshop
+    a. If necessary convert the line endings from ^M to \r (which in VI converts the CR endings to CR/LF or LF endings depending on your system)
+    b. Find the line starting with:  "%BeginPhotoshop:" (note it's place)
+    c. Find the line starting with: "%end_xml_code"
+    d. delete all of those lines from the file
+    e. Delete the last two lines:
+        [{nextImage} 1 dict begin /Metadata {photoshop_metadata_stream} def currentdict end /PUT pdfmark
+        [/NamespacePop pdfmark
+    f: save the file back to the disk
+6.  copy the file blank.ps to a file name for your convention
+7.  edit that file
+    a. near the bottom file the '%%Trailer'
+    b. insert the contents of your just created postscript file just before that line
+    c. save the file
+8. copy that file to init.ps in the lib directory (overwriting what is there, which by default is a copy of blank.ps)

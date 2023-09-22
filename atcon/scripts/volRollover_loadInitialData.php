@@ -50,7 +50,7 @@ if ($r->num_rows != 1) {
     ajaxError("Volunteer type not defined for conid " . ($conid + 1));
     return;
 }
-$l = fetch_safe_assoc($r);
+$l = $r->fetch_assoc();
 $response['rollover_memId'] = $l['id'];
 $response['rollover_label'] = $l['label'];
 $response['rollover_shortname'] = $l['shortname'];

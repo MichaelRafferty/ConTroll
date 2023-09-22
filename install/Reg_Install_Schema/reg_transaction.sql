@@ -30,14 +30,16 @@ CREATE TABLE `transaction` (
   `userid` int DEFAULT NULL,
   `create_date` datetime DEFAULT CURRENT_TIMESTAMP,
   `complete_date` datetime DEFAULT NULL,
-  `price` float DEFAULT NULL,
-  `paid` float DEFAULT NULL,
-  `withtax` float DEFAULT NULL,
-  `tax` float DEFAULT NULL,
+  `price` decimal(8,2) DEFAULT NULL,
+  `couponDiscount` decimal(8,2) DEFAULT '0.00',
+  `paid` decimal(8,2) DEFAULT NULL,
+  `withtax` decimal(8,2) DEFAULT NULL,
+  `tax` decimal(8,2) DEFAULT NULL,
   `type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `ticket_num` int DEFAULT NULL,
-  `change_due` float DEFAULT NULL,
+  `change_due` decimal(8,2) DEFAULT NULL,
+  `coupon` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `transaction_conid_fk` (`conid`),
   KEY `transaction_newperid_fk` (`newperid`),
@@ -45,7 +47,7 @@ CREATE TABLE `transaction` (
   CONSTRAINT `transaction_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `transaction_newperid_fk` FOREIGN KEY (`newperid`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `transaction_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2470 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -57,4 +59,4 @@ CREATE TABLE `transaction` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-07-13 17:52:26
+-- Dump completed on 2023-08-15 13:48:36

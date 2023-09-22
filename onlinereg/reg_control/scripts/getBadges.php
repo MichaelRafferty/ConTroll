@@ -14,21 +14,25 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     exit();
 }
 
-$con=get_cON ();
+$con=get_conf('con');
 $conid= $con['id'];
+$response['conid'] = $conid;
 
 $badgeQ = <<<EOS
-SELECT R.create_date, R.change_date, R.price, R.paid, R.id AS badgeId, P.id AS perid, NP.id AS np_id
+SELECT R.create_date, R.change_date, R.price, R.couponDiscount, R.paid, R.id AS badgeId, P.id AS perid, NP.id AS np_id
     , CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name, P.suffix) AS p_name
     , CONCAT_WS(' ', NP.first_name, NP.middle_name, NP.last_name, NP.suffix) AS np_name
     , P.badge_name AS p_badge, NP.badge_name AS np_badge
     , CONCAT_WS('-', M.memCategory, M.memType, M.memAge) as memTyp
     , M.memCategory AS category, M.memType AS type, M.memAge AS age, M.label
+    , ifnull(C.name, ' None ') as name
 FROM reg R
 JOIN memLabel M ON (M.id=R.memId)
 LEFT OUTER JOIN perinfo P ON (P.id=R.perid)
 LEFT OUTER JOIN newperson NP ON (NP.id=R.newperid)
-WHERE R.conid=?;
+LEFT OUTER JOIN coupon C on (C.id = R.coupon)
+WHERE R.conid=?
+ORDER BY R.create_date DESC;
 EOS;
 
 $response['query'] = $badgeQ;
@@ -36,7 +40,7 @@ $response['query'] = $badgeQ;
 $badges = array();
 
 $badgeA = dbSafeQuery($badgeQ, 'i', array($conid));
-while($badge = fetch_safe_assoc($badgeA)) {
+while($badge = $badgeA->fetch_assoc()) {
     array_push($badges, $badge);
 }
 
@@ -61,7 +65,7 @@ EOS;
 
 $categories = array();
 $catA = dbSafeQuery($catQ, 'i', array($conid));
-while($cat = fetch_safe_assoc($catA)) {
+while($cat = $catA->fetch_assoc()) {
     array_push($categories, $cat);
 }
 
@@ -86,7 +90,7 @@ EOS;
 
 $types = array();
 $typeA = dbSafeQuery($typeQ, 'i', array($conid));
-while($type = fetch_safe_assoc($typeA)) {
+while($type = $typeA->fetch_assoc()) {
     array_push($types, $type);
 }
 
@@ -111,7 +115,7 @@ EOS;
 
 $labels = array();
 $labelA = dbSafeQuery($labelQ, 'i', array($conid));
-while($label = fetch_safe_assoc($labelA)) {
+while($label = $labelA->fetch_assoc()) {
     array_push($labels, $label);
 }
 
@@ -136,7 +140,7 @@ EOS;
 
 $ages = array();
 $ageA = dbSafeQuery($ageQ, 'i', array($conid));
-while($age = fetch_safe_assoc($ageA)) {
+while($age = $ageA->fetch_assoc()) {
     array_push($ages, $age);
 }
 
@@ -160,10 +164,35 @@ EOS;
 
 $paids = array();
 $paidA = dbSafeQuery($paidQ, 'i', array($conid));
-while($paid = fetch_safe_assoc($paidA)) {
+while($paid = $paidA->fetch_assoc()) {
     array_push($paids, $paid);
 }
 
 $response['paids'] = $paids;
+
+$couponQ = <<<EOS
+WITH listitems AS (
+    SELECT ifnull(C.name, ' None ') as name, count(*) occurs
+    FROM reg R
+    LEFT OUTER JOIN coupon C ON (C.id  = R.coupon)
+    WHERE R.conid=?
+    GROUP BY C.name
+), totalrow AS (
+    SELECT SUM(occurs) AS total
+    FROM listitems
+)
+SELECT name, occurs, 100 * occurs / total AS percent
+FROM listitems
+JOIN totalrow
+ORDER BY name;
+EOS;
+
+$coupons = array();
+$couponA = dbSafeQuery($couponQ, 'i', array($conid));
+while($coupon = $couponA->fetch_assoc()) {
+    array_push($coupons, $coupon);
+}
+
+$response['coupons'] = $coupons;
 ajaxSuccess($response);
 ?>

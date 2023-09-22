@@ -8,6 +8,7 @@
 // location=[LOCATION] - location id from the square developer portal
 // does not currently use any other config sections for credit card other than [cc]
 
+require_once("global.php");
 
 // draw_cc_html - exposed function to draw the credit card HTML window
 //      $cc = array of [cc] section of ini file
@@ -15,23 +16,27 @@
 //
 
 function draw_cc_html($cc, $postal_code = "--") {
-?>
-  <script src="<?php echo $cc['webpaysdk']; ?>"></script>
+    $sdk = $cc['webpaysdk'];
+    $appid = $cc['appid'];
+    $location = $cc['location'];
+    $postalCode = '';
+    if ($postal_code != '--') {
+        $postalCode = "'postalCode': '$postal_code',\n";
+    }
+
+    $html = <<<EOS
+<script src="$sdk"></script>
 <!-- Configure the Web Payments SDK and Card payment method -->
   <script type="text/javascript">
       ;
       var payments = null;
     
       async function startCCPay() {
-          const appId = '<?php echo $cc['appid']; ?>';
-          const locationId = '<?php echo $cc['location']; ?>';
+          const appId = '$appid';
+          const locationId = '$location';
           const payments = Square.payments(appId, locationId);
           const card = await payments.card({
-              <?php 
-    if ($postal_code != "--") { 
-        echo "'postalCode': '$postal_code',\n";
-    }
-              ?>           
+              $postalCode        
               "style": {
                   ".input-container": {
                       "borderColor": "blue",
@@ -58,7 +63,7 @@ function draw_cc_html($cc, $postal_code = "--") {
               try {
                   const result = await card.tokenize();
                   if (result.status === 'OK') {
-                      //console.log(`Payment token is ${result.token}`);
+                      //console.log(`Payment token is ' + result.token);
                       makePurchase(result.token, "card-button");
                   }
               } catch (e) {
@@ -81,22 +86,9 @@ function draw_cc_html($cc, $postal_code = "--") {
         <div class="container-fluid overflow-hidden" id="card-container"></div>
         <button id="card-button" type="button">Purchase</button>
     </form>
-<?php
+EOS;
+    return $html;
 };
-
-function guidv4($data = null) {
-    // Generate 16 bytes (128 bits) of random data or use the data passed into the function.
-    $data = $data ?? random_bytes(16);
-    assert(strlen($data) == 16);
-
-    // Set version to 0100
-    $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
-    // Set bits 6-7 to 10
-    $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
-
-    // Output the 36 character UUID.
-    return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
-}
 
 use Square\SquareClient;
 use Square\Exceptions\ApiException;
@@ -106,6 +98,8 @@ use Square\Models\CreateOrderResponse;
 use Square\Models\Order;
 use Square\Models\OrderSource;
 use Square\Models\OrderLineItem;
+use Square\Models\OrderLineItemDiscount;
+use Square\Models\OrderLineItemDiscountType;
 use Square\Models\Currency;
 use Square\Models\Money;
 use Square\Models\CreatePaymentRequest;
@@ -117,9 +111,25 @@ function cc_charge_purchase($results, $ccauth) {
     $con = get_conf('con');
     $client = new SquareClient([
         'accessToken' => $cc['token'],
-        'squareVersion' => '2022-02-16',
+        'squareVersion' => $cc['apiversion'],
         'environment' => $cc['env'],
     ]);
+
+    if (isset($_SESSION)) {
+        if (array_key_exists('user_perid', $_SESSION)) {
+            $user_perid = $_SESSION['user_perid'];
+        } else {
+            $user_perid = null;
+        }
+        if (array_key_exists('user_id', $_SESSION)) {
+            $user_id = $_SESSION['user_id'];
+        } else {
+            $user_id = null;
+        }
+    } else {
+        $user_perid = null;
+        $user_id = null;
+    }
 
     // square api steps
     // 1. create order record and price it
@@ -172,6 +182,26 @@ function cc_charge_purchase($results, $ccauth) {
 
     $order->setLineItems($order_lineitems);
 
+    // now apply the coupon
+    if (array_key_exists('discount', $results) && $results['discount'] > 0) {
+        $item = new OrderLineItemDiscount ();
+        $item->setUid('couponDiscount');
+        if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
+            $coupon = $results['coupon'];
+            $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . ')';
+        } else {
+            $couponName = 'Coupon Applied';
+        }
+        $item->setName($couponName);
+        $item->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
+        $money = new Money;
+        $money->setAmount($results['discount'] * 100);
+        $money->setCurrency(Currency::USD);
+        $item->setAmountMoney($money);
+        $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
+        $order->setDiscounts(array($item));
+    }
+
     // pass order to square and get order id
 
     try {
@@ -208,17 +238,22 @@ function cc_charge_purchase($results, $ccauth) {
     $pay_money->setAmount($results['total'] * 100);
     $pay_money->setCurrency(Currency::USD);
 
+//web_error_log("CALLED WITH " . $results['total']);
+//var_error_log($pay_money);
     $pbody = new CreatePaymentRequest(
         $results['nonce'],
         $payuuid,
         $pay_money
     );
+    $pbody->setAmountMoney($pay_money);
     $pbody->setAutocomplete(true);
     $pbody->setOrderID($corder->getId());
     $pbody->setCustomerId($con['id'] . '-' . $custbadge['badge']);
     $pbody->setLocationId($cc['location']);
     $pbody->setReferenceId($con['id'] . '-' . $results['transid']);
     $pbody->setNote('On-Line Registration');
+
+//var_error_log($pbody);
 
     try {
         $paymentsApi = $client->getPaymentsApi();
@@ -287,11 +322,11 @@ function cc_charge_purchase($results, $ccauth) {
     $rtn = array();
     $rtn['amount'] = $approved_amt;
     $rtn['txnfields'] = array('transid','type','category','description','source','amount',
-        'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id');
+        'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'cashier','userid');
     $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd',
-            's', 's', 's', 's', 's', 's', 's', 's');
+            's', 's', 's', 's', 's', 's', 's', 's', 'i','i');
     $rtn['tnxdata'] = array($results['transid'],'credit',$category,$desc,'online',$approved_amt,
-        $txtime,$last4,$results['nonce'],$id,$auth,$receipt_url,$status,$receipt_number);
+        $txtime,$last4,$results['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $user_perid,$user_id);
     $rtn['url'] = $receipt_url;
     $rtn['rid'] = $receipt_number;
     return $rtn;

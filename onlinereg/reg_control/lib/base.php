@@ -83,6 +83,7 @@ function google_init($mode) {
     ************************************************/
     if (!empty($_SESSION['id_token_token'])
           && isset($_SESSION['id_token_token'])
+          /*&& array_key_exists('refresh_token', $_SESSION['id_token_token']) */  // need a better check here, as this is breaking with 'no refresh token' error when > 900 seconds.
     ) {
         $client->setAccessToken($_SESSION['id_token_token']);
         $token_data = $client->verifyIdToken();
@@ -191,9 +192,9 @@ function page_head($title, $auth) {
 function con_info($auth) {
     if(is_array($auth) && checkAuth(array_key_exists('sub', $auth) ? $auth['sub'] : null, 'overview')) {
         $con = get_con();
-        $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."';");
+        $count_res = dbSafeQuery("select count(*) from reg where conid=?;", 'i', array($con['id']));
         $badgeCount = fetch_safe_array($count_res);
-        $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."' AND price <= ifnull(paid,0);");
+        $count_res = dbSafeQuery("select count(*) from reg where conid=? AND price <= (ifnull(paid,0) + ifnull(couponDiscount, 0));",'i', array($con['id']));
         $unlockCount = fetch_safe_array($count_res);
   
 ?>

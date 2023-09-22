@@ -29,7 +29,7 @@ CREATE TABLE `payments` (
   `category` enum('reg','artshow','other','vendor') COLLATE utf8mb4_general_ci DEFAULT NULL,
   `description` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `source` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `amount` float DEFAULT NULL,
+  `amount` decimal(8,2) DEFAULT NULL,
   `time` datetime DEFAULT NULL,
   `cc` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `nonce` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -48,7 +48,7 @@ CREATE TABLE `payments` (
   CONSTRAINT `payments_cashier_fk` FOREIGN KEY (`cashier`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `payments_transid_fk` FOREIGN KEY (`transid`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `payments_userid_fk` FOREIGN KEY (`userid`) REFERENCES `user` (`id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=8688 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -60,4 +60,4 @@ CREATE TABLE `payments` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-07-13 17:52:26
+-- Dump completed on 2023-08-15 13:48:36
