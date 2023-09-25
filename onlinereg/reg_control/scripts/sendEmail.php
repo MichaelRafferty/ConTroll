@@ -177,7 +177,7 @@ case 'survey':
     $emailQ = <<<EOQ
 SELECT Distinct P.email_addr AS email
 FROM reg R 
-JOIN atcon_history H ON (R.id=H.regid)
+JOIN reg_history H ON (R.id=H.regid)
 JOIN reg R ON (R.id=H.regid)
 JOIN transaction T ON (T.id=H.tid)
 JOIN memLabel M ON (M.id=R.memId)

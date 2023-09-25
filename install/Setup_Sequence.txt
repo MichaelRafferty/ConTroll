@@ -56,7 +56,7 @@ It also expects you to know how to fetch/update files from GitHub. The software 
             vendorSpacePrices (NOTE vendors or art show only)
             vendor_space (NOTE vendors or art show only)
             reg
-            atcon_history
+            reg_history
             artist (Note: belongs to artshow only)
             artshow_reg (Note: belongs to artshow only)
             artshow (Note: belongs to artshow only)

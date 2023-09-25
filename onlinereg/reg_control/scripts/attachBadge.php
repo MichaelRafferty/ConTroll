@@ -27,7 +27,7 @@ $transid = $_POST['transid'];
 $badgeId = $_POST['id'];
 
 $attachQ = <<<EOQ
-INSERT INTO atcon_history(userid, tid, regid, action)
+INSERT INTO reg_history(userid, tid, regid, action)
 VALUES(?, ?, ?, 'attach');
 EOQ;
 $rowid = dbSafeInsert($attachQ, 'iii', array($userid, $transid, $badgeId));
@@ -35,7 +35,7 @@ $rowid = dbSafeInsert($attachQ, 'iii', array($userid, $transid, $badgeId));
 $response['history_id'] = $rowid;
 $actionQ = <<<EOQ
 SELECT * 
-FROM atcon_history
+FROM reg_history
 WHERE regid=? AND action !='attach';
 EOQ;
 $actionR = dbSafeQuery($actionQ, 'i', array($badgeId));

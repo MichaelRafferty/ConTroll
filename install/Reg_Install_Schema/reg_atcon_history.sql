@@ -16,13 +16,13 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `atcon_history`
+-- Table structure for table `reg_history`
 --
 
-DROP TABLE IF EXISTS `atcon_history`;
+DROP TABLE IF EXISTS `reg_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `atcon_history` (
+CREATE TABLE `reg_history` (
   `id` int NOT NULL AUTO_INCREMENT,
   `logdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `userid` int NOT NULL,
@@ -31,12 +31,12 @@ CREATE TABLE `atcon_history` (
   `action` enum('attach','print','notes') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `notes` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `atcon_history_tid_fk` (`tid`),
-  KEY `atcon_history_regid_fk` (`regid`),
-  KEY `atcon_history_userid_fk` (`userid`),
-  CONSTRAINT `atcon_history_regid_fk` FOREIGN KEY (`regid`) REFERENCES `reg` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `atcon_history_tid_fk` FOREIGN KEY (`tid`) REFERENCES `transaction` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `atcon_history_userid_fk` FOREIGN KEY (`userid`) REFERENCES `perinfo` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `reg_history_tid_fk` (`tid`),
+  KEY `reg_history_regid_fk` (`regid`),
+  KEY `reg_history_userid_fk` (`userid`),
+  CONSTRAINT `reg_history_regid_fk` FOREIGN KEY (`regid`) REFERENCES `reg` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `reg_history_tid_fk` FOREIGN KEY (`tid`) REFERENCES `transaction` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `reg_history_userid_fk` FOREIGN KEY (`userid`) REFERENCES `perinfo` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
