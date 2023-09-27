@@ -9,7 +9,7 @@ ALTER TABLE reg_history MODIFY COLUMN action enum('attach','print','notes','tran
 DROP PROCEDURE IF EXISTS mergePerid;
 
 DELIMITER $$
-CREATE PROCEDURE mergePerid (IN to_mergePID INT, IN to_survivePID INT, OUT statusmsg TEXT)
+CREATE PROCEDURE mergePerid (IN userid INT, IN to_mergePID INT, IN to_survivePID INT, OUT statusmsg TEXT, OUT rollback_log TEXT)
 BEGIN
     /* updates the database to change records with to_mergePID to to_survivePID to preserver referential integrity as it merges two perinfo records together
     /* tables with perinfo refs:
@@ -222,7 +222,7 @@ BEGIN
         SET rollback_stmts = CONCAT(rollback_stmts, stmt, CHAR(10));
         UPDATE perinfo
         SET
-            change_notes = CONCAT(trans_time, ': merged into ', to_survivePID, CHAR(10),
+            change_notes = CONCAT(trans_time, ':  User ', userid, ' merged into ', to_survivePID, CHAR(10),
                                   'was: first_name: "', first_name, '", middle_name: "', middle_name, '", last_name: "', last_name, '"', CHAR(10),
                                   'rollback_stmts=', CHAR(10),
                                   REPLACE(rollback_stmts, '''', ''''''), '''', char(10)
@@ -236,7 +236,8 @@ BEGIN
     END procBlock;
 
 /* SET statusmsg =  msg; */
-    SET statusmsg = CONCAT(msg, CHAR(10), rollback_stmts);
+    SET statusmsg = msg;
+    SET rollback_log = CONCAT(trans_time, ':  User ', userid, ' merged ', to_mergePID, ' into ', to_survivePID, CHAR(10), rollback_stmts);
 
 END$$
 DELIMITER ;
