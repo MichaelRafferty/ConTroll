@@ -32,19 +32,12 @@ It also expects you to know how to fetch/update files from GitHub. The software 
             memCategories
             memTypes
             perinfo
-            reg_staff_stats
-            routines
             servers
             user
             vendors (NOTE vendors or art show only)
-            vendorSpaces (NOTE vendors or art show only)
         ii. load tables with foreign keys
             ageList
-            artist
-            artshow_reg
             memlist
-            oauth_links
-            oauth_people
             atcon_user
             atcon_auth
             reg_badgelist
@@ -53,8 +46,11 @@ It also expects you to know how to fetch/update files from GitHub. The software 
             newperson   (NOTE: Newperson refers to transaction, you might have to do it's foreign key separately as transaction also references a different field in newperson)
             transaction
             payments
+            vendorSpaces (NOTE vendors or art show only)
             vendorSpacePrices (NOTE vendors or art show only)
             vendor_space (NOTE vendors or art show only)
+            coupon
+            couponKeys
             reg
             atcon_history
             artist (Note: belongs to artshow only)
@@ -62,8 +58,6 @@ It also expects you to know how to fetch/update files from GitHub. The software 
             artshow (Note: belongs to artshow only)
             artItems (Note: belongs to artshow only)
             artsales (Note: belongs to artshow only)
-            coupon
-            couponKeys
 
 	iii.
 	    add link from newperson to transactions:
