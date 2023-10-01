@@ -193,9 +193,9 @@ function con_info($auth) {
     if(is_array($auth) && checkAuth(array_key_exists('sub', $auth) ? $auth['sub'] : null, 'overview')) {
         $con = get_con();
         $count_res = dbSafeQuery("select count(*) from reg where conid=?;", 'i', array($con['id']));
-        $badgeCount = fetch_safe_array($count_res);
+        $badgeCount = $count_res->fetch_array();
         $count_res = dbSafeQuery("select count(*) from reg where conid=? AND price <= (ifnull(paid,0) + ifnull(couponDiscount, 0));",'i', array($con['id']));
-        $unlockCount = fetch_safe_array($count_res);
+        $unlockCount = $count_res->fetch_array();
   
 ?>
 
@@ -267,7 +267,7 @@ function countConflicts($sub) {
         $countQ = "SELECT count(*) from newperson WHERE perid IS NULL;";
         $countA = dbQuery($countQ);
         if(is_null($countA)) { return 0; }
-        $count = fetch_safe_array($countA);
+        $count = $countA->fetch_array();
         return $count[0];
     }
     return 0;
