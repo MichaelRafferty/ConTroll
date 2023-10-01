@@ -51,7 +51,7 @@ WITH unpaids AS (
 SELECT r.id, create_trans as tid
 FROM reg r
 JOIN memList m ON (m.id = r.memId)
-WHERE (r.price + r.couponDiscount) != r.paid AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
+WHERE r.price != (r.paid + r.couponDiscount) AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
 ), tids AS (
 /* add in unpaids from transactions in attach records in atcon_history */
 SELECT u.id AS regid, CASE WHEN u.tid > IFNULL(h.tid, -999) THEN u.tid ELSE h.tid END AS tid
