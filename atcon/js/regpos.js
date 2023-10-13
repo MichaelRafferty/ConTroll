@@ -459,6 +459,8 @@ function start_over(reset_all) {
     // reset data to call up
     result_perinfo = [];
     result_membership = [];
+    emailAddreesRecipients = [];
+    last_email_row = '';
 
     // reset tabs to initial values
     find_tab.disabled = false;
