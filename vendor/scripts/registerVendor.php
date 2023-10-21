@@ -15,8 +15,10 @@ WHERE email=?;
 EOS;
 $vendorTest = dbSafeQuery($vendorTestQ, 's', array(trim($_POST['email'])));
 if ($vendorTest->num_rows != 0) {
+    $vconf = get_conf("vendor");
+    $vemail = $vconf['vendors'];
     $response['status'] = 'error';
-    $response['message'] = "Another account already exists with that email, please login or contact regadmin@bsfs.org for assistance";
+    $response['message'] = "Another account already exists with that email, please login or contact $vemail for assistance";
     ajaxSuccess($response);
     exit();
 }
