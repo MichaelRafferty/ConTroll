@@ -26,7 +26,7 @@
 //
 
 require_once (__DIR__ . "/db_functions.php");
-require_once (__DIR__ . "/../config/aws.phar");
+//require_once (__DIR__ . "/../config/aws.phar");
 use Aws\Ses\SesClient;
 use Aws\Exception\AwsException;
 
