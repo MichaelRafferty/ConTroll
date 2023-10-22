@@ -3,7 +3,7 @@
 global $db_ini;
 if (!$db_ini) {    
     $db_ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../../google_client";    
+    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../../Composer";    
 }
 
 if ($db_ini['reg']['https'] <> 0) {
@@ -36,6 +36,7 @@ function google_init($mode) {
   global $db_ini;
   session_start();
 
+/*
   // bypass for testing on Development PC
   if (stripos(__DIR__, "/Volumes/Dock_Disk/") !== false) {
       $token_data = array();
@@ -49,71 +50,52 @@ function google_init($mode) {
   }
 
   // end bypass
+*/
 
   // set redirect URI to current page -- maybe make this better later.
   $redirect_uri = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
 
-  $client = new Google_Client();
+  $client = new Google\Client();
   $client->setAuthConfigFile($db_ini['google']['json']);
-  $client->setRedirectUri($redirect_uri);
   $client->addScope('email');
   $client->setAccessType('offline');
-  $client->setApprovalPrompt('force');
+  //$client->setApprovalPrompt('force');
+    
+  //unset id_token if logging out.
+  if(isset($_REQUEST['logout'])) {
+      unset($_SESSION['access_token']);
+      $client->revokeToken();
+      $client->setPrompt('select_account');
+  }
 
-    //unset id_token if logging out.
-    if(isset($_REQUEST['logout'])) {
-        unset($_SESSION['id_token_token']);
-        $client->revokeToken();
-    }
-
+  if(isset($_SESSION['access_token']) && $_SESSION['access_token']) {
+    $client->setAccessToken($_SESSION['access_token']);
+  } else {
+    $client->setRedirectUri($redirect_uri);
+    if($_SESSION['user_email']) { $client->setLoginHint($_SESSION['user_email']); } 
+    $auth_url = $client->createAuthUrl();
+    header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
+  }
 
     //handle code response
     if (isset($_GET['code'])) {
         $client->authenticate($_GET['code']);
         $token = $client->getAccessToken();
         // store in the session also
-        $_SESSION['id_token_token'] = $token;
+        $_SESSION['access_token'] = $token;
         // redirect back to the example
-        header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
+        if($mode=='page') {
+          header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
+        } else { return false; }
     }
 
-    /************************************************
-    If we have an access token, we can make
-    requests, else we generate an authentication URL.
-    ************************************************/
-    if (!empty($_SESSION['id_token_token'])
-          && isset($_SESSION['id_token_token'])
-          /*&& array_key_exists('refresh_token', $_SESSION['id_token_token']) */  // need a better check here, as this is breaking with 'no refresh token' error when > 900 seconds.
-    ) {
-        $client->setAccessToken($_SESSION['id_token_token']);
-        $token_data = $client->verifyIdToken();
-        if(is_array($token_data) && array_key_exists('exp', $token_data) && ($token_data['exp'] - time() < 900)) {
-            $client->refreshToken($_SESSION['id_token_token']['refresh_token']);
-        }
-    } else {
-        $authUrl = $client->createAuthUrl();
-        if($mode == "page") { // we're on a page
-            header('Location: ' . $authUrl);
-        } else {
-            return $authUrl;
-        }
-    }
-
-    /************************************************
-    If we're signed in we can go ahead and retrieve
-    the ID token, which is part of the bundle of
-    data that is exchange in the authenticate step
-    - we only need to do a network call if we have
-    to retrieve the Google certificate to verify it,
-    and that can be cached.
-    ************************************************/
-    $token = $client->getAccessToken();
-    if ($token) {
-        $client->setAccessToken($token);
-        $token_data = $client->verifyIdToken();
+    if($token_data = $client->verifyIdToken()) {
         return($token_data);
-    } else {
-        return false;
+    } else { 
+        $client->setRedirectUri($redirect_uri);
+        if($mode=='page') {
+          header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
+        } else { return false; } 
     }
 }
 
