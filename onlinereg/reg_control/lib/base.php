@@ -92,6 +92,7 @@ function google_init($mode) {
     if($token_data = $client->verifyIdToken()) {
         return($token_data);
     } else { 
+        unset($_SESSION['access_token']);
         $client->setRedirectUri($redirect_uri);
         if($mode=='page') {
           header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
