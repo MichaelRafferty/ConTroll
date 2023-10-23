@@ -26,53 +26,14 @@ It also expects you to know how to fetch/update files from GitHub. The software 
             printers
             routines
     c.  load the reg schema into each database
-        i. load tables without foreign keys first:
-            auth
-            conlist
-            memCategories
-            memTypes
-            perinfo
-            servers
-            user
-            vendors (NOTE vendors or art show only)
-        ii. load tables with foreign keys
-            ageList
-            memlist
-            atcon_user
-            atcon_auth
-            reg_badgelist
-            reg_club
-            user_auth
-            newperson   (NOTE: Newperson refers to transaction, you might have to do it's foreign key separately as transaction also references a different field in newperson)
-            transaction
-            payments
-            vendorSpaces (NOTE vendors or art show only)
-            vendorSpacePrices (NOTE vendors or art show only)
-            vendor_space (NOTE vendors or art show only)
-            coupon
-            couponKeys
-            reg
-            atcon_history
-            artist (Note: belongs to artshow only)
-            artshow_reg (Note: belongs to artshow only)
-            artshow (Note: belongs to artshow only)
-            artItems (Note: belongs to artshow only)
-            artsales (Note: belongs to artshow only)
+        i. load all the tables first (everything but zz_foreign_keys.sql and reg_routines.sql)
+        ii. set all the foreign keys: run zz_foreign_keys.sql
+        iii. add routines and views using reg_routines.sql
 
-	iii.
-	    add link from newperson to transactions:
-ALTER TABLE newperson ADD CONSTRAINT `newperson_transid_fk` FOREIGN KEY (`transid`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE;
-
-	iv. add routines and views
-            memLabel
-            syncServerPrinters
-
-
-	v. obsolete tables
+	v. drop obsolete tables if they still exist
             reg_staff_stats
             oauth_links
             oauth_people
-
 
 4. Populate the tables far enough to use the GUI to continue, or as far as you want.
     Necessary tables for the GUI:
