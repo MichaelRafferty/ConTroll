@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.31, for macos12 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -27,10 +27,8 @@ CREATE TABLE `atcon_auth` (
   `authuser` int NOT NULL,
   `auth` enum('data_entry','cashier','manager','artinventory','artsales','artshow','vol_roll') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `atcon_authuser_fk` (`authuser`),
-  CONSTRAINT `atcon_auth_user` FOREIGN KEY (`authuser`) REFERENCES `atcon_user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `atcon_authuser_fk` FOREIGN KEY (`authuser`) REFERENCES `atcon_user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `atcon_authuser_fk` (`authuser`)
+) ENGINE=InnoDB AUTO_INCREMENT=91 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -42,4 +40,4 @@ CREATE TABLE `atcon_auth` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-08-15 13:48:34
+-- Dump completed on 2023-10-23 18:40:44

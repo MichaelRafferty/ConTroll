@@ -16,22 +16,18 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `atcon_user`
+-- Table structure for table `patchLog`
 --
 
-DROP TABLE IF EXISTS `atcon_user`;
+DROP TABLE IF EXISTS `patchLog`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `atcon_user` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `perid` int DEFAULT NULL,
-  `conid` int DEFAULT NULL,
-  `passwd` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `userhash` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `atcon_user_conid_fk` (`conid`),
-  KEY `atcon_user_perid_fk` (`perid`)
-) ENGINE=InnoDB AUTO_INCREMENT=359 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `patchLog` (
+  `id` int NOT NULL,
+  `name` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `installDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -43,4 +39,4 @@ CREATE TABLE `atcon_user` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-10-23 18:40:46
+-- Dump completed on 2023-10-23 18:40:45

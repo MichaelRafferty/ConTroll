@@ -16,29 +16,39 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `vendors`
+-- Table structure for table `perinfo_back`
 --
 
-DROP TABLE IF EXISTS `vendors`;
+DROP TABLE IF EXISTS `perinfo_back`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `vendors` (
+CREATE TABLE `perinfo_back` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `website` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `description` text COLLATE utf8mb4_general_ci,
-  `email` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
-  `password` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `need_new` tinyint(1) DEFAULT '1',
-  `confirm` tinyint(1) DEFAULT '0',
-  `publicity` tinyint(1) DEFAULT '0',
-  `addr` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `addr2` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `last_name` varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
+  `first_name` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `middle_name` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `suffix` varchar(4) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email_addr` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `phone` varchar(15) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `badge_name` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `address` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `addr_2` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `city` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `state` varchar(2) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `zip` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `country` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `banned` enum('N','Y') COLLATE utf8mb4_general_ci NOT NULL,
+  `creation_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `change_notes` text COLLATE utf8mb4_general_ci,
+  `active` enum('N','Y') COLLATE utf8mb4_general_ci NOT NULL,
+  `open_notes` text COLLATE utf8mb4_general_ci,
+  `admin_notes` text COLLATE utf8mb4_general_ci,
+  `old_perid` int DEFAULT NULL,
+  `contact_ok` enum('N','Y') COLLATE utf8mb4_general_ci DEFAULT 'N',
+  `share_reg_ok` enum('N','Y') COLLATE utf8mb4_general_ci DEFAULT 'N',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21789 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -50,4 +60,4 @@ CREATE TABLE `vendors` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-10-23 18:40:45
+-- Dump completed on 2023-10-23 18:40:46

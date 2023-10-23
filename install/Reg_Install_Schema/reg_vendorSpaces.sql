@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.31, for macos12 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -25,7 +25,7 @@ DROP TABLE IF EXISTS `vendorSpaces`;
 CREATE TABLE `vendorSpaces` (
   `id` int NOT NULL AUTO_INCREMENT,
   `conid` int NOT NULL,
-  `spaceType` enum('artshow', 'dealers', 'fan', 'virtual') NOT NULL DEFAULT 'dealers',
+  `spaceType` enum('artshow','dealers','fan','virtual') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'dealers',
   `shortname` varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
   `name` varchar(128) COLLATE utf8mb4_general_ci NOT NULL,
   `description` text COLLATE utf8mb4_general_ci,
@@ -34,10 +34,8 @@ CREATE TABLE `vendorSpaces` (
   `additionalMemId` int NOT NULL,
   PRIMARY KEY (`id`),
   KEY `vendorSpace_memList_i` (`includedMemId`),
-  KEY `vendorSpace_memList_a` (`additionalMemId`),
-  CONSTRAINT `vendorSpace_memList_a` FOREIGN KEY (`additionalMemId`) REFERENCES `memList` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `vendorSpace_memList_i` FOREIGN KEY (`includedMemId`) REFERENCES `memList` (`id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `vendorSpace_memList_a` (`additionalMemId`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -49,4 +47,4 @@ CREATE TABLE `vendorSpaces` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-08-15 13:48:35
+-- Dump completed on 2023-10-23 18:40:46
