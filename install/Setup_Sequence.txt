@@ -40,6 +40,29 @@ It also expects you to know how to fetch/update files from GitHub. The software 
         a. conList (at least for the current convention, preferred for the current and the next convention (can approximate the dates for that one)
         b. permissions tables:
             i. auth
+                Standard 'auth' rows to select from:
+                INSERT INTO auth(id, name, page, display) VALUES
+                ('1', 'overview', 'Y', 'Membership'),
+                ('2', 'admin', 'Y', 'Admin'),
+                ('3', 'people', 'Y', 'People'),
+                ('5', 'registration', 'Y', 'Registration'),
+                ('6', 'reg_admin', 'Y', 'Badge List'),
+                ('7', 'artist', 'Y', 'Artist'),
+                ('8', 'artshow', 'Y', 'Artshow'),
+                ('9', 'badge', 'Y', 'Free Badges'),
+                ('10', 'atcon', 'N', 'N'),
+                ('11', 'art_control', 'Y', 'Art Control'),
+                ('12', 'art_sales', 'N', 'N')
+                ('13', 'club', 'Y', 'Club'),
+                ('14', 'monitor', 'Y', 'Attendance'),
+                ('15', 'reports', 'Y', 'Reports')
+                ('16', 'search', 'N', 'N'),
+                ('17', 'atcon_checkin', 'N', 'N'),
+                ('18', 'atcon_register', 'N', 'N'),
+                ('19', 'coupon', 'Y', 'Coupon'),
+                ('32', 'vendor', 'Y', 'Vendor'),
+                ('999', 'registration-old', 'Y', 'Old Reg');
+
             ii. user (at least for your first reg_control user)
             iii. user_auth (at least to add the admin role to your first reg_control user)
 

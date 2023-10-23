@@ -29,6 +29,16 @@ CREATE TABLE `patchLog` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `patchLog`
+--
+
+LOCK TABLES `patchLog` WRITE;
+/*!40000 ALTER TABLE `patchLog` DISABLE KEYS */;
+INSERT INTO `patchLog` VALUES (1,'ATCON Auth Changes','2023-09-21 19:55:19'),(2,'Local Print Servers','2023-09-21 19:58:10'),(3,'Atcon History','2023-09-21 19:59:54'),(4,'Rename BSFS to Club','2023-09-21 20:03:04'),(5,'memList  to DateTime','2023-09-21 20:03:22'),(6,'Foreign Keys','2023-09-21 20:06:43'),(7,'volrollover auth','2023-09-21 20:07:56'),(9,'coupons','2023-09-21 20:15:09'),(10,'oldreg','2023-09-21 20:41:49');
+/*!40000 ALTER TABLE `patchLog` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -39,4 +49,4 @@ CREATE TABLE `patchLog` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-10-23 18:40:45
+-- Dump completed on 2023-10-23 19:38:26
