@@ -52,10 +52,10 @@ It also expects you to know how to fetch/update files from GitHub. The software 
                 ('9', 'badge', 'Y', 'Free Badges'),
                 ('10', 'atcon', 'N', 'N'),
                 ('11', 'art_control', 'Y', 'Art Control'),
-                ('12', 'art_sales', 'N', 'N')
+                ('12', 'art_sales', 'N', 'N'),
                 ('13', 'club', 'Y', 'Club'),
                 ('14', 'monitor', 'Y', 'Attendance'),
-                ('15', 'reports', 'Y', 'Reports')
+                ('15', 'reports', 'Y', 'Reports'),
                 ('16', 'search', 'N', 'N'),
                 ('17', 'atcon_checkin', 'N', 'N'),
                 ('18', 'atcon_register', 'N', 'N'),
