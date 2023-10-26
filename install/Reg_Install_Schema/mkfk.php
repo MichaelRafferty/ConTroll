@@ -12,31 +12,35 @@ foreach ($dir as $entry) {
     if ($fname == 'zz_foreign_keys.sql' || $fname == 'create_reg_schema.sql')
         continue;
 
+    if (str_starts_with($fname, 'data_'))
+        continue;
+
 	if (!str_ends_with($fname, '.sql'))
 		continue;
 
     echo "$fname:\n";
     $lines = file($fname);
-    $table = pathinfo($fname, PATHINFO_FILENAME);
+    $localname = pathinfo($fname, PATHINFO_FILENAME);
 
-    if ($fname == 'reg_routines.sql') {
-        strip_creator($table, $lines);
+    if ($localname == 'reg_routines.sql') {
+        strip_creator($localname, $lines);
     } else {
-        strip_fk($table, $lines);
+        strip_fk($localname, $lines);
     }
 }
 file_put_contents('zz_foreign_keys.sql', implode("\n", $fks) . "\n");
 
-function strip_fk($table, $lines)  {
+function strip_fk($fname, $lines)  {
     global $fks;
     // open the file and loop over each line
     $newsql = [];
     $priorline = null;
+    $table = preg_replace('/^[^_]*_(.*)$/', '\1', $fname);
 
     foreach ($lines as $line) {
         $line = str_replace("\n", '', $line);
         $line = str_replace("utf8mb4_0900_ai_ci", "utf8mb4_general_ci", $line);
-        if (preg_match("/^ *CONSTRAINT .* FOREIGN KEY/i", $line)) {
+        if (preg_match('/^ *CONSTRAINT .* FOREIGN KEY/i', $line)) {
             // foreign key constraint
             // eg: 'CONSTRAINT `artItems_artshow_fk` FOREIGN KEY (`artshow`) REFERENCES `artshow` (`id`) ON UPDATE CASCADE,'
             // does it end in a comma?
@@ -51,6 +55,11 @@ function strip_fk($table, $lines)  {
             continue;
         }
 
+        // strip off the auto increment values
+        if (preg_match('/AUTO_INCREMENT=\d+/', $line)) {
+            $line = preg_replace('/AUTO_INCREMENT=\d+\s/', ' ', $line);
+        }
+
         if ($priorline !== null)
             $newsql[] = $priorline;
         $priorline = $line;
@@ -58,8 +67,8 @@ function strip_fk($table, $lines)  {
     if ($priorline !== null)
         $newsql[] = $priorline;
 
-    rename($table . '.sql', $table . '.old');
-    file_put_contents($table . '.sql', implode("\n", $newsql) . "\n");
+    rename($fname . '.sql', $fname . '.old');
+    file_put_contents($fname . '.sql', implode("\n", $newsql) . "\n");
 }
 
 function strip_creator($fname, $lines) {

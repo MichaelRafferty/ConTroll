@@ -1,5 +1,5 @@
-ALTER TABLE artshow ADD CONSTRAINT `artshow_reg_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
-ALTER TABLE artshow ADD CONSTRAINT `conid_fkey` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`);
+ALTER TABLE artshow_reg ADD CONSTRAINT `artshow_reg_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
+ALTER TABLE artshow_reg ADD CONSTRAINT `conid_fkey` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`);
 ALTER TABLE reg ADD CONSTRAINT `reg_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE reg ADD CONSTRAINT `reg_coupon_fk` FOREIGN KEY (`coupon`) REFERENCES `coupon` (`id`) ON UPDATE CASCADE;
 ALTER TABLE reg ADD CONSTRAINT `reg_create_trans_fk` FOREIGN KEY (`create_trans`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE;

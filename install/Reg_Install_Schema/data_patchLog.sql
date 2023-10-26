@@ -16,21 +16,14 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `servers`
+-- Dumping data for table `patchLog`
 --
 
-DROP TABLE IF EXISTS `servers`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `servers` (
-  `serverName` varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
-  `address` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
-  `location` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `active` int NOT NULL DEFAULT '0',
-  `local` int NOT NULL DEFAULT '0',
-  PRIMARY KEY (`serverName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+LOCK TABLES `patchLog` WRITE;
+/*!40000 ALTER TABLE `patchLog` DISABLE KEYS */;
+INSERT INTO `patchLog` VALUES (1,'ATCON Auth Changes','2023-09-21 19:55:19'),(2,'Local Print Servers','2023-09-21 19:58:10'),(3,'Atcon History','2023-09-21 19:59:54'),(4,'Rename BSFS to Club','2023-09-21 20:03:04'),(5,'memList  to DateTime','2023-09-21 20:03:22'),(6,'Foreign Keys','2023-09-21 20:06:43'),(7,'volrollover auth','2023-09-21 20:07:56'),(9,'coupons','2023-09-21 20:15:09'),(10,'oldreg','2023-09-21 20:41:49');
+/*!40000 ALTER TABLE `patchLog` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -41,4 +34,4 @@ CREATE TABLE `servers` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-10-26 13:36:43
+-- Dump completed on 2023-10-26 13:37:42

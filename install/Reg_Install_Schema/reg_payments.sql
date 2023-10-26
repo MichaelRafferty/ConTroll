@@ -45,7 +45,7 @@ CREATE TABLE `payments` (
   KEY `payments_transid_fk` (`transid`),
   KEY `payments_userid_fk` (`userid`),
   KEY `payments_cashier_fk` (`cashier`)
-) ENGINE=InnoDB AUTO_INCREMENT=8747 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -57,4 +57,4 @@ CREATE TABLE `payments` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-10-23 18:40:45
+-- Dump completed on 2023-10-26 13:36:43
