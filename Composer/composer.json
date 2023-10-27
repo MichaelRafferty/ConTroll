@@ -2,6 +2,8 @@
     "require": {
         "square/square": "29.1.0.20230720",
         "symfony/mailer": "^6.3",
-        "symfony/amazon-mailer": "^6.3"
+        "symfony/amazon-mailer": "^6.3",
+        "google/apiclient": "^2.10",
+        "aws/aws-sdk-php": "^3.283"
     }
 }

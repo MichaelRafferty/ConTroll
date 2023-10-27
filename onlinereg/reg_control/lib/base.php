@@ -36,7 +36,6 @@ function google_init($mode) {
   global $db_ini;
   session_start();
 
-/*
   // bypass for testing on Development PC
   if (stripos(__DIR__, "/Volumes/Dock_Disk/") !== false) {
       $token_data = array();
@@ -50,7 +49,6 @@ function google_init($mode) {
   }
 
   // end bypass
-*/
 
   // set redirect URI to current page -- maybe make this better later.
   $redirect_uri = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
