@@ -59,7 +59,7 @@ if(($infoR->num_rows == 0) or ($infoR->num_rows > 1)){
     exit();
 }
 
-$info = fetch_safe_assoc($infoR);
+$info = $infoR->fetch_assoc();
 if($info['need_new']) {
     $response['status'] = 'error';
     $response['error'] = 'A password reset email has previously been sent.  If you are still having problems loging into your account please contact ' . $reply . ' for assistance.';

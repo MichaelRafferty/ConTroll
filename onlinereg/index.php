@@ -1,19 +1,42 @@
 <?php
 // Online Reg - index.php - Main page for online con registration
 require_once("lib/base.php");
-$ini = redirect_https();
-
 require_once("../lib/cc__load_methods.php");
+require_once("../lib/coupon.php");
 
 $cc = get_conf('cc');
 $con = get_conf('con');
+$ini = get_conf('reg');
 load_cc_procs();
 
 $condata = get_con();
+$urlCouponCode = '';
+$urlSerialNum = '';
+$serialHidden = 'hidden';
 
+
+$numCoupons = num_coupons();
+if ($numCoupons == 0)
+    $costCols = 4;
+else {
+    $costCols = 2;
+
+    // only process offer on the command line if there is a valid set of coupons
+    if (array_key_exists('offer', $_GET) && $_GET['offer']) {
+        $offer_code = $_GET['offer'];
+        $offer_code = base64_decode_url($offer_code);
+        if ($offer_code) {
+            $urlCouponCode = strtok($offer_code, '~!~');
+            $urlSerialNum = strtok('~!~');
+            if ($urlSerialNum) {
+                $serialHidden = '';
+            }
+        }
+    }
+}
 $membershiptypes = array();
 $priceQ = <<<EOS
-SELECT memGroup, label, shortname, sort_order, price
+SELECT id, memGroup, label, shortname, sort_order, price, memAge, memCategory
 FROM memLabel
 WHERE
     conid=?
@@ -24,10 +47,10 @@ ORDER BY sort_order, price DESC
 ;
 EOS;
 $priceR = dbSafeQuery($priceQ, "i", array($condata['id']));
-while($priceL = fetch_safe_assoc($priceR)) {
-    $membershiptypes[] = array('memGroup' => $priceL['memGroup'], 'shortname' => $priceL['shortname'], 'price' => $priceL['price'], 'label' => $priceL['label']);
+while($priceL = $priceR->fetch_assoc()) {
+    $membershiptypes[] = $priceL;
 }
-
+$js = "var mtypes = " . json_encode($membershiptypes);
 $startdate = new DateTime($condata['startdate']);
 $enddate = new DateTime($condata['enddate']);
 $daterange = $startdate->format("F j-") . $enddate->format("j, Y");
@@ -36,18 +59,16 @@ $altstring = $con['org'] . '. ' . $condata['label'] . ' . ' . $daterange;
 $onsitesale = $startdate->format("l, F j");
 
 // overall header HTML and main body
-  ol_page_init($condata['label'] . ' Online Registration');
+  ol_page_init($condata['label'] . ' Online Registration', $js);
 ?>
- <body class="regPaybody">
+<body class="regPaybody">
     <div class="container-fluid">
         <?php if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') {
                   if (array_key_exists('logoalt', $ini)) {
                       $altstring=$ini['logoalt'];
-                  } else {
-                      $altstring = 'Logo';
                   }
          ?>
-        <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring ;?>"/>
+        <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo escape_quotes($altstring); ?>"/>
         <?php }
                if(array_key_exists('logotext', $ini) && $ini['logotext'] != '') { ?>
         <div style='display:inline-block' class='display-1'><?php echo $ini['logotext']; ?></div>
@@ -80,8 +101,48 @@ $onsitesale = $startdate->format("l, F j");
                     <button type="button" onclick="anotherBadgeModalClose();">Review and Pay</button>
                 </div>
             </div>
-        </div>           
+        </div>
     </div>
+      <?php if ($numCoupons > 0) { ?>
+      <!--- add coupon modal popup -->
+      <div class='modal modal-lg' id='addCoupon' tabindex='-2' aria-labelledby='Add Coupon' aria-hidden='true'>
+          <div class='modal-dialog'>
+              <div class='modal-content'>
+                  <div class='modal-header'>
+                      <div class='modal-title' id="couponHeader">
+                          Add Coupon to Order
+                      </div>
+                  </div>
+                  <div class='modal-body'>
+                      <div class="row mb-1">
+                          <div class="col-sm-auto p-0 ms-4 me-2">
+                              <label for="couponCode">Coupon Code:</label>
+                          </div>
+                          <div class="col-sm-auto p-0">
+                              <input type="text" size="16" maxlength="16" id="couponCode" name="couponCode" value="<?php echo escape_quotes($urlCouponCode); ?>"/>
+                          </div>
+                      </div>
+                      <div class='row mt-1 mb-1' id="serialDiv" <?php echo $serialHidden; ?>>
+                          <div class='col-sm-auto p-0 ms-4 me-2'>
+                              <label for='couponSerial'>Serial Number:</label>
+                          </div>
+                          <div class='col-sm-auto p-0'>
+                              <input type='text' size='36' maxlength='36' id='couponSerial' name='couponSerial' value="<?php echo escape_quotes($urlSerialNum); ?>"/>
+                          </div>
+                      </div>
+                      <div class="row">
+                          <div class="col-sm-12" id="couponMsgDiv"></div>
+                      </div>
+                  </div>
+                  <div class='modal-footer'>
+                      <button type='button' onclick='removeCouponCode();' id="removeCouponBTN" hidden>Remove Coupon</button>
+                      <button type='button' onclick='addCouponCode();' id="addCouponBTN">Add Coupon</button>
+                      <button type='button' onclick='couponModalClose();'>Cancel</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+          <?php } ?>
     <!--- New Badge Modal Popup -->
     <div class="modal modal-lg fade" id="newBadge" tabindex="-1" aria-labelledby="New Membership" aria-hidden="true" style='--bs-modal-width: 80%;'>
         <div class="modal-dialog">
@@ -89,7 +150,7 @@ $onsitesale = $startdate->format("l, F j");
                 <div class="modal-header" style="background-color: #b0c4de;">
                     <div class="modal-title">
                         <strong>New Membership</strong>
-                       
+
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -151,7 +212,7 @@ $onsitesale = $startdate->format("l, F j");
                                     <?php
                       $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
                       while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-                          echo "<option value='".$data[1]."'>".$data[0]."</option>";
+                          echo '<option value="' . escape_quotes($data[1]) . '">' .$data[0]. '</option>';
                       }
                       fclose($fh);
                                     ?>
@@ -164,9 +225,9 @@ $onsitesale = $startdate->format("l, F j");
                                 </div>
                             </div>
                             <div class="row">
-                                <div col="col-12-sm">
-                                    <p class="text-body">Contact Information 
-                                     (<a href='<?php echo $con['privacypolicy'];?>' target='_blank'><?php echo $con['privacytext'];?></a>).</p>
+                                <div col="col-sm-12">
+                                    <p class="text-body">Contact Information
+                                     (<a href="<?php echo escape_quotes($con['privacypolicy']);?>" target='_blank'><?php echo $con['privacytext'];?></a>).</p>
 
                                 </div>
                             </div>
@@ -218,7 +279,7 @@ $onsitesale = $startdate->format("l, F j");
                                 <div class="col-sm-12 pt-4">
                                     <p class="text-body"><?php echo $con['conname']; ?> is entirely run by volunteers.
                                     If you're interested in helping us run the convention please email
-                                    <a href='mailto:<?php echo $con['volunteers']; ?>'><?php echo $con['volunteers']; ?></a>.
+                                    <a href="mailto:<?php echo escape_quotes($con['volunteers']); ?>"><?php echo $con['volunteers']; ?></a>.
                                     </p>
                                 </div>
                             </div>
@@ -230,13 +291,13 @@ $onsitesale = $startdate->format("l, F j");
                             <div class="row">
                                 <div class="col-sm-12">
                                     <p class="text-body">
-                                    <a href="<?php echo $con['policy'];?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.
+                                    <a href="<?php echo escape_quotes($con['policy']);?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.
                                     </p>
                                 </div>
                             </div>
                              <div class="row">
                                 <div class="col-sm-12">
-                                    <input type='submit' onclick='process($("#newBadgeForm"));' value='Add Membership To Cart'/>
+                                    <input type='submit' onclick='process("#newBadgeForm");' value='Add Membership To Cart'/>
                                     <input type='submit' onclick='newBadgeModalClose();' value='Cancel'/>
                                     <input type='reset'/>
                                 </div>
@@ -284,7 +345,7 @@ $onsitesale = $startdate->format("l, F j");
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <input type='submit' onclick='process($("#newBadgeForm"));' value='Add Membership To Cart'/>
+                                    <input type='submit' onclick='process("#newBadgeForm");' value='Add Membership To Cart'/>
                                     <input type='submit' onclick='newBadgeModalClose();' value='Review and Pay'/>
                                     <input type='reset'/>
                                 </div>
@@ -295,9 +356,9 @@ $onsitesale = $startdate->format("l, F j");
             </div>
         </div>
     </div>
-    
+
     <!--- Main body of the page -->
-    
+
      <div class="container-fluid form-floating">
          <div class="row">
              <div class="col-sm-6 p-2 border border-2 border-primary">
@@ -314,22 +375,51 @@ $onsitesale = $startdate->format("l, F j");
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-sm-12">
-                                 <?php foreach ($membershiptypes as $memType) { ?>
-                                    <?php echo $memType['shortname']; ?> Memberships <span id='<?php echo $memType['memGroup'];?>'>0</span> x $<?php echo $memType['price']; ?><br/>
-                                 <?php    } ?>
-                             </div>
+                             <div class="col-sm-12" id="memSummaryDiv"></div>
                          </div>
                          <div class="row">
                              <div class="col-sm-12 ms-0 me-0 p-0">
                                  <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
                              </div>
                          </div>
-                         <div class="row">
-                             <div class="col-sm-8">
-                                Total Cost: $<span id='total'>0</span><br/>
+                         <div id='couponDiv' hidden>
+                             <div class='row'>
+                                 <div class='col-sm-12 ms-0 me-0 p-0' id='couponDetailDiv'></div>
                              </div>
-                             <div class="col-sm-auto ms-auto me-2 p-0">
+                             <div class='row'>
+                                 <div class='col-sm-12 ms-0 me-0 p-0'>
+                                     <button onclick='couponModalOpen();' id='changeCouponBTN'>Change/Remove Coupon</button>
+                                 </div>
+                             </div>
+                             <div class='row mt-4'>
+                                 <div class='col-sm-4 ms-0 me-0 p-0'>
+                                     Subtotal before coupon:
+                                 </div>
+                                 <div class="col-sm-auto ms-0 me-0 p-0" id='subTotalColDiv'></div>
+                             </div>
+                             <div class='row'>
+                                 <div class='col-sm-4 ms-0 me-0 p-0'>
+                                     Coupon Discount:
+                                 </div>
+                                 <div class='col-sm-auto ms-0 me-0 p-0' id='couponDiscountDiv'></div>
+                             </div>
+                             <div class='row'>
+                                 <div class='col-sm-12 ms-0 me-0 p-0'>
+                                     <hr style='height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;'/>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="row">
+                             <div class="col-sm-4 ms-0 me-0 p-0">
+                                 Total Cost:
+                             </div>
+                             <div class="col-sm-<?php echo $costCols; ?>" id="totalCostDiv"></div>
+                             <?php if ($numCoupons > 0) { ?>
+                             <div class='col-sm-auto ms-auto me-2 p-0' id="addCouponDiv">
+                                 <button onclick='couponModalOpen();' id="couponBTN">Add Coupon</button>
+                             </div>
+                             <?php } ?>
+                             <div class="col-sm-auto ms-0 me-2 p-0">
                                   <button onclick='newBadgeModalOpen();'>Add Memberships</button>
                              </div>
                          </div>
@@ -353,7 +443,7 @@ $onsitesale = $startdate->format("l, F j");
                                      Name:
                                  </label>
                              </div>
-                             <div class="col-sm-auto ms-0 me-0 p-0">
+                             <div class="col-sm-auto ms-0 me-1 p-0">
                                  <input type='text' name='fname' class='ccdata' id='cc_fname' required='required' placeholder='First Name'/>
                              </div>
                              <div class="col-sm-auto ms-0 me-0 p-0">
@@ -399,7 +489,7 @@ $onsitesale = $startdate->format("l, F j");
                                       <?php
                                       $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
                                       while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-                                          echo "<option value='".$data[1]."'>".$data[0]."</option>";
+                                          echo '<option value="' . escape_quotes($data[1]) . '">' . $data[0] . "</option>";
                                       }
                                       fclose($fh);
                                       ?>
@@ -415,22 +505,34 @@ $onsitesale = $startdate->format("l, F j");
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-12 ms-0 me-0 p-0">
+                             <div class="col-sm-12 ms-0 me-0 p-0">
                                  <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
                              </div>
                          </div>
-                         <div class="row">
-                             <div class="col-12 ms-0 me-0 p-0">
-                                   <?php draw_cc_html($cc); ?>
+                         <div class="row" id="emptyCart">
+                             <div class="col-sm-12 ms-0 me-0 p-0">
+                                 Your cart does not contain any primary memberships.  Please add memberships to the cart before checking out.
+                             </div>
+                         </div>
+                         <div class='row' id='noChargeCart' hidden>
+                             <div class='col-sm-12 ms-0 me'-0 p-0'>
+                                 No payment is required on your cart. Click "Purchase" to check out now or add more items to the cart using "Add Memberships".<br/>
+                                 <button id='ncpurchase' onclick="makePurchase('no-charge', 'purchase')">Purchase</button>&nbsp;
+                                 <button onclick='newBadgeModalOpen();'>Add Memberships</button>
+                             </div>
+                         </div>
+                         <div class="row" id='chargeCart' hidden>
+                             <div class="col-sm-12 ms-0 me-0 p-0">
+                                   <?php echo draw_cc_html($cc); ?>
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-12 ms-0 me-0 p-0">
+                             <div class="col-sm-12 ms-0 me-0 p-0">
                                  <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
                              </div>
                          </div>
                      </div>
-                 </form>               
+                 </form>
                  <p class="text-body">We Accept</p>
                  <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/><br/>
 <?php
@@ -442,7 +544,7 @@ $onsitesale = $startdate->format("l, F j");
     ?>
                  <p class="text-body"><?php echo $con['conname']; ?> memberships are not refundable, except in case of emergency.
                  For details and questions about transfers and rollovers to future conventions, please see
-                 <a href='<?php echo $con['regpolicy']; ?>'>The Registration Policies Page.</a></p>
+                 <a href="<?php echo escape_quotes($con['regpolicy']); ?>">The Registration Policies Page.</a></p>
              </div>
              <div class="col-sm-6 p-2 border border-2 border-primary">
                  <div class="container-fluid">
@@ -469,13 +571,13 @@ $onsitesale = $startdate->format("l, F j");
 </p>
 <?php } else if($ini['suspended']==1) { ?>
 <p class="text-primary">
-<?php echo $con['conname']; ?> has temporarily suspended online registration <?php echo $ini['suspendreason']; ?> on our ability to host <?php echo $con['conname']; ?> this year.  Please see the <a href='<?php echo $ini['suspendmessage']; ?>'>Message from our Chair</a> for details.
+<?php echo $con['conname']; ?> has temporarily suspended online registration <?php echo $ini['suspendreason']; ?>
 </p>
 <?php } else if($ini['close']==1) { ?>
 <p class="text-primary">Preregistration for <?php echo $condata['label']; ?> is now closed.
 Badges will be available for purchase starting <?php echo $onsitesale; ?> by <?php echo $ini['onsiteopen'] . ' ' . $con['pickupareatext']; ?>
-<a href="<?php echo $con['hotelwebsite']; ?>"> <?php echo $con['hotelname']; ?></a>.
-Daily rates are posted on <a href="<?php echo $con['dailywebsite']; ?>">The <?php echo $con['conname']; ?> website</a></p>
+<a href="<?php echo escape_quotes($con['hotelwebsite']); ?>"> <?php echo $con['hotelname']; ?></a>.
+Daily rates are posted on <a href="<?php echo escape_quotes($con['dailywebsite']); ?>">The <?php echo $con['conname']; ?> website</a></p>
 <p class="text-body"><?php echo $con['addlpickuptext']; ?></p>
 
 <p class="text-body">We look forward to seeing you at <?php echo $con['conname']; ?>.</p>
@@ -483,22 +585,11 @@ Daily rates are posted on <a href="<?php echo $con['dailywebsite']; ?>">The <?ph
 <p class="text-primary">Online registration for <?php echo $condata['id']; ?> is not yet open. We aim to have online registration open 6 months before the convention.
 
 We will post a notice when online registration opens on the
-<a href="<?php echo $ini['registrationpage']; ?>">The <?php echo $con['conname']; ?> Registration Page</a>.  Mail-in forms are also available on that page.</p>
+<a href="<?php echo escape_quotes($ini['registrationpage']); ?>">The <?php echo $con['conname']; ?> Registration Page</a>.  Mail-in forms are also available on that page.</p>
 
 <?php } ?>
-<p class="text-body"><a href="<?php echo $con['policy'];?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.<br/>
-For more information about <?php echo $con['conname']; ?> please email <a href="mailto:<?php echo $con['infoemail']; ?>"><?php echo $con['infoemail']; ?></a>.<br/>
-For questions about <?php echo $con['conname']; ?> Registration, email <a href="mailto:<?php echo $con['regemail']; ?>"><?php echo $con['regemail']; ?></a>.</p>
-
-<script>
-  <?php
-  foreach($membershiptypes as $memType) {
-    $grp = $memType['memGroup'];
-    $price = $memType['price'];
-    $shortname = $memType['shortname'];
-    echo "setPrice('$grp', $price, '$shortname');";
-  }
-  ?>
-</script>
+<p class="text-body"><a href="<?php echo escape_quotes($con['policy']);?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.<br/>
+For more information about <?php echo $con['conname']; ?> please email <a href="mailto:<?php echo escape_quotes($con['infoemail']); ?>"><?php echo $con['infoemail']; ?></a>.<br/>
+For questions about <?php echo $con['conname']; ?> Registration, email <a href="mailto:<?php echo escape_quotes($con['regemail']); ?>"><?php echo $con['regemail']; ?></a>.</p>
 </body>
 </html>

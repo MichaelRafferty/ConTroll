@@ -15,6 +15,13 @@ if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     exit();
 }
 
+if (array_key_exists('user_id', $_SESSION)) {
+    $user_id = $_SESSION['user_id'];
+} else {
+    ajaxError('Invalid credentials passed');
+    return;
+}
+
 if (!isset($_POST) || !isset($_POST['perid']) || !isset($_POST['badge'])
     || ($_POST['badge'] == '') || ($_POST['perid'] == '')) {
     $response['error'] = "Missing Information";
@@ -22,8 +29,12 @@ if (!isset($_POST) || !isset($_POST['perid']) || !isset($_POST['badge'])
     exit();
 }
 
+$con = get_conf('con');
+$conid = $con['id'];
+
 $from = $_POST['badge'];
 $to = $_POST['perid'];
+$from_person = $_POST['from_perid'];
 
 $checkR = dbSafeQuery("SELECT id FROM perinfo WHERE id=?;", 'i', array($to));
 if ($checkR->num_rows < 1) {
@@ -32,7 +43,21 @@ if ($checkR->num_rows < 1) {
     return;
 }
 
-$query = "UPDATE reg SET perid=? WHERE id=?;";
+$tType = 'regctl-adm-tfr/' . $user_id;
+$notes = "Transfer from $from_person to $to by $user_id";
+$insertT = <<<EOS
+INSERT INTO transaction(conid, perid, userid, create_date, complete_date, price, couponDiscount, paid, type, notes ) 
+VALUES (?, ?, ?, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 0, 0, 0, ?, ?);
+EOS;
+$newtid = dbSafeInsert($insertT, 'iiiss', array($conid, $to, $user_id, $tType, $notes));
+if ($newtid === false) {
+    $response['error'] = "Failed to insert transfer transaction";
+    ajaxSuccess($response);
+    return;
+}
+
+
+$query = "UPDATE reg SET oldperid = perid, perid=? WHERE id=?;";
 
 $response['query'] = $query;
 $num_rows = dbSafeCmd($query, 'ii', array($to, $from));

@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.31, for macos12 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -28,8 +28,11 @@ CREATE TABLE `vendor_space` (
   `vendorId` int NOT NULL,
   `spaceId` int NOT NULL,
   `item_requested` int DEFAULT NULL,
+  `time_requested` timestamp NULL DEFAULT NULL,
   `item_approved` int DEFAULT NULL,
+  `time_approved` timestamp NULL DEFAULT NULL,
   `item_purchased` int DEFAULT NULL,
+  `time_purchased` timestamp NULL DEFAULT NULL,
   `price` decimal(8,2) DEFAULT NULL,
   `paid` decimal(8,2) DEFAULT NULL,
   `transid` int DEFAULT NULL,
@@ -41,15 +44,8 @@ CREATE TABLE `vendor_space` (
   KEY `vendor_space_trans` (`transid`),
   KEY `vendor_space_req` (`item_requested`),
   KEY `vendor_space_app` (`item_approved`),
-  KEY `vendor_space_pur` (`item_purchased`),
-  CONSTRAINT `vendor_space_app` FOREIGN KEY (`item_approved`) REFERENCES `vendorSpacePrices` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `vendor_space_conid` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `vendor_space_pur` FOREIGN KEY (`item_purchased`) REFERENCES `vendorSpacePrices` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `vendor_space_req` FOREIGN KEY (`item_requested`) REFERENCES `vendorSpacePrices` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `vendor_space_space` FOREIGN KEY (`spaceId`) REFERENCES `vendorSpaces` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `vendor_space_trans` FOREIGN KEY (`transid`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `vendor_space_vendor` FOREIGN KEY (`vendorId`) REFERENCES `vendors` (`id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `vendor_space_pur` (`item_purchased`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -61,4 +57,4 @@ CREATE TABLE `vendor_space` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-07-13 17:52:23
+-- Dump completed on 2023-10-26 13:36:42

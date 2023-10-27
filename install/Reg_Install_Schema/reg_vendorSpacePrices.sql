@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.31, for macos12 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -34,9 +34,8 @@ CREATE TABLE `vendorSpacePrices` (
   `requestable` tinyint DEFAULT '1',
   `sortOrder` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  KEY `vendorSpacePrices_space` (`spaceId`),
-  CONSTRAINT `vendorSpacePrices_space` FOREIGN KEY (`spaceId`) REFERENCES `vendorSpaces` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `vendorSpacePrices_space` (`spaceId`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -48,4 +47,4 @@ CREATE TABLE `vendorSpacePrices` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-07-13 17:52:25
+-- Dump completed on 2023-10-26 13:36:43

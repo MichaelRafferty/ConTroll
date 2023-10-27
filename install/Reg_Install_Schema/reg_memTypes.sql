@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.31, for macos12 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -39,4 +39,4 @@ CREATE TABLE `memTypes` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-07-13 17:52:23
+-- Dump completed on 2023-10-26 13:36:44

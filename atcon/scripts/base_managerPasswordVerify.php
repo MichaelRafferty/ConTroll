@@ -51,7 +51,7 @@ EOS;
     if ($r->num_rows <= 0) {
         $response['error'] = 'User is not a manager';
     } else {
-        $l = fetch_safe_assoc($r);
+        $l = $r->fetch_assoc();
         if (!password_verify($passwd, $l['passwd'])) {
             $response['error'] = 'Invalid password';
         } else {

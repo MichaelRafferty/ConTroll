@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.31, for macos12 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -16,28 +16,28 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `atcon_history`
+-- Table structure for table `couponKeys`
 --
 
-DROP TABLE IF EXISTS `atcon_history`;
+DROP TABLE IF EXISTS `couponKeys`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `atcon_history` (
+CREATE TABLE `couponKeys` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `logdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `userid` int NOT NULL,
-  `tid` int NOT NULL,
-  `regid` int NOT NULL,
-  `action` enum('attach','print','notes') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `notes` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `couponId` int NOT NULL,
+  `guid` varchar(36) COLLATE utf8mb4_general_ci NOT NULL,
+  `perid` int DEFAULT NULL,
+  `notes` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `usedBy` int DEFAULT NULL,
+  `createTS` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `createBy` int DEFAULT NULL,
+  `useTS` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `atcon_history_tid_fk` (`tid`),
-  KEY `atcon_history_regid_fk` (`regid`),
-  KEY `atcon_history_userid_fk` (`userid`),
-  CONSTRAINT `atcon_history_regid_fk` FOREIGN KEY (`regid`) REFERENCES `reg` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `atcon_history_tid_fk` FOREIGN KEY (`tid`) REFERENCES `transaction` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `atcon_history_userid_fk` FOREIGN KEY (`userid`) REFERENCES `perinfo` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1110 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `couponkeys_couponid_fk` (`couponId`),
+  KEY `couponkey_usedby_fk` (`usedBy`),
+  KEY `couponkeys_createby_fk` (`createBy`),
+  KEY `couponkeys_perid_fk` (`perid`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -49,4 +49,4 @@ CREATE TABLE `atcon_history` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-07-13 17:52:26
+-- Dump completed on 2023-10-26 13:36:42

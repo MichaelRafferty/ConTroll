@@ -15,6 +15,31 @@ if($need_login == false) {
     <div id='main'>You haven't Logged in</div>
     <?php
 } else {
+    # create the user session variable
+    $user_email = $need_login['email'];
+    if (!(array_key_exists('user_email', $_SESSION) && $user_email == $_SESSION['user_email']
+        && array_key_exists('user_id', $_SESSION) && $_SESSION['user_id'] != null
+        && array_key_exists('user_perid', $_SESSION) && $_SESSION['user_perid'] != null
+    )) {
+        $_SESSION['user_email'] = $user_email;
+        // get the user id for database tracking
+        $usergetQ = <<<EOS
+SELECT id, perid
+FROM user
+WHERE email = ?;
+EOS;
+        $usergetR = dbSafeQuery($usergetQ, 's', array($user_email));
+        $userid = null;
+        if ($usergetR !== false) {
+            $userL = fetch_safe_assoc($usergetR);
+            if ($userL) {
+                $userid = $userL['id'];
+                $perid = $userL['perid'];
+            }
+        }
+        $_SESSION['user_id'] = $userid;
+        $_SESSION['user_perid'] = $perid;
+    }
     ?>
     <div id='main'>
         <div class="container-fluid">
@@ -25,7 +50,9 @@ if($need_login == false) {
             </div>
             <div class="row">
                 <div class="col-sm-auto">
-                    If you need more access please email the appropriate person with the email and sub value listed below:
+                    If you need more access please email the appropriate person with the email and sub value listed below.<br/>
+                    If your user id or user perid below is blank, not all functions will work correctly for you,
+                    also email the appropriate person to have your user id or user perid is updated.
                 </div>
             </div>
             <div class="row">
@@ -33,18 +60,14 @@ if($need_login == false) {
                     <pre><?php //var_export($need_login);
                             //echo var_export($need_login);
                             //echo var_export($_SESSION['id_token_token']);
-                            echo "Email: " . $need_login['email'];
-                            echo "\n";
-                            echo "Sub: " . $need_login['sub'];
-                            echo "\n";
-                            echo "Google Check: " . date('c', $need_login['iat']);
-                            echo "\n";
-                            echo "Current Time: " . date('c');
-                            echo "\n";
-                            echo "Next Check: " . date('c', $need_login['exp']);
-                            echo "\n";
-                            echo "Refresh Token: " . (isset($_SESSION['id_token_token']['refresh_token'])?"Exists":"Doesn't Exist");
-                            echo "\n"; 
+                            echo "Email: " . $need_login['email'] . "\n";
+                            echo "User id: " . $_SESSION['user_id'] . "\n";
+                            echo "User perid: " . $_SESSION['user_perid'] . "\n";
+                            echo "Sub: " . $need_login['sub'] . "\n";
+                            echo "Google Check: " . date('c', $need_login['iat']) . "\n";
+                            echo "Current Time: " . date('c') . "\n";
+                            echo "Next Check: " . date('c', $need_login['exp']) . "\n";
+                            echo "Refresh Token: " . (isset($_SESSION['id_token_token']['refresh_token'])?"Exists":"Doesn't Exist") . "\n";
                         ?> </pre>
                 </div>
             </div>

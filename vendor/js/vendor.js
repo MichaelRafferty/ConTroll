@@ -411,6 +411,10 @@ function makePurchase(token, label) {
     if (!token)
         token = 'test';
 
+    if (token == 'test_ccnum') {  // this is the test form
+        token = document.getElementById(token).value;
+    }
+
     var submitId = document.getElementById(purchase_label);
     submitId.disabled = true;
     var formData = $('#vendor_invoice_form').serialize()

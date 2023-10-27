@@ -180,6 +180,7 @@ function draw_vendor(data) {
             {title: "Vendors:", columns: [
                     {title: "id", field: "id", visible: false},
                     {title: "Name", field: "name", headerSort: true, headerFilter: true, tooltip: build_record_hover,},
+                    {title: "Email", field: "email", headerSort: true, headerFilter: true,},
                     {title: "Website", field: "website", headerSort: true, headerFilter: true,},
                     {title: "City", field: "city", headerSort: true, headerFilter: true,},
                     {title: "State", field: "state", headerSort: true, headerFilter: true,},

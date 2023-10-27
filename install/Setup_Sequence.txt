@@ -9,6 +9,13 @@ It also expects you to know how to fetch/update files from GitHub. The software 
 2.  Decide what account is going to host Reg.  These instructions will create two complete systems: reg and reg-test.
     a. create said account and create two directories under it: one for reg and one for reg-test
     b. retrieve the production tree to reg and the test tree to reg-test.
+        git fetch origin master - for the reg tree
+        git fetch origin test - for the test tree
+    c. Run composer for each tree
+        cd {reg}/Composer
+        composer install
+        cd {regtest}/Composer
+        composer install
 
 3. Create the two databases in your database server
     a. suggested names are reg and reg_test
@@ -19,45 +26,43 @@ It also expects you to know how to fetch/update files from GitHub. The software 
             printers
             routines
     c.  load the reg schema into each database
-        i. load tables without foreign keys first:
-            auth
-            conlist
-            memCategories
-            memTypes
-            perinfo
+        i. load all the tables first (everything but zz_foreign_keys.sql and reg_routines.sql)
+        ii. set all the foreign keys: run zz_foreign_keys.sql
+        iii. add routines and views using reg_routines.sql
+
+	v. drop obsolete tables if they still exist
             reg_staff_stats
-            routines
-            servers
-            user
-            vendors
-        ii. load tables with foreign keys
-            ageList
-            artist
-            artshow_reg
-            memlist
             oauth_links
             oauth_people
-            atcon_user
-            atcon_auth
-            reg_badgelist
-            reg_club
-            user_auth
-            vendor_reg
-            newperson   (NOTE: Newperson refers to transaction, you might have to do it's foreign key separately as transaction also references a different field in newperson)
-            transaction
-            paymewnts
-            vendor_show
-            reg
-            atcon_history
-            artshow
-            artItems
-            artsales
 
 4. Populate the tables far enough to use the GUI to continue, or as far as you want.
     Necessary tables for the GUI:
         a. conList (at least for the current convention, preferred for the current and the next convention (can approximate the dates for that one)
         b. permissions tables:
             i. auth
+                Standard 'auth' rows to select from:
+                INSERT INTO auth(id, name, page, display) VALUES
+                ('1', 'overview', 'Y', 'Membership'),
+                ('2', 'admin', 'Y', 'Admin'),
+                ('3', 'people', 'Y', 'People'),
+                ('5', 'registration', 'Y', 'Registration'),
+                ('6', 'reg_admin', 'Y', 'Badge List'),
+                ('7', 'artist', 'Y', 'Artist'),
+                ('8', 'artshow', 'Y', 'Artshow'),
+                ('9', 'badge', 'Y', 'Free Badges'),
+                ('10', 'atcon', 'N', 'N'),
+                ('11', 'art_control', 'Y', 'Art Control'),
+                ('12', 'art_sales', 'N', 'N'),
+                ('13', 'club', 'Y', 'Club'),
+                ('14', 'monitor', 'Y', 'Attendance'),
+                ('15', 'reports', 'Y', 'Reports'),
+                ('16', 'search', 'N', 'N'),
+                ('17', 'atcon_checkin', 'N', 'N'),
+                ('18', 'atcon_register', 'N', 'N'),
+                ('19', 'coupon', 'Y', 'Coupon'),
+                ('32', 'vendor', 'Y', 'Vendor'),
+                ('999', 'registration-old', 'Y', 'Old Reg');
+
             ii. user (at least for your first reg_control user)
             iii. user_auth (at least to add the admin role to your first reg_control user)
 
@@ -105,9 +110,11 @@ It also expects you to know how to fetch/update files from GitHub. The software 
         i. atcon_user
         ii. atcon_auth (at least assign the manager permission)
 
-9. If you are running the balticon reg system, it needs to access the perinfo, reg, and memList tables.  You'll need to know the zambia_db_user
-    and the host the database is on. The host is usually 'localhost';  The parens are not part of the sequnce below, just showing what you need
-    to substitute.
+9. If you are running the balticon reg system, it needs to access the perinfo, reg, and memList tables to keep its copy of the program
+    participant information updated and in sync with the reg system.  Zambia pulls the membership and contact info for its program participants
+    and when a program participant updates their contact info in Zambia it pushs this change back to the reg system as well keeping them in sync.
+    You'll need to know the zambia_db_user and the host the database is on. The host is usually 'localhost';
+    The parens are not part of the sequnce below, just showing what you need to substitute.
     a. Grant select and update to the zambia user for perinfo:
         GRANT SELECT ON perinfo TO '(zanbia_db_user)'@'(databasehost);
         GRANT UPDATE ON perinfo TO '(zanbia_db_user)'@'(databasehost);

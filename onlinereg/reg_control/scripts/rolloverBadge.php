@@ -1,31 +1,43 @@
 <?php
 global $db_ini;
 
-require_once "../lib/base.php";
+require_once '../lib/base.php';
 
-$check_auth = google_init("ajax");
-$perm = "registration";
+$check_auth = google_init('ajax');
+$perm = 'reg_admin';
+// note: old perm check was $perm = 'registration';
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
+$response = array('post' => $_POST, 'get' => $_GET, 'perm'=>$perm);
 
-if($check_auth == false || (!checkAuth($check_auth['sub'], $perm) &&
-                   (!checkAuth($check_auth['sub'], 'atcon')))) {
-    $response['error'] = "Authentication Failed";
+if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
 
-$user = $check_auth['email'];
-$response['user'] = $user;
-$userQ = "SELECT id FROM user WHERE email=?;";
-$userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', array($user)));
-$userid = $userR['id'];
+if (array_key_exists('user_id', $_SESSION)) {
+    $user_id = $_SESSION['user_id'];
+} else {
+    ajaxError('Invalid credentials passed');
+    return;
+}
+
+if (!isset($_POST) || !isset($_POST['perid']) || !isset($_POST['badge'])
+    || ($_POST['badge'] == '') || ($_POST['perid'] == '')) {
+    $response['error'] = 'Missing Information';
+    ajaxSuccess($response);
+    exit();
+}
+
 $con = get_conf('con');
-$conid=$con['id'];
+$conid = $con['id'];
+
+
+$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 $nextcon = $conid + 1;
 
-if (isset($_POST['id'])) {
-    $badgeid = $_POST['id'];
+if (isset($_POST['badge'])) {
+    $badgeid = $_POST['badge'];
 } else {
     ajaxError("No current badge");
     return false;
@@ -34,8 +46,10 @@ if (isset($_POST['id'])) {
 if (isset($_POST['type'])) {
     $rolloverType = $_POST['type'];
 } else {
-    ajaxError("No rollover type");
-    return false;
+    // default to rollover type if not specified
+    $rolloverType = 'rollover';
+    //ajaxError("No rollover type");
+    //return false;
 }
 
 // validate rollover request
@@ -49,17 +63,19 @@ if (isset($_POST['type'])) {
 //      no reg for this person for conid + 1
 
 $validateSQL = <<<EOS
-SELECT DISTINCT r.id, r.perid, r.price, r.paid, m.label, m.memAge, m.memCategory, m.memType, r1.id AS nextid, m1.label as nextlabel, H.action
+SELECT DISTINCT r.id, r.perid, r.price, r.couponDiscount, r.paid, m.label, m.memAge, m.memCategory, m.memType, r1.id AS nextid, m1.label as nextlabel, H.action,
+                p.first_name, p.last_name
 FROM reg r
 JOIN memList m ON (r.memId = m.id)
+JOIN perinfo p ON (r.perid = p.id)
 LEFT OUTER JOIN reg r1 ON (r1.conid = ? AND r.perid = r1.perid)
 LEFT OUTER JOIN memList m1 ON (r1.memId = m1.id)
-LEFT OUTER JOIN atcon_history H ON (H.regid = r.id and action = 'print')
+LEFT OUTER JOIN reg_history H ON (H.regid = r.id and action = 'print')
 WHERE r.conid = ? AND r.id = ?
 EOS;
 $result = dbSafeQuery($validateSQL, 'iii', array($nextcon, $conid, $badgeid));
 if ($result->num_rows > 1) {
-    $response['error'] = "Error: Need to resolve duplicate resistrations for this person, " . $result->num_rows . " registrations found.";
+    $response['error'] = "Error: Need to resolve duplicate registrations for this person, " . $result->num_rows . " registrations found.";
     ajaxSuccess($response);
     return false;
 }
@@ -72,15 +88,18 @@ $membership = fetch_safe_assoc($result);
 $perid = $membership['perid'];
 $label = $membership['label'];
 $nextlabel = $membership['nextlabel'];
+$first_name = $membership['first_name'];
+$last_name = $membership['last_name'];
 
 // handle common case that membership cannot exist already for next con
 if ($membership['nextid'] != null) {
-    $response['error'] = "Cannot rollover $badgeid ($perid)  of type $label as it alrady has a membershop of type $nextlabel for $nextcon";
+    $response['error'] = "Cannot rollover $badgeid ($perid: $first_name $last_name) of type $label as it already has a membership of type $nextlabel for $nextcon";
     ajaxSuccess($response);
     return false;
 }
 
 $paid = $membership['paid'];
+$couponDiscount = $membership['couponDiscount'];
 $price = $membership['price'];
 $category = strtolower($membership['memCategory']);
 $memtype = strtolower($membership['memType']);
@@ -88,28 +107,28 @@ $lclabel = strtolower($label);
 $age = strtolower($membership['memAge']);
 
 if ($lclabel == 'rollover-cancel') {
-    $response['error'] = "Cannot rollover $badgeid ($perid) as it alrady has a roll over of $nextlabel for $nextcon";
+    $response['error'] = "Cannot rollover $badgeid ($perid: $first_name $last_name) as it already has a roll over of $nextlabel for $nextcon";
     ajaxSuccess($response);
     return false;
 }
 
 if ($memtype == 'oneday') {
-    $response['error'] = "Cannot rollover $badgeid ($perid) as it is a one-day membership";
+    $response['error'] = "Cannot rollover $badgeid ($perid: $first_name $last_name) as it is a one-day membership";
     ajaxSuccess($response);
     return false;
 }
 
-$paidbadge = ($paid > 0 && $price > 0) || ($age == 'kit');  // consider kit (a $0 badge to be paid)
+$paidbadge = (($paid + $couponDiscount) > 0 && $price > 0) || ($age == 'kit');  // consider kit (a $0 badge to be paid)
 
 switch ($rolloverType) {
     case 'rollover':
-        if (! ($paidbadge || $category == 'rollover')) { // paid padge or category rollover allowed to be rolled over)
-            $response['error'] = "Cannot rollover $badgeid ($perid) as it not a paid or rollover membership";
+        if (! ($paidbadge || $category == 'rollover')) { // paid badge or category rollover allowed to be rolled over)
+            $response['error'] = "Cannot rollover $badgeid ($perid: $first_name $last_name) as it not a paid or rollover membership";
             ajaxSuccess($response);
             return false;
         }
         if ($membership['action'] == 'print') {
-            $response['error'] = "Cannot rollover $badgeid ($perid) as it was already printed";
+            $response['error'] = "Cannot rollover $badgeid ($perid: $first_name $last_name) as it was already printed";
             ajaxSuccess($response);
             return false;
         }
@@ -120,6 +139,19 @@ switch ($rolloverType) {
             $newlabel = 'rollover-' . $lclabel;
         }
 
+        // insert a controlling transaction to cover this rollover
+        $tType = 'regctl-adm-roll/' . $user_id;
+        $notes = "Rollover from $conid to $nextcon by $user_id";
+        $insertT = <<<EOS
+INSERT INTO transaction(conid, perid, userid, create_date, complete_date, price, couponDiscount, paid, type, notes ) 
+VALUES (?, ?, ?, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 0, 0, 0, ?, ?);
+EOS;
+        $newtid = dbSafeInsert($insertT, 'iiiss', array($conid, $perid, $user_id, $tType, $notes));
+        if ($newtid === false) {
+            $response['error'] = 'Failed to insert rollover transaction';
+            ajaxSuccess($response);
+            return;
+        }
         // mark prior membership as rollover-cancel
         $upgsql = <<<EOS
 UPDATE reg
@@ -129,7 +161,7 @@ WHERE reg.id = ? AND reg.conid = ?;
 EOS;
         $numrows = dbSafeCmd($upgsql, 'iii', array($conid, $badgeid, $conid));
         if ($numrows != 1) {
-            $response['error'] = "Failed altering rollover $badgeid ($perid) to rollover-cancel";
+            $response['error'] = "Failed altering rollover $badgeid ($perid: $first_name $last_name) to rollover-cancel";
             ajaxSuccess($response);
             return false;
         }
@@ -144,12 +176,25 @@ EOS;
 
     case 'volunteer':
         if (! ($paidbadge || $lclabel == 'rollover-volunteer')) { // paid padge or volunteer badge earned a volunteer rollover
-            $response['error'] = "Cannot rollover $badgeid ($perid) as it not a paid or rolled-over volunteer membership";
+            $response['error'] = "Cannot rollover $badgeid ($perid: $first_name $last_name) as it not a paid or rolled-over volunteer membership";
             ajaxSuccess($response);
             return false;
         }
 
         $newlabel = 'rollover-volunteer';
+        // insert a controlling transaction to cover this rollover
+        $tType = 'regctl-adm-volroll/' . $user_id;
+        $notes = "Volunteer Rollover from $conid to $nextcon by $user_id";
+        $insertT = <<<EOS
+INSERT INTO transaction(conid, perid, userid, create_date, complete_date, price, couponDiscount, paid, type, notes ) 
+VALUES (?, ?, ?, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 0, 0, 0, ?, ?);
+EOS;
+        $newtid = dbSafeInsert($insertT, 'iiiss', array($conid, $perid, $user_id, $tType, $notes));
+        if ($newtid === false) {
+            $response['error'] = 'Failed to insert rollover transaction';
+            ajaxSuccess($response);
+            return;
+        }
         break;
 
     default:
@@ -160,22 +205,22 @@ EOS;
 
 // now insert the new reg for 2023
 $inssql = <<<EOS
-INSERT INTO reg(conid, perid, create_date, price, paid, memId)
-SELECT ?, ?, NOW(), 0, 0, id
+INSERT INTO reg(conid, perid, create_date, price, couponDiscount, paid, memId, create_trans)
+SELECT ?, ?, NOW(), 0, 0, 0, id, ?
 FROM memList
 WHERE conid = ? AND LOWER(label) = ?;
 EOS;
 
-$newid = dbSafeInsert($inssql, 'iiis', array($nextcon, $perid, $nextcon, $newlabel));
+$newid = dbSafeInsert($inssql, 'iiiis', array($nextcon, $perid, $newtid, $nextcon, $newlabel));
 if ($newid === false) {
-    $response['error'] = "Failed inserting rolled over badge for $badgeid ($perid) of type $newlabel";
+    $response['error'] = "Failed inserting rolled over badge for $badgeid ($perid: $first_name $last_name) of type $newlabel";
     ajaxSuccess($response);
     return false;
 }
 
-$response['success'] = "Badge $badgeid of type $label rolled over to $newid of type $nextcon $newlabel for $perid";
+$response['success'] = "Badge $badgeid of type $label rolled over to $newid of type $nextcon $newlabel for $perid: $first_name $last_name";
 if ($rolloverType == 'rollover') {
-    $response['newlabelid'] = $newlabelid;
+    $response['newlabelid'] = $newid;
 }
 
 ajaxSuccess($response);

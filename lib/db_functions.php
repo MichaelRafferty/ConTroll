@@ -147,6 +147,9 @@ function dbSafeQuery($query, $typestr, $value_arr)
                 log_mysqli_error($query, "Result Error");
                 return false;
             }
+        } catch (\mysqli_sql_exception $e) {
+            log_mysqli_error($query, $e->getMessage());
+            return false;
         } catch (Exception $e) {
             log_mysqli_error("", $e->getMessage());
             return false;
@@ -195,6 +198,9 @@ function dbSafeInsert($sql, $typestr, $value_arr)
 
             // get the inserted id
             $id = $dbObject->insert_id;
+        } catch (\mysqli_sql_exception $e) {
+            log_mysqli_error("", $e->getMessage());
+            return false;
         } catch (Exception $e) {
             log_mysqli_error("", $e->getMessage());
             return false;
@@ -243,6 +249,9 @@ function dbSafeCmd($sql, $typestr, $value_arr)
 
             // get the number of rows affected
             $numrows = $dbObject->affected_rows;
+        } catch (\mysqli_sql_exception $e) {
+            log_mysqli_error("", $e->getMessage());
+            return false;
         } catch (Exception $e) {
             log_mysqli_error("", $e->getMessage());
             return false;
@@ -254,9 +263,9 @@ function dbSafeCmd($sql, $typestr, $value_arr)
         return false;
     }
 }
-// dbSafeCmd - using prepare safely perform an update/delete/multi-line insert operation
+// dbCmd - for sql commands without any ? in the command
 // returns the number of rows modified/deleted (actually changed a value)
-// This should replace all database calls to db functions that use variable data in their SQL string
+// NOTE: All queries built dynamically should use ? notation and use dbSafeCmd instead
 //
 function dbCmd($sql)
 {
@@ -272,6 +281,9 @@ function dbCmd($sql)
             }
             // get the number of rows affected
             $numrows = $dbObject->affected_rows;
+        } catch (\mysqli_sql_exception $e) {
+            log_mysqli_error("", $e->getMessage());
+            return false;
         } catch (Exception $e) {
             log_mysqli_error("", $e->getMessage());
             return false;
@@ -283,6 +295,10 @@ function dbCmd($sql)
         return false;
     }
 }
+
+// dbQuery - sql SELECT with no ? parameters
+// NOTE: All queries built dynamically should use ? notation and use dbSafeQuery instead
+//
 function dbQuery($query)
 {
     global $dbObject;
@@ -295,6 +311,9 @@ function dbQuery($query)
                 log_mysqli_error($query, "Query Error");
                 return false;
             }
+        } catch (\mysqli_sql_exception $e) {
+            log_mysqli_error($query, $e->getMessage());
+            return false;
         } catch (Exception $e) {
             log_mysqli_error($query, $e->getMessage());
             return false;
@@ -307,26 +326,37 @@ function dbQuery($query)
     }
 }
 
+// dbInsert - insert a row into the database and return the new key field
+// NOTE: All inserts built dynamically should use ? notation and use dbSafeInsert instead
+//
 function dbInsert($query)#: int|bool
 {
     global $dbObject;
     if (!is_null($dbObject)) {
-        $res = $dbObject->query($query);
-        if ($res === false) {
-            log_mysqli_error($query, 'Insert Error');
+        try {
+            $res = $dbObject->query($query);
+            if ($res === false) {
+                log_mysqli_error($query, 'Insert Error');
+                return false;
+            }
+            $id = $dbObject->insert_id;
+            if ($dbObject->errno) {
+                log_mysqli_error($query, "Insert Error");
+                return false;
+            }
+        } catch (\mysqli_sql_exception $e) {
+            log_mysqli_error($query, $e->getMessage());
             return false;
-        }
-        $id = $dbObject->insert_id;
-        if ($dbObject->errno) {
-            log_mysqli_error($query, "Insert Error");
+        } catch (Exception $e) {
+            log_mysqli_error($query, $e->getMessage());
             return false;
         }
         return $id;
     } else {
         echo "ERROR: DB Connection Not Open";
         web_error_log("ERROR: DB Connection Not Open");
-        return false;
     }
+    return false;
 }
 
 
@@ -350,12 +380,31 @@ function dbPrepare($query)
     }
 }
 
+// escape_quotes - change " to \" for use in HTML parameters
+// For use at location of actual data use
+//
+function escape_quotes($param) {
+    return str_replace('"', '\"', $param);
+}
+
+// escape_appos - change ' to \' for use in HTML parameters
+// For use at location of actual data use
+//
+function escape_appos($param) {
+    return str_replace("'", "\'", $param);
+}
+
+// Should NOT Be used going forward - Obsolete, use ? notation and the 'dbSafe' variants instead
+// also any encoding of data should be where it is needed to be used and not global to all queries
+//
 function sql_safe($string)
 {
     global $dbObject;
     return $dbObject->escape_string($string);
 }
 
+// obsolete function register, lets delete it and see if we still need it
+/*
 function register($email, $sub, $name)
 {
     global $dbObject;
@@ -379,6 +428,7 @@ function register($email, $sub, $name)
     }
     return $res;
 }
+*/
 
 function getPages($sub)#: array|bool
 {
@@ -395,7 +445,7 @@ EOS;
     if (!$auths) {
         return false;
     }
-    while ($new_auth = fetch_safe_assoc($auths)) {
+    while ($new_auth = $auths->fetch_assoc()) {
         $res[] = $new_auth;
     }
     return $res;
@@ -417,7 +467,7 @@ EOS;
     if (!$auths) {
         return false;
     }
-    while ($new_auth = fetch_safe_assoc($auths)) {
+    while ($new_auth = $auths->fetch_assoc()) {
         $res[] = $new_auth['name'];
     }
     return $res;
@@ -438,7 +488,7 @@ EOS;
     if (!$auths) {
         return false;
     }
-    while ($new_auth = fetch_safe_assoc($auths)) {
+    while ($new_auth = $auths->fetch_assoc()) {
         $res[] = $new_auth['name'];
     }
     return $res;
@@ -495,7 +545,7 @@ function getUsers($new = null)#:array|bool
     if (!$users) {
         return false;
     }
-    while ($next_user = fetch_safe_assoc($users)) {
+    while ($next_user = $users->fetch_assoc()) {
         $res[] = $next_user;
     }
     return $res;
@@ -510,6 +560,8 @@ function db_close(): void
     }
 }
 
+// older style convert quotes association, to be phased out
+// should be phased out and just use res->fetch_assoc() and proper escaping where data is used when needed
 function fetch_safe_assoc($res)
 {
     if (is_null($res)) {
@@ -530,6 +582,7 @@ function fetch_safe_assoc($res)
     return $assoc;
 }
 
+// obsolete method of escaping values, should be phased out and just use res->fetch_array() and proper escaping where data is used when needed
 function fetch_safe_array($res)
 {
     if (is_null($res)) {
@@ -559,12 +612,14 @@ function get_conf($name)
 function get_con()
 {
     global $db_ini;
-    return fetch_safe_assoc(dbSafeQuery("SELECT * FROM conlist WHERE id=?;", 'i', [$db_ini['con']['id']]));
+    $r = dbSafeQuery("SELECT * FROM conlist WHERE id=?;", 'i', [$db_ini['con']['id']]);
+    return $r->fetch_assoc();
 }
 
 function get_user($sub)
 {
-    $res = fetch_safe_assoc(dbSafeQuery("SELECT * FROM user WHERE google_sub=?;", 's', [$sub]));
+    $r = dbSafeQuery("SELECT * FROM user WHERE google_sub=?;", 's', [$sub]);
+    $res = $r->fetch_assoc();
     return $res['id'];
 }
 
@@ -597,10 +652,19 @@ function newUser($email, $sub):bool
     if (!$userR || $userR->num_rows != 1) {
         return false;
     }
-    $user = fetch_safe_assoc($userR);
+    $user = $userR->fetch_assoc();
     if ($user['google_sub'] == '') {
         $id = $user['id'];
         dbQuery("UPDATE user SET google_sub='$sub' WHERE id='$id';");
     }
     return true;
+}
+
+//  for use in url parameters for get's to make things clean
+function base64_encode_url($string) {
+    return str_replace(['+','/','='], ['-','_',''], base64_encode($string));
+}
+
+function base64_decode_url($string) {
+    return base64_decode(str_replace(['-','_'], ['+','/'], $string));
 }

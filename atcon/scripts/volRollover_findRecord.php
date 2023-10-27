@@ -98,7 +98,7 @@ $perinfo = [];
 $index = 0;
 $perids = [];
 $num_rows = $r->num_rows;
-while ($l = fetch_safe_assoc($r)) {
+while ($l = $r->fetch_assoc()) {
     if (!array_key_exists($l['perid'], $perids)) {
         $perids[$l['perid']] = $index;
         $l['index'] = $index;

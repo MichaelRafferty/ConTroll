@@ -79,7 +79,13 @@ var pay_button_ercpt = null;
 var pay_button_print = null;
 var pay_tid = null;
 var discount_mode = 'none';
-
+var num_coupons = 0;
+var couponList = null;
+var couponSelect = null;
+var coupon = null;
+var coupon_discount = Number(0).toFixed(2);
+var cart_total = Number(0).toFixed(2);
+var pay_prior_discount = null;
 // print items
 var print_div = null;
 var printed_obj = null;
@@ -148,6 +154,7 @@ window.onload = function initpage() {
     // find people
     pattern_field = document.getElementById("find_pattern");
     pattern_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') find_record('search'); });
+    pattern_field.focus();
     id_div = document.getElementById("find_results");
     find_unpaid_button = document.getElementById("find_unpaid_btn");
     isCashier = find_unpaid_button !== undefined && find_unpaid_button !== null;
@@ -185,6 +192,7 @@ window.onload = function initpage() {
 
     // pay items
     pay_div = document.getElementById('pay-div');
+    coupon = new Coupon();
 
     // print items
     print_div = document.getElementById('print-div');
@@ -276,6 +284,21 @@ function loadInitialData(data) {
             membership_select += option;
             membership_selectlist.push({price: match[row]['price'], option: option});
         }
+    }
+
+    // set up coupon items
+    num_coupons = data['num_coupons'];
+    couponList = data['couponList'];
+    // build coupon select
+    if (num_coupons <= 0) {
+        couponSelect = '';
+    } else {
+        couponSelect = '<select name="couponSelect" id="pay_couponSelect">' + "\n<option value=''>No Coupon</option>\n";
+        for (var row in couponList) {
+            var item = couponList[row];
+            couponSelect += "<option value='" + item['id'] + "'>" + item['code'] + ' (' + item['name'] + ")</option>\n";
+        }
+        couponSelect += "</select>\n";
     }
 
     cart.set_initialData(membership_select, membership_selectlist)
@@ -437,6 +460,8 @@ function start_over(reset_all) {
     // reset data to call up
     result_perinfo = [];
     result_membership = [];
+    emailAddreesRecipients = [];
+    last_email_row = '';
 
     // reset tabs to initial values
     find_tab.disabled = false;
@@ -452,10 +477,12 @@ function start_over(reset_all) {
     receeiptEmailAddresses_div = null;
     pay_button_print = null;
     pay_tid = null;
+    pay_prior_discount = null;
 
     clear_add(reset_all);
     // set tab to find-tab
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
+    pattern_field.focus();
 }
 
 // show the full perinfo record as a hover in the table
@@ -1076,7 +1103,7 @@ function draw_record(row, first) {
     html += `</div>
         <div class="col-sm-2">`;
     if (hasManager && base_manager_enabled) {
-        html += ' <span class="bg-warning pt-1 pb-1"><strong>Edit Notes</strong></span>';
+        html += '<button type="button" class="btn btn-sm btn-secondary p-0" onClick="edit_perinfo_notes(0, \'result\')">Edit Notes</button>';
     }
 
     html += `
@@ -1762,152 +1789,157 @@ function setPayType(ptype) {
 }
 
 // Process a payment against the transaction
-function pay(nomodal) {
+function pay(nomodal, prow = null) {
     var checked = false;
     var ccauth = null;
     var checkno = null;
     var desc = null;
     var ptype = null;
-    var total_amount_due = cart.getTotalPrice() - cart.getTotalPaid();
+    var total_amount_due = cart.getTotalPrice() - (cart.getTotalPaid() + Number(coupon_discount));
 
     if (nomodal != '') {
         cashChangeModal.hide();
     }
 
-    // validate the payment entry: It must be >0 and <= amount due
-    //      a payment type must be specified
-    //      for check: the check number is required
-    //      for credit card: the auth code is required
-    //      for discount: description is required, it's optional otherwise
-    var elamt = document.getElementById('pay-amt');
-    var pay_amt = Number(elamt.value);
-    if (pay_amt > 0 && pay_amt > total_amount_due) {
-        if (document.getElementById('pt-cash').checked) {
-            if (nomodal == '') {
-                cashChangeModal.show();
-                document.getElementById("CashChangeBody").innerHTML = "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + pay_amt.toFixed(2) +
-                    "<br/>Confirm change give to customer of $" + (pay_amt - total_amount_due).toFixed(2);
+    if (prow == null) {
+        // validate the payment entry: It must be >0 and <= amount due
+        //      a payment type must be specified
+        //      for check: the check number is required
+        //      for credit card: the auth code is required
+        //      for discount: description is required, it's optional otherwise
+        var elamt = document.getElementById('pay-amt');
+        var pay_amt = Number(elamt.value);
+        if (pay_amt > 0 && pay_amt > total_amount_due) {
+            if (document.getElementById('pt-cash').checked) {
+                if (nomodal == '') {
+                    cashChangeModal.show();
+                    document.getElementById("CashChangeBody").innerHTML = "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + pay_amt.toFixed(2) +
+                        "<br/>Confirm change give to customer of $" + (pay_amt - total_amount_due).toFixed(2);
+                    return;
+                }
+            } else {
+                elamt.style.backgroundColor = 'var(--bs-warning)';
                 return;
             }
-        } else {
+        }
+        if (pay_amt <= 0) {
             elamt.style.backgroundColor = 'var(--bs-warning)';
             return;
         }
-    }
-    if (pay_amt <= 0) {
-        elamt.style.backgroundColor = 'var(--bs-warning)';
-        return;
-    }
 
-    elamt.style.backgroundColor = '';
+        elamt.style.backgroundColor = '';
 
-    var elptdiv = document.getElementById('pt-div');
-    elptdiv.style.backgroundColor = '';
+        var elptdiv = document.getElementById('pt-div');
+        elptdiv.style.backgroundColor = '';
 
-    var eldesc = document.getElementById('pay-desc');
-    var elptdisc = document.getElementById('pt-discount');
-    if (elptdisc != null) {
-        if (document.getElementById('pt-discount').checked) {
-            ptype = 'discount';
-            desc = eldesc.value;
-            if (desc == null || desc == '') {
-                eldesc.style.backgroundColor = 'var(--bs-warning)';
-                return;
+        var eldesc = document.getElementById('pay-desc');
+        var elptdisc = document.getElementById('pt-discount');
+        if (elptdisc != null) {
+            if (document.getElementById('pt-discount').checked) {
+                ptype = 'discount';
+                desc = eldesc.value;
+                if (desc == null || desc == '') {
+                    eldesc.style.backgroundColor = 'var(--bs-warning)';
+                    return;
+                } else {
+                    eldesc.style.backgroundColor = '';
+                }
+                checked = true;
             } else {
                 eldesc.style.backgroundColor = '';
             }
-            checked = true;
-        } else {
-            eldesc.style.backgroundColor = '';
         }
-    }
 
-    if (document.getElementById('pt-check').checked) {
-        ptype = 'check';
-        var elcheckno = document.getElementById('pay-checkno');
-        checkno = elcheckno.value;
-        if (checkno == null || checkno == '') {
-            elcheckno.style.backgroundColor = 'var(--bs-warning)';
-            return;
-        } else {
-            elcheckno.style.backgroundColor = '';
-        }
-        checked = true;
-    }
-    if (document.getElementById('pt-credit').checked) {
-        ptype = 'credit';
-        var elccauth = document.getElementById('pay-ccauth');
-        ccauth = elccauth.value;
-        if (ccauth == null || ccauth == '') {
-            elccauth.style.backgroundColor = 'var(--bs-warning)';
-            return;
-        } else {
-            elccauth.style.backgroundColor = '';
-        }
-        checked = true;
-    }
-
-    if (document.getElementById('pt-cash').checked) {
-        ptype = 'cash';
-        checked = true;
-    }
-
-    if (!checked) {
-        elptdiv.style.backgroundColor = 'var(--bs-warning)';
-        return;
-    }
-    if (pay_amt > 0) {
-        var crow = null;
-        var change = 0;
-        if (pay_amt > total_amount_due) {
-            change = pay_amt - total_amount_due;
-            pay_amt = total_amount_due;
-            crow = {
-                index: cart.getPmtLength() + 1, amt: change, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'change',
+        if (document.getElementById('pt-check').checked) {
+            ptype = 'check';
+            var elcheckno = document.getElementById('pay-checkno');
+            checkno = elcheckno.value;
+            if (checkno == null || checkno == '') {
+                elcheckno.style.backgroundColor = 'var(--bs-warning)';
+                return;
+            } else {
+                elcheckno.style.backgroundColor = '';
             }
+            checked = true;
         }
-        var prow = {
-            index: cart.getPmtLength(), amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
-        };
-        // process payment
-        var postData = {
-            ajax_request_action: 'processPayment',
-            cart_membership: cart.getCartMembership(),
-            new_payment: prow,
-            change: crow,
-            user_id: user_id,
-            pay_tid: pay_tid,
-        };
-        pay_button_pay.disabled = true;
-        $.ajax({
-            method: "POST",
-            url: "scripts/regpos_processPayment.php",
-            data: postData,
-            success: function (data, textstatus, jqxhr) {
-                var stop = true;
-                clear_message();
-                if (typeof data == 'string') {
-                    show_message(data, 'error');
-                } else if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
-                } else if (data['message'] !== undefined) {
-                    show_message(data['message'], 'success');
-                    stop = false;
-                } else if (data['warn'] !== undefined) {
-                    show_message(data['warn'], 'success');
-                    stop = false;
+        if (document.getElementById('pt-credit').checked) {
+            ptype = 'credit';
+            var elccauth = document.getElementById('pay-ccauth');
+            ccauth = elccauth.value;
+            if (ccauth == null || ccauth == '') {
+                elccauth.style.backgroundColor = 'var(--bs-warning)';
+                return;
+            } else {
+                elccauth.style.backgroundColor = '';
+            }
+            checked = true;
+        }
+
+        if (document.getElementById('pt-cash').checked) {
+            ptype = 'cash';
+            checked = true;
+        }
+
+        if (!checked) {
+            elptdiv.style.backgroundColor = 'var(--bs-warning)';
+            return;
+        }
+
+        if (pay_amt > 0) {
+            var crow = null;
+            var change = 0;
+            if (pay_amt > total_amount_due) {
+                change = pay_amt - total_amount_due;
+                pay_amt = total_amount_due;
+                crow = {
+                    index: cart.getPmtLength() + 1, amt: change, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'change',
                 }
-                if (!stop)
-                    updatedPayment(data);
-                pay_button_pay.disabled = false;
-            },
-            error: function (jqXHR, textstatus, errorThrown) {
-                pay_button_pay.disabled = false;
-                showAjaxError(jqXHR, textstatus, errorThrown);
-            },
-        });
+            }
+            prow = {
+                index: cart.getPmtLength(), amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
+            };
+        }
     }
+    // process payment
+    var postData = {
+        ajax_request_action: 'processPayment',
+        cart_membership: cart.getCartMembership(),
+        new_payment: prow,
+        coupon: prow['coupon'],
+        change: crow,
+        user_id: user_id,
+        pay_tid: pay_tid,
+    };
+    pay_button_pay.disabled = true;
+    $.ajax({
+        method: "POST",
+        url: "scripts/regpos_processPayment.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            var stop = true;
+            clear_message();
+            if (typeof data == 'string') {
+                show_message(data, 'error');
+            } else if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+            } else if (data['message'] !== undefined) {
+                show_message(data['message'], 'success');
+                stop = false;
+            } else if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'success');
+                stop = false;
+            }
+            if (!stop)
+                updatedPayment(data);
+            pay_button_pay.disabled = false;
+        },
+        error: function (jqXHR, textstatus, errorThrown) {
+            pay_button_pay.disabled = false;
+            showAjaxError(jqXHR, textstatus, errorThrown);
+        },
+    });
 }
+
 
 // updatedPayment:
 //  payment entered into the database correctly, update the payment cart and the memberships with the updated paid amounts
@@ -2028,7 +2060,7 @@ function PrintComplete(data) {
     var regs = [];
     var index;
     for (index in badges) {
-        if (printed_obj.set(index) == 0) {
+        if (printed_obj.get(index) == 0) {
             var rparams = cart.addToPrintCount(index);
             printed_obj.set(index, 1);
             regs.push({ regid: rparams[0], printcount: rparams[1]});
@@ -2111,6 +2143,33 @@ function checkbox_check() {
     pay_button_ercpt.disabled = false;
 }
 
+// apply_coupon - apply and compute the discount for a coupon, also show the rules for the coupon if applied
+//  a = apply coupon from select
+//  r = remove coupon
+//  in any case need to re-show the pay tab with the details
+function apply_coupon(cmd) {
+    if (cmd == 'r') {
+        var curCoupon = coupon.getCouponId();
+        cart.clearCoupon(curCoupon);
+        coupon = null;
+        coupon = new Coupon();
+        coupon_discount = Number(0).toFixed(2);
+        pay_shown();
+        return;
+    }
+    if (cmd == 'a') {
+        var couponId = document.getElementById("pay_couponSelect").value;
+        coupon = null;
+        coupon = new Coupon();
+        if (couponId == '') {
+            show_message("Coupon cleared, no coupon applied", 'success');
+            return;
+        }
+        coupon.LoadCoupon(couponId);
+    }
+    return;
+}
+
 function pay_shown() {
     if (!isCashier) {
         show_message("You do not have permission to handle payments", "warning");
@@ -2120,7 +2179,13 @@ function pay_shown() {
     cart.freeze();
     current_tab = pay_tab;
     cart.drawCart();
-    if (cart.getTotalPaid() == cart.getTotalPrice()) {
+
+    if (pay_prior_discount === null) {
+        pay_prior_discount = cart.getPriorDiscount();
+    }
+
+    var total_amount_due = cart.getTotalPrice() - (cart.getTotalPaid() + pay_prior_discount + Number(coupon_discount));
+    if (total_amount_due  < 0.01) { // allow for rounding error, no need to round here
         // nothing more to pay       
         print_tab.disabled = false;
         cart.showNext();
@@ -2146,7 +2211,7 @@ function pay_shown() {
             }
             if (email_html.length > 2) {
                 pay_button_ercpt.hidden = false;
-                pay_button_ercpt.disabled = true;
+                pay_button_ercpt.disabled = false;
                 receeiptEmailAddresses_div.innerHTML = '<div class="row mt-2"><div class="col-sm-9 p-0">Email receipt to:</div></div>' +
                     email_html;
                 if (email_count == 1) {
@@ -2161,31 +2226,71 @@ function pay_shown() {
             document.getElementById('pay-check-div').hidden = true;
             document.getElementById('pay-ccauth-div').hidden = true;
             cart.hideVoid();
-        }        
+        } else {
+            goto_print();
+        }
     } else {
         if (pay_button_pay != null) {
             pay_button_pay.hidden = false;
             pay_button_rcpt.hidden = true;
             pay_button_ercpt.hidden = true;
             pay_button_ercpt.disabled = true;
-            receeiptEmailAddresses_div.innerHTML = '';
             pay_button_print.hidden = true;
         }
-        var total_amount_due = (cart.getTotalPrice() - cart.getTotalPaid()).toFixed(2);
 
         // draw the pay screen
-
         var pay_html = `
 <div id='payBody' class="container-fluid form-floating">
   <form id='payForm' action='javascript: return false; ' class="form-floating">
     <div class="row pb-2">
         <div class="col-sm-auto ms-0 me-2 p-0">New Payment Transaction ID: ` + pay_tid + `</div>
     </div>
-    <div class="row">
-        <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + total_amount_due + `</div>
+    `;
+    if (num_coupons > 0 && !cart.priorCouponInCart()) { // cannot apply a coupon if one was already in the cart (and of course, there need to be valid coupons right now)
+        if (!coupon.isCouponActive()) { // no coupon applied yet
+            pay_html += `
+    <div class="row mt-3">
+        <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+` + couponSelect + `
+        </div>
+        <div class="col-sm-auto ms-0 me-0 p-0">
+            <button class="btn btn-secondary btn-small" type="button" id="pay-btn-coupon" onclick="apply_coupon('a');">Apply Coupon</button>
+        </div>  
     </div>
-    <div class="row">
+`;
+        } else {
+            // now display the amount due
+            pay_html += `
+    <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
+        <div class="col-sm-auto ms-0 me-2 p-0">` + coupon.getNameString() + `</div>
+         <div class="col-sm-auto ms-0 me-0 p-0">
+            <button class="btn btn-secondary btn-small" type="button" id="pay-btn-coupon" onclick="apply_coupon('r');">Remove Coupon</button>
+        </div>  
+    </div>
+    <div class="row mt-1">
+        <div class="col-sm-1 ms-0 me-0">&nbsp;</div>
+        <div class="col-sm-11 ms-0 me-0 p-0">` + coupon.couponDetails() + `</div>
+    </div>
+`;
+        }
+    }
+    // add prior discounts to screen if any
+    if (pay_prior_discount > 0) {
+        pay_html += `
+    <div class="row mt-2">
+        <div class="col-sm-2 ms-0 me-2 p-0">Prior Discount:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(pay_prior_discount).toFixed(2) + `</div>
+    </div>
+`;
+    }
+    pay_html += `
+    <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(total_amount_due).toFixed(2) + `</div>
+    </div>
+    <div class="row mt-2">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Paid:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-amt" name="paid-amt" size="6"/></div>
     </div>
@@ -2249,7 +2354,7 @@ function pay_shown() {
         pay_button_pay = document.getElementById('pay-btn-pay');
         pay_button_rcpt = document.getElementById('pay-btn-rcpt');
         pay_button_ercpt = document.getElementById('pay-btn-ercpt');
-        var receeiptEmailAddresses_div = document.getElementById('receeiptEmailAddresses');
+        receeiptEmailAddresses_div = document.getElementById('receeiptEmailAddresses');
         if (receeiptEmailAddresses_div)
             receeiptEmailAddresses_div.innerHTML = '';
         pay_button_print = document.getElementById('pay-btn-print');
