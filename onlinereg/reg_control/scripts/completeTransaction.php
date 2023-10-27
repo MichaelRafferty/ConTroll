@@ -53,7 +53,7 @@ if ($transRes !== false && mysqli_num_rows($transRes) == 1) {
 
 $badgeQ = <<<EOS
 SELECT DISTINCT R.id, M.label, R.price, R.paid, P.badge_name
-FROM atcon_history H 
+FROM reg_history H 
 JOIN reg R ON (R.id = H.regid)
 JOIN memLabel as M ON M.id=R.memId
 JOIN perinfo as P on P.id=R.perid
@@ -90,7 +90,7 @@ if($totalPrice <= $totalPaid) {
   $query0 = "UPDATE transaction SET price=?, paid=?, complete_date=current_timestamp(), userid=? WHERE id=?;";
   $query1 = <<<EOS
 UPDATE reg as R
-JOIN atcon_history H ON (R.id=H.regid)
+JOIN reg_history H ON (R.id=H.regid)
 SET R.paid=R.price WHERE H.tid=?;
 EOS;
   if (!$complete) {

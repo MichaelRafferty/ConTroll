@@ -37,6 +37,7 @@ if ($user_id != $_SESSION['user_id']) {
     ajaxError("Invalid credentials passed");
     return;
 }
+$user_perid = $_SESSION['user_perid'];
 $cart_perinfo = $_POST['cart_perinfo'];
 if (sizeof($cart_perinfo) <= 0) {
     ajaxError('No members are in the cart');
@@ -89,6 +90,10 @@ EOS;
 $delRegSQL = <<<EOS
 DELETE FROM reg
 WHERE id = ?;
+EOS;
+$insHistory = <<<EOS
+INSERT INTO reg_history(userid, tid, regid, action, notes)
+VALUES (?, ?, ?, ?, ?);
 EOS;
 // insert/update all perinfo records,
 for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
@@ -217,6 +222,17 @@ for ($row = 0; $row < sizeof($cart_membership); $row++) {
             $paramarray = array($cartrow['price'], $cartrow['paid'], $cartrow['memId'], $cartrow['regid']);
             $typestr = 'ssii';
             $reg_upd += dbSafeCmd($updRegSQL, $typestr, $paramarray);
+        }
+    }
+    if (!array_key_exists('todelete', $cartrow)) {
+        // now if there is a new note for this row, add it now
+        if (array_key_exists('new_reg_note', $cartrow)) {
+            $paramarray = array($user_perid, $master_transid, $cartrow['regid'], 'notes', $cartrow['new_reg_note']);
+            $typestr = 'iiiss';
+            $new_history = dbSafeInsert($insHistory, $typestr, $paramarray);
+            if ($new_history === false) {
+                $error_message .= 'Unable to add note to membership ' . $cartrow['regid'] . '<BR/>';
+            }
         }
     }
 }

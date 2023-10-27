@@ -48,7 +48,7 @@ EOS;
     $completed = dbSafeCmd($updCompleteSQL, 'i', array($tid));
 
     $insertSQL = <<<EOS
-INSERT INTO atcon_history(userid, tid, regid, action)
+INSERT INTO reg_history(userid, tid, regid, action)
 VALUES (?,?,?,'print');
 EOS;
     $typestr = 'iii';

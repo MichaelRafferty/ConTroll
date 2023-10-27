@@ -28,11 +28,11 @@ $transid = sql_safe($_GET['id']);
 $totalPrice = 0;
 $badgeQ = <<<EOS
 SELECT DISTINCT R.id, M.label, R.price, R.paid, P.badge_name, CONCAT_WS(' ', first_name, last_name) AS full_name, S.action
-FROM atcon_history H
+FROM reg_history H
 JOIN reg R ON (R.id = H.regid)
 JOIN memLabel M ON (M.id=R.memId)
 JOIN perinfo P ON (P.id=R.perid)
-LEFT OUTER JOIN atcon_history S ON (S.regid=R.id and S.action='print')
+LEFT OUTER JOIN reg_history S ON (S.regid=R.id and S.action='print')
 WHERE H.tid = ? AND H.action = 'attach';
 EOS;
 $badgeRes = dbSafeQuery($badgeQ, 'i', array($transid));
@@ -73,7 +73,7 @@ if($totalPrice <= $totalPaid) {
   $query0 = "UPDATE transaction SET price=?, paid=?, complete_date=current_timestamp(), userid=? WHERE id=?;";
   $query1 = <<<EOS
 UPDATE reg R
-JOIN atcon_history H ON (R.id=H.regid)
+JOIN reg_history H ON (R.id=H.regid)
 SET R.paid=R.price 
 WHERE H.tid=?;
 EOS;
