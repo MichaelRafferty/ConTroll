@@ -152,8 +152,14 @@ function cc_charge_purchase($results, $ccauth) {
     $order->setSource(new OrderSource);
     $order->getSource()->setName($con['conname'] . 'OnLineReg');
 
-    $custbadge = $results['badges'][0];
-    $order->setCustomerId($con['id'] . '-' . $custbadge['badge']);
+    if (array_key_exists('badges', $results) && is_array($results['badges'])) {
+        $custid = $results['badges'][0]['badge'];
+    } else if (array_key_exists('spaceName', $results)) {
+        $custid = $results['buyer']['email'];
+    } else {
+        $custid = 'no-badges';
+    }
+    $order->setCustomerId($con['id'] . '-' . $custid);
     $order_lineitems = [];
     $lineid = 0;
 
@@ -248,7 +254,7 @@ function cc_charge_purchase($results, $ccauth) {
     $pbody->setAmountMoney($pay_money);
     $pbody->setAutocomplete(true);
     $pbody->setOrderID($corder->getId());
-    $pbody->setCustomerId($con['id'] . '-' . $custbadge['badge']);
+    $pbody->setCustomerId($con['id'] . '-' . $custid);
     $pbody->setLocationId($cc['location']);
     $pbody->setReferenceId($con['id'] . '-' . $results['transid']);
     $pbody->setNote('On-Line Registration');

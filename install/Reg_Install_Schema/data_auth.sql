@@ -16,21 +16,14 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `servers`
+-- Dumping data for table `auth`
 --
 
-DROP TABLE IF EXISTS `servers`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `servers` (
-  `serverName` varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
-  `address` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
-  `location` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `active` int NOT NULL DEFAULT '0',
-  `local` int NOT NULL DEFAULT '0',
-  PRIMARY KEY (`serverName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+LOCK TABLES `auth` WRITE;
+/*!40000 ALTER TABLE `auth` DISABLE KEYS */;
+INSERT INTO `auth` VALUES (1,'overview','Y','Membership'),(2,'admin','Y','Admin'),(3,'people','Y','People'),(5,'registration','Y','Registration'),(6,'reg_admin','Y','Badge List'),(7,'artist','Y','Artist'),(8,'artshow','Y','Artshow'),(9,'badge','Y','Free Badges'),(10,'atcon','N','N'),(11,'art_control','Y','Art Control'),(12,'art_sales','N','N'),(13,'club','Y','Club'),(14,'monitor','Y','Attendance'),(15,'reports','Y','Reports'),(16,'search','N','N'),(17,'atcon_checkin','N','N'),(18,'atcon_register','N','N'),(19,'coupon','Y','Coupon'),(32,'vendor','Y','Vendor'),(999,'registration-old','Y','Old Reg');
+/*!40000 ALTER TABLE `auth` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -41,4 +34,4 @@ CREATE TABLE `servers` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-10-26 13:36:43
+-- Dump completed on 2023-10-26 13:37:42

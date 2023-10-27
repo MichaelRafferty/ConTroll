@@ -37,7 +37,7 @@ $complete = false;
 
 $badgeListQ = <<<EOS
 SELECT DISTINCT R.id, M.label, (R.price-R.paid) AS remainder
-FROM atcon_history H
+FROM reg_history H
 JOIN reg R ON (R.id = H.regid)
 JOIN memLabel M ON (M.id=R.memId)
 WHERE H.tid = ? AND H.action='attach';

@@ -16,19 +16,17 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `servers`
+-- Table structure for table `patchLog`
 --
 
-DROP TABLE IF EXISTS `servers`;
+DROP TABLE IF EXISTS `patchLog`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `servers` (
-  `serverName` varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
-  `address` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
-  `location` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `active` int NOT NULL DEFAULT '0',
-  `local` int NOT NULL DEFAULT '0',
-  PRIMARY KEY (`serverName`)
+CREATE TABLE `patchLog` (
+  `id` int NOT NULL,
+  `name` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `installDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

@@ -106,7 +106,7 @@ page_init($page,
     </div>
 
     <div class='half'>
-        <div id="conflictView"><span class="blocktitle">Conflicts</span>
+        <div id="conflictView"><span class="blocktitle">Unmatched New People</span>
             (<span id='conflictCount'><?php echo countConflicts($need_login['sub']); ?></span>)
             <a class='showlink' id='conflictViewShowLink'
                 href='javascript:void(0)' onclick='showBlock("#conflictView")'>
@@ -123,6 +123,7 @@ page_init($page,
                 <input type="submit" value="Get"
                     onClick='fetchNewPerson("#fetchNewPerson")'/>
             </form>
+            (f for first, l for last or the newperson id)
             <form id='conflictViewForm' method="POST"
                 action='javascript:void(0)'>
                 <input type='hidden' name='oldID' id='conflictOldIDfield'/>

@@ -48,12 +48,12 @@ WITH unpaids AS (
 SELECT r.id, create_trans as tid
 FROM reg r
 JOIN memList m ON (m.id = r.memId)
-WHERE (r.price + r.couponDiscount) != r.paid AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
+WHERE r.price != (r.paid + r.couponDiscount) AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
 ), tids AS (
-/* add in unpaids from transactions in attach records in atcon_history */
+/* add in unpaids from transactions in attach records in reg_history */
 SELECT u.id AS regid, CASE WHEN u.tid > IFNULL(h.tid, -999) THEN u.tid ELSE h.tid END AS tid
 FROM unpaids u
-LEFT OUTER JOIN atcon_history h ON (h.regid = u.id AND h.action = 'attach')
+LEFT OUTER JOIN reg_history h ON (h.regid = u.id AND h.action = 'attach')
 ), maxtids AS (
 /* find the most recent transaction (highest number) across each reg and the selected list of transactions */
 SELECT regid, MAX(tid) AS tid
@@ -64,13 +64,13 @@ GROUP BY regid
 SELECT DISTINCT tid 
 FROM maxtids
 ), perids AS (
-/* now get all the perinfo ids that are mentioned in each of those tid records, from both reg, and from atcon_history */
+/* now get all the perinfo ids that are mentioned in each of those tid records, from both reg, and from reg_history */
 SELECT perid 
 FROM reg r
 JOIN tidlist t ON (t.tid = r.create_trans)
 UNION SELECT perid 
 FROM reg r
-JOIN atcon_history h on (h.regid = r.id)
+JOIN reg_history h on (h.regid = r.id)
 JOIN tidlist t ON (t.tid = h.tid)
 ), uniqueperids AS (
 SELECT DISTINCT perid
@@ -99,7 +99,7 @@ UNION
 SELECT h.regid, h.tid
 FROM uniqueperids p
 JOIN reg r ON (r.perid = p.perid)
-JOIN atcon_history h ON (r.id = h.regid AND h.action = 'attach')
+JOIN reg_history h ON (r.id = h.regid AND h.action = 'attach')
 ), uniqrids AS (
 SELECT regid, MAX(tid) AS tid
 FROM ridtid
@@ -107,13 +107,13 @@ GROUP BY regid
 ), notes AS (
 SELECT h.regid, GROUP_CONCAT(CONCAT(h.userid, '@', h.logdate, ': ', h.notes) SEPARATOR '\n') AS reg_notes, COUNT(*) AS reg_notes_count
 FROM unpaids m
-JOIN atcon_history h ON (m.id = h.regid)
+JOIN reg_history h ON (m.id = h.regid)
 WHERE h.action = 'notes'
 GROUP BY h.regid
 ), printcount AS (
 SELECT h.regid, COUNT(*) printcount
 FROM unpaids m
-JOIN atcon_history h ON (m.id = h.regid)
+JOIN reg_history h ON (m.id = h.regid)
 WHERE h.action = 'print'
 GROUP BY h.regid
 )
@@ -144,7 +144,7 @@ JOIN memLabel m ON (r.memId = m.id)
 WHERE create_trans = ? AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
 /* then add in reg ids for this attach transaction */
 UNION SELECT regid, tid
-FROM atcon_history h
+FROM reg_history h
 JOIN reg r ON (r.id = h.regid)
 JOIN memLabel m ON (r.memId = m.id)
 WHERE tid = ? AND h.action = 'attach' AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
@@ -161,7 +161,7 @@ FROM regbyperid rs
 JOIN reg r ON (r.id = rs.regid)
 UNION SELECT h.regid, tid
 FROM regbyperid rs
-JOIN atcon_history h ON (h.regid = rs.regid AND h.action = 'attach')
+JOIN reg_history h ON (h.regid = rs.regid AND h.action = 'attach')
 ), maxtid AS (
 /* now take the most recent transaction */
 SELECT regid, MAX(tid) AS tid
@@ -171,7 +171,7 @@ GROUP BY regid
 /* now get all the regids for these transactions */
 SELECT IFNULL(h.regid, r.id) AS regid, m.tid
 FROM maxtid m
-LEFT OUTER JOIN atcon_history h ON (h.tid = m.tid AND h.action = 'attach')
+LEFT OUTER JOIN reg_history h ON (h.tid = m.tid AND h.action = 'attach')
 LEFT OUTER JOiN reg r ON (r.create_trans = m.tid)
 ), regids AS (
 /* and pull both sets together */
@@ -207,19 +207,19 @@ $withClause
 , notes AS (
 SELECT h.regid, GROUP_CONCAT(CONCAT(h.userid, '@', h.logdate, ': ', h.notes) SEPARATOR '\n') AS reg_notes, COUNT(*) AS reg_notes_count
 FROM regids m
-JOIN atcon_history h ON (m.regid = h.regid)
+JOIN reg_history h ON (m.regid = h.regid)
 WHERE h.action = 'notes'
 GROUP BY h.regid
 ), printcount AS (
 SELECT h.regid, COUNT(*) printcount
 FROM regids m
-JOIN atcon_history h ON (m.regid = h.regid)
+JOIN reg_history h ON (m.regid = h.regid)
 WHERE h.action = 'print'
 GROUP BY h.regid
 ), attachcount AS (
 SELECT h.regid, COUNT(*) attachcount
 FROM regids m
-JOIN atcon_history h ON (m.regid = h.regid)
+JOIN reg_history h ON (m.regid = h.regid)
 WHERE h.action = 'attach'
 GROUP BY h.regid
 )
@@ -280,7 +280,7 @@ JOIN reg r ON (r.id = rs.regid)
 UNION
 SELECT h.regid, h.tid
 FROM regids rs
-JOIN atcon_history h ON (h.regid = rs.regid)
+JOIN reg_history h ON (h.regid = rs.regid)
 ), maxtids AS (
 SELECT regid, MAX(tid) as tid
 FROM regtid
@@ -288,13 +288,13 @@ GROUP BY regid
 ), notes AS (
 SELECT h.regid, GROUP_CONCAT(CONCAT(h.userid, '@', h.logdate, ': ', h.notes) SEPARATOR '\n') AS reg_notes, COUNT(*) AS reg_notes_count
 FROM maxtids m
-JOIN atcon_history h ON (m.regid = h.regid)
+JOIN reg_history h ON (m.regid = h.regid)
 WHERE h.action = 'notes'
 GROUP BY h.regid
 ), printcount AS (
 SELECT h.regid, COUNT(*) printcount
 FROM maxtids m
-JOIN atcon_history h ON (m.regid = h.regid)
+JOIN reg_history h ON (m.regid = h.regid)
 WHERE h.action = 'print'
 GROUP BY h.regid
 )

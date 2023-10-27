@@ -36,7 +36,6 @@ function google_init($mode) {
   global $db_ini;
   session_start();
 
-/*
   // bypass for testing on Development PC
   if (stripos(__DIR__, "/Volumes/Dock_Disk/") !== false) {
       $token_data = array();
@@ -50,7 +49,6 @@ function google_init($mode) {
   }
 
   // end bypass
-*/
 
   // set redirect URI to current page -- maybe make this better later.
   $redirect_uri = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
@@ -92,6 +90,7 @@ function google_init($mode) {
     if($token_data = $client->verifyIdToken()) {
         return($token_data);
     } else { 
+        unset($_SESSION['access_token']);
         $client->setRedirectUri($redirect_uri);
         if($mode=='page') {
           header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
@@ -175,9 +174,9 @@ function con_info($auth) {
     if(is_array($auth) && checkAuth(array_key_exists('sub', $auth) ? $auth['sub'] : null, 'overview')) {
         $con = get_con();
         $count_res = dbSafeQuery("select count(*) from reg where conid=?;", 'i', array($con['id']));
-        $badgeCount = fetch_safe_array($count_res);
+        $badgeCount = $count_res->fetch_array();
         $count_res = dbSafeQuery("select count(*) from reg where conid=? AND price <= (ifnull(paid,0) + ifnull(couponDiscount, 0));",'i', array($con['id']));
-        $unlockCount = fetch_safe_array($count_res);
+        $unlockCount = $count_res->fetch_array();
   
 ?>
 
@@ -249,7 +248,7 @@ function countConflicts($sub) {
         $countQ = "SELECT count(*) from newperson WHERE perid IS NULL;";
         $countA = dbQuery($countQ);
         if(is_null($countA)) { return 0; }
-        $count = fetch_safe_array($countA);
+        $count = $countA->fetch_array();
         return $count[0];
     }
     return 0;

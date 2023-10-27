@@ -43,7 +43,7 @@ page_init("Badge List",
                                 <label for='form_code'>Code*:</label>
                             </div>
                             <div class='col-sm-auto p-0'>
-                                <input class='form-control-sm' type='text' name='code' id='form_code' size='16' required/>
+                                <input class='form-control-sm' type='text' name='code' id='form_code' size='16' maxlength="16" required/>
                             </div>
                         </div>
                         <div class='row mb-1'>
@@ -51,7 +51,7 @@ page_init("Badge List",
                                 <label for='form_name'>Descriptive Name*:</label>
                             </div>
                             <div class='col-sm-auto p-0'>
-                                <input class='form-control-sm' type='text' name='name' id='form_name' size='32' required/>
+                                <input class='form-control-sm' type='text' name='name' id='form_name' size='32' maxlength="32" required/>
                             </div>
                         </div>
                         <div class='row mb-1'>

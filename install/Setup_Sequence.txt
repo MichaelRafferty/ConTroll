@@ -26,65 +26,43 @@ It also expects you to know how to fetch/update files from GitHub. The software 
             printers
             routines
     c.  load the reg schema into each database
-        i. load tables without foreign keys first:
-            auth
-            conlist
-            memCategories
-            memTypes
-            perinfo
-            reg_staff_stats
-            routines
-            servers
-            user
-            vendors (NOTE vendors or art show only)
-            vendorSpaces (NOTE vendors or art show only)
-        ii. load tables with foreign keys
-            ageList
-            artist
-            artshow_reg
-            memlist
-            oauth_links
-            oauth_people
-            atcon_user
-            atcon_auth
-            reg_badgelist
-            reg_club
-            user_auth
-            newperson   (NOTE: Newperson refers to transaction, you might have to do it's foreign key separately as transaction also references a different field in newperson)
-            transaction
-            payments
-            vendorSpacePrices (NOTE vendors or art show only)
-            vendor_space (NOTE vendors or art show only)
-            reg
-            atcon_history
-            artist (Note: belongs to artshow only)
-            artshow_reg (Note: belongs to artshow only)
-            artshow (Note: belongs to artshow only)
-            artItems (Note: belongs to artshow only)
-            artsales (Note: belongs to artshow only)
-            coupon
-            couponKeys
+        i. load all the tables first (everything but zz_foreign_keys.sql and reg_routines.sql)
+        ii. set all the foreign keys: run zz_foreign_keys.sql
+        iii. add routines and views using reg_routines.sql
 
-	iii.
-	    add link from newperson to transactions:
-ALTER TABLE newperson ADD CONSTRAINT `newperson_transid_fk` FOREIGN KEY (`transid`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE;
-
-	iv. add routines and views
-            memLabel
-            syncServerPrinters
-
-
-	v. obsolete tables
+	v. drop obsolete tables if they still exist
             reg_staff_stats
             oauth_links
             oauth_people
-
 
 4. Populate the tables far enough to use the GUI to continue, or as far as you want.
     Necessary tables for the GUI:
         a. conList (at least for the current convention, preferred for the current and the next convention (can approximate the dates for that one)
         b. permissions tables:
             i. auth
+                Standard 'auth' rows to select from:
+                INSERT INTO auth(id, name, page, display) VALUES
+                ('1', 'overview', 'Y', 'Membership'),
+                ('2', 'admin', 'Y', 'Admin'),
+                ('3', 'people', 'Y', 'People'),
+                ('5', 'registration', 'Y', 'Registration'),
+                ('6', 'reg_admin', 'Y', 'Badge List'),
+                ('7', 'artist', 'Y', 'Artist'),
+                ('8', 'artshow', 'Y', 'Artshow'),
+                ('9', 'badge', 'Y', 'Free Badges'),
+                ('10', 'atcon', 'N', 'N'),
+                ('11', 'art_control', 'Y', 'Art Control'),
+                ('12', 'art_sales', 'N', 'N'),
+                ('13', 'club', 'Y', 'Club'),
+                ('14', 'monitor', 'Y', 'Attendance'),
+                ('15', 'reports', 'Y', 'Reports'),
+                ('16', 'search', 'N', 'N'),
+                ('17', 'atcon_checkin', 'N', 'N'),
+                ('18', 'atcon_register', 'N', 'N'),
+                ('19', 'coupon', 'Y', 'Coupon'),
+                ('32', 'vendor', 'Y', 'Vendor'),
+                ('999', 'registration-old', 'Y', 'Old Reg');
+
             ii. user (at least for your first reg_control user)
             iii. user_auth (at least to add the admin role to your first reg_control user)
 

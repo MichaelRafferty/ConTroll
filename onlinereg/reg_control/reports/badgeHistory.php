@@ -27,7 +27,7 @@ $query = <<<EOS
 SELECT R.conid, R.perid, M.label, R.create_user, R.create_date, max(H.logdate) AS date
 FROM reg R
 JOIN memList M ON (M.id=R.memId)
-LEFT OUTER JOIN atcon_history H ON (H.regid=R.id AND H.action='print')
+LEFT OUTER JOIN reg_history H ON (H.regid=R.id AND H.action='print')
 WHERE R.conid >= ? and R.perid = ?
 GROUP BY R.conid, R.perid, M.label, R.create_user, R.create_date
 ORDER BY R.conid;
@@ -46,7 +46,7 @@ while($reportL = fetch_safe_array($reportR)) {
 $secondQ = <<<EOS
 SELECT R.conid, H.logdate as date, H.action, H.notes as comment
 FROM reg R
-JOIN atcon_history H ON (H.regid=R.id)
+JOIN reg_history H ON (H.regid=R.id)
 WHERE R.perid=?
 EOS;
 
