@@ -62,12 +62,12 @@ if ($missingfields != "") {
 $fields = "createBy," . $fields;
 $updstr = implode('= ?,', explode(',', $fields)) . "=?";
 $valstr = '?,?,?,?,?,?,?';
-$fields = 'conid,';
+$fields = 'conid,' . $fields;
 $updtypestr = 'ississ';
 $instypestr = 'iississ';
 $updparamarray = $paramarray;
-$insparamarray = $paramarray;
 array_unshift($paramarray, $conid);
+$insparamarray = $paramarray;
 
 // now add the optional fields
 $optstrfields = 'startDate,endDate,minTransaction,maxTransaction';
