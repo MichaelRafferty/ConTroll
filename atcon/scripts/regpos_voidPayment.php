@@ -50,9 +50,14 @@ if (sizeof($cart_membership) <= 0) {
 }
 
 // restore the amount paid on each cart row to the original amount
-$updCartSQL = <<<EOS
+$updCartNonZeroSQL = <<<EOS
 UPDATE reg
 SET paid = ?
+WHERE id = ?;
+EOS;
+$updCartZeroSQL = <<<EOS
+UPDATE reg
+SET paid = 0, complete_trans = NULL
 WHERE id = ?;
 EOS;
 $upd_rows = 0;
@@ -65,7 +70,11 @@ foreach ($cart_membership as $cart_row) {
     if ($cart_row['paid'] != $prior_pmt) {
         // there is a payment, back it out.
         $cart_row['paid'] = $prior_pmt;
-        $upd_rows += dbSafeCmd($updCartSQL, 'ii', array($prior_pmt, $cart_row['regid']));
+        if ($prior_pmt == 0) {
+            $upd_rows += dbSafeCmd($updCartNonZeroSQL, 'si', array($prior_pmt, $cart_row['regid']));
+        } else {
+            $upd_rows += dbSafeCmd($updCartZeroSQL, 'i', array($cart_row['regid']));
+        }
     }
 }
 
