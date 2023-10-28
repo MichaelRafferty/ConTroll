@@ -67,7 +67,7 @@ if($badgeRes) {
     if (!$complete) $totalPrice += $badge['price']-$badge['paid'];
     array_push($badges, $badge);
   }
-} else { $resp["error"].="No Badges!<br/>"; }
+} else { $response["error"].="No Badges!<br/>"; }
 $response['price'] = $totalPrice;
 $response['badges'] = $badges;
 
@@ -91,12 +91,13 @@ if($totalPrice <= $totalPaid) {
   $query1 = <<<EOS
 UPDATE reg as R
 JOIN reg_history H ON (R.id=H.regid)
-SET R.paid=R.price WHERE H.tid=?;
+SET R.paid=R.price - R.couponDiscount, R.complete_trans = ?
+WHERE H.tid=?;
 EOS;
   if (!$complete) {
       dbSafeCmd($query0, 'ddii', array($totalPrice, $totalPaid, $userid, $transid));
   }
-  dbSafeCmd($query1, 'i', array($transid));
+  dbSafeCmd($query1, 'ii', array($transid, $transid));
   $response['success']='true';
 }
 

@@ -109,7 +109,7 @@ foreach ($badgeList as $badge) {
     $amt = $badge['remainder'];
     if ($amt > 0) {
         $paid = $remainder >= $amt ? $amt : $remainder;
-        $rows = dbSafeCmd("UPDATE reg set paid = IFNULL(paid, 0) + ? WHERE id = ?", "di", array($paid, $badge['id']));
+        $rows = dbSafeCmd("UPDATE reg set paid = IFNULL(paid, 0) + ?, create_trans = ? WHERE id = ?", "dii", array($paid, $badge['id'], $transid));
         $remainder -= $amt;
     }
 }
