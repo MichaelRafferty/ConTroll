@@ -32,7 +32,7 @@ ORDER BY label, enddate, price
 EOS;
 $limitR = dbSafeQuery($limitSQL, 'i', array($conid));
 $optionList = "<option value=''>Not Limited</option>\n";
-while ($row = fetch_safe_assoc($limitR)) {
+while ($row = $limitR->fetch_assoc()) {
     $optionList .= '<option value="' . $row['id'] . '">' . $row['label'] . ' (' . $row['price'] . ': ' . $row['enddate'] . ")</option>\n";
 }
 
