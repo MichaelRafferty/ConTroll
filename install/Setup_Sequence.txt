@@ -30,7 +30,7 @@ It also expects you to know how to fetch/update files from GitHub. The software 
         ii. set all the foreign keys: run zz_foreign_keys.sql
         iii. add routines and views using reg_routines.sql
 
-	v. drop obsolete tables if they still exist
+	  d. drop obsolete tables if they still exist
             reg_staff_stats
             oauth_links
             oauth_people
