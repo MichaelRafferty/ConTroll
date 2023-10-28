@@ -140,7 +140,6 @@ if ($new_payment['type'] == 'online') {
 
 
 $complete = round($amt,2) == round($total_due,2);
-
 // now add the payment and process to which rows it applies
 $upd_rows = 0;
 $cupd_rows = 0;
@@ -208,7 +207,14 @@ UPDATE transaction
 SET coupon = ?, couponDiscount = ?
 WHERE id = ?;
 EOS;
-    $completed = dbSafeCmd($updCompleteSQL, 'iis', array($coupon, $amt, $master_tid));
+    $completed = dbSafeCmd($updCompleteSQL, 'iii', array($coupon, $amt, $master_tid));
+} else { // normal payment
+    $updCompleteSQL = <<<EOS
+UPDATE transaction
+SET paid = IFNULL(paid,0.0) + ?
+WHERE id = ?;
+EOS;
+    $completed = dbSafeCmd($updCompleteSQL, 'ii', array($new_payment['amt'], $master_tid));
 }
 $completed = 0;
 if ($complete) {

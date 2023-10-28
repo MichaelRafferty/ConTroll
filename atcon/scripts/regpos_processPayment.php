@@ -155,8 +155,16 @@ UPDATE transaction
 SET coupon = ?, couponDiscount = ?
 WHERE id = ?;
 EOS;
-    $completed = dbSafeCmd($updCompleteSQL, 'iis', array($coupon, $amt, $master_tid));
+    $completed = dbSafeCmd($updCompleteSQL, 'iii', array($coupon, $amt, $master_tid));
+} else { // normal payment
+    $updCompleteSQL = <<<EOS
+UPDATE transaction
+SET paid = IFNULL(paid,0.0) + ?
+WHERE id = ?;
+EOS;
+    $completed = dbSafeCmd($updCompleteSQL, 'ii', array($new_payment['amt'], $master_tid));
 }
+
 $completed = 0;
 if ($complete) {
     // payment is in full, mark transaction complete
