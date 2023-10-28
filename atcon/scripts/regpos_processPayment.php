@@ -141,7 +141,7 @@ foreach ($cart_membership as $cart_row) {
             $cart_row['paid'] += $amt_paid;
             $cart_membership[$cart_row['index']] = $cart_row;
             $amt -= $amt_paid;
-            $upd_rows += dbSafeCmd($updPaymentSQL, $ptypestr, array($cart_row['paid'], $cart_row['regid'], $master_tid));
+            $upd_rows += dbSafeCmd($updPaymentSQL, $ptypestr, array($cart_row['paid'], $master_tid, $cart_row['regid']));
         } else {
             $cupd_rows += dbSafeCmd($updCouponSQL, $ctypestr, array($cart_row['couponDiscount'], $coupon, $cart_row['regid']));
         }
@@ -159,10 +159,10 @@ EOS;
 } else { // normal payment
     $updCompleteSQL = <<<EOS
 UPDATE transaction
-SET paid = IFNULL(paid,0.0) + ?
+SET paid = IFNULL(paid,'0.00') + ?
 WHERE id = ?;
 EOS;
-    $completed = dbSafeCmd($updCompleteSQL, 'is', array($new_payment['amt'], $master_tid));
+    $completed = dbSafeCmd($updCompleteSQL, 'si', array($new_payment['amt'], $master_tid));
 }
 
 $completed = 0;
