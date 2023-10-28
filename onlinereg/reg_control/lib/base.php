@@ -52,6 +52,7 @@ function google_init($mode) {
 
   // set redirect URI to current page -- maybe make this better later.
   $redirect_uri = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
+  $state = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
 
   $client = new Google\Client();
   $client->setAuthConfigFile($db_ini['google']['json']);
@@ -68,30 +69,37 @@ function google_init($mode) {
 
   if(isset($_SESSION['access_token']) && $_SESSION['access_token']) {
     $client->setAccessToken($_SESSION['access_token']);
+    web_error_log("with access token", "google");
   } else {
+    web_error_log("WITHOUT access token from: " . $_SERVER['PHP_SELF'], "google");
+    $client->setState($state);
     $client->setRedirectUri($redirect_uri);
     if($_SESSION['user_email']) { $client->setLoginHint($_SESSION['user_email']); } 
     $auth_url = $client->createAuthUrl();
-    header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
+    if($mode=='page') {
+      header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
+    } else { return false; }
   }
 
     //handle code response
-    if (isset($_GET['code'])) {
+    if (isset($_GET['code'])) { // need to handle other auth responses
         $client->authenticate($_GET['code']);
         $token = $client->getAccessToken();
         // store in the session also
         $_SESSION['access_token'] = $token;
         // redirect back to the example
+        // this is probably where to use state...
         if($mode=='page') {
           header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
         } else { return false; }
     }
 
     if($token_data = $client->verifyIdToken()) {
+        web_error_log("verified token for: " . $token_data['email'], "google");
         return($token_data);
     } else { 
+        web_error_log("UNVERIFIED token from: " . $_SERVER['PHP_SELF'], "google");
         unset($_SESSION['access_token']);
-        $client->setRedirectUri($redirect_uri);
         if($mode=='page') {
           header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
         } else { return false; } 

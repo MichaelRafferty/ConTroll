@@ -15,16 +15,20 @@ if (!$db_ini) {
     $db_ini = parse_ini_file(__DIR__ . "/../config/reg_conf.ini", true);
 }
 $log = get_conf("log");
+$debug_set = get_conf("debug");
 $logdest = $log['web'];
 
 // Function web_error_log($string)
 // $string = string to write to file $logdest with added newline at end
-function web_error_log($string): void
+function web_error_log($string, $debug=""): void
 {
     global $logdest;
+    global $debug_set;
 
-    error_log(date("Y-m-d H:i:s") . ": " . $string . "\n", 3, $logdest);
-    error_log(date("Y-m-d H:i:s") . ": " . $string . "\n");
+    if(($debug == "") or (array_key_exists($debug, $debug_set) and ($debug_set[$debug]==1))) {
+        error_log(date("Y-m-d H:i:s") . ": " . $string . "\n", 3, $logdest);
+        error_log(date("Y-m-d H:i:s") . ": " . $string . "\n");
+    }
 }
 // Function var_error_log()
 // $object = object to be dumped to the PHP error log
