@@ -50,4 +50,4 @@ UPDATE reg r
 SET r.complete_trans = t.id
 WHERE r.complete_trans IS NULL AND r.price > 0 AND r.price = (r.paid + r.couponDiscount) AND p.amount >= r.paid;
 
-INSERT INTO patchLog(id, name) values(11, 'reg_history');
+INSERT INTO patchLog(id, name) values(12, 'reg_complete_trans');
