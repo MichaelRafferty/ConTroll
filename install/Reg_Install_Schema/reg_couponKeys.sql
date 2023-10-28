@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.31, for macos12 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -36,12 +36,8 @@ CREATE TABLE `couponKeys` (
   KEY `couponkeys_couponid_fk` (`couponId`),
   KEY `couponkey_usedby_fk` (`usedBy`),
   KEY `couponkeys_createby_fk` (`createBy`),
-  KEY `couponkeys_perid_fk` (`perid`),
-  CONSTRAINT `couponkey_usedby_fk` FOREIGN KEY (`usedBy`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `couponkeys_couponid_fk` FOREIGN KEY (`couponId`) REFERENCES `coupon` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `couponkeys_createby_fk` FOREIGN KEY (`createBy`) REFERENCES `user` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `couponkeys_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `couponkeys_perid_fk` (`perid`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -53,4 +49,4 @@ CREATE TABLE `couponKeys` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-08-15 13:48:36
+-- Dump completed on 2023-10-26 13:36:42

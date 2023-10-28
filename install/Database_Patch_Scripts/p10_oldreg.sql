@@ -3,6 +3,6 @@
 
 
 insert into auth(id, name, page, display)
-values('999', 'registration-old', 'Y', 'Old Reg')
+values('999', 'registration-old', 'Y', 'Old Reg');
 
 INSERT INTO patchLog(id, name) values(10, 'oldreg');

@@ -890,7 +890,7 @@ EOH;
         <form id='changepw' action='javascript:void(0)'>
         <div class='row'>
             <div class='col-sm-$width'>
-                <label for='oldPw'>Old Password:</label>
+                <label for='oldPw'>Old or Temp Password:</label>
             </div>
             <div class='col-sm-8'>
                 <input type='password' id='oldPw' name='oldPassword' required/>

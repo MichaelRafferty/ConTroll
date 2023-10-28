@@ -20,6 +20,21 @@ page_init("Badge List",
                     'js/coupon.js'),
                     $need_login);
 
+$con = get_con();
+$conid = $con['id'];
+// load membership types for limit to membership type
+$limitSQL = <<<EOS
+SELECT id, label, price, enddate
+FROM memLabel
+WHERE conid = ? AND price > 0 AND memCategory not in ('freebie', 'rollover', 'cancel', 'addon', 'add-on')
+ORDER BY label, enddate, price
+EOS;
+$limitR = dbSafeQuery($limitSQL, 'i', array($conid));
+$optionList = "<option value=''>Not Limited</option>\n";
+while ($row = fetch_safe_assoc($limitR)) {
+    $optionList .= '<option value="' . $row['id'] . '">' . $row['label'] . ' (' . $row['price'] . ': ' . $row['enddate'] . ")</option>\n";
+}
+
 // first the modal for editing/adding a coupon
 ?>
 <div id='edit_coupon' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Add/Edit Coupon' aria-hidden='true' style='--bs-modal-width: 80%;'>
@@ -43,7 +58,7 @@ page_init("Badge List",
                                 <label for='form_code'>Code*:</label>
                             </div>
                             <div class='col-sm-auto p-0'>
-                                <input class='form-control-sm' type='text' name='code' id='form_code' size='16' required/>
+                                <input class='form-control-sm' type='text' name='code' id='form_code' size='16' maxlength="16" required/>
                             </div>
                         </div>
                         <div class='row mb-1'>
@@ -51,7 +66,7 @@ page_init("Badge List",
                                 <label for='form_name'>Descriptive Name*:</label>
                             </div>
                             <div class='col-sm-auto p-0'>
-                                <input class='form-control-sm' type='text' name='name' id='form_name' size='32' required/>
+                                <input class='form-control-sm' type='text' name='name' id='form_name' size='32' maxlength="32" required/>
                             </div>
                         </div>
                         <div class='row mb-1'>
@@ -107,8 +122,10 @@ page_init("Badge List",
                             <div class='col-sm-4'>
                                 <label for='form_memId'>Limit to membership type: </label>
                             </div>
-                            <div class='col-sm-auto p-0'>
-                                <input class='form-control-sm' id='form_memId' type='text' name='memId'/>
+                            <div class='col-sm-8 p-0'>
+                                <select class='form-control-sm' id='form_memId' name='memId'>
+                                    <?php echo $optionList; ?>
+                                </select>
                             </div>
                         </div>
                         <div class='row mb-1'>

@@ -70,7 +70,7 @@ JOIN memList m ON (r.memId = m.id)
 JOIN perinfo p ON (r.perid = p.id)
 LEFT OUTER JOIN reg r1 ON (r1.conid = ? AND r.perid = r1.perid)
 LEFT OUTER JOIN memList m1 ON (r1.memId = m1.id)
-LEFT OUTER JOIN atcon_history H ON (H.regid = r.id and action = 'print')
+LEFT OUTER JOIN reg_history H ON (H.regid = r.id and action = 'print')
 WHERE r.conid = ? AND r.id = ?
 EOS;
 $result = dbSafeQuery($validateSQL, 'iii', array($nextcon, $conid, $badgeid));
