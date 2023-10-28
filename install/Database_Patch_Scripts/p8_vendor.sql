@@ -150,7 +150,7 @@ CREATE OR REPLACE VIEW vw_VendorSpace AS
 	LEFT OUTER JOIN vendorSpacePrices pur ON (v.item_purchased = pur.id);
 
 
-ALTER TABLE payments modify column category enum('reg','artshow','other',’vendor’) DEFAULT NULL;
+ALTER TABLE payments modify column category enum('reg','artshow','other','vendor') DEFAULT NULL;
 
 INSERT INTO patchLog(id, name) values(8, 'new vendor');
 

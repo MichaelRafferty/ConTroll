@@ -154,6 +154,7 @@ window.onload = function initpage() {
     // find people
     pattern_field = document.getElementById("find_pattern");
     pattern_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') find_record('search'); });
+    pattern_field.focus();
     id_div = document.getElementById("find_results");
     find_unpaid_button = document.getElementById("find_unpaid_btn");
     isCashier = find_unpaid_button !== undefined && find_unpaid_button !== null;
@@ -459,6 +460,8 @@ function start_over(reset_all) {
     // reset data to call up
     result_perinfo = [];
     result_membership = [];
+    emailAddreesRecipients = [];
+    last_email_row = '';
 
     // reset tabs to initial values
     find_tab.disabled = false;
@@ -479,6 +482,7 @@ function start_over(reset_all) {
     clear_add(reset_all);
     // set tab to find-tab
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
+    pattern_field.focus();
 }
 
 // show the full perinfo record as a hover in the table

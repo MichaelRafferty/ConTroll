@@ -17,15 +17,16 @@ if($check_auth == false || (!checkAuth($check_auth['sub'], $perm) &&
 
 $user = $check_auth['email'];
 $response['user'] = $user;
-$userQ = "SELECT id FROM user WHERE email=?;";
+$userQ = "SELECT id, perid FROM user WHERE email=?;";
 $userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', array($user)));
 $userid = $userR['id'];
+$user_perid = $userR['perid'];
 $con = get_conf('con');
 $conid=$con['id'];
 
 $attachQ = "INSERT IGNORE INTO reg_history(userid, tid, regid, action, notes)
 VALUES (?, ?, ?, ?, ?);";
-$attachR = dbSafeInsert($attachQ, 'iiiss', array($userid, $_POST['transid'], $_POST['badgeId'], 'notes', $user . ": " . $_POST['content']));
+$attachR = dbSafeInsert($attachQ, 'iiiss', array($user_perid, $_POST['transid'], $_POST['badgeId'], 'notes', $user . ": " . $_POST['content']));
 
 $atconQ = <<<EOS
 SELECT logdate, action, notes

@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.31, for macos12 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -39,12 +39,8 @@ CREATE TABLE `memList` (
   UNIQUE KEY `memList_dups` (`conid`,`label`,`startdate`,`enddate`),
   KEY `FK_memList_ageType` (`conid`,`memAge`),
   KEY `memList_memCategory_fk` (`memCategory`),
-  KEY `memList_memType_fk` (`memType`),
-  CONSTRAINT `memList_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `memList_memAge_fk` FOREIGN KEY (`conid`, `memAge`) REFERENCES `ageList` (`conid`, `ageType`) ON UPDATE CASCADE,
-  CONSTRAINT `memList_memCategory_fk` FOREIGN KEY (`memCategory`) REFERENCES `memCategories` (`memCategory`) ON UPDATE CASCADE,
-  CONSTRAINT `memList_memType_fk` FOREIGN KEY (`memType`) REFERENCES `memTypes` (`memType`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `memList_memType_fk` (`memType`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -56,4 +52,4 @@ CREATE TABLE `memList` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-08-15 13:48:36
+-- Dump completed on 2023-10-26 13:36:43

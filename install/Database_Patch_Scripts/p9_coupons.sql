@@ -21,10 +21,10 @@ CREATE TABLE coupon (
 	updateTS timestamp DEFAULT NULL,
 	updateBy int DEFAULT NULL, /* ref to user table */
 	PRIMARY KEY (id),
-	CONSTRAINT "coupon_conid_fk" FOREIGN KEY (conid) REFERENCES conlist(id) ON UPDATE CASCADE,
-	CONSTRAINT "coupon_memid_fk" FOREIGN KEY (memId) REFERENCES memList(id) ON UPDATE CASCADE,
-	CONSTRAINT "coupon_createby_fk" FOREIGN KEY (createBy) REFERENCES user(id) ON UPDATE CASCADE,
-	CONSTRAINT "coupon_updateby_fk" FOREIGN KEY (updateBy) REFERENCES user(id) ON UPDATE CASCADE
+	CONSTRAINT `coupon_conid_fk` FOREIGN KEY (conid) REFERENCES conlist(id) ON UPDATE CASCADE,
+	CONSTRAINT `coupon_memid_fk` FOREIGN KEY (memId) REFERENCES memList(id) ON UPDATE CASCADE,
+	CONSTRAINT `coupon_createby_fk` FOREIGN KEY (createBy) REFERENCES user(id) ON UPDATE CASCADE,
+	CONSTRAINT `coupon_updateby_fk` FOREIGN KEY (updateBy) REFERENCES user(id) ON UPDATE CASCADE
 );
 
 
@@ -39,10 +39,10 @@ CREATE TABLE couponKeys (
 	useTS timestamp DEFAULT NULL,
 	usedBy int DEFAULT NULL,
 	PRIMARY KEY (id),
-	CONSTRAINT "couponkeys_couponid_fk" FOREIGN KEY (couponId) REFERENCES coupon(id) ON UPDATE CASCADE ON DELETE CASCADE,
-	CONSTRAINT "couponkeys_usedby_fk" FOREIGN KEY (usedby) REFERENCES transaction(id) ON UPDATE CASCADE,
-	CONSTRAINT "couponkeys_createby_fk" FOREIGN KEY (createBy) REFERENCES user(id) ON UPDATE CASCADE,
-	CONSTRAINT "couponkeys_perid_fk" FOREIGN KEY (perid) REFERENCES perinfo(id) ON UPDATE CASCADE ON DELETE CASCADE
+	CONSTRAINT `couponkeys_couponid_fk` FOREIGN KEY (couponId) REFERENCES coupon(id) ON UPDATE CASCADE ON DELETE CASCADE,
+	CONSTRAINT `couponkeys_usedby_fk` FOREIGN KEY (usedby) REFERENCES transaction(id) ON UPDATE CASCADE,
+	CONSTRAINT `couponkeys_createby_fk` FOREIGN KEY (createBy) REFERENCES user(id) ON UPDATE CASCADE,
+	CONSTRAINT `couponkeys_perid_fk` FOREIGN KEY (perid) REFERENCES perinfo(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 ALTER TABLE reg ADD COLUMN coupon int default null;
@@ -116,4 +116,5 @@ END$$
 
 DELIMITER ;
 
+INSERT INTO auth(name, page, display) values ('coupon', 'Y', 'Coupon');
 INSERT INTO patchLog(id, name) values(9, 'coupons');
