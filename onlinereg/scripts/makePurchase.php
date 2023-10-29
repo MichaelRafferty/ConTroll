@@ -403,8 +403,8 @@ if($approved_amt == $total) {
 $txnUpdate .= "paid=?, couponDiscount = ? WHERE id=?;";
 $txnU = dbSafeCmd($txnUpdate, "ddi", array($approved_amt, $totalDiscount, $transid) );
 
-$regQ = "UPDATE reg SET paid=price-couponDiscount WHERE create_trans=?;";
-dbSafeCmd($regQ, "i", array($transid));
+$regQ = "UPDATE reg SET paid=price-couponDiscount, complete_trans = ? WHERE create_trans=?;";
+dbSafeCmd($regQ, "ii", array($transid, $transid));
 
 // mark coupon used
 if ($coupon !== null && $coupon['keyId'] !== null) {

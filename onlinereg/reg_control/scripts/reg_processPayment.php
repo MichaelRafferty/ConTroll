@@ -140,7 +140,6 @@ if ($new_payment['type'] == 'online') {
 
 
 $complete = round($amt,2) == round($total_due,2);
-
 // now add the payment and process to which rows it applies
 $upd_rows = 0;
 $cupd_rows = 0;
@@ -169,10 +168,10 @@ $response['prow'] = $new_payment;
 $response['message'] = "1 payment added";
 $updPaymentSQL = <<<EOS
 UPDATE reg
-SET paid = ?
+SET paid = ?, complete_trans = ?
 WHERE id = ?;
 EOS;
-$ptypestr = 'si';
+$ptypestr = 'sii';
 
 $updCouponSQL = <<<EOS
 UPDATE reg
@@ -194,7 +193,7 @@ foreach ($cart_membership as $cart_row) {
             $cart_row['paid'] += $amt_paid;
             $cart_membership[$cart_row['index']] = $cart_row;
             $amt -= $amt_paid;
-            $upd_rows += dbSafeCmd($updPaymentSQL, $ptypestr, array($cart_row['paid'], $cart_row['regid']));
+            $upd_rows += dbSafeCmd($updPaymentSQL, $ptypestr, array($cart_row['paid'], $master_tid, $cart_row['regid']));
         } else {
             $cupd_rows += dbSafeCmd($updCouponSQL, $ctypestr, array($cart_row['couponDiscount'], $coupon, $cart_row['regid']));
         }
@@ -208,7 +207,14 @@ UPDATE transaction
 SET coupon = ?, couponDiscount = ?
 WHERE id = ?;
 EOS;
-    $completed = dbSafeCmd($updCompleteSQL, 'iis', array($coupon, $amt, $master_tid));
+    $completed = dbSafeCmd($updCompleteSQL, 'isi', array($coupon, $amt, $master_tid));
+} else { // normal payment
+    $updCompleteSQL = <<<EOS
+UPDATE transaction
+SET paid = IFNULL(paid,'0.00') + ?
+WHERE id = ?;
+EOS;
+    $completed = dbSafeCmd($updCompleteSQL, 'si', array($new_payment['amt'], $master_tid));
 }
 $completed = 0;
 if ($complete) {

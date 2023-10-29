@@ -227,7 +227,7 @@ class consetup {
             layout: "fitDataTable",
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
-                { title: "ID", field: "id", visible: false },
+                { title: "ID", field: "id", headerSort: true },
                 { title: "Con ID", field: "conid", headerFilter: true },
                 { title: "Sort", field: "sort_order", headerSort: false, visible: false },
                 { title: "Category", field: "memCategory", editor: "list", editorParams: { values: data['memCats'], }, headerFilter: true, headerFilterParams: { values: data['memCats'] } },

@@ -18,10 +18,10 @@ if (!check_atcon($method, $conid)) {
 }
 
 page_init($page, 'admin',
-    /* css */ array('https://unpkg.com/tabulator-tables@5.5.1/dist/css/tabulator.min.css',
-                    'https://unpkg.com/tabulator-tables@5.5.1/dist/css/tabulator_bootstrap5.min.css',
+    /* css */ array('https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css',
+                    'https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_bootstrap5.min.css',
                     'css/registration.css'),
-    /* js  */ array('https://unpkg.com/tabulator-tables@5.5.1/dist/js/tabulator.min.js',
+    /* js  */ array('https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js',
                     'js/admin.js')
     );
 
