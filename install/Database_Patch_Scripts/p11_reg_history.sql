@@ -1,5 +1,5 @@
 /* p11_reg_history */
-/* rename the atcon_histroy table to reg_history as it now supports reg_control as well as atcon change histoy */
+/* rename the atcon_histroy table to reg_history as it now supports reg_control as well as atcon change history */
 
 
 RENAME TABLE atcon_history TO reg_history;

@@ -98,8 +98,14 @@ function init_file($printer)//:string {
             fclose($temp);
             break;
         default:
-            if (!copy(dirname(__FILE__) . '/init.ps', $tempfile)) {
-                $response['error'] = 'Unable to copy init.ps file';
+            $atcon = get_conf('atcon');
+            if (array_key_exists('badgeps', $atcon)) {
+                $filename = $atcon['badgeps'];
+            } else {
+                $filename = dirname(__FILE__) . '/init.ps';
+            }
+            if (!copy($filename, $tempfile)) {
+                $response['error'] = 'Unable to copy badge ps header file';
                 $response['error_message'] = error_get_last();
                 //var_error_log($response);
                 ajaxSuccess($response);
