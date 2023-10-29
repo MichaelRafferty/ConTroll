@@ -349,8 +349,8 @@ if ($approved_amt == $totprice) {
 $txnUpdate .= 'paid=? WHERE id=?;';
 $txnU = dbSafeCmd($txnUpdate, 'di', array($approved_amt, $transid));
 // reg (badge)
-$regQ = 'UPDATE reg SET paid=price WHERE create_trans=?;';
-$numrows = dbSafeCmd($regQ, 'i', array($transid));
+$regQ = 'UPDATE reg SET paid=price, complete_trans=? WHERE create_trans=?;';
+$numrows = dbSafeCmd($regQ, 'ii', array($transid, $transid));
 if ($numrows != 1) {
     $error_msg .= "Unable to mark transaction completed\n";
 }
