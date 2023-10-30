@@ -70,7 +70,7 @@ function google_init($mode) {
     $client->setAccessToken($_SESSION['access_token']);
   } else {
     $client->setRedirectUri($redirect_uri);
-    if($_SESSION['user_email']) { $client->setLoginHint($_SESSION['user_email']); } 
+    if (array_key_exists('user_email', $_SESSION) && $_SESSION['user_email']) { $client->setLoginHint($_SESSION['user_email']); }
     $auth_url = $client->createAuthUrl();
     header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
   }
