@@ -18,7 +18,7 @@ if($check_auth == false || (!checkAuth($check_auth['sub'], $perm) &&
 $user = $check_auth['email'];
 $response['user'] = $user;
 $userQ = "SELECT id, perid FROM user WHERE email=?;";
-$userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', array($user)));
+$userR = dbSafeQuery($userQ, 's', array($user))->fetch_assoc();
 $userid = $userR['id'];
 $user_perid = $userR['perid'];
 $con = get_conf('con');
