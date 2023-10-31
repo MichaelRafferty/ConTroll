@@ -304,31 +304,99 @@ EOS;
 
     // now for the payments/coupon section
 
-    // if only a coupon and no payments
-    if (count($data['payments']) <= 0 && count($data['coupons']) > 0) {
-        $coupons = $data['coupons'];
-        $plural = count($coupons) > 1 ? 's' : '';
-        $receipt .= "\nCoupon$plural Applied:\n";
+    // if payments > 0, then output payments header
+    if (count($data['payments']) > 0) {
+        $receipt .= "\nPayments:\nType, Description/Code, Amount\n";
         $receipt_html .= <<<EOS
+    <div class='row mt-2'>
+        <div class='col-sm-12'>
+            <h3>Payments::</h3>
+        </div>
+    </div>
+    <div class='row mt-1'>
+        <div class='col-sm-1'>Type</div>
+        <div class="col-sm-6">Description/Code</div>
+        <div class="col-sm-2">Amount</div>
+    </div>
+EOS;
+    }
+
+    $payment_total = 0;
+    // if only a coupon and no payments
+    if ( count($data['coupons']) > 0) {
+        if (count($data['payments']) <= 0) {
+            $coupons = $data['coupons'];
+            $plural = count($coupons) > 1 ? 's' : '';
+            $receipt .= "\nCoupon$plural Applied:\n";
+            $receipt_html .= <<<EOS
     <div class='row mt-2'>
         <div class='col-sm-12'>
             <h3>Coupon$plural Applied:</h3>
         </div>
     </div>
 EOS;
+        }
         foreach ($coupons as $coupon) {
             $name = $coupon['name'];
             $code = $coupon['code'];
             $id = $coupon['id'];
-            $discount = $dolfmt->formatCurrency((float) sum_coupon_discount($id, $data['memberships']), 'USD');
+            $discount =  sum_coupon_discount($id, $data['memberships']);
+            $payment_total += $discount;
+            $discount = $dolfmt->formatCurrency((float) $discount, 'USD');
             $receipt .= "Coupon: $name ($code): $discount\n";
             $receipt_html .= <<<EOS
     <div class='row'>
-        <div class='col-sm-7'>Coupon: $name ($code)</div>
+        <div class='col-sm-1'>Coupon</div>
+        <div class="col-sm-6">$name ($code)</div>
         <div class="col-sm-2">$discount</div>
     </div>
 EOS;
         }
+    }
+
+    // now loop over the payments
+    foreach ($data['payments'] as $pmt) {
+        $type = $pmt['type'];
+        $desc = $pmt['description'];
+        $amt = $pmt['amount'];
+        $payment_total += $amt;
+        $amt = $dolfmt->formatCurrency((float) $amt, 'USD');
+        $aprvl = $pmt['cc_approval_code'];
+        $url = $pmt['receipt_url'];
+        if ($aprvl != null && $aprvl != '') {
+            $aprvl = " ($aprvl),";
+        } else {
+            $aprvl = ",";
+        }
+    }
+        $url = $pmt['receipt_url'];
+        $receipt .= "$type, $desc$aprvl $amt\n";
+        $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class='col-sm-1'>$type</div>
+        <div class="col-sm-6">$desc$aprvl</div>
+        <div class="col-sm-2">$amt</div>
+    </div>
+EOS;
+        if ($url != null && $url != '') {
+            $receipt .= "     $url\n";
+            $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class='col-sm-1'></div>
+        <div class="col-sm-auto">$url</div>
+    </div>
+EOS;
+    }
+
+    if ($payment_total > 0) {
+        $payment_total = $dolfmt->formatCurrency((float) $payment_total, 'USD');
+        $receipt .= "\nTotal Patments: $payment_total\n";
+        $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class='col-sm-7'>Total Payments</div>
+        <div class="col-sm-2">$payment_total</div>
+    </div>
+EOS;
     }
 
     $response['receipt'] = $receipt;
