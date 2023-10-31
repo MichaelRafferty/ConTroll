@@ -28,7 +28,7 @@ page_init("Badge List",
         <div class='modal-content'>
             <div class='modal-header bg-primary text-bg-primary'>
                 <div class='modal-title'>
-                    <strong id='vendorAddEditTitle'>Transfer Registration</strong>
+                    <strong id='transferTitle'>Transfer Registration</strong>
                 </div>
                 <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
             </div>
@@ -72,6 +72,26 @@ page_init("Badge List",
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
                 <button class='btn btn-sm btn-primary' id='transferSearch' onClick='transfer_find()'>Find Person</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id='receipt' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Registration Receipt' aria-hidden='true' style='--bs-modal-width: 80%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='receiptTitle'>Registration Receipt</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div id="receipt-div">
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
+                <button class='btn btn-sm btn-primary' id='emailReceipt' onClick='receipt_email()'>Email Receipt</button>
             </div>
         </div>
     </div>

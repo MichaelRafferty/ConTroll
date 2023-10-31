@@ -27,6 +27,7 @@ SELECT R.create_date, R.change_date, R.price, R.couponDiscount, R.paid, R.id AS 
     , CONCAT_WS('-', M.memCategory, M.memType, M.memAge) as memTyp
     , M.memCategory AS category, M.memType AS type, M.memAge AS age, M.label
     , ifnull(C.name, ' None ') as name
+    , R.create_trans, R.complete_trans
 FROM reg R
 JOIN memLabel M ON (M.id=R.memId)
 LEFT OUTER JOIN perinfo P ON (P.id=R.perid)

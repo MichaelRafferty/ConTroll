@@ -270,7 +270,7 @@ EOS;
 
     $receipt .= "\nMemberships:\n";
     $receipt_html .= <<<EOS
-    <div class='row mt=4'>
+    <div class='row mt-4'>
         <div class='col-sm-12'>
             <h3>Memberships:</h3>
         </div>
@@ -302,9 +302,50 @@ EOS;
     </div>
 EOS;
 
+    // now for the payments/coupon section
+
+    // if only a coupon and no payments
+    if (count($data['payments']) <= 0 && count($data['coupons']) > 0) {
+        $coupons = $data['coupons'];
+        $plural = count($coupons) > 1 ? 's' : '';
+        $receipt .= "\nCoupon$plural Applied:\n";
+        $receipt_html .= <<<EOS
+    <div class='row mt-2'>
+        <div class='col-sm-12'>
+            <h3>Coupon$plural Applied:</h3>
+        </div>
+    </div>
+EOS;
+        foreach ($coupons as $coupon) {
+            $name = $coupon['name'];
+            $code = $coupon['code'];
+            $id = $coupon['id'];
+            $discount = $dolfmt->formatCurrency((float) sum_coupon_discount($id, $data['memberships']), 'USD');
+            $receipt .= "Coupon: $name ($code): $discount\n";
+            $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class='col-sm-7'>Coupon: $name ($code)</div>
+        <div class="col-sm-2">$discount</div>
+    </div>
+EOS;
+        }
+    }
+
     $response['receipt'] = $receipt;
     $response['receipt_html'] = $receipt_html;
     return $response;
+}
+
+// loop over all the regs and sum to total usage of a coupon id
+function sum_coupon_discount($id, $memberships) {
+    $discount = 0;
+    foreach ($memberships as $pid => $list)  {
+        foreach ($list as $item) {
+            if ($item['coupon'] == $id)
+                $discount += $item['couponDiscount'];
+        }
+    }
+    return $discount;
 }
 
 // format a member block for the receipt
@@ -324,7 +365,7 @@ function reg_format_mbr($data, $person, $list, &$receipt, &$receipt_html) {
 
     $receipt .= "\nMember: $name\n";
     $receipt_html .= <<<EOS
-    <div class='row mt=4'>
+    <div class='row mt-1'>
         <div class='col-sm-12'>
             <h4><strong>Member:</strong> $name</h4>
         </div>
@@ -338,7 +379,7 @@ EOS;
         $receipt .= "     $label: $price\n";
         $receipt_html .= <<<EOS
     <div class="row">
-        <div class"col-sm-1"></div>
+        <div class="col-sm-1"></div>
         <div class="col-sm-6">$label</div>
         <div class="col-sm-2">$price</div>
     </div>
@@ -349,7 +390,7 @@ EOS;
     $receipt .= "     Subtotal: $price\n";
     $receipt_html .= <<<EOS
     <div class="row">
-        <div class"col-sm-1"></div>
+        <div class="col-sm-1"></div>
         <div class="col-sm-6">Subtotal</div>
         <div class="col-sm-2">$price</div>
     </div>
