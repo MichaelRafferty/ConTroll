@@ -101,7 +101,8 @@ function google_init($mode) {
         web_error_log("UNVERIFIED token from: " . $_SERVER['PHP_SELF'], "google");
         unset($_SESSION['access_token']);
         if($mode=='page') {
-          header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
+          $auth_url = $client->createAuthUrl();
+          header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
         } else { return false; } 
     }
 }
