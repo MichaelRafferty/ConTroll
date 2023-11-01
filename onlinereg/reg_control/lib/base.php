@@ -89,9 +89,7 @@ function google_init($mode) {
         $_SESSION['access_token'] = $token;
         // redirect back to the example
         // this is probably where to use state...
-        if($mode=='page') {
-          header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
-        } else { return false; }
+        header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
     }
 
     if($token_data = $client->verifyIdToken()) {
