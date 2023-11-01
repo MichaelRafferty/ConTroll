@@ -13,6 +13,7 @@ var labelfilter = null;
 var couponfilter = null;
 var transfer_modal = null;
 var receipt_modal = null;
+var receipt_email_address = null;
 var find_result_table = null;
 var find_pattern_field = null;
 var testdiv = null;
@@ -27,6 +28,9 @@ $(document).ready(function () {
     id = document.getElementById('receipt');
     if (id != null) {
         receipt_modal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+        $('#receipt').on('hide.bs.modal', function () {
+            receipt_email_address = null;
+        });
     }
 
     find_pattern_field = document.getElementById("transfer_name_search");
@@ -369,7 +373,17 @@ function actionbuttons(cell, formatterParams, onRendered) {
 // display receipt: use the modal to show the receipt
 function displayReceipt(data) {
     document.getElementById('receipt-div').innerHTML = data['receipt_html'];
+    receipt_email_address = data['payor_email'];
+    document.getElementById('emailReceipt').innerHTML = "Email Receipt to " + data['payor_name'] + ' at ' + receipt_email_address;
+    document.getElementById('receiptTitle').innerHTML = "Registration Receipt for " + data['payor_name'];
     receipt_modal.show();
+}
+
+function receipt_email() {
+    if (receipt_email_address == null)
+        return;
+
+    alert(receipt_email_address);
 }
 // receipt - display a receipt for the transaction for this badge
 function receipt(index) {

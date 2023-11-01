@@ -173,7 +173,7 @@ EOS;
     //// now vendor spaces on that id
     $vendorSQL = <<<EOS
 $withTrans
-SELECT vp.id, vp.transid, vp.paid, vsp.description, vsp.price, vs.name AS space_name, v.name AS vendor_name
+SELECT vp.id, vp.transid, vp.paid, vsp.description, vsp.price, vs.name AS space_name, v.name AS vendor_name, v.email
 FROM allTrans at
 JOIN vendor_space vp ON (vp.transid = at.transid)
 JOIN vendorSpacePrices vsp ON (vsp.id = vp.item_purchased)
@@ -208,7 +208,8 @@ function reg_format_receipt($data) {
     $condata = get_con();
     $conlabel = $condata['label'];
     $receipt_date = $master_transaction['complete_date'] ? "Completed on " . $master_transaction['complete_date_str'] : "Created on " . $master_transaction['create_date_str'];
-
+    $title_payor_name = 'unknown';
+    $title_email = '';
     // Receipt Title:
     $receipt = "Receipt for payment to $conlabel\n$receipt_date\n";
     $receipt_html = <<<EOS
@@ -237,13 +238,23 @@ EOS;
         $payor_name .= ', ' . $payor['suffix'];
     $payor_name = trim($payor_name);
     $master_tid = $master_transaction['id'];
+    if (count($data['vendors']) > 0) {
+        $title_payor_name = $data['vendors'][0]['vendor_name'];
+        $title_email = $data['vendors'][0]['email'];
+    } else {
+        $title_payor_name = $payor_name;
+        $title_email = $payor['email_addr'];
+    }
+
+    $response['payor_name'] = $title_payor_name;
+    $response['payor_email'] = $title_email;
 
     switch ($type) {
         case 'artist':
             RenderErrorAjax('Artists receipts not yet supported');
             exit();
         case 'website':
-            $receipt .= "By: $payor_name, Via: Online Registration Website, Transaction: $master_tid\n";
+            $receipt .= "By: $title_payor_name, Via: Online Registration Website, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-12">
@@ -253,33 +264,33 @@ EOS;
 EOS;
             break;
         case 'vendor':
-            $receipt .= "By: $payor_name, Via: Vendor Portal, Transaction: $master_tid\n";
+            $receipt .= "By: $title_payor_name, Via: Vendor Portal, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-12">
-            By: $payor_name, Via: Vendor Portal, Transaction: $master_tid
+            By: $title_payor_name, Via: Vendor Portal, Transaction: $master_tid
         </div>
     </div>
 EOS;
             break;
         case 'atcon':
             $cashier = $master_transaction['userid'];
-            $receipt .= "By: $payor_name, Via: On-Site Registration, Cashier: $cashier, Transaction: $master_tid\n";
+            $receipt .= "By: $title_payor_name, Via: On-Site Registration, Cashier: $cashier, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-12">
-            By: $payor_name, Via: On-Site Registration Cashier: $cashier, Transaction: $master_tid
+            By: $title_payor_name, Via: On-Site Registration Cashier: $cashier, Transaction: $master_tid
         </div>
     </div>
 EOS;
             break;
         default: // reg_control receipts (registration, badgelist, people, etc.)
             $cashier = $master_transaction['userid'];
-            $receipt .= "By: $payor_name, Via: Registration Staff Member: $cashier, Transaction: $master_tid\n";
+            $receipt .= "By: $title_payor_name, Via: Registration Staff Member: $cashier, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-12">
-            By: $payor_name, Via: Registration Staff Member: $cashier, Transaction: $master_tid
+            By: $title_payor_name, Via: Registration Staff Member: $cashier, Transaction: $master_tid
         </div>
     </div>
  EOS;
