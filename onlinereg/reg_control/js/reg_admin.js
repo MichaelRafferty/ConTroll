@@ -12,6 +12,7 @@ var paidfilter = null;
 var labelfilter = null;
 var couponfilter = null;
 var transfer_modal = null;
+var receipt_modal = null;
 var find_result_table = null;
 var find_pattern_field = null;
 var testdiv = null;
@@ -21,6 +22,11 @@ $(document).ready(function () {
     id = document.getElementById('transfer_to');
     if (id != null) {
         transfer_modal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+    }
+
+    id = document.getElementById('receipt');
+    if (id != null) {
+        receipt_modal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
 
     find_pattern_field = document.getElementById("transfer_name_search");
@@ -331,29 +337,71 @@ function actionbuttons(cell, formatterParams, onRendered) {
     if (category == 'cancel')  // no actions can be taken on a cancelled membership
         return "";
 
-    if (category == 'dealer') // dealer cannot be rolled over due to dealer allocation system, dealer transfers are only allowed to other workers for that dealer and have to be handled on-site by the dealer
-        return "";
-
     var btns = "";
     var row = cell.getRow();
     var price = row.getCell("price").getValue();
     var paid = row.getCell("paid").getValue();
+    var complete_trans = row.getCell("complete_trans").getValue();
     var index = row.getIndex();
 
-    // transfer buttons
-    if ((category == 'addon' || category == 'add-on') && paid > 0) {
-        btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" onclick="transfer(' + index + ')">Transfer</button>';
-    } else if (price > 0 && paid > 0)
-        btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index + ')">Transfer</button>';
-    else if (price == 0 && paid == 0)
-        btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index +')">Transfer</button>';
+    if (category != 'dealers') { // dealers can't roll over, and transfer is handled on-site only in atcon re-assigning the name.
+        // transfer buttons
+        if ((category == 'addon' || category == 'add-on') && paid > 0) {
+            btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" onclick="transfer(' + index + ')">Transfer</button>';
+        } else if (price > 0 && paid > 0)
+            btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index + ')">Transfer</button>';
+        else if (price == 0 && paid == 0)
+            btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index + ')">Transfer</button>';
 
-    // rollover buttons
-    if (price > 0 && paid > 0)
-        btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
-    else if (price == 0 && paid == 0)
-        btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
+        // rollover buttons
+        if (price > 0 && paid > 0)
+            btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
+        else if (price == 0 && paid == 0)
+            btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
+    }
+
+    // receipt buttons
+    if (paid > 0 && complete_trans > 0)
+        btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="receipt(' + index + ')">Receipt</button>';
     return btns;
+}
+
+// display receipt: use the modal to show the receipt
+function displayReceipt(data) {
+    document.getElementById('receipt-div').innerHTML = data['receipt_html'];
+    receipt_modal.show();
+}
+// receipt - display a receipt for the transaction for this badge
+function receipt(index) {
+    var row = badgetable.getRow(index);
+    var transid = row.getCell("complete_trans").getValue();
+    if (transid == null || transid == '') {
+        transid = row.getCell("create_trans").getValue();
+    }
+    $.ajax({
+        method: "POST",
+        url: "scripts/getReceipt.php",
+        data: { transid },
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['success'] !== undefined) {
+                show_message(data['success'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+            }
+            displayReceipt(data);
+            if (data['success'] !== undefined)
+                show_message(data.success, 'success');
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in rolloverBadge: " + textStatus, jqXHR);
+        }
+    });
+
 }
 
 // rollover - cancel his years badge and create it as a rollover in next yeers con
@@ -563,6 +611,7 @@ function draw_badges(data) {
         paginationSize: 10,
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         columns: [
+            { title: "TID", field: "display_trans", headerSort: true, headerFilter: true },
             { title: "Person", field: "p_name", headerSort: true, headerFilter: true },
             { title: "Badge Name", field: "p_badge", headerSort: true, headerFilter: true },
             { title: "Membership Type", field: "label", headerSort: true, headerFilter: true, },
@@ -577,8 +626,14 @@ function draw_badges(data) {
             { field: "type", visible: false },
             { field: "badgeId", visible: false },
             { field: "perid", visible: false },
-            { title: "Action", formatter: actionbuttons, hozAlign:"center", headerSort: false },
-        ]
+            { field: "create_trans", visible: false },
+            { field: "complete_trans", visible: false },
+            { title: "Action", formatter: actionbuttons, hozAlign:"left", headerSort: false },
+        ],
+        initialSort: [
+            {column: "display_trans", dir: "desc" },
+            {column: "change_date", dir: "desc" },
+        ],
     });
 }
 

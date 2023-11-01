@@ -84,7 +84,7 @@ EOQ;
 $badgeR = dbSafeQuery($badgeQ, 'i', array($transid));
 $badges = array();
 $total = 0;
-while($badge = $badgeR->fetch_safe_assoc()) {
+while($badge = $badgeR->fetch_assoc()) {
     array_push($badges, $badge);
     $total += $badge['paid'];
 }
