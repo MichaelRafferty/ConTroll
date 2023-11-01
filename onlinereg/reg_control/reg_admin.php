@@ -22,6 +22,7 @@ page_init("Badge List",
                     $need_login);
 
 // first the modal for transfer to
+$con_conf = get_conf('con');
 ?>
 <div id='transfer_to' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Transfer Registration' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
@@ -86,12 +87,15 @@ page_init("Badge List",
                 <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                <div id="receipt-div">
-                </div>
+                <div id="receipt-div"></div>
+                <div id="regadminemail" hidden="true"><?php echo $con_conf['regadminemail'];?></div>
+                <div id="receipt-text" hidden="true"></div>
+                <div id="receipt-tables" hidden="true"></div>
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
-                <button class='btn btn-sm btn-primary' id='emailReceipt' onClick='receipt_email()'>Email Receipt</button>
+                <button class='btn btn-sm btn-primary' id='emailReceipt' onClick='receipt_email("payor")'>Email Receipt</button>
+                <button class='btn btn-sm btn-primary' id='emailReceiptReg' onClick='receipt_email("reg")'>Email Receipt to regadmin at <?php echo $con_conf['regadminemail'];?></button>
             </div>
         </div>
     </div>

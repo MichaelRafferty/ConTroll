@@ -225,6 +225,11 @@ function reg_format_receipt($data) {
         </div>
     </div>
 EOS;
+    $receipt_tables = <<<EOS
+<table>
+<tr><td colspan="3"><h2>Receipt for payment to $conlabel</h2></td></tr>
+<tr><td colspan="3">$receipt_date</td></tr>
+EOS;
 
     // Payor Info
     $type = $data['type'];
@@ -262,6 +267,10 @@ EOS;
         </div>
     </div>
 EOS;
+            $receipt_tables .= <<<EOS
+<tr><td colspan="3">By: $payor_name, Via: Online Registration Website, Transaction: $master_tid</td></tr>
+EOS;
+
             break;
         case 'vendor':
             $receipt .= "By: $title_payor_name, Via: Vendor Portal, Transaction: $master_tid\n";
@@ -272,6 +281,10 @@ EOS;
         </div>
     </div>
 EOS;
+            $receipt_tables .= <<<EOS
+<tr><td colspan="3">By: $title_payor_name, Via: Vendor Portal, Transaction: $master_tid</td></tr>
+EOS;
+
             break;
         case 'atcon':
             $cashier = $master_transaction['userid'];
@@ -294,6 +307,9 @@ EOS;
         </div>
     </div>
  EOS;
+            $receipt_tables .= <<<EOS
+<tr><td colspan="3">By: $title_payor_name, Via: Registration Staff Member: $cashier, Transaction: $master_tid</td></tr>
+EOS;
             break;
     }
 
@@ -305,19 +321,23 @@ EOS;
         </div>
     </div>
 EOS;
+    $receipt_tables .= <<<EOS
+<tr><td colspan="3">&nbsp;</td> </tr>
+<tr><td colspan="3"><h3>Memberships:</h3></td></tr>
+EOS;
 
     // first output the payor
     $payor_pid = $payor['pid'];
     $list = $data['memberships'][$payor_pid];
     $total = 0;
-    $subtotal = reg_format_mbr($data, $data['people'][$payor_pid], $list, $receipt, $receipt_html);
+    $subtotal = reg_format_mbr($data, $data['people'][$payor_pid], $list, $receipt, $receipt_html, $receipt_tables);
     $total += $subtotal;
 
     foreach ($data['memberships'] as $pid => $list) {
         if ($payor_pid == $pid)
             continue;
 
-        $subtotal = reg_format_mbr($data, $data['people'][$pid], $list, $receipt, $receipt_html);
+        $subtotal = reg_format_mbr($data, $data['people'][$pid], $list, $receipt, $receipt_html, $receipt_tables);
         $total += $subtotal;
     }
 
@@ -331,6 +351,11 @@ EOS;
         </div>
     </div>
 EOS;
+        $receipt_tables .= <<<EOS
+<tr><td colspan="3">&nbsp;</td></tr>
+<tr><td colspan="3"><h3>Vendor Spaces:</h3></td></tr>
+EOS;
+
         foreach ($data['vendors'] as $vendor) {
             $vendor_price = $vendor['price'];
             $total += $vendor_price;
@@ -347,6 +372,10 @@ EOS;
         <div class="col-sm-2">$vendor_price</div>
     </div>
 EOS;
+            $receipt_tables .= <<<EOS
+<tr><td>$vendor_sid</td><td>$vendor_desc in $vendor_area for $vendor_name</td><td>$vendor_price</td></tr>
+EOS;
+
         }
     }
 
@@ -358,6 +387,9 @@ EOS;
         <div class="col-sm-7">Total Due:</div>
         <div class="col-sm-2">$price</div>
     </div>
+EOS;
+    $receipt_tables .= <<<EOS
+<tr><td colspan="2">Total Due</td><td>$price</td></tr>
 EOS;
 
     // now for the payments/coupon section
@@ -378,6 +410,11 @@ EOS;
     </div>
 EOS;
     }
+    $receipt_tables .= <<<EOS
+<tr><td colspan="3">&nbsp;</td></tr>
+<tr><td colspan="3"><h3>Payments:</h3></td></tr>
+<tr><td>Type</td><td>Description/Code</td><td>Amount</td></tr>
+EOS;
 
     $payment_total = 0;
     // if only a coupon and no payments
@@ -393,6 +430,11 @@ EOS;
         </div>
     </div>
 EOS;
+            $receipt_tables .= <<<EOS
+<tr><td colspan="3">&nbsp;</td></tr>
+<tr><td colspan="3"><h3>Coupon$plural Applied:</h3></td></tr>
+EOS;
+
         }
         foreach ($coupons as $coupon) {
             $name = $coupon['name'];
@@ -408,6 +450,9 @@ EOS;
         <div class="col-sm-6">$name ($code)</div>
         <div class="col-sm-2">$discount</div>
     </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td>Coupon</td><td>$name ($code)</td><td>$discount</td></tr>
 EOS;
         }
     }
@@ -448,6 +493,10 @@ EOS;
         <div class="col-sm-2">$amt</div>
     </div>
 EOS;
+        $receipt_tables .= <<<EOS
+<tr><td>$type</td><td>$desc$aprvl</td><td>$amt</td></tr>
+EOS;
+
         if ($url != null && $url != '') {
             $receipt .= "     $url\n";
             $receipt_html .= <<<EOS
@@ -455,6 +504,9 @@ EOS;
         <div class='col-sm-1'></div>
         <div class="col-sm-auto">$url</div>
     </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td>&nbsp;</td><td colspan="2">$url</td></tr>
 EOS;
         }
     }
@@ -468,10 +520,14 @@ EOS;
         <div class="col-sm-2">$payment_total</div>
     </div>
 EOS;
+        $receipt_tables .= <<<EOS
+<tr><td colspan="2">Total Payments</td><td>$payment_total</td></tr>
+EOS;
     }
 
     $response['receipt'] = $receipt;
     $response['receipt_html'] = $receipt_html;
+    $response['receipt_tables'] = $receipt_tables . "</table>\n";
     return $response;
 }
 
@@ -488,7 +544,7 @@ function sum_coupon_discount($id, $memberships) {
 }
 
 // format a member block for the receipt
-function reg_format_mbr($data, $person, $list, &$receipt, &$receipt_html) {
+function reg_format_mbr($data, $person, $list, &$receipt, &$receipt_html, &$receipt_tables) {
     $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
     // first the name:
     $name = trim($person['first_name']);
@@ -510,6 +566,10 @@ function reg_format_mbr($data, $person, $list, &$receipt, &$receipt_html) {
         </div>
     </div>
 EOS;
+    $receipt_tables .= <<<EOS
+<tr><td colspan="3"><h4><strong>Member:</strong> $name</h4></td></tr>
+EOS;
+
     $subtotal = 0;
     // loop over their memberships
     foreach ($list AS $row) {
@@ -524,6 +584,10 @@ EOS;
         <div class="col-sm-2">$price</div>
     </div>
 EOS;
+        $receipt_tables .= <<<EOS
+<tr><td>$id</td><td>$label</td><td>$price</td></tr>
+EOS;
+
         $subtotal += $row['price'];
     }
     $price = $dolfmt->formatCurrency((float) $subtotal, 'USD');
@@ -534,6 +598,9 @@ EOS;
         <div class="col-sm-6">Subtotal</div>
         <div class="col-sm-2">$price</div>
     </div>
+EOS;
+    $receipt_tables .= <<<EOS
+<tr><td>&nbsp;</td><td>Subtotal</td><td>$price</td></tr>
 EOS;
 
     return $subtotal;

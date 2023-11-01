@@ -373,17 +373,56 @@ function actionbuttons(cell, formatterParams, onRendered) {
 // display receipt: use the modal to show the receipt
 function displayReceipt(data) {
     document.getElementById('receipt-div').innerHTML = data['receipt_html'];
+    document.getElementById('receipt-tables').innerHTML = data['receipt_tables'];
+    document.getElementById('receipt-text').innerHTML = data['receipt'];
     receipt_email_address = data['payor_email'];
     document.getElementById('emailReceipt').innerHTML = "Email Receipt to " + data['payor_name'] + ' at ' + receipt_email_address;
     document.getElementById('receiptTitle').innerHTML = "Registration Receipt for " + data['payor_name'];
     receipt_modal.show();
 }
 
-function receipt_email() {
+function receipt_email(addrchoice) {
+    var email = receipt_email_address;
+    var success='';
+    if (addrchoice == 'reg') {
+        email = document.getElementById('regadminemail').innerHTML;
+        success = 'Receipt sent to Regadmin at ' + email;
+    }
+
     if (receipt_email_address == null)
         return;
 
-    alert(receipt_email_address);
+    if (success == '')
+        success = document.getElementById('emailReceipt').innerHTML.replace("Email Receipt to", "Receipt sent to");
+
+    var data = {
+        email: email,
+        okmsg: success,
+        text: document.getElementById('receipt-text').innerHTML,
+        html: document.getElementById('receipt-tables').innerHTML,
+        subject: document.getElementById('receiptTitle').innerHTML,
+        success: success,
+    };
+    $.ajax({
+        method: "POST",
+        url: "scripts/emailReceipt.php",
+        data: data,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['success'] !== undefined) {
+                show_message(data['success'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in emailReceipt: " + textStatus, jqXHR);
+        }
+    });
 }
 // receipt - display a receipt for the transaction for this badge
 function receipt(index) {
@@ -412,7 +451,7 @@ function receipt(index) {
                 show_message(data.success, 'success');
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            showError("ERROR in rolloverBadge: " + textStatus, jqXHR);
+            showError("ERROR in getReceipt: " + textStatus, jqXHR);
         }
     });
 
