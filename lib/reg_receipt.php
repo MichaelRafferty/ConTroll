@@ -375,11 +375,11 @@ EOS;
         $amt = $dolfmt->formatCurrency((float)$amt, 'USD');
 
         if ($aprvl != '' && $cc != '')
-            $aprvl = " ($cc, $aprvl)";
+            $aprvl = " (last 4: $cc, auth: $aprvl)";
         else if ($cc != '')
-            $aprvl = ", $cc";
+            $aprvl = ", last4: $cc";
         else
-            $aprvl = " ($aprvl)";
+            $aprvl = " (auth: $aprvl)";
 
         $url = $pmt['receipt_url'];
         $receipt .= "$type, $desc$aprvl, $amt\n";
