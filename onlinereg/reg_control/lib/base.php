@@ -74,7 +74,7 @@ function google_init($mode) {
     web_error_log("WITHOUT access token from: " . $_SERVER['PHP_SELF'], "google");
     $client->setState($state);
     $client->setRedirectUri($redirect_uri);
-    if (array_key_exists('user_email', $_SESSION) && $_SESSION['user_email']) { $client->setLoginHint($_SESSION['user_email']); }
+    if(array_key_exists('user_email', $_SESSION) && ($_SESSION['user_email'])) { $client->setLoginHint($_SESSION['user_email']); }
     $auth_url = $client->createAuthUrl();
     if($mode=='page') {
       header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
