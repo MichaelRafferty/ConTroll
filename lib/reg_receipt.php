@@ -310,7 +310,7 @@ EOS;
         $receipt_html .= <<<EOS
     <div class='row mt-2'>
         <div class='col-sm-12'>
-            <h3>Payments::</h3>
+            <h3>Payments:</h3>
         </div>
     </div>
     <div class='row mt-1'>
@@ -324,9 +324,9 @@ EOS;
     $payment_total = 0;
     // if only a coupon and no payments
     if ( count($data['coupons']) > 0) {
+        $coupons = $data['coupons'];
+        $plural = count($coupons) > 1 ? 's' : '';
         if (count($data['payments']) <= 0) {
-            $coupons = $data['coupons'];
-            $plural = count($coupons) > 1 ? 's' : '';
             $receipt .= "\nCoupon$plural Applied:\n";
             $receipt_html .= <<<EOS
     <div class='row mt-2'>
@@ -360,17 +360,17 @@ EOS;
         $desc = $pmt['description'];
         $amt = $pmt['amount'];
         $payment_total += $amt;
-        $amt = $dolfmt->formatCurrency((float) $amt, 'USD');
+        $amt = $dolfmt->formatCurrency((float)$amt, 'USD');
         $aprvl = $pmt['cc_approval_code'];
         $url = $pmt['receipt_url'];
-        if ($aprvl != null && $aprvl != '') {
-            $aprvl = " ($aprvl),";
+        if ($aprvl != null && trim($aprvl) != '') {
+            $aprvl = " ($aprvl)";
         } else {
-            $aprvl = ",";
+            $aprvl = "";
         }
-    }
+
         $url = $pmt['receipt_url'];
-        $receipt .= "$type, $desc$aprvl $amt\n";
+        $receipt .= "$type, $desc$aprvl, $amt\n";
         $receipt_html .= <<<EOS
     <div class='row'>
         <div class='col-sm-1'>$type</div>
@@ -386,11 +386,12 @@ EOS;
         <div class="col-sm-auto">$url</div>
     </div>
 EOS;
+        }
     }
 
     if ($payment_total > 0) {
         $payment_total = $dolfmt->formatCurrency((float) $payment_total, 'USD');
-        $receipt .= "\nTotal Patments: $payment_total\n";
+        $receipt .= "\nTotal Payments: $payment_total\n";
         $receipt_html .= <<<EOS
     <div class='row'>
         <div class='col-sm-7'>Total Payments</div>

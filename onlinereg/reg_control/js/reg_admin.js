@@ -361,7 +361,8 @@ function actionbuttons(cell, formatterParams, onRendered) {
         btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
 
     // receipt buttons
-    btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="receipt(' + index + ')">Receipt</button>';
+    if (paid > 0)
+        btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="receipt(' + index + ')">Receipt</button>';
     return btns;
 }
 
