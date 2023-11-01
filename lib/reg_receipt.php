@@ -5,7 +5,7 @@
 
 function trans_receipt($transid)
 {
-    // get the transaction information
+    //// get the transaction information
     $transQ = <<<EOS
 SELECT id, conid, perid, newperid, userid, create_date, DATE_FORMAT(create_date, '%W %M %e, %Y %h:%i:%s %p') as create_date_str,
        complete_date, DATE_FORMAT(complete_date, '%W %M %e, %Y %h:%i:%s %p') as complete_date_str,
@@ -31,7 +31,7 @@ EOS;
     $response['userid'] = $userid;
     $response['transaction'] = $transL;
 
-    // get the payor information involved in this transaction
+    //// get the payor information involved in this transaction
     if ($transL['perid'] > 0) {
         $payorSQL = <<<EOS
 SELECT 'perinfo' AS tablename, id, CONCAT('p-', id) AS pid, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, address, addr_2, city, state, zip, state, country
@@ -56,7 +56,7 @@ EOS;
 
     $response['payor'] = $payorL;
 
-    // get memberships referenced by this transaction
+    //// get memberships referenced by this transaction
     ///     can be directly via create_trans or complete_trans (memPeople)
     ///     or indirectly via people referenced in this transaction and their reg transactions
 
@@ -107,7 +107,7 @@ EOS;
     }
     $response['memberships'] = $memberships;
 
-    // now all the people mentioned in those memberships
+    //// now all the people mentioned in those memberships
     $peopleSQL = <<<EOS
 $withTrans, allReg AS (
     SELECT DISTINCT r.id, r.perid, r.newperid
@@ -152,7 +152,7 @@ EOS;
     }
     $response['payments'] = $payments;
 
-    // get all coupons used
+    //// next, get all coupons used
     $couponSQL = <<<EOS
     $withTrans
     SELECT DISTINCT c.*
@@ -169,6 +169,24 @@ EOS;
         $coupons[] = $couponL;
     }
     $response['coupons'] = $coupons;
+
+    //// now vendor spaces on that id
+    $vendorSQL = <<<EOS
+$withTrans
+SELECT vp.id, vp.transid, vp.paid, vsp.description, vsp.price, vs.name AS space_name, v.name AS vendor_name
+FROM allTrans at
+JOIN vendor_space vp ON (vp.transid = at.transid)
+JOIN vendorSpacePrices vsp ON (vsp.id = vp.item_purchased)
+JOIN vendorSpaces vs ON (vs.id = vsp.spaceid)
+JOIN vendors v ON (vp.vendorId = v.id)
+ORDER BY vs.name, vsp.description
+EOS;
+    $vendorR = dbSafeQuery($vendorSQL, 'iiiiii', array($conid, $transid, $transid, $conid, $conid, $conid));
+    $vendors = [];
+    while ($vendorL = $vendorR->fetch_assoc()) {
+        $vendors[] = $vendorL;
+    }
+    $response['vendors'] = $vendors;
 
     return reg_format_receipt($response);
 }
@@ -290,6 +308,35 @@ EOS;
 
         $subtotal = reg_format_mbr($data, $data['people'][$pid], $list, $receipt, $receipt_html);
         $total += $subtotal;
+    }
+
+    // now vendor spaces if they exist
+    if (count($data['vendors']) > 0) {
+        $receipt .= "\nVendor Spaces:\n";
+        $receipt_html .= <<<EOS
+    <div class='row mt-4'>
+        <div class='col-sm-12'>
+            <h3>Vendor Spaces:</h3>
+        </div>
+    </div>
+EOS;
+        foreach ($data['vendors'] as $vendor) {
+            $vendor_price = $vendor['price'];
+            $total += $vendor_price;
+            $vendor_price = $dolfmt->formatCurrency((float) $vendor['price'], 'USD');
+            $vendor_sid = $vendor['id'];
+            $vendor_area = $vendor['space_name'];
+            $vendor_desc = $vendor['description'];
+            $vendor_name = $vendor['vendor_name'];
+            $receipt .= "$vendor_area, $vendor_desc, $vendor_name, $vendor_price\n";
+            $receipt_html .= <<<EOS
+    <div class="row">
+        <div class="col-sm-1">$vendor_sid</div>
+        <div class="col-sm-6">$vendor_desc in $vendor_area for $vendor_name</div>
+        <div class="col-sm-2">$vendor_price</div>
+    </div>
+EOS;
+        }
     }
 
     // now the total due
