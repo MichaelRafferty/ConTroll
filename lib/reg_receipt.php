@@ -359,15 +359,27 @@ EOS;
         $type = $pmt['type'];
         $desc = $pmt['description'];
         $amt = $pmt['amount'];
+        $cc = $pmt['cc'];
+        if ($cc === null)
+            $cc = "";
+        else
+            $cc = mb_substr($cc, -4);
+        $aprvl = $pmt['cc_approval_code'];
+        if ($aprvl === null)
+            $aprvl = '';
+        else
+            $aprcl = trim($aprvl);
+        $url = $pmt['receipt_url'];
+
         $payment_total += $amt;
         $amt = $dolfmt->formatCurrency((float)$amt, 'USD');
-        $aprvl = $pmt['cc_approval_code'];
-        $url = $pmt['receipt_url'];
-        if ($aprvl != null && trim($aprvl) != '') {
+
+        if ($aprvl != '' && $cc != '')
+            $aprvl = " ($cc, $aprvl)";
+        else if ($cc != '')
+            $aprvl = ", $cc";
+        else
             $aprvl = " ($aprvl)";
-        } else {
-            $aprvl = "";
-        }
 
         $url = $pmt['receipt_url'];
         $receipt .= "$type, $desc$aprvl, $amt\n";
@@ -445,10 +457,11 @@ EOS;
     foreach ($list AS $row) {
         $price = $dolfmt->formatCurrency((float) $row['price'], 'USD');
         $label = $row['label'];
-        $receipt .= "     $label: $price\n";
+        $id = $row['id'];
+        $receipt .= "$id, $label: $price\n";
         $receipt_html .= <<<EOS
     <div class="row">
-        <div class="col-sm-1"></div>
+        <div class="col-sm-1">$id</div>
         <div class="col-sm-6">$label</div>
         <div class="col-sm-2">$price</div>
     </div>
