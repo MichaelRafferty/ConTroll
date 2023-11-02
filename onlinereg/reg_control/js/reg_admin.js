@@ -337,16 +337,16 @@ function draw_stats(data) {
 }
 
 function actionbuttons(cell, formatterParams, onRendered) {
-    var category = cell.getRow().getCell('category').getValue();
+    var data = cell.getData();
+    var category = data['category'];
     if (category == 'cancel')  // no actions can be taken on a cancelled membership
         return "";
 
     var btns = "";
-    var row = cell.getRow();
-    var price = row.getCell("price").getValue();
-    var paid = row.getCell("paid").getValue();
-    var complete_trans = row.getCell("complete_trans").getValue();
-    var index = row.getIndex();
+    var index = cell.getRow().getIndex();
+    var price = data['price'];
+    var paid = data['paid'];
+    var complete_trans = data['complete_trans'];
 
     if (category != 'dealers') { // dealers can't roll over, and transfer is handled on-site only in atcon re-assigning the name.
         // transfer buttons
@@ -460,8 +460,9 @@ function receipt(index) {
 // rollover - cancel his years badge and create it as a rollover in next yeers con
 function rollover(index) {
     var row = badgetable.getRow(index);
-    var perid = row.getCell('perid').getValue();
-    var confirm_msg = "Confirm rollover for " + row.getCell("p_name").getValue().trim() + "'s badge of type " + row.getCell("label").getValue() + " to " + (conid + 1) + '?';
+    var data = row.getData();
+    var perid = data['perid'];
+    var confirm_msg = "Confirm rollover for " + data['p_name'].trim() + "'s badge of type " + data['label'] + " to " + (conid + 1) + '?';
     if (confirm(confirm_msg)) {
         $.ajax({
             method: "POST",
@@ -491,21 +492,22 @@ function rollover(index) {
 
 // transfer - get information to build modal popup to find person to transfer to
 function transfer(index) {
-    row = badgetable.getRow(index);
+    var row = badgetable.getRow(index);
+    var data = row.getData();
 
-    if (row.getCell("price").getValue() > 0 && row.getCell("paid").getValue() == 0)
+    if (data['price'] > 0 && data['paid'] == 0)
         return;
 
-    if (row.getCell("price").getValue() == 0) {
+    if (data['price'] == 0) {
         if (confirm("This is a free badge, really transfer it?\n(Is it an included vendor badge or similar situation?)") == false)
             returm;
     }
 
-    var badgeid = row.getCell("badgeId").getValue();
-    var fullname = row.getCell('p_name').getValue();
-    var badgename = row.getCell('p_badge').getValue();
-    var badgelabel = row.getCell('label').getValue();
-    var perid = row.getCell('perid').getValue();
+    var badgeid = data['badgeId'];
+    var fullname = data['p_name'];
+    var badgename = data['p_badge'];
+    var badgelabel = data['label'];
+    var perid = data['perid'];
 
     document.getElementById("transfer_name_search").value = '';
     if (find_result_table != null) {
