@@ -268,7 +268,18 @@ for ($i = 0; $i < count($additionalMembershipStatus); $i++) {
         $error_msg .= $badge['error'];
     }
 }
+if ($transid === null) {
+    // no tranasction yet, because no badges
+    $transQ = <<<EOS
+INSERT INTO transaction(price, type, conid, notes)
+    VALUES(?, ?, ?);
+EOS;
 
+    $transid = dbSafeInsert($transQ, 'dsi', array($space['totprice'], 'vendor', $conid, $space['spaceId']));
+    if ($transid === false) {
+        $status_msg .= 'Add of transaction for vendor ' . $_POST['name'] . " failed.\n";
+    }
+}
 // now charge the credit card, built the result structure to log the item and build the order
 // first the badges
 $all_badgeQ = <<<EOS
