@@ -22,7 +22,7 @@ foreach ($dir as $entry) {
     $lines = file($fname);
     $localname = pathinfo($fname, PATHINFO_FILENAME);
 
-    if ($localname == 'reg_routines.sql') {
+    if ($localname == 'reg_routines') {
         strip_creator($localname, $lines);
     } else {
         strip_fk($localname, $lines);
@@ -76,9 +76,11 @@ function strip_creator($fname, $lines) {
     foreach ($lines as $line) {
         $line = str_replace("\n", '', $line);
         $line = str_replace('utf8mb4_0900_ai_ci', 'utf8mb4_general_ci', $line);
-        // skip: /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-        if (preg_match("/50013 DEFINER=/i", $line))
-            continue;
+        // remove the DEFINER= part of : /*!50013 DEFINER=`root`@`localhost` SQL SECURITY and change the SECURITY to INVOKER
+        if (preg_match("/50013 DEFINER=/i", $line)) {
+            $line = preg_replace("/DEFINER=[\"'`][^\"'`]*[\"'`]@[\"'`][^\"'`]*[\"'`] */i", "", $line);
+            $line = str_replace('SQL SECURITY DEFINER', 'SQL SECURITY INVOKER', $line);
+        }
 
         // get rid of definer within CREATE DEFINER='root'@'localhost' PROCEDURE...
         if (preg_match("/CREATE DEFINER=/i", $line)) {
