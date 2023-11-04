@@ -9,7 +9,7 @@ function trans_receipt($transid)
     $transQ = <<<EOS
 SELECT id, conid, perid, newperid, userid, create_date, DATE_FORMAT(create_date, '%W %M %e, %Y %h:%i:%s %p') as create_date_str,
        complete_date, DATE_FORMAT(complete_date, '%W %M %e, %Y %h:%i:%s %p') as complete_date_str,
-       price, couponDiscount, paid, withtax, tax, type, notes, change_due, coupon
+       price, couponDiscount, paid, withtax, tax, type, notes, change_due, coupon, notes
 FROM transaction
 WHERE id = ?;
 EOS;
@@ -44,6 +44,15 @@ SELECT 'newperson' AS tablename, id, CONCAT('n-', id) AS pid, last_name, first_n
 FROM newperson WHERE id = ?;
 EOS;
         $payor = $transL['newperid'];
+    } else if (is_numeric($transL['notes'])) {
+        $payorSQL = <<<EOS
+SELECT 'vendor' AS tablename, v.id, CONCAT('v-', v.id) AS pid, name AS last_name, '' AS first_name, '' AS middle_name, '' AS suffix, email AS email_addr, 
+       website AS phone, name AS badge_name, addr AS address, addr2 as addr_2, city, state, zip, state,'' AS country
+FROM vendor_space vs
+JOIN vendors v ON (vs.vendorId = v.id)
+WHERE vs.id = ?;
+EOS;
+        $payor = $transL['notes'];
     } else {
         $payor = null;
     }
@@ -130,7 +139,7 @@ LEFT OUTER JOIN perinfo p ON (r.perid = p.id)
 LEFT OUTER JOIN newperson n ON (r.newperid = n.id)
 ORDER BY 1
 EOS;
-$peopleR = dbSafeQuery($peopleSQL, 'iiiiiii', array($conid, $transid, $transid, $conid, $conid, $conid, $conid));
+    $peopleR = dbSafeQuery($peopleSQL, 'iiiiiii', array($conid, $transid, $transid, $conid, $conid, $conid, $conid));
     $people = [];
     while ($peopleL = $peopleR->fetch_assoc()) {
         $people[$peopleL['pid']] = $peopleL;
@@ -138,14 +147,24 @@ $peopleR = dbSafeQuery($peopleSQL, 'iiiiiii', array($conid, $transid, $transid, 
     $response['people'] = $people;
 
     // now get all payments
-    $paySQL = <<<EOS
+    if (substr($payor, 0, 1) != 'v') {
+        $paySQL = <<<EOS
+SELECT p.*
+FROM payments p
+WHERE transid = ?
+ORDER BY id;
+EOS;
+        $payR = dbSafeQuery($paySQL, 'i', array($transid));
+    } else {
+        $paySQL = <<<EOS
 $withTrans
 SELECT p.*
 FROM payments p
 JOIN allTrans t ON (p.transid = t.transid)
 ORDER BY id;
 EOS;
-    $payR = dbSafeQuery($paySQL, 'iiiiii', array($conid, $transid, $transid, $conid, $conid, $conid));
+        $payR = dbSafeQuery($paySQL, 'iiiiii', array($conid, $transid, $transid, $conid, $conid, $conid));
+    }
     $payments = [];
     while ($payL = $payR->fetch_assoc()) {
         $payments[] = $payL;
@@ -171,7 +190,19 @@ EOS;
     $response['coupons'] = $coupons;
 
     //// now vendor spaces on that id
-    $vendorSQL = <<<EOS
+    if (substr($payor, 0, 1) != 'v') {
+        $vendorSQL = <<<EOS
+SELECT vp.id, vp.transid, vp.paid, vsp.description, vsp.price, vs.name AS space_name, v.name AS vendor_name, v.email
+FROM vendor_space vp
+JOIN vendorSpacePrices vsp ON (vsp.id = vp.item_purchased)
+JOIN vendorSpaces vs ON (vs.id = vsp.spaceid)
+JOIN vendors v ON (vp.vendorId = v.id)
+WHERE vp.transid = ?
+ORDER BY vs.name, vsp.description
+EOS;
+        $vendorR = dbSafeQuery($vendorSQL, 'i', array($transid));
+    } else {
+        $vendorSQL = <<<EOS
 $withTrans
 SELECT vp.id, vp.transid, vp.paid, vsp.description, vsp.price, vs.name AS space_name, v.name AS vendor_name, v.email
 FROM allTrans at
@@ -181,11 +212,13 @@ JOIN vendorSpaces vs ON (vs.id = vsp.spaceid)
 JOIN vendors v ON (vp.vendorId = v.id)
 ORDER BY vs.name, vsp.description
 EOS;
-    $vendorR = dbSafeQuery($vendorSQL, 'iiiiii', array($conid, $transid, $transid, $conid, $conid, $conid));
+        $vendorR = dbSafeQuery($vendorSQL, 'iiiiii', array($conid, $transid, $transid, $conid, $conid, $conid));
+    }
     $vendors = [];
     while ($vendorL = $vendorR->fetch_assoc()) {
         $vendors[] = $vendorL;
     }
+
     $response['vendors'] = $vendors;
 
     return reg_format_receipt($response);
@@ -327,11 +360,13 @@ EOS;
 EOS;
 
     // first output the payor
-    $payor_pid = $payor['pid'];
-    $list = $data['memberships'][$payor_pid];
     $total = 0;
-    $subtotal = reg_format_mbr($data, $data['people'][$payor_pid], $list, $receipt, $receipt_html, $receipt_tables);
-    $total += $subtotal;
+    $payor_pid = $payor['pid'];
+    if (substr($payor_pid, 0, 1) != 'v') {
+        $list = $data['memberships'][$payor_pid];
+        $subtotal = reg_format_mbr($data, $data['people'][$payor_pid], $list, $receipt, $receipt_html, $receipt_tables);
+        $total += $subtotal;
+    }
 
     foreach ($data['memberships'] as $pid => $list) {
         if ($payor_pid == $pid)
