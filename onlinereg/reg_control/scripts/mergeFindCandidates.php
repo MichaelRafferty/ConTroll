@@ -32,7 +32,7 @@ $remain = $_POST['remain'];
 if (array_key_exists('matchCount', $_POST)) {
     $matchCount = $_POST['matchCount'];
 } else {
-    $matchCount = 9;
+    $matchCount = 6;
 }
 
 $response = checkmerge($remain, $matchCount);

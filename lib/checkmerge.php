@@ -46,7 +46,7 @@ EOS;
         $rowkey = 'r' . $row['id'];
         // loop over each rowb computing the count of matching fields, not counting spaces, or empty fields
         foreach ($allPerinfo as $checkrow) {
-            if ($checkrow['id'] <= $row['id'])
+            if ($checkrow['id'] <= $row['id'] && $remainPid == 0)
                 continue;
             $matchkey = 'r' . $checkrow['id'];
             $match = 0;
