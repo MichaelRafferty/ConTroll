@@ -32,9 +32,9 @@ WHERE id = ?;
 EOQ;
 
 if(strtolower(substr($_GET['id'],0,1)) == 'f') {
-    $id = dbQuery("select min(id) id from newperson where perid IS NULL;")->fetch_array(MYSQLI_NUM)[0];
+    $id = dbQuery("select min(id) id from newperson where perid IS NULL;")->fetch_row()[0];
 } else if(strtolower(substr($_GET['id'],0,1)) == 'l') {
-    $id = dbQuery("select max(id) id from newperson where perid IS NULL;")->fetch_array(MYSQLI_NUM)[0];
+    $id = dbQuery("select max(id) id from newperson where perid IS NULL;")->fetch_row()[0];
 } else {
     $id = $_GET['id'];
 }
