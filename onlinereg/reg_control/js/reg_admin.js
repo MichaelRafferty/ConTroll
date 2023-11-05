@@ -12,6 +12,8 @@ var paidfilter = null;
 var labelfilter = null;
 var couponfilter = null;
 var transfer_modal = null;
+var receipt_modal = null;
+var receipt_email_address = null;
 var find_result_table = null;
 var find_pattern_field = null;
 var testdiv = null;
@@ -21,6 +23,14 @@ $(document).ready(function () {
     id = document.getElementById('transfer_to');
     if (id != null) {
         transfer_modal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+    }
+
+    id = document.getElementById('receipt');
+    if (id != null) {
+        receipt_modal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+        $('#receipt').on('hide.bs.modal', function () {
+            receipt_email_address = null;
+        });
     }
 
     find_pattern_field = document.getElementById("transfer_name_search");
@@ -327,40 +337,132 @@ function draw_stats(data) {
 }
 
 function actionbuttons(cell, formatterParams, onRendered) {
-    var category = cell.getRow().getCell('category').getValue();
+    var data = cell.getData();
+    var category = data['category'];
     if (category == 'cancel')  // no actions can be taken on a cancelled membership
         return "";
 
-    if (category == 'dealer') // dealer cannot be rolled over due to dealer allocation system, dealer transfers are only allowed to other workers for that dealer and have to be handled on-site by the dealer
-        return "";
-
     var btns = "";
-    var row = cell.getRow();
-    var price = row.getCell("price").getValue();
-    var paid = row.getCell("paid").getValue();
-    var index = row.getIndex();
+    var index = cell.getRow().getIndex();
+    var price = data['price'];
+    var paid = data['paid'];
+    var complete_trans = data['complete_trans'];
 
-    // transfer buttons
-    if ((category == 'addon' || category == 'add-on') && paid > 0) {
-        btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" onclick="transfer(' + index + ')">Transfer</button>';
-    } else if (price > 0 && paid > 0)
-        btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index + ')">Transfer</button>';
-    else if (price == 0 && paid == 0)
-        btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index +')">Transfer</button>';
+    if (category != 'dealers') { // dealers can't roll over, and transfer is handled on-site only in atcon re-assigning the name.
+        // transfer buttons
+        if ((category == 'addon' || category == 'add-on') && paid > 0) {
+            btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" onclick="transfer(' + index + ')">Transfer</button>';
+        } else if (price > 0 && paid > 0)
+            btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index + ')">Transfer</button>';
+        else if (price == 0 && paid == 0)
+            btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index + ')">Transfer</button>';
 
-    // rollover buttons
-    if (price > 0 && paid > 0)
-        btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
-    else if (price == 0 && paid == 0)
-        btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
+        // rollover buttons
+        if (price > 0 && paid > 0)
+            btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
+        else if (price == 0 && paid == 0)
+            btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
+    }
+
+    // receipt buttons
+    if (paid > 0 && complete_trans > 0)
+        btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="receipt(' + index + ')">Receipt</button>';
     return btns;
+}
+
+// display receipt: use the modal to show the receipt
+function displayReceipt(data) {
+    document.getElementById('receipt-div').innerHTML = data['receipt_html'];
+    document.getElementById('receipt-tables').innerHTML = data['receipt_tables'];
+    document.getElementById('receipt-text').innerHTML = data['receipt'];
+    receipt_email_address = data['payor_email'];
+    document.getElementById('emailReceipt').innerHTML = "Email Receipt to " + data['payor_name'] + ' at ' + receipt_email_address;
+    document.getElementById('receiptTitle').innerHTML = "Registration Receipt for " + data['payor_name'];
+    receipt_modal.show();
+}
+
+function receipt_email(addrchoice) {
+    var email = receipt_email_address;
+    var success='';
+    if (addrchoice == 'reg') {
+        email = document.getElementById('regadminemail').innerHTML;
+        success = 'Receipt sent to Regadmin at ' + email;
+    }
+
+    if (receipt_email_address == null)
+        return;
+
+    if (success == '')
+        success = document.getElementById('emailReceipt').innerHTML.replace("Email Receipt to", "Receipt sent to");
+
+    var data = {
+        email: email,
+        okmsg: success,
+        text: document.getElementById('receipt-text').innerHTML,
+        html: document.getElementById('receipt-tables').innerHTML,
+        subject: document.getElementById('receiptTitle').innerHTML,
+        success: success,
+    };
+    $.ajax({
+        method: "POST",
+        url: "scripts/emailReceipt.php",
+        data: data,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['success'] !== undefined) {
+                show_message(data['success'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in emailReceipt: " + textStatus, jqXHR);
+        }
+    });
+}
+// receipt - display a receipt for the transaction for this badge
+function receipt(index) {
+    var row = badgetable.getRow(index);
+    var transid = row.getCell("complete_trans").getValue();
+    if (transid == null || transid == '') {
+        transid = row.getCell("create_trans").getValue();
+    }
+    $.ajax({
+        method: "POST",
+        url: "scripts/getReceipt.php",
+        data: { transid },
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['success'] !== undefined) {
+                show_message(data['success'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+            }
+            displayReceipt(data);
+            if (data['success'] !== undefined)
+                show_message(data.success, 'success');
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in getReceipt: " + textStatus, jqXHR);
+        }
+    });
+
 }
 
 // rollover - cancel his years badge and create it as a rollover in next yeers con
 function rollover(index) {
     var row = badgetable.getRow(index);
-    var perid = row.getCell('perid').getValue();
-    var confirm_msg = "Confirm rollover for " + row.getCell("p_name").getValue().trim() + "'s badge of type " + row.getCell("label").getValue() + " to " + (conid + 1) + '?';
+    var data = row.getData();
+    var perid = data['perid'];
+    var confirm_msg = "Confirm rollover for " + data['p_name'].trim() + "'s badge of type " + data['label'] + " to " + (conid + 1) + '?';
     if (confirm(confirm_msg)) {
         $.ajax({
             method: "POST",
@@ -390,21 +492,22 @@ function rollover(index) {
 
 // transfer - get information to build modal popup to find person to transfer to
 function transfer(index) {
-    row = badgetable.getRow(index);
+    var row = badgetable.getRow(index);
+    var data = row.getData();
 
-    if (row.getCell("price").getValue() > 0 && row.getCell("paid").getValue() == 0)
+    if (data['price'] > 0 && data['paid'] == 0)
         return;
 
-    if (row.getCell("price").getValue() == 0) {
+    if (data['price'] == 0) {
         if (confirm("This is a free badge, really transfer it?\n(Is it an included vendor badge or similar situation?)") == false)
             returm;
     }
 
-    var badgeid = row.getCell("badgeId").getValue();
-    var fullname = row.getCell('p_name').getValue();
-    var badgename = row.getCell('p_badge').getValue();
-    var badgelabel = row.getCell('label').getValue();
-    var perid = row.getCell('perid').getValue();
+    var badgeid = data['badgeId'];
+    var fullname = data['p_name'];
+    var badgename = data['p_badge'];
+    var badgelabel = data['label'];
+    var perid = data['perid'];
 
     document.getElementById("transfer_name_search").value = '';
     if (find_result_table != null) {
@@ -563,6 +666,7 @@ function draw_badges(data) {
         paginationSize: 10,
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         columns: [
+            { title: "TID", field: "display_trans", headerSort: true, headerFilter: true },
             { title: "Person", field: "p_name", headerSort: true, headerFilter: true },
             { title: "Badge Name", field: "p_badge", headerSort: true, headerFilter: true },
             { title: "Membership Type", field: "label", headerSort: true, headerFilter: true, },
@@ -577,8 +681,14 @@ function draw_badges(data) {
             { field: "type", visible: false },
             { field: "badgeId", visible: false },
             { field: "perid", visible: false },
-            { title: "Action", formatter: actionbuttons, hozAlign:"center", headerSort: false },
-        ]
+            { field: "create_trans", visible: false },
+            { field: "complete_trans", visible: false },
+            { title: "Action", formatter: actionbuttons, hozAlign:"left", headerSort: false },
+        ],
+        initialSort: [
+            {column: "display_trans", dir: "desc" },
+            {column: "change_date", dir: "desc" },
+        ],
     });
 }
 

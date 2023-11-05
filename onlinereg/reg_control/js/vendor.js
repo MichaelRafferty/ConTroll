@@ -6,6 +6,9 @@ var approve_space = null;
 var price_lists = null;
 var add_space= null;
 var space_map = {};
+var receipt_modal = null;
+var receipt_email_address = null;
+
 $(document).ready(function () {
     id = document.getElementById('update_profile');
     if (id != null) {
@@ -18,6 +21,13 @@ $(document).ready(function () {
     id = document.getElementById('add_vendorSpace');
     if (id != null) {
         add_space = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+    }
+    id = document.getElementById('receipt');
+    if (id != null) {
+        receipt_modal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+        $('#receipt').on('hide.bs.modal', function () {
+            receipt_email_address = null;
+        });
     }
     getData();
 
@@ -85,26 +95,6 @@ function resetpwbutton(cell, formatterParams, onRendered) {
     return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">ResetPW</button>';
 }
 
-function approvalbutton(cell, formatterParams, onRendered) {
-    var data = cell.getData();
-    var req = data['requested_units'];
-    if (req == null)
-        return '';
-
-    var app = data['approved_units'];
-    if (app == null)
-        app = 0;
-
-    var pur = data['purchased_units'];
-    if (pur == null)
-        pur = 0;
-
-    if (pur >= app && app > 0)
-        return '';
-
-    return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Approve</button>';
-}
-
 // show the full vendor record as a hover in the table
 function build_record_hover(e, cell, onRendered) {
     var data = cell.getData();
@@ -129,25 +119,17 @@ function edit(e, cell) {
     return editVendor(vendor);
 }
 
-function approval(e, cell) {
-    var data = cell.getData();
-    var req = data['requested_units'];
+function approval(index) {
+    var row = spacestable.getRow(index);
+    var data = row.getData();
+    var req = data['requested_units'] || 0;
+    var app = data['approved_units'] || 0;
+    var pur = data['purchased_units'] || 0;
 
-    if (req == null)
-        return '';
+    if (req > 0 && (app < pur || pur == 0))
+        approveReq(data);
 
-    var app = data['approved_units'];
-    if (app == null)
-        app = 0;
-
-    var pur = data['purchased_units'];
-    if (pur == null)
-        pur = 0;
-
-    if (pur >= app && app > 0)
-        return '';
-
-    approveReq(data);
+    return '';
 }
 
 function resetpw(e, cell) {
@@ -239,9 +221,10 @@ function draw_spaces(data) {
                             { title: "Units", field: "purchased_units", headerSort:false, headerFilter: false, },
                             { title: "Description", field: "purchased_description", headerSort:false, headerFilter: false, },
                             { title: "Timestamp", field: "time_purchased", headerSort:true, headerFilter: false },
+                            { field: "transid", visible: false },
                         ]
                     },
-                    {title: "", formatter: approvalbutton, hozAlign: "center", cellClick: approval, headerSort: false,},
+                    {title: "", formatter: actionbuttons, hozAlign: "left", headerSort: false,},
                ]
             }
         ]
@@ -461,4 +444,106 @@ function addVendorSpace() {
             }
         }
     });
+}
+
+// display receipt: use the modal to show the receipt
+function displayReceipt(data) {
+    document.getElementById('receipt-div').innerHTML = data['receipt_html'];
+    document.getElementById('receipt-tables').innerHTML = data['receipt_tables'];
+    document.getElementById('receipt-text').innerHTML = data['receipt'];
+    receipt_email_address = data['payor_email'];
+    document.getElementById('emailReceipt').innerHTML = "Email Receipt to " + data['payor_name'] + ' at ' + receipt_email_address;
+    document.getElementById('receiptTitle').innerHTML = "Registration Receipt for " + data['payor_name'];
+    receipt_modal.show();
+}
+
+function receipt_email(addrchoice) {
+    var email = receipt_email_address;
+    var success='';
+    if (addrchoice == 'reg') {
+        email = document.getElementById('regadminemail').innerHTML;
+        success = 'Receipt sent to Regadmin at ' + email;
+    }
+
+    if (receipt_email_address == null)
+        return;
+
+    if (success == '')
+        success = document.getElementById('emailReceipt').innerHTML.replace("Email Receipt to", "Receipt sent to");
+
+    var data = {
+        email: email,
+        okmsg: success,
+        text: document.getElementById('receipt-text').innerHTML,
+        html: document.getElementById('receipt-tables').innerHTML,
+        subject: document.getElementById('receiptTitle').innerHTML,
+        success: success,
+    };
+    $.ajax({
+        method: "POST",
+        url: "scripts/emailReceipt.php",
+        data: data,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['success'] !== undefined) {
+                show_message(data['success'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in emailReceipt: " + textStatus, jqXHR);
+        }
+    });
+}
+// receipt - display a receipt for the transaction for this badge
+function receipt(index) {
+    var row = spacestable.getRow(index);
+    var transid = row.getCell("transid").getValue();
+    $.ajax({
+        method: "POST",
+        url: "scripts/getReceipt.php",
+        data: { transid },
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['success'] !== undefined) {
+                show_message(data['success'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+            }
+            displayReceipt(data);
+            if (data['success'] !== undefined)
+                show_message(data.success, 'success');
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in getReceipt: " + textStatus, jqXHR);
+        }
+    });
+
+}
+function actionbuttons(cell, formatterParams, onRendered) {
+    var btns = "";
+    var data = cell.getData();
+    var transid = data['transid'] || 0;
+    var index = cell.getRow().getIndex();
+    var req = data['requested_units'] || 0;
+    var app = data['approved_units'] || 0;
+    var pur = data['purchased_units'] || 0;
+
+    if (req > 0 && (pur < app || pur == 0)) {
+        btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="approval(' + index + ')">Approve</button>';
+    }
+
+    // receipt buttons
+    if (transid > 0)
+        btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="receipt(' + index + ')">Receipt</button>';
+    return btns;
 }

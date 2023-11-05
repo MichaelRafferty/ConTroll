@@ -57,7 +57,7 @@ $paid = 0;
 $paidQ = "SELECT amount FROM payments WHERE transid=?;";
 $paidR = dbSafeQuery($paidQ, 'i', array($transid));
 if(isset($paidR) && $paidR->num_rows > 0) {
-    while($paidA = $paidR->fetch_array()) {
+    while($paidA = $paidR->fetch_row()) {
         $paid += $paidA[0];
     }
 }

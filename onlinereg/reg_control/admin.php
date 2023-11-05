@@ -20,7 +20,8 @@ page_init($page,
                     'js/base.js',
                     'js/admin.js',
                     'js/admin_consetup.js',
-                    'js/admin_memconfig.js'
+                    'js/admin_memconfig.js',
+                    'js/admin_merge.js'
                    ),
               $need_login);
 $con = get_conf("con");
@@ -63,6 +64,10 @@ $conid=$con['id'];
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="memconfig-tab" data-bs-toggle="pill" data-bs-target="#memconfig-pane" type="button" role="tab" aria-controls="nav-nextconsetup" aria-selected="false" onclick="settab('memconfig-pane');">Membership Configuration Tables</button>
+        </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='merge-tab' data-bs-toggle='pill' data-bs-target='#merge-pane' type='button' role='tab' aria-controls='nav-merge' aria-selected='false' onclick="settab('merge-pane');">Merge People
+            </button>
         </li>
     </ul>
     <div class="tab-content" id="admin-content">
@@ -170,6 +175,7 @@ $conid=$con['id'];
     <div class="tab-pane fade" id="consetup-pane" role="tabpanel" aria-labelledby="consetup-tab" tabindex="0"></div>
     <div class="tab-pane fade" id="nextconsetup-pane" role="tabpanel" aria-labelledby="nextconsetup-tab" tabindex="0"></div>
     <div class="tab-pane fade" id="memconfig-pane" role="tabpanel" aria-labelledby="memconfig-tab" tabindex="0"></div>
+    <div class='tab-pane fade' id='merge-pane' role='tabpanel' aria-labelledby='merge-tab' tabindex='0'>
 </div>
 <script>
     $(function() {

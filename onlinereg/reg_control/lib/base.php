@@ -73,7 +73,7 @@ function google_init($mode) {
   } else { //if(!array_key_exists('code', $_GET)) {
     $client->setState($state);
     $client->setRedirectUri($redirect_uri);
-    if(array_key_exists('user_email', $_SESSION) && ($_SESSION['user_email'])) { $client->setLoginHint($_SESSION['user_email']); } 
+    if(array_key_exists('user_email', $_SESSION) && ($_SESSION['user_email'])) { $client->setLoginHint($_SESSION['user_email']); }
     $auth_url = $client->createAuthUrl();
     if($mode=='page') {
       header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL)); 
@@ -114,6 +114,7 @@ function google_init($mode) {
     } else { 
         web_error_log("UNVERIFIED token from: " . $_SERVER['PHP_SELF'], "google");
         unset($_SESSION['access_token']);
+        $client->setRedirectUri($redirect_uri);
         if($mode=='page') {
           $auth_url = $client->createAuthUrl();
           header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL)); exit();
@@ -141,7 +142,7 @@ function page_init($title, $css, $js, $auth) {
     <meta charset="utf-8"/>
     <title><?php echo $title . '--' . $db_ini['con']['conname']?> Reg</title>
     <link href='/css/jquery-ui-1.13.1.css' rel='stylesheet' type='text/css' />
-    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM' crossorigin='anonymous'/>
+    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN' crossorigin='anonymous'>
 
     <?php
     if(isset($css) && $css != null) { foreach ($css as $sheet) {
@@ -149,7 +150,7 @@ function page_init($title, $css, $js, $auth) {
 <?php
     }}
                                                  ?>
-    <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js' integrity='sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz' crossorigin='anonymous'></script>
+    <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js' integrity='sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL' crossorigin='anonymous'></script>
     <script type='text/javascript' src='/javascript/jquery-min-3.60.js'></script>
     <script type='text/javascript' src='/javascript/jquery-ui.min-1.13.1.js'></script>
     <?php
@@ -197,9 +198,9 @@ function con_info($auth) {
     if(is_array($auth) && checkAuth(array_key_exists('sub', $auth) ? $auth['sub'] : null, 'overview')) {
         $con = get_con();
         $count_res = dbSafeQuery("select count(*) from reg where conid=?;", 'i', array($con['id']));
-        $badgeCount = $count_res->fetch_array();
+        $badgeCount = $count_res->fetch_row();
         $count_res = dbSafeQuery("select count(*) from reg where conid=? AND price <= (ifnull(paid,0) + ifnull(couponDiscount, 0));",'i', array($con['id']));
-        $unlockCount = $count_res->fetch_array();
+        $unlockCount = $count_res->fetch_row();
   
 ?>
 
@@ -271,7 +272,7 @@ function countConflicts($sub) {
         $countQ = "SELECT count(*) from newperson WHERE perid IS NULL;";
         $countA = dbQuery($countQ);
         if(is_null($countA)) { return 0; }
-        $count = $countA->fetch_array();
+        $count = $countA->fetch_row();
         return $count[0];
     }
     return 0;

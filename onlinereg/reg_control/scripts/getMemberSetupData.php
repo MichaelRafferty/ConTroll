@@ -14,7 +14,7 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     exit();
 }
 
-$type = $_GET['type'];
+$type = $_POST['type'];
 
 $con=get_con();
 $conid= $con['id'];
@@ -25,7 +25,7 @@ $response['next_agelist'] = null;
 $response['current_id'] = $conid;
 $response['next_id'] = $nextconid;
 $ageSQL = <<<EOS
-SELECT a.conid,a.ageType, a.label, a.shortname, a.sortorder, count(l.id) uses
+SELECT a.conid,a.ageType, a.label, a.shortname, a.sortorder, count(l.id) uses, a.ageType as agekey
 FROM ageList a
 LEFT OUTER JOIN memList l ON (a.conid = l.conid and a.ageType = memAge)
 WHERE a.conid = ?
@@ -35,7 +35,7 @@ EOS;
 
 if ($type == 'memType' || $type == 'all') {
     $typeSQL = <<<EOS
-SELECT m.memType, m.active, m.sortorder, count(l.id) uses
+SELECT m.memType, m.active, m.sortorder, count(l.id) uses, m.memType AS memtypekey
 FROM memTypes m
 LEFT OUTER JOIN memList l ON (l.memType = m.memType)
 GROUP BY m.memType, m.active, m.sortorder
@@ -54,7 +54,7 @@ EOS;
 
 if ($type == 'memCat' || $type == 'all') {
     $catSQL = <<<EOS
-SELECT m.memCategory, m.active, m.sortorder, count(l.id) uses
+SELECT m.memCategory, m.active, m.sortorder, count(l.id) uses, m.memCategory AS memcatkey
 FROM memCategories m
 LEFT OUTER JOIN memList l ON (l.memCategory = m.memCategory)
 GROUP BY m.memCategory, m.active, m.sortorder
