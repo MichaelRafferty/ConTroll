@@ -3,7 +3,7 @@
 global $db_ini;
 if (!$db_ini) {    
     $db_ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../../google_client";    
+    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../../Composer";    
 }
 
 if ($db_ini['reg']['https'] <> 0) {
@@ -51,68 +51,73 @@ function google_init($mode) {
   // end bypass
 
   // set redirect URI to current page -- maybe make this better later.
-  $redirect_uri = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
+  $redirect_uri = "https://" . $_SERVER['HTTP_HOST'] . "/reg_control/index.php";
+  $state = $_SERVER['PHP_SELF'];
 
-  $client = new Google_Client();
+  $client = new Google\Client();
   $client->setAuthConfigFile($db_ini['google']['json']);
-  $client->setRedirectUri($redirect_uri);
   $client->addScope('email');
   $client->setAccessType('offline');
-  $client->setApprovalPrompt('force');
+  //$client->setApprovalPrompt('force');
+    
+  //unset id_token if logging out.
+  if(isset($_REQUEST['logout'])) {
+      unset($_SESSION['access_token']);
+      $client->revokeToken();
+      $client->setPrompt('select_account');
+  }
 
-    //unset id_token if logging out.
-    if(isset($_REQUEST['logout'])) {
-        unset($_SESSION['id_token_token']);
-        $client->revokeToken();
-    }
-
+  if(isset($_SESSION['access_token']) && $_SESSION['access_token']) {
+    $client->setAccessToken($_SESSION['access_token']);
+    web_error_log("with access token", "google");
+  } else { //if(!array_key_exists('code', $_GET)) {
+    $client->setState($state);
+    $client->setRedirectUri($redirect_uri);
+    if(array_key_exists('user_email', $_SESSION) && ($_SESSION['user_email'])) { $client->setLoginHint($_SESSION['user_email']); }
+    $auth_url = $client->createAuthUrl();
+    if($mode=='page') {
+      header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
+      if(array_key_exists('logout', $_REQUEST)) {
+        web_error_log("logout", "google");
+        exit();
+      }
+      web_error_log("WITHOUT access token from: " . $_SERVER['PHP_SELF'], "google");
+    } else { return false; }
+  }
 
     //handle code response
-    if (isset($_GET['code'])) {
+    if (array_key_exists('code', $_GET)) { // need to handle other auth responses
         $client->authenticate($_GET['code']);
         $token = $client->getAccessToken();
-        // store in the session also
-        $_SESSION['id_token_token'] = $token;
-        // redirect back to the example
-        header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
-    }
-
-    /************************************************
-    If we have an access token, we can make
-    requests, else we generate an authentication URL.
-    ************************************************/
-    if (!empty($_SESSION['id_token_token'])
-          && isset($_SESSION['id_token_token'])
-    ) {
-        $client->setAccessToken($_SESSION['id_token_token']);
-        $token_data = $client->verifyIdToken();
-        if(is_array($token_data) && array_key_exists('exp', $token_data) && ($token_data['exp'] - time() < 900)) {
-            $client->refreshToken($_SESSION['id_token_token']['refresh_token']);
-        }
-    } else {
-        $authUrl = $client->createAuthUrl();
-        if($mode == "page") { // we're on a page
-            header('Location: ' . $authUrl);
+        $state = "";
+        if(array_key_exists('state', $_GET)) {
+            $state = $_GET['state'];
         } else {
-            return $authUrl;
+            $state = "N/A";
         }
+        web_error_log("WITH token: state='$state'", "google");
+        // store in the session also
+        $_SESSION['access_token'] = $token;
+
+        if(!$token) {
+            var_dump($token);
+            exit();
+            }
+        // redirect back to the example
+        // this is probably where to use state...
+        header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL)); exit();
     }
 
-    /************************************************
-    If we're signed in we can go ahead and retrieve
-    the ID token, which is part of the bundle of
-    data that is exchange in the authenticate step
-    - we only need to do a network call if we have
-    to retrieve the Google certificate to verify it,
-    and that can be cached.
-    ************************************************/
-    $token = $client->getAccessToken();
-    if ($token) {
-        $client->setAccessToken($token);
-        $token_data = $client->verifyIdToken();
+    if($token_data = $client->verifyIdToken()) {
+        web_error_log("verified token for: " . $token_data['email'], "google");
         return($token_data);
-    } else {
-        return false;
+    } else { 
+        web_error_log("UNVERIFIED token from: " . $_SERVER['PHP_SELF'], "google");
+        unset($_SESSION['access_token']);
+        if($mode=='page') {
+          $auth_url = $client->createAuthUrl();
+          header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL)); exit();
+        } else { return false; } 
     }
 }
 
@@ -136,15 +141,15 @@ function page_init($title, $css, $js, $auth) {
     <meta charset="utf-8"/>
     <title><?php echo $title . '--' . $db_ini['con']['conname']?> Reg</title>
     <link href='/css/jquery-ui-1.13.1.css' rel='stylesheet' type='text/css' />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous" />
-  
+    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM' crossorigin='anonymous'/>
+
     <?php
     if(isset($css) && $css != null) { foreach ($css as $sheet) {
-        ?><link href='<?php echo $sheet; ?>' 
-                rel=stylesheet type='text/css' /><?php
+        ?><link href='<?php echo $sheet; ?>' rel=stylesheet type='text/css' />
+<?php
     }}
                                                  ?>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+    <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js' integrity='sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz' crossorigin='anonymous'></script>
     <script type='text/javascript' src='/javascript/jquery-min-3.60.js'></script>
     <script type='text/javascript' src='/javascript/jquery-ui.min-1.13.1.js'></script>
     <?php
@@ -191,10 +196,10 @@ function page_head($title, $auth) {
 function con_info($auth) {
     if(is_array($auth) && checkAuth(array_key_exists('sub', $auth) ? $auth['sub'] : null, 'overview')) {
         $con = get_con();
-        $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."';");
-        $badgeCount = fetch_safe_array($count_res);
-        $count_res = dbQuery("select count(*) from reg where conid='".$con['id']."' AND price <= ifnull(paid,0);");
-        $unlockCount = fetch_safe_array($count_res);
+        $count_res = dbSafeQuery("select count(*) from reg where conid=?;", 'i', array($con['id']));
+        $badgeCount = $count_res->fetch_array();
+        $count_res = dbSafeQuery("select count(*) from reg where conid=? AND price <= (ifnull(paid,0) + ifnull(couponDiscount, 0));",'i', array($con['id']));
+        $unlockCount = $count_res->fetch_array();
   
 ?>
 
@@ -266,7 +271,7 @@ function countConflicts($sub) {
         $countQ = "SELECT count(*) from newperson WHERE perid IS NULL;";
         $countA = dbQuery($countQ);
         if(is_null($countA)) { return 0; }
-        $count = fetch_safe_array($countA);
+        $count = $countA->fetch_array();
         return $count[0];
     }
     return 0;
