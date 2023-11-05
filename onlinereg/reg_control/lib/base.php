@@ -51,8 +51,8 @@ function google_init($mode) {
   // end bypass
 
   // set redirect URI to current page -- maybe make this better later.
-  $redirect_uri = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
-  $state = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
+  $redirect_uri = "https://" . $_SERVER['HTTP_HOST'] . "/reg_control/index.php";
+  $state = $_SERVER['PHP_SELF'];
 
   $client = new Google\Client();
   $client->setAuthConfigFile($db_ini['google']['json']);
@@ -70,26 +70,42 @@ function google_init($mode) {
   if(isset($_SESSION['access_token']) && $_SESSION['access_token']) {
     $client->setAccessToken($_SESSION['access_token']);
     web_error_log("with access token", "google");
-  } else {
-    web_error_log("WITHOUT access token from: " . $_SERVER['PHP_SELF'], "google");
+  } else { //if(!array_key_exists('code', $_GET)) {
     $client->setState($state);
     $client->setRedirectUri($redirect_uri);
     if(array_key_exists('user_email', $_SESSION) && ($_SESSION['user_email'])) { $client->setLoginHint($_SESSION['user_email']); } 
     $auth_url = $client->createAuthUrl();
     if($mode=='page') {
-      header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
+      header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL)); 
+      if(array_key_exists('logout', $_REQUEST)) { 
+        web_error_log("logout", "google");
+        exit(); 
+      }
+      web_error_log("WITHOUT access token from: " . $_SERVER['PHP_SELF'], "google");
     } else { return false; }
   }
 
     //handle code response
-    if (isset($_GET['code'])) { // need to handle other auth responses
+    if (array_key_exists('code', $_GET)) { // need to handle other auth responses
         $client->authenticate($_GET['code']);
         $token = $client->getAccessToken();
+        $state = ""; 
+        if(array_key_exists('state', $_GET)) {
+            $state = $_GET['state'];
+        } else {
+            $state = "N/A";
+        }
+        web_error_log("WITH token: state='$state'", "google");
         // store in the session also
         $_SESSION['access_token'] = $token;
+
+        if(!$token) {
+            var_dump($token);
+            exit();
+            }
         // redirect back to the example
         // this is probably where to use state...
-        header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
+        header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL)); exit();
     }
 
     if($token_data = $client->verifyIdToken()) {
@@ -100,7 +116,7 @@ function google_init($mode) {
         unset($_SESSION['access_token']);
         if($mode=='page') {
           $auth_url = $client->createAuthUrl();
-          header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
+          header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL)); exit();
         } else { return false; } 
     }
 }
