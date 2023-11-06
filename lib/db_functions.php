@@ -17,7 +17,6 @@ if (!$db_ini) {
 }
 $debug_set = get_conf('debug');
 $log = get_conf("log");
-$debug_set = get_conf("debug");
 $logdest = $log['web'];
 
 // Function web_error_log($string)
@@ -518,7 +517,7 @@ EOS;
     if (!$auths) {
         return false;
     }
-    while ($new_auth = $auths->fetch_array(MYSQLI_ASSOC)) {
+    while ($new_auth = $auths->fetch_assoc()) {
         $res[] = $new_auth['name'];
     }
     return $res;
