@@ -97,6 +97,9 @@ function displaySearchResults(data, callback) {
                 flags.append('banned<br/>');
                 userDiv.addClass('banned');
             }
+            else if (user['label']) {
+                userDiv.addClass('hasMembership');
+            }
             else if (user['active'] == 'N') {
                 flags.append('inactive<br/>');
                 userDiv.addClass('inactive');

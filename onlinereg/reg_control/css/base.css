@@ -184,6 +184,9 @@ table.inline td,table.inline tbody {
 .banned, .locked {
     background-color: #ffcccc;
 }
+.hasMembership {
+    background-color: #ccffcc;
+}
 .note, .changed {
     background-color: #ffff00;
 }
