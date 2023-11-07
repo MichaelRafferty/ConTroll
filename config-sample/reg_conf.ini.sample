@@ -21,6 +21,7 @@ policytext="Philcon Policies"
 remindertext="May we include you in our annual reminder postcards and future marketing or survey emails?"
 regemail="registration2022@philcon.org"
 regadminemail="registration2022@philcon.org"
+regconfirmcc="registrationcc@philcon.org"
 infoemail="info2022@philcon.org"
 refundemail='info2022@philcon.org'
 feedbackemail='info2022@philcon.org'
