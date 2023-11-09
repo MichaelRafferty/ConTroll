@@ -27,6 +27,47 @@ page_init($page,
 $con = get_conf("con");
 $conid=$con['id'];
 ?>
+<div id='merge-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Look up Merge Person' aria-hidden='true' style='--bs-modal-width: 80%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='mergeTitle'>Lookup Person for Merge</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <form id='merge-search' action='javascript:void(0)'>
+                        <div class='row p-1'>
+                            <div class='col-sm-3 p-0'>
+                                <label for='search_name' id="mergeName">Merge Name:</label>
+                            </div>
+                            <div class='col-sm-9 p-0'>
+                                <input class='form-control-sm' type='text' name='namesearch' id='merge_name_search' size='64'
+                                       placeholder='Name/Portion of Name, Person (Badge) ID'/>
+                            </div>
+                            <div class='row mt-3'>
+                                <div class='col-sm-12 text-bg-secondary'>
+                                    Search Results
+                                </div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-sm-12' id='merge_search_results'>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='mergeSearch' onClick='merge_find()'>Find Person</button>
+            </div>
+            <div id='result_message' class='mt-4 p-2'></div>
+        </div>
+    </div>
+</div>
 <div id='main'>
 
     <?php

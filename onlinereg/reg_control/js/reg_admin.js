@@ -23,6 +23,11 @@ $(document).ready(function () {
     id = document.getElementById('transfer_to');
     if (id != null) {
         transfer_modal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+        find_pattern_field = document.getElementById('transfer_name_search')
+        find_pattern_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') transfer_find(); });
+        id.addEventListener('shown.bs.modal', () => {
+            find_pattern_field.focus()
+        })
     }
 
     id = document.getElementById('receipt');
@@ -33,8 +38,6 @@ $(document).ready(function () {
         });
     }
 
-    find_pattern_field = document.getElementById("transfer_name_search");
-    find_pattern_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') transfer_find(); });
     testdiv = document.getElementById('test');
     getData();
 });
@@ -509,7 +512,7 @@ function transfer(index) {
     var badgelabel = data['label'];
     var perid = data['perid'];
 
-    document.getElementById("transfer_name_search").value = '';
+    find_pattern_field.value = '';
     if (find_result_table != null) {
         find_result_table.destroy();
         find_result_table = null;
@@ -532,7 +535,7 @@ function transfer_find() {
     }
 
     clear_message();
-    var name_search = document.getElementById('transfer_name_search').value.toLowerCase().trim();
+    var name_search = find_pattern_field.value.toLowerCase().trim();
     if (name_search == null || name_search == '')  {
         show_message("No search criteria specified", "warn");
         return;
