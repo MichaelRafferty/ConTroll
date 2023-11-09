@@ -356,6 +356,7 @@ class mergesetup {
                     {column: "fullname", dir: "asc"},
                 ],
                 columns: [
+                    {width: 70, headerFilter: false, headerSort: false, formatter: addMergeIcon, formatterParams: {t: "result"},},
                     {field: "perid", visible: false,},
                     {field: "index", visible: false,},
                     {field: "regcnt", visible: false,},
@@ -368,7 +369,6 @@ class mergesetup {
                     {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 100, width: 100},
                     {title: "Email Address", field: "email_addr", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true,},
                     {title: "Current Badges", field: "regs", headerFilter: true, headerWordWrap: true, tooltip: true,},
-                    {width: 70, headerFilter: false, headerSort: false, formatter: addMergeIcon, formatterParams: {t: "result"},},
                     {field: "index", visible: false,},
                 ],
             });
