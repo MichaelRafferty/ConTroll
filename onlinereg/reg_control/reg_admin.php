@@ -11,23 +11,25 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 }
 
 page_init("Badge List",
-    /* css */ array('https://unpkg.com/tabulator-tables@5.5.1/dist/css/tabulator.min.css',
+    /* css */ array('https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css',
+                 // 'https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_bootstrap5.min.css',
                     'css/base.css',
                     ),
     /* js  */ array(//'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.5.1/dist/js/tabulator.min.js',
+                    'https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js',
                     'js/base.js',
                     'js/reg_admin.js'),
                     $need_login);
 
 // first the modal for transfer to
+$con_conf = get_conf('con');
 ?>
 <div id='transfer_to' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Transfer Registration' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
             <div class='modal-header bg-primary text-bg-primary'>
                 <div class='modal-title'>
-                    <strong id='vendorAddEditTitle'>Transfer Registration</strong>
+                    <strong id='transferTitle'>Transfer Registration</strong>
                 </div>
                 <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
             </div>
@@ -71,6 +73,29 @@ page_init("Badge List",
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
                 <button class='btn btn-sm btn-primary' id='transferSearch' onClick='transfer_find()'>Find Person</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id='receipt' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Registration Receipt' aria-hidden='true' style='--bs-modal-width: 80%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='receiptTitle'>Registration Receipt</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div id="receipt-div"></div>
+                <div id="regadminemail" hidden="true"><?php echo $con_conf['regadminemail'];?></div>
+                <div id="receipt-text" hidden="true"></div>
+                <div id="receipt-tables" hidden="true"></div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
+                <button class='btn btn-sm btn-primary' id='emailReceipt' onClick='receipt_email("payor")'>Email Receipt</button>
+                <button class='btn btn-sm btn-primary' id='emailReceiptReg' onClick='receipt_email("reg")'>Email Receipt to regadmin at <?php echo $con_conf['regadminemail'];?></button>
             </div>
         </div>
     </div>

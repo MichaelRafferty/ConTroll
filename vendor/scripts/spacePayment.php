@@ -268,7 +268,18 @@ for ($i = 0; $i < count($additionalMembershipStatus); $i++) {
         $error_msg .= $badge['error'];
     }
 }
+if ($transid === null) {
+    // no tranasction yet, because no badges
+    $transQ = <<<EOS
+INSERT INTO transaction(price, type, conid, notes)
+    VALUES(?, ?, ?);
+EOS;
 
+    $transid = dbSafeInsert($transQ, 'dsi', array($space['totprice'], 'vendor', $conid, $space['spaceId']));
+    if ($transid === false) {
+        $status_msg .= 'Add of transaction for vendor ' . $_POST['name'] . " failed.\n";
+    }
+}
 // now charge the credit card, built the result structure to log the item and build the order
 // first the badges
 $all_badgeQ = <<<EOS
@@ -349,8 +360,8 @@ if ($approved_amt == $totprice) {
 $txnUpdate .= 'paid=? WHERE id=?;';
 $txnU = dbSafeCmd($txnUpdate, 'di', array($approved_amt, $transid));
 // reg (badge)
-$regQ = 'UPDATE reg SET paid=price WHERE create_trans=?;';
-$numrows = dbSafeCmd($regQ, 'i', array($transid));
+$regQ = 'UPDATE reg SET paid=price, complete_trans=? WHERE create_trans=?;';
+$numrows = dbSafeCmd($regQ, 'ii', array($transid, $transid));
 if ($numrows != 1) {
     $error_msg .= "Unable to mark transaction completed\n";
 }

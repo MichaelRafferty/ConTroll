@@ -403,8 +403,8 @@ if($approved_amt == $total) {
 $txnUpdate .= "paid=?, couponDiscount = ? WHERE id=?;";
 $txnU = dbSafeCmd($txnUpdate, "ddi", array($approved_amt, $totalDiscount, $transid) );
 
-$regQ = "UPDATE reg SET paid=price-couponDiscount WHERE create_trans=?;";
-dbSafeCmd($regQ, "i", array($transid));
+$regQ = "UPDATE reg SET paid=price-couponDiscount, complete_trans = ? WHERE create_trans=?;";
+dbSafeCmd($regQ, "ii", array($transid, $transid));
 
 // mark coupon used
 if ($coupon !== null && $coupon['keyId'] !== null) {
@@ -419,7 +419,13 @@ else {
     $body = getNoChangeEmailBody($results);
 }
 
-$return_arr = send_email($con['regadminemail'], trim($purchaseform['cc_email']), /* cc */ null, $condata['label']. " Online Registration Receipt",  $body, /* htmlbody */ null);
+$regconfirmcc = null;
+if (array_key_exists('regconfirmcc', $con)) {
+    $regconfirmcc = trim($con['regconfirmcc']);
+    if ($regconfirmcc == '')
+        $regconfirmcc = null;
+}
+$return_arr = send_email($con['regadminemail'], trim($purchaseform['cc_email']), /* cc */ $regconfirmcc, $condata['label']. " Online Registration Receipt",  $body, /* htmlbody */ null);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];

@@ -1,6 +1,7 @@
 current = null;
 next = null;
 mem = null;
+var merge = null;
 
 function clearPermissions(userid) {
     var formdata = $("#" + userid).serialize();
@@ -54,6 +55,9 @@ function settab(tabname) {
                 next.close();
             if (mem != null)
                 mem.close();
+            if (merge != null)
+                merge.close();
+
             break;
 
         case 'consetup-pane':            
@@ -63,6 +67,8 @@ function settab(tabname) {
                 current.close();
             if (mem != null)
                 mem.close();
+            if (merge != null)
+                merge.close();
             if (current == null)
                 current = new consetup('current');
             current.open();
@@ -75,6 +81,8 @@ function settab(tabname) {
                 mem.close();
             if (next != null)
                 next.close();
+            if (merge != null)
+                merge.close();
             if (next == null)
                 next = new consetup('next');
             next.open();
@@ -86,9 +94,24 @@ function settab(tabname) {
                 next.close();
             if (mem != null)
                 mem.close();
+            if (merge != null)
+                merge.close();
             if (mem == null)
                 mem = new memsetup();
             mem.open();
+            break;
+        case 'merge-pane':
+            if (current != null)
+                current.close();
+            if (next != null)
+                next.close();
+            if (mem != null)
+                mem.close();
+            if (merge != null)
+                merge.close();
+            if (merge == null)
+                merge = new mergesetup();
+            merge.open();
             break;
     }
 }

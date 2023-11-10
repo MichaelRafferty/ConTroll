@@ -19,9 +19,10 @@ if (!check_atcon($method, $conid)) {
 }
 
 page_init($page, $tab,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.5.1/dist/css/tabulator.min.css','css/registration.css'),
+    /* css */ array('https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css','css/registration.css'),
+                    'https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_bootstrap5.min.css',
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.5.1/dist/js/tabulator.min.js','js/volRollover.js')
+                    'https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js','js/volRollover.js')
     );
 ?>
 <div id="pos" class="container-fluid">

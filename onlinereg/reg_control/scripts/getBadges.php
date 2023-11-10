@@ -20,12 +20,14 @@ $response['conid'] = $conid;
 
 $badgeQ = <<<EOS
 SELECT R.create_date, R.change_date, R.price, R.couponDiscount, R.paid, R.id AS badgeId, P.id AS perid, NP.id AS np_id
-    , CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name, P.suffix) AS p_name
-    , CONCAT_WS(' ', NP.first_name, NP.middle_name, NP.last_name, NP.suffix) AS np_name
+    , CASE WHEN R.perid IS NULL THEN CONCAT_WS(' ', NP.first_name, NP.middle_name, NP.last_name, NP.suffix)
+        ELSE CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name, P.suffix) 
+      END AS p_name
     , P.badge_name AS p_badge, NP.badge_name AS np_badge
     , CONCAT_WS('-', M.memCategory, M.memType, M.memAge) as memTyp
     , M.memCategory AS category, M.memType AS type, M.memAge AS age, M.label
     , ifnull(C.name, ' None ') as name
+    , R.create_trans, R.complete_trans, IFNULL(R.complete_trans, R.create_trans) AS display_trans
 FROM reg R
 JOIN memLabel M ON (M.id=R.memId)
 LEFT OUTER JOIN perinfo P ON (P.id=R.perid)

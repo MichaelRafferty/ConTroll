@@ -21,6 +21,7 @@ policytext="Philcon Policies"
 remindertext="May we include you in our annual reminder postcards and future marketing or survey emails?"
 regemail="registration2022@philcon.org"
 regadminemail="registration2022@philcon.org"
+regconfirmcc="registrationcc@philcon.org"
 infoemail="info2022@philcon.org"
 refundemail='info2022@philcon.org'
 feedbackemail='info2022@philcon.org'
@@ -41,6 +42,8 @@ compLen="150"
 conLen="3"
 server="https://reg.philcon.org/"
 rollover_eligible="'upgrade', 'rollover', 'freebie', 'standard', 'yearahead', 'discount'"
+[debug]
+google=0 ; to enable google debug statements (1=enable, 0=disable)
 [reg]
 https=1
 test=0
@@ -65,6 +68,8 @@ onsiteopen="3:00 PM"
 discount=active
 ; endtext = text to put at the botom of the receipt.
 endtext=
+; badgeps = fill path to the Postscript header for printing badges
+badgeps="/home/psfs_reg/config/philcon.ps"
 [vendor]
 test=0
 open=1
@@ -106,7 +111,9 @@ webpaysdk="https://web.squarecdn.com/v1/square.js"
   web = "/home/psfs_reg/reglogs/web"
   reg = "/home/psfs_reg/reglogs/onLineReg"
   artshow = "/home/psfs_reg/reglogs/artshowReg"
+  vendors='/home/psfs/reglogs/vendors'
   cancel = "/home/psfs_reg/reglogs/cancel"
+  db = "/home/psfs_reg/reglogs/db"
 [email]
 ; valid types are 'aws', 'mta', 'symfony', 'file'
 ;; for aws:

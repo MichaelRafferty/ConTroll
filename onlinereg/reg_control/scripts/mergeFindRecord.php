@@ -9,7 +9,7 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 $check_auth = google_init('ajax');
-$perm = 'reg_admin';
+$perm = 'admin';
 
 $response = array('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 
@@ -83,6 +83,7 @@ SELECT DISTINCT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.
     r.regcnt, r.regs
 FROM regcnt r
 JOIN perinfo p ON (p.id = r.id)
+WHERE p.first_name != 'Merged' AND p.middle_name != 'into'
 ORDER BY last_name, first_name LIMIT $limit;
 EOS;
     $rp = dbSafeQuery($searchSQLP, 'isssss', array($conid, $name_search, $name_search, $name_search, $name_search, $name_search));

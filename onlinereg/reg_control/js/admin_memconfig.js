@@ -231,6 +231,7 @@ class memsetup {
             layout: "fitDataTable",
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
+                { field: "memtypekey", visible: false },
                 { title: "Type", field: "memType", headerSort: true, width: 150, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "unique", "required" ] },
                 { title: "Active", field: "active", headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], }, validator: "required" },
                 { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
@@ -275,6 +276,7 @@ class memsetup {
             layout: "fitDataTable",
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
+                { field: "memcatkey", visible: false },
                 { title: "Category", field: "memCategory", width: 150, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "unique", "required" ] },
                 { title: "Active", field: "active", headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], }, validator: "required" },
                 { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
@@ -320,6 +322,7 @@ class memsetup {
             layout: "fitDataTable",
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
+                { field: "agekey", visible: false },
                 { title: "ConID", field: "conid", visible: false },
                 { title: "Age Type", field: "ageType", width: 140, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: "required" },
                 { title: "Label", field: "label", headerSort: false, width: 200, editor: "input", editorParams: { elementAttributes: { maxlength: "64" } }, validator: "required" },
@@ -366,6 +369,7 @@ class memsetup {
             layout: "fitDataTable",
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
+                { field: "agekey", visible: false },
                 { title: "ConID", field: "conid", visible: false },
                 { title: "Age Type", field: "ageType", width: 140, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } } },
                 { title: "Label", field: "label", headerSort: false, width: 200, editor: "input", editorParams: { elementAttributes: { maxlength: "64" } } },
@@ -394,8 +398,8 @@ class memsetup {
         var script = "scripts/getMemberSetupData.php";
         $.ajax({
             url: script,
-            method: 'GET',
-            data: 'type=all',
+            method: 'POST',
+            data: { type: 'all', },
             success: function (data, textStatus, jhXHR) {
                 mem.draw(data, textStatus, jhXHR);
             },
@@ -500,8 +504,8 @@ class memsetup {
         var script = "scripts/getMemberSetupData.php";
         $.ajax({
             url: script,
-            method: 'GET',
-            data: 'type=memType',
+            method: 'POST',
+            data: { type: 'memType', },
             success: function (data, textStatus, jhXHR) {
                 mem.draw_memtype(data, textStatus, jhXHR);
             },
@@ -529,7 +533,7 @@ class memsetup {
                 ajax_request_action: 'memtype',
                 tabledata: this.#memtypetable.getData(),
                 tablename: "memTypes",
-                indexcol: "memType"
+                indexcol: "memtypekey"
             };
             //console.log(postdata);
             $.ajax({
@@ -600,8 +604,8 @@ class memsetup {
         var script = "scripts/getMemberSetupData.php";
         $.ajax({
             url: script,
-            method: 'GET',
-            data: 'type=memCat',
+            method: 'POST',
+            data: { type: 'memCat', },
             success: function (data, textStatus, jhXHR) {
                 mem.draw_memcat(data, textStatus, jhXHR);
             },
@@ -629,7 +633,7 @@ class memsetup {
                 ajax_request_action: 'category',
                 tabledata: this.#categorytable.getData(),
                 tablename: "memCategories",
-                indexcol: "memCategory"
+                indexcol: "memcatkey"
             };
             //console.log(postdata);
             $.ajax({
@@ -700,8 +704,8 @@ class memsetup {
         var script = "scripts/getMemberSetupData.php";
         $.ajax({
             url: script,
-            method: 'GET',
-            data: 'type=curage',
+            method: 'POST',
+            data: { type: 'curage', },
             success: function (data, textStatus, jhXHR) {
                 mem.draw_curage(data, textStatus, jhXHR);
             },
@@ -730,7 +734,7 @@ class memsetup {
                 year: this.#current_conid,
                 tabledata: this.#curagetable.getData(),
                 tablename: "ageList",
-                indexcol: "ageType"
+                indexcol: "agekey"
             };
             //console.log(postdata);
             $.ajax({
@@ -801,8 +805,8 @@ class memsetup {
         var script = "scripts/getMemberSetupData.php";
         $.ajax({
             url: script,
-            method: 'GET',
-            data: 'type=nextage',
+            method: 'POST',
+            data: { type: 'nextage', },
             success: function (data, textStatus, jhXHR) {
                 mem.draw_nextage(data, textStatus, jhXHR);
             },
@@ -831,7 +835,7 @@ class memsetup {
                 year: this.#current_conid,
                 tabledata: this.#nextagetable.getData(),
                 tablename: "ageList",
-                indexcol: "ageType"
+                indexcol: "agekey"
             };
             //console.log(postdata);
             $.ajax({

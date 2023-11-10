@@ -61,7 +61,7 @@ $paid = 0;
 
 $paidR = dbSafeQuery('SELECT amount FROM payments WHERE transid=?;', 'i', array($transid));
 if (isset($paidR) && $paidR->num_rows > 0) {
-    while($paidA = $paidR->fetch_array()) {
+    while($paidA = $paidR->fetch_row()) {
         $paid += $paidA[0];
     }
 }
@@ -109,7 +109,7 @@ foreach ($badgeList as $badge) {
     $amt = $badge['remainder'];
     if ($amt > 0) {
         $paid = $remainder >= $amt ? $amt : $remainder;
-        $rows = dbSafeCmd("UPDATE reg set paid = IFNULL(paid, 0) + ? WHERE id = ?", "di", array($paid, $badge['id']));
+        $rows = dbSafeCmd("UPDATE reg set paid = IFNULL(paid, 0) + ?, create_trans = ? WHERE id = ?", "dii", array($paid, $badge['id'], $transid));
         $remainder -= $amt;
     }
 }

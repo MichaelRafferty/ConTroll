@@ -259,8 +259,7 @@ SELECT DISTINCT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.
     TRIM(REGEXP_REPLACE(concat(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', p.suffix), '  *', ' ')) AS fullname,
     p.open_notes
 FROM perinfo p
-WHERE 
-(LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
+WHERE (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ? OR LOWER(address) LIKE ? OR LOWER(addr_2) LIKE ?)
 ORDER BY last_name, first_name LIMIT $limit;
 EOS;
     $searchSQLM = <<<EOS
@@ -268,7 +267,7 @@ WITH limitedp AS (
 /* first get the perid's for this name search */
     SELECT DISTINCT p.id, IFNULL(p.first_name, '') as first_name, p.last_name
     FROM perinfo p
-    WHERE (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
+    WHERE (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ? OR LOWER(address) LIKE ? OR LOWER(addr_2) LIKE ?)
     ORDER BY last_name, first_name LIMIT $limit
 ), regids AS (
 SELECT r.id AS regid
@@ -312,8 +311,8 @@ LEFT OUTER JOIN notes n ON (r.id = n.regid)
 LEFT OUTER JOIN printcount pc ON (r.id = pc.regid)
 ORDER BY create_date;
 EOS;
-    $rp = dbSafeQuery($searchSQLP, 'sss', array($name_search, $name_search, $name_search));
-    $rm = dbSafeQuery($searchSQLM, 'sssiii', array($name_search, $name_search, $name_search, $conid, $conid + 1, $conid));
+    $rp = dbSafeQuery($searchSQLP, 'sssss', array($name_search, $name_search, $name_search, $name_search, $name_search));
+    $rm = dbSafeQuery($searchSQLM, 'sssssiii', array($name_search, $name_search, $name_search, $name_search, $name_search, $conid, $conid + 1, $conid));
 }
 
 $perinfo = [];

@@ -16,7 +16,7 @@ page_init($page,
                    ),
               $need_login);
 if(isset($_GET) && isset($_GET['id'])) {
-    $updateQ = "UPDATE reg SET paid = 0 WHERE create_trans=?;";
+    $updateQ = "UPDATE reg SET paid = 0, complete_trans = NULL WHERE create_trans=?;";
     dbSafeCmd($updateQ, 'i', array($_GET['id']));
 }
 ?>

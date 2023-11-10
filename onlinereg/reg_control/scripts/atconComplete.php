@@ -74,12 +74,12 @@ if($totalPrice <= $totalPaid) {
   $query1 = <<<EOS
 UPDATE reg R
 JOIN reg_history H ON (R.id=H.regid)
-SET R.paid=R.price 
+SET R.paid=R.price - R.couponDiscount, complete_trans = ?
 WHERE H.tid=?;
 EOS;
 
   dbSafeCmd($query0, 'ddii', array($totalPrice, $totalPaid, $userid, $transid));
-  dbSafeCmd($query1, 'i', array($transid));
+  dbSafeCmd($query1, 'ii', array($transid, $transid));
   $response['success']='true';
 
     $badgeRes = dbQuery($badgeQ);

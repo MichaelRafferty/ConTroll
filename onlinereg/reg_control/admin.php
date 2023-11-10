@@ -11,21 +11,63 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 }
 
 page_init($page,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.5.1/dist/css/tabulator.min.css',
-                //  'https://unpkg.com/tabulator-tables@5.5.1/dist/css/tabulator_bootstrap5.min.css',
+    /* css */ array('https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css',
+                    //'https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_bootstrap5.min.css',
                     'css/base.css',
                    ),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.5.1/dist/js/tabulator.min.js',
+                    'https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js',
                     'js/base.js',
                     'js/admin.js',
                     'js/admin_consetup.js',
-                    'js/admin_memconfig.js'
+                    'js/admin_memconfig.js',
+                    'js/admin_merge.js'
                    ),
               $need_login);
 $con = get_conf("con");
 $conid=$con['id'];
 ?>
+<div id='merge-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Look up Merge Person' aria-hidden='true' style='--bs-modal-width: 80%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='mergeTitle'>Lookup Person for Merge</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <form id='merge-search' action='javascript:void(0)'>
+                        <div class='row p-1'>
+                            <div class='col-sm-3 p-0'>
+                                <label for='search_name' id="mergeName">Merge Name:</label>
+                            </div>
+                            <div class='col-sm-9 p-0'>
+                                <input class='form-control-sm' type='text' name='namesearch' id='merge_name_search' size='64'
+                                       placeholder='Name/Portion of Name, Person (Badge) ID'/>
+                            </div>
+                            <div class='row mt-3'>
+                                <div class='col-sm-12 text-bg-secondary'>
+                                    Search Results
+                                </div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-sm-12' id='merge_search_results'>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='mergeSearch' onClick='merge_find()'>Find Person</button>
+            </div>
+            <div id='result_message' class='mt-4 p-2'></div>
+        </div>
+    </div>
+</div>
 <div id='main'>
 
     <?php
@@ -63,6 +105,10 @@ $conid=$con['id'];
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="memconfig-tab" data-bs-toggle="pill" data-bs-target="#memconfig-pane" type="button" role="tab" aria-controls="nav-nextconsetup" aria-selected="false" onclick="settab('memconfig-pane');">Membership Configuration Tables</button>
+        </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='merge-tab' data-bs-toggle='pill' data-bs-target='#merge-pane' type='button' role='tab' aria-controls='nav-merge' aria-selected='false' onclick="settab('merge-pane');">Merge People
+            </button>
         </li>
     </ul>
     <div class="tab-content" id="admin-content">
@@ -170,6 +216,7 @@ $conid=$con['id'];
     <div class="tab-pane fade" id="consetup-pane" role="tabpanel" aria-labelledby="consetup-tab" tabindex="0"></div>
     <div class="tab-pane fade" id="nextconsetup-pane" role="tabpanel" aria-labelledby="nextconsetup-tab" tabindex="0"></div>
     <div class="tab-pane fade" id="memconfig-pane" role="tabpanel" aria-labelledby="memconfig-tab" tabindex="0"></div>
+    <div class='tab-pane fade' id='merge-pane' role='tabpanel' aria-labelledby='merge-tab' tabindex='0'>
 </div>
 <script>
     $(function() {
