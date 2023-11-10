@@ -3,7 +3,7 @@
 global $db_ini;
 if (!$db_ini) {    
     $db_ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../../Composer";    
+    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../../Composer";
 }
 
 if ($db_ini['reg']['https'] <> 0) {
@@ -59,7 +59,7 @@ function google_init($mode) {
   $client->addScope('email');
   $client->setAccessType('offline');
   //$client->setApprovalPrompt('force');
-    
+
   //unset id_token if logging out.
   if(isset($_REQUEST['logout'])) {
       unset($_SESSION['access_token']);
@@ -76,10 +76,10 @@ function google_init($mode) {
     if(array_key_exists('user_email', $_SESSION) && ($_SESSION['user_email'])) { $client->setLoginHint($_SESSION['user_email']); }
     $auth_url = $client->createAuthUrl();
     if($mode=='page') {
-      header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL)); 
-      if(array_key_exists('logout', $_REQUEST)) { 
+      header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
+      if(array_key_exists('logout', $_REQUEST)) {
         web_error_log("logout", "google");
-        exit(); 
+        exit();
       }
       web_error_log("WITHOUT access token from: " . $_SERVER['PHP_SELF'], "google");
     } else { return false; }
@@ -89,7 +89,11 @@ function google_init($mode) {
     if (array_key_exists('code', $_GET)) { // need to handle other auth responses
         $client->authenticate($_GET['code']);
         $token = $client->getAccessToken();
+<<<<<<< HEAD
         $state = ""; 
+=======
+        $state = "";
+>>>>>>> master
         if(array_key_exists('state', $_GET)) {
             $state = $_GET['state'];
         } else {
@@ -111,14 +115,21 @@ function google_init($mode) {
     if($token_data = $client->verifyIdToken()) {
         web_error_log("verified token for: " . $token_data['email'], "google");
         return($token_data);
+<<<<<<< HEAD
     } else { 
+=======
+    } else {
+>>>>>>> master
         web_error_log("UNVERIFIED token from: " . $_SERVER['PHP_SELF'], "google");
         unset($_SESSION['access_token']);
-        $client->setRedirectUri($redirect_uri);
         if($mode=='page') {
           $auth_url = $client->createAuthUrl();
           header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL)); exit();
+<<<<<<< HEAD
         } else { return false; } 
+=======
+        } else { return false; }
+>>>>>>> master
     }
 }
 
