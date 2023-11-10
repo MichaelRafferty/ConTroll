@@ -89,11 +89,7 @@ function google_init($mode) {
     if (array_key_exists('code', $_GET)) { // need to handle other auth responses
         $client->authenticate($_GET['code']);
         $token = $client->getAccessToken();
-<<<<<<< HEAD
-        $state = ""; 
-=======
         $state = "";
->>>>>>> master
         if(array_key_exists('state', $_GET)) {
             $state = $_GET['state'];
         } else {
@@ -115,21 +111,13 @@ function google_init($mode) {
     if($token_data = $client->verifyIdToken()) {
         web_error_log("verified token for: " . $token_data['email'], "google");
         return($token_data);
-<<<<<<< HEAD
-    } else { 
-=======
     } else {
->>>>>>> master
         web_error_log("UNVERIFIED token from: " . $_SERVER['PHP_SELF'], "google");
         unset($_SESSION['access_token']);
         if($mode=='page') {
           $auth_url = $client->createAuthUrl();
           header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL)); exit();
-<<<<<<< HEAD
-        } else { return false; } 
-=======
         } else { return false; }
->>>>>>> master
     }
 }
 
