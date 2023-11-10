@@ -18,7 +18,7 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 page_init($page,
     /* css */ array('css/base.css'
                    ),
-    /* js  */ array('/javascript/d3.js',
+    /* js  */ array('js/d3.js',
                     'js/base.js',
                     'js/badge.js'
                    ),
@@ -28,7 +28,7 @@ page_init($page,
     $freeSQL = <<<EOS
 SELECT M.id, M.label
 FROM memList M
-WHERE M.conid = ? and M.memCategory = 'freebie';
+WHERE M.conid = ? and (M.memCategory in ('freebie', 'goh') or M.label='Vendor');
 EOS;
 
     $freeR = dbSafeQuery($freeSQL, 'i', array($db_ini['con']['id']));

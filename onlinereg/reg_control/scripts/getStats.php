@@ -104,7 +104,7 @@ switch($_GET['method']) {
 SELECT Distinct R.perid, M.shortname as label, R.conid, M.memType
     , FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(min(T.complete_date))/900)*900) AS time
     , DATEDIFF(CURRENT_TIMESTAMP(), MIN(T.complete_date)) as diff
-FROM atcon_history H
+FROM reg_history H
 JOIN reg R ON (R.id=H.regid)
 JOIN transaction T ON (T.id=H.tid)
 JOIN memLabel M ON (M.id=R.memId)
@@ -146,7 +146,7 @@ SELECT M.id, M.shortname as label, COUNT(distinct R.perid) AS c
 FROM reg R
 JOIN memLabel M ON (M.id=R.memId)
 JOIN conlist C ON (C.id=R.conid)
-LEFT OUTER JOIN atcon_history H ON (H.regid = R.id AND H.action!='attach')
+LEFT OUTER JOIN reg_history H ON (H.regid = R.id AND H.action!='attach')
 WHERE R.create_date < C.startdate and R.conid=? AND H.action is NULL
 GROUP BY M.shortname, M.id
 ORDER BY M.id;
@@ -171,7 +171,7 @@ SELECT COUNT(distinct T.id) AS trans, COUNT(distinct R.id) AS badge
     , M.memType
 FROM conlist C
 JOIN transaction T ON (T.conid=C.id)
-JOIN atcon_history H ON (H.tid=T.id)
+JOIN reg_history H ON (H.tid=T.id)
 JOIN reg R ON (R.id=H.regid)
 JOIN memList M ON (M.id=R.memId)
 WHERE C.id=?
@@ -216,7 +216,7 @@ SELECT COUNT(distinct P.cashier) AS reg
     , FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(P.time)/900)*900) AS t
 FROM transaction T
 LEFT OUTER JOIN payments P ON (P.transid=T.id and P.cashier IS NOT NULL)
-JOIN atcon_history H ON (H.tid=T.id)
+JOIN reg_history H ON (H.tid=T.id)
 WHERE T.conid=?
 GROUP BY t;
 EOF;
@@ -239,7 +239,7 @@ EOF;
         break;
     case "overview":
         $query = <<<EOF
-SELECT memCategory AS cat, memType AS type, memAge AS age, label, cnt
+SELECT memCategory AS cat, memType AS type, memAge AS age, label, SUM(cnt) AS cnt, SUM(paid) AS paid
 FROM (
     SELECT COUNT(R.id) AS cnt, M.sort_order, M.memCategory, M.memType, M.memAge, M.shortname AS label, SUM(R.paid) AS paid
     FROM reg R
@@ -248,7 +248,8 @@ FROM (
     GROUP BY M.sort_order, M.memCategory, M.memType, M.memAge, M.shortname
     ) m
 WHERE memCategory is NOT NULL
-ORDER BY paid DESC, sort_order ASC, memCategory DESC, memType ASC, memAge ASC;
+GROUP BY cat, memType, memAge, label
+ORDER BY paid DESC, memCategory DESC, memType ASC, memAge ASC;
 EOF;
         $response['query'] = $query;
         $res = dbSafeQuery($query, 'i', array($conid));

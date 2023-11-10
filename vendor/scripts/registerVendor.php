@@ -1,9 +1,12 @@
 <?php
 require_once('../lib/base.php');
-require_once(__DIR__ . '/../../lib/ajax_functions.php');
-$ini = redirect_https();
 
-$response = array("post" => $_POST, "get" => $_GET);
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
+
+$response = array('post' => $_POST, 'get' => $_GET);
 
 $vendorTestQ = <<<EOS
 SELECT id
@@ -12,8 +15,10 @@ WHERE email=?;
 EOS;
 $vendorTest = dbSafeQuery($vendorTestQ, 's', array(trim($_POST['email'])));
 if ($vendorTest->num_rows != 0) {
+    $vconf = get_conf("vendor");
+    $vemail = $vconf['vendors'];
     $response['status'] = 'error';
-    $response['message'] = "Another account already exists with that email, please login or contact regadmin@bsfs.org for assistance";
+    $response['message'] = "Another account already exists with that email, please login or contact $vemail for assistance";
     ajaxSuccess($response);
     exit();
 }
@@ -23,6 +28,10 @@ INSERT INTO vendors (name, website, description, email, password, need_new, conf
 values (?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
 $typestr = 'ssssssssssssi';
+$publicity = 0;
+if (array_key_exists('publicity', $_POST)) {
+    $publicity = trim($_POST['publicity']) == 'on' ? 1 : 0;
+}
 $paramarr = array(
     trim($_POST['name']),
     trim($_POST['website']),
@@ -36,7 +45,7 @@ $paramarr = array(
     trim($_POST['city']),
     trim($_POST['state']),
     trim($_POST['zip']),
-    trim($_POST['publicity']) == 'on' ? 1 : 0
+    $publicity
 );
 $newVendor = dbSafeInsert($vendorInsertQ, $typestr, $paramarr);
 

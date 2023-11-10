@@ -1,17 +1,12 @@
 <?php
-if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
+require_once('../lib/base.php');
 
-require_once "../lib/ajax_functions.php";
-require_once "../lib/db_functions.php";
-db_connect();
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET);
-
-session_start();
+$response = array('post' => $_POST, 'get' => $_GET);
 $vendor = 0;
 
 if(isset($_SESSION['id'])) {
@@ -23,12 +18,43 @@ if(isset($_SESSION['id'])) {
     exit();
 }
 
-$updateQ = "UPDATE vendors SET website='"
-    . sql_safe($_POST['website']) . "'"
-    . ", description='"
-    . sql_safe($_POST['description']) . "'"
-    . " WHERE id=$vendor";
-dbQuery($updateQ);
+// name
+// email
+// website
+// description
+// publicity
+// addr
+// addr2
+// city
+// state
+// zip
+
+$updateQ = <<<EOS
+UPDATE vendors
+SET name=?, email=?, website=?, description=?, publicity=?, addr=?, addr2=?, city=?, state=?, zip=?
+WHERE id=?
+EOS;
+$publicity = $_POST['publicity'] == 'on';
+$updateArr = array(
+        $_POST['name'],
+        $_POST['email'],
+        $_POST['website'],
+        $_POST['description'],
+        $publicity,
+        $_POST['addr'],
+        $_POST['addr2'],
+        $_POST['city'],
+        $_POST['state'],
+        $_POST['zip'],
+        $vendor
+    );
+$numrows = dbSafeCmd($updateQ, 'ssssisssssi', $updateArr);
+if ($numrows == 1)
+    $response['success'] = "Profile Updated";
+else if ($numrows == 0)
+    $response['success'] = "Nothing to update";
+else
+    $response['error'] = 'Error encounted updating profile';
 
 ajaxSuccess($response);
 ?>

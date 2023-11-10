@@ -1,6 +1,4 @@
-CREATE DATABASE  IF NOT EXISTS "reg" /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `reg`;
--- MySQL dump 10.13  Distrib 8.0.31, for macos12 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -32,21 +30,17 @@ CREATE TABLE `memList` (
   `memType` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `memAge` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `label` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `price` float NOT NULL,
-  `startdate` date DEFAULT NULL,
-  `enddate` date DEFAULT NULL,
+  `price` decimal(8,2) NOT NULL,
+  `startdate` datetime DEFAULT NULL,
+  `enddate` datetime DEFAULT NULL,
   `atcon` enum('Y','N') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `online` enum('Y','N') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `memList_dups` (`conid`,`label`,`startdate`,`enddate`),
   KEY `FK_memList_ageType` (`conid`,`memAge`),
   KEY `memList_memCategory_fk` (`memCategory`),
-  KEY `memList_memType_fk` (`memType`),
-  CONSTRAINT `memList_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `memList_memAge_fk` FOREIGN KEY (`conid`, `memAge`) REFERENCES `ageList` (`conid`, `ageType`) ON UPDATE CASCADE,
-  CONSTRAINT `memList_memCategory_fk` FOREIGN KEY (`memCategory`) REFERENCES `memCategories` (`memCategory`) ON UPDATE CASCADE,
-  CONSTRAINT `memList_memType_fk` FOREIGN KEY (`memType`) REFERENCES `memTypes` (`memType`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=787 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `memList_memType_fk` (`memType`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -58,4 +52,4 @@ CREATE TABLE `memList` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-04-14 10:05:37
+-- Dump completed on 2023-10-26 13:36:43

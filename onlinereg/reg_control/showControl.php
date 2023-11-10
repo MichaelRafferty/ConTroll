@@ -87,7 +87,7 @@ EOS;
     <link href='css/showControl.css' rel='stylesheet' type='text/css' />
 
   <script type='text/javascript' src='/javascript/jquery-min-3.60.js'></script>
-  <script type='text/javascript' src='/javascript/d3.js'></script>
+  <script type='text/javascript' src='js/d3.js'></script>
   <script type='text/javascript' src='js/base.js'></script>
 </head>
 <body>

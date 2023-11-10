@@ -1,6 +1,4 @@
-CREATE DATABASE  IF NOT EXISTS "reg" /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `reg`;
--- MySQL dump 10.13  Distrib 8.0.31, for macos12 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -26,26 +24,21 @@ DROP TABLE IF EXISTS `vendors`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vendors` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `website` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `email` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `password` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `name` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `website` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `description` text COLLATE utf8mb4_general_ci,
+  `email` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
+  `password` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `need_new` tinyint(1) DEFAULT '1',
   `confirm` tinyint(1) DEFAULT '0',
-  `request_artshow` tinyint(1) DEFAULT '0',
-  `request_dealer` tinyint(1) DEFAULT '0',
-  `request_artistalley` tinyint(1) DEFAULT '0',
-  `request_fanac` tinyint(1) DEFAULT '0',
-  `request_virtual` tinyint(1) DEFAULT '0',
   `publicity` tinyint(1) DEFAULT '0',
-  `addr` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `addr2` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `city` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `state` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `zip` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `addr` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `addr2` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `city` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `state` varchar(2) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `zip` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -57,4 +50,4 @@ CREATE TABLE `vendors` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-04-14 10:05:36
+-- Dump completed on 2023-10-26 13:36:42

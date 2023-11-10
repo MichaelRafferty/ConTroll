@@ -55,6 +55,13 @@ if (!array_key_exists('amt', $new_payment) || $new_payment['amt'] <= 0) {
     return;
 }
 
+if (array_key_exists('coupon', $_POST)) {
+    $coupon = $_POST['coupon'];
+}
+else {
+    $coupon = null;
+}
+
 if (array_key_exists('change', $_POST)) {
     $response['crow'] = $_POST['change'];
 }
@@ -65,9 +72,16 @@ $total_due = 0;
 foreach ($cart_membership as $cart_row) {
     if ($cart_row['price'] == '')
         $cart_row['price'] = 0;
+
+    if (array_key_exists('couponDiscount', $cart_row)) {
+        if ($cart_row['couponDiscount'] == '')
+            $cart_row['couponDiscount'] = 0;
+    } else
+        $cart_row['couponDiscount'] = 0;
+
     if ($cart_row['paid'] == '')
         $cart_row['paid'] = 0;
-    $total_due += $cart_row['price'] - $cart_row['paid'];
+    $total_due += $cart_row['price'] - ($cart_row['couponDiscount'] + $cart_row['paid']);
 }
 
 if (round($amt,2) > round($total_due,2)) {
@@ -79,6 +93,7 @@ $complete = round($amt,2) == round($total_due,2);
 
 // now add the payment and process to which rows it applies
 $upd_rows = 0;
+$cupd_rows = 0;
 $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, amount, time, cc_approval_code, cashier)
 VALUES (?,?,'reg',?,'cashier',?,now(),?, ?);
@@ -104,24 +119,44 @@ UPDATE reg
 SET paid = ?
 WHERE id = ?;
 EOS;
-$typestr = 'si';
+$ptypestr = 'si';
+
+$updCouponSQL = <<<EOS
+UPDATE reg
+SET couponDiscount = ?, coupon = ?
+WHERE id = ? AND coupon IS NULL;
+EOS;
+$ctypestr = 'sii';
 foreach ($cart_membership as $cart_row) {
     if ($cart_row['price'] == '')
         $cart_row['price'] = 0;
+    if ($cart_row['couponDiscount'] == '')
+        $cart_row['couponDiscount'] = 0;
     if ($cart_row['paid'] == '')
         $cart_row['paid'] = 0;
-    $unpaid = $cart_row['price'] - $cart_row['paid'];
+    $unpaid = $cart_row['price'] - ($cart_row['couponDiscount'] + $cart_row['paid']);
     if ($unpaid > 0) {
-        $amt_paid = min($amt, $unpaid);
-        $cart_row['paid'] += $amt_paid;
-        $cart_membership[$cart_row['index']] = $cart_row;
-        $amt -= $amt_paid;
-        $upd_rows += dbSafeCmd($updPaymentSQL, $typestr, array($cart_row['paid'], $cart_row['regid']));
-        if ($amt <= 0)
-            break;
+        if ($coupon == null) {
+            $amt_paid = min($amt, $unpaid);
+            $cart_row['paid'] += $amt_paid;
+            $cart_membership[$cart_row['index']] = $cart_row;
+            $amt -= $amt_paid;
+            $upd_rows += dbSafeCmd($updPaymentSQL, $ptypestr, array($cart_row['paid'], $cart_row['regid']));
+        } else {
+            $cupd_rows += dbSafeCmd($updCouponSQL, $ctypestr, array($cart_row['couponDiscount'], $coupon, $cart_row['regid']));
+        }
     }
 }
 
+// if coupon is specified, mark transaction as having a coupon
+if ($coupon) {
+    $updCompleteSQL = <<<EOS
+UPDATE transaction
+SET coupon = ?, couponDiscount = ?
+WHERE id = ?;
+EOS;
+    $completed = dbSafeCmd($updCompleteSQL, 'iis', array($coupon, $amt, $master_tid));
+}
 $completed = 0;
 if ($complete) {
     // payment is in full, mark transaction complete

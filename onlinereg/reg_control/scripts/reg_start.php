@@ -16,8 +16,9 @@ if($check_auth == false || (!checkAuth($check_auth['sub'], $perm) &&
 $user = $check_auth['email'];
 $response['user'] = $user;
 $userQ = "SELECT id FROM user WHERE email=?;";
-$userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', array($user)));
-$userid = $userR['id'];
+$userR = dbSafeQuery($userQ, 's', array($user));
+$userV = $userR->fetch_assoc();
+$userid = $userV['id'];
 $con = get_conf('con');
 $conid=$con['id'];
 $nextconid = $conid + 1;
@@ -59,7 +60,8 @@ LEFT OUTER JOIN memLabel as M ON (M.id=R.memId)
 WHERE T.id=? AND T.conid=?;
 EOQ;
 
-$trans = fetch_safe_assoc(dbSafeQuery($transQ, 'iiii', array($conid, $nextconid, $transid, $conid)));
+$transR = dbSafeQuery($transQ, 'iiii', array($conid, $nextconid, $transid, $conid));
+$trans = $transR->fetch_assoc();
 $response['transQ'] = $transQ;
 $response['result'] = $trans;
 
@@ -82,7 +84,7 @@ EOQ;
 $badgeR = dbSafeQuery($badgeQ, 'i', array($transid));
 $badges = array();
 $total = 0;
-while($badge = fetch_safe_assoc($badgeR)) {
+while($badge = $badgeR->fetch_safe_assoc()) {
     array_push($badges, $badge);
     $total += $badge['paid'];
 }

@@ -1,6 +1,6 @@
 System Requirements for Reg
 
-1.  PHP 7.4 or higher, preferrably PHP 8.1 or higher
+1. PHP 8.1 or higher
     a.  Requires packages
         cgi-fpm/cgi-fcgi as required by your web server
         curl
@@ -44,3 +44,8 @@ System Requirements for Reg
         email_awsses.php: Uses the Amazon Simple Email Service API to send emails via Amazon SES
         email_symphony.php: Uses the Sympony add-on to PHP to talk to multiple typs of transports including the local mta.
         email_file.php: test harness that writes to a file in a path specified in the configuration file.  No actual email is sent.
+
+7. Composer:
+    Extendes PHP with classes for credit card processor and MTA
+    Install composer.phar as composer in your local bin directory
+    See: https://getcomposer.org/download/ to download and install composer on your systems

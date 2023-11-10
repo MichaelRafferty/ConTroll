@@ -3,7 +3,7 @@
 global $db_ini;
 if (!$db_ini) {    
     $db_ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../../Composer";    
+    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../../Composer";
 }
 
 if ($db_ini['reg']['https'] <> 0) {
@@ -59,7 +59,7 @@ function google_init($mode) {
   $client->addScope('email');
   $client->setAccessType('offline');
   //$client->setApprovalPrompt('force');
-    
+
   //unset id_token if logging out.
   if(isset($_REQUEST['logout'])) {
       unset($_SESSION['access_token']);
@@ -111,13 +111,13 @@ function google_init($mode) {
     if($token_data = $client->verifyIdToken()) {
         web_error_log("verified token for: " . $token_data['email'], "google");
         return($token_data);
-    } else { 
+    } else {
         web_error_log("UNVERIFIED token from: " . $_SERVER['PHP_SELF'], "google");
         unset($_SESSION['access_token']);
         if($mode=='page') {
           $auth_url = $client->createAuthUrl();
           header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL)); exit();
-        } else { return false; } 
+        } else { return false; }
     }
 }
 

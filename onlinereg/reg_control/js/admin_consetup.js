@@ -201,6 +201,7 @@ class consetup {
 
     draw_memlist(data, textStatus, jhXHR) {
         var _this = this;
+        var memListData = new Array();
 
         if (this.#memtable != null) {
             this.#memtable.off("dataChanged");
@@ -213,63 +214,63 @@ class consetup {
 
         this.#memtable = null;
         if (data['memlist'] == null) {
-            this.#memlist_div.innerHTML = 'Nothing defined yet';
+            showError("Nothing defined yet")
+            memListData = new Array();
         } else {
-            this.#memtable = new Tabulator('#' + this.#setup_type + '-memlist', {
-                maxHeight: "600px",
-                history: true,
-                movableRows: true,
-                data: data['memlist'],
-                layout: "fitDataTable",
-                columns: [
-                    { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
-                    { title: "ID", field: "id", visible: false },
-                    { title: "Con ID", field: "conid", headerFilter: true },
-                    { title: "Sort", field: "sort_order", headerSort: false, visible: false },
-                    { title: "Category", field: "memCategory", editor: "list", editorParams: { values: data['memCats'], }, headerFilter: true, headerFilterParams: { values: data['memCats'] } },
-                    { title: "Type", field: "memType", editor: "list", editorParams: { values: data['memTypes'], }, headerFilter: true, headerFilterParams: { values: data['memTypes'], } },
-                    { title: "Age", field: "memAge", editor: "list", editorParams: { values: data['ageTypes'], }, headerFilter: true, headerFilterParams: { values: data['ageTypes'], }, },
-                    {
-                        title: "Label", field: "shortname",
-                        tooltip: function (e, cell, onRendered) { return cell.getRow().getCell("label").getValue(); },
-                        editor: "input", editorParams: { elementAttributes: { maxlength: "64" } },
-                        headerFilter: true
-                    },
-                    { title: "Label", field: "label", visible: false },
-                    {
-                        title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
-                        headerFilter: "input"
-                    },
-                    { title: "Start Date", field: "startdate", width: 100, editor: "date", validator: "required", headerFilter: "input" },
-                    { title: "End Date", field: "enddate", width: 100, editor: "date", validator: "required", headerFilter: "input" },
-                    {
-                        title: "Atcon", field: "atcon", editor: "list", editorParams: { values: ["Y", "N"], },
-                        headerFilter: true, headerFilterParams: { values: ["Y", "N"], }
-                    },
-                    {
-                        title: "Online", field: "online", editor: "list", editorParams: { values: ["Y", "N"], },
-                        headerFilter: true, headerFilterParams: { values: ["Y", "N"], } },
-                    {
-                        title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                        cellClick: function (e, cell) {
-                            deleterow(e, cell.getRow());
-                        }
-                    },
-                    { field: "to_delete", visible: false, },
-                ],
-
-            });
+            memListData = data['memList'];
         }
+        this.#memtable = new Tabulator('#' + this.#setup_type + '-memlist', {
+            maxHeight: "600px",
+            history: true,
+            movableRows: true,
+            data: data['memlist'],
+            layout: "fitDataTable",
+            columns: [
+                { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
+                { title: "ID", field: "id", visible: false },
+                { title: "Con ID", field: "conid", headerFilter: true },
+                { title: "Sort", field: "sort_order", headerSort: false, visible: false },
+                { title: "Category", field: "memCategory", editor: "list", editorParams: { values: data['memCats'], }, headerFilter: true, headerFilterParams: { values: data['memCats'] } },
+                { title: "Type", field: "memType", editor: "list", editorParams: { values: data['memTypes'], }, headerFilter: true, headerFilterParams: { values: data['memTypes'], } },
+                { title: "Age", field: "memAge", editor: "list", editorParams: { values: data['ageTypes'], }, headerFilter: true, headerFilterParams: { values: data['ageTypes'], }, },
+                {
+                    title: "Label", field: "shortname",
+                    tooltip: function (e, cell, onRendered) { return cell.getRow().getCell("label").getValue(); },
+                    editor: "input", editorParams: { elementAttributes: { maxlength: "64" } },
+                    headerFilter: true
+                },
+                { title: "Label", field: "label", visible: false },
+                {
+                    title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
+                    headerFilter: "input"
+                },
+                { title: "Start Date", field: "startdate", width: 100, editor: "date", validator: "required", headerFilter: "input" },
+                { title: "End Date", field: "enddate", width: 100, editor: "date", validator: "required", headerFilter: "input" },
+                {
+                    title: "Atcon", field: "atcon", editor: "list", editorParams: { values: ["Y", "N"], },
+                    headerFilter: true, headerFilterParams: { values: ["Y", "N"], }
+                },
+                {
+                    title: "Online", field: "online", editor: "list", editorParams: { values: ["Y", "N"], },
+                    headerFilter: true, headerFilterParams: { values: ["Y", "N"], } },
+                {
+                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
+                    cellClick: function (e, cell) {
+                        deleterow(e, cell.getRow());
+                    }
+                },
+                { field: "to_delete", visible: false, },
+            ],
 
-        if (this.#memtable != null) {
-            this.#memtable.on("dataChanged", function (data) {
-                _this.memlist_dataChanged(data);
-            });
-            this.#memtable.on("rowMoved", function (row) {
-                _this.memlist_rowMoved(row)
-            });
-            this.#memtable.on("cellEdited", cellChanged);
-        }
+        });
+
+        this.#memtable.on("dataChanged", function (data) {
+            _this.memlist_dataChanged(data);
+        });
+        this.#memtable.on("rowMoved", function (row) {
+            _this.memlist_rowMoved(row)
+        });
+        this.#memtable.on("cellEdited", cellChanged);
     };
 
     draw_breaklist(data, textStatus, jhXHR) {

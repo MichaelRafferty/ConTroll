@@ -1,4 +1,18 @@
 
+// convert a form post string to an arrray
+// convert url parameters to associative array
+function URLparamsToArray(urlargs, doTrim = false) {
+    const params = new URLSearchParams(urlargs);
+    const result = {};
+    for (const [key, value] of params) {
+        if (doTrim)
+            result[key] = value.trim();
+        else
+            result[key] = value;
+    }
+    return result;
+}
+
 function test(method, formData, resultDiv) {
     $.ajax({
         url: "scripts/authEcho.php",
@@ -13,7 +27,6 @@ function test(method, formData, resultDiv) {
         }
     });
 }
-
 
 function hideBlock(block) {
     $(block + "Form").hide();
@@ -229,6 +242,66 @@ function showError(str, data = null) {
     }
 }
 
+function showAjaxError(jqXHR, textStatus, errorThrown) {
+    'use strict';
+    var message = '';
+    if (jqXHR && jqXHR.responseText) {
+        message = jqXHR.responseText;
+    } else {
+        message = 'An error occurred on the server.';
+    }
+    if (textStatus != '' && textStatus != 'error')
+        message += '<BR/>' + textStatus;
+    message += '<BR/>Error Thrown: ' + errorThrown;
+    show_message(message, 'error');
+}
+
+function clear_message() {
+    show_message('', '');
+}
+
+var message_div = null;
+// show_message:
+// apply colors to the message div and place the text in the div, first clearing any existing class colors
+// type:
+//  error: (white on red) bg-danger
+//  warn: (black on yellow-orange) bg-warning
+//  success: (white on green) bg-success
+function show_message(message, type) {
+    "use strict";
+    if (message_div === null ) {
+        message_div = document.getElementById('result_message');
+    }
+    if (message_div.classList.contains('bg-danger')) {
+        message_div.classList.remove('bg-danger');
+    }
+    if (message_div.classList.contains('bg-success')) {
+        message_div.classList.remove('bg-success');
+    }
+    if (message_div.classList.contains('bg-warning')) {
+        message_div.classList.remove('bg-warning');
+    }
+    if (message_div.classList.contains('text-white')) {
+        message_div.classList.remove('text-white');
+    }
+    if (message === undefined || message === '') {
+        message_div.innerHTML = '';
+        return;
+    }
+    if (type === 'error') {
+        message_div.classList.add('bg-danger');
+        message_div.classList.add('text-white');
+    }
+    if (type === 'success') {
+        message_div.classList.add('bg-success');
+        message_div.classList.add('text-white');
+    }
+    if (type === 'warn') {
+        message_div.classList.add('bg-warning');
+    }
+    message_div.innerHTML = message;
+}
+
 function showAlert(str) {
     $('#alertInner').empty().html(str);
     $('#alert').show();
@@ -241,4 +314,49 @@ function notnullorempty(str) {
         return false;
 
     return true;        
+}
+
+// map class - create/map/unmap object values
+// deals with dynamic names for properties easily when you can't use dot notation
+class map {
+    #map_obj = null;
+
+    constructor() {
+        this.#map_obj = {};
+    }
+
+    // isSet - is the property set
+    isSet(prop) {
+        return this.#map_obj.hasOwnProperty(prop);
+    }
+
+    // get - return the value of a property
+    get(prop) {
+        if (this.isSet(prop))
+            return this.#map_obj[prop];
+        return undefined;
+    }
+
+    // set: set the property to a value
+    set(prop, value) {
+        this.#map_obj[prop] = value;
+    }
+
+    // remove property from object
+    clear(prop) {
+        if (this.isSet(prop)) {
+            delete this.#map_obj[prop];
+        }
+    }
+
+    // for ajax use - get entire map
+    getMap() {
+        return make_copy(this.#map_obj);
+    }
+}
+
+// make_copy(associative array)
+// javascript passes by reference, can't slice an associative array, so you need to do a horrible JSON kludge
+function make_copy(arr) {
+    return JSON.parse(JSON.stringify(arr));  // horrible way to make an independent copy of an associative array
 }

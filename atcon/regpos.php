@@ -30,9 +30,12 @@ if (!check_atcon($method, $conid)) {
 }
 
 page_init($page, $tab,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css','css/atcon.css','css/registration.css'),
+    /* css */ array('https://unpkg.com/tabulator-tables@5.5.1/dist/css/tabulator.min.css',
+                    //'https://unpkg.com/tabulator-tables@5.5.1/dist/css/tabulator_bootstrap5.min.css',
+                    'css/atcon.css',
+                    'css/registration.css'),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js','js/regpos.js')
+                    'https://unpkg.com/tabulator-tables@5.5.1/dist/js/tabulator.min.js','js/regpos_cart.js', 'js/regpos_coupon.js', 'js/regpos.js')
     );
 ?>
 <div id="pos" class="container-fluid">
@@ -177,7 +180,7 @@ page_init($page, $tab,
                             <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="badgename" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
-                                    <input type="text" name="badgename" id='badgename' size="35" maxlength="32"  placeholder='defaults to first and last name' tabindex="14"/>
+                                    <input type="text" name="badgename" id='badgename' size="35" maxlength="32"  placeholder='Badgename: defaults to first and last name' tabindex="14"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Membership Type</span></label><br/>

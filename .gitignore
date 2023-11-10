@@ -3,8 +3,7 @@
 *~
 
 /config/
-/Composer/
-/Composer
+/Composer/vendor
 /google_client/
 
 # Visual Studio Stuff
@@ -26,6 +25,8 @@ dead
 /onlinereg/images/balticon57.png
 /.idea/
 /.idea/.gitignore
+
+onlinereg/onlineReg/
 
 /atcon/scripts/obsolete/
 /google_client/

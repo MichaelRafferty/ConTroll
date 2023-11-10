@@ -18,6 +18,7 @@ regpolicy="https://philcon.org/policies"
 privacypolicy="https://www.balticon.org/wp57/bsfs-and-balticon-privacy-policy/"
 privacytext="See our privacy policy for how we use and share information"
 policytext="Philcon Policies"
+remindertext="May we include you in our annual reminder postcards and future marketing or survey emails?"
 regemail="registration2022@philcon.org"
 regadminemail="registration2022@philcon.org"
 infoemail="info2022@philcon.org"
@@ -39,6 +40,7 @@ minComp="2021"
 compLen="150"
 conLen="3"
 server="https://reg.philcon.org/"
+rollover_eligible="'upgrade', 'rollover', 'freebie', 'standard', 'yearahead', 'discount'"
 [reg]
 https=1
 test=0
@@ -61,12 +63,24 @@ onsiteopen="3:00 PM"
 ;	any - any POS user can handle discount
 ;	none - disable the discount type of payment
 discount=active
+; endtext = text to put at the botom of the receipt.
+endtext=
 [vendor]
 test=0
 open=1
-artshow = "artshow2020philcon.org"
-alley = "artshow2020philcon.org"
-dealer = "dealer2020philcon.org"
+test=1
+open=1
+#vendors: email address for generic vendor emails
+#vendorsite: url to vendor website
+vendors="dealers@sydweinstein.net"By submitting this request for space, I acknowledge and agree that Philcon 2023 and the Philadelphia Science Fiction Society will not
+vendorsite="http://vendor"
+taxidlabel="NJ Sales Tax ID"
+taxidextra=
+reg_disclaimer=""
+pay_disclaimer=""
+artshow="artshow2020philcon.org"
+alley="artshow2020philcon.org"
+dealer="dealer2020philcon.org"
 addlaccounttext = ""
 artventortext = "vendors"
 [client]
@@ -79,11 +93,14 @@ client_id=""
 client_secret=""
 [cc]
 ; valid types are 'square', 'convergepay' or 'bypass' (Note: bypass is for testing only and requires localhost or test=1)
+; appid, token, location come from your square api setup
+; apiversion comes from the square api site and sdk
 type=square
 appid=""
 token=""
 env="production"
 location=""
+apiversion=""
 webpaysdk="https://web.squarecdn.com/v1/square.js"
 [log]
   web = "/home/psfs_reg/reglogs/web"

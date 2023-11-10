@@ -202,7 +202,7 @@ function loadOldPerson(objData) {
     $('#conflictFormDbEmail').css("background-color",
         $('#conflictFormDbEmail').text().trim() != $('#conflictFormUserEmail').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbPhone').css("background-color",
-        $('#conflictFormDbPhone').text().trim() != $('#conflictFormNwqPhone').text().trim() ? "LightGoldenRodYellow" : "");
+        $('#conflictFormDbPhone').text().trim() != $('#conflictFormUserPhone').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbFlags').css("background-color",
         $('#conflictFormDbFlags').text().trim() != $('#conflictFormUserFlags').text().trim() ? "LightGoldenRodYellow" : "");
 

@@ -1,6 +1,4 @@
-CREATE DATABASE  IF NOT EXISTS "reg" /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `reg`;
--- MySQL dump 10.13  Distrib 8.0.31, for macos12 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -27,11 +25,10 @@ DROP TABLE IF EXISTS `atcon_auth`;
 CREATE TABLE `atcon_auth` (
   `id` int NOT NULL AUTO_INCREMENT,
   `authuser` int NOT NULL,
-  `auth` enum('data_entry','cashier','manager','artinventory','artshow','vol_roll') NOT NULL,
+  `auth` enum('data_entry','cashier','manager','artinventory','artsales','artshow','vol_roll') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `atcon_authuser_fk` (`authuser`),
-  CONSTRAINT `atcon_authuser_fk` FOREIGN KEY (`authuser`) REFERENCES `atcon_user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=78 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `atcon_authuser_fk` (`authuser`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -43,4 +40,4 @@ CREATE TABLE `atcon_auth` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-04-14 10:05:36
+-- Dump completed on 2023-10-26 13:36:42

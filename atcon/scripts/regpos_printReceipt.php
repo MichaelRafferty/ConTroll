@@ -16,6 +16,7 @@ $response = [];
 
 $con = get_conf('con');
 $conid = $con['id'];
+$atcon_info = get_conf('atcon');
 $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
     $ajax_request_action = $_POST['ajax_request_action'];
@@ -86,7 +87,7 @@ foreach ($pmtrows as $pmtrow) {
     $total_pmt += $pmtrow['amt'];
 }
 
-$receipt .= "         ----------\n" . sprintf("total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, 'USD')) . "\n$footer\n";
+$receipt .= "         ----------\n" . sprintf("total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, 'USD')) . "\n$footer\n" . "\n" . $atcon_info['endtext'] . "\n\n\n\n";
 
 if ($receipt_type == 'print') {
     if (isset($_SESSION['receiptPrinter'])) {

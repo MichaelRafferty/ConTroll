@@ -19,9 +19,9 @@ if (!check_atcon('artsales', $conid)) {
 }
 
 page_init($page, $tab,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css','css/atcon.css','css/registration.css'),
+    /* css */ array('https://unpkg.com/tabulator-tables@5.5.1/dist/css/tabulator.min.css','css/atcon.css','css/registration.css'),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js','js/atcon.js','js/newArtSales.js')
+                    'https://unpkg.com/tabulator-tables@5.5.1/dist/js/tabulator.min.js','js/atcon.js','js/newArtSales.js')
     );
 
 db_connect();

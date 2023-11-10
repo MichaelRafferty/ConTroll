@@ -1,6 +1,4 @@
-CREATE DATABASE  IF NOT EXISTS "reg" /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `reg`;
--- MySQL dump 10.13  Distrib 8.0.31, for macos12 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -52,12 +50,8 @@ CREATE TABLE `artshow` (
   UNIQUE KEY `unique_person` (`artid`,`perid`,`conid`),
   KEY `artshow_perinfo_fk` (`perid`),
   KEY `artshow_conid_fk` (`conid`),
-  KEY `artshow_agent_fk` (`agent`),
-  CONSTRAINT `artshow_agent_fk` FOREIGN KEY (`agent`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `artshow_artid_fk` FOREIGN KEY (`artid`) REFERENCES `artist` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `artshow_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `artshow_perinfo_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1300 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `artshow_agent_fk` (`agent`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -69,4 +63,4 @@ CREATE TABLE `artshow` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-04-14 10:05:36
+-- Dump completed on 2023-10-26 13:36:43

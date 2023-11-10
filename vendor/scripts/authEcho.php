@@ -1,14 +1,12 @@
 <?php
-if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
+require_once('../lib/base.php');
 
-require_once "../lib/ajax_functions.php";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-
-$response = array("post" => $_POST, "get" => $_GET);
+$response = array('post' => $_POST, 'get' => $_GET);
 
 ajaxSuccess($response);
 ?>

@@ -21,7 +21,7 @@ $badgeQ = "SELECT id, label from memList where memCategory='cancel';";
 $badgeR = dbQuery($badgeQ);
 $badge = array();
 
-while($badgeA = fetch_safe_assoc($badgeR)) {
+while($badgeA = $badgeR->fetch_assoc()) {
     $badge[$badgeA['label']] = $badgeA['id'];
 }
 
@@ -54,7 +54,7 @@ while($badgeA = fetch_safe_assoc($badgeR)) {
     else { 
         // need to test for an handle case where some action has already been taken.
 
-        $info_assoc = fetch_safe_assoc($infoR);
+        $info_assoc = $infoR->fetch_assoc();
         $response['amount'] = $info_assoc['paid'];
     }
 

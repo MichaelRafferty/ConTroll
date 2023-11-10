@@ -40,14 +40,14 @@ function page_init($title, $tab, $css, $js)
         <?php echo $title . ' -- ' . $label; ?> Reg
     </title>
     <link href='/css/jquery-ui-1.13.1.css' rel='stylesheet' type='text/css' />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous" />
+    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM' crossorigin='anonymous'>
     <link href="css/base.css" rel='stylesheet' type='text/css' />
         <?php  if (isset($css) && $css != null) {
             foreach ($css as $sheet) { ?>
     <link href='<?php echo $sheet; ?>' rel=stylesheet type='text/css' />
             <?php }
         } ?>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+    <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js' integrity='sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz' crossorigin='anonymous'></script>
     <script type='text/javascript' src='/js/jquery-min-3.60.js'></script>
     <script type='text/javascript' src='/js/jquery-ui.min-1.13.1.js'></script>
     <script type='text/javascript' src='/js/base.js'></script>
@@ -502,7 +502,7 @@ WHERE u.perid=? AND u.userhash=? AND u.conid=?;
 EOS;
         $r = dbSafeQuery($q, 'ssi', [$_SESSION['user'], $_SESSION['userhash'], $conid]);
         if ($r->num_rows > 0) {
-            while ($l = fetch_safe_assoc($r)) {
+            while ($l = $r->fetch_assoc()) {
                 $perms[] = $l['auth'];
             }
         }
@@ -541,7 +541,7 @@ EOS;
     $genericFound = false;
     $receiptFound = false;
     $printerR = dbQuery($printerQ);
-    while ($printer = fetch_safe_assoc($printerR)) {
+    while ($printer = $printerR->fetch_assoc()) {
         $printers[$printer['serverName'] . ':' . $printer['printerName']] = $printer;
         if (mb_substr($printer['printerType'], 0, 7) == 'generic') $genericFound = true;
         if (mb_substr($printer['printerType'], 0, 7) == 'receipt') $receiptFound = true;
@@ -559,7 +559,9 @@ EOS;
 EOS;
     foreach ($printers as $key => $printer) {
         if (mb_substr($printer['printerType'], 0, 5) == 'badge') {
-            $html .= '<option value="' . $key . ':::' . $printer['address'] . ':-:' . $printer['printerName'] . ':-:' . $printer['printerType'] . ':-:' . $printer['codePage'] . '">' . $key . "</option>\n";
+            $html .= '<option value="' . escape_quotes($key) . ':::' . escape_quotes($printer['address']) .
+                ':-:' . escape_quotes($printer['printerName']) . ':-:' . escape_quotes($printer['printerType']) .
+                ':-:' . escape_quotes($printer['codePage']) . '">' . $key . "</option>\n";
         }
     }
     $html .= <<<EOS
@@ -576,12 +578,16 @@ EOS;
  EOS;
     foreach ($printers as $key => $printer) {
         if (mb_substr($printer['printerType'], 0, 7) == 'receipt') {
-            $html .= '<option value="' . $key . ':::' . $printer['address'] . ':-:' . $printer['printerName'] . ':-:' . $printer['printerType'] . ':-:' . $printer['codePage'] . '">' . $key . "</option>\n";
+            $html .= '<option value="' . escape_quotes($key) . ':::' . escape_quotes($printer['address']) .
+            ':-:' . escape_quotes($printer['printerName']) . ':-:' . escape_quotes($printer['printerType']) .
+            ':-:' . escape_quotes($printer['codePage']) . '">' . $key . "</option>\n";
         }
     }
     foreach ($printers as $key => $printer) {
         if (mb_substr($printer['printerType'], 0, 7) == 'generic') {
-            $html .=  '<option value="' . $key . ':::' . $printer['address'] . ':-:' . $printer['printerName'] . ':-:' . $printer['printerType'] . ':-:' . $printer['codePage'] . '">' . $key . "</option>\n";
+            $html .= '<option value="' . escape_quotes($key) . ':::' . escape_quotes($printer['address']) .
+            ':-:' . escape_quotes($printer['printerName']) . ':-:' . escape_quotes($printer['printerType']) .
+            ':-:' . escape_quotes($printer['codePage']) . '">' . $key . "</option>\n";
         }
     }
     $html .= <<<EOS
@@ -601,7 +607,9 @@ EOS;
 EOS;
         foreach ($printers as $key => $printer) {
             if (mb_substr($printer['printerType'], 0, 7) == 'generic') {
-                $html .= '<option value="' . $key . ':::' . $printer['address'] . ':-:' . $printer['printerName'] . ':-:' . $printer['printerType'] . ':-:' . $printer['codePage'] . '">' . $key . "</option>\n";
+                '<option value="' . escape_quotes($key) . ':::' . escape_quotes($printer['address']) .
+                ':-:' . escape_quotes($printer['printerName']) . ':-:' . escape_quotes($printer['printerType']) .
+                ':-:' . escape_quotes($printer['codePage']) . '">' . $key . "</option>\n";
             }
         }
         $html .= <<<EOS

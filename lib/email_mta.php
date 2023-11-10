@@ -17,6 +17,32 @@
 //      email_error = error message (only if status = error)
 //
 
+// TODO: convert this to PHP mailer class, so it can easily do text and html
+/*  (example of using php mailer class)
+$mail = new PHPMailer();
+
+$mail->IsHTML(true);
+$mail->CharSet = 'text/html; charset=UTF-8;';
+$mail->IsSMTP();
+
+$mail->WordWrap = 80;
+$mail->Host = 'smtp.thehost.com';
+$mail->SMTPAuth = false;
+
+$mail->From = $from;
+$mail->FromName = $from; // First name, last name
+$mail->AddAddress($to, 'First name last name');
+#$mail->AddReplyTo("reply@thehost.com", "Reply to address");
+
+$mail->Subject = $subject;
+$mail->Body = $htmlMessage;
+$mail->AltBody = $textMessage;    # This automatically sets the email to multipart/alternative. This body can be read by mail clients that do not have HTML email capability such as mutt.
+
+if (!$mail->Send()) {
+    throw new Exception('Mailer Error: ' . $mail->ErrorInfo);
+}
+*/
+
 function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
     $headers = "From: $from" . "\r\n"
         . "Reply-To: $from" . "\r\n"
