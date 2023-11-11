@@ -307,30 +307,12 @@ $onsitesale = $startdate->format("l, F j");
                                     <hr/>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <p class="text-body">
-                                        <label>
-                                            <input type='checkbox' checked name='contact' id='contact' value='Y'/>
-                                            <?php echo $con['remindertext']; ?>
-                                        </label>
-                                        <span class='small'><a href='javascript:void(0)' onClick='$("#contactTip").toggle()'>(more info)</a></span>
-                                        <div id='contactTip' class='padded highlight' style='display:none'>
-                                            <p class="text-body">
-                                                We will not sell your contact information or use it for any purpose other than contacting you about this
-                                                <?php echo $con['conname']; ?> or future <?php echo $con['conname']; ?>s.
-                                                <span class='small'><a href='javascript:void(0)' onClick='$("#contactTip").toggle()'>(close)</a></span>
-                                            </p>
-                                        </div>
-                                    </p>
-                                </div>
-                            </div>
                              <div class="row">
                                 <div class="col-sm-12">
                                     <p class="text-body">
                                         <label>
                                             <input type='checkbox' checked name='share' id='share' value='Y'/>
-                                            May we include you in our <a target='_blank' href='checkReg.php'>Check Registration page</a>?
+                                            May we include you in our <a target='_blank' href='checkReg.php'>Check Registration page</a> and website?
                                             This will allow you to check the status of your registration at your convenience.
                                             If you choose to opt out, you can only check the status of your registration status by contacting
                                             one of our volunteer staff at <?php echo $con['regemail']; ?> (please allow several days for a reply).
@@ -338,6 +320,16 @@ $onsitesale = $startdate->format("l, F j");
                                     </p>
                                 </div>
                              </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <p class="text-body">
+                                        <label>
+                                            <input type='checkbox' checked name='contact' id='contact' value='Y'/>
+                                            <?php echo $con['remindertext']; ?>
+                                        </label>
+                                    </p>
+                                </div>
+                            </div>
                             <div class="row">
                                 <div class="col-sm-12">
                                     <hr/>
