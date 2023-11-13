@@ -70,7 +70,7 @@ SELECT DISTINCT P.email_addr AS email
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
 JOIN memList M ON (R.memId = M.id)
-WHERE R.conid=? AND R.paid=R.price AND P.email_addr LIKE '%@%' AND P.contact_ok='Y' AND M.label != 'rollover-cancel'
+WHERE R.conid=? AND R.paid=R.price AND P.email_addr LIKE '%@%' AND P.contact_ok='Y' AND M.label != 'rollover-cancel' AND M.memCategory != 'cancel'
 ORDER BY email;
 EOQ;
     $typestr = 'i';
