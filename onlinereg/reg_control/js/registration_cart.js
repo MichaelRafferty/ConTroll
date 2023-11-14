@@ -580,7 +580,7 @@ class reg_cart {
             var mrow = this.#membership_rows[rownum];
             if (mrow['coupon'] == couponId) {
                 mrow['coupon'] = null;
-                mrow['discount'] = 0;
+                mrow['couponDiscount'] = 0;
             }
         }
         // remove the discount coupon from the payment
@@ -752,11 +752,11 @@ class reg_cart {
             if (row_shown) {
                 this.#total_price += Number(mrow['price']);
                 this.#total_paid += Number(mrow['paid']);
-                if (mrow['discount'])
-                    this.#total_paid += Number(mrow['discount']);
+                if (mrow['couponDiscount'])
+                    this.#total_paid += Number(mrow['couponDiscount']);
                 if (mem_is_membership)
                     membership_found = true;
-                if ((mrow['paid'] + mrow['discount']) != mrow['price']) {
+                if ((Number(mrow['paid']) + Number(mrow['couponDiscount'])) != Number(mrow['price'])) {
                     this.#unpaid_rows++;
                 }
             }
