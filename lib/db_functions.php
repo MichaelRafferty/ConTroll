@@ -21,7 +21,7 @@ $logdest = $log['web'];
 
 // Function web_error_log($string)
 // $string = string to write to file $logdest with added newline at end
-function web_error_log($string, $debug=""): void
+function web_error_log($string, $debug = ''): void
 {
     global $logdest;
     global $debug_set;
