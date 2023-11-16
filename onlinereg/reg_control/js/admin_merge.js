@@ -127,6 +127,7 @@ class mergesetup {
             this.#mergeCandidatesTable.destroy();
             this.#mergeCandidatesTable = null;
         }
+        clearError();
         var script = "scripts/mergeFindCandidates.php";
         var data = {
             remain: this.#remainPid.value,
@@ -216,6 +217,7 @@ class mergesetup {
         if (!(mergePid > 0 && remainPid > 0))
             return;
 
+        clearError();
         this.#mergeCheck_div.innerHTML = "";
         var script = "scripts/mergeCheckCandidates.php";
         var data = {
@@ -265,6 +267,7 @@ class mergesetup {
         if (!(remainPID > 0 && mergePID > 0))
             return;
 
+        clearError();
         var script = "scripts/mergeExecuteMerge.php";
         var data = {
             merge: mergePID,
@@ -318,6 +321,7 @@ class mergesetup {
             this.#find_result_table = null;
         }
 
+        clearError();
         $.ajax({
             method: "POST",
             url: "scripts/mergeFindRecord.php",
