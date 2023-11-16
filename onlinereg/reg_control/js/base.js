@@ -217,6 +217,12 @@ function getForm(formObj, formUrl, succFunc, errFunc) {
     });
 }
 
+// old style error message block
+//
+function clearError() {
+    $('#test').empty();
+}
+
 function showError(str, data = null) {
     $('#test').empty();
     if (str != null) {
