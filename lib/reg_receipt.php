@@ -2,7 +2,7 @@
 //  receipt.php - library of modules related building registration receipts
 
 // trans_receipt - given a transaction number build a receipt
-
+// This function returns all the data to make up a receipt and then calls 'reg_format_receipt' to actually format the receipt as plain text, HTML and email tables.
 function trans_receipt($transid)
 {
     //// get the transaction information
@@ -368,6 +368,7 @@ EOS;
         $total += $subtotal;
     }
 
+    // now all but the payor
     foreach ($data['memberships'] as $pid => $list) {
         if ($payor_pid == $pid)
             continue;
@@ -560,6 +561,44 @@ EOS;
 EOS;
     }
 
+    // now for the disclaimers at the bottom
+    // general disclaimer for all reg items
+    // Needs to be added
+
+    // vendor disclaimer
+    if (count($data['vendors']) > 0) {
+        $vc = get_conf('vendor');
+        $vdisc = $vc['pay_disclaimer'];
+        $receipt .=  "\n\n$vdisc\n";
+        $receipt_html .= <<<EOS
+<div class='row mt-4'>
+        <div class='col-sm-12'>
+            <p>$vdisc</p>
+        </div>
+    </div>
+EOS;
+        $receipt_tables .= <<<EOS
+<tr><td colspan="3"><p>$vdisc</p></td></tr>
+EOS;
+    }
+
+    $coninfo = get_conf('con');
+    if (array_key_exists('endtext', $coninfo)) {
+        $endtext = $coninfo['endtext'];
+        $receipt .=  "\n\n$endtext\n";
+        $receipt_html .= <<<EOS
+<div class='row mt-4'>
+        <div class='col-sm-12'>
+            <p>$endtext</p>
+        </div>
+    </div>
+EOS;
+        $receipt_tables .= <<<EOS
+<tr><td colspan="3"><p>$endtext</p></td></tr>
+EOS;
+    }
+
+    // all done now
     $response['receipt'] = $receipt;
     $response['receipt_html'] = $receipt_html;
     $response['receipt_tables'] = $receipt_tables . "</table>\n";

@@ -19,6 +19,8 @@ privacypolicy="https://www.balticon.org/wp57/bsfs-and-balticon-privacy-policy/"
 privacytext="See our privacy policy for how we use and share information"
 policytext="Philcon Policies"
 remindertext="May we include you in our annual reminder postcards and future marketing or survey emails?"
+; endtext = text to put at the botom of the receipt.
+endtext=
 regemail="registration2022@philcon.org"
 regadminemail="registration2022@philcon.org"
 regconfirmcc="registrationcc@philcon.org"
@@ -66,8 +68,6 @@ onsiteopen="3:00 PM"
 ;	any - any POS user can handle discount
 ;	none - disable the discount type of payment
 discount=active
-; endtext = text to put at the botom of the receipt.
-endtext=
 ; badgeps = fill path to the Postscript header for printing badges
 badgeps="/home/psfs_reg/config/philcon.ps"
 [vendor]
