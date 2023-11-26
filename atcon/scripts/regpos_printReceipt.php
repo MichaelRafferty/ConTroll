@@ -86,8 +86,10 @@ foreach ($pmtrows as $pmtrow) {
     $receipt .= $line . "\n";
     $total_pmt += $pmtrow['amt'];
 }
-
-$receipt .= "         ----------\n" . sprintf("total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, 'USD')) . "\n$footer\n" . "\n" . $atcon_info['endtext'] . "\n\n\n\n";
+$endtext = "\n";
+if (array_key_exists('endtext', $con))
+    $endtext = $con['endtext'] . "\n";
+$receipt .= "         ----------\n" . sprintf("total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, 'USD')) . "\n$footer\n" . "\n" . $endtext . "\n\n\n";
 
 if ($receipt_type == 'print') {
     if (isset($_SESSION['receiptPrinter'])) {

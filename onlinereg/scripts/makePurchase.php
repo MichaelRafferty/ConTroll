@@ -416,7 +416,7 @@ if ($total > 0) {
     $body = getEmailBody($transid);
 }
 else {
-    $body = getNoChangeEmailBody($results);
+    $body = getNoChargeEmailBody($results);
 }
 
 $regconfirmcc = null;
