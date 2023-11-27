@@ -1,35 +1,30 @@
 *.swp
 *.bak
 *~
-
+# local instance directories not part of release
 /config/
+/crons/
+/cronlog/
+/backups/
 /Composer/vendor
-/google_client/
-
+/reglogs/
+/UserDoc/
+.htaccess
+.htaccess.sav
 # Visual Studio Stuff
 /.vs/
 /BalticonReg.phpproj
 /BalticonReg.sln
 /BalticonReg.phpproj.user
-/google_client/
-/google_client
-/google-api-php-client--PHP8.0/
-# Visual Studio Stuff
-/.vs/
 dead
-.htaccess
 /launchSettings.json
 /onlinereg/newbadge.html
 /onlinereg/javascript/d3-7.js
 /onlinereg/images/balticon56.png
 /onlinereg/images/balticon57.png
+
+#phpstorm
 /.idea/
-/.idea/.gitignore
-
-onlinereg/onlineReg/
-
-/atcon/scripts/obsolete/
-/google_client/
 /.idea/.gitignore
 /.idea/BalticonReg.iml
 /.idea/modules.xml
@@ -38,3 +33,8 @@ onlinereg/onlineReg/
 /.idea/sqldialects.xml
 /.idea/vcs.xml
 /.idea/workspace.xml
+
+# placeholder for obsolete stuff
+onlinereg/onlineReg/
+/atcon/scripts/obsolete/
+/onlinereg/reg_control/scripts/obsolete
