@@ -15,9 +15,11 @@ function logClose($file) {
 
 function logWrite($message) {
   global $logFile;
+  $now = date("Y/m/d H:i:s");
   $fh = logStart($logFile);
+  fprintf($fh, "\n%s:\n", $now);
   $res = print_r($message, true);
-  fprintf($fh, "%s", $res);
+  fprintf($fh, "%s\n", $res);
   logClose($fh);
   }
 
