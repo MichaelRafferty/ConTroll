@@ -879,7 +879,7 @@ function add_found(data) {
             if (primmem != null) {
                 row['reg_label'] = add_membership[primmem]['label'];
                 var tid = add_membership[primmem]['tid'];
-                if (tid != '') {
+                if (tid !== null && tid !== undefined && tid != '') {
                     var other = false;
                     var mperid = row['perid'];
                     for (var mem in add_membership) {
@@ -1189,7 +1189,7 @@ function addCartIcon(cell, formatterParams, onRendered) { //plain text value
         html = '<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" onclick="add_to_cart(' +
             cell.getRow().getData().index + ', \'' + formatterParams['t'] + '\')">Add</button>';
         tid = cell.getRow().getData().tid;
-        if (tid != '' && tid != undefined && tid != null) {
+        if (tid != '' && tid !== undefined && tid !== null) {
             html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" onclick="add_to_cart(' + (-tid) + ', \'' + formatterParams['t'] + '\')">Tran</button>';
         }
         return html;
@@ -1559,7 +1559,7 @@ function found_record(data) {
         if (primmem != null) {
             row['reg_label'] = result_membership[primmem]['label'];
             tid = result_membership[primmem]['tid'];
-            if (tid != '') {
+            if (tid !== null && tid !== undefined && tid != '') {
                 var other = false;
                 mperid = row['perid'];
                 for (var mem in result_membership) {
