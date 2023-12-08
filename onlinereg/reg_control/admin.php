@@ -26,6 +26,15 @@ page_init($page,
               $need_login);
 $con = get_conf("con");
 $conid=$con['id'];
+
+if (array_key_exists('user_id', $_SESSION)) {
+    $user_id = $_SESSION['user_id'];
+} else {
+    ajaxError('Invalid credentials passed');
+    return;
+}
+
+
 ?>
 <div id='user-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Lookup Person to Add as User' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
@@ -241,8 +250,10 @@ $conid=$con['id'];
                             <td>
                                 <input form='<?php echo $user['id']; ?>'
                                     type='submit' onclick='<?php echo $updateFcn . "(" . $user['id'] . ',"' . trim($lookup_str) . '")'; ?>' value='<?php echo $updateLabel;?>' />
+                                <?php if ($user['id'] != $user_id) { ?>
                                 <input form='<?php echo $user['id']; ?>'
                                     type='button' onclick='clearPermissions("<?php echo $user['id']; ?>")' value='Delete' />
+                                <?php } ?>
                             </td>
                         </form>
                     </tr>
