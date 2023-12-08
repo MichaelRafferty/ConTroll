@@ -27,6 +27,47 @@ page_init($page,
 $con = get_conf("con");
 $conid=$con['id'];
 ?>
+<div id='user-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Lookup Person to Add as User' aria-hidden='true' style='--bs-modal-width: 80%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='addTitle'>Lookup Person to Add as User</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <form id='add-search' action='javascript:void(0)'>
+                        <div class='row p-1'>
+                            <div class='col-sm-3 p-0'>
+                                <label for='search_name' id='addName'>Name:</label>
+                            </div>
+                            <div class='col-sm-9 p-0'>
+                                <input class='form-control-sm' type='text' name='namesearch' id='add_name_search' size='64'
+                                       placeholder='Name/Portion of Name, Person (Badge) ID'/>
+                            </div>
+                            <div class='row mt-3'>
+                                <div class='col-sm-12 text-bg-secondary'>
+                                    Search Results
+                                </div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-sm-12' id='add_search_results'>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='addSearch' onClick='add_find()'>Find Person</button>
+            </div>
+            <div id='result_message' class='mt-4 p-2'></div>
+        </div>
+    </div>
+</div>
 <div id='merge-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Look up Merge Person' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
@@ -71,7 +112,7 @@ $conid=$con['id'];
 <div id='main'>
 
     <?php
-    $userQ = "Select name, email, id from user;";
+    $userQ = "Select name, email, id, perid from user;";
     $userR = dbQuery($userQ);
 
     $authQ = "Select name, id from auth;";
@@ -116,12 +157,13 @@ $conid=$con['id'];
             <table>
                 <thead>
                     <tr>
-                        <th>User</th><th>Email</th>
+                        <th>User</th><th>Email</th><th style="text-align: right; padding-left: 4px; padding-right: 4px;">Perid</th>
                         <?php
 
     $sets_num = array();
     foreach ($sets as $group => $perms) {
-                        ?><th>
+        $group = str_replace('_', '-', $group);
+                        ?><th style="overflow-wrap:normal; width: 50px;padding-left: 2px; padding-right: 2px;">
                             <?php echo $group;?>
                         </th>
                         <?php
@@ -141,16 +183,35 @@ $conid=$con['id'];
                 <tbody>
                     <?php
     while($user = fetch_safe_assoc($userR)) {
+        if ((!array_key_exists('perid', $user)) || $user['perid'] === null || $user['perid'] == '') {
+            $updateFcn = 'updatePerid';
+            $color = " background-color: red;";
+            $updateLabel = "Fix Perid";
+            $names = explode(' ', $user['name']);
+            $lookup_str = '';
+            foreach ($names as $name) {
+                $lookup_str .= ' ' . mb_substr($name, 0, 2);
+            }
+        } else {
+            $updateFcn = 'updatePermissions';
+            $updateLabel = "Update";
+            $color = '';
+        }
                     ?>
                     <tr>
                         <form id='<?php echo $user['id'];?>' action='javascript:void(0)'>
                             <input type='hidden' name='user_id' value='<?php echo $user['id'];?>' />
+                            <input type='hidden' name='perid' value='<?php echo $user['perid'];?>' />
                             <?php
                             ?>
                             <td>
                                 <?php echo $user['name'];?>
-                            </td><td>
+                            </td>
+                            <td>
                                 <?php echo $user['email']; ?>
+                            </td>
+                            <td style="text-align: right; padding-left: 4px; padding-right: 4px;<?php echo $color; ?>">
+                                <?php echo $user['perid']; ?>
                             </td>
                             <?php
         foreach($sets_num as $n => $set) {
@@ -178,11 +239,9 @@ $conid=$con['id'];
         }
                             ?>
                             <td>
-                                <input form='<?php echo $user['id']; 
-                                             ?>'
-                                    type='submit' onclick='updatePermissions("<?php echo $user['id']; ?>")' value='Update' />
-                                <input form='<?php echo $user['id'];
-            ?>'
+                                <input form='<?php echo $user['id']; ?>'
+                                    type='submit' onclick='<?php echo $updateFcn . "(" . $user['id'] . ',"' . trim($lookup_str) . '")'; ?>' value='<?php echo $updateLabel;?>' />
+                                <input form='<?php echo $user['id']; ?>'
                                     type='button' onclick='clearPermissions("<?php echo $user['id']; ?>")' value='Delete' />
                             </td>
                         </form>
@@ -192,25 +251,7 @@ $conid=$con['id'];
                     ?>
                 </tbody>
             </table>
-            <button onclick="$('#createDialog').dialog('open');">New Account</button>
-        </div>
-        <div id='createDialog'>
-            <form id='createUserForm' action='javascript:void(0)'>
-                Name: <input name='name' type='text' /><br />
-                Email: <input name='email' type='email' /><br />
-                <?php
-    foreach($sets_num as $n => $set) {
-                ?>
-                <label class='blocks'>
-                    <?php echo $n;?>
-                    <input type='checkbox' name='<?php echo $n;?>' />
-                </label>
-                <?php
-    }
-                ?>
-                <br />
-                <input type='submit' value='Create' onclick='createAccount()' />
-            </form>
+            <button id='add_new_account' type='button' class='btn btn-primary btn-sm' onclick="addFindPerson(); return false;">New Account</button>
         </div>
     </div>
     <div class="tab-pane fade" id="consetup-pane" role="tabpanel" aria-labelledby="consetup-tab" tabindex="0"></div>
