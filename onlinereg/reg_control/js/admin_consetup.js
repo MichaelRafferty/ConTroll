@@ -497,7 +497,10 @@ class consetup {
             method: 'GET',
             data: 'year=' + this.#setup_type + '&type=conlist',      
             success: function (data, textStatus, jhXHR) {
-                if (data['error'])
+                if (data['error']) {
+                    showError(data['error']);
+                    return false;
+                }
                 if (data['year'] == 'current') {
                     current.draw_conlist(data, textStatus, jhXHR);
                 } else {
