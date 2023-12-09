@@ -242,6 +242,7 @@ if (array_key_exists('user_id', $_SESSION)) {
                                     type='checkbox' name='<?php echo $n;?>'
                                     <?php
             if($a) { echo "checked='checked'"; }
+            if ($user_id == $user['id'] && $n == 'admin') { echo "onclick='return false;'"; } // prevent you from deleting your own admin setting
             ?> />
                             </td>
                             <?php
