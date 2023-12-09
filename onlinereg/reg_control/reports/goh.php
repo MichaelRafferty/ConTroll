@@ -11,7 +11,7 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 
 $con = get_conf("con");
 $conid=$con['id'];
-// this hard code needs to move to the config file
+// this hard code needs to move to the config file  (and is obsolete as perid 29 is not GOH coordinator)
 $gohLiaison = 29;
 
 header('Content-Type: application/csv');
@@ -24,7 +24,7 @@ FROM reg R
 JOIN badgeList B ON (B.perid=R.perid)
 JOIN perinfo P ON (P.id=R.perid)
 JOIN memLabel M ON (M.id=R.memId)
-WHERE R.conid=? AND ((B.userid=? OR M.memCategory='goh') AND B.conid = M.conid)
+WHERE R.conid=? AND ((B.user_perid=? OR M.memCategory='goh') AND B.conid = M.conid)
 ORDER BY M.label, P.last_name, P.first_name;
 EOS;
 

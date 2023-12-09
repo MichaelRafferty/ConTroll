@@ -25,9 +25,10 @@ if(!isset($_POST['regid']) || !isset($_POST['id'])) { ajaxSuccess(array('error'=
 
 $user = $check_auth['email'];
 $response['user'] = $user;
-$userQ = "SELECT id FROM user WHERE email='$user';";
+$userQ = "SELECT id, perid FROM user WHERE email='$user';";
 $userR = fetch_safe_assoc(dbQuery($userQ));
 $userid = $userR['id'];
+$user_perid = $userR['perid'];
 
 $transQ = <<<EOS
 SELECT *
