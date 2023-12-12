@@ -244,8 +244,8 @@ class consetup {
                     title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
                     headerFilter: "input"
                 },
-                { title: "Start Date", field: "startdate", width: 100, editor: "date", validator: "required", headerFilter: "input" },
-                { title: "End Date", field: "enddate", width: 100, editor: "date", validator: "required", headerFilter: "input" },
+                { title: "Start Date", field: "startdate", width: 150, editor: "datetime", validator: "required", headerFilter: "input" },
+                { title: "End Date", field: "enddate", width: 150, editor: "datetime", validator: "required", headerFilter: "input" },
                 {
                     title: "Atcon", field: "atcon", editor: "list", editorParams: { values: ["Y", "N"], },
                     headerFilter: true, headerFilterParams: { values: ["Y", "N"], }
