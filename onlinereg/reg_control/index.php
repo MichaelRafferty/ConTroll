@@ -40,6 +40,9 @@ EOS;
         $_SESSION['user_id'] = $userid;
         $_SESSION['user_perid'] = $perid;
     }
+    // get the version string, and the current DB patch level
+    $versionText = file_get_contents("../../version.txt");
+    $patchLevel = dbQuery("SELECT MAX(id) FROM patchLog;")->fetch_row()[0];
     ?>
     <div id='main'>
         <div class="container-fluid">
@@ -68,6 +71,8 @@ EOS;
                             echo "Current Time: " . date('c') . "\n";
                             echo "Next Check: " . date('c', $need_login['exp']) . "\n";
                             echo "Refresh Token: " . (isset($_SESSION['id_token_token']['refresh_token'])?"Exists":"Doesn't Exist") . "\n";
+                            echo "$versionText";
+                            echo "Database Patch Level: $patchLevel\n";
                         ?> </pre>
                 </div>
             </div>
