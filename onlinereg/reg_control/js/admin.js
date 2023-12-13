@@ -1,7 +1,8 @@
 current = null;
 next = null;
 mem = null;
-var merge = null;
+vendor = null;
+merge = null;
 var add_modal = null;
 var add_result_table = null;
 var add_pattern_field = null;
@@ -201,7 +202,8 @@ function settab(tabname) {
                 mem.close();
             if (merge != null)
                 merge.close();
-
+            if (vendor != null)
+                vendor.close();
             break;
 
         case 'consetup-pane':            
@@ -213,6 +215,8 @@ function settab(tabname) {
                 mem.close();
             if (merge != null)
                 merge.close();
+            if (vendor != null)
+                vendor.close();
             if (current == null)
                 current = new consetup('current');
             current.open();
@@ -227,6 +231,8 @@ function settab(tabname) {
                 next.close();
             if (merge != null)
                 merge.close();
+            if (vendor != null)
+                vendor.close();
             if (next == null)
                 next = new consetup('next');
             next.open();
@@ -240,9 +246,26 @@ function settab(tabname) {
                 mem.close();
             if (merge != null)
                 merge.close();
+            if (vendor != null)
+                vendor.close();
             if (mem == null)
                 mem = new memsetup();
             mem.open();
+            break;
+        case 'vendor-pane':
+            if (current != null)
+                current.close();
+            if (next != null)
+                next.close();
+            if (mem != null)
+                mem.close();
+            if (merge != null)
+                merge.close();
+            if (merge != null)
+                merge.close();
+            if (vendor == null)
+                vendor = new vendorsetup();
+            vendor.open();
             break;
         case 'merge-pane':
             if (current != null)
@@ -253,6 +276,8 @@ function settab(tabname) {
                 mem.close();
             if (merge != null)
                 merge.close();
+            if (vendor != null)
+                vendor.close();
             if (merge == null)
                 merge = new mergesetup();
             merge.open();

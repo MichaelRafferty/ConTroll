@@ -21,6 +21,7 @@ page_init($page,
                     'js/admin.js',
                     'js/admin_consetup.js',
                     'js/admin_memconfig.js',
+                    'js/admin_vendor.js',
                     'js/admin_merge.js'
                    ),
               $need_login);
@@ -148,16 +149,28 @@ if (array_key_exists('user_id', $_SESSION)) {
             <button class="nav-link active" id="users-tab" data-bs-toggle="pill" data-bs-target="#users-pane" type="button" role="tab" aria-controls="nav-users" aria-selected="true" onclick="settab('users-pane');">Users</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="consetup-tab" data-bs-toggle="pill" data-bs-target="#consetup-pane" type="button" role="tab" aria-controls="nav-consetup" aria-selected="false" onclick="settab('consetup-pane');">Current Convention Setup</button>
+            <button class="nav-link" id="consetup-tab" data-bs-toggle="pill" data-bs-target="#consetup-pane" type="button" role="tab"
+                    aria-controls="nav-consetup" aria-selected="false" onclick="settab('consetup-pane');">Current Convention Setup
+            </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="nextconsetup-tab" data-bs-toggle="pill" data-bs-target="#nextconsetup-pane" type="button" role="tab" aria-controls="nav-nextconsetup" aria-selected="false" onclick="settab('nextconsetup-pane');">Next Convention Setup</button>
+            <button class="nav-link" id="nextconsetup-tab" data-bs-toggle="pill" data-bs-target="#nextconsetup-pane" type="button" role="tab"
+                    aria-controls="nav-nextconsetup" aria-selected="false" onclick="settab('nextconsetup-pane');">Next Convention Setup
+            </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="memconfig-tab" data-bs-toggle="pill" data-bs-target="#memconfig-pane" type="button" role="tab" aria-controls="nav-nextconsetup" aria-selected="false" onclick="settab('memconfig-pane');">Membership Configuration Tables</button>
+            <button class="nav-link" id="memconfig-tab" data-bs-toggle="pill" data-bs-target="#memconfig-pane" type="button" role="tab"
+                    aria-controls="nav-memconfigsetup" aria-selected="false" onclick="settab('memconfig-pane');">Membership Configuration
+            </button>
         </li>
         <li class='nav-item' role='presentation'>
-            <button class='nav-link' id='merge-tab' data-bs-toggle='pill' data-bs-target='#merge-pane' type='button' role='tab' aria-controls='nav-merge' aria-selected='false' onclick="settab('merge-pane');">Merge People
+            <button class='nav-link' id='vendor-tab' data-bs-toggle='pill' data-bs-target='#vendor-pane' type='button' role='tab'
+                    aria-controls='nav-vendorsetup' aria-selected='false' onclick="settab('vendor-pane');">Vendor Configuration
+            </button>
+        </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='merge-tab' data-bs-toggle='pill' data-bs-target='#merge-pane' type='button' role='tab'
+                    aria-controls='nav-merge' aria-selected='false' onclick="settab('merge-pane');">Merge People
             </button>
         </li>
     </ul>
@@ -269,6 +282,7 @@ if (array_key_exists('user_id', $_SESSION)) {
     <div class="tab-pane fade" id="consetup-pane" role="tabpanel" aria-labelledby="consetup-tab" tabindex="0"></div>
     <div class="tab-pane fade" id="nextconsetup-pane" role="tabpanel" aria-labelledby="nextconsetup-tab" tabindex="0"></div>
     <div class="tab-pane fade" id="memconfig-pane" role="tabpanel" aria-labelledby="memconfig-tab" tabindex="0"></div>
+    <div class="tab-pane fade" id="vendor-pane" role="tabpanel" aria-labelledby="vendor-tab" tabindex="0"></div>
     <div class='tab-pane fade' id='merge-pane' role='tabpanel' aria-labelledby='merge-tab' tabindex='0'>
 </div>
 <script>
