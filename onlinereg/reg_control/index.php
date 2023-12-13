@@ -41,8 +41,16 @@ EOS;
         $_SESSION['user_perid'] = $perid;
     }
     // get the version string, and the current DB patch level
-    $versionText = file_get_contents("../../version.txt");
+    $versionFile = '../../version.txt';
+    if (is_readable($versionFile)) {
+        $versionText = file_get_contents("../../version.txt");
+    } else {
+        $versionText = "Version information not available\n";
+    }
     $patchLevel = dbQuery("SELECT MAX(id) FROM patchLog;")->fetch_row()[0];
+    if ($patchLevel === null || $patchLevel === false || $patchLevel < 0) {
+        $patchLevel = "unavailable";
+    }
     ?>
     <div id='main'>
         <div class="container-fluid">
