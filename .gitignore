@@ -11,6 +11,11 @@
 /reglogs/
 /UserDoc/
 
+# images directories not used by Controll
+/atcon/images/
+/onlinereg/images/
+/vendor/images/
+
 # stuff for local overrides
 .htaccess
 .htaccess.sav
@@ -25,8 +30,6 @@
 # The images need to be removed as we switch to the new image style, the others in section eed review.
 /onlinereg/newbadge.html
 /onlinereg/javascript/d3-7.js
-/onlinereg/images/balticon56.png
-/onlinereg/images/balticon57.png
 
 #phpstorm
 /.idea/
