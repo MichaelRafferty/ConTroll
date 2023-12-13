@@ -10,14 +10,16 @@
 /Composer/vendor
 /reglogs/
 /UserDoc/
+
+# stuff for local overrides
 .htaccess
 .htaccess.sav
+/version.txt
 # Visual Studio Stuff
 /.vs/
 /BalticonReg.phpproj
 /BalticonReg.sln
 /BalticonReg.phpproj.user
-dead
 /launchSettings.json
 /onlinereg/newbadge.html
 /onlinereg/javascript/d3-7.js
@@ -36,6 +38,8 @@ dead
 /.idea/workspace.xml
 
 # placeholder for obsolete stuff
-onlinereg/onlineReg/
 /atcon/scripts/obsolete/
 /onlinereg/reg_control/scripts/obsolete
+# asre these two obsolete ones still needed and are they relative
+onlinereg/onlineReg/
+dead
