@@ -21,6 +21,8 @@
 /BalticonReg.sln
 /BalticonReg.phpproj.user
 /launchSettings.json
+
+# The images need to be removed as we switch to the new image style, the others in section eed review.
 /onlinereg/newbadge.html
 /onlinereg/javascript/d3-7.js
 /onlinereg/images/balticon56.png
