@@ -11,4 +11,4 @@ SET user_perid = user.perid;
 ALTER TABLE badgeList
 ADD CONSTRAINT `badgeList_user_perid_fk` FOREIGN KEY (`user_perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 
-INSERT INTO patchLog(id, name) values(14, 'mergePerid_proc');
+INSERT INTO patchLog(id, name) values(15, 'badgeList_perid');
