@@ -31,7 +31,16 @@ $year = $conid;
 $action=$_POST['ajax_request_action'];
 $table = $_POST['tablename'];
 $keyfield = $_POST['indexcol'];
-$data = $_POST['tabledata'];
+try {
+    $data = json_decode( $_POST['tabledata'], true, 512, JSON_THROW_ON_ERROR);
+} catch (Exception $e) {
+    $msg = "Caught exception on json_decode: " . $e->getMessage() . PHP_EOL . "JSON error: " . json_last_error_msg() . PHP_EOL;
+    $response['error'] = $msg;
+    error_log($msg);
+    ajaxSuccess(response);
+    exit();
+}
+//$data = $_POST['tabledata'];
 $inserted = 0;
 $updated = 0;
 $deleted = 0;
