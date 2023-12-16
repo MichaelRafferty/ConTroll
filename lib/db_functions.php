@@ -19,7 +19,7 @@ $debug_set = get_conf('debug');
 $log = get_conf("log");
 $logdest = $log['web'];
 
-// Function web_error_log($string)
+// Function web_error_log($string, $debug='')
 // $string = string to write to file $logdest with added newline at end
 function web_error_log($string, $debug = ''): void
 {
