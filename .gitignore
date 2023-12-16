@@ -38,3 +38,7 @@ onlinereg/onlineReg/
 /.idea/sqldialects.xml
 /.idea/vcs.xml
 /.idea/workspace.xml
+backups/
+cronlog/
+crons/
+scripts/
