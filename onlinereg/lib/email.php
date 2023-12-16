@@ -71,7 +71,7 @@ EOS;
     return $body;
 }
 
-function getNoChangeEmailBody($results) : string
+function getNoChargeEmailBody($results) : string
 {
     $condata = get_con();
     $ini = get_conf('reg');

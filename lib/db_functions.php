@@ -21,7 +21,7 @@ $logdest = $log['web'];
 
 // Function web_error_log($string)
 // $string = string to write to file $logdest with added newline at end
-function web_error_log($string): void
+function web_error_log($string, $debug = ''): void
 {
     global $logdest;
     global $debug_set;
@@ -165,6 +165,41 @@ function dbSafeQuery($query, $typestr, $value_arr)
         web_error_log("ERROR: DB Connection Not Open");
         return false;
     }
+}
+
+// dbSafeMultiQuery - does not exist in 'safe vesion'
+//
+function dbMultiQuery($query) {
+    global $dbObject;
+    $res = null;
+    if (!is_null($dbObject)) {
+        try {
+            // execute the command
+            $res = $dbObject->multi_query($query);
+            if ($res === false || $dbObject->errno) {
+                log_mysqli_error($query, 'Query Error');
+                return false;
+            }
+        } catch (\mysqli_sql_exception $e) {
+            log_mysqli_error($query, $e->getMessage());
+            return false;
+        } catch (Exception $e) {
+            log_mysqli_error($query, $e->getMessage());
+            return false;
+        }
+        return $dbObject->store_result();
+    } else {
+        echo 'ERROR: DB Connection Not Open';
+        web_error_log('ERROR: DB Connection Not Open');
+        return false;
+    }
+}
+
+function dbNextResult() {
+    global $dbObject;
+
+    $dbObject->next_result();
+    return $dbObject->store_result();
 }
 
 // dbSafeInsert - using prepare safely perform an insert operation

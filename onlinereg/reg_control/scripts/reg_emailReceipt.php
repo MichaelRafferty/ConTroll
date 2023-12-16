@@ -28,7 +28,6 @@ $response = [];
 $con = get_conf('con');
 $conid = $con['id'];
 $reg_info = get_conf('reg');
-$control_info = get_conf('control');
 $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
     $ajax_request_action = $_POST['ajax_request_action'];
@@ -89,8 +88,10 @@ foreach ($pmtrows as $pmtrow) {
     $receipt .= $line . "\n";
     $total_pmt += $pmtrow['amt'];
 }
-
-$receipt .= "         ----------\n" . sprintf("total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, 'USD')) . "\n$footer\n" . "\n" . $control_info['endtext'] . "\n\n\n\n";
+$endtext = "\n";
+if (array_key_exists('endtext', $con))
+    $endtext = $con['endtext'] . "\n";
+$receipt .= "         ----------\n" . sprintf("total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, 'USD')) . "\n$footer\n" . "\n" . $endtext . "\n\n\n";
 
 if (!array_key_exists('email_addrs', $_POST)) {
     $response['error'] = "No email recipeints specified";
