@@ -531,7 +531,7 @@ class memsetup {
 
             var postdata = {
                 ajax_request_action: 'memtype',
-                tabledata: this.#memtypetable.getData(),
+                tabledata: JSON.stringify(this.#memtypetable.getData()),
                 tablename: "memTypes",
                 indexcol: "memtypekey"
             };
@@ -631,7 +631,7 @@ class memsetup {
 
             var postdata = {
                 ajax_request_action: 'category',
-                tabledata: this.#categorytable.getData(),
+                tabledata: JSON.stringify(this.#categorytable.getData()),
                 tablename: "memCategories",
                 indexcol: "memcatkey"
             };
@@ -732,7 +732,7 @@ class memsetup {
             var postdata = {
                 ajax_request_action: 'curage',
                 year: this.#current_conid,
-                tabledata: this.#curagetable.getData(),
+                tabledata: JSON.stringify(this.#curagetable.getData()),
                 tablename: "ageList",
                 indexcol: "agekey"
             };
@@ -833,7 +833,7 @@ class memsetup {
             var postdata = {
                 ajax_request_action: 'nextage',
                 year: this.#current_conid,
-                tabledata: this.#nextagetable.getData(),
+                tabledata: JSON.stringify(this.#nextagetable.getData()),
                 tablename: "ageList",
                 indexcol: "agekey"
             };

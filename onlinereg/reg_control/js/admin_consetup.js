@@ -530,7 +530,7 @@ class consetup {
 
             var postdata = {
                 ajax_request_action: this.#setup_type,
-                tabledata: this.#contable.getData(),
+                tabledata: JSON.stringify(this.#contable.getData()),
                 tablename: "conlist",
                 indexcol: "id"
             };
@@ -552,7 +552,6 @@ class consetup {
                     } else {
                         showError(data['success']);
                     }
-                    this.#memlist_savebtn.innerHTML = "Save Changes";
                     if (data['year'] == 'current') {
                         current.saveConlistComplete(data, textStatus, jhXHR);
                     } else {
@@ -613,7 +612,7 @@ class consetup {
 
             var postdata = {
                 ajax_request_action: this.#setup_type,
-                tabledata: this.#memtable.getData(),
+                tabledata: JSON.stringify(this.#memtable.getData()),
                 tablename: "memlist",
                 indexcol: "id"
             };
@@ -698,7 +697,7 @@ class consetup {
 
             var postdata = {
                 ajax_request_action: this.#setup_type,
-                tabledata: this.#breaktable.getData(),
+                tabledata: JSON.stringify(this.#breaktable.getData()),
                 tablename: "breaklist",
                 indexcol: "old"
             };

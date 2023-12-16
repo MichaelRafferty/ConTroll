@@ -25,6 +25,16 @@ $nextconid=$conid + 1;
 
 $action=$_POST['ajax_request_action'];
 $tablename=$_POST['tablename'];
+try {
+    $tabledata = json_decode($_POST['tabledata'], true, 512, JSON_THROW_ON_ERROR);
+} catch (Exception $e) {
+    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+    $response['error'] = $msg;
+    error_log($msg);
+    ajaxSuccess(response);
+    exit();
+}
+//$data = $_POST['tabledata'];
 $response['year'] = $action;
 
 switch ($tablename) {
@@ -32,7 +42,7 @@ switch ($tablename) {
         switch ($action) {
             case 'next':
             case 'current':
-                $data = $_POST['tabledata'][0];
+                $data = $tabledata[0];
                 $sql = <<<EOS
 INSERT INTO conlist(id, name, label, startdate, enddate, create_date)
 VALUES(?,?,?,?,?,NOW())
@@ -60,7 +70,7 @@ EOS;
         }
         break;
     case "memlist":
-        $data = $_POST['tabledata'];
+        $data = $tabledata;
         // find keys to delete (somehow)
         $delete_keys = array();
         $delete_keys[$conid] = '';
@@ -229,7 +239,7 @@ LEFT OUTER JOIN existing_memList e ON (
 WHERE m.conid = ? AND e.conid IS NULL AND m.startdate = ? AND m.enddate = ?;
 EOS;
         $typelist = 'issssssssiss';
-        $data = $_POST['tabledata'];
+        $data = $tabledata;
         $numrows = 0;
         foreach ($data as $row ) {
             $paramarray = array(
