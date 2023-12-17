@@ -26,9 +26,9 @@ It also expects you to know how to fetch/update files from GitHub. The software 
             printers
             routines
     c.  load the reg schema into each database
-        i. load all the tables first (everything but zz_foreign_keys.sql and reg_routines.sql)
+        i. load all the tables first (everything but zz_foreign_keys.sql and zz_routines.sql)
         ii. set all the foreign keys: run zz_foreign_keys.sql
-        iii. add routines and views using reg_routines.sql
+        iii. add routines and views using zz_routines.sql
 
 	  d. drop obsolete tables if they still exist
             reg_staff_stats
