@@ -184,9 +184,9 @@ if (array_key_exists('user_id', $_SESSION)) {
 
     $sets_num = array();
     foreach ($sets as $group => $perms) {
-        $group = str_replace('_', '-', $group);
+        $dispgroup = str_replace('_', '-', $group);
                         ?><th style="overflow-wrap:normal; width: 50px;padding-left: 2px; padding-right: 2px;">
-                            <?php echo $group;?>
+                            <?php echo $dispgroup;?>
                         </th>
                         <?php
         $perm_num = array();
@@ -205,12 +205,12 @@ if (array_key_exists('user_id', $_SESSION)) {
                 <tbody>
                     <?php
     while($user = fetch_safe_assoc($userR)) {
+        $lookup_str = '';
         if ((!array_key_exists('perid', $user)) || $user['perid'] === null || $user['perid'] == '') {
             $updateFcn = 'updatePerid';
             $color = " background-color: red;";
             $updateLabel = "Fix Perid";
             $names = explode(' ', $user['name']);
-            $lookup_str = '';
             foreach ($names as $name) {
                 $lookup_str .= ' ' . mb_substr($name, 0, 2);
             }
