@@ -663,26 +663,6 @@ function get_user($sub)
     return $res['id'];
 }
 
-/* if I want to handle refresh tokens in the database I'll need something like this
-function unset_refresh($id) {
-$query = "UPDATE user SET refresh_token = NULL WHERE id= $id;";
-dbQuery($query);
-}
-
-function set_refresh($id) {
-if(isset($_SESSION['refresh_token'])) {
-$token = sql_safe($_SESSION['refresh_token']);
-$query = "UPDATE user SET refresh_token = '$token' WHERE id= $id;";
-dbQuery($query);
-}
-}
-
-function get_refresh($id) {
-$query = "SELECT refresh_token FROM user WHERE id = $id;";
-dbQuery($query);
-}
- */
-
 function newUser($email, $sub):bool
 {
     if (!isset($sub) || !isset($email) || !$sub || !$email) {
