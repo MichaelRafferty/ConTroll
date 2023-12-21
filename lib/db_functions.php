@@ -49,7 +49,7 @@ function log_mysqli_error($query, $additional_error_message):void
 {
     global $dbObject;
     $result = "";
-    error_log("mysql query error in {$_SERVER["SCRIPT_FILENAME"]}");
+    error_log("mysql sql error in {$_SERVER["SCRIPT_FILENAME"]}");
     if (!empty($query)) {
         web_error_log($query);
     }
@@ -68,12 +68,15 @@ function log_mysqli_error($query, $additional_error_message):void
     echo $result;
 }
 
-function db_connect():bool
+function db_connect($nodb = false):bool
 {
     global $dbObject;
     global $db_ini;
 
     $port = 3306;
+    $dbName = $db_ini['mysql']['db_name'];
+    if ($nodb)
+        $dbName = null;
     if (array_key_exists("port", $db_ini['mysql'])) {
         $port = $db_ini['mysql']['port'];
     }
@@ -84,7 +87,7 @@ function db_connect():bool
                 $db_ini['mysql']['host'],
                 $db_ini['mysql']['user'],
                 $db_ini['mysql']['password'],
-                $db_ini['mysql']['db_name'],
+                $dbName,
                 $port
             );
 
