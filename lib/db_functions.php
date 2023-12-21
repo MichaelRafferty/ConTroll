@@ -53,7 +53,9 @@ function log_mysqli_error($query, $additional_error_message):void
     if (!empty($query)) {
         web_error_log($query);
     }
-    $errno = $dbObject->errno;
+    $errno = null;
+    if ($dbObject && property_exists($dbObject, 'errno'))
+        $errno = $dbObject->errno;
     if (!empty($errno)) {
         $query_error = "Error (" . $dbObject->errno . ") " . $dbObject->error .  ")";
         error_log($query_error);
@@ -77,35 +79,57 @@ function db_connect():bool
     }
 
     if (is_null($dbObject)) {
-        $dbObject = new mysqli(
-            $db_ini['mysql']['host'],
-            $db_ini['mysql']['user'],
-            $db_ini['mysql']['password'],
-            $db_ini['mysql']['db_name'],
-            $port
-        );
+        try {
+            $dbObject = new mysqli(
+                $db_ini['mysql']['host'],
+                $db_ini['mysql']['user'],
+                $db_ini['mysql']['password'],
+                $db_ini['mysql']['db_name'],
+                $port
+            );
 
-        if ($dbObject->connect_errno) {
-            echo "Failed to connect to MySQL: (" . $dbObject->connect_errno . ") " . $dbObject->connect_error;
-            web_error_log("Failed to connect to MySQL: (" . $dbObject->connect_errno . ") " . $dbObject->connect_error);
+            if ($dbObject->connect_errno) {
+                echo "Failed to connect to MySQL: (" . $dbObject->connect_errno . ") " . $dbObject->connect_error;
+                web_error_log("Failed to connect to MySQL: (" . $dbObject->connect_errno . ") " . $dbObject->connect_error);
+                return false;
+            }
+        } catch (\mysqli_sql_exception $e) {
+            log_mysqli_error("Connect", $e->getMessage());
+            return false;
+        } catch (Exception $e) {
+            log_mysqli_error('Connect', $e->getMessage());
+            return false;
         }
 
         // for mysql with nonstandard sql_mode (from zambia point of view) temporarily force ours
         $sql = "SET sql_mode='" .  $db_ini['mysql']['sql_mode'] . "';";
-        $success = $dbObject -> query($sql);
-        if (!$success) {
-            web_error_log("failed setting sql mode on db connection");
+        try {
+            $success = $dbObject -> query($sql);
+        } catch (\mysqli_sql_exception $e) {
+            log_mysqli_error($sql, $e->getMessage());
+            web_error_log('failed setting sql mode on db connection');
+            return false;
+        } catch (Exception $e) {
+            log_mysqli_error($sql, $e->getMessage());
+            web_error_log('failed setting sql mode on db connection');
             return false;
         }
 
         if (array_key_exists('php_timezone', $db_ini['mysql'])) {
             date_default_timezone_set($db_ini['mysql']['php_timezone']);
         }
+
         if (array_key_exists('db_timezone', $db_ini['mysql'])) {
             $sql = "SET time_zone ='" .  $db_ini['mysql']['db_timezone'] . "';";
-            $success = $dbObject -> query($sql);
-            if (!$success) {
-                web_error_log("failed setting sql mode on db connection");
+            try {
+                $success = $dbObject->query($sql);
+            } catch (\mysqli_sql_exception $e) {
+                log_mysqli_error($sql, $e->getMessage());
+                web_error_log('failed setting time_zone db connection');
+                return false;
+            } catch (Exception $e) {
+                log_mysqli_error($sql, $e->getMessage());
+                web_error_log('failed setting time_zone on db connection');
                 return false;
             }
         }
