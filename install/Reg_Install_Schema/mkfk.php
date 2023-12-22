@@ -12,9 +12,6 @@ foreach ($dir as $entry) {
     if ($fname == 'zz_foreign_keys.sql' || $fname == 'create_reg_schema.sql')
         continue;
 
-    if (str_starts_with($fname, 'data_'))
-        continue;
-
 	if (!str_ends_with($fname, '.sql'))
 		continue;
 
@@ -24,6 +21,8 @@ foreach ($dir as $entry) {
 
     if ($localname == 'reg_routines') {
         strip_creator($localname, $lines);
+    } else if (str_starts_with($fname, 'data_')) {
+        clean_data($localname, $lines);
     } else {
         strip_fk($localname, $lines);
     }
@@ -38,6 +37,15 @@ function strip_fk($fname, $lines)  {
     $table = preg_replace('/^[^_]*_(.*)$/', '\1', $fname);
 
     foreach ($lines as $line) {
+        if (str_starts_with($line, '/*!')) // skip comments
+            continue;
+
+        if (str_starts_with($line, 'CREATE DATABASE')) // this already exists as it's own sql file
+            continue;
+
+        if (str_starts_with($line, 'USE `')) // We are already in the right database
+            continue;
+
         $line = str_replace("\n", '', $line);
         $line = str_replace("utf8mb4_0900_ai_ci", "utf8mb4_general_ci", $line);
         if (preg_match('/^ *CONSTRAINT .* FOREIGN KEY/i', $line)) {
@@ -55,9 +63,13 @@ function strip_fk($fname, $lines)  {
             continue;
         }
 
-        // strip off the auto increment values
+        // strip off the auto increment values, for perinfo set it to 100
         if (preg_match('/AUTO_INCREMENT=\d+/', $line)) {
-            $line = preg_replace('/AUTO_INCREMENT=\d+\s/', ' ', $line);
+            if ($table == 'perinfo') {
+                $line = preg_replace('/AUTO_INCREMENT=\d+\s/', 'AUTO_INCREMENT=100 ', $line);
+            } else {
+                $line = preg_replace('/AUTO_INCREMENT=\d+\s/', ' ', $line);
+            }
         }
 
         if ($priorline !== null)
@@ -72,23 +84,78 @@ function strip_fk($fname, $lines)  {
 }
 
 function strip_creator($fname, $lines) {
+    $in_temp_view = false;
     $newsql = [];
     foreach ($lines as $line) {
         $line = str_replace("\n", '', $line);
-        $line = str_replace('utf8mb4_0900_ai_ci', 'utf8mb4_general_ci', $line);
-        // remove the DEFINER= part of : /*!50013 DEFINER=`root`@`localhost` SQL SECURITY and change the SECURITY to INVOKER
-        if (preg_match("/50013 DEFINER=/i", $line)) {
-            $line = preg_replace("/DEFINER=[\"'`][^\"'`]*[\"'`]@[\"'`][^\"'`]*[\"'`] */i", "", $line);
-            $line = str_replace('SQL SECURITY DEFINER', 'SQL SECURITY INVOKER', $line);
+
+        if (str_starts_with($line, 'CREATE DATABASE')) // this already exists as it's own sql file
+            continue;
+
+        if (str_starts_with($line, 'USE `')) // We are already in the right database
+            continue;
+
+        if (!$in_temp_view) {
+            if (str_starts_with($line, '-- Temporary view structure')) {
+                $in_temp_view = true;
+                continue;
+            }
+        }
+        if ($in_temp_view) {
+            if (str_starts_with($line, '-- Final view structure'))  {
+                $in_temp_view = false;
+            } else {
+                continue;
+            }
         }
 
-        // get rid of definer within CREATE DEFINER='root'@'localhost' PROCEDURE...
-        if (preg_match("/CREATE DEFINER=/i", $line)) {
+        $line = str_replace('utf8mb4_0900_ai_ci', 'utf8mb4_general_ci', $line);
+
+        if (str_contains($line, 'DROP VIEW IF EXISTS')) { // take off comment from drop view
+            $line = preg_replace('/^\/\*!\d+ (.*) *\*\/;$/', '$1;', $line);
+        } elseif (str_contains($line, 'CREATE ALGORITHM=UNDEFINED')) { // create view
+            $line = preg_replace('/^\/\*!\d+ (.*) *\*\/$/', '$1', $line);
+        } elseif (str_contains($line, ' DEFINER=') && !str_contains($line, 'CREATE')) {
+            $line = 'SQL SECURITY INVOKER';
+        } else if (str_contains($line, 'DROP FUNCTION IF EXISTS')) { // take off comment from drop view
+            $line = preg_replace('/^\/\*!\d+ (.*) *\*\/;$/', '$1;', $line);
+        } else if (str_contains($line, 'DROP PROCEDURE IF EXISTS')) { // take off comment from drop view
+            $line = preg_replace('/^\/\*!\d+ (.*) *\*\/;$/', '$1;', $line);
+        } else  if (preg_match("/CREATE DEFINER=/i", $line)) { // create function or proc
             $line = preg_replace("/DEFINER=[\"'`][^\"'`]*[\"'`]@[\"'`][^\"'`]*[\"'`] */i", "", $line);
-        }
+            $line .= "\nSQL SECURITY INVOKER";
+        } else if (str_contains($line, ' VIEW')) {
+            $line = preg_replace('/^\/\*!\d+ (.*) *\*\/;$/', '$1;', $line);
+        } else if (str_starts_with($line, '/*!')) // strip comments
+            continue;
         $newsql[] = $line;
     }
 
+    rename($fname . '.sql', $fname . '.old');
+    if ($fname == 'reg_routines')
+        $fname = 'zz_routines';
+    file_put_contents($fname . '.sql', implode("\n", $newsql) . "\n");
+}
+
+function clean_data($fname, $lines)
+{
+    $newsql = [];
+    foreach ($lines as $line) {
+        if (str_starts_with($line, 'CREATE DATABASE')) // this already exists as it's own sql file
+            continue;
+
+        if (str_starts_with($line, 'USE `')) // We are already in the right database
+            continue;
+
+        $line = str_replace("\n", '', $line);
+        if (str_contains($line, 'ALTER TABLE')) {
+            $line = preg_replace('/^\/\*!\d+ (.*) *\*\/;$/', '$1;', $line);
+        } else if (str_starts_with($line, '/*!'))
+            // skip comment lines
+            continue;
+
+        $newsql[] = $line;
+    }
     rename($fname . '.sql', $fname . '.old');
     file_put_contents($fname . '.sql', implode("\n", $newsql) . "\n");
 }
