@@ -19,7 +19,7 @@ function createMissingTables($options) : int {
     // process the sql scripts in the Reg_Install_Schema directory
     $dir = new DirectoryIterator('Reg_Install_Schema');
     $dataLoads = [];
-    $procloads = [];
+    $procLoads = [];
 
     // loop over each file
     foreach ($dir as $entry) {
@@ -38,7 +38,7 @@ function createMissingTables($options) : int {
         }
         // save procedure/view loads for later
         if (str_starts_with($fname, 'zz_')) {
-            $procloads[] = $fname;
+            $procLoads[] = $fname;
             continue;
         }
         // skip over the schema load, it's already been handled
@@ -72,36 +72,8 @@ EOS;
                     $errors++;
                 }
             } else {
-                logEcho("$table is not in the database");
-                $table = preg_replace('/^[^_]*_(.*)\.sql$/', '\1', $fname);
-                $checkSQLR = dbQuery("SELECT count(*) AS occurs FROM $table;");
-                if ($checkSQLR === false) {
-                    logEcho ("Error querying $table for rowcount");
-                    $errors++;
-                }
-                $rowcnt = $checkSQLR->fetch_row()[0];
-                if ($rowcnt > 0) {
-                    logEcho("Skipping table $table as it already has $rowcnt rows of data");
-                    continue;
-                }
-                $sql = file_get_contents('Reg_Install_Schema/' . $fname);
-                logEcho("Loading $table from $fname");
-                dbMultiQuery($sql);
-                // skip over result sets
-                dbNextResult();
-                dbNextResult();
-                dbNextResult();
-                $sql = <<<EOS
-SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE
-FROM  information_schema.TABLES 
-WHERE TABLE_SCHEMA LIKE ? AND TABLE_TYPE LIKE 'BASE TABLE' AND TABLE_NAME = ?;
-EOS;
-                $sqlR = dbSafeQuery($sql, 'ss', array($mysqlConf['db_name'], $table));
-                if ($sqlR === false || $sqlR->num_rows <= 0) {
-                    logEcho("Unable to create $table");
-                    $errors++;
-                }
-
+                logEcho("$table is not in the database, need -c to create tables");
+                $errors++;
             }
         }
     }
@@ -113,7 +85,7 @@ EOS;
                 $table = preg_replace('/^[^_]*_(.*)\.sql$/', '\1', $fname);
                 $checkSQLR = dbQuery("SELECT count(*) AS occurs FROM $table;");
                 if ($checkSQLR === false) {
-                    logEcho ("Error querying $table for rowcount");
+                    logEcho("Error querying $table for rowcount");
                     $errors++;
                 }
                 $rowcnt = $checkSQLR->fetch_row()[0];
@@ -132,18 +104,70 @@ EOS;
                 dbNextResult();
                 $checkSQLR = dbQuery("SELECT count(*) AS occurs FROM $table;");
                 if ($checkSQLR === false) {
-                    logEcho ("Error querying $table for rowcount");
+                    logEcho("Error querying $table for rowcount");
                     $errors++;
                 }
                 $rowcnt = $checkSQLR->fetch_row()[0];
                 if ($rowcnt <= 0) {
-                    logEcho ("Error inserting data into $table");
+                    logEcho("Error inserting data into $table");
                     $errors++;
                 }
             }
         }
+    }
 
-        echo "need zz_ ";
+        // zz_ are procs to create, views to create and foreign keys on tables
+
+    if ($errors == 0) {
+        if (sizeof($procLoads) > 0)  {
+            logEcho('Processing post creation scripts');
+            foreach ($procLoads as $fname) {
+                if ($fname == 'zz_foreign_keys.sql') {
+                    $keys = file('Reg_Install_Schema/' . $fname);
+                    // process foreign keys one at a time
+                    foreach ($keys as $key) {
+                        $key = str_replace(PHP_EOL, '', $key);
+                        // ALTER TABLE artshow_reg ADD CONSTRAINT `artshow_reg_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
+                        $table = preg_replace('/ALTER TABLE ([^ ]*).*/', '$1', $key);
+                        $constraint = preg_replace('/.*ADD CONSTRAINT ([^ ]*).*/', '$1', $key);
+                        $table = str_replace('`','', $table);
+                        $constraint = str_replace('`','', $constraint);
+                        // check if key already exists
+                        $checkSQL = <<<EOS
+SELECT constraint_name
+FROM information_schema.REFERENTIAL_CONSTRAINTS
+WHERE CONSTRAINT_SCHEMA = ?
+AND TABLE_NAME = ?
+AND CONSTRAINT_NAME = ?;
+EOS;
+                        $params = array($mysqlConf['db_name'], $table, $constraint);
+                        $checkR = dbSafeQuery($checkSQL, 'sss', $params);
+                        if ($checkR->num_rows > 0) {
+                            if (array_key_exists('f', $options)) {
+                                $dropSQL = <<<EOS
+ALTER TABLE $table
+DROP CONSTRAINT `$constraint`;
+EOS;
+                                dbCmd($dropSQL);
+                            } else {
+                                logEcho("Constraint $constraint exists for $table", true);
+                                continue;
+                            }
+                        }
+                        $num_rows = dbCmd($key);
+                        if ($num_rows === false) {
+                            logEcho("Adding constraint $constraint to table $table failed");
+                            $errors++;
+                        } else {
+                            logEcho("Constraint $constraint for table $table added");
+                        }
+                    }
+                } else {
+                    $procsql = file_get_contents('Reg_Install_Schema/' . $fname);
+                    // process all others procedure files
+                }
+            }
+        }
     }
 
     logEcho('Completed adding missing items from '. $mysqlConf['db_name']);

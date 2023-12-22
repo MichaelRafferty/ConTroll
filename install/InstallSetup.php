@@ -14,12 +14,13 @@ $phpMajor = 8;
 $phpMinor = 1;
 
 // get command line options
-$options = getopt("chiot");
+$options = getopt("cfhiot");
 
 if (array_key_exists('h', $options)) {
     echo <<<EOS
 InstallSetup options:
     -c  Allow creation of the database (schema) if it doesn't exist.
+    -f  Drop and re-apply foreign keys
     -h  Display this option list an exit.
     -i  suppress phpinfo in logfile.
     -o  overwrite the logfile if it exists, if omitted logfile will be appended.
