@@ -70,32 +70,6 @@ BEGIN
     ));
 END ;;
 DELIMITER ;
-DROP FUNCTION IF EXISTS `uuid_v4s2` ;
-DELIMITER ;;
-CREATE FUNCTION "uuid_v4s2"() RETURNS char(36) CHARSET utf8mb4 COLLATE utf8mb4_general_ci
-SQL SECURITY INVOKER
-    NO SQL
-BEGIN
-    -- 1th and 2nd block are made of 6 random bytes
-    SET @h1 = HEX(RANDOM_BYTES(4));
-    SET @h2 = HEX(RANDOM_BYTES(2));
-
-    -- 3th block will start with a 4 indicating the version, remaining is random
-    SET @h3 = SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3);
-
-    -- 4th block first nibble can only be 8, 9 A or B, remaining is random
-    SET @h4 = CONCAT(HEX(FLOOR(ASCII(RANDOM_BYTES(1)) / 64)+8),
-                SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3));
-
-    -- 5th block is made of 6 random bytes
-    SET @h5 = HEX(RANDOM_BYTES(6));
-
-    -- Build the complete UUID
-    RETURN LOWER(CONCAT(
-        @h1, '-', @h2, '-4', @h3, '-', @h4, '-', @h5
-    ));
-END ;;
-DELIMITER ;
 DROP PROCEDURE IF EXISTS `mergePerid` ;
 DELIMITER ;;
 CREATE PROCEDURE "mergePerid"(IN userid INT, IN to_mergePID INT, IN to_survivePID INT, OUT statusmsg TEXT, OUT rollback_log TEXT)
