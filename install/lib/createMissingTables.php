@@ -1,6 +1,6 @@
 <?php
 
-// validate MYSQL portion of config file
+// checks for completeness of schema, adding tables, data or procs/key as needed
 //  options: the array returned by getoptions.
 function createMissingTables($options) : int {
     $errors = 0;
@@ -49,8 +49,15 @@ function createMissingTables($options) : int {
         $table = preg_replace('/^[^_]*_(.*)\.sql$/', '\1', $fname);
 
         if (array_key_exists($table, $tables)) {
-            logEcho("$table exists in the database", true);
-            // future check table for matching schema
+            if (array_key_exists('s', $options)) {
+                if (checkTableDML($table, $fname)) {
+                    logEcho("$table exists in the database and is current", true);
+                } else {
+                    logEcho("$table exists in the database and is out of date");
+                }
+            } else {
+                logEcho("$table exists in the database", true);
+            }
         } else {
             if (array_key_exists('c', $options)) {
                 $sql = file_get_contents('Reg_Install_Schema/' . $fname);
@@ -163,8 +170,98 @@ EOS;
                         }
                     }
                 } else {
-                    $procsql = file_get_contents('Reg_Install_Schema/' . $fname);
-                    // process all others procedure files
+                    $procsqlLines = file('Reg_Install_Schema/' . $fname);
+                    $procSQL = [];
+                    $procType = [];
+                    $curproc = '';
+                    $cursql = '';
+                    $curtype = '';
+                    for ($startLine = 0; $startLine < sizeof($procsqlLines); $startLine++) {
+                        $line = str_replace(PHP_EOL, '', $procsqlLines[$startLine]);
+                        // not running within mysql command line processor, we don't use delimiter replacement for it's parser
+                        IF (str_starts_with($line, 'DELIMITER '))
+                            continue;
+                        if ($line == 'END ;;')
+                            $line = 'END;';
+                        IF (preg_match('/ *-- /', $line)) {
+                            echo "skipping -- \n";
+                            continue;
+                        }
+
+
+                        if (str_starts_with($line, 'DROP ')) {
+                            if ($curproc != '') {
+                                $procSQL[$curproc] = $cursql;
+                                $procType[$curproc] = $curtype;
+                            }
+                            $curproc = preg_replace('/^DROP [^`"]*[`"]([^`"]*).*$/', '\1', $line);
+                            $cursql = ''; //$line . PHP_EOL;
+                            $curtype = preg_replace('/^DROP ([^ ]*).*$/', '\1', $line);
+                            continue;
+                        }
+                        if (str_starts_with($line, 'CREATE FUNCTION "') || str_starts_with($line, 'CREATE PROCEDURE "')) {
+                            $line = preg_replace('/(CREATE[ ]+[^ ]+[ ]+)"([^"]+)"(.*)$/', '\1\2\3', $line);
+                        }
+                        $cursql .= $line . PHP_EOL;
+                    }
+                    if ($curproc != '') {
+                        $procSQL[$curproc] = $cursql;
+                        $procType[$curproc] = strtoupper($curtype);
+                    }
+                    logEcho("Processing Views/Procedures/Functions");
+                    foreach ($procSQL as $item => $sql) {
+                        $pt = $procType[$item];
+                        switch ($pt) {
+                            case 'VIEW':
+                                $checkSQL = <<<EOS
+SELECT TABLE_NAME
+FROM information_schema.VIEWS
+WHERE TABLE_SCHEMA = ?
+AND TABLE_NAME = ?;
+EOS;
+                                break;
+                            case 'FUNCTION':
+                                $checkSQL = <<<EOS
+SELECT ROUTINE_NAME
+FROM information_schema.ROUTINES
+WHERE ROUTINE_SCHEMA = ?
+AND ROUTINE_TYPE = 'FUNCTION'
+AND ROUTINE_NAME = ?;
+EOS;
+                                break;
+                            case 'PROCEDURE':
+                                $checkSQL = <<<EOS
+SELECT ROUTINE_NAME
+FROM information_schema.ROUTINES
+WHERE ROUTINE_SCHEMA = ?
+AND ROUTINE_TYPE = 'PROCEDURE'
+AND ROUTINE_NAME = ?;
+EOS;
+                                break;
+                        }
+                        //var_dump(array($pt, $mysqlConf['db_name'], $item));
+                        $checkSQLR = dbSafeQuery($checkSQL, 'ss', array($mysqlConf['db_name'], $item));
+                        if ($checkSQLR === false || $checkSQLR->num_rows <= 0) {
+                            logEcho("Adding $pt $item");
+                            //var_dump($sql);
+                            $cR = dbQuery($sql);
+                            if ($cR === false) {
+                                logEcho("You don't have sufficient permissions to add this $pt, Please seek help from a Database Administrator to create $item from zz_routines.sql");
+                                //exit();
+                            }
+                        } else if (array_key_exists('p', $options)) { // replace view/proc/functions
+                            logEcho("Drop/Replace $pt $item");
+                            //var_dump($sql);
+                            dbQuery("DROP $pt IF EXISTS `$item`;");
+                            $cR = dbQuery($sql);
+                            if ($cR === false) {
+                                logEcho("You don't have sufficient permissions to add this $pt, Please seek help from a Database Administrator to create $item from zz_routines.sql");
+                                //exit();
+                            }
+                        } else {
+                            logEcho("$pt $item exists", true);
+                        }
+                    }
                 }
             }
         }
