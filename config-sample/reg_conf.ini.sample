@@ -147,5 +147,4 @@ close=0
 max_failures=10
 url="https://reg.philcon.org/artshow"
 [control]
-clubperm='psfs'
 clubname='PSFS'
