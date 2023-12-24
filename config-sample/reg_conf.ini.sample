@@ -8,41 +8,41 @@ sql_mode='STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION'
 db_timezone='US/Eastern'
 php_timezone='AMERICA/NEW_YORK'
 [con]
-label="Philcon 2022"
-conname="Philcon"
-org="Philadelphia Science Fiction Society"
-orgabv="PSFS"
-volunteers="volunteers2022@philcon.org"
-policy="https://philcon.org/policies"
-regpolicy="https://philcon.org/policies"
-privacypolicy="https://www.balticon.org/wp57/bsfs-and-balticon-privacy-policy/"
+label="ConTroll 2022"
+conname="ConTroll"
+org="The ConTroll Development Consortium"
+orgabv="Club"
+volunteers="volunteers@conname.org"
+policy="https://conname.org/policies"
+regpolicy="https://conname.org/policies"
+privacypolicy="https://www.conname.org/privacy-policy/"
 privacytext="See our privacy policy for how we use and share information"
-policytext="Philcon Policies"
+policytext="conname Policies"
 remindertext="May we include you in our annual reminder postcards and future marketing or survey emails?"
 ; endtext = text to put at the bottom of the receipt.
 endtext=
-regemail="registration2022@philcon.org"
-regadminemail="registration2022@philcon.org"
-regconfirmcc="registrationcc@philcon.org"
-infoemail="info2022@philcon.org"
-refundemail='info2022@philcon.org'
-feedbackemail='info2022@philcon.org'
-website="https://philcon.org"
-regpage="https://philcon.org/registration/"
-schedulepage="https://schedule.philcon.org"
-dailywebsite="https://philcon.org"
-pickupareatext="at the Registration table across from Crystal 1 in the Crystal Foyer"
-addlpickuptext="The hotel has free parking. You can find information at <a href='https://philcon.org/location/directions' target='_blank'>https://philcon.org/location/directions</a>."
-hotelwebsite="https://philcon.org/hotel"
-hotelname="The Doubletree by Hilton Hotel, Cherry Hill/Philadelphia"
-hoteladdr="2349 Marlton Pike West, Cherry Hill, New Jersey, 08002"
+regemail="registration2022@conname.org"
+regadminemail="registration2022@conname.org"
+regconfirmcc="registrationcc@conname.org"
+infoemail="info2022@conname.org"
+refundemail='info2022@conname.org'
+feedbackemail='info2022@conname.org'
+website="https://conname.org"
+regpage="https://conname.org/registration/"
+schedulepage="https://schedule.conname.org"
+dailywebsite="https://conname.org"
+pickupareatext="at the Registration table across from some where"
+addlpickuptext="The hotel has free parking. You can find information at <a href='https://conname.org/location/directions' target='_blank'>https://conname.org/location/directions</a>."
+hotelwebsite="https://conname.org/hotel"
+hotelname="Hotel Name"
+hoteladdr="Hotel Address"
 survey_url="https://link-to-post-convention-survey"
 id="2022"
 taxRate=6
 minComp="2021"
 compLen="150"
 conLen="3"
-server="https://reg.philcon.org/"
+server="https://reg.conname.org/"
 rollover_eligible="'upgrade', 'rollover', 'freebie', 'standard', 'yearahead', 'discount'"
 [debug]
 google=0 ; to enable google debug statements (1=enable, 0=disable)
@@ -50,15 +50,15 @@ google=0 ; to enable google debug statements (1=enable, 0=disable)
 https=1
 test=0
 open=1
-registrationpage="https://reg.philcon.org/"
+registrationpage="https://reg.conname.org/"
 close=0
 suspended=0
 suspendreason="while we examine the impact of COVID-19"
-suspendmessage="https://philcon.org"
+suspendmessage="https://conname.org"
 cancelled=0
 cancel_date="Day, Month Day"
-server="https://reg.philcon.org/"
-logoimage="philcon2022.png"
+server="https://reg.conname.org/"
+logoimage="conname2022.png"
 logotext="Tagline not alt=text"
 onsiteopen="3:00 PM"
 [atcon]
@@ -69,31 +69,29 @@ onsiteopen="3:00 PM"
 ;	none - disable the discount type of payment
 discount=active
 ; badgeps = fill path to the Postscript header for printing badges
-badgeps="/home/psfs_reg/config/philcon.ps"
+badgeps="/home/homedir/config/conname.ps"
 [vendor]
 test=0
 open=1
-test=1
-open=1
 #vendors: email address for generic vendor emails
 #vendorsite: url to vendor website
-vendors="dealers@sydweinstein.net"
+vendors="dealers@???"
 vendorsite="http://vendor"
 taxidlabel="NJ Sales Tax ID"
 taxidextra=
 reg_disclaimer=""
 pay_disclaimer=""
-artshow="artshow2020philcon.org"
-alley="artshow2020philcon.org"
-dealer="dealer2020philcon.org"
+artshow="artshow@conname.org"
+alley="artshow@conname.org"
+dealer="dealer@conname.org"
 addlaccounttext = ""
 artventortext = "vendors"
 [client]
-path = "/home/psfs_reg/reg.philcon.org/reg_control"
+path = "/home/homedir/reg.conname.org/reg_control"
 [google]
-app_name="Philcon Registration Controller"
-redirect_base="https://reg.philcon.org/reg_control"
-json="/home/psfs_reg/config/philcon.json"
+app_name="ConTroll Registration Controller"
+redirect_base="https://reg.conname.org/reg_control"
+json="/home/homedir/config/conname.json"
 client_id=""
 client_secret=""
 [cc]
@@ -108,12 +106,12 @@ location=""
 apiversion=""
 webpaysdk="https://web.squarecdn.com/v1/square.js"
 [log]
-  web = "/home/psfs_reg/reglogs/web"
-  reg = "/home/psfs_reg/reglogs/onLineReg"
-  artshow = "/home/psfs_reg/reglogs/artshowReg"
+  web = "/home/homedir/reglogs/web"
+  reg = "/home/homedir/reglogs/onLineReg"
+  artshow = "/home/homedir/reglogs/artshowReg"
   vendors='/home/psfs/reglogs/vendors'
-  cancel = "/home/psfs_reg/reglogs/cancel"
-  db = "/home/psfs_reg/reglogs/db"
+  cancel = "/home/homedir/reglogs/cancel"
+  db = "/home/homedir/reglogs/db"
 [email]
 ; valid types are 'aws', 'mta', 'symfony', 'file'
 ;; for aws:
@@ -145,6 +143,6 @@ open=1
 suspended=1
 close=0
 max_failures=10
-url="https://reg.philcon.org/artshow"
+url="https://reg.conname.org/artshow"
 [control]
-clubname='PSFS'
+clubname='Club Name'
