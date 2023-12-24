@@ -5,6 +5,7 @@ require_once('lib/base.php');
 require_once('lib/validateConfigMYSQL.php');
 require_once('lib/validateConfigFile.php');
 require_once('lib/createMissingTables.php');
+require_once('lib/createMissingRecords.php');
 require_once('lib/checkTableDML.php');
 global $dbObject;
 global $db_ini;
@@ -16,7 +17,7 @@ $phpMajor = 8;
 $phpMinor = 1;
 
 // get command line options
-$options = getopt("cfhinopst");
+$options = getopt("cfhinopstv");
 
 if (array_key_exists('h', $options)) {
     echo <<<EOS
@@ -30,6 +31,7 @@ InstallSetup options:
     -p  Drop and re-apply views, functions and procedures
     -s  Validate existing database schema
     -t  Create missing tables, functions, keys, procedures
+    -v  Suppress validating the config file
 
 EOS;
     exit(0);
@@ -112,11 +114,22 @@ if (array_key_exists('n', $options)) {
     }
 }
 
-$error = validateConfigFile($options);
+$error = createMissingRecords($options);
 if ($error) {
-    echo 'Exiting due to errors in the config file.' . PHP_EOL;
+    echo 'Exiting due to errors creating missing records in the databas.' . PHP_EOL;
     fclose($logFile);
     exit($error);
+}
+
+if (array_key_exists('v', $options)) {
+    logEcho('Skipping configuration file validation due to the -v option');
+} else {
+    $error = validateConfigFile($options);
+    if ($error) {
+        echo 'Exiting due to errors in the config file.' . PHP_EOL;
+        fclose($logFile);
+        exit($error);
+    }
 }
 
 fclose($logFile);
