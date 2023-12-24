@@ -3,6 +3,7 @@
 require_once(__DIR__ . '/../lib/db_functions.php');
 require_once('lib/base.php');
 require_once('lib/validateConfigMYSQL.php');
+require_once('lib/validateConfigFile.php');
 require_once('lib/createMissingTables.php');
 require_once('lib/checkTableDML.php');
 global $dbObject;
@@ -15,7 +16,7 @@ $phpMajor = 8;
 $phpMinor = 1;
 
 // get command line options
-$options = getopt("cfhiopst");
+$options = getopt("cfhinopst");
 
 if (array_key_exists('h', $options)) {
     echo <<<EOS
@@ -24,6 +25,7 @@ InstallSetup options:
     -f  Drop and re-apply foreign keys
     -h  Display this option list an exit.
     -i  Suppress phpinfo in logfile.
+    -n  Suppress database schema checks
     -o  Overwrite the logfile if it exists, if omitted logfile will be appended.
     -p  Drop and re-apply views, functions and procedures
     -s  Validate existing database schema
@@ -95,13 +97,27 @@ fwrite($logFile, "PHP Command Line Version: " . $phpVersion . PHP_EOL . $phpinfo
 $error = validateConfigMYSQL($options);
 if ($error) {
     echo "Exiting due to errors in the [MYSQL] portion of the config file." . PHP_EOL;
+    fclose($logFile);
     exit($error);
 }
 
-$error = createMissingTables($options);
+if (array_key_exists('n', $options)) {
+    logEcho("Skipping database schema creation/checks due to -n option");
+} else {
+    $error = createMissingTables($options);
+    if ($error) {
+        echo 'Exiting due to errors creating all of the missing tables in the database.' . PHP_EOL;
+        fclose($logFile);
+        exit($error);
+    }
+}
+
+$error = validateConfigFile($options);
 if ($error) {
-    echo 'Exiting due to errors creating all of the missing tables in the database.' . PHP_EOL;
+    echo 'Exiting due to errors in the config file.' . PHP_EOL;
+    fclose($logFile);
     exit($error);
 }
 
 fclose($logFile);
+exit(0);

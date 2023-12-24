@@ -31,6 +31,18 @@ function validateConfigMYSQL($options) : int {
     $errors = 0;
     foreach ($reqVars AS $key => $desc) {
         if (array_key_exists($key, $mysqlConf)) {
+            if ($key == 'host') {
+                if (str_contains($mysqlConf[$key], ':')) {
+                    $msg = <<<EOS
+Warning: the host parameter has a ':' in it,
+if this is an IPv6 hard coded address, please us DNS name, like 'localhost'.
+  
+Do not put the port on the host line,
+use the port line in the configuration file
+EOS;
+                    logEcho($msg);
+                }
+            }
             if (strlen($mysqlConf[$key]) < 1) {
                 logEcho("$key is empty, needs to contain '$desc'");
                 $errors++;

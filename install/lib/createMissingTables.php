@@ -184,7 +184,6 @@ EOS;
                         if ($line == 'END ;;')
                             $line = 'END;';
                         IF (preg_match('/ *-- /', $line)) {
-                            echo "skipping -- \n";
                             continue;
                         }
 
@@ -239,11 +238,9 @@ AND ROUTINE_NAME = ?;
 EOS;
                                 break;
                         }
-                        //var_dump(array($pt, $mysqlConf['db_name'], $item));
                         $checkSQLR = dbSafeQuery($checkSQL, 'ss', array($mysqlConf['db_name'], $item));
                         if ($checkSQLR === false || $checkSQLR->num_rows <= 0) {
                             logEcho("Adding $pt $item");
-                            //var_dump($sql);
                             $cR = dbQuery($sql);
                             if ($cR === false) {
                                 logEcho("You don't have sufficient permissions to add this $pt, Please seek help from a Database Administrator to create $item from zz_routines.sql");
@@ -251,7 +248,6 @@ EOS;
                             }
                         } else if (array_key_exists('p', $options)) { // replace view/proc/functions
                             logEcho("Drop/Replace $pt $item");
-                            //var_dump($sql);
                             dbQuery("DROP $pt IF EXISTS `$item`;");
                             $cR = dbQuery($sql);
                             if ($cR === false) {
