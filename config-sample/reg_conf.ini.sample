@@ -52,6 +52,7 @@ test=0
 open=1
 registrationpage="URL of registration page on con web site"
 receiptaddlhtml="file path to receipt additional html for interest questions, et al, relative to config directory"
+receiptaddlhtmlpost="file path to text to display instead of receiptaddlhtml when receiptaddlhtml has a form and that was submitted"
 close=0
 suspended=0
 suspendreason="while we examine the impact of COVID-19"

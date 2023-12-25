@@ -75,6 +75,8 @@ function validateConfigFile($options) : int {
                     'suspendmessage',
                     'onsiteopen'
                 ];
+
+                $file = [ 'receiptaddlhtml' ];
                 break;
 
             case 'atcon':
