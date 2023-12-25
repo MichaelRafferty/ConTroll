@@ -1,5 +1,5 @@
 #set HOMEDIR to place to store the REPO
-HOMEDIR=/home/youraccountname/reg.yourdomain/Controll
+HOMEDIR=/home/youraccountname/reg.yourdomain/ConTroll
 
 # $1 = override default branch
 if [ "$1" != "" ]
@@ -9,7 +9,7 @@ else
 	BRANCH=master
 fi
 
-echo "Starting fetch of latest git branch($BRANCH) into $HOMEDIR for Controll at `date`"
+echo "Starting fetch of latest git branch($BRANCH) into $HOMEDIR for ConTroll at `date`"
 
 cd $HOMEDIR
 
