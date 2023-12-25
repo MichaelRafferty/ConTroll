@@ -13,6 +13,7 @@ global $logFile;
 global $options;
 // setup parameters
 $systemName = 'ConTroll';
+$patchLevelFile = 'Reg_Install_Schema/AA_Patchlevel.txt';
 $phpMajor = 8;
 $phpMinor = 1;
 
@@ -119,6 +120,34 @@ if ($error) {
     echo 'Exiting due to errors creating missing records in the databas.' . PHP_EOL;
     fclose($logFile);
     exit($error);
+}
+
+if (is_readable($patchLevelFile)) {
+    $lines = file($patchLevelFile);
+    if (str_starts_with($lines[0],'Current=')) {
+        $current = str_replace('Current=', '', $lines[0]);
+        $current = str_replace(PHP_EOL, '', $current);
+        $checkSQL = <<<EOS
+SELECT MAX(id)
+FROM patchLog;
+EOS;
+        $checkR = dbQuery($checkSQL);
+        if ($checkR === false) {
+            logEcho("Unable to check patchlevel, query failed");
+        } else if ($checkR->num_rows != 1) {
+            logEcho("No patches are in the system, but the current Schema Patch Level for this release is $current");
+        } else {
+            $dblevel = $checkR->fetch_row()[0];
+            if ($dblevel == $current) {
+                logEcho("Database and system are current at patch# $current");
+            } else {
+                logEcho("Database is at patch# $dblevel, but the system is at patch# $current");
+            }
+        }
+    }
+
+} else {
+    logEcho("Inable to check database patch level because the file Reg_Install_Schema/AA_Patchlevel.txt is missing");
 }
 
 if (array_key_exists('v', $options)) {
