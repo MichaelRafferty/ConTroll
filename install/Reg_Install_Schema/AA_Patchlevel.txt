@@ -1,1 +1,2 @@
-This schema is current as of Patch 15 (p15_badgeList_userid.sql)
+Current=15
+Text=This schema is current as of Patch 15 (p15_badgeList_userid.sql)
