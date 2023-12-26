@@ -57,13 +57,21 @@ if (isset($_SESSION['badgePrinter'])) {
         if ($badge['type'] == 'full') {
             $file_full = init_file($printer);
             write_badge($badge, $file_full, $printer);
-            print_badge($printer, $file_full);
-            $response['message'] .= "Full badge for " . $badge['badge_name'] . " printed<br/>";
+            $badgefile = print_badge($printer, $file_full);
+            $response['message'] .= "Full badge for " . $badge['badge_name'] . " printed.";
+            if(mb_substr($printer[2],0,1)=='0') {
+                $response['message'] .= " <a href='$badgefile'>Badge</a>";
+            }
+            $response['message'] .= "<br/>";
         } else {
             $file_1day = init_file($printer);
             write_badge($badge, $file_1day, $printer);
-            print_badge($printer, $file_1day);
-            $response['message'] .= $badge['day'] . ' badge for ' . $badge['badge_name'] . ' printed<br/>';
+            $badgefile = print_badge($printer, $file_1day);
+            $response['message'] .= $badge['day'] . ' badge for ' . $badge['badge_name'] . ' printed.';
+            if($mb_substr($printer[2],0,1)=='0') {
+                $response['message'] .= " <a href='$badgefile'>Badge</a>";
+            }
+            $response['message'] .= "<br/>";
         }
     }
     ajaxSuccess($response);
