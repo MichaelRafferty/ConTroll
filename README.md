@@ -1,40 +1,50 @@
-# BalticonReg
-Online Registration for Conventions originally built for Balticon
+# ConTroll
+Online Registration for Conventions
 
-This is the newer combined repository with all of the features of the Registration System in a single GitHub repository.  
+ConTroll is designed as an all in one system to support registration for conventions.  It supports on-line, mail-in, and on-site registration.
 
-This is the only one under active development at this time.
+ConTroll is freely available for use under the XXX License. Local changes are allowed, but all changes to ConTroll must be freely offered to the ConTroll developers for potential integration into the system. 
+
+The system is under active development by a team of developers and has functions currently in development to support:
+    Art Show Related Functions
+    Extending Vendor registrations to include Artists and Art Show spaces
+
+Planned future additions:
+    Membership Portal to review and add to a person's memberships
+    Extended Reporting options
 
 Registration Tools in this Repository:
 
-Composer: Add-on's to PHP tracked by Composer
+Composer: Add-on's to PHP tracked by Composer (composer.json and composer.lock)
 atcon: Onsite Registration Processing and Management
   Current:
-      admin: Administer on-site reg
-      regpos: Point of Sale (Check-in and Cashier
+      admin: Administer on-site reg system
+      regpos: Point of Sale (Check-in and Cashier)
       printform: Print arbitary badges
       volRollover: Volunteer Rollover for sufficient hours worked
   In port (process) from old system: (not yet completed)
-      Art Show Cashier
+      Art Show Cashier and other Art Show related functions
 
 onlinereg: Web Based Registration and membership checking
 onlinereg/reg_control: Registration Administration, control, and reports
   Current:
+      Administration (Users, Convention Setup, Vendor Setup, Merge People Records)
       Membership Graphs
-      Mail/Admin Registration
+      Mail-in/Manual Registration
       Badge List/Transfer/Rollover
       Attendence Graphs
       Coupon Management
       Vendor Mangement
+        In progress: extending vendor to handle artists
   In reg_control, but still in old format (functions, but not updated)
     People - manage information about the people in the database
-    Artist
-    Artshow
+    Artshow related items including Art Control
     Free Badges - create free badges and add people to receive a free badge
-    Art Control
     Reports
     Club Management
+    Old Format Manual Registration screen if needed for special changes not yet ported to new screens 
 vendor: Vender requests/approval/registration
+    In progress: extending vendor to support art show requests/approval/registration
 
 Older Repositories not yet ported:
   OnlineArt
