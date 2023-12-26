@@ -1,47 +1,6 @@
 <?php
 require_once("base.php");
 
-$stylemod = array(
-    'lbl' => array(
-        'Reset'          => "\x1B*",
-        '7cpi'           => "\x1BT",
-        '10cpi'          => "\x1BU",
-        '12cpi'          => "\x1BM",
-        '16cpi'          => "\x1BP",
-        '20cpi'          => "\x1BS",
-        '32cpl'          => "\x1Dt\x20",
-        '38cpl'          => "\x1Dt\x26",
-        '50cpl'          => "\x1Dt\x32",
-        'Landscape'      => "\x1DV\x01",
-        'Truncate'       => "\x1DT\x00",
-        'FeedLength282'  => "\x1DL\x02\x61",
-        'VertStrtPt95'   => "\x1BY\x19\n",
-        'VertStrtPt97'   => "\x1BY\x1a\n",
-        'VertStrtPt99'   => "\x1BY\x1c\n",
-        'DblHighON'      => "\x1D\x12",
-        'DblHighOFF'     => "\x1D\x13",
-        'DblWideON'      => "\x0E",
-        'DblWideOFF'     => "\x14",
-        'InverseON'      => "\x1D\x1E",
-        'InverseOFF'     => "\x1D\x1F"
-    ) // end lbl
-);
-
-/* function printMod returns a string of binary printer control commands
- ** $type is a  type of printer
- **** "lbl" == Dymo LabelWriter SE450
- ** $mods is an array of controls to pull back
- */
-function printMod($type, $mods)//:string {
-{
-  global $stylemod;
-  $ret = '';
-  foreach($mods as $mod) {
-    $ret .= $stylemod[$type][$mod];
-  }
-  return $ret;
-}
-
 $badgeTypes = array(
     'bsfs'     => 'B',
     'discount' => 'M',
@@ -83,20 +42,6 @@ function init_file($printer)//:string {
 
     $printerType = $printer[3];
     switch($printerType) {
-        case "DymoSEL":
-            $temp = fopen($tempfile, 'w');
-            if (!$temp) {
-                $response['error'] = 'Unable to get open file';
-                $response['error_message'] = error_get_last();
-                ajaxSuccess($response);
-                exit();
-            }
-
-            $ctrlLine = printMod('lbl',
-                array('Reset', '38cpl', 'Landscape', 'Truncate', 'VertStrtPt97'));
-            fwrite($temp, $ctrlLine);
-            fclose($temp);
-            break;
         default:
             $atcon = get_conf('atcon');
             if (array_key_exists('badgeps', $atcon)) {
@@ -118,9 +63,6 @@ function init_file($printer)//:string {
 function write_badge($badge, $tempfile, $printer):void {
     $printerType = $printer[3];
     switch ($printerType) {
-        case 'DymoSEL':
-            write_se450($badge, $tempfile);
-            break;
         default:
             write_ps($badge, $tempfile);
             break;
@@ -305,30 +247,44 @@ function print_badge($printer, $tempfile)//: string|false
     $queue = $printer[2];
     $codepage = $printer[3];
     $name = $printer[0];
-    if (mb_substr($queue, 0, 1) == '0' || $name == 'None') return 0; // this token is the temp file only print queue
-
-    $server = $printer[1];
-    $printerType = $printer[3];
-    $options = '';
-    switch ($codepage) {
-        // turbo 330. et al, -o PageSize=w82h248  -o orientation-requested=5
-        case 'Dymo3xxPS':
-            $options = '-o PageSize=w82h248 -o orientation-requested=5';
-            break;
-        // turbo 450 et al, -o PageSize=30252_Address
-        case 'Dymo4xxPS':
-            $options = '-o PageSize=30252_Address';
-            break;
-        default:
-            break;
-    }
-    // all the extra stuff for exec is for debugging issues.
-    $command = "lpr -H$server -P$queue $options < $tempfile";
-    $output = [];
     $result_code = 0;
-    $result = exec($command,$output,$result_code);
-    web_error_log("executing command '$command' returned '$result', code: $result_code");
-    //var_error_log($output);
+
+    if (mb_substr($queue, 0, 1) == '0' || $name == 'None') { // return link to badge
+        $atcon_conf = get_conf('atcon');
+        $location = $atcon_conf['badges'];
+        $newname = "ps/" . basename($tempfile) . ".ps";
+        $command = "cp $tempfile " . "$location/$newname";
+        $output = [];
+        $result = exec($command,$output,$result_code);
+        web_error_log("executing command '$command' returned '$result', code: $result_code",'badgePrn');
+        if($result_code == 0) { 
+            web_error_log("Badge saved at $newname",'badgePrn');
+            $result_code=$newname;
+        }
+    }  else { // print to a printer
+        $server = $printer[1];
+        $printerType = $printer[3];
+        $options = '';
+        switch ($codepage) {
+            // turbo 330. et al, -o PageSize=w82h248  -o orientation-requested=5
+            case 'Dymo3xxPS':
+                $options = '-o PageSize=w82h248 -o orientation-requested=5';
+                break;
+            // turbo 450 et al, -o PageSize=30252_Address
+            case 'Dymo4xxPS':
+                $options = '-o PageSize=30252_Address';
+                break;
+            default:
+                break;
+        }
+        // all the extra stuff for exec is for debugging issues.
+        $command = "lpr -H$server -P$queue $options < $tempfile";
+        $output = [];
+        $result = exec($command,$output,$result_code);
+        web_error_log("executing command '$command' returned '$result', code: $result_code",'badgePrn');
+    }
+
+    unlink($tempfile); // TODO make this a configuration option
     return $result_code;
 }
 
