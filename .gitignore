@@ -9,6 +9,7 @@
 /backups/
 /Composer/vendor
 /reglogs/
+/scripts/
 /UserDoc/
 
 # images directories not used by Controll
