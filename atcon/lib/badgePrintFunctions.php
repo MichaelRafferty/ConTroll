@@ -115,7 +115,6 @@ function write_ps($badge, $tempfile)//: void {
     $id = $badge['id'];
 
     if(strtolower($badge['type'])=='oneday') {
-        #$day = date("D");
         $day = substr($badge['day'], 0, 3);
         fwrite($temp, ""
             . "16 4\n"

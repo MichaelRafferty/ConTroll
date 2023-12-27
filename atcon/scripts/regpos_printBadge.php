@@ -63,15 +63,17 @@ if (isset($_SESSION['badgePrinter'])) {
                 $response['message'] .= " <a href='$badgefile'>Badge</a>";
             }
             $response['message'] .= "<br/>";
-        } else {
+        } else if(($badge['type'] == 'one-day') || ($badge['type']=='oneday')) {
             $file_1day = init_file($printer);
             write_badge($badge, $file_1day, $printer);
             $badgefile = print_badge($printer, $file_1day);
             $response['message'] .= $badge['day'] . ' badge for ' . $badge['badge_name'] . ' printed.';
-            if($mb_substr($printer[2],0,1)=='0') {
+            if(mb_substr($printer[2],0,1)=='0') {
                 $response['message'] .= " <a href='$badgefile'>Badge</a>";
             }
             $response['message'] .= "<br/>";
+        } else { // unprintable badge
+            next;
         }
     }
     ajaxSuccess($response);
