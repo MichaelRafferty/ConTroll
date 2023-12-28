@@ -38,8 +38,8 @@ function init_file($printer)//:string {
         exit();
     }
 
-    $printerType = $printer[3];
-    switch($printerType) {
+    $codepage = $printer[4];
+    switch($codepage) {
         default:
             $atcon = get_conf('atcon');
             if (array_key_exists('badgeps', $atcon)) {
@@ -59,8 +59,8 @@ function init_file($printer)//:string {
 }
 
 function write_badge($badge, $tempfile, $printer):void {
-    $printerType = $printer[3];
-    switch ($printerType) {
+    $codepage = $printer[4];
+    switch ($codepage) {
         default:
             write_ps($badge, $tempfile);
             break;
@@ -161,7 +161,7 @@ function write_ps($badge, $tempfile)//: void {
 function print_badge($printer, $tempfile)//: string|false
 {
     $queue = $printer[2];
-    $codepage = $printer[3];
+    $codepage = $printer[4];
     $name = $printer[0];
     $result_code = 0;
 
@@ -179,7 +179,6 @@ function print_badge($printer, $tempfile)//: string|false
         }
     }  else { // print to a printer
         $server = $printer[1];
-        $printerType = $printer[3];
         $options = '';
         switch ($codepage) {
             // turbo 330. et al, -o PageSize=w82h248  -o orientation-requested=5
@@ -212,7 +211,7 @@ function print_receipt($printer, $receipt)//:string | false {
     $queue = $printer[2];
     $server = $printer[1];
     $name = $printer[0];
-    $codepage = $printer[3];
+    $codepage = $printer[4];
 
     switch ($codepage) {
         case 'UTF-8':
