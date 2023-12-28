@@ -25,7 +25,7 @@ $response['next_agelist'] = null;
 $response['current_id'] = $conid;
 $response['next_id'] = $nextconid;
 $ageSQL = <<<EOS
-SELECT a.conid,a.ageType, a.label, a.shortname, a.sortorder, count(l.id) uses, a.ageType as agekey
+SELECT a.conid,a.ageType, a.label, a.shortname, a.badgeFlag, a.sortorder, count(l.id) uses, a.ageType as agekey
 FROM ageList a
 LEFT OUTER JOIN memList l ON (a.conid = l.conid and a.ageType = memAge)
 WHERE a.conid = ?
@@ -54,7 +54,7 @@ EOS;
 
 if ($type == 'memCat' || $type == 'all') {
     $catSQL = <<<EOS
-SELECT m.memCategory, m.active, m.sortorder, count(l.id) uses, m.memCategory AS memcatkey
+SELECT m.memCategory, m.badgeLabel, m.active, m.sortorder, count(l.id) uses, m.memCategory AS memcatkey
 FROM memCategories m
 LEFT OUTER JOIN memList l ON (l.memCategory = m.memCategory)
 GROUP BY m.memCategory, m.active, m.sortorder

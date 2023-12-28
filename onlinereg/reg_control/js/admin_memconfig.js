@@ -278,6 +278,7 @@ class memsetup {
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
                 { field: "memcatkey", visible: false },
                 { title: "Category", field: "memCategory", width: 150, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "unique", "required" ] },
+                { title: "Badge Label", field: "badgeLabel", width: 150, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "required" ] },
                 { title: "Active", field: "active", headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], }, validator: "required" },
                 { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
                 {
@@ -327,6 +328,7 @@ class memsetup {
                 { title: "Age Type", field: "ageType", width: 140, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: "required" },
                 { title: "Label", field: "label", headerSort: false, width: 200, editor: "input", editorParams: { elementAttributes: { maxlength: "64" } }, validator: "required" },
                 { title: "shortname", field: "shortname", headerSort: false, width: 140, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: "required" },
+                { title: "Badge Flag", field: "badgeFlag", headerSort: true, width: 140, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, },
                 { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
@@ -588,7 +590,7 @@ class memsetup {
     };
 
     addrowCat() {
-        this.#categorytable.addRow({ memCategory: 'new-row', active: 'Y', sortorder: 99, uses: 0 }, false);
+        this.#categorytable.addRow({ memCategory: 'new-row', badgeLabel: 'X', active: 'Y', sortorder: 99, uses: 0 }, false);
     };
 
     saveCatComplete(data, textStatus, jhXHR) {
