@@ -366,3 +366,32 @@ class map {
 function make_copy(arr) {
     return JSON.parse(JSON.stringify(arr));  // horrible way to make an independent copy of an associative array
 }
+
+// tabulator custom header filter function for numeric comparisions
+//
+function numberHeaderFilter(headerValue, rowValue, rowData, filterParams) {
+    var option = headerValue.substring(0,1);
+    var value = headerValue;
+    if (option == '<' || option == '>' || option == '=') {
+        var suboption = headerValue.substring(1, 1);
+        if (suboption == '=') {
+            option += suboption;
+            value = value.substring(2);
+        } else {
+            value = value.substring(1);
+        }
+    }
+
+    switch (option) {
+        case '<':
+            return Number(rowValue) < Number(value);
+        case '<=':
+            return Number(rowValue) <= Number(value);
+        case '>':
+            return Number(rowValue) > Number(value);
+        case '>=':
+            return Number(rowValue) >= Number(value);
+        default:
+            return Number(rowValue) == Number(value);
+    }
+}
