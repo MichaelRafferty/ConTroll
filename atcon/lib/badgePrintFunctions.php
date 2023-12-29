@@ -193,7 +193,10 @@ function print_badge($printer, $tempfile)//: string|false
                 break;
         }
         // all the extra stuff for exec is for debugging issues.
-        $command = "lpr -H$server -P$queue $options < $tempfile";
+        $serverArg = '';
+        if ($server != '')
+            $serverArg = "H$server";
+        $command = "lpr $serverArg -P$queue $options < $tempfile";
         $output = [];
         $result = exec($command,$output,$result_code);
         web_error_log("executing command '$command' returned '$result', code: $result_code",'badgePrn');
@@ -252,10 +255,14 @@ function print_receipt($printer, $receipt)//:string | false {
 
     // all the extra stuff for exec is for debugging issues.
     // Temporarly save the output to a file to help with why it's dying
-    $command = "lpr -H$server -P$queue $options < $tempfile";
+    $serverArg = '';
+    if ($server != '')
+        $serverArg = "H$server";
+    $command = "lpr $serverArg -P$queue $options < $tempfile";
     $result_code = 0;
     $result = exec($command,$output,$result_code);
     web_error_log("executing command '$command' returned '$result', code: $result_code");
+    unlink($tempfile); // TODO make this a configuration option
     //var_error_log($output);
     return $result_code;
 }
