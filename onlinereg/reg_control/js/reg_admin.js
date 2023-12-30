@@ -672,6 +672,7 @@ function draw_badges(data) {
             { title: "TID", field: "display_trans", headerSort: true, headerFilter: true },
             { title: "Person", field: "p_name", headerSort: true, headerFilter: true },
             { title: "Badge Name", field: "p_badge", headerSort: true, headerFilter: true },
+            { title: "Email", field: "p_email", headerSort: true, headerFilter: true },
             { title: "Membership Type", field: "label", headerSort: true, headerFilter: true, },
             { title: "Price", field: "price", hozAlign: "right", headerSort: true, headerFilter: true },
             { title: "Discount", field: "couponDiscount", hozAlign: "right", headerSort: true, headerFilter: true, },

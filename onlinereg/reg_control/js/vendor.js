@@ -119,7 +119,7 @@ function edit(e, cell) {
     return editVendor(vendor);
 }
 
-function approval(index) {
+function approval(index, appType) {
     var row = spacestable.getRow(index);
     var data = row.getData();
     var req = data['requested_units'] || 0;
@@ -127,7 +127,7 @@ function approval(index) {
     var pur = data['purchased_units'] || 0;
 
     if (req > 0 && (app < pur || pur == 0))
-        approveReq(data);
+        approveReq(data, appType);
 
     return '';
 }
@@ -289,11 +289,33 @@ function updateProfile() {
 }
 
 // process approving requested units
-function approveReq(data) {
+function approveReq(data, appType) {
     // populate the space in the approval form
     document.getElementById('sr_vendorId').value = data.vendorId;
     document.getElementById('sr_spaceId').value = data.spaceId;
     document.getElementById('sr_id').value = data.id;
+
+    if (appType == 'r') {  // r = approve requested space
+        approveSpace(data.item_requested);
+        return;
+    }
+
+    var btn = document.getElementById('approve_button');
+    if (appType == 'o') {
+        document.getElementById('approve_header').className = "modal-header bg-primary text-bg-primary";
+        btn.className = "btn btn-sm btn-primary";
+        btn.innerHTML = "Approve";
+        document.getElementById('approve_title').innerHTML = "Approve Vendor Space Request";
+    } else if (appType == 'c') {
+        document.getElementById('approve_header').className = "modal-header bg-warning text-bg-warning";
+        btn.className = "btn btn-sm btn-warning";
+        btn.innerHTML = "Change";
+        document.getElementById('approve_title').innerHTML = "Change Vendor Space Approval";
+    } else {
+        show_message("Invalid approval type", 'error');
+        return;
+    }
+
     document.getElementById('sr_name').innerHTML = data.vendorName;
     document.getElementById('sr_email').innerHTML = data.email;
     document.getElementById('sr_website').innerHTML = data.website;
@@ -308,10 +330,16 @@ function approveReq(data) {
 }
 
 // handle the space approval
-function approveSpace() {
+function approveSpace(override) {
+    data = $('#space_request').serialize();
+    if (override >= 0) {
+        data = data + '&sr_approved=' + override.toString();
+    }
+
+    console.log(data);
     $.ajax({
         url: 'scripts/updateVendorSpace.php',
-        data: $('#space_request').serialize(),
+        data: data,
         method: 'POST',
         success: function(data, textstatus, jqXHR) {
             if(data['error']) {
@@ -539,11 +567,16 @@ function actionbuttons(cell, formatterParams, onRendered) {
     var pur = data['purchased_units'] || 0;
 
     if (req > 0 && (pur < app || pur == 0)) {
-        btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="approval(' + index + ')">Approve</button>';
+        if (app > 0) {
+            btns += '<button class="btn btn-small btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="approval(' + index + ",'c'" + ')">Change</button>';
+        } else {
+            btns += '<button class="btn btn-small btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="approval(' + index + ",'r'" + ')">Approve Req.</button>' +
+                '<button class="btn btn-small btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="approval(' + index + ",'o'" +  ')">Approve Other</button>';
+        }
     }
 
     // receipt buttons
     if (transid > 0)
-        btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="receipt(' + index + ')">Receipt</button>';
+        btns += '<button class="btn btn-small btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="receipt(' + index + ')">Receipt</button>';
     return btns;
 }

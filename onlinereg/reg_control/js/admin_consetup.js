@@ -244,8 +244,8 @@ class consetup {
                     title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
                     headerFilter: "input"
                 },
-                { title: "Start Date", field: "startdate", width: 100, editor: "date", validator: "required", headerFilter: "input" },
-                { title: "End Date", field: "enddate", width: 100, editor: "date", validator: "required", headerFilter: "input" },
+                { title: "Start Date", field: "startdate", width: 150, editor: "datetime", validator: "required", headerFilter: "input" },
+                { title: "End Date", field: "enddate", width: 150, editor: "datetime", validator: "required", headerFilter: "input" },
                 {
                     title: "Atcon", field: "atcon", editor: "list", editorParams: { values: ["Y", "N"], },
                     headerFilter: true, headerFilterParams: { values: ["Y", "N"], }
@@ -497,7 +497,10 @@ class consetup {
             method: 'GET',
             data: 'year=' + this.#setup_type + '&type=conlist',      
             success: function (data, textStatus, jhXHR) {
-                if (data['error'])
+                if (data['error']) {
+                    showError(data['error']);
+                    return false;
+                }
                 if (data['year'] == 'current') {
                     current.draw_conlist(data, textStatus, jhXHR);
                 } else {
@@ -527,7 +530,7 @@ class consetup {
 
             var postdata = {
                 ajax_request_action: this.#setup_type,
-                tabledata: this.#contable.getData(),
+                tabledata: JSON.stringify(this.#contable.getData()),
                 tablename: "conlist",
                 indexcol: "id"
             };
@@ -549,7 +552,6 @@ class consetup {
                     } else {
                         showError(data['success']);
                     }
-                    this.#memlist_savebtn.innerHTML = "Save Changes";
                     if (data['year'] == 'current') {
                         current.saveConlistComplete(data, textStatus, jhXHR);
                     } else {
@@ -610,7 +612,7 @@ class consetup {
 
             var postdata = {
                 ajax_request_action: this.#setup_type,
-                tabledata: this.#memtable.getData(),
+                tabledata: JSON.stringify(this.#memtable.getData()),
                 tablename: "memlist",
                 indexcol: "id"
             };
@@ -695,7 +697,7 @@ class consetup {
 
             var postdata = {
                 ajax_request_action: this.#setup_type,
-                tabledata: this.#breaktable.getData(),
+                tabledata: JSON.stringify(this.#breaktable.getData()),
                 tablename: "breaklist",
                 indexcol: "old"
             };

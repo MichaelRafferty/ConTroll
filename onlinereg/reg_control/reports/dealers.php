@@ -15,7 +15,7 @@ $conid=$con['id'];
 header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="dealers.csv"');
 
-//  This hardcode needs to move to the config file for dealers
+//  This hardcode needs to move to the config file for dealers (and is obsolete, as perid 13 is not dealer coordinator)
 $dealerCoord = 13;
 
 $query = <<<EOS
@@ -24,7 +24,7 @@ FROM badgeList B
 JOIN perinfo P ON (P.id=B.perid)
 LEFT OUTER JOIN reg R ON (R.perid = P.id)
 LEFT OUTER JOIN memLabel M ON (M.id=R.memId)
-WHERE B.conid = ? AND B.userid = ?;
+WHERE B.conid = ? AND B.user_perid = ?;
 EOS;
 
 echo "Name, Badge Type\n";

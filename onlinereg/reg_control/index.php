@@ -31,7 +31,7 @@ EOS;
         $usergetR = dbSafeQuery($usergetQ, 's', array($user_email));
         $userid = null;
         if ($usergetR !== false) {
-            $userL = fetch_safe_assoc($usergetR);
+            $userL = $usergetR->fetch_assoc();
             if ($userL) {
                 $userid = $userL['id'];
                 $perid = $userL['perid'];
@@ -39,6 +39,17 @@ EOS;
         }
         $_SESSION['user_id'] = $userid;
         $_SESSION['user_perid'] = $perid;
+    }
+    // get the version string, and the current DB patch level
+    $versionFile = '../../version.txt';
+    if (is_readable($versionFile)) {
+        $versionText = file_get_contents("../../version.txt");
+    } else {
+        $versionText = "Version information not available\n";
+    }
+    $patchLevel = dbQuery("SELECT MAX(id) FROM patchLog;")->fetch_row()[0];
+    if ($patchLevel === null || $patchLevel === false || $patchLevel < 0) {
+        $patchLevel = "unavailable";
     }
     ?>
     <div id='main'>
@@ -67,7 +78,8 @@ EOS;
                             echo "Google Check: " . date('c', $need_login['iat']) . "\n";
                             echo "Current Time: " . date('c') . "\n";
                             echo "Next Check: " . date('c', $need_login['exp']) . "\n";
-                            echo "Refresh Token: " . (isset($_SESSION['id_token_token']['refresh_token'])?"Exists":"Doesn't Exist") . "\n";
+                            echo "$versionText";
+                            echo "Database Patch Level: $patchLevel\n";
                         ?> </pre>
                 </div>
             </div>

@@ -44,7 +44,6 @@ EOS;
     }
     $numRows = dbSafeCmd($updateQ, 'isi', array($approved, $time_approved, $vsID));
     if ($numRows == 1) {
-        $response['success'] = 'Space Approved';
         // now send that vendor an email telling them their space is approved
         $vendorQ = <<<EOS
 SELECT v.name, v.email, vs.shortname, vs.name AS spacename, vs.approved_description
@@ -54,24 +53,36 @@ WHERE v.id = ?
 EOS;
         $vendorR = dbSafeQuery($vendorQ, 'ii', array($spaceId, $vendorId));
         $vendorL = $vendorR->fetch_assoc();
+
         $vendorname = $vendorL['name'];
         $spacename = $vendorL['spacename'];
         $desc = $vendorL['approved_description'];
         $label = $conf['label'];
         $site = $vendor_conf['vendorsite'];
+        if ($approved == null) {
+            $response['success'] = 'Space Approval Revoked';
+            $apptype = 'revocation';
+            $appline = 'Your approval has been revoked';
+            $subtype = " Revoked";
+        } else {
+            $response['success'] = 'Space Approved';
+            $apptype = 'approval';
+            $appline = "You have been approved for $desc.  Please sign into the vendor portal at $site to purchase your space and memberships.";
+            $subtype = " Approval";
+        }
         $body = <<<EOS
 Dear $vendorname
 
-An approval has been entered against your space request in $label $spacename.
+An $apptype has been entered against your space request in $label $spacename.
 
-You have been approved for $desc.  Please sign into the vendor portal at $site to purchase your space and memberships.
+$appline
 
 Thank you.
 $label
 EOS;
 
         load_email_procs();
-        $return_arr = send_email($conf['regadminemail'], $vendorL['email'], $vendor_conf[$vendorL['shortname']], $spacename . ' Approval', $body, null);
+        $return_arr = send_email($conf['regadminemail'], $vendorL['email'], $vendor_conf[$vendorL['shortname']], $spacename . $subtype, $body, null);
 
         if (array_key_exists('error_code', $return_arr)) {
             $error_code = $return_arr['error_code'];

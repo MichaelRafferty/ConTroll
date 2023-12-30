@@ -1,0 +1,51 @@
+#set HOMEDIR to place to store the REPO
+HOMEDIR=/home/youraccountname/reg.yourdomain/Controll
+
+# $1 = override default branch
+if [ "$1" != "" ]
+then
+	BRANCH=$1
+else
+	BRANCH=master
+fi
+
+echo "Starting fetch of latest git branch($BRANCH) into $HOMEDIR for Controll at `date`"
+
+cd $HOMEDIR
+
+# update the set of branches
+if git fetch origin
+then
+	echo "origin fetch succeeded"
+else
+	echo "origin fetch failed"
+	exit 1;
+fi
+
+# switch to this branch if needed
+if git checkout $BRANCH
+then
+	echo "$BRANCH checkout succeeded"
+else
+	echo "$BRANCH checkout failed"
+	exit 1;
+fi
+
+# pull the latest copy of the branch
+if git pull origin $BRANCH
+then
+	echo "$BRANCH pull succeeded"
+else
+	echo "$BRANCH pull failed"
+	exit 1;
+fi
+
+# get the latest change date for the branch
+echo "Branch: $BRANCH" > $HOMEDIR/version.txt
+git log -n 1 --pretty=format:"Branch Date: %cD%n"  origin $BRANCH >> $HOMEDIR/version.txt
+
+#cp $HOMEDIR/config/.htaccess.sav $HOMEDIR/atcon/.htaccess
+#cp $HOMEDIR/philcon.ps $HOMEDIR/atcon/lib/init.ps
+cd $HOMEDIR/Composer
+composer install
+chmod -R g-w $HOMEDIR

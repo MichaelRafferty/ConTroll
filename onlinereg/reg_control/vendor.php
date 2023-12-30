@@ -162,9 +162,9 @@ while ($row = $spacePriceListR->fetch_assoc()) {
 <div id='approve_space' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Approve Vendor Space Request' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
-            <div class='modal-header bg-primary text-bg-primary'>
+            <div id="approve_header" class='modal-header bg-primary text-bg-primary'>
                 <div class='modal-title'>
-                    <strong>Approve Vendor Space Request</strong>
+                    <strong id="approve_title">Approve Vendor Space Request</strong>
                 </div>
                 <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
             </div>
@@ -210,7 +210,7 @@ while ($row = $spacePriceListR->fetch_assoc()) {
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' onClick='approveSpace()'>Approve</button>
+                <button id="approve_button" class='btn btn-sm btn-primary' onClick='approveSpace(-1)'>Approve</button>
             </div>
         </div>
     </div>

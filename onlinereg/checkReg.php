@@ -54,7 +54,7 @@ if($lname == "" or $fname == "") {
 } else {
     $fname .= '%';
     $query = <<<EOS
-SELECT P.last_name, SUBSTRING(P.first_name, 1, 1) AS fi, SUBSTRING(P.middle_name, 1, 1) AS mi, P.zip
+SELECT P.last_name, SUBSTRING(P.first_name, 1, 1) AS fi, SUBSTRING(P.middle_name, 1, 1) AS mi, SUBSTRING(P.zip,1,5) as zip
 FROM reg R
 JOIN perinfo P ON (R.perid = P.id)
 WHERE P.share_reg_ok='Y' AND R.conid = ? AND lower(P.first_name) like lower(?) AND lower(P.last_name) = lower(?) AND R.price=R.paid;
@@ -63,7 +63,7 @@ EOS;
     $perR = dbSafeQuery($query, 'iss', array($condata['id'],  $fname, $lname));
 
     $newp_query = <<<EOS
-SELECT NP.last_name, SUBSTRING(NP.first_name, 1, 1) as fi, SUBSTRING(NP.middle_name, 1, 1) as mi, NP.zip
+SELECT NP.last_name, SUBSTRING(NP.first_name, 1, 1) as fi, SUBSTRING(NP.middle_name, 1, 1) as mi, SUBSTRING(NP.zip, 1, 5) as zip
 FROM reg R
 JOIN newperson NP ON (R.newperid = NP.id)
 WHERE R.perid is null AND NP.share_reg_ok='Y' AND R.conid =? AND lower(NP.first_name) like lower(?) AND lower(NP.last_name) = lower(?) AND R.price=R.paid;
