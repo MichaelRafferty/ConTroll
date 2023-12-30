@@ -155,7 +155,7 @@ EOS;
         // mark prior membership as rollover-cancel
         $upgsql = <<<EOS
 UPDATE reg
-JOIN memList m ON (m.conid = ? AND LOWER(m.label) = 'rollover-cancel')
+JOIN memList m ON (m.conid = ? AND (LOWER(m.label) = 'rollover-cancel' || LOWER(m.label) = 'cancel-rollover' ))
 SET reg.memID = m.id
 WHERE reg.id = ? AND reg.conid = ?;
 EOS;
