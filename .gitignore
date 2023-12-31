@@ -12,7 +12,7 @@
 /scripts/
 /UserDoc/
 
-# images directories not used by Controll
+# images directories not used by ConTroll
 /atcon/images/
 /atcon/ps
 /onlinereg/images/
@@ -44,9 +44,11 @@
 /.idea/vcs.xml
 /.idea/workspace.xml
 
+
 # placeholder for obsolete stuff
 /atcon/scripts/obsolete/
 /onlinereg/reg_control/scripts/obsolete
 # asre these two obsolete ones still needed and are they relative
 onlinereg/onlineReg/
 dead
+
