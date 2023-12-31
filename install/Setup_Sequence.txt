@@ -14,7 +14,7 @@ It also expects you to know how to fetch/update files from GitHub. The software 
         cd {regtest}
         git clone git@github.com:MichaelRafferty/ConTroll.git ConTroll
     c. copy the regfetch script to your bin directory
-        cd {reg}/scripts-sample
+        cd {reg}/ConTroll/scripts-sample
         cp regfetchprod ~/bin
         cp regfetchprod ~/bin/regfetchtest
     d. Edit those two scripts in the bin directory to change the HOMEDIR in the scripts to your locations
@@ -24,6 +24,11 @@ It also expects you to know how to fetch/update files from GitHub. The software 
     h. Run composer for each tree
         regfetchprod
         regfetchtest
+    i. Make the local directories in each directory
+        1. cd {reg}/ConTroll
+        2. mkdir backups config cronlog crons reglogs scripts
+        3. cd {regtest}/ConTroll
+        4. mkdir backups config cronlog crons reglogs scripts
 
 3. Create the two databases in your database server
     a. suggested names are reg and reg_test
@@ -33,7 +38,7 @@ It also expects you to know how to fetch/update files from GitHub. The software 
             servers
             printers
             routines
-    c. Copy config-samle/reg_conf.ini.sample to configreg_conf.ini
+    c. Copy config-sample/reg_conf.ini.sample to config/reg_conf.ini
     d. Edit at least the [mysql] section of the configuration to set the database parameters
     f.  load the reg schema into each database using the InstallSetup.php program
         cd {reg}/install
