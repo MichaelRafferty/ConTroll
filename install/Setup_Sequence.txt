@@ -26,9 +26,9 @@ It also expects you to know how to fetch/update files from GitHub. The software 
         regfetchtest
     i. Make the local directories in each directory
         1. cd {reg}/ConTroll
-        2. mkdir backups config cronlog crons reglogs scripts
+        2. mkdir backups config cronlog crons reglogs scripts onlinereg/images vendor/images
         3. cd {regtest}/ConTroll
-        4. mkdir backups config cronlog crons reglogs scripts
+        4. mkdir backups config cronlog crons reglogs scripts onlinereg/images vendor/images
 
 3. Create the two databases in your database server
     a. suggested names are reg and reg_test
