@@ -242,7 +242,7 @@ class consetup {
                 { title: "Label", field: "label", visible: false },
                 {
                     title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
-                    headerFilter: "input"
+                    headerFilter: "input", headerFilterFunc:numberHeaderFilter,
                 },
                 { title: "Start Date", field: "startdate", width: 150, editor: "datetime", validator: "required", headerFilter: "input" },
                 { title: "End Date", field: "enddate", width: 150, editor: "datetime", validator: "required", headerFilter: "input" },
