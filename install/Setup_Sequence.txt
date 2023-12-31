@@ -9,13 +9,21 @@ It also expects you to know how to fetch/update files from GitHub. The software 
 2.  Decide what account is going to host Reg.  These instructions will create two complete systems: reg and reg-test.
     a. create said account and create two directories under it: one for reg and one for reg-test
     b. retrieve the production tree to reg and the test tree to reg-test.
-        git fetch origin master - for the reg tree
-        git fetch origin test - for the test tree
-    c. Run composer for each tree
-        cd {reg}/Composer
-        composer install
-        cd {regtest}/Composer
-        composer install
+        cd {reg}
+        git clone git@github.com:MichaelRafferty/ConTroll.git ConTroll
+        cd {regtest}
+        git clone git@github.com:MichaelRafferty/ConTroll.git ConTroll
+    c. copy the regfetch script to your bin directory
+        cd {reg}/scripts-sample
+        cp regfetchprod ~/bin
+        cp regfetchprod ~/bin/regfetchtest
+    d. Edit those two scripts in the bin directory to change the HOMEDIR in the scripts to your locations
+    e. Make sure the appropriate version of PHP (>=8.1) is in your PATH (edit your appropriate profile if needed to add it)
+    f. Make sure your approiate time zone variable is in your profile
+    g. Run php -v and check output for proper version, if wrong, go back to step e and fix it.
+    h. Run composer for each tree
+        regfetchprod
+        regfetchtest
 
 3. Create the two databases in your database server
     a. suggested names are reg and reg_test
@@ -25,50 +33,21 @@ It also expects you to know how to fetch/update files from GitHub. The software 
             servers
             printers
             routines
-    c.  load the reg schema into each database
-        i. load all the tables first (everything but zz_foreign_keys.sql and zz_routines.sql)
-        ii. set all the foreign keys: run zz_foreign_keys.sql
-        iii. add routines and views using zz_routines.sql
-
-	  d. drop obsolete tables if they still exist
-            reg_staff_stats
-            oauth_links
-            oauth_people
+    c. Copy config-samle/reg_conf.ini.sample to configreg_conf.ini
+    d. Edit at least the [mysql] section of the configuration to set the database parameters
+    f.  load the reg schema into each database using the InstallSetup.php program
+        cd {reg}/install
+        Use php InstallSetup.php -h to check the appropriate options for your system.
+            It is recommended that the schema be set up outside of InstallSetup.php.  If you have not yet edited the rest of reg_conf.ini, use the -v option
 
 4. Populate the tables far enough to use the GUI to continue, or as far as you want.
     Necessary tables for the GUI:
-        a. conList (at least for the current convention, preferred for the current and the next convention (can approximate the dates for that one)
-        b. permissions tables:
-            i. auth
-                Standard 'auth' rows to select from:
-                INSERT INTO auth(id, name, page, display) VALUES
-                ('1', 'overview', 'Y', 'Membership'),
-                ('2', 'admin', 'Y', 'Admin'),
-                ('3', 'people', 'Y', 'People'),
-                ('5', 'registration', 'Y', 'Registration'),
-                ('6', 'reg_admin', 'Y', 'Badge List'),
-                ('7', 'artist', 'Y', 'Artist'),
-                ('8', 'artshow', 'Y', 'Artshow'),
-                ('9', 'badge', 'Y', 'Free Badges'),
-                ('10', 'atcon', 'N', 'N'),
-                ('11', 'art_control', 'Y', 'Art Control'),
-                ('12', 'art_sales', 'N', 'N'),
-                ('13', 'club', 'Y', 'Club'),
-                ('14', 'monitor', 'Y', 'Attendance'),
-                ('15', 'reports', 'Y', 'Reports'),
-                ('16', 'search', 'N', 'N'),
-                ('17', 'atcon_checkin', 'N', 'N'),
-                ('18', 'atcon_register', 'N', 'N'),
-                ('19', 'coupon', 'Y', 'Coupon'),
-                ('32', 'vendor', 'Y', 'Vendor'),
-                ('999', 'registration-old', 'Y', 'Old Reg');
-
-            ii. user (at least for your first reg_control user)
-            iii. user_auth (at least to add the admin role to your first reg_control user)
+        a. conList (at least for the current convention, preferred for the current and the next convention (can approximate the dates for that one), InstallSetup.php will insert the first conlist entry.
+        b. user and user_auth: InstallSetup.php will install your master admin for you.
+        c. atcon_user and atcon_auth: InstallSetup.php will install your master manager for you.
 
 5. Copy or create the following files in your config directory
-    a. aws.phar: use ours or get a newer copy from AWS (Ours is in the config-sample directory)
-    b. copy config-sample/reg_conf.ini.sample to reg_conf.ini and edit all of the sections for your needs
+    a. Edit reg_conf.ini copied in the steps above
         i. Mimimim just to get the gui working:
             1. [mysql] section in its entirity
             2. [con] label, conname, id, minComp, compLen, conLen, server
@@ -94,25 +73,20 @@ It also expects you to know how to fetch/update files from GitHub. The software 
     a. reg.(domain)  => .../reg/onlinereg
     b. atcon.(domain) => .../reg/atcon
     c. vendor.(domain) => .../reg/vendor
-    TODO: add remaining subsystems here
-    d. reg-test.(domain) => .../reg_test/onlinereg
-    e. atcon-test.(domain) => .../reg_test/atcon
-    f. vendor-test.(domain) => .../reg_test/vendor
+    d. artist.(domain) => .../reg/vendor  /* yes, vendor, it uses the server name to determine which interface to show)
+    e. reg-test.(domain) => .../reg_test/onlinereg
+    f. atcon-test.(domain) => .../reg_test/atcon
+    g. vendor-test.(domain) => .../reg_test/vendor
+    h. artist-test.(domain) ==> .../reg_test/artist
 
 7. use reg_control's admin or the database directly to set up:
     a. users
     b. Membership Configuration Tables
     c. Current Configuration Setup
 
-8. Use reg_control's people to set up your atcon manager
-    a. enter the full information for the atcon manager (note the PERID assigned you'll need it for the next step)
-    b. In the database, create the entries for the manager in:
-        i. atcon_user
-        ii. atcon_auth (at least assign the manager permission)
-
-9. If you are running the balticon reg system, it needs to access the perinfo, reg, and memList tables to keep its copy of the program
-    participant information updated and in sync with the reg system.  Zambia pulls the membership and contact info for its program participants
-    and when a program participant updates their contact info in Zambia it pushs this change back to the reg system as well keeping them in sync.
+8. If you are running the Zambia scheduling system, zambia needs to access the perinfo, reg, and memList tables to keep its copy of the program
+    participant information updated and in sync with the ConTroll.  Zambia pulls the membership and contact info for its program participants
+    and when a program participant updates their contact info in Zambia it pushs this change back to ConTroll as well, keeping them in sync.
     You'll need to know the zambia_db_user and the host the database is on. The host is usually 'localhost';
     The parens are not part of the sequnce below, just showing what you need to substitute.
     a. Grant select and update to the zambia user for perinfo:
@@ -122,7 +96,7 @@ It also expects you to know how to fetch/update files from GitHub. The software 
         GRANT SELECT ON reg to '(zanbia_db_user)'@'(databasehost);
         GRANT SELECT ON memList to '(zanbia_db_user)'@'(databasehost);
 
-10. Set up the backup scripts in cron
+9. Set up the backup scripts in cron
     a. Create the scripts directory and copy the backup_mysql script from the scripts-sample directory to it.
     b. Set the variables at the top for your install
         DEST=full absolute path to the destination for the backups files.  Suggested is a directory called backups at the same level as scripts directory
