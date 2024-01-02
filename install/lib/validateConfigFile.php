@@ -64,7 +64,7 @@ function validateConfigFile($options) : int {
                     'test' => '0 for the production server and 1 for any test servers',
                     'registrationpage' => 'the URL where when registration will open will be posted.',
                     'open' => "0 when registration is not open and 1 when it's open",
-                    'closed' => '0 when registration is allowed to be open, and 1 when registration is closed for being too close to the convention or the convention is over',
+                    'close' => '0 when registration is allowed to be open, and 1 when registration is closed for being too close to the convention or the convention is over',
                     'suspended' => '0 when registration is available and 1 when registration is temporarily closed, and the suspendreason is then shown to inform users',
                     'cancelled' => '0 in normal cases, 1 when the convention has had to be cancelled',
                     'server' => 'URL for the registration server used for follow-on pages and redirects',
@@ -175,7 +175,7 @@ function validateConfigFile($options) : int {
                      'https' => 'should always be 1 to redirect to the secure server. and only should be zero when testing servers prior to the SSL certificate being applied',
                      'test' => '0 for the production server and 1 for any test servers',
                      'open' => "0 when registration is not open and 1 when it's open",
-                     'closed' => '0 when registration is allowed to be open, and 1 when registration is closed for being too close to the convention or the convention is over',
+                     'close' => '0 when registration is allowed to be open, and 1 when registration is closed for being too close to the convention or the convention is over',
                      'suspended' => '0 when registration is available and 1 when registration is temporarily closed, and the suspendreason is then shown to inform users',
                      'url' => 'URL to the art show portal',
                      ];
