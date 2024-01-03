@@ -31,7 +31,7 @@ try {
     $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
     $response['error'] = $msg;
     error_log($msg);
-    ajaxSuccess(response);
+    ajaxSuccess($response);
     exit();
 }
 //$data = $_POST['tabledata'];
