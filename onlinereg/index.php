@@ -1,6 +1,7 @@
 <?php
 // Online Reg - index.php - Main page for online con registration
 require_once("lib/base.php");
+require_once('../lib/global.php');
 require_once("../lib/cc__load_methods.php");
 require_once("../lib/coupon.php");
 
@@ -588,8 +589,18 @@ We will post a notice when online registration opens on the
 <a href="<?php echo escape_quotes($ini['registrationpage']); ?>">The <?php echo $con['conname']; ?> Registration Page</a>.  Mail-in forms are also available on that page.</p>
 
 <?php } ?>
-<p class="text-body"><a href="<?php echo escape_quotes($con['policy']);?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.<br/>
-For more information about <?php echo $con['conname']; ?> please email <a href="mailto:<?php echo escape_quotes($con['infoemail']); ?>"><?php echo $con['infoemail']; ?></a>.<br/>
-For questions about <?php echo $con['conname']; ?> Registration, email <a href="mailto:<?php echo escape_quotes($con['regemail']); ?>"><?php echo $con['regemail']; ?></a>.</p>
+    <div class='container-fluid'>
+        <div class="row mt-2">
+            <div class="col-sm-6">
+                <p class='text-body'><a href="<?php echo escape_quotes($con['policy']); ?>" target='_blank'>Click here for
+                        the <?php echo $con['policytext']; ?></a>.<br/>
+                    For more information about <?php echo $con['conname']; ?> please email <a
+                            href="mailto:<?php echo escape_quotes($con['infoemail']); ?>"><?php echo $con['infoemail']; ?></a>.<br/>
+                    For questions about <?php echo $con['conname']; ?> Registration, email <a
+                            href="mailto:<?php echo escape_quotes($con['regemail']); ?>"><?php echo $con['regemail']; ?></a>.</p>
+            </div>
+            <?php drawBug(6); ?>
+        </div>
+    </div>
 </body>
 </html>

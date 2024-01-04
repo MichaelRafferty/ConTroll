@@ -17,6 +17,7 @@ set_include_path(get_include_path(). $include_path_additions);
 
 require_once("vendor/autoload.php");
 require_once(__DIR__ . "/../../../lib/db_functions.php");
+require_once(__DIR__ . "/../../../lib/global.php");
 require_once(__DIR__ . "/../../../lib/ajax_functions.php");
 db_connect();
 
@@ -271,9 +272,13 @@ function tab_bar($auth, $page) {
     <?php
 }
 
-function page_foot($title) {
+function page_foot($title = "") {
     ?>
-
+    </div>
+    <div class="container-fluid">
+        <div class='row mt-2'>
+            <?php drawBug(12); ?>
+        </div>
     </div>
 </body>
 </html>
