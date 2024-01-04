@@ -68,7 +68,7 @@ foreach ($data as $index => $row ) {
     }
 }
 
-web_error_log("Keys to delete = ($delete_keys)");
+//web_error_log("Keys to delete = ($delete_keys)");
 switch ($action) {
     case 'nextage':
         $year = $nextconid;
