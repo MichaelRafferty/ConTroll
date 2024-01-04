@@ -37,7 +37,7 @@ try {
     $msg = "Caught exception on json_decode: " . $e->getMessage() . PHP_EOL . "JSON error: " . json_last_error_msg() . PHP_EOL;
     $response['error'] = $msg;
     error_log($msg);
-    ajaxSuccess(response);
+    ajaxSuccess($response);
     exit();
 }
 //$data = $_POST['tabledata'];
@@ -111,7 +111,7 @@ EOS;
             if (!array_key_exists('agekey', $row)) { // if key is not there, its an insert
                 $numrows = dbSafeInsert($inssql, 'issssi', array($year, $row['ageType'], $row['label'], $row['shortname'], $row['badgeFlag'], $row['sortorder']));
                 if ($numrows !== false)
-                    $inserted++
+                    $inserted++;
             }
         }
         break;
@@ -154,7 +154,7 @@ EOS;
             if (!array_key_exists('memtypekey', $row)) { // if key is not there, its an insert
                 $numrows = dbSafeInsert($inssql, 'ssi', array($row['memType'], $row['active'], $row['sortorder']));
                 if ($numrows !== false)
-                    $inserted++
+                    $inserted++;
             }
         }
         break;
@@ -198,7 +198,7 @@ EOS;
             if (!array_key_exists('memcatkey', $row)) { // if key is not there, its an insert
                 $numrows = dbSafeInsert($inssql, 'sssi', array($row['memCategory'], $row['badgeLabel'], $row['active'], $row['sortorder']));
                 if ($numrows !== false)
-                    $inserted++
+                    $inserted++;
             }
         }
         break;
