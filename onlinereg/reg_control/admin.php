@@ -174,7 +174,7 @@ if (array_key_exists('user_id', $_SESSION)) {
             </button>
         </li>
     </ul>
-    <div class="tab-content" id="admin-content">
+    <div class="tab-content ms-2" id="admin-content">
         <div class="tab-pane fade show active" id="users-pane" role="tabpanel" aria-labelledby="users-tab" tabindex="0">
             <table>
                 <thead>

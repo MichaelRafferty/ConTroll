@@ -50,6 +50,14 @@ class consetup {
         }
     };
 
+    // set undo / redo status for conlist (convention data)
+    checkConlistUndoRedo() {
+        var undosize = this.#contable.getHistoryUndoSize();
+        this.#conlist_undobtn.disabled = undosize <= 0;
+        this.#conlist_redobtn.disabled = this.#contable.getHistoryRedoSize() <= 0;
+        return undosize;
+    }
+
     conlist_dataChanged(data) {
         //data - the updated table data
         if (!this.#conlist_dirty) {
@@ -57,10 +65,16 @@ class consetup {
             this.#conlist_savebtn.disabled = false;
             this.#conlist_dirty = true;
         }
-        if (this.#contable.getHistoryUndoSize() > 0) {
-            this.#conlist_undobtn.disabled = false;
-        }
+        this.checkConlistUndoRedo();
     };
+
+    // set undo / redo status for memlist (membership type data)
+    checkMemlistUndoRedo() {
+        var undosize = this.#memtable.getHistoryUndoSize();
+        this.#memlist_undobtn.disabled = undosize <= 0;
+        this.#memlist_redobtn.disabled = this.#memtable.getHistoryRedoSize() <= 0;
+        return undosize;
+    }
 
     memlist_dataChanged(data) {
         //data - the updated table data
@@ -69,21 +83,25 @@ class consetup {
             this.#memlist_savebtn.disabled = false;
             this.#memlist_dirty = true;
         }
-        if (this.#memtable.getHistoryUndoSize() > 0) {
-            this.#memlist_undobtn.disabled = false;
-        }
+        this.checkMemlistUndoRedo();
     };
+
+    // set undo / redo status for break list (setup next year convention data)
+    checkBreaklistUndoRedo() {
+        var undosize = this.#breaktable.getHistoryUndoSize();
+        this.#breaklist_undobtn.disabled = undosize <= 0;
+        this.#breaklist_redobtn.disabled = this.#breaktable.getHistoryRedoSize() <= 0;
+        return undosize;
+    }
 
     breaklist_dataChanged(data) {
         //data - the updated table data
         if (!this.#breaklist_dirty) {
             this.#breaklist_dirty = true;
         }
-        if (this.#breaktable.getHistoryUndoSize() > 0) {
-            this.#breaklist_undobtn.disabled = false;
-        }
         this.#breaklist_savebtn.innerHTML = "Build " + this.#setup_title + " Membership Types";
         this.#breaklist_savebtn.disabled = false;
+        this.checkBreaklistUndoRedo();
     };
 
     draw(data, textStatus, jhXHR) {
@@ -478,6 +496,7 @@ class consetup {
         this.#memtable.addRow({ id: -99999, conid: this.#conid, shortname: 'new-row', price:0, atcon: 'N', online:'N', sortorder: 199, uses: 0 }, false).then(function(row) {
             row.getTable().scrollToRow(row);
         });
+        this.checkMemlistUndoRedo();
     };
 
     memlist_rowMoved(row) {
@@ -486,7 +505,9 @@ class consetup {
         this.#memlist_dirty = true;
         if (this.#memtable.getHistoryUndoSize() > 0) {
             this.#memlist_undobtn.disabled = false;
-            this.#memlist_undobtn.disabled = false;
+        }
+        if (this.#memtable.getHistoryRedoSize() > 0) {
+            this.#memlist_redobtn.disabled = false;
         }
     }
 

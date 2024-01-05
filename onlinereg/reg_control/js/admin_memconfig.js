@@ -457,16 +457,10 @@ class memsetup {
         if (this.#memtypetable != null) {
             this.#memtypetable.undo();
 
-            var undoCount = this.#memtypetable.getHistoryUndoSize();
-            if (undoCount <= 0) {
-                this.#memtype_undobtn.disabled = true;
+            if (this.checkTypeUndoRedo() <= 0) {
                 this.#memtype_dirty = false;
                 this.#memtype_savebtn.innerHTML = "Save Changes";
                 this.#memtype_savebtn.disabled = true;
-            }
-            var redoCount = this.#memtypetable.getHistoryRedoSize();
-            if (redoCount > 0) {
-                this.#memtype_redobtn.disabled = false;
             }
         }
     };
@@ -474,26 +468,26 @@ class memsetup {
     redoTypes() {
         if (this.#memtypetable != null) {
             this.#memtypetable.redo();
-
-            var undoCount = this.#memtypetable.getHistoryUndoSize();
-            if (undoCount > 0) {
-                this.#memtype_undobtn.disabled = false;
+            
+            if (this.checkTypeUndoRedo() > 0) {
                 this.#memtype_dirty = true;
                 this.#memtype_savebtn.innerHTML = "Save Changes*";
                 this.#memtype_savebtn.disabled = false;
-            }
-            var redoCount = this.#memtypetable.getHistoryRedoSize();
-            if (redoCount <= 0) {
-                this.#memtype_redobtn.disabled = true;
             }
         }
     };
 
     addrowTypes() {
         this.#memtypetable.addRow({memType: 'new-row', active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
-            console.log(row);
             row.getTable().scrollToRow(row);
+            mem.checkTypeUndoRedo();
         });
+    }
+
+    // set undo / redo status for mem type buttons
+    checkTypeUndoRedo() {
+        this.#memtype_undobtn.disabled = this.#memtypetable.getHistoryUndoSize() <= 0;
+        this.#memtype_redobtn.disabled = this.#memtypetable.getHistoryRedoSize() <= 0;
     }
     saveTypesComplete(data, textStatus, jhXHR) {
         if ('error' in data && data['error'] != '') {
@@ -559,16 +553,10 @@ class memsetup {
         if (this.#categorytable != null) {
             this.#categorytable.undo();
 
-            var undoCount = this.#categorytable.getHistoryUndoSize();
-            if (undoCount <= 0) {
-                this.#category_undobtn.disabled = true;
+            if (this.checkCatUndoRedo() <= 0) {
                 this.#category_dirty = false;
                 this.#category_savebtn.innerHTML = "Save Changes";
                 this.#category_savebtn.disabled = true;
-            }
-            var redoCount = this.#categorytable.getHistoryRedoSize();
-            if (redoCount > 0) {
-                this.#category_redobtn.disabled = false;
             }
         }
     };
@@ -576,26 +564,28 @@ class memsetup {
     redoCat() {
         if (this.#categorytable != null) {
             this.#categorytable.redo();
-
-            var undoCount = this.#categorytable.getHistoryUndoSize();
-            if (undoCount > 0) {
-                this.#category_undobtn.disabled = false;
+            
+            if (this.checkCatUndoRedo() > 0) {
                 this.#category_dirty = true;
                 this.#category_savebtn.innerHTML = "Save Changes*";
                 this.#category_savebtn.disabled = false;
-            }
-            var redoCount = this.#categorytable.getHistoryRedoSize();
-            if (redoCount <= 0) {
-                this.#category_redobtn.disabled = true;
             }
         }
     };
 
     addrowCat() {
         this.#categorytable.addRow({memCategory: 'new-row', badgeLabel: 'X', active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
-            console.log(row);
             row.getTable().scrollToRow(row);
+            mem.checkCatUndoRedo();
         });
+    }
+    
+    // set undo / redo status for category buttons
+    checkCatUndoRedo() {
+        var undosize = this.#categorytable.getHistoryUndoSize();
+        this.#category_undobtn.disabled = undosize <= 0;
+        this.#category_redobtn.disabled = this.#categorytable.getHistoryRedoSize() <= 0;
+        return undosize;
     }
     saveCatComplete(data, textStatus, jhXHR) {
         if ('error' in data && data['error'] != '') {
@@ -660,17 +650,11 @@ class memsetup {
     undoCurAge() {
         if (this.#curagetable != null) {
             this.#curagetable.undo();
-
-            var undoCount = this.#curagetable.getHistoryUndoSize();
-            if (undoCount <= 0) {
-                this.#curage_undobtn.disabled = true;
+            
+            if (this.checkCurageUndoRedo() <= 0) {
                 this.#curage_dirty = false;
                 this.#curage_savebtn.innerHTML = "Save Changes";
                 this.#curage_savebtn.disabled = true;
-            }
-            var redoCount = this.#curagetable.getHistoryRedoSize();
-            if (redoCount > 0) {
-                this.#curage_redobtn.disabled = false;
             }
         }
     };
@@ -678,27 +662,31 @@ class memsetup {
     redoCurAge() {
         if (this.#curagetable != null) {
             this.#curagetable.redo();
-
-            var undoCount = this.#curagetable.getHistoryUndoSize();
-            if (undoCount > 0) {
+            
+            if (this.checkCurageUndoRedo() > 0) {
                 this.#curage_undobtn.disabled = false;
                 this.#curage_dirty = true;
                 this.#curage_savebtn.innerHTML = "Save Changes*";
                 this.#curage_savebtn.disabled = false;
-            }
-            var redoCount = this.#curagetable.getHistoryRedoSize();
-            if (redoCount <= 0) {
-                this.#curage_redobtn.disabled = true;
             }
         }
     };
 
     addrowCurAge() {
         this.#curagetable.addRow({conid: this.#current_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0}, false).then(function (row) {
-            console.log(row);
             row.getTable().scrollToRow(row);
+            mem.checkCurageUndoRedo();
         });
     }
+
+    // set undo / redo status for curent con ageList buttons
+    checkCurageUndoRedo() {
+        var undosize = this.#curagetable.getHistoryUndoSize();
+        this.#curage_undobtn.disabled = undosize <= 0;
+        this.#curage_redobtn.disabled = this.#curagetable.getHistoryRedoSize() <= 0;
+        return undosize;
+    }
+
     saveCurAgeComplete(data, textStatus, jhXHR) {
         if ('error' in data && data['error'] != '') {
             showError(data['error']);
@@ -764,16 +752,10 @@ class memsetup {
         if (this.#nextagetable != null) {
             this.#nextagetable.undo();
 
-            var undoCount = this.#nextagetable.getHistoryUndoSize();
-            if (undoCount <= 0) {
-                this.#nextage_undobtn.disabled = true;
+            if (this.checkNextageUndoRedo() <= 0) {
                 this.#nextage_dirty = false;
                 this.#nextage_savebtn.innerHTML = "Save Changes";
                 this.#nextage_savebtn.disabled = true;
-            }
-            var redoCount = this.#nextagetable.getHistoryRedoSize();
-            if (redoCount > 0) {
-                this.#nextage_redobtn.disabled = false;
             }
         }
     };
@@ -782,27 +764,29 @@ class memsetup {
         if (this.#nextagetable != null) {
             this.#nextagetable.redo();
 
-            var undoCount = this.#nextagetable.getHistoryUndoSize();
-            if (undoCount > 0) {
-                this.#nextage_undobtn.disabled = false;
+            if (this.checkNextageUndoRedo() > 0) {
                 this.#nextage_dirty = true;
                 this.#nextage_savebtn.innerHTML = "Save Changes*";
                 this.#nextage_savebtn.disabled = false;
-            }
-            var redoCount = this.#nextagetable.getHistoryRedoSize();
-            if (redoCount <= 0) {
-                this.#nextage_redobtn.disabled = true;
             }
         }
     };
 
     addrowNextAge()  {
         this.#nextagetable.addRow({conid: this.#next_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0}, false).then(function (row) {
-            console.log(row);
             row.getTable().scrollToRow(row);
+            mem.checkNextageUndoRedo();
         });
     }
 
+    // set undo / redo status for next con ageList buttons
+    checkNextageUndoRedo() {
+        var undosize = this.#nextagetable.getHistoryUndoSize();
+        this.#nextage_undobtn.disabled = undosize <= 0;
+        this.#nextage_redobtn.disabled = this.#nextagetable.getHistoryRedoSize() <= 0;
+        return undosize;
+    }
+    
     saveNextAgeComplete(data, textStatus, jhXHR) {
         if ('error' in data && data['error'] != '') {
             showError(data['error']);
