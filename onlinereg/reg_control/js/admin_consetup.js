@@ -475,7 +475,9 @@ class consetup {
     };
 
     addrowMemList() {
-        this.#memtable.addRow({ id: -99999, conid: this.#conid, shortname: 'new-row', price:0, atcon: 'N', online:'N', sortorder: 199, uses: 0 }, false);
+        this.#memtable.addRow({ id: -99999, conid: this.#conid, shortname: 'new-row', price:0, atcon: 'N', online:'N', sortorder: 199, uses: 0 }, false).then(function(row) {
+            row.getTable().scrollToRow(row);
+        });
     };
 
     memlist_rowMoved(row) {

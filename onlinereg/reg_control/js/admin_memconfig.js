@@ -490,9 +490,11 @@ class memsetup {
     };
 
     addrowTypes() {
-        this.#memtypetable.addRow({ memType: 'new-row', active: 'Y', sortorder: 99, uses: 0 }, false);
-    };
-
+        this.#memtypetable.addRow({memType: 'new-row', active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
+            console.log(row);
+            row.getTable().scrollToRow(row);
+        });
+    }
     saveTypesComplete(data, textStatus, jhXHR) {
         if ('error' in data && data['error'] != '') {
             showError(data['error']);
@@ -590,9 +592,11 @@ class memsetup {
     };
 
     addrowCat() {
-        this.#categorytable.addRow({ memCategory: 'new-row', badgeLabel: 'X', active: 'Y', sortorder: 99, uses: 0 }, false);
-    };
-
+        this.#categorytable.addRow({memCategory: 'new-row', badgeLabel: 'X', active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
+            console.log(row);
+            row.getTable().scrollToRow(row);
+        });
+    }
     saveCatComplete(data, textStatus, jhXHR) {
         if ('error' in data && data['error'] != '') {
             showError(data['error']);
@@ -690,9 +694,11 @@ class memsetup {
     };
 
     addrowCurAge() {
-        this.#curagetable.addRow({ conid: this.#current_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0 }, false);
-    };
-
+        this.#curagetable.addRow({conid: this.#current_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0}, false).then(function (row) {
+            console.log(row);
+            row.getTable().scrollToRow(row);
+        });
+    }
     saveCurAgeComplete(data, textStatus, jhXHR) {
         if ('error' in data && data['error'] != '') {
             showError(data['error']);
@@ -790,9 +796,12 @@ class memsetup {
         }
     };
 
-    addrowNextAge() {
-        this.#nextagetable.addRow({ conid: this.#next_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0 }, false);
-    };
+    addrowNextAge()  {
+        this.#nextagetable.addRow({conid: this.#next_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0}, false).then(function (row) {
+            console.log(row);
+            row.getTable().scrollToRow(row);
+        });
+    }
 
     saveNextAgeComplete(data, textStatus, jhXHR) {
         if ('error' in data && data['error'] != '') {
