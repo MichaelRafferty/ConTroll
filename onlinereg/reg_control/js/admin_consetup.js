@@ -493,10 +493,12 @@ class consetup {
     };
 
     addrowMemList() {
+        var _this = this;
+
         this.#memtable.addRow({ id: -99999, conid: this.#conid, shortname: 'new-row', price:0, atcon: 'N', online:'N', sortorder: 199, uses: 0 }, false).then(function(row) {
             row.getTable().scrollToRow(row);
+            _this.checkMemlistUndoRedo();
         });
-        this.checkMemlistUndoRedo();
     };
 
     memlist_rowMoved(row) {

@@ -397,13 +397,14 @@ class memsetup {
     }
 
     open() {
+        var _this = this;
         var script = "scripts/getMemberSetupData.php";
         $.ajax({
             url: script,
             method: 'POST',
             data: { type: 'all', },
             success: function (data, textStatus, jhXHR) {
-                mem.draw(data, textStatus, jhXHR);
+                _this.draw(data, textStatus, jhXHR);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -478,9 +479,10 @@ class memsetup {
     };
 
     addrowTypes() {
+        var _this = this;
         this.#memtypetable.addRow({memType: 'new-row', active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
             row.getTable().scrollToRow(row);
-            mem.checkTypeUndoRedo();
+            _this.checkTypeUndoRedo();
         });
     }
 
@@ -490,6 +492,8 @@ class memsetup {
         this.#memtype_redobtn.disabled = this.#memtypetable.getHistoryRedoSize() <= 0;
     }
     saveTypesComplete(data, textStatus, jhXHR) {
+        var _this = this;
+
         if ('error' in data && data['error'] != '') {
             showError(data['error']);
             this.#memtype_savebtn.innerHTML = "Save Changes*";
@@ -505,7 +509,7 @@ class memsetup {
             method: 'POST',
             data: { type: 'memType', },
             success: function (data, textStatus, jhXHR) {
-                mem.draw_memtype(data, textStatus, jhXHR);
+                _this.draw_memtype(data, textStatus, jhXHR);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -515,6 +519,8 @@ class memsetup {
     }
 
     saveTypes() {
+        var _this = this;
+
         if (this.#memtypetable != null) {
             var invalids = this.#memtypetable.validate();
             if (invalids !== true) {
@@ -539,7 +545,7 @@ class memsetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
-                    mem.saveTypesComplete(data, textStatus, jhXHR);
+                    _this.saveTypesComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -574,9 +580,11 @@ class memsetup {
     };
 
     addrowCat() {
+        var _this = this;
+
         this.#categorytable.addRow({memCategory: 'new-row', badgeLabel: 'X', active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
             row.getTable().scrollToRow(row);
-            mem.checkCatUndoRedo();
+            _this.checkCatUndoRedo();
         });
     }
     
@@ -588,6 +596,8 @@ class memsetup {
         return undosize;
     }
     saveCatComplete(data, textStatus, jhXHR) {
+        var _this = this;
+
         if ('error' in data && data['error'] != '') {
             showError(data['error']);
             this.#category_savebtn.innerHTML = "Save Changes*";
@@ -603,7 +613,7 @@ class memsetup {
             method: 'POST',
             data: { type: 'memCat', },
             success: function (data, textStatus, jhXHR) {
-                mem.draw_memcat(data, textStatus, jhXHR);
+                _this.draw_memcat(data, textStatus, jhXHR);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -613,6 +623,8 @@ class memsetup {
     }
 
     saveCat() {
+        var _this = this;
+
         if (this.#categorytable != null) {
             var invalids = this.#categorytable.validate();
             if (invalids !== true) {
@@ -637,7 +649,7 @@ class memsetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
-                    mem.saveCatComplete(data, textStatus, jhXHR);
+                    _this.saveCatComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -673,9 +685,11 @@ class memsetup {
     };
 
     addrowCurAge() {
+        var _this = this;
+
         this.#curagetable.addRow({conid: this.#current_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0}, false).then(function (row) {
             row.getTable().scrollToRow(row);
-            mem.checkCurageUndoRedo();
+            _this.checkCurageUndoRedo();
         });
     }
 
@@ -688,6 +702,8 @@ class memsetup {
     }
 
     saveCurAgeComplete(data, textStatus, jhXHR) {
+        var _this = this;
+
         if ('error' in data && data['error'] != '') {
             showError(data['error']);
             this.#curage_savebtn.innerHTML = "Save Changes*";
@@ -703,7 +719,7 @@ class memsetup {
             method: 'POST',
             data: { type: 'curage', },
             success: function (data, textStatus, jhXHR) {
-                mem.draw_curage(data, textStatus, jhXHR);
+                _this.draw_curage(data, textStatus, jhXHR);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -713,6 +729,8 @@ class memsetup {
     }
 
     saveCurAge() {
+        var _this = this;
+
         if (this.#curagetable != null) {
             var invalids = this.#curagetable.validate();
             if (invalids !== true) {
@@ -738,7 +756,7 @@ class memsetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
-                    mem.saveCurAgeComplete(data, textStatus, jhXHR);
+                    _this.saveCurAgeComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -773,9 +791,11 @@ class memsetup {
     };
 
     addrowNextAge()  {
+        var _this = this;
+
         this.#nextagetable.addRow({conid: this.#next_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0}, false).then(function (row) {
             row.getTable().scrollToRow(row);
-            mem.checkNextageUndoRedo();
+            _this.checkNextageUndoRedo();
         });
     }
 
@@ -788,6 +808,8 @@ class memsetup {
     }
     
     saveNextAgeComplete(data, textStatus, jhXHR) {
+        var _this = this;
+
         if ('error' in data && data['error'] != '') {
             showError(data['error']);
             this.#nextage_savebtn.innerHTML = "Save Changes*";
@@ -803,7 +825,7 @@ class memsetup {
             method: 'POST',
             data: { type: 'nextage', },
             success: function (data, textStatus, jhXHR) {
-                mem.draw_nextage(data, textStatus, jhXHR);
+                _this.draw_nextage(data, textStatus, jhXHR);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -813,6 +835,8 @@ class memsetup {
     }
 
     saveNextAge() {
+        var _this = this;
+
         if (this.#nextagetable != null) {
             var invalids = this.#nextagetable.validate();
             if (invalids !== true) {
@@ -838,7 +862,7 @@ class memsetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
-                    mem.saveNextAgeComplete(data, textStatus, jhXHR);
+                    _this.saveNextAgeComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     showError("ERROR in " + script + ": " + textStatus, jqXHR);
