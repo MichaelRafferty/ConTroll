@@ -137,7 +137,7 @@ function submitForm(formObj, formUrl, succFunc, errFunc) {
         data: postData,
         success: succFunc,
         error: function (JqXHR, textStatus, errorThrown) {
-            $('#test').empty().append(JSON.stringify(data, null, 2));
+            $('#test').empty().append(JSON.stringify(JqXHR));
         }
     });
 }
@@ -262,22 +262,19 @@ function showAjaxError(jqXHR, textStatus, errorThrown) {
     show_message(message, 'error');
 }
 
-function clear_message() {
-    show_message('', '');
+function clear_message(div='result_message') {
+    show_message('', '', div);
 }
 
-var message_div = null;
 // show_message:
 // apply colors to the message div and place the text in the div, first clearing any existing class colors
 // type:
 //  error: (white on red) bg-danger
 //  warn: (black on yellow-orange) bg-warning
 //  success: (white on green) bg-success
-function show_message(message, type) {
-    "use strict";
-    if (message_div === null ) {
-        message_div = document.getElementById('result_message');
-    }
+function show_message(message, type, div='result_message') {
+    var message_div = document.getElementById(div);
+
     if (message_div.classList.contains('bg-danger')) {
         message_div.classList.remove('bg-danger');
     }
