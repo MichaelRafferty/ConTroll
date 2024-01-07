@@ -121,15 +121,26 @@ if ($do_update) {
     $response['first_q'] = $query;
     $rows = dbSafeCmd($query, $types, $values);
 }
-
-$query2 = "UPDATE perinfo SET change_notes=CONCAT(change_notes, '<br/>', ?) WHERE id=?;";
+$errors = '';
+$perid = $_POST['oldID'];
+$newperid = $_POST['newID'];
+$query2 = "UPDATE perinfo SET change_notes=CONCAT(IFNULL(change_notes,''), '<br/>', ?) WHERE id=?;";
 $types = 'si';
-$values = array($changeLog, $_POST['oldID']);
+$values = array($changeLog, $id);
 $response['second_q'] = $query2;
 $rows = dbSafeCmd($query2, $types, $values);
+if ($rows === false || $rows != 1) {
+    $errors .= "Unable to add $changeLog to person $perid<br/>\n";
+}
 
-dbSafeCmd('UPDATE reg SET perid=? WHERE newperid=?;', 'ii', array($_POST['oldID'], $_POST['newID']));
-dbSafeCmd('UPDATE transaction SET perid=? WHERE newperid=?;', 'ii', array($_POST['oldID'], $_POST['newID']));
+$rows = dbSafeCmd('UPDATE reg SET perid=? WHERE newperid=?;', 'ii', array($perid, $newperid));
+if ($rows === false) {
+    $errors .= "Unable to update reg entires for newperson $newperid to person $perid<br/>\n";
+}
+$rows = dbSafeCmd('UPDATE transaction SET perid=? WHERE newperid=?;', 'ii', array($perid, $newperid));
+if ($rows === false || $rows != 1) {
+    $errors .= "Unable to update transaction entire for newperson $newperid to person $perid<br/>\n";
+}
 
 $response['changeLog'] = $changeLog;
 
