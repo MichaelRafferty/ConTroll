@@ -46,6 +46,7 @@ server="https://reg.conname.org/"
 rollover_eligible="'upgrade', 'rollover', 'freebie', 'standard', 'yearahead', 'discount'"
 [debug]
 google=0 ; to enable google debug statements (1=enable, 0=disable)
+reg_control_admin=0 ; to enable reg_contol admin tab debug statement (1=enable, 0=disable)
 [reg]
 https=1
 test=0

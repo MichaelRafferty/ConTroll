@@ -44,27 +44,21 @@ class memsetup {
             this.#memtype_savebtn.disabled = false;
             this.#memtype_dirty = true;
         }
-        if (this.#memtypetable.getHistoryUndoSize() > 0) {
-            this.#memtype_undobtn.disabled = false;
-        }
+        this.checkTypeUndoRedo();
     };
 
     memtype_rowMoved(row) {
         this.#memtype_savebtn.innerHTML = "Save Changes*";
         this.#memtype_savebtn.disabled = false;
         this.#memtype_dirty = true;
-        if (this.#memtypetable.getHistoryUndoSize() > 0) {
-            this.#memtype_undobtn.disabled = false;
-        }
+        this.checkTypeUndoRedo();
     }
 
     category_rowMoved(row) {
         this.#category_savebtn.innerHTML = "Save Changes*";
         this.#category_savebtn.disabled = false;
         this.#category_dirty = true;
-        if (this.#memtypetable.getHistoryUndoSize() > 0) {
-            this.#category_undobtn.disabled = false;
-        }
+        this.checkCatUndoRedo();
     }
 
     category_dataChanged(data) {
@@ -74,9 +68,7 @@ class memsetup {
             this.#category_savebtn.disabled = false;
             this.#category_dirty = true;
         }
-        if (this.#categorytable.getHistoryUndoSize() > 0) {
-            this.#category_undobtn.disabled = false;
-        }
+        this.checkCatUndoRedo();
     };
 
     curage_dataChanged(data) {
@@ -86,18 +78,14 @@ class memsetup {
             this.#curage_savebtn.disabled = false;
             this.#curage_dirty = true;
         }
-        if (this.#curagetable.getHistoryUndoSize() > 0) {
-            this.#curage_undobtn.disabled = false;
-        }
+        this.checkCurageUndoRedo();
     };
 
     curage_rowMoved(row) {
         this.#curage_savebtn.innerHTML = "Save Changes*";
         this.#curage_savebtn.disabled = false;
         this.#curage_dirty = true;
-        if (this.#curagetable.getHistoryUndoSize() > 0) {
-            this.#curage_undobtn.disabled = false;
-        }
+        this.checkCurageUndoRedo();
     }
 
     nextage_dataChanged(data) {
@@ -107,18 +95,14 @@ class memsetup {
             this.#nextage_savebtn.disabled = false;
             this.#nextage_dirty = true;
         }
-        if (this.#nextagetable.getHistoryUndoSize() > 0) {
-            this.#nextage_undobtn.disabled = false;
-        }
+        this.checkNextageUndoRedo();
     };
 
     nextage_rowMoved(row) {
         this.#nextage_savebtn.innerHTML = "Save Changes*";
         this.#nextage_savebtn.disabled = false;
         this.#nextage_dirty = true;
-        if (this.#nextagetable.getHistoryUndoSize() > 0) {
-            this.#nextage_undobtn.disabled = false;
-        }
+        this.checkNextageUndoRedo();
     }
 
     draw(data, textStatus, jhXHR) {
@@ -488,8 +472,10 @@ class memsetup {
 
     // set undo / redo status for mem type buttons
     checkTypeUndoRedo() {
-        this.#memtype_undobtn.disabled = this.#memtypetable.getHistoryUndoSize() <= 0;
+        var undosize = this.#memtypetable.getHistoryUndoSize();
+        this.#memtype_undobtn.disabled = undosize <= 0;
         this.#memtype_redobtn.disabled = this.#memtypetable.getHistoryRedoSize() <= 0;
+        return undosize;
     }
     saveTypesComplete(data, textStatus, jhXHR) {
         var _this = this;

@@ -390,18 +390,12 @@ class consetup {
         if (this.#contable != null) {
             this.#contable.undo();
 
-            var undoCount = this.#contable.getHistoryUndoSize();
-            if (undoCount <= 0) {
-                this.#conlist_undobtn.disabled = true;
+            if (this.checkConlistUndoRedo() <= 0) {
                 this.#conlist_dirty = false;
                 if (this.#proposed == ' ') {
                     this.#conlist_savebtn.innerHTML = "Save Changes";
                     this.#conlist_savebtn.disabled = true;
                 }
-            }
-            var redoCount = this.#contable.getHistoryRedoSize();
-            if (redoCount > 0) {
-                this.#conlist_redobtn.disabled = false;
             }
         }
     };
@@ -410,16 +404,10 @@ class consetup {
         if (this.#contable != null) {
             this.#contable.redo();
 
-            var undoCount = this.#contable.getHistoryUndoSize();
-            if (undoCount > 0) {
-                this.#conlist_undobtn.disabled = false;
+            if (this.checkConlistUndoRedo() > 0) {
                 this.#conlist_dirty = true;
                 this.#conlist_savebtn.innerHTML = "Save Changes*";
                 this.#conlist_savebtn.disabled = false;
-            }
-            var redoCount = this.#contable.getHistoryRedoSize();
-            if (redoCount <= 0) {
-                this.#conlist_redobtn.disabled = true;
             }
         }
     };
@@ -428,18 +416,12 @@ class consetup {
         if (this.#memtable != null) {
             this.#memtable.undo();
 
-            var undoCount = this.#memtable.getHistoryUndoSize();
-            if (undoCount <= 0) {
-                this.#memlist_undobtn.disabled = true;
+            if (this.checkMemlistUndoRedo() <= 0) {
                 this.#memlist_dirty = false;
                 if (this.#proposed == ' ') {
                     this.#memlist_savebtn.innerHTML = "Save Changes";
                     this.#memlist_savebtn.disabled = true;
                 }
-            }
-            var redoCount = this.#memtable.getHistoryRedoSize();
-            if (redoCount > 0) {
-                this.#memlist_redobtn.disabled = false;
             }
         }
     };
@@ -448,16 +430,10 @@ class consetup {
         if (this.#memtable != null) {
             this.#memtable.redo();
 
-            var undoCount = this.#memtable.getHistoryUndoSize();
-            if (undoCount > 0) {
-                this.#memlist_undobtn.disabled = false;
+            if (this.checkMemlistUndoRedo() > 0) {
                 this.#memlist_dirty = true;
                 this.#memlist_savebtn.innerHTML = "Save Changes*";
                 this.#memlist_savebtn.disabled = false;
-            }
-            var redoCount = this.#memtable.getHistoryRedoSize();
-            if (redoCount <= 0) {
-                this.#memlist_redobtn.disabled = true;
             }
         }
     };
@@ -465,15 +441,7 @@ class consetup {
     undoBreakList() {
         if (this.#breaktable != null) {
             this.#breaktable.undo();
-
-            var undoCount = this.#breaktable.getHistoryUndoSize();
-            if (undoCount <= 0) {
-                this.#breaklist_undobtn.disabled = true;
-            }
-            var redoCount = this.#breaktable.getHistoryRedoSize();
-            if (redoCount > 0) {
-                this.#breaklist_redobtn.disabled = false;
-            }
+            this.checkBreaklistUndoRedo();
         }
     };
 
@@ -481,14 +449,7 @@ class consetup {
         if (this.#breaktable != null) {
             this.#breaktable.redo();
 
-            var undoCount = this.#breaktable.getHistoryUndoSize();
-            if (undoCount > 0) {
-                this.#breaklist_undobtn.disabled = false;       
-            }
-            var redoCount = this.#breaktable.getHistoryRedoSize();
-            if (redoCount <= 0) {
-                this.#breaklist_redobtn.disabled = true;
-            }
+            this.checkBreaklistUndoRedo();
         }
     };
 
@@ -505,12 +466,7 @@ class consetup {
         this.#memlist_savebtn.innerHTML = "Save Changes*";
         this.#memlist_savebtn.disabled = false;
         this.#memlist_dirty = true;
-        if (this.#memtable.getHistoryUndoSize() > 0) {
-            this.#memlist_undobtn.disabled = false;
-        }
-        if (this.#memtable.getHistoryRedoSize() > 0) {
-            this.#memlist_redobtn.disabled = false;
-        }
+        this.checkMemlistUndoRedo();
     }
 
     saveConlistComplete(data, textStatus, jhXHR) {        

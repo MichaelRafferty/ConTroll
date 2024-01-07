@@ -3,6 +3,12 @@ next = null;
 mem = null;
 vendor = null;
 merge = null;
+conid = null;
+// debug meaning
+//  1 = console.logs
+//  2 = show hidden table fields
+//  4 = show hidden div
+debug = 0;
 var add_modal = null;
 var add_result_table = null;
 var add_pattern_field = null;
@@ -17,13 +23,24 @@ window.onload = function initpage() {
         add_modal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
         add_pattern_field = document.getElementById("add_name_search");
         add_pattern_field.addEventListener('keyup', (e) => {
-            if (e.code === 'Enter') add_find('search');
+            if (e.code === 'Enter') add_find();
         });
         id.addEventListener('shown.bs.modal', () => {
             add_pattern_field.focus()
         });
         addTitle = document.getElementById('addTitle');
         addName = document.getElementById('addName');
+    }
+    id = document.getElementById("parameters");
+    if (id != null) {
+        var dfield = document.getElementById("debug");
+        if (dfield) dfield = dfield.innerHTML;
+        if (dfield && dfield != '') debug = Number(dfield);
+        dfield = document.getElementById("conid");
+        if (dfield) dfield = dfield.innerHTML;
+        if (dfield && dfield != '') conid = Number(dfield);
+
+        if (debug & 4) id.hidden = false;
     }
 }
 
@@ -75,17 +92,17 @@ function updatePerid(id, email) {
 
 // get the list of people for the match
 function add_find() {
-    clear_message();
+    clear_message('result_message_user');
     var name_search = document.getElementById('add_name_search').value.toLowerCase().trim();
     if (name_search == null || name_search == '')  {
-        show_message("No search criteria specified", "warn");
+        show_message("No search criteria specified", "warn", 'result_message_user');
         return;
     }
 
     // search for matching names
     $("button[name='addSearch']").attr("disabled", true);
     test.innerHTML = '';
-    clear_message();
+    clear_message('result_message_user');
     if (add_result_table) {
         add_result_table.destroy();
         add_result_table = null;
@@ -99,14 +116,14 @@ function add_find() {
         success: function (data, textstatus, jqxhr) {
             $("button[name='mergeSearch']").attr("disabled", false);
             if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+                show_message(data['error'], 'error', 'result_message_user');
                 return;
             }
             if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
+                show_message(data['message'], 'success', 'result_message_user');
             }
             if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
+                show_message(data['warn'], 'warn', 'result_message_user');
             }
             add_found(data);
         },
@@ -264,7 +281,7 @@ function settab(tabname) {
             if (merge != null)
                 merge.close();
             if (vendor == null)
-                vendor = new vendorsetup();
+                vendor = new vendorsetup(conid, debug);
             vendor.open();
             break;
         case 'merge-pane':
@@ -285,7 +302,6 @@ function settab(tabname) {
     }
 }
 function cellChanged(cell) {
-
     dirty = true;
     cell.getElement().style.backgroundColor = "#fff3cd";
 }

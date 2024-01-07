@@ -87,7 +87,7 @@ EOS;
         $updsql = <<<EOS
 UPDATE ageList
 SET ageType = ?, label = ?, shortname = ?, badgeFlag = ?, sortorder = ?
-WHERE ageType = ? and conid = ?
+WHERE ageType = ? and conid = ?;
 EOS;
 
         // now the updates, do the updates first in case we need to insert a new row with the same older key
@@ -130,7 +130,7 @@ EOS;
         $updsql = <<<EOS
 UPDATE memTypes
 SET  memType = ?, active=?, sortorder=?
-WHERE memType = ?
+WHERE memType = ?;
 EOS;
         // now the updates, do the updates first in case we need to insert a new row with the same older key
         foreach ($data as $row) {
