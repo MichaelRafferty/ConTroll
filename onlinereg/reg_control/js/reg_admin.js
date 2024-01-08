@@ -339,6 +339,7 @@ function draw_stats(data) {
     couponfilter = [];
 }
 
+// display actions as buttons in a cell for this membership
 function actionbuttons(cell, formatterParams, onRendered) {
     var data = cell.getData();
     var category = data['category'];

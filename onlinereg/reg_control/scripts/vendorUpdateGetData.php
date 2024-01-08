@@ -102,9 +102,9 @@ EOS;
                 if ($row['to_delete'] == 1)
                     continue;
             }
-            if (array_key_exists('regionTypeKey', $row)) { // if key is there, it's an update
+            if (array_key_exists($keyfield, $row)) { // if key is there, it's an update
                 $numrows = dbSafeCmd($updsql, 'sssssiss', array($row['regionType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'], $row['purchaseAreaTotals'],
-                    $row['mailinAllowed'], $row['sortorder'], $row['active'],$row['regionTypeKey']));
+                    $row['mailinAllowed'], $row['sortorder'], $row['active'],$row[$keyfield]));
                 $updated += $numrows;
             }
         }
@@ -115,7 +115,7 @@ EOS;
                 if ($row['to_delete'] == 1)
                     continue;
             }
-            if (!array_key_exists('regionTypeKey', $row)) { // if key is not there, it is an insert
+            if (!array_key_exists($keyfield, $row)) { // if key is not there, it is an insert
                 $numrows = dbSafeInsert($inssql, 'sssssis', array($row['regionType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'], $row['purchaseAreaTotals'],
                     $row['mailinAllowed'], $row['sortorder'], $row['active']));
                 if ($numrows !== false)
@@ -125,8 +125,62 @@ EOS;
         $response['message'] = "$tablename updated: $inserted added, $updated changed, $deleted removed.";
         break;
 
+    case 'regions':
+        if ($delete_keys != '') {
+            $delsql = "DELETE FROM vendorRegions WHERE id in ( $delete_keys );";
+            web_error_log("Delete sql = /$delsql/");
+            $deleted += dbCmd($delsql);
+        }
+        $inssql = <<<EOS
+INSERT INTO vendorRegions(regionType, shortname, name, description, sortorder)
+VALUES(?,?,?,?,?);
+EOS;
+        $updsql = <<<EOS
+UPDATE vendorRegions
+SET regionType = ?, shortname = ?, name = ?, description = ?, sortorder = ?
+WHERE id = ?;
+EOS;
+
+        // now the updates, do the updates first in case we need to insert a new row with the same older key
+        foreach ($data as $row ) {
+            if (array_key_exists('to_delete', $row)) {
+                if ($row['to_delete'] == 1)
+                    continue;
+            }
+            if (array_key_exists($keyfield, $row)) { // if key is there, it's an update
+                if (array_key_exists('description', $row)) {
+                    $description = $row['description'];
+                } else {
+                    $description = null;
+                }
+                $numrows = dbSafeCmd($updsql, 'ssssii', array($row['regionType'], $row['shortname'], $row['name'], $description, $row['sortorder'], $row[$keyfield]));
+                $updated += $numrows;
+            }
+        }
+
+        // now the inserts, do the inserts last in case we need to insert a new row with the same older key
+        foreach ($data as $row) {
+            if (array_key_exists('to_delete', $row)) {
+                if ($row['to_delete'] == 1)
+                    continue;
+            }
+            if (!array_key_exists($keyfield, $row)) { // if key is not there, it is an insert
+                if (array_key_exists('description', $row)) {
+                    $description = $row['description'];
+                } else {
+                    $description = null;
+                }
+                $numrows = dbSafeInsert($inssql, 'ssssi', array($row['regionType'], $row['shortname'], $row['name'],  $description, $row['sortorder']));
+                if ($numrows !== false)
+                    $inserted++;
+            }
+        }
+        $response['message'] = "$tablename updated: $inserted added, $updated changed, $deleted removed.";
+        break;
+
     default:
-        $response['error'] = "Cannot yet handle updating $tablename";
+        $response['message'] = "Cannot yet handle updating $tablename";
+        $response['error'] = '';
         ajaxSuccess($response);
         exit();
 }
@@ -153,7 +207,7 @@ EOS;
 // get all the vendor regions
 if ($gettype == 'all' || str_contains($gettype, 'regions')) {
     $vendorRegionsQ = <<<EOS
-SELECT vr.*, COUNT(vry.vendorRegion) uses
+SELECT vr.*, vr.id AS regionKey, COUNT(vry.vendorRegion) uses
 FROM vendorRegions vr
 LEFT OUTER JOIN vendorRegionYears vry ON (vr.id = vry.vendorRegion)
 GROUP BY vr.id, vr.sortorder
@@ -172,7 +226,7 @@ EOS;
 // get the vendor regions configured for this year
 if ($gettype == 'all' || str_contains($gettype, 'years')) {
     $vendorRegionYearsQ = <<<EOS
-SELECT vry.*, COUNT(vs.vendorRegionYear) uses 
+SELECT vry.*, vry.id AS yearKey, COUNT(vs.vendorRegionYear) uses 
 FROM vendorRegionYears vry
 LEFT OUTER JOIN vendorSpaces vs ON (vs.vendorRegionYear = vry.id)
 WHERE vry.conid = ?
@@ -192,7 +246,7 @@ EOS;
 // get the vendor spaces
 if ($gettype == 'all' || str_contains($gettype, 'spaces')) {
     $vendorSpacesQ = <<<EOS
-SELECT vs.*, COUNT(vsp.id) uses 
+SELECT vs.*, vs.id AS spaceKey, COUNT(vsp.id) uses 
 FROM vendorRegionYears vry
 JOIN vendorSpaces vs ON (vs.vendorRegionYear = vry.id)
 LEFT OUTER JOIN vendorSpacePrices vsp ON (vsp.spaceId = vs.id)
@@ -213,7 +267,7 @@ EOS;
 // now the prices for those spaces
 if ($gettype == 'all' || str_contains($gettype, 'prices')) {
     $vendorSpacePricesQ = <<<EOS
-SELECT vsp.*, COUNT(vspur.item_requested) + COUNT(vsapp.item_approved) + COUNT(vspur.item_purchased) AS uses
+SELECT vsp.*, vsp.id AS priceKey, COUNT(vspur.item_requested) + COUNT(vsapp.item_approved) + COUNT(vspur.item_purchased) AS uses
 FROM vendorRegionYears vry
 JOIN vendorSpaces vs ON (vs.vendorRegionYear = vry.id)
 JOIN vendorSpacePrices vsp ON (vs.id = vsp.spaceId)

@@ -16,6 +16,7 @@ var addTitle = null;
 var addName = null;
 var addType = null;
 var fixUserid = null;
+editor_modal = null;
 
 window.onload = function initpage() {
     var id = document.getElementById('user-lookup');
@@ -31,6 +32,11 @@ window.onload = function initpage() {
         addTitle = document.getElementById('addTitle');
         addName = document.getElementById('addName');
     }
+    id = document.getElementById('tinymce-modal');
+    if (id != null) {
+        editor_modal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+    }
+
     id = document.getElementById("parameters");
     if (id != null) {
         var dfield = document.getElementById("debug");

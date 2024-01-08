@@ -197,6 +197,21 @@ class vendorsetup {
         this.#regionundobtn = document.getElementById('regions-undo');
         this.#regionredobtn = document.getElementById('regions-redo');
 
+        // set up Years
+        this.#regionYearsavebtn = document.getElementById('years-save');
+        this.#regionYearundobtn = document.getElementById('years-undo');
+        this.#regionYearredobtn = document.getElementById('years-redo');
+
+        // set up Spaces
+        this.#spacesavebtn = document.getElementById('spaces-save');
+        this.#spaceundobtn = document.getElementById('spaces-undo');
+        this.#spaceredobtn = document.getElementById('spaces-redo');
+
+        // set up spacePrices
+        this.#spacePricesavebtn = document.getElementById('spacePrices-save');
+        this.#spacePriceundobtn = document.getElementById('spacePrices-undo');
+        this.#spacePriceredobtn = document.getElementById('spacePrices-redo');
+
         // get initial data
         clear_message();
         clearError();
@@ -265,6 +280,30 @@ class vendorsetup {
     settab(tabname) {
         clearError();
         clear_message();
+    }
+
+    // editDesc - use tinymce to edit a description
+    editDesc(table, field, index) {
+        editor_modal.show();
+        tinyMCE.init({
+            selector: 'textarea#editFieldArea',
+            height: 800,
+            min_height: 400,
+            plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
+            toolbar:  [ 'help nonbreaking charmap numlist bulllist link image searchreplace fullscreen preview', ],
+            content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
+            placeholder: 'Edit the description here...'
+        });
+    }
+
+    // display edit button for a long field
+    editbutton(cell, formatterParams, onRendered) {
+        var index = cell.getRow().getIndex();
+        if (index > 0) {
+            return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="vendor.editDesc(\'' +
+                formatterParams['table'] + '\', \'' + formatterParams['field'] + '\', ' + index + ');">Edit Desc</button>';
+        }
+        return "Save First";
     }
 
     // draw - draw screen for editing
@@ -422,7 +461,7 @@ class vendorsetup {
                         deleterow(e, cell.getRow());
                     }
                 },
-                {field: "to_delete", visible: false,}
+                {title: "To Del", field: "to_delete", visible: this.#debugVisible,}
             ],
         });
         this.#regionTypeTable.on("dataChanged", function (data) {
@@ -480,14 +519,16 @@ class vendorsetup {
                     editor: "input", editorParams: {elementAttributes: {maxlength: "128"}}, validator: "required"
                 },
                 {title: "Description", field: "description", headerFilter: true, width: 450, headerSort: false,},
+                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'regions', field: 'description' }, hozAlign:"left", headerSort: false },
+                {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
+                {title: "Orig Key", field: "regionKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
-                    title: 'Included', field: "includedMemId", width: 150, headerSort: false,
-                    editor: "list", formatter: "lookup", formatterParams: this.#memListArr, editorParams: {values: this.#memListArr}
+                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
+                    cellClick: function (e, cell) {
+                        deleterow(e, cell.getRow());
+                    }
                 },
-                {
-                    title: 'Additional', field: "additionalMemId", width: 150, headerSort: false,
-                    editor: "list", formatter: "lookup", formatterParams: this.#memListArr, editorParams: {values: this.#memListArr}
-                }
+                {title: "To Del", field: "to_delete", visible: this.#debugVisible,}
             ],
         });
         this.#regionsTable.on("dataChanged", function (data) {
@@ -647,6 +688,8 @@ class vendorsetup {
         });
     }
 
+    //// Processing functions for regionTypes
+
     dataChangedTypes(data) {
         //data - the updated table data
         if (!this.#regionTypedirty) {
@@ -710,8 +753,8 @@ class vendorsetup {
     saveTypesComplete(data, textStatus, jhXHR) {
         var _this = this;
 
-        if ('error' in data && data['error'] != '') {
-            if (this.#debug)
+        if ('error' in data) {
+            if (data['error'] != '' && this.#debug)
                 showError(data['error']);
             if (data['message']) {
                 show_message(data['message'], 'error');
@@ -732,13 +775,13 @@ class vendorsetup {
     }
 
     saveTypes() {
-        if (this.#regionTypeTable != null) {
+        if (this.#regionsTable != null) {
             var _this = this;
 
             var invalids = this.#regionTypeTable.validate();
             if (invalids !== true) {
                 console.log(invalids);
-                alert("spaceType Table does not pass validation, please check for empty cells or cells in red");
+                show_message("spaceType Table does not pass validation, please check for empty cells or cells outlined in red", 'error');
                 return false;
             }
             this.#regionTypesavebtn.innerHTML = "Saving...";
@@ -761,6 +804,130 @@ class vendorsetup {
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
                     _this.saveTypesComplete(data, textStatus, jhXHR);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                    return false;
+                }
+            });
+        }
+    }
+
+    //// Processing functions for regions
+    dataChangedRegions(data) {
+        //data - the updated table data
+        if (!this.#regiondirty) {
+            this.#regionsavebtn.innerHTML = "Save Changes*";
+            this.#regionsavebtn.disabled = false;
+            this.#regiondirty = true;
+        }
+        this.checkRegionsUndoRedo();
+    };
+
+    rowMovedRegions(row) {
+        this.#regionsavebtn.innerHTML = "Save Changes*";
+        this.#regionsavebtn.disabled = false;
+        this.#regionTypedirty = true;
+        this.checkRegionsUndoRedo();
+    }
+
+    // unbutton for region
+    undoRegions() {
+        if (this.#regionsTable != null) {
+            this.#regionsTable.undo();
+
+            if (this.checkRegionsUndoRedo() <= 0) {
+                this.#regionTypedirty = false;
+                this.#regionsavebtn.innerHTML = "Save Changes";
+                this.#regionsavebtn.disabled = true;
+            }
+        }
+    };
+
+    // rebutton for region
+    redoRegions() {
+        if (this.#regionsTable != null) {
+            this.#regionsTable.redo();
+
+            if (this.checkRegionsUndoRedo() > 0) {
+                this.#regionTypedirty = true;
+                this.#regionsavebtn.innerHTML = "Save Changes*";
+                this.#regionsavebtn.disabled = false;
+            }
+        }
+    };
+
+    // add row to Regions table and scroll to that new row
+    addrowRegions() {
+        var _this = this;
+        this.#regionsTable.addRow({ sortorder: 99, uses: 0}, false).then(function (row) {
+            row.getTable().scrollToRow(row);
+            _this.checkRegionsUndoRedo();
+        });
+    }
+
+    // set undo / redo status for vendor type buttons
+    checkRegionsUndoRedo() {
+        var undosize = this.#regionsTable.getHistoryUndoSize();
+        this.#regionTypeundobtn.disabled = undosize <= 0;
+        this.#regionTyperedobtn.disabled = this.#regionsTable.getHistoryRedoSize() <= 0;
+        return undosize;
+    }
+
+    saveRegionsComplete(data, textStatus, jhXHR) {
+        var _this = this;
+
+        if ('error' in data) {
+            if (this.#debug)
+                showError(data['error']);
+            if (data['message']) {
+                show_message(data['message'], 'error');
+            }
+            this.#regionsavebtn.innerHTML = "Save Changes*";
+            this.#regionsavebtn.disabled = false;
+            return false;
+        }
+        if (data['message'] !== undefined) {
+            show_message(data['message'], 'success');
+        }
+        if (data['warn'] !== undefined) {
+            show_message(data['warn'], 'warn');
+        }
+        this.#regionsavebtn.innerHTML = "Save Changes";
+        this.#regionsavebtn.disabled = true;
+        this.draw(data);
+    }
+
+    saveRegions() {
+        if (this.#regionsTable != null) {
+            var _this = this;
+
+            var invalids = this.#regionsTable.validate();
+            if (invalids !== true) {
+                console.log(invalids);
+                show_message("spaceType Table does not pass validation, please check for empty cells or cells outlined in red", 'error');
+                return false;
+            }
+            this.#regionsavebtn.innerHTML = "Saving...";
+            this.#regionsavebtn.disabled = true;
+
+            var script = "scripts/vendorUpdateGetData.php";
+
+            clear_message();
+            clearError();
+            var postdata = {
+                tabledata: JSON.stringify(this.#regionsTable.getData()),
+                tablename: "regions",
+                gettype: "regions,years",
+                indexcol: "regionKey"
+            };
+            //console.log(postdata);
+            $.ajax({
+                url: script,
+                method: 'POST',
+                data: postdata,
+                success: function (data, textStatus, jhXHR) {
+                    _this.saveRegionsComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     showError("ERROR in " + script + ": " + textStatus, jqXHR);

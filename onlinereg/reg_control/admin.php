@@ -17,6 +17,7 @@ page_init($page,
                    ),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
                     'https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js',
+                    'js/tinymce/tinymce.min.js',
                     'js/base.js',
                     'js/admin.js',
                     'js/admin_consetup.js',
@@ -43,6 +44,7 @@ if (array_key_exists('user_id', $_SESSION)) {
     <div id="debug"><?php echo $debug_admin; ?></div>
     <div id="conid"><?php echo $conid; ?></div>
 </div>
+<?php bs_tinymceModal(); ?>
 <div id='user-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Lookup Person to Add as User' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
