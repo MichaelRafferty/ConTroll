@@ -566,7 +566,7 @@ class vendorsetup {
             this.#regionYearsTable.destroy();
         }
         
-        if (data['vendorRegionsYears']) {
+        if (data['vendorRegionYears']) {
             this.#regionYears = data['vendorRegionYears'];
         }
 
@@ -580,8 +580,9 @@ class vendorsetup {
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false,},
                 {title: "Conid", field: "conid", width: 60, hozAlign: "right", headerSort: false,},
                 {
-                    title: "Vendor Space", field: "vendorSpace", headerSort: true, width: 100, headerFilter: true, headerFilterParams: {values: this.regionListArr},
-                    editor: "list", editorParams: {values: this.#regionListArr}, validator: "required"
+                    title: "Vendor Region", field: "vendorRegion", headerSort: true, width: 100, headerWordWrap: true, headerFilter: true, headerFilterParams: {values: this.#regionListArr},
+                    editor: "list", editorParams: {values: this.#regionListArr}, validator: "required",
+                    formatter: "lookup", formatterParams: this.#regionListArr, editorParams: { values: this.#regionListArr },
                 },
                 {
                     title: "Owner Name", field: "ownerName", headerSort: true, headerFilter: true, width: 250,
@@ -591,8 +592,31 @@ class vendorsetup {
                     title: "Owner Email", field: "ownerEmail", width: 250, headerSort: true, headerFilter: true,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
                 },
+                { title: 'Included', field: "includedMemId", width: 150, headerSort: false,
+                    editor: "list", formatter:"lookup", formatterParams: this.#memListArr, editorParams: { values: this.#memListArr }
+                },
+                { title: 'Additional', field: "additionalMemId", width: 150, headerSort: false,
+                    editor: "list", formatter:"lookup", formatterParams: this.#memListArr, editorParams: { values: this.#memListArr  }
+                },
+                {title: 'Total Units Avail', field: "totalUnitsAvailable", width: 60, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "input", editorParams: {maxlength: "10"}},
+                {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
+                {title: "Orig Key", field: "regionYearKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
+                {
+                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
+                    cellClick: function (e, cell) {
+                        deleterow(e, cell.getRow());
+                    }
+                },
+                {title: "To Del", field: "to_delete", visible: this.#debugVisible,}
             ],
         });
+        this.#regionYearsTable.on("dataChanged", function (data) {
+            _this.dataChangedYears(data);
+        });
+        this.#regionYearsTable.on("rowMoved", function (row) {
+            _this.rowMovedYears(row)
+        });
+        this.#regionYearsTable.on("cellEdited", cellChanged);
     }
 
     // draw spaces table
@@ -638,7 +662,7 @@ class vendorsetup {
                     editor: "input", editorParams: {elementAttributes: {maxlength: "128"}}, validator: "required"
                 },
                 {title: "Description", field: "description", headerFilter: true, width: 450, headerSort: false,},
-                {title: 'Units', field: "unitsAvailable", width: 60, hozAlign: "right", headerSort: false, editor: "input", editorParams: {maxlength: "10"}},
+                {title: 'Units', field: "unitsAvailable", width: 60, hozAlign: "right", headerSort: false, editor: "number", editorParams: {min:0, max:9999999}},
             ],
         });
     }
@@ -751,7 +775,7 @@ class vendorsetup {
     // add row to types table and scroll to that new row
     addrowTypes() {
         var _this = this;
-        this.#regionTypeTable.addRow({spaceType: 'new-row', active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
+        this.#regionTypeTable.addRow({regionType: 'new-row', active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
             row.getTable().scrollToRow(row);
             _this.checkTypesUndoRedo();
         });
@@ -796,7 +820,7 @@ class vendorsetup {
             var invalids = this.#regionTypeTable.validate();
             if (invalids !== true) {
                 console.log(invalids);
-                show_message("spaceType Table does not pass validation, please check for empty cells or cells outlined in red", 'error');
+                show_message("Region Type Table does not pass validation, please check for empty cells or cells outlined in red", 'error');
                 return false;
             }
             this.#regionTypesavebtn.innerHTML = "Saving...";
@@ -920,7 +944,7 @@ class vendorsetup {
             var invalids = this.#regionsTable.validate();
             if (invalids !== true) {
                 console.log(invalids);
-                show_message("spaceType Table does not pass validation, please check for empty cells or cells outlined in red", 'error');
+                show_message("Regions Table does not pass validation, please check for empty cells or cells outlined in red", 'error');
                 return false;
             }
             this.#regionsavebtn.innerHTML = "Saving...";
@@ -950,5 +974,130 @@ class vendorsetup {
                 }
             });
         }
+    }
+
+    //// Processing functions for regionYears
+
+    dataChangedYears(data) {
+        //data - the updated table data
+        if (!this.#regionYeardirty) {
+            this.#regionYearsavebtn.innerHTML = "Save Changes*";
+            this.#regionYearsavebtn.disabled = false;
+            this.#regionYeardirty = true;
+        }
+        this.checkYearsUndoRedo();
     };
+
+    rowMovedYears(row) {
+        this.#regionYearsavebtn.innerHTML = "Save Changes*";
+        this.#regionYearsavebtn.disabled = false;
+        this.#regionYeardirty = true;
+        this.checkYearsUndoRedo();
+    }
+
+    // unbutton for regionYears
+    undoYears() {
+        if (this.#regionYearsTable != null) {
+            this.#regionYearsTable.undo();
+
+            if (this.checkYearsUndoRedo() <= 0) {
+                this.#regionYeardirty = false;
+                this.#regionYearsavebtn.innerHTML = "Save Changes";
+                this.#regionYearsavebtn.disabled = true;
+            }
+        }
+    };
+
+    // rebutton for regionYears
+    redoYears() {
+        if (this.#regionYearsTable != null) {
+            this.#regionYearsTable.redo();
+
+            if (this.checkYearsUndoRedo() > 0) {
+                this.#regionYeardirty = true;
+                this.#regionYearsavebtn.innerHTML = "Save Changes*";
+                this.#regionYearsavebtn.disabled = false;
+            }
+        }
+    };
+
+    // add row to Years table and scroll to that new row
+    addrowYears() {
+        var _this = this;
+        this.#regionYearsTable.addRow({ownerName: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
+            row.getTable().scrollToRow(row);
+            _this.checkYearsUndoRedo();
+        });
+    }
+
+    // set undo / redo status for vendor type buttons
+    checkYearsUndoRedo() {
+        var undosize = this.#regionYearsTable.getHistoryUndoSize();
+        this.#regionYearundobtn.disabled = undosize <= 0;
+        this.#regionYearredobtn.disabled = this.#regionYearsTable.getHistoryRedoSize() <= 0;
+        return undosize;
+    }
+
+    saveYearsComplete(data, textStatus, jhXHR) {
+        var _this = this;
+
+        if ('error' in data) {
+            if (data['error'] != '' && this.#debug)
+                showError(data['error']);
+            if (data['message']) {
+                show_message(data['message'], 'error');
+            }
+            this.#regionYearsavebtn.innerHTML = "Save Changes*";
+            this.#regionYearsavebtn.disabled = false;
+            return false;
+        }
+        if (data['message'] !== undefined) {
+            show_message(data['message'], 'success');
+        }
+        if (data['warn'] !== undefined) {
+            show_message(data['warn'], 'warn');
+        }
+        this.#regionYearsavebtn.innerHTML = "Save Changes";
+        this.#regionYearsavebtn.disabled = true;
+        this.draw(data);
+    }
+
+    saveYears() {
+        if (this.#regionsTable != null) {
+            var _this = this;
+
+            var invalids = this.#regionYearsTable.validate();
+            if (invalids !== true) {
+                console.log(invalids);
+                show_message("Region Years Table does not pass validation, please check for empty cells or cells outlined in red", 'error');
+                return false;
+            }
+            this.#regionYearsavebtn.innerHTML = "Saving...";
+            this.#regionYearsavebtn.disabled = true;
+
+            var script = "scripts/vendorUpdateGetData.php";
+
+            clear_message();
+            clearError();
+            var postdata = {
+                tabledata: JSON.stringify(this.#regionYearsTable.getData()),
+                tablename: "regionYears",
+                gettype: "years,spaces",
+                indexcol: "regionYearKey"
+            };
+            //console.log(postdata);
+            $.ajax({
+                url: script,
+                method: 'POST',
+                data: postdata,
+                success: function (data, textStatus, jhXHR) {
+                    _this.saveYearsComplete(data, textStatus, jhXHR);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                    return false;
+                }
+            });
+        }
+    }
 };

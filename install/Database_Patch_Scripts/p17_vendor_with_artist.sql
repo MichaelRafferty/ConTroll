@@ -33,8 +33,8 @@ CREATE TABLE vendorRegionYears (
     vendorRegion int NOT NULL,
     ownerName varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
     ownerEmail varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
-    includedMemId int NOT NULL,
-    additionalMemId int NOT NULL,
+    includedMemId int DEFAULT NULL,
+    additionalMemId int DEFAULT NULL,
     totalUnitsAvailable int NOT NULL DEFAULT 0,
     sortorder int NOT NULL DEFAULT 0,
     PRIMARY KEY(id)
