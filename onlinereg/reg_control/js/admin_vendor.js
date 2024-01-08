@@ -283,25 +283,40 @@ class vendorsetup {
     }
 
     // editDesc - use tinymce to edit a description
-    editDesc(table, field, index) {
-        editor_modal.show();
-        tinyMCE.init({
-            selector: 'textarea#editFieldArea',
-            height: 800,
-            min_height: 400,
-            plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
-            toolbar:  [ 'help nonbreaking charmap numlist bulllist link image searchreplace fullscreen preview', ],
-            content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
-            placeholder: 'Edit the description here...'
-        });
+    editDesc(table, index, field, title) {
+        var row;
+        switch (table) {
+            case 'Regions':
+                row = this.#regionsTable.getRow(index);
+                break;
+            default:
+                return;
+        }
+        var textitem = row.getCell(field).getValue();
+        var titlename = row.getCell(title).getValue();
+        showEdit('vendor', table, index, field, titlename, textitem);
     }
 
+    editReturn(editTable, editField,  editIndex, editValue) {
+        // create update argument
+        // have to build array because you can't pass a value before a :, it takes it as a string
+        var updArr = {};
+        updArr[editField] = editValue;
+        switch (editTable) {
+            case 'Regions':
+                this.#regionsTable.getRow(editIndex).update(updArr);
+                break;
+            default:
+                return;
+        }
+
+    }
     // display edit button for a long field
     editbutton(cell, formatterParams, onRendered) {
         var index = cell.getRow().getIndex();
         if (index > 0) {
             return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="vendor.editDesc(\'' +
-                formatterParams['table'] + '\', \'' + formatterParams['field'] + '\', ' + index + ');">Edit Desc</button>';
+                formatterParams['table'] + '\',' + index + ',\'' +  formatterParams['fieldName'] + '\', \'' + formatterParams['name'] + '\');">Edit Desc</button>';
         }
         return "Save First";
     }
@@ -519,7 +534,7 @@ class vendorsetup {
                     editor: "input", editorParams: {elementAttributes: {maxlength: "128"}}, validator: "required"
                 },
                 {title: "Description", field: "description", headerFilter: true, width: 450, headerSort: false,},
-                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'regions', field: 'description' }, hozAlign:"left", headerSort: false },
+                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'Regions', fieldName: 'description', name: 'name' }, hozAlign:"left", headerSort: false },
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "regionKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {

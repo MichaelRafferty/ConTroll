@@ -392,3 +392,91 @@ function numberHeaderFilter(headerValue, rowValue, rowData, filterParams) {
             return Number(rowValue) == Number(value);
     }
 }
+
+// saveEdit - a common return from the base.php mce editor modal
+var editTableDiv = null;
+var editFieldDiv = null;
+var editIndexDiv = null;
+var editClassDiv = null;
+var editFieldArea = null;
+var editor_modal = null;
+var editTitleDiv = null;
+var editFieldNameDiv = null;
+
+function editRefs() {
+    editTableDiv = document.getElementById("editTable");
+    editFieldDiv = document.getElementById("editField");
+    editIndexDiv = document.getElementById("editIndex");
+    editClassDiv = document.getElementById("editClass");
+    editFieldArea = document.getElementById("editFieldArea");
+    editTitleDiv = document.getElementById("editTitle");
+    editFieldNameDiv = document.getElementById("editFieldName");
+    id = document.getElementById('tinymce-modal');
+    if (id != null) {
+        editor_modal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+    }
+}
+function showEdit(classname, table, index, field, titlename, textitem) {
+    if (editTableDiv == null)
+        editRefs();
+
+    if (editor_modal == null)
+        return; // tiymce area not loaded
+
+    if (textitem == null)
+        textitem = '';
+
+    editTableDiv.innerHTML = table;
+    editFieldDiv.innerHTML = field;
+    editFieldNameDiv.innerHTML = field + ':';
+    editIndexDiv.innerHTML = index;
+    editClassDiv.innerHTML = classname;
+    editFieldArea.innerHTML = textitem;
+    editTitleDiv.innerHTML = "Editing " + table + " " + titlename + " " + field;
+
+    editor_modal.show();
+    tinyMCE.init({
+        selector: 'textarea#editFieldArea',
+        height: 800,
+        min_height: 400,
+        menubar: false,
+        plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
+        toolbar:  [
+            'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
+            'bold italic underline strikethrough removeformat | '+
+            'visualchars nonbreaking charmap hr | ' +
+            'preview fullscreen ',
+            'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
+        ],
+        content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
+        placeholder: 'Edit the description here...',
+        auto_focus: 'editFieldArea'
+    });
+    tinyMCE.activeEditor.setContent(textitem);
+}
+
+// save the modal edit values back
+function saveEdit() {
+    if (editTableDiv == null)
+        editRefs();
+
+    if (editor_modal == null)
+        return; // tiymce area not loaded
+
+    var editTable = editTableDiv.innerHTML;
+    var editField = editFieldDiv.innerHTML;
+    var editIndex = editIndexDiv.innerHTML;
+    var editClass = editClassDiv.innerHTML;
+    var editValue = tinyMCE.activeEditor.getContent();
+    tinyMCE.remove();
+    editor_modal.hide();
+
+    // force a save and get the field from tinyMCE
+        switch (editClass) {
+            case 'vendor':
+                vendor.editReturn(editTable, editField,  editIndex, editValue);
+                break;
+            default:
+        }
+
+}

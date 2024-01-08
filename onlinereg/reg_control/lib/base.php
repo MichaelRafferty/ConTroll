@@ -516,6 +516,10 @@ function bs_tinymceModal() {
                 <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div id="editTable" hidden="hidden">editTable init</div>
+                <div id="editField" hidden="hidden">editField init</div>
+                <div id="editIndex" hidden="hidden">editIndex init</div>
+                <div id="editClass" hidden="hidden">editClass init</div>
                 <div class='container-fluid'>
                     <div class="row">
                         <div class="col-sm-12" id="editFieldName">Editing ...</div>
