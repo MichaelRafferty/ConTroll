@@ -82,7 +82,7 @@ CREATE TABLE vendorSpacePrices (
     includedMemberships int NOT NULL DEFAULT 0,
     additionalMemberships int NOT NULL DEFAULT 0,
     requestable tinyint DEFAULT 1,
-    sortOrder int NOT NULL DEFAULT 0,
+    sortorder int NOT NULL DEFAULT 0,
     PRIMARY KEY(id)
 );
 

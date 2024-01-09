@@ -151,7 +151,7 @@ EOS;
             if (array_key_exists($keyfield, $row)) { // if key is there, it's an update
                 if (array_key_exists('description', $row)) {
                     $description = $row['description'];
-                    if (trim($description) == '')
+                    if ($description != null && trim($description) == '')
                         $description = null;
                 } else {
                     $description = null;
@@ -170,7 +170,7 @@ EOS;
             if (!array_key_exists($keyfield, $row)) { // if key is not there, it is an insert
                 if (array_key_exists('description', $row)) {
                     $description = $row['description'];
-                    if (trim($description) == '')
+                    if ($description != null && trim($description) == '')
                         $description = null;
                 } else {
                     $description = null;
@@ -293,7 +293,7 @@ EOS;
                 }
                 if (array_key_exists('description', $row)) {
                     $description = $row['description'];
-                    if (trim($description) == '')
+                    if ($description != null && trim($description) == '')
                         $description = null;
                 } else {
                     $description = null;
@@ -323,7 +323,7 @@ EOS;
                 }
                 if (array_key_exists('description', $row)) {
                     $description = $row['description'];
-                    if (trim($description) == '')
+                    if ($description != null && trim($description) == '')
                         $description = null;
                 } else {
                     $description = null;
@@ -337,7 +337,92 @@ EOS;
         $response['message'] = "$tablename updated: $inserted added, $updated changed, $deleted removed.";
         break;
 
+    case 'vendorSpacePrices':
+        if ($delete_keys != '') {
+            $delsql = "DELETE FROM vendorSpacePrices WHERE id IN ( $delete_keys );";
+            web_error_log("Delete sql = /$delsql/");
+            $deleted += dbCmd($delsql);
+        }
+        $inssql = <<<EOS
+INSERT INTO vendorSpacePrices(spaceId, code, description, units, price, includedMemberships, additionalMemberships,  requestable, sortorder)
+VALUES(?,?,?,?,?,?,?,?,?);
+EOS;
+        $updsql = <<<EOS
+UPDATE vendorSpacePrices
+SET spaceId = ?, code = ?, description = ?, units = ?, price = ?, includedMemberships = ?, additionalMemberships = ?, requestable = ?, sortorder = ?
+WHERE id = ?;
+EOS;
 
+        // now the updates, do the updates first in case we need to insert a new row with the same older key
+        foreach ($data as $row ) {
+            if (array_key_exists('to_delete', $row)) {
+                if ($row['to_delete'] == 1)
+                    continue;
+            }
+            if (array_key_exists($keyfield, $row)) { // if key is there, it's an update
+                if (array_key_exists('units', $row)) {
+                    $units = $row['units'];
+                } else {
+                    $units = 0;
+                }
+                if (array_key_exists('price', $row)) {
+                    $price = $row['price'];
+                } else {
+                    $price = 0;
+                }
+                if (array_key_exists('includedMemberships', $row)) {
+                    $includedMemberships = $row['includedMemberships'];
+                } else {
+                    $includedMemberships = 0;
+                }
+                if (array_key_exists('additionalMemberships', $row)) {
+                    $additionalMemberships = $row['additionalMemberships'];
+                } else {
+                    $additionalMemberships = 0;
+                }
+
+                $numrows = dbSafeCmd($updsql, 'issddiiiii', array($row['spaceId'], $row['code'], $row['description'], $units, $price, $includedMemberships, $additionalMemberships,
+                    $row['requestable'], $row['sortorder'], $row[$keyfield]));
+                $updated += $numrows;
+            }
+        }
+
+        // now the inserts, do the inserts last in case we need to insert a new row with the same older key
+        foreach ($data as $row) {
+            if (array_key_exists('to_delete', $row)) {
+                if ($row['to_delete'] == 1)
+                    continue;
+            }
+            if (!array_key_exists($keyfield, $row)) { // if key is not there, it is an insert
+                if (array_key_exists('units', $row)) {
+                    $units = $row['units'];
+                } else {
+                    $units = 0;
+                }
+                if (array_key_exists('price', $row)) {
+                    $price = $row['price'];
+                } else {
+                    $price = 0;
+                }
+                if (array_key_exists('includedMemberships', $row)) {
+                    $includedMemberships = $row['includedMemberships'];
+                } else {
+                    $includedMemberships = 0;
+                }
+                if (array_key_exists('additionalMemberships', $row)) {
+                    $additionalMemberships = $row['additionalMemberships'];
+                } else {
+                    $additionalMemberships = 0;
+                }
+
+                $numrows = dbSafeInsert($inssql, 'issddiiii', array($row['spaceId'], $row['code'], $row['description'], $units, $price, $includedMemberships, $additionalMemberships,
+                    $row['requestable'], $row['sortorder']));
+                if ($numrows !== false)
+                    $inserted++;
+            }
+        }
+        $response['message'] = "$tablename updated: $inserted added, $updated changed, $deleted removed.";
+        break;
     default:
         $response['message'] = "Cannot yet handle updating $tablename";
         $response['error'] = '';

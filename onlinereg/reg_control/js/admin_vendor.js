@@ -31,6 +31,7 @@ class vendorsetup {
 
     // vendor spaces (sections of a region)
     #spaces = null;
+    #spacesListArr = {};
     #spacesTable = null;
     #spacedirty = false;
     #spacesavebtn = null;
@@ -375,7 +376,7 @@ class vendorsetup {
         }
 
         if ((!drew_spacePrices) && data['vendorSpacePrices']) {
-            drawSpacePrices(data);
+            this.drawSpacePrices(data);
         }
     }
 
@@ -528,6 +529,7 @@ class vendorsetup {
             data: this.#regions,
             layout: "fitDataTable",
             columns: [
+                {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false},
                 {
                     title: "Type", field: "regionType", headerSort: true, width: 100, headerFilter: true, headerFilterParams: {values: this.#regionType_arr},
@@ -596,6 +598,7 @@ class vendorsetup {
             data: this.#regionYears,
             layout: "fitDataTable",
             columns: [
+                {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false,},
                 {title: "Conid", field: "conid", width: 60, hozAlign: "right", headerSort: false,},
                 {
@@ -649,8 +652,19 @@ class vendorsetup {
             this.#spacesTable.destroy();
         }
 
-        if (data['vendorSpaces'])
+        if (data['vendorSpaces']) {
             this.#spaces = data['vendorSpaces'];
+
+            this.#spacesListArr = {};
+            this.#spaces.forEach(s => {
+                this.#spacesListArr[s.id] = s.shortname;
+            });
+
+            if (this.#debug & 1) {
+                console.log("spacesListArr:");
+                console.log(this.#spacesListArr);
+            }
+        }
 
         this.#spacedirty = false;
         this.#spacesTable = new Tabulator('#spaces-div', {
@@ -660,6 +674,7 @@ class vendorsetup {
             data: this.#spaces,
             layout: "fitDataTable",
             columns: [
+                {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false},
                 {
                     title: "Vendor Region",
@@ -716,8 +731,8 @@ class vendorsetup {
             this.#spacePricesTable.destroy();
         }
 
-        if (data['vendorSpacePricess'])
-            this.#spacePrices = data['vendorSpacePricess'];
+        if (data['vendorSpacePrices'])
+            this.#spacePrices = data['vendorSpacePrices'];
 
         this.#spacePricedirty = false;
         this.#spacePricesTable = new Tabulator('#spacePrices-div', {
@@ -727,19 +742,17 @@ class vendorsetup {
             data: this.#spacePrices,
             layout: "fitDataTable",
             columns: [
+                {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false},
                 {
-                    title: "Vendor Space", field: "spaceId", width: 150, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#regionListArr},
-                    editor: "list", formatter: "lookup", formatterParams: this.#regionListArr, editorParams: {values: this.#regionListArr}
+                    title: "Vendor Space", field: "spaceId", width: 150, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#spacesListArr},
+                    editor: "list", formatter: "lookup", formatterParams: this.#spacesListArr, editorParams: {values: this.#spacesListArr}
                 },
                 {
                     title: "Code", field: "code", headerSort: true, headerFilter: true, width: 150,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "32"}}, validator: "required"
                 },
-                {
-                    title: "Description", field: "description", headerSort: false, headerFilter: true, width: 600,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
-                },
+                {title: "Description", field: "description", editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, headerFilter: true, width: 450, headerSort: false,},
                 {
                     title: 'Units', field: "units", width: 60, hozAlign: "right", headerSort: false, editor: "input", editorParams: {maxlength: "10"},
                     headerFilter: true, headerFilterFunc: numberHeaderFilter,
@@ -761,7 +774,14 @@ class vendorsetup {
                 {
                     title: "Req", field: "requestable", width: 50, hozAlign: "right", headerSort: false,
                     editor: "tickCross", formatter: "tickCross",
-                }
+                },
+                {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
+                {title: "Orig Key", field: "priceKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
+                {
+                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
+                    cellClick: function (e, cell) { deleterow(e, cell.getRow()); }.name,
+                },
+                {title: "To Del", field: "to_delete", visible: this.#debugVisible,}
             ],
         });
         this.#spacePricesTable.on("dataChanged", function (data) {
@@ -1253,8 +1273,133 @@ class vendorsetup {
             var postdata = {
                 tabledata: JSON.stringify(this.#spacesTable.getData()),
                 tablename: "vendorSpaces",
-                gettype: "spaces,spacePrices",
+                gettype: "spaces,prices",
                 indexcol: "spaceKey"
+            };
+            //console.log(postdata);
+            $.ajax({
+                url: script,
+                method: 'POST',
+                data: postdata,
+                success: function (data, textStatus, jhXHR) {
+                    _this.saveSpacesComplete(data, textStatus, jhXHR);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                    return false;
+                }
+            });
+        }
+    }
+
+    //// Processing functions for spacePricedss
+
+    dataChangedSpacePrices(data) {
+        //data - the updated table data
+        if (!this.#spacePricedirty) {
+            this.#spacePricesavebtn.innerHTML = "Save Changes*";
+            this.#spacePricesavebtn.disabled = false;
+            this.#spacePricedirty = true;
+        }
+        this.checkSpacePricesUndoRedo();
+    };
+
+    rowMovedSpacePrices(row) {
+        this.#spacePricesavebtn.innerHTML = "Save Changes*";
+        this.#spacePricesavebtn.disabled = false;
+        this.#spacePricedirty = true;
+        this.checkSpacePricesUndoRedo();
+    }
+
+    // unbutton for spaces
+    undoSpacePrices() {
+        if (this.#spacePricesTable != null) {
+            this.#spacePricesTable.undo();
+
+            if (this.checkSpacePricesUndoRedo() <= 0) {
+                this.#spacePricedirty = false;
+                this.#spacePricesavebtn.innerHTML = "Save Changes";
+                this.#spacePricesavebtn.disabled = true;
+            }
+        }
+    };
+
+    // rebutton for spaces
+    redoSpaces() {
+        if (this.#spacePricesTable != null) {
+            this.#spacePricesTable.redo();
+
+            if (this.checkSpacePricesUndoRedo() > 0) {
+                this.#spacePricedirty = true;
+                this.#spacePricesavebtn.innerHTML = "Save Changes*";
+                this.#spacePricesavebtn.disabled = false;
+            }
+        }
+    };
+
+    // add row to Spaces table and scroll to that new row
+    addrowSpacePrices() {
+        var _this = this;
+        this.#spacePricesTable.addRow({code: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
+            row.getTable().scrollToRow(row);
+            _this.checkSpacePricesUndoRedo();
+        });
+    }
+
+    // set undo / redo status for spaces buttons
+    checkSpacePricesUndoRedo() {
+        var undosize = this.#spacePricesTable.getHistoryUndoSize();
+        this.#spacePriceredobtn.disabled = undosize <= 0;
+        this.#spacePriceredobtn.disabled = this.#spacePricesTable.getHistoryRedoSize() <= 0;
+        return undosize;
+    }
+
+    saveSpacePricessComplete(data, textStatus, jhXHR) {
+        var _this = this;
+
+        if ('error' in data) {
+            if (data['error'] != '' && this.#debug)
+                showError(data['error']);
+            if (data['message']) {
+                show_message(data['message'], 'error');
+            }
+            this.#spacePricesavebtn.innerHTML = "Save Changes*";
+            this.#spacePricesavebtn.disabled = false;
+            return false;
+        }
+        if (data['message'] !== undefined) {
+            show_message(data['message'], 'success');
+        }
+        if (data['warn'] !== undefined) {
+            show_message(data['warn'], 'warn');
+        }
+        this.#spacePricesavebtn.innerHTML = "Save Changes";
+        this.#spacePricesavebtn.disabled = true;
+        this.draw(data);
+    }
+
+    saveSpacePrices() {
+        if (this.#spacePricesTable != null) {
+            var _this = this;
+
+            var invalids = this.#spacePricesTable.validate();
+            if (invalids !== true) {
+                console.log(invalids);
+                show_message("Space Prices Table does not pass validation, please check for empty cells or cells outlined in red", 'error');
+                return false;
+            }
+            this.#spacePricesavebtn.innerHTML = "Saving...";
+            this.#spacePricesavebtn.disabled = true;
+
+            var script = "scripts/vendorUpdateGetData.php";
+
+            clear_message();
+            clearError();
+            var postdata = {
+                tabledata: JSON.stringify(this.#spacePricesTable.getData()),
+                tablename: "vendorSpacePrices",
+                gettype: "prices",
+                indexcol: "priceKey"
             };
             //console.log(postdata);
             $.ajax({
