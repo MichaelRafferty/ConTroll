@@ -151,6 +151,8 @@ EOS;
             if (array_key_exists($keyfield, $row)) { // if key is there, it's an update
                 if (array_key_exists('description', $row)) {
                     $description = $row['description'];
+                    if (trim($description) == '')
+                        $description = null;
                 } else {
                     $description = null;
                 }
@@ -168,6 +170,8 @@ EOS;
             if (!array_key_exists($keyfield, $row)) { // if key is not there, it is an insert
                 if (array_key_exists('description', $row)) {
                     $description = $row['description'];
+                    if (trim($description) == '')
+                        $description = null;
                 } else {
                     $description = null;
                 }
@@ -245,7 +249,6 @@ EOS;
                 } else {
                     $totalUnitsAvailable = 0;
                 }
-                //INSERT INTO vendorRegionYears(conid, vendorRegion, ownerName, ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, sortorder)
                 $numrows = dbSafeInsert($inssql, 'iissiiii', array($conid, $row['vendorRegion'], $row['ownerName'], $row['ownerEmail'],
                     $includedMemId, $additionalMemId, $totalUnitsAvailable, $row['sortorder']));
                 if ($numrows !== false)
@@ -254,6 +257,86 @@ EOS;
         }
         $response['message'] = "$tablename updated: $inserted added, $updated changed, $deleted removed.";
         break;
+
+    case 'vendorSpaces':
+        if ($delete_keys != '') {
+            $delsql = "DELETE FROM vendorSpaces WHERE id IN ( $delete_keys );";
+            web_error_log("Delete sql = /$delsql/");
+            $deleted += dbCmd($delsql);
+        }
+        $inssql = <<<EOS
+INSERT INTO vendorSpaces(vendorRegionYear, shortname, name, description, unitsAvailable, unitsAvailableMailin, sortorder)
+VALUES(?,?,?,?,?,?,?);
+EOS;
+        $updsql = <<<EOS
+UPDATE vendorSpaces
+SET vendorRegionYear = ?, shortname = ?, name = ?, description = ?, unitsAvailable = ?, unitsAvailableMailin = ?, sortorder = ?
+WHERE id = ?;
+EOS;
+
+        // now the updates, do the updates first in case we need to insert a new row with the same older key
+        foreach ($data as $row ) {
+            if (array_key_exists('to_delete', $row)) {
+                if ($row['to_delete'] == 1)
+                    continue;
+            }
+            if (array_key_exists($keyfield, $row)) { // if key is there, it's an update
+                if (array_key_exists('unitsAvailable', $row)) {
+                    $unitsAvailable = $row['unitsAvailable'];
+                } else {
+                    $unitsAvailable = 0;
+                }
+                if (array_key_exists('unitsAvailableMailin', $row)) {
+                    $unitsAvailableMailin = $row['unitsAvailableMailin'];
+                } else {
+                    $unitsAvailableMailin = 0;
+                }
+                if (array_key_exists('description', $row)) {
+                    $description = $row['description'];
+                    if (trim($description) == '')
+                        $description = null;
+                } else {
+                    $description = null;
+                }
+                $numrows = dbSafeCmd($updsql, 'isssiiii', array($row['vendorRegionYear'], $row['shortname'], $row['name'], $description,
+                    $unitsAvailable, $unitsAvailableMailin, $row['sortorder'], $row[$keyfield]));
+                $updated += $numrows;
+            }
+        }
+
+        // now the inserts, do the inserts last in case we need to insert a new row with the same older key
+        foreach ($data as $row) {
+            if (array_key_exists('to_delete', $row)) {
+                if ($row['to_delete'] == 1)
+                    continue;
+            }
+            if (!array_key_exists($keyfield, $row)) { // if key is not there, it is an insert
+                if (array_key_exists('unitsAvailable', $row)) {
+                    $unitsAvailable = $row['unitsAvailable'];
+                } else {
+                    $unitsAvailable = 0;
+                }
+                if (array_key_exists('unitsAvailableMailin', $row)) {
+                    $unitsAvailableMailin = $row['unitsAvailableMailin'];
+                } else {
+                    $unitsAvailableMailin = 0;
+                }
+                if (array_key_exists('description', $row)) {
+                    $description = $row['description'];
+                    if (trim($description) == '')
+                        $description = null;
+                } else {
+                    $description = null;
+                }
+                $numrows = dbSafeInsert($inssql, 'isssiii', array($row['vendorRegionYear'], $row['shortname'], $row['name'], $description,
+                    $unitsAvailable, $unitsAvailableMailin, $row['sortorder']));
+                if ($numrows !== false)
+                    $inserted++;
+            }
+        }
+        $response['message'] = "$tablename updated: $inserted added, $updated changed, $deleted removed.";
+        break;
+
 
     default:
         $response['message'] = "Cannot yet handle updating $tablename";
@@ -303,8 +386,9 @@ EOS;
 // get the vendor regions configured for this year
 if ($gettype == 'all' || str_contains($gettype, 'years')) {
     $vendorRegionYearsQ = <<<EOS
-SELECT vry.*, vry.id AS regionYearKey, COUNT(vs.vendorRegionYear) uses 
+SELECT vry.*, vry.id AS regionYearKey, COUNT(vs.vendorRegionYear) uses, vr.shortname
 FROM vendorRegionYears vry
+JOIN vendorRegions vr ON (vry.vendorRegion = vr.id)
 LEFT OUTER JOIN vendorSpaces vs ON (vs.vendorRegionYear = vry.id)
 WHERE vry.conid = ?
 GROUP BY vry.id, vry.sortorder

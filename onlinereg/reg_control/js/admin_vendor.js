@@ -22,6 +22,7 @@ class vendorsetup {
 
     // vendor region years
     #regionYears = null;
+    #regionYearsListArr = {};
     #regionYearsTable = null;
     #regionYeardirty = false;
     #regionYearsavebtn = null;
@@ -289,6 +290,9 @@ class vendorsetup {
             case 'Regions':
                 row = this.#regionsTable.getRow(index);
                 break;
+            case 'vendorSpaces':
+                row = this.#spacesTable.getRow(index);
+                break;
             default:
                 return;
         }
@@ -305,6 +309,9 @@ class vendorsetup {
         switch (editTable) {
             case 'Regions':
                 this.#regionsTable.getRow(editIndex).update(updArr);
+                break;
+            case 'vendorSpaces':
+                this.#spacesTable.getRow(editIndex).update(updArr);
                 break;
             default:
                 return;
@@ -517,6 +524,7 @@ class vendorsetup {
         this.#regionsTable = new Tabulator('#regions-div', {
             maxHeight: "800px",
             history: true,
+            movableRows: true,
             data: this.#regions,
             layout: "fitDataTable",
             columns: [
@@ -568,12 +576,23 @@ class vendorsetup {
         
         if (data['vendorRegionYears']) {
             this.#regionYears = data['vendorRegionYears'];
+
+            this.#regionYearsListArr = {};
+            this.#regionYears.forEach(s => {
+                this.#regionYearsListArr[s.id] = s.shortname;
+            });
+
+            if (this.#debug & 1) {
+                console.log("regionYearsListArr:");
+                console.log(this.#regionYearsListArr);
+            }
         }
 
         this.#regionYeardirty = false;
         this.#regionYearsTable = new Tabulator('#regionYears-div', {
             maxHeight: "800px",
             history: true,
+            movableRows: true,
             data: this.#regionYears,
             layout: "fitDataTable",
             columns: [
@@ -637,21 +656,23 @@ class vendorsetup {
         this.#spacesTable = new Tabulator('#spaces-div', {
             maxHeight: "800px",
             history: true,
+            movableRows: true,
             data: this.#spaces,
             layout: "fitDataTable",
             columns: [
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false},
                 {
-                    title: "Vendor Space",
-                    field: "spaceType",
+                    title: "Vendor Region",
+                    field: "vendorRegionYear",
                     headerSort: true,
                     headerWordWrap: true,
                     width: 100,
                     headerFilter: true,
-                    headerFilterParams: {values: this.#regionListArr},
+                    headerFilterParams: {values: this.#regionYearsListArr},
                     editor: "list",
-                    editorParams: {values: this.#regionListArr},
-                    validator: "required"
+                    editorParams: {values: this.#regionYearsListArr},
+                    validator: "required",
+                    formatter: "lookup", formatterParams: this.#regionYearsListArr,
                 },
                 {
                     title: "Short Name", field: "shortname", headerSort: true, headerFilter: true, width: 150,
@@ -662,9 +683,26 @@ class vendorsetup {
                     editor: "input", editorParams: {elementAttributes: {maxlength: "128"}}, validator: "required"
                 },
                 {title: "Description", field: "description", headerFilter: true, width: 450, headerSort: false,},
+                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'vendorSpaces', fieldName: 'description', name: 'name' }, hozAlign:"left", headerSort: false },
                 {title: 'Units', field: "unitsAvailable", width: 60, hozAlign: "right", headerSort: false, editor: "number", editorParams: {min:0, max:9999999}},
+                {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
+                {title: "Orig Key", field: "spaceKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
+                {
+                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
+                    cellClick: function (e, cell) {
+                        deleterow(e, cell.getRow());
+                    }
+                },
+                {title: "To Del", field: "to_delete", visible: this.#debugVisible,}
             ],
         });
+        this.#spacesTable.on("dataChanged", function (data) {
+            _this.dataChangedSpaces(data);
+        });
+        this.#spacesTable.on("rowMoved", function (row) {
+            _this.rowMovedSpaces(row)
+        });
+        this.#spacesTable.on("cellEdited", cellChanged);
     }
     
     // draw spacePrices table
@@ -685,6 +723,7 @@ class vendorsetup {
         this.#spacePricesTable = new Tabulator('#spacePrices-div', {
             maxHeight: "800px",
             history: true,
+            movableRows: true,
             data: this.#spacePrices,
             layout: "fitDataTable",
             columns: [
@@ -725,6 +764,13 @@ class vendorsetup {
                 }
             ],
         });
+        this.#spacePricesTable.on("dataChanged", function (data) {
+            _this.dataChangedSpacePrices(data);
+        });
+        this.#spacePricesTable.on("rowMoved", function (row) {
+            _this.rowMovedSpacePrices(row)
+        });
+        this.#spacePricesTable.on("cellEdited", cellChanged);
     }
 
     //// Processing functions for regionTypes
@@ -1092,6 +1138,131 @@ class vendorsetup {
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
                     _this.saveYearsComplete(data, textStatus, jhXHR);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                    return false;
+                }
+            });
+        }
+    }
+
+    //// Processing functions for spaces
+
+    dataChangedSpaces(data) {
+        //data - the updated table data
+        if (!this.#spacedirty) {
+            this.#spacesavebtn.innerHTML = "Save Changes*";
+            this.#spacesavebtn.disabled = false;
+            this.#spacedirty = true;
+        }
+        this.checkSpacesUndoRedo();
+    };
+
+    rowMovedSpaces(row) {
+        this.#spacesavebtn.innerHTML = "Save Changes*";
+        this.#spacesavebtn.disabled = false;
+        this.#spacedirty = true;
+        this.checkSpacesUndoRedo();
+    }
+
+    // unbutton for regionSpaces
+    undoSpaces() {
+        if (this.#spacesTable != null) {
+            this.#spacesTable.undo();
+
+            if (this.checkSpacesUndoRedo() <= 0) {
+                this.#spacedirty = false;
+                this.#spacesavebtn.innerHTML = "Save Changes";
+                this.#spacesavebtn.disabled = true;
+            }
+        }
+    };
+
+    // rebutton for regionSpaces
+    redoSpaces() {
+        if (this.#spacesTable != null) {
+            this.#spacesTable.redo();
+
+            if (this.checkSpacesUndoRedo() > 0) {
+                this.#spacedirty = true;
+                this.#spacesavebtn.innerHTML = "Save Changes*";
+                this.#spacesavebtn.disabled = false;
+            }
+        }
+    };
+
+    // add row to Spaces table and scroll to that new row
+    addrowSpaces() {
+        var _this = this;
+        this.#spacesTable.addRow({shortname: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
+            row.getTable().scrollToRow(row);
+            _this.checkSpacesUndoRedo();
+        });
+    }
+
+    // set undo / redo status for vendor type buttons
+    checkSpacesUndoRedo() {
+        var undosize = this.#spacesTable.getHistoryUndoSize();
+        this.#spaceundobtn.disabled = undosize <= 0;
+        this.#spaceredobtn.disabled = this.#spacesTable.getHistoryRedoSize() <= 0;
+        return undosize;
+    }
+
+    saveSpacesComplete(data, textStatus, jhXHR) {
+        var _this = this;
+
+        if ('error' in data) {
+            if (data['error'] != '' && this.#debug)
+                showError(data['error']);
+            if (data['message']) {
+                show_message(data['message'], 'error');
+            }
+            this.#spacesavebtn.innerHTML = "Save Changes*";
+            this.#spacesavebtn.disabled = false;
+            return false;
+        }
+        if (data['message'] !== undefined) {
+            show_message(data['message'], 'success');
+        }
+        if (data['warn'] !== undefined) {
+            show_message(data['warn'], 'warn');
+        }
+        this.#spacesavebtn.innerHTML = "Save Changes";
+        this.#spacesavebtn.disabled = true;
+        this.draw(data);
+    }
+
+    saveSpaces() {
+        if (this.#spacesTable != null) {
+            var _this = this;
+
+            var invalids = this.#spacesTable.validate();
+            if (invalids !== true) {
+                console.log(invalids);
+                show_message("Spaces Table does not pass validation, please check for empty cells or cells outlined in red", 'error');
+                return false;
+            }
+            this.#spacesavebtn.innerHTML = "Saving...";
+            this.#spacesavebtn.disabled = true;
+
+            var script = "scripts/vendorUpdateGetData.php";
+
+            clear_message();
+            clearError();
+            var postdata = {
+                tabledata: JSON.stringify(this.#spacesTable.getData()),
+                tablename: "vendorSpaces",
+                gettype: "spaces,spacePrices",
+                indexcol: "spaceKey"
+            };
+            //console.log(postdata);
+            $.ajax({
+                url: script,
+                method: 'POST',
+                data: postdata,
+                success: function (data, textStatus, jhXHR) {
+                    _this.saveSpacesComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     showError("ERROR in " + script + ": " + textStatus, jqXHR);

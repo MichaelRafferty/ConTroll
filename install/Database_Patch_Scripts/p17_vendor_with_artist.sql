@@ -2,6 +2,18 @@
    Note: vendor = no pre-approval needed, artshow - pre-approval required to allow asking for space
  */
 
+/* it is recommended that if you have not used vendor before and there is no data you wish to migrate you uncomment out the drop table statements and recreate the tables */
+/*
+
+DROP TABLE IF EXISTS vendor_space;
+DROP TABLE IF EXISTS vendorSpacePrices;
+DROP TABLE IF EXISTS vendorSpaces;
+DROP TABLE IF EXISTS vendorRegionYears;
+DROP TABLE IF EXISTS vendorRegions;
+DROP TABLE IF EXISTS vendorRegionTypes;
+
+*/
+
 /*  vendorRegionTypes table - Rules for different types of vendor regions */
 CREATE TABLE vendorRegionTypes (
     regionType varchar(16) NOT NULL,
