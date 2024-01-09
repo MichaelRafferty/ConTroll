@@ -604,7 +604,7 @@ class vendorsetup {
                 {
                     title: "Vendor Region", field: "vendorRegion", headerSort: true, width: 100, headerWordWrap: true, headerFilter: true, headerFilterParams: {values: this.#regionListArr},
                     editor: "list", editorParams: {values: this.#regionListArr}, validator: "required",
-                    formatter: "lookup", formatterParams: this.#regionListArr, editorParams: { values: this.#regionListArr },
+                    formatter: "lookup", formatterParams: this.#regionListArr,
                 },
                 {
                     title: "Owner Name", field: "ownerName", headerSort: true, headerFilter: true, width: 250,

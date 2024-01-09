@@ -65,6 +65,12 @@ if ($tablename != 'none') {
             $delete_keys .= ($first ? "'" : ",'") . sql_safe($row[$keyfield]) . "'";
             $first = false;
         } else {
+            // trim all fields
+            foreach ($row as $field => $value) {
+                if ($value != null) {
+                    $data[$index][$field] = trim($value);
+                }
+            }
             if (array_key_exists('sortorder', $row))
                 $roworder = $row['sortorder'];
             else
