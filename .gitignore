@@ -12,8 +12,9 @@
 /scripts/
 /UserDoc/
 
-# images directories not used by Controll
+# images directories not used by ConTroll
 /atcon/images/
+/atcon/ps
 /onlinereg/images/
 /vendor/images/
 
@@ -23,9 +24,9 @@
 /version.txt
 # Visual Studio Stuff
 /.vs/
-/BalticonReg.phpproj
-/BalticonReg.sln
-/BalticonReg.phpproj.user
+/ConTroll.phpproj
+/ConTroll.sln
+/ConTroll.phpproj.user
 /launchSettings.json
 
 # The images need to be removed as we switch to the new image style, the others in section eed review.
@@ -35,13 +36,14 @@
 #phpstorm
 /.idea/
 /.idea/.gitignore
-/.idea/BalticonReg.iml
+/.idea/ConTroll.iml
 /.idea/modules.xml
 /.idea/php.xml
 /.idea/inspectionProfiles/Project_Default.xml
 /.idea/sqldialects.xml
 /.idea/vcs.xml
 /.idea/workspace.xml
+
 
 # placeholder for obsolete stuff
 /atcon/scripts/obsolete/

@@ -37,7 +37,7 @@ try {
     $msg = "Caught exception on json_decode: " . $e->getMessage() . PHP_EOL . "JSON error: " . json_last_error_msg() . PHP_EOL;
     $response['error'] = $msg;
     error_log($msg);
-    ajaxSuccess(response);
+    ajaxSuccess($response);
     exit();
 }
 //$data = $_POST['tabledata'];
@@ -49,16 +49,26 @@ $sortorder = 10;
 // build list of keys to delete
 $delete_keys = '';
 $first = true;
-foreach ($data as $row ) {
-    if (array_key_exists('to_delete', $row)) {
-        if ($row['to_delete'] == 1) {
-            $delete_keys .= ($first ? "'" : ",'") . sql_safe($row[$keyfield]) . "'";
-            $first = false;
+// compute delete keys in the array and redo the sort order
+$sort_order = 10;
+foreach ($data as $index => $row ) {
+    if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1) {
+        $delete_keys .= ($first ? "'" : ",'") . sql_safe($row[$keyfield]) . "'";
+        $first = false;
+    } else {
+        if (array_key_exists('sortorder', $row))
+            $roworder = $row['sortorder'];
+        else
+            $roworder = 500;
+
+        if ($roworder >= 0 && $roworder < 900) {
+            $data[$index]['sortorder'] = $sort_order;
+            $sort_order += 10;
         }
     }
 }
 
-web_error_log("Keys to delete = ($delete_keys)");
+//web_error_log("Keys to delete = ($delete_keys)");
 switch ($action) {
     case 'nextage':
         $year = $nextconid;
@@ -71,49 +81,37 @@ switch ($action) {
             $deleted += dbSafeCmd($delsql, 'i', array($year));
         }
         $inssql = <<<EOS
-INSERT INTO ageList(conid, ageType, label, shortname, sortorder)
-VALUES(?,?,?,?,?);
+INSERT INTO ageList(conid, ageType, label, shortname, badgeFlag, sortorder)
+VALUES(?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE ageList
-SET ageType = ?, label = ?, shortname = ?, sortorder = ?
-WHERE ageType = ? and conid = ?
+SET ageType = ?, label = ?, shortname = ?, badgeFlag = ?, sortorder = ?
+WHERE ageType = ? and conid = ?;
 EOS;
 
         // now the updates, do the updates first in case we need to insert a new row with the same older key
-        $sort_order = 10;
         foreach ($data as $row ) {
             if (array_key_exists('to_delete', $row)) {
                 if ($row['to_delete'] == 1)
                     continue;
             }
-            $roworder = $row['sortorder'];
-            if ($roworder >= 0 && $roworder < 900) {
-                $roworder = $sort_order;
-                $sort_order += 10;
-            }
-
             if (array_key_exists('agekey', $row)) { // if key is there, it's an update
-                $numrows = dbSafeCmd($updsql, 'sssisi', array($row['ageType'], $row['label'], $row['shortname'], $roworder, $row['agekey'], $year));
+                $numrows = dbSafeCmd($updsql, 'ssssisi', array($row['ageType'], $row['label'], $row['shortname'], $row['badgeFlag'], $row['sortorder'], $row['agekey'], $year));
                 $updated += $numrows;
             }
         }
 
         // now the inserts, do the inserts last in case we need to insert a new row with the same older key
-        $sort_order = 10;
         foreach ($data as $row) {
             if (array_key_exists('to_delete', $row)) {
                 if ($row['to_delete'] == 1)
                     continue;
             }
-            $roworder = $row['sortorder'];
-            if ($roworder >= 0 && $roworder < 900) {
-                $roworder = $sort_order;
-                $sort_order += 10;
-            }
             if (!array_key_exists('agekey', $row)) { // if key is not there, its an insert
-                $numrows = dbSafeCmd($inssql, 'isssi', array($year, $row['ageType'], $row['label'], $row['shortname'], $roworder));
-                $inserted += $numrows;
+                $numrows = dbSafeInsert($inssql, 'issssi', array($year, $row['ageType'], $row['label'], $row['shortname'], $row['badgeFlag'], $row['sortorder']));
+                if ($numrows !== false)
+                    $inserted++;
             }
         }
         break;
@@ -132,40 +130,31 @@ EOS;
         $updsql = <<<EOS
 UPDATE memTypes
 SET  memType = ?, active=?, sortorder=?
-WHERE memType = ?
+WHERE memType = ?;
 EOS;
         // now the updates, do the updates first in case we need to insert a new row with the same older key
-        $sort_order = 10;
         foreach ($data as $row) {
             if (array_key_exists('to_delete', $row)) {
                 if ($row['to_delete'] == 1)
                     continue;
             }
-            $roworder = $row['sortorder'];
-            if ($roworder >= 0 && $roworder < 900) {
-                $roworder = $sort_order;
-                $sort_order += 10;
-            }
+
             if (array_key_exists('memtypekey', $row)) { // if key is there, it's an update
-                $numrows = dbSafeCmd($updsql, 'ssis', array($row['memType'], $row['active'], $roworder, $row['memtypekey']));
+                $numrows = dbSafeCmd($updsql, 'ssis', array($row['memType'], $row['active'], $row['sortorder'], $row['memtypekey']));
                 $updated += $numrows;
             }
         }
         // now the inserts, do the inserts last in case we need to insert a new row with the same older key
-        $sort_order = 10;
         foreach ($data as $row) {
             if (array_key_exists('to_delete', $row)) {
                 if ($row['to_delete'] == 1)
                     continue;
             }
-            $roworder = $row['sortorder'];
-            if ($roworder >= 0 && $roworder < 900) {
-                $roworder = $sort_order;
-                $sort_order += 10;
-            }
+
             if (!array_key_exists('memtypekey', $row)) { // if key is not there, its an insert
-                $numrows = dbSafeCmd($inssql, 'ssi', array($row['memType'], $row['active'], $roworder));
-                $inserted += $numrows;
+                $numrows = dbSafeInsert($inssql, 'ssi', array($row['memType'], $row['active'], $row['sortorder']));
+                if ($numrows !== false)
+                    $inserted++;
             }
         }
         break;
@@ -178,28 +167,23 @@ EOS;
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO memCategories(memCategory, active, sortorder)
-VALUES(?,?,?);
+INSERT INTO memCategories(memCategory, badgeLabel, active, sortorder)
+VALUES(?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE memCategories
-SET memCategory=?, active=?, sortorder=?
+SET memCategory=?, badgeLabel = ?, active=?, sortorder=?
 WHERE memCategory=?;
 EOS;
         // now the updates, do the updates first in case we need to insert a new row with the same older key
-        $sort_order = 10;
         foreach ($data as $row) {
             if (array_key_exists('to_delete', $row)) {
                 if ($row['to_delete'] == 1)
                     continue;
             }
-            $roworder = $row['sortorder'];
-            if ($roworder >= 0 && $roworder < 900) {
-                $roworder = $sort_order;
-                $sort_order += 10;
-            }
+
             if (array_key_exists('memcatkey', $row)) { // if key is there, it's an update
-                $numrows = dbSafeCmd($updsql, 'ssis', array($row['memCategory'], $row['active'], $roworder, $row['memcatkey']));
+                $numrows = dbSafeCmd($updsql, 'sssis', array($row['memCategory'], $row['badgeLabel'], $row['active'], $row['sortorder'], $row['memcatkey']));
                 $updated += $numrows;
             }
         }
@@ -210,14 +194,11 @@ EOS;
                 if ($row['to_delete'] == 1)
                     continue;
             }
-            $roworder = $row['sortorder'];
-            if ($roworder >= 0 && $roworder < 900) {
-                $roworder = $sort_order;
-                $sort_order += 10;
-            }
+
             if (!array_key_exists('memcatkey', $row)) { // if key is not there, its an insert
-                $numrows = dbSafeCmd($inssql, 'ssi', array($row['memCategory'], $row['active'], $roworder));
-                $inserted += $numrows;
+                $numrows = dbSafeInsert($inssql, 'sssi', array($row['memCategory'], $row['badgeLabel'], $row['active'], $row['sortorder']));
+                if ($numrows !== false)
+                    $inserted++;
             }
         }
         break;

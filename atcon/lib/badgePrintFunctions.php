@@ -1,71 +1,28 @@
 <?php
 require_once("base.php");
 
-$stylemod = array(
-    'lbl' => array(
-        'Reset'          => "\x1B*",
-        '7cpi'           => "\x1BT",
-        '10cpi'          => "\x1BU",
-        '12cpi'          => "\x1BM",
-        '16cpi'          => "\x1BP",
-        '20cpi'          => "\x1BS",
-        '32cpl'          => "\x1Dt\x20",
-        '38cpl'          => "\x1Dt\x26",
-        '50cpl'          => "\x1Dt\x32",
-        'Landscape'      => "\x1DV\x01",
-        'Truncate'       => "\x1DT\x00",
-        'FeedLength282'  => "\x1DL\x02\x61",
-        'VertStrtPt95'   => "\x1BY\x19\n",
-        'VertStrtPt97'   => "\x1BY\x1a\n",
-        'VertStrtPt99'   => "\x1BY\x1c\n",
-        'DblHighON'      => "\x1D\x12",
-        'DblHighOFF'     => "\x1D\x13",
-        'DblWideON'      => "\x0E",
-        'DblWideOFF'     => "\x14",
-        'InverseON'      => "\x1D\x1E",
-        'InverseOFF'     => "\x1D\x1F"
-    ) // end lbl
-);
+$con = get_conf('con');
+$conid = $con['id'];
 
-/* function printMod returns a string of binary printer control commands
- ** $type is a  type of printer
- **** "lbl" == Dymo LabelWriter SE450
- ** $mods is an array of controls to pull back
- */
-function printMod($type, $mods)//:string {
-{
-  global $stylemod;
-  $ret = '';
-  foreach($mods as $mod) {
-    $ret .= $stylemod[$type][$mod];
-  }
-  return $ret;
+$badgeTypeQ = "SELECT memCategory, badgeLabel FROM memCategories WHERE active='Y';";
+$badgeTypeR = dbQuery($badgeTypeQ);
+$badgeTypes = array();
+
+while($badgeType = $badgeTypeR->fetch_assoc()) {
+$badgeTypes[$badgeType['memCategory']] = $badgeType['badgeLabel'];
 }
 
-$badgeTypes = array(
-    'bsfs'     => 'B',
-    'discount' => 'M',
-    'freebie'  => 'F',
-    'goh'      => 'G',
-    'rollover' => 'R',
-    'standard' => 'M',
-    'yearahead' => 'M',
-    'premium'  => 'M',
-    'test'     => 'X',
-    'Attending' => 'A',
-    'Vendor' => 'V',
-    'voter' => 'V',
-    'NoRights' => 'N'
-);
+$badgeFlagQ = "SELECT ageType, badgeFlag FROM ageList WHERE conid=? and badgeFlag is not null;";
+$badgeFlagR = dbSafeQuery($badgeFlagQ, 'i', array($conid));
+$badgeFlags = array();
 
-function lookupType($type)//:string {
-{
-    global $badgeTypes;
-    return $badgeTypes[$type];
+while($badgeFlag = $badgeFlagR->fetch_assoc()) {
+$badgeFlags[$badgeFlag['ageType']] = $badgeFlag['badgeFlag'];
 }
 
 function init_file($printer)//:string {
 {
+    global $badgeTypes;
     if ($printer[0] == 'None' && $printer[2] == '') {
         $response['error'] = "You have no printer defined, you cannot print a badge.";
         ajaxSuccess($response);
@@ -81,22 +38,8 @@ function init_file($printer)//:string {
         exit();
     }
 
-    $printerType = $printer[3];
-    switch($printerType) {
-        case "DymoSEL":
-            $temp = fopen($tempfile, 'w');
-            if (!$temp) {
-                $response['error'] = 'Unable to get open file';
-                $response['error_message'] = error_get_last();
-                ajaxSuccess($response);
-                exit();
-            }
-
-            $ctrlLine = printMod('lbl',
-                array('Reset', '38cpl', 'Landscape', 'Truncate', 'VertStrtPt97'));
-            fwrite($temp, $ctrlLine);
-            fclose($temp);
-            break;
+    $codepage = $printer[4];
+    switch($codepage) {
         default:
             $atcon = get_conf('atcon');
             if (array_key_exists('badgeps', $atcon)) {
@@ -116,11 +59,8 @@ function init_file($printer)//:string {
 }
 
 function write_badge($badge, $tempfile, $printer):void {
-    $printerType = $printer[3];
-    switch ($printerType) {
-        case 'DymoSEL':
-            write_se450($badge, $tempfile);
-            break;
+    $codepage = $printer[4];
+    switch ($codepage) {
         default:
             write_ps($badge, $tempfile);
             break;
@@ -129,6 +69,8 @@ function write_badge($badge, $tempfile, $printer):void {
 
 function write_ps($badge, $tempfile)//: void {
 {
+    global $badgeTypes;
+    global $badgeFlags;
     $temp = fopen($tempfile, "a");
     if(!$temp) {
         $response['error'] = "Unable to get open file";
@@ -169,13 +111,10 @@ function write_ps($badge, $tempfile)//: void {
     }
 
     //info line
-    $type = lookupType($badge['category']);
+    $type = $badgeTypes[$badge['category']];
     $id = $badge['id'];
 
-    if($badge['age'] == 'youth') { $type = 'Y'; }
-
     if(strtolower($badge['type'])=='oneday') {
-        #$day = date("D");
         $day = substr($badge['day'], 0, 3);
         fwrite($temp, ""
             . "16 4\n"
@@ -189,113 +128,32 @@ function write_ps($badge, $tempfile)//: void {
         . "details setfont\n"
         . "($type $id) show\n\n");
 
-    if($badge['age'] == 'child') {
+    if(array_key_exists($badge['age'], $badgeFlags)) {
+        $flag = $badgeFlags[$badge['age']];
+        $flagLen = mb_strlen($flag);
+        $offset = ceil($flagLen / 2);
+        $wordoffset = floor($flagLen/2);
+        $start = 91 - 8*$offset;
+        $end = 91 + 8*$offset;
+        $word = $start + 4;
+        
         fwrite($temp, "newpath\n"
-            . "68 4 moveto\n"
-            . "68 16 lineto\n"
-            . "114 16 lineto\n"
-            . "114 4 lineto\n"
+            . "$start 4 moveto\n"
+            . "$start 16 lineto\n"
+            . "$end 16 lineto\n"
+            . "$end 4 lineto\n"
             . "closepath fill\n"
             . "1 setgray\n"
-            . "72 6\n"
+            . "$word 6\n"
             . "2 copy moveto\n"
             . "childFont setfont\n"
-            . "(child) show\n\n"
+            . "($flag) show\n\n"
             . "0 setgray\n\n");
-      }
-    if($badge['age'] == 'kit') {
-        fwrite($temp, "newpath\n"
-            . "68 4 moveto\n"
-            . "68 16 lineto\n"
-            . "114 16 lineto\n"
-            . "114 4 lineto\n"
-            . "closepath fill\n"
-            . "1 setgray\n"
-            . "72 6\n"
-            . "2 copy moveto\n"
-            . "childFont setfont\n"
-            . "( kit ) show\n\n"
-            . "0 setgray\n\n");
-      }
+
+    }
 
     #fwrite($temp, "grestore\nshowpage\n%%EOF\n");
     fwrite($temp, "\nshowpage\n");
-    fclose($temp);
-}
-
-function write_se450($badge, $tempfile)//:void {
-{
-    $temp = fopen($tempfile, "a");
-    if(!$temp) {
-        $response['error'] = "Unable to get open file";
-        $response['error_message'] = error_get_last();
-        ajaxSuccess($response);
-        exit();
-    }
-
-    //build badge name
-    if($badge['badge_name'] == "") {
-      $badge['badge_name'] = $badge['full_name'];
-    }
-
-    #$badge_name2 = preg_replace("/#/", "", $badge['badge_name']);
-    $badge_name2 = $badge['badge_name'];
-    $badge_name = html_entity_decode($badge_name2, ENT_QUOTES | ENT_HTML401);
-    $name = $badge_name;
-    $namelen = strlen($name);
-    if($namelen > 16) {
-        $len = strrpos(substr($badge_name,1,16), ' ');
-        if($len === false || $len === 0) { $len = 16; }
-        else { $len +=1; }
-        $name = substr($badge_name, 0, $len);
-        $name2 = substr($badge_name, $len, 22);
-        $name .= "\n"
-            . printmod('lbl', array('7cpi', 'DblHighOFF', 'DblWideOFF'))
-            . $name2;
-    } else { $name .= "\n"; }
-
-    $output = printmod('lbl', array('10cpi', 'DblHighON', 'DblWideON'));
-    $output .= $name;
-    $output .= "\n";
-
-    //info line
-    $type = lookupType($badge['category']);
-    $id = $badge['id'];
-
-    if($badge['age'] == 'youth') {
-        $type='Y';
-    }
-
-    if(strtolower($badge['type'])=='oneday') {
-        #$day = date("D");
-        $day = substr($badge['day'], 0, 3);
-    } else { $day = ""; }
-
-    if($badge['age'] == 'child') {
-        $age = sprintf("%schild%s",
-                printmod('lbl', array('InverseON')),
-                printmod('lbl', array('InverseOFF'))
-                );
-    } else if($badge['age'] == 'kit') {
-        $age = sprintf("%s kit %s",
-                printmod('lbl', array('InverseON')),
-                printmod('lbl', array('InverseOFF'))
-                );
-    } else { $age = ""; }
-
-    $output .= sprintf("%s%3s%s%5s%1s%s\n",
-            printmod('lbl', array('10cpi', 'DblHighON', 'DblWideON')),
-            $day,
-            printmod('lbl', array('10cpi', 'DblHighOFF', 'DblWideOFF')),
-            "", $type, $id);
-
-    $output .= sprintf("%s%11s%s",
-            printmod('lbl', array('10cpi', 'DblHighOFF', 'DblWideOFF')),
-            "", $age);
-
-    $output .= "\f";
-
-    fwrite($temp, $output);
     fclose($temp);
 }
 
@@ -303,32 +161,48 @@ function write_se450($badge, $tempfile)//:void {
 function print_badge($printer, $tempfile)//: string|false
 {
     $queue = $printer[2];
-    $codepage = $printer[3];
+    $codepage = $printer[4];
     $name = $printer[0];
-    if (mb_substr($queue, 0, 1) == '0' || $name == 'None') return 0; // this token is the temp file only print queue
-
-    $server = $printer[1];
-    $printerType = $printer[3];
-    $options = '';
-    switch ($codepage) {
-        // turbo 330. et al, -o PageSize=w82h248  -o orientation-requested=5
-        case 'Dymo3xxPS':
-            $options = '-o PageSize=w82h248 -o orientation-requested=5';
-            break;
-        // turbo 450 et al, -o PageSize=30252_Address
-        case 'Dymo4xxPS':
-            $options = '-o PageSize=30252_Address';
-            break;
-        default:
-            break;
-    }
-    // all the extra stuff for exec is for debugging issues.
-    $command = "lpr -H$server -P$queue $options < $tempfile";
-    $output = [];
     $result_code = 0;
-    $result = exec($command,$output,$result_code);
-    web_error_log("executing command '$command' returned '$result', code: $result_code");
-    //var_error_log($output);
+
+    if (mb_substr($queue, 0, 1) == '0' || $name == 'None') { // return link to badge
+        $atcon_conf = get_conf('atcon');
+        $location = $atcon_conf['badges'];
+        $newname = "ps/" . basename($tempfile) . ".ps";
+        $command = "cp $tempfile " . "$location/$newname";
+        $output = [];
+        $result = exec($command,$output,$result_code);
+        web_error_log("executing command '$command' returned '$result', code: $result_code",'badgePrn');
+        if($result_code == 0) { 
+            web_error_log("Badge saved at $newname",'badgePrn');
+            $result_code=$newname;
+        }
+    }  else { // print to a printer
+        $server = $printer[1];
+        $options = '';
+        switch ($codepage) {
+            // turbo 330. et al, -o PageSize=w82h248  -o orientation-requested=5
+            case 'Dymo3xxPS':
+                $options = '-o PageSize=w82h248 -o orientation-requested=5';
+                break;
+            // turbo 450 et al, -o PageSize=30252_Address
+            case 'Dymo4xxPS':
+                $options = '-o PageSize=30252_Address';
+                break;
+            default:
+                break;
+        }
+        // all the extra stuff for exec is for debugging issues.
+        $serverArg = '';
+        if ($server != '')
+            $serverArg = "H$server";
+        $command = "lpr $serverArg -P$queue $options < $tempfile";
+        $output = [];
+        $result = exec($command,$output,$result_code);
+        web_error_log("executing command '$command' returned '$result', code: $result_code",'badgePrn');
+    }
+
+    unlink($tempfile); // TODO make this a configuration option
     return $result_code;
 }
 
@@ -340,7 +214,7 @@ function print_receipt($printer, $receipt)//:string | false {
     $queue = $printer[2];
     $server = $printer[1];
     $name = $printer[0];
-    $codepage = $printer[3];
+    $codepage = $printer[4];
 
     switch ($codepage) {
         case 'UTF-8':
@@ -381,10 +255,14 @@ function print_receipt($printer, $receipt)//:string | false {
 
     // all the extra stuff for exec is for debugging issues.
     // Temporarly save the output to a file to help with why it's dying
-    $command = "lpr -H$server -P$queue $options < $tempfile";
+    $serverArg = '';
+    if ($server != '')
+        $serverArg = "H$server";
+    $command = "lpr $serverArg -P$queue $options < $tempfile";
     $result_code = 0;
     $result = exec($command,$output,$result_code);
     web_error_log("executing command '$command' returned '$result', code: $result_code");
+    unlink($tempfile); // TODO make this a configuration option
     //var_error_log($output);
     return $result_code;
 }

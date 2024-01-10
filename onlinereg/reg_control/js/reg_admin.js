@@ -339,6 +339,7 @@ function draw_stats(data) {
     couponfilter = [];
 }
 
+// display actions as buttons in a cell for this membership
 function actionbuttons(cell, formatterParams, onRendered) {
     var data = cell.getData();
     var category = data['category'];
@@ -669,6 +670,8 @@ function draw_badges(data) {
         paginationSize: 10,
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         columns: [
+            { title: "TID", field: "display_trans", headerSort: true, headerFilter: true },
+            { title: "PID", field: "perid", headerSort: true, headerFilter: true, },
             { title: "TID", field: "display_trans", headerSort: true, headerFilter: true },
             { title: "Person", field: "p_name", headerSort: true, headerFilter: true },
             { title: "Badge Name", field: "p_badge", headerSort: true, headerFilter: true },

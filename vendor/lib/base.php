@@ -42,4 +42,16 @@ echo <<<EOF
 EOF;
 }
 
+function vendor_page_foot() {
+    ?>
+    <div class="container-fluid">
+        <div class='row mt-2'>
+            <?php drawBug(12); ?>
+        </div>
+    </div>
+    </body>
+    </html>
+    <?php
+}
+
 ?>

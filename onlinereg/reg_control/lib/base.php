@@ -17,6 +17,7 @@ set_include_path(get_include_path(). $include_path_additions);
 
 require_once("vendor/autoload.php");
 require_once(__DIR__ . "/../../../lib/db_functions.php");
+require_once(__DIR__ . "/../../../lib/global.php");
 require_once(__DIR__ . "/../../../lib/ajax_functions.php");
 db_connect();
 
@@ -271,9 +272,13 @@ function tab_bar($auth, $page) {
     <?php
 }
 
-function page_foot($title) {
+function page_foot($title = "") {
     ?>
-
+    </div>
+    <div class="container-fluid">
+        <div class='row mt-2'>
+            <?php drawBug(12); ?>
+        </div>
     </div>
 </body>
 </html>
@@ -498,4 +503,41 @@ function paymentDialogs() {
 <?php
 }
 
+// draw a bs5 modal popup for editing a field in tinymce
+function bs_tinymceModal() {
+    $html = <<<EOS
+    <div id='tinymce-modal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit field in TinyMCE' aria-hidden='true' style='--bs-modal-width: 80%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='editTitle'>Edit Field</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div id="editTable" hidden="hidden">editTable init</div>
+                <div id="editField" hidden="hidden">editField init</div>
+                <div id="editIndex" hidden="hidden">editIndex init</div>
+                <div id="editClass" hidden="hidden">editClass init</div>
+                <div class='container-fluid'>
+                    <div class="row">
+                        <div class="col-sm-12" id="editFieldName">Editing ...</div>
+                    </div>
+                    <div class="row">
+                         <div class='col-sm-12' id='editFieldValue'><textarea id='editFieldArea'>Content</textarea></div>
+                    </div>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='saveEdit' onClick='saveEdit()'>Save Edit</button>
+            </div>
+            <div id='result_message_edit' class='mt-4 p-2'></div>
+        </div>
+    </div>
+</div>
+EOS;
+    echo $html;
+}
 ?>

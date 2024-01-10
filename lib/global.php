@@ -16,3 +16,22 @@ function guidv4($data = null) {
     // Output the 36 character UUID.
     return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 }
+
+function drawBug($cols) {
+    global $db_ini;
+
+    $textCols = $cols - 1;
+    $server = $db_ini['con']['server'];
+    echo <<<EOS
+        <div class="col-sm-$textCols">
+            <p>
+            Powered by ConTroll. Copyright 2015-2024, Michael Rafferty.</br>
+            <img src="$server/lib/apglv3-bug.png"> ConTroll is freely available for use under the GNU Affero General Public License, Version 3.
+            See the <a href="https://github.com/MichaelRafferty/ConTroll/blob/master/README.md" target="_blank">ConTroll ReadMe file</a>.
+            </p>
+        </div>
+        <div class="col col-sm-1">
+            <img src="$server/lib/ConTroll-bug.png" alt="ConTroll Logo">
+        </div>
+EOS;
+}

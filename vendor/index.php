@@ -933,4 +933,5 @@ EOH;
 EOH;
     }
     echo $html;
+    vendor_page_footer();
 }
