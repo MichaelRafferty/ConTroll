@@ -54,7 +54,7 @@ class vendorsetup {
     #vendor_pane = null;
     #conid = null;
     #debug = 0;
-    #debugVisible = "false";
+    #debugVisible = false;
 
 
     // globals before open
@@ -70,8 +70,8 @@ class vendorsetup {
             console.log("Debug = " + debug);
             console.log("conid = " + conid);
         }
-        if (this.#debug & 2) {
-            this.#debugVisible = "true";
+        if (this.#debug & 2) {ƒtab
+            this.#debugVisible = true;
         }
     };
 
@@ -484,7 +484,7 @@ class vendorsetup {
                         deleterow(e, cell.getRow());
                     }
                 },
-                {title: "To Del", field: "to_delete", visible: this.#debugVisible,}
+                {title: "To Del", field: "to_delete", visible: this.#debugVisible }
             ],
         });
         this.#regionTypeTable.on("dataChanged", function (data) {
