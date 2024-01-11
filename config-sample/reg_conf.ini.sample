@@ -78,15 +78,16 @@ open=1
 #vendorsite: url to vendor website
 vendors="dealers@???"
 vendorsite="http://vendor"
+# path to file in config of any additional text you wish to add to explain the signup form for vendor portal
+vendorSignupAddltext=""
+artistsite="http://artist"
+# pathto file in config any additional text you wish to add to explain the signup form for artist portal
+artistSignupAddltext=""
 taxidlabel="NJ Sales Tax ID"
 taxidextra=
-reg_disclaimer=""
+// disclaimers are path to file in config directory contain the request and payment disclaimers
+req_disclaimer=""
 pay_disclaimer=""
-artshow="artshow@conname.org"
-alley="artshow@conname.org"
-dealer="dealer@conname.org"
-addlaccounttext = ""
-artventortext = "vendors"
 [client]
 path = "/home/homedir/reg.conname.org/reg_control"
 [google]

@@ -18,7 +18,15 @@ $regserver = $ini['server'];
 
 $reg_link = "<a href='$regserver'>Convention Registration</a>";
 
-vendor_page_init($condata['label'] . ' Vendor Registration');
+if (str_starts_with('artist', $_SERVER['HTTP_HOST'])){
+    $portalName = 'Artist';
+    $portalType = 'artist';
+} else {
+    $portalName = 'Vendor';
+    $portalType = 'vendor';
+}
+
+vendor_page_init($condata['label'] . " $portalName Registration");
 ?>
 
 <body id="vendorPortalBody">
@@ -41,24 +49,24 @@ vendor_page_init($condata['label'] . ' Vendor Registration');
     </div>
     <div class="row">
         <div class="col-sm-12 mt-2">
-            <h1>Vendor Portal</h1>
+            <h1><?php echo $portalName;?> Portal</h1>
         </div>
     </div>
     <?php
 if ($vendor_conf['open'] == 0) { ?>
-    <p class='text-primary'>The vendor portal is currently closed. Please check the website to determine when it will open or try again tomorrow.</p>
+    <p class='text-primary'>The <?php echo $portalName;?> portal is currently closed. Please check the website to determine when it will open or try again tomorrow.</p>
     <?php
     exit;
 }
  ?>
     <div class="row p-1">
         <div class="col-sm-auto">
-            Welcome to the <?php echo $con['label'] ?> Vendor Portal.
+            Welcome to the <?php echo $con['label'] . ' ' . $portalName; ?>  Portal.
         </div>
     </div>
     <div class=row">
         <div class="col-sm-12">
-            From here you can create and manage your account for <?php echo $vendor_conf['artventortext']; ?>.
+            From here you can create and manage your account for <?php echo $portalType; ?>s.
         </div>
     </div>
 <?php
@@ -89,17 +97,20 @@ if (isset($_SESSION['id'])) {
 } else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
     //handle login
     $login = strtolower(sql_safe($_POST['si_email']));
-    $loginQ = "SELECT id, password, need_new FROM vendors WHERE email=?;";
+    $loginQ = "SELECT id, password, need_new, archived FROM vendors WHERE email=?;";
     $loginR = dbSafeQuery($loginQ, 's', array($login));
     while ($result = $loginR->fetch_assoc()) {
         if (password_verify($_POST['si_password'], $result['password'])) {
             $_SESSION['id'] = $result['id'];
-            $_SESSION['artist'] = 0;
-            $_SESSION['dealer'] = 0;
-
             $vendor = $_SESSION['id'];
-            $artist = $_SESSION['artist'];
             $in_session = true;
+
+            if ($result['archived'] == 'Y') {
+                // they were marked archived and they logged in again, unarchive them.
+                $numupd = dbSafeCmd("UPDATE vendors SET archived = 'N' WHERE id = ?", 'i', array($vendor));
+                if ($numupd != 1)
+                    error_log("Unable to unarchive vendor $vendor");
+            }
 
             if ($result['need_new']) {
                 $forcePassword = true;
@@ -119,7 +130,7 @@ if (!$in_session) { ?>
             <div class="modal-content">
                 <div class='modal-header bg-primary text-bg-primary'>
                     <div class="modal-title">
-                        <strong>New Vendor Registration</strong>
+                        <strong>New <?php echo $portalName;?> Registration</strong>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -128,33 +139,39 @@ if (!$in_session) { ?>
                         <form id="registrationForm" name="registrionForm" action="javascript:void(0);" class="form-floating">
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <p>This form creates an account on the <?php echo $con['conname']; ?> vendor
-                                        site. <?php echo $vendor_conf['addlaccounttext'] ?></p>
+                                    <p>This form creates an account on the <?php echo $con['conname'] . " $portalName" ?>
+                                        site.</p>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
                                     <p> Please provide us with information we can use to evaluate if you qualify and how you would fit in the selection of <?php
-                                        echo $vendor_conf['artventortext'] ?> at <?php echo $con['conname']; ?>.<br/>Creating an account does not guarantee space.
+                                        echo $portalType; ?>s at <?php echo $con['conname'];
+                                        $addlkey = $portalType == 'artist' ? 'artistSignupAddltext' : 'vendorSignupAddltext';
+                                        if (array_key_exists($addlkey, $vendor_conf)) {
+                                            echo '<br/>' . file_get_contents('../config/'. $vendor_conf[$addlkey]);
+                                        } ?>
+                                        <br/>Creating an account does not guarantee space.
                                     </p>
                                 </div>
                             </div>
                             <div class="row mt-1">
                                 <div class="col-sm-2">
-                                    <label for="name" title='This is the name that we will register your space under.'> *Name: </label>
+                                    <label for="name"> *Name: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" type='text' name='name' id="name" maxlength="64" size="50" tabindex="1" required/><br/>
-                                    <span class='small'>Dealer, Artist, or Store name</span>
+                                    <input class="form-control-sm" type='text' name='name' id="name" maxlength="64" size="50" tabindex="1" required
+                                        placeholder="<?php echo $portalType == 'artist' ? 'Artist Name' : 'Vendor, Dealer or Store name';?>"/><br/>
+                                        <span class="small">This is the name that we will register your space under.</span>
                                 </div>
                             </div>
                             <div class="row mt-1">
                                 <div class="col-sm-2">
-                                    <label for="email" title='Your email address is used for contact and login purposes.'> *Email/Login: </label>
+                                    <label for="email"> *Email/Login: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" type='email' name='email' id="email" maxlength="64" size="50" required/><br/>
-                                    <span class='small'>For Contact and Login</span>
+                                    <input class="form-control-sm" type='email' name='email' id="email" maxlength="64" size="50" required
+                                        placeholder="email address for Contact and Login to the portal"/>
                                 </div>
                             </div>
                             <div class="row mt-1">
@@ -175,11 +192,11 @@ if (!$in_session) { ?>
                             </div>
                             <div class="row mt-1">
                                 <div class="col-sm-2">
-                                    <label for="website"
-                                           title='Please enter your web site, Etsy site, social media site, or other appropriate URL.'>Website: </label>
+                                    <label for="website">Website: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='website' type='text' size="64" name='website'/>
+                                    <input class="form-control-sm" id='website' type='text' size="64" name='website'
+                                        placeholder="Please enter your web, Etsy or social media site, or other appropriate URL."/>
                                 </div>
                             </div>
                             <div class="row mt-1">
@@ -201,18 +218,18 @@ if (!$in_session) { ?>
                             </div>
                             <div class="row mt-1">
                                 <div class="col-sm-2">
-                                    <label for="addr" title='Street Address'> *Address </label>
+                                    <label for="addr"> *Address </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='addr' type='text' size="64" name='addr' required/>
+                                    <input class="form-control-sm" id='addr' type='text' size="64" name='addr' required placeholder="Street Address"/>
                                 </div>
                             </div>
                             <div class="row mt-1">
                                 <div class="col-sm-2">
-                                    <label for="addr2" title='Company Name'> Company </label>
+                                    <label for="addr2"> Company </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='addr2' type='text' size="64" name='addr2'/>
+                                    <input class="form-control-sm" id='addr2' type='text' size="64" name='addr2' placeholder="Company Name"/>
                                 </div>
                             </div>
                             <div class="row mt-1">
@@ -232,7 +249,7 @@ if (!$in_session) { ?>
                                     <label for="zip"> *Zip: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0 ps-1 pb-2">
-                                    <input class="form-control-sm" id='zip' type='text' size="11" maxlength="11" name='zip' required/>
+                                    <input class="form-control-sm" id='zip' type='text' size="11" maxlength="11" name='zip' required placeholder="Postal Code"/>
                                 </div>
                             </div>
                         </form>
@@ -435,18 +452,20 @@ while ($space = $vendorSR->fetch_assoc()) {
                             </div>
                             <div class="row mt-1">
                                 <div class="col-sm-2">
-                                    <label for="addr" title='Street Address'>Address </label>
+                                    <label for="addr">Address </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='addr' type='text' size="64" name='addr' value="<?php echo escape_quotes($info['addr']); ?>" required/>
+                                    <input class="form-control-sm" id='addr' type='text' size="64" name='addr' value="<?php echo escape_quotes($info['addr']); ?>" required
+                                        placeholder="Street Address"/>
                                 </div>
                             </div>
                             <div class="row mt-1">
                                 <div class="col-sm-2">
-                                    <label for="addr2" title='Company Name'>Company/ Address line 2:</label>
+                                    <label for="addr2">Company/ Address line 2:</label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='addr2' type='text' size="64" value="<?php echo escape_quotes($info['addr2']); ?>" name='addr2'/>
+                                    <input class="form-control-sm" id='addr2' type='text' size="64" value="<?php echo escape_quotes($info['addr2']); ?>" name='addr2'
+                                        placeholder="Company Name"/>
                                 </div>
                             </div>
                             <div class="row mt-1">
@@ -537,10 +556,10 @@ while ($space = $vendorSR->fetch_assoc()) {
                                 </div>
                             </div>
 <?php
-if (array_key_exists('reg_disclaimer',$vendor_conf) && $vendor_conf['reg_disclaimer'] != '') {
+if (array_key_exists('req_disclaimer',$vendor_conf) && $vendor_conf['req_disclaimer'] != '') {
 ?>                          <div class='row p-1 pt-4 pb-3'>
                                 <div class='col-sm-12'>
-                                    <?php echo $vendor_conf['reg_disclaimer'] . "\n"; ?>
+                                    <?php echo $vendor_conf['req_disclaimer'] . "\n"; ?>
                                 </div>
                             </div>
 <?php

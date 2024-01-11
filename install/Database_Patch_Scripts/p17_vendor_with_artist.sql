@@ -88,4 +88,5 @@ CREATE TABLE vendorSpacePrices (
 
 ALTER TABLE vendorSpacePrices ADD CONSTRAINT vsp_vendorspaceid_fk FOREIGN KEY(spaceId) REFERENCES vendorSpaces(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
-INSERT INTO patchLog(id, name) values(16, vendor_with_artist);
+/* this has number xxx in it (needs to be 17) to prevent insert from working, update to 17 or final number when integrated */
+INSERT INTO patchLog(id, name) values(xxx, vendor_with_artist);
