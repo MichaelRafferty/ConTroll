@@ -446,6 +446,23 @@ function makePurchase(token, label) {
 function registrationModalOpen() {
     if (registration != null) {
         registration.show();
+        tinyMCE.init({
+            selector: 'textarea#reg-description',
+            height: 400,
+            min_height: 400,
+            menubar: false,
+            plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
+            toolbar:  [
+                'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
+                'bold italic underline strikethrough removeformat | '+
+                'visualchars nonbreaking charmap hr | ' +
+                'preview fullscreen ',
+                'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
+            ],
+            content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
+            placeholder: 'Edit the description here...',
+            auto_focus: 'reg-description'
+        });
     }
 }
 

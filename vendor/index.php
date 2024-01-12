@@ -27,6 +27,14 @@ if (str_starts_with('artist', $_SERVER['HTTP_HOST'])){
 }
 
 vendor_page_init($condata['label'] . " $portalName Registration");
+
+// load country select
+$countryOptions = '';
+$fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
+while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
+  $countryOptions .= '<option value="' . escape_quotes($data[1]) . '">' .$data[0] . '</option>' . PHP_EOL;
+}
+fclose($fh);
 ?>
 
 <body id="vendorPortalBody">
@@ -179,7 +187,7 @@ if (!$in_session) { ?>
                                     <label for="pw1"> *Password: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='pw1' type='password' name='password' required/>
+                                    <input class="form-control-sm" id='pw1' type='password' name='password' autocomplete="off" required/>
                                 </div>
                             </div>
                             <div class="row mt-1">
@@ -187,7 +195,7 @@ if (!$in_session) { ?>
                                     <label for="pw2"> *Confirm Password: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='pw2' type='password' name='password2' required/>
+                                    <input class="form-control-sm" id='pw2' type='password' name='password2' autocomplete="off" required/>
                                 </div>
                             </div>
                             <div class="row mt-1">
@@ -204,7 +212,7 @@ if (!$in_session) { ?>
                                     <label for="description">*Description: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <textarea class="form-control-sm" id="description" name='description' rows=5 cols=64 required></textarea>
+                                    <textarea class="form-control-sm" id="reg-description" name='description' rows=5 cols=64 required></textarea>
                                 </div>
                             </div>
                             <div class="row mt-1">
@@ -215,6 +223,11 @@ if (!$in_session) { ?>
                                     <label for='publicity'>Check if we may use your information to publicize your attendence at <?php echo $con['conname']; ?>, if you're
                                         coming?</label>
                                 </div>
+                            </div>
+                            <!-- Vendor/Artist Address -->
+                            <div class='row mt-2'>
+                                <div class='col-sm-2'></div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'><h4><?php echo $portalName; ?> Address</h4></div>
                             </div>
                             <div class="row mt-1">
                                 <div class="col-sm-2">
@@ -237,13 +250,13 @@ if (!$in_session) { ?>
                                     <label for="city"> *City: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='city' type='text' size="32" name='city' required/>
+                                    <input class="form-control-sm" id='city' type='text' size="32" maxlength="32" name='city' required/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
                                     <label for="state"> *State: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
-                                    <input class="form-control-sm" id='state' type='text' size="2" maxlength="2" name='state' required/>
+                                    <input class="form-control-sm" id='state' type='text' size="10" maxlength="16" name='state' required/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
                                     <label for="zip"> *Zip: </label>
@@ -252,6 +265,72 @@ if (!$in_session) { ?>
                                     <input class="form-control-sm" id='zip' type='text' size="11" maxlength="11" name='zip' required placeholder="Postal Code"/>
                                 </div>
                             </div>
+                            <div class='row mt-1'>
+                                <div class='col-sm-2'>
+                                    <label for='country'> Country </label>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
+                                    <select name='country' tabindex='10'>
+                                        <?php echo $countryOptions; ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- Shipping Address (artist only) -->
+                            <?php if ($portalType == 'artist') { ?>
+                            <div class='row mt-4'>
+                                <div class='col-sm-2'></div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'><h4>Shipping Address</h4></div>
+                                <div class='col-sm-auto p-0 ms-4 me-0'>
+                                    <button class='btn btn-sm btn-primary' onclick='copyAddressToShipTo()'>Copy <?php echo $portalName; ?> Address to Shipping Address</button>
+                                </div>
+                            </div>
+                            <div class='row mt-1'>
+                                <div class='col-sm-2'>
+                                    <label for='ship-addr'> *Address </label>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'>
+                                    <input class='form-control-sm' id='ship-addr' type='text' size='64' name='addr' required placeholder='Street Address'/>
+                                </div>
+                            </div>
+                            <div class='row mt-1'>
+                                <div class='col-sm-2'>
+                                    <label for='ship-addr2'> Company </label>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'>
+                                    <input class='form-control-sm' id='ship-addr2' type='text' size='64' name='addr2' placeholder='Company Name'/>
+                                </div>
+                            </div>
+                            <div class='row mt-1'>
+                                <div class='col-sm-2'>
+                                    <label for='ship-city'> *City: </label>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'>
+                                    <input class='form-control-sm' id='ship-city' type='text' size='32' maxlength='32' name='city' required/>
+                                </div>
+                                <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
+                                    <label for='ship-state'> *State: </label>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0 ps-1'>
+                                    <input class='form-control-sm' id='ship-state' type='text' size='10' maxlength='16' name='state' required/>
+                                </div>
+                                <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
+                                    <label for='ship-zip'> *Zip: </label>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
+                                    <input class='form-control-sm' id='ship-zip' type='text' size='11' maxlength='11' name='zip' required placeholder='Postal Code'/>
+                                </div>
+                            </div>
+                            <div class='row mt-1'>
+                                <div class='col-sm-2'>
+                                    <label for='ship-country'> Country </label>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
+                                    <select name='ship-country' tabindex='10'>
+                                        <?php echo $countryOptions; ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <?php } ?>-
                         </form>
                     </div>
                 </div>
@@ -284,7 +363,7 @@ if (!$in_session) { ?>
                         <label for="si_password">*Password: </label>
                     </div>
                     <div class="col-sm-auto">
-                        <input class="form-control-sm" type='password' id='si_password' name='si_password' size="40" required/>
+                        <input class="form-control-sm" type='password' id='si_password' name='si_password' size="40" autocomplete="on" required/>
                     </div>
                 </div>
                 <div class="row mt-2">
@@ -439,7 +518,7 @@ while ($space = $vendorSR->fetch_assoc()) {
                                     <label for='description'>Description:</label>
                                 </div>
                                 <div class='col-sm-10 p-0'>
-                                    <textarea class="form-control-sm" name='description' id='description' rows=5 cols=60><?php echo $info['description']; ?></textarea>
+                                    <textarea class="form-control-sm" name='description' id='upd-description' rows=5 cols=60><?php echo $info['description']; ?></textarea>
                                 </div>
                             </div>
                             <div class='row mt-1'>
@@ -912,7 +991,7 @@ EOH;
                 <label for='oldPw'>Old or Temp Password:</label>
             </div>
             <div class='col-sm-8'>
-                <input type='password' id='oldPw' name='oldPassword' required/>
+                <input type='password' id='oldPw' name='oldPassword' autocomplete="off" required/>
             </div>
         </div>
         <div class='row'>
@@ -920,7 +999,7 @@ EOH;
                 <label for='pw'>new Password:</label>
             </div>
             <div class='col-sm-8'>
-                <input type='password' id='pw' name='password' required/>
+                <input type='password' id='pw' name='password' autocomplete="off" required/>
             </div>
         </div>
         <div class='row'>
@@ -928,7 +1007,7 @@ EOH;
                 <label for='pw2'>Re-enter Password:</label>
             </div>
             <div class='col-sm-8'>
-                <input type='password' id='pw2' name='password2' required/>
+                <input type='password' id='pw2' name='password2' autocomplete="off" required/>
             </div>
         </div>
 EOH;

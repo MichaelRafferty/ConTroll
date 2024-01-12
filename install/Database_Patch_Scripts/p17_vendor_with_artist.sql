@@ -6,6 +6,7 @@
 /*
 
 DROP TABLE IF EXISTS vendor_space;
+DROP TABLE IF EXISTS vendors;
 DROP TABLE IF EXISTS vendorSpacePrices;
 DROP TABLE IF EXISTS vendorSpaces;
 DROP TABLE IF EXISTS vendorRegionYears;
@@ -87,6 +88,36 @@ CREATE TABLE vendorSpacePrices (
 );
 
 ALTER TABLE vendorSpacePrices ADD CONSTRAINT vsp_vendorspaceid_fk FOREIGN KEY(spaceId) REFERENCES vendorSpaces(id) ON DELETE CASCADE ON UPDATE CASCADE;
+
+CREATE TABLE vendors (
+    id int NOT NULL AUTO_INCREMENT,
+    perid int DEFAULT NULL,
+    name varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+    website varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+    description text COLLATE utf8mb4_general_ci,
+    email varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
+    password varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+    need_new tinyint(1) DEFAULT '1',
+    confirm tinyint(1) DEFAULT '0',
+    publicity tinyint(1) DEFAULT '0',
+    addr varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+    addr2 varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+    city varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
+    state varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL,
+    zip varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+    country varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    ship_addr varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    ship_addr2 varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    ship_city varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    ship_state varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    ship_zip varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    ship_country varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    archived enum('N','Y') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
+    PRIMARY KEY (id)
+);
+
+ALTER TABLE vendors ADD CONSTRAINT vendor_perid_fk FOREIGN KEY (perid) REFERENCES perinfo (id) ON UPDATE CASCADE;
+);
 
 /* this has number xxx in it (needs to be 17) to prevent insert from working, update to 17 or final number when integrated */
 INSERT INTO patchLog(id, name) values(xxx, vendor_with_artist);

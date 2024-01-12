@@ -38,6 +38,7 @@ echo <<<EOF
     <script type='text/javascript' src='js/jquery-min-3.60.js'></script>
     <script type='text/javascript' src='js/jquery-ui.min-1.13.1.js'></script>
     <script type='text/javascript' src='js/vendor.js'></script>
+    <script type='text/javascript' src='js/tinymce/tinymce.min.js'></script>
 </head>
 EOF;
 }
