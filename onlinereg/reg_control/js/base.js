@@ -272,7 +272,7 @@ function clear_message(div='result_message') {
 //  error: (white on red) bg-danger
 //  warn: (black on yellow-orange) bg-warning
 //  success: (white on green) bg-success
-function show_message(message, type, div='result_message') {
+function show_message(message, type = 'success', div='result_message') {
     var message_div = document.getElementById(div);
 
     if (message_div.classList.contains('bg-danger')) {

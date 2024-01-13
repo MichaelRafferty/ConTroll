@@ -46,7 +46,8 @@ server="https://reg.conname.org/"
 rollover_eligible="'upgrade', 'rollover', 'freebie', 'standard', 'yearahead', 'discount'"
 [debug]
 google=0 ; to enable google debug statements (1=enable, 0=disable)
-reg_control_admin=0 ; to enable reg_contol admin tab debug statement (1=enable, 0=disable)
+reg_control_admin=0 ; to enable reg_contol admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+vendors=0 ; to enable vendor and artist admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
 [reg]
 https=1
 test=0
@@ -76,11 +77,12 @@ test=0
 open=1
 #vendors: email address for generic vendor emails
 #vendorsite: url to vendor website
-vendors="dealers@???"
+vendor="dealers@???"
 vendorsite="http://vendor"
 # path to file in config of any additional text you wish to add to explain the signup form for vendor portal
 vendorSignupAddltext=""
 artistsite="http://artist"
+artist="artists@???"
 # pathto file in config any additional text you wish to add to explain the signup form for artist portal
 artistSignupAddltext=""
 taxidlabel="NJ Sales Tax ID"

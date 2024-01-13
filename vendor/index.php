@@ -2,11 +2,13 @@
 // Vendor - index.php - Main page for vendor registration
 require_once("lib/base.php");
 require_once("../lib/cc__load_methods.php");
+global $config_vars;
 
 $cc = get_conf('cc');
 $con = get_conf('con');
 $conid = $con['id'];
 $vendor_conf = get_conf('vendor');
+$debug = get_conf('debug');
 $ini = get_conf('reg');
 load_cc_procs();
 
@@ -15,6 +17,7 @@ $condata = get_con();
 $in_session = false;
 $forcePassword = false;
 $regserver = $ini['server'];
+$vendor = '';
 
 $reg_link = "<a href='$regserver'>Convention Registration</a>";
 
@@ -25,6 +28,13 @@ if (str_starts_with('artist', $_SERVER['HTTP_HOST'])){
     $portalName = 'Vendor';
     $portalType = 'vendor';
 }
+
+$config_vars = array();
+$config_vars['label'] = $con['label'];
+$config_vars['vemail'] = $vendor_conf[$portalType];
+$config_vars['portalType'] = $portalType;
+$config_vars['portalName'] = $portalName;
+$config_vars['debug'] = $debug['vendors'];
 
 vendor_page_init($condata['label'] . " $portalName Registration");
 
@@ -93,19 +103,19 @@ if (isset($_SESSION['id'])) {
     if (isset($_REQUEST['logout'])) {
         session_destroy();
         unset($_SESSION['id']);
+        if ($portalType == 'vendor') {
+            header('location:' . $vendor_conf['vendorsite']);
+        } else {
+            header('location:' . $vendor_conf['artistsite']);
+        }
     } else {
         $vendor = $_SESSION['id'];
-        $artist = $_SESSION['artist'];
-        if ($vendor == $artist) {
-            $vendor = $_SESSION['vendor'];
-            $_SESSION['id'] = $vendor;
-        }
         $in_session = true;
     }
 } else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
     //handle login
     $login = strtolower(sql_safe($_POST['si_email']));
-    $loginQ = "SELECT id, password, need_new, archived FROM vendors WHERE email=?;";
+    $loginQ = "SELECT id, password, need_new, archived FROM vendors WHERE contactEmail=?;";
     $loginR = dbSafeQuery($loginQ, 's', array($login));
     while ($result = $loginR->fetch_assoc()) {
         if (password_verify($_POST['si_password'], $result['password'])) {
@@ -131,24 +141,26 @@ if (isset($_SESSION['id'])) {
     }
 }
 
-if (!$in_session) { ?>
-    <!-- Registgration Modal Popup -->
-    <div id='registration' class="modal modal-xl fade" tabindex="-1" aria-labelledby="New Vendor" aria-hidden="true" style='--bs-modal-width: 80%;'>
+?>
+    <!-- Registgration/Edit Registration Modal Popup -->
+    <div id='profile' class="modal modal-xl fade" tabindex="-1" aria-labelledby="New Vendor" aria-hidden="true" style='--bs-modal-width: 80%;'>
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class='modal-header bg-primary text-bg-primary'>
                     <div class="modal-title">
-                        <strong>New <?php echo $portalName;?> Registration</strong>
+                        <strong id="modalTitle">Unset Title for Profile Editing</strong>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" style="padding: 4px; background-color: lightcyan;">
                     <div class="container-fluid form-floating" style="background-color: lightcyan;">
-                        <form id="registrationForm" name="registrionForm" action="javascript:void(0);" class="form-floating">
+                        <form id="vendorProfileForm" name="vendorProfileForm" action="javascript:void(0);" class="form-floating">
+                            <input type="hidden" id='profileMode' name='profileMode' value="unknown"/>
+                            <input type="hidden" id='profileType' name='profileType' value="<?php echo $portalType; ?>"/>
                             <div class="row">
-                                <div class="col-sm-12">
+                                <div class="col-sm-12" id="profileIntro">
                                     <p>This form creates an account on the <?php echo $con['conname'] . " $portalName" ?>
-                                        site.</p>
+                                        Portal.</p>
                                 </div>
                             </div>
                             <div class="row">
@@ -159,69 +171,119 @@ if (!$in_session) { ?>
                                         if (array_key_exists($addlkey, $vendor_conf)) {
                                             echo '<br/>' . file_get_contents('../config/'. $vendor_conf[$addlkey]);
                                         } ?>
-                                        <br/>Creating an account does not guarantee space.
                                     </p>
                                 </div>
                             </div>
+                            <div class="row" id="creatingAccountMsg">
+                                <div class="col-sm-12">Creating an account does not guarantee space.</div>
+                            </div>
+                            <!-- Business Info -->
+                            <div class='row mt-2'>
+                                <div class='col-sm-2'></div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'><h4>Business Information</h4></div>
+                            </div>
                             <div class="row mt-1">
                                 <div class="col-sm-2">
-                                    <label for="name"> *Name: </label>
+                                    <label for="vendorName"> *Name: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" type='text' name='name' id="name" maxlength="64" size="50" tabindex="1" required
-                                        placeholder="<?php echo $portalType == 'artist' ? 'Artist Name' : 'Vendor, Dealer or Store name';?>"/><br/>
+                                    <input class="form-control-sm" type='text' name='vendorName' id="vendorName" maxlength="64" size="50" tabindex="1" required
+                                        placeholder="<?php echo $portalType == 'artist' ? 'Company or Artist Name' : 'Vendor, Dealer or Store name';?>"/><br/>
                                         <span class="small">This is the name that we will register your space under.</span>
                                 </div>
                             </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="email"> *Email/Login: </label>
+                            <div class='row mt-1'>
+                                <div class='col-sm-2'>
+                                    <label for='vendorEmail'> *Business Email: </label>
                                 </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" type='email' name='email' id="email" maxlength="64" size="50" required
-                                        placeholder="email address for Contact and Login to the portal"/>
+                                <div class='col-sm-auto p-0 ms-0 me-0'>
+                                    <input class='form-control-sm' type='email' name='vendorEmail' id='vendorEmail' maxlength='64' size='50' required
+                                        placeholder='email address for the business' tabindex="2"/>
+                                </div>
+                            </div>
+                            <div class='row mt-1'>
+                                <div class='col-sm-2'>
+                                    <label for='vendorPhone'> *Business Phone: </label>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'>
+                                    <input class='form-control-sm' type='text' name='vendorPhone' id='vendorPhone' maxlength='32' size='24' required
+                                        placeholder='phone number for the business' tabindex="3"/>
+                                </div>
+                            </div>
+                            <div class='row mt-1'>
+                                <div class='col-sm-2'>
+                                    <label for='website'>Website: </label>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'>
+                                    <input class='form-control-sm' id='website' type='text' size='64' name='website'
+                                        placeholder='Please enter your web, Etsy or social media site, or other appropriate URL.' tabindex="4"/>
+                                </div>
+                            </div>
+                            <div class='row mt-1'>
+                                <div class='col-sm-2'>
+                                    <label for='description'>*Description: </label>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'>
+                                    <textarea class='form-control-sm' id='description' name='description' rows=5 cols=64 required tabindex="5"></textarea>
+                                </div>
+                            </div>
+                            <div class='row mt-1'>
+                                <div class='col-sm-2 p-0 ms-0 me-0 pe-2 text-end'>
+                                    <input class='form-control-sm' type='checkbox' id='publicity' name='publicity' tabindex="6"/>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'>
+                                    <label for='publicity'>Check if we may use your information to publicize your attendence at <?php echo $con['conname']; ?>, if you're
+                                        coming?</label>
+                                </div>
+                            </div>
+                            <!-- Contact Info -->
+                            <div class='row mt-2'>
+                                <div class='col-sm-2'></div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'><h4>Primary Contact Information</h4></div>
+                            </div>
+                            <div class='row mt-1'>
+                                <div class='col-sm-2'>
+                                    <label for='contactName'> *Name: </label>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'>
+                                    <input class='form-control-sm' type='text' name='contactName' id='contactName' maxlength='64' size='50' tabindex='7' required
+                                        placeholder="primary contact name"/>
                                 </div>
                             </div>
                             <div class="row mt-1">
+                                <div class="col-sm-2">
+                                    <label for="contactEmail"> *Email/Login: </label>
+                                </div>
+                                <div class="col-sm-auto p-0 ms-0 me-0">
+                                    <input class='form-control-sm' type='email' name='contactEmail' id='contactEmail' maxlength='64' size='50' required
+                                        placeholder="email address for Contact and Login to the portal" tabindex="8"/>
+                                </div>
+                            </div>
+                            <div class='row mt-1'>
+                                <div class='col-sm-2'>
+                                    <label for='contactPhone'> *Contact Phone: </label>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'>
+                                    <input class='form-control-sm' type='text' name='contactPhone' id='contactPhone' maxlength='32' size='24' required
+                                        placeholder="contact's phone number" tabindex="9"/>
+                                </div>
+                            </div>
+                            <div class="row mt-1" id="passwordLine1">
                                 <div class="col-sm-2">
                                     <label for="pw1"> *Password: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='pw1' type='password' name='password' autocomplete="off" required/>
+                                    <input class="form-control-sm" id='pw1' type='password' name='password' autocomplete="off" required tabindex="10"
+                                    size="24" placeholder='minimum of 8 characters'/>
                                 </div>
                             </div>
-                            <div class="row mt-1">
+                            <div class="row mt-1" id="passwordLine2">
                                 <div class="col-sm-2">
                                     <label for="pw2"> *Confirm Password: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='pw2' type='password' name='password2' autocomplete="off" required/>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="website">Website: </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='website' type='text' size="64" name='website'
-                                        placeholder="Please enter your web, Etsy or social media site, or other appropriate URL."/>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="description">*Description: </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <textarea class="form-control-sm" id="reg-description" name='description' rows=5 cols=64 required></textarea>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2 p-0 ms-0 me-0 pe-2 text-end">
-                                    <input class="form-control-sm" type='checkbox' id='publicity' name='publicity'/>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <label for='publicity'>Check if we may use your information to publicize your attendence at <?php echo $con['conname']; ?>, if you're
-                                        coming?</label>
+                                    <input class="form-control-sm" id='pw2' type='password' name='password2' autocomplete="off" required tabindex="11"
+                                    size="24" placeholder='minimum of 8 characters'/>
                                 </div>
                             </div>
                             <!-- Vendor/Artist Address -->
@@ -234,15 +296,14 @@ if (!$in_session) { ?>
                                     <label for="addr"> *Address </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='addr' type='text' size="64" name='addr' required placeholder="Street Address"/>
+                                    <input class="form-control-sm" id='addr' type='text' size="64" name='addr' required placeholder="Street Address" tabindex="12"/>
                                 </div>
                             </div>
                             <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="addr2"> Company </label>
-                                </div>
+                                <div class="col-sm-2"></div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='addr2' type='text' size="64" name='addr2' placeholder="Company Name"/>
+                                    <input class="form-control-sm" id='addr2' type='text' size="64" name='addr2'
+                                           placeholder="second line of address if neededsecond line of address if needed" tabindex="13"/>
                                 </div>
                             </div>
                             <div class="row mt-1">
@@ -250,19 +311,20 @@ if (!$in_session) { ?>
                                     <label for="city"> *City: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='city' type='text' size="32" maxlength="32" name='city' required/>
+                                    <input class="form-control-sm" id='city' type='text' size="32" maxlength="32" name='city' required tabindex="14"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
                                     <label for="state"> *State: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
-                                    <input class="form-control-sm" id='state' type='text' size="10" maxlength="16" name='state' required/>
+                                    <input class="form-control-sm" id='state' type='text' size="10" maxlength="16" name='state' required tabindex="15"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
                                     <label for="zip"> *Zip: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0 ps-1 pb-2">
-                                    <input class="form-control-sm" id='zip' type='text' size="11" maxlength="11" name='zip' required placeholder="Postal Code"/>
+                                    <input class="form-control-sm" id='zip' type='text' size="11" maxlength="11" name='zip' required
+                                           placeholder="Postal Code" tabindex="16"/>
                                 </div>
                             </div>
                             <div class='row mt-1'>
@@ -270,7 +332,7 @@ if (!$in_session) { ?>
                                     <label for='country'> Country </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
-                                    <select name='country' tabindex='10'>
+                                    <select id='country' name='country' tabindex='17'>
                                         <?php echo $countryOptions; ?>
                                     </select>
                                 </div>
@@ -281,68 +343,80 @@ if (!$in_session) { ?>
                                 <div class='col-sm-2'></div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'><h4>Shipping Address</h4></div>
                                 <div class='col-sm-auto p-0 ms-4 me-0'>
-                                    <button class='btn btn-sm btn-primary' onclick='copyAddressToShipTo()'>Copy <?php echo $portalName; ?> Address to Shipping Address</button>
+                                    <button class='btn btn-sm btn-primary' type="button" onclick='copyAddressToShipTo()'>Copy <?php echo $portalName; ?> Address to Shipping Address</button>
                                 </div>
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='ship-addr'> *Address </label>
+                                    <label for='shipCompany'> *Company </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' id='ship-addr' type='text' size='64' name='addr' required placeholder='Street Address'/>
+                                    <input class='form-control-sm' id='shipCompany' type='text' size='64' name='shipCompany' required
+                                           placeholder='Company Name' tabindex='17'/>
                                 </div>
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='ship-addr2'> Company </label>
+                                    <label for='shipAddr'> *Address </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' id='ship-addr2' type='text' size='64' name='addr2' placeholder='Company Name'/>
+                                    <input class='form-control-sm' id='shipAddr' type='text' size='64' name='shipAddr' required
+                                           placeholder='Street Address' tabindex="17"/>
+                                </div>
+                            </div>
+                            <div class='row mt-1'>
+                                <div class='col-sm-2'></div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'>
+                                    <input class='form-control-sm' id='shipAddr2' type='text' size='64' name='shipAddr2'
+                                           placeholder='2nd line of address if needed' tabindex="18"/>
                                 </div>
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='ship-city'> *City: </label>
+                                    <label for='shipCity'> *City: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' id='ship-city' type='text' size='32' maxlength='32' name='city' required/>
+                                    <input class='form-control-sm' id='shipCity' type='text' size='32' maxlength='32' name='shipCity' required tabindex="19"/>
                                 </div>
                                 <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
-                                    <label for='ship-state'> *State: </label>
+                                    <label for='shipState'> *State: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0 ps-1'>
-                                    <input class='form-control-sm' id='ship-state' type='text' size='10' maxlength='16' name='state' required/>
+                                    <input class='form-control-sm' id='shipState' type='text' size='10' maxlength='16' name='shipState' required tabindex="20"/>
                                 </div>
                                 <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
-                                    <label for='ship-zip'> *Zip: </label>
+                                    <label for='shipZip'> *Zip: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
-                                    <input class='form-control-sm' id='ship-zip' type='text' size='11' maxlength='11' name='zip' required placeholder='Postal Code'/>
+                                    <input class='form-control-sm' id='shipZip' type='text' size='11' maxlength='11' name='shipZip' required
+                                           placeholder='Postal Code' tabindex="21"/>
                                 </div>
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='ship-country'> Country </label>
+                                    <label for='shipCountry'> Country </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
-                                    <select name='ship-country' tabindex='10'>
+                                    <select id='shipCountry' name='shipCountry' tabindex='22'>
                                         <?php echo $countryOptions; ?>
                                     </select>
                                 </div>
                             </div>
-                            <?php } ?>-
+                            <?php } ?>
                         </form>
                     </div>
+                    <div id='au_result_message' class='mt-4 p-2'></div>
                 </div>
                 <div class="modal-footer">
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' onClick='register()'>Register</button>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex="23">Cancel</button>
+                    <button class='btn btn-sm btn-primary' id='profileSubmitBtn' onClick="submitProfile('<?php echo $portalType; ?>')" tabindex="24">Unknown</button>
                 </div>
             </div>
         </div>
     </div>
+    <?php if (!$in_session) { ?>
     <!-- signin form (at body level) -->
-    <div id='signin'>
+    <div id='signin'>reg
         <div class="container-fluid form-floating">
             <div class="row mb-2">
                 <div class="col-sm-auto">
@@ -370,11 +444,10 @@ if (!$in_session) { ?>
                     <div class="col-sm-1"></div>
                     <div class="col-sm-auto">
                         <input type='submit' class="btn btn-primary" value='signin'/> or
-                            <a href='javascript:void(0)' onclick="registrationModalOpen();">Sign Up</a>
+                            <a href='javascript:void(0)' onclick="profileModalOpen('register');">Sign Up</a>
                     </div>
                 </div>
             </form>
-            <div id='result_message' class='mt-4 p-2'></div>
         </div>
     </div>
     <div id='resetpw'>
@@ -386,19 +459,30 @@ if (!$in_session) { ?>
             </div>
         </div>
     </div>
+    <div class='container-fluid'>
+        <div class="row">
+            <div class="col-sm-12 m-0 p-0">
+                <div id='result_message' class='mt-4 p-2'></div>
+            </div>
+        </div>
+    </div>
     </body>
+    <script type='text/javascript'>
+        var config = <?php echo json_encode($config_vars); ?>;
+    </script>
 </html>
-    <?php
+<?php
     return;
 }
 // this section is for 'in-session' management
 // build spaces array
 $spaceQ = <<<EOS
-SELECT v.id, v.shortname, v.name, v.description, v.unitsAvailable, v.includedMemId, v.additionalMemId, mi.price AS includedMemPrice, ma.price AS additionalMemPrice
+SELECT v.id, v.shortname, v.name, v.description, v.unitsAvailable, vRY.includedMemId, vRY.additionalMemId, mi.price AS includedMemPrice, ma.price AS additionalMemPrice
 FROM vendorSpaces v
-JOIN memList mi ON (v.includedMemId = mi.id)
-JOIN memList ma ON (v.additionalMemId = ma.id)
-WHERE v.conid=?
+JOIN vendorRegionYears vRY ON v.vendorRegionYear = vRY.id
+JOIN memList mi ON (vRY.includedMemId = mi.id)
+JOIN memList ma ON (vRY.additionalMemId = ma.id)
+WHERE vRY.conid=?
 ORDER BY shortname;
 EOS;
 
@@ -431,14 +515,15 @@ EOS;
 
 // get this vendor
 $vendorQ = <<<EOS
-SELECT name, email, website, description, addr, addr2, city, state, zip, publicity, need_new
+SELECT vendorName, vendorEmail, vendorPhone, website, description, contactName, contactEmail, contactPhone, need_new, confirm, 
+       addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
 FROM vendors
 WHERE id=?;
 EOS;
 
 $info = dbSafeQuery($vendorQ, 'i', array($vendor))->fetch_assoc();
 if ($info['need_new']) {
-    drawChangePassword('You need to change your password.', 2, true);
+    drawChangePassword('You need to change your password.', 3, true);
     return;
 }
 
@@ -450,9 +535,7 @@ while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
 }
 fclose($fh);
 
-$config_vars = array();
-$config_vars['label'] = $con['label'];
-$config_vars['vemail'] = $vendor_conf[$space['shortname']];
+
 ?>
 
 <script type='text/javascript'>
@@ -477,119 +560,17 @@ while ($space = $vendorSR->fetch_assoc()) {
 
     // modals for each section
     ?>
-    <div id='update_profile' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Update Vendor Profile' aria-hidden='true'>
-        <div class='modal-dialog'>
-            <div class='modal-content'>
-                <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title'>
-                        <strong>Update Vendor Profile</strong>
-                    </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-                </div>
-                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class="container-fluid">
-                        <form id='vendor_update' action='javascript:void(0)'>
-                            <div class='row p-1'>
-                                <div class='col-sm-2 p-0'>
-                                    <label for='name'>Name:</label>
-                                </div>
-                                <div class='col-sm-10 p-0'>
-                                    <input class='form-control-sm' type='text' name='name' id='name' size='64' value="<?php echo escape_quotes($info['name']); ?>" required/>
-                                </div>
-                            </div>
-                            <div class='row p-1'>
-                                <div class='col-sm-2 p-0'>
-                                    <label for='emai'>Email:</label>
-                                </div>
-                                <div class='col-sm-10 p-0'>
-                                    <input class='form-control-sm' type='text' name='email' id='email' size='64' value="<?php echo escape_quotes($info['email']); ?>" required/>
-                                </div>
-                            </div>
-                            <div class="row p-1">
-                                <div class="col-sm-2 p-0">
-                                    <label for="website">Website:</label>
-                                </div>
-                                <div class="col-sm-10 p-0">
-                                    <input class='form-control-sm' type='text' name='website' id='website' value="<?php echo escape_quotes($info['website']); ?>" required/>
-                                </div>
-                            </div>
-                            <div class='row p-1'>
-                                <div class='col-sm-2 p-0'>
-                                    <label for='description'>Description:</label>
-                                </div>
-                                <div class='col-sm-10 p-0'>
-                                    <textarea class="form-control-sm" name='description' id='upd-description' rows=5 cols=60><?php echo $info['description']; ?></textarea>
-                                </div>
-                            </div>
-                            <div class='row mt-1'>
-                                <div class='col-sm-2 p-0 ms-0 me-0 pe-2 text-end'>
-                                    <input class='form-control-sm' type='checkbox' <?php echo $info['publicity'] != 0 ? 'checked' : ''; ?> name='publicity' id="publicity"/>
-                                </div>
-                                <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <label>Check if we may use your information to publicize your attendence at <?php echo $con['conname']; ?></label>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="addr">Address </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='addr' type='text' size="64" name='addr' value="<?php echo escape_quotes($info['addr']); ?>" required
-                                        placeholder="Street Address"/>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="addr2">Company/ Address line 2:</label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='addr2' type='text' size="64" value="<?php echo escape_quotes($info['addr2']); ?>" name='addr2'
-                                        placeholder="Company Name"/>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="city">City: </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='city' type='text' size="32" value="<?php echo escape_quotes($info['city']); ?>" name=' city' required/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
-                                    <label for="state"> State: </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
-                                    <input class="form-control-sm" id='state' type='text' size="2" maxlength="2" value="<?php echo escape_quotes($info['state']); ?>"
-                                           name='state' required/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
-                                    <label for="zip"> Zip: </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0 ps-1 pb-2">
-                                    <input class="form-control-sm" id='zip' type='text' size="11" maxlength="11" value="<?php echo escape_quotes($info['zip']); ?>" name='zip'
-                                           required/>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' onClick='updateProfile()'>Update</button>
-                </div>
-            </div>
-        </div>
-    </div>
     <div id='changePassword' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Change Vendor Account Password' aria-hidden='true'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
                     <div class='modal-title'>
-                        <strong>Change Vendor Account Password</strong>
+                        <strong id="changePasswordTitle">Change Vendor Account Password</strong>
                     </div>
                     <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <?php drawChangePassword('', 3, false);
+                    <?php drawChangePassword('', 4, false);
                     ?>
                 </div>
                 <div class='modal-footer'>
@@ -690,7 +671,7 @@ if (array_key_exists('req_disclaimer',$vendor_conf) && $vendor_conf['req_disclai
                                 <label for="vendor_inv_name">Name:</label>
                             </div>
                             <div class="col-sm-10 p-0">
-                                <input class="form-control-sm" type='text' name='name' id='vendor_inv_name' value="<?php echo escape_quotes($info['name']);  ?>" size="64" required/>
+                                <input class="form-control-sm" type='text' name='name' id='vendor_inv_name' value="<?php echo escape_quotes($info['vendorName']);  ?>" size="64" required/>
                             </div>
                         </div>
                         <div class='row'>
@@ -698,7 +679,7 @@ if (array_key_exists('req_disclaimer',$vendor_conf) && $vendor_conf['req_disclai
                                 <label for='vendor_inv_email'>Email:</label>
                             </div>
                             <div class='col-sm-10 p-0'>
-                                <input class='form-control-sm' type='text' name='email' id='vendor_inv_email' value="<?php echo escape_quotes($info['email']); ?>" size="64" required/>
+                                <input class='form-control-sm' type='text' name='email' id='vendor_inv_email' value="<?php echo escape_quotes($info['vendorEmail']); ?>" size="64" required/>
                             </div>
                         </div>
                         <div class='row'>
@@ -760,7 +741,7 @@ if (array_key_exists('req_disclaimer',$vendor_conf) && $vendor_conf['req_disclai
                                 <label for="vendor_inv_requests">Special Requests:</label>
                             </div>
                             <div class="col-sm-10 p-0">
-                                 <textarea class='form-control-sm' name='requests' cols="64" rows="5"></textarea>
+                                 <textarea class='form-control-sm' id='vendor_inv_requests' name='requests' cols="64" rows="5"></textarea>
                             </div>
                         </div>
                         <hr/>
@@ -813,19 +794,19 @@ if (array_key_exists('req_disclaimer',$vendor_conf) && $vendor_conf['req_disclai
                                  <label for='cc_city'>City:</label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_city' required='required' size='35' name='cc_city' maxlength='64' vaue="<?php echo escape_quotes($info['city']); ?>"/>
+                                 <input type='text' id='cc_city' required='required' size='35' name='cc_city' maxlength='64' value="<?php echo escape_quotes($info['city']); ?>"/>
                              </div>
                              <div class='col-sm-auto ps-0 pe-0'>
                                  <label for='cc_state'>State:</label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_state' size=2 maxlength="2" required='required' name='cc_state' vaue="<?php echo escape_quotes($info['state']); ?>"/>
+                                 <input type='text' id='cc_state' size=2 maxlength="2" required='required' name='cc_state' value="<?php echo escape_quotes($info['state']); ?>"/>
                              </div>
                              <div class='col-sm-auto ps-0 pe-0'>
                                  <label for='cc_zip'>Zip:</label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_zip' required='required' size=10 maxlength="10" name='cc_zip' vaue="<?php echo escape_quotes($info['zip']); ?>"/>
+                                 <input type='text' id='cc_zip' required='required' size=10 maxlength="10" name='cc_zip' value="<?php echo escape_quotes($info['zip']); ?>"/>
                              </div>
                          </div>
                          <div class='row'>
@@ -843,7 +824,7 @@ if (array_key_exists('req_disclaimer',$vendor_conf) && $vendor_conf['req_disclai
                                  <label for="cc_email">Email:</label>
                              </div>
                              <div class="col-sm-auto">
-                                  <input type='email' id='cc_email' name='cc_email' size="35" maxlength="64" value="<?php echo escape_quotes($info['email']); ?>"/>
+                                  <input type='email' id='cc_email' name='cc_email' size="35" maxlength="64" value="<?php echo escape_quotes($info['contactEmail']); ?>"/>
                              </div>
                          </div>
                          <div class='row'>
@@ -891,13 +872,13 @@ if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclai
      <div class='container-fluid'>
         <div class='row p-1'>
             <div class='col-sm-12 p-0'>
-                <h3>Welcome to the Portal Page for <?php echo $info['name']; ?></h3>
+                <h3>Welcome to the <?php echo $portalName; ?> Portal Page for <?php echo $info['vendorName']; ?></h3>
             </div>
         </div>
         <div class="row p-1">
             <div class="col-sm-auto p-0">
-                <button class="btn btn-secondary" onclick='update_profile.show();'>View/Change your profile</button>
-                <button class='btn btn-secondary' onclick='change_password.show();'>Change your password</button>
+                <button class="btn btn-secondary" onclick="profileModalOpen('update');">View/Change your profile</button>
+                <button class='btn btn-secondary' onclick='changePasswordOpen();'>Change your password</button>
                 <button class="btn btn-secondary" onclick="window.location='?logout';">Logout</button>
             </div>
         </div>
@@ -967,7 +948,13 @@ if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclai
             </div>
         </div>
         <?php } ?>
-        <div id='result_message' class='mt-4 p-2'></div>
+    </div>
+     <div class='container-fluid'>
+        <div class='row'>
+            <div class='col-sm-12 m-0 p-0'>
+                <div id='result_message' class='mt-4 p-2'></div>
+            </div>
+        </div>
     </div>
 </body>
 </html>
@@ -975,6 +962,8 @@ if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclai
 <?php
 // drawChangePassword - make it common code to draw change password prompts
 function drawChangePassword($title, $width, $drawbutton) {
+    global $config_vars;
+
     $html = '';
     if ($title != '') {
         $html = <<<EOH
@@ -991,27 +980,28 @@ EOH;
                 <label for='oldPw'>Old or Temp Password:</label>
             </div>
             <div class='col-sm-8'>
-                <input type='password' id='oldPw' name='oldPassword' autocomplete="off" required/>
+                <input type='password' id='oldPw' name='oldPassword' size="24" autocomplete="off" required/>
             </div>
         </div>
         <div class='row'>
             <div class='col-sm-$width'>
-                <label for='pw'>new Password:</label>
+                <label for='newPw'>New Password:</label>
             </div>
             <div class='col-sm-8'>
-                <input type='password' id='pw' name='password' autocomplete="off" required/>
+                <input type='password' id='newPw' name='password' size="24" autocomplete="off" required placeholder="minimum of 8 characters"/>
             </div>
         </div>
         <div class='row'>
             <div class='col-sm-$width'>
-                <label for='pw2'>Re-enter Password:</label>
+                <label for='newPw2'>Re-enter New Password:</label>
             </div>
             <div class='col-sm-8'>
-                <input type='password' id='pw2' name='password2' autocomplete="off" required/>
+                <input type='password' id='newPw2' name='password2' size="24" autocomplete="off" required placeholder="re-enter the password"/>
             </div>
         </div>
 EOH;
     if ($drawbutton) {
+        $cv = json_encode($config_vars);
         $html .= <<<EOH
         <div class='row mt-2'>
             <div class='col-sm-$width'></div>
@@ -1020,8 +1010,16 @@ EOH;
             </div>
         </div>
         </form>
+        <div class="row">
+            <div class="col-sm-12 m-0 p-0">
+                <div id='result_message' class='mt-4 p-2'></div>
+            </div>
+        </div>
     </div>
     </body>
+    <script type='text/javascript'>
+        var config = $cv;
+    </script>
 </html>
 EOH;
     } else {
@@ -1031,5 +1029,5 @@ EOH;
 EOH;
     }
     echo $html;
-    vendor_page_footer();
+    //vendor_page_footer();
 }

@@ -1,23 +1,42 @@
-var discount_memcost = 55;
-var registration = null;
+var profileModal = null;
+var profileMode = "unknown";
+var profileUseType = "unknown";
+var passwordLine1 = null;
+var passwordLine2 = null;
+var profileIntroDiv = null;
+var profileSubmitBtn = null;
+var profileModalTitle = null;
+var creatingAccountMsgDiv = null;
 var vendor_request = null;
 var vendor_invoice = null;
-var update_profile = null;
 var change_password = null;
+var changePasswordTitleDiv = null;
 var purchase_label = 'purchase';
 var additional_cost = {};
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const fieldlist = ["name", "email", "pw1", "pw2", "description", "addr", "city", "state", "zip"];
-function register() {
+const fieldlist = ["vendorName", "vendorEmail", "vendorPhone", "description", "contactName", "contactEmail", "contactPhone", "pw1", "pw2",
+    "addr", "city", "state", "zip", "country", "shipAddr", "shipCity", "shipState", "shipZip", "shipCountry"];
+const copyFromFieldList = [ 'vendorName', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
+const copyToFieldList = ['shipCompany', 'shipAddr', 'shipAddr2', 'shipCity', 'shipState', 'shipZip', 'shipCountry'];
+//  copy the address fields to the ship to address fields
+function copyAddressToShipTo() {
+    for (var fieldnum in copyFromFieldList) {
+        document.getElementById(copyToFieldList[fieldnum]).value = document.getElementById(copyFromFieldList[fieldnum]).value;
+    }
+}
+
+// submit the profile or both register and update, which type is in profileMode, set by the modal open
+function submitProfile(dataType) {
     // replace validator with direct validation as it doesn't work well with bootstrap
     var valid = true;
-
+    var m2= '';
 
     for (var fieldnum in fieldlist) {
         var field = document.getElementById(fieldlist[fieldnum]);
         switch (fieldlist[fieldnum]) {
-            case 'email':
+            case 'vendorEmail':
+            case 'contactEmail':
                 if (emailRegex.test(field.value)) {
                     field.style.backgroundColor = '';
                 } else {
@@ -26,8 +45,10 @@ function register() {
                 }
                 break;
             case 'pw1':
+                if (profileUseType != 'register')
+                    break;
                 var field2 = document.getElementById("pw2");
-                if (field.value == field2.value && field.value.length >= 4) {
+                if (field.value == field2.value && field.value.length >= 8) {
                     field.style.backgroundColor = '';
                 } else {
                     field.style.backgroundColor = 'var(--bs-warning)';
@@ -35,15 +56,33 @@ function register() {
                 }
                 break;
             case 'pw2':
+                if (profileUseType != 'register')
+                    break;
                 var field2 = document.getElementById("pw1");
-                if (field.value == field2.value && field.value.length >= 4) {
+                if (field.value == field2.value && field.value.length >= 8) {
                     field.style.backgroundColor = '';
                 } else {
                     field.style.backgroundColor = 'var(--bs-warning)';
                     valid = false;
                 }
                 break;
+            case 'description':
+                var value = tinyMCE.activeEditor.getContent();
+                if (value == null) {
+                    value = false;
+                    m2 = " and the description field which also is required.";
+                } else if (value.trim() == '') {
+                    value = false;
+                    m2 = " and the description field which also is required.";
+                }
+                break;
+
             default:
+                if (dataType == 'artist' && fieldlist[fieldnum].substring(0, 3) == 'ship') {
+                    if (config['debug' & 16])
+                        console.log("skipping " + fieldlist[fieldnum]);
+                    break;
+                }
                 if (field.value.length > 1) {
                     field.style.backgroundColor = '';
                 } else {
@@ -52,56 +91,68 @@ function register() {
                 }
         }
     }
-    if (!valid)
+
+    if (!valid) {
+        show_message("Fill in required missing fields highlighted in this color" + m2, "warn", 'au_result_message');
         return null;
+    }
+    clear_message('au_result_message');
+    tinyMCE.triggerSave();
 
     //
     $.ajax({
-        url: 'scripts/registerVendor.php',
-        data: $('#registrationForm').serialize(),
+        url: 'scripts/vendorAddUpdate.php',
+        data: $('#vendorProfileForm').serialize(),
         method: 'POST',
         success: function(data, textstatus, jqXHR) {
             if(data['status'] == 'error') {
-                alert(data['message']);
+                show_message(data['message'], 'error', 'au_result_message');
             } else {
-                alert("Thank you for registering for an account with the " + config['label'] + " Vendors portal.  Please login to your account to request space.");
-                console.log(data);
-                registrationModalClose();
+                profileModalClose();
+                if (profileUseType == 'register')
+                    show_message("Thank you for registering for an account with the " + config['label'] + ' ' + config['portalName'] + " portal.  Please log in using your contact email address and password." + "<br/" + data['message]']);
+                else
+                    show_message(data['message'], 'success')
+                if (data['info']) {
+                    if (config['debug'] & 7) {
+                        console.log("before update of vendor_info");
+                        console.log(vendor_info);
+                    }
+                    vendor_info = data['info'];
+                    if (config['debug'] & 7) {
+                        console.log("after update of vendor_info");
+                        console.log(vendor_info);
+                    }
+                    if (config['debug'] & 1)
+                        console.log(data);
+                }
             }
-        }
-    });
-}
-
-function updateProfile() {
-    $.ajax({
-        url: 'scripts/updateProfile.php',
-        data: $('#vendor_update').serialize(),
-        method: 'POST',
-        success: function(data, textstatus, jqXHR) {
-            if(data['status'] == 'error') {
-                alert(data['message']);
-            } else {
-                console.log(data);
-                update_profile.hide();
-            }
-        }
+        },
+        error: showAjaxError
     });
 }
 
 function changePassword(field) {
-    if (document.getElementById('pw2').value != document.getElementById('pw').value) {
-        alert("New passwords do not match");
+    var pw = document.getElementById('newPw').value;
+    if (pw.length < 8) {
+        show_message("New is too short.  It must be at least 8 characters.", 'warn');;
         return;
     }
+    if (document.getElementById('newPw2').value != pw) {
+        show_message("New passwords do not match", 'warn');;
+        return;
+    }
+    clear_message();
     $.ajax({
         url: 'scripts/changePassword.php',
         data: $('#changepw').serialize(),
         method: 'POST',
         success: function(data, textstatus, jqXHR) {
             if(data['status'] == 'error') {
-                alert(data['message']);
+                show_message(data['message'], 'error');
             } else {
-                console.log(data);
+                if (config['debug'] & 1)
+                    console.log(data);
                 location.reload();
             }
         }
@@ -118,7 +169,8 @@ function resetPassword() {
             if(data['error']) {
                 show_message(data['error'], 'error');
             } else {
-                console.log(data);
+                if (config['debug'] & 1)
+                    console.log(data);
                 show_message(data['message'], 'success');
             }
         }
@@ -173,7 +225,8 @@ function spaceReq(spaceId, cancel) {
         data: dataobj,
         method: 'POST',
         success: function (data, textstatus, jqxhr) {
-            console.log(data);
+            if (config['debug'] & 1)
+                console.log(data);
             if (data['error'] !== undefined) {
                 show_message(data['error'], 'error');
                 return;
@@ -424,7 +477,8 @@ function makePurchase(token, label) {
         method: 'POST',
         data: formData,
         success: function(data, textStatus, jqXhr) {
-            console.log(data);
+            if (config['debug'] & 1)
+                console.log(data);
             if(data['error']) {
                 alert(data['error']);
                 var submitId = document.getElementById(purchase_label);
@@ -443,18 +497,59 @@ function makePurchase(token, label) {
     });
 }
 
-function registrationModalOpen() {
-    if (registration != null) {
-        registration.show();
+function profileModalOpen(useType) {
+    if (profileModal != null) {
+        // set items as registration use of the modal
+        if (profileIntroDiv == null) {
+            profileIntroDiv = document.getElementById("profileIntro");
+            passwordLine1 = document.getElementById("passwordLine1");
+            passwordLine2 = document.getElementById("passwordLine2");
+            profileMode = document.getElementById('profileMode');
+            profileSubmitBtn = document.getElementById('profileSubmitBtn');
+            profileModalTitle = document.getElementById('modalTitle');
+            creatingAccountMsgDiv = document.getElementById('creatingAccountMsg');
+        }
+        if (useType == 'register') {
+            profileIntroDiv.innerHTML = '<p>This form creates an account on the ' + config['conName'] + ' ' + config['portalName'] + ' Portal.</p>';
+            profileSubmitBtn.innerHTML = 'Register ' + config['portalName'];
+            profileModalTitle.innerHTML = "New " + config['portalName'] + ' Registration;'
+            creatingAccountMsgDiv.hidden = false;
+        } else { // update
+            profileIntroDiv.innerHTML = '<p>This form updates your account on the ' + config['conName'] + ' ' + config['portalName'] + ' Portal.</p>';
+            profileSubmitBtn.innerHTML = 'Update ' + config['portalName'] + ' Profile';
+            profileModalTitle.innerHTML = "Update " + config['portalName'] + ' Profile';
+            creatingAccountMsgDiv.hidden = true;
+            var keys = Object.keys(vendor_info);
+            for (var keyindex in keys) {
+                var key = keys[keyindex];
+                var value=vendor_info[key];
+                if (config['debug'] & 16)
+                    console.log(key + ' = "' + value + '"');
+                var id = document.getElementById(key);
+                if (id) {
+                    if (key != 'publicity')
+                        id.value = value;
+                    else
+                        id.checked = value == 1;
+                }
+                else  if (config['debug'] & 16)
+                    console.log("key not found " + key);
+            }
+        }
+        profileMode.value = useType;
+        profileUseType = useType;
+        passwordLine1.hidden = useType != 'register';
+        passwordLine2.hidden = useType != 'register';
+        profileModal.show();
         tinyMCE.init({
-            selector: 'textarea#reg-description',
+            selector: 'textarea#description',
             height: 400,
             min_height: 400,
             menubar: false,
             plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
-            toolbar:  [
+            toolbar: [
                 'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
-                'bold italic underline strikethrough removeformat | '+
+                'bold italic underline strikethrough removeformat | ' +
                 'visualchars nonbreaking charmap hr | ' +
                 'preview fullscreen ',
                 'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
@@ -466,16 +561,25 @@ function registrationModalOpen() {
     }
 }
 
-function registrationModalClose() {
-    if (registration != null) {
-        registration.hide();
+function profileModalClose() {
+    if (profileModal != null) {
+        profileModal.hide();
     }
 }
 
+// open the change password modal changing the appropriate fields
+function changePasswordOpen() {
+    if (changePasswordTitleDiv == null)
+        changePasswordTitleDiv = document.getElementById('changePasswordTitle');
+
+    changePasswordTitleDiv.innerHTML = "Change " + config['portalName'] + " Portal Account Password";
+    change_password.show();
+}
+
 window.onload = function () {
-    var id = document.getElementById('registration');
+    var id = document.getElementById('profile');
     if (id != null) {
-        registration = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+        profileModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
 
     id = document.getElementById('vendor_req');
@@ -488,11 +592,6 @@ window.onload = function () {
         vendor_invoice = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
 
-    id = document.getElementById('update_profile');
-    if (id != null) {
-        update_profile = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-    }
-
     id = document.getElementById('changePassword');
     if (id != null) {
         change_password = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
@@ -501,18 +600,19 @@ window.onload = function () {
     //console.log(vendor_spaces);
 }
 
-var message_div = null;
+function clear_message(div='result_message') {
+    show_message('', '', div);
+}
+
 // show_message:
 // apply colors to the message div and place the text in the div, first clearing any existing class colors
 // type:
 //  error: (white on red) bg-danger
 //  warn: (black on yellow-orange) bg-warning
 //  success: (white on green) bg-success
-function show_message(message, type) {
-    "use strict";
-    if (message_div === null ) {
-        message_div = document.getElementById('result_message');
-    }
+function show_message(message, type = 'success', div='result_message') {
+    var message_div = document.getElementById(div);
+
     if (message_div.classList.contains('bg-danger')) {
         message_div.classList.remove('bg-danger');
     }
@@ -541,9 +641,6 @@ function show_message(message, type) {
         message_div.classList.add('bg-warning');
     }
     message_div.innerHTML = message;
-}
-function clear_message() {
-    show_message('', '');
 }
 
 function showAjaxError(jqXHR, textStatus, errorThrown) {
