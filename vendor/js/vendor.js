@@ -164,7 +164,7 @@ function resetPassword() {
     $.ajax({
         method: 'POST',
         url: 'scripts/resetPassword.php',
-        data: {'login' : email},
+        data: {'login' : email, 'type': config['portalType'], 'name': config['portalName']},
         success: function(data, textStatus, jqXhr) {
             if(data['error']) {
                 show_message(data['error'], 'error');

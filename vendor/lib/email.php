@@ -1,12 +1,12 @@
 <?php
   require_once("artshow.php");
-function vendorReset($passwd, $dest) {
+function vendorReset($passwd, $dest, $portalName, $reply) {
     $conf = get_conf('con');
     $vendor_conf = get_conf('vendor');
-    $body = "The password to you " . $conf['conname'] . " Vendor Portal account has been reset.\nThe new password is:\n\n\t$passwd\n\n" .
-        "Please login to the " . $conf['conname'] . " vendor site at " . $vendor_conf['vendorsite'] .
+    $body = "The password to you " . $conf['conname'] . " " . $portalName . " Portal account has been reset.\nThe new password is:\n\n\t$passwd\n\n" .
+        "Please login to the " . $conf['conname'] . " " . $portalName . " Portal site at " . $dest .
         " to change your password.\n\n" .
-        "If you continue to have problems please contact " . $vendor_conf['vendors'] . ".\n\nThank you for your interest in " . $conf['conname'] . ".\n";
+        "If you continue to have problems please contact " . $reply . ".\n\nThank you for your interest in " . $conf['conname'] . ".\n";
 
 return $body;
 }

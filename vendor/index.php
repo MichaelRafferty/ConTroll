@@ -274,7 +274,7 @@ if (isset($_SESSION['id'])) {
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
                                     <input class="form-control-sm" id='pw1' type='password' name='password' autocomplete="off" required tabindex="10"
-                                    size="24" placeholder='minimum of 8 characters'/>
+                                    size="24" placeholder='minimum of 8 characters' />
                                 </div>
                             </div>
                             <div class="row mt-1" id="passwordLine2">
@@ -437,7 +437,7 @@ if (isset($_SESSION['id'])) {
                         <label for="si_password">*Password: </label>
                     </div>
                     <div class="col-sm-auto">
-                        <input class="form-control-sm" type='password' id='si_password' name='si_password' size="40" autocomplete="on" required/>
+                        <input class="form-control-sm" type='password' id='si_password' name='si_password' size="40" autocomplete="off" required/>
                     </div>
                 </div>
                 <div class="row mt-2">
