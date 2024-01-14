@@ -18,6 +18,7 @@ DROP TABLE IF EXISTS vendorRegionTypes;
 /*  vendorRegionTypes table - Rules for different types of vendor regions */
 CREATE TABLE vendorRegionTypes (
     regionType varchar(16) NOT NULL,
+    portalType enum('vendor','artist') NOT NULL default 'vendor',
     requestApprovalRequired enum('None','Once','Annual') NOT NULL  DEFAULT 'Once',
     purchaseApprovalRequired enum('Y','N') NOT NULL  DEFAULT 'Y',
     purchaseAreaTotals enum('unique', 'combined') DEFAULT 'combined',

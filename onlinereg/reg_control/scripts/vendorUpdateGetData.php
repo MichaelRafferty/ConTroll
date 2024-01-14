@@ -94,12 +94,12 @@ switch ($tablename) {
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO vendorRegionTypes(regionType, requestApprovalRequired, purchaseApprovalRequired, purchaseAreaTotals, mailinAllowed, sortorder, active)
-VALUES(?,?,?,?,?,?,?);
+INSERT INTO vendorRegionTypes(regionType, portalType, requestApprovalRequired, purchaseApprovalRequired, purchaseAreaTotals, mailinAllowed, sortorder, active)
+VALUES(?,?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE vendorRegionTypes
-SET regionType = ?, requestApprovalRequired = ?, purchaseApprovalRequired = ?, purchaseAreaTotals = ?, mailinAllowed = ?, sortorder = ?, active = ?
+SET regionType = ?, portalType = ?, requestApprovalRequired = ?, purchaseApprovalRequired = ?, purchaseAreaTotals = ?, mailinAllowed = ?, sortorder = ?, active = ?
 WHERE regionType = ?;
 EOS;
 
@@ -110,7 +110,7 @@ EOS;
                     continue;
             }
             if (array_key_exists($keyfield, $row)) { // if key is there, it's an update
-                $numrows = dbSafeCmd($updsql, 'sssssiss', array($row['regionType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'], $row['purchaseAreaTotals'],
+                $numrows = dbSafeCmd($updsql, 'ssssssiss', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'], $row['purchaseAreaTotals'],
                     $row['mailinAllowed'], $row['sortorder'], $row['active'],$row[$keyfield]));
                 $updated += $numrows;
             }
@@ -123,7 +123,7 @@ EOS;
                     continue;
             }
             if (!array_key_exists($keyfield, $row)) { // if key is not there, it is an insert
-                $numrows = dbSafeInsert($inssql, 'sssssis', array($row['regionType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'], $row['purchaseAreaTotals'],
+                $numrows = dbSafeInsert($inssql, 'ssssssis', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'], $row['purchaseAreaTotals'],
                     $row['mailinAllowed'], $row['sortorder'], $row['active']));
                 if ($numrows !== false)
                     $inserted++;

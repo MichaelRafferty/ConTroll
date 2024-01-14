@@ -424,10 +424,22 @@ class vendorsetup {
                     editorParams: {maxlength: "16"}
                 },
                 {
+                    title: "Portal Type",
+                    field: "portalType",
+                    width: 80,
+                    headerSort: true,
+                    headerWordWrap: true,
+                    editor: "list",
+                    editorParams: {
+                        values: ['vendor', 'artist']
+                    },
+                    validator: "required"
+                },
+                {
                     title: "Request Approval Required",
                     field: "requestApprovalRequired",
                     headerSort: true,
-                    width: 140,
+                    width: 100,
                     headerWordWrap: true,
                     editor: "list",
                     editorParams: {
@@ -439,7 +451,7 @@ class vendorsetup {
                     title: "Purchase Approval Required",
                     field: "purchaseApprovalRequired",
                     headerSort: true,
-                    width: 140,
+                    width: 100,
                     headerWordWrap: true,
                     editor: "list",
                     editorParams: {
@@ -463,7 +475,7 @@ class vendorsetup {
                     title: "Mail-in Allowed",
                     field: "mailinAllowed",
                     headerSort: true,
-                    width: 140,
+                    width: 100,
                     headerWordWrap: true,
                     editor: "list",
                     editorParams: {
@@ -841,7 +853,7 @@ class vendorsetup {
     // add row to types table and scroll to that new row
     addrowTypes() {
         var _this = this;
-        this.#regionTypeTable.addRow({regionType: 'new-row', active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
+        this.#regionTypeTable.addRow({regionType: 'new-row', portalType: 'vendor', mailinAllowed: 'N', active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
             row.getTable().scrollToRow(row);
             _this.checkTypesUndoRedo();
         });
