@@ -450,9 +450,11 @@ function showEdit(classname, table, index, field, titlename, textitem) {
         ],
         content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
         placeholder: 'Edit the description here...',
-        auto_focus: 'editFieldArea'
+        auto_focus: 'editFieldArea',
+        init_instance_callback: function (editor) {
+            editor.setContent(textitem);
+        }
     });
-    tinyMCE.activeEditor.setContent(textitem);
 }
 
 // save the modal edit values back
