@@ -120,5 +120,21 @@ CREATE TABLE vendors (
 ALTER TABLE vendors ADD CONSTRAINT vendor_perid_fk FOREIGN KEY (perid) REFERENCES perinfo (id) ON UPDATE CASCADE;
 );
 
+CREATE TABLE vendor_requestPermissions (
+    id int NOT NULL AUTO_INCREMENT,
+    vendorId int NOT NULL,
+    regionId int NOT NULL,
+    year int NULL,
+    permission enum('N', 'Y') NOT NULL DEFAULT 'N',
+    updateDate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updateBy int NOT NULL,
+    PRIMARY KEY (id)
+);
+
+ALTER TABLE vendor_requestPermissions ADD CONSTRAINT vrp_vendor_fk FOREIGN KEY (vendorId) REFERENCES vendors(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE vendor_requestPermissions ADD CONSTRAINT vrp_region_fk FOREIGN KEY (regionId) REFERENCES vendorRegions(id) ON UPDATE CASCADE;
+ALTER TABLE vendor_requestPermissions ADD CONSTRAINT vrp_year_fk FOREIGN KEY (year) REFERENCES conlist(id) ON UPDATE CASCADE;
+ALTER TABLE vendor_requestPermissions ADD CONSTRAINT vrp_updateby_fk FOREIGN KEY (updateBy) REFERENCES perinfo(id) ON UPDATE CASCADE;
+
 /* this has number xxx in it (needs to be 17) to prevent insert from working, update to 17 or final number when integrated */
 INSERT INTO patchLog(id, name) values(xxx, vendor_with_artist);

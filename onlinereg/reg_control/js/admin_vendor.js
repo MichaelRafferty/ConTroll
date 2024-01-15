@@ -791,7 +791,7 @@ class vendorsetup {
                 {title: "Orig Key", field: "priceKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                    cellClick: function (e, cell) { deleterow(e, cell.getRow()); }.name,
+                    cellClick: function (e, cell) { deleterow(e, cell.getRow()); },
                 },
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible,}
             ],

@@ -9,10 +9,31 @@
 -- Final view structure for view `vw_VendorSpace`
 --
 
-DROP VIEW IF EXISTS `vw_VendorSpace`;
+DROP VIEW IF EXISTS vw_VendorSpace;
 CREATE ALGORITHM=UNDEFINED 
 SQL SECURITY INVOKER
-VIEW `vw_VendorSpace` AS select `v`.`id` AS `id`,`v`.`conid` AS `conid`,`v`.`vendorId` AS `vendorId`,`v`.`spaceId` AS `spaceId`,`vs`.`shortname` AS `shortname`,`vs`.`name` AS `name`,`req`.`id` AS `item_requested`,`v`.`time_requested` AS `time_requested`,`req`.`code` AS `requested_code`,`req`.`description` AS `requested_description`,`req`.`units` AS `requested_units`,`req`.`price` AS `requested_price`,`req`.`sortOrder` AS `requested_sort`,`app`.`id` AS `item_approved`,`v`.`time_approved` AS `time_approved`,`app`.`code` AS `approved_code`,`app`.`description` AS `approved_description`,`app`.`units` AS `approved_units`,`app`.`price` AS `approved_price`,`app`.`sortOrder` AS `approved_sort`,`pur`.`id` AS `item_purchased`,`v`.`time_purchased` AS `time_purchased`,`pur`.`code` AS `purchased_code`,`pur`.`description` AS `purchased_description`,`pur`.`units` AS `purchased_units`,`pur`.`price` AS `purchased_price`,`pur`.`sortOrder` AS `purchased_sort`,`v`.`price` AS `price`,`v`.`paid` AS `paid`,`v`.`transid` AS `transid`,`v`.`membershipCredits` AS `membershipCredits` from ((((`vendor_space` `v` join `vendorSpaces` `vs` on((`vs`.`id` = `v`.`spaceId`))) left join `vendorSpacePrices` `req` on((`v`.`item_requested` = `req`.`id`))) left join `vendorSpacePrices` `app` on((`v`.`item_approved` = `app`.`id`))) left join `vendorSpacePrices` `pur` on((`v`.`item_purchased` = `pur`.`id`))) ;
+VIEW vw_VendorSpace AS
+    SELECT vrt.portalType, vrt.requestApprovalRequired, vrt.purchaseApprovalRequired,vrt.purchaseAreaTotals,vrt.mailInAllowed,
+           vr.name as regionName, vr.shortname AS regionShortName, vr.description as regionDesc, vr.sortorder AS regionSortOrder,
+           vry.ownerName, vry.ownerEmail, vry.id AS regionYearId, vry.includedMemId, vry.additionalMemId, vry.totalUnitsAvailable, vry.conid AS yearId,
+           s.id AS id,s.conid AS conid,v.id AS vendorId,
+           s.spaceId AS spaceId,vs.shortname AS shortname,vs.name AS name,
+           s.item_requested AS item_requested,s.time_requested AS time_requested,req.code AS requested_code,req.description AS requested_description,
+           req.units AS requested_units,req.price AS requested_price,req.sortOrder AS requested_sort,
+           s.item_approved AS item_approved,s.time_approved AS time_approved,app.code AS approved_code,app.description AS approved_description,
+           app.units AS approved_units,app.price AS approved_price,app.sortOrder AS approved_sort,
+           s.item_purchased AS item_purchased,s.time_purchased AS time_purchased,pur.code AS purchased_code,pur.description AS purchased_description,
+           pur.units AS purchased_units,pur.price AS purchased_price,pur.sortOrder AS purchased_sort,
+           s.price AS price,s.paid AS paid,s.transid AS transid,s.membershipCredits AS membershipCredits
+    FROM vendorRegionTypes vrt
+    JOIN vendorRegions vr ON vr.regionType = vrt.regionType
+    JOIN vendorRegionYears vry ON vr.id = vry.vendorRegion
+    JOIN vendorSpaces vs ON vs.vendorRegionYear = vry.id
+    JOIN vendors v
+    LEFT JOIN vendor_space s ON v.id = s.vendorId
+    LEFT JOIN vendorSpacePrices req on (s.item_requested = req.id)
+    LEFT JOIN vendorSpacePrices app on (s.item_approved = app.id)
+    LEFT JOIN vendorSpacePrices pur on (s.item_purchased = pur.id);
 
 --
 -- Final view structure for view `memLabel`

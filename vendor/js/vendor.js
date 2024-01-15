@@ -1,6 +1,7 @@
 var profileModal = null;
 var profileMode = "unknown";
 var profileUseType = "unknown";
+var switchPortalbtn = null;
 var passwordLine1 = null;
 var passwordLine2 = null;
 var profileIntroDiv = null;
@@ -576,6 +577,11 @@ function changePasswordOpen() {
     change_password.show();
 }
 
+// change to the other portl
+function switchPortal() {
+    window.location = config['portalName'] == 'Artist' ? config['vendorsite'] : config['artistsite'];
+}
+
 window.onload = function () {
     var id = document.getElementById('profile');
     if (id != null) {
@@ -597,6 +603,10 @@ window.onload = function () {
         change_password = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
 
+    switchPortalbtn = document.getElementById('switchPortalbtn');
+    if (switchPortalbtn != null) {
+        switchPortalbtn.innerHTML = 'Switch to ' + (config['portalName'] == 'Artist' ? 'Vendor' : 'Artist') + ' Portal';
+    }
     //console.log(vendor_spaces);
 }
 

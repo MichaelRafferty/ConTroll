@@ -387,6 +387,14 @@ EOS;
                     $additionalMemberships = 0;
                 }
 
+                if (array_key_exists('code', $row)) {
+                    $code = $row['code'];
+                } else {
+                    $code = 0;
+                }
+                if ($code == '')
+                    $code = 0;
+
                 $numrows = dbSafeCmd($updsql, 'issddiiiii', array($row['spaceId'], $row['code'], $row['description'], $units, $price, $includedMemberships, $additionalMemberships,
                     $row['requestable'], $row['sortorder'], $row[$keyfield]));
                 $updated += $numrows;
