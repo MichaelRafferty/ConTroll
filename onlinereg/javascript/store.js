@@ -336,8 +336,8 @@ function removeCouponCode() {
 }
 
 function repriceCart() {
-    //console.log(mtypes);
-    //console.log(badges);
+    console.log(mtypes);
+    console.log(badges);
     var html = '';
     var nbrs = badges['agecount'];
     var total = 0;
@@ -350,8 +350,8 @@ function repriceCart() {
         for (var row in mtypes) {
             var mbrtype = mtypes[row];
             var num = 0;
-            if (nbrs[mbrtype['memGroup']] > 0) {
-                num = nbrs[mbrtype['memGroup']];
+            if (nbrs[mbrtype['id']] > 0) {
+                num = nbrs[mbrtype['id']];
                 if (mbrtype['primary']) {
                     primarymemberships += num;
                     if (coupon.isCouponActive()) {
@@ -382,8 +382,8 @@ function repriceCart() {
     for (row in mtypes) {
         mbrtype = mtypes[row];
         num = 0;
-        if (nbrs[mbrtype['memGroup']] > 0) {
-            num = nbrs[mbrtype['memGroup']];
+        if (nbrs[mbrtype['id']] > 0) {
+            num = nbrs[mbrtype['id']];
         }
         // need to set num here
         if (mbrtype['memCategory'] == 'add-on' || mbrtype['memCategory'] == 'addon')
@@ -458,7 +458,7 @@ window.onload = function () {
     if (typeof mtypes != 'undefined') { //v we got here from index (purchase a badge, not some other page)
         for (var row in mtypes) {
             var mbrtype = mtypes[row];
-            var group = mbrtype['memGroup'];
+            var group = mbrtype['id'];
             prices[group] = Number(mbrtype['price']);
             badges['agecount'][group] = 0;
             shortnames[group] = mbrtype['shortname'];
