@@ -5,6 +5,7 @@
 /config/
 /Composer/vendor
 /google_client/
+/version.txt
 
 # Visual Studio Stuff
 /.vs/
