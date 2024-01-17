@@ -6,6 +6,8 @@ var badges = { 'count': 0, 'total': 0, 'agecount': [], 'badges': [] };
 // prices = array by ageType (memAge) of prices for badges
 var prices = {};
 var $purchase_label = 'purchase';
+// ages = array by id for ages for color setting
+var ages = {};
 // shortnames are the memLabel short names for the memAge
 var shortnames = {};
 // anotherbadge = bootstrap 5 modal for the add another modal popup
@@ -165,7 +167,7 @@ function process(formRef) {
     }
 
     // build badge block in Badges list
-    var group_text = formData['age'].split('_');
+    var group_text = ages[formData['age']].split('_');
     var age_text = group_text[group_text.length -1];
     var age_color = 'text-white';
     if (age_text != 'adult' && age_text != 'military' && age_text != 'child' && age_text != 'youth' && age_text != 'kit' && age_text != 'student')
@@ -459,9 +461,10 @@ window.onload = function () {
         for (var row in mtypes) {
             var mbrtype = mtypes[row];
             var group = mbrtype['id'];
+            ages[group] = mbrtype['memGroup'];
             prices[group] = Number(mbrtype['price']);
             badges['agecount'][group] = 0;
-            shortnames[group] = mbrtype['shortname'];
+            shortnames[group] = mbrtype['shortname'].replace(',','<br/>');
             mbrtype['primary'] = !(mbrtype['price'] == 0 || (mbrtype['memCategory'] != 'standard' && mbrtype['memCategory'] != 'virtual'));
             mbrtype['discount'] = 0;
             mbrtype['discountable'] = false;
