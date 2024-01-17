@@ -141,7 +141,7 @@ class Coupon {
         if (this.#curCoupon['memId'] == null)
             return null;
 
-        return this.#curCoupon['memGroup'];
+        return this.#curCoupon['id'];
     }
 
     // coupon modal area functions
@@ -257,7 +257,7 @@ class Coupon {
                 var html = '';
                 for (var row in mtypes) {
                     var mrow = mtypes[row];
-                    html += '<option value="' + mrow['memGroup'] + '">' + mrow['label'] + "</option>\n";
+                    html += '<option value="' + mrow['id'] + '">' + mrow['label'] + "</option>\n";
                 }
                 mlist.innerHTML = html;
             }
@@ -391,7 +391,7 @@ class Coupon {
             mbrtype['primary'] = primary;
             mbrtype['discount'] = Number(discount).toFixed(2);
             mbrtype['discountable'] = discount > 0;
-            var group = mbrtype['memGroup'];
+            var group = mbrtype['id'];
             shortnames[group] = mbrtype['shortname'];
         }
         return;
