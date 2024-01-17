@@ -100,18 +100,18 @@ if ($coupon !== null) {
 }
 
 foreach ($mtypes as $id => $mbrtype) {
-    $map[$mbrtype['id']] = $mbrtype['memGroup'];
-    $prices[$mbrtype['memGroup']] = $mbrtype['price'];
-    $memId[$mbrtype['memGroup']] = $mbrtype['id'];
-    $counts[$mbrtype['memGroup']] = 0;
+    $map[$mbrtype['id']] = $mbrtype['id'];
+    $prices[$mbrtype['id']] = $mbrtype['price'];
+    $memId[$mbrtype['id']] = $mbrtype['id'];
+    $counts[$mbrtype['id']] = 0;
     $isprimary = (!$mbrtype['price'] == 0 || ($mbrtype['memCategory'] != 'standard' && $mbrtype['memCategory'] != 'virtual'));
     if ($coupon !== null) {
-        $discounts[$mbrtype['memGroup']] = $mbrtype['discount'];
+        $discounts[$mbrtype['id']] = $mbrtype['discount'];
         if ($coupon['memId'] == $mbrtype['id']) {  // ok this is a forced primary
             $isprimary = true; // need a statement here, as combining the if's gets difficult
         }
     }
-    $primary[$mbrtype['memGroup']] = $isprimary;
+    $primary[$mbrtype['id']] = $isprimary;
 }
 
 $num_primary = 0;
