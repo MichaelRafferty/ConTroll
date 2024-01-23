@@ -2,7 +2,7 @@
 // total = sum(prices) * qty of badges
 // agecount = array by ageType (memAge) of counts
 // badges = array of the data for individual badges
-var badges = { 'count': 0, 'total': 0, 'agecount': [], 'badges': [] };
+var badges = { 'count': 0, 'total': 0, 'agecount': {}, 'badges': [] };
 // prices = array by ageType (memAge) of prices for badges
 var prices = {};
 var $purchase_label = 'purchase';
