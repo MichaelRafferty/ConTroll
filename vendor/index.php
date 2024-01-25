@@ -28,6 +28,9 @@ $reg_link = "<a href='$regserver'>Convention Registration</a>";
 if (str_starts_with('artist', $_SERVER['HTTP_HOST'])){
     $portalName = 'Artist';
     $portalType = 'artist';
+} else if (str_starts_with('exhibit', $_SERVER['HTTP_HOST'])){
+    $portalName = 'Exhibitor';
+    $portalType = 'exhibitor';
 } else {
     $portalName = 'Vendor';
     $portalType = 'vendor';
@@ -124,23 +127,46 @@ if (isset($_SESSION['id'])) {
 } else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
     // handle login submit
     $login = strtolower(sql_safe($_POST['si_email']));
-    $loginQ = "SELECT id, password, need_new, archived FROM vendors WHERE contactEmail=?;";
-    $loginR = dbSafeQuery($loginQ, 's', array($login));
+    $loginQ = <<<EOS
+SELECT e.id, e.exhibitorEmail as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS cID, ey.contactEmail AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived
+FROM exhibitors e
+LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
+WHERE e.exhibitorEmail=? OR ey.contactEmail = ?;
+EOS;
+    $loginR = dbSafeQuery($loginQ, 'ss', array($login, $login));
     while ($result = $loginR->fetch_assoc()) {
-        if (password_verify($_POST['si_password'], $result['password'])) {
-            $_SESSION['id'] = $result['id'];
-            $vendor = $_SESSION['id'];
-            $in_session = true;
+        // check exhibitor email/password first
+        if ($login == $result['eEmail']) {
+            if (password_verify($_POST['si_password'], $result['ePassword'])) {
+                $_SESSION['id'] = $result['id'];
+                $vendor = $_SESSION['id'];
+                $in_session = true;
+                $_SESSION['login_type'] = 'e';
+                if ($result['eNeedNew']) {
+                    $forcePassword = true;
+                }
+            }
+        }
+        // try contact login second
+        if ((!$in_session) && $login == $result['cEmail']) {
+             if (password_verify($_POST['si_password'], $result['cPassword'])) {
+                $_SESSION['id'] = $result['id'];
+                $vendor = $_SESSION['id'];
+                $in_session = true;
+                $_SESSION['login_type'] = 'c';
+                if ($result['cNeedNew']) {
+                    $forcePassword = true;
+                }
+            }
+        }
 
+        if ($in_session) {
+            $_SESSION['cID'] = $result['cID'];
             if ($result['archived'] == 'Y') {
                 // they were marked archived and they logged in again, unarchive them.
-                $numupd = dbSafeCmd("UPDATE vendors SET archived = 'N' WHERE id = ?", 'i', array($vendor));
+                $numupd = dbSafeCmd("UPDATE exhibitors SET archived = 'N' WHERE id = ?", 'i', array($vendor));
                 if ($numupd != 1)
                     error_log("Unable to unarchive vendor $vendor");
-            }
-
-            if ($result['need_new']) {
-                $forcePassword = true;
             }
         } else {
             ?>
@@ -159,19 +185,19 @@ if (isset($_SESSION['id'])) {
 }
 
 // this section is for 'in-session' management
-// build region arry
+// build region array
 $regionQ = <<<EOS
-SELECT vrt.portalType, vrt.requestApprovalRequired, vrt.purchaseApprovalRequired,vrt.purchaseAreaTotals,vrt.mailInAllowed,
-           vr.name, vr.shortname, vr.description, vr.sortorder,
-           vry.ownerName, vry.ownerEmail, vry.id, vry.includedMemId, vry.additionalMemId, vry.totalUnitsAvailable, vry.conid,
+SELECT ert.portalType, ert.requestApprovalRequired, ert.purchaseApprovalRequired,ert.purchaseAreaTotals,ert.mailInAllowed,
+           er.name, er.shortname, er.description, er.sortorder,
+           ery.ownerName, ery.ownerEmail, ery.id, ery.includedMemId, ery.additionalMemId, ery.totalUnitsAvailable, ery.conid,
            mi.price AS includedMemPrice, ma.price AS additionalMemPrice
-FROM vendorRegionTypes vrt
-JOIN vendorRegions vr ON vr.regionType = vrt.regionType
-JOIN vendorRegionYears vry ON vr.id = vry.vendorRegion
-JOIN memList mi ON (vry.includedMemId = mi.id)
-JOIN memList ma ON (vry.additionalMemId = ma.id)
-WHERE vry.conid = ? AND vrt.portalType = ?
-ORDER BY vr.sortorder;
+FROM exhibitsRegionTypes ert
+JOIN exhibitsRegions er ON er.regionType = ert.regionType
+JOIN exhibitsRegionYears ery ON er.id = ery.exhibitsRegion
+JOIN memList mi ON (ery.includedMemId = mi.id)
+JOIN memList ma ON (ery.additionalMemId = ma.id)
+WHERE ery.conid = ? AND ert.portalType = ?
+ORDER BY er.sortorder;
 EOS;
 
 $regionR = dbSafeQuery($regionQ,'is',array($conid, $portalType));
@@ -185,13 +211,13 @@ while ($region = $regionR->fetch_assoc()) {
 
 // build spaces array
 $spaceQ = <<<EOS
-SELECT v.id, v.shortname, v.name, v.description, v.unitsAvailable, v.unitsAvailableMailin, v.vendorRegionYear
-FROM vendorSpaces v
-JOIN vendorRegionYears vRY ON (v.vendorRegionYear = vRY.id)
-JOIN vendorRegions vR ON (vRY.vendorRegion = vR.id)
-JOIN vendorRegionTypes vRT ON (vR.regionType = vRT.regionType)
-WHERE vRY.conid=? AND vRT.portalType = ?
-ORDER BY v.vendorRegionYear, v.sortorder;
+SELECT es.id, es.shortname, es.name, es.description, es.unitsAvailable, es.unitsAvailableMailin, es.exhibitsRegionYear
+FROM exhibitsSpaces es
+JOIN exhibitsRegionYears ery ON (es.exhibitsRegionYear = ery.id)
+JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
+JOIN exhibitsRegionTypes ert ON (er.regionType = ert.regionType)
+WHERE ery.conid=? AND ert.portalType = ?
+ORDER BY es.exhibitsRegionYear, es.sortorder;
 EOS;
 
 $spaceR =  dbSafeQuery($spaceQ, 'is', array($condata['id'], $portalType));
@@ -208,7 +234,7 @@ while ($space = $spaceR->fetch_assoc()) {
 foreach ($space_list AS $id => $space) {
     $priceQ = <<<EOS
 SELECT id, spaceId, code, description, units, price, includedMemberships, additionalMemberships, requestable, sortOrder
-FROM vendorSpacePrices
+FROM exhibitsSpacePrices
 WHERE spaceId=?
 ORDER BY spaceId, sortOrder;
 EOS;
@@ -220,16 +246,17 @@ EOS;
     $space_list[$id]['prices'] = $price_list;
 }
 
-// get this vendor
+// get this exhibitor
 $vendorQ = <<<EOS
-SELECT vendorName, vendorEmail, vendorPhone, website, description, contactName, contactEmail, contactPhone, need_new, confirm, 
+SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, confirm, 
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
-FROM vendors
-WHERE id=?;
+FROM exhibitors e
+LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
+WHERE e.id=? AND ey.conid = ?;
 EOS;
 
-$info = dbSafeQuery($vendorQ, 'i', array($vendor))->fetch_assoc();
-if ($info['need_new']) {
+$info = dbSafeQuery($vendorQ, 'ii', array($vendor, $conid))->fetch_assoc();
+if ($info['eNeedNew'] || $info['cNeedNew']) {
     drawChangePassword('You need to change your password.', 3, true);
     return;
 }
@@ -254,14 +281,15 @@ var country_options = <?php echo json_encode($countryOptions); ?>;
 <?php
 
 $vendorPQ = <<<EOS
-SELECT vrp.*
-FROM vendor_requestPermissions vrp
-JOIN vendorRegions vr ON vrp.regionId = vr.id
-JOIN vendorRegionTypes vrt ON vr.regionType = vrt.regionType
-WHERE vendorId = ? and (year = ? or year is NULL) and vrt.portalType = ?;
+SELECT ea.*
+FROM exhibitorApprovals ea
+JOIN exhibitsRegionYears ery ON ea.exhibitsRegionYearId = ery.id
+JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id 
+JOIN exhibitsRegionTypes ert ON er.regionType = ert.regionType
+WHERE exhibitorId = ? AND ert.portalType = ?;
 EOS;
 
-$vendorPR = dbSafeQuery($vendorPQ, 'iis', array($vendor, $condata['id'], $portalType));
+$vendorPR = dbSafeQuery($vendorPQ, 'is', array($vendor, $portalType));
 $vendor_permlist = array();
 while ($perm = $vendorPR->fetch_assoc()) {
     $vendor_permlist[$perm['regionId']] = $perm;
@@ -269,8 +297,8 @@ while ($perm = $vendorPR->fetch_assoc()) {
 
 $vendorSQ = <<<EOS
 SELECT *
-FROM vw_VendorSpace
-WHERE vendorId = ? and yearId = ? and portalType = ?;
+FROM vw_ExhibitorSpace
+WHERE exhibitorId = ? and yearId = ? and portalType = ?;
 EOS;
 
 $vendorSR = dbSafeQuery($vendorSQ, 'iii', array($vendor, $condata['id'], $vendor));
@@ -288,7 +316,7 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc);
      <div class='container-fluid'>
         <div class='row p-1'>
             <div class='col-sm-12 p-0'>
-                <h3>Welcome to the <?php echo $portalName; ?> Portal Page for <?php echo $info['vendorName']; ?></h3>
+                <h3>Welcome to the <?php echo $portalName; ?> Portal Page for <?php echo $info['exhibitorName']; ?></h3>
             </div>
         </div>
         <div class="row p-1">
@@ -373,7 +401,7 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc);
                 case 'Y': // permission isn't needed or you have been granted permission
                     // check if they already have paid space, if so, offer to show them the receipt
                     foreach ($space_list as $spaceId => $space) {
-                        if ($space['vendorRegionYear'] != $region['id'])
+                        if ($space['exhibitsRegionYear'] != $region['id'])
                             continue;
 
                         ob_start();
