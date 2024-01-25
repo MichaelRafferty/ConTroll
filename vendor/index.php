@@ -149,7 +149,7 @@ EOS;
         }
         // try contact login second
         if ((!$in_session) && $login == $result['cEmail']) {
-             if (password_verify($_POST['si_password'], $result['cPassword'])) {
+            if (password_verify($_POST['si_password'], $result['cPassword'])) {
                 $_SESSION['id'] = $result['id'];
                 $vendor = $_SESSION['id'];
                 $in_session = true;
@@ -161,26 +161,62 @@ EOS;
         }
 
         if ($in_session) {
-            $_SESSION['cID'] = $result['cID'];
+            // if archived, unarchive them, they just logged in again
             if ($result['archived'] == 'Y') {
                 // they were marked archived and they logged in again, unarchive them.
                 $numupd = dbSafeCmd("UPDATE exhibitors SET archived = 'N' WHERE id = ?", 'i', array($vendor));
                 if ($numupd != 1)
                     error_log("Unable to unarchive vendor $vendor");
             }
-        } else {
-            ?>
-            <h2 class='warn'>Unable to Verify Password</h2>
-            <?php
+            // if there is no year entry yet for this vendor create one on first login
+            if ($result['cID'] == NULL) {
+                // first get the last (if any) contact info for this exhibitor
+                $ydsql = <<<EOS
+SELECT MAX(conid)
+FROM exhibitorYears
+WHERE exhibitorId = ?;
+EOS;
+                $ydR = dbSafeQuery($ydsql, 'i', array($vendor));
+                if ($ydR->num_rows !== 1) {
+                    $last_year = 0;
+                } else {
+                    $last_year = $ydR->fetch_row()[0];
+                }
+                if ($last_year <= 0) {
+                    $yinsq = <<<EOS
+INSERT INTO exhibitorYears(conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, need_new, confirm)
+SELECT ? as conid, id, exhibitorName, exhibitorEmail, exhibitorPhone, password, need_new, confirm
+FROM exhibitors
+WHERE id = ?
+EOS;
+                    $newid = dbSafeInsert($yinsq, 'ii', array($conid, $vendor));
+                    $_SESSION['cID'] = $newid;
+                } else {
+                    $yinsq = <<<EOS
+INSERT INTO exhibitorYears(conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, need_new, confirm)
+SELECT ? as conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, need_new, confirm
+FROM exhibitorYears
+WHERE conid = ? AND exhibitorId = ?
+EOS;
+                    $newid = dbSafeInsert($yinsq, 'iii', array($conid, $last_year, $vendor));
+                    $_SESSION['cID'] = $newid;
+                }
+            } else {
+                $_SESSION['cID'] = $result['cID'];
+            }
+            break;
         }
     }
-} else {
+    if (!$in_session) {
+        ?>
+        <h2 class='warn'>Unable to Verify Password</h2>
+        <?php
+    }
+}
+if (!$in_session) {
 // not logged in, draw signup stuff
     draw_registrationModal($portalType, $portalName, $con, $countryOptions);
     draw_login($config_vars);
-?>
-
-<?php
     exit();
 }
 
@@ -248,7 +284,8 @@ EOS;
 
 // get this exhibitor
 $vendorQ = <<<EOS
-SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, confirm, 
+SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, 
+       ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm,
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId

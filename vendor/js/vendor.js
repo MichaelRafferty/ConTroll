@@ -16,9 +16,9 @@ var purchase_label = 'purchase';
 var additional_cost = {};
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const fieldlist = ["vendorName", "vendorEmail", "vendorPhone", "description", "contactName", "contactEmail", "contactPhone", "pw1", "pw2",
-    "addr", "city", "state", "zip", "country", "shipAddr", "shipCity", "shipState", "shipZip", "shipCountry"];
-const copyFromFieldList = [ 'vendorName', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
+const fieldlist = ["exhibitorName", "exhibitorEmail", "exhibitorPhone", "description", "contactName", "contactEmail", "contactPhone", "pw1", "pw2",
+    "addr", "city", "state", "zip", "country", "shipCompany", "shipAddr", "shipCity", "shipState", "shipZip", "shipCountry"];
+const copyFromFieldList = [ 'exhibitorName', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
 const copyToFieldList = ['shipCompany', 'shipAddr', 'shipAddr2', 'shipCity', 'shipState', 'shipZip', 'shipCountry'];
 //  copy the address fields to the ship to address fields
 function copyAddressToShipTo() {
@@ -36,7 +36,7 @@ function submitProfile(dataType) {
     for (var fieldnum in fieldlist) {
         var field = document.getElementById(fieldlist[fieldnum]);
         switch (fieldlist[fieldnum]) {
-            case 'vendorEmail':
+            case 'exhibitorEmail':
             case 'contactEmail':
                 if (emailRegex.test(field.value)) {
                     field.style.backgroundColor = '';
@@ -103,7 +103,7 @@ function submitProfile(dataType) {
     //
     $.ajax({
         url: 'scripts/vendorAddUpdate.php',
-        data: $('#vendorProfileForm').serialize(),
+        data: $('#exhibitorProfileForm').serialize(),
         method: 'POST',
         success: function(data, textstatus, jqXHR) {
             if(data['status'] == 'error') {
@@ -487,7 +487,7 @@ function makePurchase(token, label) {
             } else if (data['status'] == 'success') {
                 //alert('call succeeded');
                 alert(data['message']);
-                alert("Welcome to " + config['label'] + " Vendor Space. You may contact " + config['vemail'] + " with any questions.  One of our coordinators will be in touch to help you get setup.");
+                alert("Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] + " with any questions.  One of our coordinators will be in touch to help you get setup.");
                 location.reload();
             } else {
                 alert('There was an unexpected error, please email ' + config['vemail'] + 'to let us know.  Thank you.');
@@ -523,6 +523,9 @@ function profileModalOpen(useType) {
             var keys = Object.keys(vendor_info);
             for (var keyindex in keys) {
                 var key = keys[keyindex];
+                if (key == 'eNeedNew' || key == 'cNeedNew' || key == 'eConfirm' || key == 'cConfirm')
+                    continue;
+
                 var value=vendor_info[key];
                 if (config['debug'] & 16)
                     console.log(key + ' = "' + value + '"');
@@ -532,9 +535,8 @@ function profileModalOpen(useType) {
                         id.value = value;
                     else
                         id.checked = value == 1;
-                }
-                else  if (config['debug'] & 16)
-                    console.log("key not found " + key);
+                } else  if (config['debug'] & 16)
+                    console.log("field not found " + key);
             }
         }
         profileMode.value = useType;

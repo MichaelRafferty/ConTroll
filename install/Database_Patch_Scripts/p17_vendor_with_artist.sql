@@ -104,9 +104,6 @@ CREATE TABLE exhibitors (
     exhibitorName varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
     exhibitorEmail varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
     exhibitorPhone varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-    contactName varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-    contactEmail varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-    contactPhone varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
     website varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
     description text COLLATE utf8mb4_general_ci,
     password varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -143,7 +140,7 @@ CREATE TABLE exhibitorYears (
     contactPhone varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
     contactPassword varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
     need_new tinyint(1) DEFAULT '1',
-    comfirm tinyint(1) DEFAULT '0',
+    confirm tinyint(1) DEFAULT '0',
     PRIMARY KEY (id)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

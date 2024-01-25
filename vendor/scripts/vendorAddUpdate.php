@@ -8,10 +8,12 @@ $return500errors = true;
 
 $vconf = get_conf('vendor');
 $vemail = $vconf['vendor'];
+$con = get_conf('con');
+$conid = $con['id'];
 
 $response = array('post' => $_POST, 'get' => $_GET);
 
-if (!(array_key_exists('vendorEmail', $_POST) && array_key_exists('vendorName', $_POST) && array_key_exists('profileMode', $_POST))) {
+if (!(array_key_exists('exhibitorEmail', $_POST) && array_key_exists('exhibitorName', $_POST) && array_key_exists('profileMode', $_POST))) {
     $response['status'] = 'error';
     $response['message'] = "Calling sequence error, contact $vemail for assistance";
     ajaxSuccess($response);
@@ -31,10 +33,10 @@ switch ($profileMode) {
     case 'register':
         $vendorTestQ = <<<EOS
 SELECT id
-FROM vendors
-WHERE vendorEmail=? OR vendorName=?
+FROM exhibitors
+WHERE exhibitorEmail=? OR exhibitorName=?
 EOS;
-        $vendorTest = dbSafeQuery($vendorTestQ, 'ss', array(trim($_POST['vendorEmail']), trim($_POST['vendorName'])));
+        $vendorTest = dbSafeQuery($vendorTestQ, 'ss', array(trim($_POST['exhibitorEmail']), trim($_POST['exhibitorName'])));
         if ($vendorTest->num_rows != 0) {
             $response['status'] = 'error';
             $response['message'] = "Another account already exists with that name or email, please login or contact $vemail for assistance";
@@ -44,21 +46,18 @@ EOS;
 
         // create the vendor
         // email address validated on the source side
-        $vendorInsertQ = <<<EOS
-INSERT INTO vendors (vendorName, vendorEmail, vendorPhone, website, description, contactName, contactEmail, contactPhone, password, need_new, confirm, 
+        $exhibitorInsertQ = <<<EOS
+INSERT INTO exhibitors (exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, need_new, confirm, 
                      addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity) 
-values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
         $typestr = 'sssssssssiisssssssssssssi';
         $paramarr = array(
-            trim($_POST['vendorName']),
-            trim($_POST['vendorEmail']),
-            trim($_POST['vendorPhone']),
+            trim($_POST['exhibitorName']),
+            trim($_POST['exhibitorEmail']),
+            trim($_POST['exhibitorPhone']),
             trim($_POST['website']),
             trim($_POST['description']),
-            trim($_POST['contactName']),
-            trim($_POST['contactEmail']),
-            trim($_POST['contactPhone']),
             password_hash(trim($_POST['password']), PASSWORD_DEFAULT),
             0, // need_new_passwd
             0, // confirm
@@ -77,11 +76,30 @@ EOS;
             trim($_POST['shipCountry']),
             $publicity
         );
-        $newVendor = dbSafeInsert($vendorInsertQ, $typestr, $paramarr);
+        $newExhibitor = dbSafeInsert($exhibitorInsertQ, $typestr, $paramarr);
 
-        $response['newVendor'] = $newVendor;
+        // create the vendor year
+        $eyIndertQ = <<<EOS
+INSERT INTO exhibitorYears(conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, need_new, confirm)
+VALUES (?,?,?,?,?,?,?,?);
+EOS;
+        $typestr = 'iissssii';
+        $paramarr = array(
+            $conid,
+            $newExhibitor,
+            trim($_POST['contactName']),
+            trim($_POST['contactEmail']),
+            trim($_POST['contactPhone']),
+            password_hash(trim($_POST['password']), PASSWORD_DEFAULT),
+            0, // need_new_passwd
+            0 // confirm
+        );
+        $newExhibitorYear = dbSafeInsert($eyIndertQ, $typestr, $paramarr);
+
+        $response['newExhibitor'] = $newExhibitor;
+        $response['newExhibitorYear'] = $newExhibitorYear;
         $response['status'] = 'success';
-        $response['messsage'] = "$profileType " . trim($_POST['vendorName']) . " created";
+        $response['messsage'] = "$profileType " . trim($_POST['exhibitorName']) . " created";
         break;
 
         case 'update':
@@ -89,6 +107,7 @@ EOS;
 
         if (isset($_SESSION['id'])) {
             $vendor = $_SESSION['id'];
+            $vendorYear = $_SESSION['cID'];
         } else {
             $response['status'] = 'error';
             $response['message'] = 'Authentication Failure';
@@ -97,20 +116,17 @@ EOS;
         }
 
         $updateQ = <<<EOS
-UPDATE vendors
-SET vendorName=?, vendorEmail=?, vendorPhone=?, website=?, description=?, contactName=?, contactEmail=?, contactPhone=?,
+UPDATE exhibitors
+SET exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, website=?, description=?,
     addr=?, addr2=?, city=?, state=?, zip=?, country=?, shipCompany=?, shipAddr=?, shipAddr2=?, shipCity=?, shipState=?, shipZip=?, shipCountry=?, publicity=?
 WHERE id=?
 EOS;
         $updateArr = array(
-            trim($_POST['vendorName']),
-            trim($_POST['vendorEmail']),
-            trim($_POST['vendorPhone']),
+            trim($_POST['exhibitorName']),
+            trim($_POST['exhibitorEmail']),
+            trim($_POST['exhibitorPhone']),
             trim($_POST['website']),
             trim($_POST['description']),
-            trim($_POST['contactName']),
-            trim($_POST['contactEmail']),
-            trim($_POST['contactPhone']),
             trim($_POST['addr']),
             trim($_POST['addr2']),
             trim($_POST['city']),
@@ -127,21 +143,36 @@ EOS;
             $publicity,
             $vendor
         );
-        $numrows = dbSafeCmd($updateQ, 'sssssssssssssssssssssii', $updateArr);
-        if ($numrows == 1) {
+        $numrows = dbSafeCmd($updateQ, 'ssssssssssssssssssii', $updateArr);
+
+        $updateQ = <<<EOS
+UPDATE exhibitorYears
+SET contactName=?, contactEmail=?, contactPhone=?
+WHERE id=?
+EOS;
+            $updateArr = array(
+                trim($_POST['contactName']),
+                trim($_POST['contactEmail']),
+                trim($_POST['contactPhone']),
+                $vendorYear
+            );
+            $numrows1 = dbSafeCmd($updateQ, 'sssi', $updateArr);
+        if ($numrows == 1 || $numrows1 == 1) {
             $response['status'] = 'success';
             $response['message'] = 'Profile Updated';
             // get the update info
             $vendorQ = <<<EOS
-SELECT vendorName, vendorEmail, vendorPhone, website, description, contactName, contactEmail, contactPhone, need_new, confirm, 
+SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, 
+       ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm,
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
-FROM vendors
-WHERE id=?;
+FROM exhibitors e
+LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
+WHERE e.id=? AND ey.conid = ?;
 EOS;
-            $info = dbSafeQuery($vendorQ, 'i', array($vendor))->fetch_assoc();
+            $info = dbSafeQuery($vendorQ, 'ii', array($vendor, $conid))->fetch_assoc();
             $response['info'] = $info;
 
-        } else if ($numrows == 0) {
+        } else if ($numrows == 0 && $numrows1 == 0) {
             $response['status'] = 'success';
             $response['message'] = 'Nothing to update';
         } else {

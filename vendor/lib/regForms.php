@@ -79,7 +79,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                 </div>
                 <div class="modal-body" style="padding: 4px; background-color: lightcyan;">
                     <div class="container-fluid form-floating" style="background-color: lightcyan;">
-                        <form id="vendorProfileForm" name="vendorProfileForm" action="javascript:void(0);" class="form-floating">
+                        <form id="exhibitorProfileForm" name="exhibitorProfileForm" action="javascript:void(0);" class="form-floating">
                             <input type="hidden" id='profileMode' name='profileMode' value="unknown"/>
                             <input type="hidden" id='profileType' name='profileType' value="<?php echo $portalType; ?>"/>
                             <div class="row">
@@ -109,29 +109,29 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                             </div>
                             <div class="row mt-1">
                                 <div class="col-sm-2">
-                                    <label for="vendorName"> *Name: </label>
+                                    <label for="exhibitorName"> *Name: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" type='text' name='vendorName' id="vendorName" maxlength="64" size="50" tabindex="1" required
+                                    <input class="form-control-sm" type='text' name='exhibitorName' id="exhibitorName" maxlength="64" size="50" tabindex="1" required
                                         placeholder="<?php echo $portalType == 'artist' ? 'Company or Artist Name' : 'Vendor, Dealer or Store name';?>"/><br/>
                                         <span class="small">This is the name that we will register your space under.</span>
                                 </div>
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='vendorEmail'> *Business Email: </label>
+                                    <label for='exhibitorEmail'> *Business Email: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' type='email' name='vendorEmail' id='vendorEmail' maxlength='64' size='50' required
+                                    <input class='form-control-sm' type='email' name='exhibitorEmail' id='exhibitorEmail' maxlength='64' size='50' required
                                         placeholder='email address for the business' tabindex="2"/>
                                 </div>
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='vendorPhone'> *Business Phone: </label>
+                                    <label for='exhibitorPhone'> *Business Phone: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' type='text' name='vendorPhone' id='vendorPhone' maxlength='32' size='24' required
+                                    <input class='form-control-sm' type='text' name='exhibitorPhone' id='exhibitorPhone' maxlength='32' size='24' required
                                         placeholder='phone number for the business' tabindex="3"/>
                                 </div>
                             </div>
