@@ -475,8 +475,8 @@ function saveEdit() {
 
     // force a save and get the field from tinyMCE
         switch (editClass) {
-            case 'vendor':
-                vendor.editReturn(editTable, editField,  editIndex, editValue);
+            case 'exhibits':
+                exhibits.editReturn(editTable, editField,  editIndex, editValue);
                 break;
             default:
         }

@@ -46,11 +46,12 @@ EOS;
         $payor = $transL['newperid'];
     } else if (is_numeric($transL['notes'])) {
         $payorSQL = <<<EOS
-SELECT 'vendor' AS tablename, v.id, CONCAT('v-', v.id) AS pid, name AS last_name, '' AS first_name, '' AS middle_name, '' AS suffix, email AS email_addr, 
-       website AS phone, name AS badge_name, addr AS address, addr2 as addr_2, city, state, zip, state,'' AS country
-FROM vendor_space vs
-JOIN vendors v ON (vs.vendorId = v.id)
-WHERE vs.id = ?;
+SELECT 'exhibitor' AS tablename, e.id, CONCAT('e-', e.id) AS pid, exhibitorName AS last_name, '' AS first_name, '' AS middle_name, '' AS suffix, exhibitorEmail AS email_addr, 
+       website AS phone, ey.contactName AS badge_name, addr AS address, addr2 as addr_2, city, state, zip, state, country
+FROM exhibitorSpaces es
+JOIN exhibitorYears ey ON (es.exhibitorYearId = ey.id)
+JOIN exhibitors e ON (ey.exhibitorId = e.id)
+WHERE es.id = ?;
 EOS;
         $payor = $transL['notes'];
     } else {
@@ -189,37 +190,40 @@ EOS;
     }
     $response['coupons'] = $coupons;
 
-    //// now vendor spaces on that id
+    //// now exhibitor spaces on that id
+    //TODO: look at why it's 'v' and go to 'e'?
     if (substr($payor, 0, 1) != 'v') {
-        $vendorSQL = <<<EOS
-SELECT vp.id, vp.transid, vp.paid, vsp.description, vsp.price, vs.name AS space_name, v.name AS vendor_name, v.email
-FROM vendor_space vp
-JOIN vendorSpacePrices vsp ON (vsp.id = vp.item_purchased)
-JOIN vendorSpaces vs ON (vs.id = vsp.spaceid)
-JOIN vendors v ON (vp.vendorId = v.id)
-WHERE vp.transid = ?
-ORDER BY vs.name, vsp.description
+        $exhSQL = <<<EOS
+SELECT exhsp.id, exhsp.transid, exhsp.paid, esp.description, esp.price, es.name AS space_name, e.exhibitorName AS exhibitorName, e.exhibitorEmail as email
+FROM exhibitorSpaces exhsp
+JOIN exhibitsSpacePrices esp ON (esp.id = exhsp.item_purchased)
+JOIN exhibitsSpaces es ON (es.id = esp.spaceid)
+JOIN exhibitorYears ey ON exhsp.exhibitorYearId = ey.id
+JOIN exhibitors e ON (ey.exhibitorId = e.id)
+WHERE exhsp.transid = ?
+ORDER BY es.name, esp.description
 EOS;
-        $vendorR = dbSafeQuery($vendorSQL, 'i', array($transid));
+        $exhR = dbSafeQuery($exhSQL, 'i', array($transid));
     } else {
-        $vendorSQL = <<<EOS
+        $exhSQL = <<<EOS
 $withTrans
-SELECT vp.id, vp.transid, vp.paid, vsp.description, vsp.price, vs.name AS space_name, v.name AS vendor_name, v.email
+SELECT exhsp.id, exhsp.transid, exhsp.paid, esp.description, esp.price, es.name AS space_name, e.exhibitorName AS exhibitorName, e.exhibitorEmail as email
 FROM allTrans at
-JOIN vendor_space vp ON (vp.transid = at.transid)
-JOIN vendorSpacePrices vsp ON (vsp.id = vp.item_purchased)
-JOIN vendorSpaces vs ON (vs.id = vsp.spaceid)
-JOIN vendors v ON (vp.vendorId = v.id)
+JOIN exhibitorSpaces exhsp ON (exhsp.transid = at.transid)
+JOIN exhibitsSpacePrices esp ON (esp.id = exhsp.item_purchased)
+JOIN exhibitsSpaces es ON (es.id = esp.spaceid)
+JOIN exhibitorYears ey ON exhsp.exhibitorYearId = ey.id
+JOIN exhibitors e ON (ey.exhibitorId = e.id)
 ORDER BY vs.name, vsp.description
 EOS;
-        $vendorR = dbSafeQuery($vendorSQL, 'iiiiii', array($conid, $transid, $transid, $conid, $conid, $conid));
+        $exhR = dbSafeQuery($exhSQL, 'iiiiii', array($conid, $transid, $transid, $conid, $conid, $conid));
     }
-    $vendors = [];
-    while ($vendorL = $vendorR->fetch_assoc()) {
-        $vendors[] = $vendorL;
+    $exhibitors = [];
+    while ($exhL = $exhR->fetch_assoc()) {
+        $exhibitors[] = $exhL;
     }
 
-    $response['vendors'] = $vendors;
+    $response['exhibitors'] = $exhibitors;
 
     return reg_format_receipt($response);
 }
@@ -276,9 +280,9 @@ EOS;
         $payor_name .= ', ' . $payor['suffix'];
     $payor_name = trim($payor_name);
     $master_tid = $master_transaction['id'];
-    if (count($data['vendors']) > 0) {
-        $title_payor_name = $data['vendors'][0]['vendor_name'];
-        $title_email = $data['vendors'][0]['email'];
+    if (count($data['exhibitors']) > 0) {
+        $title_payor_name = $data['exhibitors'][0]['exhibitor_name'];
+        $title_email = $data['exhibitors'][0]['email'];
     } else {
         $title_payor_name = $payor_name;
         $title_email = $payor['email_addr'];
@@ -306,16 +310,17 @@ EOS;
 
             break;
         case 'vendor':
-            $receipt .= "By: $title_payor_name, Via: Vendor Portal, Transaction: $master_tid\n";
+        case 'exhibitor':
+            $receipt .= "By: $title_payor_name, Via: $type portal, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-12">
-            By: $title_payor_name, Via: Vendor Portal, Transaction: $master_tid
+            By: $title_payor_name, Via: $type portal, Transaction: $master_tid
         </div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td colspan="3">By: $title_payor_name, Via: Vendor Portal, Transaction: $master_tid</td></tr>
+<tr><td colspan="3">By: $title_payor_name, Via: $type portal, Transaction: $master_tid</td></tr>
 EOS;
 
             break;
@@ -377,39 +382,39 @@ EOS;
         $total += $subtotal;
     }
 
-    // now vendor spaces if they exist
-    if (count($data['vendors']) > 0) {
-        $receipt .= "\nVendor Spaces:\n";
+    // now exhibitor spaces if they exist
+    if (count($data['exhibitors']) > 0) {
+        $receipt .= "\nExhibitor Spaces:\n";
         $receipt_html .= <<<EOS
     <div class='row mt-4'>
         <div class='col-sm-12'>
-            <h3>Vendor Spaces:</h3>
+            <h3>Exhibitor Spaces:</h3>
         </div>
     </div>
 EOS;
         $receipt_tables .= <<<EOS
 <tr><td colspan="3">&nbsp;</td></tr>
-<tr><td colspan="3"><h3>Vendor Spaces:</h3></td></tr>
+<tr><td colspan="3"><h3>Exhibitor Spaces:</h3></td></tr>
 EOS;
 
-        foreach ($data['vendors'] as $vendor) {
-            $vendor_price = $vendor['price'];
-            $total += $vendor_price;
-            $vendor_price = $dolfmt->formatCurrency((float) $vendor['price'], 'USD');
-            $vendor_sid = $vendor['id'];
-            $vendor_area = $vendor['space_name'];
-            $vendor_desc = $vendor['description'];
-            $vendor_name = $vendor['vendor_name'];
-            $receipt .= "$vendor_area, $vendor_desc, $vendor_name, $vendor_price\n";
+        foreach ($data['exhibitors'] as $exhibitor) {
+            $exhibitor_price = $exhibitor['price'];
+            $total += $exhibitor_price;
+            $exhibitor_price = $dolfmt->formatCurrency((float) $exhibitor['price'], 'USD');
+            $exhibitor_sid = $exhibitor['id'];
+            $exhibitor_area = $exhibitor['space_name'];
+            $exhibitor_desc = $exhibitor['description'];
+            $exhibitor_name = $exhibitor['exhibitor_name'];
+            $receipt .= "$exhibitor_area, $exhibitor_desc, $exhibitor_name, $exhibitor_price\n";
             $receipt_html .= <<<EOS
     <div class="row">
-        <div class="col-sm-1">$vendor_sid</div>
-        <div class="col-sm-6">$vendor_desc in $vendor_area for $vendor_name</div>
-        <div class="col-sm-2">$vendor_price</div>
+        <div class="col-sm-1">$exhibitor_sid</div>
+        <div class="col-sm-6">$exhibitor_desc in $exhibitor_area for $exhibitor_name</div>
+        <div class="col-sm-2">$exhibitor_price</div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td>$vendor_sid</td><td>$vendor_desc in $vendor_area for $vendor_name</td><td>$vendor_price</td></tr>
+<tr><td>$exhibitor_sid</td><td>$exhibitor_desc in $exhibitor_area for $exhibitor_name</td><td>$exhibitor_price</td></tr>
 EOS;
 
         }
@@ -565,21 +570,28 @@ EOS;
     // general disclaimer for all reg items
     // Needs to be added
 
-    // vendor disclaimer
-    if (count($data['vendors']) > 0) {
+    // exhibitor disclaimer
+    if (count($data['exhibitors']) > 0) {
         $vc = get_conf('vendor');
-        $vdisc = $vc['pay_disclaimer'];
-        $receipt .=  "\n\n$vdisc\n";
-        $receipt_html .= <<<EOS
+        if (array_key_exists('pay_disclaimer', $vc)) {
+            $vdisc = $vc['pay_disclaimer'];
+            if ($vdisc != '') {
+                $vdisc = file_get_contents("../config/$vdisc");
+                if ($vdisc) {
+                    $receipt .=  "\n\n$vdisc\n";
+                    $receipt_html .= <<<EOS
 <div class='row mt-4'>
         <div class='col-sm-12'>
             <p>$vdisc</p>
         </div>
     </div>
 EOS;
-        $receipt_tables .= <<<EOS
+                    $receipt_tables .= <<<EOS
 <tr><td colspan="3"><p>$vdisc</p></td></tr>
 EOS;
+                }
+            }
+        }
     }
 
     $coninfo = get_conf('con');

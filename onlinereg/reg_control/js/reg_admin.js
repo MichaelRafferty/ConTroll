@@ -503,7 +503,7 @@ function transfer(index) {
         return;
 
     if (data['price'] == 0) {
-        if (confirm("This is a free badge, really transfer it?\n(Is it an included vendor badge or similar situation?)") == false)
+        if (confirm("This is a free badge, really transfer it?\n(Is it an included exhibitor badge or similar situation?)") == false)
             returm;
     }
 

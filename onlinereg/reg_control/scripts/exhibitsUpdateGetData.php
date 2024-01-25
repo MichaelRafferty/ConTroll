@@ -1,6 +1,6 @@
 <?php
-// update changed vendor setup data and then
-// retrieve vendor setup data for admin tab vendors
+// update changed exhibits setup data and then
+// retrieve exhibits setup data for admin tab exhibitss
 global $db_ini;
 
 require_once '../lib/base.php';
@@ -94,11 +94,11 @@ switch ($tablename) {
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO vendorRegionTypes(regionType, portalType, requestApprovalRequired, purchaseApprovalRequired, purchaseAreaTotals, mailinAllowed, sortorder, active)
+INSERT INTO exhibitsRegionTypes(regionType, portalType, requestApprovalRequired, purchaseApprovalRequired, purchaseAreaTotals, mailinAllowed, sortorder, active)
 VALUES(?,?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
-UPDATE vendorRegionTypes
+UPDATE exhibitsRegionTypes
 SET regionType = ?, portalType = ?, requestApprovalRequired = ?, purchaseApprovalRequired = ?, purchaseAreaTotals = ?, mailinAllowed = ?, sortorder = ?, active = ?
 WHERE regionType = ?;
 EOS;
@@ -134,16 +134,16 @@ EOS;
 
     case 'regions':
         if ($delete_keys != '') {
-            $delsql = "DELETE FROM vendorRegions WHERE id in ( $delete_keys );";
+            $delsql = "DELETE FROM exhibitsRegions WHERE id in ( $delete_keys );";
             web_error_log("Delete sql = /$delsql/");
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO vendorRegions(regionType, shortname, name, description, sortorder)
+INSERT INTO exhibitsRegions(regionType, shortname, name, description, sortorder)
 VALUES(?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
-UPDATE vendorRegions
+UPDATE exhibitsRegions
 SET regionType = ?, shortname = ?, name = ?, description = ?, sortorder = ?
 WHERE id = ?;
 EOS;
@@ -191,17 +191,17 @@ EOS;
 
     case 'regionYears':
         if ($delete_keys != '') {
-            $delsql = "DELETE FROM vendorRegionYears WHERE id IN ( $delete_keys );";
+            $delsql = "DELETE FROM exhibitsRegionYears WHERE id IN ( $delete_keys );";
             web_error_log("Delete sql = /$delsql/");
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO vendorRegionYears(conid, vendorRegion, ownerName, ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, sortorder)
+INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, sortorder)
 VALUES(?,?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
-UPDATE vendorRegionYears
-SET vendorRegion = ?, ownerName = ?, ownerEmail = ?, includedMemId = ?, additionalMemId = ?, totalUnitsAvailable = ?, sortorder = ?
+UPDATE exhibitsRegionYears
+SET exhibitsRegion = ?, ownerName = ?, ownerEmail = ?, includedMemId = ?, additionalMemId = ?, totalUnitsAvailable = ?, sortorder = ?
 WHERE id = ?;
 EOS;
 
@@ -227,7 +227,7 @@ EOS;
                 } else {
                     $totalUnitsAvailable = 0;
                 }
-                $numrows = dbSafeCmd($updsql, 'sssiiiii', array($row['vendorRegion'], $row['ownerName'], $row['ownerEmail'],
+                $numrows = dbSafeCmd($updsql, 'sssiiiii', array($row['exhibitsRegion'], $row['ownerName'], $row['ownerEmail'],
                     $row['includedMemId'], $row['additionalMemId'], $totalUnitsAvailable, $row['sortorder'], $row[$keyfield]));
                 $updated += $numrows;
             }
@@ -255,7 +255,7 @@ EOS;
                 } else {
                     $totalUnitsAvailable = 0;
                 }
-                $numrows = dbSafeInsert($inssql, 'iissiiii', array($conid, $row['vendorRegion'], $row['ownerName'], $row['ownerEmail'],
+                $numrows = dbSafeInsert($inssql, 'iissiiii', array($conid, $row['exhibitsRegion'], $row['ownerName'], $row['ownerEmail'],
                     $includedMemId, $additionalMemId, $totalUnitsAvailable, $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
@@ -264,19 +264,19 @@ EOS;
         $response['message'] = "$tablename updated: $inserted added, $updated changed, $deleted removed.";
         break;
 
-    case 'vendorSpaces':
+    case 'exhibitsSpaces':
         if ($delete_keys != '') {
-            $delsql = "DELETE FROM vendorSpaces WHERE id IN ( $delete_keys );";
+            $delsql = "DELETE FROM exhibitsSpaces WHERE id IN ( $delete_keys );";
             web_error_log("Delete sql = /$delsql/");
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO vendorSpaces(vendorRegionYear, shortname, name, description, unitsAvailable, unitsAvailableMailin, sortorder)
+INSERT INTO exhibitsSpaces(exhibitsRegionYear, shortname, name, description, unitsAvailable, unitsAvailableMailin, sortorder)
 VALUES(?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
-UPDATE vendorSpaces
-SET vendorRegionYear = ?, shortname = ?, name = ?, description = ?, unitsAvailable = ?, unitsAvailableMailin = ?, sortorder = ?
+UPDATE exhibitsSpaces
+SET exhibitsRegionYear = ?, shortname = ?, name = ?, description = ?, unitsAvailable = ?, unitsAvailableMailin = ?, sortorder = ?
 WHERE id = ?;
 EOS;
 
@@ -304,7 +304,7 @@ EOS;
                 } else {
                     $description = null;
                 }
-                $numrows = dbSafeCmd($updsql, 'isssiiii', array($row['vendorRegionYear'], $row['shortname'], $row['name'], $description,
+                $numrows = dbSafeCmd($updsql, 'isssiiii', array($row['exhibitsRegionYear'], $row['shortname'], $row['name'], $description,
                     $unitsAvailable, $unitsAvailableMailin, $row['sortorder'], $row[$keyfield]));
                 $updated += $numrows;
             }
@@ -334,7 +334,7 @@ EOS;
                 } else {
                     $description = null;
                 }
-                $numrows = dbSafeInsert($inssql, 'isssiii', array($row['vendorRegionYear'], $row['shortname'], $row['name'], $description,
+                $numrows = dbSafeInsert($inssql, 'isssiii', array($row['exhibitsRegionYear'], $row['shortname'], $row['name'], $description,
                     $unitsAvailable, $unitsAvailableMailin, $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
@@ -343,18 +343,18 @@ EOS;
         $response['message'] = "$tablename updated: $inserted added, $updated changed, $deleted removed.";
         break;
 
-    case 'vendorSpacePrices':
+    case 'exhibitsSpacePrices':
         if ($delete_keys != '') {
-            $delsql = "DELETE FROM vendorSpacePrices WHERE id IN ( $delete_keys );";
+            $delsql = "DELETE FROM exhibitsSpacePrices WHERE id IN ( $delete_keys );";
             web_error_log("Delete sql = /$delsql/");
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO vendorSpacePrices(spaceId, code, description, units, price, includedMemberships, additionalMemberships,  requestable, sortorder)
+INSERT INTO exhibitsSpacePrices(spaceId, code, description, units, price, includedMemberships, additionalMemberships,  requestable, sortorder)
 VALUES(?,?,?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
-UPDATE vendorSpacePrices
+UPDATE exhibitsSpacePrices
 SET spaceId = ?, code = ?, description = ?, units = ?, price = ?, includedMemberships = ?, additionalMemberships = ?, requestable = ?, sortorder = ?
 WHERE id = ?;
 EOS;
@@ -444,108 +444,108 @@ EOS;
         exit();
 }
 
-// vendor types
+// exhibits types
 if ($gettype == 'all' || str_contains($gettype,'types')) {
-    $vendorRegionTypesQ = <<<EOS
-SELECT vrt.*, vrt.regionType AS regionTypeKey, COUNT(vr.regionType) uses 
-FROM vendorRegionTypes vrt
-LEFT OUTER JOIN vendorRegions vr ON (vr.regionType = vrt.regionType)
-GROUP BY vrt.regionType, vrt.sortorder
-ORDER BY vrt.sortorder;
+    $exhibitsRegionTypesQ = <<<EOS
+SELECT ert.*, ert.regionType AS regionTypeKey, COUNT(er.regionType) uses 
+FROM exhibitsRegionTypes ert
+LEFT OUTER JOIN exhibitsRegions er ON (er.regionType = ert.regionType)
+GROUP BY ert.regionType, ert.sortorder
+ORDER BY ert.sortorder;
 EOS;
 
-    $vendorRegionTypes = array();
-    $vendorRegionTypesR = dbQuery($vendorRegionTypesQ);
-    while ($type = $vendorRegionTypesR->fetch_assoc()) {
-        array_push($vendorRegionTypes, $type);
+    $exhibitsRegionTypes = array();
+    $exhibitsRegionTypesR = dbQuery($exhibitsRegionTypesQ);
+    while ($type = $exhibitsRegionTypesR->fetch_assoc()) {
+        array_push($exhibitsRegionTypes, $type);
     }
-    $vendorRegionTypesR->free();
-    $response['vendorRegionTypes'] = $vendorRegionTypes;
+    $exhibitsRegionTypesR->free();
+    $response['exhibitsRegionTypes'] = $exhibitsRegionTypes;
 }
 
-// get all the vendor regions
+// get all the exhibits regions
 if ($gettype == 'all' || str_contains($gettype, 'regions')) {
-    $vendorRegionsQ = <<<EOS
-SELECT vr.*, vr.id AS regionKey, COUNT(vry.vendorRegion) uses
-FROM vendorRegions vr
-LEFT OUTER JOIN vendorRegionYears vry ON (vr.id = vry.vendorRegion)
-GROUP BY vr.id, vr.sortorder
-ORDER BY vr.sortorder;
+    $exhibitsRegionsQ = <<<EOS
+SELECT er.*, er.id AS regionKey, COUNT(ery.exhibitsRegion) uses
+FROM exhibitsRegions er
+LEFT OUTER JOIN exhibitsRegionYears ery ON (er.id = ery.exhibitsRegion)
+GROUP BY er.id, er.sortorder
+ORDER BY er.sortorder;
 EOS;
 
-    $vendorRegions = array();
-    $vendorRegionsR = dbQuery($vendorRegionsQ);
-    while ($space = $vendorRegionsR->fetch_assoc()) {
-        array_push($vendorRegions, $space);
+    $exhibitsRegions = array();
+    $exhibitsRegionsR = dbQuery($exhibitsRegionsQ);
+    while ($space = $exhibitsRegionsR->fetch_assoc()) {
+        array_push($exhibitsRegions, $space);
     }
-    $vendorRegionsR->free();
-    $response['vendorRegions'] = $vendorRegions;
+    $exhibitsRegionsR->free();
+    $response['exhibitsRegions'] = $exhibitsRegions;
 }
 
-// get the vendor regions configured for this year
+// get the exhibits regions configured for this year
 if ($gettype == 'all' || str_contains($gettype, 'years')) {
-    $vendorRegionYearsQ = <<<EOS
-SELECT vry.*, vry.id AS regionYearKey, COUNT(vs.vendorRegionYear) uses, vr.shortname
-FROM vendorRegionYears vry
-JOIN vendorRegions vr ON (vry.vendorRegion = vr.id)
-LEFT OUTER JOIN vendorSpaces vs ON (vs.vendorRegionYear = vry.id)
-WHERE vry.conid = ?
-GROUP BY vry.id, vry.sortorder
-ORDER BY vry.sortorder;
+    $exhibitsRegionYearsQ = <<<EOS
+SELECT ery.*, ery.id AS regionYearKey, COUNT(es.exhibitsRegionYear) uses, er.shortname
+FROM exhibitsRegionYears ery
+JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
+LEFT OUTER JOIN exhibitsSpaces es ON (es.exhibitsRegionYear = ery.id)
+WHERE ery.conid = ?
+GROUP BY ery.id, ery.sortorder
+ORDER BY ery.sortorder;
 EOS;
     
-    $vendorRegionYears = array();
-    $vendorRegionYearsR = dbSafeQuery($vendorRegionYearsQ, 'i', array($conid));
-    while ($year = $vendorRegionYearsR->fetch_assoc()) {
-        array_push($vendorRegionYears, $year);
+    $exhibitsRegionYears = array();
+    $exhibitsRegionYearsR = dbSafeQuery($exhibitsRegionYearsQ, 'i', array($conid));
+    while ($year = $exhibitsRegionYearsR->fetch_assoc()) {
+        array_push($exhibitsRegionYears, $year);
     }
-    $vendorRegionYearsR->free();
-    $response['vendorRegionYears'] = $vendorRegionYears;
+    $exhibitsRegionYearsR->free();
+    $response['exhibitsRegionYears'] = $exhibitsRegionYears;
 }
 
-// get the vendor spaces
+// get the exhibits spaces
 if ($gettype == 'all' || str_contains($gettype, 'spaces')) {
-    $vendorSpacesQ = <<<EOS
-SELECT vs.*, vs.id AS spaceKey, COUNT(vsp.id) uses 
-FROM vendorRegionYears vry
-JOIN vendorSpaces vs ON (vs.vendorRegionYear = vry.id)
-LEFT OUTER JOIN vendorSpacePrices vsp ON (vsp.spaceId = vs.id)
-WHERE vry.conid = ?
-GROUP BY vs.id, vs.sortorder
+    $exhibitsSpacesQ = <<<EOS
+SELECT es.*, es.id AS spaceKey, COUNT(esp.id) uses 
+FROM exhibitsRegionYears ery
+JOIN exhibitsSpaces es ON (es.exhibitsRegionYear = ery.id)
+LEFT OUTER JOIN exhibitsSpacePrices esp ON (esp.spaceId = es.id)
+WHERE ery.conid = ?
+GROUP BY es.id, es.sortorder
 ORDER BY sortOrder;
 EOS;
 
-    $vendorSpaces = array();
-    $vendorSpacesR = dbSafeQuery($vendorSpacesQ, 'i', array($conid));
-    while ($area = $vendorSpacesR->fetch_assoc()) {
-        array_push($vendorSpaces, $area);
+    $exhibitsSpaces = array();
+    $exhibitsSpacesR = dbSafeQuery($exhibitsSpacesQ, 'i', array($conid));
+    while ($area = $exhibitsSpacesR->fetch_assoc()) {
+        array_push($exhibitsSpaces, $area);
     }
-    $vendorSpacesR->free();
-    $response['vendorSpaces'] = $vendorSpaces;
+    $exhibitsSpacesR->free();
+    $response['exhibitsSpaces'] = $exhibitsSpaces;
 }
 
 // now the prices for those spaces
 if ($gettype == 'all' || str_contains($gettype, 'prices')) {
-    $vendorSpacePricesQ = <<<EOS
-SELECT vsp.*, vsp.id AS priceKey, COUNT(vspur.item_requested) + COUNT(vsapp.item_approved) + COUNT(vspur.item_purchased) AS uses
-FROM vendorRegionYears vry
-JOIN vendorSpaces vs ON (vs.vendorRegionYear = vry.id)
-JOIN vendorSpacePrices vsp ON (vs.id = vsp.spaceId)
-LEFT OUTER JOIN vendor_space vsreq ON (vsp.id = vsreq.item_requested)
-LEFT OUTER JOIN vendor_space vsapp ON (vsp.id = vsapp.item_approved)
-LEFT OUTER JOIN vendor_space vspur ON (vsp.id = vspur.item_purchased)
-WHERE vry.conid = ?
-GROUP BY vsp.id, vsp.sortOrder
-ORDER BY vsp.sortOrder;
+    $exhibitsSpacePricesQ = <<<EOS
+SELECT esp.*, esp.id AS priceKey, COUNT(vspur.item_requested) + COUNT(vsapp.item_approved) + COUNT(vspur.item_purchased) AS uses
+FROM exhibitsRegionYears ery
+JOIN exhibitsSpaces es ON (es.exhibitsRegionYear = ery.id)
+JOIN exhibitsSpacePrices esp ON (es.id = esp.spaceId)
+LEFT OUTER JOIN exhibitorSpaces vsreq ON (esp.id = vsreq.item_requested)
+LEFT OUTER JOIN exhibitorSpaces vsapp ON (esp.id = vsapp.item_approved)
+LEFT OUTER JOIN exhibitorSpaces vspur ON (esp.id = vspur.item_purchased)
+WHERE ery.conid = ?
+GROUP BY esp.id, esp.sortOrder
+ORDER BY esp.sortOrder;
 EOS;
 
-    $vendorSpacePrices = array();
-    $vendorSpacePricesR = dbSafeQuery($vendorSpacePricesQ, 'i', array($conid));
-    while ($price = $vendorSpacePricesR->fetch_assoc()) {
-        array_push($vendorSpacePrices, $price);
+    $exhibitsSpacePrices = array();
+    $exhibitsSpacePricesR = dbSafeQuery($exhibitsSpacePricesQ, 'i', array($conid));
+    while ($price = $exhibitsSpacePricesR->fetch_assoc()) {
+        array_push($exhibitsSpacePrices, $price);
     }
-    $vendorSpacePricesR->free();
-    $response['vendorSpacePrices'] = $vendorSpacePrices;
+    $exhibitsSpacePricesR->free();
+    $response['exhibitsSpacePrices'] = $exhibitsSpacePrices;
 }
 
 if ($gettype == 'all') {
@@ -554,7 +554,7 @@ if ($gettype == 'all') {
 SELECT * 
 FROM memList
 WHERE conid = ?
-AND memCategory IN ('artist','dealer','vendor','fan','virtual')
+AND memCategory IN ('artist','dealer','exhibits','fan','virtual')
 ORDER BY sort_order;
 EOS;
 

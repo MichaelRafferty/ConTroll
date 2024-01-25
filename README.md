@@ -8,7 +8,7 @@ ConTroll™ is freely available for use under the GNU Affero General Public Lice
 
 The system is under active development by a team of developers and has functions currently in development to support:
 Art Show Related Functions
-Extending Vendor registrations to include Artists and Art Show spaces
+Extending Exihibitor registrations to include Artists and Art Show spaces
 
 Planned future additions:
 Membership Portal to review and add to a person's memberships
@@ -35,7 +35,7 @@ Mail-in/Manual Registration
 Badge List/Transfer/Rollover
 Attendence Graphs
 Coupon Management
-Vendor Mangement
+Exhibits Mangement
 In progress: extending vendor to handle artists
 In reg_control, but still in old format (functions, but not updated)
 People - manage information about the people in the database
@@ -44,8 +44,8 @@ Free Badges - create free badges and add people to receive a free badge
 Reports
 Club Management
 Old Format Manual Registration screen if needed for special changes not yet ported to new screens
-vendor: Vender requests/approval/registration
-In progress: extending vendor to support art show requests/approval/registration
+Exhibitors: Exhibitor requests/approval/registration
+In progress: extending exhibitors to support art show requests/approval/registration
 
 Older Repositories not yet ported:
 OnlineArt

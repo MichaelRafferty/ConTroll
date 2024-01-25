@@ -1,7 +1,7 @@
 current = null;
 next = null;
 mem = null;
-vendor = null;
+exhibits = null;
 merge = null;
 conid = null;
 // debug meaning
@@ -220,8 +220,8 @@ function settab(tabname) {
                 mem.close();
             if (merge != null)
                 merge.close();
-            if (vendor != null)
-                vendor.close();
+            if (exhibits != null)
+                exhibits.close();
             break;
 
         case 'consetup-pane':            
@@ -233,8 +233,8 @@ function settab(tabname) {
                 mem.close();
             if (merge != null)
                 merge.close();
-            if (vendor != null)
-                vendor.close();
+            if (exhibits != null)
+                exhibits.close();
             if (current == null)
                 current = new consetup('current');
             current.open();
@@ -249,8 +249,8 @@ function settab(tabname) {
                 next.close();
             if (merge != null)
                 merge.close();
-            if (vendor != null)
-                vendor.close();
+            if (exhibits != null)
+                exhibits.close();
             if (next == null)
                 next = new consetup('next');
             next.open();
@@ -264,13 +264,13 @@ function settab(tabname) {
                 mem.close();
             if (merge != null)
                 merge.close();
-            if (vendor != null)
-                vendor.close();
+            if (exhibits != null)
+                exhibits.close();
             if (mem == null)
                 mem = new memsetup();
             mem.open();
             break;
-        case 'vendor-pane':
+        case 'exhibits-pane':
             if (current != null)
                 current.close();
             if (next != null)
@@ -281,9 +281,9 @@ function settab(tabname) {
                 merge.close();
             if (merge != null)
                 merge.close();
-            if (vendor == null)
-                vendor = new vendorsetup(conid, debug);
-            vendor.open();
+            if (exhibits == null)
+                exhibits = new exhibitssetup(conid, debug);
+            exhibits.open();
             break;
         case 'merge-pane':
             if (current != null)
@@ -294,8 +294,8 @@ function settab(tabname) {
                 mem.close();
             if (merge != null)
                 merge.close();
-            if (vendor != null)
-                vendor.close();
+            if (exhibits != null)
+                exhibits.close();
             if (merge == null)
                 merge = new mergesetup();
             merge.open();

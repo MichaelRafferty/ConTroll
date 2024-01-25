@@ -1,7 +1,7 @@
 //import { TabulatorFull as Tabulator } from 'tabulator-tables';
-// vendor class - all vendor space config functions
-class vendorsetup {
-    // vendor region types
+// exhibits class - all exhibits space config functions
+class exhibitssetup {
+    // exhibits region types
     #regionType = null;
     #regionType_arr = [];
 
@@ -11,7 +11,7 @@ class vendorsetup {
     #regionTypeundobtn = null;
     #regionTyperedobtn = null;
 
-    // vendor regions
+    // exhibits regions
     #regions = null
     #regionListArr = {};
     #regionsTable = null;
@@ -20,7 +20,7 @@ class vendorsetup {
     #regionundobtn = null;
     #regionredobtn = null;
 
-    // vendor region years
+    // exhibits region years
     #regionYears = null;
     #regionYearsListArr = {};
     #regionYearsTable = null;
@@ -29,7 +29,7 @@ class vendorsetup {
     #regionYearundobtn = null;
     #regionYearredobtn = null;
 
-    // vendor spaces (sections of a region)
+    // exhibits spaces (sections of a region)
     #spaces = null;
     #spacesListArr = {};
     #spacesTable = null;
@@ -38,7 +38,7 @@ class vendorsetup {
     #spaceundobtn = null;
     #spaceredobtn = null;
 
-    // vendor space prices
+    // exhibits space prices
     #spacePrices = null;
     #spacePricesTable = null;
     #spacePricedirty = false;
@@ -51,7 +51,7 @@ class vendorsetup {
     #memListArr = {};
     #message_div = null;
     #result_message_div = null;
-    #vendor_pane = null;
+    #exhibits_pane = null;
     #conid = null;
     #debug = 0;
     #debugVisible = false;
@@ -64,51 +64,51 @@ class vendorsetup {
         this.#debug = debug;
         this.#conid = conid;
         this.#message_div = document.getElementById('test');
-        this.#vendor_pane = document.getElementById('vendor-pane');
+        this.#exhibits_pane = document.getElementById('exhibits-pane');
         this.#result_message_div = document.getElementById('result_message');
         if (this.#debug & 1) {
             console.log("Debug = " + debug);
             console.log("conid = " + conid);
         }
-        if (this.#debug & 2) {ƒtab
+        if (this.#debug & 2) {
             this.#debugVisible = true;
         }
     };
 
-    // called on open of the vendor window
+    // called on open of the exhibits window
     open() {
         var html = `
 <div class="container-fluid">
     <div class="row">
-        <div class="col-sm-12"><h3 style="text-align: center;"><strong>Vendor Setup</strong></h3></div>
+        <div class="col-sm-12"><h3 style="text-align: center;"><strong>Exhibits Setup</strong></h3></div>
     </div>
-    <ul class="nav nav-pills nav-fill  mb-3" id="vendorAdmin-tab" role="tablist">
+    <ul class="nav nav-pills nav-fill  mb-3" id="exhibitsAdmin-tab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="regionTypes-tab" data-bs-toggle="pill" data-bs-target="#regionTypes-pane" type="button" role="tab" 
-                    aria-controls="nav-vendorTabs" aria-selected="true" onclick="vendor.settab('regionTypes-pane');">Region Types</button>
+                    aria-controls="nav-exhibitsTabs" aria-selected="true" onclick="exhibits.settab('regionTypes-pane');">Region Types</button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="regions-tab" data-bs-toggle="pill" data-bs-target="#regions-pane" type="button" role="tab"
-                    aria-controls="nav-regions" aria-selected="false" onclick="vendor.settab('regions-pane');">Regions
+                    aria-controls="nav-regions" aria-selected="false" onclick="exhibits.settab('regions-pane');">Regions
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="regionYears-tab" data-bs-toggle="pill" data-bs-target="#regionYears-pane" type="button" role="tab"
-                    aria-controls="nav-regionYears" aria-selected="false" onclick="vendor.settab('regionYears-pane');">Regions for this Year
+                    aria-controls="nav-regionYears" aria-selected="false" onclick="exhibits.settab('regionYears-pane');">Regions for this Year
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="regionSpaces-tab" data-bs-toggle="pill" data-bs-target="#regionSpaces-pane" type="button" role="tab"
-                    aria-controls="nav-memconfigsetup" aria-selected="false" onclick="vendor.settab('regionSpaces-pane');">Spaces within the Region
+                    aria-controls="nav-memconfigsetup" aria-selected="false" onclick="exhibits.settab('regionSpaces-pane');">Spaces within the Region
             </button>
         </li>
         <li class='nav-item' role='presentation'>
-            <button class='nav-link' id='vendorPrices-tab' data-bs-toggle='pill' data-bs-target='#vendorPrices-pane' type='button' role='tab'
-                    aria-controls='nav-vendorsetup' aria-selected='false' onclick="vendor.settab('vendorPrices-pane');">Space Pricing Options
+            <button class='nav-link' id='exhibitsPrices-tab' data-bs-toggle='pill' data-bs-target='#exhibitsPrices-pane' type='button' role='tab'
+                    aria-controls='nav-exhibitssetup' aria-selected='false' onclick="exhibits.settab('exhibitsPrices-pane');">Space Pricing Options
             </button>
         </li>
     </ul>
-    <div class="tab-content" id="vendorAdmin-content">
+    <div class="tab-content" id="exhibitsAdmin-content">
         <div class="tab-pane fade show active" id="regionTypes-pane" role="tabpanel" aria-labelledby="regionTypes-tab" tabindex="0">
             <div class="container-fluid">
                 <div class="row">
@@ -116,10 +116,10 @@ class vendorsetup {
                 </div>
                 <div class="row mt-2">
                     <div class="col-sm-auto" id="types-buttons">
-                        <button id="types-undo" type="button" class="btn btn-secondary btn-sm" onclick="vendor.undoTypes(); return false;" disabled>Undo</button>
-                        <button id="types-redo" type="button" class="btn btn-secondary btn-sm" onclick="vendor.redoTypes(); return false;" disabled>Redo</button>
-                        <button id="types-addrow" type="button" class="btn btn-secondary btn-sm" onclick="vendor.addrowTypes(); return false;">Add New</button>
-                        <button id="types-save" type="button" class="btn btn-primary btn-sm"  onclick="vendor.saveTypes(); return false;" disabled>Save Changes</button>
+                        <button id="types-undo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.undoTypes(); return false;" disabled>Undo</button>
+                        <button id="types-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoTypes(); return false;" disabled>Redo</button>
+                        <button id="types-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowTypes(); return false;">Add New</button>
+                        <button id="types-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveTypes(); return false;" disabled>Save Changes</button>
                     </div>
                 </div>
             </div>
@@ -131,10 +131,10 @@ class vendorsetup {
                 </div>
                 <div class="row mt-2">
                     <div class="col-sm-auto" id="regions-buttons">                
-                        <button id="regions-undo" type="button" class="btn btn-secondary btn-sm" onclick="vendor.undoRegions(); return false;" disabled>Undo</button>
-                        <button id="regions-redo" type="button" class="btn btn-secondary btn-sm" onclick="vendor.redoRegions(); return false;" disabled>Redo</button>
-                        <button id="regions-addrow" type="button" class="btn btn-secondary btn-sm" onclick="vendor.addrowRegions(); return false;">Add New</button>
-                        <button id="regions-save" type="button" class="btn btn-primary btn-sm"  onclick="vendor.saveRegions(); return false;" disabled>Save Changes</button>
+                        <button id="regions-undo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.undoRegions(); return false;" disabled>Undo</button>
+                        <button id="regions-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoRegions(); return false;" disabled>Redo</button>
+                        <button id="regions-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowRegions(); return false;">Add New</button>
+                        <button id="regions-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveRegions(); return false;" disabled>Save Changes</button>
                     </div>
                 </div>
             </div>
@@ -146,10 +146,10 @@ class vendorsetup {
                 </div>
                 <div class="row mt-2">
                     <div class="col-sm-auto" id="years-buttons">
-                        <button id="years-undo" type="button" class="btn btn-secondary btn-sm" onclick="vendor.undoYears(); return false;" disabled>Undo</button>
-                        <button id="years-redo" type="button" class="btn btn-secondary btn-sm" onclick="vendor.redoYears(); return false;" disabled>Redo</button>
-                        <button id="years-addrow" type="button" class="btn btn-secondary btn-sm" onclick="vendor.addrowYears(); return false;">Add New</button>
-                        <button id="years-save" type="button" class="btn btn-primary btn-sm"  onclick="vendor.saveYears(); return false;" disabled>Save Changes</button>
+                        <button id="years-undo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.undoYears(); return false;" disabled>Undo</button>
+                        <button id="years-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoYears(); return false;" disabled>Redo</button>
+                        <button id="years-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowYears(); return false;">Add New</button>
+                        <button id="years-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveYears(); return false;" disabled>Save Changes</button>
                     </div>
                 </div>
             </div>
@@ -161,25 +161,25 @@ class vendorsetup {
                 </div>
                 <div class="row mt-2">
                     <div class="col-sm-auto" id="spaces-buttons">
-                        <button id="spaces-undo" type="button" class="btn btn-secondary btn-sm" onclick="vendor.undoSpaces(); return false;" disabled>Undo</button>
-                        <button id="spaces-redo" type="button" class="btn btn-secondary btn-sm" onclick="vendor.redoSpaces(); return false;" disabled>Redo</button>
-                        <button id="spaces-addrow" type="button" class="btn btn-secondary btn-sm" onclick="vendor.addrowSpaces(); return false;">Add New</button>
-                        <button id="spaces-save" type="button" class="btn btn-primary btn-sm"  onclick="vendor.saveSpaces(); return false;" disabled>Save Changes</button>
+                        <button id="spaces-undo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.undoSpaces(); return false;" disabled>Undo</button>
+                        <button id="spaces-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoSpaces(); return false;" disabled>Redo</button>
+                        <button id="spaces-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowSpaces(); return false;">Add New</button>
+                        <button id="spaces-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveSpaces(); return false;" disabled>Save Changes</button>
                     </div>
                 </div>                        
             </div>
         </div>
-        <div class="tab-pane fade show" id="vendorPrices-pane" role="tabpanel" aria-labelledby="vendorPrices-tab" tabindex="0">
+        <div class="tab-pane fade show" id="exhibitsPrices-pane" role="tabpanel" aria-labelledby="exhibitsPrices-tab" tabindex="0">
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-sm-auto m-0 p-0" id="spacePrices-div"></div>
                 </div>
                 <div class="row mt-2">
                     <div class="col-sm-auto" id="spacePrices-buttons">
-                        <button id="spacePrices-undo" type="button" class="btn btn-secondary btn-sm" onclick="vendor.undoSpacePrices(); return false;" disabled>Undo</button>
-                        <button id="spacePrices-redo" type="button" class="btn btn-secondary btn-sm" onclick="vendor.redoSpacePrices(); return false;" disabled>Redo</button>
-                        <button id="spacePrices-addrow" type="button" class="btn btn-secondary btn-sm" onclick="vendor.addrowSpacePrices(); return false;">Add New</button>
-                        <button id="spacePrices-save" type="button" class="btn btn-primary btn-sm"  onclick="vendor.saveSpacePrices(); return false;" disabled>Save Changes</button>
+                        <button id="spacePrices-undo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.undoSpacePrices(); return false;" disabled>Undo</button>
+                        <button id="spacePrices-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoSpacePrices(); return false;" disabled>Redo</button>
+                        <button id="spacePrices-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowSpacePrices(); return false;">Add New</button>
+                        <button id="spacePrices-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveSpacePrices(); return false;" disabled>Save Changes</button>
                     </div>
                 </div>        
             </div>
@@ -187,7 +187,7 @@ class vendorsetup {
     </div>
 </div>
 `;
-        this.#vendor_pane.innerHTML = html;
+        this.#exhibits_pane.innerHTML = html;
 
         // set up regionTypes
         this.#regionTypesavebtn = document.getElementById('types-save');
@@ -218,7 +218,7 @@ class vendorsetup {
         clear_message();
         clearError();
         var _this = this;
-        var script = "scripts/vendorUpdateGetData.php";
+        var script = "scripts/exhibitsUpdateGetData.php";
         $.ajax({
             url: script,
             method: 'POST',
@@ -274,7 +274,7 @@ class vendorsetup {
             this.#spacePricesTable.destroy();
             this.#spacePricesTable = null;
         }
-        this.#vendor_pane.innerHTML = '';
+        this.#exhibits_pane.innerHTML = '';
     };
 
 
@@ -291,7 +291,7 @@ class vendorsetup {
             case 'Regions':
                 row = this.#regionsTable.getRow(index);
                 break;
-            case 'vendorSpaces':
+            case 'exhibitsSpaces':
                 row = this.#spacesTable.getRow(index);
                 break;
             default:
@@ -299,7 +299,7 @@ class vendorsetup {
         }
         var textitem = row.getCell(field).getValue();
         var titlename = row.getCell(title).getValue();
-        showEdit('vendor', table, index, field, titlename, textitem);
+        showEdit('exhibits', table, index, field, titlename, textitem);
     }
 
     editReturn(editTable, editField,  editIndex, editValue) {
@@ -311,7 +311,7 @@ class vendorsetup {
             case 'Regions':
                 this.#regionsTable.getRow(editIndex).update(updArr);
                 break;
-            case 'vendorSpaces':
+            case 'exhibitsSpaces':
                 this.#spacesTable.getRow(editIndex).update(updArr);
                 break;
             default:
@@ -323,7 +323,7 @@ class vendorsetup {
     editbutton(cell, formatterParams, onRendered) {
         var index = cell.getRow().getIndex();
         if (index > 0) {
-            return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="vendor.editDesc(\'' +
+            return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="exhibits.editDesc(\'' +
                 formatterParams['table'] + '\',' + index + ',\'' +  formatterParams['fieldName'] + '\', \'' + formatterParams['name'] + '\');">Edit Desc</button>';
         }
         return "Save First";
@@ -349,19 +349,19 @@ class vendorsetup {
             }
         }
 
-        if (data['vendorRegionTypes']) {
+        if (data['exhibitsRegionTypes']) {
             this.drawRegionTypes(data);
             this.drawRegions(data);
             drew_regions = true;
         }
 
-        if ((!drew_regions) && data['vendorRegions']) {
+        if ((!drew_regions) && data['exhibitsRegions']) {
             this.drawRegions(data);
             this.drawRegionYears(data);
             drew_regionYears = true;
         }
 
-        if ((!drew_regionYears) && data['vendorRegionYears']) {
+        if ((!drew_regionYears) && data['exhibitsRegionYears']) {
             this.drawRegionYears(data);
             this.drawSpaces(data);
             this.drawSpacePrices(data);
@@ -369,13 +369,13 @@ class vendorsetup {
             drew_spacePrices = true;
         }
 
-        if ((!drew_spaces) && data['vendorSpaces']) {
+        if ((!drew_spaces) && data['exhibitsSpaces']) {
             this.drawSpaces(data);
             this.drawSpacePrices(data);
             drew_spacePrices = true;
         }
 
-        if ((!drew_spacePrices) && data['vendorSpacePrices']) {
+        if ((!drew_spacePrices) && data['exhibitsSpacePrices']) {
             this.drawSpacePrices(data);
         }
     }
@@ -391,8 +391,8 @@ class vendorsetup {
             this.#regionTypeTable.destroy();
         }
 
-        if (data['vendorRegionTypes']) {
-            this.#regionType = data['vendorRegionTypes'];
+        if (data['exhibitsRegionTypes']) {
+            this.#regionType = data['exhibitsRegionTypes'];
             this.#regionType_arr = [];
             this.#regionType.forEach(regionType => {
                 if (regionType.active == 'Y')
@@ -519,8 +519,8 @@ class vendorsetup {
             this.#regionsTable.destroy();
         }
 
-        if (data['vendorRegions']) {
-            this.#regions = data['vendorRegions'];
+        if (data['exhibitsRegions']) {
+            this.#regions = data['exhibitsRegions'];
 
             this.#regionListArr = {};
             this.#regions.forEach(s => {
@@ -588,8 +588,8 @@ class vendorsetup {
             this.#regionYearsTable.destroy();
         }
         
-        if (data['vendorRegionYears']) {
-            this.#regionYears = data['vendorRegionYears'];
+        if (data['exhibitsRegionYears']) {
+            this.#regionYears = data['exhibitsRegionYears'];
 
             this.#regionYearsListArr = {};
             this.#regionYears.forEach(s => {
@@ -614,7 +614,7 @@ class vendorsetup {
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false,},
                 {title: "Conid", field: "conid", width: 60, hozAlign: "right", headerSort: false,},
                 {
-                    title: "Vendor Region", field: "vendorRegion", headerSort: true, width: 100, headerWordWrap: true, headerFilter: true, headerFilterParams: {values: this.#regionListArr},
+                    title: "exhibits Region", field: "exhibitsRegion", headerSort: true, width: 100, headerWordWrap: true, headerFilter: true, headerFilterParams: {values: this.#regionListArr},
                     editor: "list", editorParams: {values: this.#regionListArr}, validator: "required",
                     formatter: "lookup", formatterParams: this.#regionListArr,
                 },
@@ -664,8 +664,8 @@ class vendorsetup {
             this.#spacesTable.destroy();
         }
 
-        if (data['vendorSpaces']) {
-            this.#spaces = data['vendorSpaces'];
+        if (data['exhibitsSpaces']) {
+            this.#spaces = data['exhibitsSpaces'];
 
             this.#spacesListArr = {};
             this.#spaces.forEach(s => {
@@ -689,8 +689,8 @@ class vendorsetup {
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false},
                 {
-                    title: "Vendor Region",
-                    field: "vendorRegionYear",
+                    title: "exhibits Region",
+                    field: "exhibitsRegionYear",
                     headerSort: true,
                     headerWordWrap: true,
                     width: 100,
@@ -710,7 +710,7 @@ class vendorsetup {
                     editor: "input", editorParams: {elementAttributes: {maxlength: "128"}}, validator: "required"
                 },
                 {title: "Description", field: "description", headerFilter: true, width: 450, headerSort: false,},
-                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'vendorSpaces', fieldName: 'description', name: 'name' }, hozAlign:"left", headerSort: false },
+                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'exhibitsSpaces', fieldName: 'description', name: 'name' }, hozAlign:"left", headerSort: false },
                 {title: 'Units', field: "unitsAvailable", width: 60, hozAlign: "right", headerSort: false, editor: "number", editorParams: {min:0, max:9999999}},
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "spaceKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
@@ -743,8 +743,8 @@ class vendorsetup {
             this.#spacePricesTable.destroy();
         }
 
-        if (data['vendorSpacePrices'])
-            this.#spacePrices = data['vendorSpacePrices'];
+        if (data['exhibitsSpacePrices'])
+            this.#spacePrices = data['exhibitsSpacePrices'];
 
         this.#spacePricedirty = false;
         this.#spacePricesTable = new Tabulator('#spacePrices-div', {
@@ -757,7 +757,7 @@ class vendorsetup {
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false},
                 {
-                    title: "Vendor Space", field: "spaceId", width: 150, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#spacesListArr},
+                    title: "exhibits Space", field: "spaceId", width: 150, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#spacesListArr},
                     editor: "list", formatter: "lookup", formatterParams: this.#spacesListArr, editorParams: {values: this.#spacesListArr}
                 },
                 {
@@ -859,7 +859,7 @@ class vendorsetup {
         });
     }
 
-    // set undo / redo status for vendor type buttons
+    // set undo / redo status for exhibits type buttons
     checkTypesUndoRedo() {
         var undosize = this.#regionTypeTable.getHistoryUndoSize();
         this.#regionTypeundobtn.disabled = undosize <= 0;
@@ -904,7 +904,7 @@ class vendorsetup {
             this.#regionTypesavebtn.innerHTML = "Saving...";
             this.#regionTypesavebtn.disabled = true;
 
-            var script = "scripts/vendorUpdateGetData.php";
+            var script = "scripts/exhibitsUpdateGetData.php";
 
             clear_message();
             clearError();
@@ -983,7 +983,7 @@ class vendorsetup {
         });
     }
 
-    // set undo / redo status for vendor type buttons
+    // set undo / redo status for exhibits type buttons
     checkRegionsUndoRedo() {
         var undosize = this.#regionsTable.getHistoryUndoSize();
         this.#regionTypeundobtn.disabled = undosize <= 0;
@@ -1028,7 +1028,7 @@ class vendorsetup {
             this.#regionsavebtn.innerHTML = "Saving...";
             this.#regionsavebtn.disabled = true;
 
-            var script = "scripts/vendorUpdateGetData.php";
+            var script = "scripts/exhibitsUpdateGetData.php";
 
             clear_message();
             clearError();
@@ -1108,7 +1108,7 @@ class vendorsetup {
         });
     }
 
-    // set undo / redo status for vendor type buttons
+    // set undo / redo status for exhibits type buttons
     checkYearsUndoRedo() {
         var undosize = this.#regionYearsTable.getHistoryUndoSize();
         this.#regionYearundobtn.disabled = undosize <= 0;
@@ -1153,7 +1153,7 @@ class vendorsetup {
             this.#regionYearsavebtn.innerHTML = "Saving...";
             this.#regionYearsavebtn.disabled = true;
 
-            var script = "scripts/vendorUpdateGetData.php";
+            var script = "scripts/exhibitsUpdateGetData.php";
 
             clear_message();
             clearError();
@@ -1233,7 +1233,7 @@ class vendorsetup {
         });
     }
 
-    // set undo / redo status for vendor type buttons
+    // set undo / redo status for exhibits type buttons
     checkSpacesUndoRedo() {
         var undosize = this.#spacesTable.getHistoryUndoSize();
         this.#spaceundobtn.disabled = undosize <= 0;
@@ -1278,13 +1278,13 @@ class vendorsetup {
             this.#spacesavebtn.innerHTML = "Saving...";
             this.#spacesavebtn.disabled = true;
 
-            var script = "scripts/vendorUpdateGetData.php";
+            var script = "scripts/exhibitsUpdateGetData.php";
 
             clear_message();
             clearError();
             var postdata = {
                 tabledata: JSON.stringify(this.#spacesTable.getData()),
-                tablename: "vendorSpaces",
+                tablename: "exhibitsSpaces",
                 gettype: "spaces,prices",
                 indexcol: "spaceKey"
             };
@@ -1403,13 +1403,13 @@ class vendorsetup {
             this.#spacePricesavebtn.innerHTML = "Saving...";
             this.#spacePricesavebtn.disabled = true;
 
-            var script = "scripts/vendorUpdateGetData.php";
+            var script = "scripts/exhibitsUpdateGetData.php";
 
             clear_message();
             clearError();
             var postdata = {
                 tabledata: JSON.stringify(this.#spacePricesTable.getData()),
-                tablename: "vendorSpacePrices",
+                tablename: "exhibitsSpacePrices",
                 gettype: "prices",
                 indexcol: "priceKey"
             };

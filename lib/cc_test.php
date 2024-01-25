@@ -56,8 +56,8 @@ function cc_charge_purchase($results, $ccauth) {
 		ajaxSuccess(array('status'=>'error','data'=>'Something thinks this is a real charge method'));
 		exit();
 	}
-    if (array_key_exists('vendor', $results)) {
-        $category = 'vendor';
+    if (array_key_exists('exhibitd', $results)) {
+        $category = 'exhibits';
     } else {
         $category = 'reg';
     }

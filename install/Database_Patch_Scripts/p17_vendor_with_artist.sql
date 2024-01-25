@@ -1,9 +1,9 @@
-/* p17 - vendor_with_artist - Add parent/child relationship, add permissions for artist style, indicate type of space as vendor or artshow
-   Note: vendor = no pre-approval needed, artshow - pre-approval required to allow asking for space
+/* p17 - vendor_with_artist - Rename to exhibits and exhibitor, add permissions, and contact/ship to fields
+   Add multi-level hierarchy for exhibit
  */
 
-/* it is recommended that if you have not used vendor before and there is no data you wish to migrate you uncomment out the drop table statements and recreate the tables */
-/*
+/* NOTE: these tables totally replace the old vendor* and vendor_* tables, you can migrate data to save it, if desired. */
+/*  Eventually drop all vendor tables as obsolete
 
 DROP TABLE IF EXISTS vendor_space;
 DROP TABLE IF EXISTS vendors;
@@ -15,8 +15,8 @@ DROP TABLE IF EXISTS vendorRegionTypes;
 
 */
 
-/*  vendorRegionTypes table - Rules for different types of vendor regions */
-CREATE TABLE vendorRegionTypes (
+/*  exhibitsRegionTypes table - Rules for different types of exhibits regions */
+CREATE TABLE exhibitsRegionTypes (
     regionType varchar(16) NOT NULL,
     portalType enum('vendor','artist') NOT NULL default 'vendor',
     requestApprovalRequired enum('None','Once','Annual') NOT NULL  DEFAULT 'Once',
@@ -26,10 +26,10 @@ CREATE TABLE vendorRegionTypes (
     sortorder int NOT NULL DEFAULT 0,
     active enum('N','Y') NOT NULL DEFAULT 'Y',
     PRIMARY KEY(regionType)
-);
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-/* vendor regions - the name and description of the various regions (locations) of vendor space */
-CREATE TABLE vendorRegions (
+/* exhibits regions - the name and description of the various regions (locations) of exhibits spaces */
+CREATE TABLE exhibitsRegions (
     id int NOT NULL AUTO_INCREMENT,
     regionType varchar(16) COLLATE utf8mb4_general_ci NOT NULL,
     shortname varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
@@ -37,14 +37,16 @@ CREATE TABLE vendorRegions (
     description text COLLATE utf8mb4_general_ci,
     sortorder int NOT NULL DEFAULT 0,
     PRIMARY KEY(id)
-);
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-ALTER TABLE vendorRegions ADD CONSTRAINT vr_regiontype_fk FOREIGN KEY(regionType) REFERENCES vendorRegionTypes(regionType) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE exhibitsRegions ADD CONSTRAINT er_regiontype_fk FOREIGN KEY(regionType) REFERENCES exhibitsRegionTypes(regionType) ON DELETE CASCADE ON UPDATE CASCADE;
 
-CREATE TABLE vendorRegionYears (
+/* exhibitsRegionYears - which spaces are active for a particular year.
+   Allows keeping historical data, but allows for different memId's and owners per year */
+CREATE TABLE exhibitsRegionYears (
     id int NOT NULL AUTO_INCREMENT,
     conid int NOT NULL,
-    vendorRegion int NOT NULL,
+    exhibitsRegion int NOT NULL,
     ownerName varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
     ownerEmail varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
     includedMemId int DEFAULT NULL,
@@ -52,17 +54,17 @@ CREATE TABLE vendorRegionYears (
     totalUnitsAvailable int NOT NULL DEFAULT 0,
     sortorder int NOT NULL DEFAULT 0,
     PRIMARY KEY(id)
-);
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-ALTER TABLE vendorRegionYears ADD CONSTRAINT vendorRegion_memList_a FOREIGN KEY(additionalMemId) REFERENCES memList(id) ON UPDATE CASCADE;
-ALTER TABLE vendorRegionYears ADD CONSTRAINT vendorRegion_memList_i FOREIGN KEY(includedMemId) REFERENCES memList(id) ON UPDATE CASCADE;
-ALTER TABLE vendorRegionYears ADD CONSTRAINT vsy_conlist_fk FOREIGN KEY(conid) REFERENCES conlist(id) ON UPDATE CASCADE;
-ALTER TABLE vendorRegionYears ADD CONSTRAINT vsy_vendorRegion_fk FOREIGN KEY(vendorRegion) REFERENCES vendorRegions(id) ON UPDATE CASCADE;
+ALTER TABLE exhibitsRegionYears ADD CONSTRAINT ery_memList_a FOREIGN KEY(additionalMemId) REFERENCES memList(id) ON UPDATE CASCADE;
+ALTER TABLE exhibitsRegionYears ADD CONSTRAINT ery_memList_i FOREIGN KEY(includedMemId) REFERENCES memList(id) ON UPDATE CASCADE;
+ALTER TABLE exhibitsRegionYears ADD CONSTRAINT ery_conlist_fk FOREIGN KEY(conid) REFERENCES conlist(id) ON UPDATE CASCADE;
+ALTER TABLE exhibitsRegionYears ADD CONSTRAINT ery_exhibitsRegion_fk FOREIGN KEY(exhibitsRegion) REFERENCES exhibitsRegions(id) ON UPDATE CASCADE;
 
-/* vendor spaces (spaces within a region sold individually) */
-CREATE TABLE vendorSpaces (
+/* exhibits spaces (spaces within a region sold individually) */
+CREATE TABLE exhibitsSpaces (
     id int NOT NULL AUTO_INCREMENT,
-    vendorRegionYear int NOT NULL,
+    exhibitsRegionYear int NOT NULL,
     shortname varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
     name varchar(128) COLLATE utf8mb4_general_ci NOT NULL,
     description text COLLATE utf8mb4_general_ci,
@@ -70,11 +72,14 @@ CREATE TABLE vendorSpaces (
     unitsAvailableMailin int NOT NULL DEFAULT 0,
     sortorder int NOT NULL DEFAULT 0,
     PRIMARY KEY(id)
-);
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-ALTER TABLE vendorSpaces ADD CONSTRAINT vs_vendorRegionYears_fk FOREIGN KEY(vendorRegionYear) REFERENCES vendorRegionYears(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE exhibitsSpaces ADD CONSTRAINT es_exhibitsRegionYears_fk FOREIGN KEY(exhibitsRegionYear) REFERENCES exhibitsRegionYears(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
-CREATE TABLE vendorSpacePrices (
+/* exhibitsSpacePrices - space quantities available, prices are total, not per unit
+   Allows customizing number of included/additional memberships per quantity purchased.
+ */
+CREATE TABLE exhibitsSpacePrices (
     id int NOT NULL AUTO_INCREMENT,
     spaceId int NOT NULL,
     code varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
@@ -86,17 +91,24 @@ CREATE TABLE vendorSpacePrices (
     requestable tinyint DEFAULT 1,
     sortorder int NOT NULL DEFAULT 0,
     PRIMARY KEY(id)
-);
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-ALTER TABLE vendorSpacePrices ADD CONSTRAINT vsp_vendorspaceid_fk FOREIGN KEY(spaceId) REFERENCES vendorSpaces(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE exhibitsSpacePrices ADD CONSTRAINT esp_exhibitsspaceid_fk FOREIGN KEY(spaceId) REFERENCES exhibitsSpaces(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
-CREATE TABLE vendors (
+/* exhibitors - main demographic table for all exhibitors (artists, dealers, fan entities, etc.)
+   Note: contact will either be a current year copy or totally move to exhibitor_years
+ */
+CREATE TABLE exhibitors (
     id int NOT NULL AUTO_INCREMENT,
     perid int DEFAULT NULL,
-    name varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+    exhibitorName varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    exhibitorEmail varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    exhibitorPhone varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    contactName varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    contactEmail varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    contactPhone varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
     website varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
     description text COLLATE utf8mb4_general_ci,
-    email varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
     password varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
     need_new tinyint(1) DEFAULT '1',
     confirm tinyint(1) DEFAULT '0',
@@ -107,34 +119,86 @@ CREATE TABLE vendors (
     state varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL,
     zip varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
     country varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-    ship_addr varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-    ship_addr2 varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-    ship_city varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-    ship_state varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-    ship_zip varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-    ship_country varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    shipCompany varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    shipAddr varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    shipAddr2 varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    shipCity varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    shipState varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    shipZip varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    shipCountry varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
     archived enum('N','Y') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
     PRIMARY KEY (id)
-);
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-ALTER TABLE vendors ADD CONSTRAINT vendor_perid_fk FOREIGN KEY (perid) REFERENCES perinfo (id) ON UPDATE CASCADE;
-);
+ALTER TABLE exhibitors ADD CONSTRAINT exhibitor_perid_fk FOREIGN KEY (perid) REFERENCES perinfo (id) ON UPDATE CASCADE;
 
-CREATE TABLE vendor_requestPermissions (
+/* exhibitorYears - data per year for exhibitors
+ */
+CREATE TABLE exhibitorYears (
     id int NOT NULL AUTO_INCREMENT,
-    vendorId int NOT NULL,
-    regionId int NOT NULL,
-    year int NULL,
-    permission enum('N', 'Y') NOT NULL DEFAULT 'N',
+    conid int NOT NULL,
+    exhibitorId int NOT NULL,
+    contactName varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+    contactEmail varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+    contactPhone varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
+    contactPassword varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+    need_new tinyint(1) DEFAULT '1',
+    comfirm tinyint(1) DEFAULT '0',
+    PRIMARY KEY (id)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE exhibitorYears ADD CONSTRAINT ey_exhibitors_fk FOREIGN KEY (exhibitorId) REFERENCES exhibitors (id) ON UPDATE CASCADE;
+ALTER TABLE exhibitorYears ADD CONSTRAINT ey_conlist_fk FOREIGN KEY(conid) REFERENCES conlist(id) ON UPDATE CASCADE;
+
+/* exhibitorApprovals - track permission requests by year for regions
+ */
+CREATE TABLE exhibitorApprovals (
+    id int NOT NULL AUTO_INCREMENT,
+    exhibitorId int NOT NULL,
+    exhibitsRegionYearId int NOT NULL,
+    approval enum('none','requested','approved','denied','hide') NOT NULL DEFAULT 'none',
     updateDate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updateBy int NOT NULL,
     PRIMARY KEY (id)
-);
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-ALTER TABLE vendor_requestPermissions ADD CONSTRAINT vrp_vendor_fk FOREIGN KEY (vendorId) REFERENCES vendors(id) ON UPDATE CASCADE ON DELETE CASCADE;
-ALTER TABLE vendor_requestPermissions ADD CONSTRAINT vrp_region_fk FOREIGN KEY (regionId) REFERENCES vendorRegions(id) ON UPDATE CASCADE;
-ALTER TABLE vendor_requestPermissions ADD CONSTRAINT vrp_year_fk FOREIGN KEY (year) REFERENCES conlist(id) ON UPDATE CASCADE;
-ALTER TABLE vendor_requestPermissions ADD CONSTRAINT vrp_updateby_fk FOREIGN KEY (updateBy) REFERENCES perinfo(id) ON UPDATE CASCADE;
+ALTER TABLE exhibitorApprovals ADD CONSTRAINT ea_exhibitor_fk FOREIGN KEY (exhibitorId) REFERENCES exhibitors(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE exhibitorApprovals ADD CONSTRAINT ea_regionYear_fk FOREIGN KEY (exhibitsRegionYearId) REFERENCES exhibitsRegionYears(id) ON UPDATE CASCADE;
+ALTER TABLE exhibitorApprovals ADD CONSTRAINT ea_updateby_fk FOREIGN KEY (updateBy) REFERENCES perinfo(id) ON UPDATE CASCADE;
+
+/* exhibitorSpaces - space statuses this year for this exhibitor
+ */
+DROP TABLE IF EXISTS exhibitorSpaces;
+CREATE TABLE exhibitorSpaces
+(
+    `id`                int       NOT NULL AUTO_INCREMENT,
+    `exhibitorYearId`          int       NOT NULL,
+    `spaceId`           int       NOT NULL,
+    `item_requested`    int            DEFAULT NULL,
+    `time_requested`    timestamp NULL DEFAULT NULL,
+    `item_approved`     int            DEFAULT NULL,
+    `time_approved`     timestamp NULL DEFAULT NULL,
+    `item_purchased`    int            DEFAULT NULL,
+    `time_purchased`    timestamp NULL DEFAULT NULL,
+    `price`             decimal(8, 2)  DEFAULT NULL,
+    `paid`              decimal(8, 2)  DEFAULT NULL,
+    `transid`           int            DEFAULT NULL,
+    `membershipCredits` int            DEFAULT '0',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+ALTER TABLE exhibitorSpaces ADD CONSTRAINT es_exhibitorYears_fk FOREIGN KEY (exhibitorYearId) REFERENCES exhibitorYears(id) ON UPDATE CASCADE;
+ALTER TABLE exhibitorSpaces ADD CONSTRAINT es_spaceid_fk FOREIGN KEY (spaceId) REFERENCES exhibitorSpaces(id) ON UPDATE CASCADE;
+ALTER TABLE exhibitorSpaces ADD CONSTRAINT es_transaction_fk FOREIGN KEY (transid) REFERENCES transaction(id) ON UPDATE CASCADE;
+ALTER TABLE exhibitorSpaces ADD CONSTRAINT es_space_req_fk FOREIGN KEY (item_requested) REFERENCES exhibitsSpacePrices(id) ON UPDATE CASCADE;
+ALTER TABLE exhibitorSpaces ADD CONSTRAINT es_space_req_fk FOREIGN KEY (item_approved) REFERENCES exhibitsSpacePrices(id) ON UPDATE CASCADE;
+ALTER TABLE exhibitorSpaces ADD CONSTRAINT es_space_req_fk FOREIGN KEY (item_purchased) REFERENCES exhibitsSpacePrices(id) ON UPDATE CASCADE;
+            
+
+/* other tables effected */
+ALTER TABLE payments MODIFY COLUMN category enum('reg','artshow','other','vendor','exhibits') COLLATE utf8mb4_general_ci DEFAULT NULL;
+
 
 /* this has number xxx in it (needs to be 17) to prevent insert from working, update to 17 or final number when integrated */
 INSERT INTO patchLog(id, name) values(xxx, vendor_with_artist);
