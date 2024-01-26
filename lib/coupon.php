@@ -100,7 +100,9 @@ EOS;
     $result = array('status' => 'success', 'coupon' => $coupon);
     if ($coupon['memId']) {
         $priceQ = <<<EOS
-SELECT id, memGroup, label, shortname, sort_order, price, memAge, memCategory
+SELECT id, memGroup, label, shortname, 
+       CASE WHEN id = ? THEN -1 ELSE sort_order END AS sort_order, 
+       price, memAge, memCategory
 FROM memLabel
 WHERE
     conid=? 
@@ -108,7 +110,7 @@ WHERE
 ORDER BY sort_order, price DESC
 ;
 EOS;
-        $priceR = dbSafeQuery($priceQ, 'ii', array($con['id'], $coupon['memId']));
+        $priceR = dbSafeQuery($priceQ, 'iii', array($coupon['memId'], $con['id'], $coupon['memId']));
         while ($priceL = $priceR->fetch_assoc()) {
             $membershiptypes[] = $priceL;
         }
