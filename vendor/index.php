@@ -307,6 +307,7 @@ while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
 fclose($fh);
 
 
+$config_vars['loginType'] = $_SESSION['login_type'];
 ?>
 
 <script type='text/javascript'>

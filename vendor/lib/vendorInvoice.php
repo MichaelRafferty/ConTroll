@@ -36,7 +36,7 @@ function draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc) {
                                 <label for="vendor_inv_name">Name:</label>
                             </div>
                             <div class="col-sm-10 p-0">
-                                <input class="form-control-sm" type='text' name='name' id='vendor_inv_name' value="<?php echo escape_quotes($info['vendorName']);  ?>" size="64" required/>
+                                <input class="form-control-sm" type='text' name='name' id='vendor_inv_name' value="<?php echo escape_quotes($info['exhibitorName']);  ?>" size="64" required/>
                             </div>
                         </div>
                         <div class='row'>
@@ -44,7 +44,7 @@ function draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc) {
                                 <label for='vendor_inv_email'>Email:</label>
                             </div>
                             <div class='col-sm-10 p-0'>
-                                <input class='form-control-sm' type='text' name='email' id='vendor_inv_email' value="<?php echo escape_quotes($info['vendorEmail']); ?>" size="64" required/>
+                                <input class='form-control-sm' type='text' name='email' id='vendor_inv_email' value="<?php echo escape_quotes($info['exhibitorEmail']); ?>" size="64" required/>
                             </div>
                         </div>
                         <div class='row'>

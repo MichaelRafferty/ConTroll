@@ -136,11 +136,11 @@ function submitProfile(dataType) {
 function changePassword(field) {
     var pw = document.getElementById('newPw').value;
     if (pw.length < 8) {
-        show_message("New is too short.  It must be at least 8 characters.", 'warn');;
+        show_message("New is too short.  It must be at least 8 characters.", 'warn', 'cp_result_message');
         return;
     }
     if (document.getElementById('newPw2').value != pw) {
-        show_message("New passwords do not match", 'warn');;
+        show_message("New passwords do not match", 'warn', 'cp_result_message');
         return;
     }
     clear_message();
@@ -150,7 +150,7 @@ function changePassword(field) {
         method: 'POST',
         success: function(data, textstatus, jqXHR) {
             if(data['status'] == 'error') {
-                show_message(data['message'], 'error');
+                show_message(data['message'], 'error', 'cp_result_message');
             } else {
                 if (config['debug'] & 1)
                     console.log(data);
@@ -575,7 +575,11 @@ function changePasswordOpen() {
     if (changePasswordTitleDiv == null)
         changePasswordTitleDiv = document.getElementById('changePasswordTitle');
 
-    changePasswordTitleDiv.innerHTML = "Change " + config['portalName'] + " Portal Account Password";
+    if (config['loginType'] == 'c')
+        changePasswordTitleDiv.innerHTML = "Change " + config['portalName'] + " Portal Contact Password";
+    else
+        changePasswordTitleDiv.innerHTML = "Change " + config['portalName'] + " Portal Account Password";
+
     change_password.show();
 }
 

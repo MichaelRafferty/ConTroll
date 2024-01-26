@@ -52,7 +52,7 @@ EOH;
         </form>
         <div class="row">
             <div class="col-sm-12 m-0 p-0">
-                <div id='result_message' class='mt-4 p-2'></div>
+                <div id='cp_result_message' class='mt-4 p-2'></div>
             </div>
         </div>
     </div>
@@ -89,6 +89,11 @@ function draw_passwordModal() {
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <?php drawChangePassword('', 4, false);
                     ?>
+                    <div class='row'>
+                        <div class='col-sm-12'>
+                            <div id='cp_result_message'></div>
+                        </div>
+                    </div>
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
