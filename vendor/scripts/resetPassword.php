@@ -39,8 +39,29 @@ $str = str_shuffle(
 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#%^&*()-{}|_'
 );
 
-$infoQ = "SELECT id, contactEmail, need_new FROM vendors WHERE contactEmail = ?;";
+$infoQ = "SELECT id, exhibitorEmail, need_new FROM exhibitors WHERE exhibitorEmail = ?;";
 $infoR = dbSafeQuery($infoQ, 's', array($login));
+$infot = '';
+if ($infoR->num_rows != 1) {
+    $infoQ = <<<EOS
+SELECT id, contactEmail, need_new
+FROM exhibitorYears
+WHERE contactEmail = ? AND conid = ?;
+EOS;
+    $infoR = dbSafeQuery($infoQ, 'si', array($login, $conid));
+    if ($infoR->num_rows == 1)
+        $infot = 'c';
+} else {
+    $infot = 'e';
+}
+
+// should we tell them they goofed on the email?  this allows for phishing for email addresses of vendors and artists
+if ($infoR->num_rows != 1) {
+    $response['status'] = 'error';
+    $response['error'] = 'No user found with that email';
+    ajaxSuccess($response);
+    exit();
+}
 
 $len = rand(10,16);
 $start = rand(0,strlen($str)-$len);
@@ -54,23 +75,19 @@ $portalName = $_POST['name'];
 $reply = $vendor_conf[$portalType];
 $dest = $vendor_conf[$portalType . 'site'];
 
-// should we tell them they goofed on the email?  this allows for phishing for email addresses of vendors and artists
-if(($infoR->num_rows == 0) or ($infoR->num_rows > 1)){
-    $response['status'] = 'error';
-    $response['error'] = "No user found with that email";
-    ajaxSuccess($response);
-    exit();
-}
-
 $info = $infoR->fetch_assoc();
 if($info['need_new']) {
     $response['status'] = 'error';
-    $response['error'] = 'A password reset email has previously been sent.  If you are still having problems loging into your account please contact ' . $reply . ' for assistance.';
+    $response['error'] = 'A password reset email has previously been sent.  If you are still having problems logging into your account please contact ' . $reply . ' for assistance.';
     ajaxSuccess($response);
     exit();
 }
 
-$updateQ = "UPDATE vendors SET need_new=1, password=? where id=?;";
+if ($infot == 'e') {
+    $updateQ = "UPDATE exhibitors SET need_new=1, password=? where id=?;";
+} else if ($infot == 'c') {
+    $updateQ = "UPDATE exhibitorYears SET need_new=1, contactPassword=? where id=?";
+}
 $email = "no send attempt or a failure";
 load_email_procs();
 $num_rows = dbSafeCmd($updateQ, 'si', array($hash, $info['id']));

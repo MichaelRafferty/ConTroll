@@ -143,7 +143,7 @@ function changePassword(field) {
         show_message("New passwords do not match", 'warn', 'cp_result_message');
         return;
     }
-    clear_message();
+    clear_message('cp_result_message');
     $.ajax({
         url: 'scripts/changePassword.php',
         data: $('#changepw').serialize(),
