@@ -126,7 +126,7 @@ $perid = $_POST['oldID'];
 $newperid = $_POST['newID'];
 $query2 = "UPDATE perinfo SET change_notes=CONCAT(IFNULL(change_notes,''), '<br/>', ?) WHERE id=?;";
 $types = 'si';
-$values = array($changeLog, $id);
+$values = array($changeLog, $perid);
 $response['second_q'] = $query2;
 $rows = dbSafeCmd($query2, $types, $values);
 if ($rows === false || $rows != 1) {
@@ -143,6 +143,10 @@ if ($rows === false || $rows != 1) {
 }
 
 $response['changeLog'] = $changeLog;
+if ($errors != '') {
+    $response['errors'] = $errors;
+    error_log($errors);
+}
 
 ajaxSuccess($response);
 ?>
