@@ -465,7 +465,7 @@ window.onload = function () {
             prices[group] = Number(mbrtype['price']);
             badges['agecount'][group] = 0;
             shortnames[group] = mbrtype['shortname'].replace(',','<br/>');
-            mbrtype['primary'] = !(mbrtype['price'] == 0 || (mbrtype['memCategory'] != 'standard' && mbrtype['memCategory'] != 'virtual'));
+            mbrtype['primary'] = !(mbrtype['memCategory'] != 'standard' && mbrtype['memCategory'] != 'virtual');
             mbrtype['discount'] = 0;
             mbrtype['discountable'] = false;
         }

@@ -362,7 +362,7 @@ class Coupon {
             if (this.#couponActive) {
                 if (this.#curCoupon['memId'] == mbrtype['id']) {  // ok this is a forced primary
                     primary = true; // need a statement here, as combining the if's gets difficult
-                } else if (mbrtype['price'] == 0 || (mbrtype['memCategory'] != 'standard' && mbrtype['memCategory'] != 'virtual')) {
+                } else if (mbrtype['memCategory'] != 'standard' && mbrtype['memCategory'] != 'virtual') {
                     primary = false;
                 }
             }

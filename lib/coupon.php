@@ -196,7 +196,7 @@ function apply_coupon_data($mtypes, $coupon) {
         // first compute primary membership types
         if ($coupon['memId'] && $coupon['memId'] == $mbrtype['id']) {  // ok this is a forced primary
             $primary = true; // need a statement here, as combining the if's gets difficult
-        } else if ($mbrtype['price'] == 0 || ($mbrtype['memCategory'] != 'standard' && $mbrtype['memCategory'] != 'virtual')) {
+        } else if ($mbrtype['memCategory'] != 'standard' && $mbrtype['memCategory'] != 'virtual') {
             $primary = false;
         }
 
