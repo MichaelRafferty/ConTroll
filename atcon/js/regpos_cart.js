@@ -25,6 +25,7 @@ class regpos_cart {
     #cart_perinfo = [];
     #cart_perinfo_map = new map();
     #cart_pmt = [];
+    #days = ['sun','mon','tue','wed','thu','fri','sat'];
 
 // cart html items
     #membership_select = null;
@@ -69,7 +70,11 @@ class regpos_cart {
             var day = label.replace(/.*upgrade +(...).*/i, '$1').toLowerCase();
             if (day.length > 3)
                 day = (match[row]['label']).toLowerCase().substring(0, 3);
-            this.#upgrade_select[day] = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
+            if (!this.#days.includes(day)) {
+                day = 'a' + String(nonday).padStart(2, '0');
+                nonday++;
+            }
+            this.#upgrade_select[day] = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + ' (' + match[row]['enddate'] + ')' + "</option>\n";
         }
 
         // cart is only place to use yearahead_select, so build it.
