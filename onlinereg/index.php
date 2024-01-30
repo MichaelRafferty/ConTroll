@@ -161,7 +161,7 @@ $onsitesale = $startdate->format("l, F j");
                         <form id='newBadgeForm' action='javascript:void(0);' class="form-floating">
                             <div class="row" style="width:100%;">
                                 <div class="col-sm-12">
-                                    <p class="text-body">Please provide your legal name that will match a valid form of ID. If you provide a Badge Name, your legal name will not be publicly visible..</p>
+                                    <p class="text-body">Please provide your legal name that will match a valid form of ID. If you provide a Badge Name, your legal name will not be publicly visible.</p>
                                 </div>
                             </div>
                             <div class="row">
