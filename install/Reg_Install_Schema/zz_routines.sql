@@ -197,7 +197,7 @@ procBlock: BEGIN
 		SET rollback_stmts = CONCAT(rollback_stmts, stmt, CHAR(10));
     END IF;
     
-    /* badgreList */
+    /* badgeList */
     SET stmt = (SELECT CONCAT('UPDATE badgeList SET perid = ', to_mergePID, ' WHERE ID IN (', group_concat(id SEPARATOR ','), ');')
 		FROM badgeList 
         WHERE perid = to_mergePID); 
