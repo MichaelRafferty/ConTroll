@@ -102,7 +102,7 @@ EOS;
         $response['messsage'] = "$profileType " . trim($_POST['exhibitorName']) . " created";
         break;
 
-        case 'update':
+    case 'update':
         $vendor = 0;
 
         if (isset($_SESSION['id'])) {
