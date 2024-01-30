@@ -168,7 +168,8 @@ EOS;
                 if ($numupd != 1)
                     error_log("Unable to unarchive vendor $vendor");
             }
-            // if there is no year entry yet for this vendor create one on first login
+
+            // Build exhbititorYear on first login if it doesn't exist at the time of this login
             if ($result['cID'] == NULL) {
                 // first get the last (if any) contact info for this exhibitor
                 $ydsql = <<<EOS
@@ -200,6 +201,50 @@ WHERE conid = ? AND exhibitorId = ?
 EOS;
                     $newid = dbSafeInsert($yinsq, 'iii', array($conid, $last_year, $vendor));
                     $_SESSION['cID'] = $newid;
+                }
+
+                // load prior approvals
+                $priorQ = <<<EOS
+SELECT exhibitsRegionYearId, count(*) approvedCnt
+FROM exhibitorApprovals
+WHERE exhibitorId = ? AND approval = 'approved'
+GROUP BY exhibitsRegionYearId;
+EOS;
+                $priorR = dbSafeQuery($priorQ, 'i', array($vendor));
+                $priors = [];
+                while ($priorL = $priorR->fetch_assoc()) {
+                    $priors[$priorL['exhibitsRegionYearId']] = $priorL['approvedCnt'];
+                }
+                // now build exhibitorApprovals from exhibitorYear and exhibitsRegionYears
+                $appQ = <<<EOS
+SELECT ery.id as exhibitsRegionYearId, et.requestApprovalRequired
+FROM exhibitsRegionYears ery
+JOIN exhibitsRegions er ON (er.id = ery.exhibitsRegion)
+JOIN exhibitsRegionTypes et ON (et.regionType = er.regionType)
+WHERE ery.conid = ?
+EOS;
+                $insQ = <<<EOS
+INSERT INTO exhibitorApprovals(exhibitorId, exhibitsRegionYearId, approval, updateBy)
+VALUES (?,?,?,?);
+EOS;
+                $instypes = 'iisi';
+
+                $appR = dbSafeQuery($appQ, 'i', array($conid));
+                while ($appL = $appR->fetch_assoc()) {
+                    switch ($appL['requestApprovalRequired']) {
+                        case 'None':
+                            $approval = 'approved';
+                            break;
+                        case 'Once':
+                            if ($priors[$appL['exhibitsRegionYearId']] > 0) {
+                                $approval = 'approved';
+                                break;
+                            }
+                            // if count fall into annual (default) as it's not approved.
+                        default:
+                            $approval = 'none';
+                    }
+                    $newid = dbSafeInsert($insQ, $instypes, array($vendor, $appL['exhibitsRegionYearId'], $approval, 2));
                 }
             } else {
                 $_SESSION['cID'] = $result['cID'];
@@ -330,7 +375,7 @@ EOS;
 $vendorPR = dbSafeQuery($vendorPQ, 'is', array($vendor, $portalType));
 $vendor_permlist = array();
 while ($perm = $vendorPR->fetch_assoc()) {
-    $vendor_permlist[$perm['regionId']] = $perm;
+    $vendor_permlist[$perm['exhibitsRegionYearId']] = $perm;
 }
 
 $vendorSQ = <<<EOS
@@ -398,6 +443,18 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc);
         }
     */
 
+        // lets see if where are authorized for this space
+        if ($region['requestApprovalRequired'] != 'none') {
+            if (array_key_exists($region['id'], $vendor_permlist)) {
+                $permission = $vendor_permlist[$region['id']]['approval'];
+            } else {
+                $permission = 'approved';
+            }
+        } else {
+            $permission = 'approved';
+        }
+
+        if ($permission != 'hide') {
         // now the fixed text
         ?>
         <div class="row pt-4 p-1">
@@ -413,41 +470,42 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc);
         <div class="row p-1 mt-2" id="<?php echo $region['shortname']; ?>_div">
             <div class="col-sm-auto p-0"><?php
 
-            // lets see if where are authorized for this space
-            if ($region['requestApprovalRequired'] != 'none') {
-                if (array_key_exists($region['id'], $vendor_permlist)) {
-                    $permission = $vendor_permlist['permission'];
-                } else {
-                    $permission = 'Y';
+                switch ($permission) {
+                    case 'none': // they do not have a permission record brcause the have not requested permission yet.
+                        echo "<p>Permission of " . $region['ownerName'] . " is required to apply for space in " . $region['name'] . "</p>" . PHP_EOL; ?>
+                    <button class='btn btn-primary' onclick="requestPermission(<?php echo $region['id']; ?>);">Request Permission to apply for space</button>
+                    <?php
+                        break;
+
+                    case 'requested':
+                        $date = $vendor_permlist[$region['id']]['updateDate'];
+                        $date = date_create($date);
+                        $date = date_format($date, "F j, Y") . ' at ' . date_format($date, "g:i A");
+                        echo "<p>You requested permission for this space on $date and " . $region['ownerName'] . " has not yet processed that request.</p>" . PHP_EOL .
+                            '<p>Please email ' . $region['ownerName'] . " at <a href='mailto:" . $region['ownerEmail'] . "'>" . $region['ownerEmail'] . '</a>' . ' if you need to follow-up on this request.</p>' . PHP_EOL;
+                        break;
+
+                    case 'denied': // they were answered no
+                        echo "<p>You already requested permission for this space and " . $region['ownerName'] . " has denied that request.</p>" . PHP_EOL .
+                            "<p>Please email " . $region['ownerName'] . " at <a href='mailto:" . $region['ownerEmail'] . "'>" . $region['ownerEmail'] . "</a>" . " if you wish to appeal this decision.</p>" . PHP_EOL;
+                        break;
+
+                    case 'hide': // no longer show this exhibitor this space
+                        break;
+
+                    case 'approved': // permission isn't needed or you have been granted permission
+                        // check if they already have paid space, if so, offer to show them the receipt
+                        foreach ($space_list as $spaceId => $space) {
+                            if ($space['exhibitsRegionYear'] != $region['id'])
+                                continue;
+
+                            ob_start();
+                            var_dump($space);
+                            $str = ob_get_contents();
+                            ob_end_clean();
+                            echo "<pre>$str</pre>" . PHP_EOL;
+                        }
                 }
-            } else {
-                $permission = 'Y';
-            }
-
-            switch ($permission) {
-                case 'R': // they do not have a permission record brcause the have not requested permission yet.
-                    echo "<p>Permission of " . $region['ownerName'] . " is required to apply for space in " . $region['name'] . "</p>" . PHP_EOL; ?>
-                <button class='btn btn-primary' onclick="requestPermission(<?php echo $region['id']; ?>);">Request Permission to apply for space</button>
-                <?php
-                    break;
-
-                case 'N': // they were answered no
-                    echo "<p>You already requested permission for this space and " . $region['ownerName'] . " has denied that request.</p>" . PHP_EOL .
-                        "<p>Please email " . $region['ownerName'] . " at <a href='mailto:" . $region['ownerEmail'] . "'>" . $region['ownerEmail'] . "</a>" . " if you wish to appeal this decision.</p>" . PHP_EOL;
-                    break;
-
-                case 'Y': // permission isn't needed or you have been granted permission
-                    // check if they already have paid space, if so, offer to show them the receipt
-                    foreach ($space_list as $spaceId => $space) {
-                        if ($space['exhibitsRegionYear'] != $region['id'])
-                            continue;
-
-                        ob_start();
-                        var_dump($space);
-                        $str = ob_get_contents();
-                        ob_end_clean();
-                        echo "<pre>$str</pre>" . PHP_EOL;
-                    }
             }
             /*
              * SELECT v.id, v.shortname, v.name, v.description, v.unitsAvailable, v.unitsAvailableMailin, v.vendorRegionYear
