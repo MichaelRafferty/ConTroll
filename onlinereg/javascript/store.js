@@ -184,8 +184,8 @@ function process(formRef) {
     var bdivid="badge" + badges['count'];
     var html = "<div id='" + bdivid + "' data-index='" + (badges['count'] - 1) + "' class='container-fluid border border-2 border-dark'>\n" +
         "  <div class='row'>\n" +
-        "    <div class='col-sm-3 p-0 m-0 " + age_text + "'>\n" +
-        "      <h4><span class='badge " + age_color + ' ' + age_text + "'>" + labeldivtext + "</span></h4>" + addon + "\n" +
+        "    <div class='col-sm-3 p-0 m-0 text-wrap " + age_text + "'>\n" +
+        "      <h4><span class='badge " + age_color + ' ' + age_text + " text-wrap'>" + labeldivtext + "</span></h4>" + addon + "\n" +
         "    </div>\n" +
         "    <div class='col-sm-8'>\n" +
         "      <p class='text-body'>Full Name:<br/><strong>" + name + "</strong><br/>Badge Name:<br/><strong>" + badgename + "</strong></p>\n" +
