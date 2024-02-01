@@ -22,17 +22,16 @@ header('Content-Disposition: attachment; filename="reg_report.csv"');
 //hardcode: why the hard coded B.date in this this report, and the hard code to b53, need to generalize what we want this to do going forward
 // make need full group by, as it's only a partial list right now
 $query = <<<EOS
-SELECT R.id, CONCAT_WS(' ', P.first_name, P.last_name) AS name, CONCAT_WS(' ', P.address, P.addr_2, P.city, P.state, P.zip) AS addr
-    , P.zip as locale, P.country, P.email_addr, M.label, R.price, R.paid, R.create_date, MIN(H.logdate) AS date
+SELECT R.create_trans as TID, CONCAT_WS(' ', P.first_name, P.last_name) AS name 
+    , P.email_addr, M.label, R.paid, R.create_date as date
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
 JOIN memLabel M ON (M.id=R.memId)
-LEFT OUTER JOIN reg_history H ON (H.regid=R.id AND H.action='attach')
 WHERE R.conid=?
-GROUP BY P.id;
+ORDER BY create_date
 EOS;
 
-echo "id, name, addr, local, country, email, badge type, price, paid, create_date, pickup_date\n";
+echo "TID, name, email, type, amount_paid, date\n";
 
 $reportR = dbSafeQuery($query, 'i', array($conid));
 while($reportL = fetch_safe_array($reportR)) {

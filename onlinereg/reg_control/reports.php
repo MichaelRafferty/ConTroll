@@ -23,9 +23,7 @@ $conid=$con['id'];
 
 ?>
 <div id='main'>
-  <a href='reports/artSales.php'>Artshow amounts sold</a><br/>
-  <a href='reports/artists.php'>Artists since <?PHP echo $con['minComp']; ?></a><br/>
-  <a href="reports/artInventory.php">Art Inventory</a><br/>
+  <a href='reports/regReport.php'>Registration Report</a><br/>
   <a href='reports/newMembers.php'>New Members</a><br/>
   <a href='reports/duplicates.php'>Duplicate Memberships</a><br/>
   <a href='reports/badgeTypes.php'>Badge Types</a><br/>
@@ -36,7 +34,7 @@ $conid=$con['id'];
     <input type='submit' value='Get'/>
   </form>
   <form action='reports/hotel_reg.php' method='GET'>
-    Registration Report For <?PHP echo $con['conname']; ?>
+    Hotel Registration Report For <?PHP echo $con['conname']; ?>
     <input type='number' name='conid'/>
     <input type='submit' value='Get'/>
   </form>
