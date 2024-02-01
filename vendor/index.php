@@ -180,6 +180,7 @@ EOS;
             break;
         }
     }
+    $loginR->free();
     if (!$in_session) {
         ?>
         <h2 class='warn'>Unable to Verify Password</h2>
@@ -217,7 +218,7 @@ while ($region = $regionR->fetch_assoc()) {
     $region_list[$region['id']] = $region;
     $regions[$region['shortname']] = $region['id'];
 }
-
+$regionR->free();
 // build spaces array
 $spaceQ = <<<EOS
 SELECT es.id, es.shortname, es.name, es.description, es.unitsAvailable, es.unitsAvailableMailin, es.exhibitsRegionYear
@@ -238,6 +239,7 @@ while ($space = $spaceR->fetch_assoc()) {
     $space_list[$space['id']] = $space;
     $spaces[$space['shortname']] = $space['id'];
 }
+$spaceR->free();
 
 // built price lists
 foreach ($space_list AS $id => $space) {
@@ -254,6 +256,7 @@ EOS;
     }
     $space_list[$id]['prices'] = $price_list;
 }
+$priceR->free();
 
 // get this exhibitor
 $vendorQ = <<<EOS
@@ -265,11 +268,13 @@ LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
 WHERE e.id=? AND ey.conid = ?;
 EOS;
 
-$info = dbSafeQuery($vendorQ, 'ii', array($vendor, $conid))->fetch_assoc();
+$infoR = dbSafeQuery($vendorQ, 'ii', array($vendor, $conid));
+$info = $infoR->fetch_assoc();
 if ($info['eNeedNew'] || $info['cNeedNew']) {
     drawChangePassword('You need to change your password.', 3, true);
     return;
 }
+$infoR->free();
 
 // load the country codes for the option pulldown
 $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
@@ -305,6 +310,7 @@ $vendor_permlist = array();
 while ($perm = $vendorPR->fetch_assoc()) {
     $vendor_permlist[$perm['exhibitsRegionYearId']] = $perm;
 }
+$vendorPR->free();
 
 $vendorSQ = <<<EOS
 SELECT *
@@ -317,6 +323,7 @@ $vendor_spacelist = array();
 while ($space = $vendorSR->fetch_assoc()) {
     $vendor_spacelist[$space['spaceId']] = $space;
 }
+$vendorSR->free();
 
 draw_registrationModal($portalType, $portalName, $con, $countryOptions);
 draw_passwordModal();
