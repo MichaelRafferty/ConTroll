@@ -50,9 +50,9 @@ EOS;
         $exhibitorInsertQ = <<<EOS
 INSERT INTO exhibitors (exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, need_new, confirm, 
                      addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity) 
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
-        $typestr = 'sssssssssiisssssssssssssi';
+        $typestr = 'ssssssiisssssssssssssi';
         $paramarr = array(
             trim($_POST['exhibitorName']),
             trim($_POST['exhibitorEmail']),
@@ -75,7 +75,7 @@ EOS;
             trim($_POST['shipState']),
             trim($_POST['shipZip']),
             trim($_POST['shipCountry']),
-            $publicity
+            $_POST['publicity']
         );
         $newExhibitor = dbSafeInsert($exhibitorInsertQ, $typestr, $paramarr);
 

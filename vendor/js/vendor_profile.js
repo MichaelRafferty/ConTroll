@@ -153,6 +153,7 @@ function profileModalOpen(useType) {
             profileSubmitBtn.innerHTML = 'Register ' + config['portalName'];
             profileModalTitle.innerHTML = "New " + config['portalName'] + ' Registration;'
             creatingAccountMsgDiv.hidden = false;
+            document.getElementById('publicity').checked = 1;
         } else { // update
             profileIntroDiv.innerHTML = '<p>This form updates your account on the ' + config['conName'] + ' ' + config['portalName'] + ' Portal.</p>';
             profileSubmitBtn.innerHTML = 'Update ' + config['portalName'] + ' Profile';

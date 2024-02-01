@@ -164,7 +164,7 @@ EOS;
         if ($in_session) {
             // if archived, unarchive them, they just logged in again
             if ($result['archived'] == 'Y') {
-                // they were marked archived and they logged in again, unarchive them.
+                // they were marked archived, and they logged in again, unarchive them.
                 $numupd = dbSafeCmd("UPDATE exhibitors SET archived = 'N' WHERE id = ?", 'i', array($vendor));
                 if ($numupd != 1)
                     error_log("Unable to unarchive vendor $vendor");
