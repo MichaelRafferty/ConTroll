@@ -37,7 +37,9 @@ echo <<<EOF
     <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js' integrity='sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL' crossorigin='anonymous'></script>
     <script type='text/javascript' src='js/jquery-min-3.60.js'></script>
     <script type='text/javascript' src='js/jquery-ui.min-1.13.1.js'></script>
+    <script type='text/javascript' src='js/base.js'></script>
     <script type='text/javascript' src='js/vendor.js'></script>
+    <script type='text/javascript' src='js/vendor_profile.js'></script>
     <script type='text/javascript' src='js/tinymce/tinymce.min.js'></script>
 </head>
 EOF;

@@ -1,12 +1,7 @@
-var profileModal = null;
-var profileMode = "unknown";
-var profileUseType = "unknown";
-var switchPortalbtn = null;
+// Main Vendor javascript, also requires base.js, vendor_profile.js,
+
 var passwordLine1 = null;
 var passwordLine2 = null;
-var profileIntroDiv = null;
-var profileSubmitBtn = null;
-var profileModalTitle = null;
 var creatingAccountMsgDiv = null;
 var vendor_request = null;
 var vendor_invoice = null;
@@ -14,124 +9,6 @@ var change_password = null;
 var changePasswordTitleDiv = null;
 var purchase_label = 'purchase';
 var additional_cost = {};
-
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const fieldlist = ["exhibitorName", "exhibitorEmail", "exhibitorPhone", "description", "contactName", "contactEmail", "contactPhone", "pw1", "pw2",
-    "addr", "city", "state", "zip", "country", "shipCompany", "shipAddr", "shipCity", "shipState", "shipZip", "shipCountry"];
-const copyFromFieldList = [ 'exhibitorName', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
-const copyToFieldList = ['shipCompany', 'shipAddr', 'shipAddr2', 'shipCity', 'shipState', 'shipZip', 'shipCountry'];
-//  copy the address fields to the ship to address fields
-function copyAddressToShipTo() {
-    for (var fieldnum in copyFromFieldList) {
-        document.getElementById(copyToFieldList[fieldnum]).value = document.getElementById(copyFromFieldList[fieldnum]).value;
-    }
-}
-
-// submit the profile or both register and update, which type is in profileMode, set by the modal open
-function submitProfile(dataType) {
-    // replace validator with direct validation as it doesn't work well with bootstrap
-    var valid = true;
-    var m2= '';
-
-    for (var fieldnum in fieldlist) {
-        var field = document.getElementById(fieldlist[fieldnum]);
-        switch (fieldlist[fieldnum]) {
-            case 'exhibitorEmail':
-            case 'contactEmail':
-                if (emailRegex.test(field.value)) {
-                    field.style.backgroundColor = '';
-                } else {
-                    field.style.backgroundColor = 'var(--bs-warning)';
-                    valid = false;
-                }
-                break;
-            case 'pw1':
-                if (profileUseType != 'register')
-                    break;
-                var field2 = document.getElementById("pw2");
-                if (field.value == field2.value && field.value.length >= 8) {
-                    field.style.backgroundColor = '';
-                } else {
-                    field.style.backgroundColor = 'var(--bs-warning)';
-                    valid = false;
-                }
-                break;
-            case 'pw2':
-                if (profileUseType != 'register')
-                    break;
-                var field2 = document.getElementById("pw1");
-                if (field.value == field2.value && field.value.length >= 8) {
-                    field.style.backgroundColor = '';
-                } else {
-                    field.style.backgroundColor = 'var(--bs-warning)';
-                    valid = false;
-                }
-                break;
-            case 'description':
-                var value = tinyMCE.activeEditor.getContent();
-                if (value == null) {
-                    value = false;
-                    m2 = " and the description field which also is required.";
-                } else if (value.trim() == '') {
-                    value = false;
-                    m2 = " and the description field which also is required.";
-                }
-                break;
-
-            default:
-                if (dataType == 'artist' && fieldlist[fieldnum].substring(0, 3) == 'ship') {
-                    if (config['debug' & 16])
-                        console.log("skipping " + fieldlist[fieldnum]);
-                    break;
-                }
-                if (field.value.length > 1) {
-                    field.style.backgroundColor = '';
-                } else {
-                    field.style.backgroundColor = 'var(--bs-warning)';
-                    valid = false;
-                }
-        }
-    }
-
-    if (!valid) {
-        show_message("Fill in required missing fields highlighted in this color" + m2, "warn", 'au_result_message');
-        return null;
-    }
-    clear_message('au_result_message');
-    tinyMCE.triggerSave();
-
-    //
-    $.ajax({
-        url: 'scripts/vendorAddUpdate.php',
-        data: $('#exhibitorProfileForm').serialize(),
-        method: 'POST',
-        success: function(data, textstatus, jqXHR) {
-            if(data['status'] == 'error') {
-                show_message(data['message'], 'error', 'au_result_message');
-            } else {
-                profileModalClose();
-                if (profileUseType == 'register')
-                    show_message("Thank you for registering for an account with the " + config['label'] + ' ' + config['portalName'] + " portal.  Please log in using your contact email address and password." + "<br/" + data['message]']);
-                else
-                    show_message(data['message'], 'success')
-                if (data['info']) {
-                    if (config['debug'] & 7) {
-                        console.log("before update of vendor_info");
-                        console.log(vendor_info);
-                    }
-                    vendor_info = data['info'];
-                    if (config['debug'] & 7) {
-                        console.log("after update of vendor_info");
-                        console.log(vendor_info);
-                    }
-                    if (config['debug'] & 1)
-                        console.log(data);
-                }
-            }
-        },
-        error: showAjaxError
-    });
-}
 
 function changePassword(field) {
     var pw = document.getElementById('newPw').value;
@@ -498,78 +375,6 @@ function makePurchase(token, label) {
     });
 }
 
-function profileModalOpen(useType) {
-    if (profileModal != null) {
-        // set items as registration use of the modal
-        if (profileIntroDiv == null) {
-            profileIntroDiv = document.getElementById("profileIntro");
-            passwordLine1 = document.getElementById("passwordLine1");
-            passwordLine2 = document.getElementById("passwordLine2");
-            profileMode = document.getElementById('profileMode');
-            profileSubmitBtn = document.getElementById('profileSubmitBtn');
-            profileModalTitle = document.getElementById('modalTitle');
-            creatingAccountMsgDiv = document.getElementById('creatingAccountMsg');
-        }
-        if (useType == 'register') {
-            profileIntroDiv.innerHTML = '<p>This form creates an account on the ' + config['conName'] + ' ' + config['portalName'] + ' Portal.</p>';
-            profileSubmitBtn.innerHTML = 'Register ' + config['portalName'];
-            profileModalTitle.innerHTML = "New " + config['portalName'] + ' Registration;'
-            creatingAccountMsgDiv.hidden = false;
-        } else { // update
-            profileIntroDiv.innerHTML = '<p>This form updates your account on the ' + config['conName'] + ' ' + config['portalName'] + ' Portal.</p>';
-            profileSubmitBtn.innerHTML = 'Update ' + config['portalName'] + ' Profile';
-            profileModalTitle.innerHTML = "Update " + config['portalName'] + ' Profile';
-            creatingAccountMsgDiv.hidden = true;
-            var keys = Object.keys(vendor_info);
-            for (var keyindex in keys) {
-                var key = keys[keyindex];
-                if (key == 'eNeedNew' || key == 'cNeedNew' || key == 'eConfirm' || key == 'cConfirm')
-                    continue;
-
-                var value=vendor_info[key];
-                if (config['debug'] & 16)
-                    console.log(key + ' = "' + value + '"');
-                var id = document.getElementById(key);
-                if (id) {
-                    if (key != 'publicity')
-                        id.value = value;
-                    else
-                        id.checked = value == 1;
-                } else  if (config['debug'] & 16)
-                    console.log("field not found " + key);
-            }
-        }
-        profileMode.value = useType;
-        profileUseType = useType;
-        passwordLine1.hidden = useType != 'register';
-        passwordLine2.hidden = useType != 'register';
-        profileModal.show();
-        tinyMCE.init({
-            selector: 'textarea#description',
-            height: 400,
-            min_height: 400,
-            menubar: false,
-            plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
-            toolbar: [
-                'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
-                'bold italic underline strikethrough removeformat | ' +
-                'visualchars nonbreaking charmap hr | ' +
-                'preview fullscreen ',
-                'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
-            ],
-            content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
-            placeholder: 'Edit the description here...',
-            auto_focus: 'reg-description'
-        });
-    }
-}
-
-function profileModalClose() {
-    if (profileModal != null) {
-        profileModal.hide();
-    }
-}
-
 // open the change password modal changing the appropriate fields
 function changePasswordOpen() {
     if (changePasswordTitleDiv == null)
@@ -583,17 +388,12 @@ function changePasswordOpen() {
     change_password.show();
 }
 
-// change to the other portl
+// change to the other portal
 function switchPortal() {
     window.location = config['portalName'] == 'Artist' ? config['vendorsite'] : config['artistsite'];
 }
 
 window.onload = function () {
-    var id = document.getElementById('profile');
-    if (id != null) {
-        profileModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-    }
-
     id = document.getElementById('vendor_req');
     if (id != null) {
         vendor_request = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
@@ -613,62 +413,7 @@ window.onload = function () {
     if (switchPortalbtn != null) {
         switchPortalbtn.innerHTML = 'Switch to ' + (config['portalName'] == 'Artist' ? 'Vendor' : 'Artist') + ' Portal';
     }
+
+    vendorProfileOnLoad();
     //console.log(vendor_spaces);
-}
-
-function clear_message(div='result_message') {
-    show_message('', '', div);
-}
-
-// show_message:
-// apply colors to the message div and place the text in the div, first clearing any existing class colors
-// type:
-//  error: (white on red) bg-danger
-//  warn: (black on yellow-orange) bg-warning
-//  success: (white on green) bg-success
-function show_message(message, type = 'success', div='result_message') {
-    var message_div = document.getElementById(div);
-
-    if (message_div.classList.contains('bg-danger')) {
-        message_div.classList.remove('bg-danger');
-    }
-    if (message_div.classList.contains('bg-success')) {
-        message_div.classList.remove('bg-success');
-    }
-    if (message_div.classList.contains('bg-warning')) {
-        message_div.classList.remove('bg-warning');
-    }
-    if (message_div.classList.contains('text-white')) {
-        message_div.classList.remove('text-white');
-    }
-    if (message === undefined || message === '') {
-        message_div.innerHTML = '';
-        return;
-    }
-    if (type === 'error') {
-        message_div.classList.add('bg-danger');
-        message_div.classList.add('text-white');
-    }
-    if (type === 'success') {
-        message_div.classList.add('bg-success');
-        message_div.classList.add('text-white');
-    }
-    if (type === 'warn') {
-        message_div.classList.add('bg-warning');
-    }
-    message_div.innerHTML = message;
-}
-
-function showAjaxError(jqXHR, textStatus, errorThrown) {
-    'use strict';
-    var message = '';
-    if (jqXHR && jqXHR.responseText) {
-        message = jqXHR.responseText;
-    } else {
-        message = 'An error occurred on the server.';
-    }
-    if (textStatus != '' && textStatus != 'error')
-        message += '<BR/>' + textStatus;
-    message += '<BR/>Error Thrown: ' + errorThrown;
-    show_message(message, 'error');
 }

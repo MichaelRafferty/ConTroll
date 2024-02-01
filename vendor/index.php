@@ -473,7 +473,7 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc);
                 switch ($permission) {
                     case 'none': // they do not have a permission record brcause the have not requested permission yet.
                         echo "<p>Permission of " . $region['ownerName'] . " is required to apply for space in " . $region['name'] . "</p>" . PHP_EOL; ?>
-                    <button class='btn btn-primary' onclick="requestPermission(<?php echo $region['id']; ?>);">Request Permission to apply for space</button>
+                    <button class='btn btn-primary' onclick="requestPermission(<?php echo $region['id']; ?>);">Request Permission to apply for space in the <?php echo $region['name'];?> </button>
                     <?php
                         break;
 
