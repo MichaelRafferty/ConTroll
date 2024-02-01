@@ -1,5 +1,6 @@
 <?php
 require_once('../lib/base.php');
+require_once('../lib/vendorYears.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -78,28 +79,8 @@ EOS;
         );
         $newExhibitor = dbSafeInsert($exhibitorInsertQ, $typestr, $paramarr);
 
-        // create the vendor year
-        $eyIndertQ = <<<EOS
-INSERT INTO exhibitorYears(conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, need_new, confirm)
-VALUES (?,?,?,?,?,?,?,?);
-EOS;
-        $typestr = 'iissssii';
-        $paramarr = array(
-            $conid,
-            $newExhibitor,
-            trim($_POST['contactName']),
-            trim($_POST['contactEmail']),
-            trim($_POST['contactPhone']),
-            password_hash(trim($_POST['password']), PASSWORD_DEFAULT),
-            0, // need_new_passwd
-            0 // confirm
-        );
-        $newExhibitorYear = dbSafeInsert($eyIndertQ, $typestr, $paramarr);
-
-        $response['newExhibitor'] = $newExhibitor;
-        $response['newExhibitorYear'] = $newExhibitorYear;
-        $response['status'] = 'success';
-        $response['messsage'] = "$profileType " . trim($_POST['exhibitorName']) . " created";
+        // create the year related functions
+        vendorBuildYears($newExhibitor, $_POST['contactName'], $_POST['contactEmail'], $_POST['contactPhone'], $_POST['password']);
         break;
 
     case 'update':

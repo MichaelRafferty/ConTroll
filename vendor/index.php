@@ -2,6 +2,7 @@
 // Vendor - index.php - Main page for vendor registration
 require_once("lib/base.php");
 require_once("lib/vendorInvoice.php");
+require_once("lib/vendorYears.php");
 require_once("lib/vendorReg.php");
 require_once("lib/changePassword.php");
 require_once("lib/regForms.php");
@@ -171,81 +172,8 @@ EOS;
 
             // Build exhbititorYear on first login if it doesn't exist at the time of this login
             if ($result['cID'] == NULL) {
-                // first get the last (if any) contact info for this exhibitor
-                $ydsql = <<<EOS
-SELECT MAX(conid)
-FROM exhibitorYears
-WHERE exhibitorId = ?;
-EOS;
-                $ydR = dbSafeQuery($ydsql, 'i', array($vendor));
-                if ($ydR->num_rows !== 1) {
-                    $last_year = 0;
-                } else {
-                    $last_year = $ydR->fetch_row()[0];
-                }
-                if ($last_year <= 0) {
-                    $yinsq = <<<EOS
-INSERT INTO exhibitorYears(conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, need_new, confirm)
-SELECT ? as conid, id, exhibitorName, exhibitorEmail, exhibitorPhone, password, need_new, confirm
-FROM exhibitors
-WHERE id = ?
-EOS;
-                    $newid = dbSafeInsert($yinsq, 'ii', array($conid, $vendor));
-                    $_SESSION['cID'] = $newid;
-                } else {
-                    $yinsq = <<<EOS
-INSERT INTO exhibitorYears(conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, need_new, confirm)
-SELECT ? as conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, need_new, confirm
-FROM exhibitorYears
-WHERE conid = ? AND exhibitorId = ?
-EOS;
-                    $newid = dbSafeInsert($yinsq, 'iii', array($conid, $last_year, $vendor));
-                    $_SESSION['cID'] = $newid;
-                }
-
-                // load prior approvals
-                $priorQ = <<<EOS
-SELECT exhibitsRegionYearId, count(*) approvedCnt
-FROM exhibitorApprovals
-WHERE exhibitorId = ? AND approval = 'approved'
-GROUP BY exhibitsRegionYearId;
-EOS;
-                $priorR = dbSafeQuery($priorQ, 'i', array($vendor));
-                $priors = [];
-                while ($priorL = $priorR->fetch_assoc()) {
-                    $priors[$priorL['exhibitsRegionYearId']] = $priorL['approvedCnt'];
-                }
-                // now build exhibitorApprovals from exhibitorYear and exhibitsRegionYears
-                $appQ = <<<EOS
-SELECT ery.id as exhibitsRegionYearId, et.requestApprovalRequired
-FROM exhibitsRegionYears ery
-JOIN exhibitsRegions er ON (er.id = ery.exhibitsRegion)
-JOIN exhibitsRegionTypes et ON (et.regionType = er.regionType)
-WHERE ery.conid = ?
-EOS;
-                $insQ = <<<EOS
-INSERT INTO exhibitorApprovals(exhibitorId, exhibitsRegionYearId, approval, updateBy)
-VALUES (?,?,?,?);
-EOS;
-                $instypes = 'iisi';
-
-                $appR = dbSafeQuery($appQ, 'i', array($conid));
-                while ($appL = $appR->fetch_assoc()) {
-                    switch ($appL['requestApprovalRequired']) {
-                        case 'None':
-                            $approval = 'approved';
-                            break;
-                        case 'Once':
-                            if ($priors[$appL['exhibitsRegionYearId']] > 0) {
-                                $approval = 'approved';
-                                break;
-                            }
-                            // if count fall into annual (default) as it's not approved.
-                        default:
-                            $approval = 'none';
-                    }
-                    $newid = dbSafeInsert($insQ, $instypes, array($vendor, $appL['exhibitsRegionYearId'], $approval, 2));
-                }
+                // create the year related functions
+                vendorBuildYears($vendor);
             } else {
                 $_SESSION['cID'] = $result['cID'];
             }
