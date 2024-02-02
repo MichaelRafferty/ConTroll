@@ -8,6 +8,25 @@ var changePasswordTitleDiv = null;
 var purchase_label = 'purchase';
 var additional_cost = {};
 
+// initial setup
+window.onload = function () {
+    id = document.getElementById('changePassword');
+    if (id != null) {
+        change_password = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+    }
+
+    switchPortalbtn = document.getElementById('switchPortalbtn');
+    if (switchPortalbtn != null) {
+        switchPortalbtn.innerHTML = 'Switch to ' + (config['portalName'] == 'Artist' ? 'Vendor' : 'Artist') + ' Portal';
+    }
+
+    vendorProfileOnLoad();
+    vendorRequestOnLoad();
+    vendorInvoiceOnLoad();
+    //console.log(vendor_spaces);
+}
+
+// execute the change password request
 function changePassword(field) {
     var pw = document.getElementById('newPw').value;
     if (pw.length < 8) {
@@ -35,6 +54,7 @@ function changePassword(field) {
     });
 }
 
+// request a reset password link via email
 function resetPassword() {
     var email = prompt('What is your login email?');
     $.ajax({
@@ -71,19 +91,28 @@ function switchPortal() {
     window.location = config['portalName'] == 'Artist' ? config['vendorsite'] : config['artistsite'];
 }
 
-window.onload = function () {
-    id = document.getElementById('changePassword');
-    if (id != null) {
-        change_password = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+// request permission to apply for space in a region that requires 'permission' to apply
+function requestPermission(id, tag) {
+    var data = {
+        'regionYearId': id,
+        'type': config['portalType'],
+        'name': config['portalName'],
+        'tag' : tag
     }
-
-    switchPortalbtn = document.getElementById('switchPortalbtn');
-    if (switchPortalbtn != null) {
-        switchPortalbtn.innerHTML = 'Switch to ' + (config['portalName'] == 'Artist' ? 'Vendor' : 'Artist') + ' Portal';
-    }
-
-    vendorProfileOnLoad();
-    vendorRequestOnLoad();
-    vendorInvoiceOnLoad();
-    //console.log(vendor_spaces);
+    $.ajax({
+        method: 'POST',
+        url: 'scripts/requestPermission.php',
+        data: data,
+        success: function(data, textStatus, jqXhr) {
+            if(data['error']) {
+                show_message(data['error'], 'error');
+            } else {
+                if (config['debug'] & 1)
+                    console.log(data);
+                // now redraw that section of the screen to show permission requested
+                document.getElementById(tag).innerHTML = data['block'];
+                show_message(data['message'], 'success');
+            }
+        }
+    });
 }

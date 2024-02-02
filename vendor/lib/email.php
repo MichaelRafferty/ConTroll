@@ -1,5 +1,7 @@
 <?php
-  require_once("artshow.php");
+// vendor approval, request, payment emails
+
+// Psssword reset
 function vendorReset($passwd, $dest, $portalName, $reply) {
     $conf = get_conf('con');
     $vendor_conf = get_conf('vendor');
@@ -11,12 +13,75 @@ function vendorReset($passwd, $dest, $portalName, $reply) {
 return $body;
 }
 
+// request for approval
+function approval($vendorId, $regionName, $ownerName, $ownerEmail, $portalName) {
+    $conf = get_conf('con');
+    $conid = $conf['id'];
+    $vendorQ = <<<EOS
+SELECT e.exhibitorName, e.exhibitorEmail, e.website, e.description, ey.contactName, ey.contactEmail
+FROM exhibitors e
+JOIN exhibitorYears ey ON (e.id = ey.exhibitorId)
+WHERE e.id=? AND ey.conid = ?;
+EOS;
+    $vendorR = dbSafeQuery($vendorQ, 'ii', array($vendorId, $conid));
+    $vendorL = $vendorR->fetch_assoc();
+    $exhibitorName = $vendorL['exhibitorName'];
+    $exhibitorEmail = $vendorL['exhibitorEmail'];
+    $website = $vendorL['website'];
+    $description = $vendorL['description'];
+    $descriptionText =strip_tags($description);
+    $contactName = $vendorL['contactName'];
+    $contactEmail = $vendorL['contactEmail'];
+    $vendorR->free();
+
+    $body = <<<EOS
+Dear $ownerName:
+    $exhibitorName has requested permission to request space in $regionName.
+    
+They have provided the following description:
+
+$descriptionText
+
+Their website is $website
+
+Please followup with $contactName at $contactEmail if you have any further questions.
+
+Respectfully submitted,
+$portalName Portal
+EOS;
+    $bodyhtml = <<<EOS
+<p>Dear $ownerName</p>
+<p>$exhibitorName has requested permission to request space in $regionName.</p>
+<p>They have provided the following description:</p>
+<hr>
+$description
+<hr>
+<p>Their website is <a href="$website" target="_blank">$website</a>.<p>
+<p>Please followup with $contactName at <a href="mainto:$contactEmail">$contactEmail</a> if you have any further questions.</p>
+<p>Respectfully submitted,<br/>$portalName Portal</p>
+EOS;
+
+    return array($contactName, $contactEmail, $body, $bodyhtml);
+}
+
+// request space
 function request($access,$price, $vendorId, $address) {
     $conf = get_conf("con");
+    $conid = $conf['conid'];
     $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
-    $vendorQ = "SELECT name, website, description FROM vendors WHERE id=?";
-    $vendor = dbSafeQuery($vendorQ, 'i', array($vendorId))->fetch_assoc();
+    $vendorQ = <<<EOS
+SELECT exhibitorName, website, description, contactName, contactEmail
+FROM exhibitors e
+JOIN exhibitorYears eY on e.id = eY.exhibitorId
+WHERE e.id=? AND eY.conid = ?;
+EOS;
+    $vendorR = dbSafeQuery($vendorQ, 'ii', array($vendorId, $conid));
+    if ($vendorR == false || $vendorR->num_rows != 1) {
+        return false;
+    }
+    $vendor = $vendorR->fetch_assoc();
+
 
     if (array_key_exists('price', $price)) {
         $body = $vendor['name'] . ",\n" .
@@ -33,9 +98,11 @@ function request($access,$price, $vendorId, $address) {
         "\nIf you have any questions please contact the $access staff at $address.\n\nThank you\n";
     }
 
+    $vendor->free();
     return $body;
 }
 
+// space payment confirmation
 function payment($results) {
     $buyer = $results['buyer'];
     $vendor = $results['vendor'];
