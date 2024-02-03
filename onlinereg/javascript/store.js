@@ -54,6 +54,10 @@ function process(formRef) {
         $('#email1').addClass('need');
         $('#email2').addClass('need');
         valid = false;
+    } else if (!validateAddress(formData['email1'])) {
+        $('#email1').addClass('need');
+        $('#email2').addClass('need');
+        valid = false;
     } else {
         $('#email1').removeClass('need');
         $('#email2').removeClass('need');
@@ -270,6 +274,15 @@ function makePurchase(token, label) {
         token = document.getElementById(token).value;
     }
 
+    // validate CC email address for receipt
+    var cc_email = document.getElementById('cc_email').value;
+    if (!validateAddress(cc_email)) {
+        alert("The 'who's paying for the order' email address is not vali, please use the Edit button to put in a valid email address for the receipt");
+        $('#cc_email').addClass('need');
+        return false;
+    }
+    $('#cc_email').removeClass('need');
+
     $('#' + $purchase_label).attr("disabled", "disabled");
     var postdata = badges['badges'];
     if (postdata.length == 0) {
@@ -434,6 +447,12 @@ function togglePopup() {
     if (newBadge != null) {
         newBadge.show();
     }
+}
+
+// validate RFC-5311/2 addresses regexp pattern from https://regex101.com/r/3uvtNl/1, found by searching validate RFC-5311/2  addresses
+function validateAddress(addr) {
+    const regPattern = /^((?:[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~]|(?<=^|\.)"|"(?=$|\.|@)|(?<=".*)[ .](?=.*")|(?<!\.)\.){1,64})(@)((?:[A-Za-z0-9.\-])*(?:[A-Za-z0-9])\.(?:[A-Za-z0-9]){2,})$/gm;
+    return regPattern.test(String(addr).toLowerCase());
 }
 
 window.onload = function () {
