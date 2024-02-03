@@ -414,89 +414,26 @@ class exhibitssetup {
             layout: "fitDataTable",
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
-                {
-                    title: "Region Type",
-                    field: "regionType",
-                    width: 200,
-                    headerSort: true,
-                    headerWordWrap: true,
-                    editor: "input",
-                    editorParams: {maxlength: "16"}
-                },
-                {
-                    title: "Portal Type",
-                    field: "portalType",
-                    width: 80,
-                    headerSort: true,
-                    headerWordWrap: true,
-                    editor: "list",
-                    editorParams: {
-                        values: ['vendor', 'artist']
-                    },
-                    validator: "required"
-                },
-                {
-                    title: "Request Approval Required",
-                    field: "requestApprovalRequired",
-                    headerSort: true,
-                    width: 100,
-                    headerWordWrap: true,
-                    editor: "list",
-                    editorParams: {
-                        values: ['None', 'Once', 'Annual']
-                    },
-                    validator: "required"
-                },
-                {
-                    title: "Purchase Approval Required",
-                    field: "purchaseApprovalRequired",
-                    headerSort: true,
-                    width: 100,
-                    headerWordWrap: true,
-                    editor: "list",
-                    editorParams: {
-                        values: ['Y', 'N']
-                    },
-                    validator: "required"
-                },
-                {
-                    title: "Purchase Area Totals",
-                    field: "purchaseAreaTotals",
-                    headerSort: true,
-                    width: 140,
-                    headerWordWrap: true,
-                    editor: "list",
-                    editorParams: {
-                        values: ['unique', 'combined']
-                    },
-                    validator: "required"
-                },
-                {
-                    title: "Mail-in Allowed",
-                    field: "mailinAllowed",
-                    headerSort: true,
-                    width: 100,
-                    headerWordWrap: true,
-                    editor: "list",
-                    editorParams: {
-                        values: ['Y', 'N']
-                    },
-                    validator: "required"
-                },
-                {
-                    title: "Active", field: "active", headerSort: true, width: 80, editor: "list", editorParams: {
-                        values: ['Y', 'N']
-                    }, validator: "required"
-                },
-                {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
-                {title: "Orig Key", field: "regionTypeKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
-                {
-                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                    cellClick: function (e, cell) {
-                        deleterow(e, cell.getRow());
-                    }
-                },
-                {title: "To Del", field: "to_delete", visible: this.#debugVisible }
+                { title: "Region Type", field: "regionType", width: 200, headerSort: true, headerWordWrap: true, editor: "input", editorParams: {maxlength: "16"} },
+                { title: "Portal Type", field: "portalType", width: 80, headerSort: true, headerWordWrap: true, editor: "list", editorParams: {
+                    values: ['vendor', 'artist']}, validator: "required" },
+                { title: "Request Approval Required", field: "requestApprovalRequired", headerSort: true, width: 100, headerWordWrap: true, editor: "list", editorParams: {
+                    values: ['None', 'Once', 'Annual']}, validator: "required" },
+                { title: "Purchase Approval Required", field: "purchaseApprovalRequired", headerSort: true, width: 100, headerWordWrap: true, editor: "list", editorParams: { 
+                    values: ['Y', 'N'] }, validator: "required" },
+                { title: "Purchase Area Totals", field: "purchaseAreaTotals", headerSort: true, width: 140, headerWordWrap: true, editor: "list", editorParams: {
+                    values: ['unique', 'combined'] }, validator: "required" },
+                { title: "Inperson Max Units", field: "inPersonMaxUnits", headerSort: true, width: 100, headerWordWrap: true, editor: "input" },
+                { title: "Mail-in Allowed", field: "mailinAllowed", headerSort: true, width: 100, headerWordWrap: true, editor: "list", editorParams: {
+                    values: ['Y', 'N'] }, validator: "required" },
+                { title: "Mail-in Max Units", field: "mailinMaxUnits", headerSort: true, width: 100, headerWordWrap: true, editor: "input" },
+                { title: "Active", field: "active", headerSort: true, width: 80, editor: "list", editorParams: { values: ['Y', 'N'] }, validator: "required" },
+                { title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
+                { title: "Orig Key", field: "regionTypeKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
+                { title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) {
+                    deleterow(e, cell.getRow());
+                } },
+                { title: "To Del", field: "to_delete", visible: this.#debugVisible }
             ],
         });
         this.#regionTypeTable.on("dataChanged", function (data) {
@@ -853,7 +790,8 @@ class exhibitssetup {
     // add row to types table and scroll to that new row
     addrowTypes() {
         var _this = this;
-        this.#regionTypeTable.addRow({regionType: 'new-row', portalType: 'vendor', mailinAllowed: 'N', active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
+        this.#regionTypeTable.addRow({regionType: 'new-row', portalType: 'vendor', purchaseApprovalRequired: 'Y',  inPersonMaxUnits: 0, mailinAllowed: 'N', mailinMaxUnits: 0,
+            active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
             row.getTable().scrollToRow(row);
             _this.checkTypesUndoRedo();
         });

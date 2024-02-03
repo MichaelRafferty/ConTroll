@@ -94,12 +94,12 @@ switch ($tablename) {
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO exhibitsRegionTypes(regionType, portalType, requestApprovalRequired, purchaseApprovalRequired, purchaseAreaTotals, mailinAllowed, sortorder, active)
-VALUES(?,?,?,?,?,?,?,?);
+INSERT INTO exhibitsRegionTypes(regionType, portalType, requestApprovalRequired, purchaseApprovalRequired, purchaseAreaTotals, inPersonMaxUnits, mailinAllowed, mailinMaxUnits, sortorder, active)
+VALUES(?,?,?,?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE exhibitsRegionTypes
-SET regionType = ?, portalType = ?, requestApprovalRequired = ?, purchaseApprovalRequired = ?, purchaseAreaTotals = ?, mailinAllowed = ?, sortorder = ?, active = ?
+SET regionType = ?, portalType = ?, requestApprovalRequired = ?, purchaseApprovalRequired = ?, purchaseAreaTotals = ?, inPersonMaxUnits = ?, mailinAllowed = ?, mailinMaxUnits = ?, sortorder = ?, active = ?
 WHERE regionType = ?;
 EOS;
 
@@ -110,8 +110,18 @@ EOS;
                     continue;
             }
             if (array_key_exists($keyfield, $row)) { // if key is there, it's an update
-                $numrows = dbSafeCmd($updsql, 'ssssssiss', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'], $row['purchaseAreaTotals'],
-                    $row['mailinAllowed'], $row['sortorder'], $row['active'],$row[$keyfield]));
+                if (array_key_exists('inPersonMaxUnits', $row)) {
+                    $inPersonMaxUnits = $row['inPersonMaxUnits'];
+                } else {
+                    $inPersonMaxUnits = null;
+                }
+                if (array_key_exists('mailinMaxUnits', $row)) {
+                    $mailinMaxUnits = $row['mailinMaxUnits'];
+                } else {
+                    $mailinMaxUnits = null;
+                }
+                $numrows = dbSafeCmd($updsql, 'sssssisiiss', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'],
+                    $row['purchaseAreaTotals'], $inPersonMaxUnits, $row['mailinAllowed'], $mailinMaxUnits, $row['sortorder'], $row['active'],$row[$keyfield]));
                 $updated += $numrows;
             }
         }
@@ -123,8 +133,18 @@ EOS;
                     continue;
             }
             if (!array_key_exists($keyfield, $row)) { // if key is not there, it is an insert
-                $numrows = dbSafeInsert($inssql, 'ssssssis', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'], $row['purchaseAreaTotals'],
-                    $row['mailinAllowed'], $row['sortorder'], $row['active']));
+                if (array_key_exists('inPersonMaxUnits', $row)) {
+                    $inPersonMaxUnits = $row['inPersonMaxUnits'];
+                } else {
+                    $inPersonMaxUnits = null;
+                }
+                if (array_key_exists('mailinMaxUnits', $row)) {
+                    $mailinMaxUnits = $row['mailinMaxUnits'];
+                } else {
+                    $mailinMaxUnits = null;
+                }
+                $numrows = dbSafeInsert($inssql, 'sssssisiis', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'],
+                    $row['purchaseAreaTotals'], $inPersonMaxUnits, $row['mailinAllowed'], $mailinMaxUnits, $row['sortorder'], $row['active']));
                 if ($numrows !== false)
                     $inserted++;
             }
@@ -395,8 +415,13 @@ EOS;
                 if ($code == '')
                     $code = 0;
 
+                if (array_key_exists('requestable', $row)) {
+                    $requestable = $row['requestable'];
+                } else {
+                    $requestable = 0;
+                }
                 $numrows = dbSafeCmd($updsql, 'issddiiiii', array($row['spaceId'], $row['code'], $row['description'], $units, $price, $includedMemberships, $additionalMemberships,
-                    $row['requestable'], $row['sortorder'], $row[$keyfield]));
+                    $requestable, $row['sortorder'], $row[$keyfield]));
                 $updated += $numrows;
             }
         }
@@ -429,8 +454,13 @@ EOS;
                     $additionalMemberships = 0;
                 }
 
+                if (array_key_exists('requestable', $row)) {
+                    $requestable = $row['requestable'];
+                } else {
+                    $requestable = 0;
+                }
                 $numrows = dbSafeInsert($inssql, 'issddiiii', array($row['spaceId'], $row['code'], $row['description'], $units, $price, $includedMemberships, $additionalMemberships,
-                    $row['requestable'], $row['sortorder']));
+                    $requestable, $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }
