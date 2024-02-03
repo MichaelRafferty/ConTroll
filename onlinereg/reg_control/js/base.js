@@ -364,6 +364,14 @@ function make_copy(arr) {
     return JSON.parse(JSON.stringify(arr));  // horrible way to make an independent copy of an associative array
 }
 
+// validate RFC-5311/2 addresses regexp pattern from https://regex101.com/r/3uvtNl/1, found by searching validate RFC-5311/2  addresses
+function validateAddress(addr) {
+    if (addr == '/n' || addr == '/r')
+        return; // allow none or refused values in reg_control
+    const regPattern = /^((?:[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~]|(?<=^|\.)"|"(?=$|\.|@)|(?<=".*)[ .](?=.*")|(?<!\.)\.){1,64})(@)((?:[A-Za-z0-9.\-])*(?:[A-Za-z0-9])\.(?:[A-Za-z0-9]){2,})$/gm;
+    return regPattern.test(String(addr).toLowerCase());
+}
+
 // tabulator custom header filter function for numeric comparisions
 //
 function numberHeaderFilter(headerValue, rowValue, rowData, filterParams) {
