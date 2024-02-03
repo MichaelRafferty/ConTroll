@@ -255,7 +255,7 @@ function mp_ajax_error(JqXHR, textStatus, errorThrown) {
 
 function mp_ajax_success(data, textStatus, jqXHR) {
     if (data['status'] == 'error') {
-        alert("Transaction Failed: " + data['data']);
+        alert("Purchase Failed: " + data['error']);
         $('#' + $purchase_label).removeAttr("disabled");
     } else if (data['status'] == 'echo') {
         console.log(data);
