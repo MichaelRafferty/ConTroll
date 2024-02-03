@@ -37,6 +37,11 @@ if (count($badges) == 0) {
     exit();
 }
 
+if (!filter_var($purchaseform['cc_email'], FILTER_VALIDATE_EMAIL)) {
+    ajaxSuccess(array('status' => 'error', 'error' => 'Error: Invalid Receipt Email passed, use "Edit" button and enter a valid email address for the receipt'));
+    exit();
+}
+
 $ccauth = get_conf('cc');
 load_cc_procs();
 load_email_procs();
@@ -172,7 +177,7 @@ $total = round($total, 2);
 
 if($webtotal != $total) {
     error_log("bad total: post=" . $webtotal . ", calc=" . $total);
-    ajaxSuccess(array('status'=>'error', 'data'=>'Unable to process, bad total sent to Server'));
+    ajaxSuccess(array('status'=>'error', 'error'=>'Unable to process, bad total sent to Server'));
     exit();
 }
 
@@ -375,7 +380,7 @@ logWrite(array('con'=>$condata['name'], 'trans'=>$transid, 'results'=>$results, 
 if ($total > 0) {
     $rtn = cc_charge_purchase($results, $ccauth);
     if ($rtn === null) {
-        ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
+        ajaxSuccess(array('status' => 'error', 'error' => 'Credit card not approved'));
         exit();
     }
 
