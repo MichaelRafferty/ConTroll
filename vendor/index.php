@@ -198,7 +198,7 @@ if (!$in_session) {
 // this section is for 'in-session' management
 // build region array
 $regionQ = <<<EOS
-SELECT ert.portalType, ert.requestApprovalRequired, ert.purchaseApprovalRequired,ert.purchaseAreaTotals,ert.mailInAllowed,
+SELECT ert.portalType, ert.requestApprovalRequired, ert.purchaseApprovalRequired,ert.purchaseAreaTotals,ert.mailInAllowed, ert.mailinMaxUnits, ert.inPersonMaxUnits,
            er.name, er.shortname, er.description, er.sortorder,
            ery.ownerName, ery.ownerEmail, ery.id, ery.includedMemId, ery.additionalMemId, ery.totalUnitsAvailable, ery.conid,
            mi.price AS includedMemPrice, ma.price AS additionalMemPrice
@@ -220,9 +220,10 @@ while ($region = $regionR->fetch_assoc()) {
     $regions[$region['shortname']] = $region['id'];
 }
 $regionR->free();
+
 // build spaces array
 $spaceQ = <<<EOS
-SELECT es.id, er.shortname as regionShortname, er.name as Regionname, es.shortname as spaceShortname, es.name AS spaceName, es.description, es.unitsAvailable, es.unitsAvailableMailin, es.exhibitsRegionYear
+SELECT es.id, er.shortname as regionShortname, er.name as regionName, es.shortname as spaceShortname, es.name AS spaceName, es.description, es.unitsAvailable, es.unitsAvailableMailin, es.exhibitsRegionYear
 FROM exhibitsSpaces es
 JOIN exhibitsRegionYears ery ON (es.exhibitsRegionYear = ery.id)
 JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
@@ -233,13 +234,11 @@ EOS;
 
 $spaceR =  dbSafeQuery($spaceQ, 'is', array($condata['id'], $portalType));
 $space_list = array();
-$regions = array();
 $spaces = array();
 // output the data for the scripts to use
 
 while ($space = $spaceR->fetch_assoc()) {
     $space_list[$space['exhibitsRegionYear']][$space['id']] = $space;
-    $regions[$space['regionShortname']] = $space['exhibitsRegionYear'];
     $spaces[$space['spaceShortname']] = array( 'region' => $space['exhibitsRegionYear'], 'space' => $space['id'] );
 }
 $spaceR->free();
@@ -325,6 +324,7 @@ $vendorSR->free();
 ?>
 <script type='text/javascript'>
 var config = <?php echo json_encode($config_vars); ?>;
+    var region_list = <?php echo json_encode($region_list); ?>;
     var exhibits_spaces = <?php echo json_encode($space_list); ?>;
     var vendor_info = <?php echo json_encode($info); ?>;
     var exhibitor_spacelist = <?php echo json_encode($vendor_spacelist); ?>;
@@ -386,8 +386,10 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc);
         }
     */
 
-        // lets see if where are authorized for this space
-        if ($region['requestApprovalRequired'] != 'none') {
+        // let's see if where are authorized for this space
+        if ($region['mailInAllowed'] == 'N' && $info['mailin'] == 'Y')
+            $permission='noMailIn';
+        else if ($region['requestApprovalRequired'] != 'none') {
             if (array_key_exists($region['id'], $vendor_permlist)) {
                 $permission = $vendor_permlist[$region['id']]['approval'];
             } else {
@@ -414,6 +416,9 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc);
             <div class="col-sm-auto p-0"><?php
 
                 switch ($permission) {
+                    case 'noMailIn':
+                        echo "<p>This space does not allow mail-in. Please update your portal and select in person/agent if you wish to request this space</p>\n";
+                        break;
                     case 'none': // they do not have a permission record brcause the have not requested permission yet.
                         echo "<p>Permission of " . $region['ownerName'] . " is required to apply for space in " . $region['name'] . "</p>" . PHP_EOL; ?>
                     <button class='btn btn-primary' onclick="requestPermission(<?php echo $region['id'] . ",'" . $region['shortname'] . "_div'"; ?>);">Request Permission to apply for space in the <?php echo $region['name'];?> </button>

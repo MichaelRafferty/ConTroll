@@ -1,5 +1,8 @@
 // items related to requesting space (not approvals)
 var vendor_request = null;
+var vendor_req_btn = null;
+var totalUnitsRequested_div = null;
+var totalUnitsRequestedRow = null;
 
 // init
 function vendorRequestOnLoad() {
@@ -11,12 +14,28 @@ function vendorRequestOnLoad() {
 
 // openReq - update the modal for this space
 function openReq(regionId, cancel) {
+    var spaceHtml = '';
+    var regionName = '';
+
     //console.log("open request modal for id =" + spaceid);
     var region = exhibits_spaces[regionId];
     if (!region)
         return;
-    if (config['debug'] & 1)
+
+    var regionList = region_list[regionId];
+    if (config['debug'] & 1) {
+        console.log("regionList");
+        console.log(regionList);
+        console.log("Region Spaces");
         console.log(region);
+    }
+
+    regionName = regionList.name;
+    var mailIn = vendor_info.mailin == 'Y';
+    var unitLimit = mailIn ? regionList.mailinMaxUnits : regionList.inPersonMaxUnits;
+    if (config['debug'] & 1) {
+        console.log("Unit limit: " + unitLimit);
+    }
 
     // determine number of spaces in the region
     var keys = Object.keys(region);
@@ -32,9 +51,13 @@ function openReq(regionId, cancel) {
     var col = 0;
     var last = 0;
     var space = null;
-    var spaceHtml = '';
+
+    if (mailIn) {
+        spaceHtml += "<div class='row'>\n<div class='col-sm-12 p-0 m-2'><i>You are requesting space as mail-in. If this is not correct, please cancel this request and update your profile.</i></div>"
+    }
+
     for (index = 0; index < spaceCount; index += 3) { // look over the spaces up to 3 per row
-        spaceHtml += '<div class="row">' + "\n";
+        spaceHtml += "<div class='row'>\n";
         last = index + 3;
         if (last > spaceCount)
             last = spaceCount;
@@ -45,10 +68,15 @@ function openReq(regionId, cancel) {
             var options = "<option value='-1'>" + (cancel ? 'Cancel' : 'No') + " Space Requested</option>\n";
             var prices = space.prices;
             var price_keys = Object.keys(prices).sort();
+            var units =  '';
             for (var priceid in price_keys) {
                 var price = prices[price_keys[priceid]];
-                if (price.requestable == 1)
-                    options += "<option value='" + price.id + "'>" + price.description + ' for ' + Number(price.price).toFixed(2) + "</option>\n";
+                if (price.requestable == 1 && (price.units <= unitLimit || unitLimit == 0)) {
+                    if (unitLimit > 0) {
+                        units = ' (' + String(price.units) + ' unit' + (price.units > 1 ? 's' : '') + ')';
+                    }
+                    options += "<option value='" + price.id + "'>" + price.description + ' for ' + Number(price.price).toFixed(2) + units + "</option>\n";
+                }
             }
 
             // now build block
@@ -59,12 +87,20 @@ function openReq(regionId, cancel) {
                 "<div className='row p-1'><div className='col-sm-auto p-0 pe-2'>\n" +
                 "<label htmlFor='vendor_req_price_id'>How many spaces are you requesting?</label>\n" +
                 "</div>\n" +
-                "<div className='col-sm-auto p-0'>" + "\n" +
-                "<select name='vendor_req_price_id_" + keys[col] +  "' id='vendor_req_price_id" + keys[col] + "'>\n" +
-                options + "\n</select></div></div>" + "\n" +
-            '</div></div></div>' + "\n";
+                "<div className='col-sm-auto p-0'>\n" +
+                "<select name='vendor_req_price_id_" + keys[col] +  "' id='vendor_req_price_id_" + keys[col] + "' onchange='updateTotalUnits(" + regionId + "," + unitLimit + ");'>\n" +
+                options + "\n</select></div></div>\n" +
+            "</div></div></div>\n";
         }
-        spaceHtml += '</div>' + "\n";
+        spaceHtml += "</div>\n";
+        // now check if we need to track limits
+    }
+    // add until limit if needed
+    if (unitLimit > 0) {
+        spaceHtml += "<div class='row mt-2' id='TotalUnitsRequestedRow'>\n<div class='col-sm-auto p-0 m-0 ms-4'><b>Total Requestable unit limit: " + String(unitLimit) + "</b></div>\n" +
+            "<div class='col-sm-auto p-0 m-0 ms-4'><b>Total Units Requested:</b></div>" +
+            "<div class='col-sm-auto p-0 m-0 ms-2' id='totalUnitsRequested'>0</div>\n" +
+            "</div>\n";
     }
     // build option list
 
@@ -72,8 +108,8 @@ function openReq(regionId, cancel) {
     document.getElementById("spaceHtml").innerHTML = spaceHtml;
 
     // update fields
-    document.getElementById("vendor_req_title").innerHTML = "<strong>" + (cancel ? 'Change/Cancel ' : '') + region.name + ' Space Request</strong>';
-    document.getElementById("vendor_req_btn").innerHTML = (cancel ? "Change/Cancel " : "Request ") + region.name + ' Space';
+    document.getElementById("vendor_req_title").innerHTML = "<strong>" + (cancel ? 'Change/Cancel ' : '') + regionName + ' Space Request</strong>';
+    document.getElementById("vendor_req_btn").innerHTML = (cancel ? "Change/Cancel " : "Request ") + regionName + ' Space';
     var selection = document.getElementById('vendor_req_price_id');
     //selection.innerHTML = options;
     //if (cancel) selection.value = cancel;
@@ -81,6 +117,53 @@ function openReq(regionId, cancel) {
     vendor_request.show();
 }
 
+// updateTotalUnits -update the total units requested pulldown and color it if its too large
+function updateTotalUnits(regionId, unitLimit) {
+    if (unitLimit <= 0) // no limit, nothing to check
+        return;
+
+    var region = exhibits_spaces[regionId];
+    if (!region)
+        return;
+
+    var requestedUnits = 0;
+    var keys = Object.keys(region);
+    var field;
+    var id;
+    for (var key in keys) {
+        var priceId = keys[key];
+
+        field = document.getElementById('vendor_req_price_id_' + String(keys[key]));
+        var value = field.value;
+        if (value > 0) {
+            var prices = region[keys[key]].prices;
+            for (var priceIdx in prices) {
+                if (prices[priceIdx].id == value) {
+                    requestedUnits += Number(prices[priceIdx].units);
+                }
+            }
+        }
+    }
+    if (totalUnitsRequested_div == null)
+        totalUnitsRequested_div = document.getElementById('totalUnitsRequested');
+
+    totalUnitsRequested_div.innerHTML = String(requestedUnits);
+
+    var mailIn = vendor_info.mailin == 'Y';
+    var regionList = region_list[regionId];
+    var unitLimit = mailIn ? regionList.mailinMaxUnits : regionList.inPersonMaxUnits;
+    if (totalUnitsRequestedRow == null) {
+        totalUnitsRequestedRow = document.getElementById('TotalUnitsRequestedRow');
+        vendor_req_btn = document.getElementById('vendor_req_btn');
+    }
+    if (requestedUnits > unitLimit) {
+        totalUnitsRequestedRow.classList.add('bg-warning');
+        vendor_req_btn.disabled = true;
+    } else {
+        totalUnitsRequestedRow.classList.remove('bg-warning');
+        vendor_req_btn.disabled = false;
+    }
+}
 
 // Space Request - call scripts/spaceRequest.php to add a request record
 function spaceReq(spaceId, cancel) {
