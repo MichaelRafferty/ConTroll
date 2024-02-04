@@ -84,6 +84,7 @@ EOS;
         break;
 
     case 'update':
+    case 'review':
         $vendor = 0;
 
         if (isset($_SESSION['id'])) {
@@ -126,25 +127,32 @@ EOS;
         );
         $numrows = dbSafeCmd($updateQ, 'ssssssssssssssssssii', $updateArr);
 
+        if (array_key_exists('mailin', $_POST)) {
+            $mailin = $_POST['mailin'];
+        } else {
+            $mailin = 'N';
+        }
+
         $updateQ = <<<EOS
 UPDATE exhibitorYears
-SET contactName=?, contactEmail=?, contactPhone=?
+SET contactName=?, contactEmail=?, contactPhone=?, mailin = ?, needReview = 0
 WHERE id=?
 EOS;
             $updateArr = array(
                 trim($_POST['contactName']),
                 trim($_POST['contactEmail']),
                 trim($_POST['contactPhone']),
+                $mailin,
                 $vendorYear
             );
-            $numrows1 = dbSafeCmd($updateQ, 'sssi', $updateArr);
+            $numrows1 = dbSafeCmd($updateQ, 'ssssi', $updateArr);
         if ($numrows == 1 || $numrows1 == 1) {
             $response['status'] = 'success';
             $response['message'] = 'Profile Updated';
             // get the update info
             $vendorQ = <<<EOS
 SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, 
-       ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm,
+       ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview as needReview,
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
@@ -152,7 +160,8 @@ WHERE e.id=? AND ey.conid = ?;
 EOS;
             $info = dbSafeQuery($vendorQ, 'ii', array($vendor, $conid))->fetch_assoc();
             $response['info'] = $info;
-
+            $response['status'] = 'success';
+            $response['message'] = 'Profile Updated';
         } else if ($numrows == 0 && $numrows1 == 0) {
             $response['status'] = 'success';
             $response['message'] = 'Nothing to update';

@@ -22,8 +22,10 @@ window.onload = function () {
 
     vendorProfileOnLoad();
     vendorRequestOnLoad();
-    vendorInvoiceOnLoad();
-    //console.log(vendor_spaces);
+    vendorInvoiceOnLoad()
+    if (vendor_info['needReview']) {
+        profileModalOpen('review');
+    }
 }
 
 // execute the change password request

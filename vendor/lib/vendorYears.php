@@ -2,7 +2,7 @@
 // exhibitorYears and exhibiorApprovals related functions for create/retrieval
 
 // vendorBuildYears - build exhibitorYears and exhibitorApprovals for this year
-function vendorBuildYears($exhibitor, $contactName = NULL, $contactEmail = NULL, $contactPhone = NULL, $contactPassword = NULL): bool|string
+function vendorBuildYears($exhibitor, $contactName = NULL, $contactEmail = NULL, $contactPhone = NULL, $contactPassword = NULL, $mailin = 'N'): bool|string
 {
     $con = get_conf('con');
     $conid = $con['id'];
@@ -50,10 +50,10 @@ EOS;
             $contactPassword = password_hash(trim($contactPassword), PASSWORD_DEFAULT);
         }
         $eyinsq = <<<EOS
-INSERT INTO exhibitorYears(conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, need_new, confirm)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO exhibitorYears(conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, confirm)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-        $typestr = 'iissssii';
+        $typestr = 'iisssssii';
         $paramArray = array(
             $conid,
             $exhibitor,
@@ -61,6 +61,7 @@ EOS;
             trim($contactEmail),
             trim($contactPhone),
             $contactPassword,
+            $mailin,
             $need_new,
             $confirm
         );
@@ -68,8 +69,8 @@ EOS;
     } else {
         // no passed parameters but prior year exists
         $yinsq = <<<EOS
-INSERT INTO exhibitorYears(conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, need_new, confirm)
-SELECT ? as conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, need_new, confirm
+INSERT INTO exhibitorYears(conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, confirm)
+SELECT ? as conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, confirm
 FROM exhibitorYears
 WHERE conid = ? AND exhibitorId = ?
 EOS;

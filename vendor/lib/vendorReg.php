@@ -6,7 +6,7 @@ function draw_vendorReqModal() {
     $vendor_conf = get_conf('vendor');
     ?>
     <!-- request -->
-    <div id='vendor_req' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request $spacetitle Space' aria-hidden='true'>
+    <div id='vendor_req' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request $spacetitle Space' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
@@ -24,16 +24,7 @@ function draw_vendorReqModal() {
                                     you sell if at all possible.
                                 </div>
                             </div>
-                            <div class='row p-1'>
-                                <div class='col-sm-auto p-0 pe-2'>
-                                    <label for='vendor_req_price_id'>How many spaces are you requesting?</label>
-                                </div>
-                                <div class='col-sm-auto p-0'>
-                                    <select name='vendor_req_price_id' id='vendor_req_price_id'>
-                                        <option value='-1'>No Space Requested</option>
-                                    </select>
-                                </div>
-                            </div>
+                            <div id="spaceHtml"></div>
                             <div class='row p-1 pt-4 pb-3'>
                                 <div class='col-sm-12'>
                                     You will be able to identify people for the included memberships (if any) and purchase up to the allowed number of discounted memberships later, if your request is
@@ -42,12 +33,17 @@ function draw_vendorReqModal() {
                             </div>
                             <?php
                             if (array_key_exists('req_disclaimer',$vendor_conf) && $vendor_conf['req_disclaimer'] != '') {
-                                ?>                          <div class='row p-1 pt-4 pb-3'>
+                                $discfile = "../config/" . $vendor_conf['req_disclaimer'];
+                                if (is_readable($discfile)) {
+                                    $disclaimer = file_get_contents($discfile);
+                                ?>
+                                <div class='row p-1 pt=0 pb-3'>
                                     <div class='col-sm-12'>
-                                        <?php echo $vendor_conf['req_disclaimer'] . "\n"; ?>
+                                        <?php echo $disclaimer . "\n"; ?>
                                     </div>
                                 </div>
                                 <?php
+                                }
                             }
                             ?>
                             <div class='row p-0 bg-warning'>

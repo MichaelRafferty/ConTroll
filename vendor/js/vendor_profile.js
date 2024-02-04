@@ -7,9 +7,9 @@ var profileIntroDiv = null;
 var profileSubmitBtn = null;
 var profileModalTitle = null;
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const fieldlist = ["exhibitorName", "exhibitorEmail", "exhibitorPhone", "description", "contactName", "contactEmail", "contactPhone", "pw1", "pw2",
-    "addr", "city", "state", "zip", "country", "shipCompany", "shipAddr", "shipCity", "shipState", "shipZip", "shipCountry"];
+const fieldlist = ["exhibitorName", "exhibitorEmail", "exhibitorPhone", "description", "publicity",
+    "contactName", "contactEmail", "contactPhone", "pw1", "pw2",
+    "addr", "city", "state", "zip", "country", "shipCompany", "shipAddr", "shipCity", "shipState", "shipZip", "shipCountry", "mailin"];
 const copyFromFieldList = [ 'exhibitorName', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
 const copyToFieldList = ['shipCompany', 'shipAddr', 'shipAddr2', 'shipCity', 'shipState', 'shipZip', 'shipCountry'];
 
@@ -40,7 +40,7 @@ function submitProfile(dataType) {
         switch (fieldlist[fieldnum]) {
             case 'exhibitorEmail':
             case 'contactEmail':
-                if (emailRegex.test(field.value)) {
+                if (validateAddress(field.value)) {
                     field.style.backgroundColor = '';
                 } else {
                     field.style.backgroundColor = 'var(--bs-warning)';
@@ -80,9 +80,14 @@ function submitProfile(dataType) {
                 }
                 break;
 
+            case 'mailin':
+                break;
+
             default:
-                if (dataType == 'artist' && fieldlist[fieldnum].substring(0, 3) == 'ship') {
-                    if (config['debug' & 16])
+                console.log(fieldlist[fieldnum].substring(0, 4) );
+                console.log(dataType);
+                if (dataType != 'artist' && fieldlist[fieldnum].substring(0, 4) == 'ship') {
+                    if (config['debug'] & 16)
                         console.log("skipping " + fieldlist[fieldnum]);
                     break;
                 }
@@ -149,14 +154,20 @@ function profileModalOpen(useType) {
             creatingAccountMsgDiv = document.getElementById('creatingAccountMsg');
         }
         if (useType == 'register') {
-            profileIntroDiv.innerHTML = '<p>This form creates an account on the ' + config['conName'] + ' ' + config['portalName'] + ' Portal.</p>';
+            profileIntroDiv.innerHTML = '<p>This form creates an account on the ' + config['label'] + ' ' + config['portalName'] + ' Portal.</p>';
             profileSubmitBtn.innerHTML = 'Register ' + config['portalName'];
             profileModalTitle.innerHTML = "New " + config['portalName'] + ' Registration;'
             creatingAccountMsgDiv.hidden = false;
             document.getElementById('publicity').checked = 1;
-        } else { // update
-            profileIntroDiv.innerHTML = '<p>This form updates your account on the ' + config['conName'] + ' ' + config['portalName'] + ' Portal.</p>';
-            profileSubmitBtn.innerHTML = 'Update ' + config['portalName'] + ' Profile';
+        } else { // update/Review
+            if (useType == 'review') {
+                profileIntroDiv.innerHTML = '<p>Please review and update your account with any changes this year.</p>';
+                profileSubmitBtn.innerHTML = 'Reviewed/Updated ' + config['portalName'] + ' Profile';
+            } else {
+                profileIntroDiv.innerHTML = '<p>This form updates your account on the ' + config['label'] + ' ' + config['portalName'] + ' Portal.</p>';
+                profileSubmitBtn.innerHTML = 'Update ' + config['portalName'] + ' Profile';
+            }
+
             profileModalTitle.innerHTML = "Update " + config['portalName'] + ' Profile';
             creatingAccountMsgDiv.hidden = true;
             var keys = Object.keys(vendor_info);
@@ -168,12 +179,20 @@ function profileModalOpen(useType) {
                 var value=vendor_info[key];
                 if (config['debug'] & 16)
                     console.log(key + ' = "' + value + '"');
+                if (key == 'mailin') {
+                    if (value == 'N')
+                        key = 'mailinN';
+                    if (value == 'Y')
+                        key = 'mailinN';
+                }
                 var id = document.getElementById(key);
                 if (id) {
-                    if (key != 'publicity')
-                        id.value = value;
-                    else
+                    if (key == 'publicity')
                         id.checked = value == 1;
+                    else if (key == 'mailinY' || key == 'mailinN')
+                        id.checked = true;
+                    else
+                        id.value = value;
                 } else  if (config['debug'] & 16)
                     console.log("field not found " + key);
             }

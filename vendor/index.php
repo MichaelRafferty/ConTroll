@@ -129,7 +129,8 @@ if (isset($_SESSION['id'])) {
     // handle login submit
     $login = strtolower(sql_safe($_POST['si_email']));
     $loginQ = <<<EOS
-SELECT e.id, e.exhibitorEmail as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS cID, ey.contactEmail AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived
+SELECT e.id, e.exhibitorEmail as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS cID, 
+       ey.contactEmail AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
 WHERE e.exhibitorEmail=? OR ey.contactEmail = ?;
@@ -221,7 +222,7 @@ while ($region = $regionR->fetch_assoc()) {
 $regionR->free();
 // build spaces array
 $spaceQ = <<<EOS
-SELECT es.id, es.shortname, es.name, es.description, es.unitsAvailable, es.unitsAvailableMailin, es.exhibitsRegionYear
+SELECT es.id, er.shortname as regionShortname, er.name as Regionname, es.shortname as spaceShortname, es.name AS spaceName, es.description, es.unitsAvailable, es.unitsAvailableMailin, es.exhibitsRegionYear
 FROM exhibitsSpaces es
 JOIN exhibitsRegionYears ery ON (es.exhibitsRegionYear = ery.id)
 JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
@@ -232,36 +233,41 @@ EOS;
 
 $spaceR =  dbSafeQuery($spaceQ, 'is', array($condata['id'], $portalType));
 $space_list = array();
+$regions = array();
 $spaces = array();
 // output the data for the scripts to use
 
 while ($space = $spaceR->fetch_assoc()) {
-    $space_list[$space['id']] = $space;
-    $spaces[$space['shortname']] = $space['id'];
+    $space_list[$space['exhibitsRegionYear']][$space['id']] = $space;
+    $regions[$space['regionShortname']] = $space['exhibitsRegionYear'];
+    $spaces[$space['spaceShortname']] = array( 'region' => $space['exhibitsRegionYear'], 'space' => $space['id'] );
 }
 $spaceR->free();
 
 // built price lists
-foreach ($space_list AS $id => $space) {
-    $priceQ = <<<EOS
-SELECT id, spaceId, code, description, units, price, includedMemberships, additionalMemberships, requestable, sortOrder
-FROM exhibitsSpacePrices
+foreach ($space_list AS $yearId => $regionYear) {
+    foreach ($regionYear as $id => $space) {
+        $priceQ = <<<EOS
+SELECT p.id, p.spaceId, p.code, p.description, p.units, p.price, p.includedMemberships, p.additionalMemberships, p.requestable, p.sortOrder, es.id AS spaceId, es.exhibitsRegionYear
+FROM exhibitsSpacePrices p
+JOIN exhibitsSpaces es ON p.spaceId = es.id
 WHERE spaceId=?
-ORDER BY spaceId, sortOrder;
+ORDER BY p.spaceId, p.sortOrder;
 EOS;
-    $priceR = dbSafeQuery($priceQ, 'i', array($space['id']));
-    $price_list = array();
-    while ($price = $priceR->fetch_assoc()) {
-        $price_list[] = $price;
+        $priceR = dbSafeQuery($priceQ, 'i', array($id));
+        $price_list = array();
+        while ($price = $priceR->fetch_assoc()) {
+            $price_list[] = $price;
+        }
+        $space_list[$yearId][$id]['prices'] = $price_list;
     }
-    $space_list[$id]['prices'] = $price_list;
 }
 $priceR->free();
 
 // get this exhibitor
 $vendorQ = <<<EOS
 SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, 
-       ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm,
+       ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview, ey.mailin,
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
@@ -274,6 +280,7 @@ if ($info['eNeedNew'] || $info['cNeedNew']) {
     drawChangePassword('You need to change your password.', 3, true);
     return;
 }
+
 $infoR->free();
 
 // load the country codes for the option pulldown
@@ -286,15 +293,6 @@ fclose($fh);
 
 
 $config_vars['loginType'] = $_SESSION['login_type'];
-?>
-
-<script type='text/javascript'>
-var config = <?php echo json_encode($config_vars); ?>;
-var vendor_spaces = <?php echo json_encode($space_list); ?>;
-var vendor_info = <?php echo json_encode($info); ?>;
-var country_options = <?php echo json_encode($countryOptions); ?>;
-</script>
-<?php
 
 $vendorPQ = <<<EOS
 SELECT ea.*
@@ -324,7 +322,17 @@ while ($space = $vendorSR->fetch_assoc()) {
     $vendor_spacelist[$space['spaceId']] = $space;
 }
 $vendorSR->free();
-
+?>
+<script type='text/javascript'>
+var config = <?php echo json_encode($config_vars); ?>;
+    var exhibits_spaces = <?php echo json_encode($space_list); ?>;
+    var vendor_info = <?php echo json_encode($info); ?>;
+    var exhibitor_spacelist = <?php echo json_encode($vendor_spacelist); ?>;
+    var regions = <?php echo json_encode($regions); ?>;
+    var spaces = <?php echo json_encode($spaces); ?>;
+    var country_options = <?php echo json_encode($countryOptions); ?>;
+    </script>
+<?php
 draw_registrationModal($portalType, $portalName, $con, $countryOptions);
 draw_passwordModal();
 draw_vendorReqModal();
@@ -350,7 +358,7 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc);
                 <h3><?php echo $portalName; ?> Spaces</h3>
             </div>
         </div>
-<?php   if (count($spaces) > 1)  { ?>
+<?php   if (count($regions) > 1)  { ?>
         <div class="row p-1">
             <div class="col-sm-12 p-0"><?php
                 echo $con['label']; ?> has multiple types of spaces for <?php echo $portalName; ?>s. If you select a type for which you aren't qualified we will alert groups
@@ -430,47 +438,51 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc);
 
                     case 'approved': // permission isn't needed or you have been granted permission
                         // check if they already have paid space, if so, offer to show them the receipt
-                        foreach ($space_list as $spaceId => $space) {
+                        $paid = 0;
+                        $requested = 0;
+                        $approved = 0;
+                        $timeRequested = null;
+                        $regionSpaces = [];
+                        $vendorSpaces = [];
+                        $regionId = $region['id'];
+                        $regionName = $region['name'];
+                        foreach ($space_list[$regionId] as $spaceId => $space) {
                             if ($space['exhibitsRegionYear'] != $region['id'])
                                 continue;
 
-                            ob_start();
-                            var_dump($space);
-                            $str = ob_get_contents();
-                            ob_end_clean();
-                            echo "<pre>$str</pre>" . PHP_EOL;
-                        }
-                }
-            }
-            /*
-             * SELECT v.id, v.shortname, v.name, v.description, v.unitsAvailable, v.unitsAvailableMailin, v.vendorRegionYear
-FROM vendorSpaces v
-JOIN vendorRegionYears vRY ON (v.vendorRegionYear = vRY.id)
-JOIN vendorRegions vR ON (vRY.vendorRegion = vR.id)
-JOIN vendorRegionTypes vRT ON (vR.regionType = vRT.regionType)
-WHERE vRY.conid=? AND vRT.portalType = ?
-ORDER BY v.vendorRegionYear, v.sortorder;
-EOS;
+                            $regionSpaces[$space['id']] = $space;
+                            if (array_key_exists($space['id'], $vendor_spacelist)) {
+                                $vendorSpace = $vendor_spacelist[$space['id']];
 
-$spaceR =  dbSafeQuery($spaceQ, 'is', array($condata['id'], $portalType));
-$space_list = array();
-$spaces = array();
+
+                                if ($vendorSpace !== null) {
+                                    $vendorSpaces[$space['id']] = $vendorSpace;
+                                    if ($vendorSpace['item_requested'] != null) {
+                                        $requested++;
+                                        $timeRequested = $vendorSpace['time_requested'];
+                                    }
+                                    if ($vendorSpace['item_approved'] != null)
+                                        $approved++;
+                                    if ($vendorSpace['item_purchased'] != null)
+                                        $paid++;
+                                }
+
+                            }
+                        }
+
+                        if ($paid > 0)
+                            vendor_receipt($region, $regionSpaces);
+                        else if ($approved > 0)
+                            vendor_invoice($region, $regionSpaces);
+                        else if ($requested > 0)
+                            vendor_showRequest($region, $regionSpaces);
+                        else
+                            echo "<button class='btn btn-primary' onclick = 'openReq($regionId, 0);' > Request $regionName Space</button>" . PHP_EOL;
+                }
+        }
+            /*
 // output the data for the scripts to use
 
-while ($space = $spaceR->fetch_assoc()) {
-    $space_list[$space['id']] = $space;
-    $spaces[$space['shortname']] = $space['id'];
-}
-
-// built price lists
-foreach ($space_list AS $shortname => $space) {
-    $priceQ = <<<EOS
-SELECT id, spaceId, code, description, units, price, includedMemberships, additionalMemberships, requestable, sortOrder
-FROM vendorSpacePrices
-WHERE spaceId=?
-ORDER BY sortOrder;
-EOS;
-             *
              *
         if ($vendor_space !== null) {
             if ($vendor_space['item_purchased']) {
