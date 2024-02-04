@@ -65,41 +65,59 @@ EOS;
 }
 
 // request space
-function request($access,$price, $vendorId, $address) {
+function request($price, $exhibitorInfo, $regionInfo, $portalName, $spaces) {
     $conf = get_conf("con");
-    $conid = $conf['conid'];
-    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+    $conid = $conf['id'];
 
-    $vendorQ = <<<EOS
-SELECT exhibitorName, website, description, contactName, contactEmail
-FROM exhibitors e
-JOIN exhibitorYears eY on e.id = eY.exhibitorId
-WHERE e.id=? AND eY.conid = ?;
-EOS;
-    $vendorR = dbSafeQuery($vendorQ, 'ii', array($vendorId, $conid));
-    if ($vendorR == false || $vendorR->num_rows != 1) {
-        return false;
-    }
-    $vendor = $vendorR->fetch_assoc();
-
-
-    if (array_key_exists('price', $price)) {
-        $body = $vendor['name'] . ",\n" .
-            "Thank you for your interest in the " . $conf['conname'] . " $access.\n" .
-            "You provided the description:\n" . $vendor['description'] . "\n" .
-            "And the website " . $vendor['website'] . "\n" .
-            "\nYou have requested " . $price['description'] . ' in the ' . $access . ' for ' . $dolfmt->formatCurrency($price['price'], 'USD') . "\n" .
-            "\nIf you have any questions please contact the $access staff at $address.\n\nThank you\n";
-        //$body = "id: $vendorId access: $access info: " . json_encode($vendor) . "\n";
+    $ownerName = $regionInfo['ownerName'];
+    $exhibitorName = $exhibitorInfo['exhibitorName'];
+    $contactName = $exhibitorInfo['contactName'];
+    $contactEmail = $exhibitorInfo['contactEmail'];
+    $description = $exhibitorInfo['description'];
+    $descriptionText =strip_tags($description);
+    $regionName = $regionInfo['name'];
+    $ownerName = $regionInfo['ownerName'];
+    $website = $exhibitorInfo['website'];
+    if ($price == null) {
+        $requestType = 'cancelled their';
+        $spaces =  "We are sorry $exhibitorName has had to cancel their space request in the $regionName.";
     } else {
-        $body = $vendor['name'] . ",\n" .
-        'Thank you for your interest in the ' . $conf['conname'] . " $access.\n" .
-        "We are sorry you had to cancel your space request in the $access.\n" .
-        "\nIf you have any questions please contact the $access staff at $address.\n\nThank you\n";
+        $requestType = 'requested';
+        $spaces = "They have requested:\n" . $spaces;
     }
+    $body = <<<EOS
+Dear $ownerName:
+    $exhibitorName has $requestType space in $regionName.
+    
+They have provided the following description:
 
-    $vendor->free();
-    return $body;
+$descriptionText
+
+Their website is $website
+
+$spaces
+
+Please followup with $contactName at $contactEmail if you have any further questions.
+
+Respectfully submitted,
+$portalName Portal
+EOS;
+
+    $spacesHtml = str_replace("\n", "<br>\n", $spaces);
+    $bodyhtml = <<<EOS
+<p>Dear $ownerName</p>
+<p>$exhibitorName has $requestType space in $regionName.</p>
+<p>They have provided the following description:</p>
+<hr>
+$description
+<hr>
+<p>Their website is <a href="$website" target="_blank">$website</a>.<p>
+<p>$spacesHtml</p>
+<p>Please followup with $contactName at <a href="mainto:$contactEmail">$contactEmail</a> if you have any further questions.</p>
+<p>Respectfully submitted,<br/>$portalName Portal</p>
+EOS;
+
+    return array($body, $bodyhtml);
 }
 
 // space payment confirmation
@@ -143,5 +161,5 @@ function payment($results) {
         $body .= "Total amount: " . $dolfmt->formatCurrency($results['total'], 'USD') . "\n\n" .
             "If you have any questions please contact the " . $space['name'] . ' staff at ' . $vendor_conf[$space['shortname']]  . ".\n\nThank you\n";
 
-    return $body;
+    return array($body);
 }

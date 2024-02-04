@@ -1,6 +1,7 @@
 <?php
 // Vendor - index.php - Main page for vendor registration
 require_once("lib/base.php");
+require_once("lib/vendorRequest.php");
 require_once("lib/vendorInvoice.php");
 require_once("lib/vendorYears.php");
 require_once("lib/vendorReg.php");
@@ -309,25 +310,25 @@ while ($perm = $vendorPR->fetch_assoc()) {
 }
 $vendorPR->free();
 
-$vendorSQ = <<<EOS
+$exhibitorSQ = <<<EOS
 SELECT *
 FROM vw_ExhibitorSpace
-WHERE exhibitorId = ? and yearId = ? and portalType = ?;
+WHERE exhibitorId = ? and conid = ? and portalType = ?;
 EOS;
 
-$vendorSR = dbSafeQuery($vendorSQ, 'iii', array($vendor, $condata['id'], $vendor));
-$vendor_spacelist = array();
-while ($space = $vendorSR->fetch_assoc()) {
-    $vendor_spacelist[$space['spaceId']] = $space;
+$exhibitorSR = dbSafeQuery($exhibitorSQ, 'iis', array($vendor, $condata['id'], $portalType));
+$exhibitorSpaceList = array();
+while ($space = $exhibitorSR->fetch_assoc()) {
+    $exhibitorSpaceList[$space['spaceId']] = $space;
 }
-$vendorSR->free();
+$exhibitorSR->free();
 ?>
 <script type='text/javascript'>
 var config = <?php echo json_encode($config_vars); ?>;
     var region_list = <?php echo json_encode($region_list); ?>;
     var exhibits_spaces = <?php echo json_encode($space_list); ?>;
     var vendor_info = <?php echo json_encode($info); ?>;
-    var exhibitor_spacelist = <?php echo json_encode($vendor_spacelist); ?>;
+    var exhibitor_spacelist = <?php echo json_encode($exhibitorSpaceList); ?>;
     var regions = <?php echo json_encode($regions); ?>;
     var spaces = <?php echo json_encode($spaces); ?>;
     var country_options = <?php echo json_encode($countryOptions); ?>;
@@ -456,8 +457,8 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc);
                                 continue;
 
                             $regionSpaces[$space['id']] = $space;
-                            if (array_key_exists($space['id'], $vendor_spacelist)) {
-                                $vendorSpace = $vendor_spacelist[$space['id']];
+                            if (array_key_exists($space['id'], $exhibitorSpaceList)) {
+                                $vendorSpace = $exhibitorSpaceList[$space['id']];
 
 
                                 if ($vendorSpace !== null) {
@@ -480,7 +481,7 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc);
                         else if ($approved > 0)
                             vendor_invoice($region, $regionSpaces);
                         else if ($requested > 0)
-                            vendor_showRequest($region, $regionSpaces);
+                            vendor_showRequest($regionId, $regionName, $regionSpaces, $exhibitorSpaceList);
                         else
                             echo "<button class='btn btn-primary' onclick = 'openReq($regionId, 0);' > Request $regionName Space</button>" . PHP_EOL;
                 }

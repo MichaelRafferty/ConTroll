@@ -50,6 +50,7 @@ function draw_vendorReqModal() {
                                 <div class='col-sm-auto p-2'>Completing this application does not guarantee space.</div>
                             </div>
                         </form>
+                        <div class="row" id="sr_message_div"></div>
                     </div>
                 </div>
                 <div class='modal-footer'>

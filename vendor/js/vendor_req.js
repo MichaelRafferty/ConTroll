@@ -13,6 +13,7 @@ function vendorRequestOnLoad() {
 }
 
 // openReq - update the modal for this space
+//      add all of the spaces in this 'region'
 function openReq(regionId, cancel) {
     var spaceHtml = '';
     var regionName = '';
@@ -96,14 +97,10 @@ function openReq(regionId, cancel) {
         // now check if we need to track limits
     }
     // add until limit if needed
-    if (unitLimit > 0) {
-        spaceHtml += "<div class='row mt-2' id='TotalUnitsRequestedRow'>\n<div class='col-sm-auto p-0 m-0 ms-4'><b>Total Requestable unit limit: " + String(unitLimit) + "</b></div>\n" +
-            "<div class='col-sm-auto p-0 m-0 ms-4'><b>Total Units Requested:</b></div>" +
-            "<div class='col-sm-auto p-0 m-0 ms-2' id='totalUnitsRequested'>0</div>\n" +
-            "</div>\n";
-    }
-    // build option list
-
+     spaceHtml += "<div class='row mt-2' id='TotalUnitsRequestedRow'" + (unitLimit > 0 ? '' : ' hidden') + ">\n<div class='col-sm-auto p-0 m-0 ms-4'><b>Total Requestable unit limit: " + String(unitLimit) + "</b></div>\n" +
+         "<div class='col-sm-auto p-0 m-0 ms-4'><b>Total Units Requested:</b></div>" +
+         "<div class='col-sm-auto p-0 m-0 ms-2' id='totalUnitsRequested'>0</div>\n" +
+         "</div>\n";
 
     document.getElementById("spaceHtml").innerHTML = spaceHtml;
 
@@ -113,15 +110,12 @@ function openReq(regionId, cancel) {
     var selection = document.getElementById('vendor_req_price_id');
     //selection.innerHTML = options;
     //if (cancel) selection.value = cancel;
-    document.getElementById('vendor_req_btn').setAttribute('onClick', "spaceReq(" + region.id + ',' + cancel + ')');
+    document.getElementById('vendor_req_btn').setAttribute('onClick', "spaceReq(" + regionId + ',' + cancel + ')');
     vendor_request.show();
 }
 
-// updateTotalUnits -update the total units requested pulldown and color it if its too large
+// updateTotalUnits -update the total units requested pulldown and color it if it's too large
 function updateTotalUnits(regionId, unitLimit) {
-    if (unitLimit <= 0) // no limit, nothing to check
-        return;
-
     var region = exhibits_spaces[regionId];
     if (!region)
         return;
@@ -156,7 +150,7 @@ function updateTotalUnits(regionId, unitLimit) {
         totalUnitsRequestedRow = document.getElementById('TotalUnitsRequestedRow');
         vendor_req_btn = document.getElementById('vendor_req_btn');
     }
-    if (requestedUnits > unitLimit) {
+    if (requestedUnits > unitLimit && unitLimit > 0) {
         totalUnitsRequestedRow.classList.add('bg-warning');
         vendor_req_btn.disabled = true;
     } else {
@@ -166,19 +160,23 @@ function updateTotalUnits(regionId, unitLimit) {
 }
 
 // Space Request - call scripts/spaceRequest.php to add a request record
-function spaceReq(spaceId, cancel) {
+function spaceReq(regionId, cancel) {
     //console.log("spaceReq called for " + spaceId);
 
-    var opt = document.getElementById('vendor_req_price_id');
-    //console.log(opt);
-    //console.log(opt.value);
-    if (opt.value <= 0 && !cancel) {
-        alert("Select an amount of space to resquest");
+    if (totalUnitsRequested_div == null)
+        totalUnitsRequested_div = document.getElementById('totalUnitsRequested');
+
+    if (Number(totalUnitsRequested_div.innerHTML) <= 0 && !cancel) {
+        show_message("Select an amount of space to request", 'error', 'sr_message_div');
         return;
     }
+
+    clear_message('sr_message_div');
     dataobj = {
-        spaceid: spaceId,
-        priceid: opt.value,
+        regionId: regionId,
+        requests: $('#vendor_req_form').serialize(),
+        'type': config['portalType'],
+        'name': config['portalName'],
     };
     $.ajax({
         url: 'scripts/spaceReq.php',
@@ -188,16 +186,16 @@ function spaceReq(spaceId, cancel) {
             if (config['debug'] & 1)
                 console.log(data);
             if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+                show_message(data['error'], 'error', 'sr_message_div');
                 return;
             }
             if (data['success'] !== undefined) {
-                show_message(data['success'], 'success');
                 vendor_request.hide();
-                document.getElementById(data['div']).innerHTML = "<div class='col-sm-auto'><button class='btn btn-primary' onClick='location.reload()'>Click here to refresh page to update status</button></div>";
+                show_message(data['success'], 'success');
+                document.getElementById(data['div']).innerHTML = "need to update the status";
             }
             if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
+                show_message(data['warn'], 'warn', 'sr_message_div');
             }
         },
         error: showAjaxError
