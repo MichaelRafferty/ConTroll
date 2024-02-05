@@ -29,6 +29,13 @@ if (array_key_exists('publicity', $_POST)) {
     $publicity = trim($_POST['publicity']) == 'on' ? 1 : 0;
 }
 
+// default mailin
+if (array_key_exists('mailin', $_POST)) {
+    $mailin = $_POST['mailin'];
+} else {
+    $mailin = 'N';
+}
+
 // if register check for existence of vendor
 switch ($profileMode) {
     case 'register':
@@ -80,7 +87,7 @@ EOS;
         $newExhibitor = dbSafeInsert($exhibitorInsertQ, $typestr, $paramarr);
 
         // create the year related functions
-        vendorBuildYears($newExhibitor, $_POST['contactName'], $_POST['contactEmail'], $_POST['contactPhone'], $_POST['password']);
+        vendorBuildYears($newExhibitor, $_POST['contactName'], $_POST['contactEmail'], $_POST['contactPhone'], $_POST['password'], $mailin);
         break;
 
     case 'update':
@@ -127,12 +134,6 @@ EOS;
         );
         $numrows = dbSafeCmd($updateQ, 'ssssssssssssssssssii', $updateArr);
 
-        if (array_key_exists('mailin', $_POST)) {
-            $mailin = $_POST['mailin'];
-        } else {
-            $mailin = 'N';
-        }
-
         $updateQ = <<<EOS
 UPDATE exhibitorYears
 SET contactName=?, contactEmail=?, contactPhone=?, mailin = ?, needReview = 0
@@ -151,7 +152,7 @@ EOS;
             $response['message'] = 'Profile Updated';
             // get the update info
             $vendorQ = <<<EOS
-SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, 
+SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, ey.mailin,
        ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview as needReview,
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
 FROM exhibitors e

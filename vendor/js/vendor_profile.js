@@ -183,7 +183,7 @@ function profileModalOpen(useType) {
                     if (value == 'N')
                         key = 'mailinN';
                     if (value == 'Y')
-                        key = 'mailinN';
+                        key = 'mailinY';
                 }
                 var id = document.getElementById(key);
                 if (id) {
