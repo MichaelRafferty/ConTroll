@@ -154,5 +154,19 @@ if (array_key_exists('email_error', $return_arr)) {
     $response['success'] = "Request sent";
 }
 
+$exhibitorSQ = <<<EOS
+SELECT *
+FROM vw_ExhibitorSpace
+WHERE exhibitorId = ? and conid = ? and portalType = ?;
+EOS;
+
+$exhibitorSR = dbSafeQuery($exhibitorSQ, 'iis', array($vendor, $conid, $portalType));
+$exhibitorSpaceList = array();
+while ($space = $exhibitorSR->fetch_assoc()) {
+    $exhibitorSpaceList[$space['spaceId']] = $space;
+}
+$exhibitorSR->free();
+$response['exhibitor_spacelist'] = $exhibitorSpaceList;
+
 ajaxSuccess($response);
 ?>

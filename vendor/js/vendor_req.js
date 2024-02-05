@@ -54,7 +54,8 @@ function openReq(regionId, cancel) {
     var space = null;
 
     if (mailIn) {
-        spaceHtml += "<div class='row'>\n<div class='col-sm-12 p-0 m-2'><i>You are requesting space as mail-in. If this is not correct, please cancel this request and update your profile.</i></div>"
+        spaceHtml += "<div class='row'>\n<div class='col-sm-12 p-0 m-2'><i>You are requesting space as mail-in. " +
+            "If this is not correct, please dismiss this form using the 'Cancel' button in grey below and update your profile.</i></div>"
     }
 
     for (index = 0; index < spaceCount; index += 3) { // look over the spaces up to 3 per row
@@ -172,6 +173,7 @@ function spaceReq(regionId, cancel) {
     }
 
     clear_message('sr_message_div');
+    clear_message();
     dataobj = {
         regionId: regionId,
         requests: $('#vendor_req_form').serialize(),
@@ -189,10 +191,13 @@ function spaceReq(regionId, cancel) {
                 show_message(data['error'], 'error', 'sr_message_div');
                 return;
             }
+            if (data['exhibitor_spacelist']) {
+                exhibitor_spacelist = data['exhibitor_spacelist'];
+            }
             if (data['success'] !== undefined) {
                 vendor_request.hide();
                 show_message(data['success'], 'success');
-                document.getElementById(data['div']).innerHTML = "need to update the status";
+                updateRequestStatusBlock(regionId);
             }
             if (data['warn'] !== undefined) {
                 show_message(data['warn'], 'warn', 'sr_message_div');
@@ -200,4 +205,34 @@ function spaceReq(regionId, cancel) {
         },
         error: showAjaxError
     })
+}
+
+// update the request status block to show the new request
+function updateRequestStatusBlock(regionId) {
+    var blockname = region_list[regionId].shortname + '_div';
+    var blockdiv = document.getElementById(blockname);
+
+    // get the name for this region
+    var regionName = region_list[regionId].name;
+    // get the list item for this
+    var region_spaces = exhibits_spaces[regionId];
+    var spaceStatus = ''
+    var exSpaceKeys = Object.keys(exhibitor_spacelist);
+    for (var exSpaceIdx in exSpaceKeys) {
+        if (region_spaces[exSpaceKeys[exSpaceIdx]]) { // space is in our region
+            var region = region_spaces[exSpaceKeys[exSpaceIdx]];
+            var space = exhibitor_spacelist[exSpaceKeys[exSpaceIdx]];
+            var timeRequested = new Date(space.time_requested)
+            spaceStatus += space.requested_description + " in " + regionName + " for $" + Number(space.requested_price).toFixed(2) +
+                "at " + time_requested + "<br/>";
+        }
+    }
+
+    if (spaceStatus == '') {
+        blockdiv.innerHTML = "<button class='btn btn-primary' onclick = 'openReq(regionId, 0);' > Request " + regionName + " Space</button>";
+        return;
+    }
+
+    blockdiv.innerHTML = 'Request pending authorization for:<br/>' + spaceStatus +
+        "<button class='btn btn-primary' onclick = 'openReq(regionId, 1);' > Change/Cancel " + regionName + " Space</button>";
 }
