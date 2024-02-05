@@ -65,7 +65,7 @@ EOS;
 }
 
 // request space
-function request($price, $exhibitorInfo, $regionInfo, $portalName, $spaces) {
+function request($exhibitorInfo, $regionInfo, $portalName, $spaces) {
     $conf = get_conf("con");
     $conid = $conf['id'];
 
@@ -78,7 +78,7 @@ function request($price, $exhibitorInfo, $regionInfo, $portalName, $spaces) {
     $regionName = $regionInfo['name'];
     $ownerName = $regionInfo['ownerName'];
     $website = $exhibitorInfo['website'];
-    if ($price == null) {
+    if ($spaces == '') {
         $requestType = 'cancelled their';
         $spaces =  "We are sorry $exhibitorName has had to cancel their space request in the $regionName.";
     } else {

@@ -135,7 +135,7 @@ EOS;
 }
 
 load_email_procs();
-$emails = request($price, $exhibitorInfo, $regionInfo, $portalName, $spaces);
+$emails = request($exhibitorInfo, $regionInfo, $portalName, $spaces);
 if ($exhibitorInfo['exhibitorEmail'] == $exhibitorInfo['contactEmail'] || $exhibitorInfo['contactEmail'] == '')
     $cc = $exhibitorInfo['exhibitorEmail'];
 else

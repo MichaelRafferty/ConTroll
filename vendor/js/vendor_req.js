@@ -17,9 +17,11 @@ function vendorRequestOnLoad() {
 function openReq(regionId, cancel) {
     var spaceHtml = '';
     var regionName = '';
+    var totalUnitsRequested = 0;
 
     //console.log("open request modal for id =" + spaceid);
     var region = exhibits_spaces[regionId];
+
     if (!region)
         return;
 
@@ -52,6 +54,8 @@ function openReq(regionId, cancel) {
     var col = 0;
     var last = 0;
     var space = null;
+    var req_item = -1;
+    var sel = '';
 
     if (mailIn) {
         spaceHtml += "<div class='row'>\n<div class='col-sm-12 p-0 m-2'><i>You are requesting space as mail-in. " +
@@ -65,9 +69,13 @@ function openReq(regionId, cancel) {
             last = spaceCount;
         for (col = index; col < last; col++) {
             space = region[keys[col]];
+            reg_item = -1;
+            exSpace = exhibitor_spacelist[keys[col]];
+            if (exSpace)
+                req_item = exSpace.item_requested;
 
             // build option pulldown
-            var options = "<option value='-1'>" + (cancel ? 'Cancel' : 'No') + " Space Requested</option>\n";
+            var options = "<option value='-1'" + (reg_item == -1 ? ' selected>' : '>') + (cancel ? 'Cancel' : 'No') + " Space Requested</option>\n";
             var prices = space.prices;
             var price_keys = Object.keys(prices).sort();
             var units =  '';
@@ -77,7 +85,14 @@ function openReq(regionId, cancel) {
                     if (unitLimit > 0) {
                         units = ' (' + String(price.units) + ' unit' + (price.units > 1 ? 's' : '') + ')';
                     }
-                    options += "<option value='" + price.id + "'>" + price.description + ' for ' + Number(price.price).toFixed(2) + units + "</option>\n";
+                    sel = "'>";
+                    if (exSpace) {
+                        if (exSpace.item_requested == price.id) {
+                            totalUnitsRequested += Number(price.units);
+                            sel = "' selected>";
+                        }
+                    }
+                    options += "<option value='" + price.id + sel + price.description + ' for ' + Number(price.price).toFixed(2) + units + "</option>\n";
                 }
             }
 
@@ -100,7 +115,7 @@ function openReq(regionId, cancel) {
     // add until limit if needed
      spaceHtml += "<div class='row mt-2' id='TotalUnitsRequestedRow'" + (unitLimit > 0 ? '' : ' hidden') + ">\n<div class='col-sm-auto p-0 m-0 ms-4'><b>Total Requestable unit limit: " + String(unitLimit) + "</b></div>\n" +
          "<div class='col-sm-auto p-0 m-0 ms-4'><b>Total Units Requested:</b></div>" +
-         "<div class='col-sm-auto p-0 m-0 ms-2' id='totalUnitsRequested'>0</div>\n" +
+         "<div class='col-sm-auto p-0 m-0 ms-2' id='totalUnitsRequested'>" + totalUnitsRequested + "</div>\n" +
          "</div>\n";
 
     document.getElementById("spaceHtml").innerHTML = spaceHtml;
@@ -222,17 +237,19 @@ function updateRequestStatusBlock(regionId) {
         if (region_spaces[exSpaceKeys[exSpaceIdx]]) { // space is in our region
             var region = region_spaces[exSpaceKeys[exSpaceIdx]];
             var space = exhibitor_spacelist[exSpaceKeys[exSpaceIdx]];
-            var timeRequested = new Date(space.time_requested)
-            spaceStatus += space.requested_description + " in " + regionName + " for $" + Number(space.requested_price).toFixed(2) +
-                "at " + time_requested + "<br/>";
+            if (space.item_requested) {
+                var timeRequested = new Date(space.time_requested)
+                spaceStatus += space.requested_description + " in " + regionName + " for $" + Number(space.requested_price).toFixed(2) +
+                    " at " + timeRequested + "<br/>";
+            }
         }
     }
 
     if (spaceStatus == '') {
-        blockdiv.innerHTML = "<button class='btn btn-primary' onclick = 'openReq(regionId, 0);' > Request " + regionName + " Space</button>";
+        blockdiv.innerHTML = "<div class=\"col-sm-auto p-0\"><button class='btn btn-primary' onclick = 'openReq(regionId, 0);' > Request " + regionName + " Space</button></div>";
         return;
     }
 
-    blockdiv.innerHTML = 'Request pending authorization for:<br/>' + spaceStatus +
-        "<button class='btn btn-primary' onclick = 'openReq(regionId, 1);' > Change/Cancel " + regionName + " Space</button>";
+    blockdiv.innerHTML = '<div class="col-sm-auto p-0">Request pending authorization for:<br/>' + spaceStatus +
+        "<button class='btn btn-primary' onclick = 'openReq(" + regionId + ", 1);' > Change/Cancel " + regionName + " Space</button></div>";
 }
