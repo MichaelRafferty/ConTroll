@@ -4,7 +4,6 @@ require_once("lib/base.php");
 require_once("lib/vendorRequest.php");
 require_once("lib/vendorInvoice.php");
 require_once("lib/vendorYears.php");
-require_once("lib/vendorReg.php");
 require_once("lib/changePassword.php");
 require_once("lib/regForms.php");
 require_once("../lib/cc__load_methods.php");
@@ -479,7 +478,7 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc);
                         if ($paid > 0)
                             vendor_receipt($region, $regionSpaces);
                         else if ($approved > 0)
-                            vendor_invoice($region, $regionSpaces);
+                            vendor_showInvoice($regionId, $regionName, $regionSpaces, $exhibitorSpaceList);
                         else if ($requested > 0)
                             vendor_showRequest($regionId, $regionName, $regionSpaces, $exhibitorSpaceList);
                         else

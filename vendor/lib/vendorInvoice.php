@@ -237,3 +237,24 @@ if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclai
     </div>
 <?php
 }
+
+// vendor_showRequest -> show the current request and the change/cancel button
+function vendor_showInvoice($regionId, $regionName, $regionSpaces, $exhibitorSpaceList)
+{
+    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+
+    echo "You have been approved for:<br/>\n";
+    foreach ($exhibitorSpaceList as $key => $spaceItem) {
+        // limit to spaces for this region
+        $spaceId = $spaceItem['spaceId'];
+        if (array_key_exists($spaceId, $regionSpaces)) {
+            $date = $spaceItem['time_approved'];
+            $date = date_create($date);
+            $date = date_format($date, 'F j, Y') . ' at ' . date_format($date, 'g:i A');
+            echo $spaceItem['approved_description'] . ' in ' . $spaceItem['regionName'] . ' for ' . $dolfmt->formatCurrency($spaceItem['approved_price'], 'USD') .
+                " at $date<br/>\n";
+        }
+    }
+    echo "<button class='btn btn-primary' onclick='openReq($regionId);'>Pay $regionName Invoice</button>";
+
+}
