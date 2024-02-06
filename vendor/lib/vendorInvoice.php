@@ -243,6 +243,7 @@ function vendor_showInvoice($regionId, $regionName, $regionSpaces, $exhibitorSpa
 {
     $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
+    $totalPrice = 0;
     echo "You have been approved for:<br/>\n";
     foreach ($exhibitorSpaceList as $key => $spaceItem) {
         // limit to spaces for this region
@@ -253,8 +254,10 @@ function vendor_showInvoice($regionId, $regionName, $regionSpaces, $exhibitorSpa
             $date = date_format($date, 'F j, Y') . ' at ' . date_format($date, 'g:i A');
             echo $spaceItem['approved_description'] . ' in ' . $spaceItem['regionName'] . ' for ' . $dolfmt->formatCurrency($spaceItem['approved_price'], 'USD') .
                 " at $date<br/>\n";
+            $totalPrice += $spaceItem['approved_price'];
         }
     }
+    echo "__________________________________________________________<br/>\nTotal price for $regionName spaces " . $dolfmt->formatCurrency($totalPrice, 'USD') . "<br/>\n";
     echo "<button class='btn btn-primary' onclick='openReq($regionId);'>Pay $regionName Invoice</button>";
 
 }
