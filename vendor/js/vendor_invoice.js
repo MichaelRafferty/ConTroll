@@ -1,5 +1,6 @@
 // Items related to building and paying the vendor invoice
 var vendor_invoice = null;
+var totalSpacePrice = 0;
 
 // set up vendor invoice items
 function vendorInvoiceOnLoad() {
@@ -10,23 +11,61 @@ function vendorInvoiceOnLoad() {
 }
 
 // openInvoice: display the vendor invoice (and registration items)
-function openInvoice(spaceId, sortorder) {
-    console.log("spaceid: " + spaceId + ", sortorder: " + sortorder);
-    var space = vendor_spaces[spaceId];
-    var price = space.prices[sortorder];
-    console.log(space);
-    console.log(price);
+function openInvoice(regionId) {
+    var regionName = '';
+    var includedMemberships = 0;
+    var additionalMemberships = 0;
+    var html = '';
+    var priceIdx = 0;
+
+    if (config['debug'] & 1)
+        console.log("regionId: " + regionId);
+    var region = exhibits_spaces[regionId];
+
+    var regionList = region_list[regionId];
+    if (config['debug'] & 1) {
+        console.log("regionList");
+        console.log(regionList);
+        console.log("Region Spaces");
+        console.log(region);
+    }
+
+    regionName = regionList.name;
+
+    // refresh the items spaces purchased area
+    html = "You are approved for:<br/>\n";
+    var exSpaceKeys = Object.keys(exhibitor_spacelist);
+    for (var exSpaceIdx in exSpaceKeys) {
+        if (region[exSpaceKeys[exSpaceIdx]]) { // space is in our region
+            var space = exhibitor_spacelist[exSpaceKeys[exSpaceIdx]];
+            var prices = region[exSpaceKeys[exSpaceIdx]].prices;
+            if (space.item_approved) {
+                html += space.approved_description + " in " + regionName + " for $" + Number(space.approved_price).toFixed(2) + "<br/>";
+                totalSpacePrice += Number(space.approved_price);
+                // find price item in prices
+                for (priceIdx = 0; priceIdx < prices.length; priceIdx++) {
+                    if (prices[priceIdx].id == space.item_approved)
+                        break;
+                }
+                includedMemberships = Math.max(includedMemberships, prices[priceIdx].includedMemberships);
+                additionalMemberships = Math.max(additionalMemberships, prices[priceIdx].additionalMemberships);
+            }
+        }
+    }
+    html += "____________________________<br/>\nTotal price for spaces $" + Number(totalSpacePrice).toFixed(2)+ "<br/>\n";
+
+    document.getElementById('vendor_inv_approved_for').innerHTML = html;
 
     // fill in the variable items
-    document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + space.name + ' Invoice</strong>';
-    document.getElementById('vendor_inv_approved_for').innerHTML = vendor_info.name + " you are approved for " + price.description;
-    var spaces = price.includedMemberships + price.additionalMemberships;
-    var html = "<p>This space comes with " +
-        (price.includedMemberships > 0 ? price.includedMemberships : "no") +
+    document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + regionName + ' Invoice</strong>';
+
+    var spaces = includedMemberships + additionalMemberships;
+    html = "<p>This space comes with " +
+        (includedMemberships > 0 ? includedMemberships : "no") +
         " memberships included and " +
-        (price.additionalMemberships > 0 ? "the " : "no ") + "right to purchase " +
-        (price.additionalMemberships > 0 ? "up to " +  price.additionalMemberships  : "no") +
-        " additional memberships at a reduced rate of $" + Number(space.additionalMemPrice).toFixed(2) + ".</p>";
+        (additionalMemberships > 0 ? "the " : "no ") + "right to purchase " +
+        (additionalMemberships > 0 ? "up to " +  additionalMemberships  : "no") +
+        " additional memberships at a reduced rate of $" + Number(regionList.additionalMemPrice).toFixed(2) + ".</p>";
     if (spaces > 0) {
         html += "<p>All vendors must have a membership for everyone working in their space. Included and additional discounted memberships can only be purchased while paying for your space. " +
             "If you do not purchase them now while paying your space invoice, you will have to purchase them at the current membership rates.</p>" +
@@ -35,16 +74,15 @@ function openInvoice(spaceId, sortorder) {
             "<p><input type='checkbox' style='transform: scale(2);' name='agreeNone' id='add-new-comment'agreeNone'> &nbsp;&nbsp;If you do not wish to purchase any memberships at this time, check this box to acknowledge the requirement for memberships above.</p>"
     }
     document.getElementById('vendor_inv_included').innerHTML = html;
-    document.getElementById('dealer_space_cost').innerHTML = Number(price.price).toFixed(2);
-    document.getElementById('vendor_inv_cost').innerHTML = Number(price.price).toFixed(2);
-    document.getElementById('vendor_inv_item_id').value = price.id
+    document.getElementById('vendor_inv_cost').innerHTML = Number(totalSpacePrice).toFixed(2);
+    //document.getElementById('vendor_inv_item_id').value = price.id
 
     var html = '';
     // now build the included memberships
-    if (price.includedMemberships > 0) {
-        html = "<input type='hidden' name='incl_mem_count' value='" + price.includedMemberships + "'>\n" +
-            "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Included Memberships: (up to " + price.includedMemberships + ")</strong></div></div>";
-        for (var mnum = 0; mnum < price.includedMemberships; mnum++) {
+    if (includedMemberships > 0) {
+        html = "<input type='hidden' name='incl_mem_count' value='" + includedMemberships + "'>\n" +
+            "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Included Memberships: (up to " + includedMemberships + ")</strong></div></div>";
+        for (var mnum = 0; mnum < includedMemberships; mnum++) {
             // name fields
             html += `
 <div class="row mt-4">
@@ -123,10 +161,10 @@ function openInvoice(spaceId, sortorder) {
     html += "<hr/>";
 
     // now build the additional memberships
-    if (price.additionalMemberships > 0) {
-        html += "<input type='hidden' name='addl_mem_count' value='" + price.additionalMemberships + "'>\n" +
-            "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Additional Memberships: (up to " + price.additionalMemberships + ")</strong></div></div>";
-        for (var mnum = 0; mnum < price.additionalMemberships; mnum++) {
+    if (additionalMemberships > 0) {
+        html += "<input type='hidden' name='addl_mem_count' value='" + additionalMemberships + "'>\n" +
+            "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Additional Memberships: (up to " + additionalMemberships + ")</strong></div></div>";
+        for (var mnum = 0; mnum < additionalMemberships; mnum++) {
             // name fields
             html += `
 <div class="row mt-4">
@@ -135,7 +173,7 @@ function openInvoice(spaceId, sortorder) {
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="fname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>First Name</span></label><br/>
-        <input class="form-control-sm" type="text" name="fname_a_` + mnum + `" id="fname_a_` + mnum + `" size="22" maxlength="32" onchange="updateCost(` + spaceId + ",'" + sortorder + "'," + mnum + `)"/>
+        <input class="form-control-sm" type="text" name="fname_a_` + mnum + `" id="fname_a_` + mnum + `" size="22" maxlength="32" onchange="updateCost(` + regionId + "," + mnum + `)"/>
     </div>
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="mname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
@@ -208,18 +246,18 @@ function openInvoice(spaceId, sortorder) {
 }
 
 // update invoice for the Cost of Memberships and total Cost when an additional member is started
-function updateCost(spaceId, sortorder, item) {
-    var space = vendor_spaces[spaceId];
-    var price = space.prices[sortorder];
+function updateCost(regionId, item) {
+    var regionList = region_list[regionId];
+    var price = Number(regionList.additionalMemPrice);
     var fname = document.getElementById('fname_a_' + item).value;
     var cost = 0;
-    additional_cost[item] = fname == '' ? 0 : Number(space.additionalMemPrice);
+    additional_cost[item] = fname == '' ? 0 : Number(regionList.additionalMemPrice);
     for (var num in additional_cost) {
         cost += additional_cost[num];
     }
     console.log(cost);
     document.getElementById('vendor_inv_mbr_cost').innerHTML = Number(cost).toFixed(2);
-    cost += Number(price.price);
+    cost += Number(totalSpacePrice);
     console.log(cost);
     document.getElementById('vendor_inv_cost').innerHTML = Number(cost).toFixed(2);
 }

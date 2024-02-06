@@ -16,10 +16,10 @@ function draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc) {
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class="container-fluid form-floating">
                     <form id='vendor_invoice_form' class='form-floating' action='javascript:void(0);'>
-                        <div class="row mb=2">
+                        <div class="row mt-2">
                             <div class="col-sm-12" id="vendor_inv_approved_for"></div>
                         </div>
-                        <div class='row'>
+                        <div class='row mt-4'>
                             <div class='col-sm-12' id='vendor_inv_included'></div>
                         </div>
                         <hr/>
@@ -96,10 +96,9 @@ function draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc) {
                         <div class="row">
                             <div class="col-sm-12"><?php echo $vendor_conf['taxidextra']; ?></div>
                         </div>
-                        <div class="row mt-4">
-                            <div class="col-sm-12">
-                                Cost for Spaces $<span id='dealer_space_cost'></span>
-                            </div>
+                        <div class="row mt-4 mb-4">
+                            <div class="col-sm-2"></div>
+                            <div class="col-sm-10" id="dealer_space_cost"></div>
                         </div>
                         <div class="row">
                             <div class="col-sm-2">
@@ -210,8 +209,20 @@ function draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc) {
                         <?php
 if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclaimer'] != '') {
 ?>                          <div class='row p-1 pt-4 pb-3'>
-                                <div class='col-sm-12'>
-                                    <?php echo $vendor_conf['pay_disclaimer'] . "\n"; ?>
+                                <div class='col-sm-12'><?php
+                            if (array_key_exists('pay_disclaimer', $vendor_conf) && $vendor_conf['pay_disclaimer'] != '') {
+                                $discfile = '../config/' . $vendor_conf['pay_disclaimer'];
+                                if (is_readable($discfile)) {
+                                    $disclaimer = file_get_contents($discfile);
+                                    ?>
+                                    <div class='row p-1 pt=0 pb-3'>
+                                        <div class='col-sm-12'>
+                                            <?php echo $disclaimer . "\n"; ?>
+                                        </div>
+                                    </div>
+                                    <?php
+                                }
+                            } ?>
                                 </div>
                             </div>
 <?php
@@ -258,6 +269,6 @@ function vendor_showInvoice($regionId, $regionName, $regionSpaces, $exhibitorSpa
         }
     }
     echo "__________________________________________________________<br/>\nTotal price for $regionName spaces " . $dolfmt->formatCurrency($totalPrice, 'USD') . "<br/>\n";
-    echo "<button class='btn btn-primary' onclick='openReq($regionId);'>Pay $regionName Invoice</button>";
+    echo "<button class='btn btn-primary' onclick='openInvoice($regionId);'>Pay $regionName Invoice</button>";
 
 }
