@@ -3,6 +3,7 @@ var vendor_request = null;
 var vendor_req_btn = null;
 var totalUnitsRequested_div = null;
 var totalUnitsRequestedRow = null;
+var countCombined = false;
 
 // init
 function vendorRequestOnLoad() {
@@ -26,6 +27,7 @@ function openReq(regionYearId, cancel) {
         return;
 
     var regionList = region_list[regionYearId];
+    countCombined = regionList['purchaseAreaTotals'] == 'combined';
     if (config['debug'] & 1) {
         console.log("regionList");
         console.log(regionList);
@@ -37,7 +39,7 @@ function openReq(regionYearId, cancel) {
     var mailIn = vendor_info.mailin == 'Y';
     var unitLimit = mailIn ? regionList.mailinMaxUnits : regionList.inPersonMaxUnits;
     if (config['debug'] & 1) {
-        console.log("Unit limit: " + unitLimit);
+        console.log("Unit limit: " + unitLimit + ", countCombined: " + countCombined);
     }
 
     // determine number of spaces in the region
@@ -113,7 +115,7 @@ function openReq(regionYearId, cancel) {
         // now check if we need to track limits
     }
     // add until limit if needed
-     spaceHtml += "<div class='row mt-2' id='TotalUnitsRequestedRow'" + (unitLimit > 0 ? '' : ' hidden') + ">\n<div class='col-sm-auto p-0 m-0 ms-4'><b>Total Requestable unit limit: " + String(unitLimit) + "</b></div>\n" +
+     spaceHtml += "<div class='row mt-2' id='TotalUnitsRequestedRow'" + (unitLimit > 0 && countCombined ? '' : ' hidden') + ">\n<div class='col-sm-auto p-0 m-0 ms-4'><b>Total Requestable unit limit: " + String(unitLimit) + "</b></div>\n" +
          "<div class='col-sm-auto p-0 m-0 ms-4'><b>Total Units Requested:</b></div>" +
          "<div class='col-sm-auto p-0 m-0 ms-2' id='totalUnitsRequested'>" + totalUnitsRequested + "</div>\n" +
          "</div>\n";
@@ -166,7 +168,7 @@ function updateTotalUnits(regionYearId, unitLimit) {
         totalUnitsRequestedRow = document.getElementById('TotalUnitsRequestedRow');
         vendor_req_btn = document.getElementById('vendor_req_btn');
     }
-    if (requestedUnits > unitLimit && unitLimit > 0) {
+    if (requestedUnits > unitLimit && unitLimit > 0 && countCombined) {
         totalUnitsRequestedRow.classList.add('bg-warning');
         vendor_req_btn.disabled = true;
     } else {
