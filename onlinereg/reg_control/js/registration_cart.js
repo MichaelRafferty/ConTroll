@@ -57,7 +57,7 @@ class reg_cart {
         this.#membership_select = membership_select;
         this.#membership_selectlist = membership_selectlist;
         // cart is only place to use upgrade_select, so build it.
-        this.#upgrade_select = [];
+        this.#upgrade_select = {};
 
         var row = null;
         // upgrade_select
@@ -76,7 +76,9 @@ class reg_cart {
                 day = 'a' + String(nonday).padStart(2, '0');
                 nonday++;
             }
-            this.#upgrade_select[day] = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + ' (' + match[row]['enddate'] + ')' + "</option>\n";
+            if (!this.#upgrade_select[day])
+                this.#upgrade_select[day] = ''
+            this.#upgrade_select[day] += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + ' (' + match[row]['enddate'] + ')' + "</option>\n";
         }
 
         // cart is only place to use yearahead_select, so build it.
