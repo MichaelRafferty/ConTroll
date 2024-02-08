@@ -497,14 +497,14 @@ if ($yearcnt == 0) {
 
     // its a new year, copy from last year
     $insRY = <<<EOS
-INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, min.id, man.id, totalUnitsAvailable, sortorder) 
-SELECT $conid, ery.exhibitsRegion, ery.ownerName, ery.ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, sortorder
+INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, sortorder) 
+SELECT $conid, ery.exhibitsRegion, ery.ownerName, ery.ownerEmail, minx.id, manx.id, totalUnitsAvailable, sortorder
 FROM exhibitsRegionYears ery
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
 LEFT OUTER JOIN memList ma ON ery.additionalMemId = ma.id
-LEFT OUTER JOIN memList min ON (mi.memAge = min.memAge AND mi.memType = min.memType AND mi.memCategory = min.memCategory AND mi.label = min.label)
-LEFT OUTER JOIN memList man ON (ma.memAge = man.memAge AND ma.memType = man.memType AND ma.memCategory = man.memCategory AND ma.label = man.label)
-WHERE ery.conid = ? AND min.conid = ? AND man.conid = ?
+LEFT OUTER JOIN memList minx ON (mi.memAge = minx.memAge AND mi.memType = minx.memType AND mi.memCategory = minx.memCategory AND mi.label = minx.label)
+LEFT OUTER JOIN memList manx ON (ma.memAge = manx.memAge AND ma.memType = manx.memType AND ma.memCategory = manx.memCategory AND ma.label = manx.label)
+WHERE ery.conid = ? AND minx.conid = ? AND manx.conid = ?
 EOS;
     $numRows=dbSafeCmd($insRY, 'iii', array($lastConid, $conid, $conid));
 
