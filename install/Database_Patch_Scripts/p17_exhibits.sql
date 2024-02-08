@@ -259,6 +259,9 @@ DROP TABLE IF EXISTS vendors;
 DROP TABLE IF EXISTS vendorSpacePrices;
 DROP TABLE IF EXISTS vendorSpaces;
 
+    NOTE2: the table artist references vendor for artist_vendor_fk.  This is not handled by this patch, a separate patch to artist table,
+    if it survives this change, will be needed
+
 */
 
 INSERT INTO patchLog(id, name) values(17, 'exhibits');
