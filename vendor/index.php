@@ -336,7 +336,7 @@ var config = <?php echo json_encode($config_vars); ?>;
 draw_registrationModal($portalType, $portalName, $con, $countryOptions);
 draw_passwordModal();
 draw_vendorReqModal();
-draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc);
+draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $portalName);
 ?>
     <!-- now for the top of the form -->
      <div class='container-fluid'>
@@ -449,9 +449,9 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc);
                         $timeRequested = null;
                         $regionSpaces = [];
                         $vendorSpaces = [];
-                        $regionId = $region['id'];
+                        $regionYearId = $region['id'];
                         $regionName = $region['name'];
-                        foreach ($space_list[$regionId] as $spaceId => $space) {
+                        foreach ($space_list[$regionYearId] as $spaceId => $space) {
                             if ($space['exhibitsRegionYear'] != $region['id'])
                                 continue;
 
@@ -476,40 +476,15 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc);
                         }
 
                         if ($paid > 0)
-                            vendor_receipt($region, $regionSpaces);
+                            vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
                         else if ($approved > 0)
-                            vendor_showInvoice($regionId, $regionName, $regionSpaces, $exhibitorSpaceList);
+                            vendor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
                         else if ($requested > 0)
-                            vendor_showRequest($regionId, $regionName, $regionSpaces, $exhibitorSpaceList);
+                            vendor_showRequest($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
                         else
-                            echo "<button class='btn btn-primary' onclick = 'openReq($regionId, 0);' > Request $regionName Space</button>" . PHP_EOL;
+                            echo "<button class='btn btn-primary' onclick = 'openReq($regionYearId, 0);' > Request $regionName Space</button>" . PHP_EOL;
                 }
         }
-            /*
-// output the data for the scripts to use
-
-             *
-        if ($vendor_space !== null) {
-            if ($vendor_space['item_purchased']) {
-                echo "You are registered for " . $vendor_space['purchased_description'] . "\n";
-            } else if ($vendor_space['item_approved']) {
-                ?>
-                <button class="btn btn-primary"
-                        onclick="openInvoice(<?php echo "'" . $space['id'] . "', '" . substr('0000000000' . $vendor_space['approved_sort'], -6); ?>')">
-                    Pay <?php echo $space['name']; ?> Invoice</button> <?php
-            } else if ($vendor_space['item_requested']) {
-                echo 'Request pending authorization for ' . $vendor_space['requested_description'] . ".\n";?>
-            </div>
-            <div class="col-sm-auto ms-4 p-0"> <button class='btn btn-primary' onclick='openReq(<?php echo $spaceid . ", " . $vendor_space['item_requested'];?>);'>Change/Cancel  <?php echo $space['name']; ?> Space</button><?php
-            } else {
-                 ?>
-            <button class="btn btn-primary" onclick='openReq(<?php echo $spaceid; ?>, 0);'>Request <?php echo $space['name']; ?> Space</button><?php
-            }
-        } else {
-            ?>
-            <button class="btn btn-primary" onclick='openReq(<?php echo $spaceid; ?>, 0);'>Request <?php echo $space['name']; ?> Space</button><?php
-        }
-            */
         ?>
             </div>
         </div>

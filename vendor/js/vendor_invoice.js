@@ -1,6 +1,7 @@
 // Items related to building and paying the vendor invoice
 var vendor_invoice = null;
 var totalSpacePrice = 0;
+var regionYearId = null;
 
 // set up vendor invoice items
 function vendorInvoiceOnLoad() {
@@ -11,18 +12,20 @@ function vendorInvoiceOnLoad() {
 }
 
 // openInvoice: display the vendor invoice (and registration items)
-function openInvoice(regionId) {
+function openInvoice(id) {
     var regionName = '';
     var includedMemberships = 0;
     var additionalMemberships = 0;
     var html = '';
     var priceIdx = 0;
 
-    if (config['debug'] & 1)
-        console.log("regionId: " + regionId);
-    var region = exhibits_spaces[regionId];
+    regionYearId = id;
 
-    var regionList = region_list[regionId];
+    if (config['debug'] & 1)
+        console.log("regionYearId: " + regionYearId);
+    var region = exhibits_spaces[regionYearId];
+
+    var regionList = region_list[regionYearId];
     if (config['debug'] & 1) {
         console.log("regionList");
         console.log(regionList);
@@ -75,13 +78,15 @@ function openInvoice(regionId) {
     }
     document.getElementById('vendor_inv_included').innerHTML = html;
     document.getElementById('vendor_inv_cost').innerHTML = Number(totalSpacePrice).toFixed(2);
-    //document.getElementById('vendor_inv_item_id').value = price.id
+    document.getElementById('vendorSpacePrice').value = totalSpacePrice;
+    document.getElementById('vendor_inv_region_id').value = regionYearId;
 
     var html = '';
     // now build the included memberships
     if (includedMemberships > 0) {
         html = "<input type='hidden' name='incl_mem_count' value='" + includedMemberships + "'>\n" +
-            "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Included Memberships: (up to " + includedMemberships + ")</strong></div></div>";
+            "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Included Memberships: (up to " + includedMemberships + ")</strong>" +
+            "<input type='hidden' name='includedMemberships' value='" + String(includedMemberships) + "'></div></div>";
         for (var mnum = 0; mnum < includedMemberships; mnum++) {
             // name fields
             html += `
@@ -163,7 +168,8 @@ function openInvoice(regionId) {
     // now build the additional memberships
     if (additionalMemberships > 0) {
         html += "<input type='hidden' name='addl_mem_count' value='" + additionalMemberships + "'>\n" +
-            "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Additional Memberships: (up to " + additionalMemberships + ")</strong></div></div>";
+            "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Additional Memberships: (up to " + additionalMemberships + ")</strong>" +
+            "<input type='hidden' name='additionalMemberships' value='" + String(additionalMemberships) + "'></div></div>";
         for (var mnum = 0; mnum < additionalMemberships; mnum++) {
             // name fields
             html += `
@@ -173,7 +179,7 @@ function openInvoice(regionId) {
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="fname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>First Name</span></label><br/>
-        <input class="form-control-sm" type="text" name="fname_a_` + mnum + `" id="fname_a_` + mnum + `" size="22" maxlength="32" onchange="updateCost(` + regionId + "," + mnum + `)"/>
+        <input class="form-control-sm" type="text" name="fname_a_` + mnum + `" id="fname_a_` + mnum + `" size="22" maxlength="32" onchange="updateCost(` + regionYearId + "," + mnum + `)"/>
     </div>
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="mname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
@@ -242,12 +248,13 @@ function openInvoice(regionId) {
     }
     html += "<hr/>";
     document.getElementById("vendor_inv_included_mbr").innerHTML = html;
+    regionYearId =
     vendor_invoice.show();
 }
 
 // update invoice for the Cost of Memberships and total Cost when an additional member is started
-function updateCost(regionId, item) {
-    var regionList = region_list[regionId];
+function updateCost(regionYearId, item) {
+    var regionList = region_list[regionYearId];
     var price = Number(regionList.additionalMemPrice);
     var fname = document.getElementById('fname_a_' + item).value;
     var cost = 0;
@@ -255,10 +262,12 @@ function updateCost(regionId, item) {
     for (var num in additional_cost) {
         cost += additional_cost[num];
     }
-    console.log(cost);
+    if (config['debug'] & 1)
+        console.log('Pre totalSpacePrice: ' + String(cost));
     document.getElementById('vendor_inv_mbr_cost').innerHTML = Number(cost).toFixed(2);
     cost += Number(totalSpacePrice);
-    console.log(cost);
+    if (config['debug'] & 1)
+        console.log('After adding totalSpacePrice: ' + String(cost));
     document.getElementById('vendor_inv_cost').innerHTML = Number(cost).toFixed(2);
 }
 
@@ -285,15 +294,15 @@ function makePurchase(token, label) {
         success: function(data, textStatus, jqXhr) {
             if (config['debug'] & 1)
                 console.log(data);
-            if(data['error']) {
+            if (data['error']) {
                 alert(data['error']);
                 var submitId = document.getElementById(purchase_label);
                 submitId.disabled = false;
             } else if (data['status'] == 'success') {
                 //alert('call succeeded');
-                alert(data['message']);
-                alert("Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] + " with any questions.  One of our coordinators will be in touch to help you get setup.");
-                location.reload();
+                vendor_invoice.hide();
+                show_message(data['message'] + "<p>Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] + " with any questions.  One of our coordinators will be in touch to help you get setup.</p>");
+                updatePaidStatusBlock();
             } else {
                 alert('There was an unexpected error, please email ' + config['vemail'] + 'to let us know.  Thank you.');
                 var submitId = document.getElementById(purchase_label);
@@ -301,4 +310,36 @@ function makePurchase(token, label) {
             }
         }
     });
+}
+
+// update the paid status block to show the confirmed space
+function updatePaidStatusBlock() {
+    var blockname = region_list[regionYearId].shortname + '_div';
+    var blockdiv = document.getElementById(blockname);
+
+    // get the name for this region
+    var regionName = region_list[regionYearId].name;
+    // get the list item for this
+    var region_spaces = exhibits_spaces[regionYearId];
+    var spaceStatus = ''
+    var exSpaceKeys = Object.keys(exhibitor_spacelist);
+    for (var exSpaceIdx in exSpaceKeys) {
+        if (region_spaces[exSpaceKeys[exSpaceIdx]]) { // space is in our region
+            var region = region_spaces[exSpaceKeys[exSpaceIdx]];
+            var space = exhibitor_spacelist[exSpaceKeys[exSpaceIdx]];
+            if (space.item_purchased) {
+                var timePurchased = new Date(space.time_purchased)
+                spaceStatus += space.requested_description + " in " + regionName + " for $" + Number(space.requested_price).toFixed(2) +
+                    " at " + timePurchased + "<br/>";
+            }
+        }
+    }
+
+    if (spaceStatus == '') {
+        blockdiv.innerHTML = "<div class=\"col-sm-auto p-0\"><button class='btn btn-primary' onclick = 'openReq(regionYearId, 0);' > Request " + regionName + " Space</button></div>";
+        return;
+    }
+
+    blockdiv.innerHTML = '<div class="col-sm-auto p-0">You have purchased:<br/>' + spaceStatus +
+        "<button class='btn btn-primary' onclick = 'showReceipt(" + regionYearId + "1);' > Show receipt for " + regionName + " space</button></div>";
 }

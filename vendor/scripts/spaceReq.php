@@ -22,7 +22,7 @@ $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 $response['conid'] = $conid;
 
 // validate that the items passed are the VendorSpace id and the VendorSpacePrice id
-if (!array_key_exists('regionId', $_POST)) {
+if (!array_key_exists('regionYearId', $_POST)) {
     ajaxError('Invalid arguments');
     return;
 }
@@ -31,7 +31,7 @@ if (!array_key_exists('requests', $_POST)) {
     return;
 }
 
-$regionId = $_POST['regionId'];
+$regionYearId = $_POST['regionYearId'];
 parse_str($_POST['requests'], $requests);
 $portalType = $_POST['type'];
 $portalName = $_POST['name'];
@@ -59,7 +59,7 @@ FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id
 WHERE ery.id = ?;
 EOS;
-$regionR = dbSafeQuery($regionQ, 'i', array($regionId));
+$regionR = dbSafeQuery($regionQ, 'i', array($regionYearId));
 if ($regionR == false || $regionR->num_rows != 1) {
     ajaxError('Invalid arguments');
     return;

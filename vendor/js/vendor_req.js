@@ -14,18 +14,18 @@ function vendorRequestOnLoad() {
 
 // openReq - update the modal for this space
 //      add all of the spaces in this 'region'
-function openReq(regionId, cancel) {
+function openReq(regionYearId, cancel) {
     var spaceHtml = '';
     var regionName = '';
     var totalUnitsRequested = 0;
 
     //console.log("open request modal for id =" + spaceid);
-    var region = exhibits_spaces[regionId];
+    var region = exhibits_spaces[regionYearId];
 
     if (!region)
         return;
 
-    var regionList = region_list[regionId];
+    var regionList = region_list[regionYearId];
     if (config['debug'] & 1) {
         console.log("regionList");
         console.log(regionList);
@@ -105,7 +105,7 @@ function openReq(regionId, cancel) {
                 "<label htmlFor='vendor_req_price_id'>How many spaces are you requesting?</label>\n" +
                 "</div>\n" +
                 "<div className='col-sm-auto p-0'>\n" +
-                "<select name='vendor_req_price_id_" + keys[col] +  "' id='vendor_req_price_id_" + keys[col] + "' onchange='updateTotalUnits(" + regionId + "," + unitLimit + ");'>\n" +
+                "<select name='vendor_req_price_id_" + keys[col] +  "' id='vendor_req_price_id_" + keys[col] + "' onchange='updateTotalUnits(" + regionYearId + "," + unitLimit + ");'>\n" +
                 options + "\n</select></div></div>\n" +
             "</div></div></div>\n";
         }
@@ -126,13 +126,13 @@ function openReq(regionId, cancel) {
     var selection = document.getElementById('vendor_req_price_id');
     //selection.innerHTML = options;
     //if (cancel) selection.value = cancel;
-    document.getElementById('vendor_req_btn').setAttribute('onClick', "spaceReq(" + regionId + ',' + cancel + ')');
+    document.getElementById('vendor_req_btn').setAttribute('onClick', "spaceReq(" + regionYearId + ',' + cancel + ')');
     vendor_request.show();
 }
 
 // updateTotalUnits -update the total units requested pulldown and color it if it's too large
-function updateTotalUnits(regionId, unitLimit) {
-    var region = exhibits_spaces[regionId];
+function updateTotalUnits(regionYearId, unitLimit) {
+    var region = exhibits_spaces[regionYearId];
     if (!region)
         return;
 
@@ -160,7 +160,7 @@ function updateTotalUnits(regionId, unitLimit) {
     totalUnitsRequested_div.innerHTML = String(requestedUnits);
 
     var mailIn = vendor_info.mailin == 'Y';
-    var regionList = region_list[regionId];
+    var regionList = region_list[regionYearId];
     var unitLimit = mailIn ? regionList.mailinMaxUnits : regionList.inPersonMaxUnits;
     if (totalUnitsRequestedRow == null) {
         totalUnitsRequestedRow = document.getElementById('TotalUnitsRequestedRow');
@@ -176,7 +176,7 @@ function updateTotalUnits(regionId, unitLimit) {
 }
 
 // Space Request - call scripts/spaceRequest.php to add a request record
-function spaceReq(regionId, cancel) {
+function spaceReq(regionYearId, cancel) {
     //console.log("spaceReq called for " + spaceId);
 
     if (totalUnitsRequested_div == null)
@@ -190,7 +190,7 @@ function spaceReq(regionId, cancel) {
     clear_message('sr_message_div');
     clear_message();
     dataobj = {
-        regionId: regionId,
+        regionYearId: regionYearId,
         requests: $('#vendor_req_form').serialize(),
         'type': config['portalType'],
         'name': config['portalName'],
@@ -212,7 +212,7 @@ function spaceReq(regionId, cancel) {
             if (data['success'] !== undefined) {
                 vendor_request.hide();
                 show_message(data['success'], 'success');
-                updateRequestStatusBlock(regionId);
+                updateRequestStatusBlock(regionYearId);
             }
             if (data['warn'] !== undefined) {
                 show_message(data['warn'], 'warn', 'sr_message_div');
@@ -223,14 +223,14 @@ function spaceReq(regionId, cancel) {
 }
 
 // update the request status block to show the new request
-function updateRequestStatusBlock(regionId) {
-    var blockname = region_list[regionId].shortname + '_div';
+function updateRequestStatusBlock(regionYearId) {
+    var blockname = region_list[regionYearId].shortname + '_div';
     var blockdiv = document.getElementById(blockname);
 
     // get the name for this region
-    var regionName = region_list[regionId].name;
+    var regionName = region_list[regionYearId].name;
     // get the list item for this
-    var region_spaces = exhibits_spaces[regionId];
+    var region_spaces = exhibits_spaces[regionYearId];
     var spaceStatus = ''
     var exSpaceKeys = Object.keys(exhibitor_spacelist);
     for (var exSpaceIdx in exSpaceKeys) {
@@ -246,10 +246,10 @@ function updateRequestStatusBlock(regionId) {
     }
 
     if (spaceStatus == '') {
-        blockdiv.innerHTML = "<div class=\"col-sm-auto p-0\"><button class='btn btn-primary' onclick = 'openReq(regionId, 0);' > Request " + regionName + " Space</button></div>";
+        blockdiv.innerHTML = "<div class=\"col-sm-auto p-0\"><button class='btn btn-primary' onclick = 'openReq(regionYearId, 0);' > Request " + regionName + " Space</button></div>";
         return;
     }
 
     blockdiv.innerHTML = '<div class="col-sm-auto p-0">Request pending authorization for:<br/>' + spaceStatus +
-        "<button class='btn btn-primary' onclick = 'openReq(" + regionId + ", 1);' > Change/Cancel " + regionName + " Space</button></div>";
+        "<button class='btn btn-primary' onclick = 'openReq(" + regionYearId + ", 1);' > Change/Cancel " + regionName + " Space</button></div>";
 }
