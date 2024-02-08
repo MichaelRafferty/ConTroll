@@ -474,6 +474,63 @@ EOS;
         exit();
 }
 
+// check to see if this is the first time in a new year
+$yearcheckR = dbSafeQuery("SELECT COUNT(*) AS numRows FROM exhibitsRegionYears WHERE conid = ?;", 'i', array($conid));
+if ($yearcheckR == false || $yearcheckR->num_rows == 0) {
+    $response['error'] = "Year check query failed";
+    ajaxSuccess($response);
+    exit();
+}
+$yearL = $yearcheckR->fetch_assoc();
+$yearcnt = $yearL['numRows'];
+$yearcheckR->free();
+if ($yearcnt == 0) {
+    $conidR = dbQuery("SELECT MAX(conid) maxConid FROM exhibitsRegionYears");
+    if ($conidR == false || $conidR->num_rows == 0) {
+        $response['error'] = 'Year check conid query failed';
+        ajaxSuccess($response);
+        exit();
+    }
+    $conidL = $conidR->fetch_assoc();
+    $lastConid = $conidL['maxConid'];
+    $conidR->free();
+
+    // its a new year, copy from last year
+    $insRY = <<<EOS
+INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, min.id, man.id, totalUnitsAvailable, sortorder) 
+SELECT $conid, ery.exhibitsRegion, ery.ownerName, ery.ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, sortorder
+FROM exhibitsRegionYears ery
+LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
+LEFT OUTER JOIN memList ma ON ery.additionalMemId = ma.id
+LEFT OUTER JOIN memList min ON (mi.memAge = min.memAge AND mi.memType = min.memType AND mi.memCategory = min.memCategory AND mi.label = min.label)
+LEFT OUTER JOIN memList man ON (ma.memAge = man.memAge AND ma.memType = man.memType AND ma.memCategory = man.memCategory AND ma.label = man.label)
+WHERE ery.conid = ? AND min.conid = ? AND man.conid = ?
+EOS;
+    $numRows=dbSafeCmd($insRY, 'iii', array($lastConid, $conid, $conid));
+
+    $insS = <<<EOS
+INSERT INTO exhibitsSpaces(exhibitsRegionYear, shortname, name, description, unitsAvailable, unitsAvailableMailin, sortorder)
+SELECT eyn.id, es.shortname, es.name, es.description, es.unitsAvailable, es.unitsAvailableMailin, es.sortorder
+FROM exhibitsSpaces es
+JOIN exhibitsRegionYears ey on es.exhibitsRegionYear = ey.id
+JOIN exhibitsRegionYears eyn ON (eyn.exhibitsRegion = ey.exhibitsRegion AND eyn.conid = ?)
+WHERE ey.conid = ?;
+EOS;
+    $numRows=dbSafeCmd($insS, 'ii', array($conid, $lastConid));
+
+    $insSP = <<<EOS
+INSERT INTO exhibitsSpacePrices(spaceId, code, description, units, price, includedMemberships, additionalMemberships, requestable, sortorder) 
+SELECT esn.id, esp.code, esp.description, esp.units, esp.price, esp.includedMemberships, esp.additionalMemberships, esp.requestable, esp.sortorder
+FROM exhibitsSpacePrices esp
+JOIN exhibitsSpaces es ON esp.spaceId = es.id
+JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id
+JOIN exhibitsRegionYears ern ON (ery.exhibitsRegion = ern.exhibitsRegion AND ern.conid = ?)
+JOIN exhibitsSpaces esn ON (ern.id = esn.exhibitsRegionYear AND esn.shortname = es.shortname AND es.name = esn.name)
+WHERE ery.conid = ?;
+EOS;
+    $numRows=dbSafeCmd($insSP, 'ii', array($conid, $lastConid));
+
+}
 // exhibits types
 if ($gettype == 'all' || str_contains($gettype,'types')) {
     $exhibitsRegionTypesQ = <<<EOS
