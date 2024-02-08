@@ -6,24 +6,23 @@
 
 
 --
--- Table structure for table `vendorSpacePrices`
+-- Table structure for table `exhibitsSpacePrices`
 --
 
-DROP TABLE IF EXISTS `vendorSpacePrices`;
-CREATE TABLE `vendorSpacePrices` (
+DROP TABLE IF EXISTS `exhibitsSpacePrices`;
+CREATE TABLE `exhibitsSpacePrices` (
   `id` int NOT NULL AUTO_INCREMENT,
   `spaceId` int NOT NULL,
-  `code` varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
-  `description` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
+  `code` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `description` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `units` decimal(4,2) DEFAULT '1.00',
   `price` decimal(8,2) NOT NULL,
   `includedMemberships` int NOT NULL DEFAULT '0',
   `additionalMemberships` int NOT NULL DEFAULT '0',
   `requestable` tinyint DEFAULT '1',
-  `sortOrder` int NOT NULL DEFAULT '0',
+  `sortorder` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  KEY `vendorSpacePrices_space` (`spaceId`)
+  KEY `esp_exhibitsspaceid_fk` (`spaceId`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
--- Dump completed on 2023-12-21 16:26:31

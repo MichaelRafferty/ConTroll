@@ -14,8 +14,8 @@ CREATE TABLE `memCategories` (
   `memCategory` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `sortorder` int NOT NULL DEFAULT '0',
   `active` enum('N','Y') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'Y',
+  `badgeLabel` varchar(16) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'X',
   PRIMARY KEY (`memCategory`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
--- Dump completed on 2023-12-21 16:26:32

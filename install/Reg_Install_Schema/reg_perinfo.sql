@@ -40,4 +40,3 @@ CREATE TABLE `perinfo` (
 ) ENGINE=InnoDB AUTO_INCREMENT=100 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
--- Dump completed on 2023-12-21 16:26:32
