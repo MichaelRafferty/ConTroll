@@ -36,6 +36,8 @@ $name_search = $_POST['name_search'];
 $rollover_memId = $_POST['rollover_memId'];
 $response['name_search'] = $name_search;
 
+$response['elig'] = $con['rollover_eligible'];
+
 $limit = 99999999;
 if (is_numeric($name_search)) {
     //

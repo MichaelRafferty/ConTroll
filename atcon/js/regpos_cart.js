@@ -69,7 +69,7 @@ class regpos_cart {
             var day = label.replace(/.*upgrade +(...).*/i, '$1').toLowerCase();
             if (day.length > 3)
                 day = (match[row]['label']).toLowerCase().substring(0, 3);
-            this.#upgrade_select[day] = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
+            this.#upgrade_select[day] += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
         }
 
         // cart is only place to use yearahead_select, so build it.
