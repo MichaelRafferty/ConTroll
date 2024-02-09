@@ -308,9 +308,19 @@ class Coupon {
 
         if (this.#curCoupon['couponType'] == '$mem' || this.#curCoupon['couponType'] == '%mem') {
             html += "<li>This coupon only applies to memberships, not add-ons</li>";
+            if (this.#curCoupon['couponType'] == '$mem') {
+                html += "<li>This coupon provides a $" + Number(this.#curCoupon['discount']).toFixed(2) + " discount on primary memberships.</li>";
+            } else {
+                html += "<li>This coupon provides a " + String(this.#curCoupon['discount']) + "% discount on primary memberships.</li>";
+            }
         }
         if (this.#curCoupon['couponType'] == '$off' || this.#curCoupon['couponType'] == '%off') {
             html += "<li>This coupon only applies to the cost of memberships in the cart, not add-ons</li>";
+            if (this.#curCoupon['couponType'] == '$off') {
+                html += "<li>This coupon provides a $" + Number(this.#curCoupon['discount']).toFixed(2) + " discount off the total of primary memberships in the cart.</li>";
+            } else {
+                html += "<li>This coupon provides a " + String(this.#curCoupon['discount']) + "% discount off the total of primary memberships in the cart.</li>";
+            }
         }
         if (this.#curCoupon['couponType'] == 'price') {
             label = this.#curCoupon['shortname'];
