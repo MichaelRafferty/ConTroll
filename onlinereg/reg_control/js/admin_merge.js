@@ -375,7 +375,7 @@ class mergesetup {
                 ],
                 columns: [
                     {width: 70, headerFilter: false, headerSort: false, formatter: addMergeIcon, formatterParams: {t: "result"},},
-                    {field: "perid", visible: false,},
+                    {title: "perid", field: "perid",width: 100, hozAlign: 'right' },
                     {field: "index", visible: false,},
                     {field: "regcnt", visible: false,},
                     {title: "Name", field: "fullname", width: 200, headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
