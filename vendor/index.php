@@ -207,7 +207,7 @@ JOIN exhibitsRegions er ON er.regionType = ert.regionType
 JOIN exhibitsRegionYears ery ON er.id = ery.exhibitsRegion
 JOIN memList mi ON (ery.includedMemId = mi.id)
 JOIN memList ma ON (ery.additionalMemId = ma.id)
-WHERE ery.conid = ? AND ert.portalType = ?
+WHERE ery.conid = ? AND ert.portalType = ? AND ert.active = 'Y'
 ORDER BY er.sortorder;
 EOS;
 
@@ -228,7 +228,7 @@ FROM exhibitsSpaces es
 JOIN exhibitsRegionYears ery ON (es.exhibitsRegionYear = ery.id)
 JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
 JOIN exhibitsRegionTypes ert ON (er.regionType = ert.regionType)
-WHERE ery.conid=? AND ert.portalType = ?
+WHERE ery.conid=? AND ert.portalType = ? AND ert.active = 'Y'
 ORDER BY es.exhibitsRegionYear, es.sortorder;
 EOS;
 
@@ -368,24 +368,6 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $portalName)
 <?php   }
 
     foreach ($region_list as $id => $region) {
-
-    /*
-    foreach ($spaces AS $spacename => $spaceid) {
-        $space = $space_list[$spaceid];
-        if (array_key_exists($space['shortname'] . '_details', $vendor_conf)) {
-            $description = $vendor_conf[$space['shortname'] . '_details'];
-        } else {
-            $description = $space['description'];
-        }
-        if (array_key_exists($spaceid, $vendor_spacelist)) {
-            $vendor_space = $vendor_spacelist[$spaceid];
-            $item_requested = $vendor_space['item_requested'];
-        } else {
-            $vendor_space = null;
-            $item_requested = null;
-        }
-    */
-
         // let's see if where are authorized for this space
         if ($region['mailInAllowed'] == 'N' && $info['mailin'] == 'Y')
             $permission='noMailIn';

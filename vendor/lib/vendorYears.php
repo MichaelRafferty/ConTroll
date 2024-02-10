@@ -99,7 +99,7 @@ SELECT ery.id as exhibitsRegionYearId, et.requestApprovalRequired
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON (er.id = ery.exhibitsRegion)
 JOIN exhibitsRegionTypes et ON (et.regionType = er.regionType)
-WHERE ery.conid = ?
+WHERE ery.conid = ? AND et.active = 'Y'
 EOS;
     $insQ = <<<EOS
 INSERT INTO exhibitorApprovals(exhibitorId, exhibitsRegionYearId, approval, updateBy)
