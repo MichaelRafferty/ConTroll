@@ -29,7 +29,10 @@ page_init($page,
 $con = get_conf("con");
 $conid=$con['id'];
 $debug = get_conf('debug');
-$debug_admin=$debug['reg_control_admin'];
+if (array_key_exists('reg_control_admin', $debug))
+    $debug_admin=$debug['reg_control_admin'];
+else
+    $debug_admin = 0;
 
 if (array_key_exists('user_id', $_SESSION)) {
     $user_id = $_SESSION['user_id'];
