@@ -24,9 +24,133 @@ page_init($page,
 
 $con = get_con();
 $conid = $con['id'];
+$debug = get_conf('debug');
+if (array_key_exists('reg_control_exhibitors', $debug))
+    $debug_exhibitors = $debug['reg_control_exhibitors'];
+else
+    $debug_exhibitors = 0;
 
 $conf = get_conf('con');
 
+// to build tabs get the list of vendor types
+$regionOwnerQ = <<<EOS
+SELECT eR.id, eR.name, eRY.ownerName
+FROM exhibitsRegionYears eRY
+JOIN exhibitsRegions eR ON eRY.exhibitsRegion = eR.id
+WHERE conid = ?
+ORDER BY ownerName;
+EOS;
+$regionOwnerR = dbSafeQuery($regionOwnerQ, 'i',array($conid));
+if ($regionOwnerR == false || $regionOwnerR->num_rows == 0) {
+    echo "No exhibits are configured.";
+    page_foot($page);
+    return;
+}
+?>
+<div id='main'>
+    <ul class='nav nav-tabs mb-3' id='exhibitor-tab' role='tablist'>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link active' id='overview-tab' data-bs-toggle='pill' data-bs-target='#overview-pane' type='button' role='tab' aria-controls='nav-overview'
+            aria-selected="true" onclick="exhibitors.settabOwner('overview-pane');">Overview
+            </button>
+        </li>
+<?php
+// build tab structure
+$regionOwners = [];
+$regions = [];
+while ($regionL = $regionOwnerR->fetch_assoc()) {
+    $regionOwner = $regionL['ownerName'];
+    $regionOwnerId = str_replace(' ', '-', $regionOwner);
+    $regionOwners[$regionOwner][$regionL['id']] = $regionL;
+    $regions['regionName'] = [ 'regionOwner' => $regionOwner, 'id' => $regionL['id'] ];
+    if (count($regionOwners[$regionOwner]) == 1) {
+    ?>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='<?php echo $regionOwnerId; ?>-tab' data-bs-toggle='pill' data-bs-target='#<?php echo $regionOwnerId; ?>-pane' type='button' role='tab' aria-controls='nav-<?php echo $regionOwnerId; ?>'
+                    aria-selected="false" onclick="exhibitors.settabOwner('<?php echo $regionOwnerId; ?>-pane');"><?php echo $regionOwner; ?>
+            </button>
+        </li>
+    <?php
+    }
+}
+$config_vars = array();
+$config_vars['label'] = $con['label'];
+$config_vars['conid'] = $conid;
+$config_vars['debug'] = $debug_exhibitors;
+?>
+    </ul>
+<script type='text/javascript'>
+    var config = <?php echo json_encode($config_vars); ?>;
+    var regionOwners = <?php echo json_encode($regionOwners); ?>;
+    var regions = <?php echo json_encode($regions); ?>;
+</script>
+    <div class='tab-content ms-2' id='overview-content'>
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-sm-12'>
+                    <h3 style='text-align: center;'><strong>Exhibitors Overview</strong></h3>
+                </div>
+            </div>
+            <div class='row'>
+                <div class="col-sm-12">
+                    <p>The Exhibitors tab handles all types of exhibitors:</p>
+                    <ol>
+                        <li>Artists</li>
+                        <li>Dealers</li>
+                        <li>Exhibits</li>
+                        <li>Fan Tables</li>
+                    </ol>
+                    <p>There is a separate tab within the Exhibitors tab for each Exhibitor Space within the convention.</p>
+                    <p>These space tabs handle:</p>
+                    <ol>
+                        <li>Exhibotor Management</li>
+                        <li>Permission to request space in this Exhibitor Space (if required)</li>
+                        <li>Status of all Space Requests</li>
+                    </ol>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-12'>
+                    <p>
+                        <strong>NOTE:</strong> When you approve requests for a space, any request from the same exhibior that is not approved will be cancelled when you press the save button.
+                        It is necessary to approve all the spaces for an exhibitor in the same save transaction.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <?php
+foreach ($regionOwners AS $regionOwner => $regionList) {
+    $regionOwnerId = str_replace(' ', '-', $regionOwner);
+    ?>
+    <div class='tab-content ms-2' id='<?php echo $regionOwnerId; ?>-content' hidden>
+        <ul class='nav nav-pills nav-fill  mb-3' id='<?php echo $regionOwnerId; ?>-content-tab' role='tablist'>
+<?php
+    $first = true;
+    foreach ($regionList AS $regionId => $region) {
+        $regionName = $region['name'];
+?>
+            <li class='nav-item' role='presentation'>
+                <button class='nav-link <?php echo $first ? 'active' : ''; ?>' id='<?php echo $regionName; ?>-tab' data-bs-toggle='pill' data-bs-target='#regionTypes-pane' type='button' role='tab'
+                        aria-controls='<?php echo $regionOwnerId; ?>-content-tab' aria-selected="<?php echo $first ? 'true' : 'false'; ?>"
+                        onclick="exhibitors.settabRegion('<?php echo $regionName; ?>-pane');"><?php echo $regionName; ?>
+                </button>
+            </li>
+<?php
+        $first = false;
+    }
+    ?>
+        </ul>
+    </div>
+<?php
+}
+?>
+    <div id='result_message' class='mt-4 p-2'></div>
+    <pre id='test'></pre>
+</div>
+
+<?php /*
 // get the list of vendors and spaces for the add vendor space modal
 $vendorListQ = "SELECT id, name, website, city, state FROM vendors ORDER BY name, city, state;";
 $vendorListR = dbQuery($vendorListQ);
@@ -388,6 +512,6 @@ while ($row = $spacePriceListR->fetch_assoc()) {
 <div id='result_message' class='mt-4 p-2'></div>
 <pre id='test'></pre>
 <?php
-
+*/
 page_foot($page);
 ?>

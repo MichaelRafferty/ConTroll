@@ -1,3 +1,75 @@
+//import { TabulatorFull as Tabulator } from 'tabulator-tables';
+
+// exhibitors class - functions for spae ownerto review and approve spaces requested by exhibitors
+class exhibitorsAdm {
+
+    // global items
+    #conid = null;
+    #debug = 0;
+    #debugVisible = false;
+    #message_div = null;
+    #result_message_div = null;
+
+    // Owner items
+    #ownerTabs = {};
+    #currentOwner = null;
+
+    //Region items
+    #currentRegion = null;
+    #regionTabs = {};
+    constructor(conid, debug) {
+        this.#debug = debug;
+        this.#conid = conid;
+        this.#message_div = document.getElementById('test');
+        this.#result_message_div = document.getElementById('result_message');
+        if (this.#debug & 1) {
+            console.log("Debug = " + debug);
+            console.log("conid = " + conid);
+        }
+        if (this.#debug & 2) {
+            this.#debugVisible = true;
+        }
+
+        // owners
+        this.#ownerTabs['overview'] = document.getElementById('overview-content');
+        this.#currentOwner = this.#ownerTabs['overview'];
+        var ownerKeys = Object.keys(regionOwners);
+        for (var id in ownerKeys) {
+            var owner = ownerKeys[id];
+            var ownerId = owner.replaceAll(' ', '-');
+            this.#ownerTabs[ownerId] = document.getElementById(ownerId + '-content');
+
+            // regions within owners
+            var regions = regionOwners[owner];
+            var regionKeys = Object.keys(regions);
+            for (var id in regionKeys) {
+                var region = regions[regionKeys[id]];
+                var regionId = region['name'].replaceAll(' ', '-');
+                this.#regionTabs[regionId] = document.getElementById(regionId + '-content');
+            }
+        }
+    };
+
+    // common code for changing tabs
+    settabOwner(tabname) {
+        clearError();
+        clear_message();
+        var content = tabname.replace('-pane', '');
+
+        this.#currentOwner.hidden = true;
+        this.#ownerTabs[content].hidden = false;
+        this.#currentOwner = this.#ownerTabs[content];
+    }
+};
+
+exhibitors = null;
+
+// create class on page render
+window.onload = function initpage() {
+    exhibitors = new exhibitorsAdm(config['conid'], config['debug']);
+}
+
+/*
 var summaryDiv = null;
 var vendortable = null;
 var spacestable = null;
@@ -580,3 +652,5 @@ function actionbuttons(cell, formatterParams, onRendered) {
         btns += '<button class="btn btn-small btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="receipt(' + index + ')">Receipt</button>';
     return btns;
 }
+
+ */
