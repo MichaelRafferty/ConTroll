@@ -45,24 +45,96 @@ class exhibitorsAdm {
             for (var id in regionKeys) {
                 var region = regions[regionKeys[id]];
                 var regionId = region['name'].replaceAll(' ', '-');
-                this.#regionTabs[regionId] = document.getElementById(regionId + '-content');
+                this.#regionTabs[regionId] = document.getElementById(regionId + '-div');
             }
+        }
+        if (this.#debug & 4) {
+            console.log("ownerTabs");
+            console.log(this.#ownerTabs);
+            console.log("regionTabs");
+            console.log(this.#regionTabs);
         }
     };
 
     // common code for changing tabs
+    // top level - overview, owner
     settabOwner(tabname) {
+        // need to add the do you wish to save dirty data item
         clearError();
         clear_message();
         var content = tabname.replace('-pane', '');
 
-        this.#currentOwner.hidden = true;
+        if (this.#currentOwner)
+            this.#currentOwner.hidden = true;
         this.#ownerTabs[content].hidden = false;
         this.#currentOwner = this.#ownerTabs[content];
+        if (this.#currentRegion) {
+            this.#currentRegion.hidden = true;
+            this.#currentRegion = null;
+        }
+        var ownerLookup = regionOwnersTabNames[tabname];
+        var regions = regionOwners[ownerLookup];
+        var regionKey = Object.keys(regions)[0];
+        var region = regions[regionKey];
+        this.settabRegion(region['name'].replaceAll(' ', '-') + '-pane');
+    }
+
+    // second level - region
+    settabRegion(tabname) {
+        // need to add the do you wish to save dirty data item
+        clearError();
+        clear_message();
+        var content = tabname.replace('-pane', '');
+        if (this.#currentRegion)
+            this.#currentRegion.hidden = true;
+        this.#regionTabs[content].hidden = false;
+        this.#currentRegion = this.#regionTabs[content];
+
+        // now re-draw the specific tab
+        this.open(tabname);
+    }
+
+    // open(tabname) - fetch the data and re-draw the region tab
+    open(tabname) {
+        if (this.#debug & 1)
+            console.log("opening " + tabname)
+
+        // get the data for this tab
+        $.ajax({
+            url: "scripts/getExhibitorData.php",
+            method: "POST",
+            data: { region: regionTabNames[tabname]['name'], regionId: regionTabNames[tabname]['id']},
+            success: getExhibitorDataDraw,
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in getExhibitorData: " + textStatus, jqXHR);
+                return false;
+            }
+        })
+    }
+
+    draw(data) {
+        if (data['error']) {
+            show_message(data['error'], 'error');
+            this.#message_div.innerHTML = "Query:\n" + data['query'] + "\n\n" + "Args: " + data['args'].toString();
+            return;
+        }
+        this.#message_div.innerHTML = '';
+
+        if (this.#debug & 8)
+            console.log(data);
+
+        var divId = data['post']['region'];
+        divId = divId.replaceAll(' ','-') + '-div';
+        var dataDiv = document.getElementById(divId)
+        dataDiv.innerHTML = "Hello World!, this is " + divId;
     }
 };
 
 exhibitors = null;
+
+function getExhibitorDataDraw(data, textStatus, jqXHR) {
+    exhibitors.draw(data);
+}
 
 // create class on page render
 window.onload = function initpage() {
@@ -111,7 +183,7 @@ $(document).ready(function () {
 
 function getData() {
     $.ajax({
-        url: "scripts/getVendorData.php",
+        url: "scripts/getExhibitorData.php",
         method: "GET",
         success: draw,
         error: function (jqXHR, textStatus, errorThrown) {

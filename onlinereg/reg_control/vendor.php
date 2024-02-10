@@ -57,12 +57,18 @@ if ($regionOwnerR == false || $regionOwnerR->num_rows == 0) {
 <?php
 // build tab structure
 $regionOwners = [];
+$regionOwnersTabNames = [];
 $regions = [];
+$regionTabNames = [];
 while ($regionL = $regionOwnerR->fetch_assoc()) {
     $regionOwner = $regionL['ownerName'];
     $regionOwnerId = str_replace(' ', '-', $regionOwner);
+    $regionOwnersTabNames[$regionOwnerId . '-pane'] = $regionOwner;
     $regionOwners[$regionOwner][$regionL['id']] = $regionL;
-    $regions['regionName'] = [ 'regionOwner' => $regionOwner, 'id' => $regionL['id'] ];
+    $regionOwners[$regionOwner][$regionL['id']] = $regionL;
+    $regions[$regionL['name']] = [ 'regionOwner' => $regionOwner, 'id' => $regionL['id'] ];
+    $regionTabName = str_replace(' ', '-', $regionL['name']) . '-pane';
+    $regionTabNames[$regionTabName] = [ 'name' => $regionL['name'], 'id' => $regionL['id'] ];
     if (count($regionOwners[$regionOwner]) == 1) {
     ?>
         <li class='nav-item' role='presentation'>
@@ -83,6 +89,8 @@ $config_vars['debug'] = $debug_exhibitors;
     var config = <?php echo json_encode($config_vars); ?>;
     var regionOwners = <?php echo json_encode($regionOwners); ?>;
     var regions = <?php echo json_encode($regions); ?>;
+    var regionTabNames = <?php echo json_encode($regionTabNames); ?>;
+    var regionOwnersTabNames = <?php echo json_encode($regionOwnersTabNames); ?>;
 </script>
     <div class='tab-content ms-2' id='overview-content'>
         <div class='container-fluid'>
@@ -130,11 +138,12 @@ foreach ($regionOwners AS $regionOwner => $regionList) {
     $first = true;
     foreach ($regionList AS $regionId => $region) {
         $regionName = $region['name'];
+        $regionNameId = str_replace(' ', '-', $regionName);
 ?>
             <li class='nav-item' role='presentation'>
-                <button class='nav-link <?php echo $first ? 'active' : ''; ?>' id='<?php echo $regionName; ?>-tab' data-bs-toggle='pill' data-bs-target='#regionTypes-pane' type='button' role='tab'
+                <button class='nav-link <?php echo $first ? 'active' : ''; ?>' id='<?php echo $regionNameId; ?>-tab' data-bs-toggle='pill' data-bs-target='#regionTypes-pane' type='button' role='tab'
                         aria-controls='<?php echo $regionOwnerId; ?>-content-tab' aria-selected="<?php echo $first ? 'true' : 'false'; ?>"
-                        onclick="exhibitors.settabRegion('<?php echo $regionName; ?>-pane');"><?php echo $regionName; ?>
+                        onclick="exhibitors.settabRegion('<?php echo $regionNameId; ?>-pane');"><?php echo $regionName; ?>
                 </button>
             </li>
 <?php
@@ -142,6 +151,17 @@ foreach ($regionOwners AS $regionOwner => $regionList) {
     }
     ?>
         </ul>
+<?php
+        foreach ($regionList AS $regionId => $region) {
+            $regionName = $region['name'];
+            $regionNameId = str_replace(' ', '-', $regionName);
+?>
+        <div class='tab-content ms-2' id='<?php echo $regionNameId; ?>-content'>
+            <div class='container-fluid' id="<?php echo $regionNameId; ?>-div"></div>
+        </div>
+<?php
+        }
+?>
     </div>
 <?php
 }
