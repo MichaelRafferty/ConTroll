@@ -616,7 +616,7 @@ EOS;
 // now the prices for those spaces
 if ($gettype == 'all' || str_contains($gettype, 'prices')) {
     $exhibitsSpacePricesQ = <<<EOS
-SELECT esp.*, esp.id AS priceKey, COUNT(vspur.item_requested) + COUNT(vsapp.item_approved) + COUNT(vspur.item_purchased) AS uses
+SELECT esp.*, esp.id AS priceKey, COUNT(vspur.item_requested) + COUNT(vsapp.item_approved) + COUNT(vspur.item_purchased) AS uses, ery.exhibitsRegion AS regionId
 FROM exhibitsRegionYears ery
 JOIN exhibitsSpaces es ON (es.exhibitsRegionYear = ery.id)
 JOIN exhibitsSpacePrices esp ON (es.id = esp.spaceId)

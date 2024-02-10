@@ -626,7 +626,7 @@ class exhibitssetup {
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false},
                 {
-                    title: "exhibits Region",
+                    title: "Region",
                     field: "exhibitsRegionYear",
                     headerSort: true,
                     headerWordWrap: true,
@@ -693,6 +693,10 @@ class exhibitssetup {
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false},
+                {
+                    title: "Region", field: "regionId", width: 150, headerSort: true, headerFilter: 'list', headerFilterParams: {values: this.#regionListArr},
+                    formatter: "lookup", formatterParams: this.#regionListArr,
+                },
                 {
                     title: "exhibits Space", field: "spaceId", width: 150, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#spacesListArr},
                     editor: "list", formatter: "lookup", formatterParams: this.#spacesListArr, editorParams: {values: this.#spacesListArr}
