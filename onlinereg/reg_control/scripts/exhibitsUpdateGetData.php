@@ -495,16 +495,18 @@ if ($yearcnt == 0) {
     $lastConid = $conidL['maxConid'];
     $conidR->free();
 
-    // its a new year, copy from last year
+    // it's a new year, copy from last year
     $insRY = <<<EOS
 INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, sortorder) 
 SELECT $conid, ery.exhibitsRegion, ery.ownerName, ery.ownerEmail, minx.id, manx.id, totalUnitsAvailable, sortorder
 FROM exhibitsRegionYears ery
+JOIN exhibitsRegions eR ON ery.exhibitsRegion = eR.exhibitsRegions.id
+JOIN exhibitsRegionTypes eRT ON eR.regionType = eRT.regionType
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
 LEFT OUTER JOIN memList ma ON ery.additionalMemId = ma.id
 LEFT OUTER JOIN memList minx ON (mi.memAge = minx.memAge AND mi.memType = minx.memType AND mi.memCategory = minx.memCategory AND mi.label = minx.label)
 LEFT OUTER JOIN memList manx ON (ma.memAge = manx.memAge AND ma.memType = manx.memType AND ma.memCategory = manx.memCategory AND ma.label = manx.label)
-WHERE ery.conid = ? AND minx.conid = ? AND manx.conid = ?
+WHERE ery.conid = ? AND minx.conid = ? AND manx.conid = ? AND eRT.active = 'Y'
 EOS;
     $numRows=dbSafeCmd($insRY, 'iii', array($lastConid, $conid, $conid));
 
