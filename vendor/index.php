@@ -323,7 +323,7 @@ while ($space = $exhibitorSR->fetch_assoc()) {
 $exhibitorSR->free();
 ?>
 <script type='text/javascript'>
-var config = <?php echo json_encode($config_vars); ?>;
+    var config = <?php echo json_encode($config_vars); ?>;
     var region_list = <?php echo json_encode($region_list); ?>;
     var exhibits_spaces = <?php echo json_encode($space_list); ?>;
     var vendor_info = <?php echo json_encode($info); ?>;
