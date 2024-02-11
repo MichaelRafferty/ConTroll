@@ -5,7 +5,7 @@ require_once("lib/vendorRequest.php");
 require_once("lib/vendorInvoice.php");
 require_once("lib/vendorYears.php");
 require_once("lib/changePassword.php");
-require_once("lib/regForms.php");
+require_once("../lib/exhibitorRegForms.php");
 require_once("../lib/cc__load_methods.php");
 global $config_vars;
 

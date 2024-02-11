@@ -1,4 +1,6 @@
-// Vendor Prpfile related functions
+class exhibitorProfile {
+
+// Exhibitor Profile related functions
 var profileModal = null;
 var profileMode = "unknown";
 var profileUseType = "unknown";

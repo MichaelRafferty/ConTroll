@@ -52,10 +52,11 @@ $response['exhibitors'] = $exhibitors;
 
 // get approvals for this region
 $approvalQ = <<<EOS
-SELECT eA.id, eA.exhibitorId, eA.exhibitsRegionYearId, eA.approval, eA.updateDate, eA.updateBy, eR.name, eR.shortname
+SELECT eA.id, eA.exhibitorId, eA.exhibitsRegionYearId, eA.approval, eA.updateDate, eA.updateBy, eR.name, eR.shortname, e.exhibitorName, e.exhibitorEmail, e.website
 FROM exhibitorApprovals eA
 JOIN exhibitsRegionYears eRY ON eA.exhibitsRegionYearId = eRY.id
 JOIN reg.exhibitsRegions eR on eRY.exhibitsRegion = eR.id
+JOIN exhibitors e ON eA.exhibitorId = e.id
 WHERE eRY.exhibitsRegion = ? and eRY.conid = ?;
 EOS;
 

@@ -39,7 +39,7 @@ echo <<<EOF
     <script type='text/javascript' src='js/jquery-ui.min-1.13.1.js'></script>
     <script type='text/javascript' src='js/base.js'></script>
     <script type='text/javascript' src='js/vendor.js'></script>
-    <script type='text/javascript' src='js/vendor_profile.js'></script>
+    <script type='text/javascript' src='jslib/exhibitorProfile.js'></script>
     <script type='text/javascript' src='js/vendor_req.js'></script>
     <script type='text/javascript' src='js/vendor_invoice.js'></script>
     <script type='text/javascript' src='js/tinymce/tinymce.min.js'></script>

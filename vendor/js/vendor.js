@@ -23,9 +23,10 @@ window.onload = function () {
     vendorProfileOnLoad();
     vendorRequestOnLoad();
     vendorInvoiceOnLoad()
-    if (vendor_info['needReview']) {
-        profileModalOpen('review');
-    }
+    if (typeof vendor_info !== 'undefined')
+        if (vendor_info['needReview']) {
+            profileModalOpen('review');
+        }
 }
 
 // execute the change password request
