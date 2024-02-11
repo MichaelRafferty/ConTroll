@@ -44,8 +44,7 @@ WHERE
     AND online = 'Y'
     AND startdate <= current_timestamp()
     AND enddate > current_timestamp()
-ORDER BY sort_order, price DESC
-;
+ORDER BY sort_order, price DESC;
 EOS;
 $priceR = dbSafeQuery($priceQ, "i", array($condata['id']));
 while($priceL = $priceR->fetch_assoc()) {
@@ -269,7 +268,7 @@ $onsitesale = $startdate->format("l, F j");
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Membership Type</span></label><br/>
-                                    <select id='memType' name='age' style="width:500px;" tabindex='15' title='Age as of <?php echo substr($condata['startdate'], 0, 10); ?> (the first day of the convention)'>
+                                    <select id='memType' name='memType' style="width:500px;" tabindex='15' title='Age is as of <?php echo substr($condata['startdate'], 0, 10); ?> (the first day of the convention)'>
                                         <?php foreach ($membershiptypes as $memType) { ?>
                                             <option value='<?php echo $memType['id'];?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price'];?>)</option>
                                         <?php    } ?>
