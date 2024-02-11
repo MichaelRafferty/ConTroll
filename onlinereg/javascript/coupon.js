@@ -141,7 +141,7 @@ class Coupon {
         if (this.#curCoupon['memId'] == null)
             return null;
 
-        return this.#curCoupon['id'];
+        return this.#curCoupon['memId'];
     }
 
     // coupon modal area functions
