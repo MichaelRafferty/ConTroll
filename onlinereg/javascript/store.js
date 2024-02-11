@@ -1,14 +1,14 @@
 // count = total count of badges
 // total = sum(prices) * qty of badges
-// memTypeCount = array by ageType (memAge) of counts //todo convert to memId counts
+// memTypeCount = array by memId of counts
 // badges = array of the data for individual badges
 var badges = { 'count': 0, 'total': 0, 'memTypeCount': {}, 'badges': [] };
-// prices = array by ageType (memAge) of prices for badges  //todo convert to memId counts
+// prices = array by memId of prices for badges
 var prices = {};
 var $purchase_label = 'purchase';
-// ages = array by id for ages for color setting  //todo: convert to lookup from memConfig
+// ages = array by id for ages for color setting
 var ages = {};
-// shortnames are the memLabel short names for the memAge //todo: where is this used and is it still relevant
+// shortnames are the memLabel short names for the memAge
 var shortnames = {};
 // anotherbadge = bootstrap 5 modal for the add another modal popup
 var anotherBadge = null;
