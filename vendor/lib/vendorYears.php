@@ -2,8 +2,7 @@
 // exhibitorYears and exhibiorApprovals related functions for create/retrieval
 
 // vendorBuildYears - build exhibitorYears and exhibitorApprovals for this year
-function vendorBuildYears($exhibitor, $contactName = NULL, $contactEmail = NULL, $contactPhone = NULL, $contactPassword = NULL, $mailin = 'N'): bool|string
-{
+function vendorBuildYears($exhibitor, $contactName = NULL, $contactEmail = NULL, $contactPhone = NULL, $contactPassword = NULL, $mailin = 'N'): bool|string {
     $con = get_conf('con');
     $conid = $con['id'];
     $need_new = 0;
@@ -108,6 +107,64 @@ EOS;
     $instypes = 'iisi';
 
     $appR = dbSafeQuery($appQ, 'i', array($conid));
+    while ($appL = $appR->fetch_assoc()) {
+        switch ($appL['requestApprovalRequired']) {
+            case 'None':
+                $approval = 'approved';
+                break;
+            case 'Once':
+                if ($priors[$appL['exhibitsRegionYearId']] > 0) {
+                    $approval = 'approved';
+                    break;
+                }
+            // if count fall into annual (default) as it's not approved.
+            default:
+                $approval = 'none';
+        }
+        $newid = dbSafeInsert($insQ, $instypes, array($exhibitor, $appL['exhibitsRegionYearId'], $approval, 2));
+    }
+    $appR->free();
+    return false;
+}
+
+
+// vendorCheckMissingSpaces - check for missing approval and space records for newly created spaces
+function vendorCheckMissingSpaces($exhibitor, $yearId): bool|string
+{
+    $con = get_conf('con');
+    $conid = $con['id'];
+
+    // now build new approval records for this year that don't already exist
+
+    // load prior approvals - for checking ones that are 'once'
+    $priorQ = <<<EOS
+SELECT exhibitsRegionYearId, count(*) approvedCnt
+FROM exhibitorApprovals
+WHERE exhibitorId = ? AND approval = 'approved'
+GROUP BY exhibitsRegionYearId;
+EOS;
+    $priorR = dbSafeQuery($priorQ, 'i', array($exhibitor));
+    $priors = [];
+    while ($priorL = $priorR->fetch_assoc()) {
+        $priors[$priorL['exhibitsRegionYearId']] = $priorL['approvedCnt'];
+    }
+    $priorR->free();
+    // now build exhibitorApprovals from exhibitorYear and exhibitsRegionYears
+    $appQ = <<<EOS
+SELECT ery.id as exhibitsRegionYearId, et.requestApprovalRequired
+FROM exhibitsRegionYears ery
+JOIN exhibitsRegions er ON (er.id = ery.exhibitsRegion)
+JOIN exhibitsRegionTypes et ON (et.regionType = er.regionType)
+LEFT OUTER JOIN exhibitorApprovals eA ON eA.exhibitsRegionYearId = ery.id AND  eA.exhibitorId = ?
+WHERE ery.conid = ? AND et.active = 'Y' AND eA.id IS NULL
+EOS;
+    $insQ = <<<EOS
+INSERT INTO exhibitorApprovals(exhibitorId, exhibitsRegionYearId, approval, updateBy)
+VALUES (?,?,?,?);
+EOS;
+    $instypes = 'iisi';
+
+    $appR = dbSafeQuery($appQ, 'ii', array($exhibitor, $conid));
     while ($appL = $appR->fetch_assoc()) {
         switch ($appL['requestApprovalRequired']) {
             case 'None':

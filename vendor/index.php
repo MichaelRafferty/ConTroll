@@ -177,6 +177,7 @@ EOS;
                 vendorBuildYears($vendor);
             } else {
                 $_SESSION['cID'] = $result['cID'];
+                vendorCheckMissingSpaces($vendor, $result['cID']);
             }
             break;
         }
