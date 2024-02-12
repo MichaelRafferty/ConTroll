@@ -277,7 +277,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                 <div class='col-sm-2'></div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'><h4>Shipping Address</h4></div>
                                 <div class='col-sm-auto p-0 ms-4 me-0'>
-                                    <button class='btn btn-sm btn-primary' type="button" onclick='copyAddressToShipTo()'>Copy <?php echo $portalName; ?> Address to Shipping Address</button>
+                                    <button class='btn btn-sm btn-primary' type="button" onclick='exhibitorProfile.copyAddressToShipTo()'>Copy <?php echo $portalName; ?> Address to Shipping Address</button>
                                 </div>
                             </div>
                             <div class='row mt-1'>
@@ -343,7 +343,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                 </div>
                 <div class="modal-footer">
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex="46">Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='profileSubmitBtn' onClick="submitProfile('<?php echo $portalType; ?>')" tabindex="48">Unknown</button>
+                    <button class='btn btn-sm btn-primary' id='profileSubmitBtn' onClick="exhibitorProfile.submitProfile('<?php echo $portalType; ?>')" tabindex="48">Unknown</button>
                 </div>
             </div>
         </div>

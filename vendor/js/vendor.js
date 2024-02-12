@@ -1,12 +1,11 @@
 // Main Vendor javascript, also requires base.js, vendor_profile.js,
 
-var passwordLine1 = null;
-var passwordLine2 = null;
-var creatingAccountMsgDiv = null;
 var change_password = null;
 var changePasswordTitleDiv = null;
 var purchase_label = 'purchase';
 var additional_cost = {};
+var switchPortalbtn = null;
+exhibitorProfile = null;
 
 // initial setup
 window.onload = function () {
@@ -20,13 +19,12 @@ window.onload = function () {
         switchPortalbtn.innerHTML = 'Switch to ' + (config['portalName'] == 'Artist' ? 'Vendor' : 'Artist') + ' Portal';
     }
 
-    vendorProfileOnLoad();
+    exhibitorProfile = new ExhibitorProfile(config['debug']);
     vendorRequestOnLoad();
     vendorInvoiceOnLoad()
-    if (typeof vendor_info !== 'undefined')
-        if (vendor_info['needReview']) {
-            profileModalOpen('review');
-        }
+    if (vendor_info['needReview']) {
+        exhibitorProfile.profileModalOpen('review');
+    }
 }
 
 // execute the change password request

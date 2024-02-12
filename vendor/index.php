@@ -347,7 +347,7 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $portalName)
         </div>
         <div class="row p-1">
             <div class="col-sm-auto p-0">
-                <button class="btn btn-secondary" onclick="profileModalOpen('update');">View/Change your profile</button>
+                <button class="btn btn-secondary" onclick="exhibitorProfile.profileModalOpen('update');">View/Change your profile</button>
                 <button class='btn btn-secondary' onclick='changePasswordOpen();'>Change your password</button>
                 <button class='btn btn-secondary' id='switchPortalbtn' onclick='switchPortal();'>Switch to XXX Portal</button>
                 <button class="btn btn-secondary" onclick="window.location='?logout';">Logout</button>
