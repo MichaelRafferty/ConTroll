@@ -123,13 +123,13 @@ $num_primary = 0;
 $total = 0;
 // compute the pre-discount total to see if the ca
 foreach ($badges as $badge) {
-    if(!isset($badge) || !isset($badge['age'])) { continue; }
-    if (array_key_exists($badge['age'], $counts)) {
-        if ($primary[$badge['age']]) {
+    if(!isset($badge) || !isset($badge['memType'])) { continue; }
+    if (array_key_exists($badge['memType'], $counts)) {
+        if ($primary[$badge['memType']]) {
             $num_primary++;
         }
-        $total += $prices[$badge['age']];
-        $counts[$badge['age']]++;
+        $total += $prices[$badge['memType']];
+        $counts[$badge['memType']]++;
     }
 }
 
@@ -153,15 +153,15 @@ $origMaxMbrDiscounts = $maxMbrDiscounts;
 
 // check that we got valid total from the post before anything is inserted into the database, the empty rows are deleted badges from the site
 foreach ($badges as $badge) {
-    if(!isset($badge) || !isset($badge['age'])) { continue; }
-    if (array_key_exists($badge['age'], $counts)) {
-        $price = $prices[$badge['age']];
+    if(!isset($badge) || !isset($badge['memType'])) { continue; }
+    if (array_key_exists($badge['memType'], $counts)) {
+        $price = $prices[$badge['memType']];
         $preDiscount += $price;
-        if ($apply_discount && $primary[$badge['age']]) {
+        if ($apply_discount && $primary[$badge['memType']]) {
             if ($maxMbrDiscounts > 0) {
-                $price -= $discounts[$badge['age']];
+                $price -= $discounts[$badge['memType']];
                 $maxMbrDiscounts--;
-                $totalDiscount += $discounts[$badge['age']];
+                $totalDiscount += $discounts[$badge['memType']];
             }
         }
         $total += $price;
@@ -183,21 +183,21 @@ if($webtotal != $total) {
 
 $maxMbrDiscounts = $origMaxMbrDiscounts;
 foreach ($badges as $badge) {
-    if (!isset($badge) || !isset($badge['age'])) {
+    if (!isset($badge) || !isset($badge['memType'])) {
         continue;
     }
-    if (array_key_exists($badge['age'], $counts)) {
+    if (array_key_exists($badge['memType'], $counts)) {
         $discount = 0;
-        if ($apply_discount && $primary[$badge['age']]) {
+        if ($apply_discount && $primary[$badge['memType']]) {
             if ($maxMbrDiscounts > 0) {
-                $discount = $discounts[$badge['age']];
+                $discount = $discounts[$badge['memType']];
                 $maxMbrDiscounts--;
             }
         }
         $people[$count] = array(
             'info' => $badge,
-            'price' => $prices[$badge['age']],
-            'memId' => $memId[$badge['age']],
+            'price' => $prices[$badge['memType']],
+            'memId' => $memId[$badge['memType']],
             'coupon' => $coupon,
             'discount' => $discount,
         );
