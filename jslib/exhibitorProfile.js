@@ -12,6 +12,8 @@ class ExhibitorProfile {
     #passwordLine1 = null;
     #passwordLine2 = null;
     #creatingAccountMsgDiv = null;
+    #exhibitorId = null;
+    #exhibitorYearId = null;
     // globals
     #debugFlag = 0;
 
@@ -23,7 +25,7 @@ class ExhibitorProfile {
     static #copyToFieldList = ['shipCompany', 'shipAddr', 'shipAddr2', 'shipCity', 'shipState', 'shipZip', 'shipCountry'];
 
     // constructor function - intializes dom objects and inital privates
-    constructor(debug = 0) {
+    constructor(debug = 0, portalType = '') {
         var id = document.getElementById('profile');
         if (id != null) {
             this.#profileModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
@@ -35,6 +37,10 @@ class ExhibitorProfile {
                 this.#profileSubmitBtn = document.getElementById('profileSubmitBtn');
                 this.#profileModalTitle = document.getElementById('modalTitle');
                 this.#creatingAccountMsgDiv = document.getElementById('creatingAccountMsg');
+                if (portalType == 'admin') {
+                    this.#exhibitorId = document.getElementById('exhibitorId');
+                    this.#exhibitorYearId = document.getElementById('exhibitorYearId');
+                }
             }
         }
         if (debug)
@@ -169,9 +175,13 @@ class ExhibitorProfile {
     }
 
     // profileModalOpen - set up and show the edit profile modal
-    profileModalOpen(useType) {
+    profileModalOpen(useType, exhibitorId = null, exhibitorYearId = null) {
         if (this.#profileModal != null) {
             // set items as registration use of the modal
+            if (exhibitorId != null && this.#exhibitorId != null)
+                this.#exhibitorId.value = exhibitorId;
+            if (exhibitorYearId != null && this.#exhibitorYearId != null)
+                this.#exhibitorYearId.value = exhibitorYearId;
             switch (useType) {
                 case 'register':
                     this.#profileIntroDiv.innerHTML = '<p>This form creates an account on the ' + config['label'] + ' ' + config['portalName'] + ' Portal.</p>';

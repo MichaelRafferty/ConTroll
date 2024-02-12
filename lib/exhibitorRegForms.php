@@ -80,8 +80,14 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                 <div class="modal-body" style="padding: 4px; background-color: lightcyan;">
                     <div class="container-fluid form-floating" style="background-color: lightcyan;">
                         <form id="exhibitorProfileForm" name="exhibitorProfileForm" action="javascript:void(0);" class="form-floating">
-                            <input type="hidden" id='profileMode' name='profileMode' value="unknown"/>
+                            <input type="hidden" id='profileMode' name='profileMode' value="admin"/>
                             <input type="hidden" id='profileType' name='profileType' value="<?php echo $portalType; ?>"/>
+                            <?php
+                            if ($portalType == 'admin') {
+                                echo  "<input type = 'hidden' id = 'exhibitorId' name = 'exhibitorId'/>\n";
+                                echo  "<input type = 'hidden' id = 'exhibitorYearId' name = 'exhibitorYearId'/>\n";
+                            }
+                            ?>
                             <div class="row">
                                 <div class="col-sm-12" id="profileIntro">
                                     <p>This form creates an account on the <?php echo $con['conname'] . " $portalName" ?>
@@ -272,7 +278,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                 </div>
                             </div>
                             <!-- Shipping Address (artist only) -->
-                            <?php if ($portalType == 'artist') { ?>
+                            <?php if ($portalType == 'artist' || $portalType == 'admin') { ?>
                             <div class='row mt-4'>
                                 <div class='col-sm-2'></div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'><h4>Shipping Address</h4></div>
@@ -343,7 +349,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                 </div>
                 <div class="modal-footer">
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex="46">Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='profileSubmitBtn' onClick="exhibitorProfile.submitProfile('<?php echo $portalType; ?>')" tabindex="48">Unknown</button>
+                    <button class='btn btn-sm btn-primary' id='profileSubmitBtn' onClick="exhibitorProfile.submitProfile('<?php echo $portalType; ?>')" tabindex="48">Admin</button>
                 </div>
             </div>
         </div>

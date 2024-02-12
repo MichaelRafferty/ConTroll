@@ -20,13 +20,17 @@ page_init($page,
                     'https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js',
                     //'js/d3.js',
                     'js/base.js',
-                    'js/vendor.js'
+                    'jslib/exhibitorProfile.js',
+                    'js/vendor.js',
+                    'js/tinymce/tinymce.min.js'
                    ),
               $need_login);
 
 $con = get_con();
 $conid = $con['id'];
+$conf = $con['id'];
 $debug = get_conf('debug');
+$vendor_conf = get_conf('vendor');
 if (array_key_exists('reg_control_exhibitors', $debug))
     $debug_exhibitors = $debug['reg_control_exhibitors'];
 else
@@ -57,6 +61,17 @@ while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
     $countryOptions .= '<option value="' . escape_quotes($data[1]) . '">' .$data[0] . '</option>' . PHP_EOL;
 }
 fclose($fh);
+
+$config_vars = array();
+$portalType = 'admin';
+$portalName = 'Exhibitor';
+$config_vars['lƒabel'] = $con['label'];
+$config_vars['vemail'] = $conf['regadminemail'];
+$config_vars['portalType'] = $portalType;
+$config_vars['portalName'] = $portalName;
+$config_vars['artistsite'] = $vendor_conf['artistsite'];
+$config_vars['vendorsite'] = $vendor_conf['vendorsite'];
+$config_vars['debug'] = $debug['reg_control_exhibitors'];
 
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions)
 ?>
@@ -93,10 +108,6 @@ while ($regionL = $regionOwnerR->fetch_assoc()) {
     <?php
     }
 }
-$config_vars = array();
-$config_vars['label'] = $con['label'];
-$config_vars['conid'] = $conid;
-$config_vars['debug'] = $debug_exhibitors;
 ?>
     </ul>
 <script type='text/javascript'>

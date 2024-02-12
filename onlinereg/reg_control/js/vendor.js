@@ -1,4 +1,7 @@
 //import { TabulatorFull as Tabulator } from 'tabulator-tables';
+// globals required for exhibitorProfile.js
+vendor_info = null;
+exhibitorProfile = null;
 
 // exhibitors class - functions for spae ownerto review and approve spaces requested by exhibitors
 class exhibitorsAdm {
@@ -20,7 +23,6 @@ class exhibitorsAdm {
     // exhibitor items
     #exhibitorsTable = null;
     #pricelists = null;
-    #exhibitorProfile = null;
 
     // Owner items
     #ownerTabs = {};
@@ -40,9 +42,6 @@ class exhibitorsAdm {
         this.#message_div = document.getElementById('test');
         this.#result_message_div = document.getElementById('result_message');
         id = document.getElementById('profile');
-        if (id != null) {
-            this.#exhibitorProfile = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-        }
 
         if (this.#debug & 1) {
             console.log("Debug = " + debug);
@@ -51,6 +50,9 @@ class exhibitorsAdm {
         if (this.#debug & 2) {
             this.#debugVisible = true;
         }
+
+        // exhibitors
+        exhibitorProfile = new ExhibitorProfile(this.#debug, config['portalType']);
 
         // owners
         this.#ownerTabs['overview'] = document.getElementById('overview-content');
@@ -70,6 +72,7 @@ class exhibitorsAdm {
                 this.#regionTabs[regionId] = document.getElementById(regionId + '-div');
             }
         }
+
         if (this.#debug & 4) {
             console.log("ownerTabs");
             console.log(this.#ownerTabs);
@@ -420,7 +423,7 @@ class exhibitorsAdm {
 // button callout functions
     edit(e, cell) {
         var exhibitor = cell.getRow().getData();
-        return editExhibior(exhibitor);
+        exhibitors.editExhibitor(exhibitor);
     }
 
     // button formatters
@@ -481,22 +484,9 @@ class exhibitorsAdm {
     editExhibitor(exhibitor) {
         if (this.#debug & 4)
             console.log(exhibitor);
-        document.getElementById('vendorAddEditTitle').innerHTML = "Update Vendor Profile";
-        document.getElementById('vendorAddUpdatebtn').innerHTML = "Update";
-        document.getElementById("ev_name").value = vendor.name;
-        document.getElementById("ev_email").value = vendor.email;
-        document.getElementById("ev_website").value = vendor.website;
-        document.getElementById("ev_description").value = vendor.description;
-        document.getElementById("ev_addr").value = vendor.addr;
-        document.getElementById("ev_addr2").value = vendor.addr2;
-        document.getElementById("ev_city").value = vendor.city;
-        document.getElementById("ev_state").value = vendor.state;
-        document.getElementById("ev_zip").value = vendor.zip;
-        document.getElementById("ev_publicity").checked = vendor.publicity == 1;
-        document.getElementById("ev_vendorId").value = vendor.id;
-        this.#exhibitorProfile.show();
+    vendor_info = exhibitor;
+    exhibitorProfile.profileModalOpen('update', exhibitor['exhibitorId'], exhibitor['contactId']);
     }
-
 };
 
 exhibitors = null;
@@ -594,26 +584,6 @@ function addNewVendor() {
     document.getElementById("ev_publicity").checked = true;
     document.getElementById("ev_vendorId").value = -1;
     update_profile.show();
-}
-
-// updateProfile - update the database profile for this vendor
-function updateProfile() {
-    $.ajax({
-        url: 'scripts/updateVendorProfile.php',
-        data: $('#vendor_update').serialize(),
-        method: 'POST',
-        success: function(data, textstatus, jqXHR) {
-            if(data['status'] == 'error') {
-                alert(data['message']);
-            } else {
-                console.log(data);
-                if (data['success'])
-                    show_message(data['success'], 'success');
-                update_profile.hide();
-                getData();
-            }
-        }
-    });
 }
 
 // process approving requested units
