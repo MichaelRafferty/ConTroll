@@ -81,6 +81,6 @@ function vendor_showRequest($regionId, $regionName, $regionSpaces, $exhibitorSpa
                 " at $date<br/>\n";
         }
     }
-    echo "<button class='btn btn-primary' onclick='openInvoice($regionId, 1);'>Change/Cancel $regionName Space</button>";
+    echo "<button class='btn btn-primary' onclick='openReq($regionId, 1);'>Change/Cancel $regionName Space</button>";
 
 }

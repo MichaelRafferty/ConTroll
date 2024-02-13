@@ -136,7 +136,7 @@ while ($regionL = $regionOwnerR->fetch_assoc()) {
                     <p>There is a separate tab within the Exhibitors tab for each Exhibitor Space within the convention.</p>
                     <p>These space tabs handle:</p>
                     <ol>
-                        <li>Exhibotor Management</li>
+                        <li>Exhibitor Management</li>
                         <li>Permission to request space in this Exhibitor Space (if required)</li>
                         <li>Status of all Space Requests</li>
                     </ol>
