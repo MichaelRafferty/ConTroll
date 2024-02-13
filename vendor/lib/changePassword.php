@@ -1,7 +1,7 @@
 <?php
 
 // drawChangePassword - make it common code to draw change password prompts
-function drawChangePassword($title, $width, $drawbutton) {
+function drawChangePassword($title, $width, $drawbutton, $info = null, $pwtype = null) {
     global $config_vars;
 
     $html = '';
@@ -59,6 +59,10 @@ EOH;
     </body>
     <script type='text/javascript'>
         var config = $cv;
+        var pwtype = '$pwtype';
+EOH;
+        $html .= "var vendor_info = " . json_encode($info) . ";";
+        $html .= <<<EOH
     </script>
 </html>
 EOH;

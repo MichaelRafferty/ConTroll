@@ -387,14 +387,20 @@ class exhibitorsAdm {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {title: "Vendors:", columns: [
-                        {title: "id", field: "id", visible: false},
+                        {title: "Exhibitor Id", field: "exhibitorId", visible: false,},
                         {title: "Name", field: "exhibitorName", headerSort: true, headerFilter: true, tooltip: this.buildRecordHover,},
                         {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true,},
+                        {title: "Phone", field: "exhibitorPhone", headerSort: true, headerFilter: true,},
                         {title: "Website", field: "website", headerSort: true, headerFilter: true,},
+                        {title: "Contact Id", field: "contactId", visible: false, },
+                        {title: "Contact Name", field: "contactName", headerSort: true, headerFilter: true, },
+                        {title: "Contact Email", field: "contactEmail", headerSort: true, headerFilter: true,},
+                        {title: "Contact Phone", field: "contactPhone", headerSort: true, headerFilter: true,},
                         {title: "City", field: "city", headerSort: true, headerFilter: true,},
                         {title: "State", field: "state", headerSort: true, headerFilter: true,},
                         {title: "", formatter: this.editbutton, hozAlign: "center", cellClick: this.edit, headerSort: false,},
-                        {title: "", formatter: this.resetpwbutton, hozAlign: "center", cellClick: this.resetpw, headerSort: false,},
+                        {title: "", formatter: this.resetpwbutton, formatterParams: {name: 'Exh'}, hozAlign: "center", cellClick: this.resetpw, headerSort: false,},
+                        {title: "", formatter: this.resetpwbutton, formatterParams: {name: 'Con'}, hozAlign: "center", cellClick: this.resetCpw, headerSort: false,},
                     ]
                 }
             ]
@@ -431,7 +437,8 @@ class exhibitorsAdm {
         return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Edit</button>';
     }
     resetpwbutton(cell, formatterParams, onRendered) {
-        return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">ResetPW</button>';
+        return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Reset' + formatterParams['name'] +
+        'PW</button>';
     }
 
     // tabulator button formatters (need to be global, not in class
@@ -486,6 +493,34 @@ class exhibitorsAdm {
             console.log(exhibitor);
     vendor_info = exhibitor;
     exhibitorProfile.profileModalOpen('update', exhibitor['exhibitorId'], exhibitor['contactId']);
+    }
+
+    // reset an exhibitor's password
+    resetpw(e, cell) {
+        var exhibitorId = cell.getRow().getCell("exhibitorId").getValue();
+        $.ajax({
+            url: 'scripts/setPassword.php',
+            method: "POST",
+            data: { 'exhibitorId': exhibitorId, type: 'exhibitor' },
+            success: function (data, textStatus, jqXhr) {
+                if(data['error'] != undefined) { console.log(data['error']); }
+                alert(data['password']);
+            }
+        });
+    }
+
+    // reset an contact's password
+    resetCpw(e, cell) {
+        var contactId = cell.getRow().getCell("contactId").getValue();
+        $.ajax({
+            url: 'scripts/setPassword.php',
+            method: "POST",
+            data: { 'contactId': contactId, type: 'contact' },
+            success: function (data, textStatus, jqXhr) {
+                if(data['error'] != undefined) { console.log(data['error']); }
+                alert(data['password']);
+            }
+        });
     }
 };
 
@@ -552,21 +587,6 @@ function approval(index, appType) {
 
     return '';
 }
-
-function resetpw(e, cell) {
-    vendor = cell.getRow().getCell("id").getValue();
-    $.ajax({
-        url: 'scripts/setPassword.php',
-        method: "POST",
-        data: { 'vendorId': vendor },
-        success: function (data, textStatus, jqXhr) {
-            if(data['error'] != undefined) { console.log(data['error']); }
-            alert(data['password']);
-        }
-    });
-}
-
-
 
 // add a new vendor to the vendors table
 function addNewVendor() {

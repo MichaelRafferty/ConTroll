@@ -276,8 +276,12 @@ EOS;
 
 $infoR = dbSafeQuery($vendorQ, 'ii', array($vendor, $conid));
 $info = $infoR->fetch_assoc();
-if ($info['eNeedNew'] || $info['cNeedNew']) {
-    drawChangePassword('You need to change your password.', 3, true);
+if ($info['eNeedNew']) {
+    drawChangePassword('You need to change your exhibitor password.', 3, true, $info, 'e');
+    return;
+}
+if ($info['cNeedNew']) {
+    drawChangePassword('You need to change your contact password.', 3, true, $info, 'c');
     return;
 }
 

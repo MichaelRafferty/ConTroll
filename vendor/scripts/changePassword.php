@@ -28,7 +28,7 @@ if($_POST['oldPassword'] == $_POST['password']) {
     ajaxSuccess($response);
     exit();
 }
-if ($_SESSION['login_type'] == 'c') {
+if ($_POST['pwType'] == 'c') {
     $testQ = "SELECT contactPassword AS password FROM exhibitorYears WHERE id=? AND conid=?;";
     $testR = dbSafeQuery($testQ, 'ii', array($client, $conid));
 } else {
@@ -47,7 +47,7 @@ if(!password_verify($_POST['oldPassword'], $testPw['password'])) {
     $response['pwcheck'] = 'passwd';
 }
 
-if ($_SESSION['login_type'] == 'c') {
+if ($_POST['pwType'] == 'c') {
     $updateQ = <<<EOS
 UPDATE exhibitorYears
 SET contactPassword = ?, need_new = 0
@@ -58,7 +58,7 @@ EOS;
 } else {
     $updateQ = <<<EOS
 UPDATE exhibitors
-SET password = ?
+SET password = ?, need_new = 0
 WHERE id=?;
 EOS;
     $typestr = 'si';

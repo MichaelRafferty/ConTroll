@@ -39,9 +39,16 @@ function changePassword(field) {
         return;
     }
     clear_message('cp_result_message');
+    var param = $('#changepw').serialize();
+    if (typeof pwtype === 'undefined') {
+        param += '&pwType=' + config['loginType'];
+    } else {
+        param += '&pwType=' + pwtype;
+    }
+    console.log(param);
     $.ajax({
         url: 'scripts/changePassword.php',
-        data: $('#changepw').serialize(),
+        data: param,
         method: 'POST',
         success: function(data, textstatus, jqXHR) {
             if(data['status'] == 'error') {
