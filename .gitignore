@@ -50,7 +50,7 @@
 
 # placeholder for obsolete stuff
 /atcon/scripts/obsolete/
-/onlinereg/reg_control/scripts/obsolete
+/onlinereg/reg_control/obsolete
 # asre these two obsolete ones still needed and are they relative
 onlinereg/onlineReg/
 dead
