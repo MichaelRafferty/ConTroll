@@ -2,6 +2,10 @@
    Add multi-level hierarchy for exhibit
  */
 
+/* artists an artshow move to exhibits/exhibitors, so remove those pages from the menu */
+UPDATE auth SET page = 'N' WHERE NAME IN ('artist', 'artshow');
+UPDATE auth SET display='Exhibitors' WHERE NAME = 'vendor';
+
 DROP TABLE IF EXISTS `exhibitorApprovals`;
 CREATE TABLE `exhibitorApprovals` (
                                       `id` int NOT NULL AUTO_INCREMENT,
