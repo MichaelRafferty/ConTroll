@@ -14,6 +14,7 @@ class ExhibitorProfile {
     #creatingAccountMsgDiv = null;
     #exhibitorId = null;
     #exhibitorYearId = null;
+    #exhibitorRow = null;
     // globals
     #debugFlag = 0;
 
@@ -171,17 +172,21 @@ class ExhibitorProfile {
                 if (config['debug'] & 1)
                     console.log(data);
             }
+            if (this.#exhibitorRow) {
+                this.#exhibitorRow.update(vendor_info);
+            }
         }
     }
 
     // profileModalOpen - set up and show the edit profile modal
-    profileModalOpen(useType, exhibitorId = null, exhibitorYearId = null) {
+    profileModalOpen(useType, exhibitorId = null, exhibitorYearId = null, exhibitorRow = null) {
         if (this.#profileModal != null) {
             // set items as registration use of the modal
             if (exhibitorId != null && this.#exhibitorId != null)
                 this.#exhibitorId.value = exhibitorId;
             if (exhibitorYearId != null && this.#exhibitorYearId != null)
                 this.#exhibitorYearId.value = exhibitorYearId;
+            this.#exhibitorRow = exhibitorRow;
             switch (useType) {
                 case 'register':
                     this.#profileIntroDiv.innerHTML = '<p>This form creates an account on the ' + config['label'] + ' ' + config['portalName'] + ' Portal.</p>';

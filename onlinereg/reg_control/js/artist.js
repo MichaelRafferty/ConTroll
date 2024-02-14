@@ -253,7 +253,7 @@ function changeAddr() {
 
 function resetPw(vendor) {
     $.ajax({
-        url: 'scripts/setPassword.php',
+        url: 'scripts/exhibitsSetPassword.php',
         method: "GET",
         data: 'vendor=' + vendor,
         success: function (data, textStatus, jqXhr) {
@@ -278,4 +278,3 @@ function approveArtist(id) {
         }
     });
 }
-

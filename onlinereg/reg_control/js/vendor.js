@@ -19,6 +19,7 @@ class exhibitorsAdm {
     // approvals items
     #approvalsTable = null;
     #approvalValues = ['none', 'requested', 'approved', 'denied', 'hide'];
+    #approvalRow = null;
 
     // exhibitor items
     #exhibitorsTable = null;
@@ -41,7 +42,7 @@ class exhibitorsAdm {
         this.#conid = conid;
         this.#message_div = document.getElementById('test');
         this.#result_message_div = document.getElementById('result_message');
-        id = document.getElementById('profile');
+        var id = document.getElementById('profile');
 
         if (this.#debug & 1) {
             console.log("Debug = " + debug);
@@ -58,16 +59,16 @@ class exhibitorsAdm {
         this.#ownerTabs['overview'] = document.getElementById('overview-content');
         this.#currentOwner = this.#ownerTabs['overview'];
         var ownerKeys = Object.keys(regionOwners);
-        for (var id in ownerKeys) {
-            var owner = ownerKeys[id];
+        for (var idO in ownerKeys) {
+            var owner = ownerKeys[idO];
             var ownerId = owner.replaceAll(' ', '-');
             this.#ownerTabs[ownerId] = document.getElementById(ownerId + '-content');
 
             // regions within owners
             var regions = regionOwners[owner];
             var regionKeys = Object.keys(regions);
-            for (var id in regionKeys) {
-                var region = regions[regionKeys[id]];
+            for (var idR in regionKeys) {
+                var region = regions[regionKeys[idR]];
                 var regionId = region['name'].replaceAll(' ', '-');
                 this.#regionTabs[regionId] = document.getElementById(regionId + '-div');
             }
@@ -269,11 +270,6 @@ class exhibitorsAdm {
             "    <div class='row'>\n" +
             "        <div class='col-sm-12' id='" + groupid + "-app-table-div'></div>\n" +
             "    </div>\n" +
-            //"    <div class='row'>\n" +
-            //"        <div class='col-sm-12'>\n" +
-            //"            <button class='btn btn-secondary' id='addVendorSpaceBtn' onClick=" + '"exhibitor.addNewSpace();"' + ">Add New Vendor Space</button>\n" +
-            //"        </div>\n" +
-            //"    </div>\n" +
             "</div></div>\n"
 
         return html;
@@ -289,13 +285,13 @@ class exhibitorsAdm {
         var html = "<div class='tab-content ms-2' id='" + groupid + "-exh-content' hidden>\n" +
             "<div class='container-fluid'>\n" +
             "    <div class='row'>\n" +
-            "        <div class='col-sm-12' id='" + groupid + "-exh-table-div'>Hello Exhibitors!</div>\n" +
+            "        <div class='col-sm-12' id='" + groupid + "-exh-table-div'></div>\n" +
             "    </div>\n" +
-            //"    <div class='row'>\n" +
-            //"        <div class='col-sm-12'>\n" +
-            //"            <button class='btn btn-secondary' id='addVendorSpaceBtn' onClick=" + '"exhibitor.addNewSpace();"' + ">Add New Vendor Space</button>\n" +
-            //"        </div>\n" +
-            //"    </div>\n" +
+            "    <div class='row'>\n" +
+            "        <div class='col-sm-12'>\n" +
+            "            <button class='btn btn-secondary' id='addExhibitorBtn' onClick=" + '"exhibitor.addNew();"' + ">Add New Exhibitor</button>\n" +
+            "        </div>\n" +
+            "    </div>\n" +
             "</div></div>\n"
 
         return html;
@@ -321,9 +317,9 @@ class exhibitorsAdm {
                         {title: "requested_code", field: "requested_code", visible: false},
                         {title: "approved_code", field: "approved_code", visible: false},
                         {title: "purchased_code", field: "purchased_code", visible: false},
-                        {title: "Name", field: "exhibitorName", width: 150, headerSort: true, headerFilter: true,},
+                        {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true,},
                         {title: "Website", field: "website", width: 150, headerSort: true, headerFilter: true,},
-                        {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true,},
+                        {title: "Email", field: "exhibitorEmail", width: 150, headerSort: true, headerFilter: true,},
                         {title: "Space", field: "spaceName", width: 180, headerSort: true, headerFilter: true },
                         {title: "Requested", columns: [
                                 { title: "Units", field: "requested_units", headerSort:false, headerFilter: false, },
@@ -364,12 +360,15 @@ class exhibitorsAdm {
                         {title: "Region", field: "name", headerSort: true, headerFilter: true },
                         {title: "id", field: "id", visible: false},
                         {title: "exhibitorId", field: "exhibitorId", visible: false},
-                        {title: "Name", field: "exhibitorName", headerSort: true, headerFilter: true,},
+                        {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true,},
                         {title: "Website", field: "website", headerSort: true, headerFilter: true,},
                         {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true,},
                         {title: "Approval", field: "approval", headerSort: true, headerFilter: 'list', headerFilterParams: {values: this.#approvalValues},},
                         {title: "Timestamp", field: "updateDate", headerSort: true, },
-                        {title: "", formatter: this.exhibitorApprovalActionButtons, hozAlign: "left", headerSort: false,},
+                        {title: "", field: "b1", formatter: this.approvalButton, formatterParams: {name: 'Approve'}, width: 100, hozAlign: "center", cellClick: this.exhApprove, headerSort: false,},
+                        {title: "", field: "b2", formatter: this.approvalButton, formatterParams: {name: 'Reset'}, width: 80, hozAlign: "center", cellClick: this.exhReset, headerSort: false,},
+                        {title: "", field: "b3", formatter: this.approvalButton, formatterParams: {name: 'Deny'}, width: 80, hozAlign: "center", cellClick: this.exhDeny, headerSort: false,},
+                        {title: "", field: "b4", formatter: this.approvalButton, formatterParams: {name: 'Hide'}, width: 80, hozAlign: "center", cellClick: this.exhHide, headerSort: false,},
                     ]
                 }
             ]
@@ -388,15 +387,15 @@ class exhibitorsAdm {
             columns: [
                 {title: "Vendors:", columns: [
                         {title: "Exhibitor Id", field: "exhibitorId", visible: false,},
-                        {title: "Name", field: "exhibitorName", headerSort: true, headerFilter: true, tooltip: this.buildRecordHover,},
+                        {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true, tooltip: this.buildRecordHover,},
                         {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true,},
-                        {title: "Phone", field: "exhibitorPhone", headerSort: true, headerFilter: true,},
+                        {title: "Phone", field: "exhibitorPhone", width: 140, headerSort: true, headerFilter: true,},
                         {title: "Website", field: "website", headerSort: true, headerFilter: true,},
                         {title: "Contact Id", field: "contactId", visible: false, },
                         {title: "Contact Name", field: "contactName", headerSort: true, headerFilter: true, },
                         {title: "Contact Email", field: "contactEmail", headerSort: true, headerFilter: true,},
-                        {title: "Contact Phone", field: "contactPhone", headerSort: true, headerFilter: true,},
-                        {title: "City", field: "city", headerSort: true, headerFilter: true,},
+                        {title: "Con Phone", field: "contactPhone", width: 140, headerSort: true, headerFilter: true,},
+                        {title: "City", field: "city", width: 140, headerSort: true, headerFilter: true,},
                         {title: "State", field: "state", headerSort: true, headerFilter: true,},
                         {title: "", formatter: this.editbutton, hozAlign: "center", cellClick: this.edit, headerSort: false,},
                         {title: "", formatter: this.resetpwbutton, formatterParams: {name: 'Exh'}, hozAlign: "center", cellClick: this.resetpw, headerSort: false,},
@@ -428,20 +427,53 @@ class exhibitorsAdm {
 
 // button callout functions
     edit(e, cell) {
-        var exhibitor = cell.getRow().getData();
-        exhibitors.editExhibitor(exhibitor);
+        var exhibitorRow = cell.getRow()
+        var exhibitorData = exhibitorRow.getData();
+        exhibitors.editExhibitor(exhibitorData, exhibitorRow);
     }
 
+    // approve an approval request
+    exhApprove(e, cell) {
+        var exhibitorRow = cell.getRow()
+        var exhibitorData = exhibitorRow.getData();
+        exhibitors.processApprovalChange('approved', exhibitorData, exhibitorRow);
+    }
+
+    // reset an approval back to request
+    exhReset(e, cell) {
+        var exhibitorRow = cell.getRow()
+        var exhibitorData = exhibitorRow.getData();
+        exhibitors.processApprovalChange('requested', exhibitorData, exhibitorRow);
+    }
+
+    // deny an approval request
+    exhDeny(e, cell) {
+        var exhibitorRow = cell.getRow()
+        var exhibitorData = exhibitorRow.getData();
+        exhibitors.processApprovalChange('denied', exhibitorData, exhibitorRow);
+    }
+
+    // hid a region (hide status)
+    exhHide(e, cell) {
+        var exhibitorRow = cell.getRow()
+        var exhibitorData = exhibitorRow.getData();
+        exhibitors.processApprovalChange('hide', exhibitorData, exhibitorRow);
+    }
+
+
     // button formatters
+
+    // edit exhibitor Record
     editbutton(cell, formatterParams, onRendered) {
         return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Edit</button>';
     }
+    // change exhibitor password buttons
     resetpwbutton(cell, formatterParams, onRendered) {
         return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Reset' + formatterParams['name'] +
         'PW</button>';
     }
 
-    // tabulator button formatters (need to be global, not in class
+    // tabulator button formatters
     exhibitorSpacesActionButtons(cell, formatterParams, onRendered) {
         var btns = "";
         var data = cell.getData();
@@ -466,61 +498,116 @@ class exhibitorsAdm {
         return btns;
     }
 
-    exhibitorApprovalActionButtons(cell, formatterParams, onRendered) {
-        var btns = "";
+    approvalButton(cell, formatterParams, onRendered) {
         var data = cell.getData();
         var id = data['id'];
         var approval = data['approval'] || 'none';
+        var name = formatterParams['name'];
+        var color = 'secondary';
 
-        if (approval != 'none')
-            btns += '<button class="btn btn-small btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", ' +
-                'onclick="exhibibitorSetApproval(' + id + ", 'none')" + '";>Reset</button>';
-        if (approval != 'approved')
-            btns += '<button class="btn btn-small btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", ' +
-                'onclick="exhibibitorSetApproval(' + id + ", 'approved')" + '";>Approve</button>';
-        if (approval != 'deny')
-            btns += '<button class="btn btn-small btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", ' +
-                'onclick="exhibibitorSetApproval(' + id + ", 'none')" + '";>Deny</button>';
-        if (approval != 'deny')
-            btns += '<button class="btn btn-small btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", ' +
-                'onclick="exhibibitorSetApproval(' + id + ", 'hide')" + '";>Hide</button>';
-        return btns;
+        switch (approval) {
+            case 'none':
+            case 'requested':
+                if (name == 'Reset')
+                    return '';
+                break;
+            case 'approved':
+                if (name == 'Approve')
+                    return '';
+                break;
+            case 'denied':
+                if (name == 'Deny')
+                    return '';
+                break;
+            case 'hide':
+                if (name == 'Hide')
+                    return '';
+                break;
+        }
+        switch (name) {
+            case 'Approve':
+                color = 'primary';
+                break;
+            case 'Reset':
+                color = 'secondary';
+                break;
+            case 'Deny':
+                color = 'warning'
+                break;
+            case 'Hide':
+                color = 'danger';
+                break;
+        }
+        return '<button class="btn btn-small btn-' + color + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
     }
 
     // editExhibitor - Populate edit vendor modal with current data
-    editExhibitor(exhibitor) {
+    editExhibitor(exhibitor, exhibitorRow = null) {
         if (this.#debug & 4)
             console.log(exhibitor);
     vendor_info = exhibitor;
-    exhibitorProfile.profileModalOpen('update', exhibitor['exhibitorId'], exhibitor['contactId']);
+    exhibitorProfile.profileModalOpen('update', exhibitor['exhibitorId'], exhibitor['contactId'], exhibitorRow);
     }
 
     // reset an exhibitor's password
     resetpw(e, cell) {
         var exhibitorId = cell.getRow().getCell("exhibitorId").getValue();
         $.ajax({
-            url: 'scripts/setPassword.php',
+            url: 'scripts/exhibitsSetPassword.php',
             method: "POST",
             data: { 'exhibitorId': exhibitorId, type: 'exhibitor' },
             success: function (data, textStatus, jqXhr) {
                 if(data['error'] != undefined) { console.log(data['error']); }
                 alert(data['password']);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in emailReceipt: " + textStatus, jqXHR);
             }
         });
     }
 
-    // reset an contact's password
+    // reset a contact's password
     resetCpw(e, cell) {
         var contactId = cell.getRow().getCell("contactId").getValue();
         $.ajax({
-            url: 'scripts/setPassword.php',
+            url: 'scripts/exhibitsSetPassword.php',
             method: "POST",
             data: { 'contactId': contactId, type: 'contact' },
             success: function (data, textStatus, jqXhr) {
                 if(data['error'] != undefined) { console.log(data['error']); }
                 alert(data['password']);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in emailReceipt: " + textStatus, jqXHR);
             }
         });
+    }
+
+    // processApprovalChange - change the value of the approval record for this exhibitor
+    processApprovalChange(value, approvalData, approvalRow) {
+        this.#approvalRow = approvalRow
+        $.ajax({
+            url: 'scripts/exhibitsSetApproval.php',
+            method: "POST",
+            data: { approvalData: approvalData, approvalValue: value },
+            success: function (data, textstatus, jqXHR) {
+                exhibitors.approvalChangeSuccess(data);
+                },
+            error: showAjaxError
+        });
+    }
+
+    // approvalChangeSuccess - successful return from setting the record
+    approvalChangeSuccess(data) {
+        if (data['status'] == 'error') {
+            show_message(data['message'], 'error');
+        } else {
+            if (data['message'])
+                show_message(data['message'], 'success')
+            if (this.#approvalRow) {
+                this.#approvalRow.update(data['info']);
+            }
+        }
     }
 };
 
