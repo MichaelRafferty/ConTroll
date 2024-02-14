@@ -29,7 +29,7 @@
 /ConTroll.phpproj.user
 /launchSettings.json
 
-# The images need to be removed as we switch to the new image style, the others in section eed review.
+# The images need to be removed as we switch to the new image style, the others in section need review.
 /onlinereg/newbadge.html
 /onlinereg/javascript/d3-7.js
 /install/Reg_Install_Schema/reg_local*
