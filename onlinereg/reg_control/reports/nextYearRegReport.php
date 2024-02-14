@@ -38,7 +38,7 @@ EOS;
 
 echo "TID, name, email, type, amount_paid, date, printed, first printed, transaction type\n";
 
-$reportR = dbSafeQuery($query, 'i', array($conid));
+$reportR = dbSafeQuery($query, 'i', array($conid+1));
 while($reportL = fetch_safe_array($reportR)) {
     for($i = 0 ; $i < count($reportL); $i++) {
         printf("\"%s\",", $reportL[$i]);

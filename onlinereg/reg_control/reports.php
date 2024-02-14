@@ -24,6 +24,7 @@ $conid=$con['id'];
 ?>
 <div id='main'>
   <a href='reports/regReport.php'>Registration Report</a><br/>
+  <a href='reports/nextYearRegReport.php'>Next Year Registration Report</a><br/>
   <a href='reports/newMembers.php'>New Members</a><br/>
   <a href='reports/duplicates.php'>Duplicate Memberships</a><br/>
   <a href='reports/badgeTypes.php'>Badge Types</a><br/>
