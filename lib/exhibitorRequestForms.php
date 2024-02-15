@@ -1,7 +1,7 @@
 <?php
 
 // draw the vendor request modal
-function draw_vendorReqModal()
+function draw_vendorReqModal($portalType = '')
 {
     $vendor_conf = get_conf('vendor');
     ?>
@@ -19,12 +19,14 @@ function draw_vendorReqModal()
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
                         <form id='vendor_req_form' action='javascript:void(0)'>
+                            <?php if ($portalType == '') { ?>
                             <div class='row p-0 bg-warning'>
                                 <div class='col-sm-12 p-2'>
                                     Please make sure your profile contains a good description of what you will be vending and a link for our staff to see what
                                     you sell if at all possible.
                                 </div>
                             </div>
+                            <?php } ?>
                             <div id="spaceHtml"></div>
                             <div class='row p-1 pt-4 pb-3'>
                                 <div class='col-sm-12'>
@@ -47,10 +49,12 @@ function draw_vendorReqModal()
                                     <?php
                                 }
                             }
+                            if ($portalType == '') {
                             ?>
                             <div class='row p-0 bg-warning'>
                                 <div class='col-sm-auto p-2'>Completing this application does not guarantee space.</div>
                             </div>
+                            <?php } ?>
                         </form>
                         <div class="row" id="sr_message_div"></div>
                     </div>

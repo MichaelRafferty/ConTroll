@@ -490,3 +490,10 @@ function saveEdit() {
         }
 
 }
+
+// blankIfNull - return empty string if argument is nullk
+function blankIfNull(value) {
+    if (value == null)
+        return '';
+    return value;
+}

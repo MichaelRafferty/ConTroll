@@ -123,8 +123,15 @@ function openReq(regionYearId, cancel) {
     document.getElementById("spaceHtml").innerHTML = spaceHtml;
 
     // update fields
-    document.getElementById("vendor_req_title").innerHTML = "<strong>" + (cancel ? 'Change/Cancel ' : '') + regionName + ' Space Request</strong>';
-    document.getElementById("vendor_req_btn").innerHTML = (cancel ? "Change/Cancel " : "Request ") + regionName + ' Space';
+    var prompt = ' ';
+    if (cancel == 1)
+        prompt = 'Change/Cancel ';
+    if (cancel == 2)
+        prompt = 'Approve ';
+    document.getElementById("vendor_req_title").innerHTML = "<strong>" + prompt + regionName + ' Space Request</strong>';
+    if (cancel == 0)
+        prompt = 'Request';
+    document.getElementById("vendor_req_btn").innerHTML = prompt + regionName + ' Space';
     var selection = document.getElementById('vendor_req_price_id');
     //selection.innerHTML = options;
     //if (cancel) selection.value = cancel;
@@ -197,8 +204,13 @@ function spaceReq(regionYearId, cancel) {
         'type': config['portalType'],
         'name': config['portalName'],
     };
+    var url = 'scripts/spaceReq.php';
+    if (cancel == 2) {
+       url = 'scripts/exhibitorsSpaceApproval.php';
+       dataobj['approvalType'] = 'other';
+    }
     $.ajax({
-        url: 'scripts/spaceReq.php',
+        url: url,
         data: dataobj,
         method: 'POST',
         success: function (data, textstatus, jqxhr) {
