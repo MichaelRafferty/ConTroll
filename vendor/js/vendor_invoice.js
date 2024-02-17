@@ -336,7 +336,7 @@ function updatePaidStatusBlock() {
     }
 
     if (spaceStatus == '') {
-        blockdiv.innerHTML = "<div class=\"col-sm-auto p-0\"><button class='btn btn-primary' onclick = 'openReq(regionYearId, 0);' > Request " + regionName + " Space</button></div>";
+        blockdiv.innerHTML = "<div class=\"col-sm-auto p-0\"><button class='btn btn-primary' onclick = 'exhibitorRequest.openReq(regionYearId, 0);' > Request " + regionName + " Space</button></div>";
         return;
     }
 

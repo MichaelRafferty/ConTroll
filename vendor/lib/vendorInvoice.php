@@ -251,7 +251,7 @@ if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclai
 <?php
 }
 
-// vendor_showRequest -> show the current request and the change/cancel button
+// vendor_showInvoice -> show the current request and the change/cancel button
 function vendor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList)
 {
     $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);

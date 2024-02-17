@@ -31,7 +31,7 @@ $exhibitorId = $_POST['exhibitorId'];
 $regionQ = <<<EOS
 SELECT ert.portalType, ert.requestApprovalRequired, ert.purchaseApprovalRequired,ert.purchaseAreaTotals,ert.mailInAllowed, ert.mailinMaxUnits, ert.inPersonMaxUnits,
 er.name, er.shortname, er.description, er.sortorder,
-ery.ownerName, ery.ownerEmail, ery.id, ery.includedMemId, ery.additionalMemId, ery.totalUnitsAvailable, ery.conid,
+ery.ownerName, ery.ownerEmail, ery.id, ery.includedMemId, ery.additionalMemId, ery.totalUnitsAvailable, ery.conid, ery.mailinFee,
 mi.price AS includedMemPrice, ma.price AS additionalMemPrice
 FROM exhibitsRegionTypes ert
 JOIN exhibitsRegions er ON er.regionType = ert.regionType
@@ -148,7 +148,7 @@ $exhibitorSR->free();
 
 $response['region_list'] = $region_list;
 $response['exhibits_spaces'] = $space_list;
-$response['vendor_info'] = $info;
+$response['exhibitor_info'] = $info;
 $response['exhibitor_spacelist'] = $exhibitorSpaceList;
 $response['regions'] = $regions;
 $response['spaces'] = $spaces;

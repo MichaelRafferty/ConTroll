@@ -1,6 +1,6 @@
 //import { TabulatorFull as Tabulator } from 'tabulator-tables';
 // globals required for exhibitorProfile.js
-vendor_info = null;
+exhibitor_info = null;
 exhibitorProfile = null;
 region_list = null;
 exhibits_spaces = null;
@@ -612,7 +612,7 @@ class exhibitorsAdm {
     editExhibitor(exhibitor, exhibitorRow = null) {
         if (this.#debug & 4)
             console.log(exhibitor);
-    vendor_info = exhibitor;
+    exhibitor_info = exhibitor;
     exhibitorProfile.profileModalOpen('update', exhibitor['exhibitorId'], exhibitor['contactId'], exhibitorRow);
     }
 
@@ -719,7 +719,6 @@ class exhibitorsAdm {
             error: showAjaxError
         });
 
-        //openReq(exhibitorData['regionYearId'], true);
     }
 
     // spaceApprovalSuccess - successful return from marking the space approval
@@ -739,12 +738,12 @@ class exhibitorsAdm {
     spaceAppDataSuccess(data) {
         region_list = data['region_list'];
         exhibits_spaces = data['exhibits_spaces'];
-        vendor_info = data['vendor_info'];
+        exhibitor_info = data['exhibitor_info'];
         exhibitor_spacelist = data['exhibitor_spacelist'];
         regions = data['regions'];
         spaces = data['spaces'];
         country_options = data['country_options'];
-        openReq(this.#regionYearId, 2);
+        exhibitorRequest.openReq(this.#regionYearId, 2);
     }
 };
 
@@ -758,7 +757,7 @@ function getExhibitorDataDraw(data, textStatus, jqXHR) {
 // create class on page render
 window.onload = function initpage() {
     exhibitors = new exhibitorsAdm(config['conid'], config['debug']);
-    vendorRequestOnLoad();
+    exhibitorRequestOnLoad();
 }
 
 /*

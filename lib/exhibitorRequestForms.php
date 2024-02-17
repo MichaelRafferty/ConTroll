@@ -1,24 +1,24 @@
 <?php
 
 // draw the vendor request modal
-function draw_vendorReqModal($portalType = '')
+function draw_exhibitorRequestModal($portalType = '')
 {
-    $vendor_conf = get_conf('vendor');
+    $exhibitor_conf = get_conf('vendor');
     ?>
     <!-- request -->
-    <div id='vendor_req' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request $spacetitle Space' aria-hidden='true'
+    <div id='exhibitor_req' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request $spacetitle Space' aria-hidden='true'
          style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title' id="vendor_req_title">
+                    <div class='modal-title' id="exhibitor_req_title">
                         <strong>Vendor Space Request</strong>
                     </div>
                     <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
-                        <form id='vendor_req_form' action='javascript:void(0)'>
+                        <form id='exhibitor_req_form' action='javascript:void(0)'>
                             <?php if ($portalType == '') { ?>
                             <div class='row p-0 bg-warning'>
                                 <div class='col-sm-12 p-2'>
@@ -36,8 +36,8 @@ function draw_vendorReqModal($portalType = '')
                                 </div>
                             </div>
                             <?php
-                            if (array_key_exists('req_disclaimer', $vendor_conf) && $vendor_conf['req_disclaimer'] != '') {
-                                $discfile = '../config/' . $vendor_conf['req_disclaimer'];
+                            if (array_key_exists('req_disclaimer', $exhibitor_conf) && $exhibitor_conf['req_disclaimer'] != '') {
+                                $discfile = '../config/' . $exhibitor_conf['req_disclaimer'];
                                 if (is_readable($discfile)) {
                                     $disclaimer = file_get_contents($discfile);
                                     ?>
@@ -61,7 +61,7 @@ function draw_vendorReqModal($portalType = '')
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='vendor_req_btn' onClick="spaceReq(0, 0)">Request Vendor Space</button>
+                    <button class='btn btn-sm btn-primary' id='exhibitor_req_btn' onClick="spaceReq(0, 0)">Request Vendor Space</button>
                 </div>
             </div>
         </div>
@@ -69,8 +69,8 @@ function draw_vendorReqModal($portalType = '')
     <?php
 }
 
-// vendor_showRequest -> show the current request and the change/cancel button
-function vendor_showRequest($regionId, $regionName, $regionSpaces, $exhibitorSpaceList) {
+// exhibitor_showRequest -> show the current request and the change/cancel button
+function exhibitor_showRequest($regionId, $regionName, $regionSpaces, $exhibitorSpaceList) {
     $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
     echo "Request pending authorization for:<br/>\n";
@@ -85,6 +85,6 @@ function vendor_showRequest($regionId, $regionName, $regionSpaces, $exhibitorSpa
                 " at $date<br/>\n";
         }
     }
-    echo "<button class='btn btn-primary' onclick='openReq($regionId, 1);'>Change/Cancel $regionName Space</button>";
+    echo "<button class='btn btn-primary' onclick='exhibitorRequest.openReq($regionId, 1);'>Change/Cancel $regionName Space</button>";
 
 }

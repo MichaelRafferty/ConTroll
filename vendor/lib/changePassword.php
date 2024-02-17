@@ -61,7 +61,7 @@ EOH;
         var config = $cv;
         var pwtype = '$pwtype';
 EOH;
-        $html .= "var vendor_info = " . json_encode($info) . ";";
+        $html .= "var exhibitor_info = " . json_encode($info) . ";";
         $html .= <<<EOH
     </script>
 </html>

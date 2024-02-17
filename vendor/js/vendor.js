@@ -20,9 +20,9 @@ window.onload = function () {
     }
 
     exhibitorProfile = new ExhibitorProfile(config['debug']);
-    vendorRequestOnLoad();
+    exhibitorRequestOnLoad();
     vendorInvoiceOnLoad()
-    if (vendor_info['needReview']) {
+    if (exhibitor_info['needReview']) {
         exhibitorProfile.profileModalOpen('review');
     }
 }

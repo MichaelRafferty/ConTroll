@@ -40,7 +40,7 @@ echo <<<EOF
     <script type='text/javascript' src='js/base.js'></script>
     <script type='text/javascript' src='js/vendor.js'></script>
     <script type='text/javascript' src='jslib/exhibitorProfile.js'></script>
-    <script type='text/javascript' src='jslib/exhibitorReq.js'></script>
+    <script type='text/javascript' src='jslib/exhibitorRequest.js'></script>
     <script type='text/javascript' src='js/vendor_invoice.js'></script>
     <script type='text/javascript' src='js/tinymce/tinymce.min.js'></script>
 </head>

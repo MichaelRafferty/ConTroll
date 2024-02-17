@@ -1,6 +1,6 @@
 <?php
 require_once "lib/base.php";
-require_once "../../lib/exhibitorRegForms.php";
+require_once "../../lib/exhibitorRegistrationForms.php";
 require_once "../../lib/exhibitorRequestForms.php";
 
 //initialize google session
@@ -23,7 +23,7 @@ page_init($page,
                     'js/base.js',
                     'jslib/exhibitorProfile.js',
                     'js/vendor.js',
-                    'jslib/exhibitorReq.js',
+                    'jslib/exhibitorRequest.js',
                     'js/tinymce/tinymce.min.js'
                    ),
               $need_login);
@@ -76,7 +76,7 @@ $config_vars['vendorsite'] = $vendor_conf['vendorsite'];
 $config_vars['debug'] = $debug['reg_control_exhibitors'];
 
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
-draw_vendorReqModal('admin');
+draw_exhibitorRequestModal('admin');
 ?>
 <div id='main'>
     <ul class='nav nav-tabs mb-3' id='exhibitor-tab' role='tablist'>

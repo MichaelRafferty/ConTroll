@@ -4,7 +4,7 @@ require_once("lib/base.php");
 require_once("lib/vendorInvoice.php");
 require_once("lib/vendorYears.php");
 require_once("lib/changePassword.php");
-require_once("../lib/exhibitorRegForms.php");
+require_once("../lib/exhibitorRegistrationForms.php");
 require_once('../lib/exhibitorRequestForms.php');
 require_once("../lib/cc__load_methods.php");
 global $config_vars;
@@ -331,7 +331,7 @@ $exhibitorSR->free();
     var config = <?php echo json_encode($config_vars); ?>;
     var region_list = <?php echo json_encode($region_list); ?>;
     var exhibits_spaces = <?php echo json_encode($space_list); ?>;
-    var vendor_info = <?php echo json_encode($info); ?>;
+    var exhibitor_info = <?php echo json_encode($info); ?>;
     var exhibitor_spacelist = <?php echo json_encode($exhibitorSpaceList); ?>;
     var regions = <?php echo json_encode($regions); ?>;
     var spaces = <?php echo json_encode($spaces); ?>;
@@ -340,7 +340,7 @@ $exhibitorSR->free();
 <?php
 draw_registrationModal($portalType, $portalName, $con, $countryOptions);
 draw_passwordModal();
-draw_vendorReqModal();
+draw_exhibitorRequestModal();
 draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $portalName);
 ?>
     <!-- now for the top of the form -->
@@ -467,9 +467,9 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $portalName)
                         else if ($approved > 0)
                             vendor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
                         else if ($requested > 0)
-                            vendor_showRequest($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
+                            exhibitor_showRequest($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
                         else
-                            echo "<button class='btn btn-primary' onclick = 'openReq($regionYearId, 0);' > Request $regionName Space</button>" . PHP_EOL;
+                            echo "<button class='btn btn-primary' onclick = 'exhibitorRequest.openReq($regionYearId, 0);' > Request $regionName Space</button>" . PHP_EOL;
                 }
         }
         ?>

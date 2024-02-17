@@ -161,19 +161,19 @@ class ExhibitorProfile {
                 show_message(data['message'], 'success')
             if (data['info']) {
                 if (config['debug'] & 7) {
-                    console.log("before update of vendor_info");
-                    console.log(vendor_info);
+                    console.log("before update of exhibitor_info");
+                    console.log(exhibitor_info);
                 }
-                vendor_info = data['info'];
+                exhibitor_info = data['info'];
                 if (config['debug'] & 7) {
-                    console.log("after update of vendor_info");
-                    console.log(vendor_info);
+                    console.log("after update of exhibitor_info");
+                    console.log(exhibitor_info);
                 }
                 if (config['debug'] & 1)
                     console.log(data);
             }
             if (this.#exhibitorRow) {
-                this.#exhibitorRow.update(vendor_info);
+                this.#exhibitorRow.update(exhibitor_info);
             }
         }
     }
@@ -213,13 +213,13 @@ class ExhibitorProfile {
             }
 
             this.#creatingAccountMsgDiv.hidden = true;
-            var keys = Object.keys(vendor_info);
+            var keys = Object.keys(exhibitor_info);
             for (var keyindex in keys) {
                 var key = keys[keyindex];
                 if (key == 'eNeedNew' || key == 'cNeedNew' || key == 'eConfirm' || key == 'cConfirm')
                     continue;
 
-                var value = vendor_info[key];
+                var value = exhibitor_info[key];
                 if (this.#debugFlag & 16)
                     console.log(key + ' = "' + value + '"');
                 if (key == 'mailin') {
