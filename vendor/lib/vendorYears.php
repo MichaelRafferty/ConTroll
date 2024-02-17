@@ -129,8 +129,7 @@ EOS;
 
 
 // vendorCheckMissingSpaces - check for missing approval and space records for newly created spaces
-function vendorCheckMissingSpaces($exhibitor, $yearId): bool|string
-{
+function vendorCheckMissingSpaces($exhibitor, $yearId) {
     $con = get_conf('con');
     $conid = $con['id'];
 
@@ -182,5 +181,16 @@ EOS;
         $newid = dbSafeInsert($insQ, $instypes, array($exhibitor, $appL['exhibitsRegionYearId'], $approval, 2));
     }
     $appR->free();
-    return false;
+
+    // now build spaces for this year that don't exist
+    $insSpQ = <<<EOS
+INSERT INTO exhibitorSpaces(exhibitorYearId, spaceId)
+SELECT ?, es.id
+FROM exhibitsSpaces es
+JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id
+LEFT OUTER JOIN exhibitorSpaces eS ON eS.spaceId = es.id
+WHERE ery.conid = ? AND eS.id is null;
+EOS;
+    $numRows = dbSafeCmd($insSpQ, 'ii', array($yearId, $conid));
+    return;
 }
