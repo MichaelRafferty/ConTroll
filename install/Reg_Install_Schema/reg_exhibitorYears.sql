@@ -23,6 +23,7 @@ CREATE TABLE `exhibitorYears` (
   `need_new` tinyint(1) DEFAULT '1',
   `confirm` tinyint(1) DEFAULT '0',
   `needReview` tinyint(1) NOT NULL DEFAULT '1',
+  `exhibitorNumber` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `ey_exhibitors_fk` (`exhibitorId`),
   KEY `ey_conlist_fk` (`conid`)

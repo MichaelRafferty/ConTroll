@@ -24,6 +24,7 @@ CREATE TABLE `exhibitorSpaces` (
   `paid` decimal(8,2) DEFAULT NULL,
   `transid` int DEFAULT NULL,
   `membershipCredits` int DEFAULT '0',
+  `locations` varchar(265) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `es_exhibitorYears_fk` (`exhibitorYearId`),
   KEY `es_transaction_fk` (`transid`),

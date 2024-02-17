@@ -19,6 +19,7 @@ CREATE TABLE `exhibitsRegionYears` (
   `includedMemId` int DEFAULT NULL,
   `additionalMemId` int DEFAULT NULL,
   `totalUnitsAvailable` int NOT NULL DEFAULT '0',
+  `mailinFee` decimal(8,2) NOT NULL DEFAULT '0.00',
   `sortorder` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `ery_memList_a` (`additionalMemId`),

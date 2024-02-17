@@ -21,6 +21,8 @@ CREATE TABLE `exhibitsRegionTypes` (
   `mailinMaxUnits` int NOT NULL DEFAULT '0',
   `sortorder` int NOT NULL DEFAULT '0',
   `active` enum('N','Y') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Y',
+  `needW9` enum('N','Y') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
+  `usesInventory` enum('N','Y') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
   PRIMARY KEY (`regionType`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
