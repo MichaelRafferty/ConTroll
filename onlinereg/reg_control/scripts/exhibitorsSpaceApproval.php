@@ -50,7 +50,9 @@ EOS;
             $response['message'] = 'Nothing to change';
         }
         break;
-    case 'other':
+    case 'other': // this is either admin approve other or admin change approval functions
+
+        // requests = each space price id in the format
         break;
 
     default:
