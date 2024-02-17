@@ -94,12 +94,14 @@ switch ($tablename) {
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO exhibitsRegionTypes(regionType, portalType, requestApprovalRequired, purchaseApprovalRequired, purchaseAreaTotals, inPersonMaxUnits, mailinAllowed, mailinMaxUnits, sortorder, active)
-VALUES(?,?,?,?,?,?,?,?,?,?);
+INSERT INTO exhibitsRegionTypes(regionType, portalType, requestApprovalRequired, purchaseApprovalRequired, purchaseAreaTotals, 
+                                inPersonMaxUnits, mailinAllowed, mailinMaxUnits, needW9, usesInventory, sortorder, active)
+VALUES(?,?,?,?,?,?,?,?,?,?, ?, ?);
 EOS;
         $updsql = <<<EOS
 UPDATE exhibitsRegionTypes
-SET regionType = ?, portalType = ?, requestApprovalRequired = ?, purchaseApprovalRequired = ?, purchaseAreaTotals = ?, inPersonMaxUnits = ?, mailinAllowed = ?, mailinMaxUnits = ?, sortorder = ?, active = ?
+SET regionType = ?, portalType = ?, requestApprovalRequired = ?, purchaseApprovalRequired = ?, purchaseAreaTotals = ?, 
+    inPersonMaxUnits = ?, mailinAllowed = ?, mailinMaxUnits = ?, needW9 = ?, usesInventory = ?, sortorder = ?, active = ?
 WHERE regionType = ?;
 EOS;
 
@@ -120,8 +122,9 @@ EOS;
                 } else {
                     $mailinMaxUnits = null;
                 }
-                $numrows = dbSafeCmd($updsql, 'sssssisiiss', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'],
-                    $row['purchaseAreaTotals'], $inPersonMaxUnits, $row['mailinAllowed'], $mailinMaxUnits, $row['sortorder'], $row['active'],$row[$keyfield]));
+                $numrows = dbSafeCmd($updsql, 'sssssisississ', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'],
+                    $row['purchaseAreaTotals'], $inPersonMaxUnits, $row['mailinAllowed'], $mailinMaxUnits, $row['needW9'], $row['usesInventory'],
+                    $row['sortorder'], $row['active'],$row[$keyfield]));
                 $updated += $numrows;
             }
         }
@@ -143,8 +146,9 @@ EOS;
                 } else {
                     $mailinMaxUnits = null;
                 }
-                $numrows = dbSafeInsert($inssql, 'sssssisiis', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'],
-                    $row['purchaseAreaTotals'], $inPersonMaxUnits, $row['mailinAllowed'], $mailinMaxUnits, $row['sortorder'], $row['active']));
+                $numrows = dbSafeInsert($inssql, 'sssssisissis', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'],
+                    $row['purchaseAreaTotals'], $inPersonMaxUnits, $row['mailinAllowed'], $mailinMaxUnits, $row['needW9'], $row['usesInventory'],
+                    $row['sortorder'], $row['active']));
                 if ($numrows !== false)
                     $inserted++;
             }
@@ -216,12 +220,12 @@ EOS;
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, sortorder)
-VALUES(?,?,?,?,?,?,?,?);
+INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, mailinFee, sortorder)
+VALUES(?,?,?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE exhibitsRegionYears
-SET exhibitsRegion = ?, ownerName = ?, ownerEmail = ?, includedMemId = ?, additionalMemId = ?, totalUnitsAvailable = ?, sortorder = ?
+SET exhibitsRegion = ?, ownerName = ?, ownerEmail = ?, includedMemId = ?, additionalMemId = ?, totalUnitsAvailable = ?, mailinFee = ?, sortorder = ?
 WHERE id = ?;
 EOS;
 
@@ -247,8 +251,8 @@ EOS;
                 } else {
                     $totalUnitsAvailable = 0;
                 }
-                $numrows = dbSafeCmd($updsql, 'sssiiiii', array($row['exhibitsRegion'], $row['ownerName'], $row['ownerEmail'],
-                    $row['includedMemId'], $row['additionalMemId'], $totalUnitsAvailable, $row['sortorder'], $row[$keyfield]));
+                $numrows = dbSafeCmd($updsql, 'sssiiidii', array($row['exhibitsRegion'], $row['ownerName'], $row['ownerEmail'],
+                    $row['includedMemId'], $row['additionalMemId'], $totalUnitsAvailable, $row['mailinFee'], $row['sortorder'], $row[$keyfield]));
                 $updated += $numrows;
             }
         }
@@ -275,8 +279,8 @@ EOS;
                 } else {
                     $totalUnitsAvailable = 0;
                 }
-                $numrows = dbSafeInsert($inssql, 'iissiiii', array($conid, $row['exhibitsRegion'], $row['ownerName'], $row['ownerEmail'],
-                    $includedMemId, $additionalMemId, $totalUnitsAvailable, $row['sortorder']));
+                $numrows = dbSafeInsert($inssql, 'iissiiidi', array($conid, $row['exhibitsRegion'], $row['ownerName'], $row['ownerEmail'],
+                    $includedMemId, $additionalMemId, $totalUnitsAvailable, $row['mailinFee'], $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }

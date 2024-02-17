@@ -55,6 +55,7 @@ class exhibitssetup {
     #conid = null;
     #debug = 0;
     #debugVisible = false;
+    #priceregexp = 'regex:^([0-9]+([.][0-9]*)?|[.][0-9]+)';
 
 
     // globals before open
@@ -427,6 +428,8 @@ class exhibitssetup {
                 { title: "Mail-in Allowed", field: "mailinAllowed", headerSort: true, width: 100, headerWordWrap: true, editor: "list", editorParams: {
                     values: ['Y', 'N'] }, validator: "required" },
                 { title: "Mail-in Max Units", field: "mailinMaxUnits", headerSort: true, width: 100, headerWordWrap: true, editor: "input" },
+                { title: "Need W9", field: "needW9", headerSort: false, width: 0, headerWordWrap: true, editor: "list", editorParams: { values: ['Y', 'N'] }, validator: "required" },
+                { title: "Uses Inventory", field: "usesInventory", headerSort: false, width: 0, headerWordWrap: true, editor: "list", editorParams: { values: ['Y', 'N'] }, validator: "required" },
                 { title: "Active", field: "active", headerSort: true, width: 80, editor: "list", editorParams: { values: ['Y', 'N'] }, validator: "required" },
                 { title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 { title: "Orig Key", field: "regionTypeKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
@@ -570,6 +573,7 @@ class exhibitssetup {
                     editor: "list", formatter:"lookup", formatterParams: this.#memListArr, editorParams: { values: this.#memListArr  }
                 },
                 {title: 'Total Units Avail', field: "totalUnitsAvailable", width: 60, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "input", editorParams: {maxlength: "10"}},
+                {title: 'Mail In Fee', field: "mailinFee", width: 60, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "input", validator: ["required", this.#priceregexp],},
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "regionYearKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
