@@ -26,10 +26,10 @@ $vendor = '';
 
 $reg_link = "<a href='$regserver'>Convention Registration</a>";
 
-if (str_starts_with('artist', $_SERVER['HTTP_HOST'])){
+if (str_starts_with($_SERVER['HTTP_HOST'], 'artist')){
     $portalName = 'Artist';
     $portalType = 'artist';
-} else if (str_starts_with('exhibit', $_SERVER['HTTP_HOST'])){
+} else if (str_starts_with($_SERVER['HTTP_HOST'], 'exhibit')){
     $portalName = 'Exhibitor';
     $portalType = 'exhibitor';
 } else {
