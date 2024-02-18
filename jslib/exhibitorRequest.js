@@ -90,8 +90,12 @@ class ExhibitorRequest {
                 space = region[keys[col]];
                 var reg_item = -1;
                 var exSpace = exhibitor_spacelist[keys[col]];
-                if (exSpace)
-                    req_item = exSpace.item_requested;
+                if (exSpace) {
+                    if (exSpace.item_approved)
+                        req_item = exSpace.item_approved;
+                    else
+                        req_item = exSpace.item_requested;
+                }
 
                 // build option pulldown
                 var options = "<option value='-1'" + (reg_item == -1 ? ' selected>' : '>') + (cancel ? 'Cancel' : 'No') + " Space Requested</option>\n";
@@ -106,7 +110,7 @@ class ExhibitorRequest {
                         }
                         sel = "'>";
                         if (exSpace) {
-                            if (exSpace.item_requested == price.id) {
+                            if (req_item == price.id) {
                                 totalUnitsRequested += Number(price.units);
                                 sel = "' selected>";
                             }
@@ -227,7 +231,10 @@ class ExhibitorRequest {
         if (cancel == 2) {
             url = 'scripts/exhibitorsSpaceApproval.php';
             dataobj['approvalType'] = 'other';
+            dataobj['exhibitorId'] = exhibitor_info['exhibitorId'];
+            dataobj['exhibitorYearId'] = exhibitor_info['exhibitorYearId'];
         }
+        var _this = this;
         $.ajax({
             url: url,
             data: dataobj,
@@ -243,7 +250,7 @@ class ExhibitorRequest {
                     exhibitor_spacelist = data['exhibitor_spacelist'];
                 }
                 if (data['success'] !== undefined) {
-                    this.#exhibitor_request.hide();
+                    _this.#exhibitor_request.hide();
                     show_message(data['success'], 'success');
                     updateRequestStatusBlock(regionYearId);
                 }

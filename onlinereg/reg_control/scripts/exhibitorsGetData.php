@@ -139,7 +139,7 @@ FROM vw_ExhibitorSpace xS
 JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
 JOIN exhibitsRegionYears eRY ON eS.exhibitsRegionYear = eRY.id
 JOIN exh ON (xS.exhibitorId = exh.id)
-WHERE eRY.conid=? AND eRY.exhibitsRegion = ? AND IFNULL(requested_units, 0) > 0
+WHERE eRY.conid=? AND eRY.exhibitsRegion = ? AND (IFNULL(requested_units, 0) > 0 OR IFNULL(approved_units, 0) > 0)
 ORDER BY sortOrder, exhibitorName, spaceName
 EOS;
 
