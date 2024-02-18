@@ -372,11 +372,13 @@ class exhibitorsAdm {
                 '</div>';
             }
         }
-        region['space'] = spaceHTML + "</div>";
-        region['req'] = req;
-        region['app'] = app;
-        region['pur'] = pur;
-        regions.push(make_copy(region));
+        if (currentRegion > 0) {
+            region['space'] = spaceHTML + "</div>";
+            region['req'] = req;
+            region['app'] = app;
+            region['pur'] = pur;
+            regions.push(make_copy(region));
+        }
 
         console.log("regions:");
         console.log(regions);
