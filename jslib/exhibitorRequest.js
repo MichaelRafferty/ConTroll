@@ -252,7 +252,10 @@ class ExhibitorRequest {
                 if (data['success'] !== undefined) {
                     _this.#exhibitor_request.hide();
                     show_message(data['success'], 'success');
-                    updateRequestStatusBlock(regionYearId);
+                    if (cancel == 2)
+                        exhibitors.UpdateSpaceRow(data);
+                    else
+                        updateRequestStatusBlock(regionYearId);
                 }
                 if (data['warn'] !== undefined) {
                     show_message(data['warn'], 'warn', 'sr_message_div');

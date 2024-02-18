@@ -19,6 +19,7 @@ if (!array_key_exists('approvalType', $_POST)) {
     ajaxError('No Data');
 }
 $approvalType = $_POST['approvalType'];
+$regionYearId = $_POST['regionYearId'];
 
 switch ($approvalType) {
     case 'req':
@@ -67,6 +68,7 @@ EOS;
 
         // requests = each space price id in the format
         $requests = $_POST['requests'];
+        $exhibitorId = $_POST['exhibitorId'];
         $exhibitorYearId = $_POST['exhibitorYearId'];
         $requests = explode('&',$requests);
         $num_rows = 0;
@@ -95,5 +97,49 @@ EOS;
         $response['error'] =  'Bad type passed, get help';
 }
 
+if (array_key_exists('success', $response)) {
+    // detail of space for this region
+    $details = array();
+    $detailQ = <<<EOS
+WITH exh AS (
+SELECT e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id AS exhibitorYearId, 
+	SUM(IFNULL(espr.units, 0)) AS ru, SUM(IFNULL(espa.units, 0)) AS au, SUM(IFNULL(espp.units, 0)) AS pu
+FROM exhibitorSpaces eS
+LEFT OUTER JOIN exhibitsSpacePrices espr ON (eS.item_requested = espr.id)
+LEFT OUTER JOIN exhibitsSpacePrices espa ON (eS.item_approved = espa.id)
+LEFT OUTER JOIN exhibitsSpacePrices espp ON (eS.item_purchased = espp.id)
+JOIN exhibitorYears eY ON (eY.id = eS.exhibitorYearId)
+JOIN exhibitors e ON (e.id = eY.exhibitorId)
+JOIN exhibitsSpaces s ON (s.id = eS.spaceId)
+JOIN exhibitsRegionYears eRY ON s.exhibitsRegionYear = eRY.id
+WHERE eY.conid = ? AND eRY.id = ?
+GROUP BY e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id
+)
+SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.website, exh.exhibitorEmail,
+    xS.spaceId, xS.name as spaceName, xS.item_requested, xS.time_requested, xS.requested_units, xS.requested_code, xS.requested_description,
+    xS.item_approved, xS.time_approved, xS.approved_units, xS.approved_code, xS.approved_description,
+    xS.item_purchased, xS.time_purchased, xS.purchased_units, xS.purchased_code, xS.purchased_description, xS.transid,
+    eRY.id AS exhibitsRegionYearId, eRY.exhibitsRegion AS regionId,
+    exh.pu * 10000 + exh.au * 100 + exh.ru AS sortOrder
+FROM vw_ExhibitorSpace xS
+JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
+JOIN exhibitsRegionYears eRY ON eS.exhibitsRegionYear = eRY.id
+JOIN exh ON (xS.exhibitorId = exh.id)
+WHERE eRY.conid=? AND eRY.id = ? AND (IFNULL(requested_units, 0) > 0 OR IFNULL(approved_units, 0) > 0)
+ORDER BY sortOrder, exhibitorName, spaceName
+EOS;
+
+    $detailR = dbSafeQuery($detailQ, 'iiii', array($conid, $regionYearId, $conid, $regionYearId));
+
+    while ($detailL = $detailR->fetch_assoc()) {
+        $detail = $detailL;
+        $detail['b1'] = time();
+        $detail['b2'] = time();
+        $detail['b3'] = time();
+        $details[] = $detail;
+    }
+
+    $response['detail'] = $details;
+}
 ajaxSuccess($response);
 ?>

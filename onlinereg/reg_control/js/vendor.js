@@ -25,6 +25,7 @@ class exhibitorsAdm {
     #exhibitorId = null;
     #regionId = null;
     #regionYearId = null;
+    #regionGroupId = '';
 
     // approvals items
     #approvalsTable = null;
@@ -180,6 +181,7 @@ class exhibitorsAdm {
         // add in tabs for spaces, approvals and exhibitor
         var region = regions[regionName];
         var groupid = 'data-' + region['id'];
+        this.#regionGroupId = groupid;
         html += "<ul class='nav nav-tabs mb-3' id='" + groupid + "-tab' role='tablist'>\n" +
             "<li class='nav-item' role='presentation'>\n" +
             "<button class='nav-link active' id='" + groupid + "-spaces-tab' data-bs-toggle='pill' data-bs-target='#" + groupid + "-spaces-pane' type='button' role='tab' aria-controls='nav-spaces'\n" +
@@ -212,7 +214,7 @@ class exhibitorsAdm {
         this.#spacesTabs[groupid + '-app'] = document.getElementById(groupid + '-app-content');
         this.#spacesTabs[groupid + '-exh'] = document.getElementById(groupid + '-exh-content');
         this.settabData(groupid + '-spaces-pane');
-        this.drawSpacesTable(data,  groupid);
+        this.drawSpacesTable(data,  groupid, true);
         if (region['requestApprovalRequired'] != 'None') {
             this.drawApprovalsTable(data, groupid);
         }
@@ -308,11 +310,7 @@ class exhibitorsAdm {
     }
 
     // drawSpacesTable - now that the DOM is created, draw the actual table
-    drawSpacesTable(data, groupid) {
-        //var requested = data['summary']['requested'];
-        //var approved = data['summary']['approved'];
-        //var purchased = data['summary']['purchased'];
-
+    drawSpacesTable(data, groupid, newTable) {
         // build new data array
         var regions = [];
         var region = null;
@@ -385,33 +383,65 @@ class exhibitorsAdm {
 
         console.log("regions:");
         console.log(regions);
-        this.#spacesTable = new Tabulator('#' + groupid + '-spaces-table-div', {
-            data: regions,
-            layout: "fitDataTable",
-            index: 'eYRid',
-            pagination: true,
-            paginationSize: 25,
-            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
-            columns: [
-                {title: "Exhibitor Space Requests Detail:", columns: [
-                        {title: "eYRid", field: "eYRid", visible: false},
-                        {title: "regionId", field: "regionId", visible: false},
-                        {field: "transid", visible: false },
-                        {field: "app", visible: false },
-                        {field: "req", visible: false },
-                        {field: "pur", visible: false },
-                        {title: "exhibitorId", field: "exhibitorId", visible: false},
-                        {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true,},
-                        {title: "Website", field: "website", width: 200, headerSort: true, headerFilter: true,},
-                        {title: "Email", field: "exhibitorEmail", width: 200, headerSort: true, headerFilter: true,},
-                        {title: "Requested, Approved, Purchased", field: "space",  width: 800, formatter: this.htmlFormatter, variableHeight: true, },
-                        {title: "", field: "s1", formatter: this.spaceApprovalButton, formatterParams: {name: 'Approve Req'}, maxWidth: 200, hozAlign: "center", cellClick: this.spApprovalReq, headerSort: false,},
-                        {title: "", field: "s2", formatter: this.spaceApprovalButton, formatterParams: {name: 'Approve Other'}, maxWidth: 200, hozAlign: "center", cellClick: this.spApprovalOther, headerSort: false,},
-                        {title: "", field: "s3", formatter: this.spaceApprovalButton, formatterParams: {name: 'Receipt'}, maxWidth: 200, hozAlign: "center", cellClick: exhibitors.spaceReceipt, headerSort: false,},
-                    ]
-                }
-            ]
-        });
+        if (newTable) {
+            this.#spacesTable = new Tabulator('#' + groupid + '-spaces-table-div', {
+                data: regions,
+                layout: "fitDataTable",
+                index: 'eYRid',
+                pagination: true,
+                paginationSize: 25,
+                paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+                columns: [
+                    {
+                        title: "Exhibitor Space Requests Detail:", columns: [
+                            {title: "eYRid", field: "eYRid", visible: false},
+                            {title: "regionId", field: "regionId", visible: false},
+                            {field: "transid", visible: false},
+                            {field: "app", visible: false},
+                            {field: "req", visible: false},
+                            {field: "pur", visible: false},
+                            {title: "exhibitorId", field: "exhibitorId", visible: false},
+                            {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true,},
+                            {title: "Website", field: "website", width: 200, headerSort: true, headerFilter: true,},
+                            {title: "Email", field: "exhibitorEmail", width: 200, headerSort: true, headerFilter: true,},
+                            {title: "Requested, Approved, Purchased", field: "space", width: 800, formatter: this.htmlFormatter, variableHeight: true,},
+                            {
+                                title: "",
+                                field: "s1",
+                                formatter: this.spaceApprovalButton,
+                                formatterParams: {name: 'Approve Req'},
+                                maxWidth: 200,
+                                hozAlign: "center",
+                                cellClick: this.spApprovalReq,
+                                headerSort: false,
+                            },
+                            {
+                                title: "",
+                                field: "s2",
+                                formatter: this.spaceApprovalButton,
+                                formatterParams: {name: 'Approve Other'},
+                                maxWidth: 200,
+                                hozAlign: "center",
+                                cellClick: this.spApprovalOther,
+                                headerSort: false,
+                            },
+                            {
+                                title: "",
+                                field: "s3",
+                                formatter: this.spaceApprovalButton,
+                                formatterParams: {name: 'Receipt'},
+                                maxWidth: 200,
+                                hozAlign: "center",
+                                cellClick: exhibitors.spaceReceipt,
+                                headerSort: false,
+                            },
+                        ]
+                    }
+                ]
+            });
+        } else {
+            this.#spacesTable.replaceData(regions);
+        }
     }
 
     // drawApprovalsTable - now that the DOM is created, draw the actual table
@@ -706,8 +736,8 @@ class exhibitorsAdm {
     }
 
     spaceApprovalOther(e, cell) {
-        var row = cell.getRow();
-        var exhibitorData = row.getData();
+        this.#spaceRow = cell.getRow();
+        var exhibitorData = this.#spaceRow.getData();
         this.#exhibitorId = exhibitorData['exhibitorId'];
         this.#regionId = exhibitorData['regionId'];
         this.#regionYearId = exhibitorData['regionYearId'];
@@ -749,6 +779,13 @@ class exhibitorsAdm {
         spaces = data['spaces'];
         country_options = data['country_options'];
         exhibitorRequest.openReq(this.#regionYearId, 2);
+    }
+
+    // update the row just changed
+    UpdateSpaceRow(details) {
+        if (this.#spaceRow) {
+            this.drawSpacesTable(details, this.#regionGroupId, false);
+        }
     }
 };
 
