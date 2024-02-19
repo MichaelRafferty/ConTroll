@@ -41,9 +41,9 @@ $exhibitorQ = <<<EOS
 SELECT e.id AS exhibitorId, ey.id AS exhibitorYearId, e.exhibitorName, e.exhibitorEmail, ey.contactName, ey.contactEmail, e.exhibitorName, e.website, e.description
 FROM exhibitors e
 JOIN exhibitorYears ey ON e.id = ey.exhibitorId
-WHERE ey.conid = ?;
+WHERE ey.conid = ? AND e.id = ?
 EOS;
-$exhibitorR = dbSafeQuery($exhibitorQ, 'i', array($conid));
+$exhibitorR = dbSafeQuery($exhibitorQ, 'ii', array($conid, $vendor));
 if ($exhibitorR == false || $exhibitorR->num_rows != 1) {
     ajaxError('Invalid Session');
     return;
