@@ -21,6 +21,7 @@ window.onload = function () {
 
     exhibitorProfile = new ExhibitorProfile(config['debug']);
     exhibitorRequestOnLoad();
+    auctionItemRegistrationOnLoad()
     vendorInvoiceOnLoad()
     if (exhibitor_info['needReview']) {
         exhibitorProfile.profileModalOpen('review');

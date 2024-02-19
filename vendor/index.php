@@ -3,6 +3,7 @@
 require_once("lib/base.php");
 require_once("lib/vendorInvoice.php");
 require_once("lib/changePassword.php");
+require_once("lib/auctionItemRegistrationForms.php");
 require_once('../lib/exhibitorYears.php');
 require_once("../lib/exhibitorRegistrationForms.php");
 require_once('../lib/exhibitorRequestForms.php');
@@ -344,6 +345,7 @@ draw_registrationModal($portalType, $portalName, $con, $countryOptions);
 draw_passwordModal();
 draw_exhibitorRequestModal();
 draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $portalName);
+draw_itemRegistrationModal($portalType);
 ?>
     <!-- now for the top of the form -->
      <div class='container-fluid'>
@@ -466,6 +468,9 @@ draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $portalName)
 
                         if ($paid > 0)
                             vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
+                            if($portalType == 'artist') {
+                                itemRegistrationOpenBtn();
+                            }
                         else if ($approved > 0)
                             vendor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
                         else if ($requested > 0)

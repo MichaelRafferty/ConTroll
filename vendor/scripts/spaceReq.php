@@ -23,10 +23,12 @@ $response['conid'] = $conid;
 
 // validate that the items passed are the VendorSpace id and the VendorSpacePrice id
 if (!array_key_exists('regionYearId', $_POST)) {
+    error_log("no regionYear");
     ajaxError('Invalid arguments');
     return;
 }
 if (!array_key_exists('requests', $_POST)) {
+    error_log("no requests");
     ajaxError('Invalid arguments');
     return;
 }
@@ -61,6 +63,7 @@ WHERE ery.id = ?;
 EOS;
 $regionR = dbSafeQuery($regionQ, 'i', array($regionYearId));
 if ($regionR == false || $regionR->num_rows != 1) {
+    error_log("regionQ: $regionQ with $regionYearId failed");
     ajaxError('Invalid arguments');
     return;
 }
@@ -71,7 +74,7 @@ $response['div'] = $regionInfo['shortname'] . '_div';
 $spaces = '';
 
 foreach ($requests as $key => $priceId) {
-     $spaceid = str_replace('vendor_req_price_id_', '', $key);
+     $spaceid = str_replace('exhbibitor_req_price_id_', '', $key); //TODO fix spelling here and wherever else it's wrong...
 
     if ($priceId > 0) {
         // get the details of the item requested
@@ -93,6 +96,7 @@ EOS;
 
     $price = $priceR->fetch_assoc();
     if ($price === null || $price === false)  {
+        error_log("PriceQ: $priceQ with $spaceId failed");
         ajaxError('Invalid arguments');
         return;
     }
