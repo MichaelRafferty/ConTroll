@@ -32,6 +32,3 @@ function auctionItemRegistrationOnLoad() {
     auctionItemRegistration = new AuctionItemRegistration();
 }
 
-function itemRegistrationOpenBtn() {
-    echo "<button class='btn btn-primary' onclick='auctionItemRegistration.open();'>Open Item Registration</button>";
-}
