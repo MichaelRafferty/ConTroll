@@ -521,41 +521,49 @@ draw_itemRegistrationModal($portalType);
                         $vendorSpaces = [];
                         $regionYearId = $region['id'];
                         $regionName = $region['name'];
-                        foreach ($space_list[$regionYearId] as $spaceId => $space) {
-                            if ($space['exhibitsRegionYear'] != $region['id'])
-                                continue;
+                        $foundSpace = false;
+                        if (array_key_exists($regionYearId, $space_list)) {
+                            foreach ($space_list[$regionYearId] as $spaceId => $space) {
+                                if ($space['exhibitsRegionYear'] != $region['id'])
+                                    continue;
 
-                            $regionSpaces[$space['id']] = $space;
-                            if (array_key_exists($space['id'], $exhibitorSpaceList)) {
-                                $vendorSpace = $exhibitorSpaceList[$space['id']];
+                                $regionSpaces[$space['id']] = $space;
+                                $foundSpace = true;
+                                if (array_key_exists($space['id'], $exhibitorSpaceList)) {
+                                    $vendorSpace = $exhibitorSpaceList[$space['id']];
 
 
-                                if ($vendorSpace !== null) {
-                                    $vendorSpaces[$space['id']] = $vendorSpace;
-                                    if ($vendorSpace['item_requested'] != null) {
-                                        $requested++;
-                                        $timeRequested = $vendorSpace['time_requested'];
+                                    if ($vendorSpace !== null) {
+                                        $vendorSpaces[$space['id']] = $vendorSpace;
+                                        if ($vendorSpace['item_requested'] != null) {
+                                            $requested++;
+                                            $timeRequested = $vendorSpace['time_requested'];
+                                        }
+                                        if ($vendorSpace['item_approved'] != null)
+                                            $approved++;
+                                        if ($vendorSpace['item_purchased'] != null)
+                                            $paid++;
                                     }
-                                    if ($vendorSpace['item_approved'] != null)
-                                        $approved++;
-                                    if ($vendorSpace['item_purchased'] != null)
-                                        $paid++;
-                                }
 
+                                }
                             }
                         }
 
-                        if ($paid > 0)
+                        if ($paid > 0) {
                             vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
-                            if($portalType == 'artist') {
+                            if ($portalType == 'artist') {
                                 itemRegistrationOpenBtn();
                             }
+                        }
                         else if ($approved > 0)
                             vendor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
                         else if ($requested > 0)
                             exhibitor_showRequest($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
-                        else
+                        else if ($foundSpace)
                             echo "<button class='btn btn-primary' onclick = 'exhibitorRequest.openReq($regionYearId, 0);' > Request $regionName Space</button>" . PHP_EOL;
+                        else
+                            echo "There are no requestable items currently configured for this space, please email " .
+                                $region['ownerName'] . " at <a href='mailto:" . $region['ownerEmail'] . "'>" . $region['ownerEmail'] . "</a> for further assistance." . PHP_EOL;
                 }
         }
         ?>
