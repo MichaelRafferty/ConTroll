@@ -43,6 +43,7 @@ echo <<<EOF
     <script type='text/javascript' src='jslib/exhibitorRequest.js'></script>
     <script type='text/javascript' src='js/vendor_invoice.js'></script>
     <script type='text/javascript' src='js/tinymce/tinymce.min.js'></script>
+    <script type='text/javascript' src='js/auctionItemRegistration.js'></script>
 </head>
 EOF;
 }
