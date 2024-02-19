@@ -22,8 +22,10 @@ window.onload = function () {
     exhibitorProfile = new ExhibitorProfile(config['debug']);
     exhibitorRequestOnLoad();
     vendorInvoiceOnLoad()
-    if (exhibitor_info['needReview']) {
-        exhibitorProfile.profileModalOpen('review');
+    if (typeof exhibitor_info !== 'undefined') {
+        if (exhibitor_info['needReview']) {
+            exhibitorProfile.profileModalOpen('review');
+        }
     }
 }
 
@@ -96,7 +98,7 @@ function changePasswordOpen() {
 
 // change to the other portal
 function switchPortal() {
-    window.location = config['portalName'] == 'Artist' ? config['vendorsite'] : config['artistsite'];
+    window.location = "/switchPortal.php?site=" + encodeURIComponent(config['portalName'] == 'Artist' ? config['vendorsite'] : config['artistsite']);
 }
 
 // request permission to apply for space in a region that requires 'permission' to apply

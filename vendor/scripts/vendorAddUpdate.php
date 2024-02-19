@@ -36,6 +36,35 @@ if (array_key_exists('mailin', $_POST)) {
     $mailin = 'N';
 }
 
+// now for the optional fields
+$shipCompany = null;
+if (array_key_exists('shipCompany', $_POST) && $_POST['shipCompany'] != null) {
+    $shipCompany = trim($_POST['shipCompany']);
+}
+$shipAddr = null;
+if (array_key_exists('shipAddr', $_POST) && $_POST['shipAddr'] != null) {
+    $shipAddr = trim($_POST['shipAddr']);
+}
+$shipAddr2 = null;
+if (array_key_exists('shipAddr2', $_POST) && $_POST['shipAddr2'] != null) {
+    $shipAddr2 = trim($_POST['shipAddr2']);
+}
+$shipCity = null;
+if (array_key_exists('shipCity', $_POST) && $_POST['shipCity'] != null) {
+    $shipCity = trim($_POST['shipCity']);
+}
+$shipState = null;
+if (array_key_exists('shipState', $_POST) && $_POST['shipState'] != null) {
+    $shipState = trim($_POST['shipState']);
+}
+$shipZip = null;
+if (array_key_exists('shipZip', $_POST) && $_POST['shipZip'] != null) {
+    $shipZip = trim($_POST['shipZip']);
+}
+$shipCountry = null;
+if (array_key_exists('shipCountry', $_POST) && $_POST['shipCountry'] != null) {
+    $shipCountry = trim($_POST['shipCountry']);
+}
 // if register check for existence of vendor
 switch ($profileMode) {
     case 'register':
@@ -75,19 +104,19 @@ EOS;
             trim($_POST['state']),
             trim($_POST['zip']),
             trim($_POST['country']),
-            trim($_POST['shipCompany']),
-            trim($_POST['shipAddr']),
-            trim($_POST['shipAddr2']),
-            trim($_POST['shipCity']),
-            trim($_POST['shipState']),
-            trim($_POST['shipZip']),
-            trim($_POST['shipCountry']),
+            $shipCompany,
+            $shipAddr,
+            $shipAddr2,
+            $shipCity,
+            $shipState,
+            $shipZip,
+            $shipCountry,
             $_POST['publicity']
         );
         $newExhibitor = dbSafeInsert($exhibitorInsertQ, $typestr, $paramarr);
 
         // create the year related functions
-        $newyId = exhibitorBuildYears($newExhibitor, $_POST['contactName'], $_POST['contactEmail'], $_POST['contactPhone'], $_POST['password'], $mailin);
+        $newyId = exhibitorBuildYears($newExhibitor, $_POST['contactName'], $_POST['contactEmail'], $_POST['contactPhone'], $_POST['cpassword'], $mailin);
         exhibitorCheckMissingSpaces($newExhibitor, $newyId);
         break;
 
@@ -123,13 +152,13 @@ EOS;
             trim($_POST['state']),
             trim($_POST['zip']),
             trim($_POST['country']),
-            trim($_POST['shipCompany']),
-            trim($_POST['shipAddr']),
-            trim($_POST['shipAddr2']),
-            trim($_POST['shipCity']),
-            trim($_POST['shipState']),
-            trim($_POST['shipZip']),
-            trim($_POST['shipCountry']),
+            $shipCompany,
+            $shipAddr,
+            $shipAddr2,
+            $shipCity,
+            $shipState,
+            $shipZip,
+            $shipCountry,
             $publicity,
             $vendor
         );
