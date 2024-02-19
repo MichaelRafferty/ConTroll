@@ -2,6 +2,12 @@
 global $db_ini;
 
 require_once '../lib/base.php';
+require_once('../../../lib/exhibitorYears.php');
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
+
 $check_auth = google_init('ajax');
 $perm = 'vendor';
 
@@ -15,6 +21,8 @@ if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
 
 $con = get_con();
 $conid = $con['id'];
+$vconf = get_conf('vendor');
+$vemail = $vconf['vendor'];
 
 if (!(array_key_exists('exhibitorEmail', $_POST) && array_key_exists('exhibitorName', $_POST) && array_key_exists('profileMode', $_POST))) {
     $response['status'] = 'error';
@@ -41,6 +49,7 @@ if (array_key_exists('mailin', $_POST)) {
 // if register check for existence of vendor
 switch ($profileMode) {
     case 'register':
+    case 'add':
         $vendorTestQ = <<<EOS
 SELECT id
 FROM exhibitors
@@ -89,7 +98,8 @@ EOS;
         $newExhibitor = dbSafeInsert($exhibitorInsertQ, $typestr, $paramarr);
 
         // create the year related functions
-        vendorBuildYears($newExhibitor, $_POST['contactName'], $_POST['contactEmail'], $_POST['contactPhone'], $_POST['password'], $mailin);
+        $yearId = exhibitorBuildYears($newExhibitor, $_POST['contactName'], $_POST['contactEmail'], $_POST['contactPhone'], $_POST['password'], $mailin);
+        exhibitorCheckMissingSpaces($newExhibitor, $yearId);
         break;
 
     case 'update':

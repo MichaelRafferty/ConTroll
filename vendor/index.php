@@ -2,8 +2,8 @@
 // Vendor - index.php - Main page for vendor registration
 require_once("lib/base.php");
 require_once("lib/vendorInvoice.php");
-require_once("lib/vendorYears.php");
 require_once("lib/changePassword.php");
+require_once('../lib/exhibitorYears.php');
 require_once("../lib/exhibitorRegistrationForms.php");
 require_once('../lib/exhibitorRequestForms.php');
 require_once("../lib/cc__load_methods.php");
@@ -174,11 +174,13 @@ EOS;
             // Build exhbititorYear on first login if it doesn't exist at the time of this login
             if ($result['cID'] == NULL) {
                 // create the year related functions
-                vendorBuildYears($vendor);
+                $newid = exhibitorBuildYears($vendor);
+                if (is_numeric($newid))
+                    $_SESSION['cID'] = $newid;
             } else {
                 $_SESSION['cID'] = $result['cID'];
-                vendorCheckMissingSpaces($vendor, $result['cID']);
             }
+            exhibitorCheckMissingSpaces($vendor, $_SESSION['cID']);
             break;
         }
     }

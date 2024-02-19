@@ -1,8 +1,8 @@
 <?php
 // exhibitorYears and exhibiorApprovals related functions for create/retrieval
 
-// vendorBuildYears - build exhibitorYears and exhibitorApprovals for this year
-function vendorBuildYears($exhibitor, $contactName = NULL, $contactEmail = NULL, $contactPhone = NULL, $contactPassword = NULL, $mailin = 'N'): bool|string {
+// exhibitorBuildYears - build exhibitorYears and exhibitorApprovals for this year
+function exhibitorBuildYears($exhibitor, $contactName = NULL, $contactEmail = NULL, $contactPhone = NULL, $contactPassword = NULL, $mailin = 'N'): bool|string {
     $con = get_conf('con');
     $conid = $con['id'];
     $need_new = 0;
@@ -64,7 +64,7 @@ EOS;
             $need_new,
             $confirm
         );
-        $newid = dbSafeInsert($eyinsq, $typestr, $paramArray);
+        $newyrid = dbSafeInsert($eyinsq, $typestr, $paramArray);
     } else {
         // no passed parameters but prior year exists
         $yinsq = <<<EOS
@@ -73,10 +73,8 @@ SELECT ? as conid, exhibitorId, contactName, contactEmail, contactPhone, contact
 FROM exhibitorYears
 WHERE conid = ? AND exhibitorId = ?
 EOS;
-        $newid = dbSafeInsert($yinsq, 'iii', array($conid, $last_year, $exhibitor));
+        $newyrid = dbSafeInsert($yinsq, 'iii', array($conid, $last_year, $exhibitor));
     }
-    $_SESSION['cID'] = $newid;
-
     // now build new approval records for this year
 
     // load prior approvals - for checking ones that are 'once'
@@ -124,12 +122,12 @@ EOS;
         $newid = dbSafeInsert($insQ, $instypes, array($exhibitor, $appL['exhibitsRegionYearId'], $approval, 2));
     }
     $appR->free();
-    return false;
+    return $newyrid;
 }
 
 
-// vendorCheckMissingSpaces - check for missing approval and space records for newly created spaces
-function vendorCheckMissingSpaces($exhibitor, $yearId) {
+// exhibitorCheckMissingSpaces - check for missing approval and space records for newly created spaces
+function exhibitorCheckMissingSpaces($exhibitor, $yearId) {
     $con = get_conf('con');
     $conid = $con['id'];
 
@@ -188,9 +186,9 @@ INSERT INTO exhibitorSpaces(exhibitorYearId, spaceId)
 SELECT ?, es.id
 FROM exhibitsSpaces es
 JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id
-LEFT OUTER JOIN exhibitorSpaces eS ON eS.spaceId = es.id
+LEFT OUTER JOIN exhibitorSpaces eS ON eS.spaceId = es.id AND eS.exhibitorYearId = ?
 WHERE ery.conid = ? AND eS.id is null;
 EOS;
-    $numRows = dbSafeCmd($insSpQ, 'ii', array($yearId, $conid));
+    $numRows = dbSafeCmd($insSpQ, 'iii', array($yearId, $yearId, $conid));
     return;
 }

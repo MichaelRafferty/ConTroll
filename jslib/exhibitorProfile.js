@@ -76,7 +76,7 @@ class ExhibitorProfile {
                     }
                     break;
                 case 'pw1':
-                    if (this.#profileUseType != 'register')
+                    if (this.#profileUseType != 'register' && this.#profileUseType != 'add')
                         break;
                     field2 = document.getElementById("pw2");
                     if (field.value == field2.value && field.value.length >= 8) {
@@ -87,7 +87,7 @@ class ExhibitorProfile {
                     }
                     break;
                 case 'pw2':
-                    if (this.#profileUseType != 'register')
+                    if (this.#profileUseType != 'register' && this.#profileUseType != 'add')
                         break;
                     field2 = document.getElementById("pw1");
                     if (field.value == field2.value && field.value.length >= 8) {
@@ -182,17 +182,26 @@ class ExhibitorProfile {
     profileModalOpen(useType, exhibitorId = null, exhibitorYearId = null, exhibitorRow = null) {
         if (this.#profileModal != null) {
             // set items as registration use of the modal
-            if (exhibitorId != null && this.#exhibitorId != null)
+            if (exhibitorId != null)
                 this.#exhibitorId.value = exhibitorId;
-            if (exhibitorYearId != null && this.#exhibitorYearId != null)
+            if (exhibitorYearId != null)
                 this.#exhibitorYearId.value = exhibitorYearId;
             this.#exhibitorRow = exhibitorRow;
             switch (useType) {
                 case 'register':
                     this.#profileIntroDiv.innerHTML = '<p>This form creates an account on the ' + config['label'] + ' ' + config['portalName'] + ' Portal.</p>';
                     this.#profileSubmitBtn.innerHTML = 'Register ' + config['portalName'];
-                    this.#profileModalTitle.innerHTML = "New " + config['portalName'] + ' Registration;'
+                    this.#profileModalTitle.innerHTML = "New " + config['portalName'] + ' Registration';
                     this.#creatingAccountMsgDiv.hidden = false;
+                    this.clearForm();
+                    document.getElementById('publicity').checked = 1;
+                    break;
+                case 'add':
+                    this.#profileIntroDiv.innerHTML = '<p>This form creates an account for the Exhibitor Portals.</p>';
+                    this.#profileSubmitBtn.innerHTML = 'Create Exhibitor';
+                    this.#profileModalTitle.innerHTML = 'New Exhibitor Registration';
+                    this.#creatingAccountMsgDiv.hidden = false;
+                    this.clearForm();
                     document.getElementById('publicity').checked = 1;
                     break;
                 case 'review':
@@ -213,37 +222,41 @@ class ExhibitorProfile {
             }
 
             this.#creatingAccountMsgDiv.hidden = true;
-            var keys = Object.keys(exhibitor_info);
-            for (var keyindex in keys) {
-                var key = keys[keyindex];
-                if (key == 'eNeedNew' || key == 'cNeedNew' || key == 'eConfirm' || key == 'cConfirm')
-                    continue;
+            if (typeof exhibitor_info !== 'undefined') {
+                if (exhibitor_info && useType != 'regoister' && useType != 'add') {
+                    var keys = Object.keys(exhibitor_info);
+                    for (var keyindex in keys) {
+                        var key = keys[keyindex];
+                        if (key == 'eNeedNew' || key == 'cNeedNew' || key == 'eConfirm' || key == 'cConfirm')
+                            continue;
 
-                var value = exhibitor_info[key];
-                if (this.#debugFlag & 16)
-                    console.log(key + ' = "' + value + '"');
-                if (key == 'mailin') {
-                    if (value == 'N')
-                        key = 'mailinN';
-                    if (value == 'Y')
-                        key = 'mailinY';
+                        var value = exhibitor_info[key];
+                        if (this.#debugFlag & 16)
+                            console.log(key + ' = "' + value + '"');
+                        if (key == 'mailin') {
+                            if (value == 'N')
+                                key = 'mailinN';
+                            if (value == 'Y')
+                                key = 'mailinY';
+                        }
+                        var id = document.getElementById(key);
+                        if (id) {
+                            if (key == 'publicity')
+                                id.checked = value == 1;
+                            else if (key == 'mailinY' || key == 'mailinN')
+                                id.checked = true;
+                            else
+                                id.value = value;
+                        } else if (this.#debugFlag & 16)
+                            console.log("field not found " + key);
+                    }
                 }
-                var id = document.getElementById(key);
-                if (id) {
-                    if (key == 'publicity')
-                        id.checked = value == 1;
-                    else if (key == 'mailinY' || key == 'mailinN')
-                        id.checked = true;
-                    else
-                        id.value = value;
-                } else if (this.#debugFlag & 16)
-                    console.log("field not found " + key);
             }
         }
         this.#profileMode.value = useType;
         this.#profileUseType = useType;
-        this.#passwordLine1.hidden = useType != 'register';
-        this.#passwordLine2.hidden = useType != 'register';
+        this.#passwordLine1.hidden = useType != 'register' && useType != 'add';
+        this.#passwordLine2.hidden = useType != 'register' && useType != 'add';
         this.#profileModal.show();
         tinyMCE.init({
             selector: 'textarea#description',
@@ -269,5 +282,13 @@ class ExhibitorProfile {
         if (this.#profileModal != null) {
             this.#profileModal.hide();
         }
+    }
+
+    // clear form - empty out all the fields in the form
+    clearForm() {
+        document.getElementById('exhibitorProfileForm').reset();
+        document.getElementById('description').innerHTML = '';
+        if (tinyMCE.activeEditor)
+            tinyMCE.activeEditor.setContent('');
     }
 }

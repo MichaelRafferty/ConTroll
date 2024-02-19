@@ -262,7 +262,7 @@ class exhibitorsAdm {
             "    </div>\n" +
             "    <div class='row'>\n" +
             "        <div class='col-sm-12'>\n" +
-            "            <button class='btn btn-secondary' id='addVendorSpaceBtn' onClick=" + '"exhibitor.addNewSpace();"' + ">Add New Vendor Space</button>\n" +
+            "            <button class='btn btn-secondary' id='addVendorSpaceBtn' onClick=" + '"exhibitor.addNewSpace();"' + ">Add New Exhibitor Space</button>\n" +
             "        </div>\n" +
             "    </div>\n" +
             "</div></div>\n"
@@ -301,7 +301,7 @@ class exhibitorsAdm {
             "    </div>\n" +
             "    <div class='row'>\n" +
             "        <div class='col-sm-12'>\n" +
-            "            <button class='btn btn-secondary' id='addExhibitorBtn' onClick=" + '"exhibitor.addNew();"' + ">Add New Exhibitor</button>\n" +
+            "            <button class='btn btn-secondary' id='addExhibitorBtn' onClick=" + '"exhibitors.addNew();"' + ">Add New Exhibitor</button>\n" +
             "        </div>\n" +
             "    </div>\n" +
             "</div></div>\n"
@@ -522,7 +522,10 @@ class exhibitorsAdm {
         return hover_text;
     }
 
-
+// add new functions
+    addNew() {
+        exhibitorProfile.profileModalOpen('add');
+    }
 // button callout functions
     edit(e, cell) {
         var exhibitorRow = cell.getRow()

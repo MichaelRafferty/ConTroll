@@ -33,7 +33,7 @@ function draw_login($config_vars) {
                     <div class='col-sm-1'></div>
                     <div class='col-sm-auto'>
                         <input type='submit' class='btn btn-primary' value='signin'/> or
-                            <a href='javascript:void(0)' onclick="profileModalOpen('register');">Sign Up</a>
+                            <a href='javascript:void(0)' onclick="exhibitorProfile.profileModalOpen('register');">Sign Up</a>
                     </div>
                 </div>
             </form>
@@ -88,12 +88,13 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                 echo  "<input type = 'hidden' id = 'exhibitorYearId' name = 'exhibitorYearId'/>\n";
                             }
                             ?>
-                            <div class="row">
+                            <div class="row" <?php echo $portalType == 'admin' ? ' hidden' : ''; ?>>
                                 <div class="col-sm-12" id="profileIntro">
                                     <p>This form creates an account on the <?php echo $con['conname'] . " $portalName" ?>
                                         Portal.</p>
                                 </div>
                             </div>
+                            <?php if ($portalType != 'admin') { ?>
                             <div class="row">
                                 <div class="col-sm-12">
                                     <p> Please provide us with information we can use to evaluate if you qualify and how you would fit in the selection of <?php
@@ -105,6 +106,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                     </p>
                                 </div>
                             </div>
+                            <?php } ?>
                             <div class="row" id="creatingAccountMsg">
                                 <div class="col-sm-12">Creating an account does not guarantee space.</div>
                             </div>

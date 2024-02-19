@@ -1,6 +1,6 @@
 <?php
 require_once('../lib/base.php');
-require_once('../lib/vendorYears.php');
+require_once('../../lib/exhibitorYears.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -87,7 +87,8 @@ EOS;
         $newExhibitor = dbSafeInsert($exhibitorInsertQ, $typestr, $paramarr);
 
         // create the year related functions
-        vendorBuildYears($newExhibitor, $_POST['contactName'], $_POST['contactEmail'], $_POST['contactPhone'], $_POST['password'], $mailin);
+        $newyId = exhibitorBuildYears($newExhibitor, $_POST['contactName'], $_POST['contactEmail'], $_POST['contactPhone'], $_POST['password'], $mailin);
+        exhibitorCheckMissingSpaces($newExhibitor, $newyId);
         break;
 
     case 'update':
