@@ -253,9 +253,9 @@ class ExhibitorRequest {
                     _this.#exhibitor_request.hide();
                     show_message(data['success'], 'success');
                     if (cancel == 2)
-                        exhibitors.UpdateSpaceRow(data);
+                        _this.UpdateSpaceRow(data);
                     else
-                        updateRequestStatusBlock(regionYearId);
+                        _this.updateRequestStatusBlock(regionYearId);
                 }
                 if (data['warn'] !== undefined) {
                     show_message(data['warn'], 'warn', 'sr_message_div');
@@ -289,7 +289,7 @@ class ExhibitorRequest {
         }
 
         if (spaceStatus == '') {
-            blockdiv.innerHTML = "<div class=\"col-sm-auto p-0\"><button class='btn btn-primary' onclick = 'exhibitorRequest.openReq(regionYearId, 0);' > Request " + regionName + " Space</button></div>";
+            blockdiv.innerHTML = "<div class=\"col-sm-auto p-0\"><button class='btn btn-primary' onclick = 'exhibitorRequest.openReq(" + regionYearId + ", 0);' > Request " + regionName + " Space</button></div>";
             return;
         }
 
