@@ -19,11 +19,11 @@ if (!check_atcon('artsales', $conid)) {
 }
 
 page_init($page, $tab,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css',
-                 // 'https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_bootstrap5.min.css',
+    /* css */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
+                 // 'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
 		    'css/atcon.css','css/registration.css'),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js','js/atcon.js','js/newArtSales.js')
+                    'https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js','js/atcon.js','js/newArtSales.js')
     );
 
 db_connect();
