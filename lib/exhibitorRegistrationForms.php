@@ -1,7 +1,7 @@
 
 <?php
 // draw_login - draw the login/signup form
-function draw_login($config_vars) {
+function draw_login($config_vars, $result_message = '') {
     ?>
 
  <!-- signin form (at body level) -->
@@ -12,7 +12,7 @@ function draw_login($config_vars) {
                     <h4>Please log in to continue to the Portal.</h4>
                 </div>
             </div>
-            <form id='vendor-signin' method='POST'>
+            <form id='exhibitorSignin' method='POST'>
                 <div class='row mt-1'>
                     <div class='col-sm-1'>
                         <label for='si_email'>*Email/Login: </label>
@@ -51,7 +51,7 @@ function draw_login($config_vars) {
     <div class='container-fluid'>
         <div class='row'>
             <div class='col-sm-12 m-0 p-0'>
-                <div id='result_message' class='mt-4 p-2'></div>
+                <div id='result_message' class='mt-4 p-2'><?php echo $result_message; ?></div>
             </div>
         </div>
     </div>
@@ -131,7 +131,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' type='email' name='exhibitorEmail' id='exhibitorEmail' maxlength='64' size='50' required
-                                        placeholder='email address for the business' tabindex="2"/>
+                                        placeholder='email address for the business' tabindex="10"/>
                                 </div>
                             </div>
                             <div class='row mt-1'>
@@ -140,7 +140,25 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' type='text' name='exhibitorPhone' id='exhibitorPhone' maxlength='32' size='24' required
-                                        placeholder='phone number for the business' tabindex="3"/>
+                                        placeholder='phone number for the business' tabindex="20"/>
+                                </div>
+                            </div>
+                            <div class='row mt-1' id='passwordLine1'>
+                                <div class='col-sm-2'>
+                                    <label for='pw1'> *Password: </label>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'>
+                                    <input class='form-control-sm' id='pw1' type='password' name='password' autocomplete='off' required tabindex='30'
+                                           size='24' placeholder='minimum of 8 characters'/>
+                                </div>
+                            </div>
+                            <div class='row mt-1' id='passwordLine2'>
+                                <div class='col-sm-2'>
+                                    <label for='pw2'> *Confirm Password: </label>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'>
+                                    <input class='form-control-sm' id='pw2' type='password' name='cpassword2' autocomplete='off' required tabindex='40'
+                                       size='24' placeholder='minimum of 8 characters'/>
                                 </div>
                             </div>
                             <div class='row mt-1'>
@@ -149,7 +167,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' id='website' type='text' size='64' name='website'
-                                        placeholder='Please enter your web, Etsy or social media site, or other appropriate URL.' tabindex="4"/>
+                                        placeholder='Please enter your web, Etsy or social media site, or other appropriate URL.' tabindex="50"/>
                                 </div>
                             </div>
                             <div class='row mt-1'>
@@ -157,12 +175,12 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                     <label for='description'>*Description: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <textarea class='form-control-sm' id='description' name='description' rows=5 cols=64 required tabindex="5"></textarea>
+                                    <textarea class='form-control-sm' id='description' name='description' rows=5 cols=64 required tabindex="60"></textarea>
                                 </div>
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2 p-0 ms-0 me-0 pe-2 text-end'>
-                                    <input class='form-control-sm' type='checkbox' id='publicity' name='publicity' tabindex="6"/>
+                                    <input class='form-control-sm' type='checkbox' id='publicity' name='publicity' tabindex="70"/>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <label for='publicity'>Check if we may use your information to publicize your attendence at <?php echo $con['conname']; ?>, if you're
@@ -178,9 +196,9 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                 <div class='col-sm-2'>
                                     <label for='mailin'> *Mail In Artist: </label>
                                 </div>
-                                <div class='col-sm-auto p-0 ms-0 me-2 align-middle'><input class='form-control-sm' type='radio' name='mailin' id='mailinN'  tabindex='7' value="N" /></div>
+                                <div class='col-sm-auto p-0 ms-0 me-2 align-middle'><input class='form-control-sm' type='radio' name='mailin' id='mailinN'  tabindex='80' value="N" /></div>
                                 <div class='col-sm-auto p-0 ms-0 me-4'>On-site/Using Agent or Not an Artist (not Mail-in)</div>
-                                <div class='col-sm-auto p-0 ms-0 me-2 align-middle'><input class='form-control-sm' type='radio' name='mailin' id='mailinY'  tabindex='7' value="Y"/></div>
+                                <div class='col-sm-auto p-0 ms-0 me-2 align-middle'><input class='form-control-sm' type='radio' name='mailin' id='mailinY'  tabindex='90' value="Y"/></div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>Shipping Art, return via Shipping Address (Mail In)</div>
                             </div>
                             <div class='row mt-1'>
@@ -188,7 +206,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                     <label for='contactName'> *Contact/Agent Name: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' type='text' name='contactName' id='contactName' maxlength='64' size='50' tabindex='10' required
+                                    <input class='form-control-sm' type='text' name='contactName' id='contactName' maxlength='64' size='50' tabindex='100' required
                                         placeholder="primary contact name"/>
                                 </div>
                             </div>
@@ -198,7 +216,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
                                     <input class='form-control-sm' type='email' name='contactEmail' id='contactEmail' maxlength='64' size='50' required
-                                        placeholder="email address for Contact and Login to the portal" tabindex="12"/>
+                                        placeholder="email address for Contact and Login to the portal" tabindex="110"/>
                                 </div>
                             </div>
                             <div class='row mt-1'>
@@ -207,24 +225,24 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' type='text' name='contactPhone' id='contactPhone' maxlength='32' size='24' required
-                                        placeholder="contact's phone number" tabindex="14"/>
+                                        placeholder="contact's phone number" tabindex="120"/>
                                 </div>
                             </div>
-                            <div class="row mt-1" id="passwordLine1">
+                            <div class="row mt-1" id="cpasswordLine1">
                                 <div class="col-sm-2">
-                                    <label for="pw1"> *Password: </label>
+                                    <label for="cpw1"> *Contact Password: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='pw1' type='password' name='password' autocomplete="off" required tabindex="16"
+                                    <input class="form-control-sm" id='cpw1' type='password' name='cpassword' autocomplete="off" required tabindex="130"
                                     size="24" placeholder='minimum of 8 characters' />
                                 </div>
                             </div>
-                            <div class="row mt-1" id="passwordLine2">
+                            <div class="row mt-1" id="cpasswordLine2">
                                 <div class="col-sm-2">
-                                    <label for="pw2"> *Confirm Password: </label>
+                                    <label for="cpw2"> *Confirm Password: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='pw2' type='password' name='password2' autocomplete="off" required tabindex="18"
+                                    <input class="form-control-sm" id='cpw2' type='password' name='cpassword2' autocomplete="off" required tabindex="140"
                                     size="24" placeholder='minimum of 8 characters'/>
                                 </div>
                             </div>
@@ -238,14 +256,14 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                     <label for="addr"> *Address </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='addr' type='text' size="64" name='addr' required placeholder="Street Address" tabindex="20"/>
+                                    <input class="form-control-sm" id='addr' type='text' size="64" name='addr' required placeholder="Street Address" tabindex="150"/>
                                 </div>
                             </div>
                             <div class="row mt-1">
                                 <div class="col-sm-2"></div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
                                     <input class="form-control-sm" id='addr2' type='text' size="64" name='addr2'
-                                           placeholder="second line of address if neededsecond line of address if needed" tabindex="22"/>
+                                           placeholder="second line of address if neededsecond line of address if needed" tabindex="160"/>
                                 </div>
                             </div>
                             <div class="row mt-1">
@@ -253,20 +271,20 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                     <label for="city"> *City: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='city' type='text' size="32" maxlength="32" name='city' required tabindex="24"/>
+                                    <input class="form-control-sm" id='city' type='text' size="32" maxlength="32" name='city' required tabindex="170"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
                                     <label for="state"> *State: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
-                                    <input class="form-control-sm" id='state' type='text' size="10" maxlength="16" name='state' required tabindex="26"/>
+                                    <input class="form-control-sm" id='state' type='text' size="10" maxlength="16" name='state' required tabindex="180"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
                                     <label for="zip"> *Zip: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0 ps-1 pb-2">
                                     <input class="form-control-sm" id='zip' type='text' size="11" maxlength="11" name='zip' required
-                                           placeholder="Postal Code" tabindex="28"/>
+                                           placeholder="Postal Code" tabindex="190"/>
                                 </div>
                             </div>
                             <div class='row mt-1'>
@@ -274,7 +292,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                     <label for='country'> Country </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
-                                    <select id='country' name='country' tabindex='30'>
+                                    <select id='country' name='country' tabindex='200'>
                                         <?php echo $countryOptions; ?>
                                     </select>
                                 </div>
@@ -294,7 +312,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' id='shipCompany' type='text' size='64' name='shipCompany' required
-                                           placeholder='Company Name' tabindex='32'/>
+                                           placeholder='Company Name' tabindex='210'/>
                                 </div>
                             </div>
                             <div class='row mt-1'>
@@ -303,14 +321,14 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' id='shipAddr' type='text' size='64' name='shipAddr' required
-                                           placeholder='Street Address' tabindex="34"/>
+                                           placeholder='Street Address' tabindex="220"/>
                                 </div>
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'></div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' id='shipAddr2' type='text' size='64' name='shipAddr2'
-                                           placeholder='2nd line of address if needed' tabindex="36"/>
+                                           placeholder='2nd line of address if needed' tabindex="230"/>
                                 </div>
                             </div>
                             <div class='row mt-1'>
@@ -318,20 +336,20 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                     <label for='shipCity'> *City: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' id='shipCity' type='text' size='32' maxlength='32' name='shipCity' required tabindex="38"/>
+                                    <input class='form-control-sm' id='shipCity' type='text' size='32' maxlength='32' name='shipCity' required tabindex="240"/>
                                 </div>
                                 <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
                                     <label for='shipState'> *State: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0 ps-1'>
-                                    <input class='form-control-sm' id='shipState' type='text' size='10' maxlength='16' name='shipState' required tabindex="40"/>
+                                    <input class='form-control-sm' id='shipState' type='text' size='10' maxlength='16' name='shipState' required tabindex="250"/>
                                 </div>
                                 <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
                                     <label for='shipZip'> *Zip: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
                                     <input class='form-control-sm' id='shipZip' type='text' size='11' maxlength='11' name='shipZip' required
-                                           placeholder='Postal Code' tabindex="42"/>
+                                           placeholder='Postal Code' tabindex="260"/>
                                 </div>
                             </div>
                             <div class='row mt-1'>
@@ -339,7 +357,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                     <label for='shipCountry'> Country </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
-                                    <select id='shipCountry' name='shipCountry' tabindex='44'>
+                                    <select id='shipCountry' name='shipCountry' tabindex='270'>
                                         <?php echo $countryOptions; ?>
                                     </select>
                                 </div>
@@ -350,8 +368,8 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                     <div id='au_result_message' class='mt-4 p-2'></div>
                 </div>
                 <div class="modal-footer">
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex="46">Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='profileSubmitBtn' onClick="exhibitorProfile.submitProfile('<?php echo $portalType; ?>')" tabindex="48">Admin</button>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex="280">Cancel</button>
+                    <button class='btn btn-sm btn-primary' id='profileSubmitBtn' onClick="exhibitorProfile.submitProfile('<?php echo $portalType; ?>')" tabindex="290">Admin</button>
                 </div>
             </div>
         </div>

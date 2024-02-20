@@ -25,6 +25,14 @@ $forcePassword = false;
 $regserver = $ini['server'];
 $vendor = '';
 
+// encrypt/decrypt stuff
+$ciphers = openssl_get_cipher_methods();
+$cipher = 'aes-128-cbc';
+$ivlen = openssl_cipher_iv_length($cipher);
+$ivdate = date_create("now");
+$iv = substr(date_format($ivdate, 'YmdzwLLwzdmY'), 0, $ivlen);
+$key = $conid . $con['label'] . $con['regadminemail'];
+
 $reg_link = "<a href='$regserver'>Convention Registration</a>";
 
 if (str_starts_with($_SERVER['HTTP_HOST'], 'artist')){
@@ -111,89 +119,160 @@ if ($vendor_conf['test'] == 1) {
 <?php
 }
 
-if (isset($_SESSION['id'])) {
+if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
 // in session, is it a logout?
     if (isset($_REQUEST['logout'])) {
         session_destroy();
         unset($_SESSION['id']);
+        unset($_SESSION['cID']);
+        unset($_SESSION['login_type']);
         if ($portalType == 'vendor') {
             header('location:' . $vendor_conf['vendorsite']);
         } else {
             header('location:' . $vendor_conf['artistsite']);
         }
+        exit();
     } else {
         // nope, just set the vendor id
         $vendor = $_SESSION['id'];
         $in_session = true;
     }
+} else if (isset($_GET['vid'])) {
+    $match = openssl_decrypt($_GET['vid'], $cipher, $key, 0, $iv);
+    $match = json_decode($match, true);
+    $timediff = time() - $match['ts'];
+    if ($timediff > 120) {
+        draw_registrationModal($portalType, $portalName, $con, $countryOptions);
+        draw_login($config_vars, "<div class='bg-danger text-white'>The link has expired, please log in again</div>");
+        exit();
+    }
+    $vendor = $match['id'];
+    $_SESSION['id'] = $vendor;
+    $_SESSION['cID'] = $match['cID'];
+    $_SESSION['login_type'] = $match['loginType'];
+    $in_session = true;
+    if ($match['loginType'] == 'e') {
+        if ($match['eNeedNew']) {
+            $forcePassword = true;
+        }
+    } else {
+        if ($match['cNeedNew']) {
+            $forcePassword = true;
+        }
+    }
+    // if archived, unarchive them, they just logged in again
+    if ($match['archived'] == 'Y') {
+        // they were marked archived, and they logged in again, unarchive them.
+        $numupd = dbSafeCmd("UPDATE exhibitors SET archived = 'N' WHERE id = ?", 'i', array($vendor));
+        if ($numupd != 1)
+            error_log("Unable to unarchive vendor $vendor");
+    }
+
+    // Build exhbititorYear on first login if it doesn't exist at the time of this login
+    if ($match['cID'] == NULL) {
+        // create the year related functions
+        $newid = exhibitorBuildYears($vendor);
+        if (is_numeric($newid))
+            $_SESSION['cID'] = $newid;
+    } else {
+        $_SESSION['cID'] = $match['cID'];
+    }
+    exhibitorCheckMissingSpaces($vendor, $_SESSION['cID']);
 } else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
     // handle login submit
     $login = strtolower(sql_safe($_POST['si_email']));
     $loginQ = <<<EOS
-SELECT e.id, e.exhibitorEmail as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS cID, 
+SELECT e.id, e.exhibitorName, e.exhibitorEmail as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS cID, 
        ey.contactEmail AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
 WHERE e.exhibitorEmail=? OR ey.contactEmail = ?;
 EOS;
     $loginR = dbSafeQuery($loginQ, 'ss', array($login, $login));
-    while ($result = $loginR->fetch_assoc()) {
-        // check exhibitor email/password first
+    // find out how many match
+    $matches = array();
+    while ($result = $loginR->fetch_assoc()) { // check exhibitor email/password first
+        $found = false;
         if ($login == $result['eEmail']) {
             if (password_verify($_POST['si_password'], $result['ePassword'])) {
-                $_SESSION['id'] = $result['id'];
-                $vendor = $_SESSION['id'];
-                $in_session = true;
-                $_SESSION['login_type'] = 'e';
-                if ($result['eNeedNew']) {
-                    $forcePassword = true;
-                }
+                $result['loginType'] = 'e';
+                $matches[] = $result;
+                $found = true;
             }
         }
-        // try contact login second
-        if ((!$in_session) && $login == $result['cEmail']) {
+        if (!$found && $login == $result['cEmail']) { // try contact login second
             if (password_verify($_POST['si_password'], $result['cPassword'])) {
-                $_SESSION['id'] = $result['id'];
-                $vendor = $_SESSION['id'];
-                $in_session = true;
-                $_SESSION['login_type'] = 'c';
-                if ($result['cNeedNew']) {
-                    $forcePassword = true;
-                }
+                $result['loginType'] = 'c';
+                $matches[] = $result;
             }
-        }
-
-        if ($in_session) {
-            // if archived, unarchive them, they just logged in again
-            if ($result['archived'] == 'Y') {
-                // they were marked archived, and they logged in again, unarchive them.
-                $numupd = dbSafeCmd("UPDATE exhibitors SET archived = 'N' WHERE id = ?", 'i', array($vendor));
-                if ($numupd != 1)
-                    error_log("Unable to unarchive vendor $vendor");
-            }
-
-            // Build exhbititorYear on first login if it doesn't exist at the time of this login
-            if ($result['cID'] == NULL) {
-                // create the year related functions
-                $newid = exhibitorBuildYears($vendor);
-                if (is_numeric($newid))
-                    $_SESSION['cID'] = $newid;
-            } else {
-                $_SESSION['cID'] = $result['cID'];
-            }
-            exhibitorCheckMissingSpaces($vendor, $_SESSION['cID']);
-            break;
         }
     }
     $loginR->free();
-    if (!$in_session) {
+    if (count($matches) == 0) {
         ?>
-        <h2 class='warn'>Unable to Verify Password</h2>
-        <?php
-    }
-}
-if (!$in_session) {
+    <h2 class='warn'>Unable to Verify Password</h2>
+    <?php
 // not logged in, draw signup stuff
+        draw_registrationModal($portalType, $portalName, $con, $countryOptions);
+        draw_login($config_vars);
+        exit();
+    }
+
+    if (count($matches) > 1) {
+        echo "<h4>This email address has access to multiple portal accounts</h4>\n" .
+            "Please select one of the accounts below:<br/><ul>\n";
+
+        foreach ($matches as $match) {
+            $match['ts'] = time();
+            $string = json_encode($match);
+            $string = urlencode(openssl_encrypt($string, $cipher, $key, 0, $iv));
+            echo "<li><a href='?vid=$string'>" .  $match['exhibitorName'] . "</a></li>\n";
+        }
+?>
+    </ul>
+    <button class='btn btn-secondary' onclick="window.location='?logout';">Logout</button>
+    <script type='text/javascript'>
+        var config = <?php echo json_encode($config_vars); ?>;
+    </script>
+    <?php
+        exit();
+    }
+
+    // a single  match....
+    $match = $matches[0];
+    $_SESSION['id'] = $match['id'];
+    $vendor = $_SESSION['id'];
+    $_SESSION['login_type'] = $match['loginType'];
+    $in_session = true;
+    if ($match['loginType'] == 'e') {
+        if ($match['eNeedNew']) {
+            $forcePassword = true;
+        }
+    } else {
+        if ($match['cNeedNew']) {
+            $forcePassword = true;
+        }
+    }
+
+    // if archived, unarchive them, they just logged in again
+    if ($match['archived'] == 'Y') {
+        // they were marked archived, and they logged in again, unarchive them.
+        $numupd = dbSafeCmd("UPDATE exhibitors SET archived = 'N' WHERE id = ?", 'i', array($vendor));
+        if ($numupd != 1)
+            error_log("Unable to unarchive vendor $vendor");
+    }
+
+    // Build exhbititorYear on first login if it doesn't exist at the time of this login
+    if ($match['cID'] == NULL) {
+        // create the year related functions
+        $newid = exhibitorBuildYears($vendor);
+        if (is_numeric($newid))
+            $_SESSION['cID'] = $newid;
+    } else {
+        $_SESSION['cID'] = $match['cID'];
+    }
+    exhibitorCheckMissingSpaces($vendor, $_SESSION['cID']);
+} else {
     draw_registrationModal($portalType, $portalName, $con, $countryOptions);
     draw_login($config_vars);
     exit();
@@ -442,41 +521,49 @@ draw_itemRegistrationModal($portalType);
                         $vendorSpaces = [];
                         $regionYearId = $region['id'];
                         $regionName = $region['name'];
-                        foreach ($space_list[$regionYearId] as $spaceId => $space) {
-                            if ($space['exhibitsRegionYear'] != $region['id'])
-                                continue;
+                        $foundSpace = false;
+                        if (array_key_exists($regionYearId, $space_list)) {
+                            foreach ($space_list[$regionYearId] as $spaceId => $space) {
+                                if ($space['exhibitsRegionYear'] != $region['id'])
+                                    continue;
 
-                            $regionSpaces[$space['id']] = $space;
-                            if (array_key_exists($space['id'], $exhibitorSpaceList)) {
-                                $vendorSpace = $exhibitorSpaceList[$space['id']];
+                                $regionSpaces[$space['id']] = $space;
+                                $foundSpace = true;
+                                if (array_key_exists($space['id'], $exhibitorSpaceList)) {
+                                    $vendorSpace = $exhibitorSpaceList[$space['id']];
 
 
-                                if ($vendorSpace !== null) {
-                                    $vendorSpaces[$space['id']] = $vendorSpace;
-                                    if ($vendorSpace['item_requested'] != null) {
-                                        $requested++;
-                                        $timeRequested = $vendorSpace['time_requested'];
+                                    if ($vendorSpace !== null) {
+                                        $vendorSpaces[$space['id']] = $vendorSpace;
+                                        if ($vendorSpace['item_requested'] != null) {
+                                            $requested++;
+                                            $timeRequested = $vendorSpace['time_requested'];
+                                        }
+                                        if ($vendorSpace['item_approved'] != null)
+                                            $approved++;
+                                        if ($vendorSpace['item_purchased'] != null)
+                                            $paid++;
                                     }
-                                    if ($vendorSpace['item_approved'] != null)
-                                        $approved++;
-                                    if ($vendorSpace['item_purchased'] != null)
-                                        $paid++;
-                                }
 
+                                }
                             }
                         }
 
-                        if ($paid > 0) 
+                        if ($paid > 0) {
                             vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
-                            if($portalType == 'artist') {
-                                itemRegistrationOpenBtn($regionYearId);
+                            if ($portalType == 'artist') {
+                                itemRegistrationOpenBtn();
                             }
+                        }
                         else if ($approved > 0)
                             vendor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
                         else if ($requested > 0)
                             exhibitor_showRequest($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
-                        else
+                        else if ($foundSpace)
                             echo "<button class='btn btn-primary' onclick = 'exhibitorRequest.openReq($regionYearId, 0);' > Request $regionName Space</button>" . PHP_EOL;
+                        else
+                            echo "There are no requestable items currently configured for this space, please email " .
+                                $region['ownerName'] . " at <a href='mailto:" . $region['ownerEmail'] . "'>" . $region['ownerEmail'] . "</a> for further assistance." . PHP_EOL;
                 }
         }
         ?>

@@ -11,6 +11,8 @@ class ExhibitorProfile {
     #profileModalTitle = null;
     #passwordLine1 = null;
     #passwordLine2 = null;
+    #cpasswordLine1 = null;
+    #cpasswordLine2 = null;
     #creatingAccountMsgDiv = null;
     #exhibitorId = null;
     #exhibitorYearId = null;
@@ -34,6 +36,8 @@ class ExhibitorProfile {
                 this.#profileIntroDiv = document.getElementById("profileIntro");
                 this.#passwordLine1 = document.getElementById("passwordLine1");
                 this.#passwordLine2 = document.getElementById("passwordLine2");
+                this.#cpasswordLine1 = document.getElementById("cpasswordLine1");
+                this.#cpasswordLine2 = document.getElementById("cpasswordLine2");
                 this.#profileMode = document.getElementById('profileMode');
                 this.#profileSubmitBtn = document.getElementById('profileSubmitBtn');
                 this.#profileModalTitle = document.getElementById('modalTitle');
@@ -187,6 +191,7 @@ class ExhibitorProfile {
             if (exhibitorYearId != null)
                 this.#exhibitorYearId.value = exhibitorYearId;
             this.#exhibitorRow = exhibitorRow;
+            this.#creatingAccountMsgDiv.hidden = true;
             switch (useType) {
                 case 'register':
                     this.#profileIntroDiv.innerHTML = '<p>This form creates an account on the ' + config['label'] + ' ' + config['portalName'] + ' Portal.</p>';
@@ -221,7 +226,6 @@ class ExhibitorProfile {
                     this.#profileModalTitle.innerHTML = UseType + config['portalName'] + ' Profile';
             }
 
-            this.#creatingAccountMsgDiv.hidden = true;
             if (typeof exhibitor_info !== 'undefined') {
                 if (exhibitor_info && useType != 'regoister' && useType != 'add') {
                     var keys = Object.keys(exhibitor_info);
@@ -255,8 +259,11 @@ class ExhibitorProfile {
         }
         this.#profileMode.value = useType;
         this.#profileUseType = useType;
-        this.#passwordLine1.hidden = useType != 'register' && useType != 'add';
-        this.#passwordLine2.hidden = useType != 'register' && useType != 'add';
+        var hide = useType != 'register' && useType != 'add';
+        this.#passwordLine1.hidden = hide;
+        this.#passwordLine2.hidden = hide;
+        this.#cpasswordLine1.hidden = hide;
+        this.#cpasswordLine2.hidden = hide;
         this.#profileModal.show();
         tinyMCE.init({
             selector: 'textarea#description',
