@@ -552,7 +552,7 @@ draw_itemRegistrationModal($portalType);
                         if ($paid > 0) {
                             vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
                             if ($portalType == 'artist') {
-                                itemRegistrationOpenBtn();
+                                itemRegistrationOpenBtn($regionYearId);
                             }
                         }
                         else if ($approved > 0)
