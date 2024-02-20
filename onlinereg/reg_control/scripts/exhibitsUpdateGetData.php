@@ -501,8 +501,8 @@ if ($yearcnt == 0) {
 
     // it's a new year, copy from last year
     $insRY = <<<EOS
-INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, sortorder) 
-SELECT $conid, ery.exhibitsRegion, ery.ownerName, ery.ownerEmail, minx.id, manx.id, totalUnitsAvailable, sortorder
+INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, mailinFee, sortorder) 
+SELECT $conid, ery.exhibitsRegion, ery.ownerName, ery.ownerEmail, minx.id, manx.id, totalUnitsAvailable, ery.mailinFee, ery.sortorder
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions eR ON ery.exhibitsRegion = eR.exhibitsRegions.id
 JOIN exhibitsRegionTypes eRT ON eR.regionType = eRT.regionType

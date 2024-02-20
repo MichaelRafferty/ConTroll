@@ -381,8 +381,10 @@ class exhibitorsAdm {
             regions.push(make_copy(region));
         }
 
-        console.log("regions:");
-        console.log(regions);
+        if (this.#debug & 8) {
+            console.log("regions:");
+            console.log(regions);
+        }
         if (newTable) {
             this.#spacesTable = new Tabulator('#' + groupid + '-spaces-table-div', {
                 data: regions,
@@ -396,6 +398,7 @@ class exhibitorsAdm {
                         title: "Exhibitor Space Requests Detail:", columns: [
                             {title: "eYRid", field: "eYRid", visible: false},
                             {title: "regionId", field: "regionId", visible: false},
+                            {title: "regionYearId", field: "regionYearId", visible: false},
                             {field: "transid", visible: false},
                             {field: "app", visible: false},
                             {field: "req", visible: false},

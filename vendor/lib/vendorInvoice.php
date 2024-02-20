@@ -1,6 +1,6 @@
 <?php
 // draw the invoice screen for buying space in the vendor/artist portal
-function draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $portalName) {
+function draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $portalName, $portalType) {
     $vendor_conf = get_conf('vendor');
     ?>
     <!-- invoice -->
@@ -26,6 +26,7 @@ function draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $po
                         <input type='hidden' name='vendor' id='vendor_inv_id' value='<?php echo $vendor; ?>'/>
                         <input type='hidden' name='regionYearId' id='vendor_inv_region_id'/>
                         <input type='hidden' name='portalName' id='vendorPortalName' value='<?php echo $portalName; ?>'/>
+                        <input type='hidden' name='portalType' id='vendorPortalType' value='<?php echo $portalType; ?>'/>
                         <input type='hidden' name='spacePrice' id='vendorSpacePrice'/>
                         <div class="row">
                             <div class="col-sm-12">
@@ -242,6 +243,9 @@ if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclai
                             </div>
                         </div>
                     </form>
+                        <div class='row'>
+                            <div class='col-sm-12' id="inv_result_message"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -251,8 +255,8 @@ if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclai
 <?php
 }
 
-// vendor_showInvoice -> show the current request and the change/cancel button
-function vendor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList)
+// exhibitor_showInvoice -> show the current request and the change/cancel button
+function exhibitor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList, $region, $info)
 {
     $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
@@ -269,6 +273,10 @@ function vendor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibito
                 " at $date<br/>\n";
             $totalPrice += $spaceItem['approved_price'];
         }
+    }
+    if ($info['mailin'] == 'Y' && $region['mailinFee'] > 0) {
+        echo "Mail in Fee of " . $dolfmt->formatCurrency($region['mailinFee'], 'USD') . "<br/>\n";
+        $totalPrice += $region['mailinFee'];
     }
     echo "__________________________________________________________<br/>\nTotal price for $regionName spaces " . $dolfmt->formatCurrency($totalPrice, 'USD') . "<br/>\n";
     echo "<button class='btn btn-primary' onclick='openInvoice($regionYearId);'>Pay $regionName Invoice</button>";
@@ -295,5 +303,5 @@ function vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpa
         }
     }
     echo "__________________________________________________________<br/>\nTotal price for $regionName spaces " . $dolfmt->formatCurrency($totalPrice, 'USD') . "<br/>\n";
-    echo "<button class='btn btn-primary' onclick='showReceipt($regionYearId);'>Show receipt for $regionName space</button>";
+    echo "<button class='btn btn-primary m-1' onclick='showReceipt($regionYearId);'>Show receipt for $regionName space</button>";
 }

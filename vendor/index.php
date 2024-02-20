@@ -230,7 +230,7 @@ EOS;
         }
 ?>
     </ul>
-    <button class='btn btn-secondary' onclick="window.location='?logout';">Logout</button>
+    <button class='btn btn-secondary m-1' onclick="window.location='?logout';">Logout</button>
     <script type='text/javascript'>
         var config = <?php echo json_encode($config_vars); ?>;
     </script>
@@ -283,7 +283,7 @@ EOS;
 $regionQ = <<<EOS
 SELECT ert.portalType, ert.requestApprovalRequired, ert.purchaseApprovalRequired,ert.purchaseAreaTotals,ert.mailInAllowed, ert.mailinMaxUnits, ert.inPersonMaxUnits,
            er.name, er.shortname, er.description, er.sortorder,
-           ery.ownerName, ery.ownerEmail, ery.id, ery.includedMemId, ery.additionalMemId, ery.totalUnitsAvailable, ery.conid,
+           ery.ownerName, ery.ownerEmail, ery.id, ery.includedMemId, ery.additionalMemId, ery.totalUnitsAvailable, ery.conid, ery.mailinFee,
            mi.price AS includedMemPrice, ma.price AS additionalMemPrice
 FROM exhibitsRegionTypes ert
 JOIN exhibitsRegions er ON er.regionType = ert.regionType
@@ -423,7 +423,7 @@ $exhibitorSR->free();
 draw_registrationModal($portalType, $portalName, $con, $countryOptions);
 draw_passwordModal();
 draw_exhibitorRequestModal();
-draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $portalName);
+draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $portalName, $portalType);
 draw_itemRegistrationModal($portalType);
 ?>
     <!-- now for the top of the form -->
@@ -435,10 +435,10 @@ draw_itemRegistrationModal($portalType);
         </div>
         <div class="row p-1">
             <div class="col-sm-auto p-0">
-                <button class="btn btn-secondary" onclick="exhibitorProfile.profileModalOpen('update');">View/Change your profile</button>
-                <button class='btn btn-secondary' onclick='changePasswordOpen();'>Change your password</button>
-                <button class='btn btn-secondary' id='switchPortalbtn' onclick='switchPortal();'>Switch to XXX Portal</button>
-                <button class="btn btn-secondary" onclick="window.location='?logout';">Logout</button>
+                <button class="btn btn-secondary m-1" onclick="exhibitorProfile.profileModalOpen('update');">View/Change your profile</button>
+                <button class='btn btn-secondary m-1' onclick='changePasswordOpen();'>Change your password</button>
+                <button class='btn btn-secondary m-1' id='switchPortalbtn' onclick='switchPortal();'>Switch to XXX Portal</button>
+                <button class="btn btn-secondary m-1" onclick="window.location='?logout';">Logout</button>
             </div>
         </div>
         <div class="row p-1 pt-4">
@@ -491,7 +491,7 @@ draw_itemRegistrationModal($portalType);
                         break;
                     case 'none': // they do not have a permission record brcause the have not requested permission yet.
                         echo "<p>Permission of " . $region['ownerName'] . " is required to apply for space in " . $region['name'] . "</p>" . PHP_EOL; ?>
-                    <button class='btn btn-primary' onclick="requestPermission(<?php echo $region['id'] . ",'" . $region['shortname'] . "_div'"; ?>);">Request Permission to apply for space in the <?php echo $region['name'];?> </button>
+                    <button class='btn btn-primary m-1' onclick="requestPermission(<?php echo $region['id'] . ",'" . $region['shortname'] . "_div'"; ?>);">Request Permission to apply for space in the <?php echo $region['name'];?> </button>
                     <?php
                         break;
 
@@ -556,11 +556,11 @@ draw_itemRegistrationModal($portalType);
                             }
                         }
                         else if ($approved > 0)
-                            vendor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
+                            exhibitor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList, $region_list[$regionYearId], $info);
                         else if ($requested > 0)
                             exhibitor_showRequest($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
                         else if ($foundSpace)
-                            echo "<button class='btn btn-primary' onclick = 'exhibitorRequest.openReq($regionYearId, 0);' > Request $regionName Space</button>" . PHP_EOL;
+                            echo "<button class='btn btn-primary m-1' onclick = 'exhibitorRequest.openReq($regionYearId, 0);' > Request $regionName Space</button>" . PHP_EOL;
                         else
                             echo "There are no requestable items currently configured for this space, please email " .
                                 $region['ownerName'] . " at <a href='mailto:" . $region['ownerEmail'] . "'>" . $region['ownerEmail'] . "</a> for further assistance." . PHP_EOL;

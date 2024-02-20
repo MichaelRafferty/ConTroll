@@ -61,9 +61,10 @@ $aggreeNone = false;
 if (array_key_exists('agreeNone', $_POST))
     $aggreeNone = $_POST['agreeNone'] == 'on';
 
+$dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 // get the specific information allowed
 $regionYearQ = <<<EOS
-SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice
+SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice, ery.mailinFee
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
@@ -122,6 +123,9 @@ while ($space =  $spaceR->fetch_assoc()) {
     $additionalMembershipsComputed = max($additionalMembershipsComputed, $space['additionalMemberships']);
 }
 $spaceR->free();
+if ($region['mailinFee'] > 0) {
+    $spacePriceComputed += $region['mailinFee'];
+}
 
 if ($spacePrice != $spacePriceComputed || $includedMembershipsComputed != $includedMembershipsMax || $additionalMembershipsComputed != $additionalMembershipsMax) {
     $response['error'] = 'Computed values does not match passed values, get help.';
@@ -168,7 +172,7 @@ foreach($membership_fields as $field => $required) {
     }
 }
 if ($allrequired == false) {
-    $missing_msg .= 'Some credit card payment information is missing: ' . implode(',', $notfound) . "\n";
+    $missing_msg .= 'Some credit card payment information is missing: ' . implode(',', $notfound) . "<br/>\n";
     $valid = false;
 }
 
@@ -208,7 +212,7 @@ for ($num = 0; $num < $includedMembershipsMax; $num++) {
         continue;
     }
     // some required data is missing
-    $missing_msg .= "Included Membership " . $num + 1 . " is missing " . implode(',', $notfound) . "\n";
+    $missing_msg .= "Included Membership " . $num + 1 . " is missing " . implode(',', $notfound) . "<br/>\n";
     $valid = false;
 }
 
@@ -248,7 +252,7 @@ for ($num = 0; $num < $additionalMembershipsMax; $num++) {
         }
         continue;
         // some required data is missing
-        $missing_msg .= 'Additional Membership ' . $num + 1 . ' is missing ' . implode(',', $notfound) . "\n";
+        $missing_msg .= 'Additional Membership ' . $num + 1 . ' is missing ' . implode(',', $notfound) . "<br/>\n";
         $valid = false;
     }
 }
@@ -263,7 +267,7 @@ foreach ($email_addresses AS $email => $where) {
         $val = trim($_POST[$email]);
         if ($val != '') {
             if (!filter_var($val, FILTER_VALIDATE_EMAIL)) {
-                $invalidEmail_msg .= $where . " is not in the format of a valid email address\n";
+                $invalidEmail_msg .= $where . " is not in the format of a valid email address<br/>\n";
                 $valid = false;
             }
         }
@@ -281,7 +285,7 @@ if (($additionalMemberships + $includedMemberships == 0) && !$aggreeNone) {
 }
 
 if (!$valid) {
-    $response['error'] = "There were some issues with the data on the form.  Please correct and re-submit.\n\n$missing_msg\n$invalidEmail_msg\n";
+    $response['error'] = "There were some issues with the data on the form.<br/>Please correct and re-submit.<br/><br/>$missing_msg\n$invalidEmail_msg\n";
     ajaxSuccess($response);
     return;
 }
@@ -334,10 +338,10 @@ if ($transid === null) {
     // no tranasction yet, because no badges
     $transQ = <<<EOS
 INSERT INTO transaction(price, type, conid, notes)
-    VALUES(?, ?, ?);
+    VALUES(?, ?, ?, ?);
 EOS;
 
-    $transid = dbSafeInsert($transQ, 'dsi', array($totprice, $portalName, $conid, "RegionYearID: $regionYearId"));
+    $transid = dbSafeInsert($transQ, 'dsis', array($totprice, $portalName, $conid, "RegionYearID: $regionYearId"));
     if ($transid === false) {
         $status_msg .= "Add of transaction for $portalName " . $_POST['name'] . " failed.<br/>\n";
     }
@@ -406,7 +410,7 @@ $txnid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
 if ($txnid == false) {
     $error_msg .= "Insert of payment failed\n";
 } else {
-    $status_msg .= "Payment for " . $rtn['amount'] . " processed<br/>\n";
+    $status_msg .= "Payment for " . $dolfmt->formatCurrency($rtn['amount'], 'USD') . " processed<br/>\n";
 }
 $approved_amt = $rtn['amount'];
 $results['approved_amt'] = $approved_amt;
@@ -430,11 +434,11 @@ if ($numrows != 1) {
 // vendor_space
 $vendorUQ = <<<EOS
 UPDATE exhibitorSpaces
-SET item_purchased = ?, paid=?, transid = ?, membershipCredits = 0, time_purchased = now()
+SET item_purchased = ?, price=?, paid=?, transid = ?, membershipCredits = 0, time_purchased = now()
 WHERE id = ?
 EOS;
 foreach ($spaces as $id => $space) {
-    $num_rows = dbSafeCmd($vendorUQ, 'idii', array($space['item_approved'], $totprice, $transid, $space['id']));
+    $num_rows = dbSafeCmd($vendorUQ, 'iddii', array($space['item_approved'], $space['approved_price'], $space['approved_price'], $transid, $space['id']));
     if ($num_rows == 0) {
         $error_msg .= "Unable to mark " . $space['name']  . " space purchased\n";
     } else {
@@ -456,6 +460,19 @@ if (array_key_exists('email_error', $return_arr)) {
     $error_msg = null;
 }
 
+$exhibitorSQ = <<<EOS
+SELECT *
+FROM vw_ExhibitorSpace
+WHERE exhibitorId = ? and conid = ? and portalType = ?;
+EOS;
+
+$exhibitorSR = dbSafeQuery($exhibitorSQ, 'iis', array($exhId, $conid, $_POST['portalType']));
+$exhibitorSpaceList = array();
+while ($space = $exhibitorSR->fetch_assoc()) {
+    $exhibitorSpaceList[$space['spaceId']] = $space;
+}
+$exhibitorSR->free();
+
 ajaxSuccess(array(
     'status' => $return_arr['status'],
     'url' => $rtn['url'],
@@ -463,7 +480,8 @@ ajaxSuccess(array(
     'email' => $return_arr,
     'trans' => $transid,
     'email_error' => $error_code,
-    'message' => $status_msg
+    'message' => $status_msg,
+    'exhibitor_spacelist' => $exhibitorSpaceList
 ));
 return;
 

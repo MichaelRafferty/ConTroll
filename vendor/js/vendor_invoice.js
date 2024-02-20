@@ -20,6 +20,7 @@ function openInvoice(id) {
     var priceIdx = 0;
 
     regionYearId = id;
+    totalSpacePrice = 0;
 
     if (config['debug'] & 1)
         console.log("regionYearId: " + regionYearId);
@@ -54,6 +55,10 @@ function openInvoice(id) {
                 additionalMemberships = Math.max(additionalMemberships, prices[priceIdx].additionalMemberships);
             }
         }
+    }
+    if (regionList['mailinFee'] > 0 && exhibitor_info['mailin'] == 'Y') {
+        html += "Mail in free of $" + Number(regionList['mailinFee']).toFixed(2) + "<br/>\n";
+            totalSpacePrice += Number(regionList['mailinFee']);
     }
     html += "____________________________<br/>\nTotal price for spaces $" + Number(totalSpacePrice).toFixed(2)+ "<br/>\n";
 
@@ -248,7 +253,6 @@ function openInvoice(id) {
     }
     html += "<hr/>";
     document.getElementById("vendor_inv_included_mbr").innerHTML = html;
-    regionYearId =
     vendor_invoice.show();
 }
 
@@ -295,16 +299,19 @@ function makePurchase(token, label) {
             if (config['debug'] & 1)
                 console.log(data);
             if (data['error']) {
-                alert(data['error']);
+                show_message(data['error'], 'error', 'inv_result_message');
                 var submitId = document.getElementById(purchase_label);
                 submitId.disabled = false;
             } else if (data['status'] == 'success') {
-                //alert('call succeeded');
                 vendor_invoice.hide();
-                show_message(data['message'] + "<p>Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] + " with any questions.  One of our coordinators will be in touch to help you get setup.</p>");
+                show_message(data['message'] + "<p>Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] +
+                    " with any questions.  One of our coordinators will be in touch to help you get setup.</p>");
+                if (data['exhibitor_spacelist']) {
+                    exhibitor_spacelist = data['exhibitor_spacelist'];
+                }
                 updatePaidStatusBlock();
             } else {
-                alert('There was an unexpected error, please email ' + config['vemail'] + 'to let us know.  Thank you.');
+                show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
                 var submitId = document.getElementById(purchase_label);
                 submitId.disabled = false;
             }
@@ -340,6 +347,10 @@ function updatePaidStatusBlock() {
         return;
     }
 
-    blockdiv.innerHTML = '<div class="col-sm-auto p-0">You have purchased:<br/>' + spaceStatus +
-        "<button class='btn btn-primary' onclick = 'showReceipt(" + regionYearId + "1);' > Show receipt for " + regionName + " space</button></div>";
+    spaceStatus += "<button class='btn btn-primary m-1' onclick = 'showReceipt(" + regionYearId + "1);' > Show receipt for " + regionName + " space</button>";
+    if (region_list[regionYearId].portalType == 'artist') {
+        spaceStatus += "<button class='btn btn-primary m-1' onclick='auctionItemRegistration.open();'>Open Item Registration</button>";
+    }
+    blockdiv.innerHTML = '<div class="col-sm-auto p-0">You have purchased:<br/>' + spaceStatus + "</div>";
+
 }

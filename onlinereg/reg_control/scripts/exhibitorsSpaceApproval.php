@@ -21,7 +21,8 @@ if (!array_key_exists('approvalType', $_POST)) {
     ajaxError('No Data');
 }
 $approvalType = $_POST['approvalType'];
-$regionYearId = $_POST['regionYearId'];
+if (array_key_exists('regionYearId', $_POST))
+    $regionYearId = $_POST['regionYearId'];
 
 switch ($approvalType) {
     case 'req':
@@ -29,6 +30,7 @@ switch ($approvalType) {
             ajaxError('No Data');
         }
         $exhibitorData = $_POST['exhibitorData'];
+        $regionYearId = $exhibitorData['regionYearId'];
 
 //region = { eYRid: currentRegion, exhibitorId: space['exhibitorId'], exhibitorName: space['exhibitorName'], website: space['website'],
         //                   exhibitorEmail: space['exhibitorEmail'], transid: space['transid'], };

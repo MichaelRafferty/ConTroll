@@ -30,7 +30,7 @@ function draw_itemRegistrationModal($portalType = '') {
 
 
 function itemRegistrationOpenBtn() {
-    echo "<button class='btn btn-primary' onclick='auctionItemRegistration.open();'>Open Item Registration</button>";
+    echo "<button class='btn btn-primary m-1' onclick='auctionItemRegistration.open();'>Open Item Registration</button>";
 }
 
 
