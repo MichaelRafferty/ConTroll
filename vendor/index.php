@@ -466,12 +466,12 @@ draw_itemRegistrationModal($portalType);
                             }
                         }
 
-                        if ($paid > 0) {
+                        if ($paid > 0) 
                             vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
                             if($portalType == 'artist') {
-                                itemRegistrationOpenBtn();
+                                itemRegistrationOpenBtn($regionYearId);
                             }
-                        } else if ($approved > 0)
+                        else if ($approved > 0)
                             vendor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
                         else if ($requested > 0)
                             exhibitor_showRequest($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
