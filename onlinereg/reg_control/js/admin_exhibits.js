@@ -573,7 +573,9 @@ class exhibitssetup {
                     editor: "list", formatter:"lookup", formatterParams: this.#memListArr, editorParams: { values: this.#memListArr  }
                 },
                 {title: 'Total Units Avail', field: "totalUnitsAvailable", width: 60, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "input", editorParams: {maxlength: "10"}},
-                {title: 'Mail In Fee', field: "mailinFee", width: 60, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "input", validator: ["required", this.#priceregexp],},
+                {title: 'At-Con Id Base', field: "atconIdBase", width: 60, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "number",},
+                {title: 'Mail-In Fee', field: "mailinFee", width: 60, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "input", validator: ["required", this.#priceregexp],},
+                {title: 'Mail-In Id Base', field: "mailinIdBase", width: 60, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "number",},
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "regionYearKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {

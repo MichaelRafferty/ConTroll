@@ -220,12 +220,12 @@ EOS;
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, mailinFee, sortorder)
-VALUES(?,?,?,?,?,?,?,?,?);
+INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, atconIdBase, mailinFee, mailinIdBase, sortorder)
+VALUES(?,?,?,?,?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE exhibitsRegionYears
-SET exhibitsRegion = ?, ownerName = ?, ownerEmail = ?, includedMemId = ?, additionalMemId = ?, totalUnitsAvailable = ?, mailinFee = ?, sortorder = ?
+SET exhibitsRegion = ?, ownerName = ?, ownerEmail = ?, includedMemId = ?, additionalMemId = ?, totalUnitsAvailable = ?, atconIdBase = ?, mailinFee = ?, mailinIdBase = ?, sortorder = ?
 WHERE id = ?;
 EOS;
 
@@ -251,8 +251,9 @@ EOS;
                 } else {
                     $totalUnitsAvailable = 0;
                 }
-                $numrows = dbSafeCmd($updsql, 'sssiiidii', array($row['exhibitsRegion'], $row['ownerName'], $row['ownerEmail'],
-                    $row['includedMemId'], $row['additionalMemId'], $totalUnitsAvailable, $row['mailinFee'], $row['sortorder'], $row[$keyfield]));
+                $numrows = dbSafeCmd($updsql, 'sssiiiidiii', array($row['exhibitsRegion'], $row['ownerName'], $row['ownerEmail'],
+                    $row['includedMemId'], $row['additionalMemId'], $totalUnitsAvailable, $row['atconIdBase'], $row['mailinFee'], $row['mailinIdBase'],
+                    $row['sortorder'], $row[$keyfield]));
                 $updated += $numrows;
             }
         }
@@ -280,7 +281,7 @@ EOS;
                     $totalUnitsAvailable = 0;
                 }
                 $numrows = dbSafeInsert($inssql, 'iissiiidi', array($conid, $row['exhibitsRegion'], $row['ownerName'], $row['ownerEmail'],
-                    $includedMemId, $additionalMemId, $totalUnitsAvailable, $row['mailinFee'], $row['sortorder']));
+                    $includedMemId, $additionalMemId, $totalUnitsAvailable, $row['atconIdBase'], $row['mailinFee'], $row['mailinIdBase'], $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }
@@ -501,8 +502,8 @@ if ($yearcnt == 0) {
 
     // it's a new year, copy from last year
     $insRY = <<<EOS
-INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, mailinFee, sortorder) 
-SELECT $conid, ery.exhibitsRegion, ery.ownerName, ery.ownerEmail, minx.id, manx.id, totalUnitsAvailable, ery.mailinFee, ery.sortorder
+INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, atconIdBase, mailinFee, mailinIdBase, sortorder) 
+SELECT $conid, ery.exhibitsRegion, ery.ownerName, ery.ownerEmail, minx.id, manx.id, totalUnitsAvailable, ery.atconIdBase, ery.mailinFee, ery.mailinIdBase, ery.sortorder
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions eR ON ery.exhibitsRegion = eR.exhibitsRegions.id
 JOIN exhibitsRegionTypes eRT ON eR.regionType = eRT.regionType

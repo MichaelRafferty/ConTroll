@@ -10,6 +10,13 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
 
+if (array_key_exists('user_id', $_SESSION)) {
+    $user_id = $_SESSION['user_id'];
+} else {
+    bounce_page('index.php');
+    return;
+}
+
 page_init($page,
     /* css */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
                     //'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
@@ -29,18 +36,11 @@ page_init($page,
 $con = get_conf("con");
 $conid=$con['id'];
 $debug = get_conf('debug');
+
 if (array_key_exists('reg_control_admin', $debug))
     $debug_admin=$debug['reg_control_admin'];
 else
     $debug_admin = 0;
-
-if (array_key_exists('user_id', $_SESSION)) {
-    $user_id = $_SESSION['user_id'];
-} else {
-    ajaxError('Invalid credentials passed');
-    return;
-}
-
 
 ?>
 <div id='parameters' <?php if (!($debug_admin & 4)) echo 'hidden'; ?>>
