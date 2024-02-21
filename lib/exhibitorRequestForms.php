@@ -6,7 +6,7 @@ function draw_exhibitorRequestModal($portalType = '')
     $exhibitor_conf = get_conf('vendor');
     ?>
     <!-- request -->
-    <div id='exhibitor_req' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request $spacetitle Space' aria-hidden='true'
+    <div id='exhibitor_req' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request Exhibitor Space' aria-hidden='true'
          style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>

@@ -23,6 +23,7 @@ window.onload = function () {
     exhibitorRequestOnLoad();
     auctionItemRegistrationOnLoad()
     vendorInvoiceOnLoad()
+    exhibitorReceiptOnLoad();
     if (typeof exhibitor_info !== 'undefined') {
         if (exhibitor_info['needReview']) {
             exhibitorProfile.profileModalOpen('review');

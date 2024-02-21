@@ -347,7 +347,7 @@ function updatePaidStatusBlock() {
         return;
     }
 
-    spaceStatus += "<button class='btn btn-primary m-1' onclick = 'showReceipt(" + regionYearId + "1);' > Show receipt for " + regionName + " space</button>";
+    spaceStatus += "<button class='btn btn-primary m-1' onclick='exhibitorReceipt.showReceipt(" + regionYearId + "1);' > Show receipt for " + regionName + " space</button>";
     if (region_list[regionYearId].portalType == 'artist') {
         spaceStatus += "<button class='btn btn-primary m-1' onclick='auctionItemRegistration.open();'>Open Item Registration</button>";
     }

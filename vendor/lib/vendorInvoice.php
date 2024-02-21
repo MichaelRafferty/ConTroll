@@ -303,5 +303,5 @@ function vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpa
         }
     }
     echo "__________________________________________________________<br/>\nTotal price for $regionName spaces " . $dolfmt->formatCurrency($totalPrice, 'USD') . "<br/>\n";
-    echo "<button class='btn btn-primary m-1' onclick='showReceipt($regionYearId);'>Show receipt for $regionName space</button>";
+    echo "<button class='btn btn-primary m-1' onclick='exhibitorReceipt.showReceipt($regionYearId);'>Show receipt for $regionName space</button>";
 }

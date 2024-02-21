@@ -3,7 +3,7 @@
 
 // trans_receipt - given a transaction number build a receipt
 // This function returns all the data to make up a receipt and then calls 'reg_format_receipt' to actually format the receipt as plain text, HTML and email tables.
-function trans_receipt($transid)
+function trans_receipt($transid, $exhibitor=null, $spaces=null, $region=null)
 {
     //// get the transaction information
     $transQ = <<<EOS
@@ -31,8 +31,15 @@ EOS;
     $response['userid'] = $userid;
     $response['transaction'] = $transL;
 
+    $payorL = [];
     //// get the payor information involved in this transaction
-    if ($transL['perid'] > 0) {
+    if ($exhibitor != null) {
+        $payorL = [ 'tablename' => 'exhibitor', 'id' => $exhibitor['id'], 'pid' => 'e-' . $exhibitor['id'], 'last_name' => $exhibitor['exhibitorName'],
+            'first_name' => '', 'middle_name' => '', 'suffix' => '', 'email_addr' => $exhibitor['exhibitorEmail'], 'phone' => $exhibitor['exhibitorPhone'],
+            'badge_name' => $exhibitor['contactName'], 'address' => $exhibitor['addr'], 'addr_2' => $exhibitor['addr2'], 'city' => $exhibitor['city'],
+            'state' => $exhibitor['state'], 'zip' => $exhibitor['state'], 'country' => $exhibitor['country'] ];
+        $payor = null;
+    } else  if ($transL['perid'] > 0) {
         $payorSQL = <<<EOS
 SELECT 'perinfo' AS tablename, id, CONCAT('p-', id) AS pid, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, address, addr_2, city, state, zip, state, country
 FROM perinfo WHERE id = ?;
@@ -44,24 +51,12 @@ SELECT 'newperson' AS tablename, id, CONCAT('n-', id) AS pid, last_name, first_n
 FROM newperson WHERE id = ?;
 EOS;
         $payor = $transL['newperid'];
-    } else if (is_numeric($transL['notes'])) {
-        $payorSQL = <<<EOS
-SELECT 'exhibitor' AS tablename, e.id, CONCAT('e-', e.id) AS pid, exhibitorName AS last_name, '' AS first_name, '' AS middle_name, '' AS suffix, exhibitorEmail AS email_addr, 
-       website AS phone, ey.contactName AS badge_name, addr AS address, addr2 as addr_2, city, state, zip, state, country
-FROM exhibitorSpaces es
-JOIN exhibitorYears ey ON (es.exhibitorYearId = ey.id)
-JOIN exhibitors e ON (ey.exhibitorId = e.id)
-WHERE es.id = ?;
-EOS;
-        $payor = $transL['notes'];
     } else {
         $payor = null;
     }
     if ($payor) {
         $payorR = dbSafeQuery($payorSQL, 'i', array($payor));
         $payorL = $payorR->fetch_assoc();
-    } else {
-        $payorL = [];
     }
 
     $response['payor'] = $payorL;
@@ -148,7 +143,7 @@ EOS;
     $response['people'] = $people;
 
     // now get all payments
-    if (substr($payor, 0, 1) != 'v') {
+    if ($exhibitor != null) {
         $paySQL = <<<EOS
 SELECT p.*
 FROM payments p
@@ -190,40 +185,14 @@ EOS;
     }
     $response['coupons'] = $coupons;
 
-    //// now exhibitor spaces on that id
-    //TODO: look at why it's 'v' and go to 'e'?
-    if (substr($payor, 0, 1) != 'v') {
-        $exhSQL = <<<EOS
-SELECT exhsp.id, exhsp.transid, exhsp.paid, esp.description, esp.price, es.name AS space_name, e.exhibitorName AS exhibitorName, e.exhibitorEmail as email
-FROM exhibitorSpaces exhsp
-JOIN exhibitsSpacePrices esp ON (esp.id = exhsp.item_purchased)
-JOIN exhibitsSpaces es ON (es.id = esp.spaceid)
-JOIN exhibitorYears ey ON exhsp.exhibitorYearId = ey.id
-JOIN exhibitors e ON (ey.exhibitorId = e.id)
-WHERE exhsp.transid = ?
-ORDER BY es.name, esp.description
-EOS;
-        $exhR = dbSafeQuery($exhSQL, 'i', array($transid));
-    } else {
-        $exhSQL = <<<EOS
-$withTrans
-SELECT exhsp.id, exhsp.transid, exhsp.paid, esp.description, esp.price, es.name AS space_name, e.exhibitorName AS exhibitorName, e.exhibitorEmail as email
-FROM allTrans at
-JOIN exhibitorSpaces exhsp ON (exhsp.transid = at.transid)
-JOIN exhibitsSpacePrices esp ON (esp.id = exhsp.item_purchased)
-JOIN exhibitsSpaces es ON (es.id = esp.spaceid)
-JOIN exhibitorYears ey ON exhsp.exhibitorYearId = ey.id
-JOIN exhibitors e ON (ey.exhibitorId = e.id)
-ORDER BY vs.name, vsp.description
-EOS;
-        $exhR = dbSafeQuery($exhSQL, 'iiiiii', array($conid, $transid, $transid, $conid, $conid, $conid));
-    }
-    $exhibitors = [];
-    while ($exhL = $exhR->fetch_assoc()) {
-        $exhibitors[] = $exhL;
-    }
+    if ($exhibitor)
+        $response['exhibitor'] = $exhibitor;
 
-    $response['exhibitors'] = $exhibitors;
+    if ($spaces)
+        $response['spaces'] = $spaces;
+
+    if ($region)
+        $response['region'] = $region;
 
     return reg_format_receipt($response);
 }
@@ -280,9 +249,9 @@ EOS;
         $payor_name .= ', ' . $payor['suffix'];
     $payor_name = trim($payor_name);
     $master_tid = $master_transaction['id'];
-    if (count($data['exhibitors']) > 0) {
-        $title_payor_name = $data['exhibitors'][0]['exhibitor_name'];
-        $title_email = $data['exhibitors'][0]['email'];
+    if (array_key_exists('exhibitor', $data)) {
+        $title_payor_name = $data['exhibitor']['exhibitorName'];
+        $title_email = $data['exhibitor']['exhibitorEmail'];
     } else {
         $title_payor_name = $payor_name;
         $title_email = $payor['email_addr'];
@@ -292,9 +261,6 @@ EOS;
     $response['payor_email'] = $title_email;
 
     switch ($type) {
-        case 'artist':
-            RenderErrorAjax('Artists receipts not yet supported');
-            exit();
         case 'website':
             $receipt .= "By: $title_payor_name, Via: Online Registration Website, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
@@ -310,6 +276,7 @@ EOS;
 
             break;
         case 'vendor':
+        case 'artist':
         case 'exhibitor':
             $receipt .= "By: $title_payor_name, Via: $type portal, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
@@ -367,7 +334,7 @@ EOS;
     // first output the payor
     $total = 0;
     $payor_pid = $payor['pid'];
-    if (substr($payor_pid, 0, 1) != 'v') {
+    if (substr($payor_pid, 0, 1) != 'e') {
         $list = $data['memberships'][$payor_pid];
         $subtotal = reg_format_mbr($data, $data['people'][$payor_pid], $list, $receipt, $receipt_html, $receipt_tables);
         $total += $subtotal;
@@ -383,7 +350,7 @@ EOS;
     }
 
     // now exhibitor spaces if they exist
-    if (count($data['exhibitors']) > 0) {
+    if (array_key_exists('exhibitor', $data)) {
         $receipt .= "\nExhibitor Spaces:\n";
         $receipt_html .= <<<EOS
     <div class='row mt-4'>
@@ -396,7 +363,7 @@ EOS;
 <tr><td colspan="3">&nbsp;</td></tr>
 <tr><td colspan="3"><h3>Exhibitor Spaces:</h3></td></tr>
 EOS;
-
+/* need to redo this part for the exhibitor spaces
         foreach ($data['exhibitors'] as $exhibitor) {
             $exhibitor_price = $exhibitor['price'];
             $total += $exhibitor_price;
@@ -418,6 +385,7 @@ EOS;
 EOS;
 
         }
+*/
     }
 
     // now the total due
@@ -571,24 +539,31 @@ EOS;
     // Needs to be added
 
     // exhibitor disclaimer
-    if (count($data['exhibitors']) > 0) {
+    if (array_key_exists('exhibitor', $data)) {
         $vc = get_conf('vendor');
         if (array_key_exists('pay_disclaimer', $vc)) {
             $vdisc = $vc['pay_disclaimer'];
             if ($vdisc != '') {
-                $vdisc = file_get_contents("../config/$vdisc");
-                if ($vdisc) {
-                    $receipt .=  "\n\n$vdisc\n";
-                    $receipt_html .= <<<EOS
+                $path = "../config/$vdisc";
+                if (!file_exists($path))
+                    $path = "../" . $path;
+                if (!file_exists($path))
+                    $path = '../' . $path;
+                if (file_exists($path)) {
+                    $vdisc = file_get_contents($path);
+                    if ($vdisc) {
+                        $receipt .= "\n\n$vdisc\n";
+                        $receipt_html .= <<<EOS
 <div class='row mt-4'>
         <div class='col-sm-12'>
             <p>$vdisc</p>
         </div>
     </div>
 EOS;
-                    $receipt_tables .= <<<EOS
+                        $receipt_tables .= <<<EOS
 <tr><td colspan="3"><p>$vdisc</p></td></tr>
 EOS;
+                    }
                 }
             }
         }

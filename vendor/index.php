@@ -7,6 +7,7 @@ require_once("lib/auctionItemRegistrationForms.php");
 require_once('../lib/exhibitorYears.php');
 require_once("../lib/exhibitorRegistrationForms.php");
 require_once('../lib/exhibitorRequestForms.php');
+require_once('../lib/exhibitorReceiptForms.php');
 require_once("../lib/cc__load_methods.php");
 global $config_vars;
 
@@ -424,6 +425,7 @@ draw_registrationModal($portalType, $portalName, $con, $countryOptions);
 draw_passwordModal();
 draw_exhibitorRequestModal();
 draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $portalName, $portalType);
+draw_exhibitorRceiptModal($portalType);
 draw_itemRegistrationModal($portalType);
 ?>
     <!-- now for the top of the form -->
