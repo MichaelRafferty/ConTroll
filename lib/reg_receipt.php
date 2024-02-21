@@ -5,6 +5,8 @@
 // This function returns all the data to make up a receipt and then calls 'reg_format_receipt' to actually format the receipt as plain text, HTML and email tables.
 function trans_receipt($transid, $exhId = null, $regionYearId=null)
 {
+    $emails = [];
+    $exhibitor = null;
     if ($transid == null) {
 
 // get the transaction for this regionid
@@ -112,6 +114,12 @@ EOS;
         }
         $exhibitor = $exhibitorR->fetch_assoc();
         $exhibitorR->free();
+        if ($exhibitor['exhibitorEmail']) {
+            $emails[] = $exhibitor['exhibitorEmail'];
+        }
+        if ($exhibitor['contactEmail']) {
+            $emaikls[] = $exhibitor['contactEmail'];
+        }
     }
 
     //// get the transaction information
@@ -248,6 +256,7 @@ EOS;
     $people = [];
     while ($peopleL = $peopleR->fetch_assoc()) {
         $people[$peopleL['pid']] = $peopleL;
+        $emails[] = $peopleL['email_addr'];
     }
     $response['people'] = $people;
 
@@ -293,6 +302,8 @@ EOS;
         $coupons[] = $couponL;
     }
     $response['coupons'] = $coupons;
+    if (count($emails) > 0)
+        $response['emails'] = $emails;
 
     if ($exhibitor)
         $response['exhibitor'] = $exhibitor;

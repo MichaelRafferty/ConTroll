@@ -24,7 +24,7 @@ function draw_exhibitorRceiptModal($portalType = '')
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Dismiss</button>
-                    <button class='btn btn-sm btn-primary' id='email_receipt_btn' onClick="spaceReq(0, 0)">Email Receipt</button>
+                    <div id="repeciotEmailBtns"></div>
                 </div>
             </div>
         </div>

@@ -1,7 +1,5 @@
 <?php
 require_once('../lib/base.php');
-require_once('../../lib/email__load_methods.php');
-require_once('../../lib/log.php');
 require_once('../../lib/reg_receipt.php');
 
 // use common global Ajax return functions
@@ -19,15 +17,10 @@ $vendor_conf = get_conf('vendor');
 
 $response['conid'] = $conid;
 
-$ccauth = get_conf('cc');
-load_email_procs();
-
-$log = get_conf('log');
-logInit($log['vendors']);
-
-$email = "no send attempt or a failure";
-
-if(!isset($_SESSION['id'])) { ajaxSuccess(array('status'=>'error', 'message'=>'Session Failure')); exit; }
+if (!isset($_SESSION['id'])) {
+    ajaxSuccess(array('status'=>'error', 'message'=>'Session Failure'));
+    exit;
+}
 
 $exhId = $_SESSION['id'];
 

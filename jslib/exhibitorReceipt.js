@@ -7,6 +7,7 @@ class ExhibitorReceipt {
     #exhibitorReveiptBtn = null;
     #receiptContent = null;
     #regionYearId = null;
+    #receiptData = null;
 
 // init
     constructor() {
@@ -77,8 +78,48 @@ class ExhibitorReceipt {
     drawReceipt(data) {
         var html = data['receipt_html'];
         this.#receiptContent.innerHTML = html;
+        if (data['emails']) {
+            var btns = '';
+            var id = document.getElementById('repeciotEmailBtns');
+            if (id) {
+                this.#receiptData = data;
+                for (var idx in data['emails']) {
+                    btns += "<button class='btn btn-sm btn-primary' onclick='exhibitorReceipt.emailReceipt(" + idx + ");'>Email to " + data['emails'][idx] + "</button>";
+                }
+                id.innerHTML = btns;
+            }
+        }
 
         this.#exhibitorRequest.show();
+    }
+
+    // email receipt - requires prior saving of data in a private
+    emailReceipt(idx) {
+        if (this.#receiptData['emails'] && this.#receiptData['emails'].length > idx) {
+            var email = this.#receiptData['emails'][idx];
+            var tbl = this.#receiptData['receipt_tables'];
+            var txt = this.#receiptData['receipt'];
+            $.ajax({
+                url: 'scripts/receiptEmail.php',
+                data: { email: email, text: txt, tables: tbl },
+                method: 'POST',
+                success: function (data, textstatus, jqxhr) {
+                    if (config['debug'] & 1)
+                        console.log(data);
+                    if (data['error'] !== undefined) {
+                        show_message(data['error'], 'error', 'receipt_message_div');
+                        return;
+                    }
+                    if (data['success'] !== undefined) {
+                        show_message(data['success'], 'success', 'receipt_message_div');
+                    }
+                    if (data['warn'] !== undefined) {
+                        show_message(data['warn'], 'warn', 'receipt_message_div');
+                    }
+                },
+                error: showAjaxError
+            })
+        }
     }
 }
 
