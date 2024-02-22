@@ -27,7 +27,7 @@ $regionId = $_POST['regionId'];
 $exhibitorQ = <<<EOS
 SELECT e.id as exhibitorId, perid, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, publicity, 
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, archived,
-       eY.id as contactId, conid, contactName, contactEmail, contactPhone, contactPassword, mailin, artistId
+       eY.id as contactId, conid, contactName, contactEmail, contactPhone, contactPassword, mailin
 FROM exhibitors e
 JOIN exhibitorYears eY ON e.id = eY.exhibitorId
 WHERE eY.conid = ?;
@@ -52,11 +52,12 @@ $response['exhibitors'] = $exhibitors;
 
 // get approvals for this region
 $approvalQ = <<<EOS
-SELECT eA.id, eA.exhibitorId, eA.exhibitsRegionYearId, eA.approval, eA.updateDate, eA.updateBy, eR.name, eR.shortname, e.exhibitorName, e.exhibitorEmail, e.website
-FROM exhibitorApprovals eA
-JOIN exhibitsRegionYears eRY ON eA.exhibitsRegionYearId = eRY.id
+SELECT exRY.id, eY.exhibitorId, exRY.exhibitsRegionYearId, exRY.approval, exRY.updateDate, exRY.updateBy, eR.name, eR.shortname, e.exhibitorName, e.exhibitorEmail, e.website
+FROM exhibitorRegionYears exRY
+JOIN exhibitsRegionYears eRY ON exRY.exhibitsRegionYearId = eRY.id
 JOIN exhibitsRegions eR on eRY.exhibitsRegion = eR.id
-JOIN exhibitors e ON eA.exhibitorId = e.id
+JOIN exhibitorYears eY on exRY.exhibitorYearId = eY.id
+JOIN exhibitors e ON eY.exhibitorId = e.id
 WHERE eRY.exhibitsRegion = ? and eRY.conid = ?;
 EOS;
 
@@ -122,7 +123,8 @@ FROM exhibitorSpaces eS
 LEFT OUTER JOIN exhibitsSpacePrices espr ON (eS.item_requested = espr.id)
 LEFT OUTER JOIN exhibitsSpacePrices espa ON (eS.item_approved = espa.id)
 LEFT OUTER JOIN exhibitsSpacePrices espp ON (eS.item_purchased = espp.id)
-JOIN exhibitorYears eY ON (eY.id = eS.exhibitorYearId)
+JOIN exhibitorRegionYears exRY ON (exRY.id = eS.exhibitorRegionYear)
+JOIN exhibitorYears eY ON (eY.id = exRY.exhibitorYearId)
 JOIN exhibitors e ON (e.id = eY.exhibitorId)
 JOIN exhibitsSpaces s ON (s.id = eS.spaceId)
 JOIN exhibitsRegionYears eRY ON s.exhibitsRegionYear = eRY.id

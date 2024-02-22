@@ -1,7 +1,7 @@
 <?php
 // exhibitorYears and exhibiorRegionYears related functions for create/retrieval
 
-// exhibitorBuildYears - build exhibitorYears and exhibitorApprovals for this year
+// exhibitorBuildYears - build exhibitorYears and exhibitorRegionYears for this year
 function exhibitorBuildYears($exhibitor, $contactName = NULL, $contactEmail = NULL, $contactPhone = NULL, $contactPassword = NULL, $mailin = 'N'): bool|string {
     $con = get_conf('con');
     $conid = $con['id'];

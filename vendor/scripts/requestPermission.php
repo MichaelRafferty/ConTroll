@@ -63,9 +63,10 @@ $date = date_create('now');
 $date = date_format($date, 'F j, Y') . ' at ' . date_format($date, 'g:i A');
 
 $upQ = <<<EOS
-UPDATE exhibitorApprovals
-SET approval = ?
-WHERE exhibitorId = ? AND exhibitsRegionYearId = ?;
+UPDATE exhibitorRegionYears
+JOIN exhibitorYears exY ON exhibitorRegionYears.exhibitorYearId = exY.id
+SET approval = ?, updateDate = NOW(), updateBy = 2
+WHERE exY.exhibitorId = ? AND exhibitsRegionYearId = ?;
 EOS;
 if ($approvalReq == 'None') {
     // we should never be here, this space no longer requires approval, update the approval record

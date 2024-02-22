@@ -33,11 +33,11 @@ if ($approvalValue == $curvalue) {
     $response['message'] = 'Nothing to change';
 } else {
     $upQ = <<<EOS
-UPDATE exhibitorApprovals
-SET approval = ?
+UPDATE exhibitorRegionYears
+SET approval = ?, updateDate = NOW(), updateBy = ?
 WHERE id = ?;
 EOS;
-    $num_rows = dbSafeCmd($upQ, 'si', array($approvalValue, $approvalId));
+    $num_rows = dbSafeCmd($upQ, 'sii', array($approvalValue, $_SESSION['user_perid'], $approvalId));
     if ($num_rows == 1) {
         $response['status'] = 'success';
         $response['message'] = "Approval changed to $approvalValue";
