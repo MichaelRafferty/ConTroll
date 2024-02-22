@@ -19,7 +19,9 @@ CREATE TABLE `exhibitsRegionYears` (
   `includedMemId` int DEFAULT NULL,
   `additionalMemId` int DEFAULT NULL,
   `totalUnitsAvailable` int NOT NULL DEFAULT '0',
+  `atconIdBase` int not null default '0',
   `mailinFee` decimal(8,2) NOT NULL DEFAULT '0.00',
+  `mailinIdBase` int not null default '0',
   `sortorder` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `ery_memList_a` (`additionalMemId`),
@@ -27,5 +29,3 @@ CREATE TABLE `exhibitsRegionYears` (
   KEY `ery_conlist_fk` (`conid`),
   KEY `ery_exhibitsRegion_fk` (`exhibitsRegion`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-

@@ -12,12 +12,12 @@ load_cc_procs();
 
 page_init($page,
     /* css */ array('css/base.css',
-        'https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css',
-        'https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_bootstrap5.min.css',
+        'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
+        'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
         'css/registration.css'
     ),
     /* js  */ array(//'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-        'https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js',
+        'https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js',
         'js/base.js',
         'js/registration.js',
         'js/registration_cart.js',

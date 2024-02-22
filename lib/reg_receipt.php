@@ -3,8 +3,125 @@
 
 // trans_receipt - given a transaction number build a receipt
 // This function returns all the data to make up a receipt and then calls 'reg_format_receipt' to actually format the receipt as plain text, HTML and email tables.
-function trans_receipt($transid)
+function trans_receipt($transid, $exhId = null, $regionYearId=null)
 {
+    $emails = [];
+    $exhibitor = null;
+    if ($transid == null) {
+
+// get the transaction for this regionid
+// now the space information for this regionYearId
+        $spaceQ = <<<EOS
+SELECT e.*, esp.includedMemberships, esp.additionalMemberships
+FROM vw_ExhibitorSpace e
+JOIN exhibitsSpaces s ON (s.id = e.spaceId)
+JOIN exhibitsSpacePrices esp ON (s.id = esp.spaceId AND e.item_approved = esp.id)
+JOIN exhibitsRegionYears ery ON (ery.id = s.exhibitsRegionYear)
+JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
+WHERE ery.id = ?;
+EOS;
+        $spaceR = dbSafeQuery($spaceQ, 'i', array($regionYearId));
+        if ($spaceR == false || $spaceR->num_rows == 0) {
+            $response['error'] = 'Unable to find any space for the receipt';
+            ajaxSuccess($response);
+            return;
+        }
+
+        $spaces = [];
+        while ($space = $spaceR->fetch_assoc()) {
+            if ($transid == null)
+                $transid = $space['transid'];
+            if ($exhId == null)
+                $exhId = $space['exhibitorId'];
+            $spaces[$space['spaceId']] = $space;
+        }
+        $spaceR->free();
+
+// get the specific information allowed
+        $regionYearQ = <<<EOS
+SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice, ery.mailinFee
+FROM exhibitsRegionYears ery
+JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
+LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
+LEFT OUTER JOIN memList ma ON ery.additionalMemId = ma.id
+WHERE ery.id = ?;
+EOS;
+        $regionYearR = dbSafeQuery($regionYearQ, 'i', array($regionYearId));
+        if ($regionYearR == false || $regionYearR->num_rows != 1) {
+            $response['error'] = 'Unable to find region record, get help';
+            ajaxSuccess($response);
+            return;
+        }
+        $region = $regionYearR->fetch_assoc();
+        $regionYearR->free();
+    } else { // check to see if there is an exhibitor space with this transid
+        // get the transaction for this regionid
+        // now the space information for this regionYearId
+        $spaceQ = <<<EOS
+SELECT e.*, esp.includedMemberships, esp.additionalMemberships, ery.id AS regionYearId
+FROM vw_ExhibitorSpace e
+JOIN exhibitsSpaces s ON (s.id = e.spaceId)
+JOIN exhibitsSpacePrices esp ON (s.id = esp.spaceId AND e.item_approved = esp.id)
+JOIN exhibitsRegionYears ery ON (ery.id = s.exhibitsRegionYear)
+JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
+WHERE e.transid = ?;
+EOS;
+        $spaceR = dbSafeQuery($spaceQ, 'i', array($transid));
+        $spaces = [];
+        while ($space = $spaceR->fetch_assoc()) {
+            if ($regionYearId == null)
+                $regionYearId = $space['regionYearId'];
+            $spaces[$space['spaceId']] = $space;
+        }
+        $spaceR->free();
+
+        // now fetch the region info
+        if ($regionYearId != null) {
+            $regionYearQ = <<<EOS
+SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice, ery.mailinFee
+FROM exhibitsRegionYears ery
+JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
+LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
+LEFT OUTER JOIN memList ma ON ery.additionalMemId = ma.id
+WHERE ery.id = ?;
+EOS;
+            $regionYearR = dbSafeQuery($regionYearQ, 'i', array($regionYearId));
+            if ($regionYearR == false || $regionYearR->num_rows != 1) {
+                $response['error'] = 'Unable to find region record, get help';
+                ajaxSuccess($response);
+                return;
+            }
+            $region = $regionYearR->fetch_assoc();
+            $regionYearR->free();
+        } else {
+            $region = null;
+        }
+    }
+
+    if ($exhId != null) {
+        // get current exhibitor information
+        $exhibitorQ = <<<EOS
+SELECT e.id, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, addr, addr2, city, state, zip, country, contactEmail, contactName, contactPhone
+FROM exhibitors e
+JOIN exhibitorYears ey ON e.id = ey.exhibitorId
+WHERE e.id=?;
+EOS;
+        $exhibitorR = dbSafeQuery($exhibitorQ, 'i', array($exhId));
+        if ($exhibitorR == false || $exhibitorR->num_rows != 1) {
+            $response['error'] = 'Unable to find your exhibitor record';
+            ajaxSuccess($response);
+            return;
+        }
+        $exhibitor = $exhibitorR->fetch_assoc();
+        $exhibitorR->free();
+        if ($exhibitor['exhibitorEmail']) {
+            $emails[] = $exhibitor['exhibitorEmail'];
+        }
+        if ($exhibitor['contactEmail']) {
+            $emaikls[] = $exhibitor['contactEmail'];
+        }
+    }
+
     //// get the transaction information
     $transQ = <<<EOS
 SELECT id, conid, perid, newperid, userid, create_date, DATE_FORMAT(create_date, '%W %M %e, %Y %h:%i:%s %p') as create_date_str,
@@ -31,8 +148,15 @@ EOS;
     $response['userid'] = $userid;
     $response['transaction'] = $transL;
 
+    $payorL = [];
     //// get the payor information involved in this transaction
-    if ($transL['perid'] > 0) {
+    if ($exhibitor != null) {
+        $payorL = [ 'tablename' => 'exhibitor', 'id' => $exhibitor['id'], 'pid' => 'e-' . $exhibitor['id'], 'last_name' => $exhibitor['exhibitorName'],
+            'first_name' => '', 'middle_name' => '', 'suffix' => '', 'email_addr' => $exhibitor['exhibitorEmail'], 'phone' => $exhibitor['exhibitorPhone'],
+            'badge_name' => $exhibitor['contactName'], 'address' => $exhibitor['addr'], 'addr_2' => $exhibitor['addr2'], 'city' => $exhibitor['city'],
+            'state' => $exhibitor['state'], 'zip' => $exhibitor['state'], 'country' => $exhibitor['country'] ];
+        $payor = null;
+    } else  if ($transL['perid'] > 0) {
         $payorSQL = <<<EOS
 SELECT 'perinfo' AS tablename, id, CONCAT('p-', id) AS pid, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, address, addr_2, city, state, zip, state, country
 FROM perinfo WHERE id = ?;
@@ -44,24 +168,12 @@ SELECT 'newperson' AS tablename, id, CONCAT('n-', id) AS pid, last_name, first_n
 FROM newperson WHERE id = ?;
 EOS;
         $payor = $transL['newperid'];
-    } else if (is_numeric($transL['notes'])) {
-        $payorSQL = <<<EOS
-SELECT 'exhibitor' AS tablename, e.id, CONCAT('e-', e.id) AS pid, exhibitorName AS last_name, '' AS first_name, '' AS middle_name, '' AS suffix, exhibitorEmail AS email_addr, 
-       website AS phone, ey.contactName AS badge_name, addr AS address, addr2 as addr_2, city, state, zip, state, country
-FROM exhibitorSpaces es
-JOIN exhibitorYears ey ON (es.exhibitorYearId = ey.id)
-JOIN exhibitors e ON (ey.exhibitorId = e.id)
-WHERE es.id = ?;
-EOS;
-        $payor = $transL['notes'];
     } else {
         $payor = null;
     }
     if ($payor) {
         $payorR = dbSafeQuery($payorSQL, 'i', array($payor));
         $payorL = $payorR->fetch_assoc();
-    } else {
-        $payorL = [];
     }
 
     $response['payor'] = $payorL;
@@ -144,11 +256,12 @@ EOS;
     $people = [];
     while ($peopleL = $peopleR->fetch_assoc()) {
         $people[$peopleL['pid']] = $peopleL;
+        $emails[] = $peopleL['email_addr'];
     }
     $response['people'] = $people;
 
     // now get all payments
-    if (substr($payor, 0, 1) != 'v') {
+    if ($exhibitor != null) {
         $paySQL = <<<EOS
 SELECT p.*
 FROM payments p
@@ -172,7 +285,7 @@ EOS;
     }
     $response['payments'] = $payments;
 
-    //// next, get all coupons used
+    // next, get all coupons used
     $couponSQL = <<<EOS
     $withTrans
     SELECT DISTINCT c.*
@@ -189,41 +302,17 @@ EOS;
         $coupons[] = $couponL;
     }
     $response['coupons'] = $coupons;
+    if (count($emails) > 0)
+        $response['emails'] = $emails;
 
-    //// now exhibitor spaces on that id
-    //TODO: look at why it's 'v' and go to 'e'?
-    if (substr($payor, 0, 1) != 'v') {
-        $exhSQL = <<<EOS
-SELECT exhsp.id, exhsp.transid, exhsp.paid, esp.description, esp.price, es.name AS space_name, e.exhibitorName AS exhibitorName, e.exhibitorEmail as email
-FROM exhibitorSpaces exhsp
-JOIN exhibitsSpacePrices esp ON (esp.id = exhsp.item_purchased)
-JOIN exhibitsSpaces es ON (es.id = esp.spaceid)
-JOIN exhibitorYears ey ON exhsp.exhibitorYearId = ey.id
-JOIN exhibitors e ON (ey.exhibitorId = e.id)
-WHERE exhsp.transid = ?
-ORDER BY es.name, esp.description
-EOS;
-        $exhR = dbSafeQuery($exhSQL, 'i', array($transid));
-    } else {
-        $exhSQL = <<<EOS
-$withTrans
-SELECT exhsp.id, exhsp.transid, exhsp.paid, esp.description, esp.price, es.name AS space_name, e.exhibitorName AS exhibitorName, e.exhibitorEmail as email
-FROM allTrans at
-JOIN exhibitorSpaces exhsp ON (exhsp.transid = at.transid)
-JOIN exhibitsSpacePrices esp ON (esp.id = exhsp.item_purchased)
-JOIN exhibitsSpaces es ON (es.id = esp.spaceid)
-JOIN exhibitorYears ey ON exhsp.exhibitorYearId = ey.id
-JOIN exhibitors e ON (ey.exhibitorId = e.id)
-ORDER BY vs.name, vsp.description
-EOS;
-        $exhR = dbSafeQuery($exhSQL, 'iiiiii', array($conid, $transid, $transid, $conid, $conid, $conid));
-    }
-    $exhibitors = [];
-    while ($exhL = $exhR->fetch_assoc()) {
-        $exhibitors[] = $exhL;
-    }
+    if ($exhibitor)
+        $response['exhibitor'] = $exhibitor;
 
-    $response['exhibitors'] = $exhibitors;
+    if ($spaces)
+        $response['spaces'] = $spaces;
+
+    if ($region)
+        $response['region'] = $region;
 
     return reg_format_receipt($response);
 }
@@ -280,9 +369,9 @@ EOS;
         $payor_name .= ', ' . $payor['suffix'];
     $payor_name = trim($payor_name);
     $master_tid = $master_transaction['id'];
-    if (count($data['exhibitors']) > 0) {
-        $title_payor_name = $data['exhibitors'][0]['exhibitor_name'];
-        $title_email = $data['exhibitors'][0]['email'];
+    if (array_key_exists('exhibitor', $data)) {
+        $title_payor_name = $data['exhibitor']['exhibitorName'];
+        $title_email = $data['exhibitor']['exhibitorEmail'];
     } else {
         $title_payor_name = $payor_name;
         $title_email = $payor['email_addr'];
@@ -292,9 +381,6 @@ EOS;
     $response['payor_email'] = $title_email;
 
     switch ($type) {
-        case 'artist':
-            RenderErrorAjax('Artists receipts not yet supported');
-            exit();
         case 'website':
             $receipt .= "By: $title_payor_name, Via: Online Registration Website, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
@@ -310,6 +396,7 @@ EOS;
 
             break;
         case 'vendor':
+        case 'artist':
         case 'exhibitor':
             $receipt .= "By: $title_payor_name, Via: $type portal, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
@@ -367,7 +454,7 @@ EOS;
     // first output the payor
     $total = 0;
     $payor_pid = $payor['pid'];
-    if (substr($payor_pid, 0, 1) != 'v') {
+    if (substr($payor_pid, 0, 1) != 'e') {
         $list = $data['memberships'][$payor_pid];
         $subtotal = reg_format_mbr($data, $data['people'][$payor_pid], $list, $receipt, $receipt_html, $receipt_tables);
         $total += $subtotal;
@@ -383,7 +470,7 @@ EOS;
     }
 
     // now exhibitor spaces if they exist
-    if (count($data['exhibitors']) > 0) {
+    if (array_key_exists('exhibitor', $data)) {
         $receipt .= "\nExhibitor Spaces:\n";
         $receipt_html .= <<<EOS
     <div class='row mt-4'>
@@ -396,27 +483,48 @@ EOS;
 <tr><td colspan="3">&nbsp;</td></tr>
 <tr><td colspan="3"><h3>Exhibitor Spaces:</h3></td></tr>
 EOS;
-
-        foreach ($data['exhibitors'] as $exhibitor) {
-            $exhibitor_price = $exhibitor['price'];
-            $total += $exhibitor_price;
-            $exhibitor_price = $dolfmt->formatCurrency((float) $exhibitor['price'], 'USD');
-            $exhibitor_sid = $exhibitor['id'];
-            $exhibitor_area = $exhibitor['space_name'];
-            $exhibitor_desc = $exhibitor['description'];
-            $exhibitor_name = $exhibitor['exhibitor_name'];
-            $receipt .= "$exhibitor_area, $exhibitor_desc, $exhibitor_name, $exhibitor_price\n";
-            $receipt_html .= <<<EOS
+        $exhibitor = $data['exhibitor'];
+        $region = $data['region'];
+        $exhibitor_sid = $exhibitor['id'];
+        $exhibitor_name = $exhibitor['exhibitorName'];
+        $regionName = $region['name'];
+        $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-1">$exhibitor_sid</div>
-        <div class="col-sm-6">$exhibitor_desc in $exhibitor_area for $exhibitor_name</div>
-        <div class="col-sm-2">$exhibitor_price</div>
+        <div class="col-sm-6"> $regionName for $exhibitor_name</div>
     </div>
 EOS;
-            $receipt_tables .= <<<EOS
-<tr><td>$exhibitor_sid</td><td>$exhibitor_desc in $exhibitor_area for $exhibitor_name</td><td>$exhibitor_price</td></tr>
-EOS;
+        $receipt_tables .= "<tr><td>$exhibitor_sid</td><td>$regionName for $exhibitor_name</td><td></td></tr>\n";
+        $receipt .= "$exhibitor_sid: $regionName for $exhibitor_name\n";
 
+        foreach ($data['spaces'] as $space) {
+            $spaceDesc = $space['purchased_description'];
+            $spaceName = $space['name'];
+            $total += $space['purchased_price'];
+            $spacePrice = $dolfmt->formatCurrency((float) $space['purchased_price'], 'USD');
+            $receipt_html .= <<<EOS
+    <div class="row">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-6">$spaceDesc in $spaceName</div>
+        <div class="col-sm-2">$spacePrice</div>
+    </div>
+EOS;
+            $receipt_tables .= "<tr><td></td><td>$spaceDesc in $spaceName</td><td>$spacePrice</td></tr>\n";
+            $receipt .= "     $spaceDesc in $spaceName: $spacePrice\n";
+        }
+
+        if ($region['mailinFee'] > 0) {
+            $total += $region['mailinFee'];
+            $fee = $dolfmt->formatCurrency((float) $region['mailinFee'], 'USD');
+            $receipt_html .= <<<EOS
+    <div class="row">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-6">Mail In Fee</div>
+        <div class="col-sm-2">$fee</div>
+    </div>
+EOS;
+            $receipt_tables .= "<tr><td></td><td>Mail In Fee</td><td>$fee</td></tr>\n";
+            $receipt .= "     Mail In Fee: $fee\n";
         }
     }
 
@@ -571,24 +679,31 @@ EOS;
     // Needs to be added
 
     // exhibitor disclaimer
-    if (count($data['exhibitors']) > 0) {
+    if (array_key_exists('exhibitor', $data)) {
         $vc = get_conf('vendor');
         if (array_key_exists('pay_disclaimer', $vc)) {
             $vdisc = $vc['pay_disclaimer'];
             if ($vdisc != '') {
-                $vdisc = file_get_contents("../config/$vdisc");
-                if ($vdisc) {
-                    $receipt .=  "\n\n$vdisc\n";
-                    $receipt_html .= <<<EOS
+                $path = "../config/$vdisc";
+                if (!file_exists($path))
+                    $path = "../" . $path;
+                if (!file_exists($path))
+                    $path = '../' . $path;
+                if (file_exists($path)) {
+                    $vdisc = file_get_contents($path);
+                    if ($vdisc) {
+                        $receipt .= "\n\n$vdisc\n";
+                        $receipt_html .= <<<EOS
 <div class='row mt-4'>
         <div class='col-sm-12'>
             <p>$vdisc</p>
         </div>
     </div>
 EOS;
-                    $receipt_tables .= <<<EOS
+                        $receipt_tables .= <<<EOS
 <tr><td colspan="3"><p>$vdisc</p></td></tr>
 EOS;
+                    }
                 }
             }
         }
