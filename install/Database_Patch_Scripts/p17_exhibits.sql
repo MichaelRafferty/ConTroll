@@ -55,15 +55,26 @@ CREATE TABLE `exhibitorYears` (
     `contactPhone` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
     `contactPassword` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
     `mailin` enum('N','Y') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
-    `artistId` int DEFAULT NULL,
     `need_new` tinyint(1) DEFAULT '1',
     `confirm` tinyint(1) DEFAULT '0',
     `needReview` tinyint(1) NOT NULL DEFAULT '1',
-    `exhibitorNumber` int DEFAULT NULL,
     PRIMARY KEY (`id`),
     KEY `ey_exhibitors_fk` (`exhibitorId`),
     KEY `ey_conlist_fk` (`conid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE exhibitorRegionYears (
+    id int NOT NULL AUtO_INCREMENT,
+    exhibitorYearId int NOT NULL,
+    exhibitsRegionYearId int NOT NULL,
+    exhibitorNumber INT DEFAULT NULL,
+    locations varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    agentPerid int DEFAULT NULL,
+    agentNewperson int DEFAULT NULL,
+    agentRequest varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    sortorder int NOT NULL DEFAULT 0,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;;
 
 DROP TABLE IF EXISTS `exhibitors`;
 CREATE TABLE `exhibitors` (
@@ -195,6 +206,10 @@ ALTER TABLE exhibitsRegionYears ADD CONSTRAINT `ery_conlist_fk` FOREIGN KEY (`co
 ALTER TABLE exhibitsRegionYears ADD CONSTRAINT `ery_exhibitsRegion_fk` FOREIGN KEY (`exhibitsRegion`) REFERENCES `exhibitsRegions` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitsRegionYears ADD CONSTRAINT `ery_memList_a` FOREIGN KEY (`additionalMemId`) REFERENCES `memList` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitsRegionYears ADD CONSTRAINT `ery_memList_i` FOREIGN KEY (`includedMemId`) REFERENCES `memList` (`id`) ON UPDATE CASCADE;
+ALTER TABLE exhibitorRegionYears ADD CONSTRAINT exry_eyrid FOREIGN KEY (exhibitsRegionYearId) REFERENCES exhibitsRegionYears(id) ON UPDATE CASCADE;
+ALTER TABLE exhibitorRegionYears ADD CONSTRAINT exry_eyid FOREIGN KEY (exhibitorYearId) REFERENCES exhibitorYears(id) ON UPDATE CASCADE;
+ALTER TABLE exhibitorRegionYears ADD CONSTRAINT exry_agentPerid FOREIGN KEY (agentPerid) REFERENCES perinfo(id) ON UPDATE CASCADE;
+ALTER TABLE exhibitorRegionYears ADD CONSTRAINT exry_agentNewperon FOREIGN KEY (agentNewperson) REFERENCES newperson(id) ON UPDATE CASCADE;
 
 DROP VIEW IF EXISTS `vw_ExhibitorSpace`;
 CREATE ALGORITHM=UNDEFINED

@@ -65,6 +65,17 @@ EOS;
             $confirm
         );
         $newyrid = dbSafeInsert($eyinsq, $typestr, $paramArray);
+
+        // Next is exhibitorRegionYears,  from exhibitsRegionYears
+        $exRYinsq = <<<EOS
+INSERT INTO exhibitorRegionYears(exhibitorYearId, exhibitsRegionYearId, sortorder) {
+SELECT ey.id AS exhibitorYearId, eRY.id, eRY.sortorder
+FROM exhibitorYears ey
+JOIN exhibitsRegionYears eRY ON (ey.conid = eRY.conid)
+WHERE ey.exhibitorId = ? AND ey.conid = ?
+ORDER BY eRY.sortorder;
+EOS;
+        $numrows = dbSafeCmd($exRYinsq, 'ii', array($exhibitor, $conid));
     } else {
         // no passed parameters but prior year exists
         $yinsq = <<<EOS
@@ -74,7 +85,21 @@ FROM exhibitorYears
 WHERE conid = ? AND exhibitorId = ?
 EOS;
         $newyrid = dbSafeInsert($yinsq, 'iii', array($conid, $last_year, $exhibitor));
+
+        // Next is exhibitorRegionYears,  from exhibitsRegionYears
+        $exRYinsq = <<<EOS
+INSERT INTO exhibitorRegionYears(exhibitorYearId, exhibitsRegionYearId, agentPerid, sortorder) {
+SELECT ey.id AS exhibitorYearId, eRY.id, eRYold.agentPerid, eRY.sortorder
+FROM exhibitorYears eYold
+JOIN exhibitorRegionYears eRYold ON eYold.id = eRYold.exhibitorYearId
+JOIN exhibitorYears ey
+JOIN exhibitsRegionYears eRY ON (ey.conid = eRY.conid)
+WHERE ey.exhibitorId = ? AND ey.conid = ? AND eYold.conid = ?
+ORDER BY eRY.sortorder;
+EOS;
+        $numrows = dbSafeCmd($exRYinsq, 'iii', array($exhibitor, $conid, $last_year));
     }
+
     // now build new approval records for this year
 
     // load prior approvals - for checking ones that are 'once'
@@ -179,6 +204,18 @@ EOS;
         $newid = dbSafeInsert($insQ, $instypes, array($exhibitor, $appL['exhibitsRegionYearId'], $approval, 2));
     }
     $appR->free();
+
+    // now for the exhibitorRegionYears
+    $exRYinsq = <<<EOS
+INSERT INTO exhibitorRegionYears(exhibitorYearId, exhibitsRegionYearId, sortorder) {
+SELECT ey.id AS exhibitorYearId, eRY.id, eRY.sortorder
+FROM exhibitorYears ey
+JOIN exhibitsRegionYears eRY ON (ey.conid = eRY.conid)
+LEFT OUTER JOIN exhibitorRegionYears exRY ON exRY.exhibitsRegionYearId = eRY.id
+WHERE ey.exhibitorId = ? AND ey.conid = ? AND exRY.id IS NULL
+ORDER BY eRY.sortorder;
+EOS;
+    $numrows = dbSafeCmd($exRYinsq, 'ii', array($exhibitor, $conid));
 
     // now build spaces for this year that don't exist
     $insSpQ = <<<EOS
