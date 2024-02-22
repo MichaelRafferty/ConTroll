@@ -38,7 +38,7 @@ switch ($approvalType) {
 
         $upQ = <<<EOS
 UPDATE exhibitorSpaces eS
-JOIN exhibitorYears eY on eS.exhibitorYearId = eY.id
+JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
 JOIN exhibitsSpaces es ON es.id = eS.spaceId
 JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
 SET item_approved = item_requested, time_approved = NOW()
@@ -61,18 +61,19 @@ EOS;
         $upQ = <<<EOS
 UPDATE exhibitorSpaces
 SET item_approved = ?, time_approved = NOW()
-WHERE spaceId = ? and exhibitorYearId = ?;
+WHERE spaceId = ? and exhibitorRegionYear = ?;
 EOS;
 $upCanQ = <<<EOS
 UPDATE exhibitorSpaces
 SET item_approved = null, item_requested = null, time_requested = NOW(), time_approved = NOW()
-WHERE spaceId = ? and exhibitorYearId = ?;
+WHERE spaceId = ? and exhibitorRegionYear = ?;
 EOS;
 
         // requests = each space price id in the format
         $requests = $_POST['requests'];
         $exhibitorId = $_POST['exhibitorId'];
         $exhibitorYearId = $_POST['exhibitorYearId'];
+        $regionYearId = $_POST['regionYearId'];
         $requests = explode('&',$requests);
         $num_rows = 0;
         foreach ($requests as $req) {
@@ -81,9 +82,9 @@ EOS;
             $value = $reqitems[1];
             $spaceId = str_replace('exhbibitor_req_price_id_', '', $spaceId);
             if ($value > 0) {
-                $num_rows += dbSafeCmd($upQ, 'iii', array($value, $spaceId, $exhibitorYearId));
+                $num_rows += dbSafeCmd($upQ, 'iii', array($value, $spaceId, $regionYearId));
             } else {
-                $num_rows += dbSafeCmd($upCanQ, 'ii', array($spaceId, $exhibitorYearId));
+                $num_rows += dbSafeCmd($upCanQ, 'ii', array($spaceId, $regionYearId));
             }
         }
         if ($num_rows > 0) {
@@ -111,7 +112,8 @@ FROM exhibitorSpaces eS
 LEFT OUTER JOIN exhibitsSpacePrices espr ON (eS.item_requested = espr.id)
 LEFT OUTER JOIN exhibitsSpacePrices espa ON (eS.item_approved = espa.id)
 LEFT OUTER JOIN exhibitsSpacePrices espp ON (eS.item_purchased = espp.id)
-JOIN exhibitorYears eY ON (eY.id = eS.exhibitorYearId)
+JOIN exhibitorRegionYears exRY ON exRY.id = eS.exhibitorRegionYear
+JOIN exhibitorYears eY ON (eY.id = exRY.exhibitorYearId)
 JOIN exhibitors e ON (e.id = eY.exhibitorId)
 JOIN exhibitsSpaces s ON (s.id = eS.spaceId)
 JOIN exhibitsRegionYears eRY ON s.exhibitsRegionYear = eRY.id

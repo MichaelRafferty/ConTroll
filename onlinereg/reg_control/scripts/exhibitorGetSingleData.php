@@ -118,7 +118,7 @@ fclose($fh);
 
 
 $vendorPQ = <<<EOS
-SELECT exYR.*
+SELECT exRY.*
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 JOIN exhibitsRegionYears ery ON exRY.exhibitsRegionYearId = ery.id

@@ -40,18 +40,21 @@ $portalName = $_POST['name'];
 
 // get exhibitor info
 $exhibitorQ = <<<EOS
-SELECT e.id AS exhibitorId, ey.id AS exhibitorYearId, e.exhibitorName, e.exhibitorEmail, ey.contactName, ey.contactEmail, e.exhibitorName, e.website, e.description
+SELECT e.id AS exhibitorId, ey.id AS exhibitorYearId, e.exhibitorName, e.exhibitorEmail, ey.contactName, ey.contactEmail, e.exhibitorName, e.website, e.description, exRY.id AS exhibitorRegionYearId
 FROM exhibitors e
 JOIN exhibitorYears ey ON e.id = ey.exhibitorId
-WHERE ey.conid = ? AND e.id = ?
+JOIN exhibitsRegionYears eRY
+JOIN exhibitorRegionYears exRY ON ey.id = exRY.exhibitorYearId AND exRY.exhibitsRegionYearId = eRY.id
+WHERE ey.conid = ? AND e.id = ? AND eRY.id = ?
 EOS;
-$exhibitorR = dbSafeQuery($exhibitorQ, 'ii', array($conid, $vendor));
+$exhibitorR = dbSafeQuery($exhibitorQ, 'iii', array($conid, $vendor, $regionYearId));
 if ($exhibitorR == false || $exhibitorR->num_rows != 1) {
     ajaxError('Invalid Session');
     return;
 }
 $exhibitorInfo = $exhibitorR->fetch_assoc();
 $eyId = $exhibitorInfo['exhibitorYearId'];
+$exRYId = $exhibitorInfo['exhibitorRegionYearId'];
 $exhibitorR->free();
 
 // get region info
@@ -108,7 +111,8 @@ EOS;
     $vendorQ = <<<EOS
 SELECT es.id, item_requested, item_approved, item_purchased, price, paid, transid, membershipCredits
 FROM exhibitorYears ey
-JOIN exhibitorSpaces es ON ey.id = es.exhibitorYearId
+JOIN exhibitorRegionYears exRY ON ey.id = exRY.exhibitorYearId
+JOIN exhibitorSpaces es ON exRY.id = es.exhibitorRegionYear
 WHERE spaceId = ? and exhibitorYearId = ?;
 EOS;
     $vendorR = dbSafeQuery($vendorQ, 'ii', array($spaceid, $eyId));
@@ -124,8 +128,8 @@ EOS;
     if ($exhibitorSpace['id'] < 0) {
         if ($priceId > 0) {
             // insert a new record because its a new request
-            $insertQ = 'INSERT INTO exhibitorSpaces(exhibitorYearId, spaceId, item_requested, time_requested) VALUES(?, ?, ?, now());';
-            $rowid = dbSafeInsert($insertQ, 'iii', array($eyId, $spaceid, $priceId));
+            $insertQ = 'INSERT INTO exhibitorSpaces(exhibitorRegionYear, spaceId, item_requested, time_requested) VALUES(?, ?, ?, now());';
+            $rowid = dbSafeInsert($insertQ, 'iii', array($exRYId, $spaceid, $priceId));
         }
     } else if ($priceId > 0) {
         // update for new/changed item
