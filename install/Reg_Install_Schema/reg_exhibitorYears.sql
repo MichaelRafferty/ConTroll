@@ -19,11 +19,9 @@ CREATE TABLE `exhibitorYears` (
   `contactPhone` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `contactPassword` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `mailin` enum('N','Y') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
-  `artistId` int DEFAULT NULL,
   `need_new` tinyint(1) DEFAULT '1',
   `confirm` tinyint(1) DEFAULT '0',
   `needReview` tinyint(1) NOT NULL DEFAULT '1',
-  `exhibitorNumber` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `ey_exhibitors_fk` (`exhibitorId`),
   KEY `ey_conlist_fk` (`conid`)
