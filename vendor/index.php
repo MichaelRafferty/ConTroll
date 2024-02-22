@@ -382,12 +382,13 @@ fclose($fh);
 $config_vars['loginType'] = $_SESSION['login_type'];
 
 $vendorPQ = <<<EOS
-SELECT ea.*
-FROM exhibitorApprovals ea
-JOIN exhibitsRegionYears ery ON ea.exhibitsRegionYearId = ery.id
+SELECT exRY.*, ey.exhibitorId
+FROM exhibitorRegionYears exRY
+JOIN exhibitorYears ey ON exRY.exhibitorYearId = ey.id
+JOIN exhibitsRegionYears ery ON exRY.exhibitsRegionYearId = ery.id
 JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id 
 JOIN exhibitsRegionTypes ert ON er.regionType = ert.regionType
-WHERE exhibitorId = ? AND ert.portalType = ?;
+WHERE ey.exhibitorId = ? AND ert.portalType = ?;
 EOS;
 
 $vendorPR = dbSafeQuery($vendorPQ, 'is', array($vendor, $portalType));

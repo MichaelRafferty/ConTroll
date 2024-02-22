@@ -6,24 +6,10 @@
 UPDATE auth SET page = 'N' WHERE NAME IN ('artist', 'artshow');
 UPDATE auth SET display='Exhibitors' WHERE NAME = 'vendor';
 
-DROP TABLE IF EXISTS `exhibitorApprovals`;
-CREATE TABLE `exhibitorApprovals` (
-    `id` int NOT NULL AUTO_INCREMENT,
-    `exhibitorId` int NOT NULL,
-    `exhibitsRegionYearId` int NOT NULL,
-    `approval` enum('none','requested','approved','denied','hide') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'none',
-    `updateDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updateBy` int NOT NULL,
-    PRIMARY KEY (`id`),
-    KEY `ea_exhibitor_fk` (`exhibitorId`),
-    KEY `ea_regionYear_fk` (`exhibitsRegionYearId`),
-    KEY `ea_updateby_fk` (`updateBy`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 DROP TABLE IF EXISTS `exhibitorSpaces`;
 CREATE TABLE `exhibitorSpaces` (
     `id` int NOT NULL AUTO_INCREMENT,
-    `exhibitorYearId` int NOT NULL,
+    `exhibitorRegionYearId` int NOT NULL,
     `spaceId` int NOT NULL,
     `item_requested` int DEFAULT NULL,
     `time_requested` timestamp NULL DEFAULT NULL,
@@ -37,7 +23,6 @@ CREATE TABLE `exhibitorSpaces` (
     `membershipCredits` int DEFAULT '0',
     `locations` varchar(265) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
     PRIMARY KEY (`id`),
-    KEY `es_exhibitorYears_fk` (`exhibitorYearId`),
     KEY `es_transaction_fk` (`transid`),
     KEY `es_space_req_fk` (`item_requested`),
     KEY `es_space_app_fk` (`item_approved`),
@@ -72,9 +57,11 @@ CREATE TABLE exhibitorRegionYears (
     agentPerid int DEFAULT NULL,
     agentNewperson int DEFAULT NULL,
     agentRequest varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    `approval` enum('none','requested','approved','denied','hide') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'none',
+    `updateDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updateBy` int NOT NULL,
     sortorder int NOT NULL DEFAULT 0,
     PRIMARY KEY(id)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;;
 
 DROP TABLE IF EXISTS `exhibitors`;
 CREATE TABLE `exhibitors` (
@@ -187,15 +174,12 @@ CREATE TABLE `exhibitsSpaces` (
     KEY `es_exhibitsRegionYears_fk` (`exhibitsRegionYear`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-ALTER TABLE exhibitorSpaces ADD CONSTRAINT `es_exhibitorYears_fk` FOREIGN KEY (`exhibitorYearId`) REFERENCES `exhibitorYears` (`id`) ON UPDATE CASCADE;
+
 ALTER TABLE exhibitorSpaces ADD CONSTRAINT `es_space_app_fk` FOREIGN KEY (`item_approved`) REFERENCES `exhibitsSpacePrices` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorSpaces ADD CONSTRAINT `es_space_pur_fk` FOREIGN KEY (`item_purchased`) REFERENCES `exhibitsSpacePrices` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorSpaces ADD CONSTRAINT `es_space_req_fk` FOREIGN KEY (`item_requested`) REFERENCES `exhibitsSpacePrices` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorSpaces ADD CONSTRAINT `es_spaceid_fk` FOREIGN KEY (`spaceId`) REFERENCES `exhibitsSpaces` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorSpaces ADD CONSTRAINT `es_transaction_fk` FOREIGN KEY (`transid`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE;
-ALTER TABLE exhibitorApprovals ADD CONSTRAINT `ea_exhibitor_fk` FOREIGN KEY (`exhibitorId`) REFERENCES `exhibitors` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE exhibitorApprovals ADD CONSTRAINT `ea_regionYear_fk` FOREIGN KEY (`exhibitsRegionYearId`) REFERENCES `exhibitsRegionYears` (`id`) ON UPDATE CASCADE;
-ALTER TABLE exhibitorApprovals ADD CONSTRAINT `ea_updateby_fk` FOREIGN KEY (`updateBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitsRegions ADD CONSTRAINT `er_regiontype_fk` FOREIGN KEY (`regionType`) REFERENCES `exhibitsRegionTypes` (`regionType`) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE exhibitors ADD CONSTRAINT `exhibitor_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitsSpaces ADD CONSTRAINT `es_exhibitsRegionYears_fk` FOREIGN KEY (`exhibitsRegionYear`) REFERENCES `exhibitsRegionYears` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -210,27 +194,34 @@ ALTER TABLE exhibitorRegionYears ADD CONSTRAINT exry_eyrid FOREIGN KEY (exhibits
 ALTER TABLE exhibitorRegionYears ADD CONSTRAINT exry_eyid FOREIGN KEY (exhibitorYearId) REFERENCES exhibitorYears(id) ON UPDATE CASCADE;
 ALTER TABLE exhibitorRegionYears ADD CONSTRAINT exry_agentPerid FOREIGN KEY (agentPerid) REFERENCES perinfo(id) ON UPDATE CASCADE;
 ALTER TABLE exhibitorRegionYears ADD CONSTRAINT exry_agentNewperon FOREIGN KEY (agentNewperson) REFERENCES newperson(id) ON UPDATE CASCADE;
+ALTER TABLE exhibitorRegionYears ADD CONSTRAINT `ecry_updateby_fk` FOREIGN KEY (`updateBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 
 DROP VIEW IF EXISTS `vw_ExhibitorSpace`;
 CREATE ALGORITHM=UNDEFINED
     SQL SECURITY INVOKER
     VIEW `vw_ExhibitorSpace` AS
-    select `ert`.`portalType` AS `portalType`,`ert`.`requestApprovalRequired` AS `requestApprovalRequired`,`ert`.`purchaseApprovalRequired` AS `purchaseApprovalRequired`,
-           `ert`.`purchaseAreaTotals` AS `purchaseAreaTotals`,`ert`.`mailinAllowed` AS `mailInAllowed`,`er`.`name` AS `regionName`,`er`.`shortname` AS `regionShortName`,
-           `er`.`description` AS `regionDesc`,`er`.`sortorder` AS `regionSortOrder`,`ery`.`ownerName` AS `ownerName`,`ery`.`ownerEmail` AS `ownerEmail`,`ery`.`id` AS `regionYearId`,
-           `ery`.`includedMemId` AS `includedMemId`,`ery`.`additionalMemId` AS `additionalMemId`,`ery`.`totalUnitsAvailable` AS `totalUnitsAvailable`,`ery`.`conid` AS `yearId`,
-           `s`.`id` AS `id`,`Ey`.`conid` AS `conid`,`e`.`id` AS `exhibitorId`,`s`.`spaceId` AS `spaceId`,`es`.`shortname` AS `shortname`,`es`.`name` AS `name`,
-           `s`.`item_requested` AS `item_requested`,`s`.`time_requested` AS `time_requested`,`req`.`code` AS `requested_code`,`req`.`description` AS `requested_description`,
-           `req`.`units` AS `requested_units`,`req`.`price` AS `requested_price`,`req`.`sortorder` AS `requested_sort`,`s`.`item_approved` AS `item_approved`,
-           `s`.`time_approved` AS `time_approved`,`app`.`code` AS `approved_code`,`app`.`description` AS `approved_description`,`app`.`units` AS `approved_units`,
-           `app`.`price` AS `approved_price`,`app`.`sortorder` AS `approved_sort`,`s`.`item_purchased` AS `item_purchased`,`s`.`time_purchased` AS `time_purchased`,
-           `pur`.`code` AS `purchased_code`,`pur`.`description` AS `purchased_description`,`pur`.`units` AS `purchased_units`,`pur`.`price` AS `purchased_price`,
-           `pur`.`sortorder` AS `purchased_sort`,`s`.`price` AS `price`,`s`.`paid` AS `paid`,`s`.`transid` AS `transid`,`s`.`membershipCredits` AS `membershipCredits`
-    from (((((((((`exhibitors` `e` join `exhibitorYears` `Ey` on((`e`.`id` = `Ey`.`exhibitorId`))) left join `exhibitorSpaces` `s` on((`Ey`.`id` = `s`.`exhibitorYearId`)))
-        left join `exhibitsSpacePrices` `req` on((`s`.`item_requested` = `req`.`id`))) left join `exhibitsSpacePrices` `app` on((`s`.`item_approved` = `app`.`id`)))
-        left join `exhibitsSpacePrices` `pur` on((`s`.`item_purchased` = `pur`.`id`))) left join `exhibitsSpaces` `es` on((`s`.`spaceId` = `es`.`id`)))
-        join `exhibitsRegionYears` `ery` on((`es`.`exhibitsRegionYear` = `ery`.`id`))) join `exhibitsRegions` `er` on((`er`.`id` = `ery`.`exhibitsRegion`)))
-        join `exhibitsRegionTypes` `ert` on((`ert`.`regionType` = `er`.`regionType`))) ;
+select ert.portalType AS portalType,ert.requestApprovalRequired AS requestApprovalRequired,ert.purchaseApprovalRequired AS purchaseApprovalRequired,
+       ert.purchaseAreaTotals AS purchaseAreaTotals,ert.mailinAllowed AS mailInAllowed,er.name AS regionName,er.shortname AS regionShortName,
+       er.description AS regionDesc,er.sortorder AS regionSortOrder,ery.ownerName AS ownerName,ery.ownerEmail AS ownerEmail,ery.id AS regionYearId,
+       ery.includedMemId AS includedMemId,ery.additionalMemId AS additionalMemId,ery.totalUnitsAvailable AS totalUnitsAvailable,ery.conid AS yearId,
+       s.id AS id,Ey.conid AS conid,e.id AS exhibitorId,s.spaceId AS spaceId,es.shortname AS shortname,es.name AS name,
+       s.item_requested AS item_requested,s.time_requested AS time_requested,req.code AS requested_code,req.description AS requested_description,
+       req.units AS requested_units,req.price AS requested_price,req.sortorder AS requested_sort,s.item_approved AS item_approved,
+       s.time_approved AS time_approved,app.code AS approved_code,app.description AS approved_description,app.units AS approved_units,
+       app.price AS approved_price,app.sortorder AS approved_sort,s.item_purchased AS item_purchased,s.time_purchased AS time_purchased,
+       pur.code AS purchased_code,pur.description AS purchased_description,pur.units AS purchased_units,pur.price AS purchased_price,
+       pur.sortorder AS purchased_sort,s.price AS price,s.paid AS paid,s.transid AS transid,s.membershipCredits AS membershipCredits
+from exhibitors e
+         join exhibitorYears Ey on e.id = Ey.exhibitorId
+         join exhibitorRegionYears Ery ON Ery.exhibitorYearId = Ey.id
+         left join exhibitorSpaces s on Ey.id = s.exhibitorRegionYear
+         left join exhibitsSpacePrices req on s.item_requested = req.id
+         left join exhibitsSpacePrices app on s.item_approved = app.id
+         left join exhibitsSpacePrices pur on s.item_purchased = pur.id
+         left join exhibitsSpaces es on s.spaceId = es.id
+         join exhibitsRegionYears ery on es.exhibitsRegionYear = ery.id
+         join exhibitsRegions er on er.id = ery.exhibitsRegion
+         join exhibitsRegionTypes ert on ert.regionType = er.regionType ;
 
 /* NOTE: these tables totally replace the old vendor* and vendor_* tables, you can migrate data to save it, if desired. */
 /*  Eventually drop all vendor tables as obsolete
