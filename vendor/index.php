@@ -125,7 +125,7 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
     if (isset($_REQUEST['logout'])) {
         session_destroy();
         unset($_SESSION['id']);
-        unset($_SESSION['cID']);
+        unset($_SESSION['eyID']);
         unset($_SESSION['login_type']);
         if ($portalType == 'vendor') {
             header('location:' . $vendor_conf['vendorsite']);
@@ -149,7 +149,7 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
     }
     $vendor = $match['id'];
     $_SESSION['id'] = $vendor;
-    $_SESSION['cID'] = $match['cID'];
+    $_SESSION['eyID'] = $match['eyID'];
     $_SESSION['login_type'] = $match['loginType'];
     $in_session = true;
     if ($match['loginType'] == 'e') {
@@ -170,20 +170,20 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
     }
 
     // Build exhbititorYear on first login if it doesn't exist at the time of this login
-    if ($match['cID'] == NULL) {
+    if ($match['eyID'] == NULL) {
         // create the year related functions
         $newid = exhibitorBuildYears($vendor);
         if (is_numeric($newid))
-            $_SESSION['cID'] = $newid;
+            $_SESSION['eyID'] = $newid;
     } else {
-        $_SESSION['cID'] = $match['cID'];
+        $_SESSION['eyID'] = $match['eyID'];
     }
-    exhibitorCheckMissingSpaces($vendor, $_SESSION['cID']);
+    exhibitorCheckMissingSpaces($vendor, $_SESSION['eyID']);
 } else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
     // handle login submit
     $login = strtolower(sql_safe($_POST['si_email']));
     $loginQ = <<<EOS
-SELECT e.id, e.exhibitorName, e.exhibitorEmail as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS cID, 
+SELECT e.id, e.exhibitorName, e.exhibitorEmail as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
        ey.contactEmail AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
@@ -264,15 +264,15 @@ EOS;
     }
 
     // Build exhbititorYear on first login if it doesn't exist at the time of this login
-    if ($match['cID'] == NULL) {
+    if ($match['eyID'] == NULL) {
         // create the year related functions
         $newid = exhibitorBuildYears($vendor);
         if (is_numeric($newid))
-            $_SESSION['cID'] = $newid;
+            $_SESSION['eyID'] = $newid;
     } else {
-        $_SESSION['cID'] = $match['cID'];
+        $_SESSION['eyID'] = $match['eyID'];
     }
-    exhibitorCheckMissingSpaces($vendor, $_SESSION['cID']);
+    exhibitorCheckMissingSpaces($vendor, $_SESSION['eyID']);
 } else {
     draw_registrationModal($portalType, $portalName, $con, $countryOptions);
     draw_login($config_vars);

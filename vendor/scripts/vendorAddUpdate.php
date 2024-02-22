@@ -126,7 +126,7 @@ EOS;
 
         if (isset($_SESSION['id'])) {
             $vendor = $_SESSION['id'];
-            $vendorYear = $_SESSION['cID'];
+            $vendorYear = $_SESSION['eyID'];
         } else {
             $response['status'] = 'error';
             $response['message'] = 'Authentication Failure';

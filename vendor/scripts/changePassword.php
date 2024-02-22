@@ -14,7 +14,7 @@ $conid = $con['id'];
 
 if(isset($_SESSION['id'])) {
     $vendor = $_SESSION['id'];
-    $client = $_SESSION['cID'];
+    $client = $_SESSION['eyID'];
 } else {
     $response['status']='error';
     $response['message']='Authentication Failure';
