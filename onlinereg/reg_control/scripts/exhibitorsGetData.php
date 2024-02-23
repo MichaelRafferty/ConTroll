@@ -52,13 +52,17 @@ $response['exhibitors'] = $exhibitors;
 
 // get approvals for this region
 $approvalQ = <<<EOS
-SELECT exRY.id, eY.exhibitorId, exRY.exhibitsRegionYearId, exRY.approval, exRY.updateDate, exRY.updateBy, eR.name, eR.shortname, e.exhibitorName, e.exhibitorEmail, e.website
+SELECT exRY.id, eY.exhibitorId, exRY.exhibitsRegionYearId, exRY.approval, exRY.updateDate, exRY.updateBy, eR.name, eR.shortname, e.exhibitorName, e.exhibitorEmail, e.website,
+       COUNT(exS.item_approved) + COUNT(exS.item_requested) + COUNT(exS.item_purchased) AS used
 FROM exhibitorRegionYears exRY
 JOIN exhibitsRegionYears eRY ON exRY.exhibitsRegionYearId = eRY.id
 JOIN exhibitsRegions eR on eRY.exhibitsRegion = eR.id
 JOIN exhibitorYears eY on exRY.exhibitorYearId = eY.id
+JOIN exhibitsSpaces es ON es.exhibitsRegionYear = eRY.id
+JOIN exhibitorSpaces exS ON es.id = exS.spaceId AND exS.exhibitorRegionYear = exRY.id
 JOIN exhibitors e ON eY.exhibitorId = e.id
-WHERE eRY.exhibitsRegion = ? and eRY.conid = ?;
+WHERE eRY.exhibitsRegion = ? and eRY.conid = ?
+GROUP BY exRY.id, eY.exhibitorId, exRY.exhibitsRegionYearId, exRY.approval, exRY.updateDate, exRY.updateBy, eR.name, eR.shortname, e.exhibitorName, e.exhibitorEmail, e.website;
 EOS;
 
 $approvalR = dbSafeQuery($approvalQ, 'si', array($regionId, $conid));
@@ -73,10 +77,17 @@ if (!$approvalR) {
 $approvals = array();
 while ($approvalL = $approvalR->fetch_assoc()) {
     $approvalData = $approvalL;
-    $approvalData['b1'] = time();
-    $approvalData['b2'] = time();
-    $approvalData['b3'] = time();
-    $approvalData['b4'] = time();
+    if ($approvalData['used'] > 0) {
+        $approvalData['b1'] = -1;
+        $approvalData['b2'] = -1;
+        $approvalData['b3'] = -1;
+        $approvalData['b4'] = -1;
+    } else {
+        $approvalData['b1'] = time();
+        $approvalData['b2'] = time();
+        $approvalData['b3'] = time();
+        $approvalData['b4'] = time();
+    }
     $approvals[] = $approvalData;
 }
 $approvalR->free();

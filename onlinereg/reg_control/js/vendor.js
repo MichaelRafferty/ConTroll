@@ -540,28 +540,32 @@ class exhibitorsAdm {
     exhApprove(e, cell) {
         var exhibitorRow = cell.getRow()
         var exhibitorData = exhibitorRow.getData();
-        exhibitors.processApprovalChange('approved', exhibitorData, exhibitorRow);
+        if (exhibitorData['b1'] > 0)
+            exhibitors.processApprovalChange('approved', exhibitorData, exhibitorRow);
     }
 
     // reset an approval back to request
     exhReset(e, cell) {
         var exhibitorRow = cell.getRow()
         var exhibitorData = exhibitorRow.getData();
-        exhibitors.processApprovalChange('requested', exhibitorData, exhibitorRow);
+        if (exhibitorData['b1'] > 0)
+            exhibitors.processApprovalChange('requested', exhibitorData, exhibitorRow);
     }
 
     // deny an approval request
     exhDeny(e, cell) {
         var exhibitorRow = cell.getRow()
         var exhibitorData = exhibitorRow.getData();
-        exhibitors.processApprovalChange('denied', exhibitorData, exhibitorRow);
+        if (exhibitorData['b1'] > 0)
+            exhibitors.processApprovalChange('denied', exhibitorData, exhibitorRow);
     }
 
     // hid a region (hide status)
     exhHide(e, cell) {
         var exhibitorRow = cell.getRow()
         var exhibitorData = exhibitorRow.getData();
-        exhibitors.processApprovalChange('hide', exhibitorData, exhibitorRow);
+        if (exhibitorData['b1'] > 0)
+            exhibitors.processApprovalChange('hide', exhibitorData, exhibitorRow);
     }
 
 
@@ -609,6 +613,7 @@ class exhibitorsAdm {
     approvalButton(cell, formatterParams, onRendered) {
         var data = cell.getData();
         var id = data['id'];
+        var b1 = data['b1'];
         var approval = data['approval'] || 'none';
         var name = formatterParams['name'];
         var color = 'secondary';
@@ -616,22 +621,30 @@ class exhibitorsAdm {
         switch (approval) {
             case 'none':
             case 'requested':
-                if (name == 'Reset')
+                if (name == 'Reset' && b1 > 0)
                     return '';
                 break;
             case 'approved':
-                if (name == 'Approve')
+                if (name == 'Approve' && b1 > 0)
                     return '';
                 break;
             case 'denied':
-                if (name == 'Deny')
+                if (name == 'Deny' && b1 > 0)
                     return '';
                 break;
             case 'hide':
-                if (name == 'Hide')
+                if (name == 'Hide' && b1 > 0)
                     return '';
                 break;
         }
+
+        if (b1 < 0) {
+            if (name == 'Approve' && b1 == -1) {
+                return "Allocated";
+            }
+            return '';
+        }
+
         switch (name) {
             case 'Approve':
                 color = 'primary';
