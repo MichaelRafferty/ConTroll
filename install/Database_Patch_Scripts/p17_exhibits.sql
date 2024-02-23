@@ -49,25 +49,26 @@ CREATE TABLE `exhibitorYears` (
     KEY `ey_conlist_fk` (`conid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-DROP TABLE IF EXISTS `exhibitsRegionYears`;
-CREATE TABLE `exhibitsRegionYears` (
+DROP TABLE IF EXISTS `exhibitorRegionYears`;
+CREATE TABLE `exhibitorRegionYears` (
     `id` int NOT NULL AUTO_INCREMENT,
-    `conid` int NOT NULL,
-    `exhibitsRegion` int NOT NULL,
-    `ownerName` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-    `ownerEmail` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-    `includedMemId` int DEFAULT NULL,
-    `additionalMemId` int DEFAULT NULL,
-    `totalUnitsAvailable` int NOT NULL DEFAULT '0',
-    `atconIdBase` int NOT NULL DEFAULT '0',
-    `mailinFee` decimal(8,2) NOT NULL DEFAULT '0.00',
-    `mailinIdBase` int NOT NULL DEFAULT '0',
+    `exhibitorYearId` int NOT NULL,
+    `exhibitsRegionYearId` int NOT NULL,
+    `exhibitorNumber` int DEFAULT NULL,
+    `locations` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+    `agentPerid` int DEFAULT NULL,
+    `agentNewperson` int DEFAULT NULL,
+    `agentRequest` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+    `approval` enum('none','requested','approved','denied','hide') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'none',
+    `updateDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updateBy` int NOT NULL,
     `sortorder` int NOT NULL DEFAULT '0',
     PRIMARY KEY (`id`),
-    KEY `ery_memList_a` (`additionalMemId`),
-    KEY `ery_memList_i` (`includedMemId`),
-    KEY `ery_conlist_fk` (`conid`),
-    KEY `ery_exhibitsRegion_fk` (`exhibitsRegion`)
+    KEY `exry_eyrid` (`exhibitsRegionYearId`),
+    KEY `exry_eyid` (`exhibitorYearId`),
+    KEY `exry_agentPerid` (`agentPerid`),
+    KEY `exry_agentNewperon` (`agentNewperson`),
+    KEY `ecry_updateby_fk` (`updateBy`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 DROP TABLE IF EXISTS `exhibitors`;

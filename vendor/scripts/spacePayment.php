@@ -448,11 +448,11 @@ foreach ($spaces as $id => $space) {
     }
 }
 
-// assign exhibitor id
+// assign exhibitor id and the agent if its null
 // rule: if exhibitor is mailin, use largest exhibitor number + 1 that is greater than mailin base.
 //      if exhibitor is not mailin, use largest exhibitor number = 1 that is greater than atcon base and less that mailin base (if mailin base is != atconbase)
 $exNumQ = <<<EOS
-SELECT IFNULL(exhibitorNumber, 0) AS exhibitorNumber, exRY.id
+SELECT IFNULL(exhibitorNumber, 0) AS exhibitorNumber, exRY.id, agentPerid, agentNewperson
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
 WHERE conid = ? and exhibitorId = ? and exRY.exhibitsRegionYearId = ?
@@ -464,7 +464,21 @@ if ($exNumR == false || $exNumR->num_rows == 0) {
 $exNumL = $exNumR->fetch_assoc();
 $exRYid = $exNumL['id'];
 $exhNum = $exNumL['exhibitorNumber'];
+$exPerid = $exNumL['agentPerid'];
+$exNewPerson = $exNumL['agentNewperson'];
 $exNumR->free();
+
+// first the agent
+if ($exPerid == null && $exNewPerson == null && count($badges) > 0) {
+    $badgePerid = $badges[0]['perid'];
+    $badgeNewPerson = $badges[0]['newid'];
+    $updAgent = <<<EOS
+UPDATE exhibitorRegionYears
+SET agentPerid = ?, agentNewperson = ?
+WHERE id = ?;
+EOS;
+    $num_rows = dbSafeCmd($updAgent, 'iii', array($badgePerid, $badgeNewPerson, $exRYid));
+}
 
 if ($exhNum == 0) {
     if ($exhibitor['mailin'] == 'N') {
