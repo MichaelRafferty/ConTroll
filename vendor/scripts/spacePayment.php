@@ -452,7 +452,7 @@ foreach ($spaces as $id => $space) {
 // rule: if exhibitor is mailin, use largest exhibitor number + 1 that is greater than mailin base.
 //      if exhibitor is not mailin, use largest exhibitor number = 1 that is greater than atcon base and less that mailin base (if mailin base is != atconbase)
 $exNumQ = <<<EOS
-SELECT IFNULL(exhibitorNumber, 0) AS exhibitorNumber, exRY.id, agentPerid, agentNewperson
+SELECT IFNULL(exhibitorNumber, 0) AS exhibitorNumber, exRY.id, agentPerid, agentNewperson, mailin
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
 WHERE conid = ? and exhibitorId = ? and exRY.exhibitsRegionYearId = ?
@@ -466,10 +466,11 @@ $exRYid = $exNumL['id'];
 $exhNum = $exNumL['exhibitorNumber'];
 $exPerid = $exNumL['agentPerid'];
 $exNewPerson = $exNumL['agentNewperson'];
+$exMailin = $exNumL['mailin'];
 $exNumR->free();
 
 // first the agent
-if ($exPerid == null && $exNewPerson == null && count($badges) > 0) {
+if ($exMailin == 'N' && $exPerid == null && $exNewPerson == null && count($badges) > 0) {
     $badgePerid = $badges[0]['perid'];
     $badgeNewPerson = $badges[0]['newid'];
     $updAgent = <<<EOS
