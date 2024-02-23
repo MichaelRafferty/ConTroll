@@ -134,6 +134,34 @@ EOS;
             exit();
         }
 
+        // check to see if mailin becomes yes and there are mailin-no spaces
+        if ($mailin == 'Y') {
+            $checkQ = <<<EOS
+SELECT count(*) numno
+FROM exhibitorSpaces exS
+JOIN exhibitorRegionYears exRY ON exS.exhibitorRegionYear = exRY.id
+JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
+JOIN exhibitsSpaces es ON exS.spaceId = es.id
+JOIN exhibitsRegionYears ery ON exRY.exhibitsRegionYearId = ery.id
+JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id
+JOIN exhibitsRegionTypes ert ON er.regionType = ert.regionType
+WHERE exY.conid = ? AND ert.mailinAllowed = 'N' AND 
+      (exS.item_requested IS NOT NULL OR exS.item_approved IS NOT NULL OR exS.item_purchased IS NOT NULL)
+EOS;
+            $checkR = dbSafeQuery($checkQ, 'i', array($conid));
+            if ($checkR == false || $checkR->num_rows != 1) {
+                $response['error'] = 'error';
+                $response['message'] = 'Error checkin mail in restrictions';
+                break;
+            }
+            $conflicts = $checkR->fetch_row()[0];
+            if ($conflicts > 0) {
+                $response['status'] = 'warn';
+                $response['message'] = 'You have space in areas that do not allow mail-in.  You cannot select mail-in.  Please switch back to on-site.';
+                break;
+            }
+        }
+
         $updateQ = <<<EOS
 UPDATE exhibitors
 SET exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, website=?, description=?,
@@ -197,7 +225,7 @@ EOS;
             $response['status'] = 'success';
             $response['message'] = 'Nothing to update';
         } else {
-            $response['error'] = 'success';
+            $response['error'] = 'error';
             $response['message'] = 'Error encountered updating profile';
         }
         break;

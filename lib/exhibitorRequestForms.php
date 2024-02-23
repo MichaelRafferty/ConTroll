@@ -78,11 +78,13 @@ function exhibitor_showRequest($regionId, $regionName, $regionSpaces, $exhibitor
         // limit to spaces for this region
         $spaceId = $spaceItem['spaceId'];
         if (array_key_exists($spaceId, $regionSpaces)) {
-            $date = $spaceItem['time_requested'];
-            $date = date_create($date);
-            $date = date_format($date, 'F j, Y') . ' at ' . date_format($date, 'g:i A');
-            echo $spaceItem['requested_description'] . " in " . $spaceItem['regionName'] . " for " . $dolfmt->formatCurrency($spaceItem['requested_price'], 'USD') .
-                " at $date<br/>\n";
+            if ($spaceItem['item_requested'] != null) {
+                $date = $spaceItem['time_requested'];
+                $date = date_create($date);
+                $date = date_format($date, 'F j, Y') . ' at ' . date_format($date, 'g:i A');
+                echo $spaceItem['requested_description'] . " in " . $spaceItem['regionName'] . " for " . $dolfmt->formatCurrency($spaceItem['requested_price'], 'USD') .
+                    " at $date<br/>\n";
+            }
         }
     }
     echo "<button class='btn btn-primary' onclick='exhibitorRequest.openReq($regionId, 1);'>Change/Cancel $regionName Space</button>";

@@ -161,6 +161,8 @@ class ExhibitorProfile {
             this.profileModalClose();
             if (this.#profileUseType == 'register')
                 show_message("Thank you for registering for an account with the " + config['label'] + ' ' + config['portalName'] + " portal.  Please log in using your contact email address and password." + "<br/" + data['message]']);
+            else if (data['status'] == 'warn')
+                show_message(data['message'], 'warn')
             else
                 show_message(data['message'], 'success')
             if (data['info']) {
