@@ -769,9 +769,7 @@ class exhibitorsAdm {
         } else {
             if (data['message'])
                 show_message(data['message'], 'success')
-            if (this.#spaceRow) {
-                this.#spaceRow.update(data['info']);
-            }
+            this.UpdateSpaceRow(data);
         }
     }
 

@@ -39,6 +39,7 @@ switch ($approvalType) {
         $upQ = <<<EOS
 UPDATE exhibitorSpaces eS
 JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
+JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
 JOIN exhibitsSpaces es ON es.id = eS.spaceId
 JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
 SET item_approved = item_requested, time_approved = NOW()
