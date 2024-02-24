@@ -64,7 +64,8 @@ if (array_key_exists('agreeNone', $_POST))
 $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 // get the specific information allowed
 $regionYearQ = <<<EOS
-SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice, ery.mailinFee
+SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice,
+       ery.mailinFee, ery.atconIdBase, ery.mailinIdBase
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
@@ -82,7 +83,7 @@ $regionYearR->free();
 
 // get current exhibitor information
 $exhibitorQ = <<<EOS
-SELECT exhibitorName, exhibitorEmail, website, description, addr, addr2, city, state, zip, contactEmail, contactName
+SELECT exhibitorId, exhibitorName, exhibitorEmail, website, description, addr, addr2, city, state, zip, contactEmail, contactName, ey.mailin
 FROM exhibitors e
 JOIN exhibitorYears ey ON e.id = ey.exhibitorId
 WHERE e.id=?;
@@ -123,7 +124,8 @@ while ($space =  $spaceR->fetch_assoc()) {
     $additionalMembershipsComputed = max($additionalMembershipsComputed, $space['additionalMemberships']);
 }
 $spaceR->free();
-if ($region['mailinFee'] > 0) {
+// add in mail in fee if this exhibitor is using mail in this year and the fee exist
+if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
     $spacePriceComputed += $region['mailinFee'];
 }
 
@@ -445,6 +447,100 @@ foreach ($spaces as $id => $space) {
         $status_msg .= "Space " . $space['name'] . " marked purchased<br/>\n";
     }
 }
+
+// assign exhibitor id and the agent if its null
+// rule: if exhibitor is mailin, use largest exhibitor number + 1 that is greater than mailin base.
+//      if exhibitor is not mailin, use largest exhibitor number = 1 that is greater than atcon base and less that mailin base (if mailin base is != atconbase)
+$exNumQ = <<<EOS
+SELECT IFNULL(exhibitorNumber, 0) AS exhibitorNumber, exRY.id, agentPerid, agentNewperson, mailin
+FROM exhibitorRegionYears exRY
+JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
+WHERE conid = ? and exhibitorId = ? and exRY.exhibitsRegionYearId = ?
+EOS;
+$exNumR = dbSafeQuery($exNumQ, 'iii', array($conid, $exhibitor['exhibitorId'], $regionYearId));
+if ($exNumR == false || $exNumR->num_rows == 0) {
+    $error_msg .= "Unable to retrieve existing exhibitor number<br/>\n";
+}
+$exNumL = $exNumR->fetch_assoc();
+$exRYid = $exNumL['id'];
+$exhNum = $exNumL['exhibitorNumber'];
+$exPerid = $exNumL['agentPerid'];
+$exNewPerson = $exNumL['agentNewperson'];
+$exMailin = $exNumL['mailin'];
+$exNumR->free();
+
+// first the agent
+if ($exMailin == 'N' && $exPerid == null && $exNewPerson == null && count($badges) > 0) {
+    $badgePerid = $badges[0]['perid'];
+    $badgeNewPerson = $badges[0]['newid'];
+    $updAgent = <<<EOS
+UPDATE exhibitorRegionYears
+SET agentPerid = ?, agentNewperson = ?
+WHERE id = ?;
+EOS;
+    $num_rows = dbSafeCmd($updAgent, 'iii', array($badgePerid, $badgeNewPerson, $exRYid));
+}
+
+if ($exhNum == 0) {
+    if ($exhibitor['mailin'] == 'N') {
+        if ($region['atconIdBase'] < $region['mailinIdBase']) {
+            $nextIdQ = <<<EOS
+SELECT MAX(exhibitorNumber)
+FROM exhibitorRegionYears exRY
+JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
+WHERE exhibitorNumber is NOT NULL AND exhibitorNumber >= ? AND exhibitorNumber < ? AND conid = ? and exRY.exhibitsRegionYearId = ?;
+EOS;
+            $nextIDR = dbSafeQuery($nextIdQ, 'iiii', array($region['atconIdBase'], $region['mailinIdBase'], $conid, $regionYearId));
+            if ($nextIDR == false || $nextIDR->num_rows == 0) {
+                $nextID = $region['atconIdBase'] + 1;
+            } else {
+                $nextL = $nextIDR->fetch_row();
+                $nextID = $nextL[0] == NULL ? $region['atconIdBase'] + 1 : $nextL[0] + 1;
+            }
+        } else if ($region['atconIdBase']) {
+            $nextIdQ = <<<EOS
+SELECT MAX(exhibitorNumber)
+FROM exhibitorRegionYears exRY
+JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
+WHERE exhibitorNumber is NOT NULL AND exhibitorNumber >= ? AND conid = ? and exRY.exhibitsRegionYearId = ?;
+EOS;
+            $nextIDR = dbSafeQuery($nextIdQ, 'iii', array($region['atconIdBase'], $conid, $regionYearId));
+            if ($nextIDR == false || $nextIDR->num_rows == 0) {
+                $nextID = $region['atconIdBase'] + 1;
+            } else {
+                $nextL = $nextIDR->fetch_row();
+                $nextID = $nextL[0] == NULL ? $region['atconIdBase'] + 1 : $nextL[0] + 1;
+            }
+        }
+    } else {
+        $nextIdQ = <<<EOS
+SELECT MAX(exhibitorNumber)
+FROM exhibitorRegionYears exRY
+JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
+WHERE exhibitorNumber is NOT NULL AND exhibitorNumber >= ? AND conid = ? and exRY.exhibitsRegionYearId = ?;
+EOS;
+        $nextIDR = dbSafeQuery($nextIdQ, 'iii', array($region['mailinIdBase'], $conid, $regionYearId));
+        if ($nextIDR == false || $nextIDR->num_rows == 0) {
+            $nextID = $region['mailinIdBase'] + 1;
+        } else {
+            $nextL = $nextIDR->fetch_row();
+            $nextID = $nextL[0] == NULL ? $region['mailinIdBase'] + 1 : $nextL[0] + 1;
+        }
+    }
+    $updNum = <<<EOS
+UPDATE exhibitorRegionYears
+SET exhibitorNumber = ?
+WHERE id = ?;
+EOS;
+    $numrows = dbSafeCmd($updNum, 'ii', array($nextID, $exRYid));
+    if ($numrows != 1) {
+        $error_msg .= "Unable to assign exhibitor number<br/>\n";
+    } else {
+        $status_msg .= "You have been assigned Exhibitor Number $nextID for this space.<br/>\n";
+    }
+}
+
+
 $emails = payment($results);
 $return_arr = send_email($conf['regadminemail'], array($exhibitor['exhibitorEmail'], $buyer['email']), $region['ownerEmail'], $region['name'] . ' Payment', $emails[0], $emails[1]);
 

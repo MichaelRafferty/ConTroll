@@ -28,7 +28,7 @@ $key = $conid . $con['label'] . $con['regadminemail'];
 if (isset($_SESSION['id']) && isset($_GET['site'])) {
     $match = array();
     $match['id'] = $_SESSION['id'];
-    $match['cID'] = $_SESSION['cID'];
+    $match['eyID'] = $_SESSION['eyID'];
     $match['loginType'] = $_SESSION['login_type'];
     $match['eNeedNew'] = 0;
     $match['cNeedNew'] = 0;

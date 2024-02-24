@@ -12,7 +12,7 @@
 DROP TABLE IF EXISTS `exhibitorSpaces`;
 CREATE TABLE `exhibitorSpaces` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `exhibitorYearId` int NOT NULL,
+  `exhibitorRegionYear` int NOT NULL,
   `spaceId` int NOT NULL,
   `item_requested` int DEFAULT NULL,
   `time_requested` timestamp NULL DEFAULT NULL,
@@ -26,12 +26,12 @@ CREATE TABLE `exhibitorSpaces` (
   `membershipCredits` int DEFAULT '0',
   `locations` varchar(265) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
-  KEY `es_exhibitorYears_fk` (`exhibitorYearId`),
   KEY `es_transaction_fk` (`transid`),
   KEY `es_space_req_fk` (`item_requested`),
   KEY `es_space_app_fk` (`item_approved`),
   KEY `es_space_pur_fk` (`item_purchased`),
-  KEY `es_spaceid_fk` (`spaceId`)
+  KEY `es_spaceid_fk` (`spaceId`),
+  KEY `es_exRY_fk` (`exhibitorRegionYear`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

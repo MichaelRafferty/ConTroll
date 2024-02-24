@@ -1,7 +1,7 @@
 <?php
-// exhibitorYears and exhibiorApprovals related functions for create/retrieval
+// exhibitorYears and exhibiorRegionYears related functions for create/retrieval
 
-// exhibitorBuildYears - build exhibitorYears and exhibitorApprovals for this year
+// exhibitorBuildYears - build exhibitorYears and exhibitorRegionYears for this year
 function exhibitorBuildYears($exhibitor, $contactName = NULL, $contactEmail = NULL, $contactPhone = NULL, $contactPassword = NULL, $mailin = 'N'): bool|string {
     $con = get_conf('con');
     $conid = $con['id'];
@@ -25,8 +25,7 @@ EOS;
     } else {
         $last_year = 0;
     }
-    // no last year or passed contact parameters, need to insert new version
-    if ($last_year <= 0) {
+    if ($last_year <= 0) {  // no last year or passed contact parameters, need to insert new version
         if ($contactName == NULL) { // get default information from vendor
             $eyDefQ = <<<EOS
 SELECT exhibitorName, exhibitorEmail, exhibitorPhone, password, need_new, confirm
@@ -65,53 +64,70 @@ EOS;
             $confirm
         );
         $newyrid = dbSafeInsert($eyinsq, $typestr, $paramArray);
-    } else {
-        // no passed parameters but prior year exists
-        $yinsq = <<<EOS
-INSERT INTO exhibitorYears(conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, confirm)
-SELECT ? as conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, confirm
-FROM exhibitorYears
-WHERE conid = ? AND exhibitorId = ?
-EOS;
-        $newyrid = dbSafeInsert($yinsq, 'iii', array($conid, $last_year, $exhibitor));
     }
-    // now build new approval records for this year
 
+    // build a exhibitorRegionYears from exhibitsRegionYears and any past data
     // load prior approvals - for checking ones that are 'once'
     $priorQ = <<<EOS
-SELECT exhibitsRegionYearId, count(*) approvedCnt
-FROM exhibitorApprovals
-WHERE exhibitorId = ? AND approval = 'approved'
-GROUP BY exhibitsRegionYearId;
+WITH mostrecentPerid AS (
+    SELECT exhibitsRegion, MAX(ey.conid) AS conid
+    FROM exhibitorRegionYears exRY
+    JOIN exhibitorYears ey ON exRY.exhibitorYearId = ey.id
+    JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
+    WHERE ey.exhibitorId = ?
+    GROUP BY exhibitsRegion
+), perid AS (
+    SELECT p.exhibitsRegion, exRY.agentPerid 
+    FROM exhibitorRegionYears exRY
+    JOIN exhibitorYears ey ON exRY.exhibitorYearId = ey.id
+    JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
+    JOIN mostrecentPerid p ON p.conid = ey.conid AND p.exhibitsRegion = eRY.exhibitsRegion
+    WHERE ey.exhibitorId = ?
+), app AS (
+    SELECT ery.exhibitsRegion, count(*) AS approvedCnt, MAX(updateDate) AS updateDate, MAX(updateBy) AS updateBy
+    FROM exhibitorRegionYears exRY
+    JOIN exhibitorYears eY on exRY.exhibitorYearId = eY.id
+    JOIN exhibitsRegionYears ery ON exRY.exhibitsRegionYearId = ery.id
+    WHERE exhibitorId = ? AND approval = 'approved'
+    GROUP BY exhibitsRegion
+)
+SELECT app.exhibitsRegion, approvedCnt, updateDate, updateBy, agentPerid
+    FROM app
+    LEFT OUTER JOIN perid p ON p.exhibitsRegion = app.exhibitsRegion;
 EOS;
-    $priorR = dbSafeQuery($priorQ, 'i', array($exhibitor));
+    $priorR = dbSafeQuery($priorQ, 'iii', array($exhibitor, $exhibitor, $exhibitor));
     $priors = [];
     while ($priorL = $priorR->fetch_assoc()) {
-        $priors[$priorL['exhibitsRegionYearId']] = $priorL['approvedCnt'];
+        $priors[$priorL['exhibitsRegion']] = $priorL;
     }
     $priorR->free();
-    // now build exhibitorApprovals from exhibitorYear and exhibitsRegionYears
+
+    // now for the creation of exhibitorRegionYears taking into account the region approvals above
+
     $appQ = <<<EOS
-SELECT ery.id as exhibitsRegionYearId, et.requestApprovalRequired
+SELECT ery.id as exhibitsRegionYearId, et.requestApprovalRequired, ey.id AS exhibitorYearId, ery.exhibitsRegion
 FROM exhibitsRegionYears ery
-JOIN exhibitsRegions er ON (er.id = ery.exhibitsRegion)
+JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id
 JOIN exhibitsRegionTypes et ON (et.regionType = er.regionType)
-WHERE ery.conid = ? AND et.active = 'Y'
+JOIN exhibitorYears ey on ery.conid = ey.conid
+WHERE ery.conid = ? AND et.active = 'Y' AND ey.exhibitorId = ?
 EOS;
     $insQ = <<<EOS
-INSERT INTO exhibitorApprovals(exhibitorId, exhibitsRegionYearId, approval, updateBy)
-VALUES (?,?,?,?);
+INSERT INTO exhibitorRegionYears(exhibitorYearId, exhibitsRegionYearId, agentPerid, approval, updateDate, updateBy, sortorder) {
+VALUES (?, ?, ?, ?, ?, ?, ?);
 EOS;
-    $instypes = 'iisi';
+    $instypes = 'iiissii';
 
-    $appR = dbSafeQuery($appQ, 'i', array($conid));
+    $sortorder = 10;
+    $now = date('Y-m-d H-i-s');
+    $appR = dbSafeQuery($appQ, 'ii', array($conid, $exhibitor));
     while ($appL = $appR->fetch_assoc()) {
         switch ($appL['requestApprovalRequired']) {
             case 'None':
                 $approval = 'approved';
                 break;
             case 'Once':
-                if ($priors[$appL['exhibitsRegionYearId']] > 0) {
+                if ($priors[$appL['exhibitsRegion']] > 0) {
                     $approval = 'approved';
                     break;
                 }
@@ -119,7 +135,21 @@ EOS;
             default:
                 $approval = 'none';
         }
-        $newid = dbSafeInsert($insQ, $instypes, array($exhibitor, $appL['exhibitsRegionYearId'], $approval, 2));
+
+        $agentPerid = null;
+        $updateBy = 2;
+        $updatedDate = $now;
+        if (array_key_exists($appL['exhibitsRegion'], $priors)) {
+            $agentPerid = $priors[$appL['exhibitsRegion']]['agentPerid'];
+            $updateBy = $priors[$appL['exhibitsRegion']]['updateBy'];
+            $updatedDate = $priors[$appL['exhibitsRegion']]['updatedDate'];
+            if ($updateBy == null) {
+                $updateBy = 2;
+                $updatedDate = $now;
+            }
+        }
+        $newid = dbSafeInsert($insQ, $instypes, array($appL['exhibitorYearId'], $appL['exhibitsRegionYearId'], $agentPerid, $approval, $updatedDate, $updateBy, $sortorder));
+        $sortorder += 10;
     }
     $appR->free();
     return $newyrid;
@@ -134,41 +164,69 @@ function exhibitorCheckMissingSpaces($exhibitor, $yearId) {
     // now build new approval records for this year that don't already exist
 
     // load prior approvals - for checking ones that are 'once'
+    // build a exhibitorRegionYears from exhibitsRegionYears and any past data
+    // load prior approvals - for checking ones that are 'once'
     $priorQ = <<<EOS
-SELECT exhibitsRegionYearId, count(*) approvedCnt
-FROM exhibitorApprovals
-WHERE exhibitorId = ? AND approval = 'approved'
-GROUP BY exhibitsRegionYearId;
+WITH mostrecentPerid AS (
+    SELECT exhibitsRegion, MAX(ey.conid) AS conid
+    FROM exhibitorRegionYears exRY
+    JOIN exhibitorYears ey ON exRY.exhibitorYearId = ey.id
+    JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
+    WHERE ey.exhibitorId = ?
+    GROUP BY exhibitsRegion
+), perid AS (
+    SELECT p.exhibitsRegion, exRY.agentPerid 
+    FROM exhibitorRegionYears exRY
+    JOIN exhibitorYears ey ON exRY.exhibitorYearId = ey.id
+    JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
+    JOIN mostrecentPerid p ON p.conid = ey.conid AND p.exhibitsRegion = eRY.exhibitsRegion
+    WHERE ey.exhibitorId = ?
+), app AS (
+    SELECT ery.exhibitsRegion, count(*) AS approvedCnt, MAX(updateDate) AS updateDate, MAX(updateBy) AS updateBy
+    FROM exhibitorRegionYears exRY
+    JOIN exhibitorYears eY on exRY.exhibitorYearId = eY.id
+    JOIN exhibitsRegionYears ery ON exRY.exhibitsRegionYearId = ery.id
+    WHERE exhibitorId = ? AND approval = 'approved'
+    GROUP BY exhibitsRegion
+)
+SELECT app.exhibitsRegion, approvedCnt, updateDate, updateBy, agentPerid
+    FROM app
+    LEFT OUTER JOIN perid p ON p.exhibitsRegion = app.exhibitsRegion;
 EOS;
-    $priorR = dbSafeQuery($priorQ, 'i', array($exhibitor));
+    $priorR = dbSafeQuery($priorQ, 'iii', array($exhibitor, $exhibitor, $exhibitor));
     $priors = [];
     while ($priorL = $priorR->fetch_assoc()) {
-        $priors[$priorL['exhibitsRegionYearId']] = $priorL['approvedCnt'];
+        $priors[$priorL['exhibitsRegion']] = $priorL;
     }
     $priorR->free();
-    // now build exhibitorApprovals from exhibitorYear and exhibitsRegionYears
+
+    // now for the creation of exhibitorRegionYears taking into account the region approvals above
+
     $appQ = <<<EOS
-SELECT ery.id as exhibitsRegionYearId, et.requestApprovalRequired
+SELECT ery.id as exhibitsRegionYearId, et.requestApprovalRequired, ey.id AS exhibitorYearId, ery.exhibitsRegion
 FROM exhibitsRegionYears ery
-JOIN exhibitsRegions er ON (er.id = ery.exhibitsRegion)
+JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id
 JOIN exhibitsRegionTypes et ON (et.regionType = er.regionType)
-LEFT OUTER JOIN exhibitorApprovals eA ON eA.exhibitsRegionYearId = ery.id AND  eA.exhibitorId = ?
-WHERE ery.conid = ? AND et.active = 'Y' AND eA.id IS NULL
+JOIN exhibitorYears ey on ery.conid = ey.conid
+LEFT OUTER JOIN exhibitorRegionYears exRY ON ey.id = exRY.exhibitorYearId
+WHERE ery.conid = ? AND et.active = 'Y' AND ey.exhibitorId = ? AND exRY.id IS NULL
 EOS;
     $insQ = <<<EOS
-INSERT INTO exhibitorApprovals(exhibitorId, exhibitsRegionYearId, approval, updateBy)
-VALUES (?,?,?,?);
+INSERT INTO exhibitorRegionYears(exhibitorYearId, exhibitsRegionYearId, agentPerid, approval, updateDate, updateBy, sortorder)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 EOS;
-    $instypes = 'iisi';
+    $instypes = 'iiissii';
 
-    $appR = dbSafeQuery($appQ, 'ii', array($exhibitor, $conid));
+    $sortorder = 10;
+    $now = date('Y-m-d H-i-s');
+    $appR = dbSafeQuery($appQ, 'ii', array($conid, $exhibitor));
     while ($appL = $appR->fetch_assoc()) {
         switch ($appL['requestApprovalRequired']) {
             case 'None':
                 $approval = 'approved';
                 break;
             case 'Once':
-                if ($priors[$appL['exhibitsRegionYearId']] > 0) {
+                if ($priors[$appL['exhibitsRegion']] > 0) {
                     $approval = 'approved';
                     break;
                 }
@@ -176,19 +234,33 @@ EOS;
             default:
                 $approval = 'none';
         }
-        $newid = dbSafeInsert($insQ, $instypes, array($exhibitor, $appL['exhibitsRegionYearId'], $approval, 2));
+        $agentPerid = null;
+        $updateBy = 2;
+        $updatedDate = $now;
+        if (array_key_exists($appL['exhibitsRegion'], $priors)) {
+            $agentPerid = $priors[$appL['exhibitsRegion']]['agentPerid'];
+            $updateBy = $priors[$appL['exhibitsRegion']]['updateBy'];
+            $updatedDate = $priors[$appL['exhibitsRegion']]['updatedDate'];
+            if ($updateBy == null) {
+                $updateBy = 2;
+                $updatedDate = $now;
+            }
+        }
+        $newid = dbSafeInsert($insQ, $instypes, array($appL['exhibitorYearId'], $appL['exhibitsRegionYearId'], $agentPerid, $approval, $updatedDate, $updateBy, $sortorder));
+        $sortorder += 10;
     }
     $appR->free();
 
     // now build spaces for this year that don't exist
     $insSpQ = <<<EOS
-INSERT INTO exhibitorSpaces(exhibitorYearId, spaceId)
-SELECT ?, es.id
+INSERT INTO exhibitorSpaces(exhibitorRegionYear, spaceId)
+SELECT exRY.id, es.id
 FROM exhibitsSpaces es
 JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id
-LEFT OUTER JOIN exhibitorSpaces eS ON eS.spaceId = es.id AND eS.exhibitorYearId = ?
+JOIN exhibitorRegionYears exRY ON ery.id = exRY.exhibitsRegionYearId
+LEFT OUTER JOIN exhibitorSpaces eS ON eS.spaceId = es.id AND eS.exhibitorRegionYear = exRY.id
 WHERE ery.conid = ? AND eS.id is null;
 EOS;
-    $numRows = dbSafeCmd($insSpQ, 'iii', array($yearId, $yearId, $conid));
+    $numRows = dbSafeCmd($insSpQ, 'i', array($conid));
     return;
 }

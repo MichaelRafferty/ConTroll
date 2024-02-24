@@ -266,12 +266,14 @@ function exhibitor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhib
         // limit to spaces for this region
         $spaceId = $spaceItem['spaceId'];
         if (array_key_exists($spaceId, $regionSpaces)) {
-            $date = $spaceItem['time_approved'];
-            $date = date_create($date);
-            $date = date_format($date, 'F j, Y') . ' at ' . date_format($date, 'g:i A');
-            echo $spaceItem['approved_description'] . ' in ' . $spaceItem['regionName'] . ' for ' . $dolfmt->formatCurrency($spaceItem['approved_price'], 'USD') .
-                " at $date<br/>\n";
-            $totalPrice += $spaceItem['approved_price'];
+            if ($spaceItem['item_approved'] != null) {
+                $date = $spaceItem['time_approved'];
+                $date = date_create($date);
+                $date = date_format($date, 'F j, Y') . ' at ' . date_format($date, 'g:i A');
+                echo $spaceItem['approved_description'] . ' in ' . $spaceItem['regionName'] . ' for ' . $dolfmt->formatCurrency($spaceItem['approved_price'], 'USD') .
+                    " at $date<br/>\n";
+                $totalPrice += $spaceItem['approved_price'];
+            }
         }
     }
     if ($info['mailin'] == 'Y' && $region['mailinFee'] > 0) {
@@ -294,12 +296,14 @@ function vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpa
         // limit to spaces for this region
         $spaceId = $spaceItem['spaceId'];
         if (array_key_exists($spaceId, $regionSpaces)) {
-            $date = $spaceItem['time_purchased'];
-            $date = date_create($date);
-            $date = date_format($date, 'F j, Y') . ' at ' . date_format($date, 'g:i A');
-            echo $spaceItem['purchased_description'] . ' in ' . $spaceItem['regionName'] . ' for ' . $dolfmt->formatCurrency($spaceItem['purchased_price'], 'USD') .
-                " at $date<br/>\n";
-            $totalPrice += $spaceItem['purchased_price'];
+            if ($spaceItem['item_purchased'] != null) {
+                $date = $spaceItem['time_purchased'];
+                $date = date_create($date);
+                $date = date_format($date, 'F j, Y') . ' at ' . date_format($date, 'g:i A');
+                echo $spaceItem['purchased_description'] . ' in ' . $spaceItem['regionName'] . ' for ' . $dolfmt->formatCurrency($spaceItem['purchased_price'], 'USD') .
+                    " at $date<br/>\n";
+                $totalPrice += $spaceItem['purchased_price'];
+            }
         }
     }
     echo "__________________________________________________________<br/>\nTotal price for $regionName spaces " . $dolfmt->formatCurrency($totalPrice, 'USD') . "<br/>\n";

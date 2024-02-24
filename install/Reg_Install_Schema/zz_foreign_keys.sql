@@ -1,12 +1,14 @@
-ALTER TABLE exhibitorSpaces ADD CONSTRAINT `es_exhibitorYears_fk` FOREIGN KEY (`exhibitorYearId`) REFERENCES `exhibitorYears` (`id`) ON UPDATE CASCADE;
+ALTER TABLE exhibitorRegionYears ADD CONSTRAINT `ecry_updateby_fk` FOREIGN KEY (`updateBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
+ALTER TABLE exhibitorRegionYears ADD CONSTRAINT `exry_agentNewperon` FOREIGN KEY (`agentNewperson`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
+ALTER TABLE exhibitorRegionYears ADD CONSTRAINT `exry_agentPerid` FOREIGN KEY (`agentPerid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
+ALTER TABLE exhibitorRegionYears ADD CONSTRAINT `exry_eyid` FOREIGN KEY (`exhibitorYearId`) REFERENCES `exhibitorYears` (`id`) ON UPDATE CASCADE;
+ALTER TABLE exhibitorRegionYears ADD CONSTRAINT `exry_eyrid` FOREIGN KEY (`exhibitsRegionYearId`) REFERENCES `exhibitsRegionYears` (`id`) ON UPDATE CASCADE;
+ALTER TABLE exhibitorSpaces ADD CONSTRAINT `es_exRY_fk` FOREIGN KEY (`exhibitorRegionYear`) REFERENCES `exhibitorRegionYears` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorSpaces ADD CONSTRAINT `es_space_app_fk` FOREIGN KEY (`item_approved`) REFERENCES `exhibitsSpacePrices` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorSpaces ADD CONSTRAINT `es_space_pur_fk` FOREIGN KEY (`item_purchased`) REFERENCES `exhibitsSpacePrices` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorSpaces ADD CONSTRAINT `es_space_req_fk` FOREIGN KEY (`item_requested`) REFERENCES `exhibitsSpacePrices` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorSpaces ADD CONSTRAINT `es_spaceid_fk` FOREIGN KEY (`spaceId`) REFERENCES `exhibitsSpaces` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorSpaces ADD CONSTRAINT `es_transaction_fk` FOREIGN KEY (`transid`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE;
-ALTER TABLE exhibitorApprovals ADD CONSTRAINT `ea_exhibitor_fk` FOREIGN KEY (`exhibitorId`) REFERENCES `exhibitors` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE exhibitorApprovals ADD CONSTRAINT `ea_regionYear_fk` FOREIGN KEY (`exhibitsRegionYearId`) REFERENCES `exhibitsRegionYears` (`id`) ON UPDATE CASCADE;
-ALTER TABLE exhibitorApprovals ADD CONSTRAINT `ea_updateby_fk` FOREIGN KEY (`updateBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artshow_reg ADD CONSTRAINT `artshow_reg_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artshow_reg ADD CONSTRAINT `conid_fkey` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`);
 ALTER TABLE reg ADD CONSTRAINT `reg_complete_fk` FOREIGN KEY (`complete_trans`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE;
@@ -40,7 +42,6 @@ ALTER TABLE coupon ADD CONSTRAINT `coupon_createby_fk` FOREIGN KEY (`createBy`) 
 ALTER TABLE coupon ADD CONSTRAINT `coupon_memid_fk` FOREIGN KEY (`memId`) REFERENCES `memList` (`id`) ON UPDATE CASCADE;
 ALTER TABLE coupon ADD CONSTRAINT `coupon_updateby_fk` FOREIGN KEY (`updateBy`) REFERENCES `user` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artshow ADD CONSTRAINT `artshow_agent_fk` FOREIGN KEY (`agent`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
-ALTER TABLE artshow ADD CONSTRAINT `artshow_artid_fk` FOREIGN KEY (`artid`) REFERENCES `artist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artshow ADD CONSTRAINT `artshow_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artshow ADD CONSTRAINT `artshow_perinfo_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorYears ADD CONSTRAINT `ey_conlist_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
@@ -61,7 +62,6 @@ ALTER TABLE couponKeys ADD CONSTRAINT `couponkeys_perid_fk` FOREIGN KEY (`perid`
 ALTER TABLE artsales ADD CONSTRAINT `artsales_artitem_fk` FOREIGN KEY (`artid`) REFERENCES `artItems` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artsales ADD CONSTRAINT `artsales_perinfo_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artsales ADD CONSTRAINT `artsales_transid_fk` FOREIGN KEY (`transid`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE;
-ALTER TABLE artist ADD CONSTRAINT `artist_artist_fk` FOREIGN KEY (`artist`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE printers ADD CONSTRAINT `printers_server` FOREIGN KEY (`serverName`) REFERENCES `servers` (`serverName`) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE exhibitsRegionYears ADD CONSTRAINT `ery_conlist_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitsRegionYears ADD CONSTRAINT `ery_exhibitsRegion_fk` FOREIGN KEY (`exhibitsRegion`) REFERENCES `exhibitsRegions` (`id`) ON UPDATE CASCADE;

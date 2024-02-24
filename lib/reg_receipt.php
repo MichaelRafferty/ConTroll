@@ -101,7 +101,7 @@ EOS;
     if ($exhId != null) {
         // get current exhibitor information
         $exhibitorQ = <<<EOS
-SELECT e.id, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, addr, addr2, city, state, zip, country, contactEmail, contactName, contactPhone
+SELECT e.id, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, addr, addr2, city, state, zip, country, contactEmail, contactName, contactPhone, ey.mailin
 FROM exhibitors e
 JOIN exhibitorYears ey ON e.id = ey.exhibitorId
 WHERE e.id=?;
@@ -513,7 +513,7 @@ EOS;
             $receipt .= "     $spaceDesc in $spaceName: $spacePrice\n";
         }
 
-        if ($region['mailinFee'] > 0) {
+        if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
             $total += $region['mailinFee'];
             $fee = $dolfmt->formatCurrency((float) $region['mailinFee'], 'USD');
             $receipt_html .= <<<EOS
