@@ -18,10 +18,12 @@ $vendor = '';
 $response = array('post' => $_POST, 'get' => $_GET);
 
 $region = $_POST['region']; // TODO error checking
-$getType = $_POST['gettype']; 
+$getType = $_POST['gettype'];
 
 $vendor = $_SESSION['id'];
+$vendor_year = $_SESSION['cID'];
 $response['vendor'] = $vendor;
+$response['vendor_year'] = $vendor_year;
 if($vendor == false) {
     $response['status'] = 'error';
     $response['error'] = 'no vendor found';
@@ -32,12 +34,12 @@ if($vendor == false) {
 $itemQ = <<<EOS
 SELECT i.id, item_key, title, material, type, original_qty, min_price, sale_price 
 FROM artItems i
-    JOIN vendor_show vs on vs.id=i.vendor_show
-WHERE vs.vendor_id=? and vs.region_id=?
+    JOIN exhibitorRegionYears eRY on eRY.id=i.vendor_show
+WHERE eRY.exhibitorYearId=? and eRY.exhibitsRegionYearId = ?; 
 EOS;
 
 $itemL = 'ii';
-$itemA = array($vendor, $region);
+$itemA = array($vendor_year, $region);
 
 switch($getType) {
     case 'art':

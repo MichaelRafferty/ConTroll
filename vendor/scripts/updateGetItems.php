@@ -24,7 +24,9 @@ $region = $_POST['region']; // TODO error checking
 $itemType = $_POST['itemType'];
 
 $vendor = $_SESSION['id'];
+$vendor_year = $_SESSION['cID'];
 $response['vendor'] = $vendor;
+$response['vendor_year'] = $vendor_year;
 
 if($vendor == false) {
     $response['status'] = 'error';
@@ -54,13 +56,13 @@ if(in_array($itemType, ['art', 'print', 'nfs']) {
 $maxQ = <<<EOS
 SELECT max(item_key) as last_key
 FROM artItems i
-    JOIN vendor_show vs on vs.id=i.vendor_show
-WHERE vs.vendor_id=? and vs.region_id=?
-GROUP BY vs.vendor_id and vs.region_id
+    JOIN exhibitorRegionYears eRY on eRY.id=i.vendor_show
+WHERE eRY.exhibitorYearId=? and eRY.exhibitsRegionYearId=?
+GROUP BY eRY.exhibitorYearId, eRY.exhibitsRegionYearId;
 EOS;
 
 $maxL = "ii";
-$maxA = array($vendor, $region);
+$maxA = array($vendor_year, $region);
 
 $maxR = dbSafeQuery($maxQ, $maxL, $maxA)->fetch_assoc();
 $nextItemKey = 0;
@@ -121,8 +123,8 @@ foreach ($data as $index => $row) {
 $itemQ = <<<EOS
 SELECT i.id, item_key, title, material, type, original_qty, min_price, sale_price
 FROM artItems i
-    JOIN vendor_show vs on vs.id=i.vendor_show
-WHERE vs.vendor_id=? and vs.region_id=?
+    JOIN exhibitorRegionYears eRY on eRY.id=i.vendor_show
+WHERE eRY.exhibitorYearId=? and eRY.exhibitsRegionYearId=?
 EOS;
 
 $itemL = 'ii';
