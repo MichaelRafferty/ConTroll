@@ -38,6 +38,7 @@ class AuctionItemRegistration {
 
     open(region) {
         clear_message('ir_message_div');
+        this.#region = region;
         var _this = this;
         var script = "scripts/getItems.php"
         $.ajax({
@@ -46,7 +47,7 @@ class AuctionItemRegistration {
             data: {gettype: 'all', region: region},
             success: function (data, textSatus, jhXHR) {
                 if (data['error']) {
-                    showError(data['error']);
+                    show_message(data['error'], 'error', 'ir_message_div');
                     return false;
                 }
                 console.log(data);
@@ -61,28 +62,26 @@ class AuctionItemRegistration {
     };
 
     draw(data) {
-        this.drawArtItemTable(data['items']);
-        this.#artItemsDirty = false;
         this.#artSaveBtn = document.getElementById('art-save');
         this.#artUndoBtn = document.getElementById('art-undo');
         this.#artRedoBtn = document.getElementById('art-redo');
+        this.drawArtItemTable(data['items']);
 
-        this.drawPrintItemTable(data['items']);
-        this.#printItemsDirty = false;
         this.#printSaveBtn = document.getElementById('print-save');
         this.#printUndoBtn = document.getElementById('print-undo');
         this.#printRedoBtn = document.getElementById('print-redo');
+        this.drawPrintItemTable(data['items']);
 
-        this.drawNfsItemTable(data['items']);
-        this.#nfsItemsDirty = false;
         this.#nfsSaveBtn = document.getElementById('nfs-save');
         this.#nfsUndoBtn = document.getElementById('nfs-undo');
         this.#nfsRedoBtn = document.getElementById('nfs-redo');
+        this.drawNfsItemTable(data['items']);
 
         this.#item_registration.show(); 
     };
 
     close() {
+        this.#region = 0;
         if(this.#artItemTable) {
             this.#artItemTable.off('dataChanged');
             this.#artItemTable.off('cellEdited');
@@ -150,8 +149,63 @@ class AuctionItemRegistration {
         });
     };
     saveArt() {
-    // TODO deal with this
+        var type = 'art';
+        if(this.#artItemTable != null) {
+            var _this = this;
+
+            var invalids; // TODO validation
+            this.#artSaveBtn.innerHTML = "Saving...";
+            this.#artSaveBtn.disabled = true;
+
+            var script = "scripts/updateGetItems.php";
+
+            clear_message();
+            var postdata = {
+                region: this.#region,
+                itemType: type,
+                tabledata: JSON.stringify(this.#artItemTable.getData())
+            };
+
+            console.log(postdata);
+            $.ajax({
+                url: script,
+                method: 'POST',
+                data: postdata,
+                success: function (data, textStatus, jhXHR) {
+                    _this.saveArtComplete(data, textStatus, jhXHR);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    show_message("ERROR in " + script + ": " + textStatus, 'error', 'ir_message_div');
+                    return false;
+                }
+            });
+        }
     }
+    saveArtComplete(data, textStatus, jhXHR) {
+        if('error' in data) {
+            if (data['error']) {
+                show_message(data['error'], 'error', 'ir_message_div');
+                return false;
+            }
+            if (data['message']) {
+                show_message(data['message'], 'error', 'ir_message_div');
+            }
+            this.#artSaveBtn.innerHTML = "Save Changes*";
+            this.#artSaveBtn.disabled = false;
+            return false;
+        }
+        if(data['message'] !== undefined) {
+            show_message(data['message'], 'success', 'ir_message_div');
+        }   
+        if(data['warn'] !== undefined) {
+            show_message(data['warn'], 'warn', 'ir_message_div');
+        }   
+
+        console.log(data);
+        this.drawArtItemTable(data['items']);
+    }
+//TODO Delete Art Items
+//TODO change Item Number
 
     dataChangedPrint(data) {
         //data - the updated table data
@@ -270,10 +324,14 @@ class AuctionItemRegistration {
                 {title: "Quick Sale", field: "sale_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 20, editor: 'number', editorParams: {min: 1} },
             ]
         });
+        this.#artItemsDirty = false;
         this.#artItemTable.on("dataChanged", function (data) {
             _this.dataChangedArt(data);
         });
         this.#artItemTable.on("cellEdited", cellChanged);
+
+        this.#artSaveBtn.innerHTML='Save Changes';
+        this.#artSaveBtn.disbled=true;
     }
 
     drawPrintItemTable(data) {
@@ -295,10 +353,14 @@ class AuctionItemRegistration {
                 {title: "Quick Sale", field: "sale_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 20, editor: 'number', editorParams: {min: 1} },
             ]
         });
+        this.#printItemsDirty = false;
         this.#printItemTable.on("dataChanged", function (data) {
             _this.dataChangedPrint(data);
         });
         this.#printItemTable.on("cellEdited", cellChanged);
+
+        this.#printSaveBtn.innerHTML='Save Changes';
+        this.#printSaveBtn.disbled=true;
     }
 
     drawNfsItemTable(data) {
@@ -319,10 +381,14 @@ class AuctionItemRegistration {
                 {title: "Insurance Price", field: "sale_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 20, editor: 'number', editorParams: {min: 1} },
             ]
         });
+        this.#nfsItemsDirty = false;
         this.#nfsItemTable.on("dataChanged", function (data) {
             _this.dataChangedNfs(data);
         });
         this.#nfsItemTable.on("cellEdited", cellChanged);
+
+        this.#nfsSaveBtn.innerHTML='Save Changes';
+        this.#nfsSaveBtn.disbled=true;
     }
     
 }
