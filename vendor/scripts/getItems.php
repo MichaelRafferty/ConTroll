@@ -13,12 +13,7 @@ $debug = get_conf('debug');
 $ini = get_conf('reg');
 
 $condata = get_con();
-$in_session = false;
-$forcePassword = false;
-$regserver = $ini['server'];
 $vendor = '';
-
-$reg_link = "<a href='$regserver'>Convention Registration</a>";
 
 $response = array('post' => $_POST, 'get' => $_GET);
 
@@ -35,7 +30,7 @@ if($vendor == false) {
 }
 
 $itemQ = <<<EOS
-SELECT item_key, title, material, type, original_qty, min_price, sale_price 
+SELECT i.id, item_key, title, material, type, original_qty, min_price, sale_price 
 FROM artItems i
     JOIN vendor_show vs on vs.id=i.vendor_show
 WHERE vs.vendor_id=? and vs.region_id=?

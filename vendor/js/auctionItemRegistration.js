@@ -62,19 +62,16 @@ class AuctionItemRegistration {
     };
 
     draw(data) {
-        this.#artItemsDirty = false;
         this.#artSaveBtn = document.getElementById('art-save');
         this.#artUndoBtn = document.getElementById('art-undo');
         this.#artRedoBtn = document.getElementById('art-redo');
         this.drawArtItemTable(data['items']);
 
-        this.#printItemsDirty = false;
         this.#printSaveBtn = document.getElementById('print-save');
         this.#printUndoBtn = document.getElementById('print-undo');
         this.#printRedoBtn = document.getElementById('print-redo');
         this.drawPrintItemTable(data['items']);
 
-        this.#nfsItemsDirty = false;
         this.#nfsSaveBtn = document.getElementById('nfs-save');
         this.#nfsUndoBtn = document.getElementById('nfs-undo');
         this.#nfsRedoBtn = document.getElementById('nfs-redo');
@@ -327,6 +324,7 @@ class AuctionItemRegistration {
                 {title: "Quick Sale", field: "sale_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 20, editor: 'number', editorParams: {min: 1} },
             ]
         });
+        this.#artItemsDirty = false;
         this.#artItemTable.on("dataChanged", function (data) {
             _this.dataChangedArt(data);
         });
@@ -355,6 +353,7 @@ class AuctionItemRegistration {
                 {title: "Quick Sale", field: "sale_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 20, editor: 'number', editorParams: {min: 1} },
             ]
         });
+        this.#printItemsDirty = false;
         this.#printItemTable.on("dataChanged", function (data) {
             _this.dataChangedPrint(data);
         });
@@ -382,6 +381,7 @@ class AuctionItemRegistration {
                 {title: "Insurance Price", field: "sale_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 20, editor: 'number', editorParams: {min: 1} },
             ]
         });
+        this.#nfsItemsDirty = false;
         this.#nfsItemTable.on("dataChanged", function (data) {
             _this.dataChangedNfs(data);
         });
