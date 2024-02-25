@@ -580,6 +580,9 @@ draw_itemRegistrationModal($portalType);
                 <div id='result_message' class='mt-4 p-2'></div>
             </div>
         </div>
+         <div class='row'>
+             <?php drawBug(12); ?>
+         </div>
     </div>
 </body>
 </html>

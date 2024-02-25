@@ -1,6 +1,6 @@
 # ConTroll™  Registration for Conventions
 ![Control Troll Logo](onlinereg/lib/ConTroll.png)\
-ConTroll™ and the ConTroll Troll Logo™ are Copyright 2015-2024, Michael Rafferty
+ConTroll™ and the ConTroll Troll Logo are Copyright 2015-2024, Michael Rafferty
 
 ConTroll™ is designed as an all in one system to support registration for conventions.  It supports on-line, mail-in, and on-site registration.
 
