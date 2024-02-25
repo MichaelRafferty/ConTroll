@@ -80,7 +80,7 @@ else { $nextItemKey = $maxR['last_key'] + 1; }
 $response['nextItemKey'] = $nextItemKey;
 
 foreach ($data as $index => $row ) {
-    if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1) {
+    if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists($keyfield, $row)) {
         $delete_keys .= ($first ? "'" : ",'") . sql_safe($row[$keyfield]) . "'";
         $first = false;
     } else {

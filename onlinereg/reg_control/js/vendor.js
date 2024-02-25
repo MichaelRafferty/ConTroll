@@ -8,6 +8,8 @@ exhibitor_spacelist = null;
 regions = null;
 spaces =null;
 country_options = null;
+tabname = null;
+regionid = null;
 
 // exhibitors class - functions for spae ownerto review and approve spaces requested by exhibitors
 class exhibitorsAdm {
@@ -143,15 +145,17 @@ class exhibitorsAdm {
     }
 
     // open(tabname) - fetch the data and re-draw the region tab
-    open(tabname) {
+    open(newtabname) {
         if (this.#debug & 1)
             console.log("opening " + tabname)
 
+        tabname = regionTabNames[newtabname]['name'];
+        regionid = regionTabNames[newtabname]['id'];
         // get the data for this tab
         $.ajax({
             url: "scripts/exhibitorsGetData.php",
             method: "POST",
-            data: { region: regionTabNames[tabname]['name'], regionId: regionTabNames[tabname]['id']},
+            data: { region: tabname, regionId: regionid },
             success: getExhibitorDataDraw,
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in getExhibitorData: " + textStatus, jqXHR);
@@ -221,6 +225,15 @@ class exhibitorsAdm {
         this.drawExhibitorsTable(data,  groupid);
     }
 
+    redraw(data) {
+        var regionName = data['post']['region'];
+        var region = regions[regionName];
+        this.drawSpacesTable(data,  null, false);
+        if (region['requestApprovalRequired'] != 'None') {
+            this.#approvalsTable.replaceData(data['approvals']);
+        }
+        this.#exhibitorsTable.replaceData(data['exhibitors']);
+    }
     // summary status at the top of the screen
     drawSummary(data) {
         var summary = data['summary'];
@@ -262,7 +275,7 @@ class exhibitorsAdm {
             "    </div>\n" +
             "    <div class='row'>\n" +
             "        <div class='col-sm-12'>\n" +
-            "            <button class='btn btn-secondary' id='addVendorSpaceBtn' onClick=" + '"exhibitor.addNewSpace();"' + ">Add New Exhibitor Space</button>\n" +
+            "            <button class='btn btn-secondary' id='addVendorSpaceBtn' onClick=" + '"exhibitors.addNewSpace();"' + ">Add New Exhibitor Space</button>\n" +
             "        </div>\n" +
             "    </div>\n" +
             "</div></div>\n"
@@ -837,6 +850,10 @@ function getExhibitorDataDraw(data, textStatus, jqXHR) {
     exhibitors.draw(data);
 }
 
+function updateExhibitorDataDraw(data, textStatus, jqXHR) {
+    exhibitors.redraw(data);
+}
+
 // create class on page render
 window.onload = function initpage() {
     exhibitors = new exhibitorsAdm(config['conid'], config['debug']);
@@ -882,24 +899,6 @@ $(document).ready(function () {
         space_map[price['id']] = opt;
     }
 });
-
-// add a new vendor to the vendors table
-function addNewVendor() {
-    document.getElementById('vendorAddEditTitle').innerHTML = "Add New Vendor";
-    document.getElementById('vendorAddUpdatebtn').innerHTML = "Add";
-    document.getElementById("ev_name").value = '';
-    document.getElementById("ev_email").value = '';
-    document.getElementById("ev_website").value = '';
-    document.getElementById("ev_description").value = '';
-    document.getElementById("ev_addr").value = '';
-    document.getElementById("ev_addr2").value = '';
-    document.getElementById("ev_city").value = '';
-    document.getElementById("ev_state").value = '';
-    document.getElementById("ev_zip").value = '';
-    document.getElementById("ev_publicity").checked = true;
-    document.getElementById("ev_vendorId").value = -1;
-    update_profile.show();
-}
 
 // allow entry of a new space type for a vendor
 function addNewSpace() {

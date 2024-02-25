@@ -180,6 +180,18 @@ class ExhibitorProfile {
             }
             if (this.#exhibitorRow) {
                 this.#exhibitorRow.update(exhibitor_info);
+            } else {
+                // now need to update the other tabs data as well....
+                $.ajax({
+                    url: "scripts/exhibitorsGetData.php",
+                    method: "POST",
+                    data: { region: tabname, regionId: regionid },
+                    success: updateExhibitorDataDraw,
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        showError("ERROR in getExhibitorData: " + textStatus, jqXHR);
+                        return false;
+                    }
+                })
             }
         }
     }

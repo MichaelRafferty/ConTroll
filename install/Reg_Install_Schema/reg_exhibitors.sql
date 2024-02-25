@@ -13,6 +13,7 @@ DROP TABLE IF EXISTS `exhibitors`;
 CREATE TABLE `exhibitors` (
   `id` int NOT NULL AUTO_INCREMENT,
   `perid` int DEFAULT NULL,
+  `newperid` int DEFAULT NULL,
   `exhibitorName` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `exhibitorEmail` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `exhibitorPhone` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -37,7 +38,8 @@ CREATE TABLE `exhibitors` (
   `shipCountry` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `archived` enum('N','Y') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
   PRIMARY KEY (`id`),
-  KEY `exhibitor_perid_fk` (`perid`)
+  KEY `exhibitor_perid_fk` (`perid`),
+  KEY `exhibitors_newperson_fk` (`newperid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

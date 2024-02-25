@@ -83,7 +83,8 @@ $regionYearR->free();
 
 // get current exhibitor information
 $exhibitorQ = <<<EOS
-SELECT exhibitorId, exhibitorName, exhibitorEmail, website, description, addr, addr2, city, state, zip, contactEmail, contactName, ey.mailin
+SELECT exhibitorId, exhibitorName, exhibitorEmail, website, description, addr, addr2, city, state, zip, perid, newperid
+       contactEmail, contactName, ey.mailin
 FROM exhibitors e
 JOIN exhibitorYears ey ON e.id = ey.exhibitorId
 WHERE e.id=?;
@@ -470,15 +471,30 @@ $exMailin = $exNumL['mailin'];
 $exNumR->free();
 
 // first the agent
-if ($exMailin == 'N' && $exPerid == null && $exNewPerson == null && count($badges) > 0) {
-    $badgePerid = $badges[0]['perid'];
-    $badgeNewPerson = $badges[0]['newid'];
+if ($exMailin == 'N' && $exPerid == null && $exNewPerson == null) {
     $updAgent = <<<EOS
 UPDATE exhibitorRegionYears
 SET agentPerid = ?, agentNewperson = ?
 WHERE id = ?;
 EOS;
-    $num_rows = dbSafeCmd($updAgent, 'iii', array($badgePerid, $badgeNewPerson, $exRYid));
+    if (count($badges) > 0) {
+        $badgePerid = $badges[0]['perid'];
+        $badgeNewPerson = $badges[0]['newid'];
+        $num_rows = dbSafeCmd($updAgent, 'iii', array($badgePerid, $badgeNewPerson, $exRYid));
+
+        // update the master agents if needed
+        if ($exhibitor['perid'] == null && $exhibitor['newperid'] == null) {
+            $updMaster = <<<EOS
+UPDATE exhibitors
+SET perid = ?, newperid = ?
+WHERE id = ?;
+EOS;
+            $num_rows = dbSafeCmd($updMaster, 'iii', array($badgePerid, $badgeNewPerson, $exhibitor['exhibitorId']));
+        }
+    } else if ($exhibitor['perid'] != null || $exhibitor['newperid'] != null) {
+        // no badge use the master values in exhibitors table
+        $num_rows = dbSafeCmd($updAgent, 'iii', array($exhibitor['perid'], $exhibitor['newperid'], $exRYid));
+    }
 }
 
 if ($exhNum == 0) {
