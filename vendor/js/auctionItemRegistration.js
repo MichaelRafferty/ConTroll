@@ -36,6 +36,7 @@ class AuctionItemRegistration {
     };
 
 
+    
     open(region) {
         clear_message('ir_message_div');
         this.#region = region;
@@ -103,13 +104,17 @@ class AuctionItemRegistration {
         this.#item_registration.hide(); 
     };
 
-    dataChangedArt(data) {
+    dataChangedArt(data=null) {
         //data - the updated table data
         if (!this.#artItemsDirty) {
             this.#artSaveBtn.innerHTML = "Save Changes*";
             this.#artSaveBtn.disabled = false;
             this.#artItemsDirty = true;
         }
+        if(data == null){
+            this.#artSaveBtn.innerHTML = "Save Changes*";
+            this.#artSaveBtn.disabled = false;
+         }
         this.checkArtUndoRedo();
     };
     checkArtUndoRedo() {
@@ -176,6 +181,7 @@ class AuctionItemRegistration {
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     show_message("ERROR in " + script + ": " + textStatus, 'error', 'ir_message_div');
+                    _this.dataChangedArt();
                     return false;
                 }
             });
@@ -185,6 +191,8 @@ class AuctionItemRegistration {
         if('error' in data) {
             if (data['error']) {
                 show_message(data['error'], 'error', 'ir_message_div');
+                this.#artSaveBtn.innerHTML = "Save Changes*";
+                this.#artSaveBtn.disabled = false;
                 return false;
             }
             if (data['message']) {
@@ -207,13 +215,17 @@ class AuctionItemRegistration {
 //TODO Delete Art Items
 //TODO change Item Number
 
-    dataChangedPrint(data) {
+    dataChangedPrint(data=null) {
         //data - the updated table data
         if (!this.#printItemsDirty) {
             this.#printSaveBtn.innerHTML = "Save Changes*";
             this.#printSaveBtn.disabled = false;
             this.#printItemsDirty = true;
         }
+        if(data == null){
+            this.#printSaveBtn.innerHTML = "Save Changes*";
+            this.#printSaveBtn.disabled = false;
+         }
         this.checkPrintUndoRedo();
     };
     checkPrintUndoRedo() {
@@ -256,13 +268,17 @@ class AuctionItemRegistration {
     // TODO deal with this
     }
 
-    dataChangedNfs(data) {
+    dataChangedNfs(data = null) {
         //data - the updated table data
         if (!this.#nfsItemsDirty) {
             this.#nfsSaveBtn.innerHTML = "Save Changes*";
             this.#nfsSaveBtn.disabled = false;
             this.#nfsItemsDirty = true;
         }
+        if(data == null){
+            this.#nfsSaveBtn.innerHTML = "Save Changes*";
+            this.#nfsSaveBtn.disabled = false;
+         }
         this.checkNfsUndoRedo();
     };
     checkNfsUndoRedo() {

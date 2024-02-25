@@ -36,9 +36,9 @@ if($vendor == false) {
 }
 
 $data = [];
-if(in_array($itemType, ['art', 'print', 'nfs']) {
+if(in_array($itemType, ['art', 'print', 'nfs'])) {
     try {
-        $data = json_decode($_POST['tabledata'], true, 512, JSON_THROW_ON_ERROR)
+        $data = json_decode($_POST['tabledata'], true, 512, JSON_THROW_ON_ERROR);
     } catch (Exception $e) {
         $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
         $response['error'] = $msg;
@@ -52,6 +52,14 @@ if(in_array($itemType, ['art', 'print', 'nfs']) {
     ajaxSuccess($response);
     exit();
 }
+
+$vendorQ = <<<EOS
+SELECT id from exhibitorRegionYears 
+WHERE exhibitorYearId=? and exhibitsRegionYearId=?;
+EOS;
+
+$vendorR = dbSafeQuery($vendorQ, 'ii', array($vendor_year, $region))->fetch_assoc();
+$vendor_show = $vendorR['id'];
 
 $maxQ = <<<EOS
 SELECT max(item_key) as last_key
@@ -85,6 +93,7 @@ foreach ($data as $index => $row ) {
     }
 }
 
+$deleted = 0;
 /*
 if($delete_keys != '') {
     $delsql = "DELETE FROM artItems WHERE id in ( $delete_keys );" 
@@ -94,31 +103,58 @@ if($delete_keys != '') {
 */
 
 $inssql = <<<EOS
-INSERT INTO artItems (item_key, title, material, type, original_qty, min_price, sale_price) 
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO artItems (item_key, title, material, type, original_qty, quantity, min_price, sale_price, vendor_show) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 $updsql = <<<EOS
-UPDATE artItems SET item_key=?, title=?, material=?, original_qty=?, min_price=?, sale_price=? 
+UPDATE artItems SET item_key=?, title=?, material=?, original_qty=?, quantity=?, min_price=?, sale_price=? 
 WHERE id=?
 EOS;
 
+$updated = 0;
+$inserted = 0;
 foreach ($data as $index => $row) { 
     if (array_key_exists('to_delete', $row)) {
         if ($row['to_delete'] == 1) continue;
     }
+    $item_key = 0;
+    if(array_key_exists('item_key', $row)) {
+        $item_key = $row['item_key'];
+    }
     $title = 'Unknown';
-    if(array_key_exists('title', $row) {
-        $title = $row['title']
+    if(array_key_exists('title', $row)) {
+        $title = $row['title'];
     }
     $material = null;
     if(array_key_exists('material', $row)) {
         $material = $row['material'];
     }
-    if(array_key_exists('id', $row)) { // update
+    $qty = 1;
+    if(array_key_exists('original_qty', $row)) {
+        $qty= $row['original_qty'];
+    }
+    if(!array_key_exists('sale_price', $row) && ($itemType != 'art')) {
+        continue; // print and nfs need sale
+    }
+    if(!array_key_exists('min_price', $row) && ($itemType == 'art')) {
+        continue; // art need min bid
+    } else if(!array_key_exists('min_price', $row)) {
+        $row['min_price'] = $row['sale_price'];
+    }
+    if($row['min_price'] > $row['sale_price']) {
+        continue; // invalid
+    }
+    if(array_key_exists('id', $row) && ($row['id'] > 0)) { // update
+        $numrows = dbSafeCmd($updsql, 'issiiddi', array($item_key, $title, $material, $qty, $qty, $row['min_price'], $row['sale_price'], $row['id']));
+        $updated += $numrows;
     } else { // new!
+        $numrows = dbSafeCmd($inssql, 'isssiiddi', array($nextItemKey++, $title, $material, $itemType, $qty, $qty, $row['min_price'], $row['sale_price'], $vendor_show));
+        if($numrows !== false) {
+            $inserted++;
+        }
     }
 }
-
+$response['message'] = "$itemType updated: $inserted added, $updated changed, $deleted removed.";
 
 $itemQ = <<<EOS
 SELECT i.id, item_key, title, material, type, original_qty, min_price, sale_price
@@ -128,7 +164,7 @@ WHERE eRY.exhibitorYearId=? and eRY.exhibitsRegionYearId=?
 EOS;
 
 $itemL = 'ii';
-$itemA = array($vendor, $region);
+$itemA = array($vendor_year, $region);
 
 switch($itemType) {
     case 'art':
