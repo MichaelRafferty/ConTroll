@@ -83,11 +83,10 @@ EOS;
         $rollover_sortorder = 500;
         foreach ($data as $index => $row ) {
             //$cidfound[$row['conid']] = true;
-            if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && $row['id'] >= 0) {
+            if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists('memlistkey', $row)) {
                 $cid = $row['conid'];
-                $id = $row['id'];
                 if (array_key_exists($cid, $first)) {
-                    $delete_keys[$cid] .= ($first[$cid] ? "'" : ",'") . sql_safe($row['id']) . "'";
+                    $delete_keys[$cid] .= ($first[$cid] ? "'" : ",'") . sql_safe($row['memlistkey']) . "'";
                     $first[$cid] = false;
                 }
             } else {
