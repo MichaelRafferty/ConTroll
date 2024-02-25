@@ -24,7 +24,7 @@ $region = $_POST['region']; // TODO error checking
 $itemType = $_POST['itemType'];
 
 $vendor = $_SESSION['id'];
-$vendor_year = $_SESSION['cID'];
+$vendor_year = $_SESSION['eyID'];
 $response['vendor'] = $vendor;
 $response['vendor_year'] = $vendor_year;
 

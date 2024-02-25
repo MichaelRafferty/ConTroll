@@ -280,7 +280,7 @@ EOS;
                 } else {
                     $totalUnitsAvailable = 0;
                 }
-                $numrows = dbSafeInsert($inssql, 'iissiiidi', array($conid, $row['exhibitsRegion'], $row['ownerName'], $row['ownerEmail'],
+                $numrows = dbSafeInsert($inssql, 'iissiiiidii', array($conid, $row['exhibitsRegion'], $row['ownerName'], $row['ownerEmail'],
                     $includedMemId, $additionalMemId, $totalUnitsAvailable, $row['atconIdBase'], $row['mailinFee'], $row['mailinIdBase'], $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
