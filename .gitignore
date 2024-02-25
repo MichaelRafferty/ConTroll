@@ -27,6 +27,7 @@ dead
 /.idea/.gitignore
 
 onlinereg/onlineReg/
+onlinereg/images
 
 /atcon/scripts/obsolete/
 /google_client/
