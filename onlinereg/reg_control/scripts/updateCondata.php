@@ -83,7 +83,7 @@ EOS;
         $rollover_sortorder = 500;
         foreach ($data as $index => $row ) {
             //$cidfound[$row['conid']] = true;
-            if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1) {
+            if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && $row['id'] >= 0) {
                 $cid = $row['conid'];
                 $id = $row['id'];
                 if (array_key_exists($cid, $first)) {

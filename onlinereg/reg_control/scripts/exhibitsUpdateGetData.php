@@ -61,7 +61,7 @@ if ($tablename != 'none') {
 
     $sort_order = 10;
     foreach ($data as $index => $row ) {
-        if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1) {
+        if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists($keyfield, $row)) {
             $delete_keys .= ($first ? "'" : ",'") . sql_safe($row[$keyfield]) . "'";
             $first = false;
         } else {
@@ -89,7 +89,7 @@ switch ($tablename) {
         break;
     case 'regionTypes':
         if ($delete_keys != '') {
-            $delsql = "DELETE FROM regionTypes WHERE regionType in ( $delete_keys );";
+            $delsql = "DELETE FROM exhibitsRegionTypes WHERE regionType in ( $delete_keys );";
             web_error_log("Delete sql = /$delsql/");
             $deleted += dbCmd($delsql);
         }
