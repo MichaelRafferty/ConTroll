@@ -2,6 +2,7 @@
 require_once "lib/base.php";
 require_once "../../lib/exhibitorRegistrationForms.php";
 require_once "../../lib/exhibitorRequestForms.php";
+require_once "../../lib/exhibitorReceiptForms.php";
 
 //initialize google session
 $need_login = google_init("page");
@@ -24,6 +25,7 @@ page_init($page,
                     'jslib/exhibitorProfile.js',
                     'js/vendor.js',
                     'jslib/exhibitorRequest.js',
+                    'jslib/exhibitorReceipt.js',
                     'js/tinymce/tinymce.min.js'
                    ),
               $need_login);
@@ -77,6 +79,7 @@ $config_vars['debug'] = $debug['reg_control_exhibitors'];
 
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
 draw_exhibitorRequestModal('admin');
+draw_exhibitorReceiptModal('admin');;
 ?>
 <div id='main'>
     <ul class='nav nav-tabs mb-3' id='exhibitor-tab' role='tablist'>

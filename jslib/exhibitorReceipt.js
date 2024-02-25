@@ -21,27 +21,11 @@ class ExhibitorReceipt {
 
 // showReceipt - open the receipt modal and fetch it's contents
 
-    showReceipt(regionYearId) {
+    showReceipt(regionYearId, exhibitorId = null) {
         var spaceHtml = '';
-        var regionName = '';
 
         this.#regionYearId = regionYearId;
 
-        //console.log("open receipt modal for id =" + regionYearId);
-        var region = exhibits_spaces[regionYearId];
-
-        if (!region)
-            return;
-
-        var regionList = region_list[regionYearId];
-        if (config['debug'] & 1) {
-            console.log("regionList");
-            console.log(regionList);
-            console.log("Region Spaces");
-            console.log(region);
-        }
-
-        regionName = regionList.name;
         clear_message('receipt_message_div');
         clear_message();
         var dataobj = {
@@ -49,6 +33,9 @@ class ExhibitorReceipt {
             'type': config['portalType'],
             'name': config['portalName'],
         };
+        if (exhibitorId)
+            dataobj['exhibitorId'] = exhibitorId;
+
         var url = 'scripts/exhibitorReceipt.php';
         var _this = this;
         $.ajax({

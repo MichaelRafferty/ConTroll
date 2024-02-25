@@ -426,7 +426,7 @@ draw_registrationModal($portalType, $portalName, $con, $countryOptions);
 draw_passwordModal();
 draw_exhibitorRequestModal();
 draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $portalName, $portalType);
-draw_exhibitorRceiptModal($portalType);
+draw_exhibitorReceiptModal($portalType);
 draw_itemRegistrationModal($portalType);
 ?>
     <!-- now for the top of the form -->

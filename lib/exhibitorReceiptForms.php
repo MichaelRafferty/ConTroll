@@ -1,7 +1,7 @@
 <?php
 
 // draw the vendor request modal
-function draw_exhibitorRceiptModal($portalType = '')
+function draw_exhibitorReceiptModal($portalType = '')
 {
     $exhibitor_conf = get_conf('vendor');
     ?>

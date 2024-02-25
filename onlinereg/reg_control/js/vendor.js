@@ -435,7 +435,7 @@ class exhibitorsAdm {
                                 formatterParams: {name: 'Receipt'},
                                 maxWidth: 200,
                                 hozAlign: "center",
-                                cellClick: exhibitors.spaceReceipt,
+                                cellClick: this.spReceipt,
                                 headerSort: false,
                             },
                         ]
@@ -601,11 +601,12 @@ class exhibitorsAdm {
                     return '<button class="btn btn-small btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", >' + name + '</button>';
                 }
             }
-
-        var transid = data['transid'] || 0;
-        // receipt buttons
-        if (transid > 0)
-            return '<button class="btn btn-small btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
+        if (name == 'Receipt' || name == 'Show Receipt') {
+            var transid = data['transid'] || 0;
+            // receipt buttons
+            if (transid > 0)
+                return '<button class="btn btn-small btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
+        }
         return '';
     }
 
@@ -740,9 +741,27 @@ class exhibitorsAdm {
         exhibitors.spaceApprovalOther(e, cell);
     }
 
+    // call the showReceipt
+    spReceipt(e, cell) {
+        exhibitors.spaceReceipt(e, cell);
+    }
+
+    spaceReceipt(e, cell) {
+        this.#spaceRow = cell.getRow();
+        var exhibitorData = this.#spaceRow.getData();
+        this.#regionYearId = exhibitorData['regionYearId'];
+        this.#exhibitorId = exhibitorData['exhibitorId'];
+        exhibitorReceipt.showReceipt(this.#regionYearId, this.#exhibitorId);
+    }
+
     spaceApprovalReq(e, cell) {
         this.#spaceRow = cell.getRow();
         var exhibitorData = this.#spaceRow.getData();
+        var app = exhibitorData['app'] || 0;
+        var pur = exhibitorData['pur'] || 0;
+        if (app == 0 || pur > 0)
+            return; // suppress click if there is nothing to approve
+
         $.ajax({
             url: 'scripts/exhibitorsSpaceApproval.php',
             method: "POST",
@@ -757,6 +776,11 @@ class exhibitorsAdm {
     spaceApprovalOther(e, cell) {
         this.#spaceRow = cell.getRow();
         var exhibitorData = this.#spaceRow.getData();
+        var app = exhibitorData['app'] || 0;
+        var pur = exhibitorData['pur'] || 0;
+        if (app == 0 || pur > 0)
+            return; // suppress click if there is nothing to approve
+
         this.#exhibitorId = exhibitorData['exhibitorId'];
         this.#regionId = exhibitorData['regionId'];
         this.#regionYearId = exhibitorData['regionYearId'];
@@ -817,6 +841,7 @@ function getExhibitorDataDraw(data, textStatus, jqXHR) {
 window.onload = function initpage() {
     exhibitors = new exhibitorsAdm(config['conid'], config['debug']);
     exhibitorRequestOnLoad();
+    exhibitorReceiptOnLoad();
 }
 
 /*
