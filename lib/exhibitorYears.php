@@ -77,7 +77,7 @@ WITH mostrecentPerid AS (
     WHERE ey.exhibitorId = ?
     GROUP BY exhibitsRegion
 ), perid AS (
-    SELECT p.exhibitsRegion, exRY.agentPerid 
+    SELECT p.exhibitsRegion, exRY.agentPerid, exRY.agentNewperson
     FROM exhibitorRegionYears exRY
     JOIN exhibitorYears ey ON exRY.exhibitorYearId = ey.id
     JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
@@ -91,7 +91,7 @@ WITH mostrecentPerid AS (
     WHERE exhibitorId = ? AND approval = 'approved'
     GROUP BY exhibitsRegion
 )
-SELECT app.exhibitsRegion, approvedCnt, updateDate, updateBy, agentPerid
+SELECT app.exhibitsRegion, approvedCnt, updateDate, updateBy, agentPerid, agentNewperson
     FROM app
     LEFT OUTER JOIN perid p ON p.exhibitsRegion = app.exhibitsRegion;
 EOS;
@@ -113,10 +113,10 @@ JOIN exhibitorYears ey on ery.conid = ey.conid
 WHERE ery.conid = ? AND et.active = 'Y' AND ey.exhibitorId = ?
 EOS;
     $insQ = <<<EOS
-INSERT INTO exhibitorRegionYears(exhibitorYearId, exhibitsRegionYearId, agentPerid, approval, updateDate, updateBy, sortorder) {
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO exhibitorRegionYears(exhibitorYearId, exhibitsRegionYearId, agentPerid,  agentNewperson, approval, updateDate, updateBy, sortorder)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-    $instypes = 'iiissii';
+    $instypes = 'iiiissii';
 
     $sortorder = 10;
     $now = date('Y-m-d H-i-s');
@@ -137,10 +137,12 @@ EOS;
         }
 
         $agentPerid = null;
+        $agentNewperson = null;
         $updateBy = 2;
         $updatedDate = $now;
         if (array_key_exists($appL['exhibitsRegion'], $priors)) {
             $agentPerid = $priors[$appL['exhibitsRegion']]['agentPerid'];
+            $agentNewperson = $priors[$appL['exhibitsRegion']]['agentNewperson'];
             $updateBy = $priors[$appL['exhibitsRegion']]['updateBy'];
             $updatedDate = $priors[$appL['exhibitsRegion']]['updatedDate'];
             if ($updateBy == null) {
@@ -148,7 +150,7 @@ EOS;
                 $updatedDate = $now;
             }
         }
-        $newid = dbSafeInsert($insQ, $instypes, array($appL['exhibitorYearId'], $appL['exhibitsRegionYearId'], $agentPerid, $approval, $updatedDate, $updateBy, $sortorder));
+        $newid = dbSafeInsert($insQ, $instypes, array($appL['exhibitorYearId'], $appL['exhibitsRegionYearId'], $agentPerid, $agentNewperson, $approval, $updatedDate, $updateBy, $sortorder));
         $sortorder += 10;
     }
     $appR->free();
