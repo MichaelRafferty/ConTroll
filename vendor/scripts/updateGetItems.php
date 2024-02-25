@@ -78,10 +78,12 @@ if($maxR == null) { $nextItemKey = 1; }
 else { $nextItemKey = $maxR['last_key'] + 1; }
 
 $response['nextItemKey'] = $nextItemKey;
+$first = true;
+$delete_keys = '';
 
 foreach ($data as $index => $row ) {
-    if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists($keyfield, $row)) {
-        $delete_keys .= ($first ? "'" : ",'") . sql_safe($row[$keyfield]) . "'";
+    if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists('id', $row)) {
+        $delete_keys .= ($first ? "'" : ",'") . sql_safe($row['id']) . "'";
         $first = false;
     } else {
         // trim all fields
@@ -94,13 +96,11 @@ foreach ($data as $index => $row ) {
 }
 
 $deleted = 0;
-/*
 if($delete_keys != '') {
-    $delsql = "DELETE FROM artItems WHERE id in ( $delete_keys );" 
+    $delsql = "DELETE FROM artItems WHERE id in ( $delete_keys );";
     web_error_log("Delete sql = /$delsql/");
     $deleted += dbCmd($delsql);
 }
-*/
 
 $inssql = <<<EOS
 INSERT INTO artItems (item_key, title, material, type, original_qty, quantity, min_price, sale_price, vendor_show) 
@@ -157,7 +157,7 @@ foreach ($data as $index => $row) {
 $response['message'] = "$itemType updated: $inserted added, $updated changed, $deleted removed.";
 
 $itemQ = <<<EOS
-SELECT i.id, item_key, title, material, type, original_qty, min_price, sale_price
+SELECT i.id, item_key, title, material, type, original_qty, min_price, sale_price, 0 as uses
 FROM artItems i
     JOIN exhibitorRegionYears eRY on eRY.id=i.vendor_show
 WHERE eRY.exhibitorYearId=? and eRY.exhibitsRegionYearId=?
