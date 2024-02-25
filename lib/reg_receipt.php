@@ -101,12 +101,15 @@ EOS;
     if ($exhId != null) {
         // get current exhibitor information
         $exhibitorQ = <<<EOS
-SELECT e.id, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, addr, addr2, city, state, zip, country, contactEmail, contactName, contactPhone, ey.mailin
+SELECT e.id, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, addr, addr2, city, state, zip, country, 
+       contactEmail, contactName, contactPhone, ey.mailin, exRY.exhibitorNumber
 FROM exhibitors e
 JOIN exhibitorYears ey ON e.id = ey.exhibitorId
-WHERE e.id=?;
+JOIN exhibitorRegionYears exRY ON ey.id = exRY.exhibitorYearId
+JOIN exhibitsRegionYears ery ON exRY.exhibitsRegionYearId = ery.id
+WHERE e.id=? AND ery.id = ?;
 EOS;
-        $exhibitorR = dbSafeQuery($exhibitorQ, 'i', array($exhId));
+        $exhibitorR = dbSafeQuery($exhibitorQ, 'ii', array($exhId, $regionYearId));
         if ($exhibitorR == false || $exhibitorR->num_rows != 1) {
             $response['error'] = 'Unable to find your exhibitor record';
             ajaxSuccess($response);
@@ -486,6 +489,9 @@ EOS;
         $exhibitor = $data['exhibitor'];
         $region = $data['region'];
         $exhibitor_sid = $exhibitor['id'];
+        $exhibitor_number = $exhibitor['exhibitorNumber'];
+        if ($exhibitor_number != null)
+            $exhibitor_sid = "$exhibitor_number ($exhibitor_sid)";
         $exhibitor_name = $exhibitor['exhibitorName'];
         $regionName = $region['name'];
         $receipt_html .= <<<EOS
