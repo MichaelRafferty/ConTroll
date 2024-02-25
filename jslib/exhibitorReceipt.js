@@ -71,7 +71,7 @@ class ExhibitorReceipt {
             if (id) {
                 this.#receiptData = data;
                 for (var idx in data['emails']) {
-                    btns += "<button class='btn btn-sm btn-primary' onclick='exhibitorReceipt.emailReceipt(" + idx + ");'>Email to " + data['emails'][idx] + "</button>";
+                    btns += "<button class='btn btn-sm btn-primary ms-1 me-1' onclick='exhibitorReceipt.emailReceipt(" + idx + ");'>Email to " + data['emails'][idx] + "</button>";
                 }
                 id.innerHTML = btns;
             }

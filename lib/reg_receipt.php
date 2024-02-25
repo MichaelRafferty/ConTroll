@@ -118,10 +118,12 @@ EOS;
         $exhibitor = $exhibitorR->fetch_assoc();
         $exhibitorR->free();
         if ($exhibitor['exhibitorEmail']) {
-            $emails[] = $exhibitor['exhibitorEmail'];
+            if (!in_array($exhibitor['exhibitorEmail'], $emails))
+                $emails[] = $exhibitor['exhibitorEmail'];
         }
         if ($exhibitor['contactEmail']) {
-            $emaikls[] = $exhibitor['contactEmail'];
+            if (!in_array($exhibitor['contactEmail'], $emails))
+                $emails[] = $exhibitor['contactEmail'];
         }
     }
 
@@ -259,7 +261,8 @@ EOS;
     $people = [];
     while ($peopleL = $peopleR->fetch_assoc()) {
         $people[$peopleL['pid']] = $peopleL;
-        $emails[] = $peopleL['email_addr'];
+        if (!in_array($peopleL['email_addr'], $emails))
+            $emails[] = $peopleL['email_addr'];
     }
     $response['people'] = $people;
 
