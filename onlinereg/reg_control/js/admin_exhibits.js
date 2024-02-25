@@ -413,6 +413,10 @@ class exhibitssetup {
             movableRows: true,
             data: this.#regionType,
             layout: "fitDataTable",
+            pagination: true,
+            paginationAddRow:"table",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 { title: "Region Type", field: "regionType", width: 200, headerSort: true, headerWordWrap: true, editor: "input", editorParams: {maxlength: "16"} },
@@ -480,6 +484,10 @@ class exhibitssetup {
             movableRows: true,
             data: this.#regions,
             layout: "fitDataTable",
+            pagination: true,
+            paginationAddRow:"table",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false},
@@ -549,6 +557,10 @@ class exhibitssetup {
             movableRows: true,
             data: this.#regionYears,
             layout: "fitDataTable",
+            pagination: true,
+            paginationAddRow:"table",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false,},
@@ -628,6 +640,10 @@ class exhibitssetup {
             movableRows: true,
             data: this.#spaces,
             layout: "fitDataTable",
+            pagination: true,
+            paginationAddRow:"table",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false},
@@ -696,6 +712,10 @@ class exhibitssetup {
             movableRows: true,
             data: this.#spacePrices,
             layout: "fitDataTable",
+            pagination: true,
+            paginationAddRow:"table",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false},
@@ -802,6 +822,7 @@ class exhibitssetup {
         var _this = this;
         this.#regionTypeTable.addRow({regionType: 'new-row', portalType: 'vendor', purchaseApprovalRequired: 'Y',  inPersonMaxUnits: 0, mailinAllowed: 'N', mailinMaxUnits: 0,
             active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
+            _this.#regionTypeTable.setPage("last"); // adding new to last page always
             row.getTable().scrollToRow(row);
             _this.checkTypesUndoRedo();
         });
@@ -926,6 +947,7 @@ class exhibitssetup {
     addrowRegions() {
         var _this = this;
         this.#regionsTable.addRow({ sortorder: 99, uses: 0}, false).then(function (row) {
+            _this.#regionsTable.setPage("last"); // adding new to last page always
             row.getTable().scrollToRow(row);
             _this.checkRegionsUndoRedo();
         });
@@ -1051,6 +1073,7 @@ class exhibitssetup {
     addrowYears() {
         var _this = this;
         this.#regionYearsTable.addRow({ownerName: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
+            _this.#regionYearsTable.setPage("last"); // adding new to last page always
             row.getTable().scrollToRow(row);
             _this.checkYearsUndoRedo();
         });
@@ -1176,6 +1199,7 @@ class exhibitssetup {
     addrowSpaces() {
         var _this = this;
         this.#spacesTable.addRow({shortname: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
+            _this.#spacesTable.setPage("last"); // adding new to last page always
             row.getTable().scrollToRow(row);
             _this.checkSpacesUndoRedo();
         });
@@ -1301,6 +1325,7 @@ class exhibitssetup {
     addrowSpacePrices() {
         var _this = this;
         this.#spacePricesTable.addRow({code: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
+            _this.#spacePricesTable.setPage("last"); // adding new to last page always
             row.getTable().scrollToRow(row);
             _this.checkSpacePricesUndoRedo();
         });
