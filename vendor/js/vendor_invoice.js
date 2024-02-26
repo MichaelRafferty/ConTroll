@@ -122,11 +122,18 @@ function openInvoice(id) {
                 "<p><input type='radio' name='agent' id='agent_self' value='self' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;I will be my own agent and my membership is not one of the ones below.<br/>" +
                 "<input type='radio' name='agent' id='agent_first' value='first' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;The first membership below will be my agent.<br/>";
 
-            if (exhibitor_info['perid']) {
+            var ry = exhibitor_regionyears[regionYearId];
+            if (ry['perid']) {
+                html += "<input type='radio' name='agent' id='agent_perid' value='p" + ry['perid'] + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
+                    ry['p_first_name'] + ' ' + ry['p_last_name'] + ' as my agent.<br/>';
+            } else if (ry['newid']) {
+                html += "<input type='radio' name='agent' id='agent_newid' value='n" + ry['newid'] + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
+                    ry['n_first_name'] + ' ' + ry['n_last_name'] + ' as my agent.<br/>';
+            } else if (exhibitor_info['perid']) {
                 html += "<input type='radio' name='agent' id='agent_perid' value='p" + exhibitor_info['perid'] + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
                     exhibitor_info['p_first_name'] + ' ' + exhibitor_info['p_last_name'] + ' as my agent.<br/>';
             } else if (exhibitor_info['newid']) {
-                html += "<input type='radio' name='agent' id='agent_newid' value='p" + exhibitor_info['newid'] + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
+                html += "<input type='radio' name='agent' id='agent_newid' value='n" + exhibitor_info['newid'] + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
                     exhibitor_info['n_first_name'] + ' ' + exhibitor_info['n_last_name'] + ' as my agent.<br/>';
             }
             html += "<input type='radio' name='agent' id='agent_request' value='request' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Please assign my agent as per my request below.<br/>" +

@@ -385,12 +385,15 @@ fclose($fh);
 $config_vars['loginType'] = $_SESSION['login_type'];
 
 $vendorPQ = <<<EOS
-SELECT exRY.*, ey.exhibitorId
+SELECT exRY.*, ey.exhibitorId,
+    p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newid, n.first_name AS n_first_name, n.last_name AS n_last_name
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears ey ON exRY.exhibitorYearId = ey.id
 JOIN exhibitsRegionYears ery ON exRY.exhibitsRegionYearId = ery.id
 JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id 
 JOIN exhibitsRegionTypes ert ON er.regionType = ert.regionType
+LEFT OUTER JOIN perinfo p ON p.id = exRY.agentPerid
+LEFT OUTER JOIN newperson n ON n.id = exRY.agentNewperson
 WHERE ey.exhibitorId = ? AND ert.portalType = ?;
 EOS;
 
@@ -420,6 +423,7 @@ $exhibitorSR->free();
     var exhibits_spaces = <?php echo json_encode($space_list); ?>;
     var exhibitor_info = <?php echo json_encode($info); ?>;
     var exhibitor_spacelist = <?php echo json_encode($exhibitorSpaceList); ?>;
+    var exhibitor_regionyears = <?php echo json_encode($vendor_permlist); ?>;
     var regions = <?php echo json_encode($regions); ?>;
     var spaces = <?php echo json_encode($spaces); ?>;
     var country_options = <?php echo json_encode($countryOptions); ?>;
