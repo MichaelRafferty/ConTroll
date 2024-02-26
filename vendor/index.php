@@ -1,7 +1,7 @@
 <?php
 // Vendor - index.php - Main page for vendor registration
 require_once("lib/base.php");
-require_once("lib/vendorInvoice.php");
+require_once("lib/exhibitorInvoice.php");
 require_once("lib/changePassword.php");
 require_once("lib/auctionItemRegistrationForms.php");
 require_once('../lib/exhibitorYears.php');
@@ -24,7 +24,7 @@ $condata = get_con();
 $in_session = false;
 $forcePassword = false;
 $regserver = $ini['server'];
-$vendor = '';
+$exhibitor = '';
 
 // encrypt/decrypt stuff
 $ciphers = openssl_get_cipher_methods();
@@ -135,7 +135,7 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
         exit();
     } else {
         // nope, just set the vendor id
-        $vendor = $_SESSION['id'];
+        $exhibitor = $_SESSION['id'];
         $in_session = true;
     }
 } else if (isset($_GET['vid'])) {
@@ -147,8 +147,8 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
         draw_login($config_vars, "<div class='bg-danger text-white'>The link has expired, please log in again</div>");
         exit();
     }
-    $vendor = $match['id'];
-    $_SESSION['id'] = $vendor;
+    $exhibitor = $match['id'];
+    $_SESSION['id'] = $exhibitor;
     $_SESSION['eyID'] = $match['eyID'];
     $_SESSION['login_type'] = $match['loginType'];
     $in_session = true;
@@ -164,21 +164,21 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
     // if archived, unarchive them, they just logged in again
     if ($match['archived'] == 'Y') {
         // they were marked archived, and they logged in again, unarchive them.
-        $numupd = dbSafeCmd("UPDATE exhibitors SET archived = 'N' WHERE id = ?", 'i', array($vendor));
+        $numupd = dbSafeCmd("UPDATE exhibitors SET archived = 'N' WHERE id = ?", 'i', array($exhibitor));
         if ($numupd != 1)
-            error_log("Unable to unarchive vendor $vendor");
+            error_log("Unable to unarchive vendor $exhibitor");
     }
 
     // Build exhbititorYear on first login if it doesn't exist at the time of this login
     if ($match['eyID'] == NULL) {
         // create the year related functions
-        $newid = exhibitorBuildYears($vendor);
+        $newid = exhibitorBuildYears($exhibitor);
         if (is_numeric($newid))
             $_SESSION['eyID'] = $newid;
     } else {
         $_SESSION['eyID'] = $match['eyID'];
     }
-    exhibitorCheckMissingSpaces($vendor, $_SESSION['eyID']);
+    exhibitorCheckMissingSpaces($exhibitor, $_SESSION['eyID']);
 } else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
     // handle login submit
     $login = strtolower(sql_safe($_POST['si_email']));
@@ -242,7 +242,7 @@ EOS;
     // a single  match....
     $match = $matches[0];
     $_SESSION['id'] = $match['id'];
-    $vendor = $_SESSION['id'];
+    $exhibitor = $_SESSION['id'];
     $_SESSION['login_type'] = $match['loginType'];
     $in_session = true;
     if ($match['loginType'] == 'e') {
@@ -258,21 +258,21 @@ EOS;
     // if archived, unarchive them, they just logged in again
     if ($match['archived'] == 'Y') {
         // they were marked archived, and they logged in again, unarchive them.
-        $numupd = dbSafeCmd("UPDATE exhibitors SET archived = 'N' WHERE id = ?", 'i', array($vendor));
+        $numupd = dbSafeCmd("UPDATE exhibitors SET archived = 'N' WHERE id = ?", 'i', array($exhibitor));
         if ($numupd != 1)
-            error_log("Unable to unarchive vendor $vendor");
+            error_log("Unable to unarchive vendor $exhibitor");
     }
 
     // Build exhbititorYear on first login if it doesn't exist at the time of this login
     if ($match['eyID'] == NULL) {
         // create the year related functions
-        $newid = exhibitorBuildYears($vendor);
+        $newid = exhibitorBuildYears($exhibitor);
         if (is_numeric($newid))
             $_SESSION['eyID'] = $newid;
     } else {
         $_SESSION['eyID'] = $match['eyID'];
     }
-    exhibitorCheckMissingSpaces($vendor, $_SESSION['eyID']);
+    exhibitorCheckMissingSpaces($exhibitor, $_SESSION['eyID']);
 } else {
     draw_registrationModal($portalType, $portalName, $con, $countryOptions);
     draw_login($config_vars);
@@ -351,13 +351,16 @@ $priceR->free();
 $vendorQ = <<<EOS
 SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, 
        ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview, ey.mailin,
-       addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
+       e.addr, e.addr2, e.city, e.state, e.zip, e.country, e.shipCompany, e.shipAddr, e.shipAddr2, e.shipCity, e.shipState, e.shipZip, e.shipCountry, e.publicity,
+       p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newid, n.first_name AS n_first_name, n.last_name AS n_last_name
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
+LEFT OUTER JOIN perinfo p ON p.id = e.perid
+LEFT OUTER JOIN newperson n ON n.id = e.newperid
 WHERE e.id=? AND ey.conid = ?;
 EOS;
 
-$infoR = dbSafeQuery($vendorQ, 'ii', array($vendor, $conid));
+$infoR = dbSafeQuery($vendorQ, 'ii', array($exhibitor, $conid));
 $info = $infoR->fetch_assoc();
 if ($info['eNeedNew']) {
     drawChangePassword('You need to change your exhibitor password.', 3, true, $info, 'e');
@@ -391,7 +394,7 @@ JOIN exhibitsRegionTypes ert ON er.regionType = ert.regionType
 WHERE ey.exhibitorId = ? AND ert.portalType = ?;
 EOS;
 
-$vendorPR = dbSafeQuery($vendorPQ, 'is', array($vendor, $portalType));
+$vendorPR = dbSafeQuery($vendorPQ, 'is', array($exhibitor, $portalType));
 $vendor_permlist = array();
 while ($perm = $vendorPR->fetch_assoc()) {
     $vendor_permlist[$perm['exhibitsRegionYearId']] = $perm;
@@ -404,7 +407,7 @@ FROM vw_ExhibitorSpace
 WHERE exhibitorId = ? and conid = ? and portalType = ?;
 EOS;
 
-$exhibitorSR = dbSafeQuery($exhibitorSQ, 'iis', array($vendor, $condata['id'], $portalType));
+$exhibitorSR = dbSafeQuery($exhibitorSQ, 'iis', array($exhibitor, $condata['id'], $portalType));
 $exhibitorSpaceList = array();
 while ($space = $exhibitorSR->fetch_assoc()) {
     $exhibitorSpaceList[$space['spaceId']] = $space;
@@ -425,7 +428,7 @@ $exhibitorSR->free();
 draw_registrationModal($portalType, $portalName, $con, $countryOptions);
 draw_passwordModal();
 draw_exhibitorRequestModal();
-draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $portalName, $portalType);
+draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $cc, $portalName, $portalType);
 draw_exhibitorReceiptModal($portalType);
 draw_itemRegistrationModal($portalType);
 ?>

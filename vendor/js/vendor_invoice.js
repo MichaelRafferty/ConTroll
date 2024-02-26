@@ -27,6 +27,23 @@ function openInvoice(id) {
     var region = exhibits_spaces[regionYearId];
 
     var regionList = region_list[regionYearId];
+    var portalName = 'Exhibitor';
+    var attendeeName = 'Exhibitor';
+    var attendeeNameLC = 'Exhibitors';
+    var portalType = regionList.portalType
+    switch (portalType) {
+        case 'artist':
+            portalName = 'Artist';
+            attendeeName = 'Artist';
+            attendeeNameLC = 'artist';
+            break;
+        case 'vendor':
+            portalName = 'Vendor';
+            attendeeName = 'Vendor';
+            attendeeNameLC = 'vendor';
+            break;
+    }
+    var mailin = exhibitor_info['mailin'];
     if (config['debug'] & 1) {
         console.log("regionList");
         console.log(regionList);
@@ -75,11 +92,46 @@ function openInvoice(id) {
         (additionalMemberships > 0 ? "up to " +  additionalMemberships  : "no") +
         " additional memberships at a reduced rate of $" + Number(regionList.additionalMemPrice).toFixed(2) + ".</p>";
     if (spaces > 0) {
-        html += "<p>All vendors must have a membership for everyone working in their space. Included and additional discounted memberships can only be purchased while paying for your space. " +
-            "If you do not purchase them now while paying your space invoice, you will have to purchase them at the current membership rates.</p>" +
-            "<p>If you are unsure who will be using the registrations please use the first name of ‘Provided’ and a last name of ‘At Con’. The on-site registration desk will update the membership to the name on their ID.</p>" +
-            "<p>Program participants do not need to buy memberships; however, we will confirm that they meet the requirements to waive the membership cost.  If they do not, they will need to purchase a membership on-site at the on-site rates.</p>" +
-            "<p><input type='checkbox' style='transform: scale(2);' name='agreeNone' id='add-new-comment'agreeNone'> &nbsp;&nbsp;If you do not wish to purchase any memberships at this time, check this box to acknowledge the requirement for memberships above.</p>"
+        switch (portalType) {
+            case 'artist':
+                if (mailin == 'N') {
+                    html += "<p>All non mail-in artists must have a membership. Included and additional discounted memberships can only be purchased while paying for your space.";
+                } else {
+                    html += "<p>Mail-in artists do not need a membership. Included and additional discounted memberships, however, can only be purchased while paying for your space.";
+                }
+                break;
+            case 'vendor':
+                html += "<p>All vendors must have a membership. Included and additional discounted memberships can only be purchased while paying for your space.";
+                break;
+            default:
+                html += "<p>All exhibitors must have a membership. Included and additional discounted memberships can only be purchased while paying for your space.";
+        }
+
+        html += " If you do not purchase them now while paying your space invoice, you will have to purchase them at the current membership rates.</p>" +
+            "<p>If you are unsure who will be using the registrations please use the first name of ‘Provided’ and a last name of ‘At Con’. " +
+            "The on-site registration desk will update the membership to the name on their ID.</p>" +
+            "<p>Program participants do not need to buy memberships; however, we will confirm that they meet the requirements to waive the membership cost. " +
+            "If they do not, they will need to purchase a membership on-site at the on-site rates.</p>" +
+            "<p><input type='checkbox' style='transform: scale(2);' name='agreeNone' id='agreeNone'> &nbsp;&nbsp;" +
+            "If you do not wish to purchase any memberships at this time, check this box to acknowledge the requirement for memberships above.</p>";
+
+        if (portalType == 'artist' && mailin == 'N') {
+            html += "<p>In addition, all non-mail-in artists need to declare an on-site agent. " +
+                "This is the person that will be contacted if there are any issues with setup, operation, or teardown of your exhibit. " +
+                "The agent needs a membership, and you can be the agent.</p>" +
+                "<p><input type='radio' name='agent' id='agent_self' value='self' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;I will be my own agent and my membership is not one of the ones below.<br/>" +
+                "<input type='radio' name='agent' id='agent_first' value='first' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;The first membership below will be my agent.<br/>";
+
+            if (exhibitor_info['perid']) {
+                html += "<input type='radio' name='agent' id='agent_perid' value='p" + exhibitor_info['perid'] + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
+                    exhibitor_info['p_first_name'] + ' ' + exhibitor_info['p_last_name'] + ' as my agent.<br/>';
+            } else if (exhibitor_info['newid']) {
+                html += "<input type='radio' name='agent' id='agent_newid' value='p" + exhibitor_info['newid'] + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
+                    exhibitor_info['n_first_name'] + ' ' + exhibitor_info['n_last_name'] + ' as my agent.<br/>';
+            }
+            html += "<input type='radio' name='agent' id='agent_request' value='request' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Please assign my agent as per my request below.<br/>" +
+                "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type='text' name='agent_request' placeholder='Enter your agent request here if needed' size='120'></p>"
+        }
     }
     document.getElementById('vendor_inv_included').innerHTML = html;
     document.getElementById('vendor_inv_cost').innerHTML = Number(totalSpacePrice).toFixed(2);

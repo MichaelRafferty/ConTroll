@@ -1,6 +1,6 @@
 <?php
 // draw the invoice screen for buying space in the vendor/artist portal
-function draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $portalName, $portalType) {
+function draw_exhibitorInvoiceModal($exibitor, $info, $countryOptions, $ini, $cc, $portalName, $portalType) {
     $vendor_conf = get_conf('vendor');
     ?>
     <!-- invoice -->
@@ -9,7 +9,7 @@ function draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $po
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
                     <div class='modal-title' id="vendor_invoice_title">
-                        <strong>Vendor Invoice</strong>
+                        <strong><?php echo $portalName; ?> Invoice</strong>
                     </div>
                     <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                 </div>
@@ -23,7 +23,7 @@ function draw_vendorInvoiceModal($vendor, $info, $countryOptions, $ini, $cc, $po
                             <div class='col-sm-12' id='vendor_inv_included'></div>
                         </div>
                         <hr/>
-                        <input type='hidden' name='vendor' id='vendor_inv_id' value='<?php echo $vendor; ?>'/>
+                        <input type='hidden' name='vendor' id='vendor_inv_id' value='<?php echo $exhibitor; ?>'/>
                         <input type='hidden' name='regionYearId' id='vendor_inv_region_id'/>
                         <input type='hidden' name='portalName' id='vendorPortalName' value='<?php echo $portalName; ?>'/>
                         <input type='hidden' name='portalType' id='vendorPortalType' value='<?php echo $portalType; ?>'/>
