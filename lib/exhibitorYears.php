@@ -64,6 +64,15 @@ EOS;
             $confirm
         );
         $newyrid = dbSafeInsert($eyinsq, $typestr, $paramArray);
+    } else if ($last_year < $conid) {
+        // build from last year
+        $eyinsQ = <<<EOS
+INSERT INTO exhibitorYears (conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, confirm)
+SELECT ?, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, confirm
+FROM exhibitorYears
+WHERE conid = ? AND exhibitorId = ?;
+EOS;
+        $newyrid = dbSafeInsert($eyinsQ, 'iii', array($conid, $last_year, $exhibitor));
     }
 
     // build a exhibitorRegionYears from exhibitsRegionYears and any past data
@@ -164,7 +173,6 @@ function exhibitorCheckMissingSpaces($exhibitor, $yearId) {
     $conid = $con['id'];
 
     // now build new approval records for this year that don't already exist
-
     // load prior approvals - for checking ones that are 'once'
     // build a exhibitorRegionYears from exhibitsRegionYears and any past data
     // load prior approvals - for checking ones that are 'once'

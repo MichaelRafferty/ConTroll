@@ -31,7 +31,10 @@ WITH maxcid AS (
     FROM exhibitorYears
     GROUP BY exhibitorId
 )
-SELECT e.*, ey.*, 0 as import
+SELECT e.id, e.perid, e.newperid, e.exhibitorName, e.exhibitorEmail, e.exhibitorPhone, e.website, e.publicity,
+    e.addr, e.addr2, e.city, e.state, e.zip, e.country, 
+    e.shipCompany, e.shipAddr, e.shipAddr2, e.shipCity, e.shipState, e.shipZip, e.shipCountry, e.archived,
+    ey.id as eyId, ey.conid, ey.exhibitorId, ey.contactName, ey.contactEmail, ey.contactPhone, ey.mailin, 0 as import
 FROM exhibitors e
 LEFT OUTER JOIN maxcid ON e.id = maxcid.exhibitorId
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId AND maxcid.maxConid = ey.conid

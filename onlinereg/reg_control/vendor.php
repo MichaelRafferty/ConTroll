@@ -100,7 +100,7 @@ draw_exhibitorReceiptModal('admin');
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' onclick='importPastVendors()'>Import Selected Past Exhibitors</button>
+                    <button class='btn btn-sm btn-primary' onclick='exhibitors.importPastExhibitors()'>Import Selected Past Exhibitors</button>
                 </div>
             </div>
         </div>

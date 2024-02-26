@@ -546,7 +546,7 @@ class exhibitorsAdm {
     importPastModalOpen() {
         this.#importHTML.innerHTML = "<div class='row'><div class='col-sm-12' id='Importtable'></div></div>";
         if (this.#importTable) {
-            this.#importTable.off("rowClicked");
+            this.#importTable.off("rowClick");
             this.#importTable.destroy();
             this.#importTable = null;
         }
@@ -602,6 +602,26 @@ class exhibitorsAdm {
         });
 
         this.#importModal.show();
+    }
+
+    importPastExhibitors() {
+        var data = this.#importTable.getData();
+        this.#importModal.hide();
+        $.ajax({
+            url: 'scripts/exhibitorsImportPast.php',
+            method: "POST",
+            data: { past: JSON.stringify(data) },
+            success: function (data, textstatus, jqXHR) {
+                exhibitors.importSuccess(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in exhibitorsImportPast: " + textStatus, jqXHR);
+            }
+        });
+    }
+
+    importSuccess(data) {
+        this.#exhibitorsTable.replaceData(data['exhibitors']);
     }
 
 // add new functions
