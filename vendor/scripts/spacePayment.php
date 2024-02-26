@@ -83,13 +83,13 @@ $regionYearR->free();
 
 // get current exhibitor information
 $exhibitorQ = <<<EOS
-SELECT exhibitorId, exhibitorName, exhibitorEmail, website, description, addr, addr2, city, state, zip, perid, newperid
+SELECT exhibitorId, exhibitorName, exhibitorEmail, website, description, addr, addr2, city, state, zip, perid, newperid,
        contactEmail, contactName, ey.mailin
 FROM exhibitors e
 JOIN exhibitorYears ey ON e.id = ey.exhibitorId
-WHERE e.id=?;
+WHERE e.id=? AND ey.conid = ?;
 EOS;
-$exhibitorR = dbSafeQuery($exhibitorQ, 'i', array($exhId));
+$exhibitorR = dbSafeQuery($exhibitorQ, 'ii', array($exhId, $conid));
 if ($exhibitorR == false || $exhibitorR->num_rows != 1) {
     $response['error'] = 'Unable to find your exhibitor record';
     ajaxSuccess($response);
@@ -471,29 +471,53 @@ $exMailin = $exNumL['mailin'];
 $exNumR->free();
 
 // first the agent
-if ($exMailin == 'N' && $exPerid == null && $exNewPerson == null) {
+if ($exMailin == 'N') {
+    if (array_key_exists('agent', $_POST))
+        $agent = $_POST['agent'];
+    else
+        $agent = 'first';
+
+    $perid = null;;
+    $newperid = null;
+    $agentRequest = null;
+    if ($agent == 'first') {
+        if (count($badges) > 0) {
+            $perid = $badges[0]['perid'];
+            $newperid = $badges[0]['newid'];
+        } else {
+            $perid = $exhibitor['perid'];
+            $newperid = $exhibitor['newperid'];
+        }
+    } else if ($agent == 'self') {
+        $agentRequest = 'Assign me as my own agent please.';
+    } else if ($agent = 'request') {
+        $agentRequest = $_POST['agent_request'];
+    } else {
+        if (substr($agent, 0, 1) == 'p')
+            $perid = substr($agent, 1);
+        else
+            $newperid = substr($agent, 1);
+    }
+
+    if ($perid == null && $newperid == null && $agentRequest == null) {
+        $perid = $exhibitor['perid'];
+        $newperid = $exhibitor['newperid'];
+    }
     $updAgent = <<<EOS
 UPDATE exhibitorRegionYears
-SET agentPerid = ?, agentNewperson = ?
+SET agentPerid = ?, agentNewperson = ?, agentRequest = ?
 WHERE id = ?;
 EOS;
-    if (count($badges) > 0) {
-        $badgePerid = $badges[0]['perid'];
-        $badgeNewPerson = $badges[0]['newid'];
-        $num_rows = dbSafeCmd($updAgent, 'iii', array($badgePerid, $badgeNewPerson, $exRYid));
+    $num_rows = dbSafeCmd($updAgent, 'iisi', array($perid, $newperid, $agentRequest, $exRYid));
 
-        // update the master agents if needed
-        if ($exhibitor['perid'] == null && $exhibitor['newperid'] == null) {
-            $updMaster = <<<EOS
+    // update the master agents if needed
+    if ($exhibitor['perid'] == null && $exhibitor['newperid'] == null) {
+        $updMaster = <<<EOS
 UPDATE exhibitors
 SET perid = ?, newperid = ?
 WHERE id = ?;
 EOS;
-            $num_rows = dbSafeCmd($updMaster, 'iii', array($badgePerid, $badgeNewPerson, $exhibitor['exhibitorId']));
-        }
-    } else if ($exhibitor['perid'] != null || $exhibitor['newperid'] != null) {
-        // no badge use the master values in exhibitors table
-        $num_rows = dbSafeCmd($updAgent, 'iii', array($exhibitor['perid'], $exhibitor['newperid'], $exRYid));
+        $num_rows = dbSafeCmd($updMaster, 'iii', array($perid, $newperid, $exhibitor['exhibitorId']));
     }
 }
 
