@@ -363,35 +363,48 @@ class exhibitorsAdm {
                 req += space['requested_units'];
                 app += space['approved_units'];
                 pur += space['purchased_units'];
-                region = { eYRid: currentRegion, regionId: space['regionId'], regionYearId: space['exhibitsRegionYearId'],
-                    exhibitorId: space['exhibitorId'], exhibitorName: space['exhibitorName'], website: space['website'], exhibitorEmail: space['exhibitorEmail'],
-                    transid: space['transid'], s1: space['b1'], s2: space['b2'], s3: space['b3'], };
+                region = {
+                    eYRid: currentRegion,
+                    regionId: space['regionId'],
+                    regionYearId: space['exhibitsRegionYearId'],
+                    exhibitorId: space['exhibitorId'],
+                    exhibitorName: space['exhibitorName'],
+                    website: space['website'],
+                    exhibitorEmail: space['exhibitorEmail'],
+                    transid: space['transid'],
+                    s1: space['b1'],
+                    s2: space['b2'],
+                    s3: space['b3'],
+                };
             }
             // add the space data as a formatted region
-            spaceHTML += '<div class="row">' +
-                '<div class="col-sm-12"><STRONG>' + space['spaceName'] + '</STRONG></div></div>';
+            if (space['requested_units'] > 0 || space['approved_units'] > 0 || space['purchased_units'] > 0) {
+                spaceHTML += '<div class="row">' +
+                    '<div class="col-sm-12"><STRONG>' + space['spaceName'] + '</STRONG></div></div>';
 
-            if (blankIfNull(space['requested_units']) != '') {
-                spaceHTML += '<div class="row"><div class="col-sm-2' + (blankIfNull(space['approved_units']) == '' ? ' text-danger' : '') + '">Requested: </div>' +
-                    '<div class="col-sm-2 text-right">' + blankIfNull(space['requested_units']) + '</div>' +
-                    '<div class="col-sm-3">' + blankIfNull(space['requested_description']) + '</div>' +
-                    '<div class="col-sm-4">' + blankIfNull(space['time_requested']) + '</div>' +
-                    '</div>';
-            }
+                if (blankIfNull(space['requested_units']) != '') {
+                    spaceHTML += '<div class="row"><div class="col-sm-2' + (blankIfNull(space['approved_units']) == '' ? ' text-danger' : '') + '">Requested: </div>' +
+                        '<div class="col-sm-2 text-right">' + blankIfNull(space['requested_units']) + '</div>' +
+                        '<div class="col-sm-3">' + blankIfNull(space['requested_description']) + '</div>' +
+                        '<div class="col-sm-4">' + blankIfNull(space['time_requested']) + '</div>' +
+                        '</div>';
+                }
 
-            if (blankIfNull(space['approved_units']) != '') {
-                spaceHTML += '<div class="row"><div class="col-sm-2">Approved: </div>' +
-                    '<div class="col-sm-2 text-right">' + blankIfNull(space['approved_units']) + '</div>' +
-                    '<div class="col-sm-3">' + blankIfNull(space['approved_description']) + '</div>' +
-                    '<div class="col-sm-4">' + blankIfNull(space['time_approved']) + '</div>' +
-                    '</div>';
-            }import_exhibitor
-            if (blankIfNull(space['purchased_units']) != '') {
-                spaceHTML += '<div class="row"><div class="row"><div class="col-sm-2">Purchased: </div>' +
-                '<div class="col-sm-2 text-right">' + blankIfNull(space['purchased_units']) + '</div>' +
-                '<div class="col-sm-3">' + blankIfNull(space['purchased_description']) + '</div>' +
-                '<div class="col-sm-4">' + blankIfNull(space['time_purchased']) + '</div>' +
-                '</div>';
+                if (blankIfNull(space['approved_units']) != '') {
+                    spaceHTML += '<div class="row"><div class="col-sm-2">Approved: </div>' +
+                        '<div class="col-sm-2 text-right">' + blankIfNull(space['approved_units']) + '</div>' +
+                        '<div class="col-sm-3">' + blankIfNull(space['approved_description']) + '</div>' +
+                        '<div class="col-sm-4">' + blankIfNull(space['time_approved']) + '</div>' +
+                        '</div>';
+                }
+                import_exhibitor
+                if (blankIfNull(space['purchased_units']) != '') {
+                    spaceHTML += '<div class="row"><div class="row"><div class="col-sm-2">Purchased: </div>' +
+                        '<div class="col-sm-2 text-right">' + blankIfNull(space['purchased_units']) + '</div>' +
+                        '<div class="col-sm-3">' + blankIfNull(space['purchased_description']) + '</div>' +
+                        '<div class="col-sm-4">' + blankIfNull(space['time_purchased']) + '</div>' +
+                        '</div>';
+                }
             }
         }
         if (currentRegion > 0) {
@@ -861,9 +874,10 @@ class exhibitorsAdm {
     spaceApprovalReq(e, cell) {
         this.#spaceRow = cell.getRow();
         var exhibitorData = this.#spaceRow.getData();
+        var req = exhibitorData['req'] || 0;
         var app = exhibitorData['app'] || 0;
         var pur = exhibitorData['pur'] || 0;
-        if (app == 0 || pur > 0)
+        if (req == 0 || pur > 0)
             return; // suppress click if there is nothing to approve
 
         $.ajax({
@@ -880,9 +894,10 @@ class exhibitorsAdm {
     spaceApprovalOther(e, cell) {
         this.#spaceRow = cell.getRow();
         var exhibitorData = this.#spaceRow.getData();
+        var req = exhibitorData['req'] || 0;
         var app = exhibitorData['app'] || 0;
         var pur = exhibitorData['pur'] || 0;
-        if (app == 0 || pur > 0)
+        if (req == 0 || pur > 0)
             return; // suppress click if there is nothing to approve
 
         this.#exhibitorId = exhibitorData['exhibitorId'];
