@@ -13,7 +13,7 @@ if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     exit();
 }
 
-if (!(array_key_exists('portalType', $_POST) && array_key_exists('portalname', $_POST))) {
+if (!(array_key_exists('portalType', $_POST) && array_key_exists('portalName', $_POST))) {
     $response['error'] = 'Calling Sequence Error';
     ajaxSuccess($response);
     exit();
@@ -31,7 +31,7 @@ WITH maxcid AS (
     FROM exhibitorYears
     GROUP BY exhibitorId
 )
-SELECT e.*, ey.*
+SELECT e.*, ey.*, 0 as import
 FROM exhibitors e
 LEFT OUTER JOIN maxcid ON e.id = maxcid.exhibitorId
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId AND maxcid.maxConid = ey.conid
@@ -47,6 +47,6 @@ while ($pastL = $pastR->fetch_assoc()) {
 }
 $pastR->free();
 
-$respomnse['past'] = past;
+$response['past'] = $past;
 ajaxSuccess($response);
 ?>

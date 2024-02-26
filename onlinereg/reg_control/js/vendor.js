@@ -546,13 +546,14 @@ class exhibitorsAdm {
     importPastModalOpen() {
         this.#importHTML.innerHTML = "<div class='row'><div class='col-sm-12' id='Importtable'></div></div>";
         if (this.#importTable) {
+            this.#importTable.off("rowClicked");
             this.#importTable.destroy();
             this.#importTable = null;
         }
         $.ajax({
             url: 'scripts/exhibitorsGetPastForImport.php',
             method: "POST",
-            data: { portatType: 'admin', portalName: 'Admin' },
+            data: { portalType: 'admin', portalName: 'Admin' },
             success: function (data, textstatus, jqXHR) {
                 exhibitors.importDataSuccess(data);
             },
@@ -572,6 +573,7 @@ class exhibitorsAdm {
             show_message($data['message'], 'error');
             return;
         }
+        var _this = this;
         this.#importTable = new Tabulator('#Importtable', {
             data: data['past'],
             layout: "fitDataTable",
@@ -580,18 +582,24 @@ class exhibitorsAdm {
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
-                { title: "Import", field: "import", headerSort: true, input: "tickCross", editorParams: { tristate: false, }, },
+                { title: "Import", field: "import", headerSort: true, hozAlign: "center", formatter:"tickCross", editorParams: { tristate: false, }, },
                 { title: "ID", field: 'id', headerSort: true, },
-                { title: "Exhibitor Number", field: "exhibitorNumber", headerSort: true, headerWordWrap: true, },
-                { title: "Exhibitor Name", field: "exhibitorName", headerSort: true, headerFilter: true, },
-                { title: "Exhibitor Website", field: "exhbitiorWebsite", headerSort: true, headerFilter: true, },
-                { title: "Exhibitor Email", field: "exhbitiorEmail", headerSort: true, headerFilter: true, },
-                { title: "Contact Name", field: "contactName", headerSort: true, headerFilter: true, },
-                { title: "Contact Email", field: "contactEmail", headerSort: true, headerFilter: true, },
-                { title: "City", field: "City", headerSort: true, headerFilter: true, },
-                { title: "State", field: "State", headerSort: true, headerFilter: true, },
-                { title: "Zip", field: "Zip", headerSort: true, headerFilter: true, },
+                { title: "Exh Nbr", field: "exhibitorNumber", headerSort: true, headerWordWrap: true, width: 80, },
+                { title: "Exhibitor Name", field: "exhibitorName", headerSort: true, headerFilter: true, width: 300, },
+                { title: "Exhibitor Website", field: "website", headerSort: true, headerFilter: true, width: 200, },
+                { title: "Exhibitor Email", field: "exhibitorEmail", headerSort: true, headerFilter: true, width: 300, },
+                { title: "Contact Name", field: "contactName", headerSort: true, headerFilter: true, width: 300, },
+                { title: "Contact Email", field: "contactEmail", headerSort: true, headerFilter: true, width: 300, },
+                { title: "City", field: "city", headerSort: true, headerFilter: true, width: 150 },
+                { title: "State", field: "state", headerSort: true, headerFilter: true, width: 60 },
+                { title: "Zip", field: "zip", headerSort: true, headerFilter: true, width: 120 },
         ]});
+        this.#importTable.on("rowClick", function(e, row){
+            var cell = row.getCell('import');
+            var contents = cell.getValue();
+            contents = !contents;
+            cell.setValue(contents);
+        });
 
         this.#importModal.show();
     }
