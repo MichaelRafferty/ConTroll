@@ -79,8 +79,32 @@ $config_vars['debug'] = $debug['reg_control_exhibitors'];
 
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
 draw_exhibitorRequestModal('admin');
-draw_exhibitorReceiptModal('admin');;
+draw_exhibitorReceiptModal('admin');
 ?>
+<!-- import modal -->
+    <div id='import_exhibitor' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Import Past Vendors' aria-hidden='true'
+         style='--bs-modal-width: 96%;'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='exhibitor_receipt_title'>
+                        <strong>Import Past Exhibitors</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <div class='container-fluid'>
+                        <div id='importHTML'></div>
+                        <div class='row' id='import_message_div'></div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                    <button class='btn btn-sm btn-primary' onclick='importPastVendors()'>Import Selected Past Exhibitors</button>
+                </div>
+            </div>
+        </div>
+    </div>
 <div id='main'>
     <ul class='nav nav-tabs mb-3' id='exhibitor-tab' role='tablist'>
         <li class='nav-item' role='presentation'>

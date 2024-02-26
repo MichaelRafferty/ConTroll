@@ -80,11 +80,11 @@ page_init($page, $tab,
                             <div class="row mt-3">
                                 <div class="col-sm-4">
                                       <?php if ($mode == 'cashier') { ?>
-                                    <button type="button" class="btn btn-small btn-primary" id="find_unpaid_btn" name="find_btn" onclick="find_record('unpaid');" hidden>Find Unpaid Transactions</button>
+                                    <button type="button" class="btn btn-sm btn-primary" id="find_unpaid_btn" name="find_btn" onclick="find_record('unpaid');" hidden>Find Unpaid Transactions</button>
                                     <?php } ?>
                                 </div>
                                 <div class="col-sm-8">
-                                    <button type="button" class="btn btn-small btn-primary" id="find_search_btn" name="find_btn" onclick="find_record('search');">Find Record</button>
+                                    <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" name="find_btn" onclick="find_record('search');">Find Record</button>
                                 </div>
                             </div>
                             <div class="row mt-3">
@@ -211,8 +211,8 @@ page_init($page, $tab,
                             </div>
                             <div class="row">
                                 <div class="col-sm-12 mt-3">
-                                    <button type="button" class="btn btn-primary btn-small" id="addnew-btn" name="find_btn" onclick="add_new();">Add to Cart</button>
-                                    <button type="button" class="btn btn-secondary btn-small" id="clearadd-btn" onclick="clear_add();">Clear Add Person Form</button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="addnew-btn" name="find_btn" onclick="add_new();">Add to Cart</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="clear_add();">Clear Add Person Form</button>
                                 </div>
                             </div>
                         </div>
@@ -234,11 +234,11 @@ page_init($page, $tab,
             <div id="cart"></div>
             <div class="row">
                 <div class="col-sm-12 mt-3">
-                    <button type="button" class="btn btn-primary btn-small" id="cart_no_changes_btn" onclick="review_nochanges();" hidden>No Changes</button>
-                    <button type="button" class="btn btn-primary btn-small" id="review_btn" onclick="start_review();" hidden>Review Data</button>
-                    <button type="button" class="btn btn-warning btn-small" id="startover_btn" onclick="start_over(1);" hidden>Start Over</button>
-                    <button type="button" class="btn btn-warning btn-small" id="void_btn" onclick="void_trans();" hidden>Void</button>
-                    <button type="button" class="btn btn-primary btn-small" id="next_btn" onclick="start_over(1);" hidden>Next Customer</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="cart_no_changes_btn" onclick="review_nochanges();" hidden>No Changes</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="review_btn" onclick="start_review();" hidden>Review Data</button>
+                    <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="start_over(1);" hidden>Start Over</button>
+                    <button type="button" class="btn btn-warning btn-sm" id="void_btn" onclick="void_trans();" hidden>Void</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="start_over(1);" hidden>Next Customer</button>
                 </div>
             </div>
         </div>       

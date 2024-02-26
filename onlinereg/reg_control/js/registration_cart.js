@@ -648,12 +648,12 @@ class reg_cart {
                 (category == 'standard' || category == 'yearahead') && memType == 'full';
             col1 = '';
             if ((allow_delete || allow_delete_priv) && !this.#freeze_cart) {
-                col1 += '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
+                col1 += '<button type = "button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
                     mrow['index'] + ')" >X</button >';
             }
             // C = change membership type
             if (allow_change_priv && !this.#freeze_cart) {
-                col1 += '<button type = "button" class="btn btn-small btn-warning pt-0 pb-0 ps-1 pe-1 m-0" onclick = "change_membership(' +
+                col1 += '<button type = "button" class="btn btn-sm btn-warning pt-0 pb-0 ps-1 pe-1 m-0" onclick = "change_membership(' +
                     mrow['index'] + ')" >C</button >';
             }
 
@@ -670,7 +670,7 @@ class reg_cart {
                 if (notes_count > 0) {
                     btntext = 'Notes:' + notes_count.toString();
                 }
-                label += ' <button type = "button" class="btn btn-small ' + btncolor + ' pt-0 pb-0 ps-1 pe-1 m-0" onclick = " +show_reg_note(' +
+                label += ' <button type = "button" class="btn btn-sm ' + btncolor + ' pt-0 pb-0 ps-1 pe-1 m-0" onclick = " +show_reg_note(' +
                     mrow['index'] + ', ' + notes_count + ')" style=" --bs-btn-font-size:75%;">' + btntext + '</button >';
             }
 
@@ -779,8 +779,8 @@ class reg_cart {
         rowhtml += membername + '</div>';
         if (!this.#freeze_cart) {
             rowhtml += `
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="edit_from_cart(` + perid + `)">Edit</button></div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="remove_from_cart(` + perid + `)">Remove</button></div>
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="edit_from_cart(` + perid + `)">Edit</button></div>
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="remove_from_cart(` + perid + `)">Remove</button></div>
 `;
         }
         rowhtml += '</div>'; // end of member name row
@@ -836,7 +836,7 @@ class reg_cart {
 ` + this.#membership_select + `
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-madd-" + rownum + `')">Add</button>
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-madd-" + rownum + `')">Add</button>
         </div>
     </div>`;
         }
@@ -866,7 +866,7 @@ class reg_cart {
             rowhtml += `
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mupg-" + rownum + `')">Add</button></div >
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mupg-" + rownum + `')">Add</button></div >
 </div>
 `;
         }
@@ -887,7 +887,7 @@ class reg_cart {
 ` + this.#yearahead_select + `
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mya-" + rownum + `')">Add</button></div >
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mya-" + rownum + `')">Add</button></div >
 </div>
 `;
             }
@@ -908,7 +908,7 @@ class reg_cart {
 ` + this.#addon_select + `
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-maddon-" + rownum + `')">Add</button></div >
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-maddon-" + rownum + `')">Add</button></div >
 </div>
 `;
             }
@@ -1160,8 +1160,8 @@ class reg_cart {
     <div class="row mt-2">
         <div class="col-sm-1 m-0 p-0">&nbsp;</div>
         <div class="col-sm-auto m-0 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="review-btn-update" onclick="review_update();">Update All</button>
-            <button class="btn btn-primary btn-small" type="button" id="review-btn-nochanges" onclick="review_nochanges();">No Changes</button>
+            <button class="btn btn-primary btn-sm" type="button" id="review-btn-update" onclick="review_update();">Update All</button>
+            <button class="btn btn-primary btn-sm" type="button" id="review-btn-nochanges" onclick="review_nochanges();">No Changes</button>
         </div>
     </div>
     <div class="row">
@@ -1274,7 +1274,7 @@ class reg_cart {
             print_html += `
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="pay-print-` + this.#cart_perinfo[rownum]['index'] + `" name="print_btn" onclick="print_badge(` + crow['index'] + `);">Print</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-print-` + this.#cart_perinfo[rownum]['index'] + `" name="print_btn" onclick="print_badge(` + crow['index'] + `);">Print</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">            
             <span class="text-bg-success"> Membership: ` + this.#cart_membership[mrow]['label'] + `</span> (Times Printed: ` +

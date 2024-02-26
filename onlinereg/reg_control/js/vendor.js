@@ -37,6 +37,9 @@ class exhibitorsAdm {
     // exhibitor items
     #exhibitorsTable = null;
     #pricelists = null;
+    #importModal = null;
+    #importHTML = null;
+    #importTable = null;
 
     // Owner items
     #ownerTabs = {};
@@ -67,6 +70,10 @@ class exhibitorsAdm {
 
         // exhibitors
         exhibitorProfile = new ExhibitorProfile(this.#debug, config['portalType']);
+        id = document.getElementById("import_exhibitor");
+        if (id)
+            this.#importModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+        this.#importHTML = document.getElementById('importHTML');
 
         // owners
         this.#ownerTabs['overview'] = document.getElementById('overview-content');
@@ -273,9 +280,9 @@ class exhibitorsAdm {
             "    <div class='row'>\n" +
             "        <div class='col-sm-12' id='" + groupid + "-spaces-table-div'></div>\n" +
             "    </div>\n" +
-            "    <div class='row'>\n" +
+            "    <div class='row mt-2'>\n" +
             "        <div class='col-sm-12'>\n" +
-            "            <button class='btn btn-secondary' id='addVendorSpaceBtn' onClick=" + '"exhibitors.addNewSpace();"' + ">Add New Exhibitor Space</button>\n" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addVendorSpaceBtn' onClick=" + '"exhibitors.addNewSpace();"' + ">Add New Exhibitor Space</button>\n" +
             "        </div>\n" +
             "    </div>\n" +
             "</div></div>\n"
@@ -312,9 +319,10 @@ class exhibitorsAdm {
             "    <div class='row'>\n" +
             "        <div class='col-sm-12' id='" + groupid + "-exh-table-div'></div>\n" +
             "    </div>\n" +
-            "    <div class='row'>\n" +
+            "    <div class='row mt-2'>\n" +
             "        <div class='col-sm-12'>\n" +
-            "            <button class='btn btn-secondary' id='addExhibitorBtn' onClick=" + '"exhibitors.addNew();"' + ">Add New Exhibitor</button>\n" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn' onClick=" + '"exhibitors.addNew();"' + ">Add New Exhibitor</button>\n" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='importExhibitorBtn' onClick=" + '"exhibitors.importPast();"' + ">Import Past Exhibitors</button>\n" +
             "        </div>\n" +
             "    </div>\n" +
             "</div></div>\n"
@@ -377,7 +385,7 @@ class exhibitorsAdm {
                     '<div class="col-sm-3">' + blankIfNull(space['approved_description']) + '</div>' +
                     '<div class="col-sm-4">' + blankIfNull(space['time_approved']) + '</div>' +
                     '</div>';
-            }
+            }import_exhibitor
             if (blankIfNull(space['purchased_units']) != '') {
                 spaceHTML += '<div class="row"><div class="row"><div class="col-sm-2">Purchased: </div>' +
                 '<div class="col-sm-2 text-right">' + blankIfNull(space['purchased_units']) + '</div>' +
@@ -402,59 +410,54 @@ class exhibitorsAdm {
             this.#spacesTable = new Tabulator('#' + groupid + '-spaces-table-div', {
                 data: regions,
                 layout: "fitDataTable",
-                index: 'eYRid',
+                index: 'id',
                 pagination: true,
                 paginationSize: 25,
                 paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
                 columns: [
+                    {title: "ID", field: "id", visible: true},
+                    {title: "Exhibitor Number", field: "regionId", visible: false},
+                    {title: "regionYearId", field: "regionYearId", visible: false},
+                    {field: "transid", visible: false},
+                    {field: "app", visible: false},
+                    {field: "req", visible: false},
+                    {field: "pur", visible: false},
+                    {title: "exhibitorId", field: "exhibitorId", visible: false},
+                    {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true,},
+                    {title: "Website", field: "website", width: 200, headerSort: true, headerFilter: true,},
+                    {title: "Email", field: "exhibitorEmail", width: 200, headerSort: true, headerFilter: true,},
+                    {title: "Requested, Approved, Purchased", field: "space", width: 800, formatter: this.htmlFormatter, variableHeight: true,},
                     {
-                        title: "Exhibitor Space Requests Detail:", columns: [
-                            {title: "eYRid", field: "eYRid", visible: false},
-                            {title: "regionId", field: "regionId", visible: false},
-                            {title: "regionYearId", field: "regionYearId", visible: false},
-                            {field: "transid", visible: false},
-                            {field: "app", visible: false},
-                            {field: "req", visible: false},
-                            {field: "pur", visible: false},
-                            {title: "exhibitorId", field: "exhibitorId", visible: false},
-                            {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true,},
-                            {title: "Website", field: "website", width: 200, headerSort: true, headerFilter: true,},
-                            {title: "Email", field: "exhibitorEmail", width: 200, headerSort: true, headerFilter: true,},
-                            {title: "Requested, Approved, Purchased", field: "space", width: 800, formatter: this.htmlFormatter, variableHeight: true,},
-                            {
-                                title: "",
-                                field: "s1",
-                                formatter: this.spaceApprovalButton,
-                                formatterParams: {name: 'Approve Req'},
-                                maxWidth: 200,
-                                hozAlign: "center",
-                                cellClick: this.spApprovalReq,
-                                headerSort: false,
-                            },
-                            {
-                                title: "",
-                                field: "s2",
-                                formatter: this.spaceApprovalButton,
-                                formatterParams: {name: 'Approve Other'},
-                                maxWidth: 200,
-                                hozAlign: "center",
-                                cellClick: this.spApprovalOther,
-                                headerSort: false,
-                            },
-                            {
-                                title: "",
-                                field: "s3",
-                                formatter: this.spaceApprovalButton,
-                                formatterParams: {name: 'Receipt'},
-                                maxWidth: 200,
-                                hozAlign: "center",
-                                cellClick: this.spReceipt,
-                                headerSort: false,
-                            },
-                        ]
-                    }
-                ]
-            });
+                        title: "",
+                        field: "s1",
+                        formatter: this.spaceApprovalButton,
+                        formatterParams: {name: 'Approve Req'},
+                        maxWidth: 200,
+                        hozAlign: "center",
+                        cellClick: this.spApprovalReq,
+                        headerSort: false,
+                    },
+                    {
+                        title: "",
+                        field: "s2",
+                        formatter: this.spaceApprovalButton,
+                        formatterParams: {name: 'Approve Other'},
+                        maxWidth: 200,
+                        hozAlign: "center",
+                        cellClick: this.spApprovalOther,
+                        headerSort: false,
+                    },
+                    {
+                        title: "",
+                        field: "s3",
+                        formatter: this.spaceApprovalButton,
+                        formatterParams: {name: 'Receipt'},
+                        maxWidth: 200,
+                        hozAlign: "center",
+                        cellClick: this.spReceipt,
+                        headerSort: false,
+                    },
+                ]});
         } else {
             this.#spacesTable.replaceData(regions);
         }
@@ -538,10 +541,70 @@ class exhibitorsAdm {
         return hover_text;
     }
 
+    // importPastModalOpen
+    // get the available past vendors for the import and show the modal
+    importPastModalOpen() {
+        this.#importHTML.innerHTML = "<div class='row'><div class='col-sm-12' id='Importtable'></div></div>";
+        if (this.#importTable) {
+            this.#importTable.destroy();
+            this.#importTable = null;
+        }
+        $.ajax({
+            url: 'scripts/exhibitorsGetPastForImport.php',
+            method: "POST",
+            data: { portatType: 'admin', portalName: 'Admin' },
+            success: function (data, textstatus, jqXHR) {
+                exhibitors.importDataSuccess(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in exhibitorsGetPastForImport: " + textStatus, jqXHR);
+            }
+        });
+    }
+
+    // process the data and draw the table
+    importDataSuccess(data) {
+        if (data['status'] == 'warn') {
+            show_message($data['message'], 'warn');
+            return;
+        }
+        if (data['status'] == 'error') {
+            show_message($data['message'], 'error');
+            return;
+        }
+        this.#importTable = new Tabulator('#Importtable', {
+            data: data['past'],
+            layout: "fitDataTable",
+            index: 'id',
+            pagination: true,
+            paginationSize: 25,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            columns: [
+                { title: "Import", field: "import", headerSort: true, input: "tickCross", editorParams: { tristate: false, }, },
+                { title: "ID", field: 'id', headerSort: true, },
+                { title: "Exhibitor Number", field: "exhibitorNumber", headerSort: true, headerWordWrap: true, },
+                { title: "Exhibitor Name", field: "exhibitorName", headerSort: true, headerFilter: true, },
+                { title: "Exhibitor Website", field: "exhbitiorWebsite", headerSort: true, headerFilter: true, },
+                { title: "Exhibitor Email", field: "exhbitiorEmail", headerSort: true, headerFilter: true, },
+                { title: "Contact Name", field: "contactName", headerSort: true, headerFilter: true, },
+                { title: "Contact Email", field: "contactEmail", headerSort: true, headerFilter: true, },
+                { title: "City", field: "City", headerSort: true, headerFilter: true, },
+                { title: "State", field: "State", headerSort: true, headerFilter: true, },
+                { title: "Zip", field: "Zip", headerSort: true, headerFilter: true, },
+        ]});
+
+        this.#importModal.show();
+    }
+
 // add new functions
     addNew() {
         exhibitorProfile.profileModalOpen('add');
     }
+
+    importPast() {
+        exhibitors.importPastModalOpen();
+    }
+
 // button callout functions
     edit(e, cell) {
         var exhibitorRow = cell.getRow()
@@ -609,16 +672,16 @@ class exhibitorsAdm {
 
             if (req > 0 && (pur < app || pur == 0)) {
                 if (app > 0 && name == 'Approve Other')
-                    return '<button class="btn btn-small btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Change</button>';
+                    return '<button class="btn btn-sm btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Change</button>';
                 if (app == 0)
-                    return '<button class="btn btn-small btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", >' + name + '</button>';
+                    return '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", >' + name + '</button>';
                 }
             }
         if (name == 'Receipt' || name == 'Show Receipt') {
             var transid = data['transid'] || 0;
             // receipt buttons
             if (transid > 0)
-                return '<button class="btn btn-small btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
+                return '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
         }
         return '';
     }
@@ -673,7 +736,7 @@ class exhibitorsAdm {
                 color = 'danger';
                 break;
         }
-        return '<button class="btn btn-small btn-' + color + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
+        return '<button class="btn btn-sm btn-' + color + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
     }
 
     // editExhibitor - Populate edit vendor modal with current data

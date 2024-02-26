@@ -48,7 +48,7 @@ page_init($page, $tab,
                     <div class="col-sm-4">
                     </div>
                     <div class="col-sm-8">
-                        <button type="button" class="btn btn-small btn-primary" id="find_search_btn" onclick="find_record();">Find Record</button>
+                        <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" onclick="find_record();">Find Record</button>
                     </div>
                 </div>
                 <div class="row mt-3">
@@ -73,7 +73,7 @@ page_init($page, $tab,
             <div id='list'></div>
             <div class="row">
                 <div class="col-sm-12 mt-3">
-                    <button type="button" class="btn btn-warning btn-small" id="startover_btn" onclick="start_over(1);">Start Over</button>
+                    <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="start_over(1);">Start Over</button>
                 </div>
             </div>
         </div>       

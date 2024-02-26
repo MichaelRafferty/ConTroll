@@ -103,7 +103,7 @@ while($artist = fetch_safe_assoc($artistR)) {
                             </div>
                             <div class="row mt-3">
                                 <div class="col-sm-4">
-                                    <button type="button" class="btn btn-small btn-primary" id="find_search_btn" onclick="find_item('search');">Find Item</button>
+                                    <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" onclick="find_item('search');">Find Item</button>
                                 </div>
                             </div>
                             <div class="row mt-3">
@@ -124,11 +124,11 @@ while($artist = fetch_safe_assoc($artistR)) {
             <div id="cart"></div>
             <div class="row">
                 <div class="col-sm-12 mt-3">
-                    <button type="button" class="btn btn-success btn-small" id="inventory_btn" onclick="inventory();" hidden>Update Inventory</button>
-                    <button type="button" class="btn btn-success btn-small" id="location_change_btn" onclick="change_locs();" hidden>Set Changed Locations</button>
-                    <button type="button" class="btn btn-warning btn-small" id="startover_btn" onclick="start_over();">Start Over</button>
-                    <button type="button" class="btn btn-warning btn-small" id="void_btn" onclick="void_trans();" hidden>Void</button>
-                    <button type="button" class="btn btn-primary btn-small" id="next_btn" onclick="start_over(0);" hidden>Next Customer</button>
+                    <button type="button" class="btn btn-success btn-sm" id="inventory_btn" onclick="inventory();" hidden>Update Inventory</button>
+                    <button type="button" class="btn btn-success btn-sm" id="location_change_btn" onclick="change_locs();" hidden>Set Changed Locations</button>
+                    <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="start_over();">Start Over</button>
+                    <button type="button" class="btn btn-warning btn-sm" id="void_btn" onclick="void_trans();" hidden>Void</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="start_over(0);" hidden>Next Customer</button>
                 </div>
             </div>
         </div>       

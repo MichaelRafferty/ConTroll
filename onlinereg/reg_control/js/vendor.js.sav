@@ -551,16 +551,16 @@ class exhibitorsAdm {
 
             if (req > 0 && (pur < app || pur == 0)) {
                 if (app > 0 && name == 'Approve Other')
-                    return '<button class="btn btn-small btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Change</button>';
+                    return '<button class="btn btn-sm btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Change</button>';
                 if (app == 0)
-                    return '<button class="btn btn-small btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", >' + name + '</button>';
+                    return '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", >' + name + '</button>';
                 }
             }
 
         var transid = data['transid'] || 0;
         // receipt buttons
         if (transid > 0)
-            return '<button class="btn btn-small btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
+            return '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
         return '';
     }
 
@@ -605,7 +605,7 @@ class exhibitorsAdm {
                 color = 'danger';
                 break;
         }
-        return '<button class="btn btn-small btn-' + color + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
+        return '<button class="btn btn-sm btn-' + color + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
     }
 
     // editExhibitor - Populate edit vendor modal with current data
