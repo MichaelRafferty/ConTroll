@@ -445,7 +445,7 @@ function showEdit(classname, table, index, field, titlename, textitem) {
     editor_modal.show();
     tinyMCE.init({
         selector: 'textarea#editFieldArea',
-        height: 800,
+        height: 500,
         min_height: 400,
         menubar: false,
         plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
