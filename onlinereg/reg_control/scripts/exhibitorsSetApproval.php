@@ -45,9 +45,9 @@ EOS;
         $response['message'] = "Approval changed to $approvalValue";
         $approvalData['approval'] = $approvalValue;
         $approvalData['b1'] = time();
-        $approvalData['b2'] = time();
-        $approvalData['b3'] = time();
-        $approvalData['b4'] = time();
+        $approvalData['b2'] = $approvalData['b1'] + 1;
+        $approvalData['b3'] = $approvalData['b2'] + 1;
+        $approvalData['b4'] = $approvalData['b3'] + 1;
     }
     if ($num_rows == 0) {
         $response['status'] = 'success';
@@ -59,12 +59,15 @@ $response['info'] = $approvalData;
 
 if ($approvalValue == 'approved' || $approvalValue == 'denied') {
     $appQ = <<<EOS
-SELECT ownerEmail, ownerName, er.name, e.exhibitorName, e.exhibitorEmail, exY.contactName, exY.contactEmail
+SELECT ownerEmail, ownerName, er.name, e.exhibitorName, e.exhibitorEmail, exY.contactName, exY.contactEmail, e.id as exhibitorId, exRY.exhibitorNumber,
+       IFNULL(TRIM(CONCAT(p.first_name, ' ', p.last_name)), TRIM(CONCAT(n.first_name, ' ', n.last_name))) AS agentName, agentRequest
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 JOIN exhibitors e ON exY.exhibitorId = e.id
 JOIN exhibitsRegionYears ery ON ery.id = exRY.exhibitsRegionYearId
 JOIN exhibitsRegions er on ery.exhibitsRegion = er.id
+LEFT OUTER JOIN perinfo p ON p.id = exRY.agentPerid
+LEFT OUTER JOIN newperson n ON n.id = exRY.agentNewperson
 WHERE exRY.id = ?
 EOS;
     $appR = dbSafeQuery($appQ, 'i', array($approvalId));

@@ -54,7 +54,8 @@ $regionR->free();
 
 // build spaces array
 $spaceQ = <<<EOS
-SELECT es.id, er.shortname as regionShortname, er.name as regionName, es.shortname as spaceShortname, es.name AS spaceName, es.description, es.unitsAvailable, es.unitsAvailableMailin, es.exhibitsRegionYear
+SELECT es.id, er.shortname as regionShortname, er.name as regionName, es.shortname as spaceShortname, es.name AS spaceName,
+       es.description, es.unitsAvailable, es.unitsAvailableMailin, es.exhibitsRegionYear
 FROM exhibitsSpaces es
 JOIN exhibitsRegionYears ery ON (es.exhibitsRegionYear = ery.id)
 JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)

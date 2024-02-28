@@ -364,6 +364,8 @@ class exhibitorsAdm {
                 app += space['approved_units'];
                 pur += space['purchased_units'];
                 region = {
+                    id: space['exhibitorId'],
+                    exhibitorNumber: space['exhibitorNumber'],
                     eYRid: currentRegion,
                     regionId: space['regionId'],
                     regionYearId: space['exhibitsRegionYearId'],
@@ -371,10 +373,13 @@ class exhibitorsAdm {
                     exhibitorName: space['exhibitorName'],
                     website: space['website'],
                     exhibitorEmail: space['exhibitorEmail'],
+                    agentRequest: 'abc', //space['agentRequest'],
+                    agentName: space['agentName'],
                     transid: space['transid'],
                     s1: space['b1'],
                     s2: space['b2'],
                     s3: space['b3'],
+                    s4: space['b4'],
                 };
             }
             // add the space data as a formatted region
@@ -397,14 +402,25 @@ class exhibitorsAdm {
                         '<div class="col-sm-4">' + blankIfNull(space['time_approved']) + '</div>' +
                         '</div>';
                 }
-                import_exhibitor
+
                 if (blankIfNull(space['purchased_units']) != '') {
-                    spaceHTML += '<div class="row"><div class="row"><div class="col-sm-2">Purchased: </div>' +
+                    spaceHTML += '<div class="row"><div class="col-sm-2">Purchased: </div>' +
                         '<div class="col-sm-2 text-right">' + blankIfNull(space['purchased_units']) + '</div>' +
                         '<div class="col-sm-3">' + blankIfNull(space['purchased_description']) + '</div>' +
                         '<div class="col-sm-4">' + blankIfNull(space['time_purchased']) + '</div>' +
                         '</div>';
                 }
+            }
+            // now do agent stuff
+            if (blankIfNull(region['agentRequest']) != '') {
+                spaceHTML += '<div class="row"><div class="col-sm-4">Agent Request: </div>' +
+                    '<div class="col-sm-8">' + blankIfNull(region['agentRequest']) + '</div>' +
+                    '</div>';
+            }
+            if (blankIfNull(region['agentName']) != '') {
+                spaceHTML += '<div class="row"><div class="col-sm-4">Agent Name: </div>' +
+                    '<div class="col-sm-8">' + blankIfNull(region['agentName']) + '</div>' +
+                    '</div>';
             }
         }
         if (currentRegion > 0) {
@@ -420,6 +436,7 @@ class exhibitorsAdm {
             console.log(regions);
         }
         if (newTable) {
+            var _this = this;
             this.#spacesTable = new Tabulator('#' + groupid + '-spaces-table-div', {
                 data: regions,
                 layout: "fitDataTable",
@@ -428,8 +445,9 @@ class exhibitorsAdm {
                 paginationSize: 25,
                 paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
                 columns: [
-                    {title: "ID", field: "id", visible: true},
-                    {title: "Exhibitor Number", field: "regionId", visible: false},
+                    {title: "ID", field: "id", visible: true, width: 65, },
+                    {title: "RegionId", field: "regionId", visible: false},
+                    {title: "Exh Num", field: "exhibitorNumber", headerWordWrap: true, width: 75 },
                     {title: "regionYearId", field: "regionYearId", visible: false},
                     {field: "transid", visible: false},
                     {field: "app", visible: false},
@@ -439,7 +457,7 @@ class exhibitorsAdm {
                     {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true,},
                     {title: "Website", field: "website", width: 200, headerSort: true, headerFilter: true,},
                     {title: "Email", field: "exhibitorEmail", width: 200, headerSort: true, headerFilter: true,},
-                    {title: "Requested, Approved, Purchased", field: "space", width: 800, formatter: this.htmlFormatter, variableHeight: true,},
+                    {title: "Requested, Approved, Purchased", field: "space", width: 750, formatter: this.htmlFormatter, variableHeight: true,},
                     {
                         title: "",
                         field: "s1",
@@ -447,7 +465,7 @@ class exhibitorsAdm {
                         formatterParams: {name: 'Approve Req'},
                         maxWidth: 200,
                         hozAlign: "center",
-                        cellClick: this.spApprovalReq,
+                        cellClick: _this.spApprovalReq,
                         headerSort: false,
                     },
                     {
@@ -457,7 +475,7 @@ class exhibitorsAdm {
                         formatterParams: {name: 'Approve Other'},
                         maxWidth: 200,
                         hozAlign: "center",
-                        cellClick: this.spApprovalOther,
+                        cellClick: _this.spApprovalOther,
                         headerSort: false,
                     },
                     {
@@ -467,7 +485,17 @@ class exhibitorsAdm {
                         formatterParams: {name: 'Receipt'},
                         maxWidth: 200,
                         hozAlign: "center",
-                        cellClick: this.spReceipt,
+                        cellClick: _this.spReceipt,
+                        headerSort: false,
+                    },
+                    {
+                        title: "",
+                        field: "s4",
+                        formatter: this.spaceApprovalButton,
+                        formatterParams: {name: 'Agent'},
+                        maxWidth: 200,
+                        hozAlign: "center",
+                        cellClick: _this.spAgent,
                         headerSort: false,
                     },
                 ]});
@@ -724,6 +752,11 @@ class exhibitorsAdm {
             if (transid > 0)
                 return '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
         }
+        if (name == 'Agent') {
+            var agentRequest = data['agentRequest'] || '';
+            if (agentRequest != '' && !agentRequest.startsWith('Processed: '))
+                return '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
+        }
         return '';
     }
 
@@ -863,6 +896,12 @@ class exhibitorsAdm {
         exhibitors.spaceReceipt(e, cell);
     }
 
+    // call process agent request
+    spAgent(e, cell) {
+        exhibitors.spaceAgentRequest(e, cell);
+    }
+
+    // show the receipt
     spaceReceipt(e, cell) {
         this.#spaceRow = cell.getRow();
         var exhibitorData = this.#spaceRow.getData();
@@ -871,6 +910,7 @@ class exhibitorsAdm {
         exhibitorReceipt.showReceipt(this.#regionYearId, this.#exhibitorId);
     }
 
+    // process appove requested
     spaceApprovalReq(e, cell) {
         this.#spaceRow = cell.getRow();
         var exhibitorData = this.#spaceRow.getData();
@@ -891,6 +931,7 @@ class exhibitorsAdm {
         });
     }
 
+    // process approve other than requested
     spaceApprovalOther(e, cell) {
         this.#spaceRow = cell.getRow();
         var exhibitorData = this.#spaceRow.getData();
@@ -946,6 +987,11 @@ class exhibitorsAdm {
         if (this.#spaceRow) {
             this.drawSpacesTable(details, this.#regionGroupId, false);
         }
+    }
+
+    // process the agent request
+    spaceAgentRequest(e, cell) {
+        show_message("Not Yet", 'warn');
     }
 };
 

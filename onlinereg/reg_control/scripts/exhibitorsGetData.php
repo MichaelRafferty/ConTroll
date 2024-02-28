@@ -84,9 +84,9 @@ while ($approvalL = $approvalR->fetch_assoc()) {
         $approvalData['b4'] = -1;
     } else {
         $approvalData['b1'] = time();
-        $approvalData['b2'] = time();
-        $approvalData['b3'] = time();
-        $approvalData['b4'] = time();
+        $approvalData['b2'] = $approvalData['b1'] + 1;
+        $approvalData['b3'] = $approvalData['b2'] + 1;
+        $approvalData['b4'] = $approvalData['b3'] + 1;
     }
     $approvals[] = $approvalData;
 }
@@ -128,7 +128,8 @@ $response['summary'] = $spaces;
 $details = array();
 $detailQ = <<<EOS
 WITH exh AS (
-SELECT e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id AS exhibitorYearId, 
+SELECT e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id AS exhibitorYearId, exRY.exhibitorNumber, exRY.agentRequest,
+    TRIM(CONCAT(p.first_name, ' ', p.last_name)) as pName, TRIM(CONCAT(n.first_name, ' ', n.last_name)) AS nName,
 	SUM(IFNULL(espr.units, 0)) AS ru, SUM(IFNULL(espa.units, 0)) AS au, SUM(IFNULL(espp.units, 0)) AS pu
 FROM exhibitorSpaces eS
 LEFT OUTER JOIN exhibitsSpacePrices espr ON (eS.item_requested = espr.id)
@@ -139,14 +140,17 @@ JOIN exhibitorYears eY ON (eY.id = exRY.exhibitorYearId)
 JOIN exhibitors e ON (e.id = eY.exhibitorId)
 JOIN exhibitsSpaces s ON (s.id = eS.spaceId)
 JOIN exhibitsRegionYears eRY ON s.exhibitsRegionYear = eRY.id
+LEFT OUTER JOIN perinfo p ON p.id = exRY.agentPerid
+LEFT OUTER JOIN newperson n ON n.id = exRY.agentNewperson
 WHERE eY.conid = ? AND eRY.exhibitsRegion = ?
-GROUP BY e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id
+GROUP BY e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id, exRY.exhibitorNumber, pName, nName, agentRequest
 )
 SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.website, exh.exhibitorEmail,
     xS.spaceId, xS.name as spaceName, xS.item_requested, xS.time_requested, xS.requested_units, xS.requested_code, xS.requested_description,
     xS.item_approved, xS.time_approved, xS.approved_units, xS.approved_code, xS.approved_description,
     xS.item_purchased, xS.time_purchased, xS.purchased_units, xS.purchased_code, xS.purchased_description, xS.transid,
-    eRY.id AS exhibitsRegionYearId, eRY.exhibitsRegion AS regionId,
+    eRY.id AS exhibitsRegionYearId, eRY.exhibitsRegion AS regionId, exh.exhibitorNumber,
+    IFNULL(pName, nName) as agentName,
     exh.pu * 10000 + exh.au * 100 + exh.ru AS sortOrder
 FROM vw_ExhibitorSpace xS
 JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
@@ -168,8 +172,9 @@ if (!$detailR) {
 while($detailL = $detailR->fetch_assoc()) {
     $detail = $detailL;
     $detail['b1'] = time();
-    $detail['b2'] = time();
-    $detail['b3'] = time();
+    $detail['b2'] = $detail['b1'] + 1;
+    $detail['b3'] = $detail['b2'] + 1;
+    $detail['b4'] = $detail['b3'] + 1;
     $details[] = $detail;
 }
 
