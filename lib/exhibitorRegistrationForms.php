@@ -193,7 +193,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                     <label for='mailin'> *Mail In Artist: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-2 align-middle'><input class='form-control-sm' type='radio' name='mailin' id='mailinN'  tabindex='80' value="N" /></div>
-                                <div class='col-sm-auto p-0 ms-0 me-4'>On-site/Using Agent (not Mail-in)</div>
+                                <div class='col-sm-auto p-0 ms-0 me-4'>On-site/Using Agent (not Mail In)</div>
                                 <div class='col-sm-auto p-0 ms-0 me-2 align-middle'><input class='form-control-sm' type='radio' name='mailin' id='mailinY'  tabindex='90' value="Y"/></div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>Shipping Art, return via Shipping Address (Mail In)</div>
                             </div>
