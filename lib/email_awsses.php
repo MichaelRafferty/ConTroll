@@ -26,10 +26,9 @@
 //
 
 require_once (__DIR__ . "/db_functions.php");
+require_once(__DIR__ . '/../Composer/vendor/autoload.php');
 use Aws\Ses\SesClient;
 use Aws\Exception\AwsException;
-
-
 
 function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
     $return_arr = array();
