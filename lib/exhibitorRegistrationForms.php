@@ -187,23 +187,27 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                         coming?</label>
                                 </div>
                             </div>
-                            <!-- Contact Info -->
-                            <div class='row mt-2'>
-                                <div class='col-sm-2'></div>
-                                <div class='col-sm-auto p-0 ms-0 me-0'><h4>Primary Contact/Agent Information</h4></div>
-                            </div>
+                            <?php if ($portalType == 'artist') { ?>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
                                     <label for='mailin'> *Mail In Artist: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-2 align-middle'><input class='form-control-sm' type='radio' name='mailin' id='mailinN'  tabindex='80' value="N" /></div>
-                                <div class='col-sm-auto p-0 ms-0 me-4'>On-site/Using Agent or Not an Artist (not Mail-in)</div>
+                                <div class='col-sm-auto p-0 ms-0 me-4'>On-site/Using Agent (not Mail-in)</div>
                                 <div class='col-sm-auto p-0 ms-0 me-2 align-middle'><input class='form-control-sm' type='radio' name='mailin' id='mailinY'  tabindex='90' value="Y"/></div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>Shipping Art, return via Shipping Address (Mail In)</div>
                             </div>
+                            <?php } else { ?>
+                            <input type="hidden" name="mailin" id="mailinN" value="N">
+                            <?php } ?>
+                            <!-- Contact Info -->
+                            <div class='row mt-2'>
+                                <div class='col-sm-2'></div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'><h4>Primary Contact</h4></div>
+                            </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='contactName'> *Contact/Agent Name: </label>
+                                    <label for='contactName'> *Contact Name: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' type='text' name='contactName' id='contactName' maxlength='64' size='50' tabindex='100' required
