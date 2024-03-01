@@ -52,7 +52,9 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
     }
 
     $Destination = array();
-    $Destination['ToAddresses'] = array($to);
+    if(is_array($to)) { $Destination['ToAddresses'] = $to; }
+    else { $Destination['ToAddresses'] = array($to); }
+
     if (!is_null($cc)) {
         if (is_array($cc)) {
             $Destination['CcAddresses'] = $cc;
