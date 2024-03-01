@@ -144,6 +144,13 @@ function process(formRef) {
     $('#email2').val('');
     $('#badgename').val('');
 
+    // build name and legal name
+    var name = formData['fname'] + " " + formData['mname'] + " " + formData['lname'] + " " + formData['suffix'];
+    name = name.trim();
+    if (formData['legalname']=='') {
+        formData['legalname'] = name;
+    }
+
     badges['count'] +=  1;
     badges['memTypeCount'][formData['memType']] += 1;
     //badges['total'] += prices[formData['memType']];
@@ -155,8 +162,6 @@ function process(formRef) {
     if (formData['badgename']=='') {
         badgename = (formData['fname']+" "+formData['lname']).trim();
     }
-
-    var name = formData['fname'] + " " + formData['mname'] + " " + formData['lname'] + " " + formData['suffix'];
 
     // add this person to the "who is paying" "person" list
     var option = $(document.createElement('option'))

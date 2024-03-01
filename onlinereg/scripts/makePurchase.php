@@ -274,6 +274,7 @@ EOF;
             trim($badge['mname']),
             trim($badge['fname']),
             trim($badge['suffix']),
+            trim($badge['legalname']),
             trim($badge['email1']),
             trim($badge['phone']),
             trim($badge['badgename']),
@@ -289,12 +290,12 @@ EOF;
         );
 
         $insertQ = <<<EOS
-INSERT INTO newperson(last_name, middle_name, first_name, suffix, email_addr, phone,
+INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone,
     badge_name, address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, perid)
-    VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 
-        $newid = dbSafeInsert($insertQ, 'sssssssssssssssi', $value_arr);
+        $newid = dbSafeInsert($insertQ, 'ssssssssssssssssi', $value_arr);
         $people[$count]['newid'] = $newid;
         $people[$count]['perid'] = $id;
 
@@ -347,7 +348,7 @@ foreach($people as $person) {
 
 $all_badgeQ = <<<EOS
 SELECT R.id AS badge,
-    NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix,
+    NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix, NP.legalName AS legalName,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
     NP.id as id, R.price AS price, R.couponDiscount as discount, M.memAge AS age, NP.badge_name AS badgename
