@@ -146,7 +146,7 @@ function payment($results) {
             "Special Requests:\n" . $results['specialrequests'] . "\n\n";
 
         $body .= "Memberships purchased at this time:\n\n";
-        foreach ($results['formbadges'] as $badge) {
+        if (array_key_exists('formbadges', $results) && is_array($results['formbadges'])) foreach ($results['formbadges'] as $badge) {
             if ($badge['type'] == 'i')
                 $body .= "Included membership " . $badge['index'] . ":\n     ";
             else

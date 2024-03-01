@@ -113,7 +113,7 @@ SELECT es.id, item_requested, item_approved, item_purchased, price, paid, transi
 FROM exhibitorYears ey
 JOIN exhibitorRegionYears exRY ON ey.id = exRY.exhibitorYearId
 JOIN exhibitorSpaces es ON exRY.id = es.exhibitorRegionYear
-WHERE spaceId = ? and exhibitorYearId = ?;
+WHERE spaceId = ? and exRY.exhibitorYearId = ?;
 EOS;
     $vendorR = dbSafeQuery($vendorQ, 'ii', array($spaceid, $eyId));
     if ($vendorR == false || $vendorR->num_rows == 1)

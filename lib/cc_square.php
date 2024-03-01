@@ -155,7 +155,7 @@ function cc_charge_purchase($results, $ccauth) {
     if (array_key_exists('badges', $results) && is_array($results['badges'])) {
         $custid = $results['badges'][0]['badge'];
     } else if (array_key_exists('spaceName', $results)) {
-        $custid = $results['buyer']['email'];
+        $custid = $results['buyer']['fname'] . '_' . $results['buyer']['lname'];
     } else {
         $custid = 'no-badges';
     }
@@ -165,7 +165,7 @@ function cc_charge_purchase($results, $ccauth) {
 
     // add order lines
 
-    foreach ($results['badges'] as $badge) {
+    if(array_key_exists('badges', $results) && is_array($results['badges'])) foreach ($results['badges'] as $badge) {
         $item = new OrderLineItem ('1');
         $item->setUid('badge' . ($lineid + 1));
         $item->setName($badge['age'] . ' Badge for ' .  trim($badge['fname'] . ' ' . $badge['mname']  . ' ' . $badge['lname']));
