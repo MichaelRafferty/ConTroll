@@ -263,8 +263,8 @@ function apply_overall_discount($coupon, $total) {
     if (!$coupon['coupon_met'])
         return 0;
 
-    $couponType = $coupon['couponType'];
-    if ($couponType == '$off') {
+    $code = $coupon['couponType'];
+    if ($code == '$off') {
         return min($total, $coupon['discount']);
     }
 
