@@ -65,17 +65,17 @@ $total_price = 0;
 $total_paid = 0;
 
 $insPerinfoSQL = <<<EOS
-INSERT INTO perinfo(last_name,first_name,middle_name,suffix,email_addr,phone,badge_name,address,addr_2,city,state,zip,country,contact_ok,share_reg_ok,open_notes,banned,active,creation_date)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N','Y',now());
+INSERT INTO perinfo(last_name,first_name,middle_name,suffix,legalName,email_addr,phone,badge_name,address,addr_2,city,state,zip,country,contact_ok,share_reg_ok,open_notes,banned,active,creation_date)
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N','Y',now());
 EOS;
 $existingQ = <<<EOS
-SELECT last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, address, addr_2, city, state, zip, country, open_notes, contact_ok, share_reg_ok, change_notes
+SELECT last_name, first_name, middle_name, suffix, perinfo.legalName, email_addr, phone, badge_name, address, addr_2, city, state, zip, country, open_notes, contact_ok, share_reg_ok, change_notes
 FROM perinfo
 WHERE id = ?;
 EOS;
 $updPerinfoSQL = <<<EOS
 UPDATE perinfo SET
-    last_name=?,first_name=?,middle_name=?,suffix=?,email_addr=?,phone=?,badge_name=?,address=?,addr_2=?,city=?,state=?,zip=?,country=?,
+    last_name=?,first_name=?,middle_name=?,suffix=?,legalName=?,email_addr=?,phone=?,badge_name=?,address=?,addr_2=?,city=?,state=?,zip=?,country=?,
     open_notes=?,banned='N',update_date=NOW(),active='Y',contact_ok=?,share_reg_ok=?,change_notes=?
 WHERE id = ?;
 EOS;
@@ -104,14 +104,21 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             $open_notes = null;
     } else
         $open_notes = null;
+    $legalName = $cartrow['legalName'];
+
+    if ($legalName == '') {
+        $legalName = trim($cartrow['first_name']  . ($cartrow['middle_name'] == '' ? ' ' : ' ' . $cartrow['middle_name'] . ' ' ) .
+            $cartrow['last_name'] . ' ' . $cartrow['suffix']);
+    }
+
     if ($cartrow['perid'] <= 0) {
         // insert this row
         $paramarray = array(
-            $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
+            $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$legalName,$cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
             $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],
             $cartrow['contact_ok'],$cartrow['share_reg_ok'],$open_notes
         );
-        $typestr = 'ssssssssssssssss';
+        $typestr = 'sssssssssssssssss';
         $new_perid = dbSafeInsert($insPerinfoSQL, $typestr, $paramarray);
         if ($new_perid === false) {
             $error_message .= "Insert of person $row failed<BR/>";
@@ -159,12 +166,12 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             $new_change_notes = "\nreg_control/registration Updated " . date(DATE_RFC2822) . " by $user_id:\n$changes\n" . $new_change_notes;
 
         $paramarray = array(
-            $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
+            $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$legalName,$cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
             $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],$open_notes,
             $cartrow['contact_ok'],$cartrow['share_reg_ok'],$new_change_notes,
             $cartrow['perid']
         );
-        $typestr = 'sssssssssssssssssi';
+        $typestr = 'ssssssssssssssssssi';
         $per_upd += dbSafeCmd($updPerinfoSQL, $typestr, $paramarray);
     }
 }

@@ -379,6 +379,7 @@ class regpos_cart {
         cart_row['middle_name'] = row['middle_name'];
         cart_row['last_name'] = row['last_name'];
         cart_row['suffix'] = row['suffix'];
+        cart_row['legalName'] = row['legalName'];
         cart_row['badge_name'] = row['badge_name'];
         cart_row['address_1'] = row['address_1'];
         cart_row['address_2'] = row['address_2'];
