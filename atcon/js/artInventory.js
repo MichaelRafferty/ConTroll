@@ -320,7 +320,7 @@ function draw_cart_row(rownum) {
     var action_html = `
     </div>
     <div class="col-sm-4">
-        <button type="button" class="btn btn-small btn-secondary p-0" onclick="remove_from_cart(`+rownum+`)">Remove</button><br/>
+        <button type="button" class="btn btn-sm btn-secondary p-0" onclick="remove_from_cart(`+rownum+`)">Remove</button><br/>
 `;
     var trailing_html = '</div></div>';
 
@@ -349,9 +349,9 @@ function draw_cart_row(rownum) {
                     + 'NFS @ ' + item['status'] + '<br/>';
                 action_html += '<br/>';
                 if(item['need_location']) {
-                    action_html += `<button class="btn btn-primary btn-small p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                    action_html += `<button class="btn btn-primary btn-sm p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
                 } else {
-                    action_html += `<button class="btn btn-info btn-small p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                    action_html += `<button class="btn btn-info btn-sm p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
                 }
                 action_html += '<br/>';
             }
@@ -363,13 +363,13 @@ function draw_cart_row(rownum) {
                 + 'Art @ ' + item['status'] + '<br/>';
             action_html += '<br/>';
             if(item['need_location']) {
-                action_html += `<button class="btn btn-primary btn-small p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                action_html += `<button class="btn btn-primary btn-sm p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
             } else {
-                action_html += `<button class="btn btn-info btn-small p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                action_html += `<button class="btn btn-info btn-sm p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
             }
             action_html += '<br/>';
             if(item['status'] == 'BID') {
-                action_html += `<button class="btn btn-success btn-small p-0" type="button" id="` + item['id'] + `"_to_bidsheet" onclick="update_bid(`+rownum+`,false,true);">To Bid Sheet</button><br/>`;
+                action_html += `<button class="btn btn-success btn-sm p-0" type="button" id="` + item['id'] + `"_to_bidsheet" onclick="update_bid(`+rownum+`,false,true);">To Bid Sheet</button><br/>`;
             } else {
                 action_html += '<br/>'; 
             }
@@ -386,8 +386,8 @@ function draw_cart_row(rownum) {
                     + `' value="` + item['bidder'] + `" style="width: 7em"></input> @ $`
                     + `<input type='number' min=`+min_price+` id='bid_` + item['id']
                     + `' value="` + item['final_price'] + `" style="width: 7em"></input><br/>`
-                action_html += `<button class="btn btn-primary btn-small p-0" type="button" id="` + item['id'] + `"_update_bid" onclick="update_bid(`+rownum+`);">Bid</button>`;
-                action_html += `<button class="btn btn-secondary btn-small p-0" type="button" id="` + item['id'] + `"_to_auction" onclick="update_bid(`+rownum+`,true);">To Auction</button>`;
+                action_html += `<button class="btn btn-primary btn-sm p-0" type="button" id="` + item['id'] + `"_update_bid" onclick="update_bid(`+rownum+`);">Bid</button>`;
+                action_html += `<button class="btn btn-secondary btn-sm p-0" type="button" id="` + item['id'] + `"_to_auction" onclick="update_bid(`+rownum+`,true);">To Auction</button>`;
             }
             action_html += "<br/>"
             break;
@@ -403,13 +403,13 @@ function draw_cart_row(rownum) {
             }
             action_html += '<br/>';
             if(item['need_location']) {
-                action_html += `<button class="btn btn-primary btn-small p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                action_html += `<button class="btn btn-primary btn-sm p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
             } else {
-                action_html += `<button class="btn btn-info btn-small p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                action_html += `<button class="btn btn-info btn-sm p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
             }
             action_html += '<br/>';
             if(item['need_count']) {
-                action_html += `<button class="btn btn-primary btn-small p-0" type="button" id="` + item['id'] + `"_confirm_count" onclick="confirm_count(`+rownum+`);">Confirm Qty</button>`;
+                action_html += `<button class="btn btn-primary btn-sm p-0" type="button" id="` + item['id'] + `"_confirm_count" onclick="confirm_count(`+rownum+`);">Confirm Qty</button>`;
             }
             action_html += '<br/>';
             break;

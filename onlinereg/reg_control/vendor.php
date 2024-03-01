@@ -1,5 +1,9 @@
 <?php
 require_once "lib/base.php";
+require_once "../../lib/exhibitorRegistrationForms.php";
+require_once "../../lib/exhibitorRequestForms.php";
+require_once "../../lib/exhibitorReceiptForms.php";
+
 //initialize google session
 $need_login = google_init("page");
 
@@ -9,156 +13,220 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 }
 
 page_init($page,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css',
-                    'https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_bootstrap5.min.css',
+    /* css */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
+                    'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
                     'css/base.css'
                    ),
     /* js  */ array(
                     //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js',
+                    'https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js',
                     //'js/d3.js',
                     'js/base.js',
-                    'js/vendor.js'
+                    'jslib/exhibitorProfile.js',
+                    'js/vendor.js',
+                    'jslib/exhibitorRequest.js',
+                    'jslib/exhibitorReceipt.js',
+                    'js/tinymce/tinymce.min.js'
                    ),
               $need_login);
 
 $con = get_con();
 $conid = $con['id'];
+$conf = $con['id'];
+$debug = get_conf('debug');
+$vendor_conf = get_conf('vendor');
+if (array_key_exists('reg_control_exhibitors', $debug))
+    $debug_exhibitors = $debug['reg_control_exhibitors'];
+else
+    $debug_exhibitors = 0;
 
 $conf = get_conf('con');
 
-// get the list of vendors and spaces for the add vendor space modal
-$vendorListQ = "SELECT id, name, website, city, state FROM vendors ORDER BY name, city, state;";
-$vendorListR = dbQuery($vendorListQ);
-$vendorList = array();
-while ($row = $vendorListR->fetch_assoc()) {
-        $vendorList[] = $row;
-
-}
-
-$spaceListQ = "SELECT id, shortname, name FROM vendorSpaces ORDER BY name;";
-$spaceListR = dbQuery($spaceListQ);
-$spaceList = array();
-while ($row = $spaceListR->fetch_assoc()) {
-    $spaceList[] = $row;
-}
-
-$spacePriceListQ = <<<EOS
-SELECT v.id, v.spaceId, v.description, v.price, v.includedMemberships, v.additionalMemberships, m.price AS additionalPrice
-FROM vendorSpacePrices v
-JOIN vendorSpaces vs ON (v.spaceId = vs.id)
-JOIN memList m ON (vs.additionalMemId = m.id)
-ORDER BY v.spaceId, v.sortOrder;
+// to build tabs get the list of vendor types
+$regionOwnerQ = <<<EOS
+SELECT eR.id, eR.name, eRY.ownerName, eRT.requestApprovalRequired, eRT.purchaseApprovalRequired
+FROM exhibitsRegionYears eRY
+JOIN exhibitsRegions eR ON eRY.exhibitsRegion = eR.id
+JOIN exhibitsRegionTypes eRT ON eR.regionType = eRT.regionType
+WHERE conid = ?
+ORDER BY eRY.ownerName, eR.name;
 EOS;
-$spacePriceListR = dbQuery($spacePriceListQ);
-$spacePriceList = array();
-while ($row = $spacePriceListR->fetch_assoc()) {
-    $spacePriceList[] = $row;
+$regionOwnerR = dbSafeQuery($regionOwnerQ, 'i',array($conid));
+if ($regionOwnerR == false || $regionOwnerR->num_rows == 0) {
+    echo "No exhibits are configured.";
+    page_foot($page);
+    return;
 }
-// first the modals for use by the script
+
+// load country select
+$countryOptions = '';
+$fh = fopen(__DIR__ . '/../../lib/countryCodes.csv', 'r');
+while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
+    $countryOptions .= '<option value="' . escape_quotes($data[1]) . '">' .$data[0] . '</option>' . PHP_EOL;
+}
+fclose($fh);
+
+$config_vars = array();
+$portalType = 'admin';
+$portalName = 'Exhibitor';
+$config_vars['lƒabel'] = $con['label'];
+$config_vars['vemail'] = $conf['regadminemail'];
+$config_vars['portalType'] = $portalType;
+$config_vars['portalName'] = $portalName;
+$config_vars['artistsite'] = $vendor_conf['artistsite'];
+$config_vars['vendorsite'] = $vendor_conf['vendorsite'];
+$config_vars['debug'] = $debug['reg_control_exhibitors'];
+
+draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
+draw_exhibitorRequestModal('admin');
+draw_exhibitorReceiptModal('admin');
 ?>
-<script type="text/javascript">
-    <?php echo "var spacePriceList = " . json_encode($spacePriceList) . ";\n"; ?>
-</script>
-<div id='update_profile' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Update Vendor Profile' aria-hidden='true' style="--bs-modal-width: 80%;">
-    <div class='modal-dialog'>
-        <div class='modal-content'>
-            <div class='modal-header bg-primary text-bg-primary'>
-                <div class='modal-title'>
-                    <strong id='vendorAddEditTitle'>Update Vendor Profile</strong>
+<!-- import modal -->
+    <div id='import_exhibitor' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Import Past Vendors' aria-hidden='true'
+         style='--bs-modal-width: 96%;'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='exhibitor_receipt_title'>
+                        <strong>Import Past Exhibitors</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                 </div>
-                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-            </div>
-            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                <div class='container-fluid'>
-                    <form id='vendor_update' action='javascript:void(0)'>
-                        <input type="hidden" name="vendorId" id="ev_vendorId" value="">
-                        <div class='row p-1'>
-                            <div class='col-sm-2 p-0'>
-                                <label for='ev_name'>Name:</label>
-                            </div>
-                            <div class='col-sm-10 p-0'>
-                                <input class='form-control-sm' type='text' name='name' id='ev_name' size='64' required/>
-                            </div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 p-0'>
-                                <label for='ev_email'>Email:</label>
-                            </div>
-                            <div class='col-sm-10 p-0'>
-                                <input class='form-control-sm' type='text' name='email' id='ev_email' size='64' required/>
-                            </div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 p-0'>
-                                <label for='ev_website'>Website:</label>
-                            </div>
-                            <div class='col-sm-10 p-0'>
-                                <input class='form-control-sm' type='text' name='website' id='ev_website' required/>
-                            </div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 p-0'>
-                                <label for='ev_description'>Description:</label>
-                            </div>
-                            <div class='col-sm-10 p-0'>
-                                <textarea class='form-control-sm' name='description' id='ev_description' rows=5 cols=60></textarea>
-                            </div>
-                        </div>
-                        <div class='row mt-1'>
-                            <div class='col-sm-2 p-0 ms-0 me-0 pe-2 text-end'>
-                                <input class='form-control-sm' type='checkbox' name='publicity' id="ev_publicity"/>
-                            </div>
-                            <div class='col-sm-auto p-0 ms-0 me-0'>
-                                <label for="ev_publicity">Check if we may use your information to publicize your attendence at <?php echo $conf['conname']; ?></label>
-                            </div>
-                        </div>
-                        <div class="row mt-1">
-                            <div class="col-sm-2">
-                                <label for="ev_addr" title='Street Address'>Address </label>
-                            </div>
-                            <div class="col-sm-auto p-0 ms-0 me-0">
-                                <input class="form-control-sm" id='ev_addr' type='text' size="64" name='addr' required/>
-                            </div>
-                        </div>
-                        <div class="row mt-1">
-                            <div class="col-sm-2">
-                                <label for="ev_addr2" title='Company Name'>Company/ Address line 2:</label>
-                            </div>
-                            <div class="col-sm-auto p-0 ms-0 me-0">
-                                <input class="form-control-sm" id='ev_addr2' type='text' size="64" name='addr2'/>
-                            </div>
-                        </div>
-                        <div class="row mt-1">
-                            <div class="col-sm-2">
-                                <label for="ev_city">City: </label>
-                            </div>
-                            <div class="col-sm-auto p-0 ms-0 me-0">
-                                <input class="form-control-sm" id='ev_city' type='text' size="32" name=' city' required/>
-                            </div>
-                            <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
-                                <label for="ev_state"> State: </label>
-                            </div>
-                            <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
-                                <input class="form-control-sm" id='ev_state' type='text' size="2" maxlength="2" name='state' required/>
-                            </div>
-                            <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
-                                <label for="ev_zip"> Zip: </label>
-                            </div>
-                            <div class="col-sm-auto p-0 ms-0 me-0 ps-1 pb-2">
-                                <input class="form-control-sm" id='ev_zip' type='text' size="11" maxlength="11" name='zip' required/>
-                            </div>
-                        </div>
-                    </form>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <div class='container-fluid'>
+                        <div id='importHTML'></div>
+                        <div class='row' id='import_message_div'></div>
+                    </div>
                 </div>
-            </div>
-            <div class='modal-footer'>
-                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='vendorAddUpdatebtn' onClick='updateProfile()'>Update</button>
+                <div class='modal-footer'>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                    <button class='btn btn-sm btn-primary' onclick='exhibitors.importPastExhibitors()'>Import Selected Past Exhibitors</button>
+                </div>
             </div>
         </div>
     </div>
+<div id='main'>
+    <ul class='nav nav-tabs mb-3' id='exhibitor-tab' role='tablist'>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link active' id='overview-tab' data-bs-toggle='pill' data-bs-target='#overview-pane' type='button' role='tab' aria-controls='nav-overview'
+            aria-selected="true" onclick="exhibitors.settabOwner('overview-pane');">Overview
+            </button>
+        </li>
+<?php
+// build tab structure
+$regionOwners = [];
+$regionOwnersTabNames = [];
+$regions = [];
+$regionTabNames = [];
+while ($regionL = $regionOwnerR->fetch_assoc()) {
+    $regionOwner = $regionL['ownerName'];
+    $regionOwnerId = str_replace(' ', '-', $regionOwner);
+    $regionOwnersTabNames[$regionOwnerId . '-pane'] = $regionOwner;
+    $regionOwners[$regionOwner][$regionL['id']] = $regionL;
+    $regionOwners[$regionOwner][$regionL['id']] = $regionL;
+    $regions[$regionL['name']] = [ 'regionOwner' => $regionOwner, 'id' => $regionL['id'],
+        'requestApprovalRequired' => $regionL['requestApprovalRequired'], 'purchaseApprovalRequired' => $regionL['purchaseApprovalRequired'] ];
+    $regionTabName = str_replace(' ', '-', $regionL['name']) . '-pane';
+    $regionTabNames[$regionTabName] = [ 'name' => $regionL['name'], 'id' => $regionL['id'] ];
+    if (count($regionOwners[$regionOwner]) == 1) {
+    ?>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='<?php echo $regionOwnerId; ?>-tab' data-bs-toggle='pill' data-bs-target='#<?php echo $regionOwnerId; ?>-pane' type='button' role='tab' aria-controls='nav-<?php echo $regionOwnerId; ?>'
+                    aria-selected="false" onclick="exhibitors.settabOwner('<?php echo $regionOwnerId; ?>-pane');"><?php echo $regionOwner; ?>
+            </button>
+        </li>
+    <?php
+    }
+}
+?>
+    </ul>
+<script type='text/javascript'>
+    var config = <?php echo json_encode($config_vars); ?>;
+    var regionOwners = <?php echo json_encode($regionOwners); ?>;
+    var regions = <?php echo json_encode($regions); ?>;
+    var regionTabNames = <?php echo json_encode($regionTabNames); ?>;
+    var regionOwnersTabNames = <?php echo json_encode($regionOwnersTabNames); ?>;
+</script>
+    <div class='tab-content ms-2' id='overview-content'>
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-sm-12'>
+                    <h3 style='text-align: center;'><strong>Exhibitors Overview</strong></h3>
+                </div>
+            </div>
+            <div class='row'>
+                <div class="col-sm-12">
+                    <p>The Exhibitors tab handles all types of exhibitors:</p>
+                    <ol>
+                        <li>Artists</li>
+                        <li>Dealers</li>
+                        <li>Exhibits</li>
+                        <li>Fan Tables</li>
+                    </ol>
+                    <p>There is a separate tab within the Exhibitors tab for each Exhibitor Space within the convention.</p>
+                    <p>These space tabs handle:</p>
+                    <ol>
+                        <li>Exhibitor Management</li>
+                        <li>Permission to request space in this Exhibitor Space (if required)</li>
+                        <li>Status of all Space Requests</li>
+                    </ol>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-12'>
+                    <p>
+                        <strong>NOTE:</strong> When you approve requests for a space, any request from the same exhibitor that is not approved will be cancelled when you press the save button.
+                        It is necessary to approve all the spaces for an exhibitor in the same save transaction.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <?php
+foreach ($regionOwners AS $regionOwner => $regionList) {
+    $regionOwnerId = str_replace(' ', '-', $regionOwner);
+    ?>
+    <div class='tab-content ms-2' id='<?php echo $regionOwnerId; ?>-content' hidden>
+        <ul class='nav nav-pills nav-fill  mb-3' id='<?php echo $regionOwnerId; ?>-content-tab' role='tablist'>
+<?php
+    $first = true;
+    foreach ($regionList AS $regionId => $region) {
+        $regionName = $region['name'];
+        $regionNameId = str_replace(' ', '-', $regionName);
+?>
+            <li class='nav-item' role='presentation'>
+                <button class='nav-link <?php echo $first ? 'active' : ''; ?>' id='<?php echo $regionNameId; ?>-tab' data-bs-toggle='pill' data-bs-target='#regionTypes-pane' type='button' role='tab'
+                        aria-controls='<?php echo $regionOwnerId; ?>-content-tab' aria-selected="<?php echo $first ? 'true' : 'false'; ?>"
+                        onclick="exhibitors.settabRegion('<?php echo $regionNameId; ?>-pane');"><?php echo $regionName; ?>
+                </button>
+            </li>
+<?php
+        $first = false;
+    }
+    ?>
+        </ul>
+<?php
+        foreach ($regionList AS $regionId => $region) {
+            $regionName = $region['name'];
+            $regionNameId = str_replace(' ', '-', $regionName);
+?>
+        <div class='tab-content ms-2' id='<?php echo $regionNameId; ?>-content'>
+            <div class='container-fluid' id="<?php echo $regionNameId; ?>-div"></div>
+        </div>
+<?php
+        }
+?>
+    </div>
+<?php
+}
+?>
+    <div id='result_message' class='mt-4 p-2'></div>
+    <pre id='test'></pre>
 </div>
+
+<?php /*
+
 <div id='approve_space' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Approve Vendor Space Request' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
@@ -388,6 +456,6 @@ while ($row = $spacePriceListR->fetch_assoc()) {
 <div id='result_message' class='mt-4 p-2'></div>
 <pre id='test'></pre>
 <?php
-
+*/
 page_foot($page);
 ?>

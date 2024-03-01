@@ -137,7 +137,7 @@ function submitForm(formObj, formUrl, succFunc, errFunc) {
         data: postData,
         success: succFunc,
         error: function (JqXHR, textStatus, errorThrown) {
-            $('#test').empty().append(JSON.stringify(data, null, 2));
+            $('#test').empty().append(JSON.stringify(JqXHR));
         }
     });
 }
@@ -262,22 +262,19 @@ function showAjaxError(jqXHR, textStatus, errorThrown) {
     show_message(message, 'error');
 }
 
-function clear_message() {
-    show_message('', '');
+function clear_message(div='result_message') {
+    show_message('', '', div);
 }
 
-var message_div = null;
 // show_message:
 // apply colors to the message div and place the text in the div, first clearing any existing class colors
 // type:
 //  error: (white on red) bg-danger
 //  warn: (black on yellow-orange) bg-warning
 //  success: (white on green) bg-success
-function show_message(message, type) {
-    "use strict";
-    if (message_div === null ) {
-        message_div = document.getElementById('result_message');
-    }
+function show_message(message, type = 'success', div='result_message') {
+    var message_div = document.getElementById(div);
+
     if (message_div.classList.contains('bg-danger')) {
         message_div.classList.remove('bg-danger');
     }
@@ -367,6 +364,14 @@ function make_copy(arr) {
     return JSON.parse(JSON.stringify(arr));  // horrible way to make an independent copy of an associative array
 }
 
+// validate RFC-5311/2 addresses regexp pattern from https://regex101.com/r/3uvtNl/1, found by searching validate RFC-5311/2  addresses
+function validateAddress(addr) {
+    if (addr == '/n' || addr == '/r')
+        return; // allow none or refused values in reg_control
+    const regPattern = /^((?:[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~]|(?<=^|\.)"|"(?=$|\.|@)|(?<=".*)[ .](?=.*")|(?<!\.)\.){1,64})(@)((?:[A-Za-z0-9.\-])*(?:[A-Za-z0-9])\.(?:[A-Za-z0-9]){2,})$/gm;
+    return regPattern.test(String(addr).toLowerCase());
+}
+
 // tabulator custom header filter function for numeric comparisions
 //
 function numberHeaderFilter(headerValue, rowValue, rowData, filterParams) {
@@ -394,4 +399,101 @@ function numberHeaderFilter(headerValue, rowValue, rowData, filterParams) {
         default:
             return Number(rowValue) == Number(value);
     }
+}
+
+// saveEdit - a common return from the base.php mce editor modal
+var editTableDiv = null;
+var editFieldDiv = null;
+var editIndexDiv = null;
+var editClassDiv = null;
+var editFieldArea = null;
+var editor_modal = null;
+var editTitleDiv = null;
+var editFieldNameDiv = null;
+
+function editRefs() {
+    editTableDiv = document.getElementById("editTable");
+    editFieldDiv = document.getElementById("editField");
+    editIndexDiv = document.getElementById("editIndex");
+    editClassDiv = document.getElementById("editClass");
+    editFieldArea = document.getElementById("editFieldArea");
+    editTitleDiv = document.getElementById("editTitle");
+    editFieldNameDiv = document.getElementById("editFieldName");
+    id = document.getElementById('tinymce-modal');
+    if (id != null) {
+        editor_modal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+    }
+}
+function showEdit(classname, table, index, field, titlename, textitem) {
+    if (editTableDiv == null)
+        editRefs();
+
+    if (editor_modal == null)
+        return; // tiymce area not loaded
+
+    if (textitem == null)
+        textitem = '';
+
+    editTableDiv.innerHTML = table;
+    editFieldDiv.innerHTML = field;
+    editFieldNameDiv.innerHTML = field + ':';
+    editIndexDiv.innerHTML = index;
+    editClassDiv.innerHTML = classname;
+    editFieldArea.innerHTML = textitem;
+    editTitleDiv.innerHTML = "Editing " + table + " " + titlename + " " + field;
+
+    editor_modal.show();
+    tinyMCE.init({
+        selector: 'textarea#editFieldArea',
+        height: 500,
+        min_height: 400,
+        menubar: false,
+        plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
+        toolbar:  [
+            'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
+            'bold italic underline strikethrough removeformat | '+
+            'visualchars nonbreaking charmap hr | ' +
+            'preview fullscreen ',
+            'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
+        ],
+        content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
+        placeholder: 'Edit the description here...',
+        auto_focus: 'editFieldArea',
+        init_instance_callback: function (editor) {
+            editor.setContent(textitem);
+        }
+    });
+}
+
+// save the modal edit values back
+function saveEdit() {
+    if (editTableDiv == null)
+        editRefs();
+
+    if (editor_modal == null)
+        return; // tiymce area not loaded
+
+    var editTable = editTableDiv.innerHTML;
+    var editField = editFieldDiv.innerHTML;
+    var editIndex = editIndexDiv.innerHTML;
+    var editClass = editClassDiv.innerHTML;
+    var editValue = tinyMCE.activeEditor.getContent();
+    tinyMCE.remove();
+    editor_modal.hide();
+
+    // force a save and get the field from tinyMCE
+        switch (editClass) {
+            case 'exhibits':
+                exhibits.editReturn(editTable, editField,  editIndex, editValue);
+                break;
+            default:
+        }
+
+}
+
+// blankIfNull - return empty string if argument is nullk
+function blankIfNull(value) {
+    if (value == null)
+        return '';
+    return value;
 }

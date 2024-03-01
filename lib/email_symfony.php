@@ -25,6 +25,10 @@ $emailconf = get_conf('email');
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Part\DataPart;
+use Symfony\Component\Mime\Part\File;
 
 // send_email - exposed function send an email
 //      $from = sender
@@ -33,6 +37,7 @@ use Symfony\Component\Mime\Email;
 //      $subject = subject of the email
 //      $textbody = text of email message for plain text
 //      $htmlbody = email message in HTML format
+//      $attachments = array of files to attach (each element is an array of [f]ilepath, name, type]
 //
 // returns an associative array of status
 //      status = success / error
@@ -40,7 +45,7 @@ use Symfony\Component\Mime\Email;
 //      error_code = error code returned by api
 //
 
-function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
+function send_email($from, $to, $cc, $subject, $textbody, $htmlbody, $attachments = NULL) {
     global $transport, $mailer, $emailconf;
     $return_arr = array();
 
@@ -128,6 +133,12 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
         // html body
         if ($htmlbody !== null) {
             $email->html($htmlbody);
+        }
+        // add optional attachments
+        if ($attachments !== null) {
+            foreach ($attachments AS $file) {
+                $email->addPart(new DataPart(new File($file[0]), $file[1], $file[2]));
+            }
         }
         // now send it
         $mailer->send($email);

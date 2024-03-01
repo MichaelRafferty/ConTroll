@@ -10,33 +10,44 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
 
+if (array_key_exists('user_id', $_SESSION)) {
+    $user_id = $_SESSION['user_id'];
+} else {
+    bounce_page('index.php');
+    return;
+}
+
 page_init($page,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css',
-                    //'https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_bootstrap5.min.css',
+    /* css */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
+                    //'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
                     'css/base.css',
                    ),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js',
+                    'https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js',
+                    'js/tinymce/tinymce.min.js',
                     'js/base.js',
                     'js/admin.js',
                     'js/admin_consetup.js',
                     'js/admin_memconfig.js',
-                    'js/admin_vendor.js',
+                    'js/admin_exhibits.js',
                     'js/admin_merge.js'
                    ),
               $need_login);
 $con = get_conf("con");
 $conid=$con['id'];
+$debug = get_conf('debug');
 
-if (array_key_exists('user_id', $_SESSION)) {
-    $user_id = $_SESSION['user_id'];
-} else {
-    ajaxError('Invalid credentials passed');
-    return;
-}
-
+if (array_key_exists('reg_control_admin', $debug))
+    $debug_admin=$debug['reg_control_admin'];
+else
+    $debug_admin = 0;
 
 ?>
+<div id='parameters' <?php if (!($debug_admin & 4)) echo 'hidden'; ?>>
+    <div id="debug"><?php echo $debug_admin; ?></div>
+    <div id="conid"><?php echo $conid; ?></div>
+</div>
+<?php bs_tinymceModal(); ?>
 <div id='user-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Lookup Person to Add as User' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
@@ -51,7 +62,7 @@ if (array_key_exists('user_id', $_SESSION)) {
                     <form id='add-search' action='javascript:void(0)'>
                         <div class='row p-1'>
                             <div class='col-sm-3 p-0'>
-                                <label for='search_name' id='addName'>Name:</label>
+                                <label for='add_name_search' id='addName'>Name:</label>
                             </div>
                             <div class='col-sm-9 p-0'>
                                 <input class='form-control-sm' type='text' name='namesearch' id='add_name_search' size='64'
@@ -74,7 +85,7 @@ if (array_key_exists('user_id', $_SESSION)) {
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
                 <button class='btn btn-sm btn-primary' id='addSearch' onClick='add_find()'>Find Person</button>
             </div>
-            <div id='result_message' class='mt-4 p-2'></div>
+            <div id='result_message_user' class='mt-4 p-2'></div>
         </div>
     </div>
 </div>
@@ -92,7 +103,7 @@ if (array_key_exists('user_id', $_SESSION)) {
                     <form id='merge-search' action='javascript:void(0)'>
                         <div class='row p-1'>
                             <div class='col-sm-3 p-0'>
-                                <label for='search_name' id="mergeName">Merge Name:</label>
+                                <label for='merge_name_search' id="mergeName">Merge Name:</label>
                             </div>
                             <div class='col-sm-9 p-0'>
                                 <input class='form-control-sm' type='text' name='namesearch' id='merge_name_search' size='64'
@@ -115,7 +126,7 @@ if (array_key_exists('user_id', $_SESSION)) {
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
                 <button class='btn btn-sm btn-primary' id='mergeSearch' onClick='merge_find()'>Find Person</button>
             </div>
-            <div id='result_message' class='mt-4 p-2'></div>
+            <div id='result_message_merge' class='mt-4 p-2'></div>
         </div>
     </div>
 </div>
@@ -164,8 +175,8 @@ if (array_key_exists('user_id', $_SESSION)) {
             </button>
         </li>
         <li class='nav-item' role='presentation'>
-            <button class='nav-link' id='vendor-tab' data-bs-toggle='pill' data-bs-target='#vendor-pane' type='button' role='tab'
-                    aria-controls='nav-vendorsetup' aria-selected='false' onclick="settab('vendor-pane');">Vendor Configuration
+            <button class='nav-link' id='exhibits-tab' data-bs-toggle='pill' data-bs-target='#exhibits-pane' type='button' role='tab'
+                    aria-controls='nav-exhibitssetup' aria-selected='false' onclick="settab('exhibits-pane');">Exhibits Configuration
             </button>
         </li>
         <li class='nav-item' role='presentation'>
@@ -174,7 +185,7 @@ if (array_key_exists('user_id', $_SESSION)) {
             </button>
         </li>
     </ul>
-    <div class="tab-content" id="admin-content">
+    <div class="tab-content ms-2" id="admin-content">
         <div class="tab-pane fade show active" id="users-pane" role="tabpanel" aria-labelledby="users-tab" tabindex="0">
             <table>
                 <thead>
@@ -282,8 +293,9 @@ if (array_key_exists('user_id', $_SESSION)) {
     <div class="tab-pane fade" id="consetup-pane" role="tabpanel" aria-labelledby="consetup-tab" tabindex="0"></div>
     <div class="tab-pane fade" id="nextconsetup-pane" role="tabpanel" aria-labelledby="nextconsetup-tab" tabindex="0"></div>
     <div class="tab-pane fade" id="memconfig-pane" role="tabpanel" aria-labelledby="memconfig-tab" tabindex="0"></div>
-    <div class="tab-pane fade" id="vendor-pane" role="tabpanel" aria-labelledby="vendor-tab" tabindex="0"></div>
-    <div class='tab-pane fade' id='merge-pane' role='tabpanel' aria-labelledby='merge-tab' tabindex='0'>
+    <div class="tab-pane fade" id="exhibits-pane" role="tabpanel" aria-labelledby="exhibits-tab" tabindex="0"></div>
+    <div class='tab-pane fade' id='merge-pane' role='tabpanel' aria-labelledby='merge-tab' tabindex='0'></div>
+    <div id='result_message' class='mt-4 p-2'></div>
 </div>
 <script>
     $(function() {

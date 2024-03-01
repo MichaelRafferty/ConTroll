@@ -19,10 +19,10 @@ if (!check_atcon($method, $conid)) {
 }
 
 page_init($page, $tab,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css','css/registration.css',
-                    'https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_bootstrap5.min.css'),
+    /* css */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css','css/registration.css',
+                    'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css'),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js','js/volRollover.js')
+                    'https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js','js/volRollover.js')
     );
 ?>
 <div id="pos" class="container-fluid">
@@ -48,7 +48,7 @@ page_init($page, $tab,
                     <div class="col-sm-4">
                     </div>
                     <div class="col-sm-8">
-                        <button type="button" class="btn btn-small btn-primary" id="find_search_btn" onclick="find_record();">Find Record</button>
+                        <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" onclick="find_record();">Find Record</button>
                     </div>
                 </div>
                 <div class="row mt-3">
@@ -73,7 +73,7 @@ page_init($page, $tab,
             <div id='list'></div>
             <div class="row">
                 <div class="col-sm-12 mt-3">
-                    <button type="button" class="btn btn-warning btn-small" id="startover_btn" onclick="start_over(1);">Start Over</button>
+                    <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="start_over(1);">Start Over</button>
                 </div>
             </div>
         </div>       

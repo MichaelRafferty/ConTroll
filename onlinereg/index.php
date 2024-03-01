@@ -1,6 +1,7 @@
 <?php
 // Online Reg - index.php - Main page for online con registration
 require_once("lib/base.php");
+require_once('../lib/global.php');
 require_once("../lib/cc__load_methods.php");
 require_once("../lib/coupon.php");
 
@@ -43,8 +44,7 @@ WHERE
     AND online = 'Y'
     AND startdate <= current_timestamp()
     AND enddate > current_timestamp()
-ORDER BY sort_order, price DESC
-;
+ORDER BY sort_order, price DESC;
 EOS;
 $priceR = dbSafeQuery($priceQ, "i", array($condata['id']));
 while($priceL = $priceR->fetch_assoc()) {
@@ -160,7 +160,7 @@ $onsitesale = $startdate->format("l, F j");
                         <form id='newBadgeForm' action='javascript:void(0);' class="form-floating">
                             <div class="row" style="width:100%;">
                                 <div class="col-sm-12">
-                                    <p class="text-body">Please provide your legal name that will match a valid form of ID. If you provide a Badge Name, your legal name will not be publicly visible..</p>
+                                    <p class="text-body">Please provide your legal name that will match a valid form of ID. If you provide a Badge Name, your legal name will not be publicly visible.</p>
                                 </div>
                             </div>
                             <div class="row">
@@ -268,9 +268,9 @@ $onsitesale = $startdate->format("l, F j");
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Membership Type</span></label><br/>
-                                    <select id='memType' name='age' style="width:500px;" tabindex='15' title='Age as of <?php echo substr($condata['startdate'], 0, 10); ?> (the first day of the convention)'>
+                                    <select id='memType' name='memType' style="width:500px;" tabindex='15' title='Age is as of <?php echo substr($condata['startdate'], 0, 10); ?> (the first day of the convention)'>
                                         <?php foreach ($membershiptypes as $memType) { ?>
-                                            <option value='<?php echo $memType['memGroup'];?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price'];?>)</option>
+                                            <option value='<?php echo $memType['id'];?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price'];?>)</option>
                                         <?php    } ?>
                                     </select>
                                 </div>
@@ -588,8 +588,18 @@ We will post a notice when online registration opens on the
 <a href="<?php echo escape_quotes($ini['registrationpage']); ?>">The <?php echo $con['conname']; ?> Registration Page</a>.  Mail-in forms are also available on that page.</p>
 
 <?php } ?>
-<p class="text-body"><a href="<?php echo escape_quotes($con['policy']);?>" target="_blank">Click here for the <?php echo $con['policytext']; ?></a>.<br/>
-For more information about <?php echo $con['conname']; ?> please email <a href="mailto:<?php echo escape_quotes($con['infoemail']); ?>"><?php echo $con['infoemail']; ?></a>.<br/>
-For questions about <?php echo $con['conname']; ?> Registration, email <a href="mailto:<?php echo escape_quotes($con['regemail']); ?>"><?php echo $con['regemail']; ?></a>.</p>
+    <div class='container-fluid'>
+        <div class="row mt-2">
+            <div class="col-sm-6">
+                <p class='text-body'><a href="<?php echo escape_quotes($con['policy']); ?>" target='_blank'>Click here for
+                        the <?php echo $con['policytext']; ?></a>.<br/>
+                    For more information about <?php echo $con['conname']; ?> please email <a
+                            href="mailto:<?php echo escape_quotes($con['infoemail']); ?>"><?php echo $con['infoemail']; ?></a>.<br/>
+                    For questions about <?php echo $con['conname']; ?> Registration, email <a
+                            href="mailto:<?php echo escape_quotes($con['regemail']); ?>"><?php echo $con['regemail']; ?></a>.</p>
+            </div>
+            <?php drawBug(6); ?>
+        </div>
+    </div>
 </body>
 </html>

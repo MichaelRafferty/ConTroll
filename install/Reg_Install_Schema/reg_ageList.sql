@@ -16,8 +16,8 @@ CREATE TABLE `ageList` (
   `label` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `shortname` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `sortorder` int NOT NULL,
+  `badgeFlag` varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`conid`,`ageType`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
--- Dump completed on 2023-12-21 16:26:32

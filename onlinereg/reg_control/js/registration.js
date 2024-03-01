@@ -1061,17 +1061,17 @@ function draw_record(row, first) {
     <div class="row mt-2">
         <div class="col-sm-3 pt-1 pb-1">`;
     if (first) {
-        html += `<button class="btn btn-primary btn-small" id="add_btn_all" onclick="add_to_cart(-` + number_search + `, 'result');">Add All Cart</button>`;
+        html += `<button class="btn btn-primary btn-sm" id="add_btn_all" onclick="add_to_cart(-` + number_search + `, 'result');">Add All Cart</button>`;
     }
     html += `</div>
         <div class="col-sm-5 pt-1 pb-1">`;
     if (cart.notinCart(data['perid'])) {
         if (data['banned'] == 'Y') {
             html += `
-            <button class="btn btn-danger btn-small" id="add_btn_1" onclick="add_to_cart(` + row + `, 'result');">B</button>`;
+            <button class="btn btn-danger btn-sm" id="add_btn_1" onclick="add_to_cart(` + row + `, 'result');">B</button>`;
         } else {
             html += `
-            <button class="btn btn-success btn-small" id="add_btn_1" onclick="add_to_cart(` + row + `, 'result');">Add to Cart</button>`;
+            <button class="btn btn-success btn-sm" id="add_btn_1" onclick="add_to_cart(` + row + `, 'result');">Add to Cart</button>`;
         }
     } else {
         html += `
@@ -1510,11 +1510,11 @@ function found_record(data) {
                 { column: "names", dir: "asc" },
             ],
             columns: [             
-                { title: "TID", field: "tid", headerFilter: true, headerWordWrap: true, width: 50, maxWidth: 50, hozAlign: 'right', },
+                { title: "TID", field: "tid", headerFilter: true, headerWordWrap: true, width: 70, maxWidth: 70, hozAlign: 'right', },
                 { title: "Names", field: "names", headerFilter: true, headerSort: true, headerWordWrap: true, tooltip: true, },
-                { title: "#M", field: "num_mem", minWidth: 30, maxWidth: 30, headerSort: false, hozAlign: 'right', },
-                { title: "Price", field: "price", maxWidth: 50, minWidth: 50, headerSort: false, hozAlign: 'right', },
-                { title: "Paid", field: "paid", maxWidth: 50, minWidth: 50, headerSort: false, hozAlign: 'right', },
+                { title: "#M", field: "num_mem", minWidth:50, maxWidth: 50, headerSort: false, hozAlign: 'right', },
+                { title: "Price", field: "price", maxWidth: 80, minWidth: 80, headerSort: false, hozAlign: 'right', },
+                { title: "Paid", field: "paid", maxWidth: 80, minWidth: 80, headerSort: false, hozAlign: 'right', },
                 { title: "Cart", width: 50, formatter: addCartIcon, formatterParams: {t:"unpaid"}, headerSort: false, },
                 { field: "index", visible: false, },
             ],
@@ -1608,7 +1608,7 @@ function found_record(data) {
     id_div.innerHTML = `"container-fluid">
     <div class="row mt-3">
         <div class="col-sm-4">No matching records found</div>
-        <div class="col-sm-auto"><button class="btn btn-primary btn-small" type="button" id="not_found_add_new" onclick="not_found_add_new();">Add New Person</button>
+        <div class="col-sm-auto"><button class="btn btn-primary btn-sm" type="button" id="not_found_add_new" onclick="not_found_add_new();">Add New Person</button>
         </div>
     </div>
 </div>
@@ -2130,7 +2130,7 @@ function pay_shown() {
 ` + couponSelect + `
         </div>
         <div class="col-sm-auto ms-0 me-0 p-0">
-            <button class="btn btn-secondary btn-small" type="button" id="pay-btn-coupon" onclick="apply_coupon('a');">Apply Coupon</button>
+            <button class="btn btn-secondary btn-sm" type="button" id="pay-btn-coupon" onclick="apply_coupon('a');">Apply Coupon</button>
         </div>  
     </div>
 `;
@@ -2141,7 +2141,7 @@ function pay_shown() {
         <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
         <div class="col-sm-auto ms-0 me-2 p-0">` + coupon.getNameString() + `</div>
          <div class="col-sm-auto ms-0 me-0 p-0">
-            <button class="btn btn-secondary btn-small" type="button" id="pay-btn-coupon" onclick="apply_coupon('r');">Remove Coupon</button>
+            <button class="btn btn-secondary btn-sm" type="button" id="pay-btn-coupon" onclick="apply_coupon('r');">Remove Coupon</button>
         </div>  
     </div>
     <div class="row mt-1">
@@ -2210,10 +2210,10 @@ function pay_shown() {
     <div class="row mt-3">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="pay-btn-pay" onclick="pay('');">Confirm Pay</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-pay" onclick="pay('');">Confirm Pay</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="pay-btn-ercpt" onclick="email_receipt('email');" hidden disabled>Email Receipt</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-ercpt" onclick="email_receipt('email');" hidden disabled>Email Receipt</button>
         </div>
     </div>
     <div id="receeiptEmailAddresses" class="container-fluid"></div>

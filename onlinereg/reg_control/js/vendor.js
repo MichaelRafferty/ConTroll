@@ -1,6 +1,1021 @@
+//import { TabulatorFull as Tabulator } from 'tabulator-tables';
+// globals required for exhibitorProfile.js
+exhibitor_info = null;
+exhibitorProfile = null;
+region_list = null;
+exhibits_spaces = null;
+exhibitor_spacelist = null;
+regions = null;
+spaces =null;
+country_options = null;
+tabname = null;
+regionid = null;
+
+// exhibitors class - functions for spae ownerto review and approve spaces requested by exhibitors
+class exhibitorsAdm {
+
+    // global items
+    #conid = null;
+    #debug = 0;
+    #debugVisible = false;
+    #message_div = null;
+    #result_message_div = null;
+
+    // Space items
+    #spacesTable = null;
+    #spaceRow = null;
+    #exhibitorId = null;
+    #regionId = null;
+    #regionYearId = null;
+    #regionGroupId = '';
+
+    // approvals items
+    #approvalsTable = null;
+    #approvalValues = ['none', 'requested', 'approved', 'denied', 'hide'];
+    #approvalRow = null;
+
+    // exhibitor items
+    #exhibitorsTable = null;
+    #pricelists = null;
+    #importModal = null;
+    #importHTML = null;
+    #importTable = null;
+
+    // Owner items
+    #ownerTabs = {};
+    #currentOwner = null;
+
+    // Region items
+    #currentRegion = null;
+    #regionTabs = {};
+
+    // Spaces items
+    #currentSpace = null;
+    #spacesTabs = {};
+
+    constructor(conid, debug) {
+        this.#debug = debug;
+        this.#conid = conid;
+        this.#message_div = document.getElementById('test');
+        this.#result_message_div = document.getElementById('result_message');
+        var id = document.getElementById('profile');
+
+        if (this.#debug & 1) {
+            console.log("Debug = " + debug);
+            console.log("conid = " + conid);
+        }
+        if (this.#debug & 2) {
+            this.#debugVisible = true;
+        }
+
+        // exhibitors
+        exhibitorProfile = new ExhibitorProfile(this.#debug, config['portalType']);
+        id = document.getElementById("import_exhibitor");
+        if (id)
+            this.#importModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+        this.#importHTML = document.getElementById('importHTML');
+
+        // owners
+        this.#ownerTabs['overview'] = document.getElementById('overview-content');
+        this.#currentOwner = this.#ownerTabs['overview'];
+        var ownerKeys = Object.keys(regionOwners);
+        for (var idO in ownerKeys) {
+            var owner = ownerKeys[idO];
+            var ownerId = owner.replaceAll(' ', '-');
+            this.#ownerTabs[ownerId] = document.getElementById(ownerId + '-content');
+
+            // regions within owners
+            var regions = regionOwners[owner];
+            var regionKeys = Object.keys(regions);
+            for (var idR in regionKeys) {
+                var region = regions[regionKeys[idR]];
+                var regionId = region['name'].replaceAll(' ', '-');
+                this.#regionTabs[regionId] = document.getElementById(regionId + '-div');
+            }
+        }
+
+        if (this.#debug & 4) {
+            console.log("ownerTabs");
+            console.log(this.#ownerTabs);
+            console.log("regionTabs");
+            console.log(this.#regionTabs);
+        }
+    };
+
+    // common code for changing tabs
+    // top level - overview, owner
+    settabOwner(tabname) {
+        // need to add the do you wish to save dirty data item
+        clearError();
+        clear_message();
+        var content = tabname.replace('-pane', '');
+
+        if (this.#currentOwner)
+            this.#currentOwner.hidden = true;
+        this.#ownerTabs[content].hidden = false;
+        this.#currentOwner = this.#ownerTabs[content];
+        if (this.#currentRegion) {
+            this.#currentRegion.hidden = true;
+            this.#currentRegion = null;
+        }
+        var ownerLookup = regionOwnersTabNames[tabname];
+        var regions = regionOwners[ownerLookup];
+        var regionKey = Object.keys(regions)[0];
+        var region = regions[regionKey];
+        this.settabRegion(region['name'].replaceAll(' ', '-') + '-pane');
+    }
+
+    // second level - region
+    settabRegion(tabname) {
+        // need to add the do you wish to save dirty data item
+        clearError();
+        clear_message();
+        var content = tabname.replace('-pane', '');
+        if (this.#currentRegion)
+            this.#currentRegion.hidden = true;
+        this.#regionTabs[content].hidden = false;
+        this.#currentRegion = this.#regionTabs[content];
+
+        // now re-draw the specific tab
+        this.open(tabname);
+    }
+
+    settabData(tabname) {
+        clearError();
+        clear_message();
+
+        var content = tabname.replace('-pane', '');
+        if (this.#currentSpace)
+            this.#currentSpace.hidden = true;
+        this.#spacesTabs[content].hidden = false;
+        this.#currentSpace = this.#spacesTabs[content];
+    }
+
+    // open(tabname) - fetch the data and re-draw the region tab
+    open(newtabname) {
+        if (this.#debug & 1)
+            console.log("opening " + tabname)
+
+        tabname = regionTabNames[newtabname]['name'];
+        regionid = regionTabNames[newtabname]['id'];
+        // get the data for this tab
+        $.ajax({
+            url: "scripts/exhibitorsGetData.php",
+            method: "POST",
+            data: { region: tabname, regionId: regionid },
+            success: getExhibitorDataDraw,
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in getExhibitorData: " + textStatus, jqXHR);
+                return false;
+            }
+        })
+    }
+
+    draw(data) {
+        if (data['error']) {
+            show_message(data['error'], 'error');
+            this.#message_div.innerHTML = "Query:\n" + data['query'] + "\n\n" + "Args: " + data['args'].toString();
+            return;
+        }
+        this.#message_div.innerHTML = '';
+        this.#pricelists = data['price_list'];
+
+        if (this.#debug & 8)
+            console.log(data);
+
+        var regionName = data['post']['region'];
+        var divId = regionName.replaceAll(' ','-') + '-div';
+        var dataDiv = document.getElementById(divId)
+
+        // build up the html for this tab
+        var html = this.drawSummary(data);
+        // add in tabs for spaces, approvals and exhibitor
+        var region = regions[regionName];
+        var groupid = 'data-' + region['id'];
+        this.#regionGroupId = groupid;
+        html += "<ul class='nav nav-tabs mb-3' id='" + groupid + "-tab' role='tablist'>\n" +
+            "<li class='nav-item' role='presentation'>\n" +
+            "<button class='nav-link active' id='" + groupid + "-spaces-tab' data-bs-toggle='pill' data-bs-target='#" + groupid + "-spaces-pane' type='button' role='tab' aria-controls='nav-spaces'\n" +
+            "       aria-selected='true' onclick=" + '"' + "exhibitors.settabData('" + groupid + "-spaces-pane');" + '"' + ">Space Requests\n" +
+            "</button>\n" +
+            "</li>\n";
+        if (region['requestApprovalRequired'] != 'None') {
+            html += "<li class='nav-item' role='presentation'>\n" +
+                "<button class='nav-link' id='" + groupid + "-app-tab' data-bs-toggle='pill' data-bs-target='#" + groupid + "-app-pane' type='button' role='tab' aria-controls='nav-app'\n" +
+                "       aria-selected='false' onclick=" + '"' + "exhibitors.settabData('" + groupid + "-app-pane');" + '"' + ">Approval Requests\n" +
+                "</button>\n" +
+                "</li>\n";
+        }
+        html += "<li class='nav-item' role='presentation'>\n" +
+            "<button class='nav-link' id='" + groupid + "-exh-tab' data-bs-toggle='pill' data-bs-target='#" + groupid + "-exh-pane' type='button' role='tab' aria-controls='nav-exh'\n" +
+            "       aria-selected='false' onclick=" + '"' + "exhibitors.settabData('" + groupid + "-exh-pane');" + '"' + ">Exhibitors Information\n" +
+            "</button>\n" +
+            "</li>\n";
+        html += "</ul>\n";
+
+        html += this.drawSpaces(data, groupid);
+        if (region['requestApprovalRequired'] != 'None') {
+            html += this.drawApprovals(data,  groupid);
+        }
+        html += this.drawExhibitors(data, groupid);
+        dataDiv.innerHTML = html;
+
+        this.#spacesTabs = {}
+        this.#spacesTabs[groupid + '-spaces'] = document.getElementById(groupid + '-spaces-content');
+        this.#spacesTabs[groupid + '-app'] = document.getElementById(groupid + '-app-content');
+        this.#spacesTabs[groupid + '-exh'] = document.getElementById(groupid + '-exh-content');
+        this.settabData(groupid + '-spaces-pane');
+        this.drawSpacesTable(data,  groupid, true);
+        if (region['requestApprovalRequired'] != 'None') {
+            this.drawApprovalsTable(data, groupid);
+        }
+        this.drawExhibitorsTable(data,  groupid);
+    }
+
+    redraw(data) {
+        var regionName = data['post']['region'];
+        var region = regions[regionName];
+        this.drawSpacesTable(data,  null, false);
+        if (region['requestApprovalRequired'] != 'None') {
+            this.#approvalsTable.replaceData(data['approvals']);
+        }
+        this.#exhibitorsTable.replaceData(data['exhibitors']);
+    }
+    // summary status at the top of the screen
+    drawSummary(data) {
+        var summary = data['summary'];
+        if (!summary)
+            return;
+
+        var html = '<div class="container-fluid">';
+
+        for (var spaceid in summary) {
+            var space = summary[spaceid];
+            var remaining =  space['unitsAvailable'] - space['approved'];
+            html += `    <div class="row mt-0 mb-0 p-0">
+        <div class="col-sm-auto">
+            <span style="font-size: 125%; font-weight: bold;">` + space['name'] + ` Registrations: </span>
+        </div>
+        <div class="col-sm-auto ms-2 pt-1">New: ` + space['new'] + `</div>
+        <div class="col-sm-auto ms-2 pt-1">Pending: ` + space['pending'] + `</div>
+        <div class="col-sm-auto ms-2 pt-1">Purchased: ` + space['purchased'] + `</div>
+        <div class="col-sm-auto ms-2 pt-1">Remaining: ` + remaining + `</div>
+    </div>
+        `;
+        }
+
+        html += '<hr/></div>';
+        return html;
+    }
+
+    // drawSpaces
+    // update the space detail section from the detail portion of the returned data
+    drawSpaces(data, groupid) {
+        if (this.#spacesTable !== null) {
+            this.#spacesTable.destroy();
+            this.#spacesTable = null;
+        }
+        var html = "<div class='tab-content ms-2' id='" + groupid + "-spaces-content' hidden>\n" +
+            "<div class='container-fluid'>\n" +
+            "    <div class='row'>\n" +
+            "        <div class='col-sm-12' id='" + groupid + "-spaces-table-div'></div>\n" +
+            "    </div>\n" +
+            "    <div class='row mt-2'>\n" +
+            "        <div class='col-sm-12'>\n" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addVendorSpaceBtn' onClick=" + '"exhibitors.addNewSpace();"' + ">Add New Exhibitor Space</button>\n" +
+            "        </div>\n" +
+            "    </div>\n" +
+            "</div></div>\n"
+
+        return html;
+    }
+
+    // drawApprovals
+    // update the approvals detail section from the detail portion of the returned data
+    drawApprovals(data, groupid) {
+        if (this.#approvalsTable !== null) {
+            this.#approvalsTable.destroy();
+            this.#approvalsTable = null;
+        }
+        var html = "<div class='tab-content ms-2' id='" + groupid + "-app-content' hidden>\n" +
+            "<div class='container-fluid'>\n" +
+            "    <div class='row'>\n" +
+            "        <div class='col-sm-12' id='" + groupid + "-app-table-div'></div>\n" +
+            "    </div>\n" +
+            "</div></div>\n"
+
+        return html;
+    }
+
+    // drawExhibitors
+    // update the exhibitor detail section from the detail portion of the returned data
+    drawExhibitors(data, groupid) {
+        if (this.#exhibitorsTable !== null) {
+            this.#exhibitorsTable.destroy();
+            this.#exhibitorsTable = null;
+        }
+        var html = "<div class='tab-content ms-2' id='" + groupid + "-exh-content' hidden>\n" +
+            "<div class='container-fluid'>\n" +
+            "    <div class='row'>\n" +
+            "        <div class='col-sm-12' id='" + groupid + "-exh-table-div'></div>\n" +
+            "    </div>\n" +
+            "    <div class='row mt-2'>\n" +
+            "        <div class='col-sm-12'>\n" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn' onClick=" + '"exhibitors.addNew();"' + ">Add New Exhibitor</button>\n" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='importExhibitorBtn' onClick=" + '"exhibitors.importPast();"' + ">Import Past Exhibitors</button>\n" +
+            "        </div>\n" +
+            "    </div>\n" +
+            "</div></div>\n"
+
+        return html;
+    }
+
+    // drawSpacesTable - now that the DOM is created, draw the actual table
+    drawSpacesTable(data, groupid, newTable) {
+        // build new data array
+        var regions = [];
+        var region = null;
+        var currentRegion = -1;
+        var spaces = data['detail'];
+        var spaceKeys = Object.keys(spaces);
+        var spaceHTML = '';
+        var req = 0;
+        var app = 0;
+        var pur = 0;
+        for (var idS in spaceKeys) {
+            var space = spaces[idS];
+            var newRegion = space['exhibitsRegionYearId'];
+            if (newRegion != currentRegion) {
+                // change in region
+                if (currentRegion > 0) {
+                    region['space'] = spaceHTML + "</div>";
+                    region['req'] = req;
+                    region['app'] = app;
+                    region['pur'] = pur;
+                    regions[currentRegion] = make_copy(region);
+                    spaceHTML = '';
+                    req = 0;
+                    app = 0;
+                    pur = 0;
+                }
+                currentRegion = newRegion;
+                spaceHTML = '<div class="container-fluid">';
+                req += space['requested_units'];
+                app += space['approved_units'];
+                pur += space['purchased_units'];
+                region = {
+                    id: space['exhibitorId'],
+                    exhibitorNumber: space['exhibitorNumber'],
+                    eYRid: currentRegion,
+                    regionId: space['regionId'],
+                    regionYearId: space['exhibitsRegionYearId'],
+                    exhibitorId: space['exhibitorId'],
+                    exhibitorName: space['exhibitorName'],
+                    website: space['website'],
+                    exhibitorEmail: space['exhibitorEmail'],
+                    agentRequest: 'abc', //space['agentRequest'],
+                    agentName: space['agentName'],
+                    transid: space['transid'],
+                    s1: space['b1'],
+                    s2: space['b2'],
+                    s3: space['b3'],
+                    s4: space['b4'],
+                };
+            }
+            // add the space data as a formatted region
+            if (space['requested_units'] > 0 || space['approved_units'] > 0 || space['purchased_units'] > 0) {
+                spaceHTML += '<div class="row">' +
+                    '<div class="col-sm-12"><STRONG>' + space['spaceName'] + '</STRONG></div></div>';
+
+                if (blankIfNull(space['requested_units']) != '') {
+                    spaceHTML += '<div class="row"><div class="col-sm-2' + (blankIfNull(space['approved_units']) == '' ? ' text-danger' : '') + '">Requested: </div>' +
+                        '<div class="col-sm-2 text-right">' + blankIfNull(space['requested_units']) + '</div>' +
+                        '<div class="col-sm-3">' + blankIfNull(space['requested_description']) + '</div>' +
+                        '<div class="col-sm-4">' + blankIfNull(space['time_requested']) + '</div>' +
+                        '</div>';
+                }
+
+                if (blankIfNull(space['approved_units']) != '') {
+                    spaceHTML += '<div class="row"><div class="col-sm-2">Approved: </div>' +
+                        '<div class="col-sm-2 text-right">' + blankIfNull(space['approved_units']) + '</div>' +
+                        '<div class="col-sm-3">' + blankIfNull(space['approved_description']) + '</div>' +
+                        '<div class="col-sm-4">' + blankIfNull(space['time_approved']) + '</div>' +
+                        '</div>';
+                }
+
+                if (blankIfNull(space['purchased_units']) != '') {
+                    spaceHTML += '<div class="row"><div class="col-sm-2">Purchased: </div>' +
+                        '<div class="col-sm-2 text-right">' + blankIfNull(space['purchased_units']) + '</div>' +
+                        '<div class="col-sm-3">' + blankIfNull(space['purchased_description']) + '</div>' +
+                        '<div class="col-sm-4">' + blankIfNull(space['time_purchased']) + '</div>' +
+                        '</div>';
+                }
+            }
+            // now do agent stuff
+            if (blankIfNull(region['agentRequest']) != '') {
+                spaceHTML += '<div class="row"><div class="col-sm-4">Agent Request: </div>' +
+                    '<div class="col-sm-8">' + blankIfNull(region['agentRequest']) + '</div>' +
+                    '</div>';
+            }
+            if (blankIfNull(region['agentName']) != '') {
+                spaceHTML += '<div class="row"><div class="col-sm-4">Agent Name: </div>' +
+                    '<div class="col-sm-8">' + blankIfNull(region['agentName']) + '</div>' +
+                    '</div>';
+            }
+        }
+        if (currentRegion > 0) {
+            region['space'] = spaceHTML + "</div>";
+            region['req'] = req;
+            region['app'] = app;
+            region['pur'] = pur;
+            regions.push(make_copy(region));
+        }
+
+        if (this.#debug & 8) {
+            console.log("regions:");
+            console.log(regions);
+        }
+        if (newTable) {
+            var _this = this;
+            this.#spacesTable = new Tabulator('#' + groupid + '-spaces-table-div', {
+                data: regions,
+                layout: "fitDataTable",
+                index: 'id',
+                pagination: true,
+                paginationSize: 25,
+                paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+                columns: [
+                    {title: "ID", field: "id", visible: true, width: 65, },
+                    {title: "RegionId", field: "regionId", visible: false},
+                    {title: "Exh Num", field: "exhibitorNumber", headerWordWrap: true, width: 75 },
+                    {title: "regionYearId", field: "regionYearId", visible: false},
+                    {field: "transid", visible: false},
+                    {field: "app", visible: false},
+                    {field: "req", visible: false},
+                    {field: "pur", visible: false},
+                    {title: "exhibitorId", field: "exhibitorId", visible: false},
+                    {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true,},
+                    {title: "Website", field: "website", width: 200, headerSort: true, headerFilter: true,},
+                    {title: "Email", field: "exhibitorEmail", width: 200, headerSort: true, headerFilter: true,},
+                    {title: "Requested, Approved, Purchased", field: "space", width: 750, formatter: this.htmlFormatter, variableHeight: true,},
+                    {
+                        title: "",
+                        field: "s1",
+                        formatter: this.spaceApprovalButton,
+                        formatterParams: {name: 'Approve Req'},
+                        maxWidth: 200,
+                        hozAlign: "center",
+                        cellClick: _this.spApprovalReq,
+                        headerSort: false,
+                    },
+                    {
+                        title: "",
+                        field: "s2",
+                        formatter: this.spaceApprovalButton,
+                        formatterParams: {name: 'Approve Other'},
+                        maxWidth: 200,
+                        hozAlign: "center",
+                        cellClick: _this.spApprovalOther,
+                        headerSort: false,
+                    },
+                    {
+                        title: "",
+                        field: "s3",
+                        formatter: this.spaceApprovalButton,
+                        formatterParams: {name: 'Receipt'},
+                        maxWidth: 200,
+                        hozAlign: "center",
+                        cellClick: _this.spReceipt,
+                        headerSort: false,
+                    },
+                    {
+                        title: "",
+                        field: "s4",
+                        formatter: this.spaceApprovalButton,
+                        formatterParams: {name: 'Agent'},
+                        maxWidth: 200,
+                        hozAlign: "center",
+                        cellClick: _this.spAgent,
+                        headerSort: false,
+                    },
+                ]});
+        } else {
+            this.#spacesTable.replaceData(regions);
+        }
+    }
+
+    // drawApprovalsTable - now that the DOM is created, draw the actual table
+    drawApprovalsTable(data, groupid) {
+        this.#approvalsTable = new Tabulator('#' + groupid + '-app-table-div', {
+            data: data['approvals'],
+            layout: "fitDataTable",
+            pagination: true,
+            paginationSize: 25,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            columns: [
+                {title: "Exhibitor Approval Requests Detail:", columns: [
+                        {title: "Region", field: "name", headerSort: true, headerFilter: true },
+                        {title: "id", field: "id", visible: false},
+                        {title: "exhibitorId", field: "exhibitorId", visible: false},
+                        {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true,},
+                        {title: "Website", field: "website", headerSort: true, headerFilter: true,},
+                        {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true,},
+                        {title: "Approval", field: "approval", headerSort: true, headerFilter: 'list', headerFilterParams: {values: this.#approvalValues},},
+                        {title: "Timestamp", field: "updateDate", headerSort: true, },
+                        {title: "", field: "b1", formatter: this.approvalButton, formatterParams: {name: 'Approve'}, width: 100, hozAlign: "center", cellClick: this.exhApprove, headerSort: false,},
+                        {title: "", field: "b2", formatter: this.approvalButton, formatterParams: {name: 'Reset'}, width: 80, hozAlign: "center", cellClick: this.exhReset, headerSort: false,},
+                        {title: "", field: "b3", formatter: this.approvalButton, formatterParams: {name: 'Deny'}, width: 80, hozAlign: "center", cellClick: this.exhDeny, headerSort: false,},
+                        {title: "", field: "b4", formatter: this.approvalButton, formatterParams: {name: 'Hide'}, width: 80, hozAlign: "center", cellClick: this.exhHide, headerSort: false,},
+                    ]
+                }
+            ]
+        });
+    }
+
+    // drawExhibitorsTable
+    // update the exhibitors div with the table of exhibitors
+    drawExhibitorsTable(data, groupid) {
+        this.#exhibitorsTable = new Tabulator('#' + groupid + '-exh-table-div', {
+            data: data['exhibitors'],
+            layout: "fitDataTable",
+            pagination: true,
+            paginationSize: 25,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            columns: [
+                {title: "Vendors:", columns: [
+                        {title: "Exhibitor Id", field: "exhibitorId", visible: false,},
+                        {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true, tooltip: this.buildRecordHover,},
+                        {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true,},
+                        {title: "Phone", field: "exhibitorPhone", width: 140, headerSort: true, headerFilter: true,},
+                        {title: "Website", field: "website", headerSort: true, headerFilter: true,},
+                        {title: "Contact Id", field: "contactId", visible: false, },
+                        {title: "Contact Name", field: "contactName", headerSort: true, headerFilter: true, },
+                        {title: "Contact Email", field: "contactEmail", headerSort: true, headerFilter: true,},
+                        {title: "Con Phone", field: "contactPhone", width: 140, headerSort: true, headerFilter: true,},
+                        {title: "City", field: "city", width: 140, headerSort: true, headerFilter: true,},
+                        {title: "State", field: "state", headerSort: true, headerFilter: true,},
+                        {title: "", formatter: this.editbutton, hozAlign: "center", cellClick: this.edit, headerSort: false,},
+                        {title: "", formatter: this.resetpwbutton, formatterParams: {name: 'Exh'}, hozAlign: "center", cellClick: this.resetpw, headerSort: false,},
+                        {title: "", formatter: this.resetpwbutton, formatterParams: {name: 'Con'}, hozAlign: "center", cellClick: this.resetCpw, headerSort: false,},
+                    ]
+                }
+            ]
+        });
+    }
+
+    // show the full vendor record as a hover in the table
+    buildRecordHover(e, cell, onRendered) {
+        var data = cell.getData();
+        //console.log(data);
+        var hover_text = 'Exhibitor id: ' + data['id'] + '<br/>' +
+            data['exhibitorName'] + '<br/>' +
+            'Website: ' + data['website'] + '<br/>' +
+            data['addr'] + '<br/>';
+        if (data['addr2'] != '') {
+            hover_text += data['addr2'] + '<br/>';
+        }
+        hover_text += data['city'] + ', ' + data['state'] + ' ' + data['zip'] + '<br/>' +
+            data['country'] + '<br/>' +
+            'Needs New Password: ' + (data['needs_new'] ? 'Yes' : 'No') +  '<br/>' +
+            'Publicize: ' + (data['publicity'] ? 'Yes' : 'No') +  '<br/>';
+        hover_text += 'Description:<br/>&nbsp;&nbsp;&nbsp;&nbsp;' + data['description'].replaceAll('\n', '<br/>&nbsp;&nbsp;&nbsp;&nbsp;');
+        return hover_text;
+    }
+
+    // importPastModalOpen
+    // get the available past vendors for the import and show the modal
+    importPastModalOpen() {
+        this.#importHTML.innerHTML = "<div class='row'><div class='col-sm-12' id='Importtable'></div></div>";
+        if (this.#importTable) {
+            this.#importTable.off("rowClick");
+            this.#importTable.destroy();
+            this.#importTable = null;
+        }
+        $.ajax({
+            url: 'scripts/exhibitorsGetPastForImport.php',
+            method: "POST",
+            data: { portalType: 'admin', portalName: 'Admin' },
+            success: function (data, textstatus, jqXHR) {
+                exhibitors.importDataSuccess(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in exhibitorsGetPastForImport: " + textStatus, jqXHR);
+            }
+        });
+    }
+
+    // process the data and draw the table
+    importDataSuccess(data) {
+        if (data['status'] == 'warn') {
+            show_message($data['message'], 'warn');
+            return;
+        }
+        if (data['status'] == 'error') {
+            show_message($data['message'], 'error');
+            return;
+        }
+        var _this = this;
+        this.#importTable = new Tabulator('#Importtable', {
+            data: data['past'],
+            layout: "fitDataTable",
+            index: 'id',
+            pagination: true,
+            paginationSize: 25,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            columns: [
+                { title: "Import", field: "import", headerSort: true, hozAlign: "center", formatter:"tickCross", editorParams: { tristate: false, }, },
+                { title: "ID", field: 'id', headerSort: true, },
+                { title: "Exh Nbr", field: "exhibitorNumber", headerSort: true, headerWordWrap: true, width: 80, },
+                { title: "Exhibitor Name", field: "exhibitorName", headerSort: true, headerFilter: true, width: 300, },
+                { title: "Exhibitor Website", field: "website", headerSort: true, headerFilter: true, width: 200, },
+                { title: "Exhibitor Email", field: "exhibitorEmail", headerSort: true, headerFilter: true, width: 300, },
+                { title: "Contact Name", field: "contactName", headerSort: true, headerFilter: true, width: 300, },
+                { title: "Contact Email", field: "contactEmail", headerSort: true, headerFilter: true, width: 300, },
+                { title: "City", field: "city", headerSort: true, headerFilter: true, width: 150 },
+                { title: "State", field: "state", headerSort: true, headerFilter: true, width: 60 },
+                { title: "Zip", field: "zip", headerSort: true, headerFilter: true, width: 120 },
+        ]});
+        this.#importTable.on("rowClick", function(e, row){
+            var cell = row.getCell('import');
+            var contents = cell.getValue();
+            contents = !contents;
+            cell.setValue(contents);
+        });
+
+        this.#importModal.show();
+    }
+
+    importPastExhibitors() {
+        var data = this.#importTable.getData();
+        this.#importModal.hide();
+        $.ajax({
+            url: 'scripts/exhibitorsImportPast.php',
+            method: "POST",
+            data: { past: JSON.stringify(data) },
+            success: function (data, textstatus, jqXHR) {
+                exhibitors.importSuccess(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in exhibitorsImportPast: " + textStatus, jqXHR);
+            }
+        });
+    }
+
+    importSuccess(data) {
+        this.#exhibitorsTable.replaceData(data['exhibitors']);
+    }
+
+// add new functions
+    addNew() {
+        exhibitorProfile.profileModalOpen('add');
+    }
+
+    importPast() {
+        exhibitors.importPastModalOpen();
+    }
+
+// button callout functions
+    edit(e, cell) {
+        var exhibitorRow = cell.getRow()
+        var exhibitorData = exhibitorRow.getData();
+        exhibitors.editExhibitor(exhibitorData, exhibitorRow);
+    }
+
+    // approve an approval request
+    exhApprove(e, cell) {
+        var exhibitorRow = cell.getRow()
+        var exhibitorData = exhibitorRow.getData();
+        if (exhibitorData['b1'] > 0)
+            exhibitors.processApprovalChange('approved', exhibitorData, exhibitorRow);
+    }
+
+    // reset an approval back to request
+    exhReset(e, cell) {
+        var exhibitorRow = cell.getRow()
+        var exhibitorData = exhibitorRow.getData();
+        if (exhibitorData['b1'] > 0)
+            exhibitors.processApprovalChange('requested', exhibitorData, exhibitorRow);
+    }
+
+    // deny an approval request
+    exhDeny(e, cell) {
+        var exhibitorRow = cell.getRow()
+        var exhibitorData = exhibitorRow.getData();
+        if (exhibitorData['b1'] > 0)
+            exhibitors.processApprovalChange('denied', exhibitorData, exhibitorRow);
+    }
+
+    // hid a region (hide status)
+    exhHide(e, cell) {
+        var exhibitorRow = cell.getRow()
+        var exhibitorData = exhibitorRow.getData();
+        if (exhibitorData['b1'] > 0)
+            exhibitors.processApprovalChange('hide', exhibitorData, exhibitorRow);
+    }
+
+
+    // html formatter
+    htmlFormatter(cell, formatterParams, onRendered) {
+        return cell.getValue();
+    }
+    // button formatters
+
+    // edit exhibitor Record
+    editbutton(cell, formatterParams, onRendered) {
+        return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Edit</button>';
+    }
+    // change exhibitor password buttons
+    resetpwbutton(cell, formatterParams, onRendered) {
+        return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Reset' + formatterParams['name'] +
+        'PW</button>';
+    }
+
+    // tabulator button formatters
+    spaceApprovalButton(cell, formatterParams, onRendered) {
+        var name = formatterParams['name'];
+        var data = cell.getData();
+        if (name.startsWith('Approve')) {
+            var req = data['req'] || 0;
+            var app = data['app'] || 0;
+            var pur = data['pur'] || 0;
+
+            if (req > 0 && (pur < app || pur == 0)) {
+                if (app > 0 && name == 'Approve Other')
+                    return '<button class="btn btn-sm btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Change</button>';
+                if (app == 0)
+                    return '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", >' + name + '</button>';
+                }
+            }
+        if (name == 'Receipt' || name == 'Show Receipt') {
+            var transid = data['transid'] || 0;
+            // receipt buttons
+            if (transid > 0)
+                return '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
+        }
+        if (name == 'Agent') {
+            var agentRequest = data['agentRequest'] || '';
+            if (agentRequest != '' && !agentRequest.startsWith('Processed: '))
+                return '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
+        }
+        return '';
+    }
+
+    // request approval buttons
+    approvalButton(cell, formatterParams, onRendered) {
+        var data = cell.getData();
+        var id = data['id'];
+        var b1 = data['b1'];
+        var approval = data['approval'] || 'none';
+        var name = formatterParams['name'];
+        var color = 'secondary';
+
+        switch (approval) {
+            case 'none':
+            case 'requested':
+                if (name == 'Reset' && b1 > 0)
+                    return '';
+                break;
+            case 'approved':
+                if (name == 'Approve' && b1 > 0)
+                    return '';
+                break;
+            case 'denied':
+                if (name == 'Deny' && b1 > 0)
+                    return '';
+                break;
+            case 'hide':
+                if (name == 'Hide' && b1 > 0)
+                    return '';
+                break;
+        }
+
+        if (b1 < 0) {
+            if (name == 'Approve' && b1 == -1) {
+                return "Allocated";
+            }
+            return '';
+        }
+
+        switch (name) {
+            case 'Approve':
+                color = 'primary';
+                break;
+            case 'Reset':
+                color = 'secondary';
+                break;
+            case 'Deny':
+                color = 'warning'
+                break;
+            case 'Hide':
+                color = 'danger';
+                break;
+        }
+        return '<button class="btn btn-sm btn-' + color + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
+    }
+
+    // editExhibitor - Populate edit vendor modal with current data
+    editExhibitor(exhibitor, exhibitorRow = null) {
+        if (this.#debug & 4)
+            console.log(exhibitor);
+    exhibitor_info = exhibitor;
+    exhibitorProfile.profileModalOpen('update', exhibitor['exhibitorId'], exhibitor['contactId'], exhibitorRow);
+    }
+
+    // reset an exhibitor's password
+    resetpw(e, cell) {
+        var exhibitorId = cell.getRow().getCell("exhibitorId").getValue();
+        $.ajax({
+            url: 'scripts/exhibitorsSetPassword.php',
+            method: "POST",
+            data: { 'exhibitorId': exhibitorId, type: 'exhibitor' },
+            success: function (data, textStatus, jqXhr) {
+                if(data['error'] != undefined) { console.log(data['error']); }
+                alert(data['password']);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in emailReceipt: " + textStatus, jqXHR);
+            }
+        });
+    }
+
+    // reset a contact's password
+    resetCpw(e, cell) {
+        var contactId = cell.getRow().getCell("contactId").getValue();
+        $.ajax({
+            url: 'scripts/exhibitorsSetPassword.php',
+            method: "POST",
+            data: { 'contactId': contactId, type: 'contact' },
+            success: function (data, textStatus, jqXhr) {
+                if(data['error'] != undefined) { console.log(data['error']); }
+                alert(data['password']);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in emailReceipt: " + textStatus, jqXHR);
+            }
+        });
+    }
+
+    // processApprovalChange - change the value of the approval record for this exhibitor
+    processApprovalChange(value, approvalData, approvalRow) {
+        this.#approvalRow = approvalRow
+        $.ajax({
+            url: 'scripts/exhibitorsSetApproval.php',
+            method: "POST",
+            data: { approvalData: approvalData, approvalValue: value },
+            success: function (data, textstatus, jqXHR) {
+                exhibitors.approvalChangeSuccess(data);
+                },
+            error: showAjaxError
+        });
+    }
+
+    // approvalChangeSuccess - successful return from setting the record
+    approvalChangeSuccess(data) {
+        if (data['status'] == 'error') {
+            show_message(data['message'], 'error');
+        } else {
+            if (data['message'])
+                show_message(data['message'], 'success')
+            if (this.#approvalRow) {
+                this.#approvalRow.update(data['info']);
+            }
+        }
+    }
+
+    // spaceApprovals - process a space approval
+    spApprovalReq(e, cell) {
+        exhibitors.spaceApprovalReq(e, cell);
+    }
+
+    spApprovalOther(e, cell) {
+        exhibitors.spaceApprovalOther(e, cell);
+    }
+
+    // call the showReceipt
+    spReceipt(e, cell) {
+        exhibitors.spaceReceipt(e, cell);
+    }
+
+    // call process agent request
+    spAgent(e, cell) {
+        exhibitors.spaceAgentRequest(e, cell);
+    }
+
+    // show the receipt
+    spaceReceipt(e, cell) {
+        this.#spaceRow = cell.getRow();
+        var exhibitorData = this.#spaceRow.getData();
+        this.#regionYearId = exhibitorData['regionYearId'];
+        this.#exhibitorId = exhibitorData['exhibitorId'];
+        exhibitorReceipt.showReceipt(this.#regionYearId, this.#exhibitorId);
+    }
+
+    // process appove requested
+    spaceApprovalReq(e, cell) {
+        this.#spaceRow = cell.getRow();
+        var exhibitorData = this.#spaceRow.getData();
+        var req = exhibitorData['req'] || 0;
+        var app = exhibitorData['app'] || 0;
+        var pur = exhibitorData['pur'] || 0;
+        if (req == 0 || pur > 0)
+            return; // suppress click if there is nothing to approve
+
+        $.ajax({
+            url: 'scripts/exhibitorsSpaceApproval.php',
+            method: "POST",
+            data: { exhibitorData: exhibitorData, approvalType: 'req' },
+            success: function (data, textstatus, jqXHR) {
+                exhibitors.spaceApprovalSuccess(data);
+            },
+            error: showAjaxError
+        });
+    }
+
+    // process approve other than requested
+    spaceApprovalOther(e, cell) {
+        this.#spaceRow = cell.getRow();
+        var exhibitorData = this.#spaceRow.getData();
+        var req = exhibitorData['req'] || 0;
+        var app = exhibitorData['app'] || 0;
+        var pur = exhibitorData['pur'] || 0;
+        if (req == 0 || pur > 0)
+            return; // suppress click if there is nothing to approve
+
+        this.#exhibitorId = exhibitorData['exhibitorId'];
+        this.#regionId = exhibitorData['regionId'];
+        this.#regionYearId = exhibitorData['regionYearId'];
+
+        console.log("Space Approval for " + exhibitorData['exhibitorName'] + " of type other");
+
+        $.ajax({
+            url: 'scripts/exhibitorGetSingleData.php',
+            method: "POST",
+            data: { regionId: exhibitorData['regionId'], exhibitorId: exhibitorData['exhibitorId'] },
+            success: function (data, textstatus, jqXHR) {
+                exhibitors.spaceAppDataSuccess(data);
+            },
+            error: showAjaxError
+        });
+
+    }
+
+    // spaceApprovalSuccess - successful return from marking the space approval
+    spaceApprovalSuccess(data) {
+        if (data['status'] == 'error') {
+            show_message(data['message'], 'error');
+        } else {
+            if (data['message'])
+                show_message(data['message'], 'success')
+            this.UpdateSpaceRow(data);
+        }
+    }
+
+    // spaceAppDataSuccess - set Javascript globals and open the request up
+    spaceAppDataSuccess(data) {
+        region_list = data['region_list'];
+        exhibits_spaces = data['exhibits_spaces'];
+        exhibitor_info = data['exhibitor_info'];
+        exhibitor_spacelist = data['exhibitor_spacelist'];
+        regions = data['regions'];
+        spaces = data['spaces'];
+        country_options = data['country_options'];
+        exhibitorRequest.openReq(this.#regionYearId, 2);
+    }
+
+    // update the row just changed
+    UpdateSpaceRow(details) {
+        if (this.#spaceRow) {
+            this.drawSpacesTable(details, this.#regionGroupId, false);
+        }
+    }
+
+    // process the agent request
+    spaceAgentRequest(e, cell) {
+        show_message("Not Yet", 'warn');
+    }
+};
+
+exhibitors = null;
+
+// hook to public class function for exhibitor draw
+function getExhibitorDataDraw(data, textStatus, jqXHR) {
+    exhibitors.draw(data);
+}
+
+function updateExhibitorDataDraw(data, textStatus, jqXHR) {
+    exhibitors.redraw(data);
+}
+
+// create class on page render
+window.onload = function initpage() {
+    exhibitors = new exhibitorsAdm(config['conid'], config['debug']);
+    exhibitorRequestOnLoad();
+    exhibitorReceiptOnLoad();
+}
+
+/*
 var summaryDiv = null;
 var vendortable = null;
-var spacestable = null;
 var update_profile = null;
 var approve_space = null;
 var price_lists = null;
@@ -36,324 +1051,6 @@ $(document).ready(function () {
         space_map[price['id']] = opt;
     }
 });
-
-function getData() {
-    $.ajax({
-        url: "scripts/getVendorData.php",
-        method: "GET",
-        success: draw,
-        error: function (jqXHR, textStatus, errorThrown) {
-            showError("ERROR in getVendorData: " + textStatus, jqXHR);
-            return false;
-        }
-    })
-}
-
-// draw/update the database items into tables on the screen
-function draw(data, textStatus, jqXHR) {
-    draw_summary(data);
-    draw_vendor(data);
-    draw_spaces(data);
-    price_lists = data['price_list'];
-}
-
-// summary status at the top of the screen
-function draw_summary(data) {
-    var summary = data['summary'];
-    if (!summary)
-        return;
-
-    html = '<div class="container-fluid">';
-
-    for (var spaceid in summary) {
-        space = summary[spaceid];
-        remaining =  space['unitsAvailable'] - space['approved'];
-        html += `    <div class="row mt-1 mb-1 p-0">
-        <div class="col-sm-auto">
-            <span style="font-size: 125%; font-weight: bold;">` + space['name'] + ` Registrations: </span>
-        </div>
-        <div class="col-sm-auto ms-2 pt-1">New: ` + space['new'] + `</div>
-        <div class="col-sm-auto ms-2 pt-1">Pending: ` + space['pending'] + `</div>
-        <div class="col-sm-auto ms-2 pt-1">Purchased: ` + space['purchased'] + `</div>
-        <div class="col-sm-auto ms-2 pt-1">Remaining: ` + remaining + `</div>
-    </div>
-        `;
-    }
-
-    html += '</div>';
-    if (summaryDiv == null)
-        summaryDiv = document.getElementById("summary-div");
-
-    summaryDiv.innerHTML = html;
-}
-
-// button formatters
-function editbutton(cell, formatterParams, onRendered) {
-    return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Edit</button>';
-}
-function resetpwbutton(cell, formatterParams, onRendered) {
-    return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">ResetPW</button>';
-}
-
-// show the full vendor record as a hover in the table
-function build_record_hover(e, cell, onRendered) {
-    var data = cell.getData();
-    //console.log(data);
-    var hover_text = 'Vendor id: ' + data['id'] + '<br/>' +
-        data['name'] + '<br/>' +
-        'Website: ' + data['website'] + '<br/>' +
-        data['addr'] + '<br/>';
-    if (data['addr2'] != '') {
-        hover_text += data['addr2'] + '<br/>';
-    }
-    hover_text += data['city'] + ', ' + data['state'] + ' ' + data['zip'] + '<br/>' +
-        'Needs New Password: ' + (data['needs_new'] ? 'Yes' : 'No') +  '<br/>' +
-        'Publicize: ' + (data['publicity'] ? 'Yes' : 'No') +  '<br/>';
-    hover_text += 'Description:<br/>&nbsp;&nbsp;&nbsp;&nbsp;' + data['description'].replaceAll('\n', '<br/>&nbsp;&nbsp;&nbsp;&nbsp;');
-    return hover_text;
-}
-
-// button callout functions
-function edit(e, cell) {
-    vendor = cell.getRow().getData();
-    return editVendor(vendor);
-}
-
-function approval(index, appType) {
-    var row = spacestable.getRow(index);
-    var data = row.getData();
-    var req = data['requested_units'] || 0;
-    var app = data['approved_units'] || 0;
-    var pur = data['purchased_units'] || 0;
-
-    if (req > 0 && (app < pur || pur == 0))
-        approveReq(data, appType);
-
-    return '';
-}
-
-function resetpw(e, cell) {
-    vendor = cell.getRow().getCell("id").getValue();
-    $.ajax({
-        url: 'scripts/setPassword.php',
-        method: "POST",
-        data: { 'vendorId': vendor },
-        success: function (data, textStatus, jqXhr) {
-            if(data['error'] != undefined) { console.log(data['error']); }
-            alert(data['password']);
-        }
-    });
-}
-
-// draw_vendor
-// update the VendorList div with the table of vendors
-function draw_vendor(data) {
-    if (vendortable !== null) {
-        vendortable.destroy();
-        vendortable = null;
-    }
-    vendortable = new Tabulator('#VendorList', {
-        data: data['vendors'],
-        layout: "fitDataTable",
-        pagination: true,
-        paginationSize: 25,
-        paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
-        columns: [
-            {title: "Vendors:", columns: [
-                    {title: "id", field: "id", visible: false},
-                    {title: "Name", field: "name", headerSort: true, headerFilter: true, tooltip: build_record_hover,},
-                    {title: "Email", field: "email", headerSort: true, headerFilter: true,},
-                    {title: "Website", field: "website", headerSort: true, headerFilter: true,},
-                    {title: "City", field: "city", headerSort: true, headerFilter: true,},
-                    {title: "State", field: "state", headerSort: true, headerFilter: true,},
-                    {title: "", formatter: editbutton, hozAlign: "center", cellClick: edit, headerSort: false,},
-                    {title: "", formatter: resetpwbutton, hozAlign: "center", cellClick: resetpw, headerSort: false,},
-                ]
-            }
-        ]
-    });
-}
-
-
-// draw_spaces
-// update the space detail section from the detail portion of the returned data
-function draw_spaces(data) {
-    if (spacestable !== null) {
-        spacestable.destroy();
-        spacestable = null;
-    }
-
-    var requested = data['summary']['requested'];
-    var approved = data['summary']['approved'];
-    var purchased = data['summary']['purchased'];
-
-    spacestable = new Tabulator('#SpaceDetail', {
-        data: data['detail'],
-        layout: "fitDataTable",
-        pagination: true,
-        paginationSize: 25,
-        paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
-        columns: [
-            {title: "Vendor Space Detail:", columns: [
-                    {title: "id", field: "id", visible: false},
-                    {title: "vendorId", field: "vendorId", visible: false},
-                    {title: "spaceId", field: "spaceId", visible: false},
-                    {title: "requested_code", field: "requested_code", visible: false},
-                    {title: "approved_code", field: "approved_code", visible: false},
-                    {title: "purchased_code", field: "purchased_code", visible: false},
-                    {title: "Name", field: "vendorName", headerSort: true, headerFilter: true,},
-                    {title: "Website", field: "website", headerSort: true, headerFilter: true,},
-                    {title: "Email", field: "email", headerSort: true, headerFilter: true,},
-                    {title: "Space", field: "spaceName", headerSort: true, headerFilter: true },
-                    {title: "Requested", columns: [
-                            { title: "Units", field: "requested_units", headerSort:false, headerFilter: false, },
-                            { title: "Description", field: "requested_description", headerSort:false, headerFilter: false, },
-                            { title: "Timestamp", field: "time_requested", headerSort:true, headerFilter: false },
-                        ]
-                    },
-                    {title: "Approved", columns: [
-                            { title: "Units", field: "approved_units", headerSort:false, headerFilter: false, },
-                            { title: "Description", field: "approved_description", headerSort:false, headerFilter: false, },
-                            { title: "Timestamp", field: "time_approved", headerSort:true, headerFilter: false },
-                        ]
-                    },
-                    {title: "Purchased", columns: [
-                            { title: "Units", field: "purchased_units", headerSort:false, headerFilter: false, },
-                            { title: "Description", field: "purchased_description", headerSort:false, headerFilter: false, },
-                            { title: "Timestamp", field: "time_purchased", headerSort:true, headerFilter: false },
-                            { field: "transid", visible: false },
-                        ]
-                    },
-                    {title: "", formatter: actionbuttons, hozAlign: "left", headerSort: false,},
-               ]
-            }
-        ]
-    });
-}
-
-// editVendor - Populate edit vendor modal with current data
-function editVendor(vendor) {
-    console.log(vendor);
-    document.getElementById('vendorAddEditTitle').innerHTML = "Update Vendor Profile";
-    document.getElementById('vendorAddUpdatebtn').innerHTML = "Update";
-    document.getElementById("ev_name").value = vendor.name;
-    document.getElementById("ev_email").value = vendor.email;
-    document.getElementById("ev_website").value = vendor.website;
-    document.getElementById("ev_description").value = vendor.description;
-    document.getElementById("ev_addr").value = vendor.addr;
-    document.getElementById("ev_addr2").value = vendor.addr2;
-    document.getElementById("ev_city").value = vendor.city;
-    document.getElementById("ev_state").value = vendor.state;
-    document.getElementById("ev_zip").value = vendor.zip;
-    document.getElementById("ev_publicity").checked = vendor.publicity == 1;
-    document.getElementById("ev_vendorId").value = vendor.id;
-    update_profile.show();
-}
-
-// add a new vendor to the vendors table
-function addNewVendor() {
-    document.getElementById('vendorAddEditTitle').innerHTML = "Add New Vendor";
-    document.getElementById('vendorAddUpdatebtn').innerHTML = "Add";
-    document.getElementById("ev_name").value = '';
-    document.getElementById("ev_email").value = '';
-    document.getElementById("ev_website").value = '';
-    document.getElementById("ev_description").value = '';
-    document.getElementById("ev_addr").value = '';
-    document.getElementById("ev_addr2").value = '';
-    document.getElementById("ev_city").value = '';
-    document.getElementById("ev_state").value = '';
-    document.getElementById("ev_zip").value = '';
-    document.getElementById("ev_publicity").checked = true;
-    document.getElementById("ev_vendorId").value = -1;
-    update_profile.show();
-}
-
-// updateProfile - update the database profile for this vendor
-function updateProfile() {
-    $.ajax({
-        url: 'scripts/updateVendorProfile.php',
-        data: $('#vendor_update').serialize(),
-        method: 'POST',
-        success: function(data, textstatus, jqXHR) {
-            if(data['status'] == 'error') {
-                alert(data['message']);
-            } else {
-                console.log(data);
-                if (data['success'])
-                    show_message(data['success'], 'success');
-                update_profile.hide();
-                getData();
-            }
-        }
-    });
-}
-
-// process approving requested units
-function approveReq(data, appType) {
-    // populate the space in the approval form
-    document.getElementById('sr_vendorId').value = data.vendorId;
-    document.getElementById('sr_spaceId').value = data.spaceId;
-    document.getElementById('sr_id').value = data.id;
-
-    if (appType == 'r') {  // r = approve requested space
-        approveSpace(data.item_requested);
-        return;
-    }
-
-    var btn = document.getElementById('approve_button');
-    if (appType == 'o') {
-        document.getElementById('approve_header').className = "modal-header bg-primary text-bg-primary";
-        btn.className = "btn btn-sm btn-primary";
-        btn.innerHTML = "Approve";
-        document.getElementById('approve_title').innerHTML = "Approve Vendor Space Request";
-    } else if (appType == 'c') {
-        document.getElementById('approve_header').className = "modal-header bg-warning text-bg-warning";
-        btn.className = "btn btn-sm btn-warning";
-        btn.innerHTML = "Change";
-        document.getElementById('approve_title').innerHTML = "Change Vendor Space Approval";
-    } else {
-        show_message("Invalid approval type", 'error');
-        return;
-    }
-
-    document.getElementById('sr_name').innerHTML = data.vendorName;
-    document.getElementById('sr_email').innerHTML = data.email;
-    document.getElementById('sr_website').innerHTML = data.website;
-    document.getElementById('sr_spaceName').innerHTML = data.spaceName;
-    document.getElementById('sr_reqUnits').innerHTML = data.requested_units;
-    document.getElementById('sr_reqDescription').innerHTML = data.requested_description;
-    document.getElementById('sr_appOption').innerHTML = "\n" + '<select name="sr_approved" id="sr_approved"><option value="0">Not Approved</option>' + price_lists[data.spaceId] + "</select>\n";
-    if (data.item_approved)
-        document.getElementById('sr_approved').value = data.item_approved;
-    // make the form visible
-    approve_space.show();
-}
-
-// handle the space approval
-function approveSpace(override) {
-    data = $('#space_request').serialize();
-    if (override >= 0) {
-        data = data + '&sr_approved=' + override.toString();
-    }
-
-    console.log(data);
-    $.ajax({
-        url: 'scripts/updateVendorSpace.php',
-        data: data,
-        method: 'POST',
-        success: function(data, textstatus, jqXHR) {
-            if(data['error']) {
-                show_message($data['error'], 'error');
-            } else {
-                console.log(data);
-                if (data['success'])
-                    show_message(data['success'], 'success');
-                approve_space.hide();
-                getData();
-            }
-        }
-    });
-}
 
 // allow entry of a new space type for a vendor
 function addNewSpace() {
@@ -557,26 +1254,6 @@ function receipt(index) {
     });
 
 }
-function actionbuttons(cell, formatterParams, onRendered) {
-    var btns = "";
-    var data = cell.getData();
-    var transid = data['transid'] || 0;
-    var index = cell.getRow().getIndex();
-    var req = data['requested_units'] || 0;
-    var app = data['approved_units'] || 0;
-    var pur = data['purchased_units'] || 0;
 
-    if (req > 0 && (pur < app || pur == 0)) {
-        if (app > 0) {
-            btns += '<button class="btn btn-small btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="approval(' + index + ",'c'" + ')">Change</button>';
-        } else {
-            btns += '<button class="btn btn-small btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="approval(' + index + ",'r'" + ')">Approve Req.</button>' +
-                '<button class="btn btn-small btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="approval(' + index + ",'o'" +  ')">Approve Other</button>';
-        }
-    }
 
-    // receipt buttons
-    if (transid > 0)
-        btns += '<button class="btn btn-small btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="receipt(' + index + ')">Receipt</button>';
-    return btns;
-}
+ */

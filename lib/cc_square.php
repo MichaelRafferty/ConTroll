@@ -177,7 +177,7 @@ function cc_charge_purchase($results, $ccauth) {
     }
     if (array_key_exists('spaceName', $results)) {
         $item = new OrderLineItem ('1');
-        $item->setUid('vendor-space');
+        $item->setUid('exhibits-space');
         $item->setName($results['spaceName'] . ':' . $results['spaceDescription']);
         $item->setBasePriceMoney(new Money);
         $item->getBasePriceMoney()->setAmount($results['spacePrice'] * 100);
@@ -319,8 +319,8 @@ function cc_charge_purchase($results, $ccauth) {
     $txtime = $payment->getCreatedAt();
     $receipt_number = $payment->getReceiptNumber();
 
-    if (array_key_exists('vendor', $results)) {
-        $category = 'vendor';
+    if (array_key_exists('exhibits', $results)) {
+        $category = 'exhibits';
     } else {
         $category = 'reg';
     }
