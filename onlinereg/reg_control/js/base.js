@@ -96,6 +96,7 @@ function displaySearchResults(data, callback) {
             if (user['label']) { userDiv.append(user['label'] + "<br/>" + "<hr/>"); }
             if (user['full_name']) { userDiv.append(user['full_name'] + "<br/>"); }
             else { userDiv.append("***NO NAME***<br/>"); }
+            if (user['legalName']) { userDiv.append(user['legalName'] + "<br/>"); }
             if (user['badge_name']) { userDiv.append(user['badge_name'] + "<br/>"); }
             userDiv.append($(document.createElement("hr")));
             if (user['address']) { userDiv.append(user['address'] + "<br/>"); }
