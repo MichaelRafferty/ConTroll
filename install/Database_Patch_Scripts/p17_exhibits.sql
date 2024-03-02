@@ -279,12 +279,23 @@ SELECT v.id * 10000 + vs.conid, vs.conid, v.id, v.name, v.email, v.password, 'N'
 FROM vendors v
 JOIN vendor_space vs ON (vs.vendorid = v.id);
 
-INSERT INTO exhibitorSpaces(id, exhibitorYearId, spaceId, item_requested, time_requested, item_approved, time_approved, item_purchased, time_purchased,
-	price, paid, transid, membershipCredits)
-SELECT vs.id, ey.id, vs.spaceId, item_requested, time_requested, item_approved, time_approved, item_purchased, time_purchased,
+INSERT INTO exhibitorRegionYears(exhibitorYearId, exhibitsRegionYearId, approval, updateDate, updateBy)
+SELECT ey.id, ery.id, 'none', now(), 2
+FROM exhibitsRegionYears ery
+JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id
+JOIN exhibitsRegionTypes et ON (et.regionType = er.regionType)
+JOIN exhibitorYears ey on ery.conid = ey.conid;
+
+INSERT INTO exhibitorSpaces (id, exhibitorRegionYear, spaceId, item_requested, time_requested, item_approved, time_approved, item_purchased, time_purchased,
+    price, paid, transid, membershipCredits)
+SELECT vs.id AS exSpaceId, exry.id as exhibitorRegionYear, vs.spaceId, item_requested, time_requested, item_approved, time_approved, item_purchased, time_purchased,
 	price, paid, transid, membershipCredits
-FROM vendor_space vs
-JOIN exhibitorYears ey ON (ey.exhibitorId = vs.vendorId and ey.conid = vs.conid);
+FROM exhibitorYears ey
+JOIN vendor_space vs ON ey.exhibitorId = vs.vendorId and ey.conid = vs.conid
+JOIN exhibitsSpaces es ON es.id = vs.spaceId
+JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id and vs.conid = ey.conid
+JOIN exhibitorRegionYears exry ON ery.id = exry.exhibitsRegionYearId AND ey.id = exry.exhibitorYearId
+ORDER BY vs.id, exry.id, vs.id;
 
     then delete the old tables
 
