@@ -40,6 +40,12 @@ if (!array_key_exists('regionYearId', $_POST)) {
     ajaxError("invalid calling sequence");
     exit();
 }
+
+if (array_key_exists('portalType', $_POST))
+    $portalType = $_POST['portalType'];
+else
+    $portalType = 'exhibits';
+
 $regionYearId = $_POST['regionYearId'];
 $specialRequests = $_POST['requests'];
 $taxid = $_POST['taxid'];
@@ -179,6 +185,7 @@ if ($allrequired == false) {
     $valid = false;
 }
 
+$email_addresses = [ 'cc_email' => 'Payment Information Email'];
 
 // validate the form, returning any errors on missing data
 $includedMembershipStatus = array();
@@ -204,6 +211,11 @@ for ($num = 0; $num < $includedMembershipsMax; $num++) {
                 $notfound[] = $membership_names[$field];
                 $allrequired = false;
             }
+        }
+        if ($field = 'email') {
+            // add to email addresses
+            if ($nonefound == false && $val != '')
+                $email_addresses[$postfield] = "Included Membership $num Email";
         }
     }
 
@@ -261,9 +273,6 @@ for ($num = 0; $num < $additionalMembershipsMax; $num++) {
 }
 
 // check email addresses
-$email_addresses = [ 'cc_email' => 'Payment Information Email', 'email_i_0' => 'Included Membership 1 Email', 'email_i_1' => 'Included Membership 2 Email',
-    'email_a_0' => 'Additional Membership 1 Email', 'email_a_1' => 'Additional Membership 2 Email'];
-
 $invalidEmail_msg = '';
 foreach ($email_addresses AS $email => $where) {
     if (array_key_exists($email, $_POST)) {
@@ -277,14 +286,16 @@ foreach ($email_addresses AS $email => $where) {
     }
 }
 
-if ($additionalMemberships > 0 && $includedMemberships < $includedMembershipsMax) {
-    $missing_msg .= "You must use all included memberships before using additional ones\n";
-    $valid = false;
-}
+if ($additionalMembershipsMax > 0 || $includedMembershipsMax > 0) {
+    if ($additionalMemberships > 0 && $includedMemberships < $includedMembershipsMax) {
+        $missing_msg .= "You must use all included memberships before using additional ones\n";
+        $valid = false;
+    }
 
-if (($additionalMemberships + $includedMemberships == 0) && !$aggreeNone) {
-    $missing_msg .= "You must buy at least one membership for your space or check the box at the top of the invoice noting that you are not purchasing any memberships at this time and acknowledge the need for memberships for all working in your space.";
-    $valid = false;
+    if (($additionalMemberships + $includedMemberships == 0) && !$aggreeNone) {
+        $missing_msg .= "You must buy at least one membership for your space or check the box at the top of the invoice noting that you are not purchasing any memberships at this time and acknowledge the need for memberships for all working in your space.";
+        $valid = false;
+    }
 }
 
 if (!$valid) {
@@ -386,6 +397,7 @@ $results = array(
     'specialrequests' => $specialRequests,
     'region' => $region,
     'vendor' => $exhibitor,
+    'exhibits' => $portalType,
     'buyer' => $buyer,
 );
 
@@ -522,6 +534,7 @@ EOS;
 }
 
 if ($exhNum == 0) {
+    $nextID = -1;
     if ($exhibitor['mailin'] == 'N') {
         if ($region['atconIdBase'] < $region['mailinIdBase']) {
             $nextIdQ = <<<EOS
@@ -552,7 +565,8 @@ EOS;
                 $nextID = $nextL[0] == NULL ? $region['atconIdBase'] + 1 : $nextL[0] + 1;
             }
         }
-    } else {
+    }
+    if ($nextID < 0) {
         $nextIdQ = <<<EOS
 SELECT MAX(exhibitorNumber)
 FROM exhibitorRegionYears exRY

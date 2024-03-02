@@ -114,16 +114,17 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                         <hr/>
                         <div id="vendor_inv_included_mbr"></div>
                         <div id="vendor_inv_additional_mbr"></div>
-                        <div class="row">
-                        <div class="row">
-                            <div class="col-sm-2">
-                                Cost for Memberships:
+                        <div id="membershipCost">
+                            <div class="row">
+                                <div class="col-sm-2">
+                                    Cost for Memberships:
+                                </div>
+                                <div class="col-sm-10 p-0">
+                                    $<span id='vendor_inv_mbr_cost'>0</span>
+                                </div>
                             </div>
-                            <div class="col-sm-10 p-0">
-                                $<span id='vendor_inv_mbr_cost'>0</span>
-                            </div>
+                            <hr/>
                         </div>
-                        <hr/>
                         <div class="row">
                             <div class="col-sm-auto">
                                 Total: <span id='vendor_inv_cost'></span>

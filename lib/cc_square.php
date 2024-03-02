@@ -319,8 +319,12 @@ function cc_charge_purchase($results, $ccauth) {
     $txtime = $payment->getCreatedAt();
     $receipt_number = $payment->getReceiptNumber();
 
+    // set category based on if exhibits is a portal type
     if (array_key_exists('exhibits', $results)) {
-        $category = 'exhibits';
+        if ($results['exhibits'] == 'vendor')
+            $category = 'vendor';
+        else
+            $category = 'artshow';
     } else {
         $category = 'reg';
     }

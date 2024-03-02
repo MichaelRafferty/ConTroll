@@ -2,6 +2,7 @@
 var vendor_invoice = null;
 var totalSpacePrice = 0;
 var regionYearId = null;
+var membershipCostdiv = null;
 
 // set up vendor invoice items
 function vendorInvoiceOnLoad() {
@@ -9,6 +10,7 @@ function vendorInvoiceOnLoad() {
     if (id != null) {
         vendor_invoice = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
+    membershipCostdiv = document.getElementById("membershipCost");
 }
 
 // openInvoice: display the vendor invoice (and registration items)
@@ -145,6 +147,8 @@ function openInvoice(id) {
     document.getElementById('vendorSpacePrice').value = totalSpacePrice;
     document.getElementById('vendor_inv_region_id').value = regionYearId;
 
+    membershipCostdiv.hidden =  (includedMemberships == 0 && additionalMemberships == 0) ;
+
     var html = '';
     // now build the included memberships
     if (includedMemberships > 0) {
@@ -232,8 +236,8 @@ function openInvoice(id) {
 </div>
 `;
         }
+        html += "<hr/>";
     }
-    html += "<hr/>";
 
     // now build the additional memberships
     if (additionalMemberships > 0) {
@@ -321,8 +325,8 @@ function openInvoice(id) {
 </div>
 `;
         }
+        html += "<hr/>";
     }
-    html += "<hr/>";
     document.getElementById("vendor_inv_included_mbr").innerHTML = html;
     vendor_invoice.show();
 }
