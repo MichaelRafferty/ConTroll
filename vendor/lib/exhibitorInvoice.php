@@ -77,7 +77,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                 <label for='vendor_inv_state'> State: </label>
                             </div>
                             <div class='col-sm-auto p-0 ms-0 me-0 ps-1'>
-                                <input class='form-control-sm' id='vendor_inv_state' type='text' size='2' maxlength='2' value="<?php echo escape_quotes($info['state']); ?>"
+                                <input class='form-control-sm' id='vendor_inv_state' type='text' size='10' maxlength='16' value="<?php echo escape_quotes($info['state']); ?>"
                                        name='state' required/>
                             </div>
                             <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
@@ -168,7 +168,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                  <label for='cc_state'>State:</label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_state' size=2 maxlength="2" required='required' name='cc_state' value="<?php echo escape_quotes($info['state']); ?>"/>
+                                 <input type='text' id='cc_state' size=10 maxlength="16" required='required' name='cc_state' value="<?php echo escape_quotes($info['state']); ?>"/>
                              </div>
                              <div class='col-sm-auto ps-0 pe-0'>
                                  <label for='cc_zip'>Zip:</label>

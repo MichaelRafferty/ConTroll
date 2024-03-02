@@ -149,11 +149,11 @@ $buyer['zip'] = $_POST['cc_zip'];
 $buyer['country'] = $_POST['cc_country'];
 $buyer['email'] = $_POST['cc_email'];
 
-$membership_fields = array('fname' => 1, 'mname' => 0, 'lname' => 1, 'suffix' => 0, 'addr' => 1, 'addr2' => 0, 'city' => 1, 'state' => 1, 'zip' => 1,
+$membership_fields = array('fname' => 1, 'mname' => 0, 'lname' => 1, 'suffix' => 0, 'legalname' => 0, 'addr' => 1, 'addr2' => 0, 'city' => 1, 'state' => 1, 'zip' => 1,
     'country' => 1, 'email' => 1, 'phone' => 0, 'badgename' => 0);
-$membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'suffix' => 'Suffix', 'addr' => 'Address Line 1',
-    'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State', 'zip' => 'Zip Code/Postal Code', 'country' => 'Country',
-     'email' => 'Email Address', 'phone' => 'Phone Number', 'badgename' => 'Badge Name');
+$membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'legalname' => 'Legal Name', 'suffix' => 'Suffix',
+    'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State', 'zip' => 'Zip Code/Postal Code',
+    'country' => 'Country', 'email' => 'Email Address', 'phone' => 'Phone Number', 'badgename' => 'Badge Name');
 
 $missing_msg = '';
 $valid = true;
@@ -356,7 +356,7 @@ SELECT R.id AS badge,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename
+    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.legalName AS legalname
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
 JOIN memList M ON (M.id = R.memID)
@@ -690,17 +690,21 @@ EOF;
         $id = null;
     }
     $badge['perid'] = $id;
+    $legalName = $badge['legalname'];
+    if ($legalName == '') {
+        $legalName = trim($badge['fname']  . ($badge['mname'] == '' ? ' ' : ' ' . $badge['mname'] . ' ' ) . $badge['lname'] . ' ' . $badge['suffix']);
+    }
 
-    $value_arr = array($badge['lname'], $badge['mname'], $badge['fname'], $badge['suffix'], $badge['email'], $badge['phone'], $badge['badgename'],
+    $value_arr = array($badge['lname'], $badge['mname'], $badge['fname'], $badge['suffix'], $legalName, $badge['email'], $badge['phone'], $badge['badgename'],
         $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country'], $badge['contact'], $badge['share'], $id);
 
     $insertQ = <<<EOS
-INSERT INTO newperson(last_name, middle_name, first_name, suffix, email_addr, phone, badge_name,
+INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone, badge_name,
                       address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, perid)
-    VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 
-    $newid = dbSafeInsert($insertQ, 'sssssssssssssssi', $value_arr);
+    $newid = dbSafeInsert($insertQ, 'ssssssssssssssssi', $value_arr);
     $badge['error'] = '';
     if ($newid === false) {
         $badge['error'] .= 'Add of person of badge for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";
