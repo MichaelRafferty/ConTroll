@@ -505,7 +505,7 @@ if ($yearcnt == 0) {
 INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, atconIdBase, mailinFee, mailinIdBase, sortorder) 
 SELECT $conid, ery.exhibitsRegion, ery.ownerName, ery.ownerEmail, minx.id, manx.id, totalUnitsAvailable, ery.atconIdBase, ery.mailinFee, ery.mailinIdBase, ery.sortorder
 FROM exhibitsRegionYears ery
-JOIN exhibitsRegions eR ON ery.exhibitsRegion = eR.exhibitsRegions.id
+JOIN exhibitsRegions eR ON ery.exhibitsRegion = eR.id
 JOIN exhibitsRegionTypes eRT ON eR.regionType = eRT.regionType
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
 LEFT OUTER JOIN memList ma ON ery.additionalMemId = ma.id
