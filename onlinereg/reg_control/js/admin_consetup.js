@@ -50,6 +50,14 @@ class consetup {
         }
     };
 
+    // set undo / redo status for conlist (convention data)
+    checkConlistUndoRedo() {
+        var undosize = this.#contable.getHistoryUndoSize();
+        this.#conlist_undobtn.disabled = undosize <= 0;
+        this.#conlist_redobtn.disabled = this.#contable.getHistoryRedoSize() <= 0;
+        return undosize;
+    }
+
     conlist_dataChanged(data) {
         //data - the updated table data
         if (!this.#conlist_dirty) {
@@ -57,10 +65,16 @@ class consetup {
             this.#conlist_savebtn.disabled = false;
             this.#conlist_dirty = true;
         }
-        if (this.#contable.getHistoryUndoSize() > 0) {
-            this.#conlist_undobtn.disabled = false;
-        }
+        this.checkConlistUndoRedo();
     };
+
+    // set undo / redo status for memlist (membership type data)
+    checkMemlistUndoRedo() {
+        var undosize = this.#memtable.getHistoryUndoSize();
+        this.#memlist_undobtn.disabled = undosize <= 0;
+        this.#memlist_redobtn.disabled = this.#memtable.getHistoryRedoSize() <= 0;
+        return undosize;
+    }
 
     memlist_dataChanged(data) {
         //data - the updated table data
@@ -69,21 +83,25 @@ class consetup {
             this.#memlist_savebtn.disabled = false;
             this.#memlist_dirty = true;
         }
-        if (this.#memtable.getHistoryUndoSize() > 0) {
-            this.#memlist_undobtn.disabled = false;
-        }
+        this.checkMemlistUndoRedo();
     };
+
+    // set undo / redo status for break list (setup next year convention data)
+    checkBreaklistUndoRedo() {
+        var undosize = this.#breaktable.getHistoryUndoSize();
+        this.#breaklist_undobtn.disabled = undosize <= 0;
+        this.#breaklist_redobtn.disabled = this.#breaktable.getHistoryRedoSize() <= 0;
+        return undosize;
+    }
 
     breaklist_dataChanged(data) {
         //data - the updated table data
         if (!this.#breaklist_dirty) {
             this.#breaklist_dirty = true;
         }
-        if (this.#breaktable.getHistoryUndoSize() > 0) {
-            this.#breaklist_undobtn.disabled = false;
-        }
         this.#breaklist_savebtn.innerHTML = "Build " + this.#setup_title + " Membership Types";
         this.#breaklist_savebtn.disabled = false;
+        this.checkBreaklistUndoRedo();
     };
 
     draw(data, textStatus, jhXHR) {
@@ -228,6 +246,7 @@ class consetup {
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
                 { title: "ID", field: "id", headerSort: true },
+                { field: "memlistkey", visible: false, },
                 { title: "Con ID", field: "conid", headerFilter: true },
                 { title: "Sort", field: "sort_order", headerSort: false, visible: false },
                 { title: "Category", field: "memCategory", editor: "list", editorParams: { values: data['memCats'], }, headerFilter: true, headerFilterParams: { values: data['memCats'] } },
@@ -242,10 +261,10 @@ class consetup {
                 { title: "Label", field: "label", visible: false },
                 {
                     title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
-                    headerFilter: "input"
+                    headerFilter: "input", headerFilterFunc:numberHeaderFilter,
                 },
-                { title: "Start Date", field: "startdate", width: 100, editor: "date", validator: "required", headerFilter: "input" },
-                { title: "End Date", field: "enddate", width: 100, editor: "date", validator: "required", headerFilter: "input" },
+                { title: "Start Date", field: "startdate", width: 150, editor: "datetime", validator: "required", headerFilter: "input" },
+                { title: "End Date", field: "enddate", width: 150, editor: "datetime", validator: "required", headerFilter: "input" },
                 {
                     title: "Atcon", field: "atcon", editor: "list", editorParams: { values: ["Y", "N"], },
                     headerFilter: true, headerFilterParams: { values: ["Y", "N"], }
@@ -372,18 +391,12 @@ class consetup {
         if (this.#contable != null) {
             this.#contable.undo();
 
-            var undoCount = this.#contable.getHistoryUndoSize();
-            if (undoCount <= 0) {
-                this.#conlist_undobtn.disabled = true;
+            if (this.checkConlistUndoRedo() <= 0) {
                 this.#conlist_dirty = false;
                 if (this.#proposed == ' ') {
                     this.#conlist_savebtn.innerHTML = "Save Changes";
                     this.#conlist_savebtn.disabled = true;
                 }
-            }
-            var redoCount = this.#contable.getHistoryRedoSize();
-            if (redoCount > 0) {
-                this.#conlist_redobtn.disabled = false;
             }
         }
     };
@@ -392,16 +405,10 @@ class consetup {
         if (this.#contable != null) {
             this.#contable.redo();
 
-            var undoCount = this.#contable.getHistoryUndoSize();
-            if (undoCount > 0) {
-                this.#conlist_undobtn.disabled = false;
+            if (this.checkConlistUndoRedo() > 0) {
                 this.#conlist_dirty = true;
                 this.#conlist_savebtn.innerHTML = "Save Changes*";
                 this.#conlist_savebtn.disabled = false;
-            }
-            var redoCount = this.#contable.getHistoryRedoSize();
-            if (redoCount <= 0) {
-                this.#conlist_redobtn.disabled = true;
             }
         }
     };
@@ -410,18 +417,12 @@ class consetup {
         if (this.#memtable != null) {
             this.#memtable.undo();
 
-            var undoCount = this.#memtable.getHistoryUndoSize();
-            if (undoCount <= 0) {
-                this.#memlist_undobtn.disabled = true;
+            if (this.checkMemlistUndoRedo() <= 0) {
                 this.#memlist_dirty = false;
                 if (this.#proposed == ' ') {
                     this.#memlist_savebtn.innerHTML = "Save Changes";
                     this.#memlist_savebtn.disabled = true;
                 }
-            }
-            var redoCount = this.#memtable.getHistoryRedoSize();
-            if (redoCount > 0) {
-                this.#memlist_redobtn.disabled = false;
             }
         }
     };
@@ -430,16 +431,10 @@ class consetup {
         if (this.#memtable != null) {
             this.#memtable.redo();
 
-            var undoCount = this.#memtable.getHistoryUndoSize();
-            if (undoCount > 0) {
-                this.#memlist_undobtn.disabled = false;
+            if (this.checkMemlistUndoRedo() > 0) {
                 this.#memlist_dirty = true;
                 this.#memlist_savebtn.innerHTML = "Save Changes*";
                 this.#memlist_savebtn.disabled = false;
-            }
-            var redoCount = this.#memtable.getHistoryRedoSize();
-            if (redoCount <= 0) {
-                this.#memlist_redobtn.disabled = true;
             }
         }
     };
@@ -447,15 +442,7 @@ class consetup {
     undoBreakList() {
         if (this.#breaktable != null) {
             this.#breaktable.undo();
-
-            var undoCount = this.#breaktable.getHistoryUndoSize();
-            if (undoCount <= 0) {
-                this.#breaklist_undobtn.disabled = true;
-            }
-            var redoCount = this.#breaktable.getHistoryRedoSize();
-            if (redoCount > 0) {
-                this.#breaklist_redobtn.disabled = false;
-            }
+            this.checkBreaklistUndoRedo();
         }
     };
 
@@ -463,29 +450,24 @@ class consetup {
         if (this.#breaktable != null) {
             this.#breaktable.redo();
 
-            var undoCount = this.#breaktable.getHistoryUndoSize();
-            if (undoCount > 0) {
-                this.#breaklist_undobtn.disabled = false;       
-            }
-            var redoCount = this.#breaktable.getHistoryRedoSize();
-            if (redoCount <= 0) {
-                this.#breaklist_redobtn.disabled = true;
-            }
+            this.checkBreaklistUndoRedo();
         }
     };
 
     addrowMemList() {
-        this.#memtable.addRow({ id: -99999, conid: this.#conid, shortname: 'new-row', price:0, atcon: 'N', online:'N', sortorder: 199, uses: 0 }, false);
+        var _this = this;
+
+        this.#memtable.addRow({ id: -99999, conid: this.#conid, shortname: 'new-row', price:0, atcon: 'N', online:'N', sortorder: 199, uses: 0 }, false).then(function(row) {
+            row.getTable().scrollToRow(row);
+            _this.checkMemlistUndoRedo();
+        });
     };
 
     memlist_rowMoved(row) {
         this.#memlist_savebtn.innerHTML = "Save Changes*";
         this.#memlist_savebtn.disabled = false;
         this.#memlist_dirty = true;
-        if (this.#memtable.getHistoryUndoSize() > 0) {
-            this.#memlist_undobtn.disabled = false;
-            this.#memlist_undobtn.disabled = false;
-        }
+        this.checkMemlistUndoRedo();
     }
 
     saveConlistComplete(data, textStatus, jhXHR) {        
@@ -497,7 +479,10 @@ class consetup {
             method: 'GET',
             data: 'year=' + this.#setup_type + '&type=conlist',      
             success: function (data, textStatus, jhXHR) {
-                if (data['error'])
+                if (data['error']) {
+                    showError(data['error']);
+                    return false;
+                }
                 if (data['year'] == 'current') {
                     current.draw_conlist(data, textStatus, jhXHR);
                 } else {
@@ -527,7 +512,7 @@ class consetup {
 
             var postdata = {
                 ajax_request_action: this.#setup_type,
-                tabledata: this.#contable.getData(),
+                tabledata: JSON.stringify(this.#contable.getData()),
                 tablename: "conlist",
                 indexcol: "id"
             };
@@ -549,7 +534,6 @@ class consetup {
                     } else {
                         showError(data['success']);
                     }
-                    this.#memlist_savebtn.innerHTML = "Save Changes";
                     if (data['year'] == 'current') {
                         current.saveConlistComplete(data, textStatus, jhXHR);
                     } else {
@@ -610,7 +594,7 @@ class consetup {
 
             var postdata = {
                 ajax_request_action: this.#setup_type,
-                tabledata: this.#memtable.getData(),
+                tabledata: JSON.stringify(this.#memtable.getData()),
                 tablename: "memlist",
                 indexcol: "id"
             };
@@ -695,7 +679,7 @@ class consetup {
 
             var postdata = {
                 ajax_request_action: this.#setup_type,
-                tabledata: this.#breaktable.getData(),
+                tabledata: JSON.stringify(this.#breaktable.getData()),
                 tablename: "breaklist",
                 indexcol: "old"
             };

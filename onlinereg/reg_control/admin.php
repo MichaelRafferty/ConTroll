@@ -10,23 +10,85 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
 
+if (array_key_exists('user_id', $_SESSION)) {
+    $user_id = $_SESSION['user_id'];
+} else {
+    bounce_page('index.php');
+    return;
+}
+
 page_init($page,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css',
-                    //'https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_bootstrap5.min.css',
+    /* css */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
+                    //'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
                     'css/base.css',
                    ),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js',
+                    'https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js',
+                    'js/tinymce/tinymce.min.js',
                     'js/base.js',
                     'js/admin.js',
                     'js/admin_consetup.js',
                     'js/admin_memconfig.js',
+                    'js/admin_exhibits.js',
                     'js/admin_merge.js'
                    ),
               $need_login);
 $con = get_conf("con");
 $conid=$con['id'];
+$debug = get_conf('debug');
+
+if (array_key_exists('reg_control_admin', $debug))
+    $debug_admin=$debug['reg_control_admin'];
+else
+    $debug_admin = 0;
+
 ?>
+<div id='parameters' <?php if (!($debug_admin & 4)) echo 'hidden'; ?>>
+    <div id="debug"><?php echo $debug_admin; ?></div>
+    <div id="conid"><?php echo $conid; ?></div>
+</div>
+<?php bs_tinymceModal(); ?>
+<div id='user-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Lookup Person to Add as User' aria-hidden='true' style='--bs-modal-width: 80%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='addTitle'>Lookup Person to Add as User</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <form id='add-search' action='javascript:void(0)'>
+                        <div class='row p-1'>
+                            <div class='col-sm-3 p-0'>
+                                <label for='add_name_search' id='addName'>Name:</label>
+                            </div>
+                            <div class='col-sm-9 p-0'>
+                                <input class='form-control-sm' type='text' name='namesearch' id='add_name_search' size='64'
+                                       placeholder='Name/Portion of Name, Person (Badge) ID'/>
+                            </div>
+                            <div class='row mt-3'>
+                                <div class='col-sm-12 text-bg-secondary'>
+                                    Search Results
+                                </div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-sm-12' id='add_search_results'>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='addSearch' onClick='add_find()'>Find Person</button>
+            </div>
+            <div id='result_message_user' class='mt-4 p-2'></div>
+        </div>
+    </div>
+</div>
 <div id='merge-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Look up Merge Person' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
@@ -41,7 +103,7 @@ $conid=$con['id'];
                     <form id='merge-search' action='javascript:void(0)'>
                         <div class='row p-1'>
                             <div class='col-sm-3 p-0'>
-                                <label for='search_name' id="mergeName">Merge Name:</label>
+                                <label for='merge_name_search' id="mergeName">Merge Name:</label>
                             </div>
                             <div class='col-sm-9 p-0'>
                                 <input class='form-control-sm' type='text' name='namesearch' id='merge_name_search' size='64'
@@ -64,14 +126,14 @@ $conid=$con['id'];
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
                 <button class='btn btn-sm btn-primary' id='mergeSearch' onClick='merge_find()'>Find Person</button>
             </div>
-            <div id='result_message' class='mt-4 p-2'></div>
+            <div id='result_message_merge' class='mt-4 p-2'></div>
         </div>
     </div>
 </div>
 <div id='main'>
 
     <?php
-    $userQ = "Select name, email, id from user;";
+    $userQ = "Select name, email, id, perid from user;";
     $userR = dbQuery($userQ);
 
     $authQ = "Select name, id from auth;";
@@ -98,31 +160,44 @@ $conid=$con['id'];
             <button class="nav-link active" id="users-tab" data-bs-toggle="pill" data-bs-target="#users-pane" type="button" role="tab" aria-controls="nav-users" aria-selected="true" onclick="settab('users-pane');">Users</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="consetup-tab" data-bs-toggle="pill" data-bs-target="#consetup-pane" type="button" role="tab" aria-controls="nav-consetup" aria-selected="false" onclick="settab('consetup-pane');">Current Convention Setup</button>
+            <button class="nav-link" id="consetup-tab" data-bs-toggle="pill" data-bs-target="#consetup-pane" type="button" role="tab"
+                    aria-controls="nav-consetup" aria-selected="false" onclick="settab('consetup-pane');">Current Convention Setup
+            </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="nextconsetup-tab" data-bs-toggle="pill" data-bs-target="#nextconsetup-pane" type="button" role="tab" aria-controls="nav-nextconsetup" aria-selected="false" onclick="settab('nextconsetup-pane');">Next Convention Setup</button>
+            <button class="nav-link" id="nextconsetup-tab" data-bs-toggle="pill" data-bs-target="#nextconsetup-pane" type="button" role="tab"
+                    aria-controls="nav-nextconsetup" aria-selected="false" onclick="settab('nextconsetup-pane');">Next Convention Setup
+            </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="memconfig-tab" data-bs-toggle="pill" data-bs-target="#memconfig-pane" type="button" role="tab" aria-controls="nav-nextconsetup" aria-selected="false" onclick="settab('memconfig-pane');">Membership Configuration Tables</button>
+            <button class="nav-link" id="memconfig-tab" data-bs-toggle="pill" data-bs-target="#memconfig-pane" type="button" role="tab"
+                    aria-controls="nav-memconfigsetup" aria-selected="false" onclick="settab('memconfig-pane');">Membership Configuration
+            </button>
         </li>
         <li class='nav-item' role='presentation'>
-            <button class='nav-link' id='merge-tab' data-bs-toggle='pill' data-bs-target='#merge-pane' type='button' role='tab' aria-controls='nav-merge' aria-selected='false' onclick="settab('merge-pane');">Merge People
+            <button class='nav-link' id='exhibits-tab' data-bs-toggle='pill' data-bs-target='#exhibits-pane' type='button' role='tab'
+                    aria-controls='nav-exhibitssetup' aria-selected='false' onclick="settab('exhibits-pane');">Exhibits Configuration
+            </button>
+        </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='merge-tab' data-bs-toggle='pill' data-bs-target='#merge-pane' type='button' role='tab'
+                    aria-controls='nav-merge' aria-selected='false' onclick="settab('merge-pane');">Merge People
             </button>
         </li>
     </ul>
-    <div class="tab-content" id="admin-content">
+    <div class="tab-content ms-2" id="admin-content">
         <div class="tab-pane fade show active" id="users-pane" role="tabpanel" aria-labelledby="users-tab" tabindex="0">
             <table>
                 <thead>
                     <tr>
-                        <th>User</th><th>Email</th>
+                        <th>User</th><th>Email</th><th style="text-align: right; padding-left: 4px; padding-right: 4px;">Perid</th>
                         <?php
 
     $sets_num = array();
     foreach ($sets as $group => $perms) {
-                        ?><th>
-                            <?php echo $group;?>
+        $dispgroup = str_replace('_', '-', $group);
+                        ?><th style="overflow-wrap:normal; width: 50px;padding-left: 2px; padding-right: 2px;">
+                            <?php echo $dispgroup;?>
                         </th>
                         <?php
         $perm_num = array();
@@ -141,16 +216,35 @@ $conid=$con['id'];
                 <tbody>
                     <?php
     while($user = fetch_safe_assoc($userR)) {
+        $lookup_str = '';
+        if ((!array_key_exists('perid', $user)) || $user['perid'] === null || $user['perid'] == '') {
+            $updateFcn = 'updatePerid';
+            $color = " background-color: red;";
+            $updateLabel = "Fix Perid";
+            $names = explode(' ', $user['name']);
+            foreach ($names as $name) {
+                $lookup_str .= ' ' . mb_substr($name, 0, 2);
+            }
+        } else {
+            $updateFcn = 'updatePermissions';
+            $updateLabel = "Update";
+            $color = '';
+        }
                     ?>
                     <tr>
                         <form id='<?php echo $user['id'];?>' action='javascript:void(0)'>
                             <input type='hidden' name='user_id' value='<?php echo $user['id'];?>' />
+                            <input type='hidden' name='perid' value='<?php echo $user['perid'];?>' />
                             <?php
                             ?>
                             <td>
                                 <?php echo $user['name'];?>
-                            </td><td>
+                            </td>
+                            <td>
                                 <?php echo $user['email']; ?>
+                            </td>
+                            <td style="text-align: right; padding-left: 4px; padding-right: 4px;<?php echo $color; ?>">
+                                <?php echo $user['perid']; ?>
                             </td>
                             <?php
         foreach($sets_num as $n => $set) {
@@ -172,18 +266,19 @@ $conid=$con['id'];
                                     type='checkbox' name='<?php echo $n;?>'
                                     <?php
             if($a) { echo "checked='checked'"; }
+            if ($user_id == $user['id'] && $n == 'admin') { echo "onclick='return false;'"; } // prevent you from deleting your own admin setting
             ?> />
                             </td>
                             <?php
         }
                             ?>
                             <td>
-                                <input form='<?php echo $user['id']; 
-                                             ?>'
-                                    type='submit' onclick='updatePermissions("<?php echo $user['id']; ?>")' value='Update' />
-                                <input form='<?php echo $user['id'];
-            ?>'
+                                <input form='<?php echo $user['id']; ?>'
+                                    type='submit' onclick='<?php echo $updateFcn . "(" . $user['id'] . ',"' . trim($lookup_str) . '")'; ?>' value='<?php echo $updateLabel;?>' />
+                                <?php if ($user['id'] != $user_id) { ?>
+                                <input form='<?php echo $user['id']; ?>'
                                     type='button' onclick='clearPermissions("<?php echo $user['id']; ?>")' value='Delete' />
+                                <?php } ?>
                             </td>
                         </form>
                     </tr>
@@ -192,31 +287,15 @@ $conid=$con['id'];
                     ?>
                 </tbody>
             </table>
-            <button onclick="$('#createDialog').dialog('open');">New Account</button>
-        </div>
-        <div id='createDialog'>
-            <form id='createUserForm' action='javascript:void(0)'>
-                Name: <input name='name' type='text' /><br />
-                Email: <input name='email' type='email' /><br />
-                <?php
-    foreach($sets_num as $n => $set) {
-                ?>
-                <label class='blocks'>
-                    <?php echo $n;?>
-                    <input type='checkbox' name='<?php echo $n;?>' />
-                </label>
-                <?php
-    }
-                ?>
-                <br />
-                <input type='submit' value='Create' onclick='createAccount()' />
-            </form>
+            <button id='add_new_account' type='button' class='btn btn-primary btn-sm' onclick="addFindPerson(); return false;">New Account</button>
         </div>
     </div>
     <div class="tab-pane fade" id="consetup-pane" role="tabpanel" aria-labelledby="consetup-tab" tabindex="0"></div>
     <div class="tab-pane fade" id="nextconsetup-pane" role="tabpanel" aria-labelledby="nextconsetup-tab" tabindex="0"></div>
     <div class="tab-pane fade" id="memconfig-pane" role="tabpanel" aria-labelledby="memconfig-tab" tabindex="0"></div>
-    <div class='tab-pane fade' id='merge-pane' role='tabpanel' aria-labelledby='merge-tab' tabindex='0'>
+    <div class="tab-pane fade" id="exhibits-pane" role="tabpanel" aria-labelledby="exhibits-tab" tabindex="0"></div>
+    <div class='tab-pane fade' id='merge-pane' role='tabpanel' aria-labelledby='merge-tab' tabindex='0'></div>
+    <div id='result_message' class='mt-4 p-2'></div>
 </div>
 <script>
     $(function() {

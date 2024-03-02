@@ -155,7 +155,7 @@ function cc_charge_purchase($results, $ccauth) {
     if (array_key_exists('badges', $results) && is_array($results['badges'])) {
         $custid = $results['badges'][0]['badge'];
     } else if (array_key_exists('spaceName', $results)) {
-        $custid = $results['buyer']['email'];
+        $custid = $results['buyer']['fname'] . '_' . $results['buyer']['lname'];
     } else {
         $custid = 'no-badges';
     }
@@ -165,7 +165,7 @@ function cc_charge_purchase($results, $ccauth) {
 
     // add order lines
 
-    foreach ($results['badges'] as $badge) {
+    if(array_key_exists('badges', $results) && is_array($results['badges'])) foreach ($results['badges'] as $badge) {
         $item = new OrderLineItem ('1');
         $item->setUid('badge' . ($lineid + 1));
         $item->setName($badge['age'] . ' Badge for ' .  trim($badge['fname'] . ' ' . $badge['mname']  . ' ' . $badge['lname']));
@@ -177,7 +177,7 @@ function cc_charge_purchase($results, $ccauth) {
     }
     if (array_key_exists('spaceName', $results)) {
         $item = new OrderLineItem ('1');
-        $item->setUid('vendor-space');
+        $item->setUid('exhibits-space');
         $item->setName($results['spaceName'] . ':' . $results['spaceDescription']);
         $item->setBasePriceMoney(new Money);
         $item->getBasePriceMoney()->setAmount($results['spacePrice'] * 100);
@@ -319,8 +319,8 @@ function cc_charge_purchase($results, $ccauth) {
     $txtime = $payment->getCreatedAt();
     $receipt_number = $payment->getReceiptNumber();
 
-    if (array_key_exists('vendor', $results)) {
-        $category = 'vendor';
+    if (array_key_exists('exhibits', $results)) {
+        $category = 'exhibits';
     } else {
         $category = 'reg';
     }

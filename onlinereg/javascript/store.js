@@ -1,11 +1,13 @@
 // count = total count of badges
 // total = sum(prices) * qty of badges
-// agecount = array by ageType (memAge) of counts
+// memTypeCount = array by memId of counts
 // badges = array of the data for individual badges
-var badges = { 'count': 0, 'total': 0, 'agecount': [], 'badges': [] };
-// prices = array by ageType (memAge) of prices for badges
+var badges = { 'count': 0, 'total': 0, 'memTypeCount': {}, 'badges': [] };
+// prices = array by memId of prices for badges
 var prices = {};
 var $purchase_label = 'purchase';
+// ages = array by id for ages for color setting
+var ages = {};
 // shortnames are the memLabel short names for the memAge
 var shortnames = {};
 // anotherbadge = bootstrap 5 modal for the add another modal popup
@@ -49,6 +51,10 @@ function process(formRef) {
     // validation
     // emails must not be blank and must match
     if (formData['email1'] == '' || formData['email2'] == '' || formData['email1'] != formData['email2']) {
+        $('#email1').addClass('need');
+        $('#email2').addClass('need');
+        valid = false;
+    } else if (!validateAddress(formData['email1'])) {
         $('#email1').addClass('need');
         $('#email2').addClass('need');
         valid = false;
@@ -105,22 +111,22 @@ function process(formRef) {
     }
 
     // a membership type is required
-    if (formData['age'] =='') {
+    if (formData['memType'] =='') {
         valid = false;
-        $('#age').addClass('need');
+        $('#memType').addClass('need');
     } else {
-        $('#age').removeClass('need');
+        $('#memType').removeClass('need');
     }
 
-    if (badges['agecount'][formData['age']] == null)
-        badges['agecount'][formData['age']] = 0;
+    if (badges['memTypeCount'][formData['memType']] == null)
+        badges['memTypeCount'][formData['memType']] = 0;
 
     // check if there are too many limited memberships in the cart
-    if (coupon.getMemGroup() == formData['age']) {
-        var cur = badges['agecount'][formData['age']];
+    if (coupon.getMemGroup() == formData['memType']) {
+        var cur = badges['memTypeCount'][formData['memType']];
         var lim = coupon.getLimitMemberships();
-        if (badges['agecount'][formData['age']] >= coupon.getLimitMemberships()) {
-            alert("You already have the maximum numbero of badges of this membership type in your cart based on the coupon applied. You must choose a different membership type.");
+        if (badges['memTypeCount'][formData['memType']] >= coupon.getLimitMemberships()) {
+            alert("You already have the maximum number of badges of this membership type in your cart based on the coupon applied. You must choose a different membership type.");
             valid = false;
         }
     }
@@ -139,8 +145,8 @@ function process(formRef) {
     $('#badgename').val('');
 
     badges['count'] +=  1;
-    badges['agecount'][formData['age']] += 1;
-    //badges['total'] += prices[formData['age']];
+    badges['memTypeCount'][formData['memType']] += 1;
+    //badges['total'] += prices[formData['memType']];
     badges['badges'].push(formData);
 
     repriceCart();
@@ -165,25 +171,41 @@ function process(formRef) {
     }
 
     // build badge block in Badges list
-    var group_text = formData['age'].split('_');
-    var age_text = group_text[group_text.length -1];
+    var memId = formData['memType'];
+    // find matching mtype in array
+    var found = false;
+    var mtype = null;
+    for (var row in mtypes) {
+        var mbrtype = mtypes[row];
+        if (mbrtype['id'] == memId) {
+            mtype = mbrtype;
+            found = true;
+            break;
+        }
+    }
+
+    var age_text='unknown';
+    var labeldivtext = 'Unknown';
+    var addon = '';
+
+    if (found) {
+        age_text = mtype['memAge'];
+        labeldivtext = shortnames[mtype['id']];
+        if (mtype['memCategory'] == 'addon' || mtype['memCategory'] == 'add-on')
+            addon += "<br/>&nbsp;Add On to<br/>&nbsp;Membership";
+    }
+
     var age_color = 'text-white';
     if (age_text != 'adult' && age_text != 'military' && age_text != 'child' && age_text != 'youth' && age_text != 'kit' && age_text != 'student')
         age_color = 'text-black';
-    var labeldivtext = shortnames[formData['age']];
-    var addon = '';
-    if (age_text == 'unknown')
-        labeldivtext = 'Unknown';
-    if (group_text[0] == 'addon')
-        addon += "<br/>&nbsp;Add On to<br/>&nbsp;Membership";
     var re = /\-+/g;
     labeldivtext = labeldivtext.replace(re, '-<br/>');
 
     var bdivid="badge" + badges['count'];
     var html = "<div id='" + bdivid + "' data-index='" + (badges['count'] - 1) + "' class='container-fluid border border-2 border-dark'>\n" +
         "  <div class='row'>\n" +
-        "    <div class='col-sm-3 p-0 m-0 " + age_text + "'>\n" +
-        "      <h4><span class='badge " + age_color + ' ' + age_text + "'>" + labeldivtext + "</span></h4>" + addon + "\n" +
+        "    <div class='col-sm-3 p-0 m-0 text-wrap " + age_text + "'>\n" +
+        "      <h4><span class='badge " + age_color + ' ' + age_text + " text-wrap'>" + labeldivtext + "</span></h4>" + addon + "\n" +
         "    </div>\n" +
         "    <div class='col-sm-8'>\n" +
         "      <p class='text-body'>Full Name:<br/><strong>" + name + "</strong><br/>Badge Name:<br/><strong>" + badgename + "</strong></p>\n" +
@@ -211,7 +233,7 @@ function removeBadge(bdivid) {
     var i = toRemove.getAttribute('data-index');
     var badge_age = badges['badges'][i]['age'];
 
-    badges['agecount'][badge_age] -= 1;
+    badges['memTypeCount'][badge_age] -= 1;
     badges['count'] -= 1;
     repriceCart();
 
@@ -249,7 +271,7 @@ function mp_ajax_error(JqXHR, textStatus, errorThrown) {
 
 function mp_ajax_success(data, textStatus, jqXHR) {
     if (data['status'] == 'error') {
-        alert("Transaction Failed: " + data['data']);
+        alert("Purchase Failed: " + data['error']);
         $('#' + $purchase_label).removeAttr("disabled");
     } else if (data['status'] == 'echo') {
         console.log(data);
@@ -267,6 +289,15 @@ function makePurchase(token, label) {
     if (token == 'test_ccnum') {  // this is the test form
         token = document.getElementById(token).value;
     }
+
+    // validate CC email address for receipt
+    var cc_email = document.getElementById('cc_email').value;
+    if (!validateAddress(cc_email)) {
+        alert("The 'who's paying for the order' email address is not vali, please use the Edit button to put in a valid email address for the receipt");
+        $('#cc_email').addClass('need');
+        return false;
+    }
+    $('#cc_email').removeClass('need');
 
     $('#' + $purchase_label).attr("disabled", "disabled");
     var postdata = badges['badges'];
@@ -336,10 +367,10 @@ function removeCouponCode() {
 }
 
 function repriceCart() {
-    //console.log(mtypes);
-    //console.log(badges);
+    console.log(mtypes);
+    console.log(badges);
     var html = '';
-    var nbrs = badges['agecount'];
+    var nbrs = badges['memTypeCount'];
     var total = 0;
     var mbrtotal = 0;
     var cartDiscountable = false;
@@ -350,8 +381,8 @@ function repriceCart() {
         for (var row in mtypes) {
             var mbrtype = mtypes[row];
             var num = 0;
-            if (nbrs[mbrtype['memGroup']] > 0) {
-                num = nbrs[mbrtype['memGroup']];
+            if (nbrs[mbrtype['id']] > 0) {
+                num = nbrs[mbrtype['id']];
                 if (mbrtype['primary']) {
                     primarymemberships += num;
                     if (coupon.isCouponActive()) {
@@ -382,8 +413,8 @@ function repriceCart() {
     for (row in mtypes) {
         mbrtype = mtypes[row];
         num = 0;
-        if (nbrs[mbrtype['memGroup']] > 0) {
-            num = nbrs[mbrtype['memGroup']];
+        if (nbrs[mbrtype['id']] > 0) {
+            num = nbrs[mbrtype['id']];
         }
         // need to set num here
         if (mbrtype['memCategory'] == 'add-on' || mbrtype['memCategory'] == 'addon')
@@ -434,6 +465,12 @@ function togglePopup() {
     }
 }
 
+// validate RFC-5311/2 addresses regexp pattern from https://regex101.com/r/3uvtNl/1, found by searching validate RFC-5311/2  addresses
+function validateAddress(addr) {
+    const regPattern = /^((?:[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~]|(?<=^|\.)"|"(?=$|\.|@)|(?<=".*)[ .](?=.*")|(?<!\.)\.){1,64})(@)((?:[A-Za-z0-9.\-])*(?:[A-Za-z0-9])\.(?:[A-Za-z0-9]){2,})$/gm;
+    return regPattern.test(String(addr).toLowerCase());
+}
+
 window.onload = function () {
     var badge_modal = document.getElementById('anotherBadge');
     if (badge_modal != null) {
@@ -458,10 +495,11 @@ window.onload = function () {
     if (typeof mtypes != 'undefined') { //v we got here from index (purchase a badge, not some other page)
         for (var row in mtypes) {
             var mbrtype = mtypes[row];
-            var group = mbrtype['memGroup'];
-            prices[group] = Number(mbrtype['price']);
-            badges['agecount'][group] = 0;
-            shortnames[group] = mbrtype['shortname'];
+            var memId = mbrtype['id'];
+            ages[memId] = mbrtype['memGroup'];
+            prices[memId] = Number(mbrtype['price']);
+            badges['memTypeCount'][memId] = 0;
+            shortnames[memId] = mbrtype['shortname'].replace(',','<br/>');
             mbrtype['primary'] = !(mbrtype['price'] == 0 || (mbrtype['memCategory'] != 'standard' && mbrtype['memCategory'] != 'virtual'));
             mbrtype['discount'] = 0;
             mbrtype['discountable'] = false;

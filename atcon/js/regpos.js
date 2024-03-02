@@ -879,7 +879,7 @@ function add_found(data) {
             if (primmem != null) {
                 row['reg_label'] = add_membership[primmem]['label'];
                 var tid = add_membership[primmem]['tid'];
-                if (tid != '') {
+                if (tid !== null && tid !== undefined && tid != '') {
                     var other = false;
                     var mperid = row['perid'];
                     for (var mem in add_membership) {
@@ -1079,17 +1079,17 @@ function draw_record(row, first) {
     <div class="row mt-2">
         <div class="col-sm-3">`;
     if (first) {
-        html += `<button class="btn btn-primary btn-small" id="add_btn_all" onclick="add_to_cart(-` + number_search + `, 'result');">Add All Cart</button>`;
+        html += `<button class="btn btn-primary btn-sm" id="add_btn_all" onclick="add_to_cart(-` + number_search + `, 'result');">Add All Cart</button>`;
     }
     html += `</div>
         <div class="col-sm-5">`;
     if (cart.notinCart(data['perid'])) {
         if (data['banned'] == 'Y') {
             html += `
-            <button class="btn btn-danger btn-small" id="add_btn_1" onclick="add_to_cart(` + row + `, 'result');">B</button>`;
+            <button class="btn btn-danger btn-sm" id="add_btn_1" onclick="add_to_cart(` + row + `, 'result');">B</button>`;
         } else {
             html += `
-            <button class="btn btn-success btn-small" id="add_btn_1" onclick="add_to_cart(` + row + `, 'result');">Add to Cart</button>`;
+            <button class="btn btn-success btn-sm" id="add_btn_1" onclick="add_to_cart(` + row + `, 'result');">Add to Cart</button>`;
         }
     } else {
         html += `
@@ -1189,7 +1189,7 @@ function addCartIcon(cell, formatterParams, onRendered) { //plain text value
         html = '<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" onclick="add_to_cart(' +
             cell.getRow().getData().index + ', \'' + formatterParams['t'] + '\')">Add</button>';
         tid = cell.getRow().getData().tid;
-        if (tid != '' && tid != undefined && tid != null) {
+        if (tid != '' && tid !== undefined && tid !== null) {
             html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" onclick="add_to_cart(' + (-tid) + ', \'' + formatterParams['t'] + '\')">Tran</button>';
         }
         return html;
@@ -1559,7 +1559,7 @@ function found_record(data) {
         if (primmem != null) {
             row['reg_label'] = result_membership[primmem]['label'];
             tid = result_membership[primmem]['tid'];
-            if (tid != '') {
+            if (tid !== null && tid !== undefined && tid != '') {
                 var other = false;
                 mperid = row['perid'];
                 for (var mem in result_membership) {
@@ -1626,7 +1626,7 @@ function found_record(data) {
     id_div.innerHTML = `"container-fluid">
     <div class="row mt-3">
         <div class="col-sm-4">No matching records found</div>
-        <div class="col-sm-auto"><button class="btn btn-primary btn-small" type="button" id="not_found_add_new" onclick="not_found_add_new();">Add New Person</button>
+        <div class="col-sm-auto"><button class="btn btn-primary btn-sm" type="button" id="not_found_add_new" onclick="not_found_add_new();">Add New Person</button>
         </div>
     </div>
 </div>
@@ -2255,7 +2255,7 @@ function pay_shown() {
 ` + couponSelect + `
         </div>
         <div class="col-sm-auto ms-0 me-0 p-0">
-            <button class="btn btn-secondary btn-small" type="button" id="pay-btn-coupon" onclick="apply_coupon('a');">Apply Coupon</button>
+            <button class="btn btn-secondary btn-sm" type="button" id="pay-btn-coupon" onclick="apply_coupon('a');">Apply Coupon</button>
         </div>  
     </div>
 `;
@@ -2266,7 +2266,7 @@ function pay_shown() {
         <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
         <div class="col-sm-auto ms-0 me-2 p-0">` + coupon.getNameString() + `</div>
          <div class="col-sm-auto ms-0 me-0 p-0">
-            <button class="btn btn-secondary btn-small" type="button" id="pay-btn-coupon" onclick="apply_coupon('r');">Remove Coupon</button>
+            <button class="btn btn-secondary btn-sm" type="button" id="pay-btn-coupon" onclick="apply_coupon('r');">Remove Coupon</button>
         </div>  
     </div>
     <div class="row mt-1">
@@ -2330,16 +2330,16 @@ function pay_shown() {
     <div class="row mt-3">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="pay-btn-pay" onclick="pay('');">Confirm Pay</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-pay" onclick="pay('');">Confirm Pay</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="pay-btn-ercpt" onclick="print_receipt('email');" hidden disabled>Email Receipt</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-ercpt" onclick="print_receipt('email');" hidden disabled>Email Receipt</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="pay-btn-rcpt" onclick="print_receipt('print');" hidden>Print Receipt</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-rcpt" onclick="print_receipt('print');" hidden>Print Receipt</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="pay-btn-print" onclick="goto_print();" hidden>Print Badges</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-print" onclick="goto_print();" hidden>Print Badges</button>
         </div>
     </div>
     <div id="receeiptEmailAddresses" class="container-fluid"></div>
@@ -2398,7 +2398,7 @@ function print_shown() {
     <div class="row mt-4">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="pay-print-all" name="print_btn" onclick="print_badge(-1);">Print All</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-print-all" name="print_btn" onclick="print_badge(-1);">Print All</button>
         </div>
     </div>
     <div class="row mt-4">

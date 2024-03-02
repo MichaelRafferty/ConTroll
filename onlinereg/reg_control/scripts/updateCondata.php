@@ -25,6 +25,16 @@ $nextconid=$conid + 1;
 
 $action=$_POST['ajax_request_action'];
 $tablename=$_POST['tablename'];
+try {
+    $tabledata = json_decode($_POST['tabledata'], true, 512, JSON_THROW_ON_ERROR);
+} catch (Exception $e) {
+    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+    $response['error'] = $msg;
+    error_log($msg);
+    ajaxSuccess($response);
+    exit();
+}
+//$data = $_POST['tabledata'];
 $response['year'] = $action;
 
 switch ($tablename) {
@@ -32,7 +42,7 @@ switch ($tablename) {
         switch ($action) {
             case 'next':
             case 'current':
-                $data = $_POST['tabledata'][0];
+                $data = $tabledata[0];
                 $sql = <<<EOS
 INSERT INTO conlist(id, name, label, startdate, enddate, create_date)
 VALUES(?,?,?,?,?,NOW())
@@ -60,7 +70,7 @@ EOS;
         }
         break;
     case "memlist":
-        $data = $_POST['tabledata'];
+        $data = $tabledata;
         // find keys to delete (somehow)
         $delete_keys = array();
         $delete_keys[$conid] = '';
@@ -68,21 +78,39 @@ EOS;
         $first = array();
         $first[$conid] = true;
         $first[$nextconid] = true;
-        foreach ($data as $row ) {
+        $sort_order = 10;
+        $yearahead_sortorder = 400;
+        $rollover_sortorder = 500;
+        foreach ($data as $index => $row ) {
             //$cidfound[$row['conid']] = true;
-            if (array_key_exists('to_delete', $row)) {
-                if ($row['to_delete'] == 1) {
-                    $cid = $row['conid'];
-                    $id = $row['id'];
-                    if (array_key_exists($cid, $first)) {
-                        $delete_keys[$cid] .= ($first[$cid] ? "'" : ",'") . sql_safe($row['id']) . "'";
-                        $first[$cid] = false;
+            if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists('memlistkey', $row)) {
+                $cid = $row['conid'];
+                if (array_key_exists($cid, $first)) {
+                    $delete_keys[$cid] .= ($first[$cid] ? "'" : ",'") . sql_safe($row['memlistkey']) . "'";
+                    $first[$cid] = false;
+                }
+            } else {
+                if (array_key_exists('sort_order', $row)) { // deal with table add rows now having sort order
+                    $roworder = $row['sort_order'];
+                } else {
+                    $roworder = 10;
+                }
+                if (($roworder >= 0 && $roworder < 900) || ($roworder == -99999)) {
+                    if ($row['memCategory'] == 'rollover') {
+                        $data[$index]['sort_order'] = $rollover_sortorder;
+                        $rollover_sortorder += 2;
+                    } else if ($row['memCategory'] == 'yearahead') {
+                        $data[$index]['sort_order'] = $yearahead_sortorder;
+                        $yearahead_sortorder += 2;
+                    } else {
+                        $data[$index]['sort_order'] = $sort_order;
+                        $sort_order += 2;
                     }
                 }
             }
         }
-        error_log("Keys to delete =");
-        var_error_log($delete_keys);
+        //error_log("Keys to delete =");
+        //var_error_log($delete_keys);
         $deleted = 0;
         $inserted = 0;
         $updated = 0;
@@ -109,38 +137,18 @@ WHERE id = ?
 EOS;
         $updtypes = 'isssssssssi';
 
-        $sort_order = 10;
-        $yearahead_sortorder = 400;
-        $rollover_sortorder = 500;
         foreach ($data as $row) {
-            if (array_key_exists('sort_order', $row)) { // deal with table add rows now having sort order
-                $roworder = $row['sort_order'];
-            } else {
-                $roworder = 10;
-            }
-            if (($roworder >= 0 && $roworder < 900) || ($roworder == -99999)) {
-                if ($row['memCategory'] == 'rollover') {
-                    $roworder = $rollover_sortorder;
-                    $rollover_sortorder += 2;
-                } else if ($row['memCategory'] == 'yearahead'){
-                    $roworder = $yearahead_sortorder;
-                    $yearahead_sortorder += 2;
-                } else {
-                    $roworder = $sort_order;
-                    $sort_order += 2;
-                }
-            }
             if ($row['id'] < 0) {
-                $paramarray= array($row['conid'],$roworder,$row['memCategory'],
+                $paramarray= array($row['conid'],$row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['price'],$row['startdate'],
                     $row['enddate'],$row['atcon'],$row['online']);
                 //web_error_log("add row: /$addSQL/, types '$addtypes', values:");
                 //var_error_log($paramarray);
-                $newid = dbSafeCmd($addSQL, $addtypes, $paramarray);
+                $newid = dbSafeInsert($addSQL, $addtypes, $paramarray);
                 if ($newid)
                     $inserted++;
             } else {
-                $paramarray = array($roworder,$row['memCategory'],
+                $paramarray = array($row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['price'],$row['startdate'],
                     $row['enddate'],$row['atcon'],$row['online'], $row['id']);
                 //web_error_log("update row: /$updSQL/, types = '$updtypes', values:");
@@ -229,7 +237,7 @@ LEFT OUTER JOIN existing_memList e ON (
 WHERE m.conid = ? AND e.conid IS NULL AND m.startdate = ? AND m.enddate = ?;
 EOS;
         $typelist = 'issssssssiss';
-        $data = $_POST['tabledata'];
+        $data = $tabledata;
         $numrows = 0;
         foreach ($data as $row ) {
             $paramarray = array(

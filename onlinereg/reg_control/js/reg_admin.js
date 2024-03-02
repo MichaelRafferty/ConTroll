@@ -339,6 +339,7 @@ function draw_stats(data) {
     couponfilter = [];
 }
 
+// display actions as buttons in a cell for this membership
 function actionbuttons(cell, formatterParams, onRendered) {
     var data = cell.getData();
     var category = data['category'];
@@ -502,7 +503,7 @@ function transfer(index) {
         return;
 
     if (data['price'] == 0) {
-        if (confirm("This is a free badge, really transfer it?\n(Is it an included vendor badge or similar situation?)") == false)
+        if (confirm("This is a free badge, really transfer it?\n(Is it an included exhibitor badge or similar situation?)") == false)
             returm;
     }
 
@@ -670,12 +671,15 @@ function draw_badges(data) {
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         columns: [
             { title: "TID", field: "display_trans", headerSort: true, headerFilter: true },
+            { title: "PID", field: "perid", headerSort: true, headerFilter: true, },
+            { title: "TID", field: "display_trans", headerSort: true, headerFilter: true },
             { title: "Person", field: "p_name", headerSort: true, headerFilter: true },
             { title: "Badge Name", field: "p_badge", headerSort: true, headerFilter: true },
+            { title: "Email", field: "p_email", headerSort: true, headerFilter: true },
             { title: "Membership Type", field: "label", headerSort: true, headerFilter: true, },
-            { title: "Price", field: "price", hozAlign: "right", headerSort: true, headerFilter: true },
-            { title: "Discount", field: "couponDiscount", hozAlign: "right", headerSort: true, headerFilter: true, },
-            { title: "Paid", field: "paid", hozAlign: "right", headerSort: true, headerFilter: true, },
+            { title: "Price", field: "price", hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
+            { title: "Discount", field: "couponDiscount", hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
+            { title: "Paid", field: "paid", hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
             { title: "Coupon", field: "name", headerSort: true, headerFilter: true, },
             { title: "Created", field: "create_date", headerSort: true, headerFilter: true },
             { title: "Changed", field: "change_date", headerSort: true, headerFilter: true },

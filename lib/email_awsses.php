@@ -26,11 +26,9 @@
 //
 
 require_once (__DIR__ . "/db_functions.php");
-//require_once (__DIR__ . "/../config/aws.phar");
+require_once(__DIR__ . '/../Composer/vendor/autoload.php');
 use Aws\Ses\SesClient;
 use Aws\Exception\AwsException;
-
-
 
 function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
     $return_arr = array();
@@ -54,7 +52,9 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
     }
 
     $Destination = array();
-    $Destination['ToAddresses'] = array($to);
+    if(is_array($to)) { $Destination['ToAddresses'] = $to; }
+    else { $Destination['ToAddresses'] = array($to); }
+
     if (!is_null($cc)) {
         if (is_array($cc)) {
             $Destination['CcAddresses'] = $cc;

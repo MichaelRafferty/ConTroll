@@ -138,6 +138,14 @@ function showAjaxError(jqXHR, textStatus, errorThrown) {
     show_message(message, 'error');
 }
 
+// validate RFC-5311/2 addresses regexp pattern from https://regex101.com/r/3uvtNl/1, found by searching validate RFC-5311/2  addresses
+function validateAddress(addr) {
+    if (addr == '/n' || addr == '/r')
+        return; // allow none or refused values in atcon
+    const regPattern = /^((?:[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~]|(?<=^|\.)"|"(?=$|\.|@)|(?<=".*)[ .](?=.*")|(?<!\.)\.){1,64})(@)((?:[A-Za-z0-9.\-])*(?:[A-Za-z0-9])\.(?:[A-Za-z0-9]){2,})$/gm;
+    return regPattern.test(String(addr).toLowerCase());
+}
+
 // dayFromLabel(label)
 // return the full day name from a memList/memLabel label.
 function dayFromLabel(label) {

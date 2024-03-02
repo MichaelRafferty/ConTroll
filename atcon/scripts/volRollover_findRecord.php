@@ -36,6 +36,8 @@ $name_search = $_POST['name_search'];
 $rollover_memId = $_POST['rollover_memId'];
 $response['name_search'] = $name_search;
 
+$response['elig'] = $con['rollover_eligible'];
+
 $limit = 99999999;
 if (is_numeric($name_search)) {
     //
@@ -45,7 +47,7 @@ if (is_numeric($name_search)) {
 SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
-    TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname,
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name,''), ' ', IFNULL(p.suffix,'')), '  *', ' ')) AS fullname,
     p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname,
     CASE 
         WHEN m.memCategory is null THEN 'no membership'
@@ -74,7 +76,7 @@ EOS;
 SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
-    TRIM(REGEXP_REPLACE(concat(p.last_name, ', ', p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' ')) AS fullname,
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name,''), ', ', IFNULL(p.first_name,''),' ', IFNULL(p.middle_name,''), ' ', IFNULL(p.suffix,)), '  *', ' ')) AS fullname,
     p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname,
     CASE
         WHEN m.memCategory is null THEN 'no membership'

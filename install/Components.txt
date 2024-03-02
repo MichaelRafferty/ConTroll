@@ -38,4 +38,4 @@ scripts: global scripts used by the system
 
 scripts-sample: prototype scripts to copy
 
-vendor: dealer/artshow registration
+vendor: exhibitor registration, used by two websites artist and vendor right now

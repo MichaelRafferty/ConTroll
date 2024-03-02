@@ -71,7 +71,7 @@ EOS;
     return $body;
 }
 
-function getNoChangeEmailBody($results) : string
+function getNoChargeEmailBody($results) : string
 {
     $condata = get_con();
     $ini = get_conf('reg');
@@ -109,7 +109,7 @@ EOS;
     if ($owner['code'] != null) {
         $body .= "A coupon of type " . $owner['code'] . " (" . $owner['name'] . ") was applied to this transaction";
         if ($owner['couponDiscount'] > 0)
-            $body .= " for a savings of " . $owner['$couponDiscount'];
+            $body .= " for a savings of " . $owner['couponDiscount'];
         $body .= "\n";
     }
 

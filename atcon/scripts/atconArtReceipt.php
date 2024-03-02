@@ -148,7 +148,10 @@ if (isset($_SESSION['receiptPrinter'])) {
     $server = $printer[1];
     $queue = $printer[2];
     $codepage = $printer[4];
-    $command = "lpr -H$server -P$queue < $tempfile";
+    $serverArg = '';
+    if ($server != '')
+        $serverArg = "H$server";
+    $command = "lpr $serverArg -P$queue < $tempfile";
     $response['command'] = $command;
 } else {
     $command = "cat $tempfile";
@@ -161,4 +164,3 @@ unlink($tempfile);
 ajaxSuccess($response);
 
 ?>
-

@@ -202,7 +202,7 @@ function draw_record(row, first) {
     <div class="row mt-2">
         <div class="col-sm-3"></div>
         <div class="col-sm-5">`;
-    html += `<button class='btn btn-primary btn-small' id='set_customer' onclick="set_customer(result_perinfo[` + row + `]);">Set Customer</button>`;
+    html += `<button class='btn btn-primary btn-sm' id='set_customer' onclick="set_customer(result_perinfo[` + row + `]);">Set Customer</button>`;
     html += `
          </div>
         <div class="col-sm-2"></div>

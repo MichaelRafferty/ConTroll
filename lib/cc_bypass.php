@@ -37,10 +37,15 @@ function cc_charge_purchase($results, $ccauth) {
         $user_perid = null;
         $user_id = null;
     }
+    if (array_key_exists('exhibits', $results)) {
+        $category = 'exhibits';
+    } else {
+        $category = 'reg';
+    }
 
     $rtn = array();
     $rtn['amount'] = $results['total'];
-    $rtn['txnfields'] = array('transid','type','category','description','source','amount',
+    $rtn['txnfields'] = array('transid','type',$category,'description','source','amount',
         'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id','cashier','userid');
     $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd',
             's', 's', 's', 's', 's', 's', 's', 's','i','i');

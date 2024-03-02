@@ -21,9 +21,10 @@ if(!isset($_GET['perid'])) { ajaxError("No Data"); }
 $perid = $_GET['perid'];
 $user = $check_auth['email'];
 $response['user'] = $user;
-$userQ = "SELECT id FROM user WHERE email=?;";
+$userQ = "SELECT id, perid FROM user WHERE email=?;";
 $userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', array($user)));
 $userid = $userR['id'];
+$user_perid = $userR['perid'];
 
 $con = get_con();
 $conid = $con['id'];
@@ -33,16 +34,16 @@ $response['id'] = $perid;
 
 // do not allow duplicate entries in badgeList
 $linkQ = <<<EOS
-INSERT IGNORE INTO badgeList (perid, conid, userid)
-SELECT perid, conid, userid FROM (
-    SELECT ? AS perid, ? AS conid, ? AS userid) AS tmp
+INSERT IGNORE INTO badgeList (perid, conid, user_perid)
+SELECT perid, conid, user_perid FROM (
+    SELECT ? AS perid, ? AS conid, ? AS user_perid) AS tmp
     WHERE NOT EXISTS (
         SELECT perid FROM badgeList 
-        WHERE perid=? AND conid =? AND userid = ?
+        WHERE perid=? AND conid =? AND user_perid = ?
 ) LIMIT 1;
 EOS;
 
-$linID = dbSafeInsert($linkQ, 'iiiiii', array($perid, $conid, $userid, $perid, $conid, $userid));
+$linID = dbSafeInsert($linkQ, 'iiiiii', array($perid, $conid, $user_perid, $perid, $conid, $user_perid));
 $response['link']=$linID;
 
 $perQ = "SELECT id, CONCAT_WS(' ', first_name, middle_name, last_name, suffix) as name, badge_name from perinfo where id=?;";
