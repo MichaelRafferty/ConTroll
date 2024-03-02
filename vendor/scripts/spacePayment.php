@@ -691,7 +691,7 @@ EOF;
     }
     $badge['perid'] = $id;
     $legalName = $badge['legalname'];
-    if ($legalName == '') {
+    if ($legalName == null || $legalName == '') {
         $legalName = trim($badge['fname']  . ($badge['mname'] == '' ? ' ' : ' ' . $badge['mname'] . ' ' ) . $badge['lname'] . ' ' . $badge['suffix']);
     }
 

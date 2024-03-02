@@ -266,8 +266,8 @@ function openInvoice(id) {
 </div>
 <div class='row'>
     <div class='col-sm-12 ms-0 me-0 p-0'>
-        <label for="legalname_a_\` + mnum + \`" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
-        <input class='form-control-sm' type='text' name="legalname_a_\` + mnum + \`" id=legalname_a_\` + mnum + \`" size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix'/>
+        <label for="legalname_a_` + mnum + `" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
+        <input class='form-control-sm' type='text' name="legalname_a_` + mnum + `" id=legalname_a_` + mnum + `" size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix'/>
     </div>
 </div>
 `;
@@ -414,7 +414,7 @@ function updatePaidStatusBlock() {
     }
 
     if (spaceStatus == '') {
-        blockdiv.innerHTML = "<div class=\"col-sm-auto p-0\"><button class='btn btn-primary' onclick = 'exhibitorRequest.openReq(regionYearId, 0);' > Request " + regionName + " Space</button></div>";
+        blockdiv.innerHTML = "<div class='col-sm-auto p-0'><button class='btn btn-primary' onclick = 'exhibitorRequest.openReq(regionYearId, 0);' > Request " + regionName + " Space</button></div>";
         return;
     }
 
