@@ -268,9 +268,10 @@ SELECT exRY.id, es.id
 FROM exhibitsSpaces es
 JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id
 JOIN exhibitorRegionYears exRY ON ery.id = exRY.exhibitsRegionYearId
+JOIN exhibitorYears ey on ery.conid = ey.conid
 LEFT OUTER JOIN exhibitorSpaces eS ON eS.spaceId = es.id AND eS.exhibitorRegionYear = exRY.id
-WHERE ery.conid = ? AND eS.id is null;
+WHERE ery.conid = ? AND ey.exhibitorId = ? AND eS.id is null;
 EOS;
-    $numRows = dbSafeCmd($insSpQ, 'i', array($conid));
+    $numRows = dbSafeCmd($insSpQ, 'ii', array($conid, $exhibitor));
     return;
 }
