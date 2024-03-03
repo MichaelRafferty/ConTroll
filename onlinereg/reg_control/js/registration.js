@@ -62,7 +62,7 @@ var review_required_fields = ['first_name', 'last_name', 'email_addr', 'address_
 var review_prompt_fields = ['phone'];
 var review_editable_fields = [
     'first_name', 'middle_name', 'last_name', 'suffix',
-    'legal_name',
+    'legalName',
     'badge_name',
     'email_addr', 'phone',
     'address_1',

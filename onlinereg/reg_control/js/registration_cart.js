@@ -610,10 +610,7 @@ class reg_cart {
 // format all of the memberships for one record in the cart
     #drawCartRow(rownum) {
         var row = this.#cart_perinfo[rownum];
-        var membername = (row['first_name'] + ' ' + row['middle_name'] + ' ' + row['last_name']).trim();
-        if (row['suffix'] != '') {
-            membername += ', ' + row['suffix'];
-        }
+        var membername = ((row['first_name'] + ' ' + row['middle_name']).trim() + ' ' + row['last_name'] + ' ' + row['suffix']).trim();
         var mrow;
         var rowlabel;
         var membership_found = false;
@@ -838,7 +835,7 @@ class reg_cart {
 ` + this.#membership_select + `
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-madd-" + rownum + `')">Add</button>
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_ƒmembership_cart(` + rownum + ", 'cart-madd-" + rownum + `')">Add</button>
         </div>
     </div>`;
         }

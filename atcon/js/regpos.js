@@ -26,6 +26,7 @@ var add_memIndex_field = null;
 var add_first_field = null;
 var add_middle_field = null;
 var add_last_field = null;
+var add_legalName_field = null;
 var add_suffix_field = null;
 var add_addr1_field = null;
 var add_addr2_field = null;
@@ -46,7 +47,7 @@ var add_results_div = null;
 var add_mode = true;
 var add_mem_select = null;
 var add_mt_dataentry = `
-    <select id='ae_mem_sel' name='age' style="width:300px;" tabindex='15'>
+    <select id='ae_mem_sel' name='age' style="width:300px;" tabindex='30'>
     </select>
 `;
 var add_edit_dirty_check = false;
@@ -62,6 +63,7 @@ var review_required_fields = ['first_name', 'last_name', 'email_addr', 'address_
 var review_prompt_fields = ['phone'];
 var review_editable_fields = [
     'first_name', 'middle_name', 'last_name', 'suffix',
+    'legalName',
     'badge_name',
     'email_addr', 'phone',
     'address_1',
@@ -167,6 +169,7 @@ window.onload = function initpage() {
     add_middle_field = document.getElementById("mname");
     add_last_field = document.getElementById("lname");
     add_suffix_field = document.getElementById("suffix");
+    add_legalName_field = document.getElementById("legalName");
     add_addr1_field = document.getElementById("addr");
     add_addr2_field = document.getElementById("addr2");
     add_city_field = document.getElementById("city");
@@ -491,6 +494,7 @@ function build_record_hover(e, cell, onRendered) {
     //console.log(data);
     var hover_text = 'Person id: ' + data['perid'] + '<br/>' +
         (data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name']).trim() + '<br/>' +
+        data['legalName'] + '<br/>';
         data['address_1'] + '<br/>';
     if (data['address_2'] != '') {
         hover_text += data['address_2'] + '<br/>';
@@ -659,6 +663,7 @@ function clear_add(reset_all) {
     add_middle_field.value = "";
     add_last_field.value = "";
     add_suffix_field.value = "";
+    add_legalName_field.value = "";
     add_addr1_field.value = "";
     add_addr2_field.value = "";
     add_city_field.value = "";
@@ -716,6 +721,7 @@ function add_new() {
     var new_middle = add_middle_field.value.trim();
     var new_last = add_last_field.value.trim();
     var new_suffix = add_suffix_field.value.trim();
+    var new_legalName = add_legalName_field.value.trim();
     var new_addr1 = add_addr1_field.value.trim();
     var new_addr2 = add_addr2_field.value.trim();
     var new_city = add_city_field.value.trim();
@@ -733,12 +739,17 @@ function add_new() {
     var new_contact = add_contact_field.value.trim();
     var new_share = add_share_field.value.trim();
 
+    if (new_legalName == '') {
+        new_legalName = ((new_first + ' ' + new_middle).trim() + ' ' + new_last + ' ' + new_suffix).trim();
+    }
+
     if (add_mode == false && edit_index != '') { // update perinfo/meminfo and cart_perinfo and cart_memberships
         var row = {};
         row['first_name'] = new_first;
         row['middle_name'] = new_middle;
         row['last_name'] = new_last;
         row['suffix'] = new_suffix;
+        row['legalName'] = new_legalName;
         row['badge_name'] = new_badgename;
         row['address_1'] = new_addr1;
         row['address_2'] = new_addr2;
@@ -776,6 +787,8 @@ function add_new() {
         // clear the fields that should not be preserved between adds.  Allowing a second person to be added using most of the same data as default.
         add_first_field.value = "";
         add_middle_field.value = "";
+        add_suffix_field.value = "";
+        add_legalName_field.value = "";
         add_email_field.value = "";
         add_phone_field.value = "";
         add_badgename_field.value = "";
@@ -913,6 +926,7 @@ function add_found(data) {
                 {field: "first_name", visible: false,},
                 {field: "middle_name", visible: false,},
                 {field: "suffix", visible: false,},
+                {field: "legalName", visible: false,},
                 {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
@@ -941,6 +955,7 @@ function add_new_to_cart() {
     var new_middle = add_middle_field.value.trim();
     var new_last = add_last_field.value.trim();
     var new_suffix = add_suffix_field.value.trim();
+    var new_legalName = add_legalName_field.value.trim();
     var new_addr1 = add_addr1_field.value.trim();
     var new_addr2 = add_addr2_field.value.trim();
     var new_city = add_city_field.value.trim();
@@ -954,6 +969,10 @@ function add_new_to_cart() {
     var new_badgememId = null;
     if (bt_field) {
         new_badgememId = bt_field.value.trim();
+    }
+
+    if (new_legalName == '') {
+        new_legalName = ((new_first + ' ' + new_middle).trim() + ' ' + new_last + ' ' + new_suffix).trim();
     }
     //var new_contact = add_contact_field.value.trim();
     //var new_share = add_share_field.value.trim();
@@ -1028,6 +1047,7 @@ function add_new_to_cart() {
 
     var row = {
         perid: new_perid, first_name: new_first, middle_name: new_middle, last_name: new_last, suffix: new_suffix,
+        legalName: new_legalName,
         badge_name: new_badgename,
         address_1: new_addr1, address_2: new_addr2, city: new_city, state: new_state, postal_code: new_postal_code,
         country: new_country, email_addr: new_email, phone: new_phone,
@@ -1119,6 +1139,10 @@ function draw_record(row, first) {
             data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name'] + `
             </div>
         </div>  
+        <div class="row">
+            <div class="col-sm-3">Legal Name:</div>
+            <div class="col-sm-9">\` + data['legalName'] + \`</div>
+        </div>
         <div class="row">
             <div class="col-sm-3">Address:</div>
             <div class="col-sm-9">` + data['address_1'] + `</div>
@@ -1596,6 +1620,7 @@ function found_record(data) {
                 {field: "first_name", visible: false,},
                 {field: "middle_name", visible: false,},
                 {field: "suffix", visible: false,},
+                {field: "legalName", visible: false,},
                 {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},

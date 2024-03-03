@@ -69,7 +69,7 @@ INSERT INTO perinfo(last_name,first_name,middle_name,suffix,legalName,email_addr
 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N','Y',now());
 EOS;
 $existingQ = <<<EOS
-SELECT last_name, first_name, middle_name, suffix, perinfo.legalName, email_addr, phone, badge_name, address, addr_2, city, state, zip, country, open_notes, contact_ok, share_reg_ok, change_notes
+SELECT last_name, first_name, middle_name, suffix, legalName, email_addr, phone, badge_name, address, addr_2, city, state, zip, country, open_notes, contact_ok, share_reg_ok, change_notes
 FROM perinfo
 WHERE id = ?;
 EOS;
