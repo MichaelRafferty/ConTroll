@@ -378,7 +378,7 @@ $all_badgeR = dbSafeQuery($all_badgeQ, 'i', array($transid));
 
 $badgeResults = array();
 while ($row = $all_badgeR->fetch_assoc()) {
-    $badgeResults[count($badgeResults)] = $row;
+    $badgeResults[] = $row;
 }
 
 // prepare the credit card request
@@ -387,6 +387,7 @@ $results = array(
     'counts' => null,$spacePrice,
     'spaceName' => $region['name'],
     'spaceDescription' => $region['description'],
+    'spacePrice' => $spacePrice,
     'price' => $totprice,
     'badges' => $badgeResults,
     'formbadges' => $badges,
