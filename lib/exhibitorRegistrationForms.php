@@ -216,8 +216,8 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                             <div class="row mt-1">
                                 <div class="col-sm-2"></div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='addr2' type='text' size="64" name='addr2' required 
-                                           placeholder="second line of address if neededsecond line of address if needed" tabindex="160"/>
+                                    <input class="form-control-sm" id='addr2' type='text' size="64" name='addr2' 
+                                           placeholder="second line of address if needed" tabindex="160"/>
                                 </div>
                             </div>
                             <div class="row mt-1">
