@@ -154,7 +154,7 @@ page_init($page, $tab,
                                 </div>
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>State</span></label><br/>
-                                    <input type="text" name="state" id='state' size="2" maxlength="2" tabindex="18"/>
+                                    <input type="text" name="state" id='state' size="10" maxlength="16" tabindex="18"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Zip</span></label><br/>

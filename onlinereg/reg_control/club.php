@@ -86,7 +86,7 @@ $(function() {
             </tr>
             <tr>
                 <td class='formfield' colspan=2><input type="text" name="city" size=40/></td>
-                <td class='formfield'><input type="text" name="state" size=2 maxlength=2/></td>
+                <td class='formfield'><input type="text" name="state" size=10 maxlength=16/></td>
                 <td class='formfield'><input type="text" name="zip" size=5 maxlength=10/></td>
             </tr>
             <tr>
@@ -215,8 +215,8 @@ $(function() {
           <input tabindex=10 type='text' name='city' id='city' required='required'/>
         </td>
         <td>
-          <input tabindex=11 type='text' size=2 name='state' id='state' required='required'/> /
-          <input tabindex=12 type='text' name='zip' id='zip' size=5 required='required'/>
+          <input tabindex=11 type='text' size=10 maxlength="16" name='state' id='state' required='required'/> /
+          <input tabindex=12 type='text' name='zip' id='zip' size=5 maxlength="10" required='required'/>
         </td>
         <td colspan=2>
           <select tabindex=13 id='country' name='country' size=1 width=20>

@@ -467,7 +467,7 @@ $onsitesale = $startdate->format("l, F j");
                                  <label for="cc_state">State:</label>
                              </div>
                              <div class="col-sm-auto ms-0 me-2 p-0">
-                                 <input type='text' id='cc_state' size=2 required='required' class='ccdata' name='state/'>
+                                 <input type='text' id='cc_state' size="10" maxlength="16" required='required' class='ccdata' name='state/'>
                              </div>
                              <div class="col-sm-auto ms-0 me-1 p-0">
                                  <label for="cc_zip">Zip:</label>

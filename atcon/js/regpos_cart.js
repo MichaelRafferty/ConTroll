@@ -1120,7 +1120,7 @@ class regpos_cart {
                 '" value="' + row['city'] + '" style="background-color:' + colors.get('city') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-state" id='c` + rownum + `-state' size="2" maxlength="2" placeholder="ST" tabindex="` + String(tabindex + 24) +
+            <input type="text" name="c` + rownum + `-state" id='c` + rownum + `-state' size="10" maxlength="16" placeholder="ST" tabindex="` + String(tabindex + 24) +
                 '" value="' + row['state'] + '" style="background-color:' + colors.get('state') + ';' +`"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
