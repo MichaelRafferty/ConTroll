@@ -78,8 +78,13 @@ function getUSPSNormalizedAddress($address, $address2, $city, $state, $zip) {
     curl_setopt($valCURL, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($valCURL, CURLOPT_CONNECTTIMEOUT, 300);
     curl_setopt($valCURL, CURLOPT_HTTPHEADER, array('Content-Type: application/json', $uspsKey, $uspsAuthorization));
-    $validated = json_decode(curl_exec($valCURL), true);
+    $jsonData = curl_exec($valCURL);
+    $validated = json_decode($jsonData, true);
     curl_close($valCURL);
+    if ($validated == null) {
+        // deal with errors causing invalid json to decode
+        $validated = $jsonData;
+    }
 
     return $validated;
 }

@@ -107,7 +107,7 @@ function process(formRef) {
         valid = false;
         $('#state').addClass('need');
     } else {
-        if (formData['country'] == 'USA' || formData['country'] == 'CAN') {
+        if (formData['country'] == 'USA') {
             if (formData['state'].length != 2) {
                 valid = false;
                 $('#state').addClass('need');
@@ -152,7 +152,7 @@ function process(formRef) {
         return false;
 
     // Check USPS for standardized address
-    if (uspsDiv != null && (formData['country'] == 'USA' || formData['country'] == 'CAN')) {
+    if (uspsDiv != null && (formData['country'] == 'USA')) {
         formDataSave = formData;
         uspsAddress = null;
         $.ajax({
@@ -173,7 +173,7 @@ function countryChange() {
         return;
 
     var country = countryField.value;
-    if (country == 'USA' || country == 'CAN') {
+    if (country == 'USA') {
         addToCartBtn.innerHTML = 'Validate Address To Add Membership To Cart';
     } else {
         addToCartBtn.innerHTML = 'Add Membership To Cart';
@@ -605,7 +605,7 @@ window.onload = function () {
 
     if (uspsDiv) {
         var country = countryField.value;
-        if (country == 'USA' || country == 'CAN')
+        if (country == 'USA')
             addToCartBtn.innerHTML = 'Validate Address To Add Membership To Cart';
     }
 
