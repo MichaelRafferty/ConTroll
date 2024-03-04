@@ -144,13 +144,12 @@ $onsitesale = $startdate->format("l, F j");
       </div>
           <?php } ?>
     <!--- New Badge Modal Popup -->
-    <div class="modal modal-lg fade" id="newBadge" tabindex="-1" aria-labelledby="New Membership" aria-hidden="true" style='--bs-modal-width: 80%;'>
+    <div class="modal modal-xl fade" id="newBadge" tabindex="-1" aria-labelledby="New Membership" aria-hidden="true" style='--bs-modal-width: 90%;'>
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header" style="background-color: #b0c4de;">
                     <div class="modal-title">
                         <strong>New Membership</strong>
-
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -164,58 +163,59 @@ $onsitesale = $startdate->format("l, F j");
                                     <p class="text-body">Items marked with <span class="text-danger">&bigstar;</span> are required fields.</p>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="fname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>First Name</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="fname" id='fname' size="22" maxlength="32" tabindex="2"/>
+                            <div class="row"><div class="col-sm-8"><div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-sm-auto ms-0 me-2 p-0">
+                                        <label for="fname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>First Name</span></label><br/>
+                                        <input class="form-control-sm" type="text" name="fname" id='fname' size="22" maxlength="32" tabindex="2"/>
+                                    </div>
+                                    <div class="col-sm-auto ms-0 me-2 p-0">
+                                        <label for="mname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
+                                        <input class="form-control-sm" type="text" name="mname" id='mname' size="8" maxlength="32" tabindex="4"/>
+                                    </div>
+                                    <div class="col-sm-auto ms-0 me-2 p-0">
+                                        <label for="lname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Last Name</span></label><br/>
+                                        <input class="form-control-sm" type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="6"/>
+                                    </div>
+                                    <div class="col-sm-auto ms-0 me-0 p-0">
+                                        <label for="suffix" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
+                                        <input class="form-control-sm" type="text" name="suffix" id='suffix' size="4" maxlength="4" tabindex="8"/>
+                                    </div>
                                 </div>
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="mname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="mname" id='mname' size="8" maxlength="32" tabindex="4"/>
+                                <div class='row'>
+                                    <div class='col-sm-12 ms-0 me-0 p-0'>
+                                        <label for='legalname' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
+                                        <input class='form-control-sm' type='text' name='legalname' id='legalname' size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix' tabindex='10'/>
+                                    </div>
                                 </div>
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="lname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Last Name</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="6"/>
+                                <div class="row">
+                                    <div class="col-sm-12 ms-0 me-0 p-0">
+                                        <label for="addr" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Address</span></label><br/>
+                                        <input class="form-control-sm" type="text" name='addr' id='addr' size=64 maxlength="64" tabindex='12'/>
+                                    </div>
                                 </div>
-                                <div class="col-sm-auto ms-0 me-0 p-0">
-                                    <label for="suffix" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="suffix" id='suffix' size="4" maxlength="4" tabindex="8"/>
+                                <div class="row">
+                                    <div class="col-sm-12 ms-0 me-0 p-0">
+                                        <label for="addr2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
+                                        <input class="form-control-sm" type="text" name='addr2' id='addr2' size=64 maxlength="64" tabindex='14'/>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class='row'>
-                                <div class='col-sm-12 ms-0 me-0 p-0'>
-                                    <label for='legalname' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
-                                    <input class='form-control-sm' type='text' name='legalname' id='legalname' size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix' tabindex='10'/>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-12 ms-0 me-0 p-0">
-                                    <label for="addr" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Address</span></label><br/>
-                                    <input class="form-control-sm" type="text" name='addr' id='addr' size=64 maxlength="64" tabindex='12'/>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-12 ms-0 me-0 p-0">
-                                    <label for="addr2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
-                                    <input class="form-control-sm" type="text" name='addr2' id='addr2' size=64 maxlength="64" tabindex='14'/>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="city" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>City</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="city" id='city' size="22" maxlength="32" tabindex="16"/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>State</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="state" id='state' size="10" maxlength="16" tabindex="18"/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Zip</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="zip" id='zip' size="5" maxlength="10" tabindex="20"/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-0 p-0">
-                                    <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
-                                    <select name='country' tabindex='22'>
+                                <div class="row">
+                                    <div class="col-sm-auto ms-0 me-2 p-0">
+                                        <label for="city" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>City</span></label><br/>
+                                        <input class="form-control-sm" type="text" name="city" id='city' size="22" maxlength="32" tabindex="16"/>
+                                    </div>
+                                    <div class="col-sm-auto ms-0 me-2 p-0">
+                                        <label for="state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>State: US/CAN 2 letter abv.</span></label><br/>
+                                        <input class="form-control-sm" type="text" name="state" id='state' size="16" maxlength="16" tabindex="18"/>
+                                    </div>
+                                    <div class="col-sm-auto ms-0 me-2 p-0">
+                                        <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Zip</span></label><br/>
+                                        <input class="form-control-sm" type="text" name="zip" id='zip' size="5" maxlength="10" tabindex="20"/>
+                                    </div>
+                                    <div class="col-sm-auto ms-0 me-0 p-0">
+                                        <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
+                                        <select name='country' tabindex='22'>
                                     <?php
                       $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
                       while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
@@ -223,8 +223,11 @@ $onsitesale = $startdate->format("l, F j");
                       }
                       fclose($fh);
                                     ?>
-                                    </select>
+                                        </select>
+                                    </div>
                                 </div>
+                            </div></div>
+                                <div class="col-sm-4" id="uspsblock"></div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
@@ -235,7 +238,6 @@ $onsitesale = $startdate->format("l, F j");
                                 <div col="col-sm-12">
                                     <p class="text-body">Contact Information
                                      (<a href="<?php echo escape_quotes($con['privacypolicy']);?>" target='_blank'><?php echo $con['privacytext'];?></a>).</p>
-
                                 </div>
                             </div>
 

@@ -28,6 +28,11 @@ var emptyCart = null;
 var noChargeCart = null;
 var chargeCart = null;
 
+// usps related fields
+var formDataSave= null;
+var uspsAddress = null;
+var uspsDiv = null;
+
 
 // convert a form post string to an arrray
 // convert url parameters to associative array
@@ -81,7 +86,7 @@ function process(formRef) {
     }
 
     // address 1 is required, address 2 is optional
-    if(formData['addr'] =='') {
+    if (formData['addr'] == '') {
         valid = false;
         $('#addr').addClass('need');
     } else {
@@ -89,21 +94,30 @@ function process(formRef) {
     }
 
     // city/state/zip required
-    if (formData['city'] =='') {
+    if (formData['city'] == '') {
         valid = false;
         $('#city').addClass('need');
     } else {
         $('#city').removeClass('need');
     }
 
-    if (formData['state'] =='') {
+    if (formData['state'] == '') {
         valid = false;
         $('#state').addClass('need');
     } else {
-        $('#state').removeClass('need');
+        if (formData['country'] == 'USA' || formData['country'] == 'CAN') {
+            if (formData['state'].length != 2) {
+                valid = false;
+                $('#state').addClass('need');
+            } else {
+                $('#state').removeClass('need');
+            }
+        } else {
+            $('#state').removeClass('need');
+        }
     }
 
-    if (formData['zip']=='') {
+    if (formData['zip'] == '') {
         valid = false;
         $('#zip').addClass('need');
     } else {
@@ -111,7 +125,7 @@ function process(formRef) {
     }
 
     // a membership type is required
-    if (formData['memType'] =='') {
+    if (formData['memType'] == '') {
         valid = false;
         $('#memType').addClass('need');
     } else {
@@ -135,6 +149,89 @@ function process(formRef) {
     if (!valid)
         return false;
 
+    // Check USPS for standardized address
+    if (formData['country'] == 'USA' || formData['country'] == 'CAN') {
+        formDataSave = formData;
+        uspsAddress = null;
+        $.ajax({
+            url: "scripts/uspsCheck.php",
+            data: formData,
+            method: 'POST',
+            success: addressSuccess,
+            error: addressError
+        });
+    } else {
+        addMembership(formData);
+    }
+}
+
+function addressError(JqXHR, textStatus, errorThrown) {
+    alert("ERROR! " + textStatus + ' ' + errorThrown);
+}
+
+function addressSuccess(data, textStatus, jqXHR) {
+    showValidatedAddress(data);
+}
+
+function showValidatedAddress(data) {
+    if (uspsDiv == null)
+        uspsDiv = document.getElementById("uspsblock");
+
+    if (data['error']) {
+        html = "<h4>USPS Returned an error validating the address</h4>" +
+            "<pre>" + data['error'] + "</pre>\n";
+    } else {
+        uspsAddress = data['address'];
+        var html = "<h4>USPS Returned: " + uspsAddress['valid'] + "</h4>";
+        if (data['status'] == 'error') {
+            html += "<p>USPS uspsAddress Validation Failed: " + data['error'] + "</p>";
+        } else {
+            // ok, we got a valid uspsAddress, show the block
+            html += "<pre>" + uspsAddress['address'] + "\n";
+            if (uspsAddress['address2'])
+                html += uspsAddress['address2'] + "\n";
+            html += uspsAddress['city'] + ', ' + uspsAddress['state'] + ' ' + uspsAddress['zip'] + "</pre>\n";
+        }
+        if (uspsAddress['valid'] == 'Valid')
+            html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="useUSPS();">Use USPS Validated Address</button>'
+    }
+    html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="useMyAddress();">Use Address as Entered</button><br/>' +
+        '<button class="btn btn-sm btn-secondary m-1 mt-2" onclick="redoAddress();">I fixed the address, validate it again.</button>';
+
+    uspsDiv.innerHTML = html;
+}
+
+function useUSPS() {
+    var formData = formDataSave;
+    formData['addr'] = uspsAddress['address'];
+    if (uspsAddress['address2'])
+        formData['addr2'] = uspsAddress['address2'];
+    else
+        formData['addr2'] = '';
+    formData['city'] = uspsAddress['city'];
+    formData['state'] = uspsAddress['state'];
+    formData['zip'] = uspsAddress['zip'];
+
+    document.getElementById('addr').value = formData['addr'];
+    document.getElementById('addr2').value = formData['addr2'];
+    document.getElementById('city').value = formData['city'];
+    document.getElementById('state').value = formData['state'];
+    document.getElementById('zip').value = formData['zip'];
+    uspsDiv.innerHTML = '';
+    addMembership(formData);
+}
+
+function useMyAddress() {
+    uspsDiv.innerHTML = '';
+    addMembership(formDataSave);
+}
+
+function redoAddress() {
+    uspsDiv.innerHTML = '';
+    process("#newBadgeForm");
+}
+
+function addMembership(formData) {
     // clear for next use: first name, middle name, last name, suffix (entire name field set), and the badgename.  To make virtual easier, clear the email addresses.
     $('#fname').val('');
     $('#mname').val('');
