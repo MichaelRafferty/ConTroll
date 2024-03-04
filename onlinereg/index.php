@@ -8,6 +8,7 @@ require_once("../lib/coupon.php");
 $cc = get_conf('cc');
 $con = get_conf('con');
 $ini = get_conf('reg');
+$usps = get_conf('usps');
 load_cc_procs();
 
 $condata = get_con();
@@ -15,6 +16,9 @@ $urlCouponCode = '';
 $urlSerialNum = '';
 $serialHidden = 'hidden';
 
+$useUSPS = false;
+if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
+    $useUSPS = true;
 
 $numCoupons = num_coupons();
 if ($numCoupons == 0)
@@ -163,7 +167,7 @@ $onsitesale = $startdate->format("l, F j");
                                     <p class="text-body">Items marked with <span class="text-danger">&bigstar;</span> are required fields.</p>
                                 </div>
                             </div>
-                            <div class="row"><div class="col-sm-8"><div class="container-fluid">
+                            <?php if ($useUSPS) echo '<div class="row"><div class="col-sm-8"><div class="container-fluid">' . PHP_EOL; ?>
                                 <div class="row">
                                     <div class="col-sm-auto ms-0 me-2 p-0">
                                         <label for="fname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>First Name</span></label><br/>
@@ -215,7 +219,7 @@ $onsitesale = $startdate->format("l, F j");
                                     </div>
                                     <div class="col-sm-auto ms-0 me-0 p-0">
                                         <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
-                                        <select name='country' tabindex='22'>
+                                        <select name='country' tabindex='22' id='country' onchange="countryChange();">
                                     <?php
                       $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
                       while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
@@ -226,9 +230,7 @@ $onsitesale = $startdate->format("l, F j");
                                         </select>
                                     </div>
                                 </div>
-                            </div></div>
-                                <div class="col-sm-4" id="uspsblock"></div>
-                            </div>
+                                <?php if ($useUSPS) echo '</div></div><div class="col-sm-4" id="uspsblock"></div></div>' . PHP_EOL; ?>
                             <div class="row">
                                 <div class="col-sm-12">
                                     <hr/>
@@ -343,9 +345,9 @@ $onsitesale = $startdate->format("l, F j");
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <input type='submit' onclick='process("#newBadgeForm");' value='Add Membership To Cart'/>
-                                    <input type='submit' onclick='newBadgeModalClose();' value='Review and Pay'/>
-                                    <input type='reset'/>
+                                    <button type="button" id="addToCartBtn" class="btn btn-sm btn-primary me-1" onclick="process('#newBadgeForm');">Add Membership To Cart</button>
+                                    <button type="button" class="btn btn-sm btn-primary ms-1 me-1" onclick='newBadgeModalClose();'>Review and Pay</button>
+                                    <button type="reset" class="btn btn-sm btn-secondary ms-1">Reset</button>
                                 </div>
                             </div>
                         </form>

@@ -32,6 +32,8 @@ var chargeCart = null;
 var formDataSave= null;
 var uspsAddress = null;
 var uspsDiv = null;
+var addToCartBtn = null;
+var countryField = null;
 
 
 // convert a form post string to an arrray
@@ -150,7 +152,7 @@ function process(formRef) {
         return false;
 
     // Check USPS for standardized address
-    if (formData['country'] == 'USA' || formData['country'] == 'CAN') {
+    if (uspsDiv != null && (formData['country'] == 'USA' || formData['country'] == 'CAN')) {
         formDataSave = formData;
         uspsAddress = null;
         $.ajax({
@@ -165,6 +167,18 @@ function process(formRef) {
     }
 }
 
+// countryChange - if USPS and USA, then change button
+function countryChange() {
+    if (uspsDiv == null)
+        return;
+
+    var country = countryField.value;
+    if (country == 'USA' || country == 'CAN') {
+        addToCartBtn.innerHTML = 'Validate Address To Add Membership To Cart';
+    } else {
+        addToCartBtn.innerHTML = 'Add Membership To Cart';
+    }
+}
 function addressError(JqXHR, textStatus, errorThrown) {
     alert("ERROR! " + textStatus + ' ' + errorThrown);
 }
@@ -174,9 +188,6 @@ function addressSuccess(data, textStatus, jqXHR) {
 }
 
 function showValidatedAddress(data) {
-    if (uspsDiv == null)
-        uspsDiv = document.getElementById("uspsblock");
-
     if (data['error']) {
         html = "<h4>USPS Returned an error validating the address</h4>" +
             "<pre>" + data['error'] + "</pre>\n";
@@ -193,12 +204,13 @@ function showValidatedAddress(data) {
             html += uspsAddress['city'] + ', ' + uspsAddress['state'] + ' ' + uspsAddress['zip'] + "</pre>\n";
         }
         if (uspsAddress['valid'] == 'Valid')
-            html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="useUSPS();">Use USPS Validated Address</button>'
+            html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="useUSPS();">Add to cart using USPS Validated Address</button>'
     }
-    html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="useMyAddress();">Use Address as Entered</button><br/>' +
+    html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="useMyAddress();">Addto cart using Address as Entered</button><br/>' +
         '<button class="btn btn-sm btn-secondary m-1 mt-2" onclick="redoAddress();">I fixed the address, validate it again.</button>';
 
     uspsDiv.innerHTML = html;
+    uspsDiv.scrollIntoView({behavior: 'instant', block: 'center'});
 }
 
 function useUSPS() {
@@ -584,9 +596,18 @@ window.onload = function () {
         newBadge = new bootstrap.Modal(new_badge, { focus: true, backdrop: 'static' });
     }
 
+    uspsDiv = document.getElementById("uspsblock");
+    addToCartBtn = document.getElementById("addToCartBtn");
     emptyCart = document.getElementById("emptyCart");
     noChargeCart = document.getElementById("noChargeCart");
     chargeCart = document.getElementById("chargeCart");
+    countryField = document.getElementById("country");
+
+    if (uspsDiv) {
+        var country = countryField.value;
+        if (country == 'USA' || country == 'CAN')
+            addToCartBtn.innerHTML = 'Validate Address To Add Membership To Cart';
+    }
 
     coupon = new Coupon();
     memSummaryDiv = document.getElementById('memSummaryDiv');

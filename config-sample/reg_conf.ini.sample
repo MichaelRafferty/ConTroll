@@ -48,6 +48,7 @@ rollover_eligible="'upgrade', 'rollover', 'freebie', 'standard', 'yearahead', 'd
 google=0 ; to enable google debug statements (1=enable, 0=disable)
 reg_control_admin=0 ; to enable reg_contol admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
 vendors=0 ; to enable vendor and artist admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+usps=0 ; to enable usps address validation debug (currently bitmast from 1-31)
 [reg]
 https=1
 test=0
@@ -148,5 +149,10 @@ suspended=1
 close=0
 max_failures=10
 url="https://reg.conname.org/artshow"
+[usps]
+;	you can obtail clientId and secrets from the usps developers forum.  These are for the v3 API
+;	if these are blank or missing, the usps validation is not enabled.
+clientId=
+secret=
 [control]
 clubname='Club Name'
