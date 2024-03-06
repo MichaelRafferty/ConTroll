@@ -37,8 +37,13 @@ function cc_charge_purchase($results, $ccauth) {
         $user_perid = null;
         $user_id = null;
     }
+
+    // set category based on if exhibits is a portal type
     if (array_key_exists('exhibits', $results)) {
-        $category = 'exhibits';
+        if ($results['exhibits'] == 'vendor')
+            $category = 'vendor';
+        else
+            $category = 'artshow';
     } else {
         $category = 'reg';
     }

@@ -176,8 +176,12 @@ function cc_charge_purchase($results, $ccauth) {
     $rtn = array();
     $rtn['amount'] = $db_resp['ssl_amount'];
 
+    // set category based on if exhibits is a portal type
     if (array_key_exists('exhibits', $results)) {
-        $category = 'exhibits';
+        if ($results['exhibits'] == 'vendor')
+            $category = 'vendor';
+        else
+            $category = 'artshow';
     } else {
         $category = 'reg';
     }

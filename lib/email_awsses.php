@@ -52,9 +52,14 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
     }
 
     $Destination = array();
-    if(is_array($to)) { $Destination['ToAddresses'] = $to; }
-    else { $Destination['ToAddresses'] = array($to); }
+    // to  can be single or array of addresses
+    if (is_array($to)) {
+        $Destination['ToAddresses'] = $to;
+    } else {
+        $Destination['ToAddresses'] = array($to);
+    }
 
+    // cc is optional and can be single or array of addresses
     if (!is_null($cc)) {
         if (is_array($cc)) {
             $Destination['CcAddresses'] = $cc;

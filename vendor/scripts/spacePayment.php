@@ -40,6 +40,12 @@ if (!array_key_exists('regionYearId', $_POST)) {
     ajaxError("invalid calling sequence");
     exit();
 }
+
+if (array_key_exists('portalType', $_POST))
+    $portalType = $_POST['portalType'];
+else
+    $portalType = 'exhibits';
+
 $regionYearId = $_POST['regionYearId'];
 $specialRequests = $_POST['requests'];
 $taxid = $_POST['taxid'];
@@ -149,11 +155,11 @@ $buyer['zip'] = $_POST['cc_zip'];
 $buyer['country'] = $_POST['cc_country'];
 $buyer['email'] = $_POST['cc_email'];
 
-$membership_fields = array('fname' => 1, 'mname' => 0, 'lname' => 1, 'suffix' => 0, 'addr' => 1, 'addr2' => 0, 'city' => 1, 'state' => 1, 'zip' => 1,
+$membership_fields = array('fname' => 1, 'mname' => 0, 'lname' => 1, 'suffix' => 0, 'legalname' => 0, 'addr' => 1, 'addr2' => 0, 'city' => 1, 'state' => 1, 'zip' => 1,
     'country' => 1, 'email' => 1, 'phone' => 0, 'badgename' => 0);
-$membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'suffix' => 'Suffix', 'addr' => 'Address Line 1',
-    'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State', 'zip' => 'Zip Code/Postal Code', 'country' => 'Country',
-     'email' => 'Email Address', 'phone' => 'Phone Number', 'badgename' => 'Badge Name');
+$membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'legalname' => 'Legal Name', 'suffix' => 'Suffix',
+    'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State', 'zip' => 'Zip Code/Postal Code',
+    'country' => 'Country', 'email' => 'Email Address', 'phone' => 'Phone Number', 'badgename' => 'Badge Name');
 
 $missing_msg = '';
 $valid = true;
@@ -179,6 +185,7 @@ if ($allrequired == false) {
     $valid = false;
 }
 
+$email_addresses = [ 'cc_email' => 'Payment Information Email'];
 
 // validate the form, returning any errors on missing data
 $includedMembershipStatus = array();
@@ -204,6 +211,11 @@ for ($num = 0; $num < $includedMembershipsMax; $num++) {
                 $notfound[] = $membership_names[$field];
                 $allrequired = false;
             }
+        }
+        if ($field = 'email') {
+            // add to email addresses
+            if ($nonefound == false && $val != '')
+                $email_addresses[$postfield] = "Included Membership $num Email";
         }
     }
 
@@ -261,9 +273,6 @@ for ($num = 0; $num < $additionalMembershipsMax; $num++) {
 }
 
 // check email addresses
-$email_addresses = [ 'cc_email' => 'Payment Information Email', 'email_i_0' => 'Included Membership 1 Email', 'email_i_1' => 'Included Membership 2 Email',
-    'email_a_0' => 'Additional Membership 1 Email', 'email_a_1' => 'Additional Membership 2 Email'];
-
 $invalidEmail_msg = '';
 foreach ($email_addresses AS $email => $where) {
     if (array_key_exists($email, $_POST)) {
@@ -277,14 +286,16 @@ foreach ($email_addresses AS $email => $where) {
     }
 }
 
-if ($additionalMemberships > 0 && $includedMemberships < $includedMembershipsMax) {
-    $missing_msg .= "You must use all included memberships before using additional ones\n";
-    $valid = false;
-}
+if ($additionalMembershipsMax > 0 || $includedMembershipsMax > 0) {
+    if ($additionalMemberships > 0 && $includedMemberships < $includedMembershipsMax) {
+        $missing_msg .= "You must use all included memberships before using additional ones\n";
+        $valid = false;
+    }
 
-if (($additionalMemberships + $includedMemberships == 0) && !$aggreeNone) {
-    $missing_msg .= "You must buy at least one membership for your space or check the box at the top of the invoice noting that you are not purchasing any memberships at this time and acknowledge the need for memberships for all working in your space.";
-    $valid = false;
+    if (($additionalMemberships + $includedMemberships == 0) && !$aggreeNone) {
+        $missing_msg .= "You must buy at least one membership for your space or check the box at the top of the invoice noting that you are not purchasing any memberships at this time and acknowledge the need for memberships for all working in your space.";
+        $valid = false;
+    }
 }
 
 if (!$valid) {
@@ -356,7 +367,7 @@ SELECT R.id AS badge,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename
+    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.legalName AS legalname
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
 JOIN memList M ON (M.id = R.memID)
@@ -367,7 +378,7 @@ $all_badgeR = dbSafeQuery($all_badgeQ, 'i', array($transid));
 
 $badgeResults = array();
 while ($row = $all_badgeR->fetch_assoc()) {
-    $badgeResults[count($badgeResults)] = $row;
+    $badgeResults[] = $row;
 }
 
 
@@ -378,6 +389,7 @@ $results = array(
     'spacePrice' => $spacePrice,
     'spaceName' => $region['name'],
     'spaceDescription' => $region['description'],
+    'spacePrice' => $spacePrice,
     'price' => $totprice,
     'badges' => $badgeResults,
     'formbadges' => $badges,
@@ -388,6 +400,7 @@ $results = array(
     'specialrequests' => $specialRequests,
     'region' => $region,
     'vendor' => $exhibitor,
+    'exhibits' => $portalType,
     'buyer' => $buyer,
 );
 
@@ -529,6 +542,7 @@ EOS;
 }
 
 if ($exhNum == 0) {
+    $nextID = -1;
     if ($exhibitor['mailin'] == 'N') {
         if ($region['atconIdBase'] < $region['mailinIdBase']) {
             $nextIdQ = <<<EOS
@@ -559,7 +573,8 @@ EOS;
                 $nextID = $nextL[0] == NULL ? $region['atconIdBase'] + 1 : $nextL[0] + 1;
             }
         }
-    } else {
+    }
+    if ($nextID < 0) {
         $nextIdQ = <<<EOS
 SELECT MAX(exhibitorNumber)
 FROM exhibitorRegionYears exRY
@@ -697,17 +712,21 @@ EOF;
         $id = null;
     }
     $badge['perid'] = $id;
+    $legalName = $badge['legalname'];
+    if ($legalName == null || $legalName == '') {
+        $legalName = trim($badge['fname']  . ($badge['mname'] == '' ? ' ' : ' ' . $badge['mname'] . ' ' ) . $badge['lname'] . ' ' . $badge['suffix']);
+    }
 
-    $value_arr = array($badge['lname'], $badge['mname'], $badge['fname'], $badge['suffix'], $badge['email'], $badge['phone'], $badge['badgename'],
+    $value_arr = array($badge['lname'], $badge['mname'], $badge['fname'], $badge['suffix'], $legalName, $badge['email'], $badge['phone'], $badge['badgename'],
         $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country'], $badge['contact'], $badge['share'], $id);
 
     $insertQ = <<<EOS
-INSERT INTO newperson(last_name, middle_name, first_name, suffix, email_addr, phone, badge_name,
+INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone, badge_name,
                       address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, perid)
-    VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 
-    $newid = dbSafeInsert($insertQ, 'sssssssssssssssi', $value_arr);
+    $newid = dbSafeInsert($insertQ, 'ssssssssssssssssi', $value_arr);
     $badge['error'] = '';
     if ($newid === false) {
         $badge['error'] .= 'Add of person of badge for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";

@@ -19,12 +19,12 @@ if(!isset($_POST)) {
 }
 
 $query = <<<EOS
-INSERT INTO newperson (last_name, first_name, middle_name, suffix, email_addr, phone, badge_name,
+INSERT INTO newperson (last_name, first_name, middle_name, suffix, email_addr, phone, legalName, badge_name,
     address, addr_2, city, state, zip, country, share_reg_ok, contact_ok)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 
-$parmtypes = 'sssssssssssssss';
+$parmtypes = 'ssssssssssssssss';
 $last_name = "";
 if (array_key_exists('lname', $_POST)) {
     $last_name = trim($_POST['lname']);
@@ -66,6 +66,12 @@ if (array_key_exists('badge', $_POST)) {
     $badge = trim($_POST['badge']);
     if (is_null($badge))
         $badge = "";
+}
+$legalName = '';
+if (array_key_exists('legalName', $_POST)) {
+    $legalName = trim($_POST['legalName']);
+    if (is_null($legalName))
+        $legalName = '';
 }
 $address = "";
 if (array_key_exists('address', $_POST)) {
@@ -117,7 +123,7 @@ if (array_key_exists('contact_ok', $_POST)) {
 }
 
 
-$values = array($last_name, $first_name, $middle_name, $suffix, $email, $phone, $badge, $address, $addr2, $city, $state, $zip, $country, $share_ok, $contact_ok);
+$values = array($last_name, $first_name, $middle_name, $suffix, $email, $phone, $legalName, $badge, $address, $addr2, $city, $state, $zip, $country, $share_ok, $contact_ok);
 
 $id = dbSafeInsert($query, $parmtypes, $values);
 

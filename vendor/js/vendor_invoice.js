@@ -2,6 +2,7 @@
 var vendor_invoice = null;
 var totalSpacePrice = 0;
 var regionYearId = null;
+var membershipCostdiv = null;
 
 // set up vendor invoice items
 function vendorInvoiceOnLoad() {
@@ -9,6 +10,7 @@ function vendorInvoiceOnLoad() {
     if (id != null) {
         vendor_invoice = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
+    membershipCostdiv = document.getElementById("membershipCost");
 }
 
 // openInvoice: display the vendor invoice (and registration items)
@@ -148,6 +150,8 @@ function openInvoice(id) {
     document.getElementById('vendorSpacePrice').value = totalSpacePrice;
     document.getElementById('vendor_inv_region_id').value = regionYearId;
 
+    membershipCostdiv.hidden =  (includedMemberships == 0 && additionalMemberships == 0) ;
+
     var html = '';
     // now build the included memberships
     if (includedMemberships > 0) {
@@ -155,7 +159,7 @@ function openInvoice(id) {
             "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Included Memberships: (up to " + includedMemberships + ")</strong>" +
             "<input type='hidden' name='includedMemberships' value='" + String(includedMemberships) + "'></div></div>";
         for (var mnum = 0; mnum < includedMemberships; mnum++) {
-            // name fields
+            // name fields including legal name
             html += `
 <div class="row mt-4">
     <div class="col-sm-auto p-0">Included Member ` + (mnum + 1) + `:</div>
@@ -176,6 +180,12 @@ function openInvoice(id) {
     <div class="col-sm-auto ms-0 me-0 p-0">
         <label for="suffix_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
         <input class="form-control-sm" type="text" name="suffix_i_` + mnum + `" id='suffix_i_` + mnum + `' size="4" maxlength="4" />
+    </div>
+</div>
+<div class='row'>
+    <div class='col-sm-12 ms-0 me-0 p-0'>
+        <label for="legalname_i_` + mnum + `" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
+        <input class='form-control-sm' type='text' name="legalname_i_` + mnum + `" id=legalname_i_` + mnum + `" size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix'/>
     </div>
 </div>
 `;
@@ -200,7 +210,7 @@ function openInvoice(id) {
     </div>
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="state_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>State</span></label><br/>
-        <input class="form-control-sm" type="text" name="state_i_` + mnum + `" id='state_i_` + mnum + `' size="2" maxlength="2" />
+        <input class="form-control-sm" type="text" name="state_i_` + mnum + `" id='state_i_` + mnum + `' size="10" maxlength=16" />
     </div>
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="zip_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Zip</span></label><br/>
@@ -229,8 +239,8 @@ function openInvoice(id) {
 </div>
 `;
         }
+        html += "<hr/>";
     }
-    html += "<hr/>";
 
     // now build the additional memberships
     if (additionalMemberships > 0) {
@@ -238,7 +248,7 @@ function openInvoice(id) {
             "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Additional Memberships: (up to " + additionalMemberships + ")</strong>" +
             "<input type='hidden' name='additionalMemberships' value='" + String(additionalMemberships) + "'></div></div>";
         for (var mnum = 0; mnum < additionalMemberships; mnum++) {
-            // name fields
+            // name fields includeing legal name
             html += `
 <div class="row mt-4">
     <div class="col-sm-auto p-0">Additional Member ` + (mnum + 1) + `:</div>
@@ -259,6 +269,12 @@ function openInvoice(id) {
     <div class="col-sm-auto ms-0 me-0 p-0">
         <label for="suffix_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
         <input class="form-control-sm" type="text" name="suffix_a_` + mnum + `" id='suffix_a_` + mnum + `' size="4" maxlength="4" />
+    </div>
+</div>
+<div class='row'>
+    <div class='col-sm-12 ms-0 me-0 p-0'>
+        <label for="legalname_a_` + mnum + `" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
+        <input class='form-control-sm' type='text' name="legalname_a_` + mnum + `" id=legalname_a_` + mnum + `" size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix'/>
     </div>
 </div>
 `;
@@ -283,7 +299,7 @@ function openInvoice(id) {
     </div>   
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="state_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>State</span></label><br/>
-        <input class="form-control-sm" type="text" name="state_a_` + mnum + `" id='state_a_` + mnum + `' size="2" maxlength="2" />
+        <input class="form-control-sm" type="text" name="state_a_` + mnum + `" id='state_a_` + mnum + `' size="10" maxlength="16" />
     </div>
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="zip_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Zip</span></label><br/>
@@ -312,8 +328,8 @@ function openInvoice(id) {
 </div>
 `;
         }
+        html += "<hr/>";
     }
-    html += "<hr/>";
     document.getElementById("vendor_inv_included_mbr").innerHTML = html;
     vendor_invoice.show();
 }
@@ -405,7 +421,7 @@ function updatePaidStatusBlock() {
     }
 
     if (spaceStatus == '') {
-        blockdiv.innerHTML = "<div class=\"col-sm-auto p-0\"><button class='btn btn-primary' onclick = 'exhibitorRequest.openReq(regionYearId, 0);' > Request " + regionName + " Space</button></div>";
+        blockdiv.innerHTML = "<div class='col-sm-auto p-0'><button class='btn btn-primary' onclick = 'exhibitorRequest.openReq(regionYearId, 0);' > Request " + regionName + " Space</button></div>";
         return;
     }
 

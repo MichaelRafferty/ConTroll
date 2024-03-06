@@ -92,11 +92,21 @@ if(isset($_POST['phone'])) {
   $types .= 's';
   $values[] = $_POST['phone'];
 }
-if(isset($_POST['badge'])) {
+if(isset($_POST['legalName'])) {
   if($change) { $query .= ", "; }
   $change = true;
-  $changeLog .= "badge_name, ";
-  $query .= "badge_name=?";
+  $changeLog .= "legalName, ";
+  $query .= "legalName=?";
+  $types .= 's';
+  $values[] = $_POST['legalName'];
+}
+if (isset($_POST['badge'])) {
+  if ($change) {
+    $query .= ', ';
+  }
+  $change = true;
+  $changeLog .= 'badge_name, ';
+  $query .= 'badge_name=?';
   $types .= 's';
   $values[] = $_POST['badge'];
 }
@@ -203,7 +213,7 @@ if($change) {
 
   $res = dbSafeCmd($query, $types, $values);
   $query2 = <<<EOS
-UPDATE perinfo SET change_notes=CONCAT(IFNULL(change_notes, ''), "<br/>", ?)
+UPDATE perinfo SET change_notes=CONCAT(IFNULL(change_notes, ''), '<br/>', ?)
 WHERE id=?;
 EOS;
 

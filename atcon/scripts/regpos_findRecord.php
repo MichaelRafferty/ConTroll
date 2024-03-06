@@ -80,7 +80,8 @@ EOS;
     $unpaidSQLP = <<<EOS
 $withClauseUnpaid
 SELECT DISTINCT u.perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.middle_name, '') as middle_name, IFNULL(p.last_name, '') as last_name,
-    IFNULL(p.suffix, '') as suffix, p.badge_name, IFNULL(p.address, '') as address_1, IFNULL(p.addr_2, '') as address_2, IFNULL(p.city, '') AS city,
+    IFNULL(p.suffix, '') as suffix, IFNULL(p.legalName, '') as legalName, p.badge_name, 
+    IFNULL(p.address, '') as address_1, IFNULL(p.addr_2, '') as address_2, IFNULL(p.city, '') AS city,
     IFNULL(p.state, '') AS state, IFNULL(p.zip, '') as postal_code, IFNULL(p.country, '') as country, IFNULL(p.email_addr, '') as email_addr,
     IFNULL(p.phone, '') as phone, p.share_reg_ok, p.contact_ok, p.active, p.banned,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
@@ -182,7 +183,8 @@ EOS;
     $searchSQLP = <<<EOS
 $withClause
 SELECT DISTINCT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.middle_name, '') as middle_name, IFNULL(p.last_name, '') as last_name,
-    IFNULL(p.suffix, '') as suffix, p.badge_name, IFNULL(p.address, '') as address_1, IFNULL(p.addr_2, '') as address_2, IFNULL(p.city, '') AS city,
+    IFNULL(p.suffix, '') as suffix, IFNULL(p.legalName, '') as legalName, p.badge_name,
+    IFNULL(p.address, '') as address_1, IFNULL(p.addr_2, '') as address_2, IFNULL(p.city, '') AS city,
     IFNULL(p.state, '') AS state, IFNULL(p.zip, '') as postal_code, IFNULL(p.country, '') as country, IFNULL(p.email_addr, '') as email_addr,
     IFNULL(p.phone, '') as phone, p.share_reg_ok, p.contact_ok, p.active, p.banned,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
@@ -192,7 +194,8 @@ JOIN reg r ON (rs.regid = r.id)
 JOIN perinfo p ON (p.id = r.perid)
 UNION 
 SELECT DISTINCT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.middle_name, '') as middle_name, IFNULL(p.last_name, '') as last_name,
-    IFNULL(p.suffix, '') as suffix, p.badge_name, IFNULL(p.address, '') as address_1, IFNULL(p.addr_2, '') as address_2, IFNULL(p.city, '') AS city,
+    IFNULL(p.suffix, '') as suffix, IFNULL(p.legalName, '') as legalName, p.badge_name,
+    IFNULL(p.address, '') as address_1, IFNULL(p.addr_2, '') as address_2, IFNULL(p.city, '') AS city,
     IFNULL(p.state, '') AS state, IFNULL(p.zip, '') as postal_code, IFNULL(p.country, '') as country, IFNULL(p.email_addr, '') as email_addr,
     IFNULL(p.phone, '') as phone, p.share_reg_ok, p.contact_ok, p.active, p.banned,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
@@ -250,13 +253,15 @@ EOS;
     //web_error_log("match string: $name_search");
     $searchSQLP = <<<EOS
 SELECT DISTINCT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.middle_name, '') as middle_name, IFNULL(p.last_name, '') as last_name,
-    IFNULL(p.suffix, '') as suffix, p.badge_name, IFNULL(p.address, '') as address_1, IFNULL(p.addr_2, '') as address_2, IFNULL(p.city, '') AS city,
+    IFNULL(p.suffix, '') as suffix, IFNULL(p.legalName, '') as legalName, p.badge_name,
+    IFNULL(p.address, '') as address_1, IFNULL(p.addr_2, '') as address_2, IFNULL(p.city, '') AS city,
     IFNULL(p.state, '') AS state, IFNULL(p.zip, '') as postal_code, IFNULL(p.country, '') as country, IFNULL(p.email_addr, '') as email_addr, IFNULL(p.phone, '') as phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix,'')), '  *', ' ')) AS fullname,
     p.open_notes
 FROM perinfo p
-WHERE (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ? OR LOWER(address) LIKE ? OR LOWER(addr_2) LIKE ?)
+WHERE (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(legalName) LIKE ? OR
+       LOWER(email_addr) LIKE ? OR LOWER(address) LIKE ? OR LOWER(addr_2) LIKE ?)
 ORDER BY last_name, first_name LIMIT $limit;
 EOS;
     $searchSQLM = <<<EOS
@@ -264,7 +269,8 @@ WITH limitedp AS (
 /* first get the perid's for this name search */
     SELECT DISTINCT p.id, IFNULL(p.first_name, '') as first_name, p.last_name
     FROM perinfo p
-    WHERE (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ? OR LOWER(address) LIKE ? OR LOWER(addr_2) LIKE ?)
+    WHERE (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(legalName) LIKE ? OR
+        LOWER(email_addr) LIKE ? OR LOWER(address) LIKE ? OR LOWER(addr_2) LIKE ?)
     ORDER BY last_name, first_name LIMIT $limit
 ), regids AS (
 SELECT r.id AS regid
@@ -308,8 +314,8 @@ LEFT OUTER JOIN notes n ON (r.id = n.regid)
 LEFT OUTER JOIN printcount pc ON (r.id = pc.regid)
 ORDER BY create_date;
 EOS;
-    $rp = dbSafeQuery($searchSQLP, 'sssss', array($name_search, $name_search, $name_search, $name_search, $name_search));
-    $rm = dbSafeQuery($searchSQLM, 'sssssiii', array($name_search, $name_search, $name_search, $name_search, $name_search, $conid, $conid + 1, $conid));
+    $rp = dbSafeQuery($searchSQLP, 'ssssss', array($name_search, $name_search, $name_search, $name_search, $name_search, $name_search));
+    $rm = dbSafeQuery($searchSQLM, 'ssssssiii', array($name_search, $name_search, $name_search, $name_search, $name_search, $name_search, $conid, $conid + 1, $conid));
 }
 
 $perinfo = [];

@@ -56,11 +56,16 @@ function cc_charge_purchase($results, $ccauth) {
 		ajaxSuccess(array('status'=>'error','data'=>'Something thinks this is a real charge method'));
 		exit();
 	}
+	// set category based on if exhibits is a portal type
     if (array_key_exists('exhibits', $results)) {
-        $category = 'exhibits';
+        if ($results['exhibits'] == 'vendor')
+            $category = 'vendor';
+        else
+            $category = 'artshow';
     } else {
         $category = 'reg';
     }
+
 	switch($_POST['nonce'][0]) {
 		case '1': // success
 			$rtn['amount'] = $results['total'];
