@@ -32,6 +32,7 @@ $email = "no send attempt or a failure";
 if(!isset($_SESSION['id'])) { ajaxSuccess(array('status'=>'error', 'message'=>'Session Failure')); exit; }
 
 $exhId = $_SESSION['id'];
+$eyID = $_SESSION['eyID'];
 
 $response = array("post" => $_POST, "get" => $_GET);
 
@@ -87,6 +88,8 @@ if ($regionYearR == false || $regionYearR->num_rows != 1) {
 $region = $regionYearR->fetch_assoc();
 $regionYearR->free();
 
+//$response['region'] = $region;
+
 // get current exhibitor information
 $exhibitorQ = <<<EOS
 SELECT exhibitorId, exhibitorName, exhibitorEmail, website, description, addr, addr2, city, state, zip, perid, newperid,
@@ -104,17 +107,28 @@ if ($exhibitorR == false || $exhibitorR->num_rows != 1) {
 $exhibitor = $exhibitorR->fetch_assoc();
 $exhibitorR->free();
 
+//$response['exhibitor'] = $exhibitor;
+
+$exhibitorRegionYearQ = <<<EOS
+SELECT * FROM exhibitorRegionYears WHERE exhibitorYearId = ? AND exhibitsRegionYearId = ?;
+EOS;
+$exhibitorRegionYearR = dbSafeQuery($exhibitorRegionYearQ, 'ii', array($eyID, $regionYearId));
+$exhibitorRegionYear = $exhibitorRegionYearR->fetch_assoc();
+$exhibitorRegionYearR->free();
+$eryID = $exhibitorRegionYear['id'];
+$response['exhibitorRegionYear'] = $eryID;
+
 // now the space information for this regionYearId
 $spaceQ = <<<EOS
-SELECT e.*, esp.includedMemberships, esp.additionalMemberships
-FROM vw_ExhibitorSpace e
+SELECT e.*, esp.price as approved_price, esp.includedMemberships, esp.additionalMemberships
+FROM exhibitorSpaces e
 JOIN exhibitsSpaces s ON (s.id = e.spaceId)
 JOIN exhibitsSpacePrices esp ON (s.id = esp.spaceId AND e.item_approved = esp.id)
 JOIN exhibitsRegionYears ery ON (ery.id = s.exhibitsRegionYear)
 JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
-WHERE ery.id = ?;
+WHERE e.exhibitorRegionYear = ?;
 EOS;
-$spaceR = dbSafeQuery($spaceQ, 'i', array($regionYearId));
+$spaceR = dbSafeQuery($spaceQ, 'i', array($eryID));
 if ($spaceR == false || $spaceR->num_rows == 0) {
     $response['error'] = 'Unable to find any space to invoice';
     ajaxSuccess($response);
@@ -125,6 +139,7 @@ $includedMembershipsComputed = 0;
 $additionalMembershipsComputed = 0;
 $spaces = [];
 while ($space =  $spaceR->fetch_assoc()) {
+    var_error_log($space);
     $spaces[$space['spaceId']] = $space;
     $spacePriceComputed += $space['approved_price'];
     $includedMembershipsComputed = max($includedMembershipsComputed, $space['includedMemberships']);
@@ -137,6 +152,9 @@ if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
 }
 
 if ($spacePrice != $spacePriceComputed || $includedMembershipsComputed != $includedMembershipsMax || $additionalMembershipsComputed != $additionalMembershipsMax) {
+    error_log("Price: $spacePrice != $spacePriceComputed");
+    error_log("Price: $includedMembershipsComputed != $includedMembershipsMax");
+    error_log("Price: $additionalMembershipsComputed != $additionalMembershipsMax");
     $response['error'] = 'Computed values does not match passed values, get help.';
     ajaxSuccess($response);
     return;

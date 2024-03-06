@@ -335,7 +335,8 @@ class exhibitorsAdm {
         // build new data array
         var regions = [];
         var region = null;
-        var currentRegion = -1;
+        //var currentRegion = -1;
+        var currentExhibitor = -1;
         var spaces = data['detail'];
         var spaceKeys = Object.keys(spaces);
         var spaceHTML = '';
@@ -344,21 +345,22 @@ class exhibitorsAdm {
         var pur = 0;
         for (var idS in spaceKeys) {
             var space = spaces[idS];
-            var newRegion = space['exhibitsRegionYearId'];
-            if (newRegion != currentRegion) {
+            //var newRegion = space['exhibitsRegionYearId'];
+            var newExhibitor = space['exhibitorId']
+            if (newExhibitor != currentExhibitor) {
                 // change in region
-                if (currentRegion > 0) {
+                if (currentExhibitor > 0) {
                     region['space'] = spaceHTML + "</div>";
                     region['req'] = req;
                     region['app'] = app;
                     region['pur'] = pur;
-                    regions[currentRegion] = make_copy(region);
+                    regions[currentExhibitor] = make_copy(region);
                     spaceHTML = '';
                     req = 0;
                     app = 0;
                     pur = 0;
                 }
-                currentRegion = newRegion;
+                currentExhibitor = newExhibitor;
                 spaceHTML = '<div class="container-fluid">';
                 req += space['requested_units'];
                 app += space['approved_units'];
@@ -366,7 +368,7 @@ class exhibitorsAdm {
                 region = {
                     id: space['exhibitorId'],
                     exhibitorNumber: space['exhibitorNumber'],
-                    eYRid: currentRegion,
+                    eYRid: currentExhibitor,
                     regionId: space['regionId'],
                     regionYearId: space['exhibitsRegionYearId'],
                     exhibitorId: space['exhibitorId'],
@@ -423,7 +425,7 @@ class exhibitorsAdm {
                     '</div>';
             }
         }
-        if (currentRegion > 0) {
+        if (currentExhibitor > 0) {
             region['space'] = spaceHTML + "</div>";
             region['req'] = req;
             region['app'] = app;
