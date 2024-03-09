@@ -21,11 +21,11 @@ if (isset($_GET['mode'])) {
 */
 
 page_init($page, $tab,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css',
-                //  'https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_bootstrap5.min.css',
+    /* css */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
+                //  'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
 		    'css/atcon.css','css/registration.css','css/mockup.css'),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js','js/atcon.js','js/mockup2.js')
+                    'https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js','js/atcon.js','js/mockup2.js')
     );
 
 db_connect();
@@ -91,11 +91,11 @@ echo $conid;
                             <div class="row mt-3">
                                 <div class="col-sm-4">
                                       <?php if ($mode == 'cashier') { ?>
-                                    <button type="button" class="btn btn-small btn-primary" id="find_unpaid_btn" onclick="find_record('unpaid');" hidden>Find Unpaid Transactions</button>
+                                    <button type="button" class="btn btn-sm btn-primary" id="find_unpaid_btn" onclick="find_record('unpaid');" hidden>Find Unpaid Transactions</button>
                                     <?php } ?>
                                 </div>
                                 <div class="col-sm-8">
-                                    <button type="button" class="btn btn-small btn-primary" id="find_search_btn" onclick="find_record('search');">Find Record</button>
+                                    <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" onclick="find_record('search');">Find Record</button>
                                 </div>
                             </div>
                             <div class="row mt-3">
@@ -158,7 +158,7 @@ echo $conid;
                                 </div>
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>State</span></label><br/>
-                                    <input type="text" name="state" id='state' size="2" maxlength="2" tabindex="8"/>
+                                    <input type="text" name="state" id='state' size="10" maxlength="16" tabindex="8"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Zip</span></label><br/>
@@ -221,8 +221,8 @@ echo $conid;
                             </div>
                             <div class="row">
                                 <div class="col-sm-12 mt-3">
-                                    <button type="button" class="btn btn-primary btn-small" id="addnew-btn" onclick="add_new();">Add to Cart</button>
-                                    <button type="button" class="btn btn-secondary btn-small" id="clearadd-btn" onclick="clear_add();">Clear Add Person Form</button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="addnew-btn" onclick="add_new();">Add to Cart</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="clear_add();">Clear Add Person Form</button>
                                 </div>
                             </div>
                         </div>
@@ -243,11 +243,11 @@ echo $conid;
             <div id="cart"></div>
             <div class="row">
                 <div class="col-sm-12 mt-3">
-                    <button type="button" class="btn btn-success btn-small" id="complete_btn" onclick="complete_over();" hidden>Complete Transaction</button>
-                    <button type="button" class="btn btn-primary btn-small" id="review_btn" onclick="start_review();" hidden>Review Data</button>
-                    <button type="button" class="btn btn-warning btn-small" id="startover_btn" onclick="start_over(1);" hidden>Start Over</button>
-                    <button type="button" class="btn btn-warning btn-small" id="void_btn" onclick="void_trans();" hidden>Void</button>
-                    <button type="button" class="btn btn-primary btn-small" id="next_btn" onclick="start_over(0);" hidden>Next Customer</button>
+                    <button type="button" class="btn btn-success btn-sm" id="complete_btn" onclick="complete_over();" hidden>Complete Transaction</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="review_btn" onclick="start_review();" hidden>Review Data</button>
+                    <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="start_over(1);" hidden>Start Over</button>
+                    <button type="button" class="btn btn-warning btn-sm" id="void_btn" onclick="void_trans();" hidden>Void</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="start_over(0);" hidden>Next Customer</button>
                 </div>
             </div>
         </div>       

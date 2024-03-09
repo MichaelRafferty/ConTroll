@@ -127,6 +127,10 @@ function loadNewPerson(data) {
         $('#conflictFormNewLName').val(user['last_name']);
         $('#conflictFormNewSuffix').val(user['suffix']);
 
+        $('#conflictFormDbLegalName').empty();
+        $('#conflictFormNewLegalName').val(user['legalName']);
+        $('#conflictFormUserLegalName').empty().append(user['legalName']);
+
         $('#conflictFormDbBadge').empty();
         $('#conflictFormNewBadge').val(user['badge_name']);
         $('#conflictFormUserBadge').empty().append(user['badge_name']);
@@ -179,6 +183,7 @@ function loadOldPerson(objData) {
 
     $('#conflictFormDbName').empty().append(objData['full_name']);
     $('#conflictFormDbBadge').empty().append(objData['badge_name']);
+    $('#conflictFormDbLegalName').empty().append(objData['legalName']);
     $('#conflictFormDbAddr').empty().append(objData['address']);
     $('#conflictFormDbAddr2').empty().append(objData['addr_2']);
     $('#conflictFormDbLocale').empty().append(objData['locale']);
@@ -189,6 +194,8 @@ function loadOldPerson(objData) {
 
     $('#conflictFormDbName').css("background-color",
         $('#conflictFormDbName').text().trim() != $('#conflictFormUserName').text().trim() ? "LightGoldenRodYellow" : "");
+    $('#conflictFormDbLegalName').css("background-color",
+        $('#conflictFormDbLegalName').text().trim() != $('#conflictFormUserLegalName').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbBadge').css("background-color",
         $('#conflictFormDbBadge').text().trim() != $('#conflictFormUserBadge').text().trim() ? "LightGoldenRodYellow" : "");
     $('#conflictFormDbAddr').css("background-color",
@@ -216,6 +223,9 @@ function setField(field, source) {
         $('#conflictFormNewMName').val($('#conflictViewForm').data(source)['middle_name']);
         $('#conflictFormNewLName').val($('#conflictViewForm').data(source)['last_name']);
         $('#conflictFormNewSuffix').val($('#conflictViewForm').data(source)['suffix']);
+    }
+    if(field == 'all' || field == 'LegalName') {
+        $('#conflictFormNewLegalName').val($('#conflictViewForm').data(source)['legalName']);
     }
     if(field == 'all' || field == 'Badge') {
         $('#conflictFormNewBadge').val($('#conflictViewForm').data(source)['badge_name']);
@@ -306,9 +316,14 @@ function showEditPerson(data) {
     } else { 
         $(formObj + "suffix']").val("");
     }
-    if(notnullorempty(data['badge_name'])) { 
-        $(formObj + "badge']").val($.parseHTML(data["badge_name"].trim())[0].nodeValue);
+    if(notnullorempty(data['legalName'])) { 
+        $(formObj + "legalName']").val($.parseHTML(data["legalName"].trim())[0].nodeValue);
     } else { 
+        $(formObj + "legalName']").val("");
+    }
+    if(notnullorempty(data['badge_name'])) {
+        $(formObj + "badge']").val($.parseHTML(data["badge_name"].trim())[0].nodeValue);
+    } else {
         $(formObj + "badge']").val("");
     }
     if(notnullorempty(data['address'])) { 

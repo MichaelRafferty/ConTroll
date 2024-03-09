@@ -98,12 +98,12 @@ function validateConfigFile($options) : int {
                     'logoimage' => 'name of the logo file to display on the top of the page, it should be in onlinereg/images',
                     ];
 
-                $warn = [ 'taxidlabel', 'taxidextra', 'artventortext' ];
+                $warn = [ 'taxidlabel', 'taxidextra' ];
 
                 $email = [ 'vendors', 'artshow', 'dealer' ];
                 // need to do query to add vendorspaces parents to this email group
 
-                $file = [ 'reg_disclaimer', 'pay_disclaimer' ];
+                $file = [ 'req_disclaimer', 'pay_disclaimer', 'vendorSignupAddltext', 'artistSignupAddltext' ];
                 break;
 
             case 'client':

@@ -176,10 +176,20 @@ function cc_charge_purchase($results, $ccauth) {
     $rtn = array();
     $rtn['amount'] = $db_resp['ssl_amount'];
 
+    // set category based on if exhibits is a portal type
+    if (array_key_exists('exhibits', $results)) {
+        if ($results['exhibits'] == 'vendor')
+            $category = 'vendor';
+        else
+            $category = 'artshow';
+    } else {
+        $category = 'reg';
+    }
+
     if(isset($resp_array['ssl_result_message']) && // cc approved
         ($resp_array['ssl_result_message']=='APPROVAL' or $resp_array['ssl_result_message']=='APPROVED' )) {
 
-        $rtn['txnfields'] = array('transid','type','category','description','source','amount',
+        $rtn['txnfields'] = array('transid','type',$category,'description','source','amount',
             'txn_time', 'cc','cc_txn_id','cc_approval_code','receipt_id','cashier','userid');
         $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd',
             's', 's', 's', 's', 's','i','i');

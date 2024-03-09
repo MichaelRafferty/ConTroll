@@ -9,8 +9,12 @@ $return500errors = true;
 $response = array("post" => $_POST, "get" => $_GET);
 $vendor = 0;
 
+$con = get_conf('con');
+$conid = $con['id'];
+
 if(isset($_SESSION['id'])) {
     $vendor = $_SESSION['id'];
+    $client = $_SESSION['eyID'];
 } else {
     $response['status']='error';
     $response['message']='Authentication Failure';
@@ -24,9 +28,14 @@ if($_POST['oldPassword'] == $_POST['password']) {
     ajaxSuccess($response);
     exit();
 }
+if ($_POST['pwType'] == 'c') {
+    $testQ = "SELECT contactPassword AS password FROM exhibitorYears WHERE id=? AND conid=?;";
+    $testR = dbSafeQuery($testQ, 'ii', array($client, $conid));
+} else {
+    $testQ = 'SELECT password FROM exhibitors WHERE id=?;';
+    $testR = dbSafeQuery($testQ, 'i', array($vendor));
+}
 
-$testQ = "SELECT password FROM vendors WHERE id=?;";
-$testR = dbSafeQuery($testQ, 'i', array($vendor));
 $testPw = $testR->fetch_assoc();
 
 if(!password_verify($_POST['oldPassword'], $testPw['password'])) {
@@ -38,13 +47,29 @@ if(!password_verify($_POST['oldPassword'], $testPw['password'])) {
     $response['pwcheck'] = 'passwd';
 }
 
-$updateQ = "UPDATE vendors SET password='"
-    . password_hash($_POST['password'], PASSWORD_DEFAULT) . "'"
-    . ", need_new=0"
-    . " WHERE id=$vendor";
-dbQuery($updateQ);
+if ($_POST['pwType'] == 'c') {
+    $updateQ = <<<EOS
+UPDATE exhibitorYears
+SET contactPassword = ?, need_new = 0
+WHERE id=? AND conid=?;
+EOS;
+    $typestr = 'sii';
+    $params = array(password_hash($_POST['password'], PASSWORD_DEFAULT), $client, $conid);
+} else {
+    $updateQ = <<<EOS
+UPDATE exhibitors
+SET password = ?, need_new = 0
+WHERE id=?;
+EOS;
+    $typestr = 'si';
+    $params = array(password_hash($_POST['password'], PASSWORD_DEFAULT), $vendor);
+}
 
-$response['status']='success';
+$numRows = dbSafeCmd($updateQ, $typestr, $params);
+if ($numRows == 1)
+    $response['status']='success';
+else
+    $response['status']='nothing changed';
 
 ajaxSuccess($response);
 ?>

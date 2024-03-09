@@ -46,6 +46,9 @@ function strip_fk($fname, $lines)  {
         if (str_starts_with($line, 'USE `')) // We are already in the right database
             continue;
 
+        if (str_starts_with($line, '-- Dump completed on ')) // don't need the comment for one difference for no reason
+            continue;
+
         $line = str_replace("\n", '', $line);
         $line = str_replace("utf8mb4_0900_ai_ci", "utf8mb4_general_ci", $line);
         if (preg_match('/^ *CONSTRAINT .* FOREIGN KEY/i', $line)) {

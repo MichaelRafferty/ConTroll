@@ -115,7 +115,17 @@ class mergesetup {
     }
 
     // find the candidates to merge into this Remain PID
-    findCandidates() {
+    findCandidates(data = null) {
+        var clear_error = true;
+        if (data) {
+            if (data['error']) {
+                show_message($data['error'], 'error');
+                clear_error = false;
+            } else if (data['success']) {
+                show_message(data['success'] + ': ' + data['status'], 'success');
+                clear_error = false;
+            }
+        }
         var remainPID = this.#remainPid.value;
         if (remainPID == null || remainPID == '' || remainPID <= 0)
             return; // no values to find
@@ -127,7 +137,8 @@ class mergesetup {
             this.#mergeCandidatesTable.destroy();
             this.#mergeCandidatesTable = null;
         }
-        clearError();
+        if (clear_error)
+            clearError();
         var script = "scripts/mergeFindCandidates.php";
         var data = {
             remain: this.#remainPid.value,
@@ -201,12 +212,14 @@ class mergesetup {
     makeMerge(pid) {
         this.#mergePid.value = pid;
         this.btnctl();
+        clear_message();
     }
 
     // update remainPID with selected value (on make Remain button click)
     makeRemain(pid) {
         this.#remainPid.value = pid;
         this.btnctl();
+        clear_message();
     }
 
     // retrieve the values to display to confirm the merge before executing it
@@ -278,7 +291,7 @@ class mergesetup {
             method: 'POST',
             data: data,
             success: function (data, textStatus, jhXHR) {
-                merge.findCandidates();
+                merge.findCandidates(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -306,6 +319,7 @@ class mergesetup {
             return;
 
         clear_message('result_message_merge');
+        clear_message();
         var name_search = document.getElementById('merge_name_search').value.toLowerCase().trim();
         if (name_search == null || name_search == '')  {
             show_message("No search criteria specified", "warn", 'result_message_merge');
@@ -361,7 +375,7 @@ class mergesetup {
                 ],
                 columns: [
                     {width: 70, headerFilter: false, headerSort: false, formatter: addMergeIcon, formatterParams: {t: "result"},},
-                    {field: "perid", visible: false,},
+                    {title: "perid", field: "perid",width: 100, hozAlign: 'right' },
                     {field: "index", visible: false,},
                     {field: "regcnt", visible: false,},
                     {title: "Name", field: "fullname", width: 200, headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},

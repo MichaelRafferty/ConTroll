@@ -30,12 +30,12 @@ if (!check_atcon($method, $conid)) {
 }
 
 page_init($page, $tab,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css',
-                    'https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_bootstrap5.min.css',
+    /* css */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
+                    'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
                     'css/atcon.css',
                     'css/registration.css'),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js','js/regpos_cart.js', 'js/regpos_coupon.js', 'js/regpos.js')
+                    'https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js','js/regpos_cart.js', 'js/regpos_coupon.js', 'js/regpos.js')
     );
 ?>
 <div id="pos" class="container-fluid">
@@ -80,11 +80,11 @@ page_init($page, $tab,
                             <div class="row mt-3">
                                 <div class="col-sm-4">
                                       <?php if ($mode == 'cashier') { ?>
-                                    <button type="button" class="btn btn-small btn-primary" id="find_unpaid_btn" name="find_btn" onclick="find_record('unpaid');" hidden>Find Unpaid Transactions</button>
+                                    <button type="button" class="btn btn-sm btn-primary" id="find_unpaid_btn" name="find_btn" onclick="find_record('unpaid');" hidden>Find Unpaid Transactions</button>
                                     <?php } ?>
                                 </div>
                                 <div class="col-sm-8">
-                                    <button type="button" class="btn btn-small btn-primary" id="find_search_btn" name="find_btn" onclick="find_record('search');">Find Record</button>
+                                    <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" name="find_btn" onclick="find_record('search');">Find Record</button>
                                 </div>
                             </div>
                             <div class="row mt-3">
@@ -113,50 +113,56 @@ page_init($page, $tab,
                              <input type="hidden" name="membership-index" id="membership-index" />
                              <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="fname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>First Name</span></label><br/>
-                                    <input type="text" name="fname" id='fname' size="22" maxlength="32" tabindex="1"/>
+                                    <label for="fname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>First Name</span></label><br/>
+                                    <input type="text" name="fname" id='fname' size="22" maxlength="32" tabindex="2"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="mname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
-                                    <input type="text" name="mname" id='mname' size="6" maxlength="32" tabindex="2"/>
+                                    <input type="text" name="mname" id='mname' size="6" maxlength="32" tabindex="4"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="lname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Last Name</span></label><br/>
-                                    <input type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="3"/>
+                                    <label for="lname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Last Name</span></label><br/>
+                                    <input type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="6"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="suffix" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
-                                    <input type="text" name="suffix" id='suffix' size="4" maxlength="4" tabindex="4"/>
+                                    <input type="text" name="suffix" id='suffix' size="4" maxlength="4" tabindex="8"/>
                                 </div>
                             </div>
+                             <div class='row'>
+                                 <div class='col-sm-12 ms-0 me-0 p-0'>
+                                     <label for='legalName' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name (Defaults to First Middle Last Suffix)</span></label><br/>
+                                     <input type='text' name='legalName' id='legalName' size=80 maxlength='128' tabindex='10'/>
+                                 </div>
+                             </div>
                             <div class="row">
                                 <div class="col-sm-12 ms-0 me-0 p-0">
-                                    <label for="addr" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Address</span></label><br/>
-                                    <input type="text" name='addr' id='addr' size=64 maxlength="64" tabindex='5'/>
+                                    <label for="addr" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Address</span></label><br/>
+                                    <input type="text" name='addr' id='addr' size=64 maxlength="64" tabindex='12'/>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-12 ms-0 me-0 p-0">
                                     <label for="addr2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
-                                    <input type="text" name='addr2' id='addr2' size=64 maxlength="64" tabindex='6'/>
+                                    <input type="text" name='addr2' id='addr2' size=64 maxlength="64" tabindex='14'/>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="city" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>City</span></label><br/>
-                                    <input type="text" name="city" id='city' size="22" maxlength="32" tabindex="7"/>
+                                    <label for="city" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>City</span></label><br/>
+                                    <input type="text" name="city" id='city' size="22" maxlength="32" tabindex="16"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>State</span></label><br/>
-                                    <input type="text" name="state" id='state' size="2" maxlength="2" tabindex="8"/>
+                                    <label for="state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>State</span></label><br/>
+                                    <input type="text" name="state" id='state' size="10" maxlength="16" tabindex="18"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Zip</span></label><br/>
-                                    <input type="text" name="zip" id='zip' size="10" maxlength="10" tabindex="9"/>
+                                    <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Zip</span></label><br/>
+                                    <input type="text" name="zip" id='zip' size="10" maxlength="10" tabindex="20"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
-                                    <select name='country' id="country" tabindex='10'>
+                                    <select name='country' id="country" tabindex='22'>
                                     <?php
                                     $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
                                     while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
@@ -169,28 +175,28 @@ page_init($page, $tab,
                             </div>
                             <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="email" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Email</span></label><br/>
-                                    <input type="email" name="email" id='email' size="50" maxlength="64" tabindex="11"/>
+                                    <label for="email" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Email</span></label><br/>
+                                    <input type="email" name="email" id='email' size="50" maxlength="64" tabindex="24"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="phone" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
-                                    <input type="text" name="phone" id='phone' size="15" maxlength="15" tabindex="13"/>
+                                    <input type="text" name="phone" id='phone' size="15" maxlength="15" tabindex="26"/>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="badgename" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
-                                    <input type="text" name="badgename" id='badgename' size="35" maxlength="32"  placeholder='Badgename: defaults to first and last name' tabindex="14"/>
+                                    <input type="text" name="badgename" id='badgename' size="35" maxlength="32"  placeholder='Badgename: defaults to first and last name' tabindex="28"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
-                                    <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Membership Type</span></label><br/>
+                                    <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Membership Type</span></label><br/>
                                     <div id="ae_mem_select"></div>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-auto mt-2 ms-0 me-0 p-0">
                                     <label for="contact_ok">Include in annual reminder postcards, future <?php echo $conname; ?> emails and surveys?</label>
-                                    <select id="contact_ok" name="contact_ok" tabindex='16'>
+                                    <select id="contact_ok" name="contact_ok" tabindex='32'>
                                         <option value="Y" selected>Yes</option>
                                         <option value="N">No</option>
                                     </select>
@@ -199,7 +205,7 @@ page_init($page, $tab,
                               <div class="row">
                                 <div class="col-sm-auto mt-2 ms-0 me-0 p-0">
                                     <label for="share_reg_ok">Allow search by member to find you on website?</label>
-                                    <select id="share_reg_ok" name="share_reg_ok" tabindex='16'>
+                                    <select id="share_reg_ok" name="share_reg_ok" tabindex='34'>
                                         <option value="Y" selected>Yes</option>
                                         <option value="N">No</option>
                                     </select>
@@ -211,8 +217,8 @@ page_init($page, $tab,
                             </div>
                             <div class="row">
                                 <div class="col-sm-12 mt-3">
-                                    <button type="button" class="btn btn-primary btn-small" id="addnew-btn" name="find_btn" onclick="add_new();">Add to Cart</button>
-                                    <button type="button" class="btn btn-secondary btn-small" id="clearadd-btn" onclick="clear_add();">Clear Add Person Form</button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="addnew-btn" name="find_btn" onclick="add_new();">Add to Cart</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="clear_add();">Clear Add Person Form</button>
                                 </div>
                             </div>
                         </div>
@@ -234,11 +240,11 @@ page_init($page, $tab,
             <div id="cart"></div>
             <div class="row">
                 <div class="col-sm-12 mt-3">
-                    <button type="button" class="btn btn-primary btn-small" id="cart_no_changes_btn" onclick="review_nochanges();" hidden>No Changes</button>
-                    <button type="button" class="btn btn-primary btn-small" id="review_btn" onclick="start_review();" hidden>Review Data</button>
-                    <button type="button" class="btn btn-warning btn-small" id="startover_btn" onclick="start_over(1);" hidden>Start Over</button>
-                    <button type="button" class="btn btn-warning btn-small" id="void_btn" onclick="void_trans();" hidden>Void</button>
-                    <button type="button" class="btn btn-primary btn-small" id="next_btn" onclick="start_over(1);" hidden>Next Customer</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="cart_no_changes_btn" onclick="review_nochanges();" hidden>No Changes</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="review_btn" onclick="start_review();" hidden>Review Data</button>
+                    <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="start_over(1);" hidden>Start Over</button>
+                    <button type="button" class="btn btn-warning btn-sm" id="void_btn" onclick="void_trans();" hidden>Void</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="start_over(1);" hidden>Next Customer</button>
                 </div>
             </div>
         </div>       

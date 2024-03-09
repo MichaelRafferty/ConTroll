@@ -96,6 +96,7 @@ function displaySearchResults(data, callback) {
             if (user['label']) { userDiv.append(user['label'] + "<br/>" + "<hr/>"); }
             if (user['full_name']) { userDiv.append(user['full_name'] + "<br/>"); }
             else { userDiv.append("***NO NAME***<br/>"); }
+            if (user['legalName']) { userDiv.append(user['legalName'] + "<br/>"); }
             if (user['badge_name']) { userDiv.append(user['badge_name'] + "<br/>"); }
             userDiv.append($(document.createElement("hr")));
             if (user['address']) { userDiv.append(user['address'] + "<br/>"); }
@@ -273,7 +274,7 @@ var message_div = null;
 //  error: (white on red) bg-danger
 //  warn: (black on yellow-orange) bg-warning
 //  success: (white on green) bg-success
-function show_message(message, type, div='result_message') {
+function show_message(message, type = 'success', div='result_message') {
     var message_div = document.getElementById(div);
 
     if (message_div.classList.contains('bg-danger')) {
@@ -446,7 +447,7 @@ function showEdit(classname, table, index, field, titlename, textitem) {
     editor_modal.show();
     tinyMCE.init({
         selector: 'textarea#editFieldArea',
-        height: 800,
+        height: 500,
         min_height: 400,
         menubar: false,
         plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
@@ -459,9 +460,11 @@ function showEdit(classname, table, index, field, titlename, textitem) {
         ],
         content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
         placeholder: 'Edit the description here...',
-        auto_focus: 'editFieldArea'
+        auto_focus: 'editFieldArea',
+        init_instance_callback: function (editor) {
+            editor.setContent(textitem);
+        }
     });
-    tinyMCE.activeEditor.setContent(textitem);
 }
 
 // save the modal edit values back
@@ -482,10 +485,17 @@ function saveEdit() {
 
     // force a save and get the field from tinyMCE
         switch (editClass) {
-            case 'vendor':
-                vendor.editReturn(editTable, editField,  editIndex, editValue);
+            case 'exhibits':
+                exhibits.editReturn(editTable, editField,  editIndex, editValue);
                 break;
             default:
         }
 
+}
+
+// blankIfNull - return empty string if argument is nullk
+function blankIfNull(value) {
+    if (value == null)
+        return '';
+    return value;
 }

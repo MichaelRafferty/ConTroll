@@ -25,29 +25,22 @@ $conid=$con['id'];
 
 $query = <<<EOQ
 SELECT DISTINCT P.id, concat_ws(' ', P.first_name, P.middle_name, P.last_name) as full_name,
-    P.address, P.addr_2, concat_ws(' ', P.city, P.state, P.zip) as locale,
+    P.address, P.addr_2, concat_ws(' ', P.city, P.state, P.zip) as locale, P.legalName,
     P.badge_name, P.email_addr, P.phone, P.active, P.banned, M.label
 FROM perinfo as P
 LEFT OUTER JOIN reg R ON (R.perid = P.id AND R.conid = ?)
 LEFT OUTER JOIN memLabel M ON (R.memId = M.id)
 EOQ;
 
-if(isset($_GET['condition'])) {
-    switch($_GET['condition']) {
-        case 'artist':
-            $query .= " JOIN artist ON artist.artist=P.id";
-            break;
-    }
-}
-
-$query .= " WHERE concat_ws(' ', first_name, middle_name, last_name) LIKE ?;";
+$query .= " WHERE concat_ws(' ', first_name, middle_name, last_name) LIKE ? OR legalName LIKE ?;";
 if(isset($_GET['full_name'])) {
     $searchString = $_GET['full_name'];
     $searchString = str_replace(" ", "%", $searchString);
     }
 
 $response['query'] = $query;
-$res = dbSafeQuery($query, 'is', array($conid, "%" . $searchString . "%"));
+$searchString = "%$searchString%";
+$res = dbSafeQuery($query, 'iss', array($conid, $searchString, $searchString));
 if(!$res) {
   ajaxSuccess(array(
     "args"=>$_POST,

@@ -1,12 +1,21 @@
 <?php
 // Vendor - index.php - Main page for vendor registration
 require_once("lib/base.php");
+require_once("lib/exhibitorInvoice.php");
+require_once("lib/changePassword.php");
+require_once("lib/auctionItemRegistrationForms.php");
+require_once('../lib/exhibitorYears.php');
+require_once("../lib/exhibitorRegistrationForms.php");
+require_once('../lib/exhibitorRequestForms.php');
+require_once('../lib/exhibitorReceiptForms.php');
 require_once("../lib/cc__load_methods.php");
+global $config_vars;
 
 $cc = get_conf('cc');
 $con = get_conf('con');
 $conid = $con['id'];
 $vendor_conf = get_conf('vendor');
+$debug = get_conf('debug');
 $ini = get_conf('reg');
 load_cc_procs();
 
@@ -15,336 +24,355 @@ $condata = get_con();
 $in_session = false;
 $forcePassword = false;
 $regserver = $ini['server'];
+$exhibitor = '';
+
+// encrypt/decrypt stuff
+$ciphers = openssl_get_cipher_methods();
+$cipher = 'aes-128-cbc';
+$ivlen = openssl_cipher_iv_length($cipher);
+$ivdate = date_create("now");
+$iv = substr(date_format($ivdate, 'YmdzwLLwzdmY'), 0, $ivlen);
+$key = $conid . $con['label'] . $con['regadminemail'];
 
 $reg_link = "<a href='$regserver'>Convention Registration</a>";
 
-vendor_page_init($condata['label'] . ' Vendor Registration');
+if (str_starts_with($_SERVER['HTTP_HOST'], 'artist')){
+    $portalName = 'Artist';
+    $portalType = 'artist';
+} else if (str_starts_with($_SERVER['HTTP_HOST'], 'exhibit')){
+    $portalName = 'Exhibitor';
+    $portalType = 'exhibitor';
+} else {
+    $portalName = 'Vendor';
+    $portalType = 'vendor';
+}
+
+$config_vars = array();
+$config_vars['label'] = $con['label'];
+$config_vars['vemail'] = $vendor_conf[$portalType];
+$config_vars['portalType'] = $portalType;
+$config_vars['portalName'] = $portalName;
+$config_vars['artistsite'] = $vendor_conf['artistsite'];
+$config_vars['vendorsite'] = $vendor_conf['vendorsite'];
+$config_vars['debug'] = $debug['vendors'];
+
+vendor_page_init($condata['label'] . " $portalName Registration");
+
+// load country select
+$countryOptions = '';
+$fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
+while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
+  $countryOptions .= '<option value="' . escape_quotes($data[1]) . '">' .$data[0] . '</option>' . PHP_EOL;
+}
+fclose($fh);
 ?>
 
 <body id="vendorPortalBody">
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-12 p-0">
-            <?php if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') {
-                if (array_key_exists('logoalt', $ini)) {
-                    $altstring = $ini['logoalt'];
-                } else {
-                    $altstring = 'Logo';
-                }
-                ?>
+            <?php
+if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') {
+    if (array_key_exists('logoalt', $ini)) {
+        $altstring = $ini['logoalt'];
+    } else {
+        $altstring = 'Logo';
+    } ?>
                 <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring; ?>"/>
-            <?php }
-            if (array_key_exists('logotext', $ini) && $ini['logotext'] != '') {
-                echo $ini['logotext'];
-            } ?>
+<?php
+}
+if (array_key_exists('logotext', $ini) && $ini['logotext'] != '') {
+    echo $ini['logotext'];
+}
+?>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-12 mt-2">
-            <h1>Vendor Portal</h1>
+            <h1><?php echo $portalName;?> Portal</h1>
         </div>
     </div>
     <?php
 if ($vendor_conf['open'] == 0) { ?>
-    <p class='text-primary'>The vendor portal is currently closed. Please check the website to determine when it will open or try again tomorrow.</p>
-    <?php
+    <p class='text-primary'>The <?php echo $portalName;?> portal is currently closed. Please check the website to determine when it will open or try again tomorrow.</p>
+<?php
     exit;
 }
- ?>
+?>
     <div class="row p-1">
         <div class="col-sm-auto">
-            Welcome to the <?php echo $con['label'] ?> Vendor Portal.
+            Welcome to the <?php echo $con['label'] . ' ' . $portalName; ?>  Portal.
         </div>
     </div>
-    <div class=row">
+    <div class="row p-1">
         <div class="col-sm-12">
-            From here you can create and manage your account for <?php echo $vendor_conf['artventortext']; ?>.
+            From here you can create and manage your account for <?php echo $portalType; ?>s.
         </div>
     </div>
 <?php
 if ($vendor_conf['test'] == 1) {
-    ?>
+?>
     <div class="row">
         <div class="col-sm-12">
             <h2 class='warn'>This Page is for test purposes only</h2>
         </div>
     </div>
-    <?php
+<?php
 }
 
-if (isset($_SESSION['id'])) {
-//echo "In Session";
+if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
+// in session, is it a logout?
     if (isset($_REQUEST['logout'])) {
         session_destroy();
         unset($_SESSION['id']);
-    } else {
-        $vendor = $_SESSION['id'];
-        $artist = $_SESSION['artist'];
-        if ($vendor == $artist) {
-            $vendor = $_SESSION['vendor'];
-            $_SESSION['id'] = $vendor;
+        unset($_SESSION['eyID']);
+        unset($_SESSION['login_type']);
+        if ($portalType == 'vendor') {
+            header('location:' . $vendor_conf['vendorsite']);
+        } else {
+            header('location:' . $vendor_conf['artistsite']);
         }
+        exit();
+    } else {
+        // nope, just set the vendor id
+        $exhibitor = $_SESSION['id'];
         $in_session = true;
     }
-} else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
-    //handle login
-    $login = strtolower(sql_safe($_POST['si_email']));
-    $loginQ = "SELECT id, password, need_new FROM vendors WHERE email=?;";
-    $loginR = dbSafeQuery($loginQ, 's', array($login));
-    while ($result = $loginR->fetch_assoc()) {
-        if (password_verify($_POST['si_password'], $result['password'])) {
-            $_SESSION['id'] = $result['id'];
-            $_SESSION['artist'] = 0;
-            $_SESSION['dealer'] = 0;
-
-            $vendor = $_SESSION['id'];
-            $artist = $_SESSION['artist'];
-            $in_session = true;
-
-            if ($result['need_new']) {
-                $forcePassword = true;
-            }
-        } else {
-            ?>
-            <h2 class='warn'>Unable to Verify Password</h2>
-            <?php
+} else if (isset($_GET['vid'])) {
+    $match = openssl_decrypt($_GET['vid'], $cipher, $key, 0, $iv);
+    $match = json_decode($match, true);
+    $timediff = time() - $match['ts'];
+    web_error_log("login @ " . time() . " with ts " . $match['ts']);
+    if ($timediff > 120) {
+        draw_registrationModal($portalType, $portalName, $con, $countryOptions);
+        draw_login($config_vars, "<div class='bg-danger text-white'>The link has expired, please log in again</div>");
+        exit();
+    }
+    $exhibitor = $match['id'];
+    $_SESSION['id'] = $exhibitor;
+    $_SESSION['eyID'] = $match['eyID'];
+    $_SESSION['login_type'] = $match['loginType'];
+    $in_session = true;
+    if ($match['loginType'] == 'e') {
+        if ($match['eNeedNew']) {
+            $forcePassword = true;
+        }
+    } else {
+        if ($match['cNeedNew']) {
+            $forcePassword = true;
         }
     }
+    // if archived, unarchive them, they just logged in again
+    if ($match['archived'] == 'Y') {
+        // they were marked archived, and they logged in again, unarchive them.
+        $numupd = dbSafeCmd("UPDATE exhibitors SET archived = 'N' WHERE id = ?", 'i', array($exhibitor));
+        if ($numupd != 1)
+            error_log("Unable to unarchive vendor $exhibitor");
+    }
+
+    // Build exhbititorYear on first login if it doesn't exist at the time of this login
+    if ($match['eyID'] == NULL) {
+        // create the year related functions
+        $newid = exhibitorBuildYears($exhibitor);
+        if (is_numeric($newid))
+            $_SESSION['eyID'] = $newid;
+    } else {
+        $_SESSION['eyID'] = $match['eyID'];
+    }
+    exhibitorCheckMissingSpaces($exhibitor, $_SESSION['eyID']);
+} else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
+    // handle login submit
+    $login = strtolower(sql_safe($_POST['si_email']));
+    $loginQ = <<<EOS
+SELECT e.id, e.exhibitorName, e.exhibitorEmail as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
+       ey.contactEmail AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview
+FROM exhibitors e
+LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
+WHERE e.exhibitorEmail=? OR ey.contactEmail = ?;
+EOS;
+    $loginR = dbSafeQuery($loginQ, 'ss', array($login, $login));
+    // find out how many match
+    $matches = array();
+    while ($result = $loginR->fetch_assoc()) { // check exhibitor email/password first
+        $found = false;
+        if ($login == $result['eEmail']) {
+            if (password_verify($_POST['si_password'], $result['ePassword'])) {
+                $result['loginType'] = 'e';
+                $matches[] = $result;
+                $found = true;
+            }
+        }
+        if (!$found && $login == $result['cEmail']) { // try contact login second
+            if (password_verify($_POST['si_password'], $result['cPassword'])) {
+                $result['loginType'] = 'c';
+                $matches[] = $result;
+            }
+        }
+    }
+    $loginR->free();
+    if (count($matches) == 0) {
+        ?>
+    <h2 class='warn'>Unable to Verify Password</h2>
+    <?php
+// not logged in, draw signup stuff
+        draw_registrationModal($portalType, $portalName, $con, $countryOptions);
+        draw_login($config_vars);
+        exit();
+    }
+
+    if (count($matches) > 1) {
+        echo "<h4>This email address has access to multiple portal accounts</h4>\n" .
+            "Please select one of the accounts below:<br/><ul>\n";
+
+        foreach ($matches as $match) {
+            $match['ts'] = time();
+            $string = json_encode($match);
+            $string = urlencode(openssl_encrypt($string, $cipher, $key, 0, $iv));
+            echo "<li><a href='?vid=$string'>" .  $match['exhibitorName'] . "</a></li>\n";
+        }
+?>
+    </ul>
+    <button class='btn btn-secondary m-1' onclick="window.location='?logout';">Logout</button>
+    <script type='text/javascript'>
+        var config = <?php echo json_encode($config_vars); ?>;
+    </script>
+    <?php
+        exit();
+    }
+
+    // a single  match....
+    $match = $matches[0];
+    $_SESSION['id'] = $match['id'];
+    $exhibitor = $_SESSION['id'];
+    $_SESSION['login_type'] = $match['loginType'];
+    $in_session = true;
+    if ($match['loginType'] == 'e') {
+        if ($match['eNeedNew']) {
+            $forcePassword = true;
+        }
+    } else {
+        if ($match['cNeedNew']) {
+            $forcePassword = true;
+        }
+    }
+
+    // if archived, unarchive them, they just logged in again
+    if ($match['archived'] == 'Y') {
+        // they were marked archived, and they logged in again, unarchive them.
+        $numupd = dbSafeCmd("UPDATE exhibitors SET archived = 'N' WHERE id = ?", 'i', array($exhibitor));
+        if ($numupd != 1)
+            error_log("Unable to unarchive vendor $exhibitor");
+    }
+
+    // Build exhbititorYear on first login if it doesn't exist at the time of this login
+    if ($match['eyID'] == NULL) {
+        // create the year related functions
+        $newid = exhibitorBuildYears($exhibitor);
+        if (is_numeric($newid))
+            $_SESSION['eyID'] = $newid;
+    } else {
+        $_SESSION['eyID'] = $match['eyID'];
+    }
+    exhibitorCheckMissingSpaces($exhibitor, $_SESSION['eyID']);
+} else {
+    draw_registrationModal($portalType, $portalName, $con, $countryOptions);
+    draw_login($config_vars);
+    exit();
 }
 
-if (!$in_session) { ?>
-    <!-- Registgration Modal Popup -->
-    <div id='registration' class="modal modal-xl fade" tabindex="-1" aria-labelledby="New Vendor" aria-hidden="true" style='--bs-modal-width: 80%;'>
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class='modal-header bg-primary text-bg-primary'>
-                    <div class="modal-title">
-                        <strong>New Vendor Registration</strong>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" style="padding: 4px; background-color: lightcyan;">
-                    <div class="container-fluid form-floating" style="background-color: lightcyan;">
-                        <form id="registrationForm" name="registrionForm" action="javascript:void(0);" class="form-floating">
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <p>This form creates an account on the <?php echo $con['conname']; ?> vendor
-                                        site. <?php echo $vendor_conf['addlaccounttext'] ?></p>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <p> Please provide us with information we can use to evaluate if you qualify and how you would fit in the selection of <?php
-                                        echo $vendor_conf['artventortext'] ?> at <?php echo $con['conname']; ?>.<br/>Creating an account does not guarantee space.
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="name" title='This is the name that we will register your space under.'> *Name: </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" type='text' name='name' id="name" maxlength="64" size="50" tabindex="1" required/><br/>
-                                    <span class='small'>Dealer, Artist, or Store name</span>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="email" title='Your email address is used for contact and login purposes.'> *Email/Login: </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" type='email' name='email' id="email" maxlength="64" size="50" required/><br/>
-                                    <span class='small'>For Contact and Login</span>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="pw1"> *Password: </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='pw1' type='password' name='password' required/>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="pw2"> *Confirm Password: </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='pw2' type='password' name='password2' required/>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="website"
-                                           title='Please enter your web site, Etsy site, social media site, or other appropriate URL.'>Website: </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='website' type='text' size="64" name='website'/>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="description">*Description: </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <textarea class="form-control-sm" id="description" name='description' rows=5 cols=64 required></textarea>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2 p-0 ms-0 me-0 pe-2 text-end">
-                                    <input class="form-control-sm" type='checkbox' id='publicity' name='publicity'/>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <label for='publicity'>Check if we may use your information to publicize your attendence at <?php echo $con['conname']; ?>, if you're
-                                        coming?</label>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="addr" title='Street Address'> *Address </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='addr' type='text' size="64" name='addr' required/>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="addr2" title='Company Name'> Company </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='addr2' type='text' size="64" name='addr2'/>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="city"> *City: </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='city' type='text' size="32" name='city' required/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
-                                    <label for="state"> *State: </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
-                                    <input class="form-control-sm" id='state' type='text' size="2" maxlength="2" name='state' required/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
-                                    <label for="zip"> *Zip: </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0 ps-1 pb-2">
-                                    <input class="form-control-sm" id='zip' type='text' size="11" maxlength="11" name='zip' required/>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' onClick='register()'>Register</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- signin form (at body level) -->
-    <div id='signin'>
-        <div class="container-fluid form-floating">
-            <div class="row mb-2">
-                <div class="col-sm-auto">
-                    <h4>Please log in to continue to the Portal.</h4>
-                </div>
-            </div>
-            <form id='vendor-signin' method='POST'>
-                <div class="row mt-1">
-                    <div class="col-sm-1">
-                        <label for="si_email">*Email/Login: </label>
-                    </div>
-                    <div class="col-sm-auto">
-                        <input class="form-control-sm" type='email' name='si_email' id='si_email' size='40' required/>
-                    </div>
-                </div>
-                <div class="row mt-1">
-                    <div class="col-sm-1">
-                        <label for="si_password">*Password: </label>
-                    </div>
-                    <div class="col-sm-auto">
-                        <input class="form-control-sm" type='password' id='si_password' name='si_password' size="40" required/>
-                    </div>
-                </div>
-                <div class="row mt-2">
-                    <div class="col-sm-1"></div>
-                    <div class="col-sm-auto">
-                        <input type='submit' class="btn btn-primary" value='signin'/> or
-                            <a href='javascript:void(0)' onclick="registrationModalOpen();">Sign Up</a>
-                    </div>
-                </div>
-            </form>
-            <div id='result_message' class='mt-4 p-2'></div>
-        </div>
-    </div>
-    <div id='resetpw'>
-        <div class="container-fluid">
-            <div class="row mt-4">
-                <div class="col-sm-auto">
-                    <button class="btn btn-primary" onclick='resetPassword()'>Reset Password</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    </body>
-</html>
-    <?php
-    return;
-}
 // this section is for 'in-session' management
-// build spaces array
-$spaceQ = <<<EOS
-SELECT v.id, v.shortname, v.name, v.description, v.unitsAvailable, v.includedMemId, v.additionalMemId, mi.price AS includedMemPrice, ma.price AS additionalMemPrice
-FROM vendorSpaces v
-JOIN memList mi ON (v.includedMemId = mi.id)
-JOIN memList ma ON (v.additionalMemId = ma.id)
-WHERE v.conid=?
-ORDER BY shortname;
+// build region array
+$regionQ = <<<EOS
+SELECT ert.portalType, ert.requestApprovalRequired, ert.purchaseApprovalRequired,ert.purchaseAreaTotals,ert.mailInAllowed, ert.mailinMaxUnits, ert.inPersonMaxUnits,
+           er.name, er.shortname, er.description, er.sortorder,
+           ery.ownerName, ery.ownerEmail, ery.id, ery.includedMemId, ery.additionalMemId, ery.totalUnitsAvailable, ery.conid, ery.mailinFee,
+           mi.price AS includedMemPrice, ma.price AS additionalMemPrice
+FROM exhibitsRegionTypes ert
+JOIN exhibitsRegions er ON er.regionType = ert.regionType
+JOIN exhibitsRegionYears ery ON er.id = ery.exhibitsRegion
+LEFT OUTER JOIN memList mi ON (ery.includedMemId = mi.id)
+LEFT OUTER JOIN memList ma ON (ery.additionalMemId = ma.id)
+WHERE ery.conid = ? AND ert.portalType = ? AND ert.active = 'Y'
+ORDER BY er.sortorder;
 EOS;
 
-$spaceR =  dbSafeQuery($spaceQ, 'i', array($condata['id']));
+$regionR = dbSafeQuery($regionQ,'is',array($conid, $portalType));
+$region_list = array(); // forward array, id -> data
+$regions = array(); // reverse array, shortname -> id
+
+while ($region = $regionR->fetch_assoc()) {
+    $region_list[$region['id']] = $region;
+    $regions[$region['shortname']] = $region['id'];
+}
+$regionR->free();
+
+// build spaces array
+$spaceQ = <<<EOS
+SELECT es.id, er.shortname as regionShortname, er.name as regionName, es.shortname as spaceShortname, es.name AS spaceName, es.description, es.unitsAvailable, es.unitsAvailableMailin, es.exhibitsRegionYear
+FROM exhibitsSpaces es
+JOIN exhibitsRegionYears ery ON (es.exhibitsRegionYear = ery.id)
+JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
+JOIN exhibitsRegionTypes ert ON (er.regionType = ert.regionType)
+WHERE ery.conid=? AND ert.portalType = ? AND ert.active = 'Y'
+ORDER BY es.exhibitsRegionYear, es.sortorder;
+EOS;
+
+$spaceR =  dbSafeQuery($spaceQ, 'is', array($condata['id'], $portalType));
 $space_list = array();
 $spaces = array();
 // output the data for the scripts to use
 
 while ($space = $spaceR->fetch_assoc()) {
-    $space_list[$space['id']] = $space;
-    $spaces[$space['shortname']] = $space['id'];
+    $space_list[$space['exhibitsRegionYear']][$space['id']] = $space;
+    $spaces[$space['spaceShortname']] = array( 'region' => $space['exhibitsRegionYear'], 'space' => $space['id'] );
 }
+$spaceR->free();
 
 // built price lists
-foreach ($space_list AS $shortname => $space) {
-    $priceQ = <<<EOS
-SELECT id, spaceId, code, description, units, price, includedMemberships, additionalMemberships, requestable, sortOrder
-FROM vendorSpacePrices
+foreach ($space_list AS $yearId => $regionYear) {
+    foreach ($regionYear as $id => $space) {
+        $priceQ = <<<EOS
+SELECT p.id, p.spaceId, p.code, p.description, p.units, p.price, p.includedMemberships, p.additionalMemberships, p.requestable, p.sortOrder, es.id AS spaceId, es.exhibitsRegionYear
+FROM exhibitsSpacePrices p
+JOIN exhibitsSpaces es ON p.spaceId = es.id
 WHERE spaceId=?
-ORDER BY sortOrder;
+ORDER BY p.spaceId, p.sortOrder;
 EOS;
-    $priceR = dbSafeQuery($priceQ, 'i', array($space['id']));
-    $price_list = array();
-    while ($price = $priceR->fetch_assoc()) {
-        $sortorder = substr('0000000000' . strval($price['sortOrder']), -6);
-        $price_list[$sortorder] = $price;
+        $priceR = dbSafeQuery($priceQ, 'i', array($id));
+        $price_list = array();
+        while ($price = $priceR->fetch_assoc()) {
+            $price_list[] = $price;
+        }
+        $space_list[$yearId][$id]['prices'] = $price_list;
     }
-    $space_list[$space['id']]['prices'] = $price_list;
 }
+$priceR->free();
 
-// get this vendor
+// get this exhibitor
 $vendorQ = <<<EOS
-SELECT name, email, website, description, addr, addr2, city, state, zip, publicity, need_new
-FROM vendors
-WHERE id=?;
+SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, 
+       ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview, ey.mailin,
+       e.addr, e.addr2, e.city, e.state, e.zip, e.country, e.shipCompany, e.shipAddr, e.shipAddr2, e.shipCity, e.shipState, e.shipZip, e.shipCountry, e.publicity,
+       p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newid, n.first_name AS n_first_name, n.last_name AS n_last_name
+FROM exhibitors e
+LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
+LEFT OUTER JOIN perinfo p ON p.id = e.perid
+LEFT OUTER JOIN newperson n ON n.id = e.newperid
+WHERE e.id=? AND ey.conid = ?;
 EOS;
 
-$info = dbSafeQuery($vendorQ, 'i', array($vendor))->fetch_assoc();
-if ($info['need_new']) {
-    drawChangePassword('You need to change your password.', 2, true);
+$infoR = dbSafeQuery($vendorQ, 'ii', array($exhibitor, $conid));
+$info = $infoR->fetch_assoc();
+if ($info['eNeedNew']) {
+    drawChangePassword('You need to change your exhibitor password.', 3, true, $info, 'e');
     return;
 }
+if ($info['cNeedNew']) {
+    drawChangePassword('You need to change your contact password.', 3, true, $info, 'c');
+    return;
+}
+
+$infoR->free();
 
 // load the country codes for the option pulldown
 $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
@@ -354,584 +382,215 @@ while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
 }
 fclose($fh);
 
-$config_vars = array();
-$config_vars['label'] = $con['label'];
-$config_vars['vemail'] = $vendor_conf[$space['shortname']];
-?>
 
-<script type='text/javascript'>
-var config = <?php echo json_encode($config_vars); ?>;
-var vendor_spaces = <?php echo json_encode($space_list); ?>;
-var vendor_info = <?php echo json_encode($info); ?>;
-var country_options = <?php echo json_encode($countryOptions); ?>;
-</script>
-<?php
+$config_vars['loginType'] = $_SESSION['login_type'];
 
-$vendorSQ = <<<EOS
-SELECT *
-FROM vw_VendorSpace
-WHERE vendorId = ? and conid = ?;
+$vendorPQ = <<<EOS
+SELECT exRY.*, ey.exhibitorId,
+    p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newid, n.first_name AS n_first_name, n.last_name AS n_last_name
+FROM exhibitorRegionYears exRY
+JOIN exhibitorYears ey ON exRY.exhibitorYearId = ey.id
+JOIN exhibitsRegionYears ery ON exRY.exhibitsRegionYearId = ery.id
+JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id 
+JOIN exhibitsRegionTypes ert ON er.regionType = ert.regionType
+LEFT OUTER JOIN perinfo p ON p.id = exRY.agentPerid
+LEFT OUTER JOIN newperson n ON n.id = exRY.agentNewperson
+WHERE ey.exhibitorId = ? AND ert.portalType = ?;
 EOS;
 
-$vendorSR = dbSafeQuery($vendorSQ, 'ii', array($vendor, $condata['id']));
-$vendor_spacelist = array();
-while ($space = $vendorSR->fetch_assoc()) {
-    $vendor_spacelist[$space['spaceId']] = $space;
+$vendorPR = dbSafeQuery($vendorPQ, 'is', array($exhibitor, $portalType));
+$vendor_permlist = array();
+while ($perm = $vendorPR->fetch_assoc()) {
+    $vendor_permlist[$perm['exhibitsRegionYearId']] = $perm;
 }
+$vendorPR->free();
 
-    // modals for each section
-    ?>
-    <div id='update_profile' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Update Vendor Profile' aria-hidden='true'>
-        <div class='modal-dialog'>
-            <div class='modal-content'>
-                <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title'>
-                        <strong>Update Vendor Profile</strong>
-                    </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-                </div>
-                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class="container-fluid">
-                        <form id='vendor_update' action='javascript:void(0)'>
-                            <div class='row p-1'>
-                                <div class='col-sm-2 p-0'>
-                                    <label for='name'>Name:</label>
-                                </div>
-                                <div class='col-sm-10 p-0'>
-                                    <input class='form-control-sm' type='text' name='name' id='name' size='64' value="<?php echo escape_quotes($info['name']); ?>" required/>
-                                </div>
-                            </div>
-                            <div class='row p-1'>
-                                <div class='col-sm-2 p-0'>
-                                    <label for='emai'>Email:</label>
-                                </div>
-                                <div class='col-sm-10 p-0'>
-                                    <input class='form-control-sm' type='text' name='email' id='email' size='64' value="<?php echo escape_quotes($info['email']); ?>" required/>
-                                </div>
-                            </div>
-                            <div class="row p-1">
-                                <div class="col-sm-2 p-0">
-                                    <label for="website">Website:</label>
-                                </div>
-                                <div class="col-sm-10 p-0">
-                                    <input class='form-control-sm' type='text' name='website' id='website' value="<?php echo escape_quotes($info['website']); ?>" required/>
-                                </div>
-                            </div>
-                            <div class='row p-1'>
-                                <div class='col-sm-2 p-0'>
-                                    <label for='description'>Description:</label>
-                                </div>
-                                <div class='col-sm-10 p-0'>
-                                    <textarea class="form-control-sm" name='description' id='description' rows=5 cols=60><?php echo $info['description']; ?></textarea>
-                                </div>
-                            </div>
-                            <div class='row mt-1'>
-                                <div class='col-sm-2 p-0 ms-0 me-0 pe-2 text-end'>
-                                    <input class='form-control-sm' type='checkbox' <?php echo $info['publicity'] != 0 ? 'checked' : ''; ?> name='publicity' id="publicity"/>
-                                </div>
-                                <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <label>Check if we may use your information to publicize your attendence at <?php echo $con['conname']; ?></label>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="addr" title='Street Address'>Address </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='addr' type='text' size="64" name='addr' value="<?php echo escape_quotes($info['addr']); ?>" required/>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="addr2" title='Company Name'>Company/ Address line 2:</label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='addr2' type='text' size="64" value="<?php echo escape_quotes($info['addr2']); ?>" name='addr2'/>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="city">City: </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='city' type='text' size="32" value="<?php echo escape_quotes($info['city']); ?>" name=' city' required/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
-                                    <label for="state"> State: </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
-                                    <input class="form-control-sm" id='state' type='text' size="2" maxlength="2" value="<?php echo escape_quotes($info['state']); ?>"
-                                           name='state' required/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
-                                    <label for="zip"> Zip: </label>
-                                </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0 ps-1 pb-2">
-                                    <input class="form-control-sm" id='zip' type='text' size="11" maxlength="11" value="<?php echo escape_quotes($info['zip']); ?>" name='zip'
-                                           required/>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' onClick='updateProfile()'>Update</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div id='changePassword' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Change Vendor Account Password' aria-hidden='true'>
-        <div class='modal-dialog'>
-            <div class='modal-content'>
-                <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title'>
-                        <strong>Change Vendor Account Password</strong>
-                    </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-                </div>
-                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <?php drawChangePassword('', 3, false);
-                    ?>
-                </div>
-                <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' onClick='changePassword()'>Change Password</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- request -->
-    <div id='vendor_req' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request $spacetitle Space' aria-hidden='true'>
-        <div class='modal-dialog'>
-            <div class='modal-content'>
-                <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title' id="vendor_req_title">
-                        <strong>Vendor Space Request</strong>
-                    </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-                </div>
-                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class='container-fluid'>
-                        <form id='vendor_req_form' action='javascript:void(0)'>
-                            <div class='row p-0 bg-warning'>
-                                <div class='col-sm-12 p-2'>
-                                    Please make sure your profile contains a good description of what you will be vending and a link for our staff to see what
-                                    you sell if at all possible.
-                                </div>
-                            </div>
-                            <div class='row p-1'>
-                                <div class='col-sm-auto p-0 pe-2'>
-                                    <label for='vendor_req_price_id'>How many spaces are you requesting?</label>
-                                </div>
-                                <div class='col-sm-auto p-0'>
-                                    <select name='vendor_req_price_id' id='vendor_req_price_id'>
-                                        <option value='-1'>No Space Requested</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class='row p-1 pt-4 pb-3'>
-                                <div class='col-sm-12'>
-                                    You will be able to identify people for the included memberships (if any) and purchase up to the allowed number of discounted memberships later, if your request is
-                                    approved.
-                                </div>
-                            </div>
-<?php
-if (array_key_exists('reg_disclaimer',$vendor_conf) && $vendor_conf['reg_disclaimer'] != '') {
-?>                          <div class='row p-1 pt-4 pb-3'>
-                                <div class='col-sm-12'>
-                                    <?php echo $vendor_conf['reg_disclaimer'] . "\n"; ?>
-                                </div>
-                            </div>
-<?php
+$exhibitorSQ = <<<EOS
+SELECT *
+FROM vw_ExhibitorSpace
+WHERE exhibitorId = ? and conid = ? and portalType = ?;
+EOS;
+
+$exhibitorSR = dbSafeQuery($exhibitorSQ, 'iis', array($exhibitor, $condata['id'], $portalType));
+$exhibitorSpaceList = array();
+while ($space = $exhibitorSR->fetch_assoc()) {
+    $exhibitorSpaceList[$space['spaceId']] = $space;
 }
+$exhibitorSR->free();
 ?>
-                            <div class='row p-0 bg-warning'>
-                                <div class='col-sm-auto p-2'>Completing this application does not guarantee space.</div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='vendor_req_btn' onClick="spaceReq(0, 0)">Request Vendor Space</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- invoice -->
-    <div id='vendor_invoice' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Vendor Invoice' aria-hidden='true' style='--bs-modal-width: 80%;'>
-        <div class='modal-dialog'>
-            <div class='modal-content'>
-                <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title' id="vendor_invoice_title">
-                        <strong>Vendor Invoice</strong>
-                    </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-                </div>
-                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class="container-fluid form-floating">
-                    <form id='vendor_invoice_form' class='form-floating' action='javascript:void(0);'>
-                        <div class="row mb=2">
-                            <div class="col-sm-12" id="vendor_inv_approved_for"></div>
-                        </div>
-                        <div class='row'>
-                            <div class='col-sm-12' id='vendor_inv_included'></div>
-                        </div>
-                        <hr/>
-                        <input type='hidden' name='vendor' id='vendor_inv_id' value='<?php echo $vendor; ?>'/>
-                        <input type='hidden' name='item_purchased' id='vendor_inv_item_id'/>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <strong>Vendor Information</strong>
-                                <p>Please fill out this section with information on the vendor or store.  Changes made to the Vendor Information part of this form will update your profile.</p>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-2">
-                                <label for="vendor_inv_name">Name:</label>
-                            </div>
-                            <div class="col-sm-10 p-0">
-                                <input class="form-control-sm" type='text' name='name' id='vendor_inv_name' value="<?php echo escape_quotes($info['name']);  ?>" size="64" required/>
-                            </div>
-                        </div>
-                        <div class='row'>
-                            <div class='col-sm-2'>
-                                <label for='vendor_inv_email'>Email:</label>
-                            </div>
-                            <div class='col-sm-10 p-0'>
-                                <input class='form-control-sm' type='text' name='email' id='vendor_inv_email' value="<?php echo escape_quotes($info['email']); ?>" size="64" required/>
-                            </div>
-                        </div>
-                        <div class='row'>
-                            <div class='col-sm-2'>
-                                <label for='vendor_inv_addr'>Address:</label>
-                            </div>
-                            <div class='col-sm-10 p-0'>
-                                <input class='form-control-sm' type='text' name='addr' id='vendor_inv_addr' value="<?php echo escape_quotes($info['addr']); ?>" size='64' required/>
-                            </div>
-                        </div>
-                        <div class='row'>
-                            <div class='col-sm-2'>
-                                <label for='vendor_inv_addr2'>Company/ Addr2:</label>
-                            </div>
-                            <div class='col-sm-10 p-0'>
-                                <input class='form-control-sm' type='text' name='addr2' id='vendor_inv_addr2' value="<?php echo escape_quotes($info['addr2']); ?>" size='64'/>
-                            </div>
-                        </div>
-                        <div class='row'>
-                            <div class='col-sm-2'>
-                                <label for='vendor_inv_city'>City: </label>
-                            </div>
-                            <div class='col-sm-auto p-0 me-0'>
-                                <input class='form-control-sm' id='vendor_inv_city' type='text' size='32' value="<?php echo escape_quotes($info['city']); ?>" name=' city' required/>
-                            </div>
-                            <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
-                                <label for='vendor_inv_state'> State: </label>
-                            </div>
-                            <div class='col-sm-auto p-0 ms-0 me-0 ps-1'>
-                                <input class='form-control-sm' id='vendor_inv_state' type='text' size='2' maxlength='2' value="<?php echo escape_quotes($info['state']); ?>"
-                                       name='state' required/>
-                            </div>
-                            <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
-                                <label for='vendor_inv_zip'> Zip: </label>
-                            </div>
-                            <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
-                                <input class='form-control-sm' id='vendor_inv_zip' type='text' size='11' maxlength='11' value="<?php echo escape_quotes($info['zip']); ?>" name='zip'
-                                       required/>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-2">
-                                <label for="vendor_inv_taxid"><?php echo $vendor_conf['taxidlabel']; ?>:</label>
-                            </div>
-                            <div class="col-sm-10 p-0">
-                                <input class='form-control-sm' type='text' name='taxid'/>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-12"><?php echo $vendor_conf['taxidextra']; ?></div>
-                        </div>
-                        <div class="row mt-4">
-                            <div class="col-sm-12">
-                                Cost for Spaces $<span id='dealer_space_cost'></span>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-2">
-                                <label for="vendor_inv_requests">Special Requests:</label>
-                            </div>
-                            <div class="col-sm-10 p-0">
-                                 <textarea class='form-control-sm' name='requests' cols="64" rows="5"></textarea>
-                            </div>
-                        </div>
-                        <hr/>
-                        <div id="vendor_inv_included_mbr"></div>
-                        <div id="vendor_inv_additional_mbr"></div>
-                        <div class="row">
-                            <div class="col-sm-2">
-                                Cost for Memberships:
-                            </div>
-                            <div class="col-sm-10 p-0">
-                                $<span id='vendor_inv_mbr_cost'>0</span>
-                            </div>
-                        </div>
-                        <hr/>
-                        <div class="row">
-                            <div class="col-sm-auto">
-                                Total: <span id='vendor_inv_cost'></span>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                Payment Information:
-                            </div>
-                        </div>
-                         <div class='row'>
-                             <div class='col-sm-2'>
-                                 <label for='cc_fname'>
-                                     Name:
-                                 </label>
-                             </div>
-                             <div class='col-sm-auto pe-0'>
-                                 <input type='text' name='cc_fname' id='cc_fname' required='required' placeholder='First Name' size="32" maxlength="32" />
-                             </div>
-                             <div class='col-sm-auto'>
-                                 <input type='text' name='cc_lname' id='cc_lname' required='required'  placeholder='Last Name' size='32' maxlength='32'/>
-                             </div>
-                         </div>
-                         <div class='row'>
-                             <div class='col-sm-2'>
-                                 <label for='cc_street'>
-                                     Street:
-                                 </label>
-                             </div>
-                             <div class='col-sm-auto'>
-                                 <input type='text' id='cc_street' required='required' name='cc_addr' size='64' maxlength='64' value="<?php echo escape_quotes($info['addr']); ?>"/>
-                             </div>
-                         </div>
-                         <div class='row'>
-                             <div class='col-sm-2'>
-                                 <label for='cc_city'>City:</label>
-                             </div>
-                             <div class='col-sm-auto'>
-                                 <input type='text' id='cc_city' required='required' size='35' name='cc_city' maxlength='64' vaue="<?php echo escape_quotes($info['city']); ?>"/>
-                             </div>
-                             <div class='col-sm-auto ps-0 pe-0'>
-                                 <label for='cc_state'>State:</label>
-                             </div>
-                             <div class='col-sm-auto'>
-                                 <input type='text' id='cc_state' size=2 maxlength="2" required='required' name='cc_state' vaue="<?php echo escape_quotes($info['state']); ?>"/>
-                             </div>
-                             <div class='col-sm-auto ps-0 pe-0'>
-                                 <label for='cc_zip'>Zip:</label>
-                             </div>
-                             <div class='col-sm-auto'>
-                                 <input type='text' id='cc_zip' required='required' size=10 maxlength="10" name='cc_zip' vaue="<?php echo escape_quotes($info['zip']); ?>"/>
-                             </div>
-                         </div>
-                         <div class='row'>
-                             <div class='col-sm-2'>
-                                 <label for='cc_country'>Country:</label>
-                             </div>
-                             <div class='col-sm-auto'>
-                                  <select id='cc_country' required='required' name='cc_country' size=1>
-                                      <?php echo $countryOptions; ?>
-                                  </select>
-                             </div>
-                         </div>
-                         <div class="row">
-                             <div class="col-sm-2">
-                                 <label for="cc_email">Email:</label>
-                             </div>
-                             <div class="col-sm-auto">
-                                  <input type='email' id='cc_email' name='cc_email' size="35" maxlength="64" value="<?php echo escape_quotes($info['email']); ?>"/>
-                             </div>
-                         </div>
-                         <div class='row'>
-                            <div class='col-sm-12'>
-                                <?php if ($ini['test'] == 1) {
-                                    ?>
-                                    <h2 class='warn'>This won't charge your credit card, or do anything else.</h2>
-                                    <?php
-                                }
-                                ?>
-                                <br/>
-                                We Accept<br/>
-                                <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/>
-                            </div>
-                        </div>
-                        <hr/>
-                        <?php
-if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclaimer'] != '') {
-?>                          <div class='row p-1 pt-4 pb-3'>
-                                <div class='col-sm-12'>
-                                    <?php echo $vendor_conf['pay_disclaimer'] . "\n"; ?>
-                                </div>
-                            </div>
+<script type='text/javascript'>
+    var config = <?php echo json_encode($config_vars); ?>;
+    var region_list = <?php echo json_encode($region_list); ?>;
+    var exhibits_spaces = <?php echo json_encode($space_list); ?>;
+    var exhibitor_info = <?php echo json_encode($info); ?>;
+    var exhibitor_spacelist = <?php echo json_encode($exhibitorSpaceList); ?>;
+    var exhibitor_regionyears = <?php echo json_encode($vendor_permlist); ?>;
+    var regions = <?php echo json_encode($regions); ?>;
+    var spaces = <?php echo json_encode($spaces); ?>;
+    var country_options = <?php echo json_encode($countryOptions); ?>;
+    </script>
 <?php
-}
+draw_registrationModal($portalType, $portalName, $con, $countryOptions);
+draw_passwordModal();
+draw_exhibitorRequestModal();
+draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $cc, $portalName, $portalType);
+draw_exhibitorReceiptModal($portalType);
+draw_itemRegistrationModal($portalType);
 ?>
-                        <div class="row">
-                            <div class="col-sm-auto">
-                                Please wait for the email, and don't click the "Purchase" button more than once.
-                            </div>
-                        </div>
-                        <div class='row'>
-                            <div class='col-sm-12'>
-                                <?php echo draw_cc_html($cc, '--', 2); ?>
-                                <input type='reset'/>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                </div>
-            </div>
-        </div>
-    </div>
     <!-- now for the top of the form -->
      <div class='container-fluid'>
         <div class='row p-1'>
             <div class='col-sm-12 p-0'>
-                <h3>Welcome to the Portal Page for <?php echo $info['name']; ?></h3>
+                <h3>Welcome to the <?php echo $portalName; ?> Portal Page for <?php echo $info['exhibitorName']; ?></h3>
             </div>
         </div>
         <div class="row p-1">
             <div class="col-sm-auto p-0">
-                <button class="btn btn-secondary" onclick='update_profile.show();'>View/Change your profile</button>
-                <button class='btn btn-secondary' onclick='change_password.show();'>Change your password</button>
-                <button class="btn btn-secondary" onclick="window.location='?logout';">Logout</button>
+                <button class="btn btn-secondary m-1" onclick="exhibitorProfile.profileModalOpen('update');">View/Change your profile</button>
+                <button class='btn btn-secondary m-1' onclick='changePasswordOpen();'>Change your password</button>
+                <button class='btn btn-secondary m-1' id='switchPortalbtn' onclick='switchPortal();'>Switch to XXX Portal</button>
+                <button class="btn btn-secondary m-1" onclick="window.location='?logout';">Logout</button>
             </div>
         </div>
         <div class="row p-1 pt-4">
             <div class="col-sm-12 p-0">
-                <h3>Vendor Spaces</h3>
+                <h3><?php echo $portalName; ?> Spaces</h3>
             </div>
         </div>
-<?php   if (count($spaces) > 1)  { ?>
+<?php   if (count($regions) > 1)  { ?>
         <div class="row p-1">
             <div class="col-sm-12 p-0"><?php
-                echo $con['label']; ?> has multiple types of spaces for vendors. If you select a type for which you aren't qualified we will alert groups
+                echo $con['label']; ?> has multiple types of spaces for <?php echo $portalName; ?>s. If you select a type for which you aren't qualified we will alert groups
                 managing other spaces.
             </div>
         </div>
 <?php   }
-    foreach ($spaces AS $spacename => $spaceid) {
-        $space = $space_list[$spaceid];
-        if (array_key_exists($space['shortname'] . '_details', $vendor_conf)) {
-            $description = $vendor_conf[$space['shortname'] . '_details'];
+
+    foreach ($region_list as $id => $region) {
+        // let's see if where are authorized for this space
+        if ($region['mailInAllowed'] == 'N' && $info['mailin'] == 'Y')
+            $permission='noMailIn';
+        else if ($region['requestApprovalRequired'] != 'none') {
+            if (array_key_exists($region['id'], $vendor_permlist)) {
+                $permission = $vendor_permlist[$region['id']]['approval'];
+            } else {
+                $permission = 'approved';
+            }
         } else {
-            $description = $space['description'];
-        }
-        if (array_key_exists($spaceid, $vendor_spacelist)) {
-            $vendor_space = $vendor_spacelist[$spaceid];
-            $item_requested = $vendor_space['item_requested'];
-        } else {
-            $vendor_space = null;
-            $item_requested = null;
+            $permission = 'approved';
         }
 
+        if ($permission != 'hide') {
         // now the fixed text
         ?>
         <div class="row pt-4 p-1">
             <div class="col-sm-auto p-0">
-                <h3><?php echo $space['name'];?></h3>
+                <h3><?php echo $region['name'];?></h3>
             </div>
         </div>
         <div class="row p-1">
             <div class="col-sm-12 p-0">
-                <?php echo $description;?>
+                <?php echo $region['description'];?>
             </div>
         </div>
-        <div class="row p-1 mt-2" id="<?php echo $space['shortname']; ?>_div">
+        <div class="row p-1 mt-2" id="<?php echo $region['shortname']; ?>_div">
             <div class="col-sm-auto p-0"><?php
-        if ($vendor_space !== null) {
-            if ($vendor_space['item_purchased']) {
-                echo "You are registered for " . $vendor_space['purchased_description'] . "\n";
-            } else if ($vendor_space['item_approved']) {
-                ?>
-                <button class="btn btn-primary"
-                        onclick="openInvoice(<?php echo "'" . $space['id'] . "', '" . substr('0000000000' . $vendor_space['approved_sort'], -6); ?>')">
-                    Pay <?php echo $space['name']; ?> Invoice</button> <?php
-            } else if ($vendor_space['item_requested']) {
-                echo 'Request pending authorization for ' . $vendor_space['requested_description'] . ".\n";?>
-            </div>
-            <div class="col-sm-auto ms-4 p-0"> <button class='btn btn-primary' onclick='openReq(<?php echo $spaceid . ", " . $vendor_space['item_requested'];?>);'>Change/Cancel  <?php echo $space['name']; ?> Space</button><?php
-            } else {
-                 ?>
-            <button class="btn btn-primary" onclick='openReq(<?php echo $spaceid; ?>, 0);'>Request <?php echo $space['name']; ?> Space</button><?php
-            }
-        } else {
-            ?>
-            <button class="btn btn-primary" onclick='openReq(<?php echo $spaceid; ?>, 0);'>Request <?php echo $space['name']; ?> Space</button><?php
+
+                switch ($permission) {
+                    case 'noMailIn':
+                        echo "<p>This space does not allow mail-in. Please update your portal and select in person/agent if you wish to request this space</p>\n";
+                        break;
+                    case 'none': // they do not have a permission record brcause the have not requested permission yet.
+                        echo "<p>Permission of " . $region['ownerName'] . " is required to apply for space in " . $region['name'] . "</p>" . PHP_EOL; ?>
+                    <button class='btn btn-primary m-1' onclick="requestPermission(<?php echo $region['id'] . ",'" . $region['shortname'] . "_div'"; ?>);">Request Permission to apply for space in the <?php echo $region['name'];?> </button>
+                    <?php
+                        break;
+
+                    case 'requested':
+                        $date = $vendor_permlist[$region['id']]['updateDate'];
+                        $date = date_create($date);
+                        $date = date_format($date, "F j, Y") . ' at ' . date_format($date, "g:i A");
+                        echo "<p>You requested permission for this space on $date and " . $region['ownerName'] . " has not yet processed that request.</p>" . PHP_EOL .
+                            '<p>Please email ' . $region['ownerName'] . " at <a href='mailto:" . $region['ownerEmail'] . "'>" . $region['ownerEmail'] . '</a>' . ' if you need to follow-up on this request.</p>' . PHP_EOL;
+                        break;
+
+                    case 'denied': // they were answered no
+                        echo "<p>You already requested permission for this space and " . $region['ownerName'] . " has denied that request.</p>" . PHP_EOL .
+                            "<p>Please email " . $region['ownerName'] . " at <a href='mailto:" . $region['ownerEmail'] . "'>" . $region['ownerEmail'] . "</a>" . " if you wish to appeal this decision.</p>" . PHP_EOL;
+                        break;
+
+                    case 'hide': // no longer show this exhibitor this space
+                        break;
+
+                    case 'approved': // permission isn't needed or you have been granted permission
+                        // check if they already have paid space, if so, offer to show them the receipt
+                        $paid = 0;
+                        $requested = 0;
+                        $approved = 0;
+                        $timeRequested = null;
+                        $regionSpaces = [];
+                        $vendorSpaces = [];
+                        $regionYearId = $region['id'];
+                        $regionName = $region['name'];
+                        $foundSpace = false;
+                        if (array_key_exists($regionYearId, $space_list)) {
+                            foreach ($space_list[$regionYearId] as $spaceId => $space) {
+                                if ($space['exhibitsRegionYear'] != $region['id'])
+                                    continue;
+
+                                $regionSpaces[$space['id']] = $space;
+                                $foundSpace = true;
+                                if (array_key_exists($space['id'], $exhibitorSpaceList)) {
+                                    $vendorSpace = $exhibitorSpaceList[$space['id']];
+
+
+                                    if ($vendorSpace !== null) {
+                                        $vendorSpaces[$space['id']] = $vendorSpace;
+                                        if ($vendorSpace['item_requested'] != null) {
+                                            $requested++;
+                                            $timeRequested = $vendorSpace['time_requested'];
+                                        }
+                                        if ($vendorSpace['item_approved'] != null)
+                                            $approved++;
+                                        if ($vendorSpace['item_purchased'] != null)
+                                            $paid++;
+                                    }
+
+                                }
+                            }
+                        }
+
+                        if ($paid > 0) {
+                            vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
+                            if ($portalType == 'artist') {
+                                itemRegistrationOpenBtn($regionYearId);
+                            }
+                        }
+                        else if ($approved > 0)
+                            exhibitor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList, $region_list[$regionYearId], $info);
+                        else if ($requested > 0)
+                            exhibitor_showRequest($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
+                        else if ($foundSpace)
+                            echo "<button class='btn btn-primary m-1' onclick = 'exhibitorRequest.openReq($regionYearId, 0);' > Request $regionName Space</button>" . PHP_EOL;
+                        else
+                            echo "There are no requestable items currently configured for this space, please email " .
+                                $region['ownerName'] . " at <a href='mailto:" . $region['ownerEmail'] . "'>" . $region['ownerEmail'] . "</a> for further assistance." . PHP_EOL;
+                }
         }
         ?>
             </div>
         </div>
         <?php } ?>
-        <div id='result_message' class='mt-4 p-2'></div>
+    </div>
+     <div class='container-fluid'>
+        <div class='row'>
+            <div class='col-sm-12 m-0 p-0'>
+                <div id='result_message' class='mt-4 p-2'></div>
+            </div>
+        </div>
+         <div class='row'>
+             <?php drawBug(12); ?>
+         </div>
     </div>
 </body>
 </html>
-
-<?php
-// drawChangePassword - make it common code to draw change password prompts
-function drawChangePassword($title, $width, $drawbutton) {
-    $html = '';
-    if ($title != '') {
-        $html = <<<EOH
-    <div class='row'>
-        <div class='col-sm-12'>$title</div>
-    </div>
-EOH;
-        }
-    $html .= <<<EOH
-    <div class='container-fluid'>
-        <form id='changepw' action='javascript:void(0)'>
-        <div class='row'>
-            <div class='col-sm-$width'>
-                <label for='oldPw'>Old or Temp Password:</label>
-            </div>
-            <div class='col-sm-8'>
-                <input type='password' id='oldPw' name='oldPassword' required/>
-            </div>
-        </div>
-        <div class='row'>
-            <div class='col-sm-$width'>
-                <label for='pw'>new Password:</label>
-            </div>
-            <div class='col-sm-8'>
-                <input type='password' id='pw' name='password' required/>
-            </div>
-        </div>
-        <div class='row'>
-            <div class='col-sm-$width'>
-                <label for='pw2'>Re-enter Password:</label>
-            </div>
-            <div class='col-sm-8'>
-                <input type='password' id='pw2' name='password2' required/>
-            </div>
-        </div>
-EOH;
-    if ($drawbutton) {
-        $html .= <<<EOH
-        <div class='row mt-2'>
-            <div class='col-sm-$width'></div>
-            <div class='col-sm-8'>
-                <button class='btn btn-sm btn-primary' onClick='changePassword()'>Change Password</button>
-            </div>
-        </div>
-        </form>
-    </div>
-    </body>
-</html>
-EOH;
-    } else {
-        $html .= <<<EOH
-        </form>
-    </div>
-EOH;
-    }
-    echo $html;
-    vendor_page_footer();
-}

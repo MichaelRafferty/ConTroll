@@ -17,7 +17,7 @@ header('Content-Disposition: attachment; filename="mailer.csv"');
 
 $query = "SELECT DISTINCT concat_ws(' ', P.first_name, P.middle_name, P.last_name, P.suffix) as name"
     . ", P.addr_2 as company, P.address, P.city, P.state, P.zip, P.country"
-    . ", P.phone, P.email_addr"
+    . ", P.phone, P.email_addr, P.badge_name"
     . ", max(R.conid) as last_con"
     . " FROM perinfo as P JOIN reg as R ON R.perid=P.id"
     . " WHERE R.conid >$conid-5"
@@ -29,7 +29,7 @@ $query = "SELECT DISTINCT concat_ws(' ', P.first_name, P.middle_name, P.last_nam
     . ";";
 
 
-echo "name, company, address, city, state, zip, country, phone, email_addr, last_con"
+echo "name, company, address, city, state, zip, country, phone, email_addr, badge name, last_con"
     . "\n";
 
 $reportR = dbQuery($query);
