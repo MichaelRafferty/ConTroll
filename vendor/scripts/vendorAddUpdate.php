@@ -14,6 +14,8 @@ $conid = $con['id'];
 
 $response = array('post' => $_POST, 'get' => $_GET);
 
+$exyID = $_SESSION['eyID'];
+
 if (!(array_key_exists('exhibitorEmail', $_POST) && array_key_exists('exhibitorName', $_POST) && array_key_exists('profileMode', $_POST))) {
     $response['status'] = 'error';
     $response['message'] = "Calling sequence error, contact $vemail for assistance";
@@ -145,10 +147,10 @@ JOIN exhibitsSpaces es ON exS.spaceId = es.id
 JOIN exhibitsRegionYears ery ON exRY.exhibitsRegionYearId = ery.id
 JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id
 JOIN exhibitsRegionTypes ert ON er.regionType = ert.regionType
-WHERE exY.conid = ? AND ert.mailinAllowed = 'N' AND 
+WHERE ert.mailinAllowed = 'N' AND exY.id=? AND
       (exS.item_requested IS NOT NULL OR exS.item_approved IS NOT NULL OR exS.item_purchased IS NOT NULL)
 EOS;
-            $checkR = dbSafeQuery($checkQ, 'i', array($conid));
+            $checkR = dbSafeQuery($checkQ, 'i', array($exyID));
             if ($checkR == false || $checkR->num_rows != 1) {
                 $response['error'] = 'error';
                 $response['message'] = 'Error checkin mail in restrictions';
