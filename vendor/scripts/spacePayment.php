@@ -120,7 +120,7 @@ $response['exhibitorRegionYear'] = $eryID;
 
 // now the space information for this regionYearId
 $spaceQ = <<<EOS
-SELECT e.*, esp.price as approved_price, esp.includedMemberships, esp.additionalMemberships
+SELECT e.*, esp.price as approved_price, esp.includedMemberships, esp.additionalMemberships, s.name
 FROM exhibitorSpaces e
 JOIN exhibitsSpaces s ON (s.id = e.spaceId)
 JOIN exhibitsSpacePrices esp ON (s.id = esp.spaceId AND e.item_approved = esp.id)
@@ -230,7 +230,7 @@ for ($num = 0; $num < $includedMembershipsMax; $num++) {
                 $allrequired = false;
             }
         }
-        if ($field = 'email') {
+        if ($field == 'email') {
             // add to email addresses
             if ($nonefound == false && $val != '')
                 $email_addresses[$postfield] = "Included Membership $num Email";
@@ -440,6 +440,8 @@ for ($i = 0; $i < $num_fields; $i++) {
 }
 $txnQ = 'INSERT INTO payments(time,' . implode(',', $rtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
 $txnT = implode('', $rtn['tnxtypes']);
+//error_log("Payment Insert: $txnQ : " .implode(',', $rtn['tnxdata']) . "\n");
+
 $txnid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
 if ($txnid == false) {
     $error_msg .= "Insert of payment failed\n";
