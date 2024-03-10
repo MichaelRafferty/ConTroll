@@ -177,6 +177,7 @@ function payment($results) {
         '<p>Price for Space: ' . $dolfmt->formatCurrency($region['price'], 'USD') . "</p>\n" .
         "<p>Special Requests:<br/>\n" . $results['specialrequests'] . "</p>\n";
 
+    //TODO put in if statement in case there are no badges in formbadges
     $bodyHtml .= "<p>Memberships purchased at this time:</p>\n";
     foreach ($results['formbadges'] as $badge) {
         if ($badge['type'] == 'i')
