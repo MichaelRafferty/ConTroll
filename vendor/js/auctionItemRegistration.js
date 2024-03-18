@@ -455,8 +455,8 @@ class AuctionItemRegistration {
                 {title: 'Item Num.', field: 'item_key', width: 10, headerSort: true, headerWordWrap: true},
                 {title: 'Title', field: 'title', width: 200, headerSort: true, headerFilter: true, editor: 'input', editorParams: {maxLength: "64"} },
                 {title: "Material", field: "material", headerSort: true, headerFilter: true, width: 200, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Min. Bid", field: "min_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 20, editor: 'number', editorParams: {min: 1} },
-                {title: "Quick Sale", field: "sale_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 20, editor: 'number', editorParams: {min: 1} },
+                {title: "Min. Bid", field: "min_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 50, editor: 'number', editorParams: {min: 1} },
+                {title: "Quick Sale", field: "sale_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 50, editor: 'number', editorParams: {min: 1} },
                 {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
             ]
