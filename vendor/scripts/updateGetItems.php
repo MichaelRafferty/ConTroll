@@ -59,12 +59,12 @@ WHERE exhibitorYearId=? and exhibitsRegionYearId=?;
 EOS;
 
 $vendorR = dbSafeQuery($vendorQ, 'ii', array($vendor_year, $region))->fetch_assoc();
-$vendor_show = $vendorR['id'];
+$exhibitorRegionYearId = $vendorR['id'];
 
 $maxQ = <<<EOS
 SELECT max(item_key) as last_key
 FROM artItems i
-    JOIN exhibitorRegionYears eRY on eRY.id=i.vendor_show
+    JOIN exhibitorRegionYears eRY on eRY.id=i.exhibitorRegionYearId
 WHERE eRY.exhibitorYearId=? and eRY.exhibitsRegionYearId=?
 GROUP BY eRY.exhibitorYearId, eRY.exhibitsRegionYearId;
 EOS;
@@ -103,7 +103,7 @@ if($delete_keys != '') {
 }
 
 $inssql = <<<EOS
-INSERT INTO artItems (item_key, title, material, type, original_qty, quantity, min_price, sale_price, vendor_show) 
+INSERT INTO artItems (item_key, title, material, type, original_qty, quantity, min_price, sale_price, exhibitorRegionYearId) 
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 $updsql = <<<EOS
@@ -148,7 +148,7 @@ foreach ($data as $index => $row) {
         $numrows = dbSafeCmd($updsql, 'issiiddi', array($item_key, $title, $material, $qty, $qty, $row['min_price'], $row['sale_price'], $row['id']));
         $updated += $numrows;
     } else { // new!
-        $numrows = dbSafeCmd($inssql, 'isssiiddi', array($nextItemKey++, $title, $material, $itemType, $qty, $qty, $row['min_price'], $row['sale_price'], $vendor_show));
+        $numrows = dbSafeCmd($inssql, 'isssiiddi', array($nextItemKey++, $title, $material, $itemType, $qty, $qty, $row['min_price'], $row['sale_price'], $exhibitorRegionYearId));
         if($numrows !== false) {
             $inserted++;
         }
@@ -159,7 +159,7 @@ $response['message'] = "$itemType updated: $inserted added, $updated changed, $d
 $itemQ = <<<EOS
 SELECT i.id, item_key, title, material, type, original_qty, min_price, sale_price, 0 as uses
 FROM artItems i
-    JOIN exhibitorRegionYears eRY on eRY.id=i.vendor_show
+    JOIN exhibitorRegionYears eRY on eRY.id=i.exhibitorRegionYearId
 WHERE eRY.exhibitorYearId=? and eRY.exhibitsRegionYearId=?
 EOS;
 
