@@ -193,7 +193,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                  <label for="cc_email">Email:</label>
                              </div>
                              <div class="col-sm-auto">
-                                  <input type='email' id='cc_email' name='cc_email' size="35" maxlength="64" value="<?php echo escape_quotes($info['contactEmail']); ?>"/>
+                                  <input type='email' id='cc_email' name='cc_email' size="35" maxlength="254" value="<?php echo escape_quotes($info['contactEmail']); ?>"/>
                              </div>
                          </div>
                          <div class='row'>

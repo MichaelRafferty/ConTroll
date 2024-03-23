@@ -246,11 +246,11 @@ $onsitesale = $startdate->format("l, F j");
                             <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="email1" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Email</span></label><br/>
-                                    <input class="form-control-sm" type="email" name="email1" id='email1' size="35" maxlength="64" tabindex="24"/>
+                                    <input class="form-control-sm" type="email" name="email1" id='email1' size="35" maxlength="254" tabindex="24"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="email2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Confirm Email</span></label><br/>
-                                    <input class="form-control-sm" type="email" name="email2" id='email2' size="35" maxlength="64" tabindex="26"/>
+                                    <input class="form-control-sm" type="email" name="email2" id='email2' size="35" maxlength="254" tabindex="26"/>
                                 </div>
                             </div>
                             <div class="row">

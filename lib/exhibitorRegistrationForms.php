@@ -130,7 +130,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                     <label for='exhibitorEmail'> *Business Email: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' type='email' name='exhibitorEmail' id='exhibitorEmail' maxlength='64' size='50' required
+                                    <input class='form-control-sm' type='email' name='exhibitorEmail' id='exhibitorEmail' maxlength='254' size='50' required
                                         placeholder='email address for the business' tabindex="10"/>
                                 </div>
                             </div>
@@ -271,7 +271,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                     <label for='contactEmail'> *Email/Login: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' type='email' name='contactEmail' id='contactEmail' maxlength='64' size='50' required
+                                    <input class='form-control-sm' type='email' name='contactEmail' id='contactEmail' maxlength='254' size='50' required
                                            placeholder='email address for Contact and Login to the portal' tabindex='170'/>
                                 </div>
                             </div>
