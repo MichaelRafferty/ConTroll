@@ -15,7 +15,7 @@ CREATE TABLE `exhibitsRegionYears` (
   `conid` int NOT NULL,
   `exhibitsRegion` int NOT NULL,
   `ownerName` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `ownerEmail` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `ownerEmail` varchar(254) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `includedMemId` int DEFAULT NULL,
   `additionalMemId` int DEFAULT NULL,
   `totalUnitsAvailable` int NOT NULL DEFAULT '0',
@@ -29,5 +29,3 @@ CREATE TABLE `exhibitsRegionYears` (
   KEY `ery_conlist_fk` (`conid`),
   KEY `ery_exhibitsRegion_fk` (`exhibitsRegion`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-

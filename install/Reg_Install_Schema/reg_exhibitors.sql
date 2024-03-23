@@ -15,7 +15,7 @@ CREATE TABLE `exhibitors` (
   `perid` int DEFAULT NULL,
   `newperid` int DEFAULT NULL,
   `exhibitorName` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `exhibitorEmail` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `exhibitorEmail` varchar(254) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `exhibitorPhone` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `website` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
@@ -41,5 +41,3 @@ CREATE TABLE `exhibitors` (
   KEY `exhibitor_perid_fk` (`perid`),
   KEY `exhibitors_newperson_fk` (`newperid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-
