@@ -206,7 +206,7 @@ function showValidatedAddress(data) {
         if (uspsAddress['valid'] == 'Valid')
             html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="useUSPS();">Add to cart using USPS Validated Address</button>'
     }
-    html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="useMyAddress();">Addto cart using Address as Entered</button><br/>' +
+    html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="useMyAddress();">Add to cart using Address as Entered</button><br/>' +
         '<button class="btn btn-sm btn-secondary m-1 mt-2" onclick="redoAddress();">I fixed the address, validate it again.</button>';
 
     uspsDiv.innerHTML = html;
