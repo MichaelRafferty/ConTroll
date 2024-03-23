@@ -48,8 +48,15 @@ $conid=$con['id'];
   <form action='reports/artCheckout.php' method='GET'>
     <select name='artid'>
         <?php
-            $artistQ = "select S.id, art_key, concat_ws(' ', P.first_name, P.last_name) as name from artshow as S JOIN artist as A on A.id = S.artid JOIN perinfo as P on P.id=A.artist where conid=$conid order by art_key;";
-            $artistL = dbQuery($artistQ);
+            $artistQ = <<<EOS
+SELECT S.id, art_key, TRIM(CONCAT_WS(' ', P.first_name, P.last_name)) AS name
+FROM artshow AS S
+JOIN artist AS A ON A.id = S.artid
+JOIN perinfo AS P ON P.id=A.artist
+WHERE conid=?
+ORDER by art_key;
+EOS;
+            $artistL = dbSafeQuery($artistQ, 'i', array($conid));
             while($artist = fetch_safe_assoc($artistL)) {
                 printf("<option value = '%s'>%s (%s)</option>",
                     $artist['id'], $artist['name'], $artist['art_key']);

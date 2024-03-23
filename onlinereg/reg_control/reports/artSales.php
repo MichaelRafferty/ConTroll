@@ -18,7 +18,7 @@ header('Content-Disposition: attachment; filename="art_sales.csv"');
 $query = "SELECT"
     . " V.name"
     . ", s.a_total, p.p_total"
-    . ", concat_ws(' ', artist.ship_addr, artist.ship_addr2, artist.ship_city, artist.ship_state, artist.ship_zip, artist.ship_country)"
+    . ", TRIM(concat_ws(' ', artist.ship_addr, artist.ship_addr2, artist.ship_city, artist.ship_state, artist.ship_zip, artist.ship_country))"
     . " FROM artshow as A JOIN artist ON artist.id=A.artid"
         . " JOIN vendors AS V on V.id=artist.vendor"
         . " LEFT JOIN (SELECT A.art_key, SUM(I.final_price) as a_total"

@@ -22,7 +22,7 @@ header('Content-Disposition: attachment; filename="hotel_registration.csv"');
 // added join commented out  //. " JOIN atcon_badge as B on B.badgeId=R.id"
 // which used the where clause of  //  and B.action='pickup'"
 $query = <<<EOS
-SELECT DISTINCT CONCAT_WS(' ', P.first_name, P.last_name), REPLACE(CONCAT_WS('\n', P.address, P.addr_2, CONCAT(P.city, ', ', P.state, ' ', P.zip)), '\n\n', '\n')
+SELECT DISTINCT TRIM(CONCAT_WS(' ', P.first_name, P.last_name)), REPLACE(CONCAT_WS('\n', P.address, P.addr_2, CONCAT(P.city, ', ', P.state, ' ', P.zip)), '\n\n', '\n')
     , M.label, U.name, U.email
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
