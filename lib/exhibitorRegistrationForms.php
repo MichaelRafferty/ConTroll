@@ -130,7 +130,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                     <label for='exhibitorEmail'> *Business Email: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' type='email' name='exhibitorEmail' id='exhibitorEmail' maxlength='64' size='50' required
+                                    <input class='form-control-sm' type='email' name='exhibitorEmail' id='exhibitorEmail' maxlength='254' size='50' required
                                         placeholder='email address for the business' tabindex="10"/>
                                 </div>
                             </div>
@@ -187,7 +187,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                         coming?</label>
                                 </div>
                             </div>
-                            <?php if ($portalType == 'artist') { /* TODO change this to 'mail-in allowed' */ ?> 
+                            <?php if ($portalType == 'artist') { /* TODO change this to 'mail-in allowed' */ ?>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
                                     <label for='mailin'> *Are you requesting a mail-in space: </label>
@@ -216,8 +216,8 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                             <div class="row mt-1">
                                 <div class="col-sm-2"></div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='addr2' type='text' size="64" name='addr2' 
-                                           placeholder="second line of address if needed" tabindex="110"/>
+                                    <input class="form-control-sm" id='addr2' type='text' size="64" name='addr2'
+                                           placeholder="second line of address if neededsecond line of address if needed" tabindex="110"/>
                                 </div>
                             </div>
                             <div class="row mt-1">
@@ -254,79 +254,78 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                             <!-- Contact Info -->
                             <div class='row mt-2'>
                                 <div class='col-sm-2'></div>
-                                <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <h4>Primary Contact</h4>
-                                    <p>If you have a business manager or need to enable a second person to log in to help manager your portal account.</p>
-                                    <label for='contactName'> Contact Name: </label>
-                                </div>
-                                <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' type='text' name='contactName' id='contactName' maxlength='64' size='50' tabindex='160' 
-                                        placeholder="primary contact name"/>
-                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'><h4>Primary Contact</h4></div>
                             </div>
-                            <div class="row mt-1">
-                                <div class="col-sm-2">
-                                    <label for="contactEmail"> Email/Login: </label>
+                            <div class='row mt-1'>
+                                <div class='col-sm-2'>
+                                    <label for='contactName'> *Contact Name: </label>
                                 </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class='form-control-sm' type='email' name='contactEmail' id='contactEmail' maxlength='64' size='50' 
-                                        placeholder="email address for Contact and Login to the portal" tabindex="170"/>
+                                <div class='col-sm-auto p-0 ms-0 me-0'>
+                                    <input class='form-control-sm' type='text' name='contactName' id='contactName' maxlength='64' size='50' tabindex='160'
+                                           required
+                                           placeholder='primary contact name'/>
                                 </div>
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='contactPhone'> Contact Phone: </label>
+                                    <label for='contactEmail'> *Email/Login: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' type='text' name='contactPhone' id='contactPhone' maxlength='32' size='24' 
-                                        placeholder="contact's phone number" tabindex="180"/>
+                                    <input class='form-control-sm' type='email' name='contactEmail' id='contactEmail' maxlength='254' size='50' required
+                                           placeholder='email address for Contact and Login to the portal' tabindex='170'/>
                                 </div>
                             </div>
-                            <div class="row mt-1" id="cpasswordLine1">
-                                <div class="col-sm-2">
-                                    <label for="cpw1"> Contact Password: </label>
+                            <div class='row mt-1'>
+                                <div class='col-sm-2'>
+                                    <label for='contactPhone'> *Contact Phone: </label>
                                 </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='cpw1' type='password' name='cpassword' autocomplete="off" tabindex="190"
-                                    size="24" placeholder='minimum of 8 characters' />
+                                <div class='col-sm-auto p-0 ms-0 me-0'>
+                                    <input class='form-control-sm' type='text' name='contactPhone' id='contactPhone' maxlength='32' size='24' required
+                                           placeholder="contact's phone number" tabindex='180'/>
                                 </div>
                             </div>
-                            <div class="row mt-1" id="cpasswordLine2">
-                                <div class="col-sm-2">
-                                    <label for="cpw2"> Confirm Password: </label>
+                            <div class='row mt-1' id='cpasswordLine1'>
+                                <div class='col-sm-2'>
+                                    <label for='cpw1'> *Contact Password: </label>
                                 </div>
-                                <div class="col-sm-auto p-0 ms-0 me-0">
-                                    <input class="form-control-sm" id='cpw2' type='password' name='cpassword2' autocomplete="off" tabindex="200"
-                                    size="24" placeholder='minimum of 8 characters'/>
+                                <div class='col-sm-auto p-0 ms-0 me-0'>
+                                    <input class='form-control-sm' id='cpw1' type='password' name='cpassword' autocomplete='off' required tabindex='190'
+                                           size='24' placeholder='minimum of 8 characters'/>
+                                </div>
+                            </div>
+                            <div class='row mt-1' id='cpasswordLine2'>
+                                <div class='col-sm-2'>
+                                    <label for='cpw2'> *Confirm Password: </label>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'>
+                                    <input class='form-control-sm' id='cpw2' type='password' name='cpassword2' autocomplete='off' required tabindex='200'
+                                           size='24' placeholder='minimum of 8 characters'/>
                                 </div>
                             </div>
                             <!-- Shipping Address (artist only) -->
                             <?php if ($portalType == 'artist' || $portalType == 'admin') { ?>
                             <div class='row mt-4'>
                                 <div class='col-sm-2'></div>
-                                <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <h4>Shipping Address</h4>
-                                    <p>Complete if you will need artwork shipped back to you after the convention.</p>
-                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0'><h4>Shipping Address</h4></div>
                                 <div class='col-sm-auto p-0 ms-4 me-0'>
                                     <button class='btn btn-sm btn-primary' type="button" onclick='exhibitorProfile.copyAddressToShipTo()'>Copy <?php echo $portalName; ?> Address to Shipping Address</button>
                                 </div>
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='shipCompany'> Company </label>
+                                    <label for='shipCompany'> *Company </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' id='shipCompany' type='text' size='64' name='shipCompany' 
+                                    <input class='form-control-sm' id='shipCompany' type='text' size='64' name='shipCompany' required
                                            placeholder='Company Name' tabindex='210'/>
                                 </div>
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='shipAddr'> Address </label>
+                                    <label for='shipAddr'> *Address </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' id='shipAddr' type='text' size='64' name='shipAddr' 
+                                    <input class='form-control-sm' id='shipAddr' type='text' size='64' name='shipAddr' required
                                            placeholder='Street Address' tabindex="220"/>
                                 </div>
                             </div>
@@ -339,22 +338,22 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='shipCity'> City: </label>
+                                    <label for='shipCity'> *City: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' id='shipCity' type='text' size='32' maxlength='32' name='shipCity' tabindex="240"/>
+                                    <input class='form-control-sm' id='shipCity' type='text' size='32' maxlength='32' name='shipCity' required tabindex="240"/>
                                 </div>
                                 <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
-                                    <label for='shipState'> State: </label>
+                                    <label for='shipState'> *State: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0 ps-1'>
-                                    <input class='form-control-sm' id='shipState' type='text' size='10' maxlength='16' name='shipState' tabindex="250"/>
+                                    <input class='form-control-sm' id='shipState' type='text' size='10' maxlength='16' name='shipState' required tabindex="250"/>
                                 </div>
                                 <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
-                                    <label for='shipZip'> Zip: </label>
+                                    <label for='shipZip'> *Zip: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
-                                    <input class='form-control-sm' id='shipZip' type='text' size='11' maxlength='11' name='shipZip' 
+                                    <input class='form-control-sm' id='shipZip' type='text' size='11' maxlength='11' name='shipZip' required
                                            placeholder='Postal Code' tabindex="260"/>
                                 </div>
                             </div>

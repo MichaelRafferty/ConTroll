@@ -180,7 +180,7 @@ echo $conid;
                             <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="email" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Email</span></label><br/>
-                                    <input type="email" name="email" id='email' size="50" maxlength="64" tabindex="11"/>
+                                    <input type="email" name="email" id='email' size="50" maxlength="254" tabindex="11"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="phone" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>

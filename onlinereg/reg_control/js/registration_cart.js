@@ -1103,7 +1103,7 @@ class reg_cart {
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name='c` + rownum + `-email_addr' id='c` + rownum + `-email_addr' size=64 maxlength="64" placeholder="Email Address" tabindex="` +
+            <input type="text" name='c` + rownum + `-email_addr' id='c` + rownum + `-email_addr' size=64 maxlength="254" placeholder="Email Address" tabindex="` +
                 String(tabindex + 14) + '"  value="' + row['email_addr'] + '" style="background-color:' + colors.get('email_addr') + ';' + `"/>
         </div>
          <div class="col-sm-auto ms-0 me-0 p-0">

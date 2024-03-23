@@ -27,7 +27,7 @@ $transid = sql_safe($_GET['id']);
 
 $totalPrice = 0;
 $badgeQ = <<<EOS
-SELECT DISTINCT R.id, M.label, R.price, R.paid, P.badge_name, CONCAT_WS(' ', first_name, last_name) AS full_name, S.action
+SELECT DISTINCT R.id, M.label, R.price, R.paid, P.badge_name, TRIM(CONCAT_WS(' ', first_name, last_name)) AS full_name, S.action
 FROM reg_history H
 JOIN reg R ON (R.id = H.regid)
 JOIN memLabel M ON (M.id=R.memId)

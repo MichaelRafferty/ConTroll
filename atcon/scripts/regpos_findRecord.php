@@ -260,7 +260,7 @@ SELECT DISTINCT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix,'')), '  *', ' ')) AS fullname,
     p.open_notes
 FROM perinfo p
-WHERE (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(legalName) LIKE ? OR
+WHERE (LOWER(TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(first_name, ''), IFNULL(middle_name, ''))), IFNULL(last_name, '')))) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(legalName) LIKE ? OR
        LOWER(email_addr) LIKE ? OR LOWER(address) LIKE ? OR LOWER(addr_2) LIKE ?)
 ORDER BY last_name, first_name LIMIT $limit;
 EOS;
@@ -269,8 +269,8 @@ WITH limitedp AS (
 /* first get the perid's for this name search */
     SELECT DISTINCT p.id, IFNULL(p.first_name, '') as first_name, p.last_name
     FROM perinfo p
-    WHERE (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(legalName) LIKE ? OR
-        LOWER(email_addr) LIKE ? OR LOWER(address) LIKE ? OR LOWER(addr_2) LIKE ?)
+    WHERE (LOWER(TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(first_name, ''), IFNULL(middle_name, ''))), IFNULL(last_name, '')))) LIKE ? OR 
+        LOWER(badge_name) LIKE ? OR LOWER(legalName) LIKE ? OR LOWER(email_addr) LIKE ? OR LOWER(address) LIKE ? OR LOWER(addr_2) LIKE ?)
     ORDER BY last_name, first_name LIMIT $limit
 ), regids AS (
 SELECT r.id AS regid

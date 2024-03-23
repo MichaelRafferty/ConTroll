@@ -20,8 +20,10 @@ $response['conid'] = $conid;
 
 $badgeQ = <<<EOS
 SELECT R.create_date, R.change_date, R.price, R.couponDiscount, R.paid, R.id AS badgeId, P.id AS perid, NP.id AS np_id
-    , CASE WHEN R.perid IS NULL THEN CONCAT_WS(' ', NP.first_name, NP.middle_name, NP.last_name, NP.suffix)
-        ELSE CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name, P.suffix) 
+    , CASE WHEN R.perid IS NULL THEN 
+            TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(NP.first_name, ''), IFNULL(NP.middle_name, ''))), IFNULL(NP.last_name, ''))), IFNULL(NP.suffix, '')))
+        ELSE
+            TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(P.first_name, ''), IFNULL(P.middle_name, ''))), IFNULL(P.last_name, ''))), IFNULL(P.suffix, '')))
       END AS p_name
     , P.email_addr as p_email, P.badge_name AS p_badge, NP.badge_name AS np_badge
     , CONCAT_WS('-', M.memCategory, M.memType, M.memAge) as memTyp

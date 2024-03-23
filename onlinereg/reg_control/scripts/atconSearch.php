@@ -23,12 +23,12 @@ $con= get_conf("con");
 $conid=$con['id'];
 
 $query = <<<EOS
-SELECT P.id, CONCAT_WS(' ', first_name, middle_name, last_name) AS full_name, address, addr_2, CONCAT_WS(' ', city, state, zip) AS locale
+SELECT P.id, TRIM(CONCAT_WS(' ', first_name, middle_name, last_name)) AS full_name, address, addr_2, TRIM(CONCAT_WS(' ', city, state, zip)) AS locale
     , badge_name, email_addr, phone, active, banned, M.label
 FROM perinfo P
 LEFT OUTER JOIN reg R ON (R.perid=P.id and R.conid=?)
 LEFT JOIN memLabel M ON (M.id=R.memId)
-WHERE CONCAT_WS(' ', first_name, middle_name, last_name) LIKE ?
+WHERE TRIM(CONCAT_WS(' ', first_name, middle_name, last_name)) LIKE ?
 ORDER BY R.id, last_name, first_name;
 EOS;
 

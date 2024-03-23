@@ -27,9 +27,11 @@ CREATE TABLE `artItems` (
   `artshow` int DEFAULT NULL,
   `time_updated` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `material` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `exhibitorRegionYearId` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `artItems_conid_fk` (`conid`),
-  KEY `artItems_artshow_fk` (`artshow`)
+  KEY `artItems_artshow_fk` (`artshow`),
+  KEY `artItems_exhibitorRegionYear_fk` (`exhibitorRegionYearId`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
