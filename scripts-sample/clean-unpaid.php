@@ -106,6 +106,7 @@ foreach ($unpaidsReg AS $reg) {
 // now delete all the transaction records attached to those registrations
 $num_trans = 0;
 foreach ($unpaidsTrans AS $trans) {
+    $num_rows = dbSafeCmd('UPDATE newperson SET transid = NULL WHERE transid = ?;', 'i', array($trans['id']));
     //echo "DELETE FROM transaction WHERE id = ?;', 'i', " . $trans['id'] . ")\n";
     $num_trans = dbSafeCmd('DELETE FROM transaction WHERE id = ?;', 'i', array($trans['id']));
 }
