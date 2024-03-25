@@ -142,7 +142,7 @@ function process(formRef) {
         var cur = badges['memTypeCount'][formData['memType']];
         var lim = coupon.getLimitMemberships();
         if (badges['memTypeCount'][formData['memType']] >= coupon.getLimitMemberships()) {
-            alert("You already have the maximum number of badges of this membership type in your cart based on the coupon applied. You must choose a different membership type.");
+            alert("You already have the maximum number of memberships of this membership type in your cart based on the coupon applied. You must choose a different membership type.");
             valid = false;
         }
     }
@@ -416,7 +416,7 @@ function makePurchase(token, label) {
     $('#' + $purchase_label).attr("disabled", "disabled");
     var postdata = badges['badges'];
     if (postdata.length == 0) {
-        alert("You don't have any badges to buy, please add some badges");
+        alert("You don't have any memberships to buy, please add some memberships");
         if (newBadge != null) {
             newBadge.show();
         }
