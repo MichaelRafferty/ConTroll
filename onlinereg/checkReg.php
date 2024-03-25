@@ -85,7 +85,7 @@ EOS;
     <div id='showBadge' class="container-fluid">
         <div class="row" style="width:100%;">
             <div class="col-12 ms-0 me-0 p-0">
-                <p>Your search for <?php echo $fname . " " . $lname; ?> found <?php echo$numbadges; ?> Badge<?php if ($numbadges != 1) { echo "s"; } ?>.</p>
+                <p>Your search for <?php echo $fname . " " . $lname; ?> found <?php echo$numbadges; ?> Membership<?php if ($numbadges != 1) { echo "s"; } ?>.</p>
             </div>
         </div>
         <div class="row" style="width:100%;">
