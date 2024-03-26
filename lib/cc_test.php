@@ -52,10 +52,6 @@ function cc_charge_purchase($results, $ccauth) {
 		exit();
 	}
 
-	if(($cc['env'] != 'sandbox') || $reg['test'] != 1) {
-		ajaxSuccess(array('status'=>'error','data'=>'Something thinks this is a real charge method'));
-		exit();
-	}
 	// set category based on if exhibits is a portal type
     if (array_key_exists('exhibits', $results)) {
         if ($results['exhibits'] == 'vendor')

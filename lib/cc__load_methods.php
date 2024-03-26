@@ -15,10 +15,6 @@ function load_cc_procs() {
             require_once("cc_square.php");
             break;
         case 'test':
-            if(($cc['env'] != 'sandbox') || $reg['test'] != 1) {
-                ajaxSuccess(array('status'=>'error','data'=>'Something thinks this is a real charge method'));
-                exit();
-            }
             require_once("cc_test.php");
             break;
         case 'bypass':
