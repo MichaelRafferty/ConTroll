@@ -26,7 +26,7 @@ function vendor_page_init($title) {
 $cdn = getTabulatorIncludes();
 $tabbs5=$cdn['tabbs5'];
 $tabcss=$cdn['tabcss'];
-$tabjs=$cdn['tabbs5'];
+$tabjs=$cdn['tabjs'];
 echo <<<EOF
 <!DOCTYPE html>
 <html lang="en">
