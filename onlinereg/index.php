@@ -184,8 +184,8 @@ $onsitesale = $startdate->format("l, F j");
                             </div>
                             <div class='row'>
                                 <div class='col-sm-12 ms-0 me-0 p-0'>
-                                    <label for='legalname' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
-                                    <input class='form-control-sm' type='text' name='legalname' id='legalname' size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix' tabindex='10'/>
+                                    <label for='legalname' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: (if different than above) This will only be visible to Registration staff for checking against your ID.</label><br/>
+                                    <input class='form-control-sm' type='text' name='legalname' id='legalname' size=64 maxlength='64' placeholder='legal name if different than above' tabindex='10'/>
                                 </div>
                             </div>
                             <div class="row">
