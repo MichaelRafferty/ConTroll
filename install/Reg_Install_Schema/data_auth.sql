@@ -17,8 +17,8 @@ INSERT INTO `auth` VALUES
     (3,'people','Y','People'),
     (5,'registration','Y','Registration'),
     (6,'reg_admin','Y','Badge List'),
-    (7,'artist','Y','Artist'),
-    (8,'artshow','Y','Artshow'),
+    (7,'artist','N','Artist'),
+    (8,'artshow','N','Artshow'),
     (9,'badge','Y','Free Badges'),
     (10,'atcon','N','N'),
     (11,'art_control','Y','Art Control'),
@@ -30,9 +30,7 @@ INSERT INTO `auth` VALUES
     (17,'atcon_checkin','N','N'),
     (18,'atcon_register','N','N'),
     (19,'coupon','Y','Coupon'),
-    (32,'vendor','Y','Vendor'),
+    (32,'vendor','Y','Exhibitors'),
     (999,'registration-old','Y','Old Reg');
 ALTER TABLE `auth` ENABLE KEYS ;
 UNLOCK TABLES;
-
-

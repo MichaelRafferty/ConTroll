@@ -11,6 +11,7 @@
 /reglogs/
 /scripts/
 /UserDoc/
+/apiDocs/
 
 # images directories not used by ConTroll
 /atcon/images/
