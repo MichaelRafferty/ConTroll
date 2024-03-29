@@ -452,11 +452,11 @@ class AuctionItemRegistration {
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
                 {title: 'id', field: 'id', visible: false},
-                {title: 'Item Num.', field: 'item_key', width: 10, headerSort: true, headerWordWrap: true},
-                {title: 'Title', field: 'title', width: 200, headerSort: true, headerFilter: true, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Material", field: "material", headerSort: true, headerFilter: true, width: 200, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Min. Bid", field: "min_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 50, editor: 'number', editorParams: {min: 1} },
-                {title: "Quick Sale", field: "sale_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 50, editor: 'number', editorParams: {min: 1} },
+                {title: 'Item Num.', field: 'item_key'},
+                {title: 'Title', field: 'title', editor: 'input', editorParams: {maxLength: "64"} },
+                {title: "Material", field: "material", editor: 'input', editorParams: {maxLength: "64"} },
+                {title: "Min. Bid", field: "min_price", editor: 'number', editorParams: {min: 1} },
+                {title: "Quick Sale", field: "sale_price", editor: 'number', editorParams: {min: 1} },
                 {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
             ]
@@ -483,11 +483,11 @@ class AuctionItemRegistration {
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
                 {title: 'id', field: 'id', visible: false},
-                {title: 'Item Num.', field: 'item_key', width: 10, headerSort: true, headerWordWrap: true},
-                {title: 'Title', field: 'title', width: 200, headerSort: true, headerFilter: true, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Material", field: "material", headerSort: true, headerFilter: true, width: 200, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Quantity", field: "original_qty", headerSort: true, headerFilter: true, headerWordWrap: true, width: 20, editor: 'number', editorParams: {min: 1} },
-                {title: "Quick Sale", field: "sale_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 20, editor: 'number', editorParams: {min: 1} },
+                {title: 'Item Num.', field: 'item_key'},
+                {title: 'Title', field: 'title', editor: 'input', editorParams: {maxLength: "64"} },
+                {title: "Material", field: "material", editor: 'input', editorParams: {maxLength: "64"} },
+                {title: "Quantity", field: "original_qty", editor: 'number', editorParams: {min: 1} },
+                {title: "Quick Sale", field: "sale_price", editor: 'number', editorParams: {min: 1} },
                 {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
             ]
@@ -514,10 +514,10 @@ class AuctionItemRegistration {
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
                 {title: 'id', field: 'id', visible: false},
-                {title: 'Item Num.', field: 'item_key', width: 10, headerSort: true, headerWordWrap: true},
-                {title: 'Title', field: 'title', width: 200, headerSort: true, headerFilter: true, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Material", field: "material", headerSort: true, headerFilter: true, width: 200, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Insurance Price", field: "sale_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 20, editor: 'number', editorParams: {min: 1} },
+                {title: 'Item Num.', field: 'item_key'},
+                {title: 'Title', field: 'title', editor: 'input', editorParams: {maxLength: "64"} },
+                {title: "Material", field: "material", editor: 'input', editorParams: {maxLength: "64"} },
+                {title: "Insurance Price", field: "sale_price", editor: 'number', editorParams: {min: 1} },
                 {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
             ]
