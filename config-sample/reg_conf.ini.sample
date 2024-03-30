@@ -84,7 +84,13 @@ vendorsite="http://vendor"
 vendorSignupAddltext=""
 artistsite="http://artist"
 artist="artists@???"
-renderer='http://localhost:3000' ; remote renderer for bidsheets
+;artistOnSiteInventoryReqHTML, artistOnSiteInventoryReqText, artistMailInInventoryReqHTML, artistMailInInventoryReqText are the file names for the contents for the artist inventory request emails
+#artistOnSiteInventoryReqHTML=
+#artistOnSiteInventoryReqText=
+#artistMailInInventoryReqHTML=
+#artistMailInInventoryReqText=
+# remote renderer is only supported for Balticon, being replaced with FPDF
+#renderer='http://localhost:3000' ; remote renderer for bidsheets
 # pathto file in config any additional text you wish to add to explain the signup form for artist portal
 artistSignupAddltext=""
 taxidlabel="NJ Sales Tax ID"
