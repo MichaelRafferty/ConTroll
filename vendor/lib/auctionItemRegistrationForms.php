@@ -59,6 +59,19 @@ function draw_itemRegistrationModal($portalType = '') {
                                 <button id="nfs-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.saveNfs(); return false;" disabled>Save Changes</button>
                             </div>
                         </div>
+                        <hr/>
+                        <div class='row'>
+                            <div class='col-sm-auto'>
+                            <h4>Buttons to print out bidsheets and control sheets.</h4>
+                            </div>
+                        </div>
+                        <div class='row'>
+                            <div class='col-sm-auto' id='print_buttons'>
+                                <button id='print_bidsheet' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('bidsheets'); return false;">Print Bidsheets</button>
+                                <button id='print_printshop' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('printshop'); return false;">Print Sales Tags</button>
+                                <button id='print_controlsheet' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('control'); return false;">Print Control Sheet</button>
+                            </div>
+                        </div>
                         <div class='row' id='ir_message_div'></div>
                     </div>
                 </div>
