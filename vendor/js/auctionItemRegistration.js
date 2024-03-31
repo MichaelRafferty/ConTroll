@@ -43,7 +43,64 @@ class AuctionItemRegistration {
     };
 
 
-    
+    printSheets(type) {
+        var _this = this;
+        var script = 'scripts/bidsheets.php';
+
+        $.ajax({
+            url: script,
+            method: 'GET',
+            data: {type: type, region: this.#region},
+            xhrFields: {
+                responseType: 'blob' // to avoid binary data being mangled on charset conversion
+            },
+            success: function (data, textSatus, xhr) {
+                if(xhr.getResponseHeader('Content-Type') == 'application/pdf') {
+                    var disposition = xhr.getResponseHeader('Content-Disposition');
+                    var filename = "";
+                    if (disposition && disposition.indexOf('attachment') !== -1) {
+                        var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                        var matches = filenameRegex.exec(disposition);
+                        if (matches != null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+                    }
+                    var URL = window.URL || window.webkitURL;
+                    var downloadUrl = URL.createObjectURL(data);
+
+                    if (filename) {
+                        // use HTML5 a[download] attribute to specify filename
+                        var a = document.createElement("a");
+                        // safari doesn't support this yet
+                        if (typeof a.download === 'undefined') {
+                            window.location.href = downloadUrl;
+                        } else {
+                            a.href = downloadUrl;
+                            a.download = filename;
+                            document.body.appendChild(a);
+                            a.click();
+                        }
+                    } else {
+                        window.location.href = downloadUrl;
+                    }
+
+                    setTimeout(function () { URL.revokeObjectURL(downloadUrl); }, 100);
+                } else {
+                    if (data['error']) {
+                        show_message(data['error'], 'error', 'ir_message_div');
+                        return false;
+                    }
+                    if (data['num_rows'] == 0) {
+                        show_message(data['status'], 'warning', 'ir_message_div');
+                    }
+                    console.log(data);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                show_message("ERROR in " + script + ": " + textStatus, 'error', 'ir_message_div');
+                return false;
+            }
+        });
+    }
+
     open(region) {
         clear_message('ir_message_div');
         this.#region = region;

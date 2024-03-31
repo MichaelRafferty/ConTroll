@@ -83,6 +83,7 @@ vendorsite="http://vendor"
 vendorSignupAddltext=""
 artistsite="http://artist"
 artist="artists@???"
+renderer='http://localhost:3000' ; remote renderer for bidsheets
 # pathto file in config any additional text you wish to add to explain the signup form for artist portal
 artistSignupAddltext=""
 taxidlabel="NJ Sales Tax ID"
