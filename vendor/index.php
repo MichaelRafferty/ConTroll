@@ -188,9 +188,9 @@ SELECT e.id, e.exhibitorName, e.exhibitorEmail as eEmail, e.password AS ePasswor
        ey.contactEmail AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
-WHERE e.exhibitorEmail=? OR ey.contactEmail = ?;
+WHERE (e.exhibitorEmail=? OR ey.contactEmail = ?) AND conid = ?;
 EOS;
-    $loginR = dbSafeQuery($loginQ, 'ss', array($login, $login));
+    $loginR = dbSafeQuery($loginQ, 'ssi', array($login, $login, $conid));
     // find out how many match
     $matches = array();
     while ($result = $loginR->fetch_assoc()) { // check exhibitor email/password first

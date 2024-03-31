@@ -32,7 +32,7 @@ if($vendor == false) {
 }
 
 $itemQ = <<<EOS
-SELECT i.id, item_key, title, material, type, original_qty, min_price, sale_price, 0 as uses 
+SELECT i.id, item_key, title, material, type, original_qty, min_price, sale_price, status, 0 as uses 
 FROM artItems i
     JOIN exhibitorRegionYears eRY on eRY.id=i.exhibitorRegionYearId
 WHERE eRY.exhibitorYearId=? and eRY.exhibitsRegionYearId = ?; 
