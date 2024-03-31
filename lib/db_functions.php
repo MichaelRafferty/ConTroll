@@ -673,7 +673,9 @@ function fetch_safe_array($res)
 function get_conf($name)
 {
     global $db_ini;
-    return $db_ini[$name];
+    if (array_key_exists($name, $db_ini))
+        return $db_ini[$name];
+    return null;
 }
 
 function get_con()

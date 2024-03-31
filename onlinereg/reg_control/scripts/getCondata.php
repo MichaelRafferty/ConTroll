@@ -116,7 +116,7 @@ EOS;
 
 if ($type == 'all' || $type = 'memlist') {
     $memSQL = <<<EOS
-SELECT m.id,
+SELECT m.id, m.id AS memlistkey,
     m.conid,
     m.sort_order,
     m.memCategory,

@@ -154,6 +154,15 @@ page_init($page,
                             <td><button id='useNewName' onclick="setField('Name', 'User');">&lt;</button></td>
                             <td id='conflictFormUserName'>User Input</td>
                         </tr>
+                        <tr><th>Legal</th>
+                            <td id='conflictFormDbLegalName'>dbLegalName</td>
+                            <td class='right'><button id='useDbLegalName' onclick="setField('LegalName', 'Db');">&gt;</button></td>
+                            <td>
+                                <input id='conflictFormNewLegalName' type='text' name='legalName'/>
+                            </td>
+                            <td><button id='useNewLegalName' onclick="setField('LegalName', 'User');">&lt;</button></td>
+                            <td id='conflictFormUserLegalName'>User Input</td>
+                        </tr>
                         <tr><th>Badge</th>
                             <td id='conflictFormDbBadge'>dbBadge</td>
                             <td class='right'><button id='useDbBadge' onclick="setField('Badge', 'Db');">&gt;</button></td>
@@ -304,6 +313,13 @@ page_init($page,
                             <td class='formfield'><input type="text" name="suffix" size=4 maxlength=4/></td>
                         </tr>
                         <tr>
+                            <td class='formlabel'>Legal Name</td>
+                            <td colspan=4></td>
+                        </tr>
+                        <tr>
+                            <td class='formfield' colspan="5"><input type='text' name='legalName' size=80 maxlength="128"/></td>
+                        </tr>
+                        <tr>
                             <td class='formlabel'>Badge Name</td>
                             <td colspan=4></td>
                         </tr>
@@ -333,7 +349,7 @@ page_init($page,
                         </tr>
                         <tr>
                             <td class='formfield' colspan=2><input type="text" name="city" size=40/></td>
-                            <td class='formfield'><input type="text" name="state" size=2 maxlength=2/></td>
+                            <td class='formfield'><input type="text" name="state" size=10 maxlength=16/></td>
                             <td class='formfield'><input type="text" name="zip" size=5 maxlength=10/></td>
                             <td></td>
                         </tr>
@@ -435,6 +451,13 @@ page_init($page,
                             <td class='formfield'><input type="text" name="suffix" size=4 maxlength=4/></td>
                         </tr>
                         <tr>
+                            <td class='formlabel'>Legal Name</td>
+                            <td colspan=4></td>
+                        </tr>
+                        <tr>
+                            <td class='formfield' colspan='5'><input type='text' name='legalName' size=80 maxlength='128'/></td>
+                        </tr>
+                        <tr>
                             <td class='formlabel'>Badge Name</td>
                         </tr>
                         <tr>
@@ -461,7 +484,7 @@ page_init($page,
                         </tr>
                         <tr>
                             <td class='formfield' colspan=2><input type="text" name="city" size=40/></td>
-                            <td class='formfield'><input type="text" name="state" size=2 maxlength=2/></td>
+                            <td class='formfield'><input type="text" name="state" size=10 maxlength=16/></td>
                             <td class='formfield'><input type="text" name="zip" size=5 maxlength=10/></td>
                         </tr>
                         <tr>

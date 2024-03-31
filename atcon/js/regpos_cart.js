@@ -25,6 +25,7 @@ class regpos_cart {
     #cart_perinfo = [];
     #cart_perinfo_map = new map();
     #cart_pmt = [];
+    #days = ['sun','mon','tue','wed','thu','fri','sat'];
 
 // cart html items
     #membership_select = null;
@@ -56,7 +57,7 @@ class regpos_cart {
         this.#membership_select = membership_select;
         this.#membership_selectlist = membership_selectlist;
         // cart is only place to use upgrade_select, so build it.
-        this.#upgrade_select = [];
+        this.#upgrade_select = {};
 
         var row = null;
         // upgrade_select
@@ -69,7 +70,13 @@ class regpos_cart {
             var day = label.replace(/.*upgrade +(...).*/i, '$1').toLowerCase();
             if (day.length > 3)
                 day = (match[row]['label']).toLowerCase().substring(0, 3);
-            this.#upgrade_select[day] = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
+            if (!this.#days.includes(day)) {
+                day = 'a' + String(nonday).padStart(2, '0');
+                nonday++;
+            }
+            if (!this.#upgrade_select[day])
+                this.#upgrade_select[day] = ''
+            this.#upgrade_select[day] = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + ' (' + match[row]['enddate'] + ')' + "</option>\n";
         }
 
         // cart is only place to use yearahead_select, so build it.
@@ -331,6 +338,7 @@ class regpos_cart {
         add_middle_field.value = cartrow['middle_name'];
         add_last_field.value = cartrow['last_name'];
         add_suffix_field.value = cartrow['suffix'];
+        add_legalName_field.value = cartrow['legalName'];
         add_addr1_field.value = cartrow['address_1'];
         add_addr2_field.value = cartrow['address_2'];
         add_city_field.value = cartrow['city'];
@@ -372,6 +380,7 @@ class regpos_cart {
         cart_row['middle_name'] = row['middle_name'];
         cart_row['last_name'] = row['last_name'];
         cart_row['suffix'] = row['suffix'];
+        cart_row['legalName'] = row['legalName'];
         cart_row['badge_name'] = row['badge_name'];
         cart_row['address_1'] = row['address_1'];
         cart_row['address_2'] = row['address_2'];
@@ -591,10 +600,7 @@ class regpos_cart {
 // format all of the memberships for one record in the cart
     #drawCartRow(rownum) {
         var row = this.#cart_perinfo[rownum];
-        var membername = (row['first_name'] + ' ' + row['middle_name'] + ' ' + row['last_name']).trim();
-        if (row['suffix'] != '') {
-            membername += ', ' + row['suffix'];
-        }
+        var membername = ((row['first_name'] + ' ' + row['middle_name']).trim() + ' ' + row['last_name'] + ' ' + row['suffix']).trim();
         var mrow;
         var rowlabel;
         var membership_found = false;
@@ -631,12 +637,12 @@ class regpos_cart {
                 (category == 'standard' || category == 'yearahead') && memType == 'full';
             col1 = '';
             if ((allow_delete || allow_delete_priv) && !this.#freeze_cart) {
-                col1 += '<button type = "button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
+                col1 += '<button type = "button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
                     mrow['index'] + ')" >X</button >';
             }
             // C = change membership type
             if (allow_change_priv && !this.#freeze_cart) {
-                col1 += '<button type = "button" class="btn btn-small btn-warning pt-0 pb-0 ps-1 pe-1 m-0" onclick = "change_membership(' +
+                col1 += '<button type = "button" class="btn btn-sm btn-warning pt-0 pb-0 ps-1 pe-1 m-0" onclick = "change_membership(' +
                     mrow['index'] + ')" >C</button >';
             }
 
@@ -653,7 +659,7 @@ class regpos_cart {
                 if (notes_count > 0) {
                     btntext = 'Notes:' + notes_count.toString();
                 }
-                label += ' <button type = "button" class="btn btn-small ' + btncolor + ' pt-0 pb-0 ps-1 pe-1 m-0" onclick = " +show_reg_note(' +
+                label += ' <button type = "button" class="btn btn-sm ' + btncolor + ' pt-0 pb-0 ps-1 pe-1 m-0" onclick = " +show_reg_note(' +
                     mrow['index'] + ', ' + notes_count + ')" style=" --bs-btn-font-size:75%;">' + btntext + '</button >';
             }
 
@@ -762,8 +768,8 @@ class regpos_cart {
         rowhtml += membername + '</div>';
         if (!this.#freeze_cart) {
             rowhtml += `
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="edit_from_cart(` + perid + `)">Edit</button></div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="remove_from_cart(` + perid + `)">Remove</button></div>
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="edit_from_cart(` + perid + `)">Edit</button></div>
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="remove_from_cart(` + perid + `)">Remove</button></div>
 `;
         }
         rowhtml += '</div>'; // end of member name row
@@ -819,7 +825,7 @@ class regpos_cart {
 ` + this.#membership_select + `
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-madd-" + rownum + `')">Add</button>
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-madd-" + rownum + `')">Add</button>
         </div>
     </div>`;
         }
@@ -849,7 +855,7 @@ class regpos_cart {
             rowhtml += `
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mupg-" + rownum + `')">Add</button></div >
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mupg-" + rownum + `')">Add</button></div >
 </div>
 `;
         }
@@ -870,7 +876,7 @@ class regpos_cart {
 ` + this.#yearahead_select + `
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mya-" + rownum + `')">Add</button></div >
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mya-" + rownum + `')">Add</button></div >
 </div>
 `;
             }
@@ -891,7 +897,7 @@ class regpos_cart {
 ` + this.#addon_select + `
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-small btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-maddon-" + rownum + `')">Add</button></div >
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-maddon-" + rownum + `')">Add</button></div >
 </div>
 `;
             }
@@ -1017,7 +1023,9 @@ class regpos_cart {
         var fieldno;
         var mrow;
         var field;
+        var tabindex = 0;
         for (rownum in this.#cart_perinfo) {
+            tabindex += 100;
             row = this.#cart_perinfo[rownum];
             mrow = find_primary_membership_by_perid(this.#cart_membership, row['perid']);
             // look up missing fields
@@ -1056,69 +1064,71 @@ class regpos_cart {
     <input type="hidden" id='c` + rownum + `-index' value="` + row['index'] + `"/>
     <div class="row mt-1">
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-first_name" id='c` + rownum + `-first_name' size="25" maxlength="32" placeholder="First Name" tabindex="1" value="` + row['first_name'] +
-                '" style="background-color:' + colors.get('first_name') + ';' +
-                `"/>
+            <input type="text" name="c` + rownum + `-first_name" id='c` + rownum + `-first_name' size="25" maxlength="32" placeholder="First Name" tabindex="` + String(tabindex + 2) +
+                '" value="' + row['first_name'] + '" style="background-color:' + colors.get('first_name') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-middle_name" id='c` + rownum + `-middle_name' size="6" maxlength="32" placeholder="Middle" tabindex="2" value="` + row['middle_name'] + `"/>
+            <input type="text" name="c` + rownum + `-middle_name" id='c` + rownum + `-middle_name' size="6" maxlength="32" placeholder="Middle" tabindex="` + String(tabindex + 4) +
+                `" value="` + row['middle_name'] + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-last_name" id='c` + rownum + `-last_name' size="25" maxlength="32" placeholder="Last Name" tabindex="3" value="` + row['last_name'] +
-                '" style="background-color:' + colors.get('last_name') + ';' +
-                `"/>
+            <input type="text" name="c` + rownum + `-last_name" id='c` + rownum + `-last_name' size="25" maxlength="32" placeholder="Last Name" tabindex="` + String(tabindex + 6) +
+                `" value="` + row['last_name'] + '" style="background-color:' + colors.get('last_name') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-0 p-0">
-            <input type="text" name="c` + rownum + `-suffix" id='c` + rownum + `-suffix' size="6" maxlength="4" placeholder="Suffix" tabindex="4" value="` + row['suffix'] + `"/>
+            <input type="text" name="c` + rownum + `-suffix" id='c` + rownum + `-suffix' size="6" maxlength="4" placeholder="Suffix" tabindex="` + String(tabindex + 8) +
+                `" value="` + row['suffix'] + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
-            <input type="text" name='c` + rownum + `-badge_name' id='c` + rownum + `-badge_name' size=64 maxlength="64" placeholder="Badgename: defaults to first and last name" tabindex='5' value="` + row['badge_name'] + `"/>
+            <input type="text" name='c` + rownum + `-legalName' id='c` + rownum + `-legalName' size=80 maxlength="128" placeholder="Legal Name: defaults to first middle last suffix" tabindex="` +
+                String(tabindex + 10) +  '" value="' + row['legalName'] + `"/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-auto ms-0 me-0 p-0">
+            <input type="text" name='c` + rownum + `-badge_name' id='c` + rownum + `-badge_name' size=64 maxlength="64" placeholder="Badgename: defaults to first and last name" tabindex="` +
+                String(tabindex + 12) + '" value="' + row['badge_name'] + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name='c` + rownum + `-email_addr' id='c` + rownum + `-email_addr' size=64 maxlength="64" placeholder="Email Address" tabindex='5'  value="` + row['email_addr'] +
-                '" style="background-color:' + colors.get('email_addr') + ';' +
-                `"/>
+            <input type="text" name='c` + rownum + `-email_addr' id='c` + rownum + `-email_addr' size=64 maxlength="254" placeholder="Email Address" tabindex="` + String(tabindex + 14) +
+                '"  value="' + row['email_addr'] + '" style="background-color:' + colors.get('email_addr') + ';' + `"/>
         </div>
          <div class="col-sm-auto ms-0 me-0 p-0">
-            <input type="text" name='c` + rownum + `-phone' id='c` + rownum + `-phone' size=15 maxlength="15" placeholder="Phone Number" tabindex='5'  value="` + row['phone'] +
-                '" style="background-color:' + colors.get('phone') + ';' +
-                `"/>
+            <input type="text" name='c` + rownum + `-phone' id='c` + rownum + `-phone' size=15 maxlength="15" placeholder="Phone Number" tabindex="` + String(tabindex + 16) +
+            '" value="' + row['phone'] + '" style="background-color:' + colors.get('phone') + ';' + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
-            <input type="text" name='c` + rownum + `-address_1' id='c` + rownum + `-address_1' size=64 maxlength="64" placeholder="Street Address" tabindex='5'  value="` + row['address_1'] +
-                '" style="background-color:' + colors.get('address_1') + ';' +
-                `"/>
+            <input type="text" name='c` + rownum + `-address_1' id='c` + rownum + `-address_1' size=64 maxlength="64" placeholder="Street Address" tabindex="` + String(tabindex + 18) +
+            '"  value="' + row['address_1'] + '" style="background-color:' + colors.get('address_1') + ';' + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
-            <input type="text" name='c` + rownum + `-address_2' id='c` + rownum + `-address_2' size=64 maxlength="64" placeholder="2nd line of Address (if needed, such as company)" tabindex='5'  value="` + row['address_2'] + `"/>
+            <input type="text" name='c` + rownum + `-address_2' id='c` + rownum + `-address_2' size=64 maxlength="64" placeholder="2nd line of Address (if needed, such as company)" tabindex="` +
+                String(tabindex + 20) + '"  value="' + row['address_2'] + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-city" id='c` + rownum + `-city' size="22" maxlength="32" placeholder="City" tabindex="7" value="` + row['city'] +
-                '" style="background-color:' + colors.get('city') + ';' +
-                `"/>
+            <input type="text" name="c` + rownum + `-city" id='c` + rownum + `-city' size="22" maxlength="32" placeholder="City" tabindex="` + String(tabindex + 22) +
+                '" value="' + row['city'] + '" style="background-color:' + colors.get('city') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-state" id='c` + rownum + `-state' size="2" maxlength="2" placeholder="ST" tabindex="8" value="` + row['state'] +
-                '" style="background-color:' + colors.get('state') + ';' +
-                `"/>
+            <input type="text" name="c` + rownum + `-state" id='c` + rownum + `-state' size="10" maxlength="16" placeholder="ST" tabindex="` + String(tabindex + 24) +
+                '" value="' + row['state'] + '" style="background-color:' + colors.get('state') + ';' +`"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-postal_code" id='c` + rownum + `-postal_code' size="10" maxlength="10" placeholder="Postal Code" tabindex="9" value="` + row['postal_code'] +
-                '" style="background-color:' + colors.get('postal_code') + ';' +
-                `"/>
+            <input type="text" name="c` + rownum + `-postal_code" id='c` + rownum + `-postal_code' size="10" maxlength="10" placeholder="Postal Code" tabindex="` + String(tabindex + 26) +
+                '" value="' + row['postal_code'] + '" style="background-color:' + colors.get('postal_code') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-0 p-0">
-            <select name='c` + rownum + `-country' id='c` + rownum + `-country' tabindex='10'>
+            <select name='c` + rownum + `-country' id='c` + rownum + `-country' tabindex="` + String(tabindex + 28) + `">
                 ` + country_select + `
             </select>
         </div>
@@ -1126,14 +1136,14 @@ class regpos_cart {
     <div class="row mb-4">
         <div class="col-sm-auto ms-0 me-2 p-0">Share Reg?</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <select name='c` + rownum + `-share_reg_ok' id='c` + rownum + `-share_reg_ok' tabindex='11'>
+            <select name='c` + rownum + `-share_reg_ok' id='c` + rownum + `-share_reg_ok' tabindex="` + String(tabindex + 30) + `">
                <option value="Y" ` + (row['share_reg_ok'] == 'Y' ? 'selected' : '') + `>Y</option>
                <option value="N" ` + (row['share_reg_ok'] == 'N' ? 'selected' : '') + `>N</option>
             </select>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">Contact OK?</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <select name='c` + rownum + `-contact_ok' id='c` + rownum + `-contact_ok' tabindex='11'>
+            <select name='c` + rownum + `-contact_ok' id='c` + rownum + `-contact_ok' tabindex="` + String(tabindex + 32) + `">
                 <option value="Y" ` + (row['contact_ok'] == 'Y' ? 'selected' : '') + `>Y</option>
                 <option value="N" ` + (row['contact_ok'] == 'N' ? 'selected' : '') + `>N</option>
             </select>
@@ -1145,8 +1155,8 @@ class regpos_cart {
     <div class="row mt-2">
         <div class="col-sm-1 m-0 p-0">&nbsp;</div>
         <div class="col-sm-auto m-0 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="review-btn-update" onclick="review_update();">Update All</button>
-            <button class="btn btn-primary btn-small" type="button" id="review-btn-nochanges" onclick="review_nochanges();">No Changes</button>
+            <button class="btn btn-primary btn-sm" type="button" id="review-btn-update" onclick="review_update();">Update All</button>
+            <button class="btn btn-primary btn-sm" type="button" id="review-btn-nochanges" onclick="review_nochanges();">No Changes</button>
         </div>
     </div>
     <div class="row">
@@ -1259,7 +1269,7 @@ class regpos_cart {
             print_html += `
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-small" type="button" id="pay-print-` + this.#cart_perinfo[rownum]['index'] + `" name="print_btn" onclick="print_badge(` + crow['index'] + `);">Print</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-print-` + this.#cart_perinfo[rownum]['index'] + `" name="print_btn" onclick="print_badge(` + crow['index'] + `);">Print</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">            
             <span class="text-bg-success"> Membership: ` + this.#cart_membership[mrow]['label'] + `</span> (Times Printed: ` +

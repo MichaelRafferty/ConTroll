@@ -38,9 +38,19 @@ function cc_charge_purchase($results, $ccauth) {
         $user_id = null;
     }
 
+    // set category based on if exhibits is a portal type
+    if (array_key_exists('exhibits', $results)) {
+        if ($results['exhibits'] == 'vendor')
+            $category = 'vendor';
+        else
+            $category = 'artshow';
+    } else {
+        $category = 'reg';
+    }
+
     $rtn = array();
     $rtn['amount'] = $results['total'];
-    $rtn['txnfields'] = array('transid','type','category','description','source','amount',
+    $rtn['txnfields'] = array('transid','type',$category,'description','source','amount',
         'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id','cashier','userid');
     $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd',
             's', 's', 's', 's', 's', 's', 's', 's','i','i');

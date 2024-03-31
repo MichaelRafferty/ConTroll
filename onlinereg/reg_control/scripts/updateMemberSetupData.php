@@ -37,7 +37,7 @@ try {
     $msg = "Caught exception on json_decode: " . $e->getMessage() . PHP_EOL . "JSON error: " . json_last_error_msg() . PHP_EOL;
     $response['error'] = $msg;
     error_log($msg);
-    ajaxSuccess(response);
+    ajaxSuccess($response);
     exit();
 }
 //$data = $_POST['tabledata'];
@@ -52,7 +52,7 @@ $first = true;
 // compute delete keys in the array and redo the sort order
 $sort_order = 10;
 foreach ($data as $index => $row ) {
-    if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1) {
+    if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists($keyfield, $row)) {
         $delete_keys .= ($first ? "'" : ",'") . sql_safe($row[$keyfield]) . "'";
         $first = false;
     } else {
@@ -68,7 +68,7 @@ foreach ($data as $index => $row ) {
     }
 }
 
-web_error_log("Keys to delete = ($delete_keys)");
+//web_error_log("Keys to delete = ($delete_keys)");
 switch ($action) {
     case 'nextage':
         $year = $nextconid;
@@ -87,7 +87,7 @@ EOS;
         $updsql = <<<EOS
 UPDATE ageList
 SET ageType = ?, label = ?, shortname = ?, badgeFlag = ?, sortorder = ?
-WHERE ageType = ? and conid = ?
+WHERE ageType = ? and conid = ?;
 EOS;
 
         // now the updates, do the updates first in case we need to insert a new row with the same older key
@@ -111,7 +111,7 @@ EOS;
             if (!array_key_exists('agekey', $row)) { // if key is not there, its an insert
                 $numrows = dbSafeInsert($inssql, 'issssi', array($year, $row['ageType'], $row['label'], $row['shortname'], $row['badgeFlag'], $row['sortorder']));
                 if ($numrows !== false)
-                    $inserted++
+                    $inserted++;
             }
         }
         break;
@@ -130,7 +130,7 @@ EOS;
         $updsql = <<<EOS
 UPDATE memTypes
 SET  memType = ?, active=?, sortorder=?
-WHERE memType = ?
+WHERE memType = ?;
 EOS;
         // now the updates, do the updates first in case we need to insert a new row with the same older key
         foreach ($data as $row) {
@@ -154,7 +154,7 @@ EOS;
             if (!array_key_exists('memtypekey', $row)) { // if key is not there, its an insert
                 $numrows = dbSafeInsert($inssql, 'ssi', array($row['memType'], $row['active'], $row['sortorder']));
                 if ($numrows !== false)
-                    $inserted++
+                    $inserted++;
             }
         }
         break;
@@ -198,7 +198,7 @@ EOS;
             if (!array_key_exists('memcatkey', $row)) { // if key is not there, its an insert
                 $numrows = dbSafeInsert($inssql, 'sssi', array($row['memCategory'], $row['badgeLabel'], $row['active'], $row['sortorder']));
                 if ($numrows !== false)
-                    $inserted++
+                    $inserted++;
             }
         }
         break;

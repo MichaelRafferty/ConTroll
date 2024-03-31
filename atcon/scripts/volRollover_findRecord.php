@@ -36,6 +36,8 @@ $name_search = $_POST['name_search'];
 $rollover_memId = $_POST['rollover_memId'];
 $response['name_search'] = $name_search;
 
+$response['elig'] = $con['rollover_eligible'];
+
 $limit = 99999999;
 if (is_numeric($name_search)) {
     //
@@ -86,7 +88,9 @@ JOIN reg r ON (r.perid = p.id)
 LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ?)
 JOIN memLabel m ON (r.memId = m.id)
 LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id)
-WHERE r.conid = ? AND (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
+WHERE r.conid = ? AND (
+    LOWER(TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(first_name, ''), IFNULL(middle_name, ''))), IFNULL(last_name, ''))))  LIKE ? OR 
+    LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
 ORDER BY last_name, first_name
 LIMIT $limit;
 EOS;

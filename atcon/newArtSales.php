@@ -19,11 +19,11 @@ if (!check_atcon('artsales', $conid)) {
 }
 
 page_init($page, $tab,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css',
-                 // 'https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_bootstrap5.min.css',
+    /* css */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
+                 // 'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
 		    'css/atcon.css','css/registration.css'),
     /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js','js/atcon.js','js/newArtSales.js')
+                    'https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js','js/atcon.js','js/newArtSales.js')
     );
 
 db_connect();
@@ -99,7 +99,7 @@ echo $conid;
                                 <div class="col-sm-4"> <?php # go anon ?>
                                 </div>
                                 <div class="col-sm-8">
-                                    <button type="button" class="btn btn-small btn-primary" id="find_search_btn" name="find_btn" onclick="find_record('search');">Find Record</button>
+                                    <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" name="find_btn" onclick="find_record('search');">Find Record</button>
                                 </div>
                             </div>
                             <div class="row mt-3">
@@ -154,7 +154,7 @@ while($artist = fetch_safe_assoc($artistR)) {
                             </div>
                             <div class="row mt-3">
                                 <div class="col-sm-4">
-                                    <button type="button" class="btn btn-small btn-primary" id="find_search_btn" onclick="find_item('search');">Find Item</button>
+                                    <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" onclick="find_item('search');">Find Item</button>
                                 </div>
                             </div>
                             <div class="row mt-3">
@@ -182,11 +182,11 @@ while($artist = fetch_safe_assoc($artistR)) {
             <div id="cart"></div>
             <div class="row"> <!--- button row -->
                 <div class="col-sm-12 mt-3">
-                    <button type="button" class="btn btn-success btn-small" id="inventory_btn" onclick="inventory();" hidden>Update Inventory</button>
-                    <button type="button" class="btn btn-success btn-small" id="location_change_btn" onclick="change_locs();" hidden>Set Changed Locations</button>
-                    <button type="button" class="btn btn-warning btn-small" id="startover_btn" onclick="start_over();">Start Over</button>
-                    <button type="button" class="btn btn-warning btn-small" id="void_btn" onclick="void_trans();" hidden>Void</button>
-                    <button type="button" class="btn btn-primary btn-small" id="next_btn" onclick="start_over(0);" hidden>Next Customer</button>
+                    <button type="button" class="btn btn-success btn-sm" id="inventory_btn" onclick="inventory();" hidden>Update Inventory</button>
+                    <button type="button" class="btn btn-success btn-sm" id="location_change_btn" onclick="change_locs();" hidden>Set Changed Locations</button>
+                    <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="start_over();">Start Over</button>
+                    <button type="button" class="btn btn-warning btn-sm" id="void_btn" onclick="void_trans();" hidden>Void</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="start_over(0);" hidden>Next Customer</button>
                 </div>
             </div>
         </div>       

@@ -141,7 +141,7 @@ class Coupon {
         if (this.#curCoupon['memId'] == null)
             return null;
 
-        return this.#curCoupon['memGroup'];
+        return this.#curCoupon['memId'];
     }
 
     // coupon modal area functions
@@ -257,7 +257,7 @@ class Coupon {
                 var html = '';
                 for (var row in mtypes) {
                     var mrow = mtypes[row];
-                    html += '<option value="' + mrow['memGroup'] + '">' + mrow['label'] + "</option>\n";
+                    html += '<option value="' + mrow['id'] + '">' + mrow['label'] + "</option>\n";
                 }
                 mlist.innerHTML = html;
             }
@@ -308,9 +308,19 @@ class Coupon {
 
         if (this.#curCoupon['couponType'] == '$mem' || this.#curCoupon['couponType'] == '%mem') {
             html += "<li>This coupon only applies to memberships, not add-ons</li>";
+            if (this.#curCoupon['couponType'] == '$mem') {
+                html += "<li>This coupon provides a $" + Number(this.#curCoupon['discount']).toFixed(2) + " discount on primary memberships.</li>";
+            } else {
+                html += "<li>This coupon provides a " + String(this.#curCoupon['discount']) + "% discount on primary memberships.</li>";
+            }
         }
         if (this.#curCoupon['couponType'] == '$off' || this.#curCoupon['couponType'] == '%off') {
             html += "<li>This coupon only applies to the cost of memberships in the cart, not add-ons</li>";
+            if (this.#curCoupon['couponType'] == '$off') {
+                html += "<li>This coupon provides a $" + Number(this.#curCoupon['discount']).toFixed(2) + " discount off the total of primary memberships in the cart.</li>";
+            } else {
+                html += "<li>This coupon provides a " + String(this.#curCoupon['discount']) + "% discount off the total of primary memberships in the cart.</li>";
+            }
         }
         if (this.#curCoupon['couponType'] == 'price') {
             label = this.#curCoupon['shortname'];
@@ -391,7 +401,7 @@ class Coupon {
             mbrtype['primary'] = primary;
             mbrtype['discount'] = Number(discount).toFixed(2);
             mbrtype['discountable'] = discount > 0;
-            var group = mbrtype['memGroup'];
+            var group = mbrtype['id'];
             shortnames[group] = mbrtype['shortname'];
         }
         return;

@@ -33,7 +33,7 @@ $artid = $art['id'];
 
 $itemQ = <<<EOS
 SELECT S.art_key, I.item_key, I.title, I.type, I.status, I.min_price, I.sale_price
-    , I.final_price, I.quantity, V.name, concat_ws(' ', P.first_name, P.last_name) as name
+    , I.final_price, I.quantity, V.name, TRIM(CONCAT_WS(' ', P.first_name, P.last_name)) as name
 FROM artItems I
 JOIN artshow S ON (S.id=I.artshow)
 JOIN artist A ON (A.id=S.artid)

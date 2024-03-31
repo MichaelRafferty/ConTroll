@@ -17,6 +17,7 @@ set_include_path(get_include_path(). $include_path_additions);
 
 require_once("vendor/autoload.php");
 require_once(__DIR__ . "/../../../lib/db_functions.php");
+require_once(__DIR__ . "/../../../lib/global.php");
 require_once(__DIR__ . "/../../../lib/ajax_functions.php");
 db_connect();
 
@@ -154,18 +155,17 @@ function page_init($title, $css, $js, $auth) {
 <head>
     <meta charset="utf-8"/>
     <title><?php echo $title . '--' . $db_ini['con']['conname']?> Reg</title>
-    <link href='/css/jquery-ui-1.13.1.css' rel='stylesheet' type='text/css' />
-    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN' crossorigin='anonymous'>
-
+    <link href='/csslib/jquery-ui-1.13.1.css' rel='stylesheet' type='text/css' />
+    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH' crossorigin='anonymous'>
     <?php
     if(isset($css) && $css != null) { foreach ($css as $sheet) {
         ?><link href='<?php echo $sheet; ?>' rel=stylesheet type='text/css' />
 <?php
     }}
-                                                 ?>
-    <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js' integrity='sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL' crossorigin='anonymous'></script>
-    <script type='text/javascript' src='/javascript/jquery-min-3.60.js'></script>
-    <script type='text/javascript' src='/javascript/jquery-ui.min-1.13.1.js'></script>
+?>
+    <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js' integrity='sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz' crossorigin='anonymous'></script>
+    <script type='text/javascript' src='/jslib/jquery-3.7.1.min.js'></script>
+    <script type='text/javascript' src='/jslib/jquery-ui.min-1.13.1.js'></script>
     <?php
     if(isset($js) && $js != null) { foreach ($js as $script) {
         ?><script src='<?php echo $script; ?>' 
@@ -271,9 +271,13 @@ function tab_bar($auth, $page) {
     <?php
 }
 
-function page_foot($title) {
+function page_foot($title = "") {
     ?>
-
+    </div>
+    <div class="container-fluid">
+        <div class='row mt-2'>
+            <?php drawBug(12); ?>
+        </div>
     </div>
 </body>
 </html>
@@ -498,4 +502,59 @@ function paymentDialogs() {
 <?php
 }
 
+// reg_ uses the atcon ajax renders
+function RenderErrorAjax($message_error)
+{
+    global $return500errors;
+    if (isset($return500errors) && $return500errors) {
+        Render500ErrorAjax($message_error);
+    } else {
+        echo "<div class=\"error-container alert\"><span>$message_error</span></div>\n";
+    }
+}
+
+function Render500ErrorAjax($message_error)
+{
+    // pages which know how to handle 500 errors are expected to format the error message appropriately.
+    header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
+    echo "$message_error";
+}
+
+// draw a bs5 modal popup for editing a field in tinymce
+function bs_tinymceModal() {
+    $html = <<<EOS
+    <div id='tinymce-modal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit field in TinyMCE' aria-hidden='true' style='--bs-modal-width: 80%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='editTitle'>Edit Field</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div id="editTable" hidden="hidden">editTable init</div>
+                <div id="editField" hidden="hidden">editField init</div>
+                <div id="editIndex" hidden="hidden">editIndex init</div>
+                <div id="editClass" hidden="hidden">editClass init</div>
+                <div class='container-fluid'>
+                    <div class="row">
+                        <div class="col-sm-12" id="editFieldName">Editing ...</div>
+                    </div>
+                    <div class="row">
+                         <div class='col-sm-12' id='editFieldValue'><textarea id='editFieldArea'>Content</textarea></div>
+                    </div>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='saveEdit' onClick='saveEdit()'>Save Edit</button>
+            </div>
+            <div id='result_message_edit' class='mt-4 p-2'></div>
+        </div>
+    </div>
+</div>
+EOS;
+    echo $html;
+}
 ?>

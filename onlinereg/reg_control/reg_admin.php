@@ -11,12 +11,12 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 }
 
 page_init("Badge List",
-    /* css */ array('https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css',
-                 // 'https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_bootstrap5.min.css',
+    /* css */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
+                 // 'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
                     'css/base.css',
                     ),
     /* js  */ array(//'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js',
+                    'https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js',
                     'js/base.js',
                     'js/reg_admin.js'),
                     $need_login);

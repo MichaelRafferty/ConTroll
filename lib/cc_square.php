@@ -152,12 +152,12 @@ function cc_charge_purchase($results, $ccauth) {
     $order->setSource(new OrderSource);
     $order->getSource()->setName($con['conname'] . 'OnLineReg');
 
-    if (array_key_exists('badges', $results) && is_array($results['badges'])) {
-        $custid = $results['badges'][0]['badge'];
-    } else if (array_key_exists('spaceName', $results)) {
-        $custid = $results['buyer']['email'];
+    if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
+        $custid = 'r-' . $results['badges'][0]['badge'];
+    } else if (array_key_exists('spaceName', $results) && array_key_exists('vendorId', $results)) {
+        $custid = 'e-' . $results['vendorId'];
     } else {
-        $custid = 'no-badges';
+        $custid = 't-' + $results['transid'];
     }
     $order->setCustomerId($con['id'] . '-' . $custid);
     $order_lineitems = [];
@@ -168,7 +168,8 @@ function cc_charge_purchase($results, $ccauth) {
     foreach ($results['badges'] as $badge) {
         $item = new OrderLineItem ('1');
         $item->setUid('badge' . ($lineid + 1));
-        $item->setName($badge['age'] . ' Badge for ' .  trim($badge['fname'] . ' ' . $badge['mname']  . ' ' . $badge['lname']));
+        $item->setName($badge['age'] . ' Membership for ' .  trim(trim($badge['fname'] . ' ' . $badge['mname'])  . ' ' . $badge['lname']));
+        $item->setNote('memId: ' . $badge['memId']);
         $item->setBasePriceMoney(new Money);
         $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
         $item->getBasePriceMoney()->setCurrency(Currency::USD);
@@ -177,8 +178,8 @@ function cc_charge_purchase($results, $ccauth) {
     }
     if (array_key_exists('spaceName', $results)) {
         $item = new OrderLineItem ('1');
-        $item->setUid('vendor-space');
-        $item->setName($results['spaceName'] . ':' . $results['spaceDescription']);
+        $item->setUid('exhibits-space');
+        $item->setName($results['spaceName'] . ':' . mb_substr($results['spaceDescription'], 0, 128));
         $item->setBasePriceMoney(new Money);
         $item->getBasePriceMoney()->setAmount($results['spacePrice'] * 100);
         $item->getBasePriceMoney()->setCurrency(Currency::USD);
@@ -246,11 +247,7 @@ function cc_charge_purchase($results, $ccauth) {
 
 //web_error_log("CALLED WITH " . $results['total']);
 //var_error_log($pay_money);
-    $pbody = new CreatePaymentRequest(
-        $results['nonce'],
-        $payuuid,
-        $pay_money
-    );
+    $pbody = new CreatePaymentRequest($results['nonce'], $payuuid);
     $pbody->setAmountMoney($pay_money);
     $pbody->setAutocomplete(true);
     $pbody->setOrderID($corder->getId());
@@ -319,8 +316,12 @@ function cc_charge_purchase($results, $ccauth) {
     $txtime = $payment->getCreatedAt();
     $receipt_number = $payment->getReceiptNumber();
 
-    if (array_key_exists('vendor', $results)) {
-        $category = 'vendor';
+    // set category based on if exhibits is a portal type
+    if (array_key_exists('exhibits', $results)) {
+        if ($results['exhibits'] == 'vendor')
+            $category = 'vendor';
+        else
+            $category = 'artshow';
     } else {
         $category = 'reg';
     }

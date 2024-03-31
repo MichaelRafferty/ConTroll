@@ -245,13 +245,13 @@ function draw_record() {
     if (data['roll_regid'] === undefined || data['roll_regid'] === null) {
         if (data['banned'] == 'Y') {
             html += `
-            <button class="btn btn-danger btn-small" id="add_btn_1" onclick="rollover_member(0);">B</button>`;
+            <button class="btn btn-danger btn-sm" id="add_btn_1" onclick="rollover_member(0);">B</button>`;
         } else if (data['memCategory'] == 'eligible') {
             html += `
-            <button class="btn btn-success btn-small" id="add_btn_1" onclick="rollover_member(0);">Rollover</button>`;
+            <button class="btn btn-success btn-sm" id="add_btn_1" onclick="rollover_member(0);">Rollover</button>`;
         } else {
             html += `
-            <button class="btn btn-danger btn-small disabled" id="add_btn_1" onclick="javascript:void(0)">Not Eliglble: ` + data['memCategory'] + `</button>`;
+            <button class="btn btn-danger btn-sm disabled" id="add_btn_1" onclick="javascript:void(0)">Not Eliglble: ` + data['memCategory'] + `</button>`;
         }
     } else {
         html += `
@@ -439,7 +439,7 @@ function found_record(data) {
     id_div.innerHTML = `<div class="container-fluid">
 <div class="row mt-3">
     <div class="col-sm-4">No matching records found</div>
-    <div class="col-sm-auto"><button class="btn btn-primary btn-small" type="button" id="not_found_add_new" onclick="not_found_add_new();">Add New Person</button>
+    <div class="col-sm-auto"><button class="btn btn-primary btn-sm" type="button" id="not_found_add_new" onclick="not_found_add_new();">Add New Person</button>
     </div>
 </div>
 </div>

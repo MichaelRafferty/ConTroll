@@ -14,7 +14,7 @@ CREATE TABLE `payments` (
   `id` int NOT NULL AUTO_INCREMENT,
   `transid` int DEFAULT NULL,
   `type` enum('credit','cash','check','discount','other') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `category` enum('reg','artshow','other','vendor') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `category` enum('reg','artshow','vendor','exhibits','other') COLLATE utf8mb4_general_ci DEFAULT NULL,
   `description` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `source` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `amount` decimal(8,2) DEFAULT NULL,
@@ -36,4 +36,3 @@ CREATE TABLE `payments` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
--- Dump completed on 2023-12-21 16:26:32

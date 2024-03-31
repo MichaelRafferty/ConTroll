@@ -17,7 +17,7 @@ It also expects you to know how to fetch/update files from GitHub. The software 
         cd {reg}/ConTroll/scripts-sample
         cp regfetchprod ~/bin
         cp regfetchprod ~/bin/regfetchtest
-    d. Edit those two scripts in the bin directory to change the HOMEDIR in the scripts to your locations
+    d. Edit those two scripts in the bin directory to change the HOMEDIR in the scripts to your locations and the branch is set to the branch you are using
     e. Make sure the appropriate version of PHP (>=8.1) is in your PATH (edit your appropriate profile if needed to add it)
     f. Make sure your approiate time zone variable is in your profile
     g. Run php -v and check output for proper version, if wrong, go back to step e and fix it.
@@ -45,7 +45,7 @@ It also expects you to know how to fetch/update files from GitHub. The software 
         Use php InstallSetup.php -h to check the appropriate options for your system.
             It is recommended that the schema be set up outside of InstallSetup.php.  If you have not yet edited the rest of reg_conf.ini, use the -v option
 
-4. Populate the tables far enough to use the GUI to continue, or as far as you want.
+4. Populate the tables far enough to use the GUI to continue, or as far as you want.  Note: InstallSetuop will populate initial values for conlist, user, user_auth, atcon_user and atcon_auth for the first user.
     Necessary tables for the GUI:
         a. conList (at least for the current convention, preferred for the current and the next convention (can approximate the dates for that one), InstallSetup.php will insert the first conlist entry.
         b. user and user_auth: InstallSetup.php will install your master admin for you.
@@ -82,7 +82,7 @@ It also expects you to know how to fetch/update files from GitHub. The software 
     e. reg-test.(domain) => .../reg_test/onlinereg
     f. atcon-test.(domain) => .../reg_test/atcon
     g. vendor-test.(domain) => .../reg_test/vendor
-    h. artist-test.(domain) ==> .../reg_test/artist
+    h. artist-test.(domain) ==> .../reg_test/vendor
 
 7. use reg_control's admin or the database directly to set up:
     a. users

@@ -22,7 +22,7 @@ if(!isset($_GET) || !isset($_GET['id'])) {
 }
 
 $newPQ = <<<EOQ
-SELECT id, perid, first_name, middle_name, last_name, suffix
+SELECT id, perid, first_name, middle_name, last_name, suffix, legalName
     , concat_ws(' ', first_name, middle_name, last_name, suffix) as full_name
     , address, addr_2, city, state, zip
     , concat_ws(' ', city, state, zip) as locale, country
@@ -65,7 +65,7 @@ if ($newRes != null) {
         'other'=>array());
 
     $nameQ = <<<EOQ
-SELECT id, first_name, middle_name, last_name, suffix
+SELECT id, first_name, middle_name, last_name, suffix, legalName
     , concat_ws(' ', first_name, middle_name, last_name, suffix) as full_name
     , address, addr_2, city, state, zip
     , concat_ws(' ', city, state, zip) as locale, country
@@ -83,7 +83,7 @@ EOQ;
     $response['nameQ'] = $nameQ;
 
     $emailQ = <<<EOQ
-SELECT id, first_name, middle_name, last_name, suffix
+SELECT id, first_name, middle_name, last_name, suffix, legalName
     , concat_ws(' ', first_name, middle_name, last_name, suffix) as full_name
     , address, addr_2, concat_ws(' ', city, state, zip) as locale, country
     , badge_name, email_addr, phone, active, banned, share_reg_ok, contact_ok
