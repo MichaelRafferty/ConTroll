@@ -53,18 +53,26 @@ if(in_array($itemType, ['art', 'print', 'nfs'])) {
     exit();
 }
 
-$vendorQ = <<<EOS
+$eryQ = <<<EOS
 SELECT id from exhibitorRegionYears 
 WHERE exhibitorYearId=? and exhibitsRegionYearId=?;
 EOS;
 
-$vendorR = dbSafeQuery($vendorQ, 'ii', array($vendor_year, $region))->fetch_assoc();
-$exhibitorRegionYearId = $vendorR['id'];
+$eryR = dbSafeQuery($eryQ, 'ii', array($vendor_year, $region));
+if ($eryR === false || $eryR->num_rows != 1) {
+    error_log("Unable to retrieve exhibitorRegionYears for exhibitor year id " . $vendor_year . " and exhibitsRegionYearId " . $region);
+    $response['error'] = 'Unable to retrieve the proper setup data, please seek assistance';
+    ajaxSuccess($response);
+    exit();
+}
+$eryL = $eryR->fetch_assoc();
+$exhibitorRegionYearId = $eryL['id'];
+$eryR->free();
 
 $maxQ = <<<EOS
 SELECT max(item_key) as last_key
 FROM artItems i
-    JOIN exhibitorRegionYears eRY on eRY.id=i.exhibitorRegionYearId
+JOIN exhibitorRegionYears eRY on eRY.id=i.exhibitorRegionYearId
 WHERE eRY.exhibitorYearId=? and eRY.exhibitsRegionYearId=?
 GROUP BY eRY.exhibitorYearId, eRY.exhibitsRegionYearId;
 EOS;
@@ -74,8 +82,12 @@ $maxA = array($vendor_year, $region);
 
 $maxR = dbSafeQuery($maxQ, $maxL, $maxA)->fetch_assoc();
 $nextItemKey = 0;
-if($maxR == null) { $nextItemKey = 1; } 
-else { $nextItemKey = $maxR['last_key'] + 1; }
+if ($maxR == null) {
+    $nextItemKey = 1;
+} else {
+    $nextItemKey = $maxR['last_key'] + 1;
+    $maxR->free();
+}
 
 $response['nextItemKey'] = $nextItemKey;
 $first = true;
@@ -157,7 +169,7 @@ foreach ($data as $index => $row) {
 $response['message'] = "$itemType updated: $inserted added, $updated changed, $deleted removed.";
 
 $itemQ = <<<EOS
-SELECT i.id, item_key, title, material, type, original_qty, min_price, sale_price, 0 as uses
+SELECT i.id, item_key, title, material, type, original_qty, min_price, sale_price, status, 0 as uses
 FROM artItems i
     JOIN exhibitorRegionYears eRY on eRY.id=i.exhibitorRegionYearId
 WHERE eRY.exhibitorYearId=? and eRY.exhibitsRegionYearId=?

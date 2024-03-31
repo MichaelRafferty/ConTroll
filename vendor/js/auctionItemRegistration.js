@@ -509,13 +509,18 @@ class AuctionItemRegistration {
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
                 {title: 'id', field: 'id', visible: false},
-                {title: 'Item Num.', field: 'item_key', width: 10, headerSort: true, headerWordWrap: true},
-                {title: 'Title', field: 'title', width: 200, headerSort: true, headerFilter: true, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Material", field: "material", headerSort: true, headerFilter: true, width: 200, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Min. Bid", field: "min_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 50, editor: 'number', editorParams: {min: 1} },
-                {title: "Quick Sale", field: "sale_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 50, editor: 'number', editorParams: {min: 1} },
+                {title: '#', field: 'item_key', width: 50, hozAlign: "right"},
+                {title: 'Title', field: 'title', width: 600, editor: 'input', editorParams: { elementAttributes: { maxlength: "64"} } },
+                {title: "Material", field: "material", width: 300, editor: 'input', editorParams: { elementAttributes: { maxlength: "32"} } },
+                {title: "Minimim Bid", field: "min_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                    editor: 'number', editorParams: {min: 1}, formatter: "money",
+                    formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
+                {title: "Quick Sale", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                    editor: 'number', editorParams: {min: 1}, formatter: "money",
+                    formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
                 {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
+                {title: "Status", field: "status", visible: this.#debugVisible},
             ]
         });
         this.#artItemsDirty = false;
@@ -540,13 +545,16 @@ class AuctionItemRegistration {
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
                 {title: 'id', field: 'id', visible: false},
-                {title: 'Item Num.', field: 'item_key', width: 10, headerSort: true, headerWordWrap: true},
-                {title: 'Title', field: 'title', width: 200, headerSort: true, headerFilter: true, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Material", field: "material", headerSort: true, headerFilter: true, width: 200, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Quantity", field: "original_qty", headerSort: true, headerFilter: true, headerWordWrap: true, width: 20, editor: 'number', editorParams: {min: 1} },
-                {title: "Quick Sale", field: "sale_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 20, editor: 'number', editorParams: {min: 1} },
+                {title: '#', field: 'item_key', width: 50, hozAlign: "right"},
+                {title: 'Title', field: 'title', width: 600, editor: 'input', editorParams: { elementAttributes: { maxlength: "64"} } },
+                {title: "Material", field: "material", width: 300, editor: 'input', editorParams: { elementAttributes: { maxlength: "32"} } },
+                {title: "Quantity", field: "original_qty", headerWordWrap: true, width: 100, hozAlign: "right", editor: 'number', editorParams: {min: 1} },
+                {title: "Quick Sale", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                    editor: 'number', editorParams: {min: 1}, formatter: "money",
+                    formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
                 {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
+                {title: "Status", field: "status", visible: this.#debugVisible},
             ]
         });
         this.#printItemsDirty = false;
@@ -571,12 +579,15 @@ class AuctionItemRegistration {
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
                 {title: 'id', field: 'id', visible: false},
-                {title: 'Item Num.', field: 'item_key', width: 10, headerSort: true, headerWordWrap: true},
-                {title: 'Title', field: 'title', width: 200, headerSort: true, headerFilter: true, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Material", field: "material", headerSort: true, headerFilter: true, width: 200, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Insurance Price", field: "sale_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 20, editor: 'number', editorParams: {min: 1} },
+                {title: '#', field: 'item_key', width: 50, hozAlign: "right"},
+                {title: 'Title', field: 'title', width: 600, editor: 'input', editorParams: { elementAttributes: { maxlength: "64"} } },
+                {title: "Material", field: "material", width: 300, editor: 'input', editorParams: { elementAttributes: { maxlength: "32"} } },
+                {title: "Insurance Price", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                    editor: 'number', editorParams: {min: 1}, formatter: "money",
+                    formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
                 {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
+                {title: "Status", field: "status", visible: this.#debugVisible},
             ]
         });
         this.#nfsItemsDirty = false;
@@ -616,4 +627,3 @@ function deleterow(e, row) {
         row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
     }
 }
-
