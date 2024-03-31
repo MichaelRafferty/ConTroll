@@ -431,7 +431,7 @@ class AuctionItemRegistration {
         console.log(data);
         this.drawNfsItemTable(data['items']);
     }
-
+    
     drawArtItemTable(data) {
         var _this = this;
         this.#artItemTable = new Tabulator('#artItemTable', {
@@ -445,17 +445,17 @@ class AuctionItemRegistration {
             columns: [
                 {title: 'id', field: 'id', visible: false},
                 {title: '#', field: 'item_key', width: 50, hozAlign: "right"},
-                {title: 'Title', field: 'title', width: 600, editor: 'input', editorParams: { elementAttributes: { maxlength: "64"} } },
-                {title: "Material", field: "material", width: 300, editor: 'input', editorParams: { elementAttributes: { maxlength: "32"} } },
+                {title: 'Title', field: 'title', width: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
+                {title: "Material", field: "material", width: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
                 {title: "Minimim Bid", field: "min_price", headerWordWrap: true, width: 100, hozAlign: "right",
-                    editor: 'number', editorParams: {min: 1}, formatter: "money",
+                    editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
                     formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
                 {title: "Quick Sale", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
-                    editor: 'number', editorParams: {min: 1}, formatter: "money",
+                    editor: 'number', editable:artItemEditCheck, editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
                     formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
+                {title: "Status", field: "status", width: 200, },
                 {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
-                {title: "Status", field: "status", visible: this.#debugVisible},
             ]
         });
         this.#artItemsDirty = false;
@@ -481,15 +481,15 @@ class AuctionItemRegistration {
             columns: [
                 {title: 'id', field: 'id', visible: false},
                 {title: '#', field: 'item_key', width: 50, hozAlign: "right"},
-                {title: 'Title', field: 'title', width: 600, editor: 'input', editorParams: { elementAttributes: { maxlength: "64"} } },
-                {title: "Material", field: "material", width: 300, editor: 'input', editorParams: { elementAttributes: { maxlength: "32"} } },
-                {title: "Quantity", field: "original_qty", headerWordWrap: true, width: 100, hozAlign: "right", editor: 'number', editorParams: {min: 1} },
+                {title: 'Title', field: 'title', width: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
+                {title: "Material", field: "material", width: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
+                {title: "Quantity", field: "original_qty", headerWordWrap: true, width: 100, hozAlign: "right", editor: 'number', editable:artItemEditCheck, editorParams: {min: 1} },
                 {title: "Quick Sale", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
-                    editor: 'number', editorParams: {min: 1}, formatter: "money",
+                    editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
                     formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
+                {title: "Status", field: "status", width: 200, },
                 {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
-                {title: "Status", field: "status", visible: this.#debugVisible},
             ]
         });
         this.#printItemsDirty = false;
@@ -515,14 +515,14 @@ class AuctionItemRegistration {
             columns: [
                 {title: 'id', field: 'id', visible: false},
                 {title: '#', field: 'item_key', width: 50, hozAlign: "right"},
-                {title: 'Title', field: 'title', width: 600, editor: 'input', editorParams: { elementAttributes: { maxlength: "64"} } },
-                {title: "Material", field: "material", width: 300, editor: 'input', editorParams: { elementAttributes: { maxlength: "32"} } },
+                {title: 'Title', field: 'title', width: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
+                {title: "Material", field: "material", width: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
                 {title: "Insurance Price", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
-                    editor: 'number', editorParams: {min: 1}, formatter: "money",
+                    editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
                     formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
+                {title: "Status", field: "status", width: 200, },
                 {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
-                {title: "Status", field: "status", visible: this.#debugVisible},
             ]
         });
         this.#nfsItemsDirty = false;
@@ -561,4 +561,13 @@ function deleterow(e, row) {
         row.getCell("to_delete").setValue(1);
         row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
     }
+}
+
+function artItemEditCheck(cell) {
+    var data = cell.getRow().getData();
+    if (data.status == null)
+        return true;
+    if (data.status != 'Entered')
+        return false;
+    return true;
 }
