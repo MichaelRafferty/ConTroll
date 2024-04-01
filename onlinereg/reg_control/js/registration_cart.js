@@ -835,7 +835,7 @@ class reg_cart {
 ` + this.#membership_select + `
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_ƒmembership_cart(` + rownum + ", 'cart-madd-" + rownum + `')">Add</button>
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-madd-" + rownum + `')">Add</button>
         </div>
     </div>`;
         }
