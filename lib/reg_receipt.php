@@ -18,9 +18,9 @@ JOIN exhibitsSpaces s ON (s.id = e.spaceId)
 JOIN exhibitsSpacePrices esp ON (s.id = esp.spaceId AND e.item_approved = esp.id)
 JOIN exhibitsRegionYears ery ON (ery.id = s.exhibitsRegionYear)
 JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
-WHERE ery.id = ?;
+WHERE ery.id = ? and e.exhibitorId = ?;
 EOS;
-        $spaceR = dbSafeQuery($spaceQ, 'i', array($regionYearId));
+        $spaceR = dbSafeQuery($spaceQ, 'ii', array($regionYearId, $exhId));
         if ($spaceR == false || $spaceR->num_rows == 0) {
             $response['error'] = 'Unable to find any space for the receipt';
             ajaxSuccess($response);

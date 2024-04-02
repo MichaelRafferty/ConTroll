@@ -14,7 +14,11 @@ $conid = $con['id'];
 
 $response = array('post' => $_POST, 'get' => $_GET);
 
-$exyID = $_SESSION['eyID'];
+if (array_key_exists('eyID', $_SESSION)) {
+    $exyID = $_SESSION['eyID'];
+} else {
+    $exyID = null;
+}
 
 if (!(array_key_exists('exhibitorEmail', $_POST) && array_key_exists('exhibitorName', $_POST) && array_key_exists('profileMode', $_POST))) {
     $response['status'] = 'error';

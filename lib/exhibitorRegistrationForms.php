@@ -15,7 +15,7 @@ function draw_login($config_vars, $result_message = '') {
             <form id='exhibitorSignin' method='POST'>
                 <div class='row mt-1'>
                     <div class='col-sm-1'>
-                        <label for='si_email'>*Email/Login: </label>
+                        <label for='si_email'>*Email: </label>
                     </div>
                     <div class='col-sm-auto'>
                         <input class='form-control-sm' type='email' name='si_email' id='si_email' size='40' required/>

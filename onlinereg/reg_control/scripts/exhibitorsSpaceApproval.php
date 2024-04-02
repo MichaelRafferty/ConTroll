@@ -118,7 +118,7 @@ JOIN exhibitorYears eY ON (eY.id = exRY.exhibitorYearId)
 JOIN exhibitors e ON (e.id = eY.exhibitorId)
 JOIN exhibitsSpaces s ON (s.id = eS.spaceId)
 JOIN exhibitsRegionYears eRY ON s.exhibitsRegionYear = eRY.id
-WHERE eY.conid = ? AND eRY.id = ?
+WHERE eY.conid = ? AND eRY.id = ? AND e.id = ?
 GROUP BY e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id
 )
 SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.website, exh.exhibitorEmail,
@@ -132,11 +132,11 @@ JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
 JOIN exhibitsRegionYears eRY ON eS.exhibitsRegionYear = eRY.id
 JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 JOIN exh ON (xS.exhibitorId = exh.id)
-WHERE eRY.conid=? AND eRY.id = ? AND (time_requested IS NOT NULL OR time_approved IS NOT NULL)
+WHERE eRY.conid=? AND eRY.id = ? AND xS.exhibitorId = ? AND (time_requested IS NOT NULL OR time_approved IS NOT NULL)
 ORDER BY sortOrder, exhibitorName, spaceName
 EOS;
 
-    $detailR = dbSafeQuery($detailQ, 'iiii', array($conid, $regionYearId, $conid, $regionYearId));
+    $detailR = dbSafeQuery($detailQ, 'iiiiii', array($conid, $regionYearId, $exhibitorId, $conid, $regionYearId, $exhibitorId));
 
     while ($detailL = $detailR->fetch_assoc()) {
         $detail = $detailL;
