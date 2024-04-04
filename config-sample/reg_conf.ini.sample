@@ -91,6 +91,8 @@ taxidextra=
 // disclaimers are path to file in config directory contain the request and payment disclaimers
 req_disclaimer=""
 pay_disclaimer=""
+artsheets=false ; true/false show sheet print buttons
+artcontrol=false ; true/false show control sheet print button
 [client]
 path = "/home/homedir/reg.conname.org/reg_control"
 [google]

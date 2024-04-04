@@ -435,7 +435,7 @@ draw_passwordModal();
 draw_exhibitorRequestModal();
 draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $cc, $portalName, $portalType);
 draw_exhibitorReceiptModal($portalType);
-draw_itemRegistrationModal($portalType);
+draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf['artcontrol']);
 ?>
     <!-- now for the top of the form -->
      <div class='container-fluid'>

@@ -1,7 +1,7 @@
 <?php
 
 //draw the item registration modal
-function draw_itemRegistrationModal($portalType = '') {
+function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showcontrol=false) {
     if($portalType != 'artist') {
         return;
     }
@@ -67,9 +67,12 @@ function draw_itemRegistrationModal($portalType = '') {
                         </div>
                         <div class='row'>
                             <div class='col-sm-auto' id='print_buttons'>
+                                <?php if($showsheets) { ?>
                                 <button id='print_bidsheet' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('bidsheets'); return false;">Print Bidsheets</button>
                                 <button id='print_printshop' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('printshop'); return false;">Print Sales Tags</button>
+                                <?php } if($showcontrol) { ?>
                                 <button id='print_controlsheet' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('control'); return false;">Print Control Sheet</button>
+                                <?php } ?>
                             </div>
                         </div>
                         <div class='row' id='ir_message_div'></div>
