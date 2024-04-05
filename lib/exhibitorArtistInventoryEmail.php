@@ -97,10 +97,10 @@ function artistEamilReplaceTokens($messageTxt, $messageHtml, $valArray): array {
 
     foreach ($tokens AS $key => $val) {
         if ($messageTxt != null) {
-            $messageTxt = str_replace($key, $val, $messageTxt);
+            $messageTxt = str_replace("<<$key>>", $val, $messageTxt);
         }
         if ($messageHtml != null) {
-            $messageHtml = str_replace($key, $val, $messageHtml);
+            $messageHtml = str_replace("<<$key>>", $val, $messageHtml);
         }
     }
     return array($messageTxt, $messageHtml);
