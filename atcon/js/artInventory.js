@@ -153,6 +153,7 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
             }
             break;
         case 'Removed from Show':
+        case 'Entered':
         case 'Not In Show':
         default:
             // must check in
