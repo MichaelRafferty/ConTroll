@@ -73,7 +73,7 @@ function init_table() {
 }
 
 function inventory() {
-    var script = 'onServer/inventory.php';
+    var script = 'scripts/artInventory_inventory.php';
     $.ajax({
             method: "POST",
             url: script,
@@ -87,7 +87,7 @@ function inventory() {
 }
 
 function init_locations() {
-    var script = 'onServer/getLocations.php';
+    var script = 'scripts/artInventory_getLocations.php';
     $.ajax({
             method: "GET",
             url: script,
@@ -109,11 +109,14 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
             // no inventory action, gone
             break;
         case 'Sold Bid Sheet':
+        case 'Sold At Auction':
         case 'To Auction':
             // sales can sell
-            if(mode == 'sales') {
+            if(mode == 'sales') { // this is probably not how this will be done
                 html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'sell\')">Sell</button>';
             }
+            html += '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'alert\')">N/A</button>';
+            //no inventory action
             break;
         case 'Quicksale/Sold':
             //inventory
@@ -131,9 +134,10 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
                 html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button>';
             }
             //manager can remove from show 
+            /* actually they shouldn't be able to
             if(manager) {
                 html += '<button type="button" class="btn btn-sm btn-warning pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'remove\')">Remove</button>';
-            }
+            }*/
             break;
         case 'Checked In':
             //sales can sell
@@ -216,7 +220,7 @@ function build_table(tableData) {
 function find_item(action) {
     var artist = artist_field.value;
 
-    var script = 'onServer/getItem.php';
+    var script = 'scripts/artInventory_getItem.php';
 
     $.ajax({
         data: "artist="+artist,
