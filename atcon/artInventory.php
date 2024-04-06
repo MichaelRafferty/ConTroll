@@ -28,6 +28,12 @@ page_init($page, $tab,
 
 db_connect();
 
+$region = '';
+if(array_key_exists('region', $_GET)) { 
+    $region = $_GET['region'];
+}
+
+
 $conInfoQ = <<<EOS
 SELECT DATE(startdate) as start, DATE(enddate) as end
 FROM conlist
@@ -51,13 +57,44 @@ $startdate = $conInfo['start'];
 $enddate = $conInfo['end'];
 $method='manager';
 
-/*
+$regionQ = <<<EOS
+SELECT xR.shortname AS regionName
+FROM exhibitsRegionTypes xRT
+    JOIN exhibitsRegions xR ON xR.regionType=xRT.regionType
+    JOIN exhibitsRegionYears xRY ON xRY.exhibitsRegion = xR.id
+WHERE xRT.active='Y' AND xRT.usesInventory='Y' AND xRY.conid=?;
+EOS;
+$regionR = dbSafeQuery($regionQ, 'i', array($conid));
+$setRegion = false;
+if(($regionR->num_rows==1) && ($region='')) { $setRegion = true; }
+
+/** /
 var_dump($_SESSION);
 echo $conid;
-*/
+/**/
 
 ?>
 <div id="whoami" hidden><?php echo $_SESSION['user'];?></div>
+<div id="main">
+    <ul class='nav nav-tabs mb-3' id='region-tabs' role='tablist'>
+        <?php
+            while($regionInfo = $regionR->fetch_assoc()) {
+                if($setRegion) { $region = $regionInfo['regionName']; }
+                $isRegion = false;
+                if($region == $regionInfo['regionName']) { $isRegion = true; }
+                $regionName = $regionInfo['regionName']; 
+                $actual_link = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
+                ?>
+        <li class='nav-item <?php if($isRegion) { echo 'active'; } ?>' role='presentation'>
+            <button class='nav-link' id='<?php echo $regionName; ?>-tab'data-bs-toggle='pill' type='button' role='tab' aria-controls='nav-<?php echo $regionName; ?>' aria-selected='<?php echo $isRegion?'true':'false'; ?>' onclick='window.location = "<?php echo $actual_link . '?region=' . $regionName; ?>"'>
+                <?php echo $regionName; ?>
+            </button>
+        </li>
+                <?php
+            }
+        ?>
+    </ul>
+</div>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
         <div class="col-sm-7">
@@ -79,13 +116,19 @@ echo $conid;
                                 <div class="col-sm-4">
                                     <?php
 $artistQ = <<<EOS
-SELECT S.art_key, V.name 
-FROM artshow S
-JOIN artist A ON A.id=S.artid
-JOIN vendors V on V.id=A.vendor
-WHERE S.conid=? ORDER BY S.art_key
+SELECT xRY.id AS regionYear, xR.shortname AS regionName,
+    eRY.exhibitorNumber as art_key,e.exhibitorName as name
+FROM exhibitsRegionTypes xRT
+    JOIN exhibitsRegions xR ON xR.regionType=xRT.regionType
+    JOIN exhibitsRegionYears xRY ON xRY.exhibitsRegion = xR.id
+    JOIN exhibitorRegionYears eRY ON eRY.exhibitsRegionYearId = xRY.id
+    JOIN exhibitorYears eY ON eY.id = eRY.exhibitorYearId
+    JOIN exhibitors e ON e.id=eY.exhibitorId
+WHERE xRT.active='Y' AND xRT.usesInventory='Y' AND xRY.conid=? 
+    AND xR.shortname=? AND eRY.exhibitorNumber is not null
+ORDER BY xRY.id;
 EOS;
-$artistR = dbSafeQuery($artistQ, 'i', array($conid));
+$artistR = dbSafeQuery($artistQ, 'is', array($conid, $region));
                                     ?>
                                     <select id="artist_num_lookup" name="artist" min=100 max=300 placeholder="Artist #">
                                         <?php 
