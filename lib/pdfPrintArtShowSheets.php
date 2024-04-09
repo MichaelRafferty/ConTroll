@@ -22,7 +22,8 @@ JOIN exhibitors e ON e.id = exY.exhibitorId
 JOIN artItems aI ON aI.exhibitorRegionYearId = exRY.id 
 JOIN exhibitsRegionYears eRY ON exRY.exhibitsRegionYearId = eRY.id
 JOIN exhibitsRegions eR ON eRY.exhibitsRegion = eR.id
-WHERE exRY.exhibitorYearId=? AND exRY.exhibitsRegionYearId = ? AND aI.type = 'print';
+WHERE exRY.exhibitorYearId=? AND exRY.exhibitsRegionYearId = ? AND aI.type = 'print'
+ORDER BY aI.item_key;
 EOS;
 
     $itemR = dbSafeQuery($itemSQL, 'ii', array($regionYearId, $region));
@@ -215,7 +216,8 @@ JOIN exhibitors e ON e.id = exY.exhibitorId
 JOIN artItems aI ON aI.exhibitorRegionYearId = exRY.id 
 JOIN exhibitsRegionYears eRY ON exRY.exhibitsRegionYearId = eRY.id
 JOIN exhibitsRegions eR ON eRY.exhibitsRegion = eR.id
-WHERE exRY.exhibitorYearId=? AND exRY.exhibitsRegionYearId = ? AND aI.type in ('art','nfs');
+WHERE exRY.exhibitorYearId=? AND exRY.exhibitsRegionYearId = ? AND aI.type in ('art','nfs')
+ORDER BY aI.item_key;
 EOS;
 
     $itemR = dbSafeQuery($itemSQL, 'ii', array($regionYearId, $region));
