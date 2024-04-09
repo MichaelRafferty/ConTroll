@@ -187,7 +187,7 @@ function pdfPrintBidSheets($regionYearId, $region, $response) {
         $numcols = 3;
         $numrows = 2;
         $vsize = 3.8;
-    } else if ($bidlines <= 8) {
+    } else if ($bidlines < 8) {
         $orient = 'P';
         $numcols = 2;
         $numrows = 2;
@@ -383,7 +383,7 @@ EOS;
         pushFont('Arial', '', 6);
         for ($lineno = 1; $lineno <= $numberedLines; $lineno++) {
             $pdf->Rect($h, $v, $isize, $blockheight);
-            $pdf->SetXY($h, $v + $labeloffset, "$lineno)");
+            printXY($h, $v + $labeloffset, "$lineno)");
             $v += $blockheight;
         }
         popFont();
