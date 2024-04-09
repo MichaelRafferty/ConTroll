@@ -93,6 +93,13 @@ artist="artists@???"
 #renderer='http://localhost:3000' ; remote renderer for bidsheets
 # pathto file in config any additional text you wish to add to explain the signup form for artist portal
 artistSignupAddltext=""
+# artist bid sheets, artistBidSheetNumbers = number of bid lines, of which artistBidSheetNumbers are numbered if lines <=4, it will use up 2x3 Landscape, if >4 and less that X it will use 2x2 Portrait format, if > X it will use 2x1 portrait format
+artistBidSheetLines=4
+artistBidSheetNumbers=3
+# name for artist bid sheet header (independent of art area)
+artistBidSheet="Demo 2024 Art Show Bid Sheet"
+# name for artist print shop price tag header (independent of art area)
+artistPriceTag=""
 taxidlabel="NJ Sales Tax ID"
 taxidextra=
 // disclaimers are path to file in config directory contain the request and payment disclaimers
