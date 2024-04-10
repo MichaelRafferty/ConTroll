@@ -127,13 +127,15 @@ EOS;
     // now get art info
     $itemSQL = <<<EOS
 SELECT e.exhibitorName, exRY.exhibitorNumber, aI.title, aI.item_key, aI.min_price, aI.sale_price, aI.original_qty, aI.quantity, aI.material, aI.type, aI.status,
-       e.id, eR.name
+       aI.bidder, aI.final_price, e.id, eR.name,
+       p.first_name, p.last_name, p.middle_name, p.suffix, p.phone, p.email_addr
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors e ON e.id = exY.exhibitorId
 JOIN artItems aI ON aI.exhibitorRegionYearId = exRY.id 
 JOIN exhibitsRegionYears eRY ON exRY.exhibitsRegionYearId = eRY.id
 JOIN exhibitsRegions eR ON eRY.exhibitsRegion = eR.id
+LEFT OUTER JOIN perinfo p ON aI.bidder = p.id
 WHERE exRY.exhibitorYearId=? AND exRY.exhibitsRegionYearId = ?
 ORDER BY aI.item_key
 EOS;
@@ -209,8 +211,8 @@ EOS;
                 <div class='col-sm-3 p-0 m-0'>
                     <div class='container-fluid'>
                         <div class='row'>
-                            <div class='col-sm-2 m-0 ps-0 pe-0 border border=1 border-black'>Winning Bid</div>
-                            <div class='col-sm-5 m-0 border border=1 border-black'>Bidder</div>
+                            <div class='col-sm-3 m-0 ps-0 pe-0 border border=1 border-black'>Winning Bid</div>
+                            <div class='col-sm-4 m-0 border border=1 border-black'>Bidder<br/>&nbsp;</div>
                             <div class='col-sm-5 border border=1 border-black'>Bidder Email</div>
                         </div>
                     </div>
@@ -219,6 +221,9 @@ EOS;
             <?php
             $titleNeeded = 10;
         }
+        $winnerName = TRIM(TRIM(TRIM($artItem['first_name'] . ' ' . $artItem['middle_name']) . ' ' . $artItem['last_name']) . ' ' . $artItem['suffix']);
+        $winnerPerid = $artItem['bidder'];
+        $winnerEmail = $artItem['email_addr'];
         ?>
             <div class='row'>
                 <div class='col-sm-3 p-0 m-0'>
@@ -240,8 +245,8 @@ EOS;
                 <div class='col-sm-4 p-0 m-0'>
                     <div class='container-fluid'>
                         <div class='row'>
-                            <div class='col-sm-3 m-0 border border=1 border-black text-end'><?php echo $artItem['min_price'] ? $dolfmt->formatCurrency((float)$artItem['min_price'], 'USD') : ''; ?></div>
-                            <div class='col-sm-3 m-0 border border=1 border-black text-end'><?php echo $artItem['sale_price'] ? $dolfmt->formatCurrency((float)$artItem['sale_price'], 'USD') : ''; ?></div>
+                            <div class='col-sm-3 m-0 border border=1 border-black text-end'><?php echo $artItem['min_price'] ? $dolfmt->formatCurrency((float)$artItem['min_price'], 'USD') : '&nbsp;'; ?></div>
+                            <div class='col-sm-3 m-0 border border=1 border-black text-end'><?php echo $artItem['sale_price'] ? $dolfmt->formatCurrency((float)$artItem['sale_price'], 'USD') : '&nbsp;'; ?></div>
                             <div class='col-sm-1 border border=1 border-black text-end'><?php echo $artItem['original_qty']; ?></div>
                             <div class='col-sm-1 border border=1 border-black text-end'><?php echo $artItem['quantity']; ?></div>
                             <div class='col-sm-2 border border=2 border-black'>&nbsp;<br/>&nbsp;</div>
@@ -252,9 +257,11 @@ EOS;
                 <div class='col-sm-3 p-0 m-0'>
                     <div class='container-fluid'>
                         <div class='row'>
-                            <div class='col-sm-2 m-0 ps-1 border border=1 border-black'>&nbsp;<br/>&nbsp;</div>
-                            <div class='col-sm-5 m-0 border border=1 border-black'>&nbsp;</div>
-                            <div class='col-sm-5 border border=1 border-black'>&nbsp;</div>
+                            <div class='col-sm-3 m-0 ps-1 border border=1 border-black'><?php
+                                echo ($artItem['final_price'] ? $dolfmt->formatCurrency((float)$artItem['final_price'], 'USD') : '&nbsp;') . '<br/>&nbsp;';
+                                ?></div>
+                            <div class='col-sm-4 m-0 border border=1 border-black'><?php echo $winnerName; ?></div>
+                            <div class='col-sm-5 border border=1 border-black'><?php echo $winnerEmail; ?></div>
                         </div>
                     </div>
                 </div>
