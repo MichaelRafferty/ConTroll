@@ -71,7 +71,8 @@ function draw_exhibitorRequestModal($portalType = '')
 
 // exhibitor_showRequest -> show the current request and the change/cancel button
 function exhibitor_showRequest($regionId, $regionName, $regionSpaces, $exhibitorSpaceList) {
-    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+    $curLocale = locale_get_default();
+    $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
     echo "Request pending authorization for:<br/>\n";
     foreach ($exhibitorSpaceList as $key => $spaceItem) {

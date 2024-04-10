@@ -20,12 +20,13 @@ if (isset($_GET['mode'])) {
 }
 */
 
+$cdn = getTabulatorIncludes();
 page_init($page, $tab,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
-                //  'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
+    /* css */ array($cdn['tabcss'],
+            // $cdn['tabbs5'],
 		    'css/atcon.css','css/registration.css','css/mockup.css'),
-    /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js','js/atcon.js','js/mockup2.js')
+    /* js  */ array( //$cdn['luxon'],
+            $cdn['tabjs'],'js/atcon.js','js/mockup2.js')
     );
 
 db_connect();

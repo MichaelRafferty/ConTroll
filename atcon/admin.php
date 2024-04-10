@@ -17,12 +17,10 @@ if (!check_atcon($method, $conid)) {
     exit(0);
 }
 
+$cdn = getTabulatorIncludes();
 page_init($page, 'admin',
-    /* css */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
-                    'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
-                    'css/registration.css'),
-    /* js  */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js',
-                    'js/admin.js')
+    /* css */ array($cdn['tabcss'], $cdn['tabbs5'], 'css/registration.css'),
+    /* js  */ array($cdn['tabjs'],'js/admin.js')
     );
 
 //var_dump($_SESSION);
