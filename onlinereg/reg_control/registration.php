@@ -10,14 +10,12 @@ if (!$need_login or !checkAuth($need_login['sub'], $page)) {
 }
 load_cc_procs();
 
+$cdn = getTabulatorIncludes();
 page_init($page,
-    /* css */ array('css/base.css',
-        'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
-        'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
-        'css/registration.css'
+    /* css */ array('css/base.css', $cdn['tabcss'], $cdn['tabbs5'], 'css/registration.css'
     ),
-    /* js  */ array(//'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-        'https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js',
+    /* js  */ array(//$cdn['luxon'],
+        $cdn['tabjs'],
         'js/base.js',
         'js/registration.js',
         'js/registration_cart.js',

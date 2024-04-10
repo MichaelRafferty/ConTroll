@@ -17,6 +17,7 @@ function guidv4($data = null) {
     return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 }
 
+// draw the small ConTroll bug (and in the future the apglv3 bug)
 function drawBug($cols) {
     global $db_ini;
 
@@ -33,4 +34,14 @@ function drawBug($cols) {
             <img src="/lib/ConTroll-bug.png" alt="ConTroll Logo">
         </div>
 EOS;
+}
+
+// getTabulatorIncludes - returns CDN string for Tabulator
+function getTabulatorIncludes() {
+    return ( [
+        'tabcss' => 'https://unpkg.com/tabulator-tables@6.2.0/dist/css/tabulator.min.css',
+        'tabbs5' => 'https://unpkg.com/tabulator-tables@6.2.0/dist/css/tabulator_bootstrap5.min.css',
+        'tabjs' => 'https://unpkg.com/tabulator-tables@6.2.0/dist/js/tabulator.min.js',
+        'luxon' => 'https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js'
+    ]);
 }
