@@ -45,6 +45,7 @@ EOS;
     var mode = '<?php echo $mode; ?>';
     var conid = '<?php echo $label; ?>';
     var manager = false;
+    var region = '<?php echo $region; ?>';
     <?php if(check_atcon('manager', $conid)) { ?>
         manager = true;
     <?php } ?>
@@ -100,6 +101,7 @@ echo $conid;
         <div class="col-sm-7">
             <div id="pos-tabs">
                 <div class="tab-content" id="find-content">          
+<?php if($region != '') { ?>
                     <div class="tab-pane fade show active" id="find-pane" role="tabpanel" aria-labelledby="reg-tab" tabindex="0">
                         <div class="container-fluid">
                             <div class="row">
@@ -160,6 +162,9 @@ while($artist = fetch_safe_assoc($artistR)) {
                             </div>
                         </div>
                     </div>
+<?php } else { ?>
+                    <p>Plese select a region from the tab list above</p>
+<?php } ?>
                  </div>
             </div>
         </div>

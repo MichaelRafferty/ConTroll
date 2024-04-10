@@ -30,9 +30,10 @@ foreach ($actions as $action) {
         case 'Check In':
             $checkInQ = <<<EOS
 UPDATE artItems I 
-JOIN artshow S on S.id=I.artshow
+    JOIN exhibitorRegionYears eRY on eRY.id=I.exhibitorRegionYearId
+    JOIN exhibitorYears eY on eY.id=eRY.exhibitorYearId
 SET status='Checked In' 
-WHERE I.item_key=? and I.conid=? and S.art_key=?;
+WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $checkInR = dbSafeCmd($checkInQ, 'iii', array($item[1], $conid, $item[0]));
             $log .= " changed $checkInR";
@@ -41,9 +42,10 @@ EOS;
             $log .= " to " . $action['value'];
             $locationQ = <<<EOS
 UPDATE artItems I 
-JOIN artshow S on S.id=I.artshow
+JOIN exhibitorRegionYears eRY on eRY.id=I.exhibitorRegionYearId
+    JOIN exhibitorYears eY on eY.id=eRY.exhibitorYearId
 SET I.location=?
-WHERE I.item_key=? and I.conid=? and S.art_key=?;
+WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $locationR = dbSafeCmd($locationQ, 'siii', array($action['value'],$item[1], $conid, $item[0]));
             $log .= " changed $locationR";
@@ -51,9 +53,10 @@ EOS;
         case 'Inventory':
             $inventoryQ = <<<EOS
 UPDATE artItems I 
-JOIN artshow S on S.id=I.artshow
+JOIN exhibitorRegionYears eRY on eRY.id=I.exhibitorRegionYearId
+    JOIN exhibitorYears eY on eY.id=eRY.exhibitorYearId
 SET I.time_updated=current_timestamp()
-WHERE I.item_key=? and I.conid=? and S.art_key=?;
+WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $inventoryR = dbSafeCmd($inventoryQ, 'iii', array($item[1], $conid, $item[0]));
             $log .= " changed $inventoryR";
@@ -61,9 +64,10 @@ EOS;
         case 'Check Out':
             $checkOutQ = <<<EOS
 UPDATE artItems I 
-JOIN artshow S on S.id=I.artshow
+JOIN exhibitorRegionYears eRY on eRY.id=I.exhibitorRegionYearId
+    JOIN exhibitorYears eY on eY.id=eRY.exhibitorYearId
 SET I.status='Checked Out'
-WHERE I.item_key=? and I.conid=? and S.art_key=?;
+WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $checkOutR = dbSafeCmd($checkOutQ, 'iii', array($item[1], $conid, $item[0]));
             $log .= " changed $checkOutR";
@@ -72,9 +76,10 @@ EOS;
             $log .= " to " . $action['value'];
             $bidQ =<<<EOS
 UPDATE artItems I
-JOIN artshow S on S.id=I.artshow
+JOIN exhibitorRegionYears eRY on eRY.id=I.exhibitorRegionYearId
+    JOIN exhibitorYears eY on eY.id=eRY.exhibitorYearId
 SET I.status='Bid', I.bidder=?
-WHERE I.item_key=? and I.conid=? and S.art_key=?;
+WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $bidR = dbSafeCmd($bidQ, 'iiii', array($action['value'], $item[1], $conid, $item[0]));
             $log .= " changed $bidR";
@@ -83,18 +88,20 @@ EOS;
             $log .= " to " . $action['value'];
             $bidQ =<<<EOS
 UPDATE artItems I
-JOIN artshow S on S.id=I.artshow
+JOIN exhibitorRegionYears eRY on eRY.id=I.exhibitorRegionYearId
+    JOIN exhibitorYears eY on eY.id=eRY.exhibitorYearId
 SET I.status='Bid', I.final_price=?
-WHERE I.item_key=? and I.conid=? and S.art_key=?;
+WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $bidR = dbSafeCmd($bidQ, 'iiii', array($action['value'], $item[1], $conid, $item[0]));
             break;
         case 'Sell To Bidsheet':
             $checkInQ = <<<EOS
 UPDATE artItems I 
-JOIN artshow S on S.id=I.artshow
+JOIN exhibitorRegionYears eRY on eRY.id=I.exhibitorRegionYearId
+    JOIN exhibitorYears eY on eY.id=eRY.exhibitorYearId
 SET status='Sold Bid Sheet' 
-WHERE I.item_key=? and I.conid=? and S.art_key=?;
+WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $checkInR = dbSafeCmd($checkInQ, 'iii', array($item[1], $conid, $item[0]));
             $log .= " changed $checkInR";
@@ -102,9 +109,10 @@ EOS;
         case 'Send To Auction':
             $checkInQ = <<<EOS
 UPDATE artItems I 
-JOIN artshow S on S.id=I.artshow
+JOIN exhibitorRegionYears eRY on eRY.id=I.exhibitorRegionYearId
+    JOIN exhibitorYears eY on eY.id=eRY.exhibitorYearId
 SET status='To Auction' 
-WHERE I.item_key=? and I.conid=? and S.art_key=?;
+WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $checkInR = dbSafeCmd($checkInQ, 'iii', array($item[1], $conid, $item[0]));
             $log .= " changed $checkInR";
@@ -112,9 +120,10 @@ EOS;
         case 'Release':
             $checkInQ = <<<EOS
 UPDATE artItems I 
-JOIN artshow S on S.id=I.artshow
+JOIN exhibitorRegionYears eRY on eRY.id=I.exhibitorRegionYearId
+    JOIN exhibitorYears eY on eY.id=eRY.exhibitorYearId
 SET status='purchased/released' 
-WHERE I.item_key=? and I.conid=? and S.art_key=?;
+WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $checkInR = dbSafeCmd($checkInQ, 'iii', array($item[1], $conid, $item[0]));
             $log .= " changed $checkInR";

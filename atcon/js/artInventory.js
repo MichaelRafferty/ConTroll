@@ -88,11 +88,13 @@ function inventory() {
 
 function init_locations() {
     var script = 'scripts/artInventory_getLocations.php';
+    var data = "region=" + region
     $.ajax({
             method: "GET",
             url: script,
+            data: data,
             success: function(data, textStatus, jqXhr) {
-                locations = data;
+                locations = data['locations'];
                 //$('#test').empty().append(JSON.stringify(data, null, 2));
                 }
             });
@@ -201,7 +203,7 @@ function build_table(tableData) {
             responsiveLayout:true,
             columns: [
                 { title: 'Key', field: 'id', hozAlign: "right", width:65, headerWordWrap: true, headerFilter: true, tooltip: build_record_hover, responsive: 0},
-                { title: 'Artist', field: 'name', headerWordWrap: true, headerFilter: true, tooltip: true },
+                { title: 'Artist', field: 'exhibitorName', headerWordWrap: true, headerFilter: true, tooltip: true },
                 { title: 'Item', field: 'title', headerWordWrap: true, headerFilter: true, tooltip: true},
                 { title: 'Status', field: 'status', headerWordWrap: true, headerFilter: true, tooltip: true},
                 { title: 'Updated', field: 'time_updated', headerWordWrap: true, headerFilter: true, tooltip: true, responsive: 2},
@@ -335,11 +337,11 @@ function draw_cart_row(rownum) {
     if(item['location'] == "") {
         location_select += '<option></option>';
     }
-    for(loc in locations[item['art_key']]) {
-        if((item['location'] != "") && (locations[item['art_key']][loc] == item['location'])) {
-            location_select += '<option selected=selected>' + locations[item['art_key']][loc] + '</option>';
+    for(loc in locations[item['exhibitorNumber']]) {
+        if((item['location'] != "") && (locations[item['exhibitorNumber']][loc] == item['location'])) {
+            location_select += '<option selected=selected>' + locations[item['exhibitorNumber']][loc] + '</option>';
         } else { 
-            location_select += '<option>' + locations[item['art_key']][loc] + '</option>';
+            location_select += '<option>' + locations[item['exhibitorNumber']][loc] + '</option>';
         }
     }
     location_select += '</select>';
@@ -469,7 +471,7 @@ function update_loc(row, loc, redraw=true) {
     if(loc == undefined) { loc = document.getElementById('loc_' + item).value; }
     console.log("Shift " + item + " to " + loc);
     //check if valid
-    if(!locations[cart[row]['art_key']].includes(loc)) {
+    if(!locations[cart[row]['exhibitorNumber']].includes(loc)) {
         alert("Invalid location");
     } else {
         actionlist.push(create_action('Set Location', item, loc));
