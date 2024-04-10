@@ -85,6 +85,11 @@ vendorsite="http://vendor"
 vendorSignupAddltext=""
 artistsite="http://artist"
 artist="artists@???"
+artistBidSheetLines=4
+artistBidSheetNumbers=3
+;artistBidSheet and artistPriceTag are the titles to print on the bid sheets and print price tags
+;artistBidSheet=
+;artistPriceTag=
 ;artistOnSiteInventoryReqHTML, artistOnSiteInventoryReqText, artistMailInInventoryReqHTML, artistMailInInventoryReqText are the file names for the contents for the artist inventory request emails
 #artistOnSiteInventoryReqHTML=
 #artistOnSiteInventoryReqText=

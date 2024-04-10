@@ -2,6 +2,7 @@
 require_once('../lib/base.php');
 require_once('../../lib/email__load_methods.php');
 require_once('../../lib/cc__load_methods.php');
+require_once('../../lib/exhibitorArtistInventoryEmail.php');
 require_once('../../lib/log.php');
 require_once '../lib/email.php';
 
@@ -644,6 +645,8 @@ while ($space = $exhibitorSR->fetch_assoc()) {
     $exhibitorSpaceList[$space['spaceId']] = $space;
 }
 $exhibitorSR->free();
+
+emailArtistInventoryReq($eryID, 'Payment');
 
 ajaxSuccess(array(
     'status' => $return_arr['status'],

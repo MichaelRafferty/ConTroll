@@ -14,14 +14,29 @@
 //        <<OWNER_NAME>>: NAME OF THE REGION OWNERS
 //        <<OWNER_EMAIL>>: Email address for the owner of this region
 
-function emailArtistInventoryReq($exhibitorSpaceId, $type): bool|array {
+function emailArtistInventoryReq($regionYearId, $type): bool|array {
     $con = get_conf('con');
     $vendor = get_conf("vendor");
 
-    $artistOnSiteInventoryText = $vendor['artistOnSiteInventoryReqText'];
-    $artistOnSiteInventoryHTML = $vendor['artistOnSiteInventoryReqHTML'];
-    $artistMailInInventoryText = $vendor['artistMailInInventoryReqText'];
-    $artistMailInInventoryHTML = $vendor['artistMailInInventoryReqHTML'];
+    if (array_key_exists('artistOnSiteInventoryReqText', $vendor) && $vendor['artistOnSiteInventoryReqText'] != null && $vendor['artistOnSiteInventoryReqText'] != '')
+        $artistOnSiteInventoryText = $vendor['artistOnSiteInventoryReqText'];
+    else
+        $artistOnSiteInventoryText = null;
+
+    if (array_key_exists('artistOnSiteInventoryReqHTML', $vendor) && $vendor['artistOnSiteInventoryReqHTML'] != null && $vendor['artistOnSiteInventoryReqHTML'] != '')
+        $artistOnSiteInventoryHTML = $vendor['artistOnSiteInventoryReqHTML'];
+    else
+        $artistOnSiteInventoryHTML = null;
+
+    if (array_key_exists('artistMailInInventoryReqText', $vendor) && $vendor['artistMailInInventoryReqText'] != null && $vendor['artistMailInInventoryReqText'] != '')
+        $artistMailInInventoryText = $vendor['artistMailInInventoryReqText'];
+    else
+        $artistMailInInventoryText = null;
+
+    if (array_key_exists('artistMailInInventoryReqHTML', $vendor) && $vendor['artistOnSiteInventoryReqHTML'] != null && $vendor['artistOnSiteInventoryReqHTML'] != '')
+        $artistMailInInventoryHTML = $vendor['artistOnSiteInventoryReqHTML'];
+    else
+        $artistMailInInventoryHTML = null;
 
     if ($artistOnSiteInventoryText == NULL && $artistOnSiteInventoryHTML == NULL && $artistMailInInventoryText == NULL && $artistMailInInventoryHTML == NULL) {
         return false; // no email templates available to send
@@ -31,33 +46,42 @@ function emailArtistInventoryReq($exhibitorSpaceId, $type): bool|array {
     $artQuery = <<<EOS
 SELECT e.exhibitorName, e.exhibitorEmail, exY.contactName, exY.contactEmail,
        exY.mailin, exRY.exhibitorNumber, eR.name, eRY.ownerName, eRY.ownerEmail
-FROM exhibitorSpaces exS
-JOIN exhibitorRegionYears exRY ON exS.exhibitorRegionYear = exRY.id
+FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 JOIN exhibitors e ON exY.exhibitorid = e.id
-JOIN exhibitsSpacePrices eSP on exS.item_purchased = eSP.id
-JOIN exhibitsSpaces eS ON eSP.spaceId = eS.id
-JOIN exhibitsRegionYears eRY ON eS.exhibitsRegionYear = eRY.id
+JOIN exhibitsRegionYears eRY ON exRY.exhibitsRegionYearId = eRY.id
 JOIN exhibitsRegions eR ON eRY.exhibitsRegion = eR.id
 JOIN exhibitsRegionTypes eT ON eT.regionType = eR.regionType
-WHERE exS.id = ?
+WHERE exRY.id = ?
 EOS;
 
-    $artR = dbSafeQuery($artQuery, 'i', array($exhibitorSpaceId));
+    $artR = dbSafeQuery($artQuery, 'i', array($regionYearId));
     if ($artR == false || $artR->num_rows < 1) {
-        error_log("Space ID $exhibitorSpaceId not found");
+        error_log("Exhibitor Region Year ID $regionYearId not found");
         return false; // no artist to send to, this is really an error
     }
     $artL = $artR->fetch_assoc();
     $artR->free();
 
     // load the files
-    if ($artL['mailin'] == 'Y') {
-        $txtmsg = file_get_contents('../config/' . $artistMailInInventoryText);
-        $htmlmsg = file_get_contents('../config/' . $artistMailInInventoryHTML);
+    $txtmsg = NULL;
+    $htmlmsg = NULL;
+    //error_log(getcwd());
+    if ($type == 'Reminder') {
+        $prefix = '../../../config/';
     } else {
-        $txtmsg = file_get_contents('../config/' . $artistOnSiteInventoryText);
-        $htmlmsg = file_get_contents('../config/' . $artistOnSiteInventoryHTML);
+        $prefix = '../../config/';
+    }
+    if ($artL['mailin'] == 'Y') {
+        if ($artistMailInInventoryText != null)
+            $txtmsg = file_get_contents($prefix . $artistMailInInventoryText);
+        if ($artistMailInInventoryHTML != NULL)
+            $htmlmsg = file_get_contents($prefix . $artistMailInInventoryHTML);
+    } else {
+        if ($artistOnSiteInventoryText != null)
+            $txtmsg = file_get_contents($prefix . $artistOnSiteInventoryText);
+        if ($artistOnSiteInventoryHTML != null)
+            $htmlmsg = file_get_contents($prefix . $artistOnSiteInventoryHTML);
     }
 
     $emails = artistEamilReplaceTokens($txtmsg, $htmlmsg, $artL);
