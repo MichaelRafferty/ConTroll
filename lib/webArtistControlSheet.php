@@ -276,6 +276,13 @@ EOS;
 }
 
 function control_sheet_page_init($title) {
+    require_once('global.php');
+    $includes = getTabulatorIncludes();
+    $jquicss = $includes['jquicss'];
+    $bs5css = $includes['bs5css'];
+    $bs5js = $includes['bs5js'];
+    $jqjs = $includes['jqjs'];
+    $jquijs = $includes['jquijs'];
     echo <<<EOF
 <!DOCTYPE html>
 <html lang="en">
@@ -285,12 +292,12 @@ function control_sheet_page_init($title) {
 
     <title>$title</title>
     <link href='/vendor/css/style.css' rel='stylesheet' type='text/css' />
-    <link href='/csslib/jquery-ui-1.13.1.css' rel='stylesheet' type='text/css' /> 
-    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH' crossorigin='anonymous'>
-    
-    <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js' integrity='sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz' crossorigin='anonymous'></script>
-    <script type='text/javascript' src='/jslib/jquery-3.7.1.min.js'></script>
-    <script type='text/javascript' src='/jslib/jquery-ui.min-1.13.1.js'></script>
+    <link href='$jquicss' rel='stylesheet' type='text/css' />
+    <link href='$bs5css' rel='stylesheet'/>
+
+    <script type='text/javascript' src='$bs5js'></script>
+    <script type='type='text/javascript' src='$jqjs'></script>
+    <script type='text/javascript' src='$jquijs'></script>
 </head>
 EOF;
 }
