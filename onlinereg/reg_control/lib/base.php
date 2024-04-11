@@ -156,6 +156,7 @@ function page_init($title, $css, $js, $auth) {
 <head>
     <meta charset="utf-8"/>
     <title><?php echo $title . '--' . $db_ini['con']['conname']?> Reg</title>
+    <link rel='icon' type='image/x-icon' href='/lib/favicon.ico'>
     <link href='<?php echo $includes['jquicss'];?>' rel='stylesheet' type='text/css' />
     <link href='<?php echo $includes['bs5css'];?>' rel='stylesheet'/>
     <?php

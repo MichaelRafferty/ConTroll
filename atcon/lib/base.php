@@ -41,6 +41,7 @@ function page_init($title, $tab, $css, $js)
     <title>
         <?php echo $title . ' -- ' . $label; ?> Reg
     </title>
+    <link rel='icon' type='image/x-icon' href='/lib/favicon.ico'>
     <link href='<?php echo $includes['jquicss'];?>' rel='stylesheet' type='text/css' />
     <link href='<?php echo $includes['bs5css'];?>' rel='stylesheet'/>
     <link href="/css/base.css" rel='stylesheet' type='text/css' />
