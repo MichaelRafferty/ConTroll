@@ -182,7 +182,8 @@ $response['detail'] = $details;
 
 // build option lists for each space
 //
-$dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+$curLocale = locale_get_default();
+$dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 $priceQ = <<<EOS
 SELECT eSP.id, eSP.spaceId, eSP.code, eSP.description, eSP.units, eSP.price, eSP.requestable
 FROM exhibitsSpacePrices eSP

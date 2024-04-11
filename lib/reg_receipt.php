@@ -18,9 +18,9 @@ JOIN exhibitsSpaces s ON (s.id = e.spaceId)
 JOIN exhibitsSpacePrices esp ON (s.id = esp.spaceId AND e.item_approved = esp.id)
 JOIN exhibitsRegionYears ery ON (ery.id = s.exhibitsRegionYear)
 JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
-WHERE ery.id = ?;
+WHERE ery.id = ? and e.exhibitorId = ?;
 EOS;
-        $spaceR = dbSafeQuery($spaceQ, 'i', array($regionYearId));
+        $spaceR = dbSafeQuery($spaceQ, 'ii', array($regionYearId, $exhId));
         if ($spaceR == false || $spaceR->num_rows == 0) {
             $response['error'] = 'Unable to find any space for the receipt';
             ajaxSuccess($response);
@@ -325,7 +325,8 @@ EOS;
 
 // reg_format_receipt - format a receipt in HTML and Text formats
 function reg_format_receipt($data) {
-    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+    $curLocale = locale_get_default();
+    $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
     // ok, now there is all the data for the receipt
     // payor = who paid
     // people = details about people mentioned in the memberships
@@ -755,7 +756,8 @@ function sum_coupon_discount($id, $memberships) {
 
 // format a member block for the receipt
 function reg_format_mbr($data, $person, $list, &$receipt, &$receipt_html, &$receipt_tables) {
-    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+    $curLocale = locale_get_default();
+    $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
     // first the name:
     $name = trim($person['first_name']);
     if (mb_strlen($person['middle_name']) > 0)
