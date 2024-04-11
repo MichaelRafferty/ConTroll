@@ -40,6 +40,7 @@ echo <<<EOF
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>$title</title>
+    <link rel='icon' type='image/x-icon' href='/lib/favicon.ico'>
     <link href='css/style.css' rel='stylesheet' type='text/css' />
     <link href='$jquicss' rel='stylesheet' type='text/css' /> 
     <link href='$tabcss' rel='stylesheet'>
