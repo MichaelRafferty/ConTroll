@@ -73,7 +73,7 @@ function init_table() {
 }
 
 function inventory() {
-    var script = 'onServer/inventory.php';
+    var script = 'scripts/artInventory_inventory.php';
     $.ajax({
             method: "POST",
             url: script,
@@ -87,12 +87,14 @@ function inventory() {
 }
 
 function init_locations() {
-    var script = 'onServer/getLocations.php';
+    var script = 'scripts/artInventory_getLocations.php';
+    var data = "region=" + region
     $.ajax({
             method: "GET",
             url: script,
+            data: data,
             success: function(data, textStatus, jqXhr) {
-                locations = data;
+                locations = data['locations'];
                 //$('#test').empty().append(JSON.stringify(data, null, 2));
                 }
             });
@@ -109,11 +111,14 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
             // no inventory action, gone
             break;
         case 'Sold Bid Sheet':
+        case 'Sold At Auction':
         case 'To Auction':
             // sales can sell
-            if(mode == 'sales') {
+            if(mode == 'sales') { // this is probably not how this will be done
                 html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'sell\')">Sell</button>';
             }
+            html += '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'alert\')">N/A</button>';
+            //no inventory action
             break;
         case 'Quicksale/Sold':
             //inventory
@@ -131,9 +136,10 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
                 html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button>';
             }
             //manager can remove from show 
+            /* actually they shouldn't be able to
             if(manager) {
                 html += '<button type="button" class="btn btn-sm btn-warning pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'remove\')">Remove</button>';
-            }
+            }*/
             break;
         case 'Checked In':
             //sales can sell
@@ -149,6 +155,7 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
             }
             break;
         case 'Removed from Show':
+        case 'Entered':
         case 'Not In Show':
         default:
             // must check in
@@ -196,7 +203,7 @@ function build_table(tableData) {
             responsiveLayout:true,
             columns: [
                 { title: 'Key', field: 'id', hozAlign: "right", width:65, headerWordWrap: true, headerFilter: true, tooltip: build_record_hover, responsive: 0},
-                { title: 'Artist', field: 'name', headerWordWrap: true, headerFilter: true, tooltip: true },
+                { title: 'Artist', field: 'exhibitorName', headerWordWrap: true, headerFilter: true, tooltip: true },
                 { title: 'Item', field: 'title', headerWordWrap: true, headerFilter: true, tooltip: true},
                 { title: 'Status', field: 'status', headerWordWrap: true, headerFilter: true, tooltip: true},
                 { title: 'Updated', field: 'time_updated', headerWordWrap: true, headerFilter: true, tooltip: true, responsive: 2},
@@ -216,7 +223,7 @@ function build_table(tableData) {
 function find_item(action) {
     var artist = artist_field.value;
 
-    var script = 'onServer/getItem.php';
+    var script = 'scripts/artInventory_getItem.php';
 
     $.ajax({
         data: "artist="+artist,
@@ -330,11 +337,11 @@ function draw_cart_row(rownum) {
     if(item['location'] == "") {
         location_select += '<option></option>';
     }
-    for(loc in locations[item['art_key']]) {
-        if((item['location'] != "") && (locations[item['art_key']][loc] == item['location'])) {
-            location_select += '<option selected=selected>' + locations[item['art_key']][loc] + '</option>';
+    for(loc in locations[item['exhibitorNumber']]) {
+        if((item['location'] != "") && (locations[item['exhibitorNumber']][loc] == item['location'])) {
+            location_select += '<option selected=selected>' + locations[item['exhibitorNumber']][loc] + '</option>';
         } else { 
-            location_select += '<option>' + locations[item['art_key']][loc] + '</option>';
+            location_select += '<option>' + locations[item['exhibitorNumber']][loc] + '</option>';
         }
     }
     location_select += '</select>';
@@ -464,7 +471,7 @@ function update_loc(row, loc, redraw=true) {
     if(loc == undefined) { loc = document.getElementById('loc_' + item).value; }
     console.log("Shift " + item + " to " + loc);
     //check if valid
-    if(!locations[cart[row]['art_key']].includes(loc)) {
+    if(!locations[cart[row]['exhibitorNumber']].includes(loc)) {
         alert("Invalid location");
     } else {
         actionlist.push(create_action('Set Location', item, loc));

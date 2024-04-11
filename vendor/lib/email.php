@@ -128,7 +128,8 @@ function payment($results) {
 
     $conf = get_conf('con');
     $vendor_conf = get_conf('vendor');
-    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+    $curLocale = locale_get_default();
+    $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
     // plain text version
     $body = "Dear " . trim($buyer['fname'] . ' ' . $buyer['lname']) . ":\n\n" .

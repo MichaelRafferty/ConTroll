@@ -1,53 +1,46 @@
 <?php
-require_once("../lib/base.php");
-require_once("../../lib/auctionPrintSheets.php");
-
-$con = get_con();
-$conid= $con['id'];
-$vendor_conf = get_conf('vendor');
-$render_url = $vendor_conf['renderer'];
-$debug_conf = get_conf('debug');
-if(!array_key_exists('render', $debug_conf)) { $debug_conf['render'] = 0; }
-
-global $returnAjaxErrors, $return500errors;
-$returnAjaxErrors = true;
-$return500errors = true;
-
-$response = array('post' => $_POST, 'get' => $_GET);
-if($debug_conf['render']) { 
-    $response['renderer'] = $render_url; 
-    $response['session'] = $_SESSION;
+global $db_ini;
+if (!$db_ini) {
+    $db_ini = parse_ini_file(__DIR__ . '/../../config/reg_conf.ini', true);
 }
 
+if ($db_ini['reg']['https'] <> 0) {
+    if (!isset($_SERVER['HTTPS']) or $_SERVER['HTTPS'] != 'on') {
+        header('HTTP/1.1 301 Moved Permanently');
+        header('Location: https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']);
+        exit();
+    }
+}
 
+require_once('../../lib/db_functions.php');
+require_once('../../lib/pdfPrintArtShowSheets.php');
+require_once('../../lib/webArtistControlSheet.php');
+
+db_connect();
+session_start();
+
+date_default_timezone_set('America/New_York');
+
+$response = array('post' => $_POST, 'get' => $_GET);
 if(!array_key_exists('type', $_GET) || !array_key_exists('region', $_GET) || !array_key_exists('eyID', $_SESSION)) {
-    ajaxError('Invalid Session');
+    echo "Invalid Session\n";
     exit;
 }
 
 $eyID = $_SESSION['eyID'];
 $region = $_GET['region'];
 
-$config = array(
-    'con' => $con, 
-    'render_url' => $render_url, 
-    'debug' =>$debug_conf
-    );
-
 switch($_GET['type']) {
     case 'bidsheets':
-        $response = bidsheets($eyID, $region, $response, $config);
+        $response = pdfPrintBidSheets($eyID, $region, $response);
         break;
     case 'printshop':
-        $response = copysheets($eyID, $region, $response, $config);
+        $response = pdfPrintShopPriceSheets($eyID, $region, $response);
         break;
     case 'control':
+        $response = webArtistControlSheet($eyID, $region, $response);
+        break;
     default:
-}
-
-
-if($response['status'] != 'Success') {
-    ajaxSuccess($response);
 }
 
 ?>

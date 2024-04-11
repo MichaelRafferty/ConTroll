@@ -257,9 +257,9 @@ if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclai
 }
 
 // exhibitor_showInvoice -> show the current request and the change/cancel button
-function exhibitor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList, $region, $info)
-{
-    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+function exhibitor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList, $region, $info) {
+    $curLocale = locale_get_default();
+    $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
     $totalPrice = 0;
     echo "You have been approved for:<br/>\n";
@@ -289,7 +289,8 @@ function exhibitor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhib
 
 // draw the paid for status block
 function vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList) {
-    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+    $curLocale = locale_get_default();
+    $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
     $totalPrice = 0;
     echo "You have purchased:<br/>\n";
