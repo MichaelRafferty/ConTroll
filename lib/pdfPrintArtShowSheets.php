@@ -177,9 +177,38 @@ function pdfPrintBidSheets($regionYearId, $region, $response) {
     $conname = $con['label'];
 
     $vendor = get_conf('vendor');
-    $title = $vendor['artistBidSheet'];
-    $bidlines = $vendor['artistBidSheetLines'];
-    $numberedLines = $vendor['artistBidSheetNumbers'];
+    $title = null;
+    if (array_key_exists('artistBidSheet', $vendor))
+        $title = $vendor['artistBidSheet'];
+   
+    if ($title == null || $title == '') {
+        $title = 'Unconfigured Art Show Bid Sheets';
+    }
+    
+    $bidlines = null;
+    if (array_key_exists('artistBidSheetLines', $vendor))
+        $bidlines = $vendor['artistBidSheetLines'];
+    if ($bidlines == null || $bidlines == '' || !is_numeric($bidlines)) {
+        $bidlines = 4;
+    }
+
+    $numberedLines = null;
+    if (array_key_exists('artistBidSheetNumbers', $vendor))
+        $numberedLines = $vendor['artistBidSheetNumbers'];
+    if ($numberedLines == null || $numberedLines == '' || !is_numeric($numberedLines)) {
+        $numberedLines = 3;
+    }
+
+    $bidSep = 0;
+    if (array_key_exists('artistBidSheetBidSep', $vendor))
+        $bidSep = $vendor['artistBidSheetBidSep'];
+
+    if ($bidSep == 'yes' || $bidSep == 'true')
+        $bidSep = 1;
+    else if ($bidSep == 'no' || $bidSep == 'false')
+        $bidSep = 0;
+    else if ($bidSep == null || $bidSep == '' || !is_numeric($bidSep))
+        $bidSep = 0;
 
 // local constants for the sheets
     $margin = 0.25;
@@ -231,11 +260,6 @@ EOS;
         $response['status'] = 'No art found requiring bid sheets';
         echo "No art found requiring bid sheets\n";
         return $response;
-    }
-
-    $title = $vendor['artistBidSheet'];
-    if ($title == null || $title == '') {
-        $title = 'Unconfigured Art Show Bid Sheets';
     }
 
 // load data array
@@ -376,7 +400,7 @@ EOS;
         $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.2, $headerheight);
         $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $headerheight);
         pushFont('Arial', '', 8);
-        printXY($h + 0.025, $v + $labeloffset + 0.01, "Bidder Name");
+        printXY($h + 0.025, $v + $labeloffset + 0.01, "Bidder Name (Please Print)");
         printXY($h + 0.025 + $isize * 0.6, $v + $labeloffset + 0.01, 'Badge #');
         printXY($h + 0.025 + $isize * 0.8, $v + $labeloffset + 0.01, 'Bid ($)');
         popFont();
@@ -385,12 +409,18 @@ EOS;
         pushFont('Arial', '', 6);
         for ($lineno = 1; $lineno <= $numberedLines; $lineno++) {
             $pdf->Rect($h, $v, $isize, $blockheight);
+            if ($bidSep) {
+                $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.2, $blockheight);
+            }
             printXY($h, $v + $labeloffset, "$lineno)");
             $v += $blockheight;
         }
         popFont();
         for (; $lineno <= $bidlines; $lineno++) {
             $pdf->Rect($h, $v, $isize, $blockheight);
+            if ($bidSep) {
+                $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.2, $blockheight);
+            }
             $v += $blockheight;
         }
 
