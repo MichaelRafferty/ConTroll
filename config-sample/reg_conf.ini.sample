@@ -85,8 +85,14 @@ vendorsite="http://vendor"
 vendorSignupAddltext=""
 artistsite="http://artist"
 artist="artists@???"
+;; artist Item Registration Headers, if omitted, the defaults are used
+;artistItemAuctionTitle="Art Auction Items"
+;artistItemSalesTitle="Art Sales / Print Shop Items"
+;artistItemNFSTitle="Display Only / Not For Sale Items"
+; lines = number of bid lines, numbers are which of those are numbreed, Sep is to show seperation lines (vertical lines) in the bid rows (1=yes, 0=no)
 artistBidSheetLines=4
 artistBidSheetNumbers=3
+artistBidSheetBidSep=1
 ;artistBidSheet and artistPriceTag are the titles to print on the bid sheets and print price tags
 ;artistBidSheet=
 ;artistPriceTag=
