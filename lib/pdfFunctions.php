@@ -64,10 +64,12 @@ function printXY($x, $y, $string) {
 function mprintXY($x, $y, $hsize, $string) {
     global $currentPDF, $fontStack, $lineWidthStack;
 
-    $currentPDF->setXY($x, $y);
-    // set vertical size to point size * 1.2
-    $vsize = (($fontStack[count($fontStack) - 1][2])/72) * 1.1;
-    $currentPDF->MultiCell($hsize, $vsize, $string);
+    // set vertical size to point size + leading
+    $fontHeight = ($fontStack[count($fontStack) - 1][2])/72;
+    $vsize = $fontHeight * 1.1;
+    $currentPDF->setXY($x, $y - ($fontHeight + (1/72))/2);
+    $currentPDF->MultiCell($hsize, $vsize, $string, 0, 'L', false);
+    return $currentPDF->GetY();
 }
 
 function fitprintXY($x, $y, $hsize, $string) {
@@ -76,12 +78,38 @@ function fitprintXY($x, $y, $hsize, $string) {
     $len = $currentPDF->GetStringWidth($string);
     if ($len > $hsize) {
         $font = $fontStack[count($fontStack) - 1];
-        pushFont($font[0], $font[1], $font[2]/1.4);
-        mprintXY($x, $y - (($font[2]/72) * 0.7), $hsize - 0.15, $string);
+        $newFontSize = $font[2]/1.4;
+        pushFont($font[0], $font[1], $newFontSize);
+        $newY = $y - ($newFontSize / 144);  // strange centerline stype of mprintXY.
+        mprintXY($x, $newY, $hsize - 0.15, $string);
         popFont();
     } else {
         printXY($x, $y, $string);
     }
+    return $currentPDF->GetY();
 }
 
+function centerPrintXY($x, $y, $hsize, $string) {
+    global $currentPDF, $fontStack;
+
+    $pt = 1.0/72.0;
+
+    $len = $currentPDF->GetStringWidth($string);
+    if ($len > $hsize)
+        return mprintXY($x, $y, $hsize, $string);
+    printXY($x + ($hsize - ($len + 2 * $pt)) / 2, $y, $string);
+    return null;
+}
+
+function rightPrintXY($x, $y, $hsize, $string) {
+    global $currentPDF, $fontStack;
+
+    $pt = 1.0/72.0;
+
+    $len = $currentPDF->GetStringWidth($string);
+    if ($len > $hsize)
+        return mprintXY($x, $y, $hsize, $string);
+    printXY($x + ($hsize - ($len + 2 * $pt)), $y, $string);
+    return null;
+}
 ?>

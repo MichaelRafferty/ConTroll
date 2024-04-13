@@ -32,6 +32,7 @@ function page_init($title, $tab, $css, $js)
     $label = $con['label'];
     global $perms;
     if (isWebRequest()) {
+        $includes = getTabulatorIncludes();
         ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -40,17 +41,18 @@ function page_init($title, $tab, $css, $js)
     <title>
         <?php echo $title . ' -- ' . $label; ?> Reg
     </title>
-    <link href='/csslib/jquery-ui-1.13.1.css' rel='stylesheet' type='text/css' />
-    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH' crossorigin='anonymous'>
+    <link rel='icon' type='image/x-icon' href='/lib/favicon.ico'>
+    <link href='<?php echo $includes['jquicss'];?>' rel='stylesheet' type='text/css' />
+    <link href='<?php echo $includes['bs5css'];?>' rel='stylesheet'/>
     <link href="/css/base.css" rel='stylesheet' type='text/css' />
         <?php  if (isset($css) && $css != null) {
             foreach ($css as $sheet) { ?>
     <link href='<?php echo $sheet; ?>' rel=stylesheet type='text/css' />
             <?php }
         } ?>
-    <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js' integrity='sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz' crossorigin='anonymous'></script>
-    <script type='text/javascript' src='/jslib/jquery-3.7.1.min.js'></script>
-    <script type='text/javascript' src='/jslib/jquery-ui.min-1.13.1.js'></script>
+    <script src='<?php echo $includes['bs5js'];?>'></script>
+    <script type='text/javascript' src='<?php echo $includes['jqjs']; ?>'></script>
+    <script type='text/javascript' src='<?php echo $includes['jquijs']; ?>'></script>
     <script type='text/javascript' src='/js/base.js'></script>
         <?php
         if (isset($js) && $js != null) {
