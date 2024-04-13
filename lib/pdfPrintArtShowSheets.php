@@ -856,9 +856,9 @@ EOS;
             popFont();
             $y = mprintXY($cM, $v, $wM, $artItem['material']);
             if ($y > $maxY) $maxY = $y;
-            if ($artItem['min_price'])
+            if ($artItem['min_price'] && $artItem['type'] != 'print')
                 rightPrintXY($cMin, $v, $wMin, $dolfmt->formatCurrency((float)$artItem['min_price'], 'USD'));
-            if ($artItem['sale_price'])
+            if ($artItem['sale_price'] && $artItem['type'] != 'nfs')
                 rightPrintXY($cSale, $v, $wSale, $dolfmt->formatCurrency((float)$artItem['sale_price'], 'USD'));
             if ($artItem['original_qty'] > 0)
                 rightPrintXY($cOrig, $v, $wOrig, $artItem['original_qty']);
