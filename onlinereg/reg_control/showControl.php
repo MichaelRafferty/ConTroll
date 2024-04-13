@@ -1,5 +1,6 @@
 <?php
 require_once "lib/base.php";
+require_once "../../lib/global.php";
 //initialize google session
 $need_login = google_init("page");
 
@@ -77,7 +78,7 @@ EOS;
     return $art;
 }
 
-
+$includes = getTabulatorIncludes();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -86,7 +87,7 @@ EOS;
     <link href='css/base.css' rel='stylesheet' type='text/css' />
     <link href='css/showControl.css' rel='stylesheet' type='text/css' />
 
-  <script type='text/javascript' src='/jslib/jquery-3.7.1.min.js'></script>
+  <script type='text/javascript' src='<?php echo $includes['jqjs']; ?>'></script>
   <script type='text/javascript' src='js/d3.js'></script>
   <script type='text/javascript' src='js/base.js'></script>
 </head>
