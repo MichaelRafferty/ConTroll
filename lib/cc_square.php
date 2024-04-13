@@ -169,7 +169,7 @@ function cc_charge_purchase($results, $ccauth) {
         $item = new OrderLineItem ('1');
         $item->setUid('badge' . ($lineid + 1));
         $item->setName($badge['age'] . ' Membership for ' .  trim(trim($badge['fname'] . ' ' . $badge['mname'])  . ' ' . $badge['lname']));
-        $item->setNote('memId: ' . $badge['memId']);
+        $item->setNote($badge['memId'] . ': Membership Type Code');
         $item->setBasePriceMoney(new Money);
         $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
         $item->getBasePriceMoney()->setCurrency(Currency::USD);
