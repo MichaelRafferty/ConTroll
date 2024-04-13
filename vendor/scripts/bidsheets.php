@@ -14,7 +14,6 @@ if ($db_ini['reg']['https'] <> 0) {
 
 require_once('../../lib/db_functions.php');
 require_once('../../lib/pdfPrintArtShowSheets.php');
-require_once('../../lib/webArtistControlSheet.php');
 
 db_connect();
 session_start();
@@ -38,7 +37,7 @@ switch($_GET['type']) {
         $response = pdfPrintShopPriceSheets($eyID, $region, $response);
         break;
     case 'control':
-        $response = webArtistControlSheet($eyID, $region, $response);
+        $response = pdfArtistControlSheet($eyID, $region, $response);
         break;
     default:
 }
