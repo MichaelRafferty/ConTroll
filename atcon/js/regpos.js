@@ -1141,7 +1141,7 @@ function draw_record(row, first) {
         </div>  
         <div class="row">
             <div class="col-sm-3">Legal Name:</div>
-            <div class="col-sm-9">\` + data['legalName'] + \`</div>
+            <div class="col-sm-9">` + data['legalName'] + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">Address:</div>
