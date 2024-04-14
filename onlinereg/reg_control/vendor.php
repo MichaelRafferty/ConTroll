@@ -79,6 +79,29 @@ draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
 draw_exhibitorRequestModal('admin');
 draw_exhibitorReceiptModal('admin');
 ?>
+<!-- space detail modal -->
+    <div id='space_detail' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Space Detail' aria-hidden='true'
+    style='--bs-modal-width: 90%;'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='space-detail-title'>
+                        <strong>Space Detail</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <div class='container-fluid'>
+                        <div id='spacedetailHTML'></div>
+                        <div class='row' id='spacedetail_message_div'></div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Dismiss</button>
+                </div>
+            </div>
+        </div>
+    </div>
 <!-- import modal -->
     <div id='import_exhibitor' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Import Past Vendors' aria-hidden='true'
          style='--bs-modal-width: 96%;'>
