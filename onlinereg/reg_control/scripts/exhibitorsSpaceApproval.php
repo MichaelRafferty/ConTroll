@@ -43,9 +43,9 @@ JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
 JOIN exhibitsSpaces es ON es.id = eS.spaceId
 JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
 SET item_approved = item_requested, time_approved = NOW()
-WHERE ery.id = ?;
+WHERE ery.id = ? and eY.exhibitorId = ?;
 EOS;
-        $num_rows = dbSafeCmd($upQ, 'i', array($regionYearId));
+        $num_rows = dbSafeCmd($upQ, 'ii', array($regionYearId, $exhibitorId));
         if ($num_rows > 0 ) {
             $response['status'] = 'success';
             $response['success'] = "Space Approved";
@@ -59,15 +59,36 @@ EOS;
         if (!(array_key_exists('requests', $_POST) && array_key_exists('exhibitorYearId', $_POST))) {
             ajaxError('No Data');
         }
+
+        $exhibitorId = $_POST['exhibitorId'];
+        $exhibitorYearId = $_POST['exhibitorYearId'];
+
         $upQ = <<<EOS
-UPDATE exhibitorSpaces
+UPDATE exhibitorSpaces eS
+JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
+JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
+JOIN exhibitsSpaces es ON es.id = eS.spaceId
+JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
 SET item_approved = ?, time_approved = NOW()
-WHERE spaceId = ? and exhibitorRegionYear = ?;
+WHERE eS.spaceId = ? and ery.id = ? AND eY.exhibitorId = ?;
+EOS;
+        $upQ2 = <<<EOS
+UPDATE exhibitorSpaces eS
+JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
+JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
+JOIN exhibitsSpaces es ON es.id = eS.spaceId
+JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
+SET item_requested = item_approved, time_requested = time_approved 
+WHERE eS.spaceId = ? and ery.id = ? and eY.exhibitorId = ? and item_requested is NULL;
 EOS;
 $upCanQ = <<<EOS
-UPDATE exhibitorSpaces
+UPDATE exhibitorSpaces eS
+JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
+JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
+JOIN exhibitsSpaces es ON es.id = eS.spaceId
+JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
 SET item_approved = null, item_requested = null, time_requested = NOW(), time_approved = NOW()
-WHERE spaceId = ? and exhibitorRegionYear = ?;
+WHERE eS.spaceId = ? and ery.id = ? and eY.exhibitorId = ?;
 EOS;
 
         // requests = each space price id in the format
@@ -83,9 +104,10 @@ EOS;
             $value = $reqitems[1];
             $spaceId = str_replace('exhbibitor_req_price_id_', '', $spaceId);
             if ($value > 0) {
-                $num_rows += dbSafeCmd($upQ, 'iii', array($value, $spaceId, $regionYearId));
+                $num_rows += dbSafeCmd($upQ, 'iiii', array($value, $spaceId, $regionYearId, $exhibitorId));
+                dbSafeCmd($upQ2, 'iii', array($spaceId, $regionYearId, $exhibitorId));
             } else {
-                $num_rows += dbSafeCmd($upCanQ, 'ii', array($spaceId, $regionYearId));
+                $num_rows += dbSafeCmd($upCanQ, 'iii', array($spaceId, $regionYearId, $exhibitorId));
             }
         }
         if ($num_rows > 0) {
@@ -107,7 +129,8 @@ if (array_key_exists('success', $response)) {
     $details = array();
     $detailQ = <<<EOS
 WITH exh AS (
-SELECT e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id AS exhibitorYearId, 
+SELECT e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id AS exhibitorYearId, exRY.exhibitorNumber, exRY.agentRequest,
+    TRIM(CONCAT(p.first_name, ' ', p.last_name)) as pName, TRIM(CONCAT(n.first_name, ' ', n.last_name)) AS nName,
 	SUM(IFNULL(espr.units, 0)) AS ru, SUM(IFNULL(espa.units, 0)) AS au, SUM(IFNULL(espp.units, 0)) AS pu
 FROM exhibitorSpaces eS
 LEFT OUTER JOIN exhibitsSpacePrices espr ON (eS.item_requested = espr.id)
@@ -118,20 +141,23 @@ JOIN exhibitorYears eY ON (eY.id = exRY.exhibitorYearId)
 JOIN exhibitors e ON (e.id = eY.exhibitorId)
 JOIN exhibitsSpaces s ON (s.id = eS.spaceId)
 JOIN exhibitsRegionYears eRY ON s.exhibitsRegionYear = eRY.id
+LEFT OUTER JOIN perinfo p ON p.id = exRY.agentPerid
+LEFT OUTER JOIN newperson n ON n.id = exRY.agentNewperson
 WHERE eY.conid = ? AND eRY.id = ? AND e.id = ?
-GROUP BY e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id
+GROUP BY e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id, exRY.exhibitorNumber, exRY.agentRequest, pName, nName
 )
 SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.website, exh.exhibitorEmail,
     xS.spaceId, xS.name as spaceName, xS.item_requested, xS.time_requested, xS.requested_units, xS.requested_code, xS.requested_description,
     xS.item_approved, xS.time_approved, xS.approved_units, xS.approved_code, xS.approved_description,
     xS.item_purchased, xS.time_purchased, xS.purchased_units, xS.purchased_code, xS.purchased_description, xS.transid,
-    eRY.id AS exhibitsRegionYearId, eRY.exhibitsRegion AS regionId, eRY.ownerName, eRY.ownerEmail, eR.name AS regionName,
+    eRY.id AS exhibitsRegionYearId, eRY.exhibitsRegion AS regionId, eRY.ownerName, eRY.ownerEmail, eR.name AS regionName, exh.exhibitorNumber,
+    IFNULL(pName, nName) as agentName,
     exh.pu * 10000 + exh.au * 100 + exh.ru AS sortOrder
 FROM vw_ExhibitorSpace xS
-JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
-JOIN exhibitsRegionYears eRY ON eS.exhibitsRegionYear = eRY.id
-JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
-JOIN exh ON (xS.exhibitorId = exh.id)
+    JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
+    JOIN exhibitsRegionYears eRY ON eS.exhibitsRegionYear = eRY.id
+    JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
+    JOIN exh ON (xS.exhibitorId = exh.id)
 WHERE eRY.conid=? AND eRY.id = ? AND xS.exhibitorId = ? AND (time_requested IS NOT NULL OR time_approved IS NOT NULL)
 ORDER BY sortOrder, exhibitorName, spaceName
 EOS;

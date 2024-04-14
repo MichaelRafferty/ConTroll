@@ -24,7 +24,9 @@ if(!isset($_GET) || !isset($_GET['perid'])) {
 
 $perid = $_GET['perid'];
 
-$userQ = "SELECT id, concat_ws(' ', first_name, last_name, suffix) as name, badge_name as badge FROM perinfo WHERE id=?;";
+$userQ = "SELECT id, 
+       TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(first_name, ''), IFNULL(middle_name, ''))), IFNULL(last_name, ''))), IFNULL(suffix, ''))) AS name, 
+       badge_name AS badge FROM perinfo WHERE id=?;";
 $userR = dbSafeQuery($userQ, 'i', array($perid));
 $user = fetch_safe_assoc($userR);
 $response['id']= $user['id'];

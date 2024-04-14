@@ -63,7 +63,7 @@ SELECT DISTINCT P.id as perid, IFNULL(P.first_name, '') as first_name, IFNULL(P.
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(P.last_name, ''), ', ', IFNULL(P.first_name, ''),' ', IFNULL(P.middle_name, ''), ' ', IFNULL(P.suffix,'')), '  *', ' ')) AS fullname
 FROM perinfo P
 WHERE 
-(LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
+(LOWER(TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(first_name, ''), IFNULL(middle_name, ''))), IFNULL(last_name, '')))) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
 ORDER BY last_name, first_name LIMIT $limit;
 EOS;
     //web_error_log($findPersonQ);

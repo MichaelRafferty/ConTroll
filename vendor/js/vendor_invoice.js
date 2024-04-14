@@ -226,7 +226,7 @@ function openInvoice(id) {
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="email_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Email</span></label><br/>
-        <input class="form-control-sm" type="email" name="email_i_` + mnum + `" id='email_i_` + mnum + `' size="35" maxlength="64" />
+        <input class="form-control-sm" type="email" name="email_i_` + mnum + `" id='email_i_` + mnum + `' size="35" maxlength="254" />
     </div>
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="phone_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
@@ -315,7 +315,7 @@ function openInvoice(id) {
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="email_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Email</span></label><br/>
-        <input class="form-control-sm" type="email" name="email_a_` + mnum + `" id='email_a_` + mnum + `' size="35" maxlength="64" />
+        <input class="form-control-sm" type="email" name="email_a_` + mnum + `" id='email_a_` + mnum + `' size="35" maxlength="254" />
     </div>
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="phone_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>

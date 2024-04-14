@@ -2,6 +2,7 @@
 require_once('../lib/base.php');
 require_once('../../lib/email__load_methods.php');
 require_once('../../lib/cc__load_methods.php');
+require_once('../../lib/exhibitorArtistInventoryEmail.php');
 require_once('../../lib/log.php');
 require_once '../lib/email.php';
 
@@ -68,7 +69,8 @@ $aggreeNone = false;
 if (array_key_exists('agreeNone', $_POST))
     $aggreeNone = $_POST['agreeNone'] == 'on';
 
-$dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+$curLocale = locale_get_default();
+$dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 // get the specific information allowed
 $regionYearQ = <<<EOS
 SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice,
@@ -385,7 +387,7 @@ SELECT R.id AS badge,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.legalName AS legalname
+    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.legalName AS legalname, R.memId
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
 JOIN memList M ON (M.id = R.memID)
@@ -650,6 +652,8 @@ while ($space = $exhibitorSR->fetch_assoc()) {
     $exhibitorSpaceList[$space['spaceId']] = $space;
 }
 $exhibitorSR->free();
+
+emailArtistInventoryReq($eryID, 'Payment');
 
 ajaxSuccess(array(
     'status' => $return_arr['status'],

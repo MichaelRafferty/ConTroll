@@ -12,14 +12,12 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
 
+$cdn = getTabulatorIncludes();
 page_init($page,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
-                    'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
-                    'css/base.css'
-                   ),
+    /* css */ array($cdn['tabcss'], $cdn['tabbs5'],'css/base.css'),
     /* js  */ array(
-                    //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js',
+                    //$cdn['luxon'],
+                    $cdn['tabjs'],
                     //'js/d3.js',
                     'js/base.js',
                     'jslib/exhibitorProfile.js',
@@ -81,6 +79,29 @@ draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
 draw_exhibitorRequestModal('admin');
 draw_exhibitorReceiptModal('admin');
 ?>
+<!-- space detail modal -->
+    <div id='space_detail' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Space Detail' aria-hidden='true'
+    style='--bs-modal-width: 90%;'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='space-detail-title'>
+                        <strong>Space Detail</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <div class='container-fluid'>
+                        <div id='spacedetailHTML'></div>
+                        <div class='row' id='spacedetail_message_div'></div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Dismiss</button>
+                </div>
+            </div>
+        </div>
+    </div>
 <!-- import modal -->
     <div id='import_exhibitor' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Import Past Vendors' aria-hidden='true'
          style='--bs-modal-width: 96%;'>

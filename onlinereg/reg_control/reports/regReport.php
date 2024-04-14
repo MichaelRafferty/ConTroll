@@ -22,7 +22,7 @@ header('Content-Disposition: attachment; filename="reg_report.csv"');
 //hardcode: why the hard coded B.date in this this report, and the hard code to b53, need to generalize what we want this to do going forward
 // make need full group by, as it's only a partial list right now
 $query = <<<EOS
-SELECT R.id, CONCAT_WS(' ', P.first_name, P.last_name) AS name, CONCAT_WS(' ', P.address, P.addr_2, P.city, P.state, P.zip) AS addr
+SELECT R.id, TRIM(CONCAT_WS(' ', P.first_name, P.last_name)) AS name, TRIM(CONCAT_WS(' ', P.address, P.addr_2, P.city, P.state, P.zip)) AS addr
     , P.zip as locale, P.country, P.email_addr, M.label, R.price, R.paid, R.create_date, MIN(H.logdate) AS date
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)

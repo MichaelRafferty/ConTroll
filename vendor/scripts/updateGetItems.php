@@ -47,7 +47,7 @@ if (in_array($itemType, ['art', 'print', 'nfs'])) {
         exit();
     }
 } else {
-    $response['error'] = "Invalid Data";
+    $response['error'] = 'Invalid Data';
     error_log("Unsupported item type: $itemType");
     ajaxSuccess($response);
     exit();
@@ -77,7 +77,7 @@ WHERE eRY.exhibitorYearId=? and eRY.exhibitsRegionYearId=?
 GROUP BY eRY.exhibitorYearId, eRY.exhibitsRegionYearId;
 EOS;
 
-$maxL = "ii";
+$maxL = 'ii';
 $maxA = array($vendor_year, $region);
 
 $maxR = dbSafeQuery($maxQ, $maxL, $maxA);
@@ -93,7 +93,7 @@ $response['nextItemKey'] = $nextItemKey;
 $first = true;
 $delete_keys = '';
 
-foreach ($data as $index => $row ) {
+foreach ($data as $index => $row) {
     if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists('id', $row)) {
         $delete_keys .= ($first ? "'" : ",'") . sql_safe($row['id']) . "'";
         $first = false;
@@ -196,11 +196,11 @@ EOS;
 $itemL = 'ii';
 $itemA = array($vendor_year, $region);
 
-switch($itemType) {
+switch ($itemType) {
     case 'art':
     case 'print':
     case 'nfs':
-        $itemQ .= " and i.type=?";
+        $itemQ .= ' and i.type=?';
         $itemL .= 's';
         $itemA[] = $itemType;
         break;
@@ -217,7 +217,6 @@ while ($item = $itemR->fetch_assoc()) {
 }
 
 $response['items'] = $items;
-
 
 ajaxSuccess($response);
 ?>

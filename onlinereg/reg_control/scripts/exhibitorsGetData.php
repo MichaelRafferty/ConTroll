@@ -148,7 +148,7 @@ GROUP BY e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id, exRY.exhibi
 SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.website, exh.exhibitorEmail,
     xS.spaceId, xS.name as spaceName, xS.item_requested, xS.time_requested, xS.requested_units, xS.requested_code, xS.requested_description,
     xS.item_approved, xS.time_approved, xS.approved_units, xS.approved_code, xS.approved_description,
-    xS.item_purchased, xS.time_purchased, xS.purchased_units, xS.purchased_code, xS.purchased_description, xS.transid,
+    xS.item_purchased, xS.time_purchased, xS.purchased_units, xS.purchased_code, xS.purchased_description, xS.transid, xS.shortname,
     eRY.id AS exhibitsRegionYearId, eRY.exhibitsRegion AS regionId, exh.exhibitorNumber,
     IFNULL(pName, nName) as agentName,
     exh.pu * 10000 + exh.au * 100 + exh.ru AS sortOrder
@@ -182,7 +182,8 @@ $response['detail'] = $details;
 
 // build option lists for each space
 //
-$dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+$curLocale = locale_get_default();
+$dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 $priceQ = <<<EOS
 SELECT eSP.id, eSP.spaceId, eSP.code, eSP.description, eSP.units, eSP.price, eSP.requestable
 FROM exhibitsSpacePrices eSP

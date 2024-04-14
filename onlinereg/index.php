@@ -8,6 +8,7 @@ require_once("../lib/coupon.php");
 $cc = get_conf('cc');
 $con = get_conf('con');
 $ini = get_conf('reg');
+$usps = get_conf('usps');
 load_cc_procs();
 
 $condata = get_con();
@@ -15,6 +16,9 @@ $urlCouponCode = '';
 $urlSerialNum = '';
 $serialHidden = 'hidden';
 
+$useUSPS = false;
+if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
+    $useUSPS = true;
 
 $numCoupons = num_coupons();
 if ($numCoupons == 0)
@@ -84,8 +88,8 @@ $onsitesale = $startdate->format("l, F j");
   if($ini['open']==1 and $ini['close']==0 and $ini['suspended']==0) {
     ?>
 
-     <!--- aother badge modal popup -->
-     <div class="modal" id="anotherBadge" tabindex="-2" aria-labelledby="Add Another Badge" aria-hidden="true">
+     <!--- aother membership modal popup -->
+     <div class="modal" id="anotherBadge" tabindex="-2" aria-labelledby="Add Another Membership" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -94,11 +98,11 @@ $onsitesale = $startdate->format("l, F j");
                     </div>
                 </div>
                 <div class="modal-body">
-                     <p class="text-body">Membership added for <span id='oldBadgeName'></span>.<br/>Add another Badge?</p>
+                     <p class="text-body">Membership added for <span id='oldBadgeName'></span>.<br/>Add Another Membership?</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" onclick="togglePopup();">Add Another</button>
-                    <button type="button" onclick="anotherBadgeModalClose();">Review and Pay</button>
+                    <button class='btn btn-sm btn-primary' type="button" onclick="togglePopup();">Add Another</button>
+                    <button class='btn btn-sm btn-primary' type="button" onclick="anotherBadgeModalClose();">Review and Pay</button>
                 </div>
             </div>
         </div>
@@ -135,22 +139,21 @@ $onsitesale = $startdate->format("l, F j");
                       </div>
                   </div>
                   <div class='modal-footer'>
-                      <button type='button' onclick='removeCouponCode();' id="removeCouponBTN" hidden>Remove Coupon</button>
-                      <button type='button' onclick='addCouponCode();' id="addCouponBTN">Add Coupon</button>
-                      <button type='button' onclick='couponModalClose();'>Cancel</button>
+                      <button class='btn btn-sm btn-warning' type='button' onclick='removeCouponCode();' id="removeCouponBTN" hidden>Remove Coupon</button>
+                      <button class='btn btn-sm btn-primary' type='button' onclick='addCouponCode();' id="addCouponBTN">Add Coupon</button>
+                      <button class='btn btn-sm btn-secondary' type='button' onclick='couponModalClose();'>Cancel</button>
                   </div>
               </div>
           </div>
       </div>
           <?php } ?>
     <!--- New Badge Modal Popup -->
-    <div class="modal modal-lg fade" id="newBadge" tabindex="-1" aria-labelledby="New Membership" aria-hidden="true" style='--bs-modal-width: 80%;'>
+    <div class="modal modal-xl fade" id="newBadge" tabindex="-1" aria-labelledby="New Membership" aria-hidden="true" style='--bs-modal-width: 90%;'>
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header" style="background-color: #b0c4de;">
                     <div class="modal-title">
                         <strong>New Membership</strong>
-
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -164,58 +167,59 @@ $onsitesale = $startdate->format("l, F j");
                                     <p class="text-body">Items marked with <span class="text-danger">&bigstar;</span> are required fields.</p>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="fname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>First Name</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="fname" id='fname' size="22" maxlength="32" tabindex="2"/>
+                            <?php if ($useUSPS) echo '<div class="row"><div class="col-sm-8"><div class="container-fluid">' . PHP_EOL; ?>
+                                <div class="row">
+                                    <div class="col-sm-auto ms-0 me-2 p-0">
+                                        <label for="fname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>First Name</span></label><br/>
+                                        <input class="form-control-sm" type="text" name="fname" id='fname' size="22" maxlength="32" tabindex="2"/>
+                                    </div>
+                                    <div class="col-sm-auto ms-0 me-2 p-0">
+                                        <label for="mname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
+                                        <input class="form-control-sm" type="text" name="mname" id='mname' size="8" maxlength="32" tabindex="4"/>
+                                    </div>
+                                    <div class="col-sm-auto ms-0 me-2 p-0">
+                                        <label for="lname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Last Name</span></label><br/>
+                                        <input class="form-control-sm" type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="6"/>
+                                    </div>
+                                    <div class="col-sm-auto ms-0 me-0 p-0">
+                                        <label for="suffix" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
+                                        <input class="form-control-sm" type="text" name="suffix" id='suffix' size="4" maxlength="4" tabindex="8"/>
+                                    </div>
                                 </div>
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="mname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="mname" id='mname' size="8" maxlength="32" tabindex="4"/>
+                                <div class='row'>
+                                    <div class='col-sm-12 ms-0 me-0 p-0'>
+                                        <label for='legalname' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
+                                        <input class='form-control-sm' type='text' name='legalname' id='legalname' size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix' tabindex='10'/>
+                                    </div>
                                 </div>
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="lname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Last Name</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="6"/>
+                                <div class="row">
+                                    <div class="col-sm-12 ms-0 me-0 p-0">
+                                        <label for="addr" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Address</span></label><br/>
+                                        <input class="form-control-sm" type="text" name='addr' id='addr' size=64 maxlength="64" tabindex='12'/>
+                                    </div>
                                 </div>
-                                <div class="col-sm-auto ms-0 me-0 p-0">
-                                    <label for="suffix" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="suffix" id='suffix' size="4" maxlength="4" tabindex="8"/>
+                                <div class="row">
+                                    <div class="col-sm-12 ms-0 me-0 p-0">
+                                        <label for="addr2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
+                                        <input class="form-control-sm" type="text" name='addr2' id='addr2' size=64 maxlength="64" tabindex='14'/>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class='row'>
-                                <div class='col-sm-12 ms-0 me-0 p-0'>
-                                    <label for='legalname' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: (if different than above) This will only be visible to Registration staff for checking against your ID.</label><br/>
-                                    <input class='form-control-sm' type='text' name='legalname' id='legalname' size=64 maxlength='64' placeholder='legal name if different than above' tabindex='10'/>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-12 ms-0 me-0 p-0">
-                                    <label for="addr" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Address</span></label><br/>
-                                    <input class="form-control-sm" type="text" name='addr' id='addr' size=64 maxlength="64" tabindex='12'/>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-12 ms-0 me-0 p-0">
-                                    <label for="addr2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
-                                    <input class="form-control-sm" type="text" name='addr2' id='addr2' size=64 maxlength="64" tabindex='14'/>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="city" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>City</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="city" id='city' size="22" maxlength="32" tabindex="16"/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>State</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="state" id='state' size="10" maxlength="16" tabindex="18"/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Zip</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="zip" id='zip' size="5" maxlength="10" tabindex="20"/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-0 p-0">
-                                    <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
-                                    <select name='country' tabindex='22'>
+                                <div class="row">
+                                    <div class="col-sm-auto ms-0 me-2 p-0">
+                                        <label for="city" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>City</span></label><br/>
+                                        <input class="form-control-sm" type="text" name="city" id='city' size="22" maxlength="32" tabindex="16"/>
+                                    </div>
+                                    <div class="col-sm-auto ms-0 me-2 p-0">
+                                        <label for="state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>State: US/CAN 2 letter abv.</span></label><br/>
+                                        <input class="form-control-sm" type="text" name="state" id='state' size="16" maxlength="16" tabindex="18"/>
+                                    </div>
+                                    <div class="col-sm-auto ms-0 me-2 p-0">
+                                        <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Zip</span></label><br/>
+                                        <input class="form-control-sm" type="text" name="zip" id='zip' size="5" maxlength="10" tabindex="20"/>
+                                    </div>
+                                    <div class="col-sm-auto ms-0 me-0 p-0">
+                                        <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
+                                        <select name='country' tabindex='22' id='country' onchange="countryChange();">
                                     <?php
                       $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
                       while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
@@ -223,9 +227,10 @@ $onsitesale = $startdate->format("l, F j");
                       }
                       fclose($fh);
                                     ?>
-                                    </select>
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
+                                <?php if ($useUSPS) echo '</div></div><div class="col-sm-4" id="uspsblock"></div></div>' . PHP_EOL; ?>
                             <div class="row">
                                 <div class="col-sm-12">
                                     <hr/>
@@ -235,18 +240,17 @@ $onsitesale = $startdate->format("l, F j");
                                 <div col="col-sm-12">
                                     <p class="text-body">Contact Information
                                      (<a href="<?php echo escape_quotes($con['privacypolicy']);?>" target='_blank'><?php echo $con['privacytext'];?></a>).</p>
-
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="email1" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Email</span></label><br/>
-                                    <input class="form-control-sm" type="email" name="email1" id='email1' size="35" maxlength="64" tabindex="24"/>
+                                    <input class="form-control-sm" type="email" name="email1" id='email1' size="35" maxlength="254" tabindex="24"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="email2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Confirm Email</span></label><br/>
-                                    <input class="form-control-sm" type="email" name="email2" id='email2' size="35" maxlength="64" tabindex="26"/>
+                                    <input class="form-control-sm" type="email" name="email2" id='email2' size="35" maxlength="254" tabindex="26"/>
                                 </div>
                             </div>
                             <div class="row">
@@ -341,9 +345,9 @@ $onsitesale = $startdate->format("l, F j");
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <input type='submit' onclick='process("#newBadgeForm");' value='Add Membership To Cart'/>
-                                    <input type='submit' onclick='newBadgeModalClose();' value='Review and Pay'/>
-                                    <input type='reset'/>
+                                    <button type="button" id="addToCartBtn" class="btn btn-sm btn-primary me-1" onclick="process('#newBadgeForm');">Add Membership To Cart</button>
+                                    <button type="button" class="btn btn-sm btn-primary ms-1 me-1" onclick='newBadgeModalClose();'>Review and Pay</button>
+                                    <button type="reset" class="btn btn-sm btn-secondary ms-1">Reset</button>
                                 </div>
                             </div>
                         </form>
@@ -384,7 +388,7 @@ $onsitesale = $startdate->format("l, F j");
                              </div>
                              <div class='row'>
                                  <div class='col-sm-12 ms-0 me-0 p-0'>
-                                     <button onclick='couponModalOpen();' id='changeCouponBTN'>Change/Remove Coupon</button>
+                                     <button class='btn btn-sm btn-secondary' onclick='couponModalOpen();' id='changeCouponBTN'>Change/Remove Coupon</button>
                                  </div>
                              </div>
                              <div class='row mt-4'>
@@ -412,11 +416,11 @@ $onsitesale = $startdate->format("l, F j");
                              <div class="col-sm-<?php echo $costCols; ?>" id="totalCostDiv"></div>
                              <?php if ($numCoupons > 0) { ?>
                              <div class='col-sm-auto ms-auto me-2 p-0' id="addCouponDiv">
-                                 <button onclick='couponModalOpen();' id="couponBTN">Add Coupon</button>
+                                 <button class="btn btn-sm btn-secondary" onclick='couponModalOpen();' id="couponBTN">Add Coupon</button>
                              </div>
                              <?php } ?>
                              <div class="col-sm-auto ms-0 me-2 p-0">
-                                  <button onclick='newBadgeModalOpen();'>Add Memberships</button>
+                                  <button class='btn btn-sm btn-primary' onclick='newBadgeModalOpen();'>Add Memberships</button>
                              </div>
                          </div>
                          <div class="row">
@@ -430,7 +434,7 @@ $onsitesale = $startdate->format("l, F j");
                                  <select id='personList' onchange='updateAddr()'></select>
                              </div>
                              <div class="col-sm-auto ms-auto me-2 p-0">
-                                 <button onclick='toggleAddr()'>Edit</button>
+                                 <button class='btn btn-sm btn-secondary' onclick='toggleAddr()'>Edit</button>
                              </div>
                          </div>
                          <div class="row">
@@ -513,8 +517,8 @@ $onsitesale = $startdate->format("l, F j");
                          <div class='row' id='noChargeCart' hidden>
                              <div class='col-sm-12 ms-0 me'-0 p-0'>
                                  No payment is required on your cart. Click "Purchase" to check out now or add more items to the cart using "Add Memberships".<br/>
-                                 <button id='ncpurchase' onclick="makePurchase('no-charge', 'purchase')">Purchase</button>&nbsp;
-                                 <button onclick='newBadgeModalOpen();'>Add Memberships</button>
+                                 <button id='ncpurchase' class='btn btn-sm btn-primary' onclick="makePurchase('no-charge', 'purchase')">Purchase</button>&nbsp;
+                                 <button class='btn btn-sm btn-primary' onclick='newBadgeModalOpen();'>Add Memberships</button>
                              </div>
                          </div>
                          <div class="row" id='chargeCart' hidden>
@@ -534,7 +538,7 @@ $onsitesale = $startdate->format("l, F j");
 <?php
       if($ini['test']==1) {
 ?>
-                 <h2 class='text-danger'><strong>This won't charge your credit card.<br/>It also won't get you badges.</strong></h2>
+                 <h2 class='text-danger'><strong>This won't charge your credit card.<br/>It also won't get you membershipd.</strong></h2>
     <?php
       }
     ?>
@@ -546,7 +550,7 @@ $onsitesale = $startdate->format("l, F j");
                  <div class="container-fluid">
                      <div class="row">
                          <div class="col-sm-12">
-                              <h3 class="text-primary">Badges</h3>
+                              <h3 class="text-primary">Memberships</h3>
                          </div>
                      </div>
                      <div class="row">
@@ -571,7 +575,7 @@ $onsitesale = $startdate->format("l, F j");
 </p>
 <?php } else if($ini['close']==1) { ?>
 <p class="text-primary">Preregistration for <?php echo $condata['label']; ?> is now closed.
-Badges will be available for purchase starting <?php echo $onsitesale; ?> by <?php echo $ini['onsiteopen'] . ' ' . $con['pickupareatext']; ?>
+Memberships will be available for purchase starting <?php echo $onsitesale; ?> by <?php echo $ini['onsiteopen'] . ' ' . $con['pickupareatext']; ?>
 <a href="<?php echo escape_quotes($con['hotelwebsite']); ?>"> <?php echo $con['hotelname']; ?></a>.
 Daily rates are posted on <a href="<?php echo escape_quotes($con['dailywebsite']); ?>">The <?php echo $con['conname']; ?> website</a></p>
 <p class="text-body"><?php echo $con['addlpickuptext']; ?></p>

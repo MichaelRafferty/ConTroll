@@ -13,7 +13,6 @@ regionid = null;
 
 // exhibitors class - functions for spae ownerto review and approve spaces requested by exhibitors
 class exhibitorsAdm {
-
     // global items
     #conid = null;
     #debug = 0;
@@ -28,6 +27,7 @@ class exhibitorsAdm {
     #regionId = null;
     #regionYearId = null;
     #regionGroupId = '';
+    #spaceDetailModal = null;
 
     // approvals items
     #approvalsTable = null;
@@ -51,6 +51,7 @@ class exhibitorsAdm {
 
     // Spaces items
     #currentSpace = null;
+    #currentSpaceTab = null;
     #spacesTabs = {};
 
     constructor(conid, debug) {
@@ -75,6 +76,10 @@ class exhibitorsAdm {
             this.#importModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
         this.#importHTML = document.getElementById('importHTML');
 
+        id = document.getElementById("space_detail");
+        if (id)
+            this.#spaceDetailModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+
         // owners
         this.#ownerTabs['overview'] = document.getElementById('overview-content');
         this.#currentOwner = this.#ownerTabs['overview'];
@@ -84,11 +89,11 @@ class exhibitorsAdm {
             var ownerId = owner.replaceAll(' ', '-');
             this.#ownerTabs[ownerId] = document.getElementById(ownerId + '-content');
 
-            // regions within owners
-            var regions = regionOwners[owner];
-            var regionKeys = Object.keys(regions);
+            // regions within owners (regionsInOwner)
+            var regionsInOwner = regionOwners[owner];
+            var regionKeys = Object.keys(regionsInOwner);
             for (var idR in regionKeys) {
-                var region = regions[regionKeys[idR]];
+                var region = regionsInOwner[regionKeys[idR]];
                 var regionId = region['name'].replaceAll(' ', '-');
                 this.#regionTabs[regionId] = document.getElementById(regionId + '-div');
             }
@@ -119,9 +124,9 @@ class exhibitorsAdm {
             this.#currentRegion = null;
         }
         var ownerLookup = regionOwnersTabNames[tabname];
-        var regions = regionOwners[ownerLookup];
-        var regionKey = Object.keys(regions)[0];
-        var region = regions[regionKey];
+        var regionsInOwner = regionOwners[ownerLookup];
+        var regionKey = Object.keys(regionsInOwner)[0];
+        var region = regionsInOwner[regionKey];
         this.settabRegion(region['name'].replaceAll(' ', '-') + '-pane');
     }
 
@@ -137,6 +142,7 @@ class exhibitorsAdm {
         this.#currentRegion = this.#regionTabs[content];
 
         // now re-draw the specific tab
+        this.#currentSpaceTab = tabname;
         this.open(tabname);
     }
 
@@ -151,13 +157,18 @@ class exhibitorsAdm {
         this.#currentSpace = this.#spacesTabs[content];
     }
 
+    updateSpace() {
+        this.open(this.#currentSpaceTab);
+    }
+
     // open(tabname) - fetch the data and re-draw the region tab
     open(newtabname) {
-        if (this.#debug & 1)
-            console.log("opening " + tabname)
-
         tabname = regionTabNames[newtabname]['name'];
         regionid = regionTabNames[newtabname]['id'];
+
+        if (this.#debug & 1)
+            console.log("opening from " + newtabname + " as " + tabname + ", " + regionid);
+
         // get the data for this tab
         $.ajax({
             url: "scripts/exhibitorsGetData.php",
@@ -333,13 +344,15 @@ class exhibitorsAdm {
     // drawSpacesTable - now that the DOM is created, draw the actual table
     drawSpacesTable(data, groupid, newTable) {
         // build new data array
-        var regions = [];
+        var regionsLocal = [];
         var region = null;
         //var currentRegion = -1;
         var currentExhibitor = -1;
         var spaces = data['detail'];
         var spaceKeys = Object.keys(spaces);
         var spaceHTML = '';
+        var spaceSUM = '';
+        var spaceStage = '';
         var req = 0;
         var app = 0;
         var pur = 0;
@@ -350,18 +363,24 @@ class exhibitorsAdm {
             if (newExhibitor != currentExhibitor) {
                 // change in region
                 if (currentExhibitor > 0) {
+                    spaceSUM = spaceSUM.substring(0, spaceSUM.length - 1);
                     region['space'] = spaceHTML + "</div>";
+                    region['summary'] = spaceSUM;
+                    region['stage'] = spaceStage;
                     region['req'] = req;
                     region['app'] = app;
                     region['pur'] = pur;
-                    regions[currentExhibitor] = make_copy(region);
+                    regionsLocal[currentExhibitor] = make_copy(region);
                     spaceHTML = '';
+                    spaceStage = '';
+                    spaceSUM = '';
                     req = 0;
                     app = 0;
                     pur = 0;
                 }
                 currentExhibitor = newExhibitor;
-                spaceHTML = '<div class="container-fluid">';
+                spaceSUM = '';
+                spaceHTML = '<div class="container-fluid" style="width: 700;">';
                 req += space['requested_units'];
                 app += space['approved_units'];
                 pur += space['purchased_units'];
@@ -375,7 +394,7 @@ class exhibitorsAdm {
                     exhibitorName: space['exhibitorName'],
                     website: space['website'],
                     exhibitorEmail: space['exhibitorEmail'],
-                    agentRequest: 'abc', //space['agentRequest'],
+                    agentRequest: space['agentRequest'],
                     agentName: space['agentName'],
                     transid: space['transid'],
                     s1: space['b1'],
@@ -386,6 +405,7 @@ class exhibitorsAdm {
             }
             // add the space data as a formatted region
             if (space['requested_units'] > 0 || space['approved_units'] > 0 || space['purchased_units'] > 0) {
+                // detail first
                 spaceHTML += '<div class="row">' +
                     '<div class="col-sm-12"><STRONG>' + space['spaceName'] + '</STRONG></div></div>';
 
@@ -412,6 +432,17 @@ class exhibitorsAdm {
                         '<div class="col-sm-4">' + blankIfNull(space['time_purchased']) + '</div>' +
                         '</div>';
                 }
+                // now the summary lines
+                if (space['purchased_units'] > 0) {
+                    spaceStage = 'Purchased';
+                    spaceSUM += space['purchased_code'] + ' ' + space['shortname'] + "\n";
+                } else if (space['approved_units'] > 0) {
+                    spaceSUM += space['approved_code'] + ' ' + space['shortname'] + "\n";
+                    spaceStage = 'Approved';
+                } else if (space['requested_units'] > 0) {
+                    spaceSUM += space['requested_code'] + ' ' + space['shortname'] + "\n";
+                    spaceStage = 'Requested';
+                }
             }
             // now do agent stuff
             if (blankIfNull(region['agentRequest']) != '') {
@@ -426,21 +457,24 @@ class exhibitorsAdm {
             }
         }
         if (currentExhibitor > 0) {
+            spaceSUM = spaceSUM.substring(0, spaceSUM.length - 1);
             region['space'] = spaceHTML + "</div>";
+            region['summary'] = spaceSUM;
+            region['stage'] = spaceStage;
             region['req'] = req;
             region['app'] = app;
             region['pur'] = pur;
-            regions.push(make_copy(region));
+            regionsLocal.push(make_copy(region));
         }
 
         if (this.#debug & 8) {
             console.log("regions:");
-            console.log(regions);
+            console.log(regionsLocal);
         }
         if (newTable) {
             var _this = this;
             this.#spacesTable = new Tabulator('#' + groupid + '-spaces-table-div', {
-                data: regions,
+                data: regionsLocal,
                 layout: "fitDataTable",
                 index: 'id',
                 pagination: true,
@@ -459,50 +493,13 @@ class exhibitorsAdm {
                     {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true,},
                     {title: "Website", field: "website", width: 200, headerSort: true, headerFilter: true,},
                     {title: "Email", field: "exhibitorEmail", width: 200, headerSort: true, headerFilter: true,},
-                    {title: "Requested, Approved, Purchased", field: "space", width: 750, formatter: this.htmlFormatter, variableHeight: true,},
-                    {
-                        title: "",
-                        field: "s1",
-                        formatter: this.spaceApprovalButton,
-                        formatterParams: {name: 'Approve Req'},
-                        maxWidth: 200,
-                        hozAlign: "center",
-                        cellClick: _this.spApprovalReq,
-                        headerSort: false,
-                    },
-                    {
-                        title: "",
-                        field: "s2",
-                        formatter: this.spaceApprovalButton,
-                        formatterParams: {name: 'Approve Other'},
-                        maxWidth: 200,
-                        hozAlign: "center",
-                        cellClick: _this.spApprovalOther,
-                        headerSort: false,
-                    },
-                    {
-                        title: "",
-                        field: "s3",
-                        formatter: this.spaceApprovalButton,
-                        formatterParams: {name: 'Receipt'},
-                        maxWidth: 200,
-                        hozAlign: "center",
-                        cellClick: _this.spReceipt,
-                        headerSort: false,
-                    },
-                    {
-                        title: "",
-                        field: "s4",
-                        formatter: this.spaceApprovalButton,
-                        formatterParams: {name: 'Agent'},
-                        maxWidth: 200,
-                        hozAlign: "center",
-                        cellClick: _this.spAgent,
-                        headerSort: false,
-                    },
+                    {title: "Stage", field: "stage", headerSort: true, headerFilter: 'list', headerFilterParams: { values: ['Requested', 'Purchased', 'Approved'], },},
+                    {title: "Summary", field: "summary", width: 200, headerSort: false, headerFilter: true, formatter: "textarea", },
+                    {field: "space", visible: false},
+                    { title: "Actions", field: "s1", formatter: this.spaceButtons, maxWidth: 600, headerSort: false },
                 ]});
         } else {
-            this.#spacesTable.replaceData(regions);
+            this.#spacesTable.replaceData(regionsLocal);
         }
     }
 
@@ -715,11 +712,16 @@ class exhibitorsAdm {
             exhibitors.processApprovalChange('hide', exhibitorData, exhibitorRow);
     }
 
-
-    // html formatter
-    htmlFormatter(cell, formatterParams, onRendered) {
-        return cell.getValue();
+    // space detail cell click
+    showDetail(id) {
+        var row = this.#spacesTable.getRow(id);
+        var details = row.getCell("space").getValue();
+        var exhibitor = row.getCell('exhibitorName').getValue();
+        document.getElementById('space-detail-title').innerHTML = "<strong>Space Detail for " + exhibitor + "</strong>";
+        document.getElementById("spacedetailHTML").innerHTML = details;
+        this.#spaceDetailModal.show();
     }
+
     // button formatters
 
     // edit exhibitor Record
@@ -733,33 +735,44 @@ class exhibitorsAdm {
     }
 
     // tabulator button formatters
-    spaceApprovalButton(cell, formatterParams, onRendered) {
-        var name = formatterParams['name'];
-        var data = cell.getData();
-        if (name.startsWith('Approve')) {
-            var req = data['req'] || 0;
-            var app = data['app'] || 0;
-            var pur = data['pur'] || 0;
 
-            if (req > 0 && (pur < app || pur == 0)) {
-                if (app > 0 && name == 'Approve Other')
-                    return '<button class="btn btn-sm btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Change</button>';
-                if (app == 0)
-                    return '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", >' + name + '</button>';
-                }
-            }
-        if (name == 'Receipt' || name == 'Show Receipt') {
-            var transid = data['transid'] || 0;
-            // receipt buttons
-            if (transid > 0)
-                return '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
+    spaceButtons(cell, formatterParams, onRendered) {
+        var data = cell.getData();
+        var req = data['req'] || 0;
+        var app = data['app'] || 0;
+        var pur = data['pur'] || 0;
+        var transid = data['transid'] || 0;
+        var agentRequest = data['agentRequest'] || '';
+        var id = data['id'];
+        var buttons = '';
+
+        // details button
+        buttons += '<button class="btn btn-sm btn-info" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+            'onclick="exhibitors.showDetail(' + id + ')" >Details</button>&nbsp;';
+
+        // approval buttons
+        if (req > 0 && (pur < app || pur == 0)) {
+            if (app != req)
+                buttons += '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                    'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Approve Req</button>&nbsp;';
+            if (app > 0)
+                buttons += '<button class="btn btn-sm btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                    'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Change</button>&nbsp;';
+            if (app == 0)
+                buttons += '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                    'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Approve Other</button>&nbsp;';
         }
-        if (name == 'Agent') {
-            var agentRequest = data['agentRequest'] || '';
-            if (agentRequest != '' && !agentRequest.startsWith('Processed: '))
-                return '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">' + name + '</button>';
-        }
-        return '';
+
+        // receipt button
+        if (transid > 0)
+            buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                'onclick="exhibitors.spaceReceipt(' + id + ')" >Receipt</button>&nbsp;';
+        // agent
+        if (agentRequest != '' && !agentRequest.startsWith('Processed: '))
+            buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                'onclick="exhibitors.spaceAgent(' + id + ');" >Agent</button>&nbsp;';
+
+        return buttons;
     }
 
     // request approval buttons
@@ -883,29 +896,9 @@ class exhibitorsAdm {
             }
         }
     }
-
-    // spaceApprovals - process a space approval
-    spApprovalReq(e, cell) {
-        exhibitors.spaceApprovalReq(e, cell);
-    }
-
-    spApprovalOther(e, cell) {
-        exhibitors.spaceApprovalOther(e, cell);
-    }
-
-    // call the showReceipt
-    spReceipt(e, cell) {
-        exhibitors.spaceReceipt(e, cell);
-    }
-
-    // call process agent request
-    spAgent(e, cell) {
-        exhibitors.spaceAgentRequest(e, cell);
-    }
-
-    // show the receipt
-    spaceReceipt(e, cell) {
-        this.#spaceRow = cell.getRow();
+        // show the receipt
+    spaceReceipt(id) {
+        this.#spaceRow = this.#spacesTable.getRow(id);
         var exhibitorData = this.#spaceRow.getData();
         this.#regionYearId = exhibitorData['regionYearId'];
         this.#exhibitorId = exhibitorData['exhibitorId'];
@@ -913,8 +906,8 @@ class exhibitorsAdm {
     }
 
     // process appove requested
-    spaceApprovalReq(e, cell) {
-        this.#spaceRow = cell.getRow();
+    spaceApprovalReq(id) {
+        this.#spaceRow = this.#spacesTable.getRow(id);
         var exhibitorData = this.#spaceRow.getData();
         var req = exhibitorData['req'] || 0;
         var app = exhibitorData['app'] || 0;
@@ -934,8 +927,8 @@ class exhibitorsAdm {
     }
 
     // process approve other than requested
-    spaceApprovalOther(e, cell) {
-        this.#spaceRow = cell.getRow();
+    spaceApprovalOther(id) {
+        this.#spaceRow = this.#spacesTable.getRow(id);
         var exhibitorData = this.#spaceRow.getData();
         var req = exhibitorData['req'] || 0;
         var app = exhibitorData['app'] || 0;
@@ -967,8 +960,8 @@ class exhibitorsAdm {
             show_message(data['message'], 'error');
         } else {
             if (data['message'])
-                show_message(data['message'], 'success')
-            this.UpdateSpaceRow(data);
+                show_message(data['message'], 'success');
+            this.open(this.#currentSpaceTab);
         }
     }
 
@@ -978,21 +971,16 @@ class exhibitorsAdm {
         exhibits_spaces = data['exhibits_spaces'];
         exhibitor_info = data['exhibitor_info'];
         exhibitor_spacelist = data['exhibitor_spacelist'];
-        regions = data['regions'];
+        // don't overwrite regions, it's already loaded and its correct for all uses in vendor, exhibitorRequest doesn't use it.
         spaces = data['spaces'];
         country_options = data['country_options'];
         exhibitorRequest.openReq(this.#regionYearId, 2);
     }
 
-    // update the row just changed
-    UpdateSpaceRow(details) {
-        if (this.#spaceRow) {
-            this.drawSpacesTable(details, this.#regionGroupId, false);
-        }
-    }
-
     // process the agent request
-    spaceAgentRequest(e, cell) {
+    spaceAgentRequest(id) {
+        this.#spaceRow = this.#spacesTable.getRow(id);
+
         show_message("Not Yet", 'warn');
     }
 };

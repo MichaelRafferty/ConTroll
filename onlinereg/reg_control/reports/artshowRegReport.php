@@ -19,7 +19,7 @@ $query = "SELECT S.art_key, concat_ws(',', S.a_panel_list, S.p_panel_list, S.a_t
     . ", count(I.id) as itemCount"
     . ", V.email, P.phone, V.website"
     . ", CASE WHEN V.publicity THEN 'Yes' ELSE 'No' END"
-    . ", concat_ws(', ', A.ship_addr, A.ship_addr2, A.ship_city, A.ship_state, A.ship_zip) as address"
+    . ", TRIM(concat_ws(', ', A.ship_addr, A.ship_addr2, A.ship_city, A.ship_state, A.ship_zip)) as address"
     . ", S.agent_request, S.description, S.artid"
     //. ", S.agent_request, G.phone"
     . " FROM artshow as S"

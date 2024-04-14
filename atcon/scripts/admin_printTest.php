@@ -58,7 +58,8 @@ if (array_key_exists('codepage', $_POST)) {
 }
 
 $p = ["Test", $server, $printer, $codepage];
-$dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+$curLocale = locale_get_default();
+$dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 $dolamt = $dolfmt->formatCurrency(123456.78, 'USD');
 
 switch($type) {

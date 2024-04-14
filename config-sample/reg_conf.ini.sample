@@ -47,7 +47,9 @@ rollover_eligible="'upgrade', 'rollover', 'freebie', 'standard', 'yearahead', 'd
 [debug]
 google=0 ; to enable google debug statements (1=enable, 0=disable)
 reg_control_admin=0 ; to enable reg_contol admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+reg_control_exhibitors=0 ; to enable reg_contol exhibitors tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
 vendors=0 ; to enable vendor and artist admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+usps=0 ; to enable usps address validation debug (currently bitmast from 1-31)
 [reg]
 https=1
 test=0
@@ -75,17 +77,42 @@ badgeps="/home/homedir/config/conname.ps"
 [vendor]
 test=0
 open=1
-#vendors: email address for generic vendor emails
-#vendorsite: url to vendor website
+;vendors: email address for generic vendor emails
+;vendorsite: url to vendor website
 vendor="dealers@???"
 vendorsite="http://vendor"
-# path to file in config of any additional text you wish to add to explain the signup form for vendor portal
+; path to file in config of any additional text you wish to add to explain the signup form for vendor portal
 vendorSignupAddltext=""
 artistsite="http://artist"
 artist="artists@???"
 renderer='http://localhost:3000' ; remote renderer for bidsheets
 # pathto file in config any additional text you wish to add to explain the signup form for artist portal
+;; artist Item Registration Headers, if omitted, the defaults are used
+;artistItemAuctionTitle="Art Auction Items"
+;artistItemSalesTitle="Art Sales / Print Shop Items"
+;artistItemNFSTitle="Display Only / Not For Sale Items"
+; lines = number of bid lines, numbers are which of those are numbreed, Sep is to show seperation lines (vertical lines) in the bid rows (1=yes, 0=no)
+artistBidSheetLines=4
+artistBidSheetNumbers=3
+artistBidSheetBidSep=1
+;artistBidSheet and artistPriceTag are the titles to print on the bid sheets and print price tags
+;artistBidSheet=
+;artistPriceTag=
+;artistOnSiteInventoryReqHTML, artistOnSiteInventoryReqText, artistMailInInventoryReqHTML, artistMailInInventoryReqText are the file names for the contents for the artist inventory request emails
+;artistOnSiteInventoryReqHTML=
+;artistOnSiteInventoryReqText=
+;artistMailInInventoryReqHTML=
+;artistMailInInventoryReqText=
+; pathto file in config any additional text you wish to add to explain the signup form for artist portal
+>>>>>>> origin/test
 artistSignupAddltext=""
+; artist bid sheets, artistBidSheetNumbers = number of bid lines, of which artistBidSheetNumbers are numbered if lines <=4, it will use up 2x3 Landscape, if >4 and less that X it will use 2x2 Portrait format, if > X it will use 2x1 portrait format
+artistBidSheetLines=4
+artistBidSheetNumbers=3
+; name for artist bid sheet header (independent of art area)
+artistBidSheet="Demo 2024 Art Show Bid Sheet"
+; name for artist print shop price tag header (independent of art area)
+artistPriceTag=""
 taxidlabel="NJ Sales Tax ID"
 taxidextra=
 // disclaimers are path to file in config directory contain the request and payment disclaimers
@@ -151,5 +178,10 @@ suspended=1
 close=0
 max_failures=10
 url="https://reg.conname.org/artshow"
+[usps]
+;	you can obtail clientId and secrets from the usps developers forum.  These are for the v3 API
+;	if these are blank or missing, the usps validation is not enabled.
+clientId=
+secret=
 [control]
 clubname='Club Name'

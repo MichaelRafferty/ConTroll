@@ -10,14 +10,12 @@ if (!$need_login or !checkAuth($need_login['sub'], $page)) {
 }
 load_cc_procs();
 
+$cdn = getTabulatorIncludes();
 page_init($page,
-    /* css */ array('css/base.css',
-        'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
-        'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
-        'css/registration.css'
+    /* css */ array('css/base.css', $cdn['tabcss'], $cdn['tabbs5'], 'css/registration.css'
     ),
-    /* js  */ array(//'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-        'https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js',
+    /* js  */ array(//$cdn['luxon'],
+        $cdn['tabjs'],
         'js/base.js',
         'js/registration.js',
         'js/registration_cart.js',
@@ -163,7 +161,7 @@ $conname = $con['conname'];
                             <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="email" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Email</span></label><br/>
-                                    <input type="email" name="email" id='email' size="50" maxlength="64" tabindex="24"/>
+                                    <input type="email" name="email" id='email' size="50" maxlength="254" tabindex="24"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="phone" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>

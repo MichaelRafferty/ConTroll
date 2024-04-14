@@ -75,7 +75,7 @@ if(!isset($_SESSION['user'])) {
         <div class="row">
             <div class="col-sm-6">
                 <div class='form-floating mb-3'>
-                    <input type='number' name='user' class="no-spinners form-control" min="1" max="999999" placeholder="Your badge number"  style="width:150px;" required/>
+                    <input type='number' name='user' class="no-spinners form-control" min="1" placeholder="Your badge number"  style="width:150px;" required/>
                     <label for="user">User Badge Id:</label>
                 </div>
             </div>

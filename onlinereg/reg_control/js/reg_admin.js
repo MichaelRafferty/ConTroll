@@ -672,7 +672,6 @@ function draw_badges(data) {
         columns: [
             { title: "TID", field: "display_trans", headerSort: true, headerFilter: true },
             { title: "PID", field: "perid", headerSort: true, headerFilter: true, },
-            { title: "TID", field: "display_trans", headerSort: true, headerFilter: true },
             { title: "Person", field: "p_name", headerSort: true, headerFilter: true },
             { title: "Badge Name", field: "p_badge", headerSort: true, headerFilter: true },
             { title: "Email", field: "p_email", headerSort: true, headerFilter: true },

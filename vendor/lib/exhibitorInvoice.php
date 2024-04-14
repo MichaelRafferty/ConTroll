@@ -193,7 +193,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                  <label for="cc_email">Email:</label>
                              </div>
                              <div class="col-sm-auto">
-                                  <input type='email' id='cc_email' name='cc_email' size="35" maxlength="64" value="<?php echo escape_quotes($info['contactEmail']); ?>"/>
+                                  <input type='email' id='cc_email' name='cc_email' size="35" maxlength="254" value="<?php echo escape_quotes($info['contactEmail']); ?>"/>
                              </div>
                          </div>
                          <div class='row'>
@@ -257,9 +257,9 @@ if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclai
 }
 
 // exhibitor_showInvoice -> show the current request and the change/cancel button
-function exhibitor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList, $region, $info)
-{
-    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+function exhibitor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList, $region, $info) {
+    $curLocale = locale_get_default();
+    $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
     $totalPrice = 0;
     echo "You have been approved for:<br/>\n";
@@ -289,7 +289,8 @@ function exhibitor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhib
 
 // draw the paid for status block
 function vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList) {
-    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+    $curLocale = locale_get_default();
+    $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
     $totalPrice = 0;
     echo "You have purchased:<br/>\n";
