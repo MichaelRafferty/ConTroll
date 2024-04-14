@@ -846,7 +846,7 @@ class exhibitorsAdm {
         locationsusedHTML += "</div>\n";
 
         document.getElementById('locations-edit-title').innerHTML = "<strong>Locations for " + exhibitor + "(" + exhibitorId + ":" + exhibitorData['exhibitorYearId'] + ")</strong>";
-        document.getElementById("spaceHTML").innerHTML = summary;
+        document.getElementById("spaceHTML").innerHTML = summary.replace("\n", "<br/>");
         document.getElementById("locationsVal").value = locations;
         document.getElementById("spaceRowId").value = id;
         document.getElementById("locationsExhibitorInfoHTML").innerHTML = exhibitorInfo;

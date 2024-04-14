@@ -229,6 +229,7 @@ if ($locationR != false) {
         $locationsUsed .= ',' . $locationL['locations'];
     }
 }
+
 if (strlen($locationsUsed) > 1) {
     $locationsUsed = substr($locationsUsed, 1);
     $locationsUsed = explode(',', $locationsUsed);
@@ -236,6 +237,8 @@ if (strlen($locationsUsed) > 1) {
         $locationsUsed[$i] = trim($locationsUsed[$i]);
     }
     natsort($locationsUsed);
+} else {
+    $locationsUsed = [];
 }
 $response['locationsUsed'] = $locationsUsed;
 $response['price_list'] = $price_list;
