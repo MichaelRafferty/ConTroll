@@ -357,6 +357,7 @@ class exhibitorsAdm {
         var req = 0;
         var app = 0;
         var pur = 0;
+        var inv = 0;
         for (var idS in spaceKeys) {
             var space = spaces[idS];
             //var newRegion = space['exhibitsRegionYearId'];
@@ -371,6 +372,7 @@ class exhibitorsAdm {
                     region['req'] = req;
                     region['app'] = app;
                     region['pur'] = pur;
+                    region['inv'] = inv;
                     regionsLocal[currentExhibitor] = make_copy(region);
                     spaceHTML = '';
                     spaceStage = '';
@@ -378,6 +380,7 @@ class exhibitorsAdm {
                     req = 0;
                     app = 0;
                     pur = 0;
+                    inv = 0;
                 }
                 currentExhibitor = newExhibitor;
                 spaceSUM = '';
@@ -385,6 +388,7 @@ class exhibitorsAdm {
                 req += space['requested_units'];
                 app += space['approved_units'];
                 pur += space['purchased_units'];
+                inv += space['invCount'];
                 region = {
                     id: space['exhibitorId'],
                     exhibitorNumber: space['exhibitorNumber'],
@@ -398,12 +402,14 @@ class exhibitorsAdm {
                     agentRequest: space['agentRequest'],
                     agentName: space['agentName'],
                     transid: space['transid'],
+                    exhibitorYearId: space['exhibitorYearId'],
                     s1: space['b1'],
                     s2: space['b2'],
                     s3: space['b3'],
                     s4: space['b4'],
                 };
             }
+
             // add the space data as a formatted region
             if (space['requested_units'] > 0 || space['approved_units'] > 0 || space['purchased_units'] > 0) {
                 // detail first
@@ -465,6 +471,7 @@ class exhibitorsAdm {
             region['req'] = req;
             region['app'] = app;
             region['pur'] = pur;
+            region['inv'] = inv;
             regionsLocal.push(make_copy(region));
         }
 
@@ -486,10 +493,12 @@ class exhibitorsAdm {
                     {title: "RegionId", field: "regionId", visible: false},
                     {title: "Exh Num", field: "exhibitorNumber", headerWordWrap: true, width: 75 },
                     {title: "regionYearId", field: "regionYearId", visible: false},
+                    {title: "ExhibitorYearId", field: "exhibitorYearId", visible: false},
                     {field: "transid", visible: false},
                     {field: "app", visible: false},
                     {field: "req", visible: false},
                     {field: "pur", visible: false},
+                    {title: "inventory", field: "inv", visible: true},
                     {title: "exhibitorId", field: "exhibitorId", visible: false},
                     {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true,},
                     {title: "Website", field: "website", width: 200, headerSort: true, headerFilter: true,},
@@ -832,6 +841,17 @@ class exhibitorsAdm {
         if (transid > 0)
             buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.spaceReceipt(' + id + ')" >Receipt</button>&nbsp;';
+
+        // inventory button
+        if (data['inv'] > 0) {
+            buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                'onclick="exhibitors.printBidSheets(' + id + ')" >Bid Sheets</button>&nbsp;';
+            buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                'onclick="exhibitors.printPriceTags(' + id + ')" >Price Tags</button>&nbsp;';
+            buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                'onclick="exhibitors.printControlSheet(' + id + ')" >Control Sheet</button>&nbsp;';
+        }
+
         // agent
         if (agentRequest != '' && !agentRequest.startsWith('Processed: '))
             buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
@@ -969,6 +989,28 @@ class exhibitorsAdm {
         this.#exhibitorId = exhibitorData['exhibitorId'];
         exhibitorReceipt.showReceipt(this.#regionYearId, this.#exhibitorId);
     }
+
+    printBidSheets(id) {
+        this.#spaceRow = this.#spacesTable.getRow(id);
+        var exhibitorData = this.#spaceRow.getData();
+        var script = "scripts/exhibitorsBidsheets.php?type=bidsheets&region=" + exhibitorData['regionYearId'] + "&eyid=" + exhibitorData['exhibitorYearId'];
+        window.open(script, "_blank")
+    }
+
+    printPriceTags(id) {
+        this.#spaceRow = this.#spacesTable.getRow(id);
+        var exhibitorData = this.#spaceRow.getData();
+        var script = "scripts/exhibitorsBidsheets.php?type=printshop&region=" + exhibitorData['regionYearId'] + "&eyid=" + exhibitorData['exhibitorYearId'];
+        window.open(script, "_blank")
+    }
+
+    printControlSheet(id) {
+        this.#spaceRow = this.#spacesTable.getRow(id);
+        var exhibitorData = this.#spaceRow.getData();
+        var script = "scripts/exhibitorsBidsheets.php?type=control&region=" + exhibitorData['regionYearId'] + "&eyid=" + exhibitorData['exhibitorYearId'];
+        window.open(script, "_blank")
+    }
+
 
     // process appove requested
     spaceApprovalReq(id) {
