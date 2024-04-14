@@ -92,7 +92,18 @@ draw_exhibitorReceiptModal('admin');
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
-                        <div id='spacedetailHTML'></div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <h4>Space Request/Approval/Payment Detail</h4>
+                            </div>
+                        </div>
+                        <div id='spaceDetailHTML'></div>
+                        <div class='row mt-3'>
+                            <div class='col-sm-12'>
+                                <h4>Information about this Exhibitor</h4>
+                            </div>
+                        </div>
+                        <div id='exhibitorInfoHTML'></div>
                         <div class='row' id='spacedetail_message_div'></div>
                     </div>
                 </div>

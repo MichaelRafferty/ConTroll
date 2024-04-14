@@ -10,6 +10,7 @@ spaces =null;
 country_options = null;
 tabname = null;
 regionid = null;
+exhibitorsData = null;
 
 // exhibitors class - functions for spae ownerto review and approve spaces requested by exhibitors
 class exhibitorsAdm {
@@ -534,15 +535,17 @@ class exhibitorsAdm {
     // drawExhibitorsTable
     // update the exhibitors div with the table of exhibitors
     drawExhibitorsTable(data, groupid) {
+        exhibitorsData = data['exhibitors'];
         this.#exhibitorsTable = new Tabulator('#' + groupid + '-exh-table-div', {
             data: data['exhibitors'],
+            index: "exhibitorId",
             layout: "fitDataTable",
             pagination: true,
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {title: "Vendors:", columns: [
-                        {title: "Exhibitor Id", field: "exhibitorId", visible: false,},
+                        {title: "Exhibitor Id", field: "exhibitorId", visible: true,},
                         {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true, tooltip: this.buildRecordHover,},
                         {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true,},
                         {title: "Phone", field: "exhibitorPhone", width: 140, headerSort: true, headerFilter: true,},
@@ -713,12 +716,74 @@ class exhibitorsAdm {
     }
 
     // space detail cell click
-    showDetail(id) {
+    showDetail(id, artisttype) {
         var row = this.#spacesTable.getRow(id);
         var details = row.getCell("space").getValue();
+        var exhibitorId = row.getCell("exhibitorId").getValue();
+        var exhibitorRow =  this.#exhibitorsTable.getRow(exhibitorId);
+        var exhibitorData = exhibitorRow.getData();
         var exhibitor = row.getCell('exhibitorName').getValue();
-        document.getElementById('space-detail-title').innerHTML = "<strong>Space Detail for " + exhibitor + "</strong>";
-        document.getElementById("spacedetailHTML").innerHTML = details;
+
+        // build exhibitor info block
+        var weburl = exhibitorData['website'];
+        if (weburl.substr(0, 8) != 'https://')
+            weburl = 'https://' + weburl;
+        var exhibitorInfo = `
+            <div class="row">
+                <div class="col-sm-2">Name:</div>
+                <div class="col-sm-auto p-0 ms-0 me-0">` + exhibitorData['exhibitorName'] + `</div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-2'>Business Email:</div>
+                <div class='col-sm-auto p-0 ms-0 me-0'>` + exhibitorData['exhibitorEmail'] + `</div>   
+            </div>
+            <div class='row'>
+                <div class='col-sm-2'>Business Phone:</div>
+                <div class='col-sm-auto p-0 ms-0 me-0'>` + exhibitorData['exhibitorPhone'] + `</div>   
+            </div>
+            <div class='row'>
+                <div class='col-sm-2'>Website:</div>
+                <div class='col-sm-auto p-0 ms-0 me-0'><a href="` + weburl  + '" target="_blank">' + exhibitorData['website']  + `</a></div>   
+            </div>
+            <div class='row'>
+                <div class='col-sm-2'>Description:</div>
+                <div class='col-sm-auto p-0 ms-0 me-0'>` + exhibitorData['description'] + `</div>   
+            </div>
+`;
+
+        if (artisttype) {
+            exhibitorInfo += `<div class="row">
+                <div class='col-sm-2'>Mail-In:</div>
+                <div class='col-sm-auto p-0 ms-0 me-0'>` + exhibitorData['mailin'] + `</div>   
+            </div>
+`;
+            }
+        exhibitorInfo += `<div class='row'>
+                <div class='col-sm-2'>Address:</div>
+                <div class='col-sm-auto p-0 ms-0 me-0'>` + exhibitorData['addr'] + `</div>   
+            </div>
+`;
+        if (exhibitorData['addr2'] && exhibitorData['addr2'].length > 0) {
+            exhibitorInfo += `<div class='row'>
+            <div class='row'>
+                <div class='col-sm-2'>&nbsp;</div>
+                <div class='col-sm-auto p-0 ms-0 me-0'>` + exhibitorData['addr2'] + `</div>   
+            </div>
+`;
+        }
+
+        exhibitorInfo += `<div class='row'>
+                <div class='col-sm-2'>&nbsp;</div>
+                <div class='col-sm-auto p-0 ms-0 me-0'>` + exhibitorData['city'] + ', ' + exhibitorData['state'] + ' ' + exhibitorData['zip'] + `</div>   
+            </div>
+             <div class='row'>
+                <div class='col-sm-2'>&nbsp;</div>
+                <div class='col-sm-auto p-0 ms-0 me-0'>` + exhibitorData['country'] + `</div>   
+            </div>
+`;
+        document.getElementById('space-detail-title').innerHTML = "<strong>Space Detail for " + exhibitor + "(" + exhibitorId + ":" + exhibitorData['exhibitorYearId'] + ")</strong>";
+        document.getElementById("spaceDetailHTML").innerHTML = details;
+        document.getElementById("exhibitorInfoHTML").innerHTML = exhibitorInfo;
         this.#spaceDetailModal.show();
     }
 
@@ -748,7 +813,7 @@ class exhibitorsAdm {
 
         // details button
         buttons += '<button class="btn btn-sm btn-info" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-            'onclick="exhibitors.showDetail(' + id + ')" >Details</button>&nbsp;';
+            'onclick="exhibitors.showDetail(' + id + ', true)" >Details</button>&nbsp;';
 
         // approval buttons
         if (req > 0 && (pur < app || pur == 0)) {
