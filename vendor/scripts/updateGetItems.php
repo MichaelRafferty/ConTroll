@@ -1,5 +1,6 @@
 <?php
 require_once('../lib/base.php');
+require_once('../../lib/log.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -107,11 +108,15 @@ foreach ($data as $index => $row) {
     }
 }
 
+$log = get_conf('log');
+logInit($log['artshow']);
+logwrite("Start of changes made by exhibitor $vendor for year $vendor_year");
 $deleted = 0;
 if ($delete_keys != '') {
     $delsql = "DELETE FROM artItems WHERE id in ( $delete_keys );";
     web_error_log("Delete sql = /$delsql/");
     $deleted += dbCmd($delsql);
+    logwrite("Deleted $deleted art items: $delete_keys");
 }
 
 $inssql = <<<EOS
@@ -171,10 +176,17 @@ foreach ($data as $index => $row) {
     if (array_key_exists('min_price', $row))
         $min_price = $row['min_price'];
     if (array_key_exists('id', $row) && ($row['id'] > 0)) { // update
-        $numrows = dbSafeCmd($updsql, 'issiiddi', array($item_key, $title, $material, $qty, $qty, $min_price, $sale_price, $row['id']));
+        $typestr = 'issiiddi';
+        $vararray = array($item_key, $title, $material, $qty, $qty, $min_price, $sale_price, $row['id']);
+        $numrows = dbSafeCmd($updsql, $typestr, $vararray);
         $updated += $numrows;
+        logwrite(array($updsql, $typestr, $vararray, $numrows));
     } else { // new!
-        $numrows = dbSafeCmd($inssql, 'isssiiddi', array($nextItemKey++, $title, $material, $itemType, $qty, $qty, $min_price, $sale_price, $exhibitorRegionYearId));
+        $typestr = 'isssiiddi';
+        $paramarray =  array($nextItemKey++, $title, $material, $itemType, $qty, $qty, $min_price, $sale_price, $exhibitorRegionYearId);
+
+        $numrows = dbSafeCmd($inssql, $typestr, $paramarray);
+        logwrite(array($inssql, $typestr, $paramarray, $numrows));
         if ($numrows !== false) {
             $inserted++;
         }
@@ -185,6 +197,8 @@ if ($data_errors != '') {
 } else {
     $response['message'] = "$itemType updated: $inserted added, $updated changed, $deleted removed.";
 }
+logwrite($response);
+logwrite("End of changes made by exhibitor $vendor for year $vendor_year");
 
 $itemQ = <<<EOS
 SELECT i.id, item_key, title, material, type, original_qty, min_price, sale_price, status, 0 as uses
