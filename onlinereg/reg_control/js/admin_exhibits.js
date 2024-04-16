@@ -306,6 +306,13 @@ class exhibitssetup {
     editReturn(editTable, editField,  editIndex, editValue) {
         // create update argument
         // have to build array because you can't pass a value before a :, it takes it as a string
+        // remove leading and trailing <p> from editValue for the description
+
+        const startRE = /^<p>/i;
+        const endRE = /<\/p>$/i;
+        editValue = editValue.replace(startRE,'');
+        editValue = editValue.replace(endRE,'');
+
         var updArr = {};
         updArr[editField] = editValue;
         switch (editTable) {
