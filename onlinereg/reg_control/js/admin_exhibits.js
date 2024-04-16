@@ -310,8 +310,11 @@ class exhibitssetup {
 
         const startRE = /^<p>/i;
         const endRE = /<\/p>$/i;
-        editValue = editValue.replace(startRE,'');
-        editValue = editValue.replace(endRE,'');
+        var neweditValue = editValue.replace(startRE,'');
+        neweditValue = neweditValue.replace(endRE,'');
+        if (neweditValue.match(/.*<p>.*/) == null) {
+            editValue = neweditValue;;
+        }
 
         var updArr = {};
         updArr[editField] = editValue;
