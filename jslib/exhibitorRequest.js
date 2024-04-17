@@ -253,7 +253,7 @@ class ExhibitorRequest {
                     _this.#exhibitor_request.hide();
                     show_message(data['success'], 'success');
                     if (cancel == 2)
-                        exhibitors.UpdateSpaceRow(data);
+                        exhibitors.updateSpace();
                     else
                         _this.updateRequestStatusBlock(regionYearId);
                 }
