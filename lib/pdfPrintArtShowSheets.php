@@ -2,7 +2,7 @@
 // pdfPrintArtShowSheets.php - routines for creating the art show bid sheets, price tags and control sheets
 require_once (__DIR__ . '/../Composer/vendor/autoload.php');
 require_once ("pdfFunctions.php");
-use Fpdf\Fpdf as Fpdf;
+
 function pdfPrintShopPriceSheets($regionYearId, $region, $response) {
 // local constants for the sheets
     $margin = 0.25;
@@ -15,7 +15,7 @@ function pdfPrintShopPriceSheets($regionYearId, $region, $response) {
     $dataOffset = 0.22;
 
     $itemSQL = <<<EOS
-SELECT e.exhibitorName, exRY.exhibitorNumber, aI.title, aI.item_key, aI.sale_price, aI.original_qty, aI.material, e.id, eR.name
+SELECT e.exhibitorName, exRY.exhibitorNumber, aI.title, aI.item_key, aI.sale_price, aI.original_qty, aI.material, e.id, eR.name, aI.id AS itemId
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors e ON e.id = exY.exhibitorId
@@ -49,6 +49,15 @@ EOS;
         $title = "Unconfigured Print Shop Price Tag";
     }
 
+    $useBarCode = false;
+    if (array_key_exists('artistPriceTagBarcode', $vendor)) {
+        $value = strtolower($vendor['artistPriceTagBarcode']);
+        if ($value == '1' || $value == 'yes') {
+            $useBarCode = true;
+            $vsize += 0.25;
+        }
+    }
+
     // load data array
     $artItems = [];
     $numTags = 0;
@@ -61,12 +70,12 @@ EOS;
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
-    $pdf = new Fpdf('L', 'in', 'Letter');
+    $pdf = new \Erkens\Fpdf\Barcode('L', 'in', 'Letter');
     initPDF($pdf, 0.008, 'Arial', '', 11);
 
     // computes from those offsets
     $hsize = ($pdf->GetPageWidth() - 2 * $margin) / $numcols;
-    $firstrow = $margin + 0.5;
+    $firstrow = $margin + 0.3;
 
     pushFont('Arial', '', 14);
     $titlewidth = $pdf->getStringWidth($title);
@@ -156,6 +165,12 @@ EOS;
             $priceFmt = $dolfmt->formatCurrency((float)$print['sale_price'], 'USD');
             $pricewidth = $pdf->getStringWidth($priceFmt);
             printXY($h + (0.97 * $isize) - $pricewidth, $v + $dataOffset, $priceFmt);
+
+            if ($useBarCode) {
+                $v += $blockheight;
+                $barcodeData = sprintf("%7.7d,%3.3d", $print['itemId'], $copy);
+                $pdf->code128($h + $indent, $v + $labeloffset, $barcodeData, $isize - (2 * $indent), $blockheight - (2 * $labeloffset));
+            }
         }
     }
 
@@ -183,6 +198,14 @@ function pdfPrintBidSheets($regionYearId, $region, $response) {
     if ($title == null || $title == '') {
         $title = 'Unconfigured Art Show Bid Sheets';
     }
+
+    $useBarCode = false;
+    if (array_key_exists('artistPriceTagBarcode', $vendor)) {
+        $value = strtolower($vendor['artistPriceTagBarcode']);
+        if ($value == '1' || $value == 'yes') {
+            $useBarCode = true;
+        }
+    }
     
     $bidlines = null;
     if (array_key_exists('artistBidSheetLines', $vendor))
@@ -209,25 +232,10 @@ function pdfPrintBidSheets($regionYearId, $region, $response) {
     else if ($bidSep == null || $bidSep == '' || !is_numeric($bidSep))
         $bidSep = 0;
 
+    $totalLines = $bidlines + ($useBarCode ? 1 : 0);
+
 // local constants for the sheets
     $margin = 0.25;
-    if ($bidlines <= 4) {
-        $orient = 'L';
-        $numcols = 3;
-        $numrows = 2;
-        $vsize = 3.8;
-    } else if ($bidlines < 8) {
-        $orient = 'P';
-        $numcols = 2;
-        $numrows = 2;
-        $vsize = 5.0;
-    } else {
-        $orient = 'P';
-        $numcols = 2;
-        $numrows = 1;
-        $vsize = 10.0;
-    }
-
     $indent = 0.1;
     $blockheight = 0.33;
     $priceheight = 0.25;
@@ -236,8 +244,25 @@ function pdfPrintBidSheets($regionYearId, $region, $response) {
     $dataOffset = 0.20;
     $priceoffset = 0.14;
 
+    if ($totalLines <= 4) {
+        $orient = 'L';
+        $numcols = 3;
+        $numrows = 2;
+        $vsize = 3.8 - ((4 - $totalLines) * $blockheight);
+    } else if ($totalLines <= 8) {
+        $orient = 'P';
+        $numcols = 2;
+        $numrows = 2;
+        $vsize = 5.1 - ((8 - $totalLines) * $blockheight);;
+    } else {
+        $orient = 'P';
+        $numcols = 2;
+        $numrows = 1;
+        $vsize = 10.1 - ((23 - $totalLines) * $blockheight);;
+    }
+
     $itemSQL = <<<EOS
-SELECT e.exhibitorName, exRY.exhibitorNumber, aI.title, aI.item_key, aI.min_price, aI.sale_price, aI.original_qty, aI.material, aI.type, e.id, eR.name
+SELECT e.exhibitorName, exRY.exhibitorNumber, aI.title, aI.item_key, aI.min_price, aI.sale_price, aI.original_qty, aI.material, aI.type, aI.id AS itemId, e.id, eR.name
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors e ON e.id = exY.exhibitorId
@@ -272,12 +297,12 @@ EOS;
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
-    $pdf = new Fpdf($orient, 'in', 'Letter');
+    $pdf = new \Erkens\Fpdf\Barcode($orient, 'in', 'Letter');
     initPDF($pdf, 0.008, 'Arial', '', 11);
 
 // computes from those offsets
     $hsize = ($pdf->GetPageWidth() - 2 * $margin) / $numcols;
-    $firstrow = $margin + 0.2;
+    $firstrow = $margin + 0.15;
 
 // timestamp for printing when generated
     $createDate = date('Y/m/d h:i:s A');
@@ -434,6 +459,12 @@ EOS;
         $pdf->Rect($h + 2.7, $v + $labeloffset + 0.05, 0.15, 0.15, $art['type'] == 'nfs' ? 'DF' : 'D');
         printXY($h + 2.85, $v + $dataOffset, 'NFS');
 
+        if ($useBarCode) {
+            $v += $blockheight;
+            $barcodeData = sprintf('%7.7d,%3.3d', $art['itemId'], 1);
+            $pdf->code128($h + $indent, $v + $labeloffset, $barcodeData, $isize - (2 * $indent), $blockheight - (2 * $labeloffset));
+        }
+
         $headerEnd = $v + $blockheight;
         pushLineWidth(0.024);
         $pdf->Rect($h, $headerStart, $isize, $headerEnd - $headerStart);
@@ -489,7 +520,7 @@ EOS;
 
     $title = "$conname Art Control Sheet for " . $artist['exhibitorName'];
 
-    $pdf = new Fpdf('L', 'in', 'Letter');
+    $pdf = new Fpdf\Fpdf('L', 'in', 'Letter');
     initPDF($pdf, 0.008, 'Arial', '', 11);
 
     // computes from those offsets
