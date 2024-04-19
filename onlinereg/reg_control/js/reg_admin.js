@@ -781,6 +781,8 @@ function sendCancel() {
 
 
 function sendEmail(type) {
+    emailBulkSend = new EmailBulkSend('result_message', 'scripts/sendBatch.php');
+
     var email = prompt("Would you like to send a test " + type + " email?\nIf so please enter the address to send the test to.");
     var action = "none";
 
@@ -791,6 +793,10 @@ function sendEmail(type) {
     } else {
         action = 'test';
     }
+
+    var data = { 'action': action, 'email': email, 'type': type };
+    emailBulkSend.getEmailAndList('scripts/sendEmail.php', data );
+    /*
 
     $.ajax({
         url: 'scripts/sendEmail.php',
@@ -804,5 +810,5 @@ function sendEmail(type) {
                 $('#test').empty().append(JSON.stringify(data));
             }
         }
-    });
+    });*/
 }
