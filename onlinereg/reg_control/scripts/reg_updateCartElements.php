@@ -163,7 +163,7 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             }
         }
         if ($changes != '')
-            $new_change_notes = "\nreg_control/registration Updated " . date(DATE_RFC2822) . " by $user_id:\n$changes\n" . $new_change_notes;
+            $new_change_notes = "\nreg_control/registration Updated " . date(DATE_RFC2822) . " by $user_perid:\n$changes\n" . $new_change_notes;
 
         $paramarray = array(
             $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$legalName,$cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
@@ -178,13 +178,13 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
 
 // create the controlling transaction, in case the master perinfo needed insertion
 $master_perid = $cart_perinfo[0]['perid'];
-$tran_type = 'regctl-reg/' . $user_id;
+$tran_type = 'regctl-reg/' . $user_perid;
 $insTransactionSQL = <<<EOS
 INSERT INTO transaction(conid,perid,userid,price,paid,type,create_date)
 VALUES (?,?,?,?,?,?,now());
 EOS;
 // now insert the master transaction
-$paramarray = array($conid, $master_perid, $user_id, 0, 0, $tran_type);
+$paramarray = array($conid, $master_perid, $user_perid, 0, 0, $tran_type);
 $typestr = 'iiisss';
 $master_transid = dbSafeInsert($insTransactionSQL, $typestr, $paramarray);
 if ($master_transid === false) {
@@ -208,7 +208,7 @@ for ($row = 0; $row < sizeof($cart_membership); $row++) {
         if ($cartrow['perid'] <= 0) {
             $cartrow['perid'] = $update_permap[$cartrow['perid']];
         }
-        $paramarray = array($cartrow['conid'], $cartrow['perid'], $cartrow['price'], $cartrow['paid'], $user_id, $master_transid, $cartrow['memId']);
+        $paramarray = array($cartrow['conid'], $cartrow['perid'], $cartrow['price'], $cartrow['paid'], $user_perid, $master_transid, $cartrow['memId']);
         $typestr = 'iissiii';
         $new_regid = dbSafeInsert($insRegSQL, $typestr, $paramarray);
         if ($new_regid === false) {

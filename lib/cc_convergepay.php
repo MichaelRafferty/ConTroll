@@ -190,11 +190,11 @@ function cc_charge_purchase($results, $ccauth) {
         ($resp_array['ssl_result_message']=='APPROVAL' or $resp_array['ssl_result_message']=='APPROVED' )) {
 
         $rtn['txnfields'] = array('transid','type',$category,'description','source','amount',
-            'txn_time', 'cc','cc_txn_id','cc_approval_code','receipt_id','cashier','userid');
+            'txn_time', 'cc','cc_txn_id','cc_approval_code','receipt_id','cashier');
         $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd',
             's', 's', 's', 's', 's','i','i');
         $rtn['tnxdata'] = array($results['transid'],'credit','reg',$db_resp['ssl_description'],'online',$db_resp['ssl_amount'],
-            $db_resp['ssl_txn_time'],$db_resp['ssl_card_number'],$db_resp['ssl_txn_id'],$db_resp['ssl_approval_code'],$db_resp['ssl_txn_id'],$user_perid, $user_id);
+            $db_resp['ssl_txn_time'],$db_resp['ssl_card_number'],$db_resp['ssl_txn_id'],$db_resp['ssl_approval_code'],$db_resp['ssl_txn_id'],$user_perid);
         $rtn['url'] = null;
         $rtn['rid'] = $db_resp['ssl_txn_id'];
         return $rtn;
