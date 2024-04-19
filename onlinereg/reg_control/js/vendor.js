@@ -1094,21 +1094,21 @@ class exhibitorsAdm {
     printBidSheets(id) {
         this.#spaceRow = this.#spacesTable.getRow(id);
         var exhibitorData = this.#spaceRow.getData();
-        var script = "scripts/exhibitorsBidsheets.php?type=bidsheets&region=" + exhibitorData['regionYearId'] + "&eyid=" + exhibitorData['exhibitorYearId'];
+        var script = "scripts/exhibitorsBidSheets.php?type=bidsheets&region=" + exhibitorData['regionYearId'] + "&eyid=" + exhibitorData['exhibitorYearId'];
         window.open(script, "_blank")
     }
 
     printPriceTags(id) {
         this.#spaceRow = this.#spacesTable.getRow(id);
         var exhibitorData = this.#spaceRow.getData();
-        var script = "scripts/exhibitorsBidsheets.php?type=printshop&region=" + exhibitorData['regionYearId'] + "&eyid=" + exhibitorData['exhibitorYearId'];
+        var script = "scripts/exhibitorsBidSheets.php?type=printshop&region=" + exhibitorData['regionYearId'] + "&eyid=" + exhibitorData['exhibitorYearId'];
         window.open(script, "_blank")
     }
 
     printControlSheet(id) {
         this.#spaceRow = this.#spacesTable.getRow(id);
         var exhibitorData = this.#spaceRow.getData();
-        var script = "scripts/exhibitorsBidsheets.php?type=control&region=" + exhibitorData['regionYearId'] + "&eyid=" + exhibitorData['exhibitorYearId'];
+        var script = "scripts/exhibitorsBidSheets.php?type=control&region=" + exhibitorData['regionYearId'] + "&eyid=" + exhibitorData['exhibitorYearId'];
         window.open(script, "_blank")
     }
 
