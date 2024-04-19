@@ -89,7 +89,8 @@ class reg_cart {
         this.#yearahead_select = '';
         this.#yearahead_selectlist = [];
         for (row in match) {
-            var option = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + ' (' + match[row]['enddate'] + ')' + "</option>\n";
+            var option = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] +
+                ' (' + match[row]['enddate'] + ':' + match[row]['id'] + ')' + "</option>\n";
             this.#yearahead_select += option;
             this.#yearahead_selectlist.push({price: match[row]['price'], option: option});
         }
@@ -101,7 +102,8 @@ class reg_cart {
         match = memList.filter(mem_filter);
         this.#addon_select = '';
         for (row in match) {
-            this.#addon_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + ' (' + match[row]['enddate'] + ')' + "</option>\n";
+            this.#addon_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] +
+                ' (' + match[row]['enddate'] + ':' + match[row]['id'] + ')' + "</option>\n";
         }
 
         this.drawCart();
