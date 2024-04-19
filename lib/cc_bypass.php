@@ -51,11 +51,11 @@ function cc_charge_purchase($results, $ccauth) {
     $rtn = array();
     $rtn['amount'] = $results['total'];
     $rtn['txnfields'] = array('transid','type',$category,'description','source','amount',
-        'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id','cashier','userid');
+        'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id','cashier');
     $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd',
             's', 's', 's', 's', 's', 's', 's', 's','i','i');
     $rtn['tnxdata'] = array($results['transid'],'other','reg','bypass','online',$results['total'],
-        strtotime("now"),'****','**n**','cctxid','bypass','bypass','ok','000',$user_perid, $user_id);
+        strtotime("now"),'****','**n**','cctxid','bypass','bypass','ok','000',$user_perid);
     $rtn['url'] = '';
     $rtn['rid'] = '000';
     return $rtn;
