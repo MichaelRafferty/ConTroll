@@ -753,7 +753,7 @@ function transferBadge(to, banned) {
 }
 
 function sendCancel() {
-    var tid = prompt("Would you like to send a test email?\nIf so please enter the transaction you want to send the test for.");
+    var tid = prompt("Would you like to send a test email?\nIf so please enter the transaction you want to send the test for.\n");
     var action = "none";
 
     if (tid == null) {
@@ -783,13 +783,16 @@ function sendCancel() {
 function sendEmail(type) {
     emailBulkSend = new EmailBulkSend('result_message', 'scripts/sendBatch.php');
 
-    var email = prompt("Would you like to send a test " + type + " email?\nIf so please enter the address to send the test to.");
+    var email = prompt("Would you like to send a test " + type + " email?\nIf so please enter the address to send the test to in the box below and click ok.\n" +
+        "If you don't provide a test address, you will be sending emails to a lot of people.\nYou will be give a chance to review the number of emails to be sent before they are sent out.\n" +
+        "Clicking cancel will cancel the sending of these emails.\n");
     var action = "none";
 
-    if (email == null) {
-        if (confirm("You are about to send a " + type + " email to a lot of people.  Are you sure?")) {
-            action = 'full';
-        } else { return false; }
+    if (email == null)
+        return false;
+
+    if (email == '') {
+        action = 'full';
     } else {
         action = 'test';
     }

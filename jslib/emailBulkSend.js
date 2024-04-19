@@ -105,10 +105,12 @@ class EmailBulkSend {
 
         params += "<button class='btn btn-primary btn-sm' onclick='emailBulkSend.sendBulkNo();'>Cancel Send</button>\n";
         this.#emailStatusHTML += params;
+        clear_message(this.#emailStatusDivId);
         this.#emailStatusDiv.innerHTML = this.#emailStatusHTML;
     }
 
     sendBulkNo() {
+        clear_message(this.#emailStatusDivId);
         this.#emailStatusDiv.innerHTML = "Email Cancelled";
         emailBulkSend = null;
     }
@@ -117,6 +119,7 @@ class EmailBulkSend {
         if (this.#emailTest)
             this.#emailTo =  this.#emailTest;
         this.#emailStatusHTML = "Email Send Started for " + this.#emailTo.length + " emails\n<PRE>\n";
+        clear_message(this.#emailStatusDivId);
         this.#emailStatusDiv.innerHTML = this.#emailStatusHTML + "</pre>\n";
         this.#startOrdinal = 0;
         if (this.#emailTo.length > 0)
