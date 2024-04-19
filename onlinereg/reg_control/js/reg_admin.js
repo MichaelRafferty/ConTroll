@@ -796,19 +796,4 @@ function sendEmail(type) {
 
     var data = { 'action': action, 'email': email, 'type': type };
     emailBulkSend.getEmailAndList('scripts/sendEmail.php', data );
-    /*
-
-    $.ajax({
-        url: 'scripts/sendEmail.php',
-        data: { 'action': action, 'email': email, 'type': type },
-        method: "POST",
-        success: function (data, textStatus, jqXHR) {
-            if (data.error) {
-                $('#test').empty().append(JSON.stringify(data));
-                alert(data.error);
-            } else {
-                $('#test').empty().append(JSON.stringify(data));
-            }
-        }
-    });*/
 }
