@@ -120,9 +120,9 @@ function page_init($title, $tab, $css, $js)
                                             <a class="nav-link navitem <?php echo $tab == "atconArtInventory" ? "active" : ""; ?>" <?php echo $tab == "atconArtInventory" ? 'aria-current="page"' : ""; ?> href="artInventory.php?mode=inventory">Art Inventory</a>
                                         </li>
                                         <?php  } 
-                                        if (in_array('manager', $perms)) { ?>
+                                        if (in_array('artsales', $perms)) { ?>
                                         <li>
-                                            <a class="nav-link navitem <?php echo $tab == "artsales" ? "active" : ""; ?>" <?php echo $tab == "artsales" ? 'aria-current="page"' : "" ?> href="newArtSales.php?mode=sales">New Art Show Cashier</a>
+                                            <a class="nav-link navitem <?php echo $tab == "artsales" ? "active" : ""; ?>" <?php echo $tab == "artsales" ? 'aria-current="page"' : "" ?> href="artpos.php">New Art Show Cashier</a>
                                         </li>
                                         <li>
                                             <a class="nav-link navitem <?php echo $tab == "admin" ? "active" : ""; ?>" <?php echo $tab == "admin" ? 'aria-current="page"' : ""; ?> href="admin.php">Administrator</a>
