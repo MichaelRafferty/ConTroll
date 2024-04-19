@@ -3,8 +3,6 @@ global $db_ini;
 
 require_once "../lib/base.php";
 require_once "../lib/email.php";
-require_once(__DIR__ . "/../../../lib/email__load_methods.php");
-require_once(__DIR__ . "/../../../lib/global.php");
 
 $check_auth = google_init("ajax");
 $user_email = $check_auth['email'];
@@ -23,8 +21,6 @@ if (!array_key_exists('user_id', $_SESSION)) {
     return;
 }
 $user_id = $_SESSION['user_id'];
-
-load_email_procs();
 
 $test = true;
 $email = null;
@@ -62,6 +58,7 @@ if ($email == null || $email == '') {
 }
 
 $response['test'] = $test;
+$macroSubstitution = false;
 
 switch ($email_type) {
 case 'reminder':
@@ -171,6 +168,7 @@ EOQ;
     $email_text = ComeBackCouponEmail_TEXT($reg['test'], date_format($expires, 'M d, Y'));
     $email_html = ComeBackCouponEmail_HTML($reg['test'], date_format($expires, 'M d, Y'));
     $email_subject = "We miss you! Please come back to $conname";
+    $macroSubstitution = true;
     break;
 
 case 'survey':
@@ -217,75 +215,24 @@ if ($response['numEmails'] == 0) {
 $email_array=array();
 $data_array=array();
 
-if($test) {
-    $email_array[] = array('email' => $email, 'first_name' => 'First', 'last_name' => 'Last', 'guid' => guidv4());
-} else {
-    while($addr =  $emailR->fetch_assoc()) {
-       $email_array[] = $addr;
-    }
+if ($test) {
+    $email_test[] = array('email' => $email, 'first_name' => 'First', 'last_name' => 'Last', 'guid' => guidv4());
+    $response['emailTest'] = $email_test;
 }
 
-if (array_key_exists('batchsize', $emailconf)) {
-    $batchsize = $emailconf['batchsize'];
-} else {
-    $batchsize= 10;
+while($addr =  $emailR->fetch_assoc()) {
+   $email_array[] = $addr;
 }
 
-if (array_key_exists('delay', $emailconf)) {
-    $delay = $emailconf['delay'];
-} else {
-    $delay= 1;
-}
 
-if ($batchsize == 0  || $delay == 0)
-    $batchsize = 999999;
-
-// bunch in groups of 10 to avoid throttle cutoff
-$i = 0;
-$numsent = 0;
-foreach ($email_array as $email) {
-    $i++;
-    $sendtext = $email_text;
-    $sendhtml = $email_html;
-    if (array_key_exists('first_name', $email)) {
-        $sendtext = str_replace('#FirstName#', $email['first_name'], $sendtext);
-        $sendhtml = str_replace('#FirstName#', $email['first_name'], $sendhtml);
-    }
-    if (array_key_exists('last_name', $email)) {
-       $sendtext = str_replace('#LastName#', $email['last_name'], $sendtext);
-       $sendhtml = str_replace('#LastName#', $email['last_name'], $sendhtml);
-    }
-    if (array_key_exists('guid', $email)) {
-        $cc = 'offer=' .base64_encode_url( $code . '~!~' . $email['guid']);
-        $sendtext = str_replace('#CouponCode#', $cc , $sendtext);
-        $sendhtml = str_replace('#CouponCode#', $cc, $sendhtml);
-    }
-    try {
-        $return_arr = send_email($con['regadminemail'], trim($email['email']), /* cc */ null, $con['label'] . ": $email_subject", $sendtext, $sendhtml);
-
-        if ($return_arr['status'] == 'success') {
-            $data_array[] = array($email, "success");
-            web_error_log("sent $email_type email to " . $email['email']);
-            $numsent++;
-        } else {
-            $data_array[] = array($email, $return_arr['email_error']);
-            $success = 'error';
-            web_error_log("failed $email_type email to " . $email['email']);
-        }
-    } catch (Exception $e) {
-        web_error_log("Email to: " . trim($email['email']) . " failed, threw exception");
-    }
-
-    if ($i > $batchsize) {
-	    $i = 0;
-	    sleep($delay);
-    }
-}
-
-$response['status'] = 'success';
-$response['error'] = $data_array;
-$response['email_array'] = $email_array;
-$response['emails_sent'] = $numsent;
+$response['emailText'] = $email_text;
+$response['emailHTML'] = $email_html;
+$response['emailFrom'] = $email;
+$response['emailTo'] =  $email_array;
+$response['emailCC'] = null;
+$response['emailSubject'] = $con['label'] . ": $email_subject";
+$response['emailType'] = $email_type;
+$response['macroSubstitution'] = $macroSubstitution;
 
 ajaxSuccess($response);
 ?>
