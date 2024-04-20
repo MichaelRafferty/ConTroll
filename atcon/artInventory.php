@@ -23,7 +23,7 @@ page_init($page, $tab,
     /* css */ array($cdn['tabcss'], $cdn['tabbs5'],
 		    'css/atcon.css','css/registration.css'),
     /* js  */ array( //$cdn['luxon'],
-                    $cdn['tabjs'],'js/atcon.js','js/artInventory.js')
+                    $cdn['tabjs'],'js/artInventory.js')
     );
 
 db_connect();

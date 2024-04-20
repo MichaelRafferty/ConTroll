@@ -22,7 +22,7 @@ $cdn = getTabulatorIncludes();
 page_init($page, $tab,
     /* css */ array($cdn['tabcss'], $cdn['tabbs5'], 'css/atcon.css','css/registration.css'),
     /* js  */ array( //$cdn['luxon'],
-                    $cdn['tabjs'],'js/atcon.js','js/newArtSales.js')
+                    $cdn['tabjs'],'js/newArtSales.js')
     );
 
 db_connect();
