@@ -270,7 +270,7 @@ function loadInitialData(data) {
     for (var row in match) {
         if (match[row]['canSell'] == 1 || Manager) {
             var option = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] +
-                ' (' + match[row]['enddate'] + ':' + match[row]['id'] + ')' + "</option>\n";
+                ' (' + match[row]['enddate'] + '; ' + match[row]['id'] + ')' + "</option>\n";
             membership_select += option;
             membership_selectlist.push({price: match[row]['price'], option: option});
         }
