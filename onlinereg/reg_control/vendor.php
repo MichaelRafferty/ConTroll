@@ -103,7 +103,7 @@ draw_exhibitorReceiptModal('admin');
                                 <h4>Information about this Exhibitor</h4>
                             </div>
                         </div>
-                        <div id='exhibitorInfoHTML'></div>
+                        <div class="container-fluid" id='exhibitorInfoHTML'></div>
                         <div class='row' id='spacedetail_message_div'></div>
                     </div>
                 </div>
@@ -140,25 +140,25 @@ draw_exhibitorReceiptModal('admin');
                         </div>
                     </div>
                     <div class='row mt-3'>
-                        <div class="col-sm-6">
+                        <div class="col-sm-6 ms-0 me-0">
                             <div class="container-fluid">
                                 <div class="row">
-                                    <div class='col-sm-12'>
+                                    <div class='col-sm-12 ms-0 me-0'>
                                         <h4>Information about this Exhibitor</h4>
-                                        <div id='locationsExhibitorInfoHTML'></div>
                                     </div>
                                 </div>
                             </div>
+                            <div class="container-fluid" id='locationsExhibitorInfoHTML'></div>
                         </div>
                         <div class='col-sm-6'>
                             <div class='container-fluid'>
                                 <div class='row'>
                                     <div class='col-sm-12'>
-                                        <h4>Locations Used</h4>
+                                        <h4>Locations Used by all Artists</h4>
                                     </div>
                                 </div>
-                                <div id='locationsUsedHTML'></div>
                             </div>
+                            <div class="container-fluid" id='locationsUsedHTML'></div>
                         </div>
                     </div>
                     <div id='locationsExhibitorInfoHTML'></div>
