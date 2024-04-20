@@ -15,7 +15,7 @@ CREATE TABLE `artItems` (
   `item_key` int NOT NULL,
   `title` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `type` enum('art','nfs','print') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `status` enum('Not In Show','Checked In','NFS','BID','Quicksale/Sold','Removed from Show','purchased/released','To Auction','Sold Bid Sheet','Checked Out') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` enum('Entered','Not In Show','Checked In','NFS','BID','Quicksale/Sold','Removed from Show','purchased/released','To Auction','Sold Bid Sheet','Checked Out') COLLATE utf8mb4_general_ci DEFAULT 'Entered',
   `location` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `quantity` int NOT NULL,
   `original_qty` int NOT NULL,
