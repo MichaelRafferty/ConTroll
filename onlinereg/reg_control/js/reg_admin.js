@@ -518,7 +518,9 @@ function transfer(index) {
         find_result_table.destroy();
         find_result_table = null;
     }
-    document.getElementById('transfer_from').innerHTML = fullname + '(' + badgename + ')';
+    if (badgename != null && badgename != '')
+        badgename = ' (' + badgename + ')';
+    document.getElementById('transfer_from').innerHTML = fullname + badgename;
     document.getElementById('transfer_badge').innerHTML = badgelabel;
     document.getElementById('from_badgeid').value = badgeid;
     document.getElementById('from_perid').value = perid;
