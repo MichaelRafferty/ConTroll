@@ -931,7 +931,7 @@ function add_found(data) {
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120,},
-                {title: "Note", width: 45, headerSort: false, headerFilter: false, formatter: perNotesIcons, formatterParams: {t:"add"}, },
+                {title: "Nt", width: 45, headerSort: false, headerFilter: false, formatter: perNotesIcons, formatterParams: {t:"add"}, },
                 {title: "Cart", width: 100, headerFilter: false, headerSort: false, formatter: addCartIcon, formatterParams: {t:"add"},},
                 {field: "index", visible: false,},
                 {field: "open_notes", visible: false,},
@@ -1130,7 +1130,11 @@ function draw_record(row, first) {
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-3">` + 'Badge Name:' + `</div>
+            <div class="col-sm-3">Person ID:</div>
+            <div class="col-sm-9">` + data['perid'] + `</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3">Badge Name:</div>
             <div class="col-sm-9">` + badge_name_default(data['badge_name'], data['first_name'], data['last_name']) + `</div>
         </div>
         <div class="row">
@@ -1625,7 +1629,7 @@ function found_record(data) {
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120,},
-                {title: "Note",width: 45, headerSort: false, headerFilter: false, formatter: perNotesIcons, formatterParams: {t:"result"}, },
+                {title: "Nt",width: 45, headerSort: false, headerFilter: false, formatter: perNotesIcons, formatterParams: {t:"result"}, },
                 {title: "Cart", width: 90, headerFilter: false, headerSort: false, formatter: addCartIcon, formatterParams: {t:"result"},},
                 {field: "index", visible: false,},
             ],

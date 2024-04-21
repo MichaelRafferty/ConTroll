@@ -17,6 +17,7 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
 $perid = $_POST['perid'];
 $con = get_con();
 $conid = $con['id'];
+$user_perid = $_SESSION['user_perid'];
 
 function check_memType($type, $year) {
   $date = Date("Y");
@@ -60,8 +61,8 @@ $badgeR = dbSafeQuery($badgeQ, 'i', array($perid));
 $badgeId = '';
 // why is this a hardced memId and transaction id???
 if($badgeR->num_rows == 0 && check_memType($type, $year)) {
-  $badgeQ = "INSERT INTO reg (conid, perid, memId, create_trans) VALUES (?, ?, ?, ?);";
-  $badgeId = dbSafeInsert($badgeQ, 'iiii', array ($conid, $perid, 64, 20985));
+  $badgeQ = "INSERT INTO reg (conid, perid, memId, create_trans, create_user) VALUES (?, ?, ?, ?, ?);";
+  $badgeId = dbSafeInsert($badgeQ, 'iiii', array ($conid, $perid, 64, 20985, $user_perid));
 
 } else  {
   $badge = fetch_safe_assoc($badgeR);

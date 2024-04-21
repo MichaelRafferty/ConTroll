@@ -41,3 +41,5 @@ CREATE TABLE `exhibitors` (
   KEY `exhibitor_perid_fk` (`perid`),
   KEY `exhibitors_newperson_fk` (`newperid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+

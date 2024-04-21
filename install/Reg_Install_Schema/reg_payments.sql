@@ -25,6 +25,7 @@ CREATE TABLE `payments` (
   `cc_approval_code` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `txn_time` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `userid` int DEFAULT NULL,
+  `userPerid` int DEFAULT NULL,
   `cashier` int DEFAULT NULL,
   `receipt_url` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `status` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
