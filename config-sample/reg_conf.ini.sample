@@ -109,7 +109,6 @@ artistPriceTagBarcode = 1;
 ;artistMailInInventoryReqHTML=
 ;artistMailInInventoryReqText=
 ; pathto file in config any additional text you wish to add to explain the signup form for artist portal
->>>>>>> origin/test
 artistSignupAddltext=""
 ; artist bid sheets, artistBidSheetNumbers = number of bid lines, of which artistBidSheetNumbers are numbered if lines <=4, it will use up 2x3 Landscape, if >4 and less that X it will use 2x2 Portrait format, if > X it will use 2x1 portrait format
 artistBidSheetLines=4
