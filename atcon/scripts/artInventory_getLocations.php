@@ -21,7 +21,7 @@ if(!array_key_exists('region', $_GET)) {
 }
 
 $locQ = <<<EOS
-SELECT exhibitorNumber, eS.locations
+SELECT exhibitorNumber, eRY.locations
 FROM exhibitorRegionYears eRY
     JOIN exhibitorYears eY ON eY.id=eRY.exhibitorYearId
     JOIN exhibitorSpaces eS on eS.exhibitorRegionYear=eRY.id
@@ -41,7 +41,7 @@ while($loc = fetch_safe_assoc($locR)) {
 }
 
 foreach($locations as $key => $value) {
-    sort($value, SORT_NATURAL);
+    natsort($value);
     $locations[$key] = $value;
 }
 

@@ -97,7 +97,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                             <?php if ($portalType != 'admin') { ?>
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <p> Please provide us with information we can use to evaluate if you qualify and how you would fit in the selection of <?php
+                                    <p> Please provide us with information we can use to manage <?php
                                         echo $portalType; ?>s at <?php echo $con['conname'];
                                         $addlkey = $portalType == 'artist' ? 'artistSignupAddltext' : 'vendorSignupAddltext';
                                         if (array_key_exists($addlkey, $vendor_conf)) {
@@ -217,7 +217,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                 <div class="col-sm-2"></div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
                                     <input class="form-control-sm" id='addr2' type='text' size="64" name='addr2'
-                                           placeholder="second line of address if neededsecond line of address if needed" tabindex="110"/>
+                                           placeholder="second line of address if needed" tabindex="110"/>
                                 </div>
                             </div>
                             <div class="row mt-1">
