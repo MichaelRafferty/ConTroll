@@ -192,7 +192,7 @@ function cc_charge_purchase($results, $ccauth) {
         $rtn['txnfields'] = array('transid','type',$category,'description','source','amount',
             'txn_time', 'cc','cc_txn_id','cc_approval_code','receipt_id','cashier');
         $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd',
-            's', 's', 's', 's', 's','i','i');
+            's', 's', 's', 's', 's','i');
         $rtn['tnxdata'] = array($results['transid'],'credit','reg',$db_resp['ssl_description'],'online',$db_resp['ssl_amount'],
             $db_resp['ssl_txn_time'],$db_resp['ssl_card_number'],$db_resp['ssl_txn_id'],$db_resp['ssl_approval_code'],$db_resp['ssl_txn_id'],$user_perid);
         $rtn['url'] = null;
