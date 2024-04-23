@@ -120,8 +120,8 @@ if ($delete_keys != '') {
 }
 
 $inssql = <<<EOS
-INSERT INTO artItems (item_key, title, material, type, original_qty, quantity, min_price, sale_price, exhibitorRegionYearId) 
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO artItems (item_key, title, material, type, original_qty, quantity, min_price, sale_price, conid, exhibitorRegionYearId) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 $updsql = <<<EOS
 UPDATE artItems SET item_key=?, title=?, material=?, original_qty=?, quantity=?, min_price=?, sale_price=? 
@@ -182,8 +182,8 @@ foreach ($data as $index => $row) {
         $updated += $numrows;
         logwrite(array($updsql, $typestr, $vararray, $numrows));
     } else { // new!
-        $typestr = 'isssiiddi';
-        $paramarray =  array($nextItemKey++, $title, $material, $itemType, $qty, $qty, $min_price, $sale_price, $exhibitorRegionYearId);
+        $typestr = 'isssiiddii';
+        $paramarray =  array($nextItemKey++, $title, $material, $itemType, $qty, $qty, $min_price, $sale_price, $conid, $exhibitorRegionYearId);
 
         $numrows = dbSafeCmd($inssql, $typestr, $paramarray);
         logwrite(array($inssql, $typestr, $paramarray, $numrows));
