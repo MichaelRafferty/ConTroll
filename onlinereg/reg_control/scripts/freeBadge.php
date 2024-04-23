@@ -36,7 +36,7 @@ $transR = dbSafeQuery($transQ, 'ii', array($user_perid, $con['id']));
 $transid=0;
 
 if ($transR->num_rows > 0) {
-  $trans=fetch_safe_assoc($transR);
+  $trans=$transR->fetch_assoc();
   $transid=$trans['id'];
 } else {
   $transQ = "INSERT INTO transaction (conid, userid, price, paid, type, notes, complete_date) VALUES (?, ?, 0, 0, 'staff', 'Free memberships', NOW());";
@@ -50,7 +50,7 @@ if((!array_key_exists('regid', $_POST)) || (!isset($_POST['regid'])) || $_POST['
     }
 
     $perQ = "SELECT perid FROM badgeList WHERE id=?;";
-    $perid = fetch_safe_assoc(dbSafeQuery($perQ, 'i', array($_POST['id'])));
+    $perid = dbSafeQuery($perQ, 'i', array($_POST['id']))->fetch_assoc();
 
     $reg = array(
       'conid'=>sql_safe($con['id']),
