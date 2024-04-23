@@ -16,11 +16,9 @@ if($check_auth == false || (!checkAuth($check_auth['sub'], $perm) &&
     exit();
 }
 
+$user_perid = $_SESSION['user_perid'];
 $user = $check_auth['email'];
 $response['user'] = $user;
-$userQ = "SELECT id FROM user WHERE email=?;";
-$userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', array($user)));
-$userid = $userR['id'];
 $con = get_conf('con');
 $conid=$con['id'];
 $transid=sql_safe($_POST['transaction']);
@@ -63,7 +61,7 @@ $memInfo = fetch_safe_assoc(dbSafeQuery($memListQuery, $types, $values));
 
 $query = "INSERT INTO reg (conid, create_user, create_trans, perid, newperid, memId, price, paid, locked) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?);";
 $types = 'iiiiiids';
-$values = array($conid, $userid, $transid);
+$values = array($conid, $user_perid, $transid);
 if(isset($_POST['id'])) {
     $values[] = $_POST['id'];
 } else {

@@ -1,6 +1,6 @@
 // Cart Class - all functions and data related to the cart portion of the right side of the screen
 // Cart includes: People, Memberships and Payments.
-class reg_cart {
+class regpos_cart {
 // cart dom items
     #void_button = null;
     #startover_button = null;
@@ -64,9 +64,7 @@ class reg_cart {
         filt_excat = null;
         filt_cat = new Array('upgrade')
         filt_shortname_regexp = null;
-        filt_conid = [Number(conid)];
         var match = memList.filter(mem_filter);
-        var nonday = 0;
         for (row in match) {
             var label = match[row]['label'];
             var day = label.replace(/.*upgrade +(...).*/i, '$1').toLowerCase();
@@ -78,32 +76,28 @@ class reg_cart {
             }
             if (!this.#upgrade_select[day])
                 this.#upgrade_select[day] = ''
-            this.#upgrade_select[day] += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + ' (' + match[row]['enddate'] + ')' + "</option>\n";
+            this.#upgrade_select[day] = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + ' (' + match[row]['enddate'] + ')' + "</option>\n";
         }
 
         // cart is only place to use yearahead_select, so build it.
         filt_cat = new Array('yearahead')
         filt_shortname_regexp = null;
-        filt_conid = [Number(conid) + 1];
         match = memList.filter(mem_filter);
         this.#yearahead_select = '';
         this.#yearahead_selectlist = [];
         for (row in match) {
-            var option = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] +
-                ' (' + match[row]['enddate'] + '; ' + match[row]['id'] + ')' + "</option>\n";
+            var option = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
             this.#yearahead_select += option;
             this.#yearahead_selectlist.push({price: match[row]['price'], option: option});
         }
 
         // cart is only place to use addon_select, so build it
-        filt_cat = ['addon', 'add-on'];
-        filt_conid = [Number(conid)];
+        filt_cat = ['addon', 'add-on']
         filt_shortname_regexp = null;
         match = memList.filter(mem_filter);
         this.#addon_select = '';
         for (row in match) {
-            this.#addon_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] +
-                ' (' + match[row]['enddate'] + '; ' + match[row]['id'] + ')' + "</option>\n";
+            this.#addon_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + "</option>\n";
         }
 
         this.drawCart();
@@ -252,19 +246,13 @@ class reg_cart {
         return make_copy(this.#cart_pmt);
     }
 
-    allowAddCouponToCart() {
-        var anyUnpaid = false;
+    priorCouponInCart() {
         for (var rownum in this.#cart_membership) {
             var mbrrow = this.#cart_membership[rownum];
             if (mbrrow['coupon'])
-                return false;
-            if ((!non_primary_categories.includes(mbrrow['memCategory'])) && mbrrow['conid'] == conid && mbrrow['price'] > 0 && mbrrow['paid'] != mbrrow['price'])
-                anyUnpaid = true;
+                return true;
         }
-        if (anyUnpaid == false)
-            return false;
-
-        return true;
+        return false;
     }
 
     getPriorDiscount() {
@@ -520,7 +508,7 @@ class reg_cart {
             optionrows = this.#yearahead_selectlist;
         var price = mrow['price'];
         for (var row in optionrows) {
-            if (optionrows[row]['price'] >= price || Manager)
+            if (optionrows[row]['price'] >= price)
                 html += optionrows[row]['option'];
         }
 
@@ -644,8 +632,8 @@ class reg_cart {
             // col1 choices
             //  X = delete element from cart
             var allow_delete = mrow['regid'] <= 0;
-            var allow_delete_priv = mrow['paid'] == 0 && mrow['printcount'] == 0;
-            var allow_change_priv = mrow['regid'] > 0 && mrow['paid'] >= 0 && mrow['printcount'] == 0 &&
+            var allow_delete_priv = isCashier && mrow['paid'] == 0 && mrow['printcount'] == 0;
+            var allow_change_priv = isCashier && mrow['regid'] > 0 && mrow['paid'] >= 0 && mrow['printcount'] == 0 &&
                 (category == 'standard' || category == 'yearahead') && memType == 'full';
             col1 = '';
             if ((allow_delete || allow_delete_priv) && !this.#freeze_cart) {
@@ -797,7 +785,7 @@ class reg_cart {
         }
         rowhtml += `</div>
         <div class="col-sm-2 p-0 text-center">`;
-        if (Manager && !this.#freeze_cart) {
+        if (hasManager && base_manager_enabled && !this.#freeze_cart) {
             btncolor = 'btn-secondary';
             if (row['open_notes_pending'] !== undefined && row['open_notes_pending'] === 1)
                 btncolor = 'btn-warning';
@@ -1017,7 +1005,9 @@ class reg_cart {
             this.#review_button.hidden = true;
             this.hideStartOver();
         }
-        find_unpaid_button.hidden = num_rows > 0;
+        if (isCashier) {
+            find_unpaid_button.hidden = num_rows > 0;
+        }
     }
 
     // create the HTML of the cart into the review data block
@@ -1075,20 +1065,19 @@ class reg_cart {
     <div class="row mt-1">
         <div class="col-sm-auto ms-0 me-2 p-0">
             <input type="text" name="c` + rownum + `-first_name" id='c` + rownum + `-first_name' size="25" maxlength="32" placeholder="First Name" tabindex="` + String(tabindex + 2) +
-                '" value="' + row['first_name'] + '" style="background-color:' + colors.get('first_name') + ';' +
-                `"/>
+                '" value="' + row['first_name'] + '" style="background-color:' + colors.get('first_name') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <input type="text" name="c` + rownum + `-middle_name" id='c` + rownum + `-middle_name' size="6" maxlength="32" placeholder="Middle" tabindex="` + String(tabindex + 4) +
-                '" value="' + row['middle_name'] + `"/>
+                `" value="` + row['middle_name'] + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <input type="text" name="c` + rownum + `-last_name" id='c` + rownum + `-last_name' size="25" maxlength="32" placeholder="Last Name" tabindex="` + String(tabindex + 6) +
-                '" value="' + row['last_name'] + '" style="background-color:' + colors.get('last_name') + ';' + `"/>
+                `" value="` + row['last_name'] + '" style="background-color:' + colors.get('last_name') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name="c` + rownum + `-suffix" id='c` + rownum + `-suffix' size="6" maxlength="4" placeholder="Suffix" tabindex="` + String(tabindex + 8) +
-                '" value="' + row['suffix'] + `"/>
+                `" value="` + row['suffix'] + `"/>
         </div>
     </div>
     <div class="row">
@@ -1100,29 +1089,29 @@ class reg_cart {
     <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-badge_name' id='c` + rownum + `-badge_name' size=64 maxlength="64" placeholder="Badgename: defaults to first and last name" tabindex="` +
-                String(tabindex + 12) +'" value="' + row['badge_name'] + `"/>
+                String(tabindex + 12) + '" value="' + row['badge_name'] + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name='c` + rownum + `-email_addr' id='c` + rownum + `-email_addr' size=64 maxlength="254" placeholder="Email Address" tabindex="` +
-                String(tabindex + 14) + '"  value="' + row['email_addr'] + '" style="background-color:' + colors.get('email_addr') + ';' + `"/>
+            <input type="text" name='c` + rownum + `-email_addr' id='c` + rownum + `-email_addr' size=64 maxlength="254" placeholder="Email Address" tabindex="` + String(tabindex + 14) +
+                '"  value="' + row['email_addr'] + '" style="background-color:' + colors.get('email_addr') + ';' + `"/>
         </div>
          <div class="col-sm-auto ms-0 me-0 p-0">
-            <input type="text" name='c` + rownum + `-phone' id='c` + rownum + `-phone' size=15 maxlength="15" placeholder="Phone Number" tabindex="` +
-            String(tabindex + 16) + '" value="' + row['phone'] + '" style="background-color:' + colors.get('phone') + ';' + `"/>
+            <input type="text" name='c` + rownum + `-phone' id='c` + rownum + `-phone' size=15 maxlength="15" placeholder="Phone Number" tabindex="` + String(tabindex + 16) +
+            '" value="' + row['phone'] + '" style="background-color:' + colors.get('phone') + ';' + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
-            <input type="text" name='c` + rownum + `-address_1' id='c` + rownum + `-address_1' size=64 maxlength="64" placeholder="Street Address" tabindex="` +
-                String(tabindex + 18) + '"  value="' + row['address_1'] + '" style="background-color:' + colors.get('address_1') + ';' + `"/>
+            <input type="text" name='c` + rownum + `-address_1' id='c` + rownum + `-address_1' size=64 maxlength="64" placeholder="Street Address" tabindex="` + String(tabindex + 18) +
+            '"  value="' + row['address_1'] + '" style="background-color:' + colors.get('address_1') + ';' + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-address_2' id='c` + rownum + `-address_2' size=64 maxlength="64" placeholder="2nd line of Address (if needed, such as company)" tabindex="` +
-                String(tabindex + 20) + '" value="' + row['address_2'] + `"/>
+                String(tabindex + 20) + '"  value="' + row['address_2'] + `"/>
         </div>
     </div>
     <div class="row">
@@ -1131,12 +1120,12 @@ class reg_cart {
                 '" value="' + row['city'] + '" style="background-color:' + colors.get('city') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-state" id='c` + rownum + `-state' size="10" maxlength="16" placeholder="State" tabindex="` + String(tabindex + 24) +
-                '" value="' + row['state'] + '" style="background-color:' + colors.get('state') + ';' + `"/>
+            <input type="text" name="c` + rownum + `-state" id='c` + rownum + `-state' size="10" maxlength="16" placeholder="ST" tabindex="` + String(tabindex + 24) +
+                '" value="' + row['state'] + '" style="background-color:' + colors.get('state') + ';' +`"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <input type="text" name="c` + rownum + `-postal_code" id='c` + rownum + `-postal_code' size="10" maxlength="10" placeholder="Postal Code" tabindex="` + String(tabindex + 26) +
-            '" value="' + row['postal_code'] + '" style="background-color:' + colors.get('postal_code') + ';' + `"/>
+                '" value="' + row['postal_code'] + '" style="background-color:' + colors.get('postal_code') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-0 p-0">
             <select name='c` + rownum + `-country' id='c` + rownum + `-country' tabindex="` + String(tabindex + 28) + `">

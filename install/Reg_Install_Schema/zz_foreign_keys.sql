@@ -37,14 +37,15 @@ ALTER TABLE memList ADD CONSTRAINT `memList_memAge_fk` FOREIGN KEY (`conid`, `me
 ALTER TABLE memList ADD CONSTRAINT `memList_memCategory_fk` FOREIGN KEY (`memCategory`) REFERENCES `memCategories` (`memCategory`) ON UPDATE CASCADE;
 ALTER TABLE memList ADD CONSTRAINT `memList_memType_fk` FOREIGN KEY (`memType`) REFERENCES `memTypes` (`memType`) ON UPDATE CASCADE;
 ALTER TABLE coupon ADD CONSTRAINT `coupon_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
-ALTER TABLE coupon ADD CONSTRAINT `coupon_createby_fk` FOREIGN KEY (`createBy`) REFERENCES `user` (`id`) ON UPDATE CASCADE;
+ALTER TABLE coupon ADD CONSTRAINT `coupon_createby_fk` FOREIGN KEY (`createBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE coupon ADD CONSTRAINT `coupon_memid_fk` FOREIGN KEY (`memId`) REFERENCES `memList` (`id`) ON UPDATE CASCADE;
-ALTER TABLE coupon ADD CONSTRAINT `coupon_updateby_fk` FOREIGN KEY (`updateBy`) REFERENCES `user` (`id`) ON UPDATE CASCADE;
+ALTER TABLE coupon ADD CONSTRAINT `coupon_updateby_fk` FOREIGN KEY (`updateBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorYears ADD CONSTRAINT `ey_conlist_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorYears ADD CONSTRAINT `ey_exhibitors_fk` FOREIGN KEY (`exhibitorId`) REFERENCES `exhibitors` (`id`) ON UPDATE CASCADE;
 ALTER TABLE transaction ADD CONSTRAINT `transaction_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE transaction ADD CONSTRAINT `transaction_newperid_fk` FOREIGN KEY (`newperid`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
 ALTER TABLE transaction ADD CONSTRAINT `transaction_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
+ALTER TABLE transaction ADD CONSTRAINT `transaction_userid_fk` FOREIGN KEY (`userid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE badgeList ADD CONSTRAINT `badgeList_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE badgeList ADD CONSTRAINT `badgeList_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE badgeList ADD CONSTRAINT `badgeList_user_perid_fk` FOREIGN KEY (`user_perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
@@ -53,7 +54,7 @@ ALTER TABLE atcon_auth ADD CONSTRAINT `atcon_auth_user` FOREIGN KEY (`authuser`)
 ALTER TABLE atcon_auth ADD CONSTRAINT `atcon_authuser_fk` FOREIGN KEY (`authuser`) REFERENCES `atcon_user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE couponKeys ADD CONSTRAINT `couponkey_usedby_fk` FOREIGN KEY (`usedBy`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE;
 ALTER TABLE couponKeys ADD CONSTRAINT `couponkeys_couponid_fk` FOREIGN KEY (`couponId`) REFERENCES `coupon` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE couponKeys ADD CONSTRAINT `couponkeys_createby_fk` FOREIGN KEY (`createBy`) REFERENCES `user` (`id`) ON UPDATE CASCADE;
+ALTER TABLE couponKeys ADD CONSTRAINT `couponkeys_createby_fk` FOREIGN KEY (`createBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE couponKeys ADD CONSTRAINT `couponkeys_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE artsales ADD CONSTRAINT `artsales_artitem_fk` FOREIGN KEY (`artid`) REFERENCES `artItems` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artsales ADD CONSTRAINT `artsales_perinfo_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;

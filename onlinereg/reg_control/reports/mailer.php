@@ -30,7 +30,7 @@ GROUP BY P.address, P.city, P.state, P.zip
 ORDER BY TRIM(concat_ws(',', P.last_name, P.first_name, P.middle_name));
 EOS;
 
-echo "name, company, address, city, state, zip, country, phone, email_addr, last_con"
+echo "name, company, address, city, state, zip, country, phone, email_addr, badge name, last_con"
     . "\n";
 
 $reportR = dbQuery($query);

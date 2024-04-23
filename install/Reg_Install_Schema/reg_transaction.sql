@@ -31,7 +31,8 @@ CREATE TABLE `transaction` (
   PRIMARY KEY (`id`),
   KEY `transaction_conid_fk` (`conid`),
   KEY `transaction_newperid_fk` (`newperid`),
-  KEY `transaction_perid_fk` (`perid`)
+  KEY `transaction_perid_fk` (`perid`),
+  KEY `transaction_userid_fk` (`userid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

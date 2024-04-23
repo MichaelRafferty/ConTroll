@@ -20,7 +20,7 @@ if (!array_key_exists('user_id', $_SESSION)) {
     ajaxError('Invalid credentials passed');
     return;
 }
-$user_id = $_SESSION['user_id'];
+$user_perid = $_SESSION['user_perid'];
 
 $test = true;
 $email = null;
@@ -115,7 +115,7 @@ EOS;
 
     $name='Come Back 10% Off Exp ' . date_format($expires, 'M d');
     $couponTypestr = 'issi';
-    $couponParamArray = array($conid, $code, $name, $user_id);
+    $couponParamArray = array($conid, $code, $name, $user_perid);
     $couponid = dbSafeInsert($couponCreate, $couponTypestr, $couponParamArray);
     if ($couponid === false) {
         $response['error'] = 'Count not create coupon';
@@ -140,7 +140,7 @@ FROM people;
 EOS;
     $couponTypestr = 'iiiiis';
     $note = 'Autogen: ' . $code;
-    $couponParamArray = array($conid, $priorcon, $priorcon2, $couponid, $note, $user_id);
+    $couponParamArray = array($conid, $priorcon, $priorcon2, $couponid, $note, $user_perid);
     $num_keys = dbSafeCmd($couponKeysCreate, $couponTypestr, $couponParamArray);
     if ($num_keys === false) {
         $response['error'] = 'Count not create couponKeys';

@@ -165,16 +165,18 @@ function cc_charge_purchase($results, $ccauth) {
 
     // add order lines
 
-    foreach ($results['badges'] as $badge) {
-        $item = new OrderLineItem ('1');
-        $item->setUid('badge' . ($lineid + 1));
-        $item->setName($badge['age'] . ' Membership for ' .  trim(trim($badge['fname'] . ' ' . $badge['mname'])  . ' ' . $badge['lname']));
-        $item->setNote($badge['memId'] . ': Membership Type Code');
-        $item->setBasePriceMoney(new Money);
-        $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
-        $item->getBasePriceMoney()->setCurrency(Currency::USD);
-        $order_lineitems[$lineid] = $item;
-        $lineid++;
+    if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
+        foreach ($results['badges'] as $badge) {
+            $item = new OrderLineItem ('1');
+            $item->setUid('badge' . ($lineid + 1));
+            $item->setName($badge['age'] . ' Membership for ' . trim(trim($badge['fname'] . ' ' . $badge['mname']) . ' ' . $badge['lname']));
+            $item->setNote($badge['memId'] . ': Membership Type Code');
+            $item->setBasePriceMoney(new Money);
+            $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
+            $item->getBasePriceMoney()->setCurrency(Currency::USD);
+            $order_lineitems[$lineid] = $item;
+            $lineid++;
+        }
     }
     if (array_key_exists('spaceName', $results)) {
         $item = new OrderLineItem ('1');
@@ -329,11 +331,11 @@ function cc_charge_purchase($results, $ccauth) {
     $rtn = array();
     $rtn['amount'] = $approved_amt;
     $rtn['txnfields'] = array('transid','type','category','description','source','amount',
-        'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'cashier','userid');
+        'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'cashier');
     $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd',
-            's', 's', 's', 's', 's', 's', 's', 's', 'i','i');
+            's', 's', 's', 's', 's', 's', 's', 's', 'i');
     $rtn['tnxdata'] = array($results['transid'],'credit',$category,$desc,'online',$approved_amt,
-        $txtime,$last4,$results['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $user_perid,$user_id);
+        $txtime,$last4,$results['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $user_perid);
     $rtn['url'] = $receipt_url;
     $rtn['rid'] = $receipt_number;
     return $rtn;

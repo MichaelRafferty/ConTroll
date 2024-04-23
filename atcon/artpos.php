@@ -1,32 +1,32 @@
 <?php
-require_once 'lib/base.php';
-require_once('../../lib/cc__load_methods.php');
-//initialize google session
-$need_login = google_init('page');
 
-$page = 'registration';
-if (!$need_login or !checkAuth($need_login['sub'], $page)) {
-    bounce_page('index.php');
+require_once "lib/base.php";
+
+if (!isset($_SESSION['user'])) {
+    header("Location: /index.php");
+    exit(0);
 }
-load_cc_procs();
-
-$cdn = getTabulatorIncludes();
-page_init($page,
-    /* css */ array('css/base.css', $cdn['tabcss'], $cdn['tabbs5'], 'css/registration.css'
-    ),
-    /* js  */ array(//$cdn['luxon'],
-        $cdn['tabjs'],
-        'js/base.js',
-        'js/registration.js',
-        'js/registration_cart.js',
-        'js/registration_coupon.js',
-    ),
-    $need_login);
 
 $con = get_conf('con');
 $conid = $con['id'];
 $conname = $con['conname'];
+$tab = 'Art Show Sales';
+$mode = 'artsales';
+$method='cashier';
 
+$page = "Atcon POS ($tab)";
+
+if (!check_atcon($method, $conid)) {
+    header('Location: /index.php');
+    exit(0);
+}
+
+$cdn = getTabulatorIncludes();
+page_init($page, $tab,
+    /* css */ array($cdn['tabcss'], $cdn['tabbs5'], 'css/atcon.css', 'css/registration.css'),
+    /* js  */ array( ///$cdn['luxon'],
+                    $cdn['tabjs'], /*'js/artpos_cart.js',*/ 'js/artpos.js')
+    );
 ?>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
@@ -34,15 +34,20 @@ $conname = $con['conname'];
             <div id="pos-tabs">
                  <ul class="nav nav-pills mb-2" id="tab-ul" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="find-tab" data-bs-toggle="pill" data-bs-target="#find-pane" type="button" role="tab" aria-controls="nav-find" aria-selected="true">Find</button>
+                        <button class="nav-link active" id="find-tab" data-bs-toggle="pill" data-bs-target="#find-pane" type="button" role="tab" aria-controls="nav-find" aria-selected="true">Find Customer</button>
                     </li>
+                    <!-- removing the add/edit person functionality... I just need to find them.
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="add-tab" data-bs-toggle="pill" data-bs-target="#add-pane" type="button" role="tab" aria-controls="nav-add" aria-selected="false">Add/Edit</button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="review-tab" data-bs-toggle="pill" data-bs-target="#review-pane" type="button" role="tab" aria-controls="nav-review" aria-selected="false" disabled>Review Data</button>
-                    </li>
-                     <li class="nav-item" role="presentation"\>
+                    </li> 
+                    -->
+                     <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="build-cart" data-bs-toggle="pill" data-bs-target="#cart-pane" type="button" role="tab" aria-controls="nav-cart" aria-selected="false" disabled>Build Cart</button>
+                     </li>
+                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="pay-tab" data-bs-toggle="pill" data-bs-target="#pay-pane" type="button" role="tab" aria-controls="nav-pay" aria-selected="false" disabled>Payment</button>
                     </li>
                 </ul>
@@ -65,11 +70,8 @@ $conname = $con['conname'];
                                 </div>
                             </div>
                             <div class="row mt-3">
-                                <div class="col-sm-4">
-                                    <button type="button" class="btn btn-sm btn-primary" id="find_unpaid_btn" name="find_btn" onclick="find_record('unpaid');" hidden>Find Unpaid Transactions</button>
-                                </div>
                                 <div class="col-sm-8">
-                                    <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" name="find_btn" onclick="find_record('search');">Find Record</button>
+                                    <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" name="find_btn" onclick="find_person('search');">Find Person</button>
                                 </div>
                             </div>
                             <div class="row mt-3">
@@ -78,7 +80,7 @@ $conname = $con['conname'];
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-sm-12 ms-0 me-0" id="find_results">
+                                <div class="col-sm-12" id="find_results">
                                 </div>
                             </div>
                         </div>
@@ -149,7 +151,7 @@ $conname = $con['conname'];
                                     <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
                                     <select name='country' id="country" tabindex='22'>
                                     <?php
-                                    $fh = fopen(__DIR__ . '/../../lib/countryCodes.csv', 'r');
+                                    $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
                                     while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
                                         echo "<option value='".$data[1]."'>".$data[0]."</option>";
                                     }
@@ -171,7 +173,7 @@ $conname = $con['conname'];
                             <div class="row">
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="badgename" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
-                                    <input type="text" name="badgename" id='badgename' size="38" maxlength="32"  placeholder='Badgename: defaults to first and last name' tabindex="28"/>
+                                    <input type="text" name="badgename" id='badgename' size="35" maxlength="32"  placeholder='Badgename: defaults to first and last name' tabindex="28"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Membership Type</span></label><br/>
@@ -197,7 +199,7 @@ $conname = $con['conname'];
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-sm-12 ms-0 me-0" id="add_results">
+                                <div class="col-sm-12" id="add_results">
                             </div>
                             </div>
                             <div class="row">
@@ -213,7 +215,10 @@ $conname = $con['conname'];
                         <div id="review-div">Review Data</div>
                     </div>
                     <div class="tab-pane fade" id="pay-pane" role="tabpanel" aria-labelledby="pay-tab" tabindex="3">
-                        <div id="pay-div">No Payment Required, Proceed to Next Customer</div>
+                        <div id="pay-div">Process Payment</div>
+                    </div>
+                    <div class="tab-pane fade" id="print-pane" role="tabpanel" aria-labelledby="print-tab" tabindex="4">
+                        <div id="print-div">Print Badges</div>
                     </div>
                  </div>
             </div>
@@ -287,4 +292,4 @@ $conname = $con['conname'];
     <div id='result_message' class='mt-4 p-2'></div>
 </div>
 <pre id='test'></pre><?php
-page_foot($page);
+page_foot();

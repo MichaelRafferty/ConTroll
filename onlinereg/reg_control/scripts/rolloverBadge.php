@@ -15,8 +15,8 @@ if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     exit();
 }
 
-if (array_key_exists('user_id', $_SESSION)) {
-    $user_id = $_SESSION['user_id'];
+if (array_key_exists('user_perid', $_SESSION)) {
+    $user_perid = $_SESSION['user_perid'];
 } else {
     ajaxError('Invalid credentials passed');
     return;
@@ -31,6 +31,7 @@ if (!isset($_POST) || !isset($_POST['perid']) || !isset($_POST['badge'])
 
 $con = get_conf('con');
 $conid = $con['id'];
+
 
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
@@ -140,13 +141,13 @@ switch ($rolloverType) {
         }
 
         // insert a controlling transaction to cover this rollover
-        $tType = 'regctl-adm-roll/' . $user_id;
-        $notes = "Rollover from $conid to $nextcon by $user_id";
+        $tType = 'regctl-adm-roll/' . $user_perid;
+        $notes = "Rollover from $conid to $nextcon by $user_perid";
         $insertT = <<<EOS
 INSERT INTO transaction(conid, perid, userid, create_date, complete_date, price, couponDiscount, paid, type, notes ) 
 VALUES (?, ?, ?, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 0, 0, 0, ?, ?);
 EOS;
-        $newtid = dbSafeInsert($insertT, 'iiiss', array($conid, $perid, $user_id, $tType, $notes));
+        $newtid = dbSafeInsert($insertT, 'iiiss', array($conid, $perid, $user_perid, $tType, $notes));
         if ($newtid === false) {
             $response['error'] = 'Failed to insert rollover transaction';
             ajaxSuccess($response);
@@ -183,13 +184,13 @@ EOS;
 
         $newlabel = 'rollover-volunteer';
         // insert a controlling transaction to cover this rollover
-        $tType = 'regctl-adm-volroll/' . $user_id;
-        $notes = "Volunteer Rollover from $conid to $nextcon by $user_id";
+        $tType = 'regctl-adm-volroll/' . $user_perid;
+        $notes = "Volunteer Rollover from $conid to $nextcon by $user_perid";
         $insertT = <<<EOS
 INSERT INTO transaction(conid, perid, userid, create_date, complete_date, price, couponDiscount, paid, type, notes ) 
 VALUES (?, ?, ?, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 0, 0, 0, ?, ?);
 EOS;
-        $newtid = dbSafeInsert($insertT, 'iiiss', array($conid, $perid, $user_id, $tType, $notes));
+        $newtid = dbSafeInsert($insertT, 'iiiss', array($conid, $perid, $user_perid, $tType, $notes));
         if ($newtid === false) {
             $response['error'] = 'Failed to insert rollover transaction';
             ajaxSuccess($response);
