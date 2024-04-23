@@ -28,7 +28,7 @@ $artist = $_POST['artist'];
 
 $artistQ = "SELECT id FROM artshow WHERE conid=? AND art_key=?";
 $artistR = dbSafeQuery($artistQ, 'ii', array($conid, $artist));
-$art = fetch_safe_assoc($artistR);
+$art = $artistR->fetch_assoc();
 $artid = $art['id'];
 
 $itemQ = <<<EOS
@@ -44,7 +44,7 @@ EOS;
 
 $itemR = dbSafeQuery($itemQ, 'iii', array($conid, $item, $artid));
 if($itemR->num_rows > 0) {
-    $item = fetch_safe_assoc($itemR);
+    $item = $itemR->fetch_assoc();
 
     $response['item'] = $item;
 } else { 

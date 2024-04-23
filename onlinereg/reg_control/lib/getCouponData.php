@@ -43,7 +43,7 @@ EOS;
         exit();
     }
     $coupons = array();
-    while ($couponL = fetch_safe_assoc($couponR)) {
+    while ($couponL = $couponR->fetch_assoc()) {
         $coupons[] = $couponL;
     }
 

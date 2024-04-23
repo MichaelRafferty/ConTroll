@@ -33,7 +33,7 @@ EOS;
 
     $freeR = dbSafeQuery($freeSQL, 'i', array($db_ini['con']['id']));
     $freeSelect = "<option disabled='disabled' selected='true'> -- select an option --</option>\\n";
-    while($free = fetch_safe_assoc($freeR)) {
+    while($free = $freeR->fetch_assoc()) {
         $freeSelect .= "<option value='" . $free['id'] . "'>" . $free['label'] . "</option>\\n";
     }
 ?>

@@ -45,7 +45,7 @@ EOS;
 <?php
 
 $conInfoR = dbSafeQuery($conInfoQ, 'i', array($conid));
-$conInfo = fetch_safe_assoc($conInfoR);
+$conInfo = $conInfoR->fetch_assoc();
 $startdate = $conInfo['start'];
 $enddate = $conInfo['end'];
 $method='manager';
@@ -138,7 +138,7 @@ $artistR = dbSafeQuery($artistQ, 'i', array($conid));
                                     ?>
                                     <select id="artist_num_lookup" name="artist" min=100 max=300 placeholder="Artist #">
                                         <?php 
-while($artist = fetch_safe_assoc($artistR)) {
+while($artist = $artistR->fetch_assoc()) {
     echo "<option value='" . $artist['art_key'] . "'>". $artist['art_key'] . " - " . $artist['name'] . "</option>";
 }
                                         ?>
