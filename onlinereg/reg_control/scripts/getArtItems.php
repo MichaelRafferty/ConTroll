@@ -47,15 +47,14 @@ $items=array();
     }
 
 $artistQ = <<<EOS
-SELECT e.exhibitorName, ery.id as exhibitorRegionYearId, ery.exhibitorNumber
+SELECT DISTINCT e.exhibitorName, ery.id as exhibitorRegionYearId, ery.exhibitorNumber
 FROM exhibitorYears ey 
     JOIN exhibitorRegionYears ery ON ery.exhibitorYearId = ey.id
     JOIN exhibitors e ON ey.exhibitorId=e.id
     JOIN exhibitsRegionYears exRY ON exRY.id=ery.exhibitsRegionYearId
     JOIN exhibitorSpaces S on S.exhibitorRegionYear=ery.id 
 WHERE ey.conid=? and exRY.exhibitsRegion=? and S.item_purchased is not null
-    and ery.exhibitorNumber is not null
-GROUP BY e.exhibitorName;
+    and ery.exhibitorNumber is not null;
 EOS; 
 
 $response['art'] = $items;
