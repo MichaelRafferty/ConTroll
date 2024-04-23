@@ -103,10 +103,11 @@ class EmailBulkSend {
         else
             params += "<button class='btn btn-primary btn-sm' onclick='emailBulkSend.sendBulkOk();'>Send " + this.#emailTo.length + " emails</button>&nbsp;";
 
-        params += "<button class='btn btn-primary btn-sm' onclick='emailBulkSend.sendBulkNo();'>Cancel Send</button>\n";
+        params += "<button class='btn btn-primary btn-sm' id='bulkSendCancelBtn' onclick='emailBulkSend.sendBulkNo();'>Cancel Send</button>\n";
         this.#emailStatusHTML += params;
         clear_message(this.#emailStatusDivId);
         this.#emailStatusDiv.innerHTML = this.#emailStatusHTML;
+        document.getElementById('bulkSendCancelBtn').focus();
     }
 
     sendBulkNo() {
