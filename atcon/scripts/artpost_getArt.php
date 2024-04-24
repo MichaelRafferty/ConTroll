@@ -1,9 +1,9 @@
 <?php
 
-// library AJAX Processor: artpos_findPeson.php
-// ConTroll Registration System
+// library AJAX Processor: regpos_findRecord.php
+// Balticon Registration System
 // Author: Syd Weinstein
-// Retrieve perinfo art bidder records for a perid
+// Retrieve perinfo and reg records for the Find and Add tabs
 
 require_once('../lib/base.php');
 
@@ -42,7 +42,7 @@ if (is_numeric($name_search)) {
 // this is perid
 //
     $findPersonQ = <<<EOS
-SELECT p.id, first_name, middle_name, last_name, suffix, badge_name, email_addr, address, addr_2, city, state, zip, country, phone
+SELECT p.id, first_name, last_name, badge_name, email_addr
 FROM perinfo p
 WHERE p.id=?;
 EOS;
@@ -55,24 +55,7 @@ EOS;
     } else if($personR->num_rows == 1) {
         $response['person'] = $personR->fetch_assoc();
         $response['status'] = 'success';
-        // now find any art for which is final and they are the high bidder
-        $perid = $response['person']['id'];
-        $findArtQ = <<<EOS
-SELECT a.id, a.item_key, a.title, a.type, a.status, a.location, a.quantity, a.original_qty, a.min_price, a.sale_price, a.final_price, a.artshow, a.material,
-       exRY.exhibitorNumber, ex.exhibitorName
-FROM artItems a
-JOIN exhibitorRegionYears exRY ON a.exhibitorRegionYearId = exRY.id
-JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
-JOIN exhibitors ex ON exY.exhibitorId = ex.id
-WHERE a.bidder = ? AND a.conid = ?;
-EOS;
-        $findArtR = dbSafeQuery($findArtQ, 'ii', array($perid, $conid));
-        $art = [];
-        while ($findArtL = $findArtR->fetch_assoc()) {
-            $art[] = $findArtL;
-        }
-        $response['art'] = $art;
-        $response['message'] = 'One Person Found, ' . $findArtR->num_rows . ' art piece' . ($findArtR->num_rows == 1 ? '' : 's') . ' found';
+        $response['message'] = "One Person Found";
     } else { // id -is key, numrows can only be zero or 1.
         $response['error'] = $personR->num_rows . " People Found, seek assistance.";
     }

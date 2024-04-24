@@ -9,7 +9,7 @@ if (!isset($_SESSION['user'])) {
 $con = get_conf("con");
 $conid=$con['id'];
 $label = $con['label'];
-$tab = 'Art Inventory';
+$tab = 'atconArtInventory';
 $page = "Atcon Art Inventory";
 $mode = 'artinventory';
 
