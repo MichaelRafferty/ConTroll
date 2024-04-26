@@ -1,3 +1,8 @@
+ALTER TABLE perinfoHistory ADD CONSTRAINT `perinfoHistory_id_fk` FOREIGN KEY (`id`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
+ALTER TABLE artItemsHistory ADD CONSTRAINT `aIH_exhibitorRegionYear_fk` FOREIGN KEY (`exhibitorRegionYearId`) REFERENCES `exhibitorRegionYears` (`id`) ON UPDATE CASCADE;
+ALTER TABLE artItemsHistory ADD CONSTRAINT `artItemsHistory_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
+ALTER TABLE artItemsHistory ADD CONSTRAINT `artItemsHistory_id_fk` FOREIGN KEY (`id`) REFERENCES `artItems` (`id`) ON UPDATE CASCADE;
+ALTER TABLE artItemsHistory ADD CONSTRAINT `artItemsHistory_updatedBy_fk` FOREIGN KEY (`updatedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorRegionYears ADD CONSTRAINT `ecry_updateby_fk` FOREIGN KEY (`updateBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorRegionYears ADD CONSTRAINT `exry_agentNewperon` FOREIGN KEY (`agentNewperson`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorRegionYears ADD CONSTRAINT `exry_agentPerid` FOREIGN KEY (`agentPerid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
@@ -66,6 +71,7 @@ ALTER TABLE exhibitsRegionYears ADD CONSTRAINT `ery_memList_a` FOREIGN KEY (`add
 ALTER TABLE exhibitsRegionYears ADD CONSTRAINT `ery_memList_i` FOREIGN KEY (`includedMemId`) REFERENCES `memList` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artItems ADD CONSTRAINT `artItems_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artItems ADD CONSTRAINT `artItems_exhibitorRegionYear_fk` FOREIGN KEY (`exhibitorRegionYearId`) REFERENCES `exhibitorRegionYears` (`id`) ON UPDATE CASCADE;
+ALTER TABLE artItems ADD CONSTRAINT `artItems_updatedBy_fk` FOREIGN KEY (`updatedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE reg_history ADD CONSTRAINT `atcon_history_regid_fk` FOREIGN KEY (`regid`) REFERENCES `reg` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE reg_history ADD CONSTRAINT `atcon_history_tid_fk` FOREIGN KEY (`tid`) REFERENCES `transaction` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE reg_history ADD CONSTRAINT `atcon_history_userid_fk` FOREIGN KEY (`userid`) REFERENCES `perinfo` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
