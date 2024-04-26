@@ -209,14 +209,19 @@ class artpos_cart {
 // cart_renumber:
 // rebuild the indices in the cart_art table
 // for shortcut reasons indices are used to allow usage of the filter functions built into javascript
-// this rebuilds the index and perinfo cross-reference maps.  It needs to be called whenever the number of items in cart is changed.
+// this rebuilds the index and art id cross-reference maps.  It needs to be called whenever the number of items in cart is changed.
     #cart_renumber() {
         var index;
         this.#cart_art_map = new map();
         for (index = 0; index < this.#cart_art.length; index++) {
             this.#cart_art[index]['index'] = index;
-            this.#cart_art_map.set(this.#cart_art[index]['perid'], index);
+            this.#cart_art_map.set(this.#cart_art[index]['id'], index);
         }
+    }
+
+    // remove from cart - delete the item from the cart and redraw it
+    remove_from_cart(id) {
+        alert('remove(' + id + ') called');
     }
 
 // format all of the memberships for one record in the cart
@@ -234,7 +239,7 @@ class artpos_cart {
         rowhtml += '<div class="col-sm-8 text-bg-success">Art Item: ' + artLabel + ' (' + row['type'] + ')</div>';
         if (!this.#freeze_cart) {
             rowhtml += `
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="remove_from_cart(` + row['id'] + `)">Remove</button></div>
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="cart.remove(` + row['id'] + `)">Remove</button></div>
 `;
         }
         rowhtml += '</div>'; // end of exhibitor Number/ItemKey row
@@ -246,11 +251,22 @@ class artpos_cart {
         // Material
         rowhtml += '<div class="row"><div class="col-sm-2">Mateiral: ' + '</div><div class="col-sm-10">' + row['material'] + '</div></div>';
         // price
-        rowhtml += '<div class="row"><div class="col-sm-8 p-0 text-end">Final Price:</div>' +
-            '<div class="col-sm-2 text-end">$' + Number(row['final_price']).toFixed(2) + '</div>' +
+        var priceType = 'Final';
+        if (row['type'] == 'print') {
+            priceType = 'Sale';
+            row['display_price'] = row['sale_price'];
+        } else if (row['type'] == 'art' && (row['final_price'] == null || row['final_price'] == 0)) {
+            priceType = 'Quick Sale';
+            row['display_price'] = row['sale_price'];
+        } else {
+            row['display_price'] = row['final_price'];
+        }
+        row['priceType'] = priceType;
+        rowhtml += '<div class="row"><div class="col-sm-8 p-0 text-end">' + priceType + ' Price:</div>' +
+            '<div class="col-sm-2 text-end">$' + Number(row['display_price']).toFixed(2) + '</div>' +
             '<div class="col-sm-2 text-end">$' + Number(0).toFixed(2) + '</div></div>';
 
-        this.#total_price += Number(row['final_price']);
+        this.#total_price += Number(row['display_price']);
         return rowhtml;
     }
 

@@ -56,15 +56,14 @@ page_init($page, $tab,
                             <div class="row mt-1">
                                 <div class="col-sm-4">
                                     <label for="find_perid" >Search for:</label>
-                                    <label for="find_perid" >Search forchang:</label>
                                 </div>
                                 <div class="col-sm-8">
-                                    <input type="number" inputmode="numeric" id="find_perid" name="find_perid" size="20" placeholder="Badge ID"/>
+                                    <input type="number" class='no-spinners' inputmode="numeric" id="find_perid" name="find_perid" size="20" placeholder="Badge ID"/>
                                 </div>
                             </div>
                             <div class="row mt-3">
                                 <div class="col-sm-8">
-                                    <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" name="find_btn" onclick="find_person('search');">Find Person</button>
+                                    <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" name="find_btn" onclick="findPerson('search');">Find Person</button>
                                 </div>
                             </div>
                             <div class="row mt-3">
@@ -79,7 +78,42 @@ page_init($page, $tab,
                         </div>
                     </div>
                     <div class="tab-pane fade" id="add-pane" role="tabpanel" aria-labelledby="add-tab" tabindex="1">
-                        <div id="add-div"><h1>Add</h1></div>
+                        <div class='container-fluid' id="add-div">
+                            <form id='add-form' name='add-form' onsubmit='return false;'>
+                                <div class='row' id='add_header'>
+                                    <div class='col-sm-12 text-bg-primary mb-2'>
+                                        <div class='text-bg-primary m-2'>
+                                            Add Additional Art to Cart
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class='row'>
+                                    <div class='col-sm-auto ms-0 me-2 p-0'>
+                                        <label for='artistNumber' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Artist Number</span></label><br/>
+                                        <input type='number' name='artistNumber' id='artistNumber' inputmode='numeric' class='no-spinners' style="width: 7em;" tabindex='21'/>
+                                    </div>
+                                    <div class='col-sm-auto ms-0 me-2 p-0'>
+                                        <label for='pieceNumber' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Piece Number</span></label><br/>
+                                        <input type='number' name='pieceNumber' id='pieceNumber' inputmode='numeric' class='no-spinners' style='width: 4em;' tabindex='22'/>
+                                    </div>
+                                    <div class='col-sm-auto ms-0 me-2 p-0'>
+                                        <label for='unitNumber' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Unit Number</span></label><br/>
+                                        <input type='number' name='unitNumber' id='unitNumber' inputmode='numeric' class='no-spinners' style='width: 4em;' tabindex='23'/>
+                                    </div>
+                                    <div class='col-sm-auto ms-2 me-2 p-0'>&nbsp;<br/>OR</div>
+                                    <div class='col-sm-auto ms-2 me-0 p-0'>
+                                        <label for='itemCode' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Item Code Scan</span></label><br/>
+                                        <input type='text' name='itemCode' id='itemCode' size="15" maxlength="32" tabindex='24'/>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-sm-auto ms-0 me-0 p-0">
+                                        <button class="btn btn-sm btn-primary" type='button' name='findArtBtn' id='findArtBtn' onclick="findArt('button')">Find Art to Add</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class='container-fluid' id='add-found-div'></div>
                     </div>
                     <div class="tab-pane fade" id="pay-pane" role="tabpanel" aria-labelledby="pay-tab" tabindex="2">
                         <div id="pay-div">Process Payment</div>

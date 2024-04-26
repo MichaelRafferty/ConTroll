@@ -11,6 +11,9 @@ var id_div = null;
 var badgeid_field = null;
 var current_person = null;
 
+// art items
+var add_found_div = null;
+var artFoundItems = null;
 
 // pay items
 var pay_div = null;
@@ -59,10 +62,19 @@ window.onload = function initpage() {
 
     // find people
     badgeid_field = document.getElementById("find_perid");
-    badgeid_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') find_person('search'); });
+    badgeid_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') findPerson('search'); });
     badgeid_field.focus();
     id_div = document.getElementById("find_results");
 
+    itemCode_field = document.getElementById("itemCode");
+    itemCode_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') findArt('code'); });
+    pieceNumber_field = document.getElementById("pieceNumber");
+    pieceNumber_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') findArt('piece'); });
+    unitNumber_field = document.getElementById("unitNumber");
+    unitNumber_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') findArt('unit'); });
+
+    // art items
+    add_found_div = document.getElementById('add-found-div');
     // pay items
     pay_div = document.getElementById('pay-div');
 
@@ -156,45 +168,8 @@ function goto_add() {
 function goto_pay() {
     bootstrap.Tab.getOrCreateInstance(pay_tab).show();
 }
-// add search person/transaction from result_perinfo record to the cart
-function add_to_cart(index, table) {
-    var rt = result_perinfo;
-    var perid;
-    var mrows;
 
-    if (index >= 0) {
-        perid = rt[index]['perid'];
-        if (cart.notinCart(perid)) {
-            cart.add(rt[index], mrows)
-        }
-    } else {
-        var row;
-        index = -index;
-        for (row in result_membership) {
-            if (result_membership[row]['tid'] == index) {
-                var prow = result_membership[row]['pindex'];
-                perid = result_perinfo[prow]['perid'];
-                if (result_perinfo[prow]['banned'] == 'Y') {
-                    alert("Please ask " + (result_perinfo[prow]['first_name'] + ' ' + result_perinfo[prow]['last_name']).trim() + " to talk to the Registration Administrator, you cannot add them at this time.")
-                    return;
-                } else if (cart.notinCart(perid)) {
-                    mrows = find_memberships_by_perid(result_membership, perid);
-                    cart.add(result_perinfo[prow], mrows);
-                }
-            }
-        }
-    }
-    clear_message();
-}
-
-// remove person and all of their memberships from the cart
-function remove_from_cart(perid) {
-    cart.remove(perid);
-    clear_message();
-}
-
-
-// draw_person: find_person found someone.  Display their details
+// draw_person: findPerson found someone.  Display their details
 function draw_person() {
     var html = `
     <div class="container-fluid">
@@ -262,173 +237,8 @@ function badge_name_default(badge_name, first_name, last_name) {
     return badge_name;
 }
 
-// display the note popup with the requested notes
-function show_perinfo_notes(index, where) {
-    var note = null;
-    var fullname = null;
-    notesType = null;
-
-    if (where == 'cart') {
-        note = cart.getPerinfoNote(index);
-        fullname = cart.getFullName(index);
-        notesType = 'PC';
-    }
-    if (where == 'result') {
-        note = result_perinfo[index]['open_notes'];
-        fullname = result_perinfo[index]['fullname'];
-        notesType = 'PR';
-    }
-    if (where == 'add') {
-        note = add_perinfo[index]['open_notes']
-        fullname = add_perinfo[index]['fullname'];
-        notesType = 'add';
-    }
-
-    if (notesType == null)
-        return;
-
-    notesIndex = index;
-
-    notes.show();
-    document.getElementById('NotesTitle').innerHTML = "Notes for " + fullname;
-    document.getElementById('NotesBody').innerHTML = note.replace(/\n/g, '<br/>');
-    var notes_btn = document.getElementById('close_note_button');
-    notes_btn.innerHTML = "Close";
-    notes_btn.disabled = false;
-}
-// edit_perinfo_notes: display in an editor the perinfo notes field
-// only managers can edit the notes
-function edit_perinfo_notes(index, where) {
-    var note = null;
-    var fullname = null;
-
-    if (!hasManager || !base_manager_enabled)
-        return;
-
-    notesType = null;
-    if (where == 'cart') {
-        note = cart.getPerinfoNote(index);
-        fullname = cart.getFullName(index);
-        notesType = 'PC';
-    }
-    if (where == 'result') {
-        note = result_perinfo[index]['open_notes'];
-        fullname = result_perinfo[index]['fullname'];
-        notesType = 'PR';
-    }
-    if (where == 'add') {
-        note = add_perinfo[index]['open_notes']
-        fullname = add_perinfo[index]['fullname'];
-        notesType = 'add';
-    }
-    if (notesType == null)
-        return;
-
-    notesIndex = index;
-    notesPriorValue = note;
-    if (notesPriorValue === null) {
-        notesPriorValue = '';
-    }
-
-    notes.show();
-    document.getElementById('NotesTitle').innerHTML = "Editing Notes for " +fullname;
-    document.getElementById('NotesBody').innerHTML = '<textarea name="perinfoNote" class="form-control" id="perinfoNote" cols=60 wrap="soft" style="height:400px;">' +
-        notesPriorValue + "</textarea>";
-    var notes_btn = document.getElementById('close_note_button');
-    notes_btn.innerHTML = "Save and Close";
-    notes_btn.disabled = false;
-}
-
-// show the registration element note, anyone can add a new note, so it needs a save and close button
-function show_reg_note(index, count) {
-    var bodyHTML = '';
-    var note = cart.getRegNote(index);
-    var fullname = cart.getRegFullName(index);
-    var label = cart.getRegLabel(index);
-    var newregnote = cart.getNewRegNote(index);
-
-    notesType = 'RC';
-    notesIndex = index;
-
-    if (count > 0) {
-        bodyHTML = note.replace(/\n/g, '<br/>');
-    }
-    bodyHTML += '<br/>&nbsp;<br/>Enter/Update new note:<br/><input type="text" name="new_reg_note" id="new_reg_note" maxLength=64 size=60>'
-
-    notes.show();
-    document.getElementById('NotesTitle').innerHTML = "Registration Notes for " + fullname + '<br/>Membership: ' + label;
-    document.getElementById('NotesBody').innerHTML = bodyHTML;
-    if (newregnote !== undefined) {
-        document.getElementById('new_reg_note').value = newregnote;
-    }
-    var notes_btn = document.getElementById('close_note_button');
-    notes_btn.innerHTML = "Save and Close";
-    notes_btn.disabled = false;
-}
-
-// save_note
-//  save and update the note based on type
-function save_note() {
-    if (document.getElementById('close_note_button').innerHTML == "Save and Close") {
-        if (notesType == 'RC') {
-            cart.setRegNote(notesIndex, document.getElementById("new_reg_note").value);
-        }
-        if (notesType == 'PC' && hasManager && base_manager_enabled) {
-            cart.setPersonNote(notesIndex, document.getElementById("perinfoNote").value);
-        }
-        if (notesType == 'PR' && hasManager && base_manager_enabled) {
-            var new_note = document.getElementById("perinfoNote").value;
-            if (new_note != notesPriorValue) {
-               result_perinfo[notesIndex]['open_notes'] = new_note;
-                // search for matching names
-                var postData = {
-                    ajax_request_action: 'updatePerinfoNote',
-                    perid: result_perinfo[notesIndex]['perid'],
-                    notes: result_perinfo[notesIndex]['open_notes'],
-                    user_id: user_id,
-                };
-                document.getElementById('close_note_button').disabled = true;
-                $.ajax({
-                    method: "POST",
-                    url: "scripts/regpos_updatePerinfoNote.php",
-                    data: postData,
-                    success: function (data, textstatus, jqxhr) {
-                        if (data['error'] !== undefined) {
-                            show_message(data['error'], 'error');
-                            document.getElementById('close_note_button').disabled = falser;
-                            return;
-                        }
-                        if (data['message'] !== undefined) {
-                            show_message(data['message'], 'success');
-                        }
-                        if (data['warn'] !== undefined) {
-                            show_message(data['warn'], 'warn');
-                        }
-                    },
-                    error: function (jqXHR, textstatus, errorThrown) {
-                        document.getElementById('close_note_button').disabled = false;
-                        showAjaxError(jqXHR, textstatus, errorThrown);
-                    }
-                });
-            }
-        }
-    }
-    notesType = null;
-    notesIndex = null;
-    notesPriorValue = null;
-    notes.hide();
-}
-
-// select the row (tid) from the unpaid list and add it to the cart, switch to the payment tab (used by find unpaid)
-// marks it as a tid (not perid) add by inverting it.  (add_to_cart will deal with the inversion)
-function add_unpaid(tid) {
-    add_to_cart(-Number(tid), 'result');
-    // force a new transaction for the payment as the cashier is not the same as the check-in in this case.
-    added_payable_trans_to_cart();
-}
-
 // find the person by badge id, in prep for loading any art already won by bid
-function find_person(find_type) {
+function findPerson(find_type) {
     id_div.innerHTML = "";
     clear_message();
     cart.startOver();
@@ -461,7 +271,7 @@ function find_person(find_type) {
             if (data['warn'] !== undefined) {
                 show_message(data['warn'], 'warn');
             }
-            found_person(data);
+            founbdPerson(data);
             $("button[name='find_btn']").attr("disabled", false);
         },
         error: function (jqXHR, textstatus, errorThrown) {
@@ -477,7 +287,7 @@ function find_person(find_type) {
 // normal:
 //      single row: display record
 //      multiple rows: display table of records with add/trans buttons
-function found_person(data) {
+function founbdPerson(data) {
     if(data['num_rows'] == 1) { // one person found
         current_person = data['person'];
         // put the person details in the cart, populate the cart with the art they have to check out
@@ -497,12 +307,204 @@ function found_person(data) {
     }
 }
 
-// when searching, if clicking on the add new button, switch to the add/edit tab
-function not_found_add_new() {
-    id_div.innerHTML = '';
-    badgeid_field.value = '';
+// findArt: find art matching the criteria with the right parameters
+function findArt(findType) {
+    var artistNumber = null;
+    var pieceNumber = null;
+    var unitNumber = null;
+    var itemId = null;
+    var itemCode = null;
 
-    bootstrap.Tab.getOrCreateInstance(add_tab).show();
+    add_found_div.innerHTML = '';
+
+    switch (findType) {
+        case 'code':
+            itemCode = document.getElementById('itemCode').value;
+            var fields = itemCode.split(',');
+            itemId = fields[0];
+            unitNumber = fields[1];
+            break;
+
+        case 'unit':
+            unitNumber = document.getElementById('unitNumber').value;
+        // fall into piece
+        case 'piece':
+            artistNumber = document.getElementById('artistNumber').value;
+            pieceNumber = document.getElementById('pieceNumber').value;
+            break;
+
+        default:
+            itemCode = document.getElementById('itemCode').value;
+            if (itemCode != null && itemCode != '') {
+                var fields = itemCode.split(',');
+                itemId = fields[0];
+                unitNumber = fields[1];
+            } else {
+                itemCode = null;
+            }
+            artistNumber = document.getElementById('artistNumber').value;
+            if (artistNumber == '') {
+                artistNumber = null;
+            }
+            pieceNumber = document.getElementById('pieceNumber').value;
+            if (pieceNumber == '') {
+                pieceNumber = null;
+            }
+    }
+
+    var postData = {
+        artistNumber: artistNumber,
+        pieceNumber: pieceNumber,
+        unitNumber: unitNumber,
+        itemId: itemId,
+        findType: findType,
+    };
+
+    $("button[name='findArtBtn']").attr("disabled", true);
+    $.ajax({
+        method: "POST",
+        url: "scripts/artpos_getArt.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                $("button[name='findArtBtn']").attr("disabled", false);
+                return;
+            }
+            if (data['message'] !== undefined) {
+                show_message(data['message'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+            }
+            foundArt(data);
+            $("button[name='findArtBtn']").attr("disabled", false);
+        },
+        error: function (jqXHR, textstatus, errorThrown) {
+            $("button[name='findArtBtn']").attr("disabled", false);
+            showAjaxError(jqXHR, textstatus, errorThrown);
+        }
+    });
+}
+
+// foundArt - process the returned array of art items to select from
+function foundArt(data) {
+    var html = '';
+    var valid = true;
+    var btn_color = 'btn-primary';
+    artFoundItems = data['items'];
+    if (data['queryType'] == 'code') {
+        var item = data['items'][0];
+        html  = '<div class="row mt-4 mb-1"><div class="col-sm-12 bg-primary text-white">Item Details</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Artist Number:</div><div class="col-sm-8">' + item['exhibitorNumber'] + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Artist Item #:</div><div class="col-sm-8">' + item['item_key'] + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Type:</div><div class="col-sm-8">' + item['type'] + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Status:</div><div class="col-sm-8">' + item['status'] + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Artist Name:</div><div class="col-sm-8">' + item['exhibitorName'] + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Title:</div><div class="col-sm-8">' + item['title'] + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Material:</div><div class="col-sm-8">' + item['material'] + '</div></div>';
+        if (item['bidder'] != null && item['bidder'] != '' && item['bidder'] != current_person['id']) {
+            valid = false;
+            html += '<div class="row"><div class="col-sm-4 bg-warning">Already Sold:</div><div class="col-sm-8 bg-warning">Item has already been sold to someone else.</div></div>';
+        }
+        if (item['type'] == 'nfs' || item['status'].toLowerCase() == 'nfs') {
+            valid = false;
+            html += '<div class="row"><div class="col-sm-4 bg-danger">Not For Sale:</div><div class="col-sm-8 bg-danger">You cannot buy a Not For Sale item.</div></div>';
+        }
+
+        if (item['type'] == 'print') {
+            html += '<div class="row"><div class="col-sm-4">Sale Price:</div><div class="col-sm-8">$' + Number(item['sale_price']).toFixed(2) + '</div></div>';
+
+            if (item['quantity'] <= 0) {
+                html += '<div class="row"><div class="col-sm-4 bg-warning">Quantity:</div><div class="col-sm-8 bg-warning">System shows all of this item are already sold, remaining quantity is 0.</div></div>';
+                btn_color = 'btn-warning';
+            }
+        }
+
+        if (item['type'] == 'art') {
+            if (item['status'].toLowerCase() == 'checked in') {
+                if (item['sale_price'] == 0 || item['sale_price'] < item['min_price']) {
+                    html += '<div class="row"><div class="col-sm-4 bg-danger">Quick Sale:</div><div class="col-sm-8 bg-danger">Item is not available for quick sale.</div></div>';
+                    valid = false;
+                } else {
+                    html += '<div class="row"><div class="col-sm-4">Quick Sale Price:</div><div class="col-sm-8">$' + Number(item['sale_price']).toFixed(2) + '</div></div>';
+                }
+            } else if (item['final_price'] > 0) {
+                html += '<div class="row"><div class="col-sm-4">Final Price:</div><div class="col-sm-8">$' + Number(item['final_price']).toFixed(2) + '</div></div>';
+            } else {
+                html += '<div class="row"><div class="col-sm-4">Final Price:</div><div class="col-sm-8">' +
+                    '<input type=number inputmode="numeric" class="no-spinners" id="art-final-price" name="art-final-price" style="width: 9em;"/></div></div>';
+            }
+        }
+
+        if (item['status'].toLowerCase() == 'removed from show') {
+            html += '<div class="row"><div class="col-sm-4 bg-warning">Removed:</div><div class="col-sm-8 bg-warning">System shows item has been removed from the show. Sell anyway?</div></div>';
+            btn_color = 'btn-warning';
+        }
+
+        if (item['status'].toLowerCase() == 'to auction') {
+            html += '<div class="row"><div class="col-sm-4 bg-warning">Auction:</div><div class="col-sm-8 bg-warning">System shows item has been sent to the voice auction. Sell anyway?</div></div>';
+            btn_color = 'btn-warning';
+        }
+
+        if (item['status'].toLowerCase() == 'checked out') {
+            html += '<div class="row"><div class="col-sm-4 bg-warning">Checked Out:</div><div class="col-sm-8 bg-warning">System shows item has been returned to the artist. Sell anyway?</div></div>';
+            btn_color = 'btn-warning';
+        }
+
+        if (item['status'].toLowerCase() == 'purchased/released') {
+            html += '<div class="row"><div class="col-sm-4 bg-danger">Released:</div><div class="col-sm-8 bg-danger">System shows item already been released to a different purchaser.</div></div>';
+            valid = false;
+        }
+
+        if (valid) {
+            if (cart.notinCart(item['id'])) {
+                html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color + '" type="button" onclick="addToCart(-1);">Add Art Item to Cart</button></div></div>';
+            } else {
+                html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-auto bg-warning">Already in Cart</div></div>';
+            }
+        }
+    }
+
+    add_found_div.innerHTML = html;
+    return;
+}
+
+// addToCart - add this row index to the cart
+function addToCart(index) {
+    var item = null;
+    if (index < 0 && artFoundItems.length > 0) {
+        item = artFoundItems[0];
+    } else if (index >= artFoundItems.length) {
+        return;
+    } else {
+        item = artFoundItems[index];
+    }
+
+    var finalPriceField = document.getElementById('art-final-price');
+    if (finalPriceField) {
+        var enteredPrice = finalPriceField.value;
+        if (enteredPrice == null)
+            enteredPrice = 0;
+        var finalPrice = item['final_price'];
+        if (finalPrice == null || finalPrice < 0) {
+            if (item['sale_price'] == null || item['sale_price'] == 0)
+                finalPrice = item['min_price'];
+            else
+                finalPrice = item['sale_price'];
+        }
+        if (enteredPrice < finalPrice) {
+            if (confirm("Entered final price is less than system's sell price of " + finalPrice + ", sell at this price anyway?"))
+                item['final_price'] = Number(finalPrice).toFixed(2);
+            else
+                return;
+        } else {
+            item['final_price'] = enteredPrice;
+        }
+    }
+
+    cart.add(item);
+    add_found_div.innerHTML = "";
 }
 
 // setPayType: shows/hides the appropriate fields for that payment type
@@ -858,7 +860,7 @@ function pay_shown() {
     </div>
     <div class="row mt-2">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Paid:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-amt" name="paid-amt" size="6"/></div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" inputmode="numeric" class="no-spinners" id="pay-amt" name="paid-amt" style="width: 7em;"/></div>
     </div>
     <div class="row">
         <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>

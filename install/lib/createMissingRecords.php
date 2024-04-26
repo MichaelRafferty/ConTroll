@@ -33,7 +33,7 @@ JOIN auth a ON ua.auth_id = a.id
 WHERE a.name = 'admin'
 EOS;
 
-    // check if user 2 exists in the system
+    // check if user 2 exists in the system (atcon)
     $checkR = dbSafeQuery($checkSQL, 'i', array(2));
     if ($checkR === false || $checkR->num_rows == 0) {
         logEcho('Error retrieving number of people in the database, cannot continue');
@@ -45,7 +45,7 @@ EOS;
         logEcho("Person 2/User 2 exist", true);
     } else {
         // insert user 2, person record first
-        $newid = dbSafeInsert($insertPQ, 'issssssss', array(2, 'Atcon', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRAITON USE', 'N', 'N'));
+        $newid = dbSafeInsert($insertPQ, 'issssssss', array(2, 'Atcon', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
         if ($newid === false) {
             logEcho("Unable to insert Person Info 2 for ATCON");
             $errors++;
@@ -58,6 +58,26 @@ EOS;
             }
         }
         logEcho("Created person and user 2 for ATCON");
+    }
+
+    // check if person 3 exists in the system (exhibitor)
+    $checkR = dbSafeQuery($checkSQL, 'i', array(3));
+    if ($checkR === false || $checkR->num_rows == 0) {
+        logEcho('Error retrieving number of people in the database, cannot continue');
+        return (1);
+    }
+    $num_rows = $checkR->fetch_row()[0];
+    $checkR->free();
+    if ($num_rows == 1) {
+        logEcho('Person 3 exists', true);
+    } else {
+        // insert person 3
+        $newid = dbSafeInsert($insertPQ, 'issssssss', array(3, 'Exhibitor', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
+        if ($newid === false) {
+            logEcho('Unable to insert Person Info 3 for Exhibitor');
+            $errors++;
+        }
+        logEcho('Created person 3 for Exhibitors');
     }
 
     // check if the initial conid exists in the system
