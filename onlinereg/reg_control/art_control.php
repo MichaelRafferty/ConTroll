@@ -65,6 +65,12 @@ foreach ($regions as $region) {
     <div class="row">
         <div class="col-sm-auto p-0">
             <div id='artItems_table'></div>
+            <div id="artItems_buttons">
+                <button id='item-undo' type='button' class='btn btn-secondary btn-sm' onclick="undoItem(); return false;" disabled>Undo</button>
+                <button id='item-redo' type='button' class='btn btn-secondary btn-sm' onclick="redoItem(); return false;" disabled>Redo</button>
+                <button id='item-addnew' type='button' class='btn btn-secondary btn-sm' onclick="addnewItem(); return false;" disabled>Add New</button>
+                <button id='item-save' type='button' class='btn btn-secondary btn-sm' onclick="saveItem(); return false;" disabled>Save</button>
+            </div>
         </div>
     </div>
     <div id='result_message' class='mt-4 p-2'></div>
