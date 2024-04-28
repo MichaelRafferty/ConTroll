@@ -117,7 +117,7 @@ function page_init($title, $tab, $css, $js)
                                         <?php  } 
                                         if (in_array('artsales', $perms)) { ?>
                                         <li>
-                                            <a class="nav-link navitem <?php echo $tab == "artsales" ? "active" : ""; ?>" <?php echo $tab == "artsales" ? 'aria-current="page"' : "" ?> href="artPos.php">Art Show Cashier</a>
+                                            <a class="nav-link navitem <?php echo $tab == "artsales" ? "active" : ""; ?>" <?php echo $tab == "artsales" ? 'aria-current="page"' : "" ?> href="artpos.php">Art Show Cashier</a>
                                         </li>
                                         <? }
                                         if (in_array('manager', $perms)) { ?>
@@ -128,11 +128,6 @@ function page_init($title, $tab, $css, $js)
                                         <li>
                                             <a class="nav-link navitem" <?php echo $tab == "change_password" ? "active" : ""; ?>" <?php echo $tab == "change_password" ? 'aria-current="page"' : ""; ?> href="index.php?action=change_passwd">Change Password</a>
                                         </li>
-                                        <?php if (in_array('artshow', $perms)) { ?>
-                                        <li>
-                                            <a class="nav-link navitem <?php echo $tab == 'artshow' ? 'active' : ''; ?>" <?php echo $tab == 'artshow' ? 'aria-current="page"' : ''; ?> href="artsales.php">Old Art Show Cashier</a>
-                                        </li>
-                                        <?php  } ?>
                                         <li>
                                             <a class="nav-link navitem" <?php echo $tab == "logout" ? "active" : ""; ?>" <?php echo $tab == "logout" ? 'aria-current="page"' : ""; ?> href="index.php?action=logout">Logout</a>
                                         </li>

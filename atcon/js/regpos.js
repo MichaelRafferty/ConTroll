@@ -404,7 +404,7 @@ function void_trans() {
         ajax_request_action: 'voidPayment',
         user_id: user_id,
         pay_tid: pay_tid,
-        cart_membership: cart.getCartMembership(),
+        cart_membership: JSON.stringify(cart.getCartMembership()),
     };
     $("button[name='void_btn']").attr("disabled", true);
     $.ajax({
@@ -1737,9 +1737,9 @@ function review_nochanges() {
     // submit the current card data to update the database, retrieve all TID's/PERID's/REGID's of inserted data
     var postData = {
         ajax_request_action: 'updateCartElements',
-        cart_perinfo: cart.getCartPerinfo(),
-        cart_perinfo_map: cart.getCartMap(),
-        cart_membership: cart.getCartMembership(),
+        cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
+        cart_perinfo_map: JSON.stringify(cart.getCartMap()),
+        cart_membership: JSON.stringify(cart.getCartMembership()),
         user_id: user_id,
     };
     $.ajax({
@@ -1932,7 +1932,7 @@ function pay(nomodal, prow = null) {
     // process payment
     var postData = {
         ajax_request_action: 'processPayment',
-        cart_membership: cart.getCartMembership(),
+        cart_membership: JSON.stringify(cart.getCartMembership()),
         new_payment: prow,
         coupon: prow['coupon'],
         change: crow,
@@ -1990,9 +1990,9 @@ function print_receipt(receipt_type) {
     var postData = {
         ajax_request_action: 'printReceipt',
         header: header_text,
-        prows: cart.getCartPerinfo(),
-        mrows: cart.getCartMembership(),
-        pmtrows: cart.getCartPmt(),
+        prows: JSON.stringify(cart.getCartPerinfo()),
+        mrows: JSON.stringify(cart.getCartMembership()),
+        pmtrows: JSON.stringify(cart.getCartPmt()),
         footer: footer_text,
         receipt_type: receipt_type,
         email_addrs: emailAddreesRecipients,
@@ -2061,8 +2061,8 @@ function print_badge(index) {
     }
     var postData = {
         ajax_request_action: 'printBadge',
-        params: params,
-        badges: badges,
+        params: JSON.stringify(params),
+        badges: JSON.stringify(badges),
     };
     $("button[name='print_btn']").attr("disabled", true);
     $.ajax({

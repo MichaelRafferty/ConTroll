@@ -22,17 +22,16 @@ var pay_button_rcpt = null;
 var pay_button_ercpt = null;
 var pay_button_print = null;
 var pay_tid = null;
+var pay_InitialCart = true;
 var discount_mode = 'none';
 var cart_total = Number(0).toFixed(2);
+
 // print items
-var print_div = null;
 var printed_obj = null;
 
 // Data Items
 var unpaid_table = [];
-var result_membership = [];
 var result_perinfo = [];
-var add_perinfo = [];
 var cashChangeModal = null;
 
 // global items
@@ -113,8 +112,7 @@ window.onload = function initpage() {
 // load mapping tables from database to javascript array
 // also retrieve session data about printers
 function loadInitialData(data) {
-    // map the memIds and labels for the pre-coded memberships.  Doing it now because it depends on what the database sends.
-    // tables
+    // load database and instace items for startup
     conlabel =  data['label'];
     conid = data['conid'];
     user_id = data['user_id']
@@ -122,7 +120,7 @@ function loadInitialData(data) {
     receiptPrinterAvailable = data['receiptPrinter'] === true;
 }
 
-// if no memberships or payments have been added to the database, this will reset for the next customer
+// if no artSales or payments have been added to the database, this will reset for the next customer
 function start_over(reset_all) {
     if (reset_all > 0)
         clear_message();
@@ -153,6 +151,7 @@ function start_over(reset_all) {
     receeiptEmailAddresses_div = null;
     pay_button_print = null;
     pay_tid = null;
+    pay_InitialCart = true;
 
     // set tab to find-tab
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
@@ -220,7 +219,7 @@ function draw_person() {
        <div class="col-sm-9">` + current_person['email_addr'] + `</div>
     </div>
     <div class="row">
-       <div class="col-sm-3">Phone::</div>
+       <div class="col-sm-3">Phone:</div>
        <div class="col-sm-9">` + current_person['phone'] + `</div>
     </div>
 </div>
@@ -271,7 +270,7 @@ function findPerson(find_type) {
             if (data['warn'] !== undefined) {
                 show_message(data['warn'], 'warn');
             }
-            founbdPerson(data);
+            foundPerson(data);
             $("button[name='find_btn']").attr("disabled", false);
         },
         error: function (jqXHR, textstatus, errorThrown) {
@@ -287,12 +286,22 @@ function findPerson(find_type) {
 // normal:
 //      single row: display record
 //      multiple rows: display table of records with add/trans buttons
-function founbdPerson(data) {
-    if(data['num_rows'] == 1) { // one person found
+function foundPerson(data) {
+    if (data['num_rows'] == 1) { // one person found
         current_person = data['person'];
         // put the person details in the cart, populate the cart with the art they have to check out
         draw_person();
-        data['art'].forEach((artItem) => cart.add(artItem));
+        data['art'].forEach((artItem) => {
+            if (pay_tid == null) {
+                pay_tid = artItem['transid'];
+            }
+            cart.add(artItem);
+        });
+        if (data['payment']) {
+            data['payment'].forEach((paymentItem) => {
+                cart.addPmt(paymentItem);
+            });
+        }
         find_tab.disabled = true;
         add_tab.disabled = false;
         cart.showAdd();
@@ -300,6 +309,7 @@ function founbdPerson(data) {
             pay_tab.disabled = false;
             cart.showPay();
         }
+        cart.drawCart();
         return;
     } else { // I'm not sure how we'd get here
         show_message(data['num_rows'] + " found.  Multiple people not yet supported.");
@@ -409,7 +419,7 @@ function foundArt(data) {
         }
         if (item['type'] == 'nfs' || item['status'].toLowerCase() == 'nfs') {
             valid = false;
-            html += '<div class="row"><div class="col-sm-4 bg-danger">Not For Sale:</div><div class="col-sm-8 bg-danger">You cannot buy a Not For Sale item.</div></div>';
+            html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Not For Sale:</div><div class="col-sm-8 bg-danger text-white">You cannot buy a Not For Sale item.</div></div>';
         }
 
         if (item['type'] == 'print') {
@@ -424,16 +434,17 @@ function foundArt(data) {
         if (item['type'] == 'art') {
             if (item['status'].toLowerCase() == 'checked in') {
                 if (item['sale_price'] == 0 || item['sale_price'] < item['min_price']) {
-                    html += '<div class="row"><div class="col-sm-4 bg-danger">Quick Sale:</div><div class="col-sm-8 bg-danger">Item is not available for quick sale.</div></div>';
+                    html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Quick Sale:</div><div class="col-sm-8 bg-danger text-white">Item is not available for quick sale.</div></div>';
                     valid = false;
                 } else {
                     html += '<div class="row"><div class="col-sm-4">Quick Sale Price:</div><div class="col-sm-8">$' + Number(item['sale_price']).toFixed(2) + '</div></div>';
                 }
-            } else if (item['final_price'] > 0) {
+            } else if (item['status'] != 'BID') {
                 html += '<div class="row"><div class="col-sm-4">Final Price:</div><div class="col-sm-8">$' + Number(item['final_price']).toFixed(2) + '</div></div>';
             } else {
+                item['status'] = 'Sold Bid Sheet';
                 html += '<div class="row"><div class="col-sm-4">Final Price:</div><div class="col-sm-8">' +
-                    '<input type=number inputmode="numeric" class="no-spinners" id="art-final-price" name="art-final-price" style="width: 9em;"/></div></div>';
+                    '<input type=number inputmode="numeric" class="no-spinners" id="art-final-price" name="art-final-price" style="width: 9em;" value="' + item['final_price'] + '"/></div></div>';
             }
         }
 
@@ -453,7 +464,7 @@ function foundArt(data) {
         }
 
         if (item['status'].toLowerCase() == 'purchased/released') {
-            html += '<div class="row"><div class="col-sm-4 bg-danger">Released:</div><div class="col-sm-8 bg-danger">System shows item already been released to a different purchaser.</div></div>';
+            html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Released:</div><div class="col-sm-8 bg-danger text-white">System shows item already been released to a different purchaser.</div></div>';
             valid = false;
         }
 
@@ -505,6 +516,47 @@ function addToCart(index) {
 
     cart.add(item);
     add_found_div.innerHTML = "";
+}
+
+// initArtSales - create/update artSales records for this cart to prepare for payment, create master transaction if none exists
+function initArtSales() {
+    // submit the current card data to update the database, retrieve updated cart
+    var postData = {
+        ajax_request_action: 'initArtSales',
+        cart_art: JSON.stringify(cart.getCartArt()),
+        cart_art_map: JSON.stringify(cart.getCartMap()),
+        pay_tid: pay_tid,
+        perid: current_person['id'],
+        user_id: user_id,
+    };
+    $.ajax({
+        method: "POST",
+        url: "scripts/artpos_initArtSales.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['message'] !== undefined) {
+                show_message(data['message'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'success');
+            }
+            initArtSalesComplete(data);
+        },
+        error: showAjaxError,
+    });
+}
+
+// initArtSalesComplete - now update the cart with the new data and call pay_shown again to draw it.
+//  all the data from the cart has been updated in the database, now apply the id's and proceed to the next step
+function initArtSalesComplete(data) {
+    pay_tid = data['pay_tid'];
+    // update cart elements
+    var unpaid_rows = cart.updateFromDB(data);
+    pay_shown();
 }
 
 // setPayType: shows/hides the appropriate fields for that payment type
@@ -636,9 +688,11 @@ function pay(nomodal, prow = null) {
         }
     }
     // process payment
+    var art = cart.getCartArt();
+    var artJSON = JSON.stringify(art);
     var postData = {
         ajax_request_action: 'processPayment',
-        cart_membership: cart.getCartMembership(),
+        cart_art: artJSON,
         new_payment: prow,
         change: crow,
         user_id: user_id,
@@ -647,7 +701,7 @@ function pay(nomodal, prow = null) {
     pay_button_pay.disabled = true;
     $.ajax({
         method: "POST",
-        url: "scripts/regpos_processPayment.php",
+        url: "scripts/artpos_processPayment.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
             var stop = true;
@@ -676,7 +730,7 @@ function pay(nomodal, prow = null) {
 
 
 // updatedPayment:
-//  payment entered into the database correctly, update the payment cart and the memberships with the updated paid amounts
+//  payment entered into the database correctly, update the payment cart and the art with the updated paid amounts
 function updatedPayment(data) {
     cart.updatePmt(data);
     pay_shown();
@@ -746,6 +800,7 @@ function find_shown() {
     cart.unfreeze();
     current_tab = find_tab;
     cart.drawCart();
+    pay_InitialCart = true;
 }
 
 function add_shown() {
@@ -754,6 +809,7 @@ function add_shown() {
     clear_message();
     cart.drawCart();
     cart.showPay();
+    pay_InitialCart = true;
 }
 
 var emailAddreesRecipients = [];
@@ -783,13 +839,17 @@ function checkbox_check() {
     pay_button_ercpt.disabled = false;
 }
 
-
+// show the pay tab, and its current dataset, if first call, update artSales in the database.
 function pay_shown() {
+    if (pay_InitialCart) {
+        pay_InitialCart = false;
+        initArtSales();
+    }
     cart.freeze();
     current_tab = pay_tab;
     cart.drawCart();
 
-    var total_amount_due = cart.getTotalPrice();
+    var total_amount_due = cart.getTotalPrice() - cart.getTotalPaid();
     if (total_amount_due  < 0.01) { // allow for rounding error, no need to round here
         // nothing more to pay       
         print_tab.disabled = false;

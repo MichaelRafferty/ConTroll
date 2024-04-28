@@ -33,14 +33,45 @@ $user_id = $_POST['user_id'];
 if ($user_id != $_SESSION['user']) {
 ajaxError("Invalid credentials passed");
 }
-$cart_perinfo = $_POST['cart_perinfo'];
+
+try {
+    $cart_perinfo = json_decode($_POST['cart_perinfo'], true, 512, JSON_THROW_ON_ERROR);
+}
+catch (Exception $e) {
+    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+    $response['error'] = $msg;
+    error_log($msg);
+    ajaxSuccess($response);
+    exit();
+}
+
 if (sizeof($cart_perinfo) <= 0) {
 ajaxError('No members are in the cart');
 return;
 }
 
-$cart_perinfo_map = $_POST['cart_perinfo_map'];
-$cart_membership = $_POST['cart_membership'];
+try {
+    $cart_perinfo_map = json_decode($_POST['cart_perinfo_map'], true, 512, JSON_THROW_ON_ERROR);
+}
+catch (Exception $e) {
+    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+    $response['error'] = $msg;
+    error_log($msg);
+    ajaxSuccess($response);
+    exit();
+}
+
+try {
+    $cart_membership = json_decode($_POST['cart_membership'], true, 512, JSON_THROW_ON_ERROR);
+}
+catch (Exception $e) {
+    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+    $response['error'] = $msg;
+    error_log($msg);
+    ajaxSuccess($response);
+    exit();
+}
+
 if (sizeof($cart_membership) <= 0) {
 ajaxError('No memberships are in the cart');
 return;
@@ -181,7 +212,7 @@ VALUES (?,?,?,?,?,'atcon',now());
 EOS;
 // now insert the master transaction
 $paramarray = array($conid, $master_perid, $user_id, 0, 0);
-$typestr = 'iiiss';
+$typestr = 'iiidd';
 $master_transid = dbSafeInsert($insTransactionSQL, $typestr, $paramarray);
 if ($master_transid === false) {
     ajaxError('Unable to create master transaction');

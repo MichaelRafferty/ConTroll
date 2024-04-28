@@ -204,6 +204,16 @@ class artpos_cart {
         if (data['crow']) {
             this.#cart_pmt.push(data['crow']);
         }
+
+        data['cart_art'].forEach((artitem) => {
+            var index = this.#cart_art_map.get(artitem['id']);
+            this.#cart_art[index] = artitem;
+        });
+    }
+
+// add payment record to cart
+    addPmt(pmt) {
+        this.#cart_pmt.push(pmt);
     }
 
 // cart_renumber:
@@ -264,9 +274,12 @@ class artpos_cart {
         row['priceType'] = priceType;
         rowhtml += '<div class="row"><div class="col-sm-8 p-0 text-end">' + priceType + ' Price:</div>' +
             '<div class="col-sm-2 text-end">$' + Number(row['display_price']).toFixed(2) + '</div>' +
-            '<div class="col-sm-2 text-end">$' + Number(0).toFixed(2) + '</div></div>';
+            '<div class="col-sm-2 text-end">$' + Number(row['paid']).toFixed(2) + '</div></div>';
 
         this.#total_price += Number(row['display_price']);
+        this.#total_paid += Number(row['paid']);
+        if (row['display_price'] > row['paid'])
+            this.#unpaid_rows++;
         return rowhtml;
     }
 
@@ -276,14 +289,24 @@ class artpos_cart {
 
         var pmt = this.#cart_pmt[prow];
         var code = '';
+        var desc = pmt['desc'] ? pmt['desc'] :'';
         if (pmt['type'] == 'check') {
-            code = pmt['checkno'];
+            if ((!pmt['checkno']) || pmt['checkno'] == '') {
+                code = desc.substring(desc.indexOf(':') + 1, desc.indexOf(';'));
+                desc = desc.substring(desc.indexOf(';') + 1);
+            } else {
+                code = pmt['checkno'];
+            }
         } else if (pmt['type'] == 'credit') {
             code = pmt['ccauth'];
         }
+        var ttype = pmt['type'];
+        if (pmt['time']) {
+            ttype += ' (' + pmt['time'] + ')';
+        }
         return `<div class="row">
-    <div class="col-sm-2 p-0">` + pmt['type'] + `</div>
-    <div class="col-sm-6 p-0">` + pmt['desc'] + `</div>
+    <div class="col-sm-4 p-0">` + ttype + `</div>
+    <div class="col-sm-4 p-0">` + desc + `</div>
     <div class="col-sm-2 p-0">` + code + `</div>
     <div class="col-sm-2 text-end">` + Number(pmt['amt']).toFixed(2) + `</div>
 </div>
@@ -354,6 +377,39 @@ class artpos_cart {
             this.#pay_button.hidden = true;
             this.hideStartOver();
         }
+    }
+
+    updateFromDB(data) {
+        var newrow;
+
+        // update the fields created by the database transactions
+        var updated_art = data['updated_art'];
+        for (rownum in updated_art) {
+            newrow = updated_art[rownum];
+            var keys = Object.keys(newrow);
+            for (var keynum in keys) {
+                var key = keys[keynum];
+                this.#cart_art[newrow['rownum']][key] = newrow[key];
+            }
+            this.#cart_art[newrow['rownum']]['dirty'] = false;
+        }
+
+
+// delete all rows from cart marked for delete
+        var delrows = [];
+        var splicerow = null;
+        for (var rownum in this.#cart_art) {
+            if (this.#cart_art[rownum]['todelete'] == 1) {
+                delrows.push(rownum);
+            }
+        }
+        delrows = delrows.reverse();
+        for (splicerow in delrows)
+            this.#cart_art.splice(delrows[splicerow], 1);
+
+// redraw the cart with the new id's and maps, which will compute the unpaid_rows.
+        cart.drawCart();
+        return this.#unpaid_rows;
     }
 
 // receiptHeader - retrieve receipt header info from cart[0]

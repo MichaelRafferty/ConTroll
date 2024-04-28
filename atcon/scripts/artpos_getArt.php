@@ -60,11 +60,14 @@ $response['findType'] = $findType;
 
 if ($itemId != null && $itemId != '') {
     $itemQ = <<<EOS
-SELECT A.*, ex.exhibitorName, exRY.exhibitorNumber
+SELECT A.*, s.id AS artSalesId, s.transid, s.amount, IFNULL(s.paid, 0.00) AS paid, s.quantity AS artSalesQuantity, s.unit, t.id AS create_trans,
+       ex.exhibitorName, exRY.exhibitorNumber
 FROM artItems A
 JOIN exhibitorRegionYears exRY ON exRY.id = A.exhibitorRegionYearId
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors ex ON ex.id = exY.exhibitorId
+LEFT OUTER JOIN artSales s ON A.id = s.artid
+LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid                   
 WHERE A.id = ? AND A.status not in ('Entered','Not In Show');
 EOS;
     $paramTypes = 'i';

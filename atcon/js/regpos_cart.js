@@ -1201,7 +1201,7 @@ class regpos_cart {
         var updated_perinfo = data['updated_perinfo'];
         for (rownum in updated_perinfo) {
             newrow = updated_perinfo[rownum];
-            cartrow = this.#cart_perinfo[newrow['rownum']]
+            cartrow = this.#cart_perinfo[newrow['rownum']];
             cartrow['perid'] = newrow['perid'];
             cartrow['dirty'] = false;
         }

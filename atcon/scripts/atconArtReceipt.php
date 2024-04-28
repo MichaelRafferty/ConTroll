@@ -75,7 +75,7 @@ $response['transid']=$transid;
 
 $artQ = <<<EOS
 SELECT S.amount, S.quantity, I.title, I.item_key, A.art_key
-FROM artsales S
+FROM artSales S
 JOIN artItems I ON (I.id=S.artid)
 JOIN artshow A ON (A.id=I.artshow)
 WHERE S.transid=?;
