@@ -4,6 +4,9 @@
  *
  */
 
+ /* disabler old reg for now */
+UPDATE auth SET page = 'N' WHERE id = 999;
+
 ALTER TABLE artItems MODIFY COLUMN status enum('Entered','Not In Show','Checked In','NFS','Removed from Show',
     'BID','Quicksale/Sold','To Auction','Sold Bid Sheet','Sold at Auction','Checked Out','purchased/released') COLLATE utf8mb4_general_ci DEFAULT 'Entered';
 
