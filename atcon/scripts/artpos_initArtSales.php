@@ -130,7 +130,7 @@ for ($row = 0; $row < sizeof($cart_art); $row++) {
 
         if ((!array_key_exists('artSalesId', $cartrow)) || $cartrow['artSalesId'] == null || $cartrow['artSalesId'] <= 0) {
             // insert this row
-            $paramarray = array($pay_tid, $cartrow['id'], $cartrow['unit'], $cartrow['status'], $master_perid, $cartrow['display_price'], 0, $cartrow['quantity']);
+            $paramarray = array($pay_tid, $cartrow['id'], $cartrow['unit'], $cartrow['status'], $master_perid, $cartrow['display_price'], 0, $cartrow['purQuantity']);
             $typestr = 'iiisiddi';
             $new_id = dbSafeInsert($insArtSales, $typestr, $paramarray);
             if ($new_id === false) {

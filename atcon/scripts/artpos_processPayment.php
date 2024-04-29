@@ -38,6 +38,8 @@ if ($user_id != $_SESSION['user']) {
     ajaxError('Invalid credentials passed');
 }
 
+$perid = $_POST['perid'];
+
 $master_tid = $_POST['pay_tid'];
 if ($master_tid <= 0) {
     ajaxError('No current transaction in process');
@@ -93,7 +95,7 @@ $complete = round($amt,2) == round($total_due,2);
 
 // now add the payment and process to which rows it applies
 $upd_rows = 0;
-$cupd_rows = 0;
+$upd_cart = 0;
 $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, amount, time, cc_approval_code, cashier)
 VALUES (?,?,'artshow',?,'cashier',?,now(),?, ?);
@@ -114,12 +116,26 @@ if ($new_pid === false) {
 $new_payment['id'] = $new_pid;
 $response['prow'] = $new_payment;
 $response['message'] = "1 payment added";
-$updPaymentSQL = <<<EOS
+$updArtSalesSQL = <<<EOS
 UPDATE artSales
-SET paid = ?, transid = ?
+SET paid = ?, transid = ?, quantity = ?
 WHERE id = ?;
 EOS;
-$ptypestr = 'sii';
+$atypestr = 'siii';
+
+$updQuantitySQL = <<<EOS
+UPDATE artItems
+SET quantity = CASE WHEN quantity - ? < 0 THEN 0 ELSE quantity - ? END
+WHERE id = ?;
+EOS;
+$uqstr = 'iii';
+
+$updStatusSQL = <<<EOS
+UPDATE artItems
+SET status = 'Quicksale/Sold', bidder = ?, final_price = ?
+WHERE id = ?;
+EOS;
+$usstr = 'idi';
 
 foreach ($cart_art as $cart_row) {
     if ($cart_row['display_price'] == '')
@@ -132,17 +148,26 @@ foreach ($cart_art as $cart_row) {
         $cart_row['paid'] = 0;
 
     $unpaid = $cart_row['amount'] - $cart_row['paid'];
+    $quantity = $cart_row['purQuantity'];
     if ($unpaid > 0) {
         $amt_paid = min($amt, $unpaid);
         $cart_row['paid'] += $amt_paid;
         $cart_art[$cart_row['index']] = $cart_row;
         $amt -= $amt_paid;
-        $upd_rows += dbSafeCmd($updPaymentSQL, $ptypestr, array($cart_row['paid'], $master_tid, $cart_row['artSalesId']));
+        $upd_rows += dbSafeCmd($updArtSalesSQL, $atypestr, array($cart_row['paid'], $master_tid, $quantity, $cart_row['artSalesId']));
+
+        // change status of items sold by quick sale to quicksale sold, decrease quantity of print items
+        if (round($amt_paid,2) == round($cart_row['paid'],2)) {
+            $upd_cart += dbSafeCmd($updQuantitySQL, $uqstr, array($quantity, $quantity, $cart_row['id']));
+
+            if ($cart_row['priceType'] == 'Quick Sale') {
+                $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array($perid, $cart_row['paid'], $cart_row['id']));
+            }
+        }
+        if ($amt <= 0)
+            break;
     }
 }
-
-// if coupon is specified, mark transaction as having a coupon
-
 
     $updCompleteSQL = <<<EOS
 UPDATE transaction

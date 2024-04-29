@@ -59,7 +59,7 @@ EOS;
         $perid = $response['person']['id'];
         $findArtQ = <<<EOS
 SELECT a.id, a.item_key, a.title, a.type, a.status, a.location, a.quantity, a.original_qty, a.min_price, a.sale_price, a.final_price, a.artshow, a.material, a.bidder,
-       s.id AS artSalesId, s.transid, s.amount, IFNULL(s.paid, 0.00) AS paid, s.quantity AS artSalesQuantity, s.unit, t.id AS create_trans,
+       s.id AS artSalesId, s.transid, s.amount, IFNULL(s.paid, 0.00) AS paid, s.quantity AS artSalesQuantity, s.unit, t.id AS create_trans, 1 AS purQuantity,
        exRY.exhibitorNumber, ex.exhibitorName
 FROM artItems a
 JOIN exhibitorRegionYears exRY ON a.exhibitorRegionYearId = exRY.id

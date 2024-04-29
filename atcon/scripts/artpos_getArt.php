@@ -61,7 +61,7 @@ $response['findType'] = $findType;
 if ($itemId != null && $itemId != '') {
     $itemQ = <<<EOS
 SELECT A.*, s.id AS artSalesId, s.transid, s.amount, IFNULL(s.paid, 0.00) AS paid, s.quantity AS artSalesQuantity, s.unit, t.id AS create_trans,
-       ex.exhibitorName, exRY.exhibitorNumber
+       ex.exhibitorName, exRY.exhibitorNumber, 1 AS purQuantity
 FROM artItems A
 JOIN exhibitorRegionYears exRY ON exRY.id = A.exhibitorRegionYearId
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
@@ -76,7 +76,7 @@ EOS;
 } else if ($artistNumber != null && $artistNumber != '') {
     if ($pieceNumber != null && $pieceNumber != '') {
         $itemQ = <<<EOS
-SELECT A.*, ex.exhibitorName, exRY.exhibitorNumber
+SELECT A.*, ex.exhibitorName, exRY.exhibitorNumber, 1 AS purQuantity
 FROM artItems A
 JOIN exhibitorRegionYears exRY ON exRY.id = A.exhibitorRegionYearId
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
@@ -88,7 +88,7 @@ EOS;
     $response['queryType'] = 'piece';
     } else {
         $itemQ = <<<EOS
-SELECT A.*, ex.exhibitorName, exRY.exhibitorNumber
+SELECT A.*, ex.exhibitorName, exRY.exhibitorNumber, 1 AS purQuantity
 FROM artItems A
 JOIN exhibitorRegionYears exRY ON exRY.id = A.exhibitorRegionYearId
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
