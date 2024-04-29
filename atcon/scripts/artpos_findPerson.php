@@ -103,6 +103,17 @@ EOS;
         $response['error'] = $personR->num_rows . " People Found, seek assistance.";
     }
     $personR->free();
+
+    // get count of art available for checkout
+    $checkOutQ = <<<EOS
+SELECT count(*)
+FROM artItems a
+JOIN artSales s ON a.id = s.artid
+WHERE s.amount = s.paid AND s.perid = ? AND a.conid = ? AND a.status IN ('Sold Bid Sheet','Sold at Auction', 'Quicksale/Sold');
+EOS;
+    $checkOutR = dbSafeQuery($checkOutQ, 'ii', array($perid, $conid));
+    $response['checkout'] = $checkOutR->fetch_row()[0];
+    $checkOutR->free();
 } else {
 //
 // this is the string search portion as the field is alphanumeric

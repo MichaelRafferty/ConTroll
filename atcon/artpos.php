@@ -42,10 +42,16 @@ page_init($page, $tab,
                      <li class="nav-item" role="presentation">
                         <button class="nav-link" id="pay-tab" data-bs-toggle="pill" data-bs-target="#pay-pane" type="button" role="tab" aria-controls="nav-pay" aria-selected="false" disabled>Payment</button>
                     </li>
+                     <li class='nav-item' role='presentation'>
+                         <button class='nav-link' id='check-tab' data-bs-toggle='pill' data-bs-target='#check-pane' type='button' role='tab' aria-controls='nav-check'
+                                 aria-selected='false' disabled>Check Out
+                         </button>
+                     </li>
                 </ul>
                 <div class="tab-content" id="find-content">          
                     <div class="tab-pane fade show active" id="find-pane" role="tabpanel" aria-labelledby="person-tab" tabindex="0">
                         <div class="container-fluid">
+                            <div class="row" id="stats-div"></div>
                             <div class="row">
                                 <div class="col-sm-12 text-bg-primary mb-2">
                                     <div class="text-bg-primary m-2">
@@ -117,6 +123,9 @@ page_init($page, $tab,
                     </div>
                     <div class="tab-pane fade" id="pay-pane" role="tabpanel" aria-labelledby="pay-tab" tabindex="2">
                         <div id="pay-div">Process Payment</div>
+                    </div>
+                    <div class='tab-pane fade' id='check-pane' role='tabpanel' aria-labelledby='check-tab' tabindex='3'>
+                        <div id='check-div'>Check out all art purchased by a person</div>
                     </div>
                  </div>
             </div>

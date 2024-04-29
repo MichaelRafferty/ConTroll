@@ -177,6 +177,7 @@ class artpos_cart {
         this.hidePay();
         this.#in_pay = false;
         this.drawCart();
+        this.showStartOver();
     }
 
     // add art record to cart
@@ -318,11 +319,15 @@ class artpos_cart {
         this.#cart_renumber(); // to keep indexing intact, renumber the index and pindex each time
         this.#total_price = 0;
         this.#total_paid = 0;
+        var name = '';
         var num_rows = 0;
+        if (current_person) {
+            name = ' For ' + (current_person['first_name'] + ' ' + current_person['last_name']).trim();
+        }
         var html = `
 <div class="container-fluid">
 <div class="row">
-    <div class="col-sm-8 text-bg-primary">Artwork</div>
+    <div class="col-sm-8 text-bg-primary">Artwork` + name + `</div>
     <div class="col-sm-2 text-bg-primary text-end">Price</div>
     <div class="col-sm-2 text-bg-primary text-end">Paid</div>
 </div>
@@ -369,7 +374,7 @@ class artpos_cart {
         html += '</div>'; // ending the container fluid
         //console.log(html);
         this.#cart_div.innerHTML = html;
-        this.#startover_button.hidden = num_rows == 0;
+        //this.#startover_button.hidden = num_rows == 0;
         if (this.#unpaid_rows == 0) {
             this.#pay_button.hidden = true;
         }

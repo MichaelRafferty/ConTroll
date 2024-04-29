@@ -4,12 +4,15 @@ var cart = null;
 // tab fields
 var find_tab = null;
 var pay_tab = null;
+var add_tab = null;
+var check_tab = null;
 var current_tab = null;
 
 // find person fields
 var id_div = null;
 var badgeid_field = null;
 var current_person = null;
+var stats_div = null;
 
 // art items
 var add_found_div = null;
@@ -48,8 +51,8 @@ window.onload = function initpage() {
     find_tab = document.getElementById("find-tab");
     current_tab = find_tab;
     add_tab = document.getElementById("add-tab");
-    add_edit_prior_tab = add_tab;
     pay_tab = document.getElementById("pay-tab");
+    check_tab = document.getElementById("check-tab");
 
     // cart
     cart = new artpos_cart();
@@ -59,6 +62,7 @@ window.onload = function initpage() {
     badgeid_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') findPerson('search'); });
     badgeid_field.focus();
     id_div = document.getElementById("find_results");
+    stats_div = document.getElementById("stats-div");
 
     itemCode_field = document.getElementById("itemCode");
     itemCode_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') findArt('code'); });
@@ -76,6 +80,7 @@ window.onload = function initpage() {
     find_tab.addEventListener('shown.bs.tab', find_shown)
     add_tab.addEventListener('shown.bs.tab', add_shown)
     pay_tab.addEventListener('shown.bs.tab', pay_shown)
+    check_tab.addEventListener('shown.bs.tab', check_shown)
 
     // cash payment requires change
     cashChangeModal = new bootstrap.Modal(document.getElementById('CashChange'), { focus: true, backldrop: 'static' });
@@ -113,6 +118,7 @@ function loadInitialData(data) {
     user_id = data['user_id']
     hasManager = data['hasManager'];
     receiptPrinterAvailable = data['receiptPrinter'] === true;
+    find_shown();
 }
 
 // if no artSales or payments have been added to the database, this will reset for the next customer
@@ -138,6 +144,7 @@ function start_over(reset_all) {
     find_tab.disabled = false;
     add_tab.disabled = true;
     pay_tab.disabled = true;
+    check_tab.disabled = true;
     cart.hideNext();
     cart.hideAdd();
     pay_button_pay = null;
@@ -304,6 +311,10 @@ function foundPerson(data) {
             cart.showPay();
         }
         cart.drawCart();
+        cart.showStartOver();
+        if (data['checkout'] > 0 && cart.getCartLength() == 0) {
+            check_tab.disabled = false;
+        }
         return;
     } else { // I'm not sure how we'd get here
         show_message(data['num_rows'] + " found.  Multiple people not yet supported.");
@@ -797,6 +808,31 @@ function find_shown() {
     current_tab = find_tab;
     cart.drawCart();
     pay_InitialCart = true;
+    // get statistics
+    $.ajax({
+        method: "POST",
+        url: "scripts/artpos_stats.php",
+        data: { stats: 'all' },
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['message'] !== undefined) {
+                show_message(data['message'], 'success');
+            }
+            updateStats(data);
+        },
+        error: showAjaxError,
+    });
+}
+
+function updateStats(data) {
+    stats_div.innerHTML = '<div class="col-sm-2">Stats:</div>' +
+        '<div class="col-sm-3">Active Customers: ' + data['active_customers'] + '</div>' +
+        '<div class="col-sm-3">Awaiting Payment: ' + data['need_pay'] + '</div>' +
+        '<div class="col-sm-4">Awaiting Checkout: ' + data['need_check'] + '</div>';
+    cart.showStartOver();
 }
 
 function add_shown() {
@@ -804,7 +840,10 @@ function add_shown() {
     current_tab = add_tab;
     clear_message();
     cart.drawCart();
-    cart.showPay();
+    if (cart.getCartLength() > 0) {
+        cart.showPay();
+    }
+    cart.showStartOver();
     pay_InitialCart = true;
 }
 
@@ -824,6 +863,7 @@ function pay_shown() {
     if (total_amount_due  < 0.01) { // allow for rounding error, no need to round here
         // nothing more to pay
         cart.showNext();
+        cart.hideStartOver();
         cart.hideAdd();
         add_tab.disabled = true;
         if (pay_button_pay != null) {
@@ -850,6 +890,7 @@ function pay_shown() {
             cart.hideAdd();
         } else {
             cart.showNext();
+            cart.hideStartOver();
         }
     } else {
         if (pay_button_pay != null) {
@@ -945,4 +986,14 @@ function pay_shown() {
             cart.showStartOver();
         }
     }
+}
+
+// check_shown - show the checkout tab
+function check_shown() {
+    current_tab = check_tab;
+    pay_tab.disabled = true;
+    cart.hideAdd();
+    cart.showNext();
+    cart.hideStartOver();
+    clear_message();
 }
