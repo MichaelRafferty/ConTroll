@@ -217,6 +217,21 @@ class artpos_cart {
         this.#cart_pmt.push(pmt);
     }
 
+    // update Row quantity - and reprice item
+    updateRowQuantity(rowid) {
+        var newqty = document.getElementById('purQuantity_' + rowid).value;
+        console.log(newqty);
+        console.log(this.#cart_art_map);
+        var row = this.#cart_art[this.#cart_art_map.get(rowid)];
+        if (newqty > row['quantity'] && newqty != row['purQuantity']) {
+            if (!confirm("Only " + row['quantity'] + " are available, are you sure?")) {
+                document.getElementById('purQuantity_' + rowid).value = row['purQuantity'];
+                return;
+            }
+        }
+        row['purQuantity'] = newqty;
+        this.drawCart();
+    }
 // cart_renumber:
 // rebuild the indices in the cart_art table
 // for shortcut reasons indices are used to allow usage of the filter functions built into javascript
@@ -261,11 +276,17 @@ class artpos_cart {
         rowhtml += '<div class="row"><div class="col-sm-2">Title: ' + '</div><div class="col-sm-10">' + row['title'] + '</div></div>';
         // Material
         rowhtml += '<div class="row"><div class="col-sm-2">Material: ' + '</div><div class="col-sm-10">' + row['material'] + '</div></div>';
+        if (this.#freeze_cart) {
+            rowhtml += '<div class="row"><div class="col-sm-2">Quantity: ' + '</div><div class="col-sm-10">' + row['purQuantity'] + '</div></div>';
+        } else if (row['type'] == 'print') {
+            rowhtml += '<div class="row"><div class="col-sm-2">Quantity: ' + '</div><div class="col-sm-10"><input type="number" min="1" max="' + row['quantity'] + '"' +
+                ' name="purQuantity_' + row['id'] + '" id="purQuantity_' + row['id'] + '" value="' + row['purQuantity'] + '" onchange="cart.updateRowQuantity(' + row['id'] +');"/></div></div>';
+        }
         // price
         var priceType = 'Final';
         if (row['type'] == 'print') {
             priceType = 'Sale';
-            row['display_price'] = row['sale_price'];
+            row['display_price'] = row['sale_price'] * row['purQuantity'];
         } else if (row['type'] == 'art' && (row['final_price'] == null || row['final_price'] == 0)) {
             priceType = 'Quick Sale';
             row['display_price'] = row['sale_price'];

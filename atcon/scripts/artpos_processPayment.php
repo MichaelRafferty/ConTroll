@@ -78,6 +78,15 @@ foreach ($cart_art as $cart_row) {
     if ($cart_row['display_price'] == '')
         $cart_row['display_price'] = 0;
 
+    if ($cart_row['purQuantity'] != $cart_row['artSalesQuantity'] && $cart_row['type'] == 'print') {
+        $cart_row['artSalesQuantity'] = $cart_row['purQuantity'];
+        $cart_row['amount'] = $cart_row['display_price'];
+        $cart_row['updSales'] = true;
+        }
+    else {
+        $cart_row['updSales'] = false;
+    }
+
     if ($cart_row['amount'] == null || $cart_row['amount'] == '')
         $cart_row['amount'] = $cart_row['display_price'];
 
@@ -118,10 +127,17 @@ $response['prow'] = $new_payment;
 $response['message'] = "1 payment added";
 $updArtSalesSQL = <<<EOS
 UPDATE artSales
-SET paid = ?, transid = ?, quantity = ?
+SET paid = ?, transid = ?, quantity = ?, amount = ?
 WHERE id = ?;
 EOS;
-$atypestr = 'siii';
+$atypestr = 'diidi';
+
+$updArtSalesQtySQL = <<<EOS
+UPDATE artSales
+SET quantity = ?, amount = ?
+WHERE id = ?;
+EOS;
+$aqtypestr = 'idi';
 
 $updQuantitySQL = <<<EOS
 UPDATE artItems
@@ -154,7 +170,7 @@ foreach ($cart_art as $cart_row) {
         $cart_row['paid'] += $amt_paid;
         $cart_art[$cart_row['index']] = $cart_row;
         $amt -= $amt_paid;
-        $upd_rows += dbSafeCmd($updArtSalesSQL, $atypestr, array($cart_row['paid'], $master_tid, $quantity, $cart_row['artSalesId']));
+        $upd_rows += dbSafeCmd($updArtSalesSQL, $atypestr, array($cart_row['paid'], $master_tid, $quantity, $cart_row['amount'], $cart_row['artSalesId']));
 
         // change status of items sold by quick sale to quicksale sold, decrease quantity of print items
         if (round($cart_row['amount'],2) == round($cart_row['paid'],2)) {
@@ -164,8 +180,10 @@ foreach ($cart_art as $cart_row) {
                 $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array($perid, $cart_row['paid'], $cart_row['id']));
             }
         }
-        if ($amt <= 0)
-            break;
+    } else {
+        if ($cart_row['updSales'] == true) {
+            $upd_rows += dbSafeCmd($updArtSalesQtySQL, $aqtypestr, array($quantity, $cart_row['amount'], $cart_row['artSalesId']));
+        }
     }
 }
 

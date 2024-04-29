@@ -78,6 +78,10 @@ foreach ($arows as $arow) {
     $receipt .= '     Title: ' . $arow['title'] . PHP_EOL;
     // Material
     $receipt .= '     Material: ' . $arow['material'] . PHP_EOL;
+    if ($arow['type'] == 'print') {
+        $receipt .= '     Quantity: ' . $arow['purQuantity'] . ' at ' . $dolfmt->formatCurrency((float) $arow['sale_price'], 'USD') . ' each' . PHP_EOL;
+        $arow['final_price'] = $arow['sale_price'] * $arow['purQuantity'];
+    }
     // price
     $receipt .= $arow['priceType'] . ' Price: ' . $dolfmt->formatCurrency((float) $arow['final_price'], 'USD') . PHP_EOL . PHP_EOL;
 
