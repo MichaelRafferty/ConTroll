@@ -20,14 +20,10 @@ var pay_div = null;
 var pay_button_pay = null;
 var pay_button_rcpt = null;
 var pay_button_ercpt = null;
-var pay_button_print = null;
 var pay_tid = null;
 var pay_InitialCart = true;
 var discount_mode = 'none';
 var cart_total = Number(0).toFixed(2);
-
-// print items
-var printed_obj = null;
 
 // Data Items
 var unpaid_table = [];
@@ -39,7 +35,6 @@ var conid = null;
 var conlabel = null;
 var user_id = 0;
 var hasManager = false;
-var badgePrinterAvailable = false;
 var receiptPrinterAvailable = false;
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -149,7 +144,6 @@ function start_over(reset_all) {
     pay_button_rcpt = null;
     pay_button_ercpt = null;
     receeiptEmailAddresses_div = null;
-    pay_button_print = null;
     pay_tid = null;
     pay_InitialCart = true;
 
@@ -740,18 +734,20 @@ var last_receipt_type = '';
 // Create a receipt and send it to the receipt printer
 function print_receipt(receipt_type) {
     last_receipt_type = receipt_type;
+    var d = new Date();
+    var payee = (current_person['first_name'] + ' ' + current_person['last_name']).trim();
 
     // header text
-    var header_text = cart.receiptHeader(user_id, pay_tid);
+    var header_text =  "\nReceipt for payment to " + conlabel + "\nat " + d.toLocaleString() + "\nBy: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid + "\n";
     // optional footer text
     var footer_text = '';
     // server side will print the receipt
     var postData = {
         ajax_request_action: 'printReceipt',
         header: header_text,
-        prows: cart.getCartPerinfo(),
-        mrows: cart.getCartMembership(),
-        pmtrows: cart.getCartPmt(),
+        person: current_person,
+        arows: JSON.stringify(cart.getCartArt()),
+        pmtrows: JSON.stringify(cart.getCartPmt()),
         footer: footer_text,
         receipt_type: receipt_type,
         email_addrs: emailAddreesRecipients,
@@ -764,7 +760,7 @@ function print_receipt(receipt_type) {
 
         $.ajax({
             method: "POST",
-            url: "scripts/regpos_printReceipt.php",
+            url: "scripts/artpos_printReceipt.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
                 clear_message();
@@ -813,31 +809,6 @@ function add_shown() {
 }
 
 var emailAddreesRecipients = [];
-var last_email_row = '';
-function toggleRecipientEmail(row) {
-    var emailCheckbox = document.getElementById('emailAddr_' + row.toString());
-    var email_address = cart.getEmail(row);
-    if (emailCheckbox.checked) {
-        if (!emailAddreesRecipients.includes(email_address)) {
-            emailAddreesRecipients.push(email_address);
-        }
-    } else {
-        if (emailAddreesRecipients.includes(email_address)) {
-            for (var index=0; index < emailAddreesRecipients.length; index++) {
-                if (emailAddreesRecipients[index] == email_address)
-                    emailAddreesRecipients.splice(index,  1);
-            }
-        }
-    }
-    pay_button_ercpt.disabled = emailAddreesRecipients.length == 0;
-}
-
-function checkbox_check() {
-    var emailCheckbox = document.getElementById('emailAddr_' + last_email_row.toString());
-    emailCheckbox.checked = true;
-    pay_button_ercpt.hidden = false;
-    pay_button_ercpt.disabled = false;
-}
 
 // show the pay tab, and its current dataset, if first call, update artSales in the database.
 function pay_shown() {
@@ -851,40 +822,26 @@ function pay_shown() {
 
     var total_amount_due = cart.getTotalPrice() - cart.getTotalPaid();
     if (total_amount_due  < 0.01) { // allow for rounding error, no need to round here
-        // nothing more to pay       
-        print_tab.disabled = false;
+        // nothing more to pay
         cart.showNext();
+        cart.hideAdd();
+        add_tab.disabled = true;
         if (pay_button_pay != null) {
             var rownum;
             pay_button_pay.hidden = true;
             pay_button_rcpt.hidden = false;
             var email_html = '';
-            var email_count = 0;
-            last_email_row = -1;
-            var cartlen = cart.getCartLength();
-            rownum = 0;
-            while (rownum < cartlen) {
-                var email_addr = cart.getEmail(rownum);
-                if (emailRegex.test(email_addr)) {
-                    email_html += '<div class="row"><div class="col-sm-1 text-end pe-2"><input type="checkbox" id="emailAddr_' + rownum.toString() +
-                        '" name="receiptEmailAddrList" onclick="toggleRecipientEmail(' + rownum.toString() + ')"/></div><div class="col-sm-8">' +
-                        '<label for="emailAddr_' + rownum.toString() + '">' + email_addr + '</label></div></div>';
-                    email_count++;
-                    last_email_row = rownum;
-                }
-                rownum++;
+            var email_addr = current_person['email_addr'];
+            if (emailRegex.test(email_addr)) {
+                email_html += '<div class="row"><div class="col-sm-1 pe-2"></div><div class="col-sm-8">' + email_addr + '</div></div>';
             }
             if (email_html.length > 2) {
                 pay_button_ercpt.hidden = false;
                 pay_button_ercpt.disabled = false;
-                receeiptEmailAddresses_div.innerHTML = '<div class="row mt-2"><div class="col-sm-9 p-0">Email receipt to:</div></div>' +
-                    email_html;
-                if (email_count == 1) {
-                    emailAddreesRecipients.push(cart.getEmail(last_email_row));
-                    setTimeout(checkbox_check, 100);
-                }
+                pay_button_ercpt.disabled = false;
+                receeiptEmailAddresses_div.innerHTML = '<div class="row mt-2"><div class="col-sm-9 p-0">Email receipt to:</div></div>' + email_html;
+                emailAddreesRecipients.push(current_person['email_addr']);
             }
-            pay_button_print.hidden = false;
             document.getElementById('pay-amt').value='';
             document.getElementById('pay-desc').value='';
             document.getElementById('pay-amt-due').innerHTML = '';
@@ -900,7 +857,6 @@ function pay_shown() {
             pay_button_rcpt.hidden = true;
             pay_button_ercpt.hidden = true;
             pay_button_ercpt.disabled = true;
-            pay_button_print.hidden = true;
         }
 
         // draw the pay screen
@@ -966,9 +922,6 @@ function pay_shown() {
         <div class="col-sm-auto ms-0 me-2 p-0">
             <button class="btn btn-primary btn-sm" type="button" id="pay-btn-rcpt" onclick="print_receipt('print');" hidden>Print Receipt</button>
         </div>
-        <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-print" onclick="goto_print();" hidden>Print Badges</button>
-        </div>
     </div>
     <div id="receeiptEmailAddresses" class="container-fluid"></div>
   </form>
@@ -985,7 +938,6 @@ function pay_shown() {
         receeiptEmailAddresses_div = document.getElementById('receeiptEmailAddresses');
         if (receeiptEmailAddresses_div)
             receeiptEmailAddresses_div.innerHTML = '';
-        pay_button_print = document.getElementById('pay-btn-print');
         if (cart.getPmtLength() > 0) {
             cart.hideStartOver();
         } else {

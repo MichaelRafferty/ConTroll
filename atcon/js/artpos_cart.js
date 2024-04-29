@@ -259,7 +259,7 @@ class artpos_cart {
         // Title
         rowhtml += '<div class="row"><div class="col-sm-2">Title: ' + '</div><div class="col-sm-10">' + row['title'] + '</div></div>';
         // Material
-        rowhtml += '<div class="row"><div class="col-sm-2">Mateiral: ' + '</div><div class="col-sm-10">' + row['material'] + '</div></div>';
+        rowhtml += '<div class="row"><div class="col-sm-2">Material: ' + '</div><div class="col-sm-10">' + row['material'] + '</div></div>';
         // price
         var priceType = 'Final';
         if (row['type'] == 'print') {
@@ -410,12 +410,5 @@ class artpos_cart {
 // redraw the cart with the new id's and maps, which will compute the unpaid_rows.
         cart.drawCart();
         return this.#unpaid_rows;
-    }
-
-// receiptHeader - retrieve receipt header info from cart[0]
-    receiptHeader(user_id, pay_tid) {
-        var d = new Date();
-        var payee = (this.#cart_art[0]['first_name'] + ' ' + this.#cart_art[0]['last_name']).trim();
-        return "\nReceipt for payment to " + conlabel + "\nat " + d.toLocaleString() + "\nBy: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid;
     }
 }
