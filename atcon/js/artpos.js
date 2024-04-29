@@ -17,6 +17,10 @@ var stats_div = null;
 // art items
 var add_found_div = null;
 var artFoundItems = null;
+var itemCode_field = null;
+var artistNumber_field = null;
+var pieceNumber_field = null;
+var unitNumber_field = null;
 
 // pay items
 var pay_div = null;
@@ -64,6 +68,7 @@ window.onload = function initpage() {
     id_div = document.getElementById("find_results");
     stats_div = document.getElementById("stats-div");
 
+    artistNumber_field = document.getElementById("artistNumber");
     itemCode_field = document.getElementById("itemCode");
     itemCode_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') findArt('code'); });
     pieceNumber_field = document.getElementById("pieceNumber");
@@ -334,22 +339,22 @@ function findArt(findType) {
 
     switch (findType) {
         case 'code':
-            itemCode = document.getElementById('itemCode').value;
+            itemCode = itemCode_field.value;
             var fields = itemCode.split(',');
             itemId = fields[0];
             unitNumber = fields[1];
             break;
 
         case 'unit':
-            unitNumber = document.getElementById('unitNumber').value;
+            unitNumber = unitNumber_field.value;
         // fall into piece
         case 'piece':
-            artistNumber = document.getElementById('artistNumber').value;
-            pieceNumber = document.getElementById('pieceNumber').value;
+            artistNumber = artistNumber_field.value;
+            pieceNumber = pieceNumber_field.value;
             break;
 
         default:
-            itemCode = document.getElementById('itemCode').value;
+            itemCode = itemCode_field.value;
             if (itemCode != null && itemCode != '') {
                 var fields = itemCode.split(',');
                 itemId = fields[0];
@@ -357,11 +362,11 @@ function findArt(findType) {
             } else {
                 itemCode = null;
             }
-            artistNumber = document.getElementById('artistNumber').value;
+            artistNumber = artistNumber_field.value;
             if (artistNumber == '') {
                 artistNumber = null;
             }
-            pieceNumber = document.getElementById('pieceNumber').value;
+            pieceNumber = pieceNumber_field.value;
             if (pieceNumber == '') {
                 pieceNumber = null;
             }
@@ -893,6 +898,10 @@ function add_shown() {
     }
     cart.showStartOver();
     pay_InitialCart = true;
+    artistNumber_field.value = null;
+    pieceNumber_field.value = null;
+    unitNumber_field.value = null;
+    itemCode_field.value = null;
 }
 
 var emailAddreesRecipients = [];
