@@ -157,7 +157,7 @@ foreach ($cart_art as $cart_row) {
         $upd_rows += dbSafeCmd($updArtSalesSQL, $atypestr, array($cart_row['paid'], $master_tid, $quantity, $cart_row['artSalesId']));
 
         // change status of items sold by quick sale to quicksale sold, decrease quantity of print items
-        if (round($amt_paid,2) == round($cart_row['paid'],2)) {
+        if (round($cart_row['amount'],2) == round($cart_row['paid'],2)) {
             $upd_cart += dbSafeCmd($updQuantitySQL, $uqstr, array($quantity, $quantity, $cart_row['id']));
 
             if ($cart_row['priceType'] == 'Quick Sale') {

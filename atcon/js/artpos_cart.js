@@ -248,7 +248,7 @@ class artpos_cart {
         // first row - member name, remove button
         var rowhtml = '<div class="row">';
         rowhtml += '<div class="col-sm-8 text-bg-success">Art Item: ' + artLabel + ' (' + row['type'] + ')</div>';
-        if (!this.#freeze_cart) {
+        if (!this.#freeze_cart && row['paid'] == 0) {
             rowhtml += `
         <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="cart.remove(` + row['id'] + `)">Remove</button></div>
 `;
