@@ -59,7 +59,7 @@ EOS;
         $perid = $response['person']['id'];
         $findArtQ = <<<EOS
 SELECT a.id, a.item_key, a.title, a.type, a.status, a.location, a.quantity, a.original_qty, a.min_price, a.sale_price, a.final_price, a.artshow, a.material, a.bidder,
-       s.id AS artSalesId, s.transid, s.amount, IFNULL(s.paid, 0.00) AS paid, s.quantity AS artSalesQuantity, s.unit, t.id AS create_trans, 1 AS purQuantity,
+       s.id AS artSalesId, s.transid, s.amount, IFNULL(s.paid, 0.00) AS paid, s.quantity AS artSalesQuantity, s.unit, t.id AS create_trans, IFNULL(s.quantity, 1) AS purQuantity,
        exRY.exhibitorNumber, ex.exhibitorName
 FROM artItems a
 JOIN exhibitorRegionYears exRY ON a.exhibitorRegionYearId = exRY.id
@@ -67,7 +67,8 @@ JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 JOIN exhibitors ex ON exY.exhibitorId = ex.id
 LEFT OUTER JOIN artSales s ON a.id = s.artid
 LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid                   
-WHERE (a.bidder = ? OR s.perid = ?) AND a.conid = ? AND a.status IN ('Sold Bid Sheet','Sold at Auction') AND
+WHERE (a.bidder = ? OR s.perid = ?) AND a.conid = ? AND 
+      (a.status IN ('Sold Bid Sheet','Sold at Auction') OR a.type = 'print') AND
       ((t.id IS NULL AND s.transid IS NULL) OR (t.id = s.transid));
 EOS;
         $findArtR = dbSafeQuery($findArtQ, 'iii', array($perid, $perid, $conid));
