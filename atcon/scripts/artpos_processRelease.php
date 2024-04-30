@@ -31,7 +31,7 @@ if (!check_atcon('artsales', $conid)) {
 }
 
 // processPayment
-//  art: art items to mark purchased/released
+//  art: art items to mark Purchased/Released
 //  new_payment: payment being added
 //  pay_tid: current master transaction
 
@@ -58,12 +58,12 @@ if (sizeof($art) <= 0) {
 
 $updArtItemsdSQL = <<<EOS
 UPDATE artItems
-SET status = 'purchased/released'
+SET status = 'Purchased/Released'
 WHERE id = ?;
 EOS;
 $updArtSalesSQL = <<<EOS
 UPDATE artSales
-SET status = 'purchased/released'
+SET status = 'Purchased/Released'
 WHERE id = ?;
 EOS;
 $typestr = 'i';

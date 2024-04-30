@@ -76,7 +76,7 @@ function draw(data, textStatus, jqXHR) {
             {title: 'Q. Sale or Print', field: 'sale_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", },
             {title: 'Orig Qty', field: 'original_qty', headerSort: true, headerFilter: true, headerWordWrap: true, width: 70, hozAlign: "right", },
             {title: 'Current Qty', field: 'quantity', headerSort: true, headerFilter: true, headerWordWrap: true, width: 70, hozAlign: "right", },
-            {title: 'Status', field: 'status', headerSort: true, headerFilter:'list', headerFilterParams: { values: ['Not In Show', 'Checked In', 'NFS', 'BID', 'Quicksale/Sold', 'Removed from Show', 'purchased/released', 'To Auction', 'Sold Bid Sheet', 'Checked Out']}, },
+            {title: 'Status', field: 'status', headerSort: true, headerFilter:'list', headerFilterParams: { values: ['Not In Show', 'Checked In', 'BID', 'Quicksale/Sold', 'Removed from Show', 'Purchased/Released', 'To Auction', 'Sold Bid Sheet', 'Checked Out']}, },
             {title: 'Location', field: 'location', headerSort: true, headerFilter: true, },
             {title: 'Bidder', field: 'bidderText', headerSort: true, headerFilter:true, },
             {title: 'Sale Price', field: 'final_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", },

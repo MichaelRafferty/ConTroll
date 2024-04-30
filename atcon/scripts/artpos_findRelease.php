@@ -58,7 +58,7 @@ JOIN exhibitorRegionYears exRY ON a.exhibitorRegionYearId = exRY.id
 JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 JOIN exhibitors ex ON exY.exhibitorId = ex.id
 JOIN artSales s ON a.id = s.artid                
-WHERE s.perid = ? AND a.conid = ? AND s.amount = s.paid AND s.status != 'purchased/released'
+WHERE s.perid = ? AND a.conid = ? AND s.amount = s.paid AND s.status != 'Purchased/Released'
 EOS;
     $findArtR = dbSafeQuery($findArtQ, 'ii', array($perid, $conid));
     $art = [];

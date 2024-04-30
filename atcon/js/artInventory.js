@@ -106,7 +106,7 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
 
     switch(item_status) {
         case 'Checked Out':
-        case 'purchased/released':
+        case 'Purchased/Released':
             html += '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'alert\')">N/A</button>';
             // no inventory action, gone
             break;
@@ -143,7 +143,6 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
             break;
         case 'Checked In':
             //sales can sell
-        case 'NFS':
             // inventory or check out
             if(mode == 'artinventory') {
                 html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button>';
