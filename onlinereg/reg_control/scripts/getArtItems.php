@@ -25,7 +25,7 @@ if(array_key_exists('region', $_GET)) {$region = $_GET['region']; }
 else { ajaxError('No Data'); } 
 
 $artQ = <<<EOS
-SELECT I.item_key, I.title, I.type, I.status, I.location, I.quantity, I.original_qty, I.min_price, I.sale_price, I.final_price, I.bidder,
+SELECT I.id, I.item_key, I.title, I.type, I.status, I.location, I.quantity, I.original_qty, I.min_price, I.sale_price, I.final_price, I.bidder,
     ery.exhibitorNumber, ery.locations, e.exhibitorName,
     concat(trim(p.first_name), ' ', trim(p.last_name)) as bidderName,
     concat(trim(p.first_name), ' ', trim(p.last_name), ' (', I.bidder, ')') as bidderText
@@ -47,7 +47,7 @@ $items=array();
     }
 
 $artistQ = <<<EOS
-SELECT DISTINCT e.exhibitorName, ery.id as exhibitorRegionYearId, ery.exhibitorNumber
+SELECT DISTINCT e.exhibitorName, ery.id as exhibitorRegionYearId, ery.exhibitorNumber, ery.locations
 FROM exhibitorYears ey 
     JOIN exhibitorRegionYears ery ON ery.exhibitorYearId = ey.id
     JOIN exhibitors e ON ey.exhibitorId=e.id

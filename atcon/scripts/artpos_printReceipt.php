@@ -1,8 +1,8 @@
 <?php
-// library AJAX Processor: printform_printReceipt.php
-// Balticon Registration System
+// library AJAX Processor: artpos_printReceipt.php
+// ConTroll Registration System
 // Author: Syd Weinstein
-// Print a receipt from the POS
+// Print a receipt from the Art Sales POS
 
 require_once('../lib/base.php');
 require_once('../lib/badgePrintFunctions.php');
@@ -25,7 +25,7 @@ if ($ajax_request_action != 'printReceipt') {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
-if (!check_atcon('cashier', $conid)) {
+if (!check_atcon('artsales', $conid)) {
     $message_error = 'No permission.';
     RenderErrorAjax($message_error);
     exit();
@@ -34,19 +34,10 @@ if (!check_atcon('cashier', $conid)) {
 // printReceipt: print the text receipt "text", if printer name starts with 0, then just log the receipt
 $header = $_POST['header'];
 
-try {
-    $prows = json_decode($_POST['prows'], true, 512, JSON_THROW_ON_ERROR);
-}
-catch (Exception $e) {
-    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
-    $response['error'] = $msg;
-    error_log($msg);
-    ajaxSuccess($response);
-    exit();
-}
+$person = $_POST['person'];
 
 try {
-    $mrows = json_decode($_POST['mrows'], true, 512, JSON_THROW_ON_ERROR);
+    $arows = json_decode($_POST['arows'], true, 512, JSON_THROW_ON_ERROR);
 }
 catch (Exception $e) {
     $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
@@ -78,30 +69,26 @@ $dolfmt = new NumberFormatter("", NumberFormatter::CURRENCY);
 // start with header
 $receipt = $header . "\n";
 // cart rows, only added to printout:
-$already_paid = 0;
 $total_due = 0;
 
-foreach ($prows as $prow) {
-    $receipt .= "\nMember: " . trim($prow['first_name'] . ' ' . $prow['last_name']) . "\n";
-    $member_due = 0;
-    foreach ($mrows as $mrow) {
-        if ($mrow['perid'] == $prow['perid']) {
-            $receipt .= "   " . $mrow['label'] . ", " . $dolfmt->formatCurrency((float) $mrow['price'], 'USD') . "\n";
-            if (array_key_exists('prior_paid', $mrow))
-                $already_paid += $mrow['prior_paid'];
-            $member_due += $mrow['price'];
-        }
+foreach ($arows as $arow) {
+    $receipt .= "Art Item: " . $arow['exhibitorNumber'] . '-' . $arow['item_key'] . ' (' . $arow['type'] . ')' . PHP_EOL;
+    // Artist
+    $receipt .= '     Artist: ' . $arow['exhibitorName'] . PHP_EOL;
+    $receipt .= '     Title: ' . $arow['title'] . PHP_EOL;
+    // Material
+    $receipt .= '     Material: ' . $arow['material'] . PHP_EOL;
+    if ($arow['type'] == 'print') {
+        $receipt .= '     Quantity: ' . $arow['purQuantity'] . ' at ' . $dolfmt->formatCurrency((float) $arow['sale_price'], 'USD') . ' each' . PHP_EOL;
+        $arow['final_price'] = $arow['sale_price'] * $arow['purQuantity'];
     }
-    $member_due = round($member_due, 2);
-    $receipt .= "   Subtotal: " . $dolfmt->formatCurrency($member_due, 'USD') . "\n";
-    $total_due += $member_due;
+    // price
+    $receipt .= $arow['priceType'] . ' Price: ' . $dolfmt->formatCurrency((float) $arow['final_price'], 'USD') . PHP_EOL . PHP_EOL;
+
+    $total_due += $arow['final_price'];
 }
 $receipt .= "Total Due:   " . $dolfmt->formatCurrency((float) $total_due, 'USD') . "\n\nPayment   Amount Description/Code\n";
 $total_pmt = 0;
-if ($already_paid > 0) {
-    $total_pmt += $already_paid;
-    $receipt .= sprintf("prior%15s Already Paid\n", $dolfmt->formatCurrency($already_paid, 'USD'));
-}
 
 foreach ($pmtrows as $pmtrow) {
     $type = $pmtrow['type'];
@@ -117,10 +104,8 @@ foreach ($pmtrows as $pmtrow) {
     $receipt .= $line . "\n";
     $total_pmt += $pmtrow['amt'];
 }
-$endtext = "\n";
-if (array_key_exists('endtext', $con))
-    $endtext = $con['endtext'] . "\n";
-$receipt .= "         ----------\n" . sprintf("total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, 'USD')) . "\n$footer\n" . "\n" . $endtext . "\n\n\n";
+$endtext = "\nThank you for your purchase. All sales are final. There are no refunds or exchanges.\n";
+$receipt .= "         ----------\n" . sprintf("Total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, 'USD')) . "\n$footer\n" . "\n" . $endtext . "\n\n\n";
 
 if ($receipt_type == 'print') {
     if (isset($_SESSION['receiptPrinter'])) {

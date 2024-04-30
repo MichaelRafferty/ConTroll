@@ -72,7 +72,7 @@ $conLen = $conConf['conLen'];
 
 if(isset($_GET['conid'])) {
     $conid=$_GET['conid'];
-    $con = fetch_safe_assoc(dbSafeQuery("SELECT * FROM conlist WHERE id=?;", 'i', array($conid)));
+    $con = dbSafeQuery('SELECT * FROM conlist WHERE id=?;', 'i', array($conid))->fetch_assoc();
 } else {
     $con = get_con();
     $conid= $con['id'];
@@ -120,7 +120,7 @@ EOF;
             'prereg'=>array(),
             'yearahead'=>array()
         );
-        while($badge = fetch_safe_assoc($badgeR)) {
+        while($badge = $badgeR)->fetch_assoc() {
             if($badge['conid'] > $conid) {
                 if(isset($badgeList['yearahead'][$badge['label']])) {
                     $badgeList['yearahead'][$badge['label']] += 1;
@@ -152,7 +152,7 @@ GROUP BY M.shortname, M.id
 ORDER BY M.id;
 EOS;
         $preregR = dbSafeQuery($preregQ, 'i', array($conid));
-        while ($prereg = fetch_safe_assoc($preregR)) {
+        while ($prereg = $preregR->fetch_assoc()) {
             if(isset($badgeList['prereg'][$prereg['label']])) {
                 $badgeList['prereg'][$prereg['label']] += $prereg['c'];
             } else {
@@ -184,7 +184,7 @@ EOS;
         $histogram = array(); //sub arrays 'expired', 'oneday', 'full', 'trans'
         $acc = array('expired'=>0, 'oneday'=>0, 'full'=>0);
         $lastdiff = 0;
-        while($histo = fetch_safe_assoc($histoR)) {
+        while($histo = $histoR->fetch_assoc()) {
             if(!isset($histogram[$histo['time']])) {
                 $histogram[$histo['time']] = array(
                     'expired'=>$acc['expired'],
@@ -222,7 +222,7 @@ GROUP BY t;
 EOF;
         $staffR = dbSafeQuery($staffQ, 'i', array($conid));
         $staffing = array();
-        while($staff = fetch_safe_assoc($staffR)) {
+        while($staff = $staffR->fetch_assoc()) {
             array_push($staffing, $staff);
         }
 
@@ -253,7 +253,7 @@ ORDER BY paid DESC, memCategory DESC, memType ASC, memAge ASC;
 EOF;
         $response['query'] = $query;
         $res = dbSafeQuery($query, 'i', array($conid));
-        while($resA = fetch_safe_assoc($res)) {
+        while($resA = $res->fetch_assoc()) {
             $cat = $resA['cat']; // membership category (standard, premium)
             $type = $resA['type']; // membership type (full, one-day)
             $age = $resA['age']; // memberhsip age (adult, child, any)
@@ -269,7 +269,7 @@ WHERE id=?;
 EOF;
 
         $dayRegA = dbSafeQuery($dayRegQ, 'i', array($conid));
-        $dayReg = fetch_safe_array($dayRegA);
+        $dayReg = $dayRegA->fetch_array();
         if ($dayReg > 0) $response['today'] = $dayReg[0] - $conLen;
 
         break;
@@ -283,7 +283,7 @@ EOQ;
         $maxRegA = dbSafeQuery($maxRegQ, 'i', array($conid));
 
         $response['maxReg'] = array();
-        while($row = fetch_safe_assoc($maxRegA)) {
+        while($row = $maxRegA->fetch_assoc()) {
             array_push($response['maxReg'], $row);
         }
         break;
@@ -296,7 +296,7 @@ WHERE id=?;
 EOF;
 
         $dayRegA = dbSafeQuery($dayRegQ, 'i', array($conid));
-        $dayReg = fetch_safe_array($dayRegA);
+        $dayReg = $dayRegA->fetch_array();
         $response['today'] = $dayReg[0];
         $statArray = array();
         for ($i=$maxLen; $i >=$conLen; $i--) {
@@ -316,7 +316,7 @@ EOF;
 
             $inner .= "FROM history WHERE diff > $i group by conid";
             $pivot_col .= "FROM ($inner) i";
-            $res = fetch_safe_array(dbQuery($pivot_col));
+            $res = $pivot_col->fetch_array(dbQuery());
 $response['statQuery'] = $pivot_col;
 
             $diff = (int)$res[0];
@@ -352,7 +352,7 @@ $response['statQuery'] = $pivot_col;
             . ", sum(cnt_all) as total, sum(cnt_paid) as paid"
             . " FROM history WHERE conid = ? and diff is not null;";
         $currentR = dbQuery($currentQ, 'i', array($conid));
-        $currentA = fetch_safe_assoc($currentR);
+        $currentA = $currentR->fetch_assoc();
         $diff = $currentA['diff'];
         $inputQ = "SELECT conid, sum(cnt_all) as total, sum(cnt_paid) as paid"
             . " FROM history WHERE conid < $conid AND diff >= $diff"
@@ -371,13 +371,13 @@ $response['statQuery'] = $pivot_col;
         $inputA = array();
         $preconA = array();
         $finalA = array();
-        while($iRow = fetch_safe_assoc($inputR)) {
+        while($iRow = $inputR->fetch_assoc()) {
             array_push($inputA, $iRow);
         }
-        while($pRow = fetch_safe_assoc($preconR)) {
+        while($pRow = $preconR->fetch_assoc()) {
             array_push($preconA, $pRow);
         }
-        while($fRow = fetch_safe_assoc($finalR)) {
+        while($fRow = $finalR->fetch_assoc()) {
             array_push($finalA, $fRow);
         }
         $response['current'] = $currentA;

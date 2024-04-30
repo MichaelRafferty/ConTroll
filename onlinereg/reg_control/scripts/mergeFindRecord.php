@@ -91,7 +91,7 @@ EOS;
 
 $perinfo = [];
 $num_rows = $rp->num_rows;
-while ($l = fetch_safe_assoc($rp)) {
+while ($l = $rp->fetch_assoc()) {
     $perinfo[] = $l;
 }
 $response['perinfo'] = $perinfo;

@@ -43,7 +43,16 @@ if ($master_tid <= 0) {
     ajaxError('No current transaction in process');
 }
 
-$cart_membership = $_POST['cart_membership'];
+try {
+    $cart_membership = json_decode($_POST['cart_membership'], true, 512, JSON_THROW_ON_ERROR);
+}
+catch (Exception $e) {
+    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+    $response['error'] = $msg;
+    error_log($msg);
+    ajaxSuccess($response);
+    exit();
+}
 if (sizeof($cart_membership) <= 0) {
     ajaxError('No memberships are in the cart');
     return;

@@ -41,7 +41,7 @@ WHERE id=?;
 EOS;
 
 $conInfoR = dbSafeQuery($conInfoQ, 'i', array($conid));
-$conInfo = fetch_safe_assoc($conInfoR);
+$conInfo = $conInfoR->fetch_assoc();
 $startdate = $conInfo['start'];
 $enddate = $conInfo['end'];
 $method='manager';

@@ -28,7 +28,7 @@ $userQ = "SELECT id,
        TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(first_name, ''), IFNULL(middle_name, ''))), IFNULL(last_name, ''))), IFNULL(suffix, ''))) AS name, 
        badge_name AS badge FROM perinfo WHERE id=?;";
 $userR = dbSafeQuery($userQ, 'i', array($perid));
-$user = fetch_safe_assoc($userR);
+$user = $userR->fetch_assoc();
 $response['id']= $user['id'];
 $response['name'] = $user['name'];
 $response['badge'] = $user['badge'];

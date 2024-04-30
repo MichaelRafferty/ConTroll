@@ -37,7 +37,7 @@ EOS;
 $transRes = dbSafeQuery($transq, 'i', array($transid));
 // check result for price == paid, if not complete, mark it complete
 if ($transRes !== false && mysqli_num_rows($transRes) == 1) {
-    $transArr = fetch_safe_assoc($transRes);
+    $transArr = $transRes->fetch_assoc();
     if ($transArr['price'] == $transArr['paid']) {
         if ((!isset($transArr['complete_date'])) || $transArr['complete_date'] == '') {
             $rows = dbSafeCmd("UPDATE transaction SET complete_date = now() where id = ?;", 'i', array($transid));

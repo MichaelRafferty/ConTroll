@@ -43,7 +43,17 @@ if ($master_tid <= 0) {
     ajaxError('No current transaction in process');
 }
 
-$cart_membership = $_POST['cart_membership'];
+try {
+    $cart_membership = json_decode($_POST['cart_membership'], true, 512, JSON_THROW_ON_ERROR);
+}
+catch (Exception $e) {
+    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+    $response['error'] = $msg;
+    error_log($msg);
+    ajaxSuccess($response);
+    exit();
+}
+
 if (sizeof($cart_membership) <= 0) {
     ajaxError('No memberships are in the cart');
     return;
@@ -67,7 +77,7 @@ if (array_key_exists('change', $_POST)) {
 }
 
 $amt = (float) $new_payment['amt'];
-// validate that the payment ammount is not too large
+// validate that the payment amount is not too large
 $total_due = 0;
 foreach ($cart_membership as $cart_row) {
     if ($cart_row['price'] == '')

@@ -44,7 +44,7 @@ FROM perinfo where id = ?;
 EOQ;
 
 $response['id'] = $id;
-$response['results'] = fetch_safe_assoc(dbSafeQuery($perQ, 'i', array($id)));
+$response['results'] = dbSafeQuery($perQ, 'i', array($id))->fetch_assoc();
 
 ajaxSuccess($response);
 ?>

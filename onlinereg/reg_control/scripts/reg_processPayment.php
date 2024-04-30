@@ -76,7 +76,7 @@ if (array_key_exists('change', $_POST)) {
 }
 
 $amt = (float) $new_payment['amt'];
-// validate that the payment ammount is not too large
+// validate that the payment amount is not too large
 $total_due = 0;
 foreach ($cart_membership as $cart_row) {
     if ($cart_row['price'] == '')
@@ -115,7 +115,7 @@ if ($new_payment['type'] == 'online') {
     if ($amt > 0) {
         $ccauth = get_conf('cc');
         load_cc_procs();
-        $rtn = cc_charge_purchase($cc_params, $ccauth);
+        $rtn = cc_charge_purchase($cc_params, $ccauth, true);
         if ($rtn === null) {
             ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
             exit();

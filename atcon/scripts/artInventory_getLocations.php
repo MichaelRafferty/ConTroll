@@ -33,9 +33,9 @@ EOS;
 $locR = dbSafeQuery($locQ, 'ii', array($conid, $region));
 
 $locations = array();
-while($loc = fetch_safe_assoc($locR)) {
+while($loc = $locR->fetch_assoc()) {
     if(!array_key_exists($loc['exhibitorNumber'], $locations)) {
-        $locations[$loc['exhibitorNumber']] = array();
+        $locations[$loc['exhibitorNumber']] = explode(',',$loc['locations']);
     }
     $locations[$loc['exhibitorNumber']] = array_merge($locations[$loc['exhibitorNumber']], explode(',',$loc['locations']));
 }

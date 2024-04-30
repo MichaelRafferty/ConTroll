@@ -31,7 +31,7 @@ if (!check_atcon($method, $conid)) {
 
 $cdn = getTabulatorIncludes();
 page_init($page, $tab,
-    /* css */ array($cdn['tabcss'], $cdn['tabbs5'], 'css/atcon.css', 'css/registration.css'),
+    /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
     /* js  */ array( ///$cdn['luxon'],
                     $cdn['tabjs'], 'js/regpos_cart.js', 'js/regpos_coupon.js', 'js/regpos.js')
     );

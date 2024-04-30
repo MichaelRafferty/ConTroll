@@ -65,6 +65,7 @@ class regpos_cart {
         filt_cat = new Array('upgrade')
         filt_shortname_regexp = null;
         var match = memList.filter(mem_filter);
+        var nonday = 0;
         for (row in match) {
             var label = match[row]['label'];
             var day = label.replace(/.*upgrade +(...).*/i, '$1').toLowerCase();
@@ -1200,7 +1201,7 @@ class regpos_cart {
         var updated_perinfo = data['updated_perinfo'];
         for (rownum in updated_perinfo) {
             newrow = updated_perinfo[rownum];
-            cartrow = this.#cart_perinfo[newrow['rownum']]
+            cartrow = this.#cart_perinfo[newrow['rownum']];
             cartrow['perid'] = newrow['perid'];
             cartrow['dirty'] = false;
         }

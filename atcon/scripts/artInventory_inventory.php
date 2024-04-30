@@ -133,7 +133,7 @@ EOS;
 UPDATE artItems I 
 JOIN exhibitorRegionYears eRY on eRY.id=I.exhibitorRegionYearId
     JOIN exhibitorYears eY on eY.id=eRY.exhibitorYearId
-SET status='purchased/released' 
+SET status='Purchased/Released' 
 WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $checkInR = dbSafeCmd($checkInQ, 'iii', array($item[1], $conid, $item[0]));

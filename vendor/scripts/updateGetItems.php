@@ -110,18 +110,18 @@ foreach ($data as $index => $row) {
 
 $log = get_conf('log');
 logInit($log['artshow']);
-logwrite("Start of changes made by exhibitor $vendor for year $vendor_year");
+logWrite("Start of changes made by exhibitor $vendor for year $vendor_year");
 $deleted = 0;
 if ($delete_keys != '') {
     $delsql = "DELETE FROM artItems WHERE id in ( $delete_keys );";
     web_error_log("Delete sql = /$delsql/");
     $deleted += dbCmd($delsql);
-    logwrite("Deleted $deleted art items: $delete_keys");
+    logWrite("Deleted $deleted art items: $delete_keys");
 }
 
 $inssql = <<<EOS
-INSERT INTO artItems (item_key, title, material, type, original_qty, quantity, min_price, sale_price, exhibitorRegionYearId) 
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO artItems (item_key, title, material, type, original_qty, quantity, min_price, sale_price, conid, exhibitorRegionYearId) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 $updsql = <<<EOS
 UPDATE artItems SET item_key=?, title=?, material=?, original_qty=?, quantity=?, min_price=?, sale_price=? 
@@ -180,13 +180,13 @@ foreach ($data as $index => $row) {
         $vararray = array($item_key, $title, $material, $qty, $qty, $min_price, $sale_price, $row['id']);
         $numrows = dbSafeCmd($updsql, $typestr, $vararray);
         $updated += $numrows;
-        logwrite(array($updsql, $typestr, $vararray, $numrows));
+        logWrite(array($updsql, $typestr, $vararray, $numrows));
     } else { // new!
-        $typestr = 'isssiiddi';
-        $paramarray =  array($nextItemKey++, $title, $material, $itemType, $qty, $qty, $min_price, $sale_price, $exhibitorRegionYearId);
+        $typestr = 'isssiiddii';
+        $paramarray =  array($nextItemKey++, $title, $material, $itemType, $qty, $qty, $min_price, $sale_price, $conid, $exhibitorRegionYearId);
 
         $numrows = dbSafeCmd($inssql, $typestr, $paramarray);
-        logwrite(array($inssql, $typestr, $paramarray, $numrows));
+        logWrite(array($inssql, $typestr, $paramarray, $numrows));
         if ($numrows !== false) {
             $inserted++;
         }
@@ -197,8 +197,8 @@ if ($data_errors != '') {
 } else {
     $response['message'] = "$itemType updated: $inserted added, $updated changed, $deleted removed.";
 }
-logwrite($response);
-logwrite("End of changes made by exhibitor $vendor for year $vendor_year");
+logWrite($response);
+logWrite("End of changes made by exhibitor $vendor for year $vendor_year");
 
 $itemQ = <<<EOS
 SELECT i.id, item_key, title, material, type, original_qty, min_price, sale_price, status, 0 as uses
