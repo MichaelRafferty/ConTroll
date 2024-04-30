@@ -35,7 +35,7 @@ $locR = dbSafeQuery($locQ, 'ii', array($conid, $region));
 $locations = array();
 while($loc = fetch_safe_assoc($locR)) {
     if(!array_key_exists($loc['exhibitorNumber'], $locations)) {
-        $locations[$loc['exhibitorNumber']] = array();
+        $locations[$loc['exhibitorNumber']] = explode(',',$loc['locations']);
     }
 }
 

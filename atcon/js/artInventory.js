@@ -351,7 +351,7 @@ function draw_cart_row(rownum) {
                 alert("Cannot Sell NFS");
             } else {
                 html += item['id'] + '<br/>' 
-                    + item['name'] + ': ' + item['title'] + '<br/>'
+                    + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
                     + 'Location: ' + location_select + '<br/>'
                     + 'NFS @ ' + item['status'] + '<br/>';
                 action_html += '<br/>';
@@ -365,7 +365,7 @@ function draw_cart_row(rownum) {
             break;
         case 'art':
             html += item['id'] + '<br/>' 
-                + item['name'] + ': ' + item['title'] + '<br/>'
+                + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
                 + 'Location: ' + location_select + '<br/>'
                 + 'Art @ ' + item['status'] + '<br/>';
             action_html += '<br/>';
@@ -407,7 +407,7 @@ function draw_cart_row(rownum) {
             break;
         case 'print':
             html += item['id'] + '<br/>' 
-                + item['name'] + ': ' + item['title'] + '<br/>'
+                + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
                 + 'Location: ' + location_select + '<br/>';
             if(item['need_count']) {
                 html += '<span class="bg-warning">' + item['quantity'] + '</span>'
