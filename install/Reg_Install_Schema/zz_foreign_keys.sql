@@ -61,9 +61,9 @@ ALTER TABLE couponKeys ADD CONSTRAINT `couponkey_usedby_fk` FOREIGN KEY (`usedBy
 ALTER TABLE couponKeys ADD CONSTRAINT `couponkeys_couponid_fk` FOREIGN KEY (`couponId`) REFERENCES `coupon` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE couponKeys ADD CONSTRAINT `couponkeys_createby_fk` FOREIGN KEY (`createBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE couponKeys ADD CONSTRAINT `couponkeys_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE artsales ADD CONSTRAINT `artsales_artitem_fk` FOREIGN KEY (`artid`) REFERENCES `artItems` (`id`) ON UPDATE CASCADE;
-ALTER TABLE artsales ADD CONSTRAINT `artsales_perinfo_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
-ALTER TABLE artsales ADD CONSTRAINT `artsales_transid_fk` FOREIGN KEY (`transid`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE;
+ALTER TABLE artSales ADD CONSTRAINT `artSales_artitem_fk` FOREIGN KEY (`artid`) REFERENCES `artItems` (`id`) ON UPDATE CASCADE;
+ALTER TABLE artSales ADD CONSTRAINT `artSales_perinfo_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
+ALTER TABLE artSales ADD CONSTRAINT `artSales_transid_fk` FOREIGN KEY (`transid`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE;
 ALTER TABLE printers ADD CONSTRAINT `printers_server` FOREIGN KEY (`serverName`) REFERENCES `servers` (`serverName`) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE exhibitsRegionYears ADD CONSTRAINT `ery_conlist_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitsRegionYears ADD CONSTRAINT `ery_exhibitsRegion_fk` FOREIGN KEY (`exhibitsRegion`) REFERENCES `exhibitsRegions` (`id`) ON UPDATE CASCADE;
