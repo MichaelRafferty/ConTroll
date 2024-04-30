@@ -65,7 +65,7 @@ FROM artItems a
 JOIN exhibitorRegionYears exRY ON a.exhibitorRegionYearId = exRY.id
 JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 JOIN exhibitors ex ON exY.exhibitorId = ex.id
-LEFT OUTER JOIN artSales s ON a.id = s.artid
+LEFT OUTER JOIN artSales s ON a.id = s.artid AND IFNULL(s.paid, 0) != IFNULL(s.amount, 0)
 LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid                   
 WHERE (a.bidder = ? OR s.perid = ?) AND a.conid = ? AND 
       (a.status IN ('Sold Bid Sheet','Sold at Auction') OR a.type = 'print') AND

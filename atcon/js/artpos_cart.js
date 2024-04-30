@@ -230,8 +230,8 @@ class artpos_cart {
     // update Row quantity - and reprice item
     updateRowQuantity(rowid) {
         var newqty = document.getElementById('purQuantity_' + rowid).value;
-        console.log(newqty);
-        console.log(this.#cart_art_map);
+        //console.log(newqty);
+        //console.log(this.#cart_art_map);
         var row = this.#cart_art[this.#cart_art_map.get(rowid)];
         if (newqty > row['quantity'] && newqty != row['purQuantity']) {
             if (!confirm("Only " + row['quantity'] + " are available, are you sure?")) {
