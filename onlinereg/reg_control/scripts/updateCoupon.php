@@ -24,24 +24,10 @@ if (!array_key_exists('couponId', $_POST)) {
 
 $con = get_conf('con');
 $conid = $con['id'];
-
-// get the user id for createdby
-$usergetQ = <<<EOS
-SELECT id
-FROM user
-WHERE email = ?;
-EOS;
-$userid = null;
-$usergetR = dbSafeQuery($usergetQ, 's', array($user_email));
-if ($usergetR !== false) {
-    $userL = $usergetR->fetch_assoc();
-    if ($userL) {
-        $userid = $userL['id'];
-    }
-}
+$user_perid = $_SESSION['user_perid'];
 
 // check for required fields
-$paramarray = array($userid);
+$paramarray = array($user_perid);
 $missingfields = '';
 $fields = 'code,name,oneUse,couponType,discount';
 foreach (explode(',', $fields) as $field) {

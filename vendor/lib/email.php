@@ -147,17 +147,19 @@ function payment($results) {
             "Special Requests:\n" . $results['specialrequests'] . "\n\n";
 
         $body .= "Memberships purchased at this time:\n\n";
-        if (array_key_exists('formbadges', $results) && is_array($results['formbadges'])) foreach ($results['formbadges'] as $badge) {
-            if ($badge['type'] == 'i')
-                $body .= "Included membership " . $badge['index'] . ":\n     ";
-            else
-                $body .= "Additional membership ". $badge['index'] . ": for " . $dolfmt->formatCurrency($badge['price'], 'USD') .  "\n     ";
-            $body .= $badge['fname'] . ' ' . ltrim($badge['mname'] . ' ') . $badge['lname'] . ' ' . $badge['suffix'] . "\n     " .
-                $badge['addr'] . "\n     ";
-            if ($badge['addr2'] && $badge['addr2'] != '')
-                $body .= $badge['addr2'] . "\n     ";
-            $body .= $badge['city'] . ', ' . $badge['state'] . ' ' . $badge['zip'] . ' ' . $badge['country'] . "\n     " .
-                'Badgename: ' . $badge['badgename'] . "\n\n";
+        if (array_key_exists('formbadges', $results) && is_array($results['formbadges'])) {
+            foreach ($results['formbadges'] as $badge) {
+                if ($badge['type'] == 'i')
+                    $body .= "Included membership " . $badge['index'] . ":\n     ";
+                else
+                    $body .= "Additional membership " . $badge['index'] . ": for " . $dolfmt->formatCurrency($badge['price'], 'USD') . "\n     ";
+                $body .= $badge['fname'] . ' ' . ltrim($badge['mname'] . ' ') . $badge['lname'] . ' ' . $badge['suffix'] . "\n     " .
+                    $badge['addr'] . "\n     ";
+                if ($badge['addr2'] && $badge['addr2'] != '')
+                    $body .= $badge['addr2'] . "\n     ";
+                $body .= $badge['city'] . ', ' . $badge['state'] . ' ' . $badge['zip'] . ' ' . $badge['country'] . "\n     " .
+                    'Badgename: ' . $badge['badgename'] . "\n\n";
+            }
         }
 
         $body .= "Total amount: " . $dolfmt->formatCurrency($results['total'], 'USD') . "\n\n" .

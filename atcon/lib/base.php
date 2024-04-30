@@ -98,11 +98,6 @@ function page_init($title, $tab, $css, $js)
                                             <a class="nav-link navitem <?php echo $tab == "cashier" ? "active" : ""; ?>" <?php echo $tab == "cashier" ? 'aria-current="page"' : ""; ?> href="regpos.php?mode=cashier">Reg Cashier</a>
                                         </li>
                                         <?php  }
-                                        if (in_array('artshow', $perms)) { ?>
-                                        <li>
-                                            <a class="nav-link navitem <?php echo $tab == "artshow" ? "active" : ""; ?>" <?php echo $tab == "artshow" ? 'aria-current="page"' : ""; ?> href="artsales.php">Artshow Cashier</a>
-                                        </li>
-                                        <?php  }
                                         if (in_array('manager', $perms)) { ?>
                                         <li>
                                             <a class="nav-link navitem <?php echo $tab == "printform" ? "active" : ""; ?>" <?php echo $tab == "printform" ? 'aria-current="page"' : ""; ?> href="printform.php">Printform</a>
@@ -120,15 +115,16 @@ function page_init($title, $tab, $css, $js)
                                             <a class="nav-link navitem <?php echo $tab == "atconArtInventory" ? "active" : ""; ?>" <?php echo $tab == "atconArtInventory" ? 'aria-current="page"' : ""; ?> href="artInventory.php?mode=inventory">Art Inventory</a>
                                         </li>
                                         <?php  } 
-                                        if (in_array('manager', $perms)) { ?>
+                                        if (in_array('artsales', $perms)) { ?>
                                         <li>
-                                            <a class="nav-link navitem <?php echo $tab == "artsales" ? "active" : ""; ?>" <?php echo $tab == "artsales" ? 'aria-current="page"' : "" ?> href="newArtSales.php?mode=sales">New Art Show Cashier</a>
+                                            <a class="nav-link navitem <?php echo $tab == "artsales" ? "active" : ""; ?>" <?php echo $tab == "artsales" ? 'aria-current="page"' : "" ?> href="artpos.php">Art Show Cashier</a>
                                         </li>
+                                        <? }
+                                        if (in_array('manager', $perms)) { ?>
                                         <li>
                                             <a class="nav-link navitem <?php echo $tab == "admin" ? "active" : ""; ?>" <?php echo $tab == "admin" ? 'aria-current="page"' : ""; ?> href="admin.php">Administrator</a>
                                         </li>
-                                        <?php  } 
-                                        ?>
+                                        <?php  } ?>
                                         <li>
                                             <a class="nav-link navitem" <?php echo $tab == "change_password" ? "active" : ""; ?>" <?php echo $tab == "change_password" ? 'aria-current="page"' : ""; ?> href="index.php?action=change_passwd">Change Password</a>
                                         </li>

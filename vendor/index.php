@@ -184,8 +184,8 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
     // handle login submit
     $login = strtolower(sql_safe($_POST['si_email']));
     $loginQ = <<<EOS
-SELECT e.id, e.exhibitorName, e.exhibitorEmail as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
-       ey.contactEmail AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview
+SELECT e.id, e.exhibitorName, LOWER(e.exhibitorEmail) as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
+       LOWER(ey.contactEmail) AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
 WHERE (e.exhibitorEmail=? OR ey.contactEmail = ?) AND conid = ?;
@@ -206,6 +206,7 @@ EOS;
             if (password_verify($_POST['si_password'], $result['cPassword'])) {
                 $result['loginType'] = 'c';
                 $matches[] = $result;
+                $found = true;
             }
         }
     }
@@ -435,7 +436,7 @@ draw_passwordModal();
 draw_exhibitorRequestModal();
 draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $cc, $portalName, $portalType);
 draw_exhibitorReceiptModal($portalType);
-draw_itemRegistrationModal($portalType);
+draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf['artcontrol']);
 ?>
     <!-- now for the top of the form -->
      <div class='container-fluid'>

@@ -1,7 +1,7 @@
 <?php
 
 //draw the item registration modal
-function draw_itemRegistrationModal($portalType = '') {
+function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showcontrol=false) {
     if($portalType != 'artist') {
         return;
     }

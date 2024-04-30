@@ -31,7 +31,7 @@ if (!check_atcon($method, $conid)) {
 
 $cdn = getTabulatorIncludes();
 page_init($page, $tab,
-    /* css */ array($cdn['tabcss'], $cdn['tabbs5'], 'css/atcon.css', 'css/registration.css'),
+    /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
     /* js  */ array( ///$cdn['luxon'],
                     $cdn['tabjs'], 'js/regpos_cart.js', 'js/regpos_coupon.js', 'js/regpos.js')
     );
@@ -91,7 +91,7 @@ page_init($page, $tab,
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-sm-12" id="find_results">
+                                <div class="col-sm-12 ms-0 me-0" id="find_results">
                                 </div>
                             </div>
                         </div>
@@ -210,7 +210,7 @@ page_init($page, $tab,
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-sm-12" id="add_results">
+                                <div class="col-sm-12 ms-0 me-0" id="add_results">
                             </div>
                             </div>
                             <div class="row">

@@ -52,7 +52,7 @@ $first = true;
 // compute delete keys in the array and redo the sort order
 $sort_order = 10;
 foreach ($data as $index => $row ) {
-    if (array_key_exists('to_delete', $row) && ($row['to_delete'] == 1) && array_key_exists($keyfield, $row)) {
+    if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists($keyfield, $row)) {
         $delete_keys .= ($first ? "'" : ",'") . sql_safe($row[$keyfield]) . "'";
         $first = false;
     } else {

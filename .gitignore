@@ -18,6 +18,7 @@
 /atcon/ps
 /onlinereg/images/
 /vendor/images/
+/install/Reg_Install_Schema/old/
 
 # stuff for local overrides
 .htaccess

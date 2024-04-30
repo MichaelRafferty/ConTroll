@@ -141,7 +141,7 @@ else
     $authR = dbQuery($authQ);
 
     $auth_set = array(); $auth_num = array();
-    while($auth = fetch_safe_assoc($authR)) {
+    while($auth = $authR->fetch_assoc()) {
         $auth_set[$auth['name']] = $auth['id'];
         $auth_num[$auth['id']] = $auth['name'];
     }
@@ -149,7 +149,7 @@ else
     $pairQ = "SELECT * from user_auth;";
     $pairR = dbQuery($pairQ);
     $user_auth = array();
-    while($pair = fetch_safe_assoc($pairR)) {
+    while($pair = $pairR->fetch_assoc()) {
         $user_auth[$pair['user_id']][$pair['auth_id']] = true;
     }
 
@@ -216,7 +216,7 @@ else
                 </thead>
                 <tbody>
                     <?php
-    while($user = fetch_safe_assoc($userR)) {
+    while($user = $userR->fetch_assoc()) {
         $lookup_str = '';
         if ((!array_key_exists('perid', $user)) || $user['perid'] === null || $user['perid'] == '') {
             $updateFcn = 'updatePerid';

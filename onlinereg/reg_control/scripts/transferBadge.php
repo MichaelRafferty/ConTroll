@@ -15,8 +15,8 @@ if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     exit();
 }
 
-if (array_key_exists('user_id', $_SESSION)) {
-    $user_id = $_SESSION['user_id'];
+if (array_key_exists('user_perid', $_SESSION)) {
+    $user_perid = $_SESSION['user_perid'];
 } else {
     ajaxError('Invalid credentials passed');
     return;
@@ -43,13 +43,13 @@ if ($checkR->num_rows < 1) {
     return;
 }
 
-$tType = 'regctl-adm-tfr/' . $user_id;
-$notes = "Transfer from $from_person to $to by $user_id";
+$tType = 'regctl-adm-tfr/' . $user_perid;
+$notes = "Transfer from $from_person to $to by $user_perid";
 $insertT = <<<EOS
 INSERT INTO transaction(conid, perid, userid, create_date, complete_date, price, couponDiscount, paid, type, notes ) 
 VALUES (?, ?, ?, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 0, 0, 0, ?, ?);
 EOS;
-$newtid = dbSafeInsert($insertT, 'iiiss', array($conid, $to, $user_id, $tType, $notes));
+$newtid = dbSafeInsert($insertT, 'iiiss', array($conid, $to, $user_perid, $tType, $notes));
 if ($newtid === false) {
     $response['error'] = "Failed to insert transfer transaction";
     ajaxSuccess($response);

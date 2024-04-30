@@ -1,0 +1,2 @@
+alter table payments modify column category enum('reg', 'artshow', 'vendor', 'other');
+

@@ -56,8 +56,8 @@ JOIN perinfo AS P ON P.id=A.artist
 WHERE conid=?
 ORDER by art_key;
 EOS;
-            $artistL = dbSafeQuery($artistQ, 'i', array($conid));
-            while($artist = fetch_safe_assoc($artistL)) {
+            $artistR = dbSafeQuery($artistQ, 'i', array($conid));
+            while($artist = $artistR->fetch_assoc()) {
                 printf("<option value = '%s'>%s (%s)</option>",
                     $artist['id'], $artist['name'], $artist['art_key']);
             }
