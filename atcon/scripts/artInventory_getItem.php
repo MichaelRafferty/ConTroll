@@ -50,7 +50,7 @@ if($item == '') {
 
 $itemR = dbSafeQuery($itemQ, $itemI, $itemP);
 $itemArr = [];
-while($newItem = fetch_safe_assoc($itemR)) {
+while($newItem = $itemR->fetch_assoc()) {
     $itemArr[] = $newItem;
 }
 

@@ -106,7 +106,7 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
 
     switch(item_status) {
         case 'Checked Out':
-        case 'purchased/released':
+        case 'Purchased/Released':
             html += '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'alert\')">N/A</button>';
             // no inventory action, gone
             break;
@@ -143,7 +143,6 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
             break;
         case 'Checked In':
             //sales can sell
-        case 'NFS':
             // inventory or check out
             if(mode == 'artinventory') {
                 html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button>';
@@ -351,7 +350,7 @@ function draw_cart_row(rownum) {
                 alert("Cannot Sell NFS");
             } else {
                 html += item['id'] + '<br/>' 
-                    + item['name'] + ': ' + item['title'] + '<br/>'
+                    + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
                     + 'Location: ' + location_select + '<br/>'
                     + 'NFS @ ' + item['status'] + '<br/>';
                 action_html += '<br/>';
@@ -365,7 +364,7 @@ function draw_cart_row(rownum) {
             break;
         case 'art':
             html += item['id'] + '<br/>' 
-                + item['name'] + ': ' + item['title'] + '<br/>'
+                + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
                 + 'Location: ' + location_select + '<br/>'
                 + 'Art @ ' + item['status'] + '<br/>';
             action_html += '<br/>';
@@ -407,7 +406,7 @@ function draw_cart_row(rownum) {
             break;
         case 'print':
             html += item['id'] + '<br/>' 
-                + item['name'] + ': ' + item['title'] + '<br/>'
+                + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
                 + 'Location: ' + location_select + '<br/>';
             if(item['need_count']) {
                 html += '<span class="bg-warning">' + item['quantity'] + '</span>'

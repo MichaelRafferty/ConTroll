@@ -209,6 +209,13 @@ foreach ($badges as $badge) {
             $badge['contact'] = 'Y';
         }
 
+        // fix the badge phone number to remove the L-R character if present
+        $phone = trim($badge['phone']);
+        if ($phone != null && $phone != '') {
+            $phone = preg_replace('/' . mb_chr(0x202d) . '/', '',  $phone);
+            $badge['phone'] = $phone;
+        }
+
 // see if there is an exact match
 
 // now resolve exact matches
@@ -379,16 +386,16 @@ $results = array(
 //log requested badges
 logWrite(array('con'=>$condata['name'], 'trans'=>$transid, 'results'=>$results, 'request'=>$badges));
 if ($total > 0) {
-    $rtn = cc_charge_purchase($results, $ccauth);
+    $rtn = cc_charge_purchase($results, $ccauth, true);
     if ($rtn === null) {
         // note there is no reason cc_charge_purchase will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        logwrite(array('con'=>$condata['name'], 'trans'=>$transid, 'error' => 'Credit card transaction not approved'));
+        logWrite(array('con'=>$condata['name'], 'trans'=>$transid, 'error' => 'Credit card transaction not approved'));
         ajaxSuccess(array('status' => 'error', 'error' => 'Credit card not approved'));
         exit();
     }
 
 //$tnx_record = $rtn['tnx'];
-    logwrite(array('con'=>$condata['name'], 'trans'=>$transid, 'ccrtn'=>$rtn));
+    logWrite(array('con'=>$condata['name'], 'trans'=>$transid, 'ccrtn'=>$rtn));
     $num_fields = sizeof($rtn['txnfields']);
     $val = array();
     for ($i = 0; $i < $num_fields; $i++) {

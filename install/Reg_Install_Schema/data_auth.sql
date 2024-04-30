@@ -31,6 +31,6 @@ INSERT INTO `auth` VALUES
     (18,'atcon_register','N','N'),
     (19,'coupon','Y','Coupon'),
     (32,'vendor','Y','Exhibitors'),
-    (999,'registration-old','Y','Old Reg');
+    (999,'registration-old','N','Old Reg');
 ALTER TABLE `auth` ENABLE KEYS ;
 UNLOCK TABLES;

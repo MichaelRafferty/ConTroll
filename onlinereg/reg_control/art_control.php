@@ -8,18 +8,18 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
 
+$cdn = getTabulatorIncludes();
+
 page_init($page,
     /* css */ array('css/base.css',
-                    'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
-                    //'css/art_control.css'
-                   ),
-    /* js  */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js',
-                    'js/d3.js',
-                    'js/base.js',
-                    //'js/table.js',
-                    'js/art_control.js'
-                   ),
-              $need_login);
+        $cdn['tabcss'],
+    ),
+    /* js  */ array('js/d3.js',
+        'js/base.js',
+        $cdn['tabjs'],
+        'js/art_control.js',
+    ),
+    $need_login);
 
 $con = get_con();
 $conid = $con['id'];

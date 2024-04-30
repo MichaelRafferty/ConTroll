@@ -4,130 +4,56 @@ var cart = null;
 // tab fields
 var find_tab = null;
 var pay_tab = null;
+var add_tab = null;
+var release_tab = null;
 var current_tab = null;
 
-// find people fields
+// find person fields
 var id_div = null;
-var pattern_field = null;
-var find_result_table = null;
-var number_search = null;
-var find_perid = null;
-var name_search = '';
+var badgeid_field = null;
+var current_person = null;
+var stats_div = null;
+var showStats_div = null;
+var statsTable = null;
+var active_customers = null;
+var awaiting_payment = null;
+var awaiting_release = null;
 
-// add/edit person fields
-var add_index_field = null;
-var add_perid_field = null;
-var add_memIndex_field = null;
-var add_first_field = null;
-var add_middle_field = null;
-var add_last_field = null;
-var add_legalName_field = null;
-var add_suffix_field = null;
-var add_addr1_field = null;
-var add_addr2_field = null;
-var add_city_field = null;
-var add_state_field = null;
-var add_postal_code_field = null;
-var add_country_field = null;
-var add_email_field = null;
-var add_phone_field = null;
-var add_badgename_field = null;
-var add_contact_field = null;
-var add_share_field = null;
-var add_header = null;
-var addnew_button = null;
-var clearadd_button = null;
-var add_results_table = null;
-var add_results_div = null;
-var add_mode = true;
-var add_mem_select = null;
-var add_mt_dataentry = `
-    <select id='ae_mem_sel' name='age' style="width:300px;" tabindex='30'>
-    </select>
-`;
-var add_edit_dirty_check = false;
-var add_edit_initial_state = "";
-var add_edit_current_state = "";
-var add_edit_prior_tab = null;
-
-// review items
-var review_div = null;
-var country_select = null;
-var review_missing_items = 0;
-var review_required_fields = ['first_name', 'last_name', 'email_addr', 'address_1', 'city', 'state', 'postal_code' ];
-var review_prompt_fields = ['phone'];
-var review_editable_fields = [
-    'first_name', 'middle_name', 'last_name', 'suffix',
-    'legalName',
-    'badge_name',
-    'email_addr', 'phone',
-    'address_1',
-    'address_2',
-    'city', 'state', 'postal_code',
-    'share_reg_ok', 'contact_ok'
-];
-
+// art items
+var add_found_div = null;
+var artFoundItems = null;
+var itemCode_field = null;
+var artistNumber_field = null;
+var pieceNumber_field = null;
+var unitNumber_field = null;
 
 // pay items
 var pay_div = null;
 var pay_button_pay = null;
 var pay_button_rcpt = null;
 var pay_button_ercpt = null;
-var pay_button_print = null;
 var pay_tid = null;
+var pay_InitialCart = true;
 var discount_mode = 'none';
-var num_coupons = 0;
-var couponList = null;
-var couponSelect = null;
-var coupon = null;
-var coupon_discount = Number(0).toFixed(2);
 var cart_total = Number(0).toFixed(2);
-var pay_prior_discount = null;
-// print items
-var print_div = null;
-var printed_obj = null;
+
+// release items
+var releaseModal = null;
+var releaseTitleDiv = null;
+var releaseBodyDiv = null;
+var releaseTable = null;
 
 // Data Items
 var unpaid_table = [];
-var result_membership = [];
 var result_perinfo = [];
-var membership_select = null;
-var add_perinfo = [];
-var add_membership = [];
-var new_perid = -1;
-var memList = null;
-var memListMap = null;
-var catList = null;
-var ageList = null;
-var typeList = null;
-var changeModal = null;
 var cashChangeModal = null;
-
-// notes items
-var notes = null;
-var notesIndex = null;
-var notesType = null;
-var notesPriorValue = null;
 
 // global items
 var conid = null;
 var conlabel = null;
 var user_id = 0;
 var hasManager = false;
-var isCashier = false;
-var badgePrinterAvailable = false;
 var receiptPrinterAvailable = false;
-var non_primary_categories = ['add-on', 'addon', 'cancel'];
-var upgradable_types = ['one-day', 'oneday', 'virtual'];
-
-// filter criteria
-var filt_excat = null; // array of exclude category
-var filt_cat = null;  // array of categories to include
-var filt_age = null;  // array of ages to include
-var filt_type = null; // array of types to include
-var filt_shortname_regexp = null; // regexp item;
-var startdate = null;
-var enddate = null;
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -140,46 +66,56 @@ window.onload = function initpage() {
     find_tab = document.getElementById("find-tab");
     current_tab = find_tab;
     add_tab = document.getElementById("add-tab");
-    add_edit_prior_tab = add_tab;
-    review_tab = document.getElementById("review-tab");
     pay_tab = document.getElementById("pay-tab");
-    print_tab = document.getElementById("print-tab");
+    release_tab = document.getElementById("release-tab");
 
     // cart
-    //cart = new regpos_cart();
+    cart = new artpos_cart();
 
     // find people
-    pattern_field = document.getElementById("find_pattern");
-    pattern_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') find_record('search'); });
-    pattern_field.focus();
+    badgeid_field = document.getElementById("find_perid");
+    badgeid_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') findPerson('search'); });
+    badgeid_field.focus();
     id_div = document.getElementById("find_results");
+    stats_div = document.getElementById("stats-div");
+    showStats_div = document.getElementById("showStats-div");
 
+    artistNumber_field = document.getElementById("artistNumber");
+    itemCode_field = document.getElementById("itemCode");
+    itemCode_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') findArt('code'); });
+    pieceNumber_field = document.getElementById("pieceNumber");
+    pieceNumber_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') findArt('piece'); });
+    unitNumber_field = document.getElementById("unitNumber");
+    unitNumber_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') findArt('unit'); });
+
+    // art items
+    add_found_div = document.getElementById('add-found-div');
     // pay items
     pay_div = document.getElementById('pay-div');
 
     // add events
     find_tab.addEventListener('shown.bs.tab', find_shown)
+    add_tab.addEventListener('shown.bs.tab', add_shown)
     pay_tab.addEventListener('shown.bs.tab', pay_shown)
-
-    // notes items
-    notes = new bootstrap.Modal(document.getElementById('Notes'), { focus: true, backldrop: 'static' });
-
-    // change membership
-    changeModal = new bootstrap.Modal(document.getElementById('Change'), { focus: true, backldrop: 'static' });
+    release_tab.addEventListener('shown.bs.tab', release_shown)
 
     // cash payment requires change
     cashChangeModal = new bootstrap.Modal(document.getElementById('CashChange'), { focus: true, backldrop: 'static' });
+
+    // release works in a modal
+    releaseModal = new bootstrap.Modal(document.getElementById('ReleaseArt'), { focus: true, backldrop: 'static' });
+    releaseTitleDiv = document.getElementById("ReleaseArtTitle");
+    releaseBodyDiv = document.getElementById("ReleaseArtBody");
 
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
 
     // load the initial data and the proceed to set up the rest of the system
     var postData = {
         ajax_request_action: 'loadInitialData',
-        nopay: !isCashier,
     };
     $.ajax({
         method: "POST",
-        url: "scripts/regpos_loadInitialData.php",
+        url: "scripts/artpos_loadInitialData.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
             if (data['error'] !== undefined) {
@@ -198,539 +134,156 @@ window.onload = function initpage() {
 // load mapping tables from database to javascript array
 // also retrieve session data about printers
 function loadInitialData(data) {
-    // map the memIds and labels for the pre-coded memberships.  Doing it now because it depends on what the database sends.
-    // tables
+    // load database and instace items for startup
     conlabel =  data['label'];
     conid = data['conid'];
     user_id = data['user_id']
     hasManager = data['hasManager'];
     receiptPrinterAvailable = data['receiptPrinter'] === true;
-
-    // set starting stages of left and right windows
+    find_shown();
 }
 
-
-// void transaction - needs to be written to actually void out a transaction in progress
-function void_trans() {
-    var postData = {
-        ajax_request_action: 'voidPayment',
-        user_id: user_id,
-        pay_tid: pay_tid,
-        cart_membership: cart.getCartMembership(),
-    };
-    $("button[name='void_btn']").attr("disabled", true);
-    $.ajax({
-        method: "POST",
-        url: "scripts/regpos_voidPayment.php",
-        data: postData,
-        success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
-                $("button[name='find_btn']").attr("disabled", false);
-                return;
-            }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
-            }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
-            }
-            start_over(0);
-        },
-        error: function (jqXHR, textstatus, errorThrown) {
-            $("button[name='void_btn']").attr("disabled", false);
-            showAjaxError(jqXHR, textstatus, errorThrown);
-        }
-    });
-}
-
-// if no memberships or payments have been added to the database, this will reset for the next customer
+// if no artSales or payments have been added to the database, this will reset for the next customer
 function start_over(reset_all) {
-    if (!confirm_discard_add_edit(false))
-        return;
-
-    if (!cart.confirmDiscardCartEntry(-1,false))
-        return;
-
     if (reset_all > 0)
         clear_message();
 
     if (base_manager_enabled) {
         base_toggleManager();
     }
+
+    hideStats();
     // empty cart
     cart.startOver();
-    if (isCashier) {
-        find_unpaid_button.hidden = false;
-    }
     // empty search strings and results
-    pattern_field.value = "";
-    if (find_result_table != null) {
-        find_result_table.destroy();
-        find_result_table = null;
-    }
+    badgeid_field.value = "";
     id_div.innerHTML = "";
     unpaid_table = null;
 
     // reset data to call up
-    result_perinfo = [];
-    result_membership = [];
     emailAddreesRecipients = [];
     last_email_row = '';
 
     // reset tabs to initial values
     find_tab.disabled = false;
-    add_tab.disabled = false;
-    review_tab.disabled = true;
+    add_tab.disabled = true;
     pay_tab.disabled = true;
-    print_tab.disabled = true;
+    release_tab.disabled = true;
     cart.hideNext();
-    cart.hideVoid();
+    cart.hideAdd();
     pay_button_pay = null;
     pay_button_rcpt = null;
     pay_button_ercpt = null;
     receeiptEmailAddresses_div = null;
-    pay_button_print = null;
     pay_tid = null;
-    pay_prior_discount = null;
+    pay_InitialCart = true;
 
     // set tab to find-tab
+    if (current_tab != find_tab) {
+        bootstrap.Tab.getOrCreateInstance(find_tab).show();
+    } else {
+        find_shown();
+    }
+    badgeid_field.focus();
+}
+
+// switch to the add tab
+function goto_find() {
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
-    pattern_field.focus();
 }
 
-// show the full perinfo record as a hover in the table
-function build_record_hover(e, cell, onRendered) {
-    var data = cell.getData();
-    //console.log(data);
-    var hover_text = 'Person id: ' + data['perid'] + '<br/>' +
-        (data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name']).trim() + '<br/>' +
-        data['legalName'] + '<br/>';
-        data['address_1'] + '<br/>';
-    if (data['address_2'] != '') {
-        hover_text += data['address_2'] + '<br/>';
-    }
-    hover_text += data['city'] + ', ' + data['state'] + ' ' + data['postal_code'] + '<br/>';
-    if (data['country'] != '' && data['country'] != 'USA') {
-        hover_text += data['country'] + '<br/>';
-    }
-    hover_text += 'Badge Name: ' + badge_name_default(data['badge_name'], data['first_name'], data['last_name']) + '<br/>' +
-        'Email: ' + data['email_addr'] + '<br/>' + 'Phone: ' + data['phone'] + '<br/>' +
-        'Active:' + data['active'] + ' Contact?:' + data['contact_ok'] + ' Share?:' + data['share_reg_ok'] + '<br/>' +
-        'Membership: ' + data['reg_label'] + '<br/>';
-
-    return hover_text;
+// switch to the add tab
+function goto_add() {
+    bootstrap.Tab.getOrCreateInstance(add_tab).show();
 }
 
-// add search person/transaction from result_perinfo record to the cart
-function add_to_cart(index, table) {
-    var rt = null;
-    var rm = null;
-    var perid;
-    var mrows;
+// switch to the pay tab
+function goto_pay() {
+    bootstrap.Tab.getOrCreateInstance(pay_tab).show();
+}
 
-    if (table == 'result') {
-        rt = result_perinfo;
-        rm = result_membership;
-    }
-
-    if (table == 'add') {
-        rt = add_perinfo;
-        rm = add_membership;
-    }
-
-    if (index >= 0) {
-        if (rt[index]['banned'] == 'Y') {
-            alert("Please ask " + (result_perinfo[index]['first_name'] + ' ' + rt[index]['last_name']).trim() +" to talk to the Registration Administrator, you cannot add them at this time.")
-            return;
-        }
-        perid = rt[index]['perid'];
-        if (cart.notinCart(perid)) {
-            mrows = find_memberships_by_perid(rm, perid);
-            cart.add(rt[index], mrows)
-        }
+function goto_release() {
+    if (current_tab != release_tab) {
+        bootstrap.Tab.getOrCreateInstance(release_tab).show();
     } else {
-        var row;
-        index = -index;
-        for (row in result_membership) {
-            if (result_membership[row]['tid'] == index) {
-                var prow = result_membership[row]['pindex'];
-                perid = result_perinfo[prow]['perid'];
-                if (result_perinfo[prow]['banned'] == 'Y') {
-                    alert("Please ask " + (result_perinfo[prow]['first_name'] + ' ' + result_perinfo[prow]['last_name']).trim() + " to talk to the Registration Administrator, you cannot add them at this time.")
-                    return;
-                } else if (cart.notinCart(perid)) {
-                    mrows = find_memberships_by_perid(result_membership, perid);
-                    cart.add(result_perinfo[prow], mrows);
-                }
-            }
-        }
+        release_shown();
     }
-
-    if (table == 'result') {
-        if (find_result_table !== null) {
-            find_result_table.replaceData(result_perinfo);
-        } else {
-            draw_as_records();
-        }
-    }
-    clear_message();
 }
 
-// remove person and all of their memberships from the cart
-function remove_from_cart(perid) {
-    cart.remove(perid);
-
-    if (find_result_table !== null) {
-        find_result_table.replaceData(result_perinfo);
-    } else {
-        draw_as_records();
-    }
-    clear_message();
-}
-
-
-// draw_record: find_record found rows from search.  Display them in the non table format used by transaction and perid search, or a single row match for string.
-function draw_record(row, first) {
-    var data = result_perinfo[row];
-    var prim = find_primary_membership_by_perid(result_membership, data['perid']);
-    var label = "No Membership";
-    if (prim != null) {
-        label = result_membership[prim]['label'];
-    }
+// draw_person: findPerson found someone.  Display their details
+function draw_person() {
     var html = `
-<div class="container-fluid">
-    <div class="row mt-2">
-        <div class="col-sm-3">`;
-    if (first) {
-        html += `<button class="btn btn-primary btn-sm" id="add_btn_all" onclick="add_to_cart(-` + number_search + `, 'result');">Add All Cart</button>`;
-    }
-    html += `</div>
-        <div class="col-sm-5">`;
-    if (cart.notinCart(data['perid'])) {
-        if (data['banned'] == 'Y') {
-            html += `
-            <button class="btn btn-danger btn-sm" id="add_btn_1" onclick="add_to_cart(` + row + `, 'result');">B</button>`;
-        } else {
-            html += `
-            <button class="btn btn-success btn-sm" id="add_btn_1" onclick="add_to_cart(` + row + `, 'result');">Add to Cart</button>`;
-        }
-    } else {
-        html += `
-            <i>In Cart</i>`
-    }
-    html += `</div>
-        <div class="col-sm-2">`;
-    if (data['open_notes'] != null && data['open_notes'].length > 0) {
-        html += '<button type="button" class="btn btn-sm btn-info p-0" onclick="show_perinfo_notes(' + data['index'] + ', \'result\')">View Notes</button>';
-    }
-    html += `</div>
-        <div class="col-sm-2">`;
-    if (hasManager && base_manager_enabled) {
-        html += '<button type="button" class="btn btn-sm btn-secondary p-0" onClick="edit_perinfo_notes(0, \'result\')">Edit Notes</button>';
-    }
-
-    html += `
-            </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-3">Person ID:</div>
+            <div class="col-sm-9">` + current_person['id'] + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">` + 'Badge Name:' + `</div>
-            <div class="col-sm-9">` + badge_name_default(data['badge_name'], data['first_name'], data['last_name']) + `</div>
+            <div class="col-sm-9">` + badge_name_default(current_person['badge_name'], current_person['first_name'], current_person['last_name']) + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">Name:</div>
             <div class="col-sm-9">` +
-            data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name'] + `
+            current_person['first_name'] + ' ' + current_person['middle_name'] + ' ' + current_person['last_name'] + `
             </div>
         </div>  
         <div class="row">
-            <div class="col-sm-3">Legal Name:</div>
-            <div class="col-sm-9">` + data['legalName'] + `</div>
-        </div>
-        <div class="row">
             <div class="col-sm-3">Address:</div>
-            <div class="col-sm-9">` + data['address_1'] + `</div>
+            <div class="col-sm-9">` + current_person['address'] + `</div>
         </div>
 `;
-    if (data['address_2'] != '') {
+    if (current_person['address_2'] != '') {
         html += `
     <div class="row">
         <div class="col-sm-3"></div>
-        <div class="col-sm-9">` + data['address_2'] + `</div>
+        <div class="col-sm-9">` + current_person['addr_2'] + `</div>
     </div>
 `;
     }
     html += `
     <div class="row">
        <div class="col-sm-3"></div>
-       <div class="col-sm-9">` + data['city'] + ', ' + data['state'] + ' ' + data['postal_code'] + `</div>
+       <div class="col-sm-9">` + current_person['city'] + ', ' + current_person['state'] + ' ' + current_person['postal_code'] + `</div>
     </div>
 `;
-    if (data['country'] != '' && data['country'] != 'USA') {
+    if (current_person['country'] != '' && current_person['country'] != 'USA') {
         html += `
     <div class="row">
        <div class="col-sm-3"></div>
-       <div class="col-sm-9">` + data['country'] + `</div>
+       <div class="col-sm-9">` + current_person['country'] + `</div>
     </div>
 `;
     }
     html += `
     <div class="row">
        <div class="col-sm-3">Email Address:</div>
-       <div class="col-sm-9">` + data['email_addr'] + `</div>
+       <div class="col-sm-9">` + current_person['email_addr'] + `</div>
     </div>
     <div class="row">
-       <div class="col-sm-3">Phone::</div>
-       <div class="col-sm-9">` + data['phone'] + `</div>
+       <div class="col-sm-3">Phone:</div>
+       <div class="col-sm-9">` + current_person['phone'] + `</div>
     </div>
-    <div class="row">
-       <div class="col-sm-3"></div>
-       <div class="col-sm-auto">Active: ` + data['active'] + `</div>
-       <div class="col-sm-auto">Contact OK: ` + data['contact_ok'] + `</div>
-       <div class="col-sm-auto">Share Reg: ` + data['share_reg_ok'] + `</div>
-    </div>
-    <div class="row">
-       <div class="col-sm-3">Membership Type:</div>
-       <div class="col-sm-9">` + label + `</div>
-    </div>
+</div>
 `;
-    return html;
+    id_div.innerHTML = html;
 }
 
-// tabulator perinfo formatters:
-
-// tabulator formatter for the add cart column, displays the "add" record and "trans" to add the transaction to the card as appropriate
-// filters for ones already in the cart, and statuses that should not be allowed to be added to the cart
-function addCartIcon(cell, formatterParams, onRendered) { //plain text value
-    var tid;
-    var html = '';
-    var banned = cell.getRow().getData().banned;
-    if (banned == undefined) {
-        tid = Number(cell.getRow().getData().tid);
-        html = '<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" onclick="add_unpaid(' + tid + ')">Pay</button > ';
-        return html;
+// badge_name_default: build a default badge name if its empty
+function badge_name_default(badge_name, first_name, last_name) {
+    if (badge_name === undefined | badge_name === null || badge_name === '') {
+        var default_name = (first_name + ' ' + last_name).trim();
+        return '<i>' + default_name.replace(/ +/, ' ') + '</i>';
     }
-    if (banned == 'Y') {
-        return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="add_to_cart(' +
-            cell.getRow().getData().index + ', \'' + formatterParams['t'] + '\')">B</button>';
-    } else if (cart.notinCart(cell.getRow().getData().perid)) {
-        html = '<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" onclick="add_to_cart(' +
-            cell.getRow().getData().index + ', \'' + formatterParams['t'] + '\')">Add</button>';
-        tid = cell.getRow().getData().tid;
-        if (tid != '' && tid !== undefined && tid !== null) {
-            html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" onclick="add_to_cart(' + (-tid) + ', \'' + formatterParams['t'] + '\')">Tran</button>';
-        }
-        return html;
-    }
-    return '<span style="font-size: 75%;">In Cart';
+    return badge_name;
 }
 
-// tabulator formatter for the notes, displays the "O" (open)  and "E" (edit) note for this person
-function perNotesIcons(cell, formatterParams, onRendered) { //plain text value
-    var index = cell.getRow().getData().index;
-    var open_notes = cell.getRow().getData().open_notes;
-    var html = "";
-    if (open_notes != null && open_notes.length > 0 && !(base_manager_enabled && hasManager)) {
-        html += '<button type="button" class="btn btn-sm btn-info p-0" style="--bs-btn-font-size: 75%;"  onclick="show_perinfo_notes(' + index + ', \'' + formatterParams['t'] + '\')">O</button>';
-    }
-    if (hasManager && base_manager_enabled) {
-        var btnclass = "btn-secondary";
-        if (open_notes != null && open_notes.length > 0)
-            btnclass = "btn-info";
-        html += ' <button type="button" class="btn btn-sm ' + btnclass + ' p-0" style="--bs-btn-font-size: 75%;" onclick="edit_perinfo_notes(' + index + ', \'' + formatterParams['t'] + '\')">E</button>';
-    }
-    if (html == "")
-        html = "&nbsp;"; // blank draws nothing
-    return html;
-}
-
-// display the note popup with the requested notes
-function show_perinfo_notes(index, where) {
-    var note = null;
-    var fullname = null;
-    notesType = null;
-
-    if (where == 'cart') {
-        note = cart.getPerinfoNote(index);
-        fullname = cart.getFullName(index);
-        notesType = 'PC';
-    }
-    if (where == 'result') {
-        note = result_perinfo[index]['open_notes'];
-        fullname = result_perinfo[index]['fullname'];
-        notesType = 'PR';
-    }
-    if (where == 'add') {
-        note = add_perinfo[index]['open_notes']
-        fullname = add_perinfo[index]['fullname'];
-        notesType = 'add';
-    }
-
-    if (notesType == null)
-        return;
-
-    notesIndex = index;
-
-    notes.show();
-    document.getElementById('NotesTitle').innerHTML = "Notes for " + fullname;
-    document.getElementById('NotesBody').innerHTML = note.replace(/\n/g, '<br/>');
-    var notes_btn = document.getElementById('close_note_button');
-    notes_btn.innerHTML = "Close";
-    notes_btn.disabled = false;
-}
-// edit_perinfo_notes: display in an editor the perinfo notes field
-// only managers can edit the notes
-function edit_perinfo_notes(index, where) {
-    var note = null;
-    var fullname = null;
-
-    if (!hasManager || !base_manager_enabled)
-        return;
-
-    notesType = null;
-    if (where == 'cart') {
-        note = cart.getPerinfoNote(index);
-        fullname = cart.getFullName(index);
-        notesType = 'PC';
-    }
-    if (where == 'result') {
-        note = result_perinfo[index]['open_notes'];
-        fullname = result_perinfo[index]['fullname'];
-        notesType = 'PR';
-    }
-    if (where == 'add') {
-        note = add_perinfo[index]['open_notes']
-        fullname = add_perinfo[index]['fullname'];
-        notesType = 'add';
-    }
-    if (notesType == null)
-        return;
-
-    notesIndex = index;
-    notesPriorValue = note;
-    if (notesPriorValue === null) {
-        notesPriorValue = '';
-    }
-
-    notes.show();
-    document.getElementById('NotesTitle').innerHTML = "Editing Notes for " +fullname;
-    document.getElementById('NotesBody').innerHTML = '<textarea name="perinfoNote" class="form-control" id="perinfoNote" cols=60 wrap="soft" style="height:400px;">' +
-        notesPriorValue + "</textarea>";
-    var notes_btn = document.getElementById('close_note_button');
-    notes_btn.innerHTML = "Save and Close";
-    notes_btn.disabled = false;
-}
-
-// show the registration element note, anyone can add a new note, so it needs a save and close button
-function show_reg_note(index, count) {
-    var bodyHTML = '';
-    var note = cart.getRegNote(index);
-    var fullname = cart.getRegFullName(index);
-    var label = cart.getRegLabel(index);
-    var newregnote = cart.getNewRegNote(index);
-
-    notesType = 'RC';
-    notesIndex = index;
-
-    if (count > 0) {
-        bodyHTML = note.replace(/\n/g, '<br/>');
-    }
-    bodyHTML += '<br/>&nbsp;<br/>Enter/Update new note:<br/><input type="text" name="new_reg_note" id="new_reg_note" maxLength=64 size=60>'
-
-    notes.show();
-    document.getElementById('NotesTitle').innerHTML = "Registration Notes for " + fullname + '<br/>Membership: ' + label;
-    document.getElementById('NotesBody').innerHTML = bodyHTML;
-    if (newregnote !== undefined) {
-        document.getElementById('new_reg_note').value = newregnote;
-    }
-    var notes_btn = document.getElementById('close_note_button');
-    notes_btn.innerHTML = "Save and Close";
-    notes_btn.disabled = false;
-}
-
-// save_note
-//  save and update the note based on type
-function save_note() {
-    if (document.getElementById('close_note_button').innerHTML == "Save and Close") {
-        if (notesType == 'RC') {
-            cart.setRegNote(notesIndex, document.getElementById("new_reg_note").value);
-        }
-        if (notesType == 'PC' && hasManager && base_manager_enabled) {
-            cart.setPersonNote(notesIndex, document.getElementById("perinfoNote").value);
-        }
-        if (notesType == 'PR' && hasManager && base_manager_enabled) {
-            var new_note = document.getElementById("perinfoNote").value;
-            if (new_note != notesPriorValue) {
-               result_perinfo[notesIndex]['open_notes'] = new_note;
-                // search for matching names
-                var postData = {
-                    ajax_request_action: 'updatePerinfoNote',
-                    perid: result_perinfo[notesIndex]['perid'],
-                    notes: result_perinfo[notesIndex]['open_notes'],
-                    user_id: user_id,
-                };
-                document.getElementById('close_note_button').disabled = true;
-                $.ajax({
-                    method: "POST",
-                    url: "scripts/regpos_updatePerinfoNote.php",
-                    data: postData,
-                    success: function (data, textstatus, jqxhr) {
-                        if (data['error'] !== undefined) {
-                            show_message(data['error'], 'error');
-                            document.getElementById('close_note_button').disabled = falser;
-                            return;
-                        }
-                        if (data['message'] !== undefined) {
-                            show_message(data['message'], 'success');
-                        }
-                        if (data['warn'] !== undefined) {
-                            show_message(data['warn'], 'warn');
-                        }
-                    },
-                    error: function (jqXHR, textstatus, errorThrown) {
-                        document.getElementById('close_note_button').disabled = false;
-                        showAjaxError(jqXHR, textstatus, errorThrown);
-                    }
-                });
-            }
-        }
-    }
-    notesType = null;
-    notesIndex = null;
-    notesPriorValue = null;
-    notes.hide();
-}
-
-// select the row (tid) from the unpaid list and add it to the cart, switch to the payment tab (used by find unpaid)
-// marks it as a tid (not perid) add by inverting it.  (add_to_cart will deal with the inversion)
-function add_unpaid(tid) {
-    add_to_cart(-Number(tid), 'result');
-    // force a new transaction for the payment as the cashier is not the same as the check-in in this case.
-    added_payable_trans_to_cart();
-}
-
-// add selected membership as a new item in the card under this perid.
-function add_membership_cart(rownum, selectname) {
-    var select = document.getElementById(selectname);
-    var membership = find_memLabel(select.value.trim());
-    cart.addMembership(rownum, membership);
-}
-
-// search the online database for a set of records matching the criteria
-// find_type: empty: search for memberships
-//              unpaid: return all unpaid
-//  possible meanings of find_pattern
-//      numeric: search for tid or perid matches
-//      alphanumeric: search for names in name, badge_name, email_address fields
-//
-function find_person(find_type) {
-    if (find_result_table != null) {
-        find_result_table.destroy();
-        find_result_table = null;
-    }
+// find the person by badge id, in prep for loading any art already won by bid
+function findPerson(find_type) {
     id_div.innerHTML = "";
     clear_message();
-    name_search = pattern_field.value.toLowerCase().trim();
+    cart.startOver();
+    var name_search = badgeid_field.value.toLowerCase().trim();
     if ((name_search == null || name_search == '') && find_type == 'search') {
         show_message("No search criteria specified", "warn");
         return;
@@ -759,7 +312,7 @@ function find_person(find_type) {
             if (data['warn'] !== undefined) {
                 show_message(data['warn'], 'warn');
             }
-            found_person(data);
+            foundPerson(data);
             $("button[name='find_btn']").attr("disabled", false);
         },
         error: function (jqXHR, textstatus, errorThrown) {
@@ -775,155 +328,304 @@ function find_person(find_type) {
 // normal:
 //      single row: display record
 //      multiple rows: display table of records with add/trans buttons
-function found_person(data) {
-    if(data['num_rows'] == 1) { // one person found
-        alert("Found Person!");
-        console.log(data['person']);
+function foundPerson(data) {
+    if (data['num_rows'] == 1) { // one person found
+        current_person = data['person'];
+        // put the person details in the cart, populate the cart with the art they have to purchase
+        draw_person();
+        data['art'].forEach((artItem) => {
+            if (pay_tid == null) {
+                pay_tid = artItem['transid'];
+            }
+            cart.add(artItem);
+        });
+        if (data['payment']) {
+            data['payment'].forEach((paymentItem) => {
+                cart.addPmt(paymentItem);
+            });
+        }
+        find_tab.disabled = true;
+        add_tab.disabled = false;
+        cart.showAdd();
+        if (cart.getCartLength() > 0) {
+            pay_tab.disabled = false;
+            cart.showPay();
+        }
+        cart.drawCart();
+        cart.showStartOver();
+        if (data['release'] > 0 && cart.getCartLength() == 0) {
+            release_tab.disabled = false;
+            cart.showRelease();
+        }
         return;
     } else { // I'm not sure how we'd get here
         show_message(data['num_rows'] + " found.  Multiple people not yet supported.");
         return;
     }
+}
 
-    // string search, returning more than one row show tabulator table
-    if (isNaN(name_search) && result_perinfo.length > 1)  {
-        // table
-        find_result_table = new Tabulator('#find_results', {
-            maxHeight: "600px",
-            data: result_perinfo,
-            layout: "fitColumns",
-            initialSort: [
-                {column: "fullname", dir: "asc"},
-            ],
-            columns: [
-                {field: "perid", visible: false,},
-                {field: "index", visible: false, },
-                {title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
-                {field: "last_name", visible: false,},
-                {field: "first_name", visible: false,},
-                {field: "middle_name", visible: false,},
-                {field: "suffix", visible: false,},
-                {field: "legalName", visible: false,},
-                {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
-                {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
-                {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
-                {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120,},
-                {title: "Note",width: 45, headerSort: false, headerFilter: false, formatter: perNotesIcons, formatterParams: {t:"result"}, },
-                {title: "Cart", width: 90, headerFilter: false, headerSort: false, formatter: addCartIcon, formatterParams: {t:"result"},},
-                {field: "index", visible: false,},
-            ],
-        });
-    } else if (result_perinfo.length > 0) {  // one row string, or all perinfo/tid searches, display in record format
-        if ((!isNaN(name_search)) && regtids.length == 1 && (attach_count > 0 || print_count > 0)) {
-            // only 1 transaction returned and it was search by number, and it's been attached for payment before
-            // add it to the cart and go to payment
-            for (row in result_membership) {
-                if ((result_membership[row]['tid'] == tid) || (result_membership[row]['rstid']==name_search)) {
-                    index = result_membership[row]['pindex'];
-                    add_to_cart(index, 'result');
-                }
+// findArt: find art matching the criteria with the right parameters
+function findArt(findType) {
+    var artistNumber = null;
+    var pieceNumber = null;
+    var unitNumber = null;
+    var itemId = null;
+    var itemCode = null;
+
+    add_found_div.innerHTML = '';
+
+    switch (findType) {
+        case 'code':
+            itemCode = itemCode_field.value;
+            var fields = itemCode.split(',');
+            itemId = fields[0];
+            unitNumber = fields[1];
+            break;
+
+        case 'unit':
+            unitNumber = unitNumber_field.value;
+        // fall into piece
+        case 'piece':
+            artistNumber = artistNumber_field.value;
+            pieceNumber = pieceNumber_field.value;
+            break;
+
+        default:
+            itemCode = itemCode_field.value;
+            if (itemCode != null && itemCode != '') {
+                var fields = itemCode.split(',');
+                itemId = fields[0];
+                unitNumber = fields[1];
+            } else {
+                itemCode = null;
             }
-            added_payable_trans_to_cart();
-            return;
-        }
-        number_search = Number(name_search);
-        draw_as_records();
-        return;
-    }
-    // no rows show the diagnostic
-    id_div.innerHTML = `"container-fluid">
-    <div class="row mt-3">
-        <div class="col-sm-4">No matching records found</div>
-        <div class="col-sm-auto"><button class="btn btn-primary btn-sm" type="button" id="not_found_add_new" onclick="not_found_add_new();">Add New Person</button>
-        </div>
-    </div>
-</div>
-`;
-    id_div.innerHTML = id_div.innerHTML = 'No matching records found'
-}
-
-function draw_as_records() {
-    var html = '';
-    var first = false;
-    var row;
-    if (result_perinfo.length > 1) {
-        first = true;
-    }
-    for (row in result_perinfo) {
-        html += draw_record(row, first);
-        first = false;
-    }
-    html += '</div>';
-    id_div.innerHTML = html;
-}
-// when searching, if clicking on the add new button, switch to the add/edit tab
-function not_found_add_new() {
-    id_div.innerHTML = '';
-    pattern_field.value = '';
-
-    bootstrap.Tab.getOrCreateInstance(add_tab).show();
-}
-
-// switch to the review tab when the review button is clicked
-function start_review() {
-    if (!confirm_discard_add_edit(false))
-        return;
-    cart.hideNoChanges();
-
-    // set tab to review-tab
-    bootstrap.Tab.getOrCreateInstance(review_tab).show();
-    review_tab.disabled = false;  
-}
-
-// create the review data screen from the cart
-function review_update() {
-    cart.updateReviewData();
-    review_shown();
-    if (review_missing_items > 0) {
-        setTimeout(review_nochanges, 100);
-    } else {
-        review_nochanges();
-    }
-}
-
-function added_payable_trans_to_cart() {
-    // clear any search remains
-    if (add_results_table != null) {
-        add_results_table.destroy();
-        add_results_table = null;
-    }
-    if (find_result_table != null) {
-        find_result_table.destroy();
-        find_result_table = null;
-    }
-    id_div.innerHTML = '';
-    cart.showNoChanges();
-}
-
-
-// no changes button pressed:
-// if everything is paid, go to print.  If cashier (has a find_unpaid button), to go Pay, else put up the diagnostic
-//      to ask them to move on to the cashier.
-function review_nochanges() {
-    // first check to see if any required fields still exist
-    if (review_missing_items > 0) {
-        if (!confirm("Proceed ignoring check for " + review_missing_items.toString() + " missing data items (shown in yellow)?")) {
-            return false; // confirm answered no, return not safe to discard
-        }
+            artistNumber = artistNumber_field.value;
+            if (artistNumber == '') {
+                artistNumber = null;
+            }
+            pieceNumber = pieceNumber_field.value;
+            if (pieceNumber == '') {
+                pieceNumber = null;
+            }
     }
 
-    cart.hideNoChanges();
-    // submit the current card data to update the database, retrieve all TID's/PERID's/REGID's of inserted data
     var postData = {
-        ajax_request_action: 'updateCartElements',
-        cart_perinfo: cart.getCartPerinfo(),
-        cart_perinfo_map: cart.getCartMap(),
-        cart_membership: cart.getCartMembership(),
+        artistNumber: artistNumber,
+        pieceNumber: pieceNumber,
+        unitNumber: unitNumber,
+        itemId: itemId,
+        findType: findType,
+    };
+
+    $("button[name='findArtBtn']").attr("disabled", true);
+    $.ajax({
+        method: "POST",
+        url: "scripts/artpos_getArt.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                $("button[name='findArtBtn']").attr("disabled", false);
+                return;
+            }
+            if (data['message'] !== undefined) {
+                show_message(data['message'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+            }
+            foundArt(data);
+            $("button[name='findArtBtn']").attr("disabled", false);
+        },
+        error: function (jqXHR, textstatus, errorThrown) {
+            $("button[name='findArtBtn']").attr("disabled", false);
+            showAjaxError(jqXHR, textstatus, errorThrown);
+        }
+    });
+}
+
+// foundArt - process the returned array of art items to select from
+function foundArt(data) {
+    var html = '';
+    var valid = true;
+    var btn_color = 'btn-primary';
+    artFoundItems = data['items'];
+    if (data['items'].length == 1) {
+        var item = data['items'][0];
+        html  = '<div class="row mt-4 mb-1"><div class="col-sm-12 bg-primary text-white">Item Details</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Artist Number:</div><div class="col-sm-8">' + item['exhibitorNumber'] + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Artist Item #:</div><div class="col-sm-8">' + item['item_key'] + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Type:</div><div class="col-sm-8">' + item['type'] + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Status:</div><div class="col-sm-8">' + item['status'] + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Artist Name:</div><div class="col-sm-8">' + item['exhibitorName'] + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Title:</div><div class="col-sm-8">' + item['title'] + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Material:</div><div class="col-sm-8">' + item['material'] + '</div></div>';
+        if (item['bidder'] != null && item['bidder'] != '' && item['bidder'] != current_person['id']) {
+            valid = false;
+            html += '<div class="row"><div class="col-sm-4 bg-warning">Already Sold:</div><div class="col-sm-8 bg-warning">Item has already been sold to someone else.</div></div>';
+        }
+
+        if (item['type'] == 'print') {
+            html += '<div class="row"><div class="col-sm-4">Sale Price:</div><div class="col-sm-8">$' + Number(item['sale_price']).toFixed(2) + '</div></div>';
+
+            if (item['quantity'] <= 0) {
+                html += '<div class="row"><div class="col-sm-4 bg-warning">Quantity:</div><div class="col-sm-8 bg-warning">System shows all of this item is already sold, remaining quantity is 0.</div></div>';
+                btn_color = 'btn-warning';
+            }
+        }
+
+        if (valid) {
+            switch (item['type']) {
+                case 'art':
+                    if (item['sale_price'] == 0 || item['sale_price'] < item['min_price']) {
+                        html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Quick Sale:</div><div class="col-sm-8 bg-danger text-white">Item is not available for quick sale.</div></div>';
+                        valid = false;
+                        break;
+                    }
+                    if (item['status'].toLowerCase() == 'checked in') {
+                        priceType = 'Quick Sale Price:';
+                        priceField = 'sale_price';
+                    } else {
+                        priceType = 'Final Price:';
+                        priceField = 'final_price';
+                    }
+                    break;
+
+                case 'nfs':
+                    html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Not For Sale:</div><div class="col-sm-8 bg-danger text-white">You cannot buy a Not For Sale item.</div></div>';
+                    valid = false;
+                    break;
+                case 'print':
+                    html += '<div class="row"><div class="col-sm-4">Remaining Quantity:</div><div class="col-sm-8">' + item['quantity'] + '</div></div>';
+                    priceType = 'Sale Price:'
+                    priceField = 'sale_price';
+                    break;
+            }
+        }
+
+        if (valid) {
+            htmlLine = '';
+            switch (item['status'].toLowerCase()) {
+                case 'checked in':
+                    // currently nothing special for checked in items, this will be for sale at priceType via priceField
+                    break;
+
+                case 'bid':
+                    item['status'] = 'Sold Bid Sheet';
+                    htmlLine = '<div class="row"><div class="col-sm-4">Final Price:</div><div class="col-sm-8">' +
+                        '<input type=number inputmode="numeric" class="no-spinners" id="art-final-price" name="art-final-price" style="width: 9em;" value="' + item['final_price'] + '"/></div></div>';
+                    break;
+
+                case 'nfs':
+                    valid = false;
+                    html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Not For Sale:</div><div class="col-sm-8 bg-danger text-white">You cannot buy a Not For Sale item.</div></div>';
+                    break;
+
+                case 'removed from show':
+                    html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Removed:</div><div class="col-sm-8 bg-danger text-white">System shows item has been removed from the show.</div></div>';
+                    valid = false;
+                    break;
+
+                case 'to auction':
+                    html += '<div class="row"><div class="col-sm-4 bg-warning">Auction:</div><div class="col-sm-8 bg-warning">System shows item has been sent to the voice auction. Sell anyway?</div></div>';
+                    btn_color = 'btn-warning';
+                    break;
+
+                case 'checked out':
+                    html += '<div class="row"><div class="col-sm-4 bg-warning">Checked Out:</div><div class="col-sm-8 bg-warning">System shows item has been returned to the artist. Sell anyway?</div></div>';
+                    btn_color = 'btn-warning';
+                    break;
+
+                case 'quicksale/sold':
+                    html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Released:</div><div class="col-sm-8 bg-danger text-white">System shows item already been sold via quicksale.</div></div>';
+                    valid = false;
+                    break;
+
+                case 'purchased/released':
+                    html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Released:</div><div class="col-sm-8 bg-danger text-white">System shows item already been released to a purchaser.</div></div>';
+                    valid = false;
+                    break;
+
+                case 'sold bid sheet':
+                case 'sold at auction':
+                    if (item['final_price'] == item['paid']) {
+                        html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Sold:</div><div class="col-sm-8 bg-danger text-white">System shows item already been sold and paid for.</div></div>';
+                        valid = false;
+                    }
+                    break;
+
+            }
+        }
+
+        if (valid) {
+            if (cart.notinCart(item['id'])) {
+                if (htmlLine != '') {
+                    html += htmlLine;
+                } else {
+                    html += '<div class="row"><div class="col-sm-4">' + priceType + '</div><div class="col-sm-8">$' + Number(item[priceField]).toFixed(2) + '</div></div>';
+                    html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color + '" type="button" onclick="addToCart(-1);">Add Art Item to Cart</button></div></div>';
+                }
+            } else {
+                html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-auto bg-warning">Already in Cart</div></div>';
+            }
+        }
+    }
+
+    add_found_div.innerHTML = html;
+    return;
+}
+
+// addToCart - add this row index to the cart
+function addToCart(index) {
+    var item = null;
+    if (index < 0 && artFoundItems.length > 0) {
+        item = artFoundItems[0];
+    } else if (index >= artFoundItems.length) {
+        return;
+    } else {
+        item = artFoundItems[index];
+    }
+
+    var finalPriceField = document.getElementById('art-final-price');
+    if (finalPriceField) {
+        var enteredPrice = finalPriceField.value;
+        if (enteredPrice == null)
+            enteredPrice = 0;
+        var finalPrice = item['final_price'];
+        if (finalPrice == null || finalPrice < 0) {
+            if (item['sale_price'] == null || item['sale_price'] == 0)
+                finalPrice = item['min_price'];
+            else
+                finalPrice = item['sale_price'];
+        }
+        if (enteredPrice < finalPrice) {
+            if (confirm("Entered final price is less than system's sell price of " + finalPrice + ", sell at this price anyway?"))
+                item['final_price'] = Number(finalPrice).toFixed(2);
+            else
+                return;
+        } else {
+            item['final_price'] = enteredPrice;
+        }
+    }
+
+    cart.add(item);
+    add_found_div.innerHTML = "";
+}
+
+// initArtSales - create/update artSales records for this cart to prepare for payment, create master transaction if none exists
+function initArtSales() {
+    // submit the current card data to update the database, retrieve updated cart
+    var postData = {
+        ajax_request_action: 'initArtSales',
+        cart_art: JSON.stringify(cart.getCartArt()),
+        cart_art_map: JSON.stringify(cart.getCartMap()),
+        pay_tid: pay_tid,
+        perid: current_person['id'],
         user_id: user_id,
     };
     $.ajax({
         method: "POST",
-        url: "scripts/regpos_updateCartElements.php",
+        url: "scripts/artpos_initArtSales.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
             if (data['error'] !== undefined) {
@@ -936,48 +638,19 @@ function review_nochanges() {
             if (data['warn'] !== undefined) {
                 show_message(data['warn'], 'success');
             }
-            reviewed_update_cart(data);
+            initArtSalesComplete(data);
         },
         error: showAjaxError,
     });
 }
 
-// reviewed_update_cart:
+// initArtSalesComplete - now update the cart with the new data and call pay_shown again to draw it.
 //  all the data from the cart has been updated in the database, now apply the id's and proceed to the next step
-function reviewed_update_cart(data) {
-    pay_tid = data['master_tid'];
+function initArtSalesComplete(data) {
+    pay_tid = data['pay_tid'];
     // update cart elements
     var unpaid_rows = cart.updateFromDB(data);
-
-    // set tab to review-tab
-    if (unpaid_rows == 0) {
-        goto_print();
-        return;
-    }
-
-    // Once saved, move them to next step
-    if (isCashier) {
-        bootstrap.Tab.getOrCreateInstance(pay_tab).show();
-    } else {
-        cart.showNext();
-        cart.hideStartOver();
-        cart.freeze();
-        var el = document.getElementById('review-btn-update');
-        if (el)
-            el.hidden = true;
-        el = document.getElementById('review-btn-nochanges');
-        if (el)
-            el.hidden = true;
-        el = document.getElementById('review_status');
-        if (el)
-            el.innerHTML = "Completed: Send customer to cashier with id of " + pay_tid;
-    }
-}
-
-// change tab to the print screen
-function goto_print() {  
-    printed_obj = null;
-    bootstrap.Tab.getOrCreateInstance(print_tab).show();    
+    pay_shown();
 }
 
 // setPayType: shows/hides the appropriate fields for that payment type
@@ -1003,7 +676,7 @@ function pay(nomodal, prow = null) {
     var checkno = null;
     var desc = null;
     var ptype = null;
-    var total_amount_due = cart.getTotalPrice() - (cart.getTotalPaid() + Number(coupon_discount));
+    var total_amount_due = cart.getTotalPrice() - cart.getTotalPaid();
 
     if (nomodal != '') {
         cashChangeModal.hide();
@@ -1109,19 +782,21 @@ function pay(nomodal, prow = null) {
         }
     }
     // process payment
+    var art = cart.getCartArt();
+    var artJSON = JSON.stringify(art);
     var postData = {
         ajax_request_action: 'processPayment',
-        cart_membership: cart.getCartMembership(),
+        cart_art: artJSON,
         new_payment: prow,
-        coupon: prow['coupon'],
         change: crow,
         user_id: user_id,
+        perid: current_person['id'],
         pay_tid: pay_tid,
     };
     pay_button_pay.disabled = true;
     $.ajax({
         method: "POST",
-        url: "scripts/regpos_processPayment.php",
+        url: "scripts/artpos_processPayment.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
             var stop = true;
@@ -1150,7 +825,7 @@ function pay(nomodal, prow = null) {
 
 
 // updatedPayment:
-//  payment entered into the database correctly, update the payment cart and the memberships with the updated paid amounts
+//  payment entered into the database correctly, update the payment cart and the art with the updated paid amounts
 function updatedPayment(data) {
     cart.updatePmt(data);
     pay_shown();
@@ -1160,18 +835,20 @@ var last_receipt_type = '';
 // Create a receipt and send it to the receipt printer
 function print_receipt(receipt_type) {
     last_receipt_type = receipt_type;
+    var d = new Date();
+    var payee = (current_person['first_name'] + ' ' + current_person['last_name']).trim();
 
     // header text
-    var header_text = cart.receiptHeader(user_id, pay_tid);
+    var header_text =  "\nReceipt for payment to " + conlabel + "\nat " + d.toLocaleString() + "\nBy: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid + "\n";
     // optional footer text
     var footer_text = '';
     // server side will print the receipt
     var postData = {
         ajax_request_action: 'printReceipt',
         header: header_text,
-        prows: cart.getCartPerinfo(),
-        mrows: cart.getCartMembership(),
-        pmtrows: cart.getCartPmt(),
+        person: current_person,
+        arows: JSON.stringify(cart.getCartArt()),
+        pmtrows: JSON.stringify(cart.getCartPmt()),
         footer: footer_text,
         receipt_type: receipt_type,
         email_addrs: emailAddreesRecipients,
@@ -1184,7 +861,7 @@ function print_receipt(receipt_type) {
 
         $.ajax({
             method: "POST",
-            url: "scripts/regpos_printReceipt.php",
+            url: "scripts/artpos_printReceipt.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
                 clear_message();
@@ -1215,227 +892,166 @@ function print_receipt(receipt_type) {
     }
 }
 
-// add_badge_to_print:
-//      create the parameters for a single badge
-//
-function add_badge_to_print(index) {
-    return cart.getBadge(index);
-}
-// Send one or all of the badges to the printer
-function print_badge(index) {
-    var rownum = 0;
-    var cartlen = cart.getCartLength();
-
-    var params = [];
-    var badges = [];
-    if (index >= 0) {
-        params.push(add_badge_to_print(index));
-        badges.push(index);
-    } else {
-        while (rownum < cartlen) {
-            params.push(add_badge_to_print(rownum));
-            badges.push(rownum);
-            rownum++;
-        }
-    }
-    var postData = {
-        ajax_request_action: 'printBadge',
-        params: params,
-        badges: badges,
-    };
-    $("button[name='print_btn']").attr("disabled", true);
+// tab shown events - state mapping for which tab is shown
+function find_shown() {
+    cart.unfreeze();
+    current_tab = find_tab;
+    cart.drawCart();
+    pay_InitialCart = true;
+    // get statistics
     $.ajax({
         method: "POST",
-        url: "scripts/regpos_printBadge.php",
-        data: postData,
+        url: "scripts/artpos_stats.php",
+        data: { stats: 'all' },
         success: function (data, textstatus, jqxhr) {
             if (data['error'] !== undefined) {
                 show_message(data['error'], 'error');
                 return;
             }
-            PrintComplete(data);
+            if (data['message'] !== undefined) {
+                show_message(data['message'], 'success');
+            }
+            updateStats(data);
         },
-        error: function (jqXHR, textstatus, errorThrown) {
-            $("button[name='print_btn']").attr("disabled", false);
-            pay_button_pay.disabled = false;
-            showAjaxError(jqXHR, textstatus, errorThrown);
-        },
+        error: showAjaxError,
     });
 }
 
-function PrintComplete(data) {
-    var badges = data['badges'];
-    var regs = [];
-    var index;
-    for (index in badges) {
-        if (printed_obj.get(index) == 0) {
-            var rparams = cart.addToPrintCount(index);
-            printed_obj.set(index, 1);
-            regs.push({ regid: rparams[0], printcount: rparams[1]});
-        }
+function updateStats(data) {
+    active_customers = data['active_customers'];
+    awaiting_payment = data['need_pay'];
+    awaiting_release =  data['need_release'];
+    var html = '<div class="col-sm-2">Stats:</div>';
+    if (active_customers.length > 0) {
+        html += '<div class="col-sm-3 text-primary" onclick="showStats(' + "'active'" + ');">Active Customers: ' + active_customers.length + '</div>';
+    } else {
+        html += '<div class="col-sm-3">Active Customers: 0</div>';
     }
-    if (regs.length > 0) {
-        var postData = {
-            ajax_request_action: 'updatePrintcount',
-            regs: regs,
-            user_id: user_id,
-            tid: pay_tid,
-        };
-        $.ajax({
-            method: "POST",
-            url: "scripts/regpos_updatePrintcount.php",
-            data: postData,
-            success: function (data, textstatus, jqxhr) {
-                if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
-                    return;
-                }
-            },
-            error: showAjaxError,
-        });
+    if (awaiting_payment.length > 0) {
+        html += '<div class="col-sm-3 text-primary" onclick="showStats(' + "'payment'" + ');">Awaiting Payment: ' + awaiting_payment.length + '</div>';
+    } else {
+        html += '<div class="col-sm-3">Awaiting Payment: 0</div>';
     }
-    $("button[name='print_btn']").attr("disabled", false);
-    print_shown();
-    show_message(data['message'], 'success');
+    if (awaiting_release.length > 0) {
+        html += '<div class="col-sm-3 text-primary" onclick="showStats(' + "'release'" + ');">Awaiting Release: ' + awaiting_release.length + '</div>';
+    } else {
+        html += '<div class="col-sm-3">Awaiting Release: 0</div>';
+    }
+    stats_div.innerHTML = html;
+    cart.showStartOver();
 }
 
-// tab shown events - state mapping for which tab is shown
-function find_shown() {
-    cart.clearInReview();
-    cart.unfreeze();
-    current_tab = find_tab;
-    cart.drawCart();
+// statistics display functions
+function hideStats() {
+    if (statsTable) {
+        statsTable.destroy();
+        statsTable = null;
+    }
+    showStats_div.innerHTML = '';
+}
+function showStats(which) {
+    var data = null;
+    switch (which) {
+        case 'active':
+            data = active_customers;
+            break;
+        case 'payment':
+            data = awaiting_payment;
+            break;
+        case 'release':
+            data = awaiting_release;
+            break;
+    }
+
+    if (statsTable) {
+        statsTable.destroy();
+        statsTable = null;
+    }
+
+    if (data == null)
+        return;
+
+    showStats_div.innerHTML = '<div class="row"><div class="col-sm-12" id="statsTableDiv"></div></div>' +
+        '<div class="row mt-2 mb-2"><div class="col-sm-auto"><button class="btn btn-sm btn-primary" onclick="hideStats();">Hide Detail</button></div></div>';
+    statsTable = new Tabulator('#statsTableDiv', {
+        maxHeight: "400px",
+        data: data,
+        index: 'perid',
+        layout: "fitColumns",
+        pagination: true,
+        paginationSize: 10,
+        paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+
+        columns: [
+            {title: "Badge #", field: "perid",  headerSort: true, headerFilter: true, maxWidth: 140, width: 140, hozAlign: 'right', headerHozAlign: 'right' },
+            {title: "Name", field: "name", headerFilter: true, maxWidth: 500, width: 500, },
+            {title: "# Items", field: "items", maxWidth: 100, width: 100, hozAlign: 'right', headerHozAlign: 'right', headerSort: false, },
+        ],
+    });
 }
 
 function add_shown() {
-    cart.clearInReview();
     cart.unfreeze();
     current_tab = add_tab;
     clear_message();
     cart.drawCart();
-}
-
-function review_shown() {
-    // draw review section
-    current_tab = review_tab;
-    review_div.innerHTML = cart.buildReviewData();
-    cart.setInReview();
-    cart.unfreeze();
-    cart.setCountrySelect();
+    if (cart.getCartLength() > 0) {
+        cart.showPay();
+    }
+    cart.showStartOver();
+    pay_InitialCart = true;
+    artistNumber_field.value = null;
+    pieceNumber_field.value = null;
+    unitNumber_field.value = null;
+    itemCode_field.value = null;
 }
 
 var emailAddreesRecipients = [];
-var last_email_row = '';
-function toggleRecipientEmail(row) {
-    var emailCheckbox = document.getElementById('emailAddr_' + row.toString());
-    var email_address = cart.getEmail(row);
-    if (emailCheckbox.checked) {
-        if (!emailAddreesRecipients.includes(email_address)) {
-            emailAddreesRecipients.push(email_address);
-        }
-    } else {
-        if (emailAddreesRecipients.includes(email_address)) {
-            for (var index=0; index < emailAddreesRecipients.length; index++) {
-                if (emailAddreesRecipients[index] == email_address)
-                    emailAddreesRecipients.splice(index,  1);
-            }
-        }
-    }
-    pay_button_ercpt.disabled = emailAddreesRecipients.length == 0;
-}
 
-function checkbox_check() {
-    var emailCheckbox = document.getElementById('emailAddr_' + last_email_row.toString());
-    emailCheckbox.checked = true;
-    pay_button_ercpt.hidden = false;
-    pay_button_ercpt.disabled = false;
-}
-
-// apply_coupon - apply and compute the discount for a coupon, also show the rules for the coupon if applied
-//  a = apply coupon from select
-//  r = remove coupon
-//  in any case need to re-show the pay tab with the details
-function apply_coupon(cmd) {
-    if (cmd == 'r') {
-        var curCoupon = coupon.getCouponId();
-        cart.clearCoupon(curCoupon);
-        coupon = null;
-        coupon = new Coupon();
-        coupon_discount = Number(0).toFixed(2);
-        pay_shown();
-        return;
-    }
-    if (cmd == 'a') {
-        var couponId = document.getElementById("pay_couponSelect").value;
-        coupon = null;
-        coupon = new Coupon();
-        if (couponId == '') {
-            show_message("Coupon cleared, no coupon applied", 'success');
-            return;
-        }
-        coupon.LoadCoupon(couponId);
-    }
-    return;
-}
-
+// show the pay tab, and its current dataset, if first call, update artSales in the database.
 function pay_shown() {
-    if (!isCashier) {
-        show_message("You do not have permission to handle payments", "warning");
-        return;
+    if (pay_InitialCart) {
+        pay_InitialCart = false;
+        initArtSales();
     }
-    cart.clearInReview();
     cart.freeze();
     current_tab = pay_tab;
     cart.drawCart();
 
-    if (pay_prior_discount === null) {
-        pay_prior_discount = cart.getPriorDiscount();
-    }
-
-    var total_amount_due = cart.getTotalPrice() - (cart.getTotalPaid() + pay_prior_discount + Number(coupon_discount));
+    var total_amount_due = cart.getTotalPrice() - cart.getTotalPaid();
     if (total_amount_due  < 0.01) { // allow for rounding error, no need to round here
-        // nothing more to pay       
-        print_tab.disabled = false;
+        // nothing more to pay
         cart.showNext();
+        cart.showRelease();
+        cart.hideStartOver();
+        cart.hideAdd();
+        add_tab.disabled = true;
         if (pay_button_pay != null) {
             var rownum;
             pay_button_pay.hidden = true;
             pay_button_rcpt.hidden = false;
             var email_html = '';
-            var email_count = 0;
-            last_email_row = -1;
-            var cartlen = cart.getCartLength();
-            rownum = 0;
-            while (rownum < cartlen) {
-                var email_addr = cart.getEmail(rownum);
-                if (emailRegex.test(email_addr)) {
-                    email_html += '<div class="row"><div class="col-sm-1 text-end pe-2"><input type="checkbox" id="emailAddr_' + rownum.toString() +
-                        '" name="receiptEmailAddrList" onclick="toggleRecipientEmail(' + rownum.toString() + ')"/></div><div class="col-sm-8">' +
-                        '<label for="emailAddr_' + rownum.toString() + '">' + email_addr + '</label></div></div>';
-                    email_count++;
-                    last_email_row = rownum;
-                }
-                rownum++;
+            var email_addr = current_person['email_addr'];
+            if (emailRegex.test(email_addr)) {
+                email_html += '<div class="row"><div class="col-sm-1 pe-2"></div><div class="col-sm-8">' + email_addr + '</div></div>';
             }
             if (email_html.length > 2) {
                 pay_button_ercpt.hidden = false;
                 pay_button_ercpt.disabled = false;
-                receeiptEmailAddresses_div.innerHTML = '<div class="row mt-2"><div class="col-sm-9 p-0">Email receipt to:</div></div>' +
-                    email_html;
-                if (email_count == 1) {
-                    emailAddreesRecipients.push(cart.getEmail(last_email_row));
-                    setTimeout(checkbox_check, 100);
-                }
+                pay_button_ercpt.disabled = false;
+                receeiptEmailAddresses_div.innerHTML = '<div class="row mt-2"><div class="col-sm-9 p-0">Email receipt to:</div></div>' + email_html;
+                emailAddreesRecipients.push(current_person['email_addr']);
             }
-            pay_button_print.hidden = false;
             document.getElementById('pay-amt').value='';
             document.getElementById('pay-desc').value='';
             document.getElementById('pay-amt-due').innerHTML = '';
             document.getElementById('pay-check-div').hidden = true;
             document.getElementById('pay-ccauth-div').hidden = true;
-            cart.hideVoid();
+            cart.hideAdd();
         } else {
-            goto_print();
+            cart.showNext();
+            cart.showRelease();
+            cart.hideStartOver();
         }
     } else {
         if (pay_button_pay != null) {
@@ -1443,7 +1059,6 @@ function pay_shown() {
             pay_button_rcpt.hidden = true;
             pay_button_ercpt.hidden = true;
             pay_button_ercpt.disabled = true;
-            pay_button_print.hidden = true;
         }
 
         // draw the pay screen
@@ -1454,45 +1069,8 @@ function pay_shown() {
         <div class="col-sm-auto ms-0 me-2 p-0">New Payment Transaction ID: ` + pay_tid + `</div>
     </div>
     `;
-    if (num_coupons > 0 && !cart.priorCouponInCart()) { // cannot apply a coupon if one was already in the cart (and of course, there need to be valid coupons right now)
-        if (!coupon.isCouponActive()) { // no coupon applied yet
-            pay_html += `
-    <div class="row mt-3">
-        <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
-        <div class="col-sm-auto ms-0 me-2 p-0">
-` + couponSelect + `
-        </div>
-        <div class="col-sm-auto ms-0 me-0 p-0">
-            <button class="btn btn-secondary btn-sm" type="button" id="pay-btn-coupon" onclick="apply_coupon('a');">Apply Coupon</button>
-        </div>  
-    </div>
-`;
-        } else {
-            // now display the amount due
-            pay_html += `
-    <div class="row mt-1">
-        <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
-        <div class="col-sm-auto ms-0 me-2 p-0">` + coupon.getNameString() + `</div>
-         <div class="col-sm-auto ms-0 me-0 p-0">
-            <button class="btn btn-secondary btn-sm" type="button" id="pay-btn-coupon" onclick="apply_coupon('r');">Remove Coupon</button>
-        </div>  
-    </div>
-    <div class="row mt-1">
-        <div class="col-sm-1 ms-0 me-0">&nbsp;</div>
-        <div class="col-sm-11 ms-0 me-0 p-0">` + coupon.couponDetails() + `</div>
-    </div>
-`;
-        }
-    }
+
     // add prior discounts to screen if any
-    if (pay_prior_discount > 0) {
-        pay_html += `
-    <div class="row mt-2">
-        <div class="col-sm-2 ms-0 me-2 p-0">Prior Discount:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(pay_prior_discount).toFixed(2) + `</div>
-    </div>
-`;
-    }
     pay_html += `
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
@@ -1500,7 +1078,7 @@ function pay_shown() {
     </div>
     <div class="row mt-2">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Paid:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-amt" name="paid-amt" size="6"/></div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" inputmode="numeric" class="no-spinners" id="pay-amt" name="paid-amt" style="width: 7em;"/></div>
     </div>
     <div class="row">
         <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
@@ -1546,9 +1124,6 @@ function pay_shown() {
         <div class="col-sm-auto ms-0 me-2 p-0">
             <button class="btn btn-primary btn-sm" type="button" id="pay-btn-rcpt" onclick="print_receipt('print');" hidden>Print Receipt</button>
         </div>
-        <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-print" onclick="goto_print();" hidden>Print Badges</button>
-        </div>
     </div>
     <div id="receeiptEmailAddresses" class="container-fluid"></div>
   </form>
@@ -1565,54 +1140,145 @@ function pay_shown() {
         receeiptEmailAddresses_div = document.getElementById('receeiptEmailAddresses');
         if (receeiptEmailAddresses_div)
             receeiptEmailAddresses_div.innerHTML = '';
-        pay_button_print = document.getElementById('pay-btn-print');
         if (cart.getPmtLength() > 0) {
-            cart.showVoid();
             cart.hideStartOver();
         } else {
-            cart.hideVoid();
+            cart.showAdd();
             cart.showStartOver();
         }
     }
 }
 
-function print_shown() {
-    cart.clearInReview();
-    find_tab.disabled = true;
-    add_tab.disabled = true;
-    review_tab.disabled = true;
-    cart.hideStartOver();
+// release_shown - show the release tab
+function release_shown() {
+    current_tab = release_tab;
+    pay_tab.disabled = true;
+    cart.hideAdd();
     cart.showNext();
-    cart.hideVoid();
-    cart.freeze();
-    current_tab = print_tab;
-    var new_print = false;
-    if (printed_obj == null) {
-        new_print = true;
-        printed_obj = new map();
-    }
-    cart.drawCart();
+    cart.hideStartOver();
+    clear_message();
 
-    // draw the print screen
-    var print_html = `<div id='printBody' class="container-fluid form-floating">
-`;
-    if (badgePrinterAvailable === false) {
-        print_html += 'No printer selected, unable to print badges.  </div>';
-        print_div.innerHTML = print_html;
+    // search for matching names
+    var postData = {
+        ajax_request_action: 'findRelease',
+        perid: current_person['id'],
+    };
+    $.ajax({
+        method: "POST",
+        url: "scripts/artpos_findRelease.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['message'] !== undefined) {
+                show_message(data['message'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+            }
+            foundRelease(data);
+        },
+        error: function (jqXHR, textstatus, errorThrown) {
+            $("button[name='find_btn']").attr("disabled", false);
+            showAjaxError(jqXHR, textstatus, errorThrown);
+        }
+    });
+}
+
+function foundRelease(data) {
+    releaseTitleDiv.innerHTML = 'Check Artwork Purchased by ' + (current_person['first_name'] + ' ' + current_person['last_name']).trim();
+
+    if (releaseTable != null) {
+        releaseTable.destroy();
+        releaseTable = null;
+    }
+
+    releaseTable = new Tabulator('#ReleaseArtBody', {
+        maxHeight: "600px",
+        data: data['art'],
+        index: 'id',
+        layout: "fitColumns",
+        initialSort: [
+            {column: "exhibitorNumber", dir: "asc"},
+            {column: "item_key", dir: "asc"},
+        ],
+        pagination: true,
+        paginationSize: 25,
+        paginationSizeSelector: [25, 50, 100, 250, true], //enable page size select element with these options
+
+        columns: [
+            {field: "id", visible: false,},
+            {field: "artSalesId", visible: false,},
+            {title: "CO", field: "released", maxWidth: 90, width: 90, hozAlign: 'center', formatter: "tickCross", cellClick: invertTickCross, headerSort: true, },
+            {title: "Exh #", field: "exhibitorNumber",  headerSort: true, headerFilter: true, headerWordWrap: true, maxWidth: 100, width: 100, hozAlign: 'right', },
+            {title: "Item #", field: "item_key", headerFilter: true, headerWordWrap: true,  maxWidth: 100, width: 100, hozAlign: 'right' },
+            {title: "Exhibitor Name", field: "exhibitorName", headerFilter: true, headerWordWrap: true,  maxWidth: 250, width: 250, },
+            {title: "Qty", field: "purQuantity", maxWidth: 90, width: 90, hozAlign: 'right' },
+            {title: "Type", field: "type", headerFilter: true, width: 120, maxWidth: 120, },
+            {title: "Title", field: "title", headerSort: true, headerFilter: true, headerWordWrap: true, maxWidth: 400, width: 400, },
+            {title: "Material", field: "material", headerSort: true, headerFilter: true,  width: 300, maxWidth: 300, },
+        ],
+    });
+
+    releaseModal.show();
+}
+
+function releaseSetAll(value) {
+    if (releaseTable == null)
         return;
-    }
-    print_html += cart.printList(new_print);
-    print_html += `
-    <div class="row mt-4">
-        <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
-        <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-print-all" name="print_btn" onclick="print_badge(-1);">Print All</button>
-        </div>
-    </div>
-    <div class="row mt-4">
-        <div class="col-sm-12 m-0 mt-4 p-0" id="pt-status"></div>
-    </div>
-</div>`;
 
-    print_div.innerHTML = print_html;
+    var counts = releaseTable.getDataCount();
+    for (var index = 1; index <= counts;  index++) {
+        var row = releaseTable.getRowFromPosition(index);
+        var cell = row.getCell('released');
+        cell.setValue(value);
+    }
+}
+
+function invertTickCross(e,cell) {
+    'use strict';
+
+    var value = cell.getValue();
+    if (value === undefined) {
+        value = false;
+    }
+    if (value === 0 || Number(value) === 0)
+        value = false;
+    else if (value === "1" || Number(value) > 0)
+        value = true;
+
+    cell.setValue(!value, true);
+}
+
+function processRelease() {
+    var data = releaseTable.getData();
+    releaseModal.hide();
+    clear_message();
+    $.ajax({
+        url: 'scripts/artpos_processRelease.php',
+        method: "POST",
+        data: { art: JSON.stringify(data), perid: current_person['id'], user_id: user_id, },
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+            }
+            if (data['message'] !== undefined) {
+                show_message(data['message'], 'success');
+            }
+            if (data['num_remain'] > 0) {
+                if (confirm(data['num_remain'] + ' items are still not released, return to release?'))
+                    release_shown();
+            } else {
+                cart.hideRelease();
+                start_over();
+            }
+        },
+        error: showAjaxError
+    });
 }

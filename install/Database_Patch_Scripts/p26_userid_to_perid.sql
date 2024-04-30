@@ -52,7 +52,7 @@ UPDATE transaction
 SET userid = U.perid
 WHERE userid = U.id;
 
-UPDATE TRANSACTION SET userid = NULL WHERE userid = 0;
+UPDATE transaction SET userid = NULL WHERE userid = 0;
 
 ALTER TABLE transaction ADD CONSTRAINT `transaction_userid_fk` FOREIGN KEY (`userid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 
