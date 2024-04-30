@@ -50,7 +50,7 @@ function draw_cc_html($cc, $postal_code = "--") {
 EOS;
     return $html;
 };
-function cc_charge_purchase($results, $ccauth) {
+function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     if (isset($_SESSION)) {
         if (array_key_exists('user_perid', $_SESSION)) {
             $user_perid = $_SESSION['user_perid'];

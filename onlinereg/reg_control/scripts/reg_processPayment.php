@@ -115,7 +115,7 @@ if ($new_payment['type'] == 'online') {
     if ($amt > 0) {
         $ccauth = get_conf('cc');
         load_cc_procs();
-        $rtn = cc_charge_purchase($cc_params, $ccauth);
+        $rtn = cc_charge_purchase($cc_params, $ccauth, true);
         if ($rtn === null) {
             ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
             exit();

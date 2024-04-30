@@ -425,7 +425,7 @@ $results = array(
 //log requested badges
 logWrite(array('con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces, 'trans' => $transid, 'results' => $results, 'request' => $badges));
 
-$rtn = cc_charge_purchase($results, $ccauth);
+$rtn = cc_charge_purchase($results, $ccauth, true);
 if ($rtn === null) {
     ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
     exit();
