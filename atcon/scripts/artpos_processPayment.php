@@ -153,6 +153,13 @@ WHERE id = ?;
 EOS;
 $usstr = 'idi';
 
+$updArtSalesStatusSQL = <<<EOS
+UPDATE artSales
+SET status = ?
+WHERE id = ?;
+EOS;
+$usrstr = 'si';
+
 foreach ($cart_art as $cart_row) {
     if ($cart_row['display_price'] == '')
         $cart_row['display_price'] = 0;
@@ -178,6 +185,10 @@ foreach ($cart_art as $cart_row) {
 
             if ($cart_row['priceType'] == 'Quick Sale') {
                 $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array($perid, $cart_row['paid'], $cart_row['id']));
+                $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array('Quicksale/Sold', $cart_row['artSalesId']));
+            }
+            if ($cart_row['type'] == 'print') {
+                $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array('Purchased/Released', $cart_row['artSalesId']));
             }
         }
     } else {

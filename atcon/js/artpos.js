@@ -176,6 +176,11 @@ function start_over(reset_all) {
 }
 
 // switch to the add tab
+function goto_find() {
+    bootstrap.Tab.getOrCreateInstance(find_tab).show();
+}
+
+// switch to the add tab
 function goto_add() {
     bootstrap.Tab.getOrCreateInstance(add_tab).show();
 }
@@ -433,7 +438,7 @@ function foundArt(data) {
     var valid = true;
     var btn_color = 'btn-primary';
     artFoundItems = data['items'];
-    if (data['queryType'] == 'code') {
+    if (data['items'].length == 1) {
         var item = data['items'][0];
         html  = '<div class="row mt-4 mb-1"><div class="col-sm-12 bg-primary text-white">Item Details</div></div>';
         html += '<div class="row"><div class="col-sm-4">Artist Number:</div><div class="col-sm-8">' + item['exhibitorNumber'] + '</div></div>';
@@ -1150,7 +1155,7 @@ function releaseSetAll(value) {
     var counts = releaseTable.getDataCount();
     for (var index = 1; index <= counts;  index++) {
         var row = releaseTable.getRowFromPosition(index);
-        var cell = row.getCell('release');
+        var cell = row.getCell('released');
         cell.setValue(value);
     }
 }
@@ -1192,6 +1197,9 @@ function processRelease() {
             if (data['num_remain'] > 0) {
                 if (confirm(data['num_remain'] + ' items are still not released, return to release?'))
                     release_shown();
+            } else {
+                cart.hideRelease();
+                start_over();
             }
         },
         error: showAjaxError
