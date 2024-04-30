@@ -103,68 +103,55 @@ function init_locations() {
 function addInventoryIcon(cell, formatterParams, onRendered) {
     var html = '';
     var item_status = cell.getRow().getData().status;
+    var btnClass = 'btn btn-sm p-0';
+    var btnStyle = 'style="--bs-btn-font-size: 75%;"';
+    
 
     switch(item_status) {
+        case 'Not In Show':
         case 'Checked Out':
         case 'purchased/released':
-            html += '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'alert\')">N/A</button>';
             // no inventory action, gone
             break;
         case 'Sold Bid Sheet':
         case 'Sold At Auction':
-            // sales can sell
-            if(mode == 'sales') { // this is probably not how this will be done
-                html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'sell\')">Sell</button>';
-            }
-            html += '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'alert\')">N/A</button>';
             //no inventory action
             break;
         case 'Quicksale/Sold':
             //inventory
             if(mode == 'artinventory') {
-                html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button>';
+                html += '<button type="button" class="'+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button> ';
             }
-            //sales or manager can release
-            if(manager || (mode=='sales')) {
-                html += '<button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Release\')">Release</button>';
+            //manager can release
+            if(manager) {
+                html += '<button type="button" class="'+btnClass+' btn-secondary" '+btnStyle+' onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Release\')">Release</button> ';
             }
             break;
         case 'To Auction':
         case 'BID':
             //inventory only
             if(mode == 'artinventory') {
-                html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button>';
+                html += '<button type="button" class="'+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button> ';
             }
-            //manager can remove from show 
-            /* actually they shouldn't be able to
-            if(manager) {
-                html += '<button type="button" class="btn btn-sm btn-warning pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'remove\')">Remove</button>';
-            }*/
             break;
         case 'Checked In':
-            //sales can sell
         case 'NFS':
             // inventory or check out
             if(mode == 'artinventory') {
-                html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button>';
-                html += '<button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Check Out\')">Out</button>';
+                html += '<button type="button" class="'+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button> ';
+                html += '<button type="button" class="'+btnClass+' btn-secondary" '+btnStyle+' onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Check Out\')">Out</button> ';
             }
             // manager can remove from show
             if(manager) {
-                html += '<button type="button" class="btn btn-sm btn-warning pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'remove\')">Remove</button>';
+                html += '<button type="button" class="'+btnClass+' btn-warning" '+btnStyle+' onclick="add_to_cart(' + cell.getRow().getData().index + ',\'remove\')">Remove</button> ';
             }
             break;
         case 'Removed from Show':
         case 'Entered':
-        case 'Not In Show':
         default:
             // must check in
-            html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Check In\')">In</button>';
+            html += '<button type="button" class="'+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Check In\')">In</button> ';
     }
-    if(html == '') { 
-        html += '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'alert\')">N/A</button>';
-    }
-
     return html;
 }
 
@@ -310,6 +297,7 @@ function add_to_cart(index, action) {
         return;
     }
 
+    item['action']=action;
     draw_cart();
 }
 
@@ -320,14 +308,18 @@ function changed_loc() {
 
 function draw_cart_row(rownum) {
     var item = cart[rownum];
+    var btnClass = 'btn btn-sm p-0';
+    var btnStyle = 'style="--bs-btn-font-size: 75%;"';
+
     var html = `
 <div class="row">
     <div class="col-sm-8">
+        <div class="text-bg-info">
 `;
     var action_html = `
     </div>
     <div class="col-sm-4">
-        <button type="button" class="btn btn-sm btn-secondary p-0" onclick="remove_from_cart(`+rownum+`)">Remove</button><br/>
+        <button type="button" class="` + btnClass +` btn-secondary" `+btnStyle+` onclick="remove_from_cart(`+rownum+`)">Remove</button><br/>
 `;
     var trailing_html = '</div></div>';
 
@@ -345,38 +337,43 @@ function draw_cart_row(rownum) {
         }
     }
     location_select += '</select>';
+    var show_location = true;
+    if((item['action'] == 'Check Out') || (item['action']=='Remove')){
+        show_location = false;
+        need_location = false;
+    }
     switch(item['type']) {
         case 'nfs':
-            if(mode == 'sales') {
-                alert("Cannot Sell NFS");
-            } else {
-                html += item['id'] + '<br/>' 
+                html += item['id'] + '<span class="right">'+item['action']+'</span></div>' 
                     + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
-                    + 'Location: ' + location_select + '<br/>'
-                    + 'NFS @ ' + item['status'] + '<br/>';
+                    + ((show_location)?'Location: ' + location_select + '<br/>':'')
+                    + 'Display Only @ ' + item['status'] + '<br/>';
                 action_html += '<br/>';
-                if(item['need_location']) {
-                    action_html += `<button class="btn btn-primary btn-sm p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
-                } else {
-                    action_html += `<button class="btn btn-info btn-sm p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                if(show_location) {
+                  if(item['need_location']) {
+                    action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                  } else {
+                    action_html += `<button class="`+btnClass+` btn-info" `+btnStyle+` type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                  }
                 }
                 action_html += '<br/>';
-            }
             break;
         case 'art':
-            html += item['id'] + '<br/>' 
+            html += item['id'] + '<span class="right">'+item['action']+'</span></div>' 
                 + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
-                + 'Location: ' + location_select + '<br/>'
-                + 'Art @ ' + item['status'] + '<br/>';
+                + ((show_location)?'Location: ' + location_select + '<br/>':'')
+                + 'Art Item @ ' + item['status'] + '<br/>';
             action_html += '<br/>';
-            if(item['need_location']) {
-                action_html += `<button class="btn btn-primary btn-sm p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
-            } else {
-                action_html += `<button class="btn btn-info btn-sm p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+            if(show_location) {
+              if(item['need_location']) {
+                action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+              } else {
+                action_html += `<button class="`+btnClass+` btn-info" `+btnStyle+` type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+              }
             }
             action_html += '<br/>';
             if(item['status'] == 'BID') {
-                action_html += `<button class="btn btn-success btn-sm p-0" type="button" id="` + item['id'] + `"_to_bidsheet" onclick="update_bid(`+rownum+`,false,true);">To Bid Sheet</button><br/>`;
+                action_html += `<button class="`+btnClass+` btn-success" `+btnStyle+` type="button" id="` + item['id'] + `"_to_bidsheet" onclick="update_bid(`+rownum+`,false,true);">To Bid Sheet</button><br/>`;
             } else {
                 action_html += '<br/>'; 
             }
@@ -393,22 +390,23 @@ function draw_cart_row(rownum) {
                     + `' value="` + item['bidder'] + `" style="width: 7em"></input> @ $`
                     + `<input type='number' min=`+min_price+` id='bid_` + item['id']
                     + `' value="` + item['final_price'] + `" style="width: 7em"></input><br/>`;
-                action_html += `<button class="btn btn-success btn-sm p-0" type="button" id="` + item['id'] + `"_at_auction" onclick="update_bid(`+rownum+`,false,true);">Sold At Auction</button><br/>`;
+                action_html += `<button class="`+btnClass+` btn-success" `+btnStyle+` type="button" id="` + item['id'] + `"_at_auction" onclick="update_bid(`+rownum+`,false,true);">Sold At Auction</button><br/>`;
             } else {
                 html += 'Bid ';
                 html += `<input type='number' min=0 id='bidder_` + item['id']
                     + `' value="` + item['bidder'] + `" style="width: 7em"></input> @ $`
                     + `<input type='number' min=`+min_price+` id='bid_` + item['id']
                     + `' value="` + item['final_price'] + `" style="width: 7em"></input><br/>`
-                action_html += `<button class="btn btn-primary btn-sm p-0" type="button" id="` + item['id'] + `"_update_bid" onclick="update_bid(`+rownum+`);">Bid</button>`;
-                action_html += `<button class="btn btn-secondary btn-sm p-0" type="button" id="` + item['id'] + `"_to_auction" onclick="update_bid(`+rownum+`,true);">To Auction</button>`;
+                action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item['id'] + `"_update_bid" onclick="update_bid(`+rownum+`);">Bid</button>`;
+                action_html += `<button class="`+btnClass+` btn-secondary" `+btnStyle+` type="button" id="` + item['id'] + `"_to_auction" onclick="update_bid(`+rownum+`,true);">To Auction</button>`;
             }
             action_html += "<br/>"
             break;
         case 'print':
-            html += item['id'] + '<br/>' 
+            html += item['id'] + '<span class="right">'+item['action']+'</span></div>' 
                 + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
-                + 'Location: ' + location_select + '<br/>';
+                + ((show_location)?'Location: ' + location_select + '<br/>':'')
+                + 'Print Shop @ ' + item['status'] + '<br/>';
             if(item['need_count']) {
                 html += '<span class="bg-warning">' + item['quantity'] + '</span>'
                 + ' @ ' + item['status'] + '<br/>';
@@ -416,14 +414,16 @@ function draw_cart_row(rownum) {
                 html += item['quantity'] + ' @ ' + item['status'] + '<br/>';
             }
             action_html += '<br/>';
-            if(item['need_location']) {
-                action_html += `<button class="btn btn-primary btn-sm p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
-            } else {
-                action_html += `<button class="btn btn-info btn-sm p-0" type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+            if(show_location) {
+              if(item['need_location']) {
+                action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                } else {
+                action_html += `<button class="`+btnClass+` btn-info" `+btnStyle+` type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+              }
             }
             action_html += '<br/>';
             if(item['need_count']) {
-                action_html += `<button class="btn btn-primary btn-sm p-0" type="button" id="` + item['id'] + `"_confirm_count" onclick="confirm_count(`+rownum+`);">Confirm Qty</button>`;
+                action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item['id'] + `"_confirm_count" onclick="confirm_count(`+rownum+`);">Confirm Qty</button>`;
             }
             action_html += '<br/>';
             break;
