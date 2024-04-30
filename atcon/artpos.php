@@ -52,6 +52,7 @@ page_init($page, $tab,
                     <div class="tab-pane fade show active" id="find-pane" role="tabpanel" aria-labelledby="person-tab" tabindex="0">
                         <div class="container-fluid">
                             <div class="row" id="stats-div"></div>
+                            <div class="container-fluid" id="showStats-div"></div>
                             <div class="row">
                                 <div class="col-sm-12 text-bg-primary mb-2">
                                     <div class="text-bg-primary m-2">

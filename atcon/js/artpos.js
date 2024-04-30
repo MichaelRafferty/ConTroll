@@ -13,6 +13,11 @@ var id_div = null;
 var badgeid_field = null;
 var current_person = null;
 var stats_div = null;
+var showStats_div = null;
+var statsTable = null;
+var active_customers = null;
+var awaiting_payment = null;
+var awaiting_release = null;
 
 // art items
 var add_found_div = null;
@@ -73,6 +78,7 @@ window.onload = function initpage() {
     badgeid_field.focus();
     id_div = document.getElementById("find_results");
     stats_div = document.getElementById("stats-div");
+    showStats_div = document.getElementById("showStats-div");
 
     artistNumber_field = document.getElementById("artistNumber");
     itemCode_field = document.getElementById("itemCode");
@@ -145,6 +151,8 @@ function start_over(reset_all) {
     if (base_manager_enabled) {
         base_toggleManager();
     }
+
+    hideStats();
     // empty cart
     cart.startOver();
     // empty search strings and results
@@ -171,7 +179,11 @@ function start_over(reset_all) {
     pay_InitialCart = true;
 
     // set tab to find-tab
-    bootstrap.Tab.getOrCreateInstance(find_tab).show();
+    if (current_tab != find_tab) {
+        bootstrap.Tab.getOrCreateInstance(find_tab).show();
+    } else {
+        find_shown();
+    }
     badgeid_field.focus();
 }
 
@@ -906,11 +918,76 @@ function find_shown() {
 }
 
 function updateStats(data) {
-    stats_div.innerHTML = '<div class="col-sm-2">Stats:</div>' +
-        '<div class="col-sm-3">Active Customers: ' + data['active_customers'] + '</div>' +
-        '<div class="col-sm-3">Awaiting Payment: ' + data['need_pay'] + '</div>' +
-        '<div class="col-sm-4">Awaiting Release: ' + data['need_release'] + '</div>';
+    active_customers = data['active_customers'];
+    awaiting_payment = data['need_pay'];
+    awaiting_release =  data['need_release'];
+    var html = '<div class="col-sm-2">Stats:</div>';
+    if (active_customers.length > 0) {
+        html += '<div class="col-sm-3 text-primary" onclick="showStats(' + "'active'" + ');">Active Customers: ' + active_customers.length + '</div>';
+    } else {
+        html += '<div class="col-sm-3">Active Customers: 0</div>';
+    }
+    if (awaiting_payment.length > 0) {
+        html += '<div class="col-sm-3 text-primary" onclick="showStats(' + "'payment'" + ');">Awaiting Payment: ' + awaiting_payment.length + '</div>';
+    } else {
+        html += '<div class="col-sm-3">Awaiting Payment: 0</div>';
+    }
+    if (awaiting_release.length > 0) {
+        html += '<div class="col-sm-3 text-primary" onclick="showStats(' + "'release'" + ');">Awaiting Release: ' + awaiting_release.length + '</div>';
+    } else {
+        html += '<div class="col-sm-3">Awaiting Release: 0</div>';
+    }
+    stats_div.innerHTML = html;
     cart.showStartOver();
+}
+
+// statistics display functions
+function hideStats() {
+    if (statsTable) {
+        statsTable.destroy();
+        statsTable = null;
+    }
+    showStats_div.innerHTML = '';
+}
+function showStats(which) {
+    var data = null;
+    switch (which) {
+        case 'active':
+            data = active_customers;
+            break;
+        case 'payment':
+            data = awaiting_payment;
+            break;
+        case 'release':
+            data = awaiting_release;
+            break;
+    }
+
+    if (statsTable) {
+        statsTable.destroy();
+        statsTable = null;
+    }
+
+    if (data == null)
+        return;
+
+    showStats_div.innerHTML = '<div class="row"><div class="col-sm-12" id="statsTableDiv"></div></div>' +
+        '<div class="row mt-2 mb-2"><div class="col-sm-auto"><button class="btn btn-sm btn-primary" onclick="hideStats();">Hide Detail</button></div></div>';
+    statsTable = new Tabulator('#statsTableDiv', {
+        maxHeight: "400px",
+        data: data,
+        index: 'perid',
+        layout: "fitColumns",
+        pagination: true,
+        paginationSize: 10,
+        paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+
+        columns: [
+            {title: "Badge #", field: "perid",  headerSort: true, headerFilter: true, maxWidth: 140, width: 140, hozAlign: 'right', headerHozAlign: 'right' },
+            {title: "Name", field: "name", headerFilter: true, maxWidth: 500, width: 500, },
+            {title: "# Items", field: "items", maxWidth: 100, width: 100, hozAlign: 'right', headerHozAlign: 'right', headerSort: false, },
+        ],
+    });
 }
 
 function add_shown() {
