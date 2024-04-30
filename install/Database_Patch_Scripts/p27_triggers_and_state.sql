@@ -7,18 +7,16 @@
  /* disabler old reg for now */
 UPDATE auth SET page = 'N' WHERE id = 999;
 
-ALTER TABLE artItems MODIFY COLUMN status enum('Entered','Not In Show','Checked In','NFS','Removed from Show',
-    'BID','Quicksale/Sold','To Auction','Sold Bid Sheet','Sold at Auction','Checked Out','purchased/released') COLLATE utf8mb4_general_ci DEFAULT 'Entered';
+ALTER TABLE artItems MODIFY COLUMN status enum('Entered','Not In Show','Checked In','Removed from Show',
+    'BID','Quicksale/Sold','To Auction','Sold Bid Sheet','Sold at Auction','Checked Out','Purchased/Released') COLLATE utf8mb4_general_ci DEFAULT 'Entered';
 
 DROP TABLE IF EXISTS artSales;
-DROP TABLE IF EXISTS artsales;
-DROP TABLE artsales;
 CREATE TABLE "artSales" (
     "id" int NOT NULL AUTO_INCREMENT,
     "transid" int DEFAULT NULL,
     "artid" int DEFAULT NULL,
     "unit" int DEFAULT NULL,
-    "status" enum('Entered','Not In Show','Checked In','NFS','Removed from Show','BID','Quicksale/Sold','To Auction','Sold Bid Sheet','Sold at Auction','Checked Out','purchased/released') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    "status" enum('Entered','Not In Show','Checked In','Removed from Show','BID','Quicksale/Sold','To Auction','Sold Bid Sheet','Sold at Auction','Checked Out','Purchased/Released') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
     "perid" int DEFAULT NULL,
     "amount" decimal(8,2) NOT NULL,
     "paid" decimal(8,2) NOT NULL DEFAULT '0.00',
@@ -41,15 +39,15 @@ UPDATE artItems SET updatedBy=3;
 ALTER TABLE artItems MODIFY COLUMN updatedBy int NOT NULL;
 ALTER TABLE artItems ADD CONSTRAINT `artItems_updatedBy_fk` FOREIGN KEY (`updatedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 
-DROP TABLE IF EXISTS artItemsHistoryartItemsHistory;
-CREATE TABLE  (
+DROP TABLE IF EXISTS artItemsHistory;
+CREATE TABLE artItemsHistory (
     historyId int NOT NULL AUTO_INCREMENT,
     id int NOT NULL,
     item_key int NOT NULL,
     title varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
     type enum('art','nfs','print') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-     status enum('Entered','Not In Show','Checked In','NFS','Removed from Show',
-         'BID','Quicksale/Sold','To Auction','Sold Bid Sheet','Sold at Auction','Checked Out','purchased/released') COLLATE utf8mb4_general_ci NOT NULL,
+     status enum('Entered','Not In Show','Checked In','Removed from Show',
+         'BID','Quicksale/Sold','To Auction','Sold Bid Sheet','Sold at Auction','Checked Out','Purchased/Released') COLLATE utf8mb4_general_ci NOT NULL,
     location varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
     quantity int NOT NULL,
     original_qty int NOT NULL,
