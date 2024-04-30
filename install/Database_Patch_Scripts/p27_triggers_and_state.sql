@@ -10,24 +10,26 @@ UPDATE auth SET page = 'N' WHERE id = 999;
 ALTER TABLE artItems MODIFY COLUMN status enum('Entered','Not In Show','Checked In','Removed from Show',
     'BID','Quicksale/Sold','To Auction','Sold Bid Sheet','Sold at Auction','Checked Out','Purchased/Released') COLLATE utf8mb4_general_ci DEFAULT 'Entered';
 
+// NOTE: if you have the table artsales, you'll need to drop that as well
+//DROP TABLE IF EXISTS artsales;
 DROP TABLE IF EXISTS artSales;
-CREATE TABLE "artSales" (
-    "id" int NOT NULL AUTO_INCREMENT,
-    "transid" int DEFAULT NULL,
-    "artid" int DEFAULT NULL,
-    "unit" int DEFAULT NULL,
-    "status" enum('Entered','Not In Show','Checked In','Removed from Show','BID','Quicksale/Sold','To Auction','Sold Bid Sheet','Sold at Auction','Checked Out','Purchased/Released') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-    "perid" int DEFAULT NULL,
-    "amount" decimal(8,2) NOT NULL,
-    "paid" decimal(8,2) NOT NULL DEFAULT '0.00',
-    "quantity" int NOT NULL,
-    PRIMARY KEY ("id"),
-    KEY "artSales_transid_fk" ("transid"),
-    KEY "artSales_artitem_fk" ("artid"),
-    KEY "artSales_perinfo_fk" ("perid"),
-    CONSTRAINT "artSales_artitem_fk" FOREIGN KEY ("artid") REFERENCES "artItems" ("id") ON UPDATE CASCADE,
-    CONSTRAINT "artSales_perinfo_fk" FOREIGN KEY ("perid") REFERENCES "perinfo" ("id") ON UPDATE CASCADE,
-    CONSTRAINT "artSales_transid_fk" FOREIGN KEY ("transid") REFERENCES "transaction" ("id") ON UPDATE CASCADE
+CREATE TABLE artSales (
+    id int NOT NULL AUTO_INCREMENT,
+    transid int DEFAULT NULL,
+    artid int DEFAULT NULL,
+    unit int DEFAULT NULL,
+    status enum('Entered','Not In Show','Checked In','Removed from Show','BID','Quicksale/Sold','To Auction','Sold Bid Sheet','Sold at Auction','Checked Out','Purchased/Released') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    perid int DEFAULT NULL,
+    amount decimal(8,2) NOT NULL,
+    paid decimal(8,2) NOT NULL DEFAULT '0.00',
+    quantity int NOT NULL,
+    PRIMARY KEY (id),
+    KEY artSales_transid_fk (transid),
+    KEY artSales_artitem_fk (artid),
+    KEY artSales_perinfo_fk (perid),
+    CONSTRAINT artSales_artitem_fk FOREIGN KEY (artid) REFERENCES artItems (id) ON UPDATE CASCADE,
+    CONSTRAINT artSales_perinfo_fk FOREIGN KEY (perid) REFERENCES perinfo (id) ON UPDATE CASCADE,
+    CONSTRAINT artSales_transid_fk FOREIGN KEY (transid) REFERENCES transaction (id) ON UPDATE CASCADE
 );
 
 /*
