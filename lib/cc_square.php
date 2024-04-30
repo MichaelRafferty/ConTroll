@@ -215,34 +215,31 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 
     try {
         $ordersApi = $client->getOrdersApi();
-        // was commented out
-        if ($useLogWrite) {
-            logWrite(array('ordersApi'=>$ordersApi, 'body'=>$body));
-        } else {
-            web_error_log("ordersApi"); var_error_log($ordersApi);
-            web_error_log("body"); var_error_log($body);
-        }
+//        if ($useLogWrite) {
+//            logWrite(array('ordersApi'=>$ordersApi, 'body'=>$body));
+//        } else {
+//            web_error_log("ordersApi"); var_error_log($ordersApi);
+//            web_error_log("body"); var_error_log($body);
+//        }
         
         $apiResponse = $ordersApi->createOrder($body);
 
-        // was commented out
-        if ($useLogWrite) {
-            logWrite(array('apiResponse'=>$apiResponse));
-        } else {
-            web_error_log("apiResponse");
-            var_error_log($apiResponse);
-        }
+//        if ($useLogWrite) {
+//            logWrite(array('apiResponse'=>$apiResponse));
+//        } else {
+//            web_error_log("apiResponse");
+//            var_error_log($apiResponse);
+//        }
         
         if ($apiResponse->isSuccess()) {
             $crerateorderresponse = $apiResponse->getResult();
-            
-            // was commented out
-            if ($useLogWrite) {
-                logWrite(array('order: success' => $crerateorderresponse));
-            } else {
-                web_error_log("order: success");
-                var_error_log($crerateorderresponse);
-            }
+
+//            if ($useLogWrite) {
+//                logWrite(array('order: success' => $crerateorderresponse));
+//            } else {
+//                web_error_log("order: success");
+//                var_error_log($crerateorderresponse);
+//            }
         } else {
             $errors = $apiResponse->getErrors();
             if ($useLogWrite) {
@@ -283,13 +280,12 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     $pay_money->setAmount($results['total'] * 100);
     $pay_money->setCurrency(Currency::USD);
 
-    // was commented out
-    if ($useLogWrite) {
-        logWrite(array('CALLED WITH' => $results['total'], 'pay_money' => $pay_money));
-    } else {
-        web_error_log("CALLED WITH " . $results['total']);
-        var_error_log($pay_money);
-    }
+//    if ($useLogWrite) {
+//        logWrite(array('CALLED WITH' => $results['total'], 'pay_money' => $pay_money));
+//    } else {
+//        web_error_log("CALLED WITH " . $results['total']);
+//        var_error_log($pay_money);
+//    }
         
     $pbody = new CreatePaymentRequest($results['nonce'], $payuuid);
     $pbody->setAmountMoney($pay_money);
@@ -308,13 +304,12 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 
         if ($apiResponse->isSuccess()) {
             $createPaymentResponse = $apiResponse->getResult();
-            // was commented out
-            if ($useLogWrite) {
-                logWrite(array('payment: success' => $createPaymentResponse));
-            } else {
-                web_error_log("payment: success");
-                var_error_log($createPaymentResponse);
-            }
+//            if ($useLogWrite) {
+//                logWrite(array('payment: success' => $createPaymentResponse));
+//            } else {
+//                web_error_log("payment: success");
+//                var_error_log($createPaymentResponse);
+//            }
         } else {
             $errors = $apiResponse->getErrors();
             if ($useLogWrite) {
