@@ -3,7 +3,7 @@
 // library AJAX Processor: artpos_stats.php
 // ConTroll Registration System
 // Author: Syd Weinstein
-// Retrieve statistics about number of active customers, # who need to pay, and # who need to checkout
+// Retrieve statistics about number of active customers, # who need to pay, and # who need to be released
 
 require_once('../lib/base.php');
 
@@ -48,15 +48,15 @@ $needPayR = dbSafeQuery($needPayQ, 'i', array($conid));
 $response['need_pay'] = $needPayR->fetch_row()[0];
 $needPayR->free();
 
-$needCheckoutQ = <<<EOS
+$needReleaseQ = <<<EOS
 SELECT COUNT(DISTINCT perid)
 FROM artItems a
 JOIN artSales s ON a.id = s.artid
 WHERE s.amount = s.paid AND a.conid= ? AND a.status IN ('Sold Bid Sheet','Sold at Auction', 'Quicksale/Sold');
 EOS;
 
-$needCheckoutR = dbSafeQuery($needCheckoutQ, 'i', array($conid));
-$response['need_check'] = $needCheckoutR->fetch_row()[0];
-$needCheckoutR->free();
+$needReleaseR = dbSafeQuery($needReleaseQ, 'i', array($conid));
+$response['need_release'] = $needReleaseR->fetch_row()[0];
+$needReleaseR->free();
 
 ajaxSuccess($response);

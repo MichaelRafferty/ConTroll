@@ -5,7 +5,7 @@ var cart = null;
 var find_tab = null;
 var pay_tab = null;
 var add_tab = null;
-var check_tab = null;
+var release_tab = null;
 var current_tab = null;
 
 // find person fields
@@ -32,6 +32,12 @@ var pay_InitialCart = true;
 var discount_mode = 'none';
 var cart_total = Number(0).toFixed(2);
 
+// release items
+var releaseModal = null;
+var releaseTitleDiv = null;
+var releaseBodyDiv = null;
+var releaseTable = null;
+
 // Data Items
 var unpaid_table = [];
 var result_perinfo = [];
@@ -56,7 +62,7 @@ window.onload = function initpage() {
     current_tab = find_tab;
     add_tab = document.getElementById("add-tab");
     pay_tab = document.getElementById("pay-tab");
-    check_tab = document.getElementById("check-tab");
+    release_tab = document.getElementById("release-tab");
 
     // cart
     cart = new artpos_cart();
@@ -85,10 +91,15 @@ window.onload = function initpage() {
     find_tab.addEventListener('shown.bs.tab', find_shown)
     add_tab.addEventListener('shown.bs.tab', add_shown)
     pay_tab.addEventListener('shown.bs.tab', pay_shown)
-    check_tab.addEventListener('shown.bs.tab', check_shown)
+    release_tab.addEventListener('shown.bs.tab', release_shown)
 
     // cash payment requires change
     cashChangeModal = new bootstrap.Modal(document.getElementById('CashChange'), { focus: true, backldrop: 'static' });
+
+    // release works in a modal
+    releaseModal = new bootstrap.Modal(document.getElementById('ReleaseArt'), { focus: true, backldrop: 'static' });
+    releaseTitleDiv = document.getElementById("ReleaseArtTitle");
+    releaseBodyDiv = document.getElementById("ReleaseArtBody");
 
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
 
@@ -149,7 +160,7 @@ function start_over(reset_all) {
     find_tab.disabled = false;
     add_tab.disabled = true;
     pay_tab.disabled = true;
-    check_tab.disabled = true;
+    release_tab.disabled = true;
     cart.hideNext();
     cart.hideAdd();
     pay_button_pay = null;
@@ -172,6 +183,14 @@ function goto_add() {
 // switch to the pay tab
 function goto_pay() {
     bootstrap.Tab.getOrCreateInstance(pay_tab).show();
+}
+
+function goto_release() {
+    if (current_tab != release_tab) {
+        bootstrap.Tab.getOrCreateInstance(release_tab).show();
+    } else {
+        release_shown();
+    }
 }
 
 // draw_person: findPerson found someone.  Display their details
@@ -295,7 +314,7 @@ function findPerson(find_type) {
 function foundPerson(data) {
     if (data['num_rows'] == 1) { // one person found
         current_person = data['person'];
-        // put the person details in the cart, populate the cart with the art they have to check out
+        // put the person details in the cart, populate the cart with the art they have to purchase
         draw_person();
         data['art'].forEach((artItem) => {
             if (pay_tid == null) {
@@ -317,8 +336,9 @@ function foundPerson(data) {
         }
         cart.drawCart();
         cart.showStartOver();
-        if (data['checkout'] > 0 && cart.getCartLength() == 0) {
-            check_tab.disabled = false;
+        if (data['release'] > 0 && cart.getCartLength() == 0) {
+            release_tab.disabled = false;
+            cart.showRelease();
         }
         return;
     } else { // I'm not sure how we'd get here
@@ -884,7 +904,7 @@ function updateStats(data) {
     stats_div.innerHTML = '<div class="col-sm-2">Stats:</div>' +
         '<div class="col-sm-3">Active Customers: ' + data['active_customers'] + '</div>' +
         '<div class="col-sm-3">Awaiting Payment: ' + data['need_pay'] + '</div>' +
-        '<div class="col-sm-4">Awaiting Checkout: ' + data['need_check'] + '</div>';
+        '<div class="col-sm-4">Awaiting Release: ' + data['need_release'] + '</div>';
     cart.showStartOver();
 }
 
@@ -920,6 +940,7 @@ function pay_shown() {
     if (total_amount_due  < 0.01) { // allow for rounding error, no need to round here
         // nothing more to pay
         cart.showNext();
+        cart.showRelease();
         cart.hideStartOver();
         cart.hideAdd();
         add_tab.disabled = true;
@@ -947,6 +968,7 @@ function pay_shown() {
             cart.hideAdd();
         } else {
             cart.showNext();
+            cart.showRelease();
             cart.hideStartOver();
         }
     } else {
@@ -1045,12 +1067,133 @@ function pay_shown() {
     }
 }
 
-// check_shown - show the checkout tab
-function check_shown() {
-    current_tab = check_tab;
+// release_shown - show the release tab
+function release_shown() {
+    current_tab = release_tab;
     pay_tab.disabled = true;
     cart.hideAdd();
     cart.showNext();
     cart.hideStartOver();
     clear_message();
+
+    // search for matching names
+    var postData = {
+        ajax_request_action: 'findRelease',
+        perid: current_person['id'],
+    };
+    $.ajax({
+        method: "POST",
+        url: "scripts/artpos_findRelease.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['message'] !== undefined) {
+                show_message(data['message'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+            }
+            foundRelease(data);
+        },
+        error: function (jqXHR, textstatus, errorThrown) {
+            $("button[name='find_btn']").attr("disabled", false);
+            showAjaxError(jqXHR, textstatus, errorThrown);
+        }
+    });
+}
+
+function foundRelease(data) {
+    releaseTitleDiv.innerHTML = 'Check Artwork Purchased by ' + (current_person['first_name'] + ' ' + current_person['last_name']).trim();
+
+    if (releaseTable != null) {
+        releaseTable.destroy();
+        releaseTable = null;
+    }
+
+    releaseTable = new Tabulator('#ReleaseArtBody', {
+        maxHeight: "600px",
+        data: data['art'],
+        index: 'id',
+        layout: "fitColumns",
+        initialSort: [
+            {column: "exhibitorNumber", dir: "asc"},
+            {column: "item_key", dir: "asc"},
+        ],
+        pagination: true,
+        paginationSize: 25,
+        paginationSizeSelector: [25, 50, 100, 250, true], //enable page size select element with these options
+
+        columns: [
+            {field: "id", visible: false,},
+            {field: "artSalesId", visible: false,},
+            {title: "CO", field: "released", maxWidth: 90, width: 90, hozAlign: 'center', formatter: "tickCross", cellClick: invertTickCross, headerSort: true, },
+            {title: "Exh #", field: "exhibitorNumber",  headerSort: true, headerFilter: true, headerWordWrap: true, maxWidth: 100, width: 100, hozAlign: 'right', },
+            {title: "Item #", field: "item_key", headerFilter: true, headerWordWrap: true,  maxWidth: 100, width: 100, hozAlign: 'right' },
+            {title: "Exhibitor Name", field: "exhibitorName", headerFilter: true, headerWordWrap: true,  maxWidth: 250, width: 250, },
+            {title: "Qty", field: "purQuantity", maxWidth: 90, width: 90, hozAlign: 'right' },
+            {title: "Type", field: "type", headerFilter: true, width: 120, maxWidth: 120, },
+            {title: "Title", field: "title", headerSort: true, headerFilter: true, headerWordWrap: true, maxWidth: 400, width: 400, },
+            {title: "Material", field: "material", headerSort: true, headerFilter: true,  width: 300, maxWidth: 300, },
+        ],
+    });
+
+    releaseModal.show();
+}
+
+function releaseSetAll(value) {
+    if (releaseTable == null)
+        return;
+
+    var counts = releaseTable.getDataCount();
+    for (var index = 1; index <= counts;  index++) {
+        var row = releaseTable.getRowFromPosition(index);
+        var cell = row.getCell('release');
+        cell.setValue(value);
+    }
+}
+
+function invertTickCross(e,cell) {
+    'use strict';
+
+    var value = cell.getValue();
+    if (value === undefined) {
+        value = false;
+    }
+    if (value === 0 || Number(value) === 0)
+        value = false;
+    else if (value === "1" || Number(value) > 0)
+        value = true;
+
+    cell.setValue(!value, true);
+}
+
+function processRelease() {
+    var data = releaseTable.getData();
+    releaseModal.hide();
+    clear_message();
+    $.ajax({
+        url: 'scripts/artpos_processRelease.php',
+        method: "POST",
+        data: { art: JSON.stringify(data), perid: current_person['id'], user_id: user_id, },
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+            }
+            if (data['message'] !== undefined) {
+                show_message(data['message'], 'success');
+            }
+            if (data['num_remain'] > 0) {
+                if (confirm(data['num_remain'] + ' items are still not released, return to release?'))
+                    release_shown();
+            }
+        },
+        error: showAjaxError
+    });
 }

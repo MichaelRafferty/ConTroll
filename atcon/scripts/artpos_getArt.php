@@ -3,7 +3,7 @@
 // library AJAX Processor: artpos_getArt.php
 // ConTroll Registration System
 // Author: Syd Weinstein
-// Retrieve artItem records for checkout
+// Retrieve artItem records for purchase
 
 require_once('../lib/base.php');
 

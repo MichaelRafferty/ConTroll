@@ -43,8 +43,8 @@ page_init($page, $tab,
                         <button class="nav-link" id="pay-tab" data-bs-toggle="pill" data-bs-target="#pay-pane" type="button" role="tab" aria-controls="nav-pay" aria-selected="false" disabled>Payment</button>
                     </li>
                      <li class='nav-item' role='presentation'>
-                         <button class='nav-link' id='check-tab' data-bs-toggle='pill' data-bs-target='#check-pane' type='button' role='tab' aria-controls='nav-check'
-                                 aria-selected='false' disabled>Check Out
+                         <button class='nav-link' id='release-tab' data-bs-toggle='pill' data-bs-target='#release-pane' type='button' role='tab' aria-controls='nav-release'
+                                 aria-selected='false' disabled>Release Art
                          </button>
                      </li>
                 </ul>
@@ -124,8 +124,8 @@ page_init($page, $tab,
                     <div class="tab-pane fade" id="pay-pane" role="tabpanel" aria-labelledby="pay-tab" tabindex="2">
                         <div id="pay-div">Process Payment</div>
                     </div>
-                    <div class='tab-pane fade' id='check-pane' role='tabpanel' aria-labelledby='check-tab' tabindex='3'>
-                        <div id='check-div'>Check out all art purchased by a person</div>
+                    <div class='tab-pane fade' id='release-pane' role='tabpanel' aria-labelledby='release-tab' tabindex='3'>
+                        <div id='release-div'></div>
                     </div>
                  </div>
             </div>
@@ -136,6 +136,7 @@ page_init($page, $tab,
                 <div class="col-sm-12 mt-3">
                     <button type="button" class="btn btn-primary btn-sm" id="add_btn" onclick="goto_add();" hidden>Add Art to Cart</button>
                     <button type="button" class="btn btn-primary btn-sm" id="pay_btn" onclick="goto_pay();" hidden>Pay Cart</button>
+                    <button type='button' class='btn btn-primary btn-sm' id='release_btn' onclick='goto_release();' hidden>Release Artwork</button>
                     <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="start_over(1);" hidden>Start Over</button>
                     <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="start_over(1);" hidden>Next Customer</button>
                 </div>
@@ -146,7 +147,7 @@ page_init($page, $tab,
     <div class='modal modal-lg' id='CashChange' tabindex='-4' aria-labelledby='CashChange' data-bs-backdrop='static' data-bs-keyboard='false' aria-hidden='true'>
         <div class='modal-dialog'>
             <div class='modal-content'>
-                <div class='modal-header'>
+                <div class='modal-header bg-primary text-bg-primary'>
                     <div class='modal-title' id='CashChangeTitle'>
                         Change due to Customer
                     </div>
@@ -156,6 +157,24 @@ page_init($page, $tab,
                 <div class='modal-footer'>
                     <button type='button' id='discard_cash_button' class='btn btn-secondary' onclick='cashChangeModal.hide();'>Cancel Cash Payment</button>
                     <button type='button' id='close_cash_button' class='btn btn-primary' onclick='pay("nomodal");'>Change given to Customer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--- pay cash change modal popup -->
+    <div class='modal modal-xl' id='ReleaseArt' tabindex='-4' aria-labelledby='ReleaseArt' data-bs-backdrop='static' data-bs-keyboard='false' aria-hidden='true' style='--bs-modal-width: 98%;'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='ReleaseArtTitle'></div>
+                </div>
+                <div class='modal-body' id='ReleaseArtBody'>
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' id='check_all_button' class='btn btn-light' onclick='releaseSetAll(true);'>Mark All Released</button>
+                    <button type='button' id='clear_all_buton' class='btn btn-light' onclick='releaseSetAll(false);'>Mark All Not Released</button>
+                    <button type='button' id='discard_release_button' class='btn btn-secondary' onclick='releaseModal.hide();'>Cancel Release</button>
+                    <button type='button' id='submit_release' class='btn btn-primary' onclick='processRelease();'>Process Release of Artwork</button>
                 </div>
             </div>
         </div>

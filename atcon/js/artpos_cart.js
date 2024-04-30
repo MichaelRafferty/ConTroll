@@ -6,6 +6,7 @@ class artpos_cart {
     #add_button = null;
     #pay_button = null;
     #next_button = null;
+    #release_button = null;
     #cart_div = null;
 
 // cart states
@@ -29,6 +30,7 @@ class artpos_cart {
         this.#cart_div = document.getElementById("cart");
         this.#startover_button = document.getElementById("startover_btn");
         this.#next_button = document.getElementById("next_btn");
+        this.#release_button = document.getElementById("release_btn");
         this.#add_button = document.getElementById("add_btn");
         this.#pay_button = document.getElementById("pay_btn");
     }
@@ -68,6 +70,14 @@ class artpos_cart {
 
     showPay() {
         this.#pay_button.hidden = false;
+    }
+
+    hideRelease() {
+        this.#release_button.hidden = true;
+    }
+
+    showRelease() {
+        this.#release_button.hidden = false;
     }
 
     hideNext() {

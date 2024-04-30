@@ -181,7 +181,7 @@ foreach ($cart_art as $cart_row) {
             }
         }
     } else {
-        if ($cart_row['updSales'] == true) {
+        if (array_key_exists('updSales', $cart_row) && $cart_row['updSales'] == true) {
             $upd_rows += dbSafeCmd($updArtSalesQtySQL, $aqtypestr, array($quantity, $cart_row['amount'], $cart_row['artSalesId']));
         }
     }
