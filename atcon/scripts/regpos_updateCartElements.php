@@ -138,6 +138,13 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             $cartrow['last_name'] . ' ' . $cartrow['suffix']);
     }
 
+    // remove l-r from phone
+    $phone = trim($cartrow['phone']);
+    if ($phone != null && $phone != '') {
+        $phone = preg_replace('/' . mb_chr(0x202d) . '/', '',  $phone);
+        $cartrow['phone'] = $phone;
+    }
+
     if ($cartrow['perid'] <= 0) {
         // insert this row
         $paramarray = array(

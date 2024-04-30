@@ -209,6 +209,13 @@ foreach ($badges as $badge) {
             $badge['contact'] = 'Y';
         }
 
+        // fix the badge phone number to remove the L-R character if present
+        $phone = trim($badge['phone']);
+        if ($phone != null && $phone != '') {
+            $phone = preg_replace('/' . mb_chr(0x202d) . '/', '',  $phone);
+            $badge['phone'] = $phone;
+        }
+
 // see if there is an exact match
 
 // now resolve exact matches
