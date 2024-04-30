@@ -155,6 +155,7 @@ function start_over(reset_all) {
     hideStats();
     // empty cart
     cart.startOver();
+    cart.hideRelease();
     // empty search strings and results
     badgeid_field.value = "";
     id_div.innerHTML = "";
