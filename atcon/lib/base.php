@@ -119,7 +119,7 @@ function page_init($title, $tab, $css, $js)
                                         <li>
                                             <a class="nav-link navitem <?php echo $tab == "artsales" ? "active" : ""; ?>" <?php echo $tab == "artsales" ? 'aria-current="page"' : "" ?> href="artpos.php">Art Show Cashier</a>
                                         </li>
-                                        <? }
+                                        <?php }
                                         if (in_array('manager', $perms)) { ?>
                                         <li>
                                             <a class="nav-link navitem <?php echo $tab == "admin" ? "active" : ""; ?>" <?php echo $tab == "admin" ? 'aria-current="page"' : ""; ?> href="admin.php">Administrator</a>
