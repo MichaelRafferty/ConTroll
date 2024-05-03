@@ -75,7 +75,7 @@ $response['transid']=$transid;
 
 $artQ = <<<EOS
 SELECT S.amount, S.quantity, I.title, I.item_key, A.art_key
-FROM artsales S
+FROM artSales S
 JOIN artItems I ON (I.id=S.artid)
 JOIN artshow A ON (A.id=I.artshow)
 WHERE S.transid=?;
@@ -84,7 +84,7 @@ EOS;
 $artR = dbSafeQuery($artQ, 'i', array($transid));
 
 $artList = array();
-while($art = fetch_safe_assoc($artR)) {
+while($art = $artR->fetch_assoc()) {
     array_push($artList, $art);
 }
 
@@ -99,7 +99,7 @@ EOS;
 
 $transR = dbSafeQuery($transQ, 'i', array($transid));
 
-$transinfo = fetch_safe_assoc($transR);
+$transinfo = $transR->fetch_assoc();
 $response['transinfo'] = $transinfo;
 
 $tempfile = tempnam(sys_get_temp_dir(), 'prnCtrl');

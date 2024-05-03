@@ -33,14 +33,14 @@ EOS;
 $locR = dbSafeQuery($locQ, 'ii', array($conid, $region));
 
 $locations = array();
-while($loc = fetch_safe_assoc($locR)) {
+while($loc = $locR->fetch_assoc()) {
     if(!array_key_exists($loc['exhibitorNumber'], $locations)) {
         $locations[$loc['exhibitorNumber']] = explode(',',$loc['locations']);
     }
 }
 
 foreach($locations as $key => $value) {
-    sort($value, SORT_NATURAL);
+    natsort($value);
     $locations[$key] = $value;
 }
 

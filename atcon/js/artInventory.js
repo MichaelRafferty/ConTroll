@@ -105,12 +105,13 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
     var item_status = cell.getRow().getData().status;
     var btnClass = 'btn btn-sm p-0';
     var btnStyle = 'style="--bs-btn-font-size: 75%;"';
-    
+
 
     switch(item_status) {
         case 'Not In Show':
         case 'Checked Out':
-        case 'purchased/released':
+        case 'Purchased/Released':
+            html += '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'alert\')">N/A</button>';
             // no inventory action, gone
             break;
         case 'Sold Bid Sheet':
@@ -344,7 +345,7 @@ function draw_cart_row(rownum) {
     }
     switch(item['type']) {
         case 'nfs':
-                html += item['id'] + '<span class="right">'+item['action']+'</span></div>' 
+                html += item['id'] + '<span class="right">'+item['action']+'</span></div>'
                     + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
                     + ((show_location)?'Location: ' + location_select + '<br/>':'')
                     + 'Display Only @ ' + item['status'] + '<br/>';
@@ -359,7 +360,7 @@ function draw_cart_row(rownum) {
                 action_html += '<br/>';
             break;
         case 'art':
-            html += item['id'] + '<span class="right">'+item['action']+'</span></div>' 
+            html += item['id'] + '<span class="right">'+item['action']+'</span></div>'
                 + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
                 + ((show_location)?'Location: ' + location_select + '<br/>':'')
                 + 'Art Item @ ' + item['status'] + '<br/>';
@@ -403,7 +404,7 @@ function draw_cart_row(rownum) {
             action_html += "<br/>"
             break;
         case 'print':
-            html += item['id'] + '<span class="right">'+item['action']+'</span></div>' 
+            html += item['id'] + '<span class="right">'+item['action']+'</span></div>'
                 + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
                 + ((show_location)?'Location: ' + location_select + '<br/>':'')
                 + 'Print Shop @ ' + item['status'] + '<br/>';

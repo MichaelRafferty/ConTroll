@@ -66,7 +66,7 @@ function findDuplicates(data) {
         if(extendedKey[extKey]) {
             extendedKey[extKey]++;
             errorString += exhNum + " has " + extendedKey[extKey] + " items with item # " + key;
-            
+
         } else {
             extendedKey[extKey] = 1;
         }
@@ -91,8 +91,8 @@ function draw(data, textStatus, jqXHR) {
     itemRedoBtn.disabled = true;
     itemSaveBtn.innerHTML = "Save Changes"
     itemSaveBtn.disabled = true;
-    
-    
+
+
     itemTable = new Tabulator('#artItems_table', {
         mxHeight: "800px",
         history: true,
@@ -118,6 +118,19 @@ function draw(data, textStatus, jqXHR) {
             {title: 'Current Qty', field: 'quantity', headerSort: true, headerFilter: true, headerWordWrap: true, width: 70, hozAlign: "right", editor: "input", validator: "numeric"},
             {title: 'Status', field: 'status', headerSort: true, editor: "list", headerFilter: "list", editorParams: { values: ['Entered', 'Not In Show', 'Checked In', 'NFS', 'BID', 'Quicksale/Sold', 'Removed from Show', 'purchased/released', 'To Auction', 'Sold Bid Sheet', 'Checked Out']}, headerFilterParams: { values: ['Entered', 'Not In Show', 'Checked In', 'NFS', 'BID', 'Quicksale/Sold', 'Removed from Show', 'purchased/released', 'To Auction', 'Sold Bid Sheet', 'Checked Out']},},
             {title: 'Location', field: 'location', headerSort: true, headerFilter: true, editor: "input"},
+            {title: 'Artist #', field: 'exhibitorNumber', headerWordWrap: true, headerSort: true, width: 60,
+                headerFilter: 'list', headerFilterParams: { values: data['artists'].map(function(a) { return a.exhibitorNumber;})},
+                hozAlign: "right",
+            },
+            {title: 'Item #', field: 'item_key', headerSort: true, headerFilter: true, headerWordWrap: true, width: 60, hozAlign: "right",},
+            {title: 'Type', field: 'type', headerSort: true, headerFilter: 'list', headerFilterParams: { values: ['art', 'print', 'nfs']}, width: 75, },
+            {title: 'Title', field: 'title', headerSort: true, headerFilter: true,},
+            {title: 'Min Bid or Ins.', field: 'min_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", },
+            {title: 'Q. Sale or Print', field: 'sale_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", },
+            {title: 'Orig Qty', field: 'original_qty', headerSort: true, headerFilter: true, headerWordWrap: true, width: 70, hozAlign: "right", },
+            {title: 'Current Qty', field: 'quantity', headerSort: true, headerFilter: true, headerWordWrap: true, width: 70, hozAlign: "right", },
+            {title: 'Status', field: 'status', headerSort: true, headerFilter:'list', headerFilterParams: { values: ['Not In Show', 'Checked In', 'BID', 'Quicksale/Sold', 'Removed from Show', 'Purchased/Released', 'To Auction', 'Sold Bid Sheet', 'Checked Out']}, },
+            {title: 'Location', field: 'location', headerSort: true, headerFilter: true, },
             {title: 'Bidder', field: 'bidderText', headerSort: true, headerFilter:true, },
             {title: 'Sale Price', field: 'final_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", },
         ]
@@ -187,8 +200,8 @@ function saveItem() {
             console.log(invalids);
             alert("Item table does not pass validation, please check for empty cells or cells in red");
             return false;
-        } 
-        
+        }
+
         var duplicates = findDuplicates(itemTable.getData());
         if(duplicates != "") {
             alert(duplicates);

@@ -401,12 +401,10 @@ while ($row = $all_badgeR->fetch_assoc()) {
     $badgeResults[] = $row;
 }
 
-
 // prepare the credit card request
 $results = array(
     'transid' => $transid,
     'counts' => null,
-    'spacePrice' => $spacePrice,
     'spaceName' => $region['name'],
     'spaceDescription' => $region['description'],
     'spacePrice' => $spacePrice,
@@ -424,15 +422,10 @@ $results = array(
     'buyer' => $buyer,
 );
 
-if($aggreeNone) {
-    $results['badges'] = null;
-    $results['formbadges'] = null;
-}
-
 //log requested badges
 logWrite(array('con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces, 'trans' => $transid, 'results' => $results, 'request' => $badges));
 
-$rtn = cc_charge_purchase($results, $ccauth);
+$rtn = cc_charge_purchase($results, $ccauth, true);
 if ($rtn === null) {
     ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
     exit();
