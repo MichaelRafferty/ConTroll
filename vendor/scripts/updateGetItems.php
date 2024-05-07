@@ -120,11 +120,11 @@ if ($delete_keys != '') {
 }
 
 $inssql = <<<EOS
-INSERT INTO artItems (item_key, title, material, type, original_qty, quantity, min_price, sale_price, conid, exhibitorRegionYearId) 
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO artItems (item_key, title, material, type, original_qty, quantity, min_price, sale_price, conid, exhibitorRegionYearId, updatedBy) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 3);
 EOS;
 $updsql = <<<EOS
-UPDATE artItems SET item_key=?, title=?, material=?, original_qty=?, quantity=?, min_price=?, sale_price=? 
+UPDATE artItems SET item_key=?, title=?, material=?, original_qty=?, quantity=?, min_price=?, sale_price=?, updatedBy=3 
 WHERE id=?
 EOS;
 
