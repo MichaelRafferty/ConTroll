@@ -58,7 +58,7 @@ EOS;
         // now find any art for which is final and they are the high bidder
         $perid = $response['person']['id'];
         $findArtQ = <<<EOS
-SELECT a.id, a.item_key, a.title, a.type, a.status, a.location, a.quantity, a.original_qty, a.min_price, a.sale_price, a.final_price, a.artshow, a.material, a.bidder,
+SELECT a.id, a.item_key, a.title, a.type, a.status, a.location, a.quantity, a.original_qty, a.min_price, a.sale_price, a.final_price, a.material, a.bidder,
        s.id AS artSalesId, s.transid, s.amount, IFNULL(s.paid, 0.00) AS paid, s.quantity AS artSalesQuantity, s.unit, t.id AS create_trans, IFNULL(s.quantity, 1) AS purQuantity,
        exRY.exhibitorNumber, ex.exhibitorName
 FROM artItems a

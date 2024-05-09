@@ -100,7 +100,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                     <p> Please provide us with information we can use to manage <?php
                                         echo $portalType; ?>s at <?php echo $con['conname'];
                                         $addlkey = $portalType == 'artist' ? 'artistSignupAddltext' : 'vendorSignupAddltext';
-                                        if (array_key_exists($addlkey, $vendor_conf)) {
+                                        if (array_key_exists($addlkey, $vendor_conf) && ($vendor_conf[$addlkey] != "")) {
                                             echo '<br/>' . file_get_contents('../config/'. $vendor_conf[$addlkey]);
                                         } ?>
                                     </p>

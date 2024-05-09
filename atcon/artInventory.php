@@ -67,7 +67,7 @@ WHERE xRT.active='Y' AND xRT.usesInventory='Y' AND xRY.conid=?;
 EOS;
 $regionR = dbSafeQuery($regionQ, 'i', array($conid));
 $setRegion = false;
-if(($regionR->num_rows==1) && ($region='')) { $setRegion = true; }
+if(($regionR->num_rows==1) && ($region=='')) { $setRegion = true; }
 
 /** /
 var_dump($_SESSION);

@@ -120,7 +120,7 @@ EOF;
             'prereg'=>array(),
             'yearahead'=>array()
         );
-        while($badge = $badgeR)->fetch_assoc() {
+        while($badge = $badgeR->fetch_assoc()) {
             if($badge['conid'] > $conid) {
                 if(isset($badgeList['yearahead'][$badge['label']])) {
                     $badgeList['yearahead'][$badge['label']] += 1;
@@ -316,7 +316,8 @@ EOF;
 
             $inner .= "FROM history WHERE diff > $i group by conid";
             $pivot_col .= "FROM ($inner) i";
-            $res = $pivot_col->fetch_array(dbQuery());
+            $pivotR = dbQuery($pivot_col);
+            $res = $pivotR->fetch_array();
 $response['statQuery'] = $pivot_col;
 
             $diff = (int)$res[0];
@@ -335,8 +336,8 @@ $response['statQuery'] = $pivot_col;
             $localStat['day'] = - (int)$diff + $conLen;
 
             for ($j = 0; $j < count($res); $j++) {
-                if($j%2==0 && $res[$j]) { array_push($all_vals, $res[$j]); }
-                else if($res[$j]) { array_push($paid_vals, $res[$j]); }
+                if($j%2==0 && array_key_exists($j, $res)) { array_push($all_vals, $res[$j]); }
+                else if(array_key_exists($j, $res)) { array_push($paid_vals, $res[$j]); }
             }
 
             $localStat['all'] = calc_stats($all_vals);

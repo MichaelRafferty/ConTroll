@@ -50,7 +50,7 @@ if ($personR->num_rows == 0) {
     $response['status'] = 'success';
     // now find any art for which is final and they are the high bidder
     $findArtQ = <<<EOS
-SELECT a.id, a.item_key, a.title, a.type, a.status, a.location, a.quantity, a.original_qty, a.min_price, a.sale_price, a.final_price, a.artshow, a.material, a.bidder,
+SELECT a.id, a.item_key, a.title, a.type, a.status, a.location, a.quantity, a.original_qty, a.min_price, a.sale_price, a.final_price, a.material, a.bidder,
        s.id AS artSalesId, s.transid, s.amount, s.paid, s.unit, s.quantity AS purQuantity,
        exRY.exhibitorNumber, ex.exhibitorName, false AS released
 FROM artItems a

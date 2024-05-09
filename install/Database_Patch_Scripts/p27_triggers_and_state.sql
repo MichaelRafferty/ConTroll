@@ -10,8 +10,8 @@ UPDATE auth SET page = 'N' WHERE id = 999;
 ALTER TABLE artItems MODIFY COLUMN status enum('Entered','Not In Show','Checked In','Removed from Show',
     'BID','Quicksale/Sold','To Auction','Sold Bid Sheet','Sold at Auction','Checked Out','Purchased/Released') COLLATE utf8mb4_general_ci DEFAULT 'Entered';
 
-// NOTE: if you have the table artsales, you'll need to drop that as well
-//DROP TABLE IF EXISTS artsales;
+-- NOTE: if you have the table artsales, you'll need to drop that as well
+-- DROP TABLE IF EXISTS artsales;
 DROP TABLE IF EXISTS artSales;
 CREATE TABLE artSales (
     id int NOT NULL AUTO_INCREMENT,
