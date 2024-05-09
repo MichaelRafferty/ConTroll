@@ -106,13 +106,12 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
 
     switch(item_status) {
         case 'Checked Out':
-        case 'purchased/released':
+        case 'Purchased/Released':
             html += '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'alert\')">N/A</button>';
             // no inventory action, gone
             break;
         case 'Sold Bid Sheet':
         case 'Sold At Auction':
-        case 'To Auction':
             // sales can sell
             if(mode == 'sales') { // this is probably not how this will be done
                 html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'sell\')">Sell</button>';
@@ -130,6 +129,7 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
                 html += '<button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Release\')">Release</button>';
             }
             break;
+        case 'To Auction':
         case 'BID':
             //inventory only
             if(mode == 'artinventory') {
@@ -143,7 +143,6 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
             break;
         case 'Checked In':
             //sales can sell
-        case 'NFS':
             // inventory or check out
             if(mode == 'artinventory') {
                 html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button>';
@@ -173,7 +172,7 @@ function build_record_hover(e, cell, onRendered) {
     hover_text = data['id'] + '<br/>' + data['name'].trim() + '<br/>' 
     hover_text += data['title'].trim() + '<br/>';
     hover_text += data['status'].trim() + ' @ ' + data['location'] + '<br/>';
-    if(data['status'] == 'BID') { 
+    if((data['status'] == 'BID') || (data['status'] == 'To Auction')) { 
         hover_text += 'by ' + data['bidder'] + ' @ $' + data['final_price'] + '<br/>';
     }
     hover_text += 'updated: ' + data['time_updated'] + '<br/>';
@@ -351,7 +350,7 @@ function draw_cart_row(rownum) {
                 alert("Cannot Sell NFS");
             } else {
                 html += item['id'] + '<br/>' 
-                    + item['name'] + ': ' + item['title'] + '<br/>'
+                    + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
                     + 'Location: ' + location_select + '<br/>'
                     + 'NFS @ ' + item['status'] + '<br/>';
                 action_html += '<br/>';
@@ -365,7 +364,7 @@ function draw_cart_row(rownum) {
             break;
         case 'art':
             html += item['id'] + '<br/>' 
-                + item['name'] + ': ' + item['title'] + '<br/>'
+                + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
                 + 'Location: ' + location_select + '<br/>'
                 + 'Art @ ' + item['status'] + '<br/>';
             action_html += '<br/>';
@@ -387,6 +386,13 @@ function draw_cart_row(rownum) {
             }
             if(item['status'] == 'Quicksale/Sold') {
                 html += `Purchased by ` + item['bidder'] + ` @ $` + item['final_price'];
+            } else if((item['status'] == 'To Auction')) {
+                html += 'Bid ';
+                html += `<input type='number' min=0 id='bidder_` + item['id']
+                    + `' value="` + item['bidder'] + `" style="width: 7em"></input> @ $`
+                    + `<input type='number' min=`+min_price+` id='bid_` + item['id']
+                    + `' value="` + item['final_price'] + `" style="width: 7em"></input><br/>`;
+                action_html += `<button class="btn btn-success btn-sm p-0" type="button" id="` + item['id'] + `"_at_auction" onclick="update_bid(`+rownum+`,false,true);">Sold At Auction</button><br/>`;
             } else {
                 html += 'Bid ';
                 html += `<input type='number' min=0 id='bidder_` + item['id']
@@ -400,7 +406,7 @@ function draw_cart_row(rownum) {
             break;
         case 'print':
             html += item['id'] + '<br/>' 
-                + item['name'] + ': ' + item['title'] + '<br/>'
+                + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
                 + 'Location: ' + location_select + '<br/>';
             if(item['need_count']) {
                 html += '<span class="bg-warning">' + item['quantity'] + '</span>'
@@ -458,8 +464,13 @@ function update_bid(row, to_auction=false, close=false) {
             cart[row]['status']='To Auction';
         }
         if(close) {
-            actionlist.push(create_action('Sell To Bidsheet', item));
-            cart[row]['status']='Sold To Bidsheet';
+            if(cart[row]['status'] == 'To Auction') {
+                actionlist.push(create_action('Sell At Auction', item));
+                cart[row]['status']='Sold At Auction';
+            } else {
+                actionlist.push(create_action('Sell To Bidsheet', item));
+                cart[row]['status']='Sold To Bidsheet';
+            }
         }
     }
 
@@ -513,7 +524,7 @@ function toggle_visibility(id) {
 
 function draw_notes() {
     var html = `<div onclick="toggle_visibility('artInventory_pending')">` + actionlist.length + ` Pending Actions
-    <span id="artInventory_pending_show">show</span><span id="artInventory_pending_hide" style="display: none">hide</span>
+    <span class='btn btn-secondary btn-sm p-0' id="artInventory_pending_show">show</span><span class='btn btn-secondary btn-sm p-0' id="artInventory_pending_hide" style="display: none">hide</span>
     <div id="artInventory_pending" class="text-info" style="display: none"><ul>`;
 
     for (action in actionlist) {

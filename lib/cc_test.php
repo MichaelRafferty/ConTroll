@@ -27,7 +27,7 @@ EOS;
     return $html;
 };
 
-function cc_charge_purchase($results, $ccauth) {
+function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     $cc = get_conf('cc');
     //$con = get_conf('con');
     $reg = get_conf('reg');
@@ -65,9 +65,9 @@ function cc_charge_purchase($results, $ccauth) {
 	switch($_POST['nonce'][0]) {
 		case '1': // success
 			$rtn['amount'] = $results['total'];
-			$rtn['txnfields'] =  array('transid','type','category','description', 'source','amount', 'txn_time', 'nonce','cc_txn_id','cc_approval_code','receipt_id', 'cashier', 'userid');
-			$rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 's', 's', 's', 's', 's', 'i','i');
-			$rtn['tnxdata'] = array($results['transid'],'credit',$category, 'test registration', 'online', $results['total'], '00-00-00 00:00:00',$_POST['nonce'],'txn id','000000','txn_id', $user_perid, $user_id);
+			$rtn['txnfields'] =  array('transid','type','category','description', 'source','amount', 'txn_time', 'nonce','cc_txn_id','cc_approval_code','receipt_id', 'cashier');
+			$rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 's', 's', 's', 's', 's', 'i');
+			$rtn['tnxdata'] = array($results['transid'],'credit',$category, 'test registration', 'online', $results['total'], '00-00-00 00:00:00',$_POST['nonce'],'txn id','000000','txn_id', $user_perid);
             $rtn['url'] = 'no test receipt';
 			return $rtn;
 		default: 

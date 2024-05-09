@@ -22,6 +22,7 @@ $userid = $userV['id'];
 $con = get_conf('con');
 $conid=$con['id'];
 $nextconid = $conid + 1;
+$user_perid = $_SESSION['user_perid'];
 
 $query = "INSERT INTO transaction (conid, perid, newperid, userid) VALUES(?, ?, ?, ?);";
 $values = array($conid);
@@ -37,7 +38,7 @@ if (isset($_POST['newperid'])) {
 } else {
     array_push($values, null);
 }
-array_push($values, $userid);
+array_push($values, $user_perid);
 
 $transid = dbSafeInsert($query, 'iiii', $values);
 $response['create_query'] = $query;

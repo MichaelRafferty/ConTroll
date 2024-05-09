@@ -764,54 +764,54 @@ class exhibitorsAdm {
         var exhibitorInfo = `
             <div class="row">
                 <div class="col-sm-2">Name:</div>
-                <div class="col-sm-auto p-0 ms-0 me-0">` + exhibitorData['exhibitorName'] + `</div>
+                <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorData['exhibitorName'] + `</div>
             </div>
             <div class='row'>
                 <div class='col-sm-2'>Business Email:</div>
-                <div class='col-sm-auto p-0 ms-0 me-0'>` + exhibitorData['exhibitorEmail'] + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData['exhibitorEmail'] + `</div>   
             </div>
             <div class='row'>
                 <div class='col-sm-2'>Business Phone:</div>
-                <div class='col-sm-auto p-0 ms-0 me-0'>` + exhibitorData['exhibitorPhone'] + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData['exhibitorPhone'] + `</div>   
             </div>
             <div class='row'>
                 <div class='col-sm-2'>Website:</div>
-                <div class='col-sm-auto p-0 ms-0 me-0'><a href="` + weburl + '" target="_blank">' + exhibitorData['website'] + `</a></div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'><a href="` + weburl + '" target="_blank">' + exhibitorData['website'] + `</a></div>   
             </div>
             <div class='row'>
-                <div class='col-sm-2'>Description:</div>
-                <div class='col-sm-auto p-0 ms-0 me-0'>` + exhibitorData['description'] + `</div>   
+                <div class='col-sm-2'>Desc.:</div>
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData['description'] + `</div>   
             </div>
 `;
 
         if (mailInAllowed == 'Y') {
             exhibitorInfo += `<div class="row">
                 <div class='col-sm-2'>Mail-In:</div>
-                <div class='col-sm-auto p-0 ms-0 me-0'>` + exhibitorData['mailin'] + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData['mailin'] + `</div>   
             </div>
 `;
         }
         exhibitorInfo += `<div class='row'>
                 <div class='col-sm-2'>Address:</div>
-                <div class='col-sm-auto p-0 ms-0 me-0'>` + exhibitorData['addr'] + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData['addr'] + `</div>   
             </div>
 `;
         if (exhibitorData['addr2'] && exhibitorData['addr2'].length > 0) {
             exhibitorInfo += `<div class='row'>
             <div class='row'>
                 <div class='col-sm-2'>&nbsp;</div>
-                <div class='col-sm-auto p-0 ms-0 me-0'>` + exhibitorData['addr2'] + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData['addr2'] + `</div>   
             </div>
 `;
         }
 
         exhibitorInfo += `<div class='row'>
                 <div class='col-sm-2'>&nbsp;</div>
-                <div class='col-sm-auto p-0 ms-0 me-0'>` + exhibitorData['city'] + ', ' + exhibitorData['state'] + ' ' + exhibitorData['zip'] + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData['city'] + ', ' + exhibitorData['state'] + ' ' + exhibitorData['zip'] + `</div>   
             </div>
              <div class='row'>
                 <div class='col-sm-2'>&nbsp;</div>
-                <div class='col-sm-auto p-0 ms-0 me-0'>` + exhibitorData['country'] + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData['country'] + `</div>   
             </div>
 `;
         return exhibitorInfo;
@@ -845,7 +845,9 @@ class exhibitorsAdm {
         }
         locationsusedHTML += "</div>\n";
 
-        document.getElementById('locations-edit-title').innerHTML = "<strong>Locations for " + exhibitor + "(" + exhibitorId + ":" + exhibitorData['exhibitorYearId'] + ")</strong>";
+
+        var exhibitorData = this.#spacesTable.getRow(id).getData();
+        document.getElementById('locations-edit-title').innerHTML = "<strong>Locations for " + exhibitor + " (" + exhibitorId + ":" + exhibitorData['exhibitorYearId'] + ")</strong>";
         document.getElementById("spaceHTML").innerHTML = summary.replace("\n", "<br/>");
         document.getElementById("locationsVal").value = locations;
         document.getElementById("spaceRowId").value = id;

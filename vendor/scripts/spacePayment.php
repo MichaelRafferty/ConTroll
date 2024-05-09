@@ -404,7 +404,7 @@ while ($row = $all_badgeR->fetch_assoc()) {
 // prepare the credit card request
 $results = array(
     'transid' => $transid,
-    'counts' => null,$spacePrice,
+    'counts' => null,
     'spaceName' => $region['name'],
     'spaceDescription' => $region['description'],
     'spacePrice' => $spacePrice,
@@ -425,7 +425,7 @@ $results = array(
 //log requested badges
 logWrite(array('con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces, 'trans' => $transid, 'results' => $results, 'request' => $badges));
 
-$rtn = cc_charge_purchase($results, $ccauth);
+$rtn = cc_charge_purchase($results, $ccauth, true);
 if ($rtn === null) {
     ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
     exit();
@@ -488,7 +488,7 @@ foreach ($spaces as $id => $space) {
 // rule: if exhibitor is mailin, use largest exhibitor number + 1 that is greater than mailin base.
 //      if exhibitor is not mailin, use largest exhibitor number = 1 that is greater than atcon base and less that mailin base (if mailin base is != atconbase)
 $exNumQ = <<<EOS
-SELECT IFNULL(exhibitorNumber, 0) AS exhibitorNumber, exRY.id, agentPerid, agentNewperson, mailin
+SELECT IFNULL(exRY.exhibitorNumber, 0) AS exhibitorNumber, exRY.id, agentPerid, agentNewperson, mailin
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
 WHERE conid = ? and exhibitorId = ? and exRY.exhibitsRegionYearId = ?
