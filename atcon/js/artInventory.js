@@ -524,7 +524,7 @@ function toggle_visibility(id) {
 
 function draw_notes() {
     var html = `<div onclick="toggle_visibility('artInventory_pending')">` + actionlist.length + ` Pending Actions
-    <span id="artInventory_pending_show">show</span><span id="artInventory_pending_hide" style="display: none">hide</span>
+    <span class='btn btn-secondary btn-sm p-0' id="artInventory_pending_show">show</span><span class='btn btn-secondary btn-sm p-0' id="artInventory_pending_hide" style="display: none">hide</span>
     <div id="artInventory_pending" class="text-info" style="display: none"><ul>`;
 
     for (action in actionlist) {
