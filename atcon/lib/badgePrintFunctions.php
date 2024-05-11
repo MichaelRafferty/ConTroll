@@ -38,7 +38,7 @@ function init_file($printer)//:string {
         exit();
     }
 
-    $codepage = $printer[4];
+    $codepage = $printer[3];
     switch($codepage) {
         default:
             $atcon = get_conf('atcon');
@@ -59,7 +59,7 @@ function init_file($printer)//:string {
 }
 
 function write_badge($badge, $tempfile, $printer):void {
-    $codepage = $printer[4];
+    $codepage = $printer[3];
     switch ($codepage) {
         default:
             write_ps($badge, $tempfile);
@@ -111,7 +111,9 @@ function write_ps($badge, $tempfile)//: void {
     }
 
     //info line
-    $type = $badgeTypes[$badge['category']];
+    $type='';
+    if($badge['category'] == 'test') { $type = 'x'; }
+    else { $type = $badgeTypes[$badge['category']]; }
     $id = $badge['id'];
 
     if(strtolower($badge['type'])=='oneday') {
@@ -160,8 +162,10 @@ function write_ps($badge, $tempfile)//: void {
 // print_badge: printer contains array(4) of display name, server, queue name (printer), printer type
 function print_badge($printer, $tempfile)//: string|false
 {
+error_log($printer[0] . ' ' . $printer[1] . ' ' . $printer[2] . ' ' . $printer[3]);
+
     $queue = $printer[2];
-    $codepage = $printer[4];
+    $codepage = $printer[3];
     $name = $printer[0];
     $result_code = 0;
 
@@ -195,7 +199,7 @@ function print_badge($printer, $tempfile)//: string|false
         // all the extra stuff for exec is for debugging issues.
         $serverArg = '';
         if ($server != '')
-            $serverArg = "H$server";
+            $serverArg = "-H$server";
         $command = "lpr $serverArg -P$queue $options < $tempfile";
         $output = [];
         $result = exec($command,$output,$result_code);
@@ -214,7 +218,7 @@ function print_receipt($printer, $receipt)//:string | false {
     $queue = $printer[2];
     $server = $printer[1];
     $name = $printer[0];
-    $codepage = $printer[4];
+    $codepage = $printer[3];
 
     switch ($codepage) {
         case 'UTF-8':
@@ -257,7 +261,7 @@ function print_receipt($printer, $receipt)//:string | false {
     // Temporarly save the output to a file to help with why it's dying
     $serverArg = '';
     if ($server != '')
-        $serverArg = "H$server";
+        $serverArg = "-H$server";
     $command = "lpr $serverArg -P$queue $options < $tempfile";
     $result_code = 0;
     $result = exec($command,$output,$result_code);
