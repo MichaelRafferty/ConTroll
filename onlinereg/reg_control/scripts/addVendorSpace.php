@@ -29,6 +29,7 @@ $vendorId = $_POST['vendor'];
 $spaceId = $_POST['space'];
 $spacePriceId = $_POST['type'];
 $operation = $_POST['state'];
+$user_perid = $_SESSION['user_perid'];
 
 // first the vendor space
 $insertVS = <<<EOS
@@ -59,14 +60,14 @@ if ($operation == 'P') {
 INSERT INTO transaction(conid, userid, complete_date, price, paid, type, notes) 
 VALUES (?,?, current_timestamp(), ?, ?, 'vendor', ?);
 EOS;
-    $transid = dbSafeInsert($insertT, 'iidds', array($conid, $user, $_POST['price'], $_POST['payment'], $desc));
+    $transid = dbSafeInsert($insertT, 'iidds', array($conid, $user_perid, $_POST['price'], $_POST['payment'], $desc));
     // build payment
 
     $insertP = <<<EOS
-INSERT INTO payments(transid, type, category, description, source, amount, time, userid) 
+INSERT INTO payments(transid, type, category, description, source, amount, time, cashier) 
 VALUES (?, 'check', 'vendor', ?, 'reg_control', ?, now(), ?);
 EOS;
-    $payid = dbSafeInsert($insertP, 'isdi', array($transid, $desc, $_POST['payment'], $user));
+    $payid = dbSafeInsert($insertP, 'isdi', array($transid, $desc, $_POST['payment'], $user_perid));
     $values[11] = $transid;
 }
 

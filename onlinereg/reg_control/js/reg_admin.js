@@ -518,7 +518,9 @@ function transfer(index) {
         find_result_table.destroy();
         find_result_table = null;
     }
-    document.getElementById('transfer_from').innerHTML = fullname + '(' + badgename + ')';
+    if (badgename != null && badgename != '')
+        badgename = ' (' + badgename + ')';
+    document.getElementById('transfer_from').innerHTML = fullname + badgename;
     document.getElementById('transfer_badge').innerHTML = badgelabel;
     document.getElementById('from_badgeid').value = badgeid;
     document.getElementById('from_perid').value = perid;
@@ -670,12 +672,13 @@ function draw_badges(data) {
         paginationSize: 10,
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         columns: [
-            { title: "TID", field: "display_trans", headerSort: true, headerFilter: true },
-            { title: "PID", field: "perid", headerSort: true, headerFilter: true, },
+            { title: "TID", field: "display_trans", hozAlign: "right",  headerSort: true, headerFilter: true },
+            { title: "PID", field: "perid", hozAlign: "right", headerSort: true, headerFilter: true, },
             { title: "Person", field: "p_name", headerSort: true, headerFilter: true },
             { title: "Badge Name", field: "p_badge", headerSort: true, headerFilter: true },
             { title: "Email", field: "p_email", headerSort: true, headerFilter: true },
             { title: "Membership Type", field: "label", headerSort: true, headerFilter: true, },
+            { title: "memId", field: "memId", hozAlign: "right", headerSort: true, headerFilter: true, },
             { title: "Price", field: "price", hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
             { title: "Discount", field: "couponDiscount", hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
             { title: "Paid", field: "paid", hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
@@ -753,7 +756,7 @@ function transferBadge(to, banned) {
 }
 
 function sendCancel() {
-    var tid = prompt("Would you like to send a test email?\nIf so please enter the transaction you want to send the test for.");
+    var tid = prompt("Would you like to send a test email?\nIf so please enter the transaction you want to send the test for.\n");
     var action = "none";
 
     if (tid == null) {
@@ -781,28 +784,22 @@ function sendCancel() {
 
 
 function sendEmail(type) {
-    var email = prompt("Would you like to send a test " + type + " email?\nIf so please enter the address to send the test to.");
+    emailBulkSend = new EmailBulkSend('result_message', 'scripts/sendBatch.php');
+
+    var email = prompt("Would you like to send a test " + type + " email?\nIf so please enter the address to send the test to in the box below and click ok.\n" +
+        "If you don't provide a test address, you will be sending emails to a lot of people.\nYou will be give a chance to review the number of emails to be sent before they are sent out.\n" +
+        "Clicking cancel will cancel the sending of these emails.\n");
     var action = "none";
 
-    if (email == null) {
-        if (confirm("You are about to send a " + type + " email to a lot of people.  Are you sure?")) {
-            action = 'full';
-        } else { return false; }
+    if (email == null)
+        return false;
+
+    if (email == '') {
+        action = 'full';
     } else {
         action = 'test';
     }
 
-    $.ajax({
-        url: 'scripts/sendEmail.php',
-        data: { 'action': action, 'email': email, 'type': type },
-        method: "POST",
-        success: function (data, textStatus, jqXHR) {
-            if (data.error) {
-                $('#test').empty().append(JSON.stringify(data));
-                alert(data.error);
-            } else {
-                $('#test').empty().append(JSON.stringify(data));
-            }
-        }
-    });
+    var data = { 'action': action, 'email': email, 'type': type };
+    emailBulkSend.getEmailAndList('scripts/sendEmail.php', data );
 }

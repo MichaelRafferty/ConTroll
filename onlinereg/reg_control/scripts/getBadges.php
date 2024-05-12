@@ -19,7 +19,7 @@ $conid= $con['id'];
 $response['conid'] = $conid;
 
 $badgeQ = <<<EOS
-SELECT R.create_date, R.change_date, R.price, R.couponDiscount, R.paid, R.id AS badgeId, P.id AS perid, NP.id AS np_id
+SELECT R.create_date, R.change_date, R.price, R.couponDiscount, R.paid, R.id AS badgeId, R.memId, P.id AS perid, NP.id AS np_id
     , CASE WHEN R.perid IS NULL THEN 
             TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(NP.first_name, ''), IFNULL(NP.middle_name, ''))), IFNULL(NP.last_name, ''))), IFNULL(NP.suffix, '')))
         ELSE

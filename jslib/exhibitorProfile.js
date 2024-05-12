@@ -1,5 +1,5 @@
 // Exhibitor Profile related functions
-//  instance of the class must be a javascript variable names exhibitorProfile
+//  instance of the class must be a javascript variable named exhibitorProfile
 class ExhibitorProfile {
 
     // Profile DOM related privates

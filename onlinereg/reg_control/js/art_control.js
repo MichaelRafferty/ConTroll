@@ -1,331 +1,225 @@
+var region = null;
+var regionTab = null;
+
+var itemTable = null;
+var itemSaveBtn = null;
+var itemUndoBtn = null;
+var itemRedoBtn = null;
+
+var itemTable_dirty = false;
+
+var priceregexp = 'regex:^([0-9]+([.][0-9]*)?|[.][0-9]+)$';
+
+var testdiv = null;
+
 $(document).ready(function() {
-  load_list();
-  $('#artPriceWarn').hide();
-  $('#gridSelectWrap').hide();
+    testdiv = document.getElementById('test');
+    setRegion('overview', null);
 });
 
-$(window).resize(function() {
-    $("#main").width($('#table').width() + $('#facets').width() + 15);
-});
+function setRegion(name, id) {
+    region = id;
 
-function key(d) {
-  return d['art_key']+'_'+d['item_key'];
+    if(regionTab!=null) {
+        regionTab.classList.remove('active');
+        regionTab.setAttribute('aria-selected', 'false');
+    }
+
+    regionElem = document.getElementById(name + '-tab');
+    regionElem.classList.add('active')
+    regionElem.setAttribute('aria-selected', 'true');
+    regionTab=regionElem;
+
+    if(region != null) { getData(); }
+    else { 
+        document.getElementById('artItems_table').innerHTML="<p>This is an Overview tab, please select one of the regions above to see the items in that region</p>";
+    }
 }
 
-function input(name, d) {
-  var id = name;
-  var size = 5;
-  if(name == 'title') { size=30; }
-  var ret = "<input size="+size+" name='" + id + "' type='text' "
-      + "value='" + d[name] + "' onChange='doChange(\"item" + key(d) + "\")'/>";
-
-  return ret;
-}
-
-function check(name, d, val) {
-  if(d[name]==val) { return " selected='selected'"; }
-  else { return ""; }
-}
-
-function doChange(id) {
-  $('#'+id).addClass('changed');
-}
-
-function load_list() {
-  var listURL = "scripts/artItems.php";
-  $.ajax({
-    method: "GET",
-    url: listURL,
-    success: function(data, textStatus, jqXHR) {
-      //showError('trace:', data);
-      console.log(data['art'].length);
-      $('#grid').data('data', data['art']);
-      $('#grid').data('rowFunc', buildRow);
-
-      var facetList = ["artist", "art_key", "status"];
-      $('#grid').data('filters', facetList);
-      defineFacets('#grid', '#facets');
-
-      //redraw('#grid');
-      for(var i=0; i< data['artists'].length; i++) {
-        if(data['artists'][i]['art_key'] != '') {
-            $('#newItemArtistList')
-                .append($(document.createElement('option'))
-                .attr('value', data['artists'][i]['art_key'])
-                .append(data['artists'][i]['name']));
+function getData() {
+    var script = "scripts/getArtItems.php";
+    $.ajax({
+        method: "GET",
+        url: script,
+        data: 'region=' + region,
+        success: function (data, textStatus, jqXHR) {
+            if('error' in data) {
+                showError("ERROR in getArt: " + data['error']);
+            }
+            draw(data, textStatus, jqXHR);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in getArt: " + textStatus, jqXHR);
+            return false;
         }
-      }
-      redraw('#grid');
-
-
-
-      $("#main").width($('#table').width() + $('#facets').width() + 15);
-    }
-  });
+    });
 }
 
-function buildRow(art) {
-    var row = $(document.createElement('tr'))
-    row.attr('id', "item" + key(art));
-    row.data('item', art);
-    var cell = $(document.createElement('td'));
-    cell.append(art['artist']);
-    row.append(cell)
-    cell = $(document.createElement('td'));
-    cell.append(art['art_key']);
-    row.append(cell)
-    cell = $(document.createElement('td'));
-    cell.append(art['item_key']);
-    row.append(cell)
-    cell = $(document.createElement('td'));
-    cell.append(art['type']);
-    row.append(cell)
-    cell = $(document.createElement('td'));
-    cell.html(input('title', art));
-    row.append(cell)
-    cell = $(document.createElement('td'));
-    cell.html(input('min_price', art));
-    row.append(cell)
-    cell = $(document.createElement('td'));
-    cell.html(input('sale_price', art));
-    row.append(cell)
-    cell = $(document.createElement('td'));
-    if(art['status']=='Not In Show') {
-        cell.html(input('original_qty', art));
-    } else {
-        cell.html(input('original_qty', art));
-        cell.find('input').attr("type", "hidden");
-        cell.append(art['original_qty']);
-    }
-    row.append(cell)
-    cell = $(document.createElement('td'));
-    cell.html(input('quantity', art));
-    row.append(cell)
-    cell = $(document.createElement('td'));
-    cell.html(status_select(art));
-    row.append(cell)
-    cell = $(document.createElement('td'));
-    cell.html(location_select(art));
-    row.append(cell)
-    cell = $(document.createElement('td'));
-    cell.append(art['bidder']);
-    row.append(cell)
-    cell = $(document.createElement('td'));
-    cell.append(art['final_price']);
-    row.append(cell)
-    cell = $(document.createElement('td'));
-    cell.html(buttons(art));
-    row.append(cell)
+function findDuplicates(data) {
+    var extendedKey = {};
+    var errorString = "";
+    for (const index in data) {
+        var item = data[index];
+        var key = item['item_key'];
+        var exhNum = item['exhibitorNumber'];
+        var extKey = exhNum + '_' + key;
+        if(extendedKey[extKey]) {
+            extendedKey[extKey]++;
+            errorString += exhNum + " has " + extendedKey[extKey] + " items with item # " + key;
 
-    return row;
-}
-
-function status_select(d) {
-  var ret = "<select name='status' onChange='doChange(\"item"+key(d)+"\")'>"
-    + "<option" + check('status', d, 'Not In Show') + ">Not In Show</option>"
-    + "<option" + check('status', d, 'Checked In') + ">Checked In</option>"
-    + "<option" + check('status', d, 'NFS') + " value='NFS'>NFS/Checked In</option>"
-    + "<option" + check('status', d, 'BID') + ">Bid</option>"
-    + "<option" + check('status', d, 'To Auction') + ">To Auction</option>"
-    + "<option" + check('status', d, 'Sold Bid Sheet') + " value='Sold Bid Sheet'>Sold to bid sheet</option>"
-    + "<option" + check('status', d, 'Quicksale/Sold') + ">Quicksale/Sold</option>"
-    + "<option" + check('status', d, 'purchased/released') + " value='purchased/released'>Purchased/Released</option>"
-    + "<option" + check('status', d, 'Removed from Show') + ">Removed From Show</option>"
-    + "<option" + check('status', d, 'Checked Out') + ">Checked Out</option>"
-    + "</select>";
-
-  return ret;
-}
-function buttons(d) {
-  var ret = "<td>";
-    ret += "<button class='right' onClick='removeItem(\""+key(d)+"\")'>Delete</button>";
-    ret += "<button class='right' onClick='update(\""+key(d)+"\")'>Update</button>";
-    ret += "<button class='right' onclick='doAuction(\""+key(d)+"\")'>Enter Purchaser</button>";
-    ret += "</td>";
-
-  return ret;
-}
-
-function location_select(d) {
-  var ret = "<select name='location' onChange='doChange(\"item"+key(d)+"\")'>"
-    + "<option" + check('location', d, '') + "></option>";
-  var list = d['loc_list'].split(",");
-  for(var i=0; i< list.length; i++) {
-    ret += "<option" + check('location', d, list[i]) + ">"+list[i]+"</option>";
-  }
-  ret += "</select>";
-
-  return ret;
-}
-
-function updateChanged() {
-  d3.selectAll(".changed").each(function () {
-    update(key($(this).data('item')));
-  });
-}
-
-function update(item) {
-  if($('#lockUpdate')[0].checked) { lockUpdate(); return false; }
-  var args = $('#item'+item+" :input").serialize() + "&key="+item;
-  $.ajax({
-    url: "scripts/updateItem.php",
-    method: "POST",
-    data: args,
-    success: function(data, textStatus, jqXHR) { 
-        //showError('trace:', data);
-        $('#grid').data('data', data['art']);
-        redraw('#grid'); 
+        } else {
+            extendedKey[extKey] = 1;
         }
-  });
-}
-
-function removeItem(item) {
-  if($('#lockUpdate')[0].checked) { 
-    lockUpdate();
-    redraw("#grid"); 
-    return false; 
-  }
-  var args = $('#item'+item+" :input").serialize() + "&key="+item + "&action=delete";
-  $.ajax({
-    url: "scripts/updateItem.php",
-    method: "POST",
-    data: args,
-    success: function(data, textStatus, jqXHR) { 
-        $('#grid').data('data', data['art']);
-        redraw("#grid"); 
     }
-  });
+    return errorString;
 }
 
-function addItem(form, close) {
-  var type = $(form+"Form input[name='type']").val()
-  var formdata = $(form+"Form").serialize()
-  var script = "scripts/addItem.php";
+function draw(data, textStatus, jqXHR) {
+    //set buttons
+    itemSaveBtn = document.getElementById("item-save");
+    itemUndoBtn = document.getElementById("item-undo");
+    itemRedoBtn = document.getElementById("item-redo");
 
-  if(type=='art') {
-    var min_bid = $(form+"Form :input[name='price']").val()
-    var qsale =  $(form+"Form :input[name='qsale']").val()
-    if(qsale != '' && parseInt(qsale) <= parseInt(min_bid)) {
-      $('#artPriceWarn').show();
-      return false;
-    } else {
-      $('#artPriceWarn').hide();
+    if(itemTable != null) {
+        itemTable.off("dataChanged");
+        itemTable.off("cellEdited");
+        itemTable.destroy();
     }
-  }
 
-$.ajax({
-    url: script,
-    method: "POST",
-    data: formdata,
-    success: function (data, textStatus, jqXHR) {
-      //showError('trace: ', data);
-      if(data['error'] != null) { alert(data['error']); }
-      else {
-        $('#main').data('art', data['art']);
-        $('#grid').data('data', data['art']);
-        redraw('#grid');
-      }
+    itemTable_dirty = false;
+    itemUndoBtn.disabled = true;
+    itemRedoBtn.disabled = true;
+    itemSaveBtn.innerHTML = "Save Changes"
+    itemSaveBtn.disabled = true;
+
+
+    itemTable = new Tabulator('#artItems_table', {
+        mxHeight: "800px",
+        history: true,
+        data: data['art'],
+        layout: 'fitDataTable',
+        pagination: true,
+        paginationSize: 50,
+        paginationSizeSelector: [10, 25, 50, 100, true], // enable page size select with these options
+        columns: [
+            {title: 'id', field: 'id', visible: false},
+            {title: 'locations', field: 'locations', visible: false},
+            {title: 'Name', field: 'exhibitorName', headerSort: true, headerFilter: 'list', headerFilterParams: { values: data['artists'].map(function(a) { return a.exhibitorName;})}, },
+            {title: 'Artist #', field: 'exhibitorNumber', headerWordWrap: true, headerSort: true, width: 60,
+                headerFilter: 'list', headerFilterParams: { values: data['artists'].map(function(a) { return a.exhibitorNumber;})},
+                hozAlign: "right",
+            },
+            {title: 'Item #', field: 'item_key', headerSort: true, headerFilter: true, headerWordWrap: true, width: 60, hozAlign: "right", editor: "input", validator: "numeric"},
+            {title: 'Type', field: 'type', headerSort: true, headerFilter: 'list', headerFilterParams: { values: ['art', 'print', 'nfs']}, width: 75, editor: "list", editorParams: {values: ['art', 'print', 'nfs']}},
+            {title: 'Title', field: 'title', headerSort: true, headerFilter: true, editor: "input", validator: "required"},
+            {title: 'Min Bid or Ins.', field: 'min_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", editor: "input", validator: ["required", priceregexp]},
+            {title: 'Q. Sale or Print', field: 'sale_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", editor: "input", validator: priceregexp},
+            {title: 'Orig Qty', field: 'original_qty', headerSort: true, headerFilter: true, headerWordWrap: true, width: 70, hozAlign: "right", editor: "input", validator: "numeric"},
+            {title: 'Current Qty', field: 'quantity', headerSort: true, headerFilter: true, headerWordWrap: true, width: 70, hozAlign: "right", editor: "input", validator: "numeric"},
+            {title: 'Status', field: 'status', headerSort: true, editor: "list", headerFilter: "list", editorParams: { values: ['Entered', 'Not In Show', 'Checked In', 'NFS', 'BID', 'Quicksale/Sold', 'Removed from Show', 'purchased/released', 'To Auction', 'Sold Bid Sheet', 'Checked Out']}, headerFilterParams: { values: ['Entered', 'Not In Show', 'Checked In', 'NFS', 'BID', 'Quicksale/Sold', 'Removed from Show', 'purchased/released', 'To Auction', 'Sold Bid Sheet', 'Checked Out']},},
+            {title: 'Location', field: 'location', headerSort: true, headerFilter: true, editor: "input"},
+            {title: 'Bidder', field: 'bidderText', headerSort: true, headerFilter:true, },
+            {title: 'Sale Price', field: 'final_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", },
+        ]
+    });
+
+    itemTable.on("dataChanged", itemTable_dataChanged);
+    itemTable.on("cellEdited", cellChanged)
+
+    itemTable_dirty = false;
+
+}
+
+function itemTable_dataChanged(data) {
+    if(!itemTable_dirty) {
+        itemSaveBtn.innerHTML = "Save Changes*";
+        itemSaveBtn.disabled = false;
+        itemTable_dirty = true;
     }
-  });
 
-  if(close) { $('#newItem').dialog('close'); $("#newItemLog").empty(); }
-  else { $('#newItemLog').append($('#newItemTitle').val() + " Added<br/>"); }
+    checkItemUndoRedo();
 }
 
-function doAuction(item) {
-  var keys = item.split("_");
-  $('#auctionArtItem').empty();
-  $('#auctionWinner').empty();
-  $('#auctionPerid').val('');
-  $('#auctionPrice').val('');
-  $('#auctionArtist').val(keys[0]);
-  $('#auctionItem').val(keys[1]);
-  fetchArt('#auctionArtist', '#auctionItem', "#auctionArtItem");
-  $('#auction').dialog("open");
+function cellChanged(cell) {
+    dirty = true;
+    cell.getElement().style.backgroundColor = "#fff3cd";
 }
 
-function fetchPerson(person, destination) {
-  var args="id="+$('#auctionPerid').val();
-  $.ajax({
-    url: "scripts/getPerson.php",
-    method: "GET",
-    data: args,
-    success: function(data, textStatus, jqXHR) {
-      $(destination).empty();
-      $(destination).data('person', data['results']);
-      $(destination).append(data['results']['full_name'])
-        .append($(document.createElement('br')))
-        .append(data['results']['badge_name']);
+function undoItem () {
+    if(itemTable != null) {
+        itemTable.undo();
+
+        if(checkItemUndoRedo() <= 0) {
+            itemTable_dirty = false;
+            itemSaveBtn.innerHTML = "Save Changes";
+            itemSaveBtn.disabled = true;
+        }
     }
-  })
 }
+function redoItem () {
+    if(itemTable != null) {
+        itemTable.redo();
 
-function fetchArt(artist, item, destination) {
-  $.ajax({
-    url: "scripts/getArt.php",
-    method: "GET",
-    data: "art_key="+$(artist).val()+"&item_key="+$(item).val(),
-    success: function(data, textStatus, jqXHR) {
-      if(data['error']) {
-        alert(data['error']);
-        return;
-      }
-      var artItem=data['result'];
-      $(destination).empty();
-      $(destination).data('art', artItem);
-      $(destination).append(artItem['title'])
-        .append($(document.createElement('br')));
-      $(destination).append(artItem['name'])
-        .append($(document.createElement('br')));
-      var table = $(document.createElement('table')).attr('width','100%');
-      var row = $(document.createElement('tr'));
-      row.append($(document.createElement('th')).attr('width','60%').append('Title'));
-      if(artItem['type']=='art') {
-        row.append($(document.createElement('th')).append('Min'));
-      }
-      row.append($(document.createElement('th')).append('Sale'));
-      if(artItem['type']=='print') {
-        $("#auctionPrice").val(data['sale_price']);
-        row.append($(document.createElement('th')).append('Qty'));
-      }
-      table.append(row);
-      row = $(document.createElement('tr'));
-      row.append($(document.createElement('td')).append(artItem['title']));
-      if(artItem['type']=='art') {
-        row.append($(document.createElement('th')).append(artItem['min_price']));
-      }
-      row.append($(document.createElement('th')).append(artItem['sale_price']));
-      if(artItem['type']=='print') {
-        row.append($(document.createElement('th')).append(artItem['quantity']));
-      }
-      table.append(row);
-      $(destination).append(table);
+        if(checkItemUndoRedo() > 0) {
+            itemTable_dirty = true;
+            itemSaveBtn.innerHTML = "Save Changes";
+            itemSaveBtn.disabled = false;
+        }
     }
-  });
 }
 
-function purchase(form) {
-  var args = $(form).serialize();
-  var item = $(form + 'Item').data('art');
-  if(+$('#auctionPrice').val() < +item['min_price']) {
-    alert("Price must be above minimum bid"); return false;
-  }
-  $.ajax({
-    url: "scripts/artSale.php",
-    method: "POST",
-    data: args,
-    success: function(data, textStatus, jqXHR) {
-      if('error' in data && data['error']!='') { 
-        showError(data['error']); 
-      }
-      //$('#main').data('art', data['art']);
-      //$('#grid').data('data', data['art']);
-      redraw("#grid");
-      alert("Artist " + data['post']['art_key'] + " Item " + data['post']['item_key'] + " Sold To " + data['post']['perid'] + " For $" + data['post']['price'] + "\nTable will update on Page Update or Reload.");
+function checkItemUndoRedo() {
+    var undosize = itemTable.getHistoryUndoSize();
+    itemUndoBtn.disabled = undosize <= 0;
+    itemRedoBtn.disabled = itemTable.getHistoryRedoSize() <= 0;
+    return undosize;
+}
+
+function addnewItem() {
+    // need to do this as a modal
+    alert("Adding Items from reg_control is not implemented yet");
+}
+
+function saveItem() {
+    if(itemTable != null) {
+        var invalids = itemTable.validate();
+        if (!invalids === true) {
+            console.log(invalids);
+            alert("Item table does not pass validation, please check for empty cells or cells in red");
+            return false;
+        }
+
+        var duplicates = findDuplicates(itemTable.getData());
+        if(duplicates != "") {
+            alert(duplicates);
+            return false;
+        }
     }
-  });
-}
 
-function lockUpdate() {
-    alert("Lock Update Checked .. if you intend to make changes please unlock");
+    itemSaveBtn.innerHTML = "Saving...";
+    itemSaveBtn.disabled = true;
+
+    script = "scripts/updateArtItems.php"
+    var postdata = {
+        tabledata: JSON.stringify(itemTable.getData()),
+        indexcol: "id",
+        region: region
+    }
+
+    $.ajax({
+        url: script,
+        method: 'POST',
+        data: postdata,
+        success: function (data, textStatus, jhXHR) {
+            if (data['error'] != undefined) {
+                showError(data['error']);
+                itemSaveBtn.innerHTML = "Save Changes";
+                itemSaveBtn.disabled = false;
+            } else {
+                //console.log(data);
+                show_message(data['message'], 'success');
+                getData();
+            }
+        }
+    });
 }

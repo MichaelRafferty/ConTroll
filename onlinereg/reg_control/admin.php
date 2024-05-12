@@ -17,13 +17,14 @@ if (array_key_exists('user_id', $_SESSION)) {
     return;
 }
 
+$cdn = getTabulatorIncludes();
 page_init($page,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
-                    //'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
+    /* css */ array($cdn['tabcss'],
+                    //$cdn['tabbs5'],
                     'css/base.css',
                    ),
-    /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js',
+    /* js  */ array( //$cdn['luxon'],
+                    $cdn['tabjs'],
                     'js/tinymce/tinymce.min.js',
                     'js/base.js',
                     'js/admin.js',
@@ -140,7 +141,7 @@ else
     $authR = dbQuery($authQ);
 
     $auth_set = array(); $auth_num = array();
-    while($auth = fetch_safe_assoc($authR)) {
+    while($auth = $authR->fetch_assoc()) {
         $auth_set[$auth['name']] = $auth['id'];
         $auth_num[$auth['id']] = $auth['name'];
     }
@@ -148,7 +149,7 @@ else
     $pairQ = "SELECT * from user_auth;";
     $pairR = dbQuery($pairQ);
     $user_auth = array();
-    while($pair = fetch_safe_assoc($pairR)) {
+    while($pair = $pairR->fetch_assoc()) {
         $user_auth[$pair['user_id']][$pair['auth_id']] = true;
     }
 
@@ -215,7 +216,7 @@ else
                 </thead>
                 <tbody>
                     <?php
-    while($user = fetch_safe_assoc($userR)) {
+    while($user = $userR->fetch_assoc()) {
         $lookup_str = '';
         if ((!array_key_exists('perid', $user)) || $user['perid'] === null || $user['perid'] == '') {
             $updateFcn = 'updatePerid';

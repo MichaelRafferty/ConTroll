@@ -24,7 +24,7 @@ $authR = dbQuery($authQ);
 $auth_set = array(); $auth_num = array();
 
 
-while($auth = fetch_safe_assoc($authR)) {
+while($auth = $authR->fetch_assoc()) {
     $auth_set[$auth['name']] = $auth['id'];
     $auth_num[$auth['id']] = $auth['name'];
 }

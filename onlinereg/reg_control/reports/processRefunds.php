@@ -24,7 +24,7 @@ header('Content-Disposition: attachment; filename="refunds_results.csv"');
 $memList = dbSafeQuery("SELECT id, label from memList WHERE memCategory='cancel' and conid=?", 'i', array($conid));
 
 $memTypes = array();
-while ($memArray = fetch_safe_assoc($memList)) {
+while ($memArray = $memList->fetch_assoc()) {
     $memTypes[$memArray['label']] = $memArray['id'];
 }
 
@@ -52,7 +52,7 @@ EOS;
 
 echo "Transaction, Label, Reference, Name, Email, Phone, Address, Addr_2, City, State, Zip, Country, Result, Reason\n";
 
-while($txn = fetch_safe_assoc($txnR)) {
+while($txn = $txnR->fetch_assoc()) {
     $result = "failed";
     $reason = "unknown";
 

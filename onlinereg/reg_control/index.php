@@ -20,6 +20,7 @@ if($need_login == false) {
     if (!(array_key_exists('user_email', $_SESSION) && $user_email == $_SESSION['user_email']
         && array_key_exists('user_id', $_SESSION) && $_SESSION['user_id'] != null
         && array_key_exists('user_perid', $_SESSION) && $_SESSION['user_perid'] != null
+        && array_key_exists('remote_addr', $_SESSION) && $_SESSION['remote_addr'] == $_SERVER['REMOTE_ADDR']
     )) {
         $_SESSION['user_email'] = $user_email;
         // get the user id for database tracking
@@ -39,6 +40,8 @@ EOS;
         }
         $_SESSION['user_id'] = $userid;
         $_SESSION['user_perid'] = $perid;
+        $_SESSION['remote_addr'] = $_SERVER['REMOTE_ADDR'];
+        web_error_log("reg_control login by $user_email($userid:$perid) from " . $_SERVER['REMOTE_ADDR']);
     }
     // get the version string, and the current DB patch level
     $versionFile = '../../version.txt';

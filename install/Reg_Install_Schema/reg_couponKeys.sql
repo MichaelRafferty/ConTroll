@@ -23,8 +23,8 @@ CREATE TABLE `couponKeys` (
   PRIMARY KEY (`id`),
   KEY `couponkeys_couponid_fk` (`couponId`),
   KEY `couponkey_usedby_fk` (`usedBy`),
-  KEY `couponkeys_createby_fk` (`createBy`),
-  KEY `couponkeys_perid_fk` (`perid`)
+  KEY `couponkeys_perid_fk` (`perid`),
+  KEY `couponkeys_createby_fk` (`createBy`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

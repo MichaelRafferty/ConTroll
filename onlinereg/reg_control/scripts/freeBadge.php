@@ -25,25 +25,22 @@ if(!isset($_POST['regid']) || !isset($_POST['id'])) { ajaxSuccess(array('error'=
 
 $user = $check_auth['email'];
 $response['user'] = $user;
-$userQ = "SELECT id, perid FROM user WHERE email='$user';";
-$userR = fetch_safe_assoc(dbQuery($userQ));
-$userid = $userR['id'];
-$user_perid = $userR['perid'];
+$user_perid = $_SESSION['user_perid'];
 
 $transQ = <<<EOS
 SELECT *
 FROM transaction
 WHERE userid=? AND type = 'staff' and conid = ?;
 EOS;
-$transR = dbSafeQuery($transQ, 'ii', array($userid, $con['id']));
+$transR = dbSafeQuery($transQ, 'ii', array($user_perid, $con['id']));
 $transid=0;
 
 if ($transR->num_rows > 0) {
-  $trans=fetch_safe_assoc($transR);
+  $trans=$transR->fetch_assoc();
   $transid=$trans['id'];
 } else {
   $transQ = "INSERT INTO transaction (conid, userid, price, paid, type, notes, complete_date) VALUES (?, ?, 0, 0, 'staff', 'Free memberships', NOW());";
-  $transid=dbSafeInsert($transQ, 'ii', array($con['id'] ,$userid));
+  $transid=dbSafeInsert($transQ, 'ii', array($con['id'] ,$user_perid));
 }
 
 if((!array_key_exists('regid', $_POST)) || (!isset($_POST['regid'])) || $_POST['regid'] == ''  || $_POST['regid'] == 'null') {
@@ -53,7 +50,7 @@ if((!array_key_exists('regid', $_POST)) || (!isset($_POST['regid'])) || $_POST['
     }
 
     $perQ = "SELECT perid FROM badgeList WHERE id=?;";
-    $perid = fetch_safe_assoc(dbSafeQuery($perQ, 'i', array($_POST['id'])));
+    $perid = dbSafeQuery($perQ, 'i', array($_POST['id']))->fetch_assoc();
 
     $reg = array(
       'conid'=>sql_safe($con['id']),
@@ -64,7 +61,7 @@ if((!array_key_exists('regid', $_POST)) || (!isset($_POST['regid'])) || $_POST['
 
     $regQ = "INSERT INTO reg (conid, perid, memId, create_trans, complete_trans, paid, price, locked, create_user) VALUES (?, ?, ?, ?, ?, 0, 0, 'N', ?);";
 
-    $regId = dbSafeInsert($regQ, 'iiiiii', array( $reg['conid'], $reg['perid'], $reg['memId'], $reg['trans'], $reg['trans'], $userid));
+    $regId = dbSafeInsert($regQ, 'iiiiii', array( $reg['conid'], $reg['perid'], $reg['memId'], $reg['trans'], $reg['trans'], $user_perid));
 
     $rows_modified = dbSafeCmd("UPDATE transaction SET perid = ? WHERE id = ?;", 'ii', array($reg['perid'], $reg['trans']));
 } else {

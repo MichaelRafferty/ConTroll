@@ -19,7 +19,7 @@ if($_SERVER['REQUEST_METHOD'] != "GET") { ajaxError("No Data"); }
 
 $user = $check_auth['email'];
 $userQ = "SELECT id, perid FROM user WHERE email=?;";
-$userR = fetch_safe_assoc(dbSafeQuery($userQ, 's', array($user)));
+$userR = dbSafeQuery($userQ, 's', array($user))->fetch_assoc();
 $userid = $userR['id'];
 $user_perid = $userR['perid'];
 
@@ -44,7 +44,7 @@ $response['query']=$entryQ;
 $response['badges']=array();
 
 $entryR = dbSafeQuery($entryQ, 'ii', array($con['id'], $user_perid));
-while($badge = fetch_safe_assoc($entryR)) {
+while($badge = $entryR->fetch_assoc()) {
   array_push($response['badges'], $badge);
 }
 
