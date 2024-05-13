@@ -37,7 +37,6 @@ while($loc = $locR->fetch_assoc()) {
     if(!array_key_exists($loc['exhibitorNumber'], $locations)) {
         $locations[$loc['exhibitorNumber']] = explode(',',$loc['locations']);
     }
-    $locations[$loc['exhibitorNumber']] = array_merge($locations[$loc['exhibitorNumber']], explode(',',$loc['locations']));
 }
 
 foreach($locations as $key => $value) {
