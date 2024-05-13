@@ -375,7 +375,7 @@ INSERT INTO transaction(price, type, conid, notes)
     VALUES(?, ?, ?, ?);
 EOS;
 
-    $notes = "exhibitorId: $exhId, exhibitorYearId: $eyID, exhibitsRegionYearId: $regionYearId, portal: $portalName";
+    $notes = "exhibitorId: $exhId, exhibitorYearId: $eyID, exhibitsRegionYearId: $regionYearId, portal: $portalName, exhibitorName: " . $exhibitor['exhibitorName'];
     $transid = dbSafeInsert($transQ, 'dsis', array($totprice, $portalName, $conid, $notes));
     if ($transid === false) {
         $status_msg .= "Add of transaction for $portalName " . $_POST['name'] . " failed.<br/>\n";
