@@ -553,7 +553,7 @@ $onsitesale = $startdate->format("l, F j");
 <?php
       if($ini['test']==1) {
 ?>
-                 <h2 class='text-danger'><strong>This won't charge your credit card.<br/>It also won't get you membershipd.</strong></h2>
+                 <h2 class='text-danger'><strong>This won't charge your credit card.<br/>It also won't get you memberships.</strong></h2>
     <?php
       }
     ?>
