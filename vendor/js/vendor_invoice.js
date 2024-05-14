@@ -93,6 +93,9 @@ function openInvoice(id) {
         (additionalMemberships > 0 ? "the " : "no ") + "right to purchase " +
         (additionalMemberships > 0 ? "up to " +  additionalMemberships  : "no") +
         " additional memberships at a reduced rate of $" + Number(regionList.additionalMemPrice).toFixed(2) + ".</p>";
+    if((includedMemberships == 0) && (additionalMemberships ==0)) {
+        html += "<input type='hidden' name='agreeNone' value='on'></input>"
+    }
     if (spaces > 0) {
         switch (portalType) {
             case 'artist':

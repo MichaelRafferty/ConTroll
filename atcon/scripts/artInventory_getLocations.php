@@ -21,7 +21,7 @@ if(!array_key_exists('region', $_GET)) {
 }
 
 $locQ = <<<EOS
-SELECT exhibitorNumber, eRY.locations
+SELECT DISTINCT exhibitorNumber, eRY.locations
 FROM exhibitorRegionYears eRY
     JOIN exhibitorYears eY ON eY.id=eRY.exhibitorYearId
     JOIN exhibitorSpaces eS on eS.exhibitorRegionYear=eRY.id
@@ -34,10 +34,13 @@ $locR = dbSafeQuery($locQ, 'ii', array($conid, $region));
 
 $locations = array();
 while($loc = $locR->fetch_assoc()) {
-    if(!array_key_exists($loc['exhibitorNumber'], $locations)) {
-        $locations[$loc['exhibitorNumber']] = explode(',',$loc['locations']);
+    if ($loc['locations'] != null && $loc['locations'] != "") {
+        if (!array_key_exists($loc['exhibitorNumber'], $locations)) {
+            $locations[$loc['exhibitorNumber']] = explode(',', $loc['locations']);
+        } else {
+            $locations[$loc['exhibitorNumber']] = array_merge($locations[$loc['exhibitorNumber']], explode(',', $loc['locations']));
+        }
     }
-    $locations[$loc['exhibitorNumber']] = array_merge($locations[$loc['exhibitorNumber']], explode(',',$loc['locations']));
 }
 
 foreach($locations as $key => $value) {

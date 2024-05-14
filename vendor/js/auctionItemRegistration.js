@@ -435,7 +435,7 @@ class AuctionItemRegistration {
         console.log(data);
         this.drawNfsItemTable(data['items']);
     }
-
+    
     drawArtItemTable(data) {
         var _this = this;
         this.#artItemTable = new Tabulator('#artItemTable', {
