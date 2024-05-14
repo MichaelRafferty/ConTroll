@@ -85,6 +85,8 @@ vendorsite="http://vendor"
 vendorSignupAddltext=""
 artistsite="http://artist"
 artist="artists@???"
+renderer='http://localhost:3000' ; remote renderer for bidsheets
+# pathto file in config any additional text you wish to add to explain the signup form for artist portal
 ;; artist Item Registration Headers, if omitted, the defaults are used
 ;artistItemAuctionTitle="Art Auction Items"
 ;artistItemSalesTitle="Art Sales / Print Shop Items"
@@ -107,6 +109,7 @@ artistPriceTagBarcode = 1;
 ;artistMailInInventoryReqHTML=
 ;artistMailInInventoryReqText=
 ; pathto file in config any additional text you wish to add to explain the signup form for artist portal
+>>>>>>> origin/test
 artistSignupAddltext=""
 ; artist bid sheets, artistBidSheetNumbers = number of bid lines, of which artistBidSheetNumbers are numbered if lines <=4, it will use up 2x3 Landscape, if >4 and less that X it will use 2x2 Portrait format, if > X it will use 2x1 portrait format
 artistBidSheetLines=4
@@ -120,6 +123,8 @@ taxidextra=
 // disclaimers are path to file in config directory contain the request and payment disclaimers
 req_disclaimer=""
 pay_disclaimer=""
+artsheets=false ; true/false show sheet print buttons
+artcontrol=false ; true/false show control sheet print button
 [client]
 path = "/home/homedir/reg.conname.org/reg_control"
 [google]

@@ -21,9 +21,11 @@ class ExhibitorProfile {
     #debugFlag = 0;
 
     static #fieldList = ["exhibitorName", "exhibitorEmail", "exhibitorPhone", "description", "publicity",
+        "addr", "city", "state", "zip", "country", "mailin"];
+    /*static #fieldList = ["exhibitorName", "exhibitorEmail", "exhibitorPhone", "description", "publicity",
         "contactName", "contactEmail", "contactPhone", "pw1", "pw2",
         "addr", "city", "state", "zip", "country", "shipCompany", "shipAddr", "shipCity", "shipState", "shipZip", "shipCountry", "mailin"];
-
+*/
     static #copyFromFieldList = ['exhibitorName', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
     static #copyToFieldList = ['shipCompany', 'shipAddr', 'shipAddr2', 'shipCity', 'shipState', 'shipZip', 'shipCountry'];
 

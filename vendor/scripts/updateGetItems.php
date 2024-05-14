@@ -61,7 +61,7 @@ EOS;
 
 $eryR = dbSafeQuery($eryQ, 'ii', array($vendor_year, $region));
 if ($eryR === false || $eryR->num_rows != 1) {
-    error_log('Unable to retrieve exhibitorRegionYears for exhibitor year id ' . $vendor_year . ' and exhibitsRegionYearId ' . $region);
+    error_log("Unable to retrieve exhibitorRegionYears for exhibitor year id " . $vendor_year . " and exhibitsRegionYearId " . $region);
     $response['error'] = 'Unable to retrieve the proper setup data, please seek assistance';
     ajaxSuccess($response);
     exit();
@@ -131,7 +131,7 @@ EOS;
 $updated = 0;
 $inserted = 0;
 $data_errors = '';
-foreach ($data as $index => $row) {
+foreach ($data as $index => $row) { 
     if (array_key_exists('to_delete', $row)) {
         if ($row['to_delete'] == 1) continue;
     }
@@ -149,23 +149,23 @@ foreach ($data as $index => $row) {
     }
     $qty = 1;
     if (array_key_exists('original_qty', $row)) {
-        $qty = $row['original_qty'];
+        $qty= $row['original_qty'];
     }
 
     if (!array_key_exists('sale_price', $row) && ($itemType != 'art')) {
-        $data_errors .= 'Item: ' . $row['item_key'] . ', Sale Price is required<br/>';
+        $data_errors .= "Item: " . $row['item_key'] . ", Sale Price is required<br/>";
         continue; // print and nfs need sale
     }
 
     if (!array_key_exists('min_price', $row) && ($itemType == 'art')) {
-        $data_errors .= 'Item: ' . $row['item_key'] . ', Min Bid is required<br/>';
+        $data_errors .= "Item: " . $row['item_key'] . ", Min Bid is required<br/>";
         continue; // art need min bid
     } else if (!array_key_exists('min_price', $row)) {
         $row['min_price'] = $row['sale_price'];
     }
 
     if ($itemType == 'art' && array_key_exists('sale_price', $row) && $row['sale_price'] != null && $row['sale_price'] <= $row['min_price']) {
-        $data_errors .= 'Item: ' . $row['item_key'] . ', Sale Price must be > Min Bid<br/>';
+        $data_errors .= "Item: " . $row['item_key'] . ", Sale Price must be > Min Bid<br/>";
         continue; // invalid
     }
 

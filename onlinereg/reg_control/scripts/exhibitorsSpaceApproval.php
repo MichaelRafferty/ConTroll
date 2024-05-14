@@ -154,11 +154,10 @@ SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.website, exh.exhibitorEmail
     IFNULL(pName, nName) as agentName,
     exh.pu * 10000 + exh.au * 100 + exh.ru AS sortOrder
 FROM vw_ExhibitorSpace xS
-JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
-JOIN exhibitsRegionYears eRY ON eS.exhibitsRegionYear = eRY.id
-JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
-JOIN exh ON (xS.exhibitorId = exh.id)
-
+    JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
+    JOIN exhibitsRegionYears eRY ON eS.exhibitsRegionYear = eRY.id
+    JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
+    JOIN exh ON (xS.exhibitorId = exh.id)
 WHERE eRY.conid=? AND eRY.id = ? AND xS.exhibitorId = ? AND (time_requested IS NOT NULL OR time_approved IS NOT NULL)
 ORDER BY sortOrder, exhibitorName, spaceName
 EOS;
