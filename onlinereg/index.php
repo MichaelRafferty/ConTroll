@@ -287,14 +287,6 @@ $onsitesale = $startdate->format("l, F j");
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-sm-12 pt-4">
-                                    <p class="text-body"><?php echo $con['conname']; ?> is entirely run by volunteers.
-                                    If you're interested in helping us run the convention please email
-                                    <a href="mailto:<?php echo escape_quotes($con['volunteers']); ?>"><?php echo $con['volunteers']; ?></a>.
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="row">
                                 <div class="col-sm-12">
                                     <hr/>
                                 </div>
@@ -305,13 +297,6 @@ $onsitesale = $startdate->format("l, F j");
                                         <a href="<?php echo escape_quotes($con['policy']); ?>" target='_blank'>Click here for
                                             the <?php echo $con['policytext']; ?></a>.
                                     </p>
-                                </div>
-                            </div>
-                             <div class="row">
-                                <div class="col-sm-12">
-                                    <input type='submit' onclick='process("#newBadgeForm");' value='Add Membership To Cart'/>
-                                    <input type='submit' onclick='newBadgeModalClose();' value='Cancel'/>
-                                    <input type='reset'/>
                                 </div>
                             </div>
                             <div class="row">
