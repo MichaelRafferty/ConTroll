@@ -380,6 +380,10 @@ function makePurchase(token, label) {
                 show_message(data['error'], 'error', 'inv_result_message');
                 var submitId = document.getElementById(purchase_label);
                 submitId.disabled = false;
+            } else if (data['status'] == 'error') {
+                show_message(data['data'], 'error', 'inv_result_message');
+                var submitId = document.getElementById(purchase_label);
+                submitId.disabled = false;
             } else if (data['status'] == 'success') {
                 vendor_invoice.hide();
                 show_message(data['message'] + "<p>Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] +

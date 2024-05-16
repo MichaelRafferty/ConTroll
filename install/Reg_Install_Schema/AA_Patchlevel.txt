@@ -1,2 +1,2 @@
-Current=17
-Text=This schema is current as of Patch 17 (p17_exhibits.sql)
+Current=27
+Text=This schema is current as of Patch 27 (p27_triggers_and_state.sql)
