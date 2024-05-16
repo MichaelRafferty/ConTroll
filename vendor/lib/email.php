@@ -180,19 +180,20 @@ function payment($results) {
         '<p>Price for Space: ' . $dolfmt->formatCurrency($region['price'], 'USD') . "</p>\n" .
         "<p>Special Requests:<br/>\n" . $results['specialrequests'] . "</p>\n";
 
-    //TODO put in if statement in case there are no badges in formbadges
-    $bodyHtml .= "<p>Memberships purchased at this time:</p>\n";
-    foreach ($results['formbadges'] as $badge) {
-        if ($badge['type'] == 'i')
-            $bodyHtml .= '<p style="margin-left: 40px;">Included membership ' . $badge['index'] . ":<br/>\n";
-        else
-            $bodyHtml .= '<p style="margin-left: 40px;">Additional membership ' . $badge['index'] . ': for ' . $dolfmt->formatCurrency($badge['price'], 'USD') . "<br/>\n";
-        $bodyHtml .= $badge['fname'] . ' ' . ltrim($badge['mname'] . ' ') . $badge['lname'] . ' ' . $badge['suffix'] . ",<br/>\n" .
-            $badge['addr'] . "<br/>\n";
-        if ($badge['addr2'] && $badge['addr2'] != '')
-            $bodyHtml .= $badge['addr2'] . "<br/>\n";
-        $bodyHtml .= $badge['city'] . ', ' . $badge['state'] . ' ' . $badge['zip'] . ' ' . $badge['country'] . "<br/>\n" .
-            'Badgename: ' . $badge['badgename'] . "</p>\n";
+    if (array_key_exists('formbadges', $results) && is_array($results['formbadges'])) {
+        $bodyHtml .= "<p>Memberships purchased at this time:</p>\n";
+        foreach ($results['formbadges'] as $badge) {
+            if ($badge['type'] == 'i')
+                $bodyHtml .= '<p style="margin-left: 40px;">Included membership ' . $badge['index'] . ":<br/>\n";
+            else
+                $bodyHtml .= '<p style="margin-left: 40px;">Additional membership ' . $badge['index'] . ': for ' . $dolfmt->formatCurrency($badge['price'], 'USD') . "<br/>\n";
+            $bodyHtml .= $badge['fname'] . ' ' . ltrim($badge['mname'] . ' ') . $badge['lname'] . ' ' . $badge['suffix'] . ",<br/>\n" .
+                $badge['addr'] . "<br/>\n";
+            if ($badge['addr2'] && $badge['addr2'] != '')
+                $bodyHtml .= $badge['addr2'] . "<br/>\n";
+            $bodyHtml .= $badge['city'] . ', ' . $badge['state'] . ' ' . $badge['zip'] . ' ' . $badge['country'] . "<br/>\n" .
+                'Badgename: ' . $badge['badgename'] . "</p>\n";
+        }
     }
 
     $bodyHtml .= '<p>Total amount: ' . $dolfmt->formatCurrency($results['total'], 'USD') . "</p>\n" .
