@@ -339,15 +339,17 @@ JOIN exhibitsSpaces es ON p.spaceId = es.id
 WHERE spaceId=?
 ORDER BY p.spaceId, p.sortOrder;
 EOS;
-        $priceR = dbSafeQuery($priceQ, 'i', array($id));
         $price_list = array();
-        while ($price = $priceR->fetch_assoc()) {
-            $price_list[] = $price;
+        $priceR = dbSafeQuery($priceQ, 'i', array($id));
+        if ($priceR !== false) {
+            while ($price = $priceR->fetch_assoc()) {
+                $price_list[] = $price;
+            }
+            $priceR->free();
         }
         $space_list[$yearId][$id]['prices'] = $price_list;
     }
 }
-$priceR->free();
 
 // get this exhibitor
 $vendorQ = <<<EOS

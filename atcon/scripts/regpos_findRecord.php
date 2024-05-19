@@ -36,6 +36,8 @@ $name_search = $_POST['name_search'];
 
 $response['find_type'] = $find_type;
 $response['name_search'] = $name_search;
+$perinfo = [];
+$membership = [];
 
 $limit = 99999999;
 if ($find_type == 'unpaid') {
@@ -136,76 +138,68 @@ EOS;
 //
 // this is perid, or transid
 //
-    $withClause = <<<EOS
-WITH regbytid AS (
-/* first reg ids for this create transaction as specified as a number */
-SELECT r.id AS regid, create_trans as tid
-FROM reg r
-JOIN memLabel m ON (r.memId = m.id)
-WHERE create_trans = ? AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
-/* then add in reg ids for this attach transaction */
-UNION SELECT regid, tid
-FROM reg_history h
-JOIN reg r ON (r.id = h.regid)
-JOIN memLabel m ON (r.memId = m.id)
-WHERE tid = ? AND h.action = 'attach' AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
-), regbyperid AS (
-/* is the number a perinfo?  find the reg id's for this person matching the number */
-SELECT r.id AS regid
-FROM reg r
-JOIN memLabel m ON (r.memId = m.id)
-WHERE perid = ? AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
-), regs AS (
-/* now get the transactions for these regids */
-SELECT rs.regid, create_trans as tid
-FROM regbyperid rs
-JOIN reg r ON (r.id = rs.regid)
-UNION SELECT h.regid, tid
-FROM regbyperid rs
-JOIN reg_history h ON (h.regid = rs.regid AND h.action = 'attach')
-), maxtid AS (
-/* now take the most recent transaction */
-SELECT regid, MAX(tid) AS tid
-FROM regs
-GROUP BY regid
-), regpt AS (
-/* now get all the regids for these transactions */
-SELECT IFNULL(h.regid, r.id) AS regid, m.tid
-FROM maxtid m
-LEFT OUTER JOIN reg_history h ON (h.tid = m.tid AND h.action = 'attach')
-LEFT OUTER JOiN reg r ON (r.create_trans = m.tid)
-), regids AS (
-/* and pull both sets together */
-SELECT regid, tid FROM regbytid
-UNION SELECT regid, tid FROM regpt
+    // first can we tell if it's a perid or a tid?
+    $overlapQ = <<<EOS
+SELECT 'p' AS which, id
+FROM perinfo p
+WHERE p.id = ?
+UNION SELECT 't' AS which, id
+FROM transaction t 
+WHERE t.id = ? AND t.conid in (?, ?);
+EOS;
+    $overlapR = dbSafeQuery($overlapQ, 'iiii', array($name_search, $name_search, $conid, $conid + 1));
+    $found_perid = false;
+    $found_tid = false;
+    while ($overlapL = $overlapR->fetch_assoc()) {
+        if ($overlapL['which'] == 'p')
+            $found_perid = true;
+        if ($overlapL['which'] == 't')
+            $found_tid = true;
+    }
+    $overlapR->free();
+
+    if ($found_perid == false && $found_tid == false) {
+        // nothing to search for, return zero records found (early exit)
+        $response['message'] = "0 memberships found";
+        $response['perinfo'] = $perinfo;
+        $response['membership'] = $membership;
+        ajaxSuccess($response);
+        exit();
+    }
+    // tid has higher precidence than perid in the matching
+    if ($found_tid) {
+        // pull all the matching regs for this transid for this period
+        $withClause = <<<EOS
+WITH regids AS (
+    /* first reg ids for this create transaction as specified as a number */
+    SELECT r.id AS regid, create_trans as tid
+    FROM reg r
+    JOIN memLabel m ON (r.memId = m.id)
+    WHERE create_trans = ? AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
+    /* then add in reg ids for this attach transaction */
+    UNION SELECT regid, tid
+    FROM reg_history h
+    JOIN reg r ON (r.id = h.regid)
+    JOIN memLabel m ON (r.memId = m.id)
+    WHERE tid = ? AND h.action = 'attach' AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
 )
 EOS;
-    $searchSQLP = <<<EOS
+        $searchSQLP = <<<EOS
 $withClause
 SELECT DISTINCT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.middle_name, '') as middle_name, IFNULL(p.last_name, '') as last_name,
-    IFNULL(p.suffix, '') as suffix, IFNULL(p.legalName, '') as legalName, p.badge_name,
-    IFNULL(p.address, '') as address_1, IFNULL(p.addr_2, '') as address_2, IFNULL(p.city, '') AS city,
+    IFNULL(p.suffix, '') as suffix, IFNULL(p.legalName, '') as legalName,
+    p.badge_name, IFNULL(p.address, '') as address_1, IFNULL(p.addr_2, '') as address_2, IFNULL(p.city, '') AS city,
     IFNULL(p.state, '') AS state, IFNULL(p.zip, '') as postal_code, IFNULL(p.country, '') as country, IFNULL(p.email_addr, '') as email_addr,
     IFNULL(p.phone, '') as phone, p.share_reg_ok, p.contact_ok, p.active, p.banned,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix,'')), '  *', ' ')) AS fullname,
     p.open_notes
-FROM regids rs
-JOIN reg r ON (rs.regid = r.id)
-JOIN perinfo p ON (p.id = r.perid)
-UNION 
-SELECT DISTINCT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.middle_name, '') as middle_name, IFNULL(p.last_name, '') as last_name,
-    IFNULL(p.suffix, '') as suffix, IFNULL(p.legalName, '') as legalName, p.badge_name,
-    IFNULL(p.address, '') as address_1, IFNULL(p.addr_2, '') as address_2, IFNULL(p.city, '') AS city,
-    IFNULL(p.state, '') AS state, IFNULL(p.zip, '') as postal_code, IFNULL(p.country, '') as country, IFNULL(p.email_addr, '') as email_addr,
-    IFNULL(p.phone, '') as phone, p.share_reg_ok, p.contact_ok, p.active, p.banned,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-    p.open_notes
-FROM perinfo p
-WHERE id = ?
+FROM regids r
+JOIN reg r1 ON (r1.id = r.regid)
+JOIN perinfo p ON (p.id = r1.perid)
 ORDER BY last_name, first_name;
 EOS;
-    //web_error_log($searchSQLP);
-    $searchSQLM = <<<EOS
+        //web_error_log($searchSQLP);
+        $searchSQLM = <<<EOS
 $withClause
 , notes AS (
 SELECT h.regid, GROUP_CONCAT(CONCAT(h.userid, '@', h.logdate, ': ', h.notes) SEPARATOR '\n') AS reg_notes, COUNT(*) AS reg_notes_count
@@ -240,16 +234,69 @@ LEFT OUTER JOIN notes n ON (r1.id = n.regid)
 WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
 ORDER BY create_date;
 EOS;
-    //web_error_log($searchSQLM);
-    $rp = dbSafeQuery($searchSQLP, 'iiiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search));
-    $rm = dbSafeQuery($searchSQLM, 'iiiiiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid, $conid + 1));
+        //web_error_log($searchSQLM);
+        $rp = dbSafeQuery($searchSQLP, 'iiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1));
+        $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid, $conid + 1));
+    } else if ($found_perid) {
+        // pull all the matching regs for this perid for this period
+        $searchSQLP = <<<EOS
+SELECT DISTINCT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.middle_name, '') as middle_name, IFNULL(p.last_name, '') as last_name,
+    IFNULL(p.suffix, '') as suffix, IFNULL(p.legalName, '') as legalName, p.badge_name,
+    IFNULL(p.address, '') as address_1, IFNULL(p.addr_2, '') as address_2, IFNULL(p.city, '') AS city,
+    IFNULL(p.state, '') AS state, IFNULL(p.zip, '') as postal_code, IFNULL(p.country, '') as country, IFNULL(p.email_addr, '') as email_addr,
+    IFNULL(p.phone, '') as phone, p.share_reg_ok, p.contact_ok, p.active, p.banned,
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
+    p.open_notes
+FROM perinfo p
+WHERE id = ?;
+EOS;
+        $searchSQLM = <<<EOS
+WITH regids AS (
+    SELECT r.id AS regid
+    FROM reg r
+    JOIN memList m ON (r.memId = m.id)
+    WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r.perid = ?
+), notes AS (
+SELECT h.regid, GROUP_CONCAT(CONCAT(h.userid, '@', h.logdate, ': ', h.notes) SEPARATOR '\n') AS reg_notes, COUNT(*) AS reg_notes_count
+FROM regids m
+JOIN reg_history h ON (m.regid = h.regid)
+WHERE h.action = 'notes'
+GROUP BY h.regid
+), printcount AS (
+SELECT h.regid, COUNT(*) printcount
+FROM regids m
+JOIN reg_history h ON (m.regid = h.regid)
+WHERE h.action = 'print'
+GROUP BY h.regid
+), attachcount AS (
+SELECT h.regid, COUNT(*) attachcount
+FROM regids m
+JOIN reg_history h ON (m.regid = h.regid)
+WHERE h.action = 'attach'
+GROUP BY h.regid
+)
+SELECT DISTINCT r.perid, r.id as regid, m.conid, r.price, r.paid, r.paid AS priorPaid, r.create_date, IFNULL(r.create_trans, -1) as tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
+                IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, m.memGroup, r.create_trans as rstid,
+                CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label
+FROM regids rs
+JOIN reg r ON (rs.regid = r.id)
+JOIN perinfo p ON (p.id = r.perid)
+JOIN memLabel m ON (r.memId = m.id)
+LEFT OUTER JOIN printcount pc ON (r.id = pc.regid)
+LEFT OUTER JOIN attachcount ac ON (r.id = ac.regid)
+LEFT OUTER JOIN notes n ON (r.id = n.regid)
+ORDER BY create_date;
+EOS;
+        $rp = dbSafeQuery($searchSQLP, 'i', array($name_search));
+        $rm = dbSafeQuery($searchSQLM, 'iiii', array($conid, $conid + 1, $name_search, $conid));
+    }
 } else {
 //
 // this is the string search portion as the field is alphanumeric
 //
     // name match
     $limit = 50; // only return 50 people's memberships
-    $name_search = '%' . preg_replace('/ +/', '%', $name_search) . '%';
+    $name_search = mb_strtolower('%' . preg_replace('/ +/', '%', $name_search) . '%');
     //web_error_log("match string: $name_search");
     $searchSQLP = <<<EOS
 SELECT DISTINCT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.middle_name, '') as middle_name, IFNULL(p.last_name, '') as last_name,
@@ -267,7 +314,7 @@ EOS;
     $searchSQLM = <<<EOS
 WITH limitedp AS (
 /* first get the perid's for this name search */
-    SELECT DISTINCT p.id, IFNULL(p.first_name, '') as first_name, p.last_name
+    SELECT DISTINCT p.id, IFNULL(p.first_name, '') as first_name, IFNULL(p.last_name, '') as last_name
     FROM perinfo p
     WHERE (LOWER(TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(first_name, ''), IFNULL(middle_name, ''))), IFNULL(last_name, '')))) LIKE ? OR 
         LOWER(badge_name) LIKE ? OR LOWER(legalName) LIKE ? OR LOWER(email_addr) LIKE ? OR LOWER(address) LIKE ? OR LOWER(addr_2) LIKE ?)
@@ -279,11 +326,11 @@ JOIN reg r ON (r.perid = p.id)
 JOIN memList m ON (r.memId = m.id)
 WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
 ), regtid AS (
-SELECT r.id as regid, create_trans as tid
+SELECT r.id as regid, IFNULL(r.create_trans, -1) AS tid
 FROM regids rs
 JOIN reg r ON (r.id = rs.regid)
 UNION
-SELECT h.regid, h.tid
+SELECT h.regid, IFNULL(h.tid, -1) AS tid
 FROM regids rs
 JOIN reg_history h ON (h.regid = rs.regid)
 ), maxtids AS (
@@ -334,7 +381,7 @@ if ($num_rows >= $limit) {
 } else {
     $response['message'] = "$num_rows memberships found";
 }
-mysqli_free_result($rp);
+$rp->free();
 
 $membership = [];
 $index = 0;
@@ -345,5 +392,5 @@ while ($l = $rm->fetch_assoc()) {
     $index++;
 }
 $response['membership'] = $membership;
-mysqli_free_result($rm);
+$rm->free();
 ajaxSuccess($response);
