@@ -170,6 +170,7 @@ error_log($printer[0] . ' ' . $printer[1] . ' ' . $printer[2] . ' ' . $printer[3
     $result_code = 0;
 
     if (mb_substr($queue, 0, 1) == '0' || $name == 'None') { // return link to badge
+        web_error_log("trying to save file");
         $atcon_conf = get_conf('atcon');
         $location = $atcon_conf['badges'];
         $newname = "ps/" . basename($tempfile) . ".ps";
@@ -179,9 +180,12 @@ error_log($printer[0] . ' ' . $printer[1] . ' ' . $printer[2] . ' ' . $printer[3
         web_error_log("executing command '$command' returned '$result', code: $result_code",'badgePrn');
         if($result_code == 0) { 
             web_error_log("Badge saved at $newname",'badgePrn');
-            $result_code=$newname;
+            $result_code='images/' . $newname;
+        } else {
+            web_error_log("Badge Not Saved: $command");
         }
     }  else { // print to a printer
+        web_error_log("trying to print to printer");
         $server = $printer[1];
         $options = '';
         switch ($codepage) {
