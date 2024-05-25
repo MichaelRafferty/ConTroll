@@ -180,7 +180,7 @@ error_log($printer[0] . ' ' . $printer[1] . ' ' . $printer[2] . ' ' . $printer[3
         web_error_log("executing command '$command' returned '$result', code: $result_code",'badgePrn');
         if($result_code == 0) { 
             web_error_log("Badge saved at $newname",'badgePrn');
-            $result_code='images/' . $newname;
+            $result_code='' . $newname;
         } else {
             web_error_log("Badge Not Saved: $command");
         }
