@@ -83,7 +83,7 @@ if (isset($_SESSION['badgePrinter'])) {
                 $response['message'] .= " <a href='$badgefile'>Badge</a>";
             }
             $response['message'] .= "<br/>";
-        } else if(($badge['type'] == 'one-day') || ($badge['type']=='oneday')) {
+        } else if(($badge['type'] == 'one-day') || ($badge['type']=='oneday') || ($badge['type']=='oneDay')) {
             $file_1day = init_file($printer);
             write_badge($badge, $file_1day, $printer);
             $badgefile = print_badge($printer, $file_1day);
