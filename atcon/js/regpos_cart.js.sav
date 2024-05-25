@@ -1286,7 +1286,7 @@ class regpos_cart {
     getBadge(index) {
 
         var row = this.#cart_perinfo[index];
-        var mrow = find_print_membership_by_perid(this.#cart_membership, row['perid']);
+        var mrow = find_primary_membership_by_perid(this.#cart_membership, row['perid']);
         var printrow = this.#cart_membership[mrow];
 
         var params = {};
@@ -1295,10 +1295,7 @@ class regpos_cart {
         params['full_name'] = (row['first_name'] + ' ' + row['last_name']).trim();
         params['category'] = printrow['memCategory'];
         params['badge_id'] = row['perid'];
-        if ((printrow['memType'].toLowerCase() == 'oneday') || (printrow['memType'].toLowerCase() == 'one-day'))
-            params['day'] = dayFromLabel(printrow['label']);
-        else
-            params['day'] = "";
+        params['day'] = dayFromLabel(printrow['label']);
         params['age'] = printrow['memAge'];
         return params;
     }
