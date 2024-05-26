@@ -49,12 +49,13 @@ $conid=$con['id'];
     <select name='artid'>
         <?php
             $artistQ = <<<EOS
-SELECT S.id, art_key, TRIM(CONCAT_WS(' ', P.first_name, P.last_name)) AS name
-FROM artshow AS S
-JOIN artist AS A ON A.id = S.artid
-JOIN perinfo AS P ON P.id=A.artist
-WHERE conid=?
-ORDER by art_key;
+select eRY.id, exhibitorName as name, exhibitorNumber as art_key
+from exhibitors e
+    join exhibitorYears eY on eY.exhibitorId=e.id
+    join exhibitorRegionYears eRY on eRY.exhibitorYearId = eY.id
+    join exhibitsRegionYears xRY on xRY.id = eRY.exhibitsRegionYearId
+    JOIN exhibitsRegions xR on xR.id=xRY.exhibitsRegion
+where eY.conid=? and xR.regionType='Art Show';
 EOS;
             $artistR = dbSafeQuery($artistQ, 'i', array($conid));
             while($artist = $artistR->fetch_assoc()) {
