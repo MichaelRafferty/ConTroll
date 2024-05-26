@@ -665,7 +665,7 @@ class regpos_cart {
             }
 
             if ((!non_primary_categories.includes(category)) && mrow['conid'] == conid) { // this is the current year membership
-                if (upgradable_types.includes(mrow['memType'])) {
+                if (upgradable_types.includes(mrow['memType'].toLowerCase())) {
                     upgrade_eligible = true;
                     if (mrow['memType'] == 'oneday' || mrow['memType'] == 'one-day') {
                         day = (mrow['label']).toLowerCase().substring(0, 3);
