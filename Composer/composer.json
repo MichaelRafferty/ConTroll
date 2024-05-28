@@ -1,13 +1,17 @@
 {
     "require": {
         "square/square": "*",
-        "symfony/mailer": "^6.4.2",
-        "symfony/amazon-mailer": "^6.4.2",
-        "google/apiclient": "^2.15.3",
-        "aws/aws-sdk-php": "^3.295.7",
-        "tinymce/tinymce": "^6.8",
+        "symfony/mailer": "^6.4",
+        "symfony/amazon-mailer": "^6.4",
+        "google/apiclient": "^2.16",
+        "aws/aws-sdk-php": "^3.307",
+        "tinymce/tinymce": "^7.1",
         "fpdf/fpdf": "^1.86",
         "picqer/php-barcode-generator": "^2.4",
-        "erkens/fpdf-barcode": "^2.2"
+        "erkens/fpdf-barcode": "^2.2",
+        "guzzlehttp/psr7": "^2.6",
+        "league/oauth2-server": "^9.0",
+        "defuse/php-encryption": "^2.4",
+        "slim/slim": "^4.13"
     }
 }
