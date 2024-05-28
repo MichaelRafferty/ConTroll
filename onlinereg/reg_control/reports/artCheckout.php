@@ -11,21 +11,23 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 
 $con = get_conf("con");
 $conid=$con['id'];
+$artid=100;
 
 if(!isset($_GET) || !isset($_GET['artid'])) {
-    echo "Artist #, Item #, Title, Number Sold, Item Price, Total"
-    . "\n";
-    exit();
+    #echo "Artist #, Item #, Title, Number Sold, Item Price, Total" . "\n";
+    #exit();
 } else {
     $artid = $_GET['artid'];
 }
 
 $nameQuery = <<<EOS
-SELECT concat_ws('_', P.first_name, P.last_name)
-FROM artshow S 
-JOIN artist A ON (A.id=S.artid)
-JOIN perinfo P ON (P.id=A.artist)
-WHERE S.id=?
+select exhibitorName, exhibitorNumber 
+from exhibitors e 
+    join exhibitorYears eY on eY.exhibitorId=e.id 
+    join exhibitorRegionYears eRY on eRY.exhibitorYearId = eY.id 
+    join exhibitsRegionYears xRY on xRY.id = eRY.exhibitsRegionYearId 
+    JOIN exhibitsRegions xR on xR.id=xRY.exhibitsRegion 
+where eY.conid=58 and xR.regionType='Art Show' and exhibitorNumber=?;
 EOS;
 
 $nameR = fetch_safe_array(dbSafeQuery($nameQuery, 'i', array($artid)));
@@ -35,7 +37,7 @@ header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="checkout_'.$name.'.csv"');
 
 $query = <<<EOS
-SELECT A.art_key, I.item_key, I.title, 
+SELECT eRY.exhibitorNumber as art_key, I.item_key, I.title, 
     CASE I.quantity < I.original_qty
         WHEN true THEN I.original_qty - I.quantity
         ELSE 1 
@@ -45,8 +47,8 @@ SELECT A.art_key, I.item_key, I.title,
         ELSE I.sale_price
     END as item_price
 FROM artItems I
-JOIN artshow A ON A.id=I.artshow
-WHERE I.artshow = ? AND (I.quantity < I.original_qty OR I.final_price IS NOT null OR status='Sold Bid Sheet');
+JOIN exhibitorRegionYears eRY ON eRY.id=I.exhibitorRegionYearId
+WHERE I.exhibitorRegionYearId = ? AND (I.quantity < I.original_qty OR I.final_price IS NOT null OR status='Sold Bid Sheet');
 EOS;
 
 //echo $query; exit();
@@ -67,10 +69,10 @@ while($reportL = fetch_safe_array($reportR)) {
 echo ",,$name TOTAL,,,$total\n";
 
 $query = <<<EOS
-SELECT A.art_key, I.item_key, I.title, I.quantity
+SELECT A.exhibitorNumber as art_key, I.item_key, I.title, I.quantity
 FROM artItems I
-JOIN artshow A ON (A.id=I.artshow)
-WHERE I.artshow = ? AND (
+JOIN exhibitorRegionYears A ON (A.id=I.exhibitorRegionYearId)
+WHERE I.exhibitorRegionYearId = ? AND (
     (I.type = 'print' AND I.quantity >0)
     OR (I.type='art' AND I.status='Checked In')
     OR I.type='nfs'
