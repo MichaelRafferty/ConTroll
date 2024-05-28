@@ -93,7 +93,7 @@ if (isset($_SESSION['badgePrinter'])) {
             }
             $response['message'] .= "<br/>";
         } else { // unprintable badge
-            next;
+            continue;
         }
     }
     ajaxSuccess($response);
