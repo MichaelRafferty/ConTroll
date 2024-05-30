@@ -1,6 +1,7 @@
 <?php
 // Registration  Portal - index.php - Main page for the membership portal
 require_once("lib/base.php");
+require_once("lib/getLoginMatch.php");
 require_once("lib/registrationForms.php");
 
 global $config_vars;
@@ -72,7 +73,7 @@ if ($portal_conf['open'] == 0) { ?>
 ?>
     <div class="row p-1">
         <div class="col-sm-auto">
-            Welcome to the <?php echo $con['label']; ?>  Membrership Portal.
+            Welcome to the <?php echo $con['label']; ?>  Membership Portal.
         </div>
     </div>
     <div class="row p-1">
@@ -113,37 +114,32 @@ if (isset($_SESSION['id'])) {
             error_log("Unable to unarchive vendor $exhibitor");
     }
 */
-} else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
-    // handle login submit
-    $login = strtolower(sql_safe($_POST['si_email']));
-    $loginQ = <<<EOS
-SELECT e.id, e.exhibitorName, LOWER(e.exhibitorEmail) as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
-       LOWER(ey.contactEmail) AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview
-FROM exhibitors e
-LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
-WHERE (e.exhibitorEmail=? OR ey.contactEmail = ?) AND conid = ?;
-EOS;
-    $loginR = dbSafeQuery($loginQ, 'ssi', array($login, $login, $conid));
-    // find out how many match
-    $matches = array();
-    while ($result = $loginR->fetch_assoc()) { // check exhibitor email/password first
-        $found = false;
-        if ($login == $result['eEmail']) {
-            if (password_verify($_POST['si_password'], $result['ePassword'])) {
-                $result['loginType'] = 'e';
-                $matches[] = $result;
-                $found = true;
-            }
-        }
-        if (!$found && $login == $result['cEmail']) { // try contact login second
-            if (password_verify($_POST['si_password'], $result['cPassword'])) {
-                $result['loginType'] = 'c';
-                $matches[] = $result;
-                $found = true;
-            }
-        }
+} else if (isset($_GET['vid'])) {
+    // handle link login
+    $match = openssl_decrypt($_GET['vid'], $cipher, $key, 0, $iv);
+    $match = json_decode($match, true);
+    if ($match['id']) {
+        $email = $match['email_addr'];
+        $id = $match['id'];
+    } else {
+        $email = $match['email'];
+        $id = null;
     }
-    $loginR->free();
+    $timediff = time() - $match['ts'];
+    web_error_log('login @ ' . time() . ' with ts ' . $match['ts'] . " for $email/$id");
+    if ($timediff > (1*3600)) {
+        draw_login($config_vars, "<div class='bg-danger text-white'>The link has expired, please request a new link</div>");
+        exit();
+    }
+
+    $loginData = getLoginMatch($email, $id);
+    if (is_array($loginData))
+        $matches = $loginData['matches'];
+    else {
+        draw_login($config_vars);
+        show_message($loginData, 'error');
+        exit();
+    }
     if (count($matches) == 0) {
         ?>
     <h2 class='warn'>Unable to Verify Password</h2>
@@ -155,14 +151,14 @@ EOS;
     }
 
     if (count($matches) > 1) {
-        echo "<h4>This email address has access to multiple portal accounts</h4>\n" .
+        echo "<h4>This email address has access to multiple membership accounts</h4>\n" .
             "Please select one of the accounts below:<br/><ul>\n";
 
         foreach ($matches as $match) {
             $match['ts'] = time();
             $string = json_encode($match);
             $string = urlencode(openssl_encrypt($string, $cipher, $key, 0, $iv));
-            echo "<li><a href='?vid=$string'>" .  $match['exhibitorName'] . "</a></li>\n";
+            echo "<li><a href='?vid=$string'>" .  $match['fullname'] . "</a></li>\n";
         }
 ?>
     </ul>
@@ -177,26 +173,10 @@ EOS;
     // a single  match....
     $match = $matches[0];
     $_SESSION['id'] = $match['id'];
-    $exhibitor = $_SESSION['id'];
-    $_SESSION['login_type'] = $match['loginType'];
+    $_SESSION['idType'] = $match['tablename'];
+    $personId = $_SESSION['id'];
+    $personType = $_SESSION['idType'];
     $in_session = true;
-    if ($match['loginType'] == 'e') {
-        if ($match['eNeedNew']) {
-            $forcePassword = true;
-        }
-    } else {
-        if ($match['cNeedNew']) {
-            $forcePassword = true;
-        }
-    }
-
-    // if archived, unarchive them, they just logged in again
-    if ($match['archived'] == 'Y') {
-        // they were marked archived, and they logged in again, unarchive them.
-        $numupd = dbSafeCmd("UPDATE exhibitors SET archived = 'N' WHERE id = ?", 'i', array($exhibitor));
-        if ($numupd != 1)
-            error_log("Unable to unarchive vendor $exhibitor");
-    }
 } else {
     //draw_registrationModal($portalType, $portalName, $con, $countryOptions);
     draw_login($config_vars);

@@ -38,7 +38,7 @@ function loginWithEmail(id = null) {
                     location.href = config.uri;
                 }
                 show_message("returned " + data['count'] + " matching records.");
-                if (matchTable) {
+                if (matchTable != null) {
                     matchTable.destroy();
                     matchTable = null;
                 }
@@ -47,8 +47,12 @@ function loginWithEmail(id = null) {
                     data: data['matches'],
                     layout: "fitColumns",
                     responsiveLayout:true,
+                    pagination: true,
+                    paginationSize: 10,
+                    paginationSizeSelector: [10, 25, 50, 100, true], // enable page size select with these options
                     columns: [
                         // phone, badge_name, legalName, address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
+                        { title: 'T', field: 'tablename', headerWordWrap: true, headerFilter: true, width: 50, },
                         { title: 'ID', field: 'id', hozAlign: "right", width:65, headerWordWrap: true, headerFilter: false, },
                         { title: 'Name', field: 'fullname', headerWordWrap: true, headerFilter: true, tooltip: true },
                         { title: 'Phone', field: 'phone', headerWordWrap: true, headerFilter: true, tooltip: true},
