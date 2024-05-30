@@ -118,6 +118,7 @@ if (isset($_SESSION['id'])) {
     // handle link login
     $match = openssl_decrypt($_GET['vid'], $cipher, $key, 0, $iv);
     $match = json_decode($match, true);
+    $linkid = $match['lid'];
     if (array_key_exists('id', $match)) {
         $email = $match['email_addr'];
         $id = $match['id'];
@@ -130,6 +131,39 @@ if (isset($_SESSION['id'])) {
     if ($timediff > (1*3600)) {
         draw_login($config_vars, "<div class='bg-danger text-white'>The link has expired, please request a new link</div>");
         exit();
+    }
+    // check if the link has been used
+    $linkQ = <<<EOS
+SELECT id, email, useCnt
+FROM portalTokenLinks
+WHERE id = ?
+ORDER BY createdTS DESC;
+EOS;
+    $linkR = dbSafeQuery($linkQ, 's', array($linkid));
+    if ($linkR == false || $linkR->num_rows != 1) {
+        draw_login($config_vars, "<div class='bg-danger text-white'>The link is invalid, please request a new link</div>");
+        exit();
+    }
+    $linkL = $linkR->fetch_assoc();
+    if ($linkL['email'] != $email) {
+        draw_login($config_vars, "<div class='bg-danger text-white'>The link is invalid, please request a new link</div>");
+        exit();
+    }
+
+    if (($linkL['useCnt'] > 0 && $id == NULL) || ($linkL['useCnt'] > 1 && $id != null)) {
+        draw_login($config_vars, "<div class='bg-danger text-white'>The link has already been used, please request a new link</div>");
+        exit();
+    }
+
+    // mark link as used
+    $updQ = <<<EOS
+UPDATE portalTokenLinks
+SET useCnt = useCnt + 1, useIP = ?, useTS = now()
+WHERE id = ?;
+EOS;
+    $updcnt = dbSafeCmd($updQ, 'si', array($_SERVER['REMOTE_ADDR'], $linkid));
+    if ($updcnt != 1) {
+        web_error_log("Error updating link $linkid as used");
     }
 
     $loginData = getLoginMatch($email, $id);
@@ -156,6 +190,7 @@ if (isset($_SESSION['id'])) {
 
         foreach ($matches as $match) {
             $match['ts'] = time();
+            $match['lid'] = $linkid;
             $string = json_encode($match);
             $string = urlencode(openssl_encrypt($string, $cipher, $key, 0, $iv));
             echo "<li><a href='?vid=$string'>" .  $match['fullname'] . "</a></li>\n";
@@ -177,6 +212,7 @@ if (isset($_SESSION['id'])) {
     $personId = $_SESSION['id'];
     $personType = $_SESSION['idType'];
     $in_session = true;
+    header('location:' . $portal_conf['portalsite']);
 } else {
     //draw_registrationModal($portalType, $portalName, $con, $countryOptions);
     draw_login($config_vars);

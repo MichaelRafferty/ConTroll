@@ -62,10 +62,20 @@ switch ($type) {
         $iv = substr(date_format($ivdate, 'YmdzwLLwzdmY'), 0, $ivlen);
         $key = $conid . $conf['label'] . $conf['regadminemail'];
 
+        $insQ = <<<EOS
+INSERT INTO portalTokenLinks(email, source_ip)
+VALUES(?, ?);
+EOS;
+        $insid = dbSafeInsert($insQ, 'ss', array($email, $_SERVER['REMOTE_ADDR']));
+        if ($insid != false) {
+            web_error_log('Error inserting tracking ID for email link');
+        }
+
         $parms = array();
         $parms['email'] = $email;
         $parms['type'] = 'token-resp';
         $parms['ts'] = time();
+        $parms['lid'] = $insid;
         $string = json_encode($parms);
         $string = urlencode(openssl_encrypt($string, $cipher, $key, 0, $iv));
         $token = $portal_conf['portalsite'] . "/index.php?vid=$string";
