@@ -32,8 +32,7 @@ function draw_login($config_vars, $result_message = '') {
                 <div class='row mt-2'>
                     <div class='col-sm-1'></div>
                     <div class='col-sm-auto'>
-                        <input type='submit' class='btn btn-primary' value='signin'/> or
-                            <a href='javascript:void(0)' onclick="exhibitorProfile.profileModalOpen('register');">Sign Up</a>
+                        <input type='submit' class='btn btn-primary' value='Existing Account Sign-in'/>
                     </div>
                 </div>
             </form>
@@ -43,8 +42,16 @@ function draw_login($config_vars, $result_message = '') {
         <div class='container-fluid'>
             <div class='row mt-4'>
                 <div class='col-sm-auto'>
-                    <button class='btn btn-primary' onclick='resetPassword()'>Reset Password</button>
+                    <button class='btn btn-secondary' onclick='resetPassword()'>Reset Forgotten Password</button>
                 </div>
+            </div>
+        </div>
+    </div>
+    <div class='container-fluid'>
+        <div class='row mt-4'>
+            <div class='col-sm-auto'>
+                <button type="button" class="btn btn-small btn-secondary" onclick="exhibitorProfile.profileModalOpen('register');">Sign Up for a New Account</a>
+            </div>
             </div>
         </div>
     </div>
