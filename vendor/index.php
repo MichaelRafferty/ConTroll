@@ -22,7 +22,6 @@ load_cc_procs();
 $condata = get_con();
 
 $in_session = false;
-$forcePassword = false;
 $regserver = $ini['server'];
 $exhibitor = '';
 
@@ -153,15 +152,7 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
     $_SESSION['eyID'] = $match['eyID'];
     $_SESSION['login_type'] = $match['loginType'];
     $in_session = true;
-    if ($match['loginType'] == 'e') {
-        if ($match['eNeedNew']) {
-            $forcePassword = true;
-        }
-    } else {
-        if ($match['cNeedNew']) {
-            $forcePassword = true;
-        }
-    }
+
     // if archived, unarchive them, they just logged in again
     if ($match['archived'] == 'Y') {
         // they were marked archived, and they logged in again, unarchive them.
@@ -180,6 +171,8 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
         $_SESSION['eyID'] = $match['eyID'];
     }
     exhibitorCheckMissingSpaces($exhibitor, $_SESSION['eyID']);
+    // reload page to get rid of vid in url
+    header('location:' . $_SERVER['PHP_SELF']);
 } else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
     // handle login submit
     $login = strtolower(sql_safe($_POST['si_email']));
@@ -247,15 +240,6 @@ EOS;
     $exhibitor = $_SESSION['id'];
     $_SESSION['login_type'] = $match['loginType'];
     $in_session = true;
-    if ($match['loginType'] == 'e') {
-        if ($match['eNeedNew']) {
-            $forcePassword = true;
-        }
-    } else {
-        if ($match['cNeedNew']) {
-            $forcePassword = true;
-        }
-    }
 
     // if archived, unarchive them, they just logged in again
     if ($match['archived'] == 'Y') {
