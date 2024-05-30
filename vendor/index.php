@@ -126,11 +126,7 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
         unset($_SESSION['id']);
         unset($_SESSION['eyID']);
         unset($_SESSION['login_type']);
-        if ($portalType == 'vendor') {
-            header('location:' . $vendor_conf['vendorsite']);
-        } else {
-            header('location:' . $vendor_conf['artistsite']);
-        }
+        header('location:' . $_SERVER['PHP_SELF']);
         exit();
     } else {
         // nope, just set the vendor id
