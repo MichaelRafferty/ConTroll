@@ -118,7 +118,7 @@ if (isset($_SESSION['id'])) {
     // handle link login
     $match = openssl_decrypt($_GET['vid'], $cipher, $key, 0, $iv);
     $match = json_decode($match, true);
-    if ($match['id']) {
+    if (array_key_exists('id', $match)) {
         $email = $match['email_addr'];
         $id = $match['id'];
     } else {
