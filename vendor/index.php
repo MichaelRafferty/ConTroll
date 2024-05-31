@@ -205,7 +205,7 @@ EOS;
     <h2 class='warn'>Unable to Verify Password</h2>
     <?php
 // not logged in, draw signup stuff
-        draw_registrationModal($portalType, $portalName, $con, $countryOptions);
+        draw_signUpModal($portalType, $portalName, $con, $countryOptions);
         draw_login($config_vars);
         exit();
     }
@@ -256,7 +256,7 @@ EOS;
     }
     exhibitorCheckMissingSpaces($exhibitor, $_SESSION['eyID']);
 } else {
-    draw_registrationModal($portalType, $portalName, $con, $countryOptions);
+    draw_signupModal($portalType, $portalName, $con, $countryOptions);
     draw_login($config_vars);
     exit();
 }
