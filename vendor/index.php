@@ -219,7 +219,7 @@ EOS;
             $string = json_encode($match);
             $string = urlencode(openssl_encrypt($string, $cipher, $key, 0, $iv));
             $name = $match['exhibitorName'];
-            if ($match['artistName'] != null && $match['artistName' != '' && $match['artistName'] != $match['exhibitorName']) {
+            if ($match['artistName'] != null && $match['artistName'] != '' && $match['artistName'] != $match['exhibitorName']) {
                 $name .= "(" . $match['artistName'] . ")";
             }
             echo "<li><a href='?vid=$string'>" .  $name . "</a></li>\n";

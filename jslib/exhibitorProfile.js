@@ -117,10 +117,12 @@ class ExhibitorProfile {
         var valid = true;
         var m2 = ''; // add on to the message field if the description field needs editing
         var field2 = null; // cross field checks (e.g. pw1 and pw2)
+        var minLength = 2;
 
         for (var fieldNum in ExhibitorProfile.#fieldList) {
             var fieldName = ExhibitorProfile.#fieldList[fieldNum];
             var field = document.getElementById(fieldName);
+            minLength = 2;
             switch (fieldName) {
                 case 'exhibitorEmail':
                 case 'contactEmail':
@@ -157,15 +159,17 @@ class ExhibitorProfile {
                     var value = tinyMCE.activeEditor.getContent();
                     if (value == null) {
                         value = false;
-                        m2 = " and the description field which also is required.";
+                        m2 += " and the description field which also is required;";
                     } else if (value.trim() == '') {
                         value = false;
-                        m2 = " and the description field which also is required.";
+                        m2 += " and the description field which also is required;";
                     }
                     break;
 
                 case 'mailin':
-                    break;
+                case 'publicity':
+                    minLength = 1;
+                    // fall into default
 
                 default:
                     if (this.#debugFlag & 16) {
@@ -177,7 +181,7 @@ class ExhibitorProfile {
                             console.log("skipping " + ExhibitorProfile.#fieldList[fieldNum]);
                         break;
                     }
-                    if (field.value.length > 1) {
+                    if (field.value.length >= minLength) {
                         field.style.backgroundColor = '';
                     } else {
                         field.style.backgroundColor = 'var(--bs-warning)';
@@ -236,17 +240,19 @@ class ExhibitorProfile {
             if (this.#exhibitorRow) {
                 this.#exhibitorRow.update(exhibitor_info);
             } else {
-                // now need to update the other tabs data as well....
-                $.ajax({
-                    url: "scripts/exhibitorsGetData.php",
-                    method: "POST",
-                    data: { region: tabname, regionId: regionid },
-                    success: updateExhibitorDataDraw,
-                    error: function (jqXHR, textStatus, errorThrown) {
-                        showError("ERROR in getExhibitorData: " + textStatus, jqXHR);
-                        return false;
-                    }
-                })
+                if (typeof tabname != 'undefined' && tabname != '') {
+                    // now need to update the other tabs data as well....
+                    $.ajax({
+                        url: "scripts/exhibitorsGetData.php",
+                        method: "POST",
+                        data: {region: tabname, regionId: regionid},
+                        success: updateExhibitorDataDraw,
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            showError("ERROR in getExhibitorData: " + textStatus, jqXHR);
+                            return false;
+                        }
+                    })
+                }
             }
         }
     }
@@ -282,7 +288,7 @@ class ExhibitorProfile {
                     this.#profileModalTitle.innerHTML = "New " + config['portalName'] + ' Registration';
                     this.#creatingAccountMsgDiv.hidden = false;
                     this.clearForm();
-                    document.getElementById('publicity').checked = 1;
+                    document.getElementById('publicity').value = 1;
                     break;
                 case 'add':
                     this.#profileIntroDiv.innerHTML = '<p>This form creates an account for the Exhibitor Portals.</p>';
@@ -290,7 +296,7 @@ class ExhibitorProfile {
                     this.#profileModalTitle.innerHTML = 'New Exhibitor Registration';
                     this.#creatingAccountMsgDiv.hidden = false;
                     this.clearForm();
-                    document.getElementById('publicity').checked = 1;
+                    document.getElementById('publicity').value = 1;
                     break;
                 case 'review':
                     this.#profileIntroDiv.innerHTML = '<p>Please review and update your account with any changes this year.</p>';
@@ -320,20 +326,10 @@ class ExhibitorProfile {
                         var value = exhibitor_info[key];
                         if (this.#debugFlag & 16)
                             console.log(key + ' = "' + value + '"');
-                        if (key == 'mailin') {
-                            if (value == 'N')
-                                key = 'mailinN';
-                            if (value == 'Y')
-                                key = 'mailinY';
-                        }
+
                         var id = document.getElementById(key);
                         if (id) {
-                            if (key == 'publicity')
-                                id.checked = value == 1;
-                            else if (key == 'mailinY' || key == 'mailinN')
-                                id.checked = true;
-                            else
-                                id.value = value;
+                            id.value = value;
                         } else if (this.#debugFlag & 16)
                             console.log("field not found " + key);
                     }
