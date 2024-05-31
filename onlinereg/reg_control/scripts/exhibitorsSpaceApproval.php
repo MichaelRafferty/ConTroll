@@ -235,7 +235,7 @@ Thank you.
 $ownerName
 EOS;
     load_email_procs();
-    $return_arr = send_email($conf['regadminemail'], array($exhibitorEmail, $contactEmail), $ownerEmail, $spaceSubject, $body, null);
+    $return_arr = send_email($ownerEmail, array($exhibitorEmail, $contactEmail), $ownerEmail, $spaceSubject, $body, null);
 
     if (array_key_exists('error_code', $return_arr)) {
         $error_code = $return_arr['error_code'];
