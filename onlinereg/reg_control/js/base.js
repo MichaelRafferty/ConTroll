@@ -449,6 +449,7 @@ function showEdit(classname, table, index, field, titlename, textitem) {
         height: 500,
         min_height: 400,
         menubar: false,
+        license_key: 'gpl',
         plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
         toolbar:  [
             'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +

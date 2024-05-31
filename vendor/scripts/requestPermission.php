@@ -92,10 +92,10 @@ EOS;
     }
     // now send the email
     load_email_procs();
-    $emails = approval($vendor, $regionName, $owner, $email, $portalName);
+    $emails = approval($vendor, $regionName, $owner, $email, $portalName, $portalType);
     $contactName = $emails[0];
     $contactEmail = $emails[1];
-    $return_arr = send_email($conf['regadminemail'], $email, $contactEmail, "$portalName access to $regionName",$emails[2], $emails[3]);
+    $return_arr = send_email($email, $email, $contactEmail, "$portalName access to $regionName",$emails[2], $emails[3]);
 
     if (array_key_exists('error_code', $return_arr)) {
         $error_code = $return_arr['error_code'];

@@ -49,7 +49,7 @@ $conid=$con['id'];
     <select name='artid'>
         <?php
             $artistQ = <<<EOS
-select eRY.id, exhibitorName as name, exhibitorNumber as art_key
+select eRY.id, artistName,exhibitorName, exhibitorNumber as art_key
 from exhibitors e
     join exhibitorYears eY on eY.exhibitorId=e.id
     join exhibitorRegionYears eRY on eRY.exhibitorYearId = eY.id
@@ -59,6 +59,11 @@ where eY.conid=? and xR.regionType='Art Show';
 EOS;
             $artistR = dbSafeQuery($artistQ, 'i', array($conid));
             while($artist = $artistR->fetch_assoc()) {
+                $name = $artist['exhibitorName'];
+                $artistName = $artist['artistName'];
+                if ($artistName != null && $artistName != '' && $artistName != $name) {
+                    $name .= "($artistName)";
+                }
                 printf("<option value = '%s'>%s (%s)</option>",
                     $artist['id'], $artist['name'], $artist['art_key']);
             }

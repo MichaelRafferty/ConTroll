@@ -15,7 +15,6 @@ $ini = get_conf('reg');
 
 $condata = get_con();
 $in_session = false;
-$forcePassword = false;
 $regserver = $ini['server'];
 $vendor = '';
 
