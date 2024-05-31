@@ -30,10 +30,7 @@ if (!(array_key_exists('exhibitorEmail', $_POST) && array_key_exists('exhibitorN
 $profileMode = $_POST['profileMode'];
 $profileType = $_POST['profileType'];
 
-$publicity = 0;
-if (array_key_exists('publicity', $_POST)) {
-    $publicity = trim($_POST['publicity']) == 'on' ? 1 : 0;
-}
+$publicity = $_POST['publicity'];
 
 // default mailin
 if (array_key_exists('mailin', $_POST)) {
@@ -118,7 +115,7 @@ EOS;
             $shipState,
             $shipZip,
             $shipCountry,
-            $_POST['publicity']
+            $publicity
         );
         $newExhibitor = dbSafeInsert($exhibitorInsertQ, $typestr, $paramarr);
 
@@ -198,7 +195,7 @@ EOS;
             $publicity,
             $vendor
         );
-        $numrows = dbSafeCmd($updateQ, 'ssssssssssssssssssii', $updateArr);
+        $numrows = dbSafeCmd($updateQ, 'sssssssssssssssssssii', $updateArr);
 
         $updateQ = <<<EOS
 UPDATE exhibitorYears

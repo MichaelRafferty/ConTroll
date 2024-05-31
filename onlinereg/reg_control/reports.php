@@ -61,7 +61,7 @@ EOS;
             while($artist = $artistR->fetch_assoc()) {
                 $name = $artist['exhibitorName'];
                 $artistName = $artist['artistName'];
-                if ($artistname != null && $artistName != '' && $artistName != $name) {
+                if ($artistName != null && $artistName != '' && $artistName != $name) {
                     $name .= "($artistName)";
                 }
                 printf("<option value = '%s'>%s (%s)</option>",

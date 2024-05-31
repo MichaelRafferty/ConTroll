@@ -197,24 +197,30 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                 </div>
                             </div>
                             <div class='row mt-1'>
-                                <div class='col-sm-2'></div>
-                                <div class='col-sm-auto p-0 ms-0 me-0 pe-2'>
-                                    <input class='form-control-sm' type='checkbox' id='publicity' name='publicity' tabindex="70"/>
+                                <div class='col-sm-2'>
+                                    <label for='publicity'> *Publicity: </label>
                                 </div>
-                                <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <label for='publicity'>Check this box if we may use your information to publicize your attendence at <?php echo $con['conname']; ?></label>
+                                <div class='col-sm-9 p-0 ms-0 me-0'>
+                                    <select name='publicity' id='publicity' tabindex='1020' style='min-width:100% !important;'>
+                                        <option value='1' selected>Yes, You may use my information to publicize my attendence
+                                            at <?php echo $con['conname']; ?></option>
+                                        <option value='0'>No, You may not use my information to publicize my attendence
+                                            at <?php echo $con['conname']; ?></option>
+                                    </select>
                                 </div>
                             </div>
                             <?php if ($portalType == 'artist') { /* TODO change this to 'mail-in allowed' */ ?>
-                            <div class='row mt-1'>
-                                <div class='col-sm-2'>
-                                    <label for='mailin'> *Are you requesting a mail-in space: </label>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>
+                                        <label for='mailin'> *Are you requesting a mail-in space: </label>
+                                    </div>
+                                    <div class='col-sm-9 p-0 ms-0 me-0'>
+                                        <select name='mailin' id='mailin' tabindex='1020' style='min-width:100% !important;'>
+                                            <option value='N'>No, (Not Mail In), On-site or Using Agent to transport and hang/collect art</option>
+                                            <option value='Y'>Yes, (Mail In), if shipping art, it will be returned to the Shipping Address</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class='col-sm-auto p-0 ms-0 me-2 align-middle'><input class='form-control-sm' type='radio' name='mailin' id='mailinN'  tabindex='80' value="N" /></div>
-                                <div class='col-sm-auto p-0 ms-0 me-4'>No, On-site/Using Agent (not Mail In)</div>
-                                <div class='col-sm-auto p-0 ms-0 me-2 align-middle'><input class='form-control-sm' type='radio' name='mailin' id='mailinY'  tabindex='90' value="Y"/></div>
-                                <div class='col-sm-auto p-0 ms-0 me-0'>Yes, if shipping art, it will be returned to the Shipping Address (Mail In)</div>
-                            </div>
                             <?php } else { ?>
                             <input type="hidden" name="mailin" id="mailinN" value="N">
                             <?php } ?>
@@ -467,23 +473,26 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions) {
                                     <div class='col-sm-2'>
                                         <label for='mailin'> *Are you requesting a mail-in space: </label>
                                     </div>
-                                    <div class='col-sm-auto p-0 ms-0 me-2 align-middle'><input class='form-control-sm' type='radio' name='mailin' id='mailinN'
-                                                                                               tabindex='1020' value="N"/></div>
-                                    <div class='col-sm-auto p-0 ms-0 me-4'>No, On-site/Using Agent (not Mail In)</div>
-                                    <div class='col-sm-auto p-0 ms-0 me-2 align-middle'><input class='form-control-sm' type='radio' name='mailin' id='mailinY'
-                                                                                               tabindex='1030' value="Y"/></div>
-                                    <div class='col-sm-auto p-0 ms-0 me-0'>Yes, if shipping art, it will be returned to the Shipping Address (Mail In)</div>
+                                    <div class='col-sm-9 p-0 ms-0 me-0'>
+                                        <select name='mailin' id='mailin' tabindex='1020' style="min-width:100% !important;">
+                                            <option value="">--Choose Yes or No--</option>
+                                            <option value="N">No, (Not Mail In), On-site or Using Agent to transport and hang/collect art</option>
+                                            <option value="Y">Yes, (Mail In), if shipping art, it will be returned to the Shipping Address</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <?php } else { ?>
                                 <input type="hidden" name="mailin" id="mailinN" value="N">
                                 <?php } ?>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'></div>
-                                    <div class='col-sm-auto p-0 ms-0 me-0 pe-2'>
-                                        <input class='form-control-sm' type='checkbox' id='publicity' name='publicity' tabindex='1040' checked />
+                                    <div class='col-sm-2'>
+                                        <label for='publicity'> *Publicity: </label>
                                     </div>
-                                    <div class='col-sm-auto p-0 ms-0 me-0'>
-                                        <label for='publicity'>Check this box if we may use your information to publicize your attendence at <?php echo $con['conname']; ?></label>
+                                    <div class='col-sm-9 p-0 ms-0 me-0'>
+                                        <select name='publicity' id='publicity' tabindex='1020' style="min-width:100% !important;">
+                                            <option value='1' selected>Yes, You may use my information to publicize my attendence at <?php echo $con['conname']; ?></option>
+                                            <option value='0'>No, You may not use my information to publicize my attendence at <?php echo $con['conname']; ?></option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="row mt-4">

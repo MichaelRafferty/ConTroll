@@ -27,7 +27,7 @@ EOS;
     $vendorL = $vendorR->fetch_assoc();
     $exhibitorName = $vendorL['exhibitorName'];
     $artistName = $vendorL['artistName'];
-    if ($portalType == 'artist' && $artistname != null && $artistName != '' && $artistName != $exhibitorName) {
+    if ($portalType == 'artist' && $artistName != null && $artistName != '' && $artistName != $exhibitorName) {
         $exhibitorName .= "($artistName)";
     }
     $exhibitorEmail = $vendorL['exhibitorEmail'];
@@ -75,8 +75,8 @@ function request($exhibitorInfo, $regionInfo, $portalName, $portalType, $spaces)
 
     $ownerName = $regionInfo['ownerName'];
     $exhibitorName = $exhibitorInfo['exhibitorName'];
-    $artistName = $vendorL['artistName'];
-    if ($portalType == 'artist' && $artistname != null && $artistName != '' && $artistName != $exhibitorName) {
+    $artistName = $exhibitorInfo['artistName'];
+    if ($portalType == 'artist' && $artistName != null && $artistName != '' && $artistName != $exhibitorName) {
         $exhibitorName .= "($artistName)";
     }
     $contactName = $exhibitorInfo['contactName'];

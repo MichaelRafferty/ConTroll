@@ -151,7 +151,7 @@ if ($exhibitorInfo['exhibitorEmail'] == $exhibitorInfo['contactEmail'] || $exhib
 else
     $cc = array($exhibitorInfo['exhibitorEmail'], $exhibitorInfo['contactEmail']);
 
-    $return_arr = send_email($conf['regadminemail'], $regionInfo['ownerEmail'], $cc, $regionInfo['name'] . " Request", $emails[0] , $emails[1]);
+    $return_arr = send_email($regionInfo['ownerEmail'], $regionInfo['ownerEmail'], $cc, $regionInfo['name'] . " Request", $emails[0] , $emails[1]);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];
