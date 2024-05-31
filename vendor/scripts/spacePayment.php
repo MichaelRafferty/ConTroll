@@ -94,7 +94,7 @@ $regionYearR->free();
 
 // get current exhibitor information
 $exhibitorQ = <<<EOS
-SELECT exhibitorId, exhibitorName, exhibitorEmail, website, description, addr, addr2, city, state, zip, perid, newperid,
+SELECT exhibitorId, artistName, exhibitorName, exhibitorEmail, website, description, addr, addr2, city, state, zip, perid, newperid,
        contactEmail, contactName, ey.mailin
 FROM exhibitors e
 JOIN exhibitorYears ey ON e.id = ey.exhibitorId

@@ -22,7 +22,6 @@ load_cc_procs();
 $condata = get_con();
 
 $in_session = false;
-$forcePassword = false;
 $regserver = $ini['server'];
 $exhibitor = '';
 
@@ -127,11 +126,7 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
         unset($_SESSION['id']);
         unset($_SESSION['eyID']);
         unset($_SESSION['login_type']);
-        if ($portalType == 'vendor') {
-            header('location:' . $vendor_conf['vendorsite']);
-        } else {
-            header('location:' . $vendor_conf['artistsite']);
-        }
+        header('location:' . $_SERVER['PHP_SELF']);
         exit();
     } else {
         // nope, just set the vendor id
@@ -153,15 +148,7 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
     $_SESSION['eyID'] = $match['eyID'];
     $_SESSION['login_type'] = $match['loginType'];
     $in_session = true;
-    if ($match['loginType'] == 'e') {
-        if ($match['eNeedNew']) {
-            $forcePassword = true;
-        }
-    } else {
-        if ($match['cNeedNew']) {
-            $forcePassword = true;
-        }
-    }
+
     // if archived, unarchive them, they just logged in again
     if ($match['archived'] == 'Y') {
         // they were marked archived, and they logged in again, unarchive them.
@@ -180,11 +167,13 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
         $_SESSION['eyID'] = $match['eyID'];
     }
     exhibitorCheckMissingSpaces($exhibitor, $_SESSION['eyID']);
+    // reload page to get rid of vid in url
+    header('location:' . $_SERVER['PHP_SELF']);
 } else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
     // handle login submit
     $login = strtolower(sql_safe($_POST['si_email']));
     $loginQ = <<<EOS
-SELECT e.id, e.exhibitorName, LOWER(e.exhibitorEmail) as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
+SELECT e.id, e.artistName, e.exhibitorName, LOWER(e.exhibitorEmail) as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
        LOWER(ey.contactEmail) AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
@@ -216,7 +205,7 @@ EOS;
     <h2 class='warn'>Unable to Verify Password</h2>
     <?php
 // not logged in, draw signup stuff
-        draw_registrationModal($portalType, $portalName, $con, $countryOptions);
+        draw_signUpModal($portalType, $portalName, $con, $countryOptions);
         draw_login($config_vars);
         exit();
     }
@@ -229,7 +218,11 @@ EOS;
             $match['ts'] = time();
             $string = json_encode($match);
             $string = urlencode(openssl_encrypt($string, $cipher, $key, 0, $iv));
-            echo "<li><a href='?vid=$string'>" .  $match['exhibitorName'] . "</a></li>\n";
+            $name = $match['exhibitorName'];
+            if ($match['artistName'] != null && $match['artistName' != '' && $match['artistName'] != $match['exhibitorName']) {
+                $name .= "(" . $match['artistName'] . ")";
+            }
+            echo "<li><a href='?vid=$string'>" .  $name . "</a></li>\n";
         }
 ?>
     </ul>
@@ -247,15 +240,6 @@ EOS;
     $exhibitor = $_SESSION['id'];
     $_SESSION['login_type'] = $match['loginType'];
     $in_session = true;
-    if ($match['loginType'] == 'e') {
-        if ($match['eNeedNew']) {
-            $forcePassword = true;
-        }
-    } else {
-        if ($match['cNeedNew']) {
-            $forcePassword = true;
-        }
-    }
 
     // if archived, unarchive them, they just logged in again
     if ($match['archived'] == 'Y') {
@@ -276,7 +260,7 @@ EOS;
     }
     exhibitorCheckMissingSpaces($exhibitor, $_SESSION['eyID']);
 } else {
-    draw_registrationModal($portalType, $portalName, $con, $countryOptions);
+    draw_signupModal($portalType, $portalName, $con, $countryOptions);
     draw_login($config_vars);
     exit();
 }
@@ -353,7 +337,7 @@ EOS;
 
 // get this exhibitor
 $vendorQ = <<<EOS
-SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, 
+SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, 
        ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview, ey.mailin,
        e.addr, e.addr2, e.city, e.state, e.zip, e.country, e.shipCompany, e.shipAddr, e.shipAddr2, e.shipCity, e.shipState, e.shipZip, e.shipCountry, e.publicity,
        p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newid, n.first_name AS n_first_name, n.last_name AS n_last_name

@@ -41,7 +41,8 @@ $portalName = $_POST['name'];
 
 // get exhibitor info
 $exhibitorQ = <<<EOS
-SELECT e.id AS exhibitorId, ey.id AS exhibitorYearId, e.exhibitorName, e.exhibitorEmail, ey.contactName, ey.contactEmail, e.exhibitorName, e.website, e.description, exRY.id AS exhibitorRegionYearId
+SELECT e.id AS exhibitorId, ey.id AS exhibitorYearId, e.artistName, e.exhibitorName, e.exhibitorEmail, ey.contactName, ey.contactEmail, e.website, e.description,
+       exRY.id AS exhibitorRegionYearId
 FROM exhibitors e
 JOIN exhibitorYears ey ON e.id = ey.exhibitorId
 JOIN exhibitsRegionYears eRY
@@ -144,7 +145,7 @@ EOS;
 }
 
 load_email_procs();
-$emails = request($exhibitorInfo, $regionInfo, $portalName, $spaces);
+$emails = request($exhibitorInfo, $regionInfo, $portalName, $portalType, $spaces);
 if ($exhibitorInfo['exhibitorEmail'] == $exhibitorInfo['contactEmail'] || $exhibitorInfo['contactEmail'] == '')
     $cc = $exhibitorInfo['exhibitorEmail'];
 else

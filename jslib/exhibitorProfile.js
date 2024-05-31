@@ -8,7 +8,14 @@ class ExhibitorProfile {
     #profileUseType = "unknown";
     #profileIntroDiv = null;
     #profileSubmitBtn = null;
+    #profilePreviousPageBtn = null;
+    #profileNextPageBtn = null;
     #profileModalTitle = null;
+    #profilePage1 = null;
+    #profilePage2 = null;
+    #profilePage3 = null;
+    #profilePage4 = null;
+    #profileCurrentPage = 1;
     #passwordLine1 = null;
     #passwordLine2 = null;
     #cpasswordLine1 = null;
@@ -20,10 +27,10 @@ class ExhibitorProfile {
     // globals
     #debugFlag = 0;
 
-    static #fieldList = ["exhibitorName", "exhibitorEmail", "exhibitorPhone", "description", "publicity",
+    static #fieldList = ["artistName", "exhibitorName", "exhibitorEmail", "exhibitorPhone", "pw1", "pw2", "description", "publicity",
         "addr", "city", "state", "zip", "country", "mailin"];
-    /*static #fieldList = ["exhibitorName", "exhibitorEmail", "exhibitorPhone", "description", "publicity",
-        "contactName", "contactEmail", "contactPhone", "pw1", "pw2",
+    /*static #fieldList = ["artistName", "exhibitorName", "exhibitorEmail", "exhibitorPhone", "description", "publicity",
+        "contactName", "contactEmail", "contactPhone", "cpw1", "cpw2",
         "addr", "city", "state", "zip", "country", "shipCompany", "shipAddr", "shipCity", "shipState", "shipZip", "shipCountry", "mailin"];
 */
     static #copyFromFieldList = ['exhibitorName', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
@@ -61,6 +68,49 @@ class ExhibitorProfile {
         }
     }
 
+    // copy other sections
+    copyArtistNametoBusinessName() {
+        var artname = document.getElementById("artistName");
+        if (artname) {
+            document.getElementById("exhibitorName").value = artname.value;
+        }
+    }
+
+    copyBusToContactName() {
+        document.getElementById("contactName").value = document.getElementById("exhibitorName").value;
+        document.getElementById("contactEmail").value = document.getElementById("exhibitorEmail").value;
+        document.getElementById("contactPhone").value = document.getElementById("exhibitorPhone").value;
+        document.getElementById("cpw1").value = document.getElementById("pw1").value;
+        document.getElementById("cpw2").value = document.getElementById("pw2").value;
+    }
+
+    // move through pages in the profile
+    prevPage() {
+        if (this.#profileCurrentPage > 1) {
+            this.#profileCurrentPage -= 1;
+
+            this.#profilePage1.hidden = this.#profileCurrentPage != 1;
+            this.#profilePage2.hidden = this.#profileCurrentPage != 2;
+            this.#profilePage3.hidden = this.#profileCurrentPage != 3;
+            this.#profilePage4.hidden = this.#profileCurrentPage != 4;
+            this.#profileSubmitBtn.disabled = true;
+            this.#profilePreviousPageBtn.disabled = this.#profileCurrentPage == 1;
+            this.#profileNextPageBtn.disabled = false;
+        }
+    }
+    nextPage() {
+        if (this.#profileCurrentPage < 4) {
+            this.#profileCurrentPage += 1;
+
+            this.#profilePage1.hidden = this.#profileCurrentPage != 1;
+            this.#profilePage2.hidden = this.#profileCurrentPage != 2;
+            this.#profilePage3.hidden = this.#profileCurrentPage != 3;
+            this.#profilePage4.hidden = this.#profileCurrentPage != 4;
+            this.#profileSubmitBtn.disabled = this.#profileCurrentPage != 4;
+            this.#profilePreviousPageBtn.disabled = false;
+            this.#profileNextPageBtn.disabled = this.#profileCurrentPage == 4;
+        }
+    }
     // submit the profile or both register and update, which type is in profileMode, set by the modal open
     submitProfile(dataType) {
         // replace validator with direct validation as it doesn't work well with bootstrap
@@ -122,7 +172,7 @@ class ExhibitorProfile {
                         console.log(ExhibitorProfile.#fieldList[fieldNum].substring(0, 4));
                         console.log(dataType);
                     }
-                    if (dataType != 'artist' && ExhibitorProfile.#fieldList[fieldNum].substring(0, 4) == 'ship') {
+                    if (dataType != 'artist' && (ExhibitorProfile.#fieldList[fieldNum].substring(0, 4) == 'ship' || ExhibitorProfile.#fieldList[fieldNum] == 'artistName')) {
                         if (this.#debugFlag & 16)
                             console.log("skipping " + ExhibitorProfile.#fieldList[fieldNum]);
                         break;
@@ -137,7 +187,10 @@ class ExhibitorProfile {
         }
 
         if (!valid) {
-            show_message("Fill in required missing fields highlighted in this color" + m2, "warn", 'au_result_message');
+            var message = "Fill in required missing fields highlighted in this color" + m2;
+            if (this.#profileUseType == 'register')
+                message += ', use the Previous Page and Next Page buttons to check all of the pages.'
+            show_message(message, "warn", 'au_result_message');
             return null;
         }
         clear_message('au_result_message');
@@ -210,6 +263,20 @@ class ExhibitorProfile {
             this.#creatingAccountMsgDiv.hidden = true;
             switch (useType) {
                 case 'register':
+                    this.#profilePage1 = document.getElementById("page1");
+                    this.#profilePage2 = document.getElementById("page2");
+                    this.#profilePage3 = document.getElementById("page3");
+                    this.#profilePage4 = document.getElementById("page4");
+                    this.#profilePreviousPageBtn = document.getElementById("previousPageBtn");
+                    this.#profileNextPageBtn = document.getElementById("nextPageBtn");
+                    this.#profileCurrentPage = 1;
+                    this.#profilePage1.hidden = false;
+                    this.#profilePage2.hidden = true;
+                    this.#profilePage3.hidden = true;
+                    this.#profilePage4.hidden = true;
+                    this.#profilePreviousPageBtn.disabled = true;
+                    this.#profileNextPageBtn.disabled = false;
+                    this.#profileSubmitBtn.disabled = true;
                     this.#profileIntroDiv.innerHTML = '<p>This form creates an account on the ' + config['label'] + ' ' + config['portalName'] + ' Portal.</p>';
                     this.#profileSubmitBtn.innerHTML = 'Register ' + config['portalName'];
                     this.#profileModalTitle.innerHTML = "New " + config['portalName'] + ' Registration';
@@ -243,7 +310,7 @@ class ExhibitorProfile {
             }
 
             if (typeof exhibitor_info !== 'undefined') {
-                if (exhibitor_info && useType != 'regoister' && useType != 'add') {
+                if (exhibitor_info && useType != 'register' && useType != 'add') {
                     var keys = Object.keys(exhibitor_info);
                     for (var keyindex in keys) {
                         var key = keys[keyindex];
@@ -286,6 +353,7 @@ class ExhibitorProfile {
             height: 400,
             min_height: 400,
             menubar: false,
+            license_key: 'gpl',
             plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
             toolbar: [
                 'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +

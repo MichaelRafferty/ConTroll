@@ -36,7 +36,7 @@ foreach ($past as $exh) {
 
 // get the exhibitor data
 $exhibitorQ = <<<EOS
-SELECT e.id as exhibitorId, perid, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, publicity, 
+SELECT e.id as exhibitorId, perid, artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, publicity, 
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, archived,
        eY.id as contactId, conid, contactName, contactEmail, contactPhone, contactPassword, mailin
 FROM exhibitors e

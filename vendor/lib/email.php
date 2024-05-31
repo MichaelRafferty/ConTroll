@@ -14,11 +14,11 @@ return $body;
 }
 
 // request for approval
-function approval($vendorId, $regionName, $ownerName, $ownerEmail, $portalName) {
+function approval($vendorId, $regionName, $ownerName, $ownerEmail, $portalName, $portalType) {
     $conf = get_conf('con');
     $conid = $conf['id'];
     $vendorQ = <<<EOS
-SELECT e.exhibitorName, e.exhibitorEmail, e.website, e.description, ey.contactName, ey.contactEmail
+SELECT e.artistName, e.exhibitorName, e.exhibitorEmail, e.website, e.description, ey.contactName, ey.contactEmail
 FROM exhibitors e
 JOIN exhibitorYears ey ON (e.id = ey.exhibitorId)
 WHERE e.id=? AND ey.conid = ?;
@@ -26,6 +26,10 @@ EOS;
     $vendorR = dbSafeQuery($vendorQ, 'ii', array($vendorId, $conid));
     $vendorL = $vendorR->fetch_assoc();
     $exhibitorName = $vendorL['exhibitorName'];
+    $artistName = $vendorL['artistName'];
+    if ($portalType == 'artist' && $artistname != null && $artistName != '' && $artistName != $exhibitorName) {
+        $exhibitorName .= "($artistName)";
+    }
     $exhibitorEmail = $vendorL['exhibitorEmail'];
     $website = $vendorL['website'];
     $description = $vendorL['description'];
@@ -65,12 +69,16 @@ EOS;
 }
 
 // request space
-function request($exhibitorInfo, $regionInfo, $portalName, $spaces) {
+function request($exhibitorInfo, $regionInfo, $portalName, $portalType, $spaces) {
     $conf = get_conf("con");
     $conid = $conf['id'];
 
     $ownerName = $regionInfo['ownerName'];
     $exhibitorName = $exhibitorInfo['exhibitorName'];
+    $artistName = $vendorL['artistName'];
+    if ($portalType == 'artist' && $artistname != null && $artistName != '' && $artistName != $exhibitorName) {
+        $exhibitorName .= "($artistName)";
+    }
     $contactName = $exhibitorInfo['contactName'];
     $contactEmail = $exhibitorInfo['contactEmail'];
     $description = $exhibitorInfo['description'];
@@ -125,6 +133,14 @@ function payment($results) {
     $buyer = $results['buyer'];
     $vendor = $results['vendor'];
     $region = $results['region'];
+    $portalType = $results['exhibits'];
+    $exhibitorName = $vendor['exhibitorName'];
+    if (array_key_exists('artistName', $vendor)) {
+        if ($portalType == 'artist' && $vendor['artistName'] != null && $vendor['artistName'] != '' && $vendor['artistName'] != $exhibitorName) {
+            $exhibitorName .= "(" . $vendor['artistName'] . ")";
+        }
+    }
+
 
     $conf = get_conf('con');
     $vendor_conf = get_conf('vendor');
@@ -135,8 +151,7 @@ function payment($results) {
     $body = "Dear " . trim($buyer['fname'] . ' ' . $buyer['lname']) . ":\n\n" .
         "Here is your receipt for payment of " . $dolfmt->formatCurrency($results['approved_amt'], 'USD') . ' for ' . $conf['label'] . ' ' . $region['name'] . "\n\n" .
         "RECEIPT FOR PAYMENT TO: " . $conf['label'] . ' on ' . date('m/d/Y h:i:s A', time()) . "\n\n" .
-        "Vendor: \n" .
-        $vendor['exhibitorName'] . "\n" .
+        "Vendor: $exhibitorName\n" .
         $vendor['addr'] . "\n";
         if ($vendor['addr2'] && $vendor['addr2'] != '')
             $body .= $vendor['addr2'] . "\n";
@@ -170,7 +185,7 @@ function payment($results) {
         '<p>Here is your receipt for payment of ' . $dolfmt->formatCurrency($results['approved_amt'], 'USD') . ' for ' . $conf['label'] . ' ' . $region['name'] . "</p>\n" .
         '<p>RECEIPT FOR PAYMENT TO: ' . $conf['label'] . ' on ' . date('m/d/Y h:i:s A', time()) . "</p>\n" .
         "<p>Vendor: <br/>\n" .
-        $vendor['exhibitorName'] . "<br/>\n" .
+        "$exhibitorName<br/>\n" .
         $vendor['addr'] . "<br/>\n";
     if ($vendor['addr2'] && $vendor['addr2'] != '')
         $bodyHtml .= $vendor['addr2'] . "<br/>\n";

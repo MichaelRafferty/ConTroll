@@ -44,7 +44,7 @@ function emailArtistInventoryReq($regionYearId, $type): bool|array {
 
     // get information about this space/artist
     $artQuery = <<<EOS
-SELECT e.exhibitorName, e.exhibitorEmail, exY.contactName, exY.contactEmail,
+SELECT e.artistName, e.exhibitorName, e.exhibitorEmail, exY.contactName, exY.contactEmail,
        exY.mailin, exRY.exhibitorNumber, eR.name, eRY.ownerName, eRY.ownerEmail
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
@@ -110,6 +110,7 @@ function artistEamilReplaceTokens($messageTxt, $messageHtml, $valArray): array {
     $vendor = get_conf('vendor');
     $tokens = [
         'EXHIBITOR_NAME' => $valArray['exhibitorName'],
+        'ARTIST_NAME' => $valArray['artistName'],
         'CONTACT_NAME' => $valArray['contactName'],
         'ARTIST_NUMBER' => $valArray['exhibitorNumber'],
         'REGION_NAME' => $valArray['name'],
