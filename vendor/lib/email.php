@@ -75,7 +75,7 @@ function request($exhibitorInfo, $regionInfo, $portalName, $portalType, $spaces)
 
     $ownerName = $regionInfo['ownerName'];
     $exhibitorName = $exhibitorInfo['exhibitorName'];
-    $artistName = $vendorL['artistName'];
+    $artistName = $exhibitorInfo['artistName'];
     if ($portalType == 'artist' && $artistName != null && $artistName != '' && $artistName != $exhibitorName) {
         $exhibitorName .= "($artistName)";
     }
