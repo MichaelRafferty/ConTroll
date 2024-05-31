@@ -52,7 +52,7 @@ if ($personR->num_rows == 0) {
     $findArtQ = <<<EOS
 SELECT a.id, a.item_key, a.title, a.type, a.status, a.location, a.quantity, a.original_qty, a.min_price, a.sale_price, a.final_price, a.material, a.bidder,
        s.id AS artSalesId, s.transid, s.amount, s.paid, s.unit, s.quantity AS purQuantity,
-       exRY.exhibitorNumber, ex.exhibitorName, false AS released
+       exRY.exhibitorNumber, ex.artistName, ex.exhibitorName, false AS released
 FROM artItems a
 JOIN exhibitorRegionYears exRY ON a.exhibitorRegionYearId = exRY.id
 JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id

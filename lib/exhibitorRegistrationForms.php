@@ -122,9 +122,20 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                 <div class='col-sm-2'></div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'><h4>Business Information</h4></div>
                             </div>
-                            <div class="row mt-1">
+                             <?php if ($portalType == 'artist' || $portalType == 'admin') { ?>
+                                <div class="row mt-1">
+                                    <div class='col-sm-2'>
+                                        <label for='artistName'> *Artist Name: </label>
+                                    </div>
+                                    <div class='col-sm-auto p-0 ms-0 me-0'>
+                                        <input class='form-control-sm' type='text' name='artistName' id='artistName' maxlength='128' size='50'
+                                               required placeholder='Artist Name' tabindex='1010'/>
+                                    </div>
+                                </div>
+                            <?php } ?>
+                            <div class='row mt-1'>
                                 <div class="col-sm-2">
-                                    <label for="exhibitorName"> *Name: </label>
+                                    <label for="exhibitorName"> *Business Name: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
                                     <input class="form-control-sm" type='text' name='exhibitorName' id="exhibitorName" maxlength="64" size="50" tabindex="2" required
@@ -444,7 +455,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions) {
                                         <label for='artistName'> *Artist Name: </label>
                                     </div>
                                     <div class='col-sm-auto p-0 ms-0 me-0'>
-                                        <input class='form-control-sm' type='text' name='artistName' id='artistName' maxlength='64' size='50'
+                                        <input class='form-control-sm' type='text' name='artistName' id='artistName' maxlength='128' size='50'
                                                required placeholder='Artist Name' tabindex='1010'/>
                                     </div>
                                 </div>

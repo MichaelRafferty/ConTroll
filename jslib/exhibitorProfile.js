@@ -310,7 +310,7 @@ class ExhibitorProfile {
             }
 
             if (typeof exhibitor_info !== 'undefined') {
-                if (exhibitor_info && useType != 'regoister' && useType != 'add') {
+                if (exhibitor_info && useType != 'register' && useType != 'add') {
                     var keys = Object.keys(exhibitor_info);
                     for (var keyindex in keys) {
                         var key = keys[keyindex];

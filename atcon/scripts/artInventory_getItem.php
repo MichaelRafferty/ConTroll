@@ -26,7 +26,7 @@ if(isset($_GET['item'])) {
 $response = array('artist' => $artist, 'item' => $item);
 
 $itemQ = <<<EOS
-SELECT e.exhibitorName, eRY.exhibitorNumber, I.item_key, concat(eRY.exhibitorNumber, '-', I.item_key) as id,
+SELECT e.artistName, e.exhibitorName, eRY.exhibitorNumber, I.item_key, concat(eRY.exhibitorNumber, '-', I.item_key) as id,
     I.title, I.type, I.status, I.location, I.quantity, I.original_qty, 
     concat(I.quantity, '/', I.original_qty) as qty,
     I.min_price, I.sale_price, I.final_price, I.bidder, I.conid, 
@@ -51,6 +51,12 @@ if($item == '') {
 $itemR = dbSafeQuery($itemQ, $itemI, $itemP);
 $itemArr = [];
 while($newItem = $itemR->fetch_assoc()) {
+    $longName = $newItem['exhibitorName'];
+    $artistName = $newItem['artistName'];
+    if ($artistName != null && $artistName != '' && $artistName != $longName ) {
+        $longName .= "($artistName)";
+    }
+    $newItem['name'] = $longName;
     $itemArr[] = $newItem;
 }
 

@@ -173,7 +173,7 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
     // handle login submit
     $login = strtolower(sql_safe($_POST['si_email']));
     $loginQ = <<<EOS
-SELECT e.id, e.exhibitorName, LOWER(e.exhibitorEmail) as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
+SELECT e.id, e.artistName, e.exhibitorName, LOWER(e.exhibitorEmail) as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
        LOWER(ey.contactEmail) AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
@@ -218,7 +218,11 @@ EOS;
             $match['ts'] = time();
             $string = json_encode($match);
             $string = urlencode(openssl_encrypt($string, $cipher, $key, 0, $iv));
-            echo "<li><a href='?vid=$string'>" .  $match['exhibitorName'] . "</a></li>\n";
+            $name = $match['exhibitorName'];
+            if ($match['artistName'] != null && $match['artistName' != '' && $match['artistName'] != $match['exhibitorName']) {
+                $name .= "(" . $match['artistName'] . ")";
+            }
+            echo "<li><a href='?vid=$string'>" .  $name . "</a></li>\n";
         }
 ?>
     </ul>
@@ -333,7 +337,7 @@ EOS;
 
 // get this exhibitor
 $vendorQ = <<<EOS
-SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, 
+SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, 
        ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview, ey.mailin,
        e.addr, e.addr2, e.city, e.state, e.zip, e.country, e.shipCompany, e.shipAddr, e.shipAddr2, e.shipCity, e.shipState, e.shipZip, e.shipCountry, e.publicity,
        p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newid, n.first_name AS n_first_name, n.last_name AS n_last_name
