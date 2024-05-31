@@ -41,7 +41,8 @@ $portalName = $_POST['name'];
 
 // get exhibitor info
 $exhibitorQ = <<<EOS
-SELECT e.id AS exhibitorId, ey.id AS exhibitorYearId, e.exhibitorName, e.exhibitorEmail, ey.contactName, ey.contactEmail, e.exhibitorName, e.website, e.description, exRY.id AS exhibitorRegionYearId
+SELECT e.id AS exhibitorId, ey.id AS exhibitorYearId, e.artistName, e.exhibitorName, e.exhibitorEmail, ey.contactName, ey.contactEmail, e.website, e.description,
+       exRY.id AS exhibitorRegionYearId
 FROM exhibitors e
 JOIN exhibitorYears ey ON e.id = ey.exhibitorId
 JOIN exhibitsRegionYears eRY
@@ -144,13 +145,13 @@ EOS;
 }
 
 load_email_procs();
-$emails = request($exhibitorInfo, $regionInfo, $portalName, $spaces);
+$emails = request($exhibitorInfo, $regionInfo, $portalName, $portalType, $spaces);
 if ($exhibitorInfo['exhibitorEmail'] == $exhibitorInfo['contactEmail'] || $exhibitorInfo['contactEmail'] == '')
     $cc = $exhibitorInfo['exhibitorEmail'];
 else
     $cc = array($exhibitorInfo['exhibitorEmail'], $exhibitorInfo['contactEmail']);
 
-    $return_arr = send_email($conf['regadminemail'], $regionInfo['ownerEmail'], $cc, $regionInfo['name'] . " Request", $emails[0] , $emails[1]);
+    $return_arr = send_email($regionInfo['ownerEmail'], $regionInfo['ownerEmail'], $cc, $regionInfo['name'] . " Request", $emails[0] , $emails[1]);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];

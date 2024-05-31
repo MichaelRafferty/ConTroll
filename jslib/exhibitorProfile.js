@@ -8,7 +8,14 @@ class ExhibitorProfile {
     #profileUseType = "unknown";
     #profileIntroDiv = null;
     #profileSubmitBtn = null;
+    #profilePreviousPageBtn = null;
+    #profileNextPageBtn = null;
     #profileModalTitle = null;
+    #profilePage1 = null;
+    #profilePage2 = null;
+    #profilePage3 = null;
+    #profilePage4 = null;
+    #profileCurrentPage = 1;
     #passwordLine1 = null;
     #passwordLine2 = null;
     #cpasswordLine1 = null;
@@ -20,10 +27,10 @@ class ExhibitorProfile {
     // globals
     #debugFlag = 0;
 
-    static #fieldList = ["exhibitorName", "exhibitorEmail", "exhibitorPhone", "description", "publicity",
+    static #fieldList = ["artistName", "exhibitorName", "exhibitorEmail", "exhibitorPhone", "pw1", "pw2", "description", "publicity",
         "addr", "city", "state", "zip", "country", "mailin"];
-    /*static #fieldList = ["exhibitorName", "exhibitorEmail", "exhibitorPhone", "description", "publicity",
-        "contactName", "contactEmail", "contactPhone", "pw1", "pw2",
+    /*static #fieldList = ["artistName", "exhibitorName", "exhibitorEmail", "exhibitorPhone", "description", "publicity",
+        "contactName", "contactEmail", "contactPhone", "cpw1", "cpw2",
         "addr", "city", "state", "zip", "country", "shipCompany", "shipAddr", "shipCity", "shipState", "shipZip", "shipCountry", "mailin"];
 */
     static #copyFromFieldList = ['exhibitorName', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
@@ -61,16 +68,61 @@ class ExhibitorProfile {
         }
     }
 
+    // copy other sections
+    copyArtistNametoBusinessName() {
+        var artname = document.getElementById("artistName");
+        if (artname) {
+            document.getElementById("exhibitorName").value = artname.value;
+        }
+    }
+
+    copyBusToContactName() {
+        document.getElementById("contactName").value = document.getElementById("exhibitorName").value;
+        document.getElementById("contactEmail").value = document.getElementById("exhibitorEmail").value;
+        document.getElementById("contactPhone").value = document.getElementById("exhibitorPhone").value;
+        document.getElementById("cpw1").value = document.getElementById("pw1").value;
+        document.getElementById("cpw2").value = document.getElementById("pw2").value;
+    }
+
+    // move through pages in the profile
+    prevPage() {
+        if (this.#profileCurrentPage > 1) {
+            this.#profileCurrentPage -= 1;
+
+            this.#profilePage1.hidden = this.#profileCurrentPage != 1;
+            this.#profilePage2.hidden = this.#profileCurrentPage != 2;
+            this.#profilePage3.hidden = this.#profileCurrentPage != 3;
+            this.#profilePage4.hidden = this.#profileCurrentPage != 4;
+            this.#profileSubmitBtn.disabled = true;
+            this.#profilePreviousPageBtn.disabled = this.#profileCurrentPage == 1;
+            this.#profileNextPageBtn.disabled = false;
+        }
+    }
+    nextPage() {
+        if (this.#profileCurrentPage < 4) {
+            this.#profileCurrentPage += 1;
+
+            this.#profilePage1.hidden = this.#profileCurrentPage != 1;
+            this.#profilePage2.hidden = this.#profileCurrentPage != 2;
+            this.#profilePage3.hidden = this.#profileCurrentPage != 3;
+            this.#profilePage4.hidden = this.#profileCurrentPage != 4;
+            this.#profileSubmitBtn.disabled = this.#profileCurrentPage != 4;
+            this.#profilePreviousPageBtn.disabled = false;
+            this.#profileNextPageBtn.disabled = this.#profileCurrentPage == 4;
+        }
+    }
     // submit the profile or both register and update, which type is in profileMode, set by the modal open
     submitProfile(dataType) {
         // replace validator with direct validation as it doesn't work well with bootstrap
         var valid = true;
         var m2 = ''; // add on to the message field if the description field needs editing
         var field2 = null; // cross field checks (e.g. pw1 and pw2)
+        var minLength = 2;
 
         for (var fieldNum in ExhibitorProfile.#fieldList) {
             var fieldName = ExhibitorProfile.#fieldList[fieldNum];
             var field = document.getElementById(fieldName);
+            minLength = 2;
             switch (fieldName) {
                 case 'exhibitorEmail':
                 case 'contactEmail':
@@ -107,27 +159,29 @@ class ExhibitorProfile {
                     var value = tinyMCE.activeEditor.getContent();
                     if (value == null) {
                         value = false;
-                        m2 = " and the description field which also is required.";
+                        m2 += " and the description field which also is required;";
                     } else if (value.trim() == '') {
                         value = false;
-                        m2 = " and the description field which also is required.";
+                        m2 += " and the description field which also is required;";
                     }
                     break;
 
                 case 'mailin':
-                    break;
+                case 'publicity':
+                    minLength = 1;
+                    // fall into default
 
                 default:
                     if (this.#debugFlag & 16) {
                         console.log(ExhibitorProfile.#fieldList[fieldNum].substring(0, 4));
                         console.log(dataType);
                     }
-                    if (dataType != 'artist' && ExhibitorProfile.#fieldList[fieldNum].substring(0, 4) == 'ship') {
+                    if (dataType != 'artist' && (ExhibitorProfile.#fieldList[fieldNum].substring(0, 4) == 'ship' || ExhibitorProfile.#fieldList[fieldNum] == 'artistName')) {
                         if (this.#debugFlag & 16)
                             console.log("skipping " + ExhibitorProfile.#fieldList[fieldNum]);
                         break;
                     }
-                    if (field.value.length > 1) {
+                    if (field.value.length >= minLength) {
                         field.style.backgroundColor = '';
                     } else {
                         field.style.backgroundColor = 'var(--bs-warning)';
@@ -137,7 +191,10 @@ class ExhibitorProfile {
         }
 
         if (!valid) {
-            show_message("Fill in required missing fields highlighted in this color" + m2, "warn", 'au_result_message');
+            var message = "Fill in required missing fields highlighted in this color" + m2;
+            if (this.#profileUseType == 'register')
+                message += ', use the Previous Page and Next Page buttons to check all of the pages.'
+            show_message(message, "warn", 'au_result_message');
             return null;
         }
         clear_message('au_result_message');
@@ -183,17 +240,19 @@ class ExhibitorProfile {
             if (this.#exhibitorRow) {
                 this.#exhibitorRow.update(exhibitor_info);
             } else {
-                // now need to update the other tabs data as well....
-                $.ajax({
-                    url: "scripts/exhibitorsGetData.php",
-                    method: "POST",
-                    data: { region: tabname, regionId: regionid },
-                    success: updateExhibitorDataDraw,
-                    error: function (jqXHR, textStatus, errorThrown) {
-                        showError("ERROR in getExhibitorData: " + textStatus, jqXHR);
-                        return false;
-                    }
-                })
+                if (typeof tabname != 'undefined' && tabname != '') {
+                    // now need to update the other tabs data as well....
+                    $.ajax({
+                        url: "scripts/exhibitorsGetData.php",
+                        method: "POST",
+                        data: {region: tabname, regionId: regionid},
+                        success: updateExhibitorDataDraw,
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            showError("ERROR in getExhibitorData: " + textStatus, jqXHR);
+                            return false;
+                        }
+                    })
+                }
             }
         }
     }
@@ -210,12 +269,26 @@ class ExhibitorProfile {
             this.#creatingAccountMsgDiv.hidden = true;
             switch (useType) {
                 case 'register':
+                    this.#profilePage1 = document.getElementById("page1");
+                    this.#profilePage2 = document.getElementById("page2");
+                    this.#profilePage3 = document.getElementById("page3");
+                    this.#profilePage4 = document.getElementById("page4");
+                    this.#profilePreviousPageBtn = document.getElementById("previousPageBtn");
+                    this.#profileNextPageBtn = document.getElementById("nextPageBtn");
+                    this.#profileCurrentPage = 1;
+                    this.#profilePage1.hidden = false;
+                    this.#profilePage2.hidden = true;
+                    this.#profilePage3.hidden = true;
+                    this.#profilePage4.hidden = true;
+                    this.#profilePreviousPageBtn.disabled = true;
+                    this.#profileNextPageBtn.disabled = false;
+                    this.#profileSubmitBtn.disabled = true;
                     this.#profileIntroDiv.innerHTML = '<p>This form creates an account on the ' + config['label'] + ' ' + config['portalName'] + ' Portal.</p>';
                     this.#profileSubmitBtn.innerHTML = 'Register ' + config['portalName'];
                     this.#profileModalTitle.innerHTML = "New " + config['portalName'] + ' Registration';
                     this.#creatingAccountMsgDiv.hidden = false;
                     this.clearForm();
-                    document.getElementById('publicity').checked = 1;
+                    document.getElementById('publicity').value = 1;
                     break;
                 case 'add':
                     this.#profileIntroDiv.innerHTML = '<p>This form creates an account for the Exhibitor Portals.</p>';
@@ -223,7 +296,7 @@ class ExhibitorProfile {
                     this.#profileModalTitle.innerHTML = 'New Exhibitor Registration';
                     this.#creatingAccountMsgDiv.hidden = false;
                     this.clearForm();
-                    document.getElementById('publicity').checked = 1;
+                    document.getElementById('publicity').value = 1;
                     break;
                 case 'review':
                     this.#profileIntroDiv.innerHTML = '<p>Please review and update your account with any changes this year.</p>';
@@ -243,7 +316,7 @@ class ExhibitorProfile {
             }
 
             if (typeof exhibitor_info !== 'undefined') {
-                if (exhibitor_info && useType != 'regoister' && useType != 'add') {
+                if (exhibitor_info && useType != 'register' && useType != 'add') {
                     var keys = Object.keys(exhibitor_info);
                     for (var keyindex in keys) {
                         var key = keys[keyindex];
@@ -253,20 +326,10 @@ class ExhibitorProfile {
                         var value = exhibitor_info[key];
                         if (this.#debugFlag & 16)
                             console.log(key + ' = "' + value + '"');
-                        if (key == 'mailin') {
-                            if (value == 'N')
-                                key = 'mailinN';
-                            if (value == 'Y')
-                                key = 'mailinY';
-                        }
+
                         var id = document.getElementById(key);
                         if (id) {
-                            if (key == 'publicity')
-                                id.checked = value == 1;
-                            else if (key == 'mailinY' || key == 'mailinN')
-                                id.checked = true;
-                            else
-                                id.value = value;
+                            id.value = value;
                         } else if (this.#debugFlag & 16)
                             console.log("field not found " + key);
                     }
@@ -286,6 +349,7 @@ class ExhibitorProfile {
             height: 400,
             min_height: 400,
             menubar: false,
+            license_key: 'gpl',
             plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
             toolbar: [
                 'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +

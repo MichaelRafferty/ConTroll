@@ -407,6 +407,7 @@ class exhibitorsAdm {
                     regionYearId: space['exhibitsRegionYearId'],
                     exhibitorId: space['exhibitorId'],
                     exhibitorName: space['exhibitorName'],
+                    artistName: space['artistName'],
                     website: space['website'],
                     exhibitorEmail: space['exhibitorEmail'],
                     agentRequest: space['agentRequest'],
@@ -594,6 +595,7 @@ class exhibitorsAdm {
         //console.log(data);
         var hover_text = 'Exhibitor id: ' + data['id'] + '<br/>' +
             data['exhibitorName'] + '<br/>' +
+            'Artist Name: ' + data['artistName'] + '<br/>' +
             'Website: ' + data['website'] + '<br/>' +
             data['addr'] + '<br/>';
         if (data['addr2'] != '') {
@@ -765,6 +767,10 @@ class exhibitorsAdm {
             <div class="row">
                 <div class="col-sm-2">Name:</div>
                 <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorData['exhibitorName'] + `</div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2">Artist Name:</div>
+                <div class="col-sm-10 p-0 ms-0 me-0">\` + exhibitorData['artistName'] + \`</div>
             </div>
             <div class='row'>
                 <div class='col-sm-2'>Business Email:</div>
