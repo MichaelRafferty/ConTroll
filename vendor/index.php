@@ -176,10 +176,10 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
 SELECT e.id, e.artistName, e.exhibitorName, LOWER(e.exhibitorEmail) as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
        LOWER(ey.contactEmail) AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview
 FROM exhibitors e
-LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
-WHERE (e.exhibitorEmail=? OR ey.contactEmail = ?) AND conid = ?;
+LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId AND conid = ?
+WHERE e.exhibitorEmail=? OR ey.contactEmail = ?
 EOS;
-    $loginR = dbSafeQuery($loginQ, 'ssi', array($login, $login, $conid));
+    $loginR = dbSafeQuery($loginQ, 'iss', array($conid, $login, $login));
     // find out how many match
     $matches = array();
     while ($result = $loginR->fetch_assoc()) { // check exhibitor email/password first
