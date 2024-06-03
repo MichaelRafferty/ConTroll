@@ -30,10 +30,7 @@ if (!(array_key_exists('exhibitorEmail', $_POST) && array_key_exists('exhibitorN
 $profileMode = $_POST['profileMode'];
 $profileType = $_POST['profileType'];
 
-$publicity = 0;
-if (array_key_exists('publicity', $_POST)) {
-    $publicity = trim($_POST['publicity']) == 'on' ? 1 : 0;
-}
+$publicity = $_POST['publicity'];
 
 // default mailin
 if (array_key_exists('mailin', $_POST)) {
@@ -90,12 +87,13 @@ EOS;
         // create the vendor
         // email address validated on the source side
         $exhibitorInsertQ = <<<EOS
-INSERT INTO exhibitors (exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, need_new, confirm, 
+INSERT INTO exhibitors (artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, need_new, confirm, 
                      addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity) 
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
-        $typestr = 'ssssssiisssssssssssssi';
+        $typestr = 'sssssssiisssssssssssssi';
         $paramarr = array(
+            trim($_POST['artistName']),
             trim($_POST['exhibitorName']),
             trim($_POST['exhibitorEmail']),
             trim($_POST['exhibitorPhone']),
@@ -117,7 +115,7 @@ EOS;
             $shipState,
             $shipZip,
             $shipCountry,
-            $_POST['publicity']
+            $publicity
         );
         $newExhibitor = dbSafeInsert($exhibitorInsertQ, $typestr, $paramarr);
 
@@ -170,11 +168,12 @@ EOS;
 
         $updateQ = <<<EOS
 UPDATE exhibitors
-SET exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, website=?, description=?,
+SET artistName = ?, exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, website=?, description=?,
     addr=?, addr2=?, city=?, state=?, zip=?, country=?, shipCompany=?, shipAddr=?, shipAddr2=?, shipCity=?, shipState=?, shipZip=?, shipCountry=?, publicity=?
 WHERE id=?
 EOS;
         $updateArr = array(
+            trim($_POST['artistName']),
             trim($_POST['exhibitorName']),
             trim($_POST['exhibitorEmail']),
             trim($_POST['exhibitorPhone']),
@@ -196,7 +195,7 @@ EOS;
             $publicity,
             $vendor
         );
-        $numrows = dbSafeCmd($updateQ, 'ssssssssssssssssssii', $updateArr);
+        $numrows = dbSafeCmd($updateQ, 'sssssssssssssssssssii', $updateArr);
 
         $updateQ = <<<EOS
 UPDATE exhibitorYears
@@ -216,7 +215,7 @@ EOS;
             $response['message'] = 'Profile Updated';
             // get the update info
             $vendorQ = <<<EOS
-SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, ey.mailin,
+SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, ey.mailin,
        ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview as needReview,
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
 FROM exhibitors e

@@ -119,7 +119,11 @@ echo $conid;
                                     <?php
 $artistQ = <<<EOS
 SELECT xRY.id AS regionYear, xR.shortname AS regionName,
-    eRY.exhibitorNumber as art_key,e.exhibitorName as name
+    eRY.exhibitorNumber as art_key, 
+    CASE
+        WHEN e.artistName IS NOT NULL AND e.artistName != e.exhibitorName AND e.artistName != '' THEN e.artistName
+        ELSE e.exhibitorName 
+    END as name
 FROM exhibitsRegionTypes xRT
     JOIN exhibitsRegions xR ON xR.regionType=xRT.regionType
     JOIN exhibitsRegionYears xRY ON xRY.exhibitsRegion = xR.id

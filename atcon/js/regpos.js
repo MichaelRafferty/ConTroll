@@ -389,6 +389,31 @@ function find_primary_membership_by_perid(tbl, perid) {
     return mem_index;
 }
 
+// given a perid, find it''s primary membership in the result_membership array
+function find_print_membership_by_perid(tbl, perid) {
+    var regitems = find_memberships_by_perid(tbl, perid);
+    var mem_index = null;
+    var mem_regid = null;
+    for (var item in regitems) {
+        var mi_row = find_memLabel(regitems[item]['memId']);
+        if (mi_row['conid'] != conid)
+            continue;
+
+        if (mem_regid) {
+            if (regitems[item]['id'] < mem_regid)
+                continue;
+        }
+
+        if (mi_row['mwmCategory'] != 'upgrade' && non_primary_categories.includes(mi_row['memCategory']))
+            continue;
+
+        mem_index = regitems[item]['index'];
+        mem_regid = regitems[item]['id'];
+        //break;
+    }
+    return mem_index;
+}
+
 // badge_name_default: build a default badge name if its empty
 function badge_name_default(badge_name, first_name, last_name) {
     if (badge_name === undefined | badge_name === null || badge_name === '') {
