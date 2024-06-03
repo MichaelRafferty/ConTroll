@@ -90,6 +90,16 @@ JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = er
 SET item_approved = null, item_requested = null, time_requested = NOW(), time_approved = NOW()
 WHERE eS.spaceId = ? and ery.id = ? and eY.exhibitorId = ?;
 EOS;
+$existingQ = <<<EOS
+SELECT item_requested, item_approved, time_requested, time_approved
+FROM exhibitorSpaces eS
+JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
+JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
+JOIN exhibitsSpaces es ON es.id = eS.spaceId
+JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
+WHERE eS.spaceId = ? and ery.id = ? and eY.exhibitorId = ?;
+EOS;
+
 
         // requests = each space price id in the format
         $requests = $_POST['requests'];
@@ -107,7 +117,17 @@ EOS;
                 $num_rows += dbSafeCmd($upQ, 'iiii', array($value, $spaceId, $regionYearId, $exhibitorId));
                 dbSafeCmd($upQ2, 'iii', array($spaceId, $regionYearId, $exhibitorId));
             } else {
-                $num_rows += dbSafeCmd($upCanQ, 'iii', array($spaceId, $regionYearId, $exhibitorId));
+                $paramarray = array($spaceId, $regionYearId, $exhibitorId);
+                $typestr = 'iii';
+                $existingR = dbSafeQuery($existingQ, $typestr, $paramarray);
+                if ($existingR == false || $existingR->num_rows != 1) {
+                    web_error_log("Could not retrieve existing space request for $spaceId, $regionYearId, $exhibitorId");
+                }
+                $existing = $existingR->fetch_assoc();
+                $existingR->free();
+                if ($existing['item_requested'] != null) { // only if there was something existing, cancel it}
+                    $num_rows += dbSafeCmd($upCanQ, $typestr, $paramarray);
+                }
             }
         }
         if ($num_rows > 0) {
@@ -235,7 +255,7 @@ Thank you.
 $ownerName
 EOS;
     load_email_procs();
-    $return_arr = send_email($conf['regadminemail'], array($exhibitorEmail, $contactEmail), $ownerEmail, $spaceSubject, $body, null);
+    $return_arr = send_email($ownerEmail, array($exhibitorEmail, $contactEmail), $ownerEmail, $spaceSubject, $body, null);
 
     if (array_key_exists('error_code', $return_arr)) {
         $error_code = $return_arr['error_code'];

@@ -108,7 +108,7 @@ FROM reg_history H
 JOIN reg R ON (R.id=H.regid)
 JOIN transaction T ON (T.id=H.tid)
 JOIN memLabel M ON (M.id=R.memId)
-WHERE R.conid>=? AND H.action = 'attach'
+WHERE R.conid>=? AND H.action = 'print'
     $addlwhere
 GROUP BY R.perid, M.shortname, R.conid, M.memType ORDER BY time, M.memType;
 EOF;

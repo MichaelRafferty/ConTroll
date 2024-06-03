@@ -174,7 +174,7 @@ function build_record_hover(e, cell, onRendered) {
     hover_text += data['status'].trim() + ' @ ' + data['location'] + '<br/>';
     if((data['status'] == 'BID') || (data['status'] == 'To Auction')) { 
         hover_text += 'by ' + data['bidder'] + ' @ $' + data['final_price'] + '<br/>';
-    }
+    }reg
     hover_text += 'updated: ' + data['time_updated'] + '<br/>';
 
     return hover_text
@@ -202,7 +202,7 @@ function build_table(tableData) {
             responsiveLayout:true,
             columns: [
                 { title: 'Key', field: 'id', hozAlign: "right", width:65, headerWordWrap: true, headerFilter: true, tooltip: build_record_hover, responsive: 0},
-                { title: 'Artist', field: 'exhibitorName', headerWordWrap: true, headerFilter: true, tooltip: true },
+                { title: 'Artist', field: 'name', headerWordWrap: true, headerFilter: true, tooltip: true },
                 { title: 'Item', field: 'title', headerWordWrap: true, headerFilter: true, tooltip: true},
                 { title: 'Status', field: 'status', headerWordWrap: true, headerFilter: true, tooltip: true},
                 { title: 'Updated', field: 'time_updated', headerWordWrap: true, headerFilter: true, tooltip: true, responsive: 2},

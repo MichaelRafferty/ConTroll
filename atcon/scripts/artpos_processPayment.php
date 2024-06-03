@@ -63,7 +63,7 @@ if (sizeof($cart_art) <= 0) {
 
 $new_payment = $_POST['new_payment'];
 if (!array_key_exists('amt', $new_payment) || $new_payment['amt'] <= 0) {
-    ajaxError('invalid payment amount passed');
+    ajaxError('invalid payment amount passed: ' . $new_payment['amt']);
     return;
 }
 
@@ -96,7 +96,7 @@ foreach ($cart_art as $cart_row) {
 }
 
 if (round($amt,2) > round($total_due,2)) {
-    ajaxError('invalid payment amount passed');
+    ajaxError('invalid payment amount passed exceeds total' . " amt: $amt total: $total_due");
     return;
 }
 
