@@ -205,10 +205,10 @@ function build_table(tableData) {
                 { title: 'Artist', field: 'name', headerWordWrap: true, headerFilter: true, tooltip: true },
                 { title: 'Item', field: 'title', headerWordWrap: true, headerFilter: true, tooltip: true},
                 { title: 'Status', field: 'status', headerWordWrap: true, headerFilter: true, tooltip: true},
-                { title: 'Updated', field: 'time_updated', headerWordWrap: true, headerFilter: true, tooltip: true, responsive: 2},
-                { title: 'Loc.', field: 'location', width: 40, headerWordWrap: true, headerFilter: true, tooltip: true},
+                { title: 'Updated', field: 'time_updated', headerWordWrap: true, headerFilter: true, tooltip: true, responsive: 2, width: 120, },
+                { title: 'Loc.', field: 'location', minWidth: 80, headerWordWrap: true, headerFilter: true, tooltip: true},
                 {field: 'index', visible: false,},
-                { title: 'Qty.', field: 'qty', width: 40, headerSort: false, tooltip: true},
+                { title: 'Qty.', field: 'qty', minWidth: 60, headerSort: false, tooltip: true},
                 { title: 'Actions', minWidth: 125, hozAlign: "center", headerFilter: false, headerSort: false, formatter: addInventoryIcon, responsive:0},
             ],
         });
