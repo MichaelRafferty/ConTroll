@@ -12,7 +12,7 @@ $conid = $con['id'];
 $conname = $con['conname'];
 $tab = 'artsales';
 $mode = 'artsales';
-$method='cashier';
+$method='artsales';
 
 $page = "Atcon POS ($tab)";
 
