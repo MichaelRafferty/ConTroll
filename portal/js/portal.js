@@ -36,6 +36,7 @@ function loginWithEmail(id = null) {
                     console.log(data);
                 if (data['count'] == 1) {
                     location.href = config.uri;
+                    return;
                 }
                 show_message("returned " + data['count'] + " matching records.");
                 if (matchTable != null) {

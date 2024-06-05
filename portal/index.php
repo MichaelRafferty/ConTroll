@@ -28,17 +28,8 @@ $config_vars['label'] = $con['label'];
 $config_vars['debug'] = $debug['portal'];
 $config_vars['uri'] = $portal_conf['portalsite'];
 
-portal_page_init($condata['label'] . " Membership Portal");
-
-// load country select
-$countryOptions = '';
-$fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-  $countryOptions .= '<option value="' . escape_quotes($data[1]) . '">' .$data[0] . '</option>' . PHP_EOL;
-}
-fclose($fh);
+index_page_init($condata['label'] . " Membership Portal");
 ?>
-
 <body id="membershipPortalBody">
 <div class="container-fluid">
     <div class="row">
@@ -105,15 +96,6 @@ if (isset($_SESSION['id'])) {
         $personId = $_SESSION['id'];
         $in_session = true;
     }
-/*
-    // if archived, unarchive them, they just logged in again
-    if ($match['archived'] == 'Y') {
-        // they were marked archived, and they logged in again, unarchive them.
-        $numupd = dbSafeCmd("UPDATE exhibitors SET archived = 'N' WHERE id = ?", 'i', array($exhibitor));
-        if ($numupd != 1)
-            error_log("Unable to unarchive vendor $exhibitor");
-    }
-*/
 } else if (isset($_GET['vid'])) {
     // handle link login
     $match = openssl_decrypt($_GET['vid'], $cipher, $key, 0, $iv);
@@ -212,69 +194,12 @@ EOS;
     $personId = $_SESSION['id'];
     $personType = $_SESSION['idType'];
     $in_session = true;
-    header('location:' . $portal_conf['portalsite']);
+    header('location:' . $portal_conf['portalsite'] . "/portal.php");
 } else {
-    //draw_registrationModal($portalType, $portalName, $con, $countryOptions);
     draw_login($config_vars);
     exit();
 }
-
-// this section is for 'in-session' management
-// build info array
-
-if ($personType == 'p') {
-    $personSQL = <<<EOS
-SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
-    p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.contact_ok, p.share_reg_ok,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname
-    FROM perinfo p
-    WHERE id = ?;
-EOS;
-} else {
-    $personSQL = <<<EOS
-SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
-    'N' AS banned, p.createtime AS creation_date, 'Y' AS active, p.contact_ok, p.share_reg_ok,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname
-    FROM newperson p
-    WHERE id = ?;
-EOS;
-}
-$personR = dbSafeQuery($personSQL, 'i', array($personId));
-if ($personR === false || $personR->num_rows == 0) {
-    echo "Invalid Login, seek assistance";
-    portal_page_foot();
-    exit();
-}
-$info = $personR->fetch_assoc();
-$personR->free();
 ?>
-<script type='text/javascript'>
-    var config = <?php echo json_encode($config_vars); ?>;
-    var country_options = <?php echo json_encode($countryOptions); ?>;
+    <script type='text/javascript'>
+        window.location = "<?php echo $portal_conf['portalsite'] . '/portal.php' ?>";
     </script>
-<?php
-/*
-draw_registrationModal($portalType, $portalName, $con, $countryOptions);
-draw_passwordModal();
-draw_exhibitorRequestModal();
-draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $cc, $portalName, $portalType);
-draw_exhibitorReceiptModal($portalType);
-draw_itemRegistrationModal($portalType, $portal_conf['artsheets'], $portal_conf['artcontrol']);
-*/
-?>
-    <!-- now for the top of the form -->
-     <div class='container-fluid'>
-        <div class='row p-1'>
-            <div class='col-sm-12 p-0'>
-                <h3>Welcome to the membership Portal Page for <?php echo $info['fullname']; ?></h3>
-            </div>
-        </div>
-        <div class="row p-1">
-            <div class="col-sm-auto p-0">
-                <button class="btn btn-secondary m-1" onclick="Profile.profileModalOpen('update');">View/Change your personal information</button>
-                <button class="btn btn-secondary m-1" onclick="window.location='?logout';">Logout</button>
-            </div>
-        </div>
-    <?php
-    portal_page_foot();
-    ?>

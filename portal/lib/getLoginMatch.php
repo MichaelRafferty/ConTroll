@@ -3,8 +3,17 @@
 
 function getLoginMatch($email, $id = null) {
     $response = [];
+// check if it's a numeric response
+    if (is_numeric($email)) {
+        $regcountQ = <<<EOS
+SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname, 'p' AS tablename
+FROM perinfo
+WHERE id = ? AND first_name != 'Merged' AND middle_name != 'into';
+EOS;
+        $regcountR = dbSafeQuery($regcountQ, 'i', array($email));
+    } else if ($id != NULL) {
 // first get the perid items
-    if ($id != NULL) {
         $regcountQ = <<<EOS
 SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname, 'p' AS tablename
@@ -33,7 +42,18 @@ EOS;
     $regcountR->free();
 
 // now add in the newperson records
-    if ($id != NULL) {
+    if (is_numeric($email)) {
+        $regcountQ = <<<EOS
+SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.legalName, n.address, n.addr_2, n.city, n.state, n.zip, n.country,
+    createtime AS creation_date, 'Y' AS active, 'N' AS banned,
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.last_name, ''), ', ', IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '  *', ' ')) AS fullname, 'n' AS tablename
+FROM newperson n
+LEFT OUTER JOIN perinfo p ON n.perid = p.id
+WHERE n.id = ? AND p.id IS NULL
+ORDER BY fullname;
+EOS;
+        $regcountR = dbSafeQuery($regcountQ, 'i', array($email));
+    } else if ($id != NULL) {
         $regcountQ = <<<EOS
 SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.legalName, n.address, n.addr_2, n.city, n.state, n.zip, n.country,
     n.createtime AS creation_date, 'Y' AS active, 'N' AS banned,
