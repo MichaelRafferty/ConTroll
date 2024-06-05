@@ -148,9 +148,14 @@ if ($portal_conf['open'] == 0) { ?>
     exit;
 }
 
+?>
+    <script type='text/javascript'>
+        var config = <?php echo json_encode($config_vars); ?>;
+    </script>
+<?php
 if ($info['managedByName'] != null) {
     ?>
-<div class='row mt-4'>
+<div class='row mt-4' id="managedByDiv">
     <div class='col-sm-auto'><b>This person record is managed by <?php echo $info['managedByName']; ?></b></div>
     <div class='col-sm-auto'><button class="btn btn-warning btn-small p-1" onclick="disassociate();">Dissociate from <?php echo $info['managedByName']; ?></button></div>
 </div>

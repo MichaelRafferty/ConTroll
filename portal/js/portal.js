@@ -116,12 +116,38 @@ function sendLink() {
         url: 'scripts/processLoginRequest.php',
         data: data,
         success: function (data, textStatus, jqXhr) {
-            if (data['error']) {
-                show_message(data['error'], 'error');
+            if (data['status'] == 'error') {
+                show_message(data['message'], 'error');
             } else {
                 if (config['debug'] & 1)
                     console.log(data);
                 show_message("Link sent, check your email and click on the link to login.");
+            }
+        }
+    });
+}
+
+// disassociate: remove the managed by link for this logged in person
+function disassociate() {
+    var data = {
+        'managedBy': 'disassociate',
+    }
+    $.ajax({
+        method: 'POST',
+        url: 'scripts/processDisassociate.php',
+        data: data,
+        success: function (data, textStatus, jqXhr) {
+            if (data['status'] == 'error') {
+                show_message(data['message'], 'error');
+            } else if (data['status'] == 'warn') {
+                show_message(data['message'], 'warn');
+            } else {
+                if (config['debug'] & 1)
+                    console.log(data);
+                var divElement = document.getElementById('managedByDiv');
+                if (divElement)
+                    divElement.style.display = 'none';
+                show_message("You have been disassociated from that manager.");
             }
         }
     });
