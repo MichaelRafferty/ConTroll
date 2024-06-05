@@ -31,6 +31,10 @@ if (array_key_exists('id', $_POST))
 
 switch ($type) {
     case 'dev':
+        if (stripos(__DIR__, '/Users/syd/') === false || $_SERVER['SERVER_ADDR'] != '127.0.0.1') {
+            ajaxSuccess(array('status'=>'error', 'message'=> 'Development login not valid outside of development:'));
+            exit();
+        }
         $loginData = getLoginMatch($email, $id);
         if (is_array($loginData))
             $matches = $loginData['matches'];

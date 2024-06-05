@@ -29,8 +29,9 @@ function loginWithEmail(id = null) {
         url: 'scripts/processLoginRequest.php',
         data: data,
         success: function (data, textStatus, jqXhr) {
-            if (data['error']) {
-                show_message(data['error'], 'error');
+            if (data['status'] == 'error') {
+                show_message(data['message'], 'error');
+                return;
             } else {
                 if (config['debug'] & 1)
                     console.log(data);
@@ -121,31 +122,6 @@ function sendLink() {
                 if (config['debug'] & 1)
                     console.log(data);
                 show_message("Link sent, check your email and click on the link to login.");
-            }
-        }
-    });
-}
-// request permission to apply for space in a region that requires 'permission' to apply
-function requestPermission(id, tag) {
-    var data = {
-        'regionYearId': id,
-        'type': config['portalType'],
-        'name': config['portalName'],
-        'tag' : tag
-    }
-    $.ajax({
-        method: 'POST',
-        url: 'scripts/requestPermission.php',
-        data: data,
-        success: function(data, textStatus, jqXhr) {
-            if(data['error']) {
-                show_message(data['error'], 'error');
-            } else {
-                if (config['debug'] & 1)
-                    console.log(data);
-                // now redraw that section of the screen to show permission requested
-                document.getElementById(tag).innerHTML = data['block'];
-                show_message(data['message'], 'success');
             }
         }
     });

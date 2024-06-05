@@ -95,17 +95,18 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
     FROM perinfo p
     LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid = ?
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
-    WHERE managedBy = ?
+    WHERE managedBy = ? AND p.id != p.managedBy
 UNION
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
     'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.contact_ok, p.share_reg_ok, p.managedBy, p.managedByNew,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
     r.status, r.memId, m.memCategory, m.memType, m.memAge, m.shortname, m. label, m.memGroup, 'n' AS personType
-    FROM newperson p    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid = ?
+    FROM newperson p    
+    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid = ?
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
-    WHERE managedBy = ? AND p.perid IS NULL;
+    WHERE managedBy = ? AND p.managedBy != ? AND p.perid IS NULL;
 EOS;
-    $managedByR = dbSafeQuery($managedSQL, 'iiii', array($conid, $personId, $conid, $personId));
+    $managedByR = dbSafeQuery($managedSQL, 'iiiii', array($conid, $personId, $conid, $personId, $personId));
 } else {
     $managedSQL = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
@@ -115,7 +116,7 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
     FROM newperson p
     LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid = ?
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
-    WHERE p.managedByNew = ?;
+    WHERE p.managedByNew = ? AND p.id != p.managedBy;
 EOS;
     $managedByR = dbSafeQuery($managedSQL, 'iiii', array($conid, $personId, $conid, $personId));
 }
@@ -190,7 +191,84 @@ if (count($managed) > 0) {
 
 ?>
 <div class='row'>
+    <div class='col-sm-12'><h3>Memberships purchased by this account:</h3></div>
+</div>
+<?php
+// get memberships purchased by this person
+if ($personType == 'p') {
+    $membershipsQ = <<<EOS
+WITH mems AS (
+    SELECT t.id, r.create_date, r.memId, m.label, m.memType, m.memCategory, p.managedBy, 
+       TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname
+    FROM transaction t
+    JOIN reg r ON t.id = r.create_trans
+    JOIN memLabel m ON m.id = r.memId
+    JOIN perinfo p ON p.id = r.perid
+    WHERE t.perid = ? AND t.conid = ?
+    UNION
+    SELECT t.id, r.create_date, r.memId, m.label, m.memType, m.memCategory, p.managedBy, 
+       TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname
+    FROM transaction t
+    JOIN reg r ON t.id = r.create_trans
+    JOIN memLabel m ON m.id = r.memId
+    JOIN newperson p ON p.id = r.newperid
+    WHERE t.perid = ? AND t.conid = ?
+)
+SELECT DISTINCT *
+FROM mems
+ORDER BY fullname, create_date
+EOS;
+    $membershipsR = dbSafeQuery($membershipsQ, 'iiii', array($personId, $conid,$personId, $conid));
+} else {
+    $membershipsQ = <<<EOS
+SELECT t.id, r.create_date, r.memId, m.label, m.memType, m.memCategory, p.managedBy, 
+   TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname
+FROM transaction t
+JOIN reg r ON t.id = r.create_trans
+JOIN memLabel m ON m.id = r.memId
+JOIN newperson p ON p.id = r.newperid
+WHERE t.newperid = ? AND t.conid = ?
+ORDER BY fullname, create_date
+EOS;
+    $membershipsR = dbSafeQuery($membershipsQ, 'ii', array($personId, $conid));
+}
 
+if ($membershipsR == false || $membershipsR->num_rows == 0) {
+    ?>
+<div class="row">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-auto">None</div>
+<?php
+} else if ($membershipsR->num_rows > 0) {
+?>
+        <div class='row'>
+            <div class='col-sm-1' style='text-align: right;'><b>Trans ID</b></div>
+            <div class='col-sm-1'><b>Created</b></div>
+            <div class='col-sm-4'><b>Person</b></div>
+            <div class='col-sm-1'><b>Type</b></div>
+            <div class='col-sm-1'><b>Category</b></div>
+            <div class='col-sm-4'><b>Membership</b></div>
+        </div>
+<?php
+
+    while ($membership = $membershipsR->fetch_assoc()) {
+        if ($membership['managedBy'] != $personId) {
+            $membership['fullname'] = 'Someone Else';
+        }
+?>
+<div class="row">
+    <div class='col-sm-1' style='text-align: right;'><?php echo $membership['create_trans'];?></div>
+    <div class="col-sm-1">echo $membership['create_date'];?></div>
+    <div class="col-sm-4">echo $membership['fullname'];?></div>
+    <div class="col-sm-1">echo $membership['memType'];?></div>
+    <div class="col-sm-1">echo $membership['memCategory'];?></div>
+    <div class="col-sm-4">echo $membership['label'];?></div>
+</div>
+<?php
+    }
+}
+?>
+</div>
 <?php
 portal_page_foot();
 ?>
