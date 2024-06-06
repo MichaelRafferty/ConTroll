@@ -198,7 +198,7 @@ if (count($managed) > 0) {
                 <div class='col-sm-4'><?php echo $curFN; ?></div>
                 <div class="col-sm-3"><?php echo $curMB; ?></div>
                 <div class='col-sm-4 p-1'>
-                    <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="editPerson(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Edit Person</button>
+                    <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="editPerson(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Edit Person Record</button>
                     <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="addMembership(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Add/Upgrade Memberships</button>
                 </div>
             </div>
@@ -221,7 +221,7 @@ if (count($managed) > 0) {
             <div class='col-sm-4'><?php echo $curFN; ?></div>
             <div class="col-sm-3"><?php echo $curMB; ?></div>
             <div class='col-sm-4 p-1'>
-                <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="editPerson(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Edit Person</button>
+                <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="editPerson(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Edit Person Record</button>
                 <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="addMembership(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Add/Upgrade Memberships</button>
             </div>
         </div>
