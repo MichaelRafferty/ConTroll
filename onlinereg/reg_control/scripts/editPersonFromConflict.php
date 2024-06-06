@@ -96,10 +96,11 @@ if ($do_update) {
         } else {
             $addcomma = true;
         }
-        $query .= 'share_reg_ok = ?, contact_ok = ?';
+        $query .= 'share_reg_ok = ?, contact_ok = ?, updatedBy = ?';
         $types .= 'ss';
         array_push($values, trim($_POST['conflictFormNewShareReg']));
         array_push($values, trim($_POST['conflictFormNewContactOK']));
+        array_push($values, $_SESSION['user_id']));
     }
 
 

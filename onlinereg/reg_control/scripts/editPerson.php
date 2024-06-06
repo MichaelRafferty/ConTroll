@@ -206,6 +206,15 @@ if(isset($_POST['admin_notes'])) {
   $types .= 's';
   $values[] = $_POST['admin_notes'];
 }
+// updated by
+if ($change) {
+  $query .= ', ';
+  $changeLog .= 'updatedBy, ';
+  $query .= 'updatedBy=?';
+  $types .= 'i';
+  $values[] = $_SESSION['user_id'];
+}
+
 if($change) {
   $query .= " WHERE id=?";
   $types .= 'i';

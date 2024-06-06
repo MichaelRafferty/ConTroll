@@ -56,10 +56,10 @@ $response = [];
 
 $updSQL = <<<EOS
 UPDATE perinfo
-SET open_notes = ?
+SET open_notes = ?, updatedBy = ?
 WHERE id = ?;
 EOS;
-$num_upd = dbSafeCmd($updSQL, 'si', array($notes, $perid));
+$num_upd = dbSafeCmd($updSQL, 'sii', array($notes, $user_id, $perid));
 if ($num_upd === false) {
     $response['error'] = "Unable to update notes";
 } else {

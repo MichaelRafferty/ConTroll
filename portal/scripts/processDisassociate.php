@@ -37,7 +37,7 @@ WHERE id = ?;
 EOS;
     $personU = <<<EOS
 UPDATE perinfo
-SET managedBy = NULL
+SET managedBy = NULL, updatedBy = ?
 WHERE id = ?;
 EOS;
 } else {
@@ -48,7 +48,7 @@ WHERE id = ?;
 EOS;
     $personU = <<<EOS
 UPDATE newperson
-SET managedBy = NULL, managedByNew = NULL
+SET managedBy = NULL, managedByNew = NULL, updatedBy = ?
 WHERE id = ?;
 EOS;
 }
@@ -66,7 +66,7 @@ if ($personL['managedBy'] == NULL && $personL['managedByNew'] == NULL) {
     exit();
 }
 
-$num_rows = dbSafeCmd($personU, 'i', array($personId));
+$num_rows = dbSafeCmd($personU, 'ii', array($personId, $personId));
 if ($num_rows == 1) {
     ajaxSuccess(array('status'=>'success', 'message'=>'Your account has been changed to unmanaged.'));
 } else {

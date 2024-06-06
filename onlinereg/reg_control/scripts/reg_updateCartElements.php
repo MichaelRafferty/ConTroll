@@ -76,7 +76,7 @@ EOS;
 $updPerinfoSQL = <<<EOS
 UPDATE perinfo SET
     last_name=?,first_name=?,middle_name=?,suffix=?,legalName=?,email_addr=?,phone=?,badge_name=?,address=?,addr_2=?,city=?,state=?,zip=?,country=?,
-    open_notes=?,banned='N',update_date=NOW(),active='Y',contact_ok=?,share_reg_ok=?,change_notes=?
+    open_notes=?,banned='N',update_date=NOW(),active='Y',contact_ok=?,share_reg_ok=?,change_notes=?,updatedBy=?
 WHERE id = ?;
 EOS;
 $insRegSQL = <<<EOS
@@ -175,10 +175,10 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         $paramarray = array(
             $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$legalName,$cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
             $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],$open_notes,
-            $cartrow['contact_ok'],$cartrow['share_reg_ok'],$new_change_notes,
+            $cartrow['contact_ok'],$cartrow['share_reg_ok'],$new_change_notes,$user_id,
             $cartrow['perid']
         );
-        $typestr = 'ssssssssssssssssssi';
+        $typestr = 'ssssssssssssssssssii';
         $per_upd += dbSafeCmd($updPerinfoSQL, $typestr, $paramarray);
     }
 }
