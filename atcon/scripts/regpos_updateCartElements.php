@@ -91,8 +91,8 @@ $total_price = 0;
 $total_paid = 0;
 
 $insPerinfoSQL = <<<EOS
-INSERT INTO perinfo(last_name,first_name,middle_name,suffix,legalName,email_addr,phone,badge_name,address,addr_2,city,state,zip,country,contact_ok,share_reg_ok,open_notes,banned,active,creation_date)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N','Y',now());
+INSERT INTO perinfo(last_name,first_name,middle_name,suffix,legalName,email_addr,phone,badge_name,address,addr_2,city,state,zip,country,contact_ok,share_reg_ok,open_notes,banned,active,creation_date,updatedBy)
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N','Y',now(),?);
 EOS;
 $existingQ = <<<EOS
 SELECT last_name, first_name, middle_name, suffix, legalName, email_addr, phone, badge_name, address, addr_2, city, state, zip, country, open_notes, contact_ok, share_reg_ok, change_notes
@@ -150,9 +150,9 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         $paramarray = array(
             $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$legalName,$cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
             $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],
-            $cartrow['contact_ok'],$cartrow['share_reg_ok'],$open_notes
+            $cartrow['contact_ok'],$cartrow['share_reg_ok'],$open_notes,$user_id
         );
-        $typestr = 'sssssssssssssssss';
+        $typestr = 'sssssssssssssssssi';
         $new_perid = dbSafeInsert($insPerinfoSQL, $typestr, $paramarray);
         if ($new_perid === false) {
             $error_message .= "Insert of person $row failed<BR/>";

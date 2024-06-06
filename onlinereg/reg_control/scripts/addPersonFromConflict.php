@@ -25,14 +25,14 @@ if(!isset($_POST) || !isset($_POST['newID'])) {
 $newPersonQ = <<<EOQ
 INSERT INTO perinfo (last_name, first_name, middle_name, suffix
     , email_addr, phone, badge_name, address, addr_2, city, state, zip
-    , country, contact_ok, share_reg_ok, active, banned)
+    , country, contact_ok, share_reg_ok, active, banned,updatedBy)
 SELECT last_name, first_name, middle_name, suffix, email_addr, phone
-    , badge_name, address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, 'Y', 'N'
+    , badge_name, address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, 'Y', 'N', ?
 FROM newperson
 WHERE id = ?;
 EOQ;
 
-$id = dbSafeInsert($newPersonQ, "i", array($_POST['newID']));
+$id = dbSafeInsert($newPersonQ, "ii", array($_POST['newID'], $_SESSION['user_id']));
 $rows = dbSafeCmd("UPDATE newperson SET perid=? WHERE id=?;", 'ii', array($id, $_POST['newID']));
 $rows = dbSafeCmd("UPDATE reg SET perid=? WHERE newperid=?;", 'ii', array($id, $_POST['newID']));
 $rows = dbSafeCmd("UPDATE transaction SET perid=? WHERE newperid=?;", 'ii', array($id, $_POST['newID']));
