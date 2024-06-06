@@ -314,7 +314,7 @@ if ($membershipsR == false || $membershipsR->num_rows == 0) {
 <?php
 
     while ($membership = $membershipsR->fetch_assoc()) {
-        if ($membership['managedBy'] != $personId) {
+        if ($membership['managedBy'] != $personId && $membership['memberId'] != $personId) {
             $membership['fullname'] = 'Someone Else';
             $membership['badge_name'] = 'Someone Else';
         }
