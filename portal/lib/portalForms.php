@@ -1,0 +1,276 @@
+<?php
+// draw_login - draw the login options form
+function draw_login($config_vars, $result_message = '') {
+    ?>
+
+ <!-- signin form (at body level) -->
+    <div id='signin'>
+        <div class='container-fluid form-floating'>
+            <div class='row mb-2'>
+                <div class='col-sm-auto'>
+                    <h4>Please log in to continue to the Portal.</h4>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class='col-sm-auto'>
+                    <button class="btn btn-sm btn-primary" onclick="portal.loginWithToken();">Login with Authentication Link via Email</button>
+                </div>
+            </div>
+            <div id='token_email_div' hidden>
+                <div class='row mt-1'>
+                    <div class='col-sm-1'>
+                        <label for='token_email'>*Email: </label>
+                    </div>
+                    <div class='col-sm-auto'>
+                        <input class='form-control-sm' type='email' name='token_email' id='token_email' size='40' onchange='portal.tokenEmailChanged();' required/>
+                    </div>
+                </div>
+                <div class='row mt-2 mb-2'>
+                    <div class='col-sm-1'></div>
+                    <div class='col-sm-auto'>
+                        <button type='button' class='btn btn-primary btn-sm' id='sendLinkBtn' onclick='portal.sendLink();' disabled>Send Link</button>
+                    </div>
+                </div>
+            </div>
+            <div class='row mb-2'>
+                <div class='col-sm-auto'>
+                    <button class='btn btn-sm btn-primary' onclick='portal.loginWithGoogle();'>Login with Google</button>
+                </div>
+            </div>
+            <?php
+            // bypass for testing on Development PC
+    if (stripos(__DIR__, '/Users/syd/') !== false && $_SERVER['SERVER_ADDR'] == '127.0.0.1') {
+                ?>
+            <div class="row mt-3><div class="col-sm-12"><hr></div></div>
+            <div class='row mt-2'>
+                <div class='col-sm-auto'>
+                    <label for='dev_email'>*Dev Email/Perid/Newperid: </label>
+                </div>
+                <div class='col-sm-auto'>
+                    <input class='form-control-sm' type='email' name='dev_email' id='dev_email' size='40' required/>
+                </div>
+                <div class='col-sm-auto'>
+                    <button type="button" class='btn btn-sm btn-primary' onclick='portal.loginWithEmail();'>Login to Development</button>
+                </div>
+            </div>
+            <div class='row mb-2'><div class="col-sm-12" id="matchList"></div></div>
+            <?php
+    } ?>
+        </div>
+    </div>
+    <div class='container-fluid'>
+        <div class='row'>
+            <div class='col-sm-12 m-0 p-0'>
+                <div id='result_message' class='mt-4 p-2'><?php echo $result_message; ?></div>
+            </div>
+        </div>
+    </div>
+    </body>
+    <script type='text/javascript'>
+        var config = <?php echo json_encode($config_vars); ?>;
+    </script>
+</html>
+<?php
+}
+
+// draw_login - draw the login options form
+function draw_editPersonModal() {
+    $usps = get_conf('usps');
+    $useUSPS = false;
+    if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
+        $useUSPS = true;
+    $con = get_conf('con');
+?>
+    <div id='editPersonModal' class='modal modal-x1 fade' tabindex='-1' aria-labelledby='Edit Person' aria-hidden='true' style='--bs-modal-width: 96%;'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='editPersonTitle'>
+                        <strong>Edit Person</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' stype='padding: 4px; background-color: lightcyan;'>
+                    <div class='container-fluid'>
+                        <form id='editPerson' class='form-floating' action='javascript:void(0);'>
+                            <input type="hidden" name="id" id="epPersonId"/>
+                            <input type="hidden" name="type" id="epPersonType"/>
+                            <h3 class='text-primary' id="epHeader">Editing XXX</h3>
+                            <div class='row' style='width:100%;'>
+                                <div class='col-sm-12'>
+                                    <p class='text-body'>Note: Please provide your legal name that will match a valid form of ID. Your legal name will not
+                                        be publicly visible. If you don't provide one, it will default to your First, Middle, Last Names and Suffix.</p>
+                                    <p class="text-body">Items marked with <span class="text-danger">&bigstar;</span> are required fields.</p>
+                                </div>
+                            </div>
+                            <?php if ($useUSPS) echo '<div class="row"><div class="col-sm-8"><div class="container-fluid">' . PHP_EOL; ?>
+                            <div class="row">
+                                <div class="col-sm-auto ms-0 me-2 p-0">
+                                    <label for="fname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>First Name</span></label><br/>
+                                    <input class="form-control-sm" type="text" name="fname" id='fname' size="22" maxlength="32" tabindex="2"/>
+                                </div>
+                                <div class="col-sm-auto ms-0 me-2 p-0">
+                                    <label for="mname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
+                                    <input class="form-control-sm" type="text" name="mname" id='mname' size="8" maxlength="32" tabindex="4"/>
+                                </div>
+                                <div class="col-sm-auto ms-0 me-2 p-0">
+                                    <label for="lname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Last Name</span></label><br/>
+                                    <input class="form-control-sm" type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="6"/>
+                                </div>
+                                <div class="col-sm-auto ms-0 me-0 p-0">
+                                    <label for="suffix" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
+                                    <input class="form-control-sm" type="text" name="suffix" id='suffix' size="4" maxlength="4" tabindex="8"/>
+                                </div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-sm-12 ms-0 me-0 p-0'>
+                                    <label for='legalname' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
+                                    <input class='form-control-sm' type='text' name='legalname' id='legalname' size=64 maxlength='64'
+                                           placeholder='Defaults to First Name Middle Name Last Name, Suffix' tabindex='10'/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12 ms-0 me-0 p-0">
+                                    <label for="addr" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Address</span></label><br/>
+                                    <input class="form-control-sm" type="text" name='addr' id='addr' size=64 maxlength="64" tabindex='12'/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12 ms-0 me-0 p-0">
+                                    <label for="addr2" class="form-label-sm"><span class="text-dark"
+                                                                                   style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
+                                    <input class="form-control-sm" type="text" name='addr2' id='addr2' size=64 maxlength="64" tabindex='14'/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-auto ms-0 me-2 p-0">
+                                    <label for="city" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>City</span></label><br/>
+                                    <input class="form-control-sm" type="text" name="city" id='city' size="22" maxlength="32" tabindex="16"/>
+                                </div>
+                                <div class="col-sm-auto ms-0 me-2 p-0">
+                                    <label for="state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>State: US/CAN 2 letter abv.</span></label><br/>
+                                    <input class="form-control-sm" type="text" name="state" id='state' size="16" maxlength="16" tabindex="18"/>
+                                </div>
+                                <div class="col-sm-auto ms-0 me-2 p-0">
+                                    <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Zip</span></label><br/>
+                                    <input class="form-control-sm" type="text" name="zip" id='zip' size="5" maxlength="10" tabindex="20"/>
+                                </div>
+                                <div class="col-sm-auto ms-0 me-0 p-0">
+                                    <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
+                                    <select name='country' tabindex='22' id='country' onchange="countryChange();">
+                                        <?php
+                                        $fh = fopen(__DIR__ . '/../../lib/countryCodes.csv', 'r');
+                                        while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {
+                                            echo '<option value="' . escape_quotes($data[1]) . '">' . $data[0] . '</option>';
+                                        }
+                                        fclose($fh);
+                                        ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <?php if ($useUSPS) echo '</div></div><div class="col-sm-4" id="uspsblock"></div></div>' . PHP_EOL; ?>
+                            <div class='row'>
+                                <div class='col-sm-12'>
+                                    <hr/>
+                                </div>
+                            </div>
+                            <div class='row'>
+                                <div col='col-sm-12'>
+                                    <p class='text-body'>Contact Information
+                                        (<a href="<?php echo escape_quotes($con['privacypolicy']); ?>" target='_blank'><?php echo $con['privacytext']; ?></a>).
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-auto ms-0 me-2 p-0">
+                                    <label for="email1" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Email</span></label><br/>
+                                    <input class="form-control-sm" type="email" name="email1" id='email1' size="35" maxlength="254" tabindex="24"/>
+                                </div>
+                                <div class="col-sm-auto ms-0 me-0 p-0">
+                                    <label for="email2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Confirm Email</span></label><br/>
+                                    <input class="form-control-sm" type="email" name="email2" id='email2' size="35" maxlength="254" tabindex="26"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6 ms-0 me-0 p-0">
+                                    <label for="phone" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
+                                    <input class="form-control-sm" type="text" name="phone" id='phone' size="20" maxlength="15" tabindex="28"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-auto ms-0 me-2 p-0">
+                                    <label for="badgename" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
+                                    <input class="form-control-sm" type="text" name="badgename" id='badgename' size="35" maxlength="32" placeholder='defaults to first and last name' tabindex="30"/>
+                                </div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-sm-12'>
+                                    <hr/>
+                                </div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-sm-12'>
+                                    <p class='text-body'>
+                                        <a href="<?php echo escape_quotes($con['policy']); ?>" target='_blank'>Click here for
+                                            the <?php echo $con['policytext']; ?></a>.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <p class="text-body"><?php echo $con['conname']; ?> is entirely run by volunteers.
+                                        If you're interested in helping us run the convention please email
+                                        <a href="mailto:<?php echo escape_quotes($con['volunteers']); ?>"><?php echo $con['volunteers']; ?></a>.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <p class="text-body">
+                                        <label>
+                                            <input type='checkbox' checked name='contact' id='contact' value='Y'/>
+                                            <?php echo $con['remindertext']; ?>
+                                        </label>
+                                        <span class='small'><a href='javascript:void(0)' onClick='$("#contactTip").toggle()'>(more info)</a></span>
+                                    <div id='contactTip' class='padded highlight' style='display:none'>
+                                        <p class="text-body">
+                                            We will not sell your contact information or use it for any purpose other than contacting you about this
+                                            <?php echo $con['conname']; ?> or future <?php echo $con['conname']; ?>s.
+                                            <span class='small'><a href='javascript:void(0)' onClick='$("#contactTip").toggle()'>(close)</a></span>
+                                        </p>
+                                    </div>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <p class="text-body">
+                                        <label>
+                                            <input type='checkbox' checked name='share' id='share' value='Y'/>
+                                            May we include you in our <a target='_blank' href='<?php echo $con['server']; ?>/checkReg.php'>Check Registration page</a>?
+                                            This will others to check if you are registered displaying only your first initial, last name, and postal code.
+                                            If you choose to opt out, only you can check your registration via the portal.
+                                        </label>
+                                    </p>
+                                </div>
+                            </div>
+                        </form>
+                        <div class='row'>
+                            <div class="col-sm-12" id='epMessageDiv'></div>
+                            <div class='row'>
+                                <div class='col-sm-12'>
+                                    Still need interests and perhaps to paginate this as it looks a bit long.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10001'>Cancel</button>
+                    <button class='btn btn-sm btn-primary' id='editPersonSubmitBtn' onClick="portal.editPersonSubmit()" tabindex='10002'>Update Person</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php
+}

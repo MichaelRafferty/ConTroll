@@ -2,7 +2,7 @@
 // Registration  Portal - index.php - Main page for the membership portal
 require_once("lib/base.php");
 require_once("lib/getLoginMatch.php");
-require_once("lib/registrationForms.php");
+require_once("lib/portalForms.php");
 
 global $config_vars;
 
@@ -149,19 +149,20 @@ if ($portal_conf['open'] == 0) { ?>
 <?php
     exit;
 }
-
 ?>
     <script type='text/javascript'>
         var config = <?php echo json_encode($config_vars); ?>;
     </script>
 <?php
+// draw all the modals for this screen
+draw_editPersonModal();
 
 // if this person is managed, print a banner and let them disassociate from the manager.
 if ($info['managedByName'] != null) {
     ?>
 <div class='row mt-4' id="managedByDiv">
     <div class='col-sm-auto'><b>This person record is managed by <?php echo $info['managedByName']; ?></b></div>
-    <div class='col-sm-auto'><button class="btn btn-warning btn-sm p-1" onclick="disassociate();">Dissociate from <?php echo $info['managedByName']; ?></button></div>
+    <div class='col-sm-auto'><button class="btn btn-warning btn-sm p-1" onclick="portal.disassociate();">Dissociate from <?php echo $info['managedByName']; ?></button></div>
 </div>
 <?php } ?>
 <div class='row mt-4'>
@@ -178,8 +179,8 @@ if ($info['managedByName'] != null) {
     <div class='col-sm-4'><?php echo $info['fullname']; ?></div>
     <div class="col-sm-3"><?php echo $holderMembership; ?></div>
     <div class='col-sm-4 p-1'>
-        <button class='btn btn-sm, btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="editPerson(<?php echo $personId . ",'" . $personType . "'"; ?>);">Edit Person Record</button>
-        <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="addMembership(<?php echo $personId . ",'" . $personType . "'"; ?>);">Add/Upgrade Memberships</button>
+        <button class='btn btn-sm, btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.editPerson(<?php echo $personId . ",'" . $personType . "'"; ?>);">Edit Person Record</button>
+        <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.addMembership(<?php echo $personId . ",'" . $personType . "'"; ?>);">Add/Upgrade Memberships</button>
     </div>
 </div>
 <?php
@@ -193,13 +194,13 @@ if (count($managed) > 0) {
             if ($currentId > 0) {
             // output the prior row
 ?>
-            <div class='row'>
+            <div class='row mt-3'>
                 <div class='col-sm-1' style='text-align: right;'><?php echo ($curPT == 'n' ? 'Temp ' : '') . $currentId; ?></div>
                 <div class='col-sm-4'><?php echo $curFN; ?></div>
                 <div class="col-sm-3"><?php echo $curMB; ?></div>
                 <div class='col-sm-4 p-1'>
-                    <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="editPerson(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Edit Person Record</button>
-                    <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="addMembership(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Add/Upgrade Memberships</button>
+                    <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.editPerson(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Edit Person Record</button>
+                    <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.addMembership(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Add/Upgrade Memberships</button>
                 </div>
             </div>
 <?php
@@ -216,13 +217,13 @@ if (count($managed) > 0) {
     }
     if ($curMB != '') {
 ?>
-        <div class='row'>
+        <div class='row mt-3'>
             <div class='col-sm-1' style='text-align: right;'><?php echo ($curPT == 'n' ? 'Temp ' : '') . $currentId; ?></div>
             <div class='col-sm-4'><?php echo $curFN; ?></div>
             <div class="col-sm-3"><?php echo $curMB; ?></div>
             <div class='col-sm-4 p-1'>
-                <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="editPerson(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Edit Person Record</button>
-                <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="addMembership(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Add/Upgrade Memberships</button>
+                <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.editPerson(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Edit Person Record</button>
+                <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.addMembership(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Add/Upgrade Memberships</button>
             </div>
         </div>
     <?php
@@ -237,39 +238,71 @@ if (count($managed) > 0) {
 // get memberships purchased by this person
 if ($personType == 'p') {
     $membershipsQ = <<<EOS
-WITH mems AS (
-    SELECT t.id, r.create_date, r.memId, r.conid, m.label, m.memType, m.memCategory, p.managedBy, 
+WITH pn AS (
+    SELECT id AS memberId, managedBy, NULL AS managedByNew,
+    CASE 
+        WHEN badge_name IS NULL OR badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(last_name, '')) , '  *', ' ')) 
+        ELSE badge_name 
+    END AS badge_name,
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
+    FROM perinfo
+), nn AS (
+    SELECT id AS memberId, managedBy, managedByNew,
+    CASE 
+        WHEN badge_name IS NULL OR badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(last_name, '')) , '  *', ' ')) 
+        ELSE badge_name 
+    END AS badge_name,
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
+    FROM newperson
+), mems AS (
+    SELECT t.id, r.create_date, r.memId, r.conid, m.label, m.memType, m.memCategory,
         CASE 
-            WHEN p.badge_name IS NULL OR p.badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.last_name, '')) , '  *', ' ')) 
-            ELSE p.badge_name 
-        END AS badge_name, p.id AS memberId,
-        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname
+            WHEN pn.memberId IS NOT NULL THEN pn.managedBy
+            WHEN nn.memberId IS NOT NULL THEN nn.managedBy
+            ELSE NULL
+        END AS managedBy,
+        CASE 
+            WHEN pn.memberId IS NOT NULL THEN pn.managedByNew
+            WHEN nn.memberId IS NOT NULL THEN nn.managedByNew
+            ELSE NULL
+        END AS managedByNew,
+        CASE 
+            WHEN pn.memberId IS NOT NULL THEN pn.badge_name
+            WHEN nn.memberid IS NOT NULL THEN nn.badge_name
+            ELSE NULL
+        END AS badge_name,
+        CASE 
+            WHEN pn.memberid IS NOT NULL THEN pn.fullname
+            WHEN nn.memberId IS NOT NULL THEN nn.fullname
+            ELSE NULL
+        END AS fullname,
+        CASE 
+            WHEN pn.memberId IS NOT NULL THEN pn.memberId
+            WHEN nn.memberId IS NOT NULL THEN nn.memberId
+            ELSE NULL
+        END AS memberId
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
     JOIN memLabel m ON m.id = r.memId
-    JOIN perinfo p ON p.id = r.perid
+    LEFT OUTER JOIN pn ON pn.memberId = r.perid AND (pn.managedBy = ? OR pn.memberId = ?)
+    LEFT OUTER JOIN nn ON nn.memberId = r.newperid
     WHERE t.perid = ? AND t.conid = ?
     UNION
-    SELECT t.id, r.create_date, r.memId, r.conid, m.label, m.memType, m.memCategory, p.managedBy,
-        CASE 
-            WHEN p.badge_name IS NULL OR p.badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.last_name, '')) , '  *', ' ')) 
-            ELSE p.badge_name 
-        END AS badge_name, p.id AS memberId,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname
+    SELECT t.id, r.create_date, r.memId, r.conid, m.label, m.memType, m.memCategory, nn.managedBy, nn.managedByNew, nn.badge_name, nn.fullname, nn.memberId    
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
     JOIN memLabel m ON m.id = r.memId
-    JOIN newperson p ON p.id = r.newperid
+    JOIN nn ON nn.memberId = r.newperid
     WHERE t.perid = ? AND t.conid = ?
 )
 SELECT DISTINCT *
 FROM mems
 ORDER BY fullname, create_date
 EOS;
-    $membershipsR = dbSafeQuery($membershipsQ, 'iiii', array($personId, $conid,$personId, $conid));
+    $membershipsR = dbSafeQuery($membershipsQ, 'iiiiii', array($personId, $personId, $personId, $conid,$personId, $conid));
 } else {
     $membershipsQ = <<<EOS
-SELECT t.id, r.create_date, r.memId, m.label, m.memType, m.memCategory, p.managedBy,
+SELECT t.id, r.create_date, r.memId, m.label, m.memType, m.memCategory, p.managedBy, p.managedByNew,
     CASE 
         WHEN p.badge_name IS NULL OR p.badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.last_name, '')) , '  *', ' ')) 
         ELSE p.badge_name
@@ -294,7 +327,6 @@ if ($membershipsR == false || $membershipsR->num_rows == 0) {
     </div>
 <?php
 } else if ($membershipsR->num_rows > 0) {
-    $currentId = -1;
 ?>
     <div class='row'>
         <div class='col-sm-1' style='text-align: right;'><b>Trans ID</b></div>
@@ -313,12 +345,14 @@ if ($membershipsR == false || $membershipsR->num_rows == 0) {
     </div>
 <?php
 
+    $rowId = -9999;
+    $currentId = -99999;
     while ($membership = $membershipsR->fetch_assoc()) {
-        if ($membership['managedBy'] != $personId && $membership['memberId'] != $personId) {
-            $membership['fullname'] = 'Someone Else';
-            $membership['badge_name'] = 'Someone Else';
+        if ($membership['fullname'] == null) {
+            $membership['fullname'] = 'Name Redacted';
+            $membership['badge_name'] = 'Name Redacted';
         }
-        if ($currentId > 0 && $currentId != $membership['memberId']) {
+        if ($currentId > -10000 && $currentId != $membership['memberId']) {
 ?>
     <div class='row'>
         <div class='col-sm-12 ms-4 me-0'>
@@ -328,6 +362,9 @@ if ($membershipsR == false || $membershipsR->num_rows == 0) {
 <?php
         }
         $currentId = $membership['memberId'];
+        if ($currentId == null)
+            $currentId = $rowId;
+        $rowId++;
 ?>
 <div class="row">
     <div class='col-sm-1' style='text-align: right;'><?php echo $membership['id'];?></div>
@@ -336,7 +373,7 @@ if ($membershipsR == false || $membershipsR->num_rows == 0) {
     <div class="col-sm-5"><?php echo ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label'];?></div>
 </div>
 <div class='row'>
-    <div class="col-sm-1" style='text-align: right;'><button class="btn btn-sm btn-secondary p-1" style='--bs-btn-font-size: 80%;' onclick="transReceipt(<?php echo $membership['id'] ?>);">Receipt</button></div>
+    <div class="col-sm-1" style='text-align: right;'><button class="btn btn-sm btn-secondary p-1 pt-0 pb-0" style='--bs-btn-font-size: 80%;' onclick="portal.transReceipt(<?php echo $membership['id'] ?>);">Receipt</button></div>
     <div class="col-sm-2"></div>
     <div class="col-sm-7"><?php echo $membership['fullname']; ?></div>
     <div class="col-sm-1"><?php echo $membership['memType']; ?></div>

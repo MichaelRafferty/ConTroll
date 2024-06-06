@@ -156,9 +156,11 @@ function portal_page_foot() {
 
 function tab_bar($page, $portal_conf) {
     $page_list = [
-            ['name' => 'editAccount.php', 'display' => 'Edit Account'],
             ['name' => 'addPerson.php', 'display' => 'Add New Person'],
             ['name' => 'paymentPlan.php', 'display' => 'Manage Payment Plan'],
+            ['name' => 'membershipHistory.php', 'display' => 'Membership History'],
+             ['name' => 'editAccount.php', 'display' => 'Account Settings'],
+             ['name' => 'portalHelp.php" target="_blank', 'display' => 'Help'],
             ];
 
     $active = $page == 'Home' ? 'active' : '';
