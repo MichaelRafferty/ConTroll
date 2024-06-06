@@ -79,11 +79,11 @@ JOIN perinfo p ON (
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(n.country,''))), '  *', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.country, ''))), '  *', ' ')
 )
-SET n.perid = p.id
+SET n.perid = p.id, n.updatedBy = ?
 WHERE n.perid IS NULL and p.id is not null AND p.active = 'Y';
 EOF;
 
-dbquery($updateQ);
+dbSafeCmd($updateQ, 'i', array($_SESSION['user_id']));
 
 page_init($page,
     /* css */ array('css/base.css'

@@ -33,7 +33,7 @@ WHERE id = ?;
 EOQ;
 
 $id = dbSafeInsert($newPersonQ, "ii", array($_POST['newID'], $_SESSION['user_id']));
-$rows = dbSafeCmd("UPDATE newperson SET perid=? WHERE id=?;", 'ii', array($id, $_POST['newID']));
+$rows = dbSafeCmd("UPDATE newperson SET perid=?, updatedBy = ? WHERE id=?;", 'iii', array($id, $_SESSION['user_id'], $_POST['newID']));
 $rows = dbSafeCmd("UPDATE reg SET perid=? WHERE newperid=?;", 'ii', array($id, $_POST['newID']));
 $rows = dbSafeCmd("UPDATE transaction SET perid=? WHERE newperid=?;", 'ii', array($id, $_POST['newID']));
 

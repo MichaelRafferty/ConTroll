@@ -25,7 +25,7 @@ $changeLog = $check_auth['email'] . ": " . date(DATE_ATOM)
     . $_POST['oldID'] . ": ";
 
 // Note which old record it matches
-$rows = dbSafeCmd("UPDATE newperson SET perid=? WHERE id = ?", "ii", array($_POST['oldID'],$_POST['newID']));
+$rows = dbSafeCmd("UPDATE newperson SET perid=?, updatedBy=? WHERE id = ?", "iii", array($_POST['oldID'],$_SESSION['user_id'], $_POST['newID']));
 
 // now build the update statement for the items to update
 $nocheckboxes = array_key_exists('honorcheckboxes', $_POST) == false;
