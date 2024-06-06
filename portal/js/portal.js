@@ -75,7 +75,7 @@ function loginWithEmail(id = null) {
 // loginSelectIcon: deal with matches in dev list
 function loginSelectIcon(cell, formatterParams, onRendered) {
     var id = cell.getRow().getData().id;
-    return "<button type='button' class='btn btn-small btn-primary pt-0 pb-0' onclick='loginWithEmail(" + id + ");'>Login</button>";
+    return "<button type='button' class='btn btn-sm btn-primary pt-0 pb-0' onclick='loginWithEmail(" + id + ");'>Login</button>";
 }
 // loginWithToken: show email for token
 function loginWithToken() {

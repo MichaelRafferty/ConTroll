@@ -159,7 +159,6 @@ function tab_bar($page, $portal_conf) {
             ['name' => 'editAccount.php', 'display' => 'Edit Account'],
             ['name' => 'addPerson.php', 'display' => 'Add New Person'],
             ['name' => 'paymentPlan.php', 'display' => 'Manage Payment Plan'],
-            ['name' => 'receipts.php', 'display' => 'Receipts'],
             ];
 
     $active = $page == 'Home' ? 'active' : '';

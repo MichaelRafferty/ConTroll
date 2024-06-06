@@ -50,7 +50,7 @@ function draw_login($config_vars, $result_message = '') {
     <div class='container-fluid'>
         <div class='row mt-4'>
             <div class='col-sm-auto'>
-                <button type="button" class="btn btn-small btn-secondary" onclick="exhibitorProfile.profileModalOpen('register');">Sign Up for a New Account</a>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="exhibitorProfile.profileModalOpen('register');">Sign Up for a New Account</a>
             </div>
             </div>
         </div>

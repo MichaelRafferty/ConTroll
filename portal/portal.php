@@ -161,7 +161,7 @@ if ($info['managedByName'] != null) {
     ?>
 <div class='row mt-4' id="managedByDiv">
     <div class='col-sm-auto'><b>This person record is managed by <?php echo $info['managedByName']; ?></b></div>
-    <div class='col-sm-auto'><button class="btn btn-warning btn-small p-1" onclick="disassociate();">Dissociate from <?php echo $info['managedByName']; ?></button></div>
+    <div class='col-sm-auto'><button class="btn btn-warning btn-sm p-1" onclick="disassociate();">Dissociate from <?php echo $info['managedByName']; ?></button></div>
 </div>
 <?php } ?>
 <div class='row mt-4'>
@@ -178,8 +178,8 @@ if ($info['managedByName'] != null) {
     <div class='col-sm-4'><?php echo $info['fullname']; ?></div>
     <div class="col-sm-3"><?php echo $holderMembership; ?></div>
     <div class='col-sm-4 p-1'>
-        <button class='btn btn-small btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="editPerson(<?php echo $personId . ",'" . $personType . "'"; ?>);">Edit Person Record</button>
-        <button class='btn btn-small btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="addMembership(<?php echo $personId . ",'" . $personType . "'"; ?>);">Add/Upgrade Memberships</button>
+        <button class='btn btn-sm, btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="editPerson(<?php echo $personId . ",'" . $personType . "'"; ?>);">Edit Person Record</button>
+        <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="addMembership(<?php echo $personId . ",'" . $personType . "'"; ?>);">Add/Upgrade Memberships</button>
     </div>
 </div>
 <?php
@@ -198,8 +198,8 @@ if (count($managed) > 0) {
                 <div class='col-sm-4'><?php echo $curFN; ?></div>
                 <div class="col-sm-3"><?php echo $curMB; ?></div>
                 <div class='col-sm-4 p-1'>
-                    <button class='btn btn-small btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="editPerson(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Edit Person</button>
-                    <button class='btn btn-small btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="addMembership(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Add/Upgrade Memberships</button>
+                    <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="editPerson(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Edit Person</button>
+                    <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="addMembership(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Add/Upgrade Memberships</button>
                 </div>
             </div>
 <?php
@@ -221,8 +221,8 @@ if (count($managed) > 0) {
             <div class='col-sm-4'><?php echo $curFN; ?></div>
             <div class="col-sm-3"><?php echo $curMB; ?></div>
             <div class='col-sm-4 p-1'>
-                <button class='btn btn-small btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="editPerson(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Edit Person</button>
-                <button class='btn btn-small btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="addMembership(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Add/Upgrade Memberships</button>
+                <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="editPerson(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Edit Person</button>
+                <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="addMembership(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Add/Upgrade Memberships</button>
             </div>
         </div>
     <?php
@@ -336,7 +336,8 @@ if ($membershipsR == false || $membershipsR->num_rows == 0) {
     <div class="col-sm-5"><?php echo ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label'];?></div>
 </div>
 <div class='row'>
-    <div class="col-sm-3"></div>
+    <div class="col-sm-1" style='text-align: right;'><button class="btn btn-sm btn-secondary p-1" style='--bs-btn-font-size: 80%;' onclick="transReceipt(<?php echo $membership['id'] ?>);">Receipt</button></div>
+    <div class="col-sm-2"></div>
     <div class="col-sm-7"><?php echo $membership['fullname']; ?></div>
     <div class="col-sm-1"><?php echo $membership['memType']; ?></div>
     <div class="col-sm-1"><?php echo $membership['memCategory']; ?></div>
