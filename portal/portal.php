@@ -36,7 +36,7 @@ while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
 fclose($fh);
 
 // this section is for 'in-session' management
-// build info array
+// build info array about the account holder
 
 if ($personType == 'p') {
     $personSQL = <<<EOS
@@ -67,42 +67,44 @@ if ($personR === false || $personR->num_rows == 0) {
 }
 $info = $personR->fetch_assoc();
 $personR->free();
-$ownerRegSQL = <<<EOS
+// get the account holder's registrations
+$holderRegSQL = <<<EOS
 SELECT r.status, r.memId, m.*
 FROM reg r
 JOIN memLabel m ON m.id = r.memId
-WHERE r.conid = ? AND (r.perid = ? OR r.newperid = ?);
+WHERE r.conid >= ? AND (r.perid = ? OR r.newperid = ?);
 EOS;
-$ownerRegR = dbSafeQuery($ownerRegSQL, 'iii', array($conid, $personType == 'p' ? $personId : -1, $personType == 'n' ? $personId : -1));
-if ($ownerRegR == false || $ownerRegR->num_rows == 0) {
-    $ownerMemberhip = 'None';
+$holderRegR = dbSafeQuery($holderRegSQL, 'iii', array($conid, $personType == 'p' ? $personId : -1, $personType == 'n' ? $personId : -1));
+if ($holderRegR == false || $holderRegR->num_rows == 0) {
+    $holderMemberhip = 'None';
 } else {
-    $ownerMembership = '';
-    while ($ownerL = $ownerRegR->fetch_assoc()) {
-        if ($ownerMembership != '')
-            $ownerMembership .= '<br/>';
-        $ownerMembership .= $ownerL['label'] . '[' . $ownerL['status'] . ']';
+    $holderMembership = '';
+    while ($holderL = $holderRegR->fetch_assoc()) {
+        if ($holderMembership != '')
+            $holderMembership .= '<br/>';
+        $holderMembership .= ($holderL['conid'] != $conid ? $holderL['conid'] . ' ' : '') . $holderL['label'] . ' (' . $holderL['status'] . ')';
     }
-    if ($ownerRegR != false)
-        $ownerRegR->free();
+    if ($holderRegR != false)
+        $holderRegR->free();
 }
+// get people managed by this account holder and their registrations
 if ($personType == 'p') {
     $managedSQL = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
     p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.contact_ok, p.share_reg_ok, p.managedBy, NULL AS managedByNew,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-    r.status, r.memId, m.memCategory, m.memType, m.memAge, m.shortname, m. label, m.memGroup, 'p' AS personType
+    r.conid, r.status, r.memId, m.memCategory, m.memType, m.memAge, m.shortname, m. label, m.memGroup, 'p' AS personType
     FROM perinfo p
-    LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid = ?
+    LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ?
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     WHERE managedBy = ? AND p.id != p.managedBy
 UNION
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
     'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.contact_ok, p.share_reg_ok, p.managedBy, p.managedByNew,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-    r.status, r.memId, m.memCategory, m.memType, m.memAge, m.shortname, m. label, m.memGroup, 'n' AS personType
+    r.conid, r.status, r.memId, m.memCategory, m.memType, m.memAge, m.shortname, m. label, m.memGroup, 'n' AS personType
     FROM newperson p    
-    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid = ?
+    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ?
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     WHERE managedBy = ? AND p.managedBy != ? AND p.perid IS NULL;
 EOS;
@@ -112,9 +114,9 @@ EOS;
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
     'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.contact_ok, p.share_reg_ok, p.managedBy, NULL AS managedByNew,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-    r.status, r.memId, m.memCategory, m.memType, m.memAge, m.shortname, m. label, m.memGroup, 'n' AS personType
+    r.conid, r.status, r.memId, m.memCategory, m.memType, m.memAge, m.shortname, m. label, m.memGroup, 'n' AS personType
     FROM newperson p
-    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid = ?
+    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ?
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     WHERE p.managedByNew = ? AND p.id != p.managedBy;
 EOS;
@@ -153,6 +155,8 @@ if ($portal_conf['open'] == 0) { ?>
         var config = <?php echo json_encode($config_vars); ?>;
     </script>
 <?php
+
+// if this person is managed, print a banner and let them disassociate from the manager.
 if ($info['managedByName'] != null) {
     ?>
 <div class='row mt-4' id="managedByDiv">
@@ -172,26 +176,57 @@ if ($info['managedByName'] != null) {
 <div class="row">
     <div class='col-sm-1' style='text-align: right;'><?php echo ($personType == 'n' ? 'Temp ' : '') . $personId; ?></div>
     <div class='col-sm-4'><?php echo $info['fullname']; ?></div>
-    <div class="col-sm-3"><?php echo $ownerMemberhip; ?></div>
+    <div class="col-sm-3"><?php echo $holderMembership; ?></div>
     <div class='col-sm-4 p-1'>
         <button class='btn btn-small btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="editPerson(<?php echo $personId . ",'" . $personType . "'"; ?>);">Edit Person Record</button>
         <button class='btn btn-small btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="addMembership(<?php echo $personId . ",'" . $personType . "'"; ?>);">Add/Upgrade Memberships</button>
     </div>
 </div>
 <?php
+
+$managedMembershipList = '';
+$currentId = -1;
+// now for the people managed by this account holder
 if (count($managed) > 0) {
     foreach ($managed as $m) {
-        ?>
-    <div class='row'>
-        <div class='col-sm-1' style='text-align: right;'><?php echo ($m['personType'] == 'n' ? 'Temp ' : '') . $m['id']; ?></div>
-        <div class='col-sm-4'><?php echo $m['fullname']; ?></div>
-        <div class="col-sm-3"><?php echo ($m['memId'] == null ? 'None' : ($m['label'] . '[' . $m['status']) . ']');?></div>
-        <div class='col-sm-4 p-1'>
-            <button class='btn btn-small btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="editPerson(<?php echo $m['id'] . ",'" . $m['personType'] . "'"; ?>);">Edit Person</button>
-            <button class='btn btn-small btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="addMembership(<?php echo $m['id'] . ",'" . $m['personType'] . "'"; ?>);">Add/Upgrade Memberships</button>
-    </div>
-    </div>
-    <?php }
+        if ($currentId != $m['id']) {
+            if ($currentId > 0) {
+            // output the prior row
+?>
+            <div class='row'>
+                <div class='col-sm-1' style='text-align: right;'><?php echo ($curPT == 'n' ? 'Temp ' : '') . $currentId; ?></div>
+                <div class='col-sm-4'><?php echo $curFN; ?></div>
+                <div class="col-sm-3"><?php echo $curMB; ?></div>
+                <div class='col-sm-4 p-1'>
+                    <button class='btn btn-small btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="editPerson(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Edit Person</button>
+                    <button class='btn btn-small btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="addMembership(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Add/Upgrade Memberships</button>
+                </div>
+            </div>
+<?php
+            }
+            $curPT = $m['personType'];
+            $currentId = $m['id'];
+            $curFN = $m['fullname'];
+            $curMB = '';
+        }
+        if ($curMB != '') {
+            $curMB .= '<br/>';
+        }
+        $curMB .= $m['memId'] == null ? 'None' : (($m['conid'] != $conid ? $m['conid'] . ' ' : '') .  $m['label'] . ' (' . $m['status']) . ')';
+    }
+    if ($curMB != '') {
+?>
+        <div class='row'>
+            <div class='col-sm-1' style='text-align: right;'><?php echo ($curPT == 'n' ? 'Temp ' : '') . $currentId; ?></div>
+            <div class='col-sm-4'><?php echo $curFN; ?></div>
+            <div class="col-sm-3"><?php echo $curMB; ?></div>
+            <div class='col-sm-4 p-1'>
+                <button class='btn btn-small btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="editPerson(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Edit Person</button>
+                <button class='btn btn-small btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="addMembership(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Add/Upgrade Memberships</button>
+            </div>
+        </div>
+    <?php
+    }
 }
 
 ?>
@@ -203,16 +238,24 @@ if (count($managed) > 0) {
 if ($personType == 'p') {
     $membershipsQ = <<<EOS
 WITH mems AS (
-    SELECT t.id, r.create_date, r.memId, m.label, m.memType, m.memCategory, p.managedBy, 
-       TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname
+    SELECT t.id, r.create_date, r.memId, r.conid, m.label, m.memType, m.memCategory, p.managedBy, 
+        CASE 
+            WHEN p.badge_name IS NULL OR p.badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.last_name, '')) , '  *', ' ')) 
+            ELSE p.badge_name 
+        END AS badge_name, p.id AS memberId,
+        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
     JOIN memLabel m ON m.id = r.memId
     JOIN perinfo p ON p.id = r.perid
     WHERE t.perid = ? AND t.conid = ?
     UNION
-    SELECT t.id, r.create_date, r.memId, m.label, m.memType, m.memCategory, p.managedBy, 
-       TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname
+    SELECT t.id, r.create_date, r.memId, r.conid, m.label, m.memType, m.memCategory, p.managedBy,
+        CASE 
+            WHEN p.badge_name IS NULL OR p.badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.last_name, '')) , '  *', ' ')) 
+            ELSE p.badge_name 
+        END AS badge_name, p.id AS memberId,
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
     JOIN memLabel m ON m.id = r.memId
@@ -226,8 +269,12 @@ EOS;
     $membershipsR = dbSafeQuery($membershipsQ, 'iiii', array($personId, $conid,$personId, $conid));
 } else {
     $membershipsQ = <<<EOS
-SELECT t.id, r.create_date, r.memId, m.label, m.memType, m.memCategory, p.managedBy, 
-   TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname
+SELECT t.id, r.create_date, r.memId, m.label, m.memType, m.memCategory, p.managedBy,
+    CASE 
+        WHEN p.badge_name IS NULL OR p.badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.last_name, '')) , '  *', ' ')) 
+        ELSE p.badge_name
+    END AS badge_name, p.id AS memberId,
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname
 FROM transaction t
 JOIN reg r ON t.id = r.create_trans
 JOIN memLabel m ON m.id = r.memId
@@ -238,36 +285,61 @@ EOS;
     $membershipsR = dbSafeQuery($membershipsQ, 'ii', array($personId, $conid));
 }
 
+// loop over the transactions outputting the memberships
 if ($membershipsR == false || $membershipsR->num_rows == 0) {
     ?>
-<div class="row">
-    <div class="col-sm-1"></div>
-    <div class="col-sm-auto">None</div>
+    <div class="row">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-auto">None</div>
+    </div>
 <?php
 } else if ($membershipsR->num_rows > 0) {
+    $currentId = -1;
 ?>
-        <div class='row'>
-            <div class='col-sm-1' style='text-align: right;'><b>Trans ID</b></div>
-            <div class='col-sm-1'><b>Created</b></div>
-            <div class='col-sm-4'><b>Person</b></div>
-            <div class='col-sm-1'><b>Type</b></div>
-            <div class='col-sm-1'><b>Category</b></div>
-            <div class='col-sm-4'><b>Membership</b></div>
-        </div>
+    <div class='row'>
+        <div class='col-sm-1' style='text-align: right;'><b>Trans ID</b></div>
+        <div class='col-sm-2'><b>Created</b></div>
+        <div class='col-sm-4'><b>Badge Name</b></div>
+        <div class='col-sm-5'><b>Membership</b></div>
+    </div>
+    <div class='row'>
+        <div class='col-sm-3'></div>
+        <div class='col-sm-7'><b>Full Name</b></div>
+        <div class='col-sm-1'><b>Type</b></div>
+        <div class='col-sm-1'><b>Category</b></div>
+    </div>
+    <div class='row'>
+        <div class="col-sm-12 ms-4 me-0"><hr style="height:4px;width:97%;align:'center';color:#333333;background-color:#333333;"/></div>
+    </div>
 <?php
 
     while ($membership = $membershipsR->fetch_assoc()) {
         if ($membership['managedBy'] != $personId) {
             $membership['fullname'] = 'Someone Else';
+            $membership['badge_name'] = 'Someone Else';
         }
+        if ($currentId > 0 && $currentId != $membership['memberId']) {
+?>
+    <div class='row'>
+        <div class='col-sm-12 ms-4 me-0'>
+            <hr style="height:2px;width:97%;align:'center';color:#333333;background-color:#333333;"/>
+        </div>
+    </div>
+<?php
+        }
+        $currentId = $membership['memberId'];
 ?>
 <div class="row">
-    <div class='col-sm-1' style='text-align: right;'><?php echo $membership['create_trans'];?></div>
-    <div class="col-sm-1">echo $membership['create_date'];?></div>
-    <div class="col-sm-4">echo $membership['fullname'];?></div>
-    <div class="col-sm-1">echo $membership['memType'];?></div>
-    <div class="col-sm-1">echo $membership['memCategory'];?></div>
-    <div class="col-sm-4">echo $membership['label'];?></div>
+    <div class='col-sm-1' style='text-align: right;'><?php echo $membership['id'];?></div>
+    <div class="col-sm-2"><?php echo $membership['create_date'];?></div>
+    <div class="col-sm-4"><?php echo $membership['badge_name'];?></div>
+    <div class="col-sm-5"><?php echo ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label'];?></div>
+</div>
+<div class='row'>
+    <div class="col-sm-3"></div>
+    <div class="col-sm-7"><?php echo $membership['fullname']; ?></div>
+    <div class="col-sm-1"><?php echo $membership['memType']; ?></div>
+    <div class="col-sm-1"><?php echo $membership['memCategory']; ?></div>
 </div>
 <?php
     }
