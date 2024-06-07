@@ -410,7 +410,7 @@ function makePurchase(token, label) {
     // validate CC email address for receipt
     var cc_email = document.getElementById('cc_email').value;
     if (!validateAddress(cc_email)) {
-        alert("The 'who's paying for the order' email address is not vali, please use the Edit button to put in a valid email address for the receipt");
+        alert("The 'who's paying for the order' email address is not valid, please use the Edit button to put in a valid email address for the receipt");
         $('#cc_email').addClass('need');
         return false;
     }

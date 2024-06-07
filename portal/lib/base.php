@@ -56,7 +56,7 @@ echo <<<EOF
 EOF;
 }
 
-function portal_page_init($title, $css, $js) {
+function portalPageInit($title, $css, $js) {
     global $db_ini;
 
     $con = get_conf('con');
@@ -137,12 +137,18 @@ function portal_page_init($title, $css, $js) {
     }
 }
 
-function portal_page_foot() {
+function portalPageFoot() {
+    $msg = '';
+    $class='';
+    if (array_key_exists('messageFwd', $_GET)) {
+        $msg = $_GET['messageFwd'];
+        $class = ' bg-success text-white';
+    }
     ?>
     <div class="container-fluid">
         <div class='row'>
             <div class='col-sm-12 m-0 p-0'>
-                <div id='result_message' class='mt-4 p-2'></div>
+                <div id='result_message' class='mt-4 p-2<?php echo $class; ?>'><?php echo $msg; ?></div>
             </div>
         </div>
         <div class='row mt-2'>

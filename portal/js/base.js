@@ -42,8 +42,7 @@ function show_message(message, type = 'success', div='result_message') {
     message_div.innerHTML = message;
 }
 
-function showAjaxError(jqXHR, textStatus, errorThrown) {
-    'use strict';
+function showAjaxError(jqXHR, textStatus, errorThrown, divElement = null) {
     var message = '';
     if (jqXHR && jqXHR.responseText) {
         message = jqXHR.responseText;
@@ -53,11 +52,25 @@ function showAjaxError(jqXHR, textStatus, errorThrown) {
     if (textStatus != '' && textStatus != 'error')
         message += '<BR/>' + textStatus;
     message += '<BR/>Error Thrown: ' + errorThrown;
-    show_message(message, 'error');
+    show_message(message, 'error', divElement);
 }
 
 // validate RFC-5311/2 addresses regexp pattern from https://regex101.com/r/3uvtNl/1, found by searching validate RFC-5311/2  addresses
 function validateAddress(addr) {
     const regPattern = /^((?:[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~]|(?<=^|\.)"|"(?=$|\.|@)|(?<=".*)[ .](?=.*")|(?<!\.)\.){1,64})(@)((?:[A-Za-z0-9.\-])*(?:[A-Za-z0-9])\.(?:[A-Za-z0-9]){2,})$/gm;
     return regPattern.test(String(addr).toLowerCase());
+}
+
+// convert a form post string to an arrray
+// convert url parameters to associative array
+function URLparamsToArray(urlargs, doTrim = false) {
+    const params = new URLSearchParams(urlargs);
+    const result = {};
+    for (const [key, value] of params) {
+        if (doTrim)
+            result[key] = value.trim();
+        else
+            result[key] = value;
+    }
+    return result;
 }

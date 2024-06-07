@@ -153,11 +153,11 @@ function draw_editPersonModal() {
                                 </div>
                                 <div class="col-sm-auto ms-0 me-2 p-0">
                                     <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Zip</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="zip" id='zip' size="5" maxlength="10" tabindex="20"/>
+                                    <input class="form-control-sm" type="text" name="zip" id='zip' size="10" maxlength="10" tabindex="20"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
                                     <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
-                                    <select name='country' tabindex='22' id='country' onchange="countryChange();">
+                                    <select name='country' tabindex='22' id='country' onchange="portal.countryChange();">
                                         <?php
                                         $fh = fopen(__DIR__ . '/../../lib/countryCodes.csv', 'r');
                                         while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {

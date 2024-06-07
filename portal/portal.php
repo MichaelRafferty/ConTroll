@@ -27,14 +27,6 @@ $config_vars['debug'] = $debug['portal'];
 $config_vars['uri'] = $portal_conf['portalsite'];
 $cdn = getTabulatorIncludes();
 
-// load country select
-$countryOptions = '';
-$fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-  $countryOptions .= '<option value="' . escape_quotes($data[1]) . '">' .$data[0] . '</option>' . PHP_EOL;
-}
-fclose($fh);
-
 // this section is for 'in-session' management
 // build info array about the account holder
 
@@ -62,7 +54,7 @@ EOS;
 $personR = dbSafeQuery($personSQL, 'i', array($personId));
 if ($personR === false || $personR->num_rows == 0) {
     echo 'Invalid Login, seek assistance';
-    portal_page_foot();
+    portalPageFoot();
     exit();
 }
 $info = $personR->fetch_assoc();
@@ -131,7 +123,7 @@ if ($managedByR != false) {
     $managedByR->free();
 }
 
-portal_page_init($info['fullname'] . ($personType == 'p' ? ' (ID: ' : 'Temporary ID: ') . $personId . ')',
+portalPageInit($info['fullname'] . ($personType == 'p' ? ' (ID: ' : 'Temporary ID: ') . $personId . ')',
     /* css */ array($cdn['tabcss'],
         $cdn['tabbs5'],
     ),
@@ -385,5 +377,5 @@ if ($membershipsR == false || $membershipsR->num_rows == 0) {
 ?>
 </div>
 <?php
-portal_page_foot();
+portalPageFoot();
 ?>
