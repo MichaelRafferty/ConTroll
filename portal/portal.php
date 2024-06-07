@@ -333,7 +333,7 @@ if ($membershipsR == false || $membershipsR->num_rows == 0) {
         <div class='col-sm-1'><b>Category</b></div>
     </div>
     <div class='row'>
-        <div class="col-sm-12 ms-4 me-0"><hr style="height:4px;width:97%;align:'center';color:#333333;background-color:#333333;"/></div>
+        <div class="col-sm-12 ms-0 me-0 align-center"><hr style="height:4px;width:95%;margin:auto;margin-top:6px;margin-bottom:10px;color:#333333;background-color:#333333;"/></div>
     </div>
 <?php
 
@@ -347,8 +347,8 @@ if ($membershipsR == false || $membershipsR->num_rows == 0) {
         if ($currentId > -10000 && $currentId != $membership['memberId']) {
 ?>
     <div class='row'>
-        <div class='col-sm-12 ms-4 me-0'>
-            <hr style="height:2px;width:97%;align:'center';color:#333333;background-color:#333333;"/>
+        <div class='col-sm-12 ms-0 me-0 align-center'>
+            <hr style='height:4px;width:95%;margin:auto;margin-top:10px;margin-bottom:10px;color:#333333;background-color:#333333;'/>
         </div>
     </div>
 <?php
