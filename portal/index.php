@@ -1,8 +1,8 @@
 <?php
-// Registration  Portal - index.php - Main page for the membership portal
+// Registration  Portal - index.php - Login/re-login page for the membership portal
 require_once("lib/base.php");
 require_once("lib/getLoginMatch.php");
-require_once("lib/portalForms.php");
+require_once("lib/loginForms.php");
 
 global $config_vars;
 

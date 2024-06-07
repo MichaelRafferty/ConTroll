@@ -33,10 +33,13 @@ ALTER TABLE perinfoIdentities ADD FOREIGN KEY pi_perinfo_fk (perid) REFERENCES p
 
 ALTER TABLE perinfo ADD COLUMN managedBy int DEFAULT NULL;
 ALTER TABLE perinfoHistory ADD COLUMN managedBy int DEFAULT NULL;
+ALTER TABLE perinfo ADD COLUMN updatedBy int DEFAULT NULL;
 ALTER TABLE perinfo ADD FOREIGN KEY pi_managedBy_fk (managedBy) REFERENCES perinfo(id) ON UPDATE CASCADE;
+ALTER TABLE perinfo ADD FOREIGN KEY pi_updatedBy_fk (updatedBy) REFERENCES perinfo(id) ON UPDATE CASCADE;
 
 ALTER TABLE newperson ADD COLUMN managedBy int DEFAULT NULL;
 ALTER TABLE newperson ADD COLUMN managedByNew int DEFAULT NULL;
+ALTER TABLE newperson ADD COLUMN updatedBy int DEFAULT NULL;
 ALTER TABLE newperson ADD FOREIGN KEY np_managedBy_fk (managedBy) REFERENCES perinfo(id) ON UPDATE CASCADE;
 ALTER TABLE newperson ADD FOREIGN KEY np_managedByNew_fk (managedByNew) REFERENCES newperson(id) ON UPDATE CASCADE;
 
@@ -62,12 +65,19 @@ DELIMITER ;
 
 
 ALTER TABLE reg ADD COLUMN printable ENUM('N','Y') NOT NULL DEFAULT 'N';
-ALTER TABLE reg ADD COLUMN status ENUM('unpaid', 'plan', 'paid', 'cancelled', 'refunded', 'upgraded', 'rolled-over') DEFAULT 'unpaid';
-UPDATE reg ¨ status = 'paid' WHERE price = (paid + couponDiscount);
+ALTER TABLE reg ADD COLUMN status ENUM('unpaid', 'plan', 'paid', 'cancelled', 'refunded', 'transfered', 'upgraded', 'rolled-over') DEFAULT 'unpaid';
+
+UPDATE reg SET status = 'paid' WHERE price = (paid + couponDiscount);
+
+
 /* would like a reg chain
 ALTER TABLE reg ADD COLUMN
 
  */
 
+/*
+ * Membership rules table:
+ *
+ */
 
 INSERT INTO patchLog(id, name) values(ppx, 'Portal Changes');

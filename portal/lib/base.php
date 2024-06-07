@@ -56,7 +56,7 @@ echo <<<EOF
 EOF;
 }
 
-function portalPageInit($title, $css, $js) {
+function portalPageInit($page, $title, $css, $js) {
     global $db_ini;
 
     $con = get_conf('con');
@@ -128,12 +128,17 @@ function portalPageInit($title, $css, $js) {
                     <?php
                     } ?>
                         <div class="row">
-                            <div class='col-sm-12'><?php tab_bar('Home', $portal_conf);?></div>
+                            <div class='col-sm-12'><?php tab_bar($page, $portal_conf);?></div>
                         </div>
                     </div>
                 </div>
             </div>
             <?php
+        if ($portal_conf['open'] == 0) { ?>
+            <p class='text-primary'>The membership portal is currently closed. Please check the website to determine when it will open or try again tomorrow.</p>
+            <?php
+            exit;
+            }
     }
 }
 
@@ -143,6 +148,14 @@ function portalPageFoot() {
     if (array_key_exists('messageFwd', $_GET)) {
         $msg = $_GET['messageFwd'];
         $class = ' bg-success text-white';
+
+        if (array_key_exists('t', $_GET)) {
+            $type = $_GET['t'];
+            if ($type == 'w')
+                $class = ' bg-warning';
+            else if ($type == 'e')
+                $class = ' bg-danger text-white';
+        }
     }
     ?>
     <div class="container-fluid">
@@ -162,15 +175,15 @@ function portalPageFoot() {
 
 function tab_bar($page, $portal_conf) {
     $page_list = [
-            ['name' => 'addPerson.php', 'display' => 'Add New Person'],
-            ['name' => 'paymentPlan.php', 'display' => 'Manage Payment Plan'],
-            ['name' => 'membershipHistory.php', 'display' => 'Membership History'],
-             ['name' => 'editAccount.php', 'display' => 'Account Settings'],
-             ['name' => 'portalHelp.php" target="_blank', 'display' => 'Help'],
-            ];
+        ['name' => 'addUpgrade', 'display' => 'Add New'],
+        ['name' => 'paymentPlan', 'display' => 'Manage Payment Plan'],
+        ['name' => 'membershipHistory', 'display' => 'Membership History'],
+        ['name' => 'editAccount', 'display' => 'Account Settings'],
+        ['name' => 'portalHelp" target="_blank', 'display' => 'Help'],
+    ];
 
-    $active = $page == 'Home' ? 'active' : '';
-    $ariainfo = $page == 'Home' ? 'aria-current="page"' : '';
+    $active = $page == 'portal' ? 'active' : '';
+    $ariainfo = $page == 'portal' ? 'aria-current="page"' : '';
     ?>
 
     <nav class="navbar navbar-dark bg-primary navbar-expand-lg mb-2">
@@ -209,4 +222,40 @@ function tab_bar($page, $portal_conf) {
 
 function isWebRequest() {
     return isset($_SERVER['HTTP_USER_AGENT']);
+}
+
+// getPersonInfo - retrieve the data for the logged in person
+    // build info array about the account holder
+
+function getPersonInfo() {
+    $personType = $_SESSION['idType'];
+    $personId = $_SESSION['id'];
+    if ($personType == 'p') {
+        $personSQL = <<<EOS
+    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+        p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.contact_ok, p.share_reg_ok, p.managedBy,
+        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
+        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(pm.first_name, ''),' ', IFNULL(pm.middle_name, ''), ' ', IFNULL(pm.last_name, ''), ' ', IFNULL(pm.suffix, '')), '  *', ' ')) AS managedByName
+        FROM perinfo p
+        LEFT OUTER JOIN perinfo pm ON p.managedBy = pm.id
+        WHERE p.id = ?;
+    EOS;
+    } else {
+        $personSQL = <<<EOS
+    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+        'N' AS banned, p.createtime AS creation_date, 'Y' AS active, p.contact_ok, p.share_reg_ok, p.managedByNew, p.managedBy,
+        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
+        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(pm.first_name, ''),' ', IFNULL(pm.middle_name, ''), ' ', IFNULL(pm.last_name, ''), ' ', IFNULL(pm.suffix, '')), '  *', ' ')) AS managedByName
+        FROM newperson p
+        LEFT OUTER JOIN newperson pm ON p.managedByNew = pm.id
+        WHERE p.id = ?;
+    EOS;
+    }
+    $personR = dbSafeQuery($personSQL, 'i', array($personId));
+    if ($personR === false || $personR->num_rows == 0) {
+        return false;
+    }
+    $info = $personR->fetch_assoc();
+    $personR->free();
+    return $info;
 }
