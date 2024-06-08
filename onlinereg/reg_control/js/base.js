@@ -305,6 +305,7 @@ function show_message(message, type = 'success', div='result_message') {
         message_div.classList.add('bg-warning');
     }
     message_div.innerHTML = message;
+    message_div.scrollIntoView(false);
 }
 
 function showAlert(str) {
