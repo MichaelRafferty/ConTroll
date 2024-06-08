@@ -375,7 +375,6 @@ class Portal {
             $('#lname').addClass('need');
         } else {
             $('#lname').removeClass('need');
-
         }
 
         // address 1 is required, address 2 is optional
@@ -418,8 +417,10 @@ class Portal {
         }
 
         // don't continue to process if any are missing
-        if (!valid)
+        if (!valid) {
+            show_message("Please correct the items highlighted in red and validate again", "error");
             return false;
+        }
 
         // Check USPS for standardized address
         if (this.#uspsDiv != null && (person['country'] == 'USA')) {
