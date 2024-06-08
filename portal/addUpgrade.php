@@ -191,7 +191,9 @@ drawVerifyPersonInfo();
 ?>
     <div id="getNewMembershipDiv">
         <div class='row'>
-            <div class='col-sm-12'>New Membership Section</div>
+            <div class='col-sm-12'>
+                <h3>Step 3: Add new memberships</h3>
+            </div>
         </div>
 <?php
 drawGetNewMemberships();
@@ -203,7 +205,9 @@ drawGetNewMemberships();
 ?>
     <div id="cartDiv">
         <div class='row'>
-            <div class='col-sm-12'>Cart Section</div>
+            <div class='col-sm-12'>
+                <h3>Memberships:</h3>
+            </div>
         </div>
 <?php
 drawCart();

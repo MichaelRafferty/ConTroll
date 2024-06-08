@@ -42,7 +42,8 @@ function draw_editPersonModal() {
                 <div class='modal-body' stype='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
                         <form id='editPerson' class='form-floating' action='javascript:void(0);'>
-
+                            <input type='hidden' name='id' id='epPersonId'/>
+                            <input type='hidden' name='type' id='epPersonType'/>
 <?php
     drawEditPersonBlock($con, $useUSPS);
 ?>
@@ -70,8 +71,6 @@ function draw_editPersonModal() {
 // drawEditPersonBlock - just output the block to edit the person
 function drawEditPersonBlock($con, $useUSPS) {
 ?>
-        <input type='hidden' name='id' id='epPersonId'/>
-        <input type='hidden' name='type' id='epPersonType'/>
         <h3 class='text-primary' id='epHeader'>Personal Information for this new person</h3>
         <div class='row' style='width:100%;'>
             <div class='col-sm-12'>
@@ -276,10 +275,6 @@ function drawGetNewMemberships() {
 // drawCart - membership cart
 function drawCart() {
     ?>
-    <div class="row">
-        <div class="col-sm-12">
-            This is the draw cart function.
-        </div>
-    </div>
+    <div class="cart" id="cartDiv"></div>
     <?php
 }

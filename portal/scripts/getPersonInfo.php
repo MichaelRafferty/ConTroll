@@ -82,10 +82,11 @@ if ($personType == 'p') {
 if (array_key_exists('memberships', $_POST) && $_POST['memberships'] == 'Y') {
     $memberships = [];
     $mQ = <<<EOS
-SELECT r.id AS regId, m.*
+SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory
 FROM reg r
 JOIN memList m ON m.id = r.memId
-WHERE r.$rfield = ? AND r.conid IN (?, ?);
+WHERE r.$rfield = ? AND r.conid IN (?, ?)
+ORDER BY r.create_date;
 EOS;
     $mR = dbSafeQuery($mQ,'iii', array($person['id'], $conid, $conid + 1));
     if ($mR !== false) {

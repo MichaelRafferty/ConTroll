@@ -10,8 +10,7 @@ window.onload = function () {
 class Membership {
     // current person info
     #epHeader = null;
-    #memberships = null;
-    #personInfo = null;
+    #personInfo = [];
     #epHeaderDiv = null;
     #fnameField = null;
     #mnameField = null;
@@ -46,12 +45,20 @@ class Membership {
     #memberAgeStatus = null;
     #memberAgeError = false;
 
+    // membership items
+    #memberships = null;
+
+    // cart items
+    #cartDiv = null;
+    #totalDue = 0;
+    #countMemberships = 0;
+    #unpaidMemberships = 0;
+
     // flow items
     #auHeader = null
     #ageBracketDiv = null;
     #verifyPersonDiv = null;
     #getNewMembershipDiv = null;
-    #cartDiv = null;
     #currentStep = 1;
     #step3submitDiv = null;
 
@@ -70,7 +77,6 @@ class Membership {
         this.#ageBracketDiv.hidden = false;
         this.#verifyPersonDiv.hidden = true;
         this.#getNewMembershipDiv.hidden = true;
-        this.#cartDiv.hidden = false;
 
         this.#epHeader = document.getElementById("epHeader");
         this.#fnameField = document.getElementById("fname");
@@ -143,6 +149,9 @@ class Membership {
     getPersonInfoSuccess(data, ageButtons) {
         // ok, it's legal to edit this person, now populate the fields
         this.#personInfo = data['person'];
+        if (data['memberships']) {
+            this.#memberships = data['memberships'];
+        }
 
         // now fill in the fields
         this.#fnameField.value = this.#personInfo['first_name'];
@@ -169,6 +178,8 @@ class Membership {
 
         if (ageButtons)
             this.buildAgeButtons();
+
+        this.updateCart();
     }
 
     // age functions
@@ -244,11 +255,22 @@ class Membership {
     verifyAddress() {
         var valid = true;
         var person = URLparamsToArray($('#addUpgradeForm').serialize());
-        var keys = Object.keys(person);
-        for (var row in keys) {
-            var key = keys[row];
-            this.#personInfo[key] = person[key];
-        }
+        this.#personInfo.last_name = person.lname.trim();
+        this.#personInfo.middle_name = person.mname.trim();
+        this.#personInfo.first_name = person.fname.trim();
+        this.#personInfo.suffix = person.suffix.trim();
+        this.#personInfo.email_addr = person.email1.trim();
+        this.#personInfo.phone = person.phone.trim();
+        this.#personInfo.badge_name = person.badgename.trim();
+        this.#personInfo.legalName = person.legalname.trim();
+        this.#personInfo.address = person.addr.trim();
+        this.#personInfo.addr_2 = person.addr2.trim();
+        this.#personInfo.city = person.city.trim();
+        this.#personInfo.state = person.state.trim();
+        this.#personInfo.zip = person.zip.trim();
+        this.#personInfo.country = person.country.trim();
+        this.#personInfo.share_reg_ok = person.hasOwnProperty('share') ? 'Y' : 'N';
+        this.#personInfo.contact_ok =  person.hasOwnProperty('scontact') ? 'Y' : 'N';
 
         // validation
         // emails must not be blank and must match
@@ -414,5 +436,56 @@ class Membership {
     redoAddress() {
         this.#uspsDiv.innerHTML = '';
         this.editPersonSubmit(false);
+    }
+
+    // cart functions
+    // updateCart - redraw the items in the cart
+    updateCart() {
+        this.#totalDue = 0;
+        this.#countMemberships = 0;
+        this.#unpaidMemberships = 0;
+        var statusCol;
+        var html = ''
+        for (var row in this.#memberships) {
+            this.#countMemberships++;
+            var membership = this.#memberships[row];
+            var amount_due = membership.price - (membership.paid + membership.couponDiscount);
+            this.#totalDue += amount_due;
+
+            if (membership.status == 'unpaid')
+                statusCol = Number(amount_due).toFixed(2)
+            else
+                statusCol = membership.status;
+
+            html += `
+    <div class="row">
+        <div class="col-sm-2">` + membership.create_date + `</div>
+        <div class="col-sm-1">` + statusCol + `</div>
+        <div class="col-sm-1">` + membership.price + `</div>
+        <div class="col-sm-1">` + membership.memType + `</div>
+        <div class="col-sm-1">` + membership.memCategory + `</div>
+        <div class="col-sm-4">` + (membership.conid != config.conid ? membership.conid + ' ' : '') + membership.label + `</div>
+    </div>
+`
+        }
+        if (this.#totalDue > 0) {
+            html += `
+    <div class='row'>
+        <div class='col-sm-12 ms-0 me-0 align-center'>
+            <hr color="black" style='height:3px;width:95%;margin:auto;margin-top:10px;margin-bottom:2px;'/>
+        </div>
+        <div class='col-sm-12 ms-0 me-0 align-center'>
+            <hr color="black" style='height:3px;width:95%;margin:auto;margin-top:2px;margin-bottom:20px;'/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"><b>Total Due:</b></div>
+        <div class="col-sm-1"><b>$` + Number(this.#totalDue).toFixed(2)+ `</b></div>
+    </div>`
+        }
+        if (this.#countMemberships == 0) {
+            html = "No memberships found";
+        }
+        this.#cartDiv.innerHTML = html;
     }
 }

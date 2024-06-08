@@ -215,7 +215,7 @@ WITH pn AS (
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
     FROM newperson
 ), mems AS (
-    SELECT t.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, m.label, m.memType, m.memCategory,
+    SELECT t.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory,
         CASE 
             WHEN pn.memberId IS NOT NULL THEN pn.managedBy
             WHEN nn.memberId IS NOT NULL THEN nn.managedBy
@@ -248,7 +248,7 @@ WITH pn AS (
     LEFT OUTER JOIN nn ON nn.memberId = r.newperid
     WHERE t.perid = ? AND t.conid = ?
     UNION
-    SELECT t.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, m.label, m.memType, m.memCategory, nn.managedBy, nn.managedByNew, nn.badge_name, nn.fullname, nn.memberId    
+    SELECT t.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory, nn.managedBy, nn.managedByNew, nn.badge_name, nn.fullname, nn.memberId    
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
     JOIN memLabel m ON m.id = r.memId
@@ -262,7 +262,7 @@ EOS;
     $membershipsR = dbSafeQuery($membershipsQ, 'iiiiii', array($personId, $personId, $personId, $conid,$personId, $conid));
 } else {
     $membershipsQ = <<<EOS
-SELECT t.id, r.create_date, r.memId, r.status, r.price, r.paid, m.label, m.memType, m.memCategory, p.managedBy, p.managedByNew,
+SELECT t.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory, p.managedBy, p.managedByNew,
     CASE 
         WHEN p.badge_name IS NULL OR p.badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.last_name, '')) , '  *', ' ')) 
         ELSE p.badge_name
