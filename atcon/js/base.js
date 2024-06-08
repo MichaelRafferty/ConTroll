@@ -119,6 +119,7 @@ function show_message(message, type) {
         message_div.classList.add('bg-warning');
     }
     message_div.innerHTML = message;
+    message_div.scrollIntoView(false);
 }
 function clear_message() {
     show_message('', '');
