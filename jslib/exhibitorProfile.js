@@ -123,6 +123,10 @@ class ExhibitorProfile {
             var fieldName = ExhibitorProfile.#fieldList[fieldNum];
             var field = document.getElementById(fieldName);
             minLength = 2;
+            if (field == null) {
+                console.log(fieldName + ' not found');
+                continue;
+            }
             switch (fieldName) {
                 case 'exhibitorEmail':
                 case 'contactEmail':
