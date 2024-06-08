@@ -1,4 +1,4 @@
-// Main portal javascript, also requires base.js, vendor_profile.js,
+// Main portal javascript, also requires base.js
 
 var portal = null;
 
@@ -256,6 +256,7 @@ class Portal {
         var data = {
             getId: id,
             getType: type,
+            memberships: 'N'
         }
         var script = 'scripts/getPersonInfo.php';
         $.ajax({
@@ -558,13 +559,13 @@ class Portal {
     }
 
     addMembership(id, type) {
-        var addForm = '<form id="AddUgrade" action="addUpgrade.php" method="POST">\
+        var addForm = '<form id="AddUpgrade" action="addUpgrade.php" method="POST">\
             <input type="hidden" name="upgradeId" value="' + id + '">\
             <input type="hidden" name="upgradeType" value="' + type + '">\
             <input type="hidden" name="action" value="upgrade">\
             </form>';
         $('body').append(addForm);
-        $('#AddUgrade').submit();
-        $('#AddUgrade').remove();
+        $('#AddUpgrade').submit();
+        $('#AddUpgrade').remove();
     }
 }

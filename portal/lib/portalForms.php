@@ -9,13 +9,18 @@ function drawVerifyPersonInfo() {
         $useUSPS = true;
     $con = get_conf('con');
 ?>
-        <div class="row">
-            <div class="col-sm-12">
-                This is the verify person function.
-            </div>
-        </div>
 <?php
     drawEditPersonBlock($con, $useUSPS);
+?>
+    <div class="row mt-3">
+        <div class='col-sm-auto'>
+            <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(1);'>Return to step 1: Age Verification</button>
+        </div>
+        <div class="col-sm-auto">
+            <button class="btn btn-sm btn-primary" onclick="membership.verifyAddress();">Verify Address and move to next step</button>
+        </div>
+    </div>
+<?php
 }
 // draw_editPerson - draw the verify/update form for the Person
 function draw_editPersonModal() {
@@ -67,7 +72,7 @@ function drawEditPersonBlock($con, $useUSPS) {
 ?>
         <input type='hidden' name='id' id='epPersonId'/>
         <input type='hidden' name='type' id='epPersonType'/>
-        <h3 class='text-primary' id='epHeader'>Editing XXX</h3>
+        <h3 class='text-primary' id='epHeader'>Personal Information for this new person</h3>
         <div class='row' style='width:100%;'>
             <div class='col-sm-12'>
                 <p class='text-body'>Note: Please provide your legal name that will match a valid form of ID. Your legal name will not
@@ -75,62 +80,62 @@ function drawEditPersonBlock($con, $useUSPS) {
                 <p class="text-body">Items marked with <span class="text-danger">&bigstar;</span> are required fields.</p>
             </div>
         </div>
-        <?php if ($useUSPS) echo '<div class="row"><div class="col-sm-8"><div class="container-fluid">' . PHP_EOL; ?>
+        <?php if ($useUSPS) echo '<div class="row"><div class="col-sm-8 p-0 m-0"><div class="container-fluid">' . PHP_EOL; ?>
         <div class="row">
-            <div class="col-sm-auto ms-0 me-2 p-0">
+            <div class="col-sm-auto">
                 <label for="fname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
                                 class='text-danger'>&bigstar;</span>First Name</span></label><br/>
                 <input class="form-control-sm" type="text" name="fname" id='fname' size="22" maxlength="32" tabindex="2"/>
             </div>
-            <div class="col-sm-auto ms-0 me-2 p-0">
+            <div class="col-sm-auto">
                 <label for="mname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
                 <input class="form-control-sm" type="text" name="mname" id='mname' size="8" maxlength="32" tabindex="4"/>
             </div>
-            <div class="col-sm-auto ms-0 me-2 p-0">
+            <div class="col-sm-auto">
                 <label for="lname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Last Name</span></label><br/>
                 <input class="form-control-sm" type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="6"/>
             </div>
-            <div class="col-sm-auto ms-0 me-0 p-0">
+            <div class="col-sm-auto">
                 <label for="suffix" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
                 <input class="form-control-sm" type="text" name="suffix" id='suffix' size="4" maxlength="4" tabindex="8"/>
             </div>
         </div>
         <div class='row'>
-            <div class='col-sm-12 ms-0 me-0 p-0'>
+            <div class='col-sm-12'>
                 <label for='legalname' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
                 <input class='form-control-sm' type='text' name='legalname' id='legalname' size=64 maxlength='64'
                        placeholder='Defaults to First Name Middle Name Last Name, Suffix' tabindex='10'/>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-12 ms-0 me-0 p-0">
+            <div class="col-sm-12">
                 <label for="addr" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
                                 class='text-danger'>&bigstar;</span>Address</span></label><br/>
                 <input class="form-control-sm" type="text" name='addr' id='addr' size=64 maxlength="64" tabindex='12'/>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-12 ms-0 me-0 p-0">
+            <div class="col-sm-12">
                 <label for="addr2" class="form-label-sm"><span class="text-dark"
                                                                style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
                 <input class="form-control-sm" type="text" name='addr2' id='addr2' size=64 maxlength="64" tabindex='14'/>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-auto ms-0 me-2 p-0">
+            <div class="col-sm-auto">
                 <label for="city" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
                                 class='text-danger'>&bigstar;</span>City</span></label><br/>
                 <input class="form-control-sm" type="text" name="city" id='city' size="22" maxlength="32" tabindex="16"/>
             </div>
-            <div class="col-sm-auto ms-0 me-2 p-0">
+            <div class="col-sm-auto">
                 <label for="state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>State: US/CAN 2 letter abv.</span></label><br/>
                 <input class="form-control-sm" type="text" name="state" id='state' size="16" maxlength="16" tabindex="18"/>
             </div>
-            <div class="col-sm-auto ms-0 me-2 p-0">
+            <div class="col-sm-auto">
                 <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Zip</span></label><br/>
                 <input class="form-control-sm" type="text" name="zip" id='zip' size="10" maxlength="10" tabindex="20"/>
             </div>
-            <div class="col-sm-auto ms-0 me-0 p-0">
+            <div class="col-sm-auto">
                 <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
                 <select name='country' tabindex='22' id='country' onchange="portal.countryChange();">
                     <?php
@@ -157,25 +162,23 @@ function drawEditPersonBlock($con, $useUSPS) {
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-auto ms-0 me-2 p-0">
+            <div class="col-sm-auto">
                 <label for="email1" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
                                 class='text-danger'>&bigstar;</span>Email</span></label><br/>
                 <input class="form-control-sm" type="email" name="email1" id='email1' size="35" maxlength="254" tabindex="24"/>
             </div>
-            <div class="col-sm-auto ms-0 me-0 p-0">
+            <div class="col-sm-auto">
                 <label for="email2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
                                 class='text-danger'>&bigstar;</span>Confirm Email</span></label><br/>
                 <input class="form-control-sm" type="email" name="email2" id='email2' size="35" maxlength="254" tabindex="26"/>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-6 ms-0 me-0 p-0">
+            <div class="col-sm-auto">
                 <label for="phone" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
                 <input class="form-control-sm" type="text" name="phone" id='phone' size="20" maxlength="15" tabindex="28"/>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-auto ms-0 me-2 p-0">
+            <div class="col-sm-auto">
                 <label for="badgename" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
                 <input class="form-control-sm" type="text" name="badgename" id='badgename' size="35" maxlength="32" placeholder='defaults to first and last name'
                        tabindex="30"/>
@@ -236,11 +239,16 @@ function drawEditPersonBlock($con, $useUSPS) {
 }
 
 // drawGetAgeBracked - age bracket selection for filtering memberships
-function drawGetAgeBracket() {
+function drawGetAgeBracket($updateName, $condata) {
+    $readableStartDate = date_format(date_create($condata['startdate']), "l M j, Y");
     ?>
-    <div class="row">
+    <div class="row mt-2">
         <div class="col-sm-12">
-            This is the age bracket function.
+            <h4 class='text-primary'>Please verify the age of <?php echo $updateName; ?> as of <?php echo $readableStartDate;?></h4>
+        </div>
+        <div class="row mt-1" id="ageButtons"></div>
+        <div class="row mt-2">
+            <div class="col-sm-12">Please click on the proper age bracket above to continue to the next step.</div>
         </div>
     </div>
     <?php
@@ -252,6 +260,14 @@ function drawGetNewMemberships() {
     <div class="row">
         <div class="col-sm-12">
             This is the membership selection function.
+        </div>
+    </div>
+    <div class='row mt-3' id="step3submit">
+        <div class='col-sm-auto'>
+            <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2);'>Return to step 2: Personal Information Verification</button>
+        </div>
+        <div class='col-sm-auto'>
+            <button class='btn btn-sm btn-primary' onclick='membership.reviewCart();'>Move to the next step to review the cart.</button>
         </div>
     </div>
     <?php

@@ -10,6 +10,9 @@ function clear_message(div='result_message') {
 //  warn: (black on yellow-orange) bg-warning
 //  success: (white on green) bg-success
 function show_message(message, type = 'success', div='result_message') {
+    if (div == null)
+        div = 'result_message';
+
     var message_div = document.getElementById(div);
 
     if (message_div.classList.contains('bg-danger')) {

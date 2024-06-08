@@ -72,4 +72,27 @@ if ($personId != $person['managedBy'] && $personId != $person['managedByNew'] &&
 
 // ok we have permission, return the person record
 $response['person'] = $person;
+
+// now if asked for memberships, get them as well
+if ($personType == 'p') {
+    $rfield = 'perid';
+} else {
+    $rfield = 'newperid';
+}
+if (array_key_exists('memberships', $_POST) && $_POST['memberships'] == 'Y') {
+    $memberships = [];
+    $mQ = <<<EOS
+SELECT r.id AS regId, m.*
+FROM reg r
+JOIN memList m ON m.id = r.memId
+WHERE r.$rfield = ? AND r.conid IN (?, ?);
+EOS;
+    $mR = dbSafeQuery($mQ,'iii', array($person['id'], $conid, $conid + 1));
+    if ($mR !== false) {
+        while ($row = $mR->fetch_assoc()) {
+            $memberships[] = $row;
+        }
+    }
+    $response['memberships'] = $memberships;
+}
 ajaxSuccess($response);
