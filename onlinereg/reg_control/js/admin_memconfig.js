@@ -262,6 +262,9 @@ class memsetup {
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
                 { field: "memcatkey", visible: false },
                 { title: "Category", field: "memCategory", width: 150, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "unique", "required" ] },
+                { title: "Only One", field: "onlyOne", headerWordWrap: true, headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required" },
+                { title: "Stand Alone", field: "standAlone", headerWordWrap: true, headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], }, width: 75, validator: "required" },
+                { title: "Variable Price", field: "variablePrice", headerWordWrap: true, headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], }, width: 85, validator: "required" },
                 { title: "Badge Label", field: "badgeLabel", width: 150, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "required" ] },
                 { title: "Active", field: "active", headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], }, validator: "required" },
                 { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
@@ -568,7 +571,7 @@ class memsetup {
     addrowCat() {
         var _this = this;
 
-        this.#categorytable.addRow({memCategory: 'new-row', badgeLabel: 'X', active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
+        this.#categorytable.addRow({memCategory: 'new-row', onlyOne: 'Y', standAlone: 'N', variablePrice: 'N', badgeLabel: 'X', active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
             row.getTable().scrollToRow(row);
             _this.checkCatUndoRedo();
         });
