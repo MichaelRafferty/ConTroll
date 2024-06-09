@@ -54,7 +54,7 @@ EOS;
 
 if ($type == 'memCat' || $type == 'all') {
     $catSQL = <<<EOS
-SELECT m.memCategory, m.badgeLabel, m.active, m.sortorder, count(l.id) uses, m.memCategory AS memcatkey
+SELECT m.memCategory, m.badgeLabel, m.onlyOne, m.standAlone, m.variablePrice, m.active, m.sortorder, count(l.id) uses, m.memCategory AS memcatkey
 FROM memCategories m
 LEFT OUTER JOIN memList l ON (l.memCategory = m.memCategory)
 GROUP BY m.memCategory, m.active, m.sortorder

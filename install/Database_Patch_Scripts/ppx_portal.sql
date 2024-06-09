@@ -69,15 +69,21 @@ ALTER TABLE reg ADD COLUMN status ENUM('unpaid', 'plan', 'paid', 'cancelled', 'r
 
 UPDATE reg SET status = 'paid' WHERE price = (paid + couponDiscount);
 
-
 /* would like a reg chain
 ALTER TABLE reg ADD COLUMN
 
  */
 
 /*
- * Membership rules table:
+ * Membership rules
+ *   memCategory Items for default rules
  *
+ *  memRules table sets
  */
+
+ALTER TABLE memCategories ADD COLUMN onlyOne enum('Y', 'N') NOT NULL DEFAULT 'Y' AFTER memCategory;
+ALTER TABLE memCategories ADD COLUMN standAlone enum('Y', 'N') NOT NULL DEFAULT 'N' AFTER onlyOne;
+ALTER TABLE memCategories ADD COLUMN variablePrice enum('Y', 'N') NOT NULL DEFAULT 'N' AFTER standAlone;
+
 
 INSERT INTO patchLog(id, name) values(ppx, 'Portal Changes');

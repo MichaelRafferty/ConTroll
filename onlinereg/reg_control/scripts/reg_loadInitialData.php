@@ -125,7 +125,7 @@ $response['memTypes'] = $typearray;
 
 // memCategories
 $memCategorySQL = <<<EOS
-SELECT memCategory
+SELECT memCategory, onlyOne, standAlone, variablePrice
 FROM memCategories
 WHERE active = 'Y'
 ORDER BY sortorder;
@@ -134,7 +134,7 @@ EOS;
 $catarray = array();
 $r = dbQuery($memCategorySQL);
 while ($l = $r->fetch_assoc()) {
-    $catarray[] = $l['memCategory'];
+    $catarray[] = $l;
 }
 mysqli_free_result($r);
 $response['memCategories'] = $catarray;
