@@ -47,9 +47,11 @@ class Membership {
 
     // membership items
     #memberships = null;
+    #membershipButtonsDiv = null;
 
     // cart items
     #cartDiv = null;
+    #cartContentsDiv = null;
     #totalDue = 0;
     #countMemberships = 0;
     #unpaidMemberships = 0;
@@ -68,10 +70,12 @@ class Membership {
         this.#auHeader = document.getElementById("auHeader");
         // set up div elements
         this.#ageButtonsDiv = document.getElementById("ageButtons");
+        this.#membershipButtonsDiv = document.getElementById("membershipButtons");
         this.#ageBracketDiv = document.getElementById("ageBracketDiv");
         this.#verifyPersonDiv = document.getElementById("verifyPersonDiv");
         this.#getNewMembershipDiv = document.getElementById("getNewMembershipDiv");
         this.#cartDiv = document.getElementById("cartDiv");
+        this.#cartContentsDiv = document.getElementById("cartContentsDiv");
         this.#step3submitDiv = document.getElementById("step3submit");
 
         this.#ageBracketDiv.hidden = false;
@@ -106,7 +110,6 @@ class Membership {
         } else {
             this.buildAgeButtons();
         }
-
     }
 
 // membership add/update functions
@@ -180,6 +183,9 @@ class Membership {
             this.buildAgeButtons();
 
         this.updateCart();
+// temp for testing
+        this.#currentAge = 'adult';
+        this.gotoStep(3);
     }
 
     // age functions
@@ -214,11 +220,33 @@ class Membership {
         this.#ageButtonsDiv.innerHTML = html;
     }
 
+    buildMembershipButtons() {
+        // now loop over age list and build each button
+        var html = '';
+        for (var row in memList) {
+            var mem = memList[row];
+            var cartrow = this.findInCart(mem.id);
+            if (cartrow == null || (mem.memCategory.toLowerCase == 'addon' || mem.memCategory.toLowerCase() == 'add-on' )) {
+                if (mem.memAge == 'all' || mem.memAge == this.#currentAge) {
+                    var color = 'btn-secondary';
+                    if (mem.memCategory == 'standard' || mem.memCategory == 'yearahead') {
+                        color = 'btn-primary';
+                    }
+                    html += '<div class="col-sm-auto"><button id="memBtn-' + mem.id + '" class="btn btn-sm ' + color + '" onclick="membership.membershipAdd(' + "'" + mem.id + "'" + ')">' +
+                        (mem.conid != config['conid'] ? mem.conid + ' ' : '') + mem.label + '</button></div>' + "\n";
+                }
+            }
+        }
+        this.#membershipButtonsDiv.innerHTML = html;
+    }
+
     // goto step: handle going directly to a step:
     gotoStep(step) {
         this.#ageBracketDiv.hidden = step != 1;
         this.#verifyPersonDiv.hidden = step != 2;
         this.#getNewMembershipDiv.hidden = step != 3;
+        if (step == 3)
+            this.buildMembershipButtons();
 
     }
     // ageSelect - redo all the age buttons on selecting one of them, then move on to the next page
@@ -387,10 +415,11 @@ class Membership {
                 html += "<p>USPS this.#uspsAddress Validation Failed: " + data['error'] + "</p>";
             } else {
                 // ok, we got a valid uspsAddress, if it doesn't match, show the block
-                if (this.#personInfo['addr'] == this.#uspsAddress['address'] && this.#personInfo['addr2'] == this.#uspsAddress['address2'] &&
+                if ((this.#personInfo['addr'] == this.#uspsAddress['address'] || this.#personInfo['address'] == this.#uspsAddress['address']) &&
+                    (this.#personInfo['addr2'] == this.#uspsAddress['address2'] || this.#personInfo['addr_2'] == this.#uspsAddress['address2']) &&
                     this.#personInfo['city'] == this.#uspsAddress['city'] && this.#personInfo['state'] == this.#uspsAddress['state'] &&
                     this.#personInfo['zip'] == this.#uspsAddress['zip']) {
-                    membership.useMyAddress();
+                    this.useMyAddress();
                     return;
                 }
 
@@ -449,23 +478,23 @@ class Membership {
         var html = ''
         for (var row in this.#memberships) {
             this.#countMemberships++;
-            var membership = this.#memberships[row];
-            var amount_due = membership.price - (membership.paid + membership.couponDiscount);
+            var membershipRec = this.#memberships[row];
+            var amount_due = membershipRec.price - (membershipRec.paid + membershipRec.couponDiscount);
             this.#totalDue += amount_due;
 
-            if (membership.status == 'unpaid')
+            if (membershipRec.status == 'unpaid')
                 statusCol = Number(amount_due).toFixed(2)
             else
-                statusCol = membership.status;
+                statusCol = membershipRec.status;
 
             html += `
     <div class="row">
-        <div class="col-sm-2">` + membership.create_date + `</div>
+        <div class="col-sm-2">` + membershipRec.create_date + `</div>
         <div class="col-sm-1">` + statusCol + `</div>
-        <div class="col-sm-1">` + membership.price + `</div>
-        <div class="col-sm-1">` + membership.memType + `</div>
-        <div class="col-sm-1">` + membership.memCategory + `</div>
-        <div class="col-sm-4">` + (membership.conid != config.conid ? membership.conid + ' ' : '') + membership.label + `</div>
+        <div class="col-sm-1">` + membershipRec.price + `</div>
+        <div class="col-sm-1">` + membershipRec.memType + `</div>
+        <div class="col-sm-1">` + membershipRec.memCategory + `</div>
+        <div class="col-sm-4">` + (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label + `</div>
     </div>
 `
         }
@@ -487,6 +516,44 @@ class Membership {
         if (this.#countMemberships == 0) {
             html = "No memberships found";
         }
-        this.#cartDiv.innerHTML = html;
+        this.#cartContentsDiv.innerHTML = html;
+    }
+
+    // add to cart
+    membershipAdd(id) {
+        var memrow = findMembership(id);
+        if (memrow == null)
+            return;
+
+        var now = new Date();
+        var newMembership = [];
+        newMembership.id = -1;
+        newMembership.create_date = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2) + ' ' +
+        ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
+        newMembership.memId = id;
+        newMembership.conid = memrow.conid;
+        newMembership.status = 'in-cart';
+        newMembership.price = memrow.price;
+        newMembership.paid = 0;
+        newMembership.couponDiscount = 0;
+        newMembership.label = memrow.label;
+        newMembership.memCategory = memrow.memCategory;
+        newMembership.memType = memrow.memType;
+        this.#memberships.push(newMembership);
+        this.updateCart();
+        this.buildMembershipButtons();
+    }
+
+    findInCart(memId) {
+        if (!this.#memberships)
+            return null; // no list to search
+
+        for (var row in this.#memberships) {
+            var cartrow = this.#memberships[row];
+            if (memId != cartrow.memId)
+                continue;
+            return cartrow;  // return matching entry
+        }
+        return null; // not found
     }
 }

@@ -256,12 +256,16 @@ function drawGetAgeBracket($updateName, $condata) {
 // drawGetNewMemberships - membership selection
 function drawGetNewMemberships() {
     ?>
-    <div class="row">
+    <div class='row mt-1' id='membershipButtons'></div>
+    <div class="row mt-2">
         <div class="col-sm-12">
-            This is the membership selection function.
+            Select from the buttons above to add memberships.
         </div>
     </div>
     <div class='row mt-3' id="step3submit">
+        <div class='col-sm-auto'>
+            <button class='btn btn-sm btn-warning' onclick='membership.gotoStep(3);'>Retry step 3</button>
+        </div>
         <div class='col-sm-auto'>
             <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2);'>Return to step 2: Personal Information Verification</button>
         </div>
@@ -275,6 +279,7 @@ function drawGetNewMemberships() {
 // drawCart - membership cart
 function drawCart() {
     ?>
-    <div class="cart" id="cartDiv"></div>
+    </div>
+    <div class="cart" id="cartContentsDiv"></div>
     <?php
 }

@@ -24,13 +24,18 @@ $portal_conf = get_conf('portal');
 
 $response['conid'] = $conid;
 
+// take either database names or edit form names
 if (array_key_exists('addr', $_POST))
     $address = $_POST['addr'];
+else if (array_key_exists('address', $_POST))
+    $address = $_POST['address'];
 else
     $address = null;
 
 if (array_key_exists('addr2', $_POST))
     $address2 = $_POST['addr2'];
+else if (array_key_exists('addr_2', $_POST))
+    $address2 = $_POST['addr_2'];
 else
     $address2 = null;
 

@@ -23,6 +23,7 @@ if (array_key_exists('id', $_SESSION) && array_key_exists('idType', $_SESSION)) 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['debug'] = $debug['portal'];
+$config_vars['conid'] = $conid;
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['regadminemail'] = $con['regadminemail'];
 $cdn = getTabulatorIncludes();
@@ -115,7 +116,8 @@ $memList = array();
 $QQ = <<<EOS
 SELECT *
 FROM memList 
-WHERE conid IN (?, ?) AND startdate <= NOW() AND enddate > NOW() AND online = 'Y'
+WHERE ((conid = ? AND memCategory != 'yearahead') OR (conid = ? AND memCategory = 'yearahead'))
+  AND startdate <= NOW() AND enddate > NOW() AND online = 'Y'
 ORDER BY sort_order;
 EOS;
 $QR = dbSafeQuery($QQ, 'ii', array($conid, $conid + 1));

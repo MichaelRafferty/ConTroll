@@ -77,3 +77,16 @@ function URLparamsToArray(urlargs, doTrim = false) {
     }
     return result;
 }
+
+function findMembership(id) {
+    if (!memList)
+        return null; // no list to search
+
+    for (var row in memList) {
+        var memrow = memList[row];
+        if (id != memrow.id)
+            continue;
+        return memrow;  // return matching entry
+    }
+    return null; // not found
+}
