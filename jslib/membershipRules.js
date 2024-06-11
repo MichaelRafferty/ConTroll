@@ -54,7 +54,7 @@ class MembershipRules {
                 this.#numOneDay++;
         }
 
-        console.log("setup for testing " + age);
+        //console.log("setup for testing " + age);
     }
 
     findInCart(memId, mlist) {
@@ -137,11 +137,11 @@ class MembershipRules {
     // test if the mem entry meets the rule (all steps must pass)
     testMembershipRule(rule,  mem) {
         var steps = rule.ruleset;
-        console.log("testing rule " + rule.name);
+        //console.log("testing rule " + rule.name);
         for (var row in steps) {
             // must pass all steps
             var step = steps[row];
-            console.log('step ' + step.step + ', type=' + step.ruleType);
+            //console.log('step ' + step.step + ', type=' + step.ruleType);
 
             if (!this.testMembershipRuleStep(step, mem))
                 return false;
@@ -162,10 +162,10 @@ class MembershipRules {
             mlist = this.#memberships;
         }
 
-        this.#allTypes = array();
-        this.#allCats = array();
-        this.#allages = array();
-        this.#allmems = array();
+        this.#allTypes = [];
+        this.#allCats = [];
+        this.#allAges = [];
+        this.#allMems = [];
         if (step.ruleType == 'needAll' || step.ruleType == 'notall') {
             // set up the check matrix for 'All' rules
             if (step.typeList != null) {
@@ -182,13 +182,13 @@ class MembershipRules {
 
             if (step.ageList != null) {
                 for (var row in step.ageListArray) {
-                    this.#allages[ageListArray[row]] = false;
+                    this.#allAges[ageListArray[row]] = false;
                 }
             }
 
             if (step.memList != null) {
                 for (var row in step.memListArray) {
-                    this.#allmems[memListArray[row]] = false;
+                    this.#allMems[memListArray[row]] = false;
                 }
             }
         }
