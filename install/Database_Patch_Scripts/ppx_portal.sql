@@ -81,6 +81,34 @@ ALTER TABLE reg ADD COLUMN
  *  memRules table sets
  */
 
+CREATE TABLE memRules (
+    name varchar(16) NOT NULL,
+    optionName varchar(64) NOT NULL,
+    description text DEFAULT NULL,
+    typeList varchar(1024) DEFAULT NULL,
+    catList varchar(1024) DEFAULT NULL,
+    ageList varchar(1024) DEFAULT NULL,
+    memList varchar(1024) DEFAULT NULL,
+    PRIMARY KEY (name)
+);
+
+CREATE TABLE memRuleItems
+(
+    name     varchar(16) NOT NULL,
+    step     int NOT NULL,
+    ruleType enum ('needAny', 'needAll', 'notAny', 'notAll', 'limitAge') NOT NULL,
+    applyTo  enum ('person','all') NOT NULL DEFAULT 'person',
+    typeList varchar(1024) DEFAULT NULL,
+    catList  varchar(1024) DEFAULT NULL,
+    ageList  varchar(1024) DEFAULT NULL,
+    memList  varchar(1024) DEFAULT NULL,
+    PRIMARY KEY (name, step)
+);
+
+
+ALTER TABLE memRuleItems ADD CONSTRAINT mri_rule_fk FOREIGN KEY (name) REFERENCES memRules(name) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
 ALTER TABLE memCategories ADD COLUMN onlyOne enum('Y', 'N') NOT NULL DEFAULT 'Y' AFTER memCategory;
 ALTER TABLE memCategories ADD COLUMN standAlone enum('Y', 'N') NOT NULL DEFAULT 'N' AFTER onlyOne;
 ALTER TABLE memCategories ADD COLUMN variablePrice enum('Y', 'N') NOT NULL DEFAULT 'N' AFTER standAlone;

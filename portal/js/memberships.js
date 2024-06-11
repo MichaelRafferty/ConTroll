@@ -39,14 +39,15 @@ class Membership {
 
     // age items
     #ageButtonsDiv = null;
-    #currentAge = null;
-    #memberAge = null;
+    #currentAge = null; // age selected but set in a membership item in the 'cart'
+    #memberAge = null; // age in a membership item in the cart
     #memberAgeLabel = null;
     #memberAgeStatus = null;
     #memberAgeError = false;
 
     // membership items
     #memberships = null;
+    #allMemberships = null;
     #membershipButtonsDiv = null;
 
     // cart items
@@ -66,6 +67,7 @@ class Membership {
 
     constructor() {
         this.#memberships = [];
+        this.#allMemberships = [];
 
         this.#auHeader = document.getElementById("auHeader");
         // set up div elements
@@ -106,15 +108,15 @@ class Membership {
         if (config['action'] != 'new') {
             this.#addUpdateType = config['upgradeType'];
             this.#addUpdateId = config['upgradeId'];
-            this.getPersonInfo(this.#addUpdateId, this.#addUpdateType, true);
+            this.getPersonInfo(this.#addUpdateId, this.#addUpdateType, true, false);
         } else {
-            this.buildAgeButtons();
+            this.getPersonInfo(config.personId, config.personType, true, true);
         }
     }
 
 // membership add/update functions
     // getPersonInfo
-    getPersonInfo(id, type, ageButtons) {
+    getPersonInfo(id, type, ageButtons, newFlag) {
         if (id == null) {
             return;
         }
@@ -122,7 +124,7 @@ class Membership {
         var data = {
             getId: id,
             getType: type,
-            memberships: 'Y',
+            memberships: newFlag ? 'A' : 'Y',
             ageButtons: ageButtons,
         }
         var script = 'scripts/getPersonInfo.php';
@@ -138,7 +140,7 @@ class Membership {
                 } else {
                     if (config['debug'] & 1)
                         console.log(data);
-                    membership.getPersonInfoSuccess(data, ageButtons);
+                    membership.getPersonInfoSuccess(data, ageButtons, newFlag);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -149,19 +151,39 @@ class Membership {
     }
 
     // got the person, update the modal contents
-    getPersonInfoSuccess(data, ageButtons) {
+    getPersonInfoSuccess(data, ageButtons, newFlag) {
         // ok, it's legal to edit this person, now populate the fields
         this.#personInfo = data['person'];
         if (data['memberships']) {
             this.#memberships = data['memberships'];
         }
+        if (data['allMemberships']) {
+            this.#allMemberships = data['allMemberships'];
+        }
 
         // now fill in the fields
-        this.#fnameField.value = this.#personInfo['first_name'];
-        this.#mnameField.value = this.#personInfo['middle_name'];
+        if (newFlag) {
+            this.#fnameField.value = '';
+            this.#mnameField.value = '';
+            this.#suffixField.value = '';
+            this.#legalnameField.value = '';
+            this.#email1Field.value = '';
+            this.#email2Field.value = '';
+            this.#phoneField.value = '';
+            this.#badgenameField.value = '';
+        } else {
+            this.#fnameField.value = this.#personInfo['first_name'];
+            this.#mnameField.value = this.#personInfo['middle_name'];
+            this.#suffixField.value = this.#personInfo['suffix'];
+            this.#legalnameField.value = this.#personInfo['legalName'];
+            this.#email1Field.value = this.#personInfo['email_addr'];
+            this.#email2Field.value = this.#personInfo['email_addr'];
+            this.#phoneField.value = this.#personInfo['phone'];
+            this.#badgenameField.value = this.#personInfo['badge_name'];
+            this.#auHeader.innerHTML = 'Adding/Updating memberships for ' + this.#personInfo.fullname;
+            this.#epHeader.innerHTML = 'Verifying personal information for ' + this.#personInfo.fullname;
+        }
         this.#lnameField.value = this.#personInfo['last_name'];
-        this.#suffixField.value = this.#personInfo['suffix'];
-        this.#legalnameField.value = this.#personInfo['legalName'];
         this.#addrField.value = this.#personInfo['address'];
         this.#addr2Field.value = this.#personInfo['addr_2'];
         this.#cityField.value = this.#personInfo['city'];
@@ -171,13 +193,10 @@ class Membership {
         this.#uspsblock.innerHTML = '';
         this.#email1Field.value = this.#personInfo['email_addr'];
         this.#email2Field.value = this.#personInfo['email_addr'];
-        this.#phoneField.value = this.#personInfo['phone'];
-        this.#badgenameField.value = this.#personInfo['badge_name'];
+
         this.#shareField.checked = (this.#personInfo['share_reg_ok'] == null || this.#personInfo['share_reg_ok'] == 'Y');
         this.#contactField.checked = (this.#personInfo['contact_ok'] == null || this.#personInfo['contact_ok'] == 'Y');
         this.#memberships = data['memberships'];
-        this.#auHeader.innerHTML = 'Adding/Updating memberships for ' + this.#personInfo.fullname;
-        this.#epHeader.innerHTML = 'Verifying personal information for ' + this.#personInfo.fullname;
 
         if (ageButtons)
             this.buildAgeButtons();
@@ -196,13 +215,7 @@ class Membership {
             if (mbr.memAge != 'all') {
                 this.#memberAge = mbr.memAge;
                 this.#memberAgeLabel = mbr.status;
-                for (row in ageList) {
-                    var age = ageList[row];
-                    if (age.ageType == this.#memberAge) {
-                        this.#memberAgeLabel = age.label;
-                        break;
-                    }
-                }
+                this.#memberAgeLabel = ageListIdx[this.#memberAge]
                 break;
             }
         }
@@ -223,19 +236,23 @@ class Membership {
     buildMembershipButtons() {
         // now loop over age list and build each button
         var html = '';
+        var rules = new MembershipRules(config['conid'], this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+
         for (var row in memList) {
             var mem = memList[row];
-            var cartrow = this.findInCart(mem.id);
-            if (cartrow == null || (mem.memCategory.toLowerCase == 'addon' || mem.memCategory.toLowerCase() == 'add-on' )) {
-                if (mem.memAge == 'all' || mem.memAge == this.#currentAge) {
-                    var color = 'btn-secondary';
-                    if (mem.memCategory == 'standard' || mem.memCategory == 'yearahead') {
-                        color = 'btn-primary';
-                    }
-                    html += '<div class="col-sm-auto"><button id="memBtn-' + mem.id + '" class="btn btn-sm ' + color + '" onclick="membership.membershipAdd(' + "'" + mem.id + "'" + ')">' +
-                        (mem.conid != config['conid'] ? mem.conid + ' ' : '') + mem.label + '</button></div>' + "\n";
+            // apply implitict rules and membershipRules against memList entry
+            if (!rules.testMembership(mem))
+                continue;
+
+            // apply age filter from age select
+            if (mem.memAge == 'all' || mem.memAge == this.#currentAge) {
+                var color = 'btn-secondary';
+                if (mem.memCategory == 'standard' || mem.memCategory == 'yearahead') {
+                    color = 'btn-primary';
                 }
-            }
+                html += '<div class="col-sm-auto"><button id="memBtn-' + mem.id + '" class="btn btn-sm ' + color + '" onclick="membership.membershipAdd(' + "'" + mem.id + "'" + ')">' +
+                    (mem.conid != config['conid'] ? mem.conid + ' ' : '') + mem.label + '</button></div>' + "\n";
+                }
         }
         this.#membershipButtonsDiv.innerHTML = html;
     }
@@ -494,9 +511,9 @@ class Membership {
         <div class="col-sm-1">` + membershipRec.price + `</div>
         <div class="col-sm-1">` + membershipRec.memType + `</div>
         <div class="col-sm-1">` + membershipRec.memCategory + `</div>
-        <div class="col-sm-4">` + (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label + `</div>
+        <div class="col-sm-4">` + (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label + ' [' + ageListIdx[membershipRec.memAge].label + `]</div>
     </div>
-`
+`;
         }
         if (this.#totalDue > 0) {
             html += `

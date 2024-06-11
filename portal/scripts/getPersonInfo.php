@@ -33,6 +33,11 @@ $response['personType'] = $personType;
 $response['personId'] = $personId;
 $getId = $_POST['getId'];
 $getType = $_POST['getType'];
+if (array_key_exists('memberships', $_POST)) {
+    $membershipReq = $_POST['memberships'];
+} else {
+    $membershipReq = '';
+}
 
 // get the record
 if ($personType == 'p') {
@@ -76,19 +81,24 @@ $response['person'] = $person;
 // now if asked for memberships, get them as well
 if ($personType == 'p') {
     $rfield = 'perid';
+    $ptable = 'perinfo';
+    $mfield = 'managedBy';
 } else {
     $rfield = 'newperid';
+    $ptable = 'newperson';
+    $mfield = 'managedByNew';
 }
-if (array_key_exists('memberships', $_POST) && $_POST['memberships'] == 'Y') {
+
+if ($membershipReq == 'Y') {
     $memberships = [];
     $mQ = <<<EOS
-SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory
+SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory, m.memAge
 FROM reg r
 JOIN memList m ON m.id = r.memId
 WHERE r.$rfield = ? AND r.conid IN (?, ?)
 ORDER BY r.create_date;
 EOS;
-    $mR = dbSafeQuery($mQ,'iii', array($person['id'], $conid, $conid + 1));
+    $mR = dbSafeQuery($mQ, 'iii', array($person['id'], $conid, $conid + 1));
     if ($mR !== false) {
         while ($row = $mR->fetch_assoc()) {
             $memberships[] = $row;
@@ -96,4 +106,25 @@ EOS;
     }
     $response['memberships'] = $memberships;
 }
+
+if ($membershipReq == 'A') {
+    $allMemberships = [];
+    $mQ = <<<EOS
+SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory, m.memAge
+FROM reg r
+JOIN memList m ON m.id = r.memId
+JOIN $ptable p ON p.id = r.$rfield
+LEFT OUTER JOIN $ptable pm ON p.$mfield = pm.id
+WHERE r.$rfield = p.id AND r.conid IN (?, ?) AND (pm.id = ? OR p.id = ?)
+ORDER BY r.create_date;
+EOS;
+    $mR = dbSafeQuery($mQ, 'iiii', array($conid, $conid + 1, $personId, $personId));
+    if ($mR !== false) {
+        while ($row = $mR->fetch_assoc()) {
+            $allMemberships[] = $row;
+        }
+    }
+    $response['allMemberships'] = $allMemberships;
+}
+
 ajaxSuccess($response);

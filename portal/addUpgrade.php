@@ -26,6 +26,8 @@ $config_vars['debug'] = $debug['portal'];
 $config_vars['conid'] = $conid;
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['regadminemail'] = $con['regadminemail'];
+$config_vars['personId'] = $personId;
+$config_vars['personType'] = $personType;
 $cdn = getTabulatorIncludes();
 
 // are we add new or upgrade existing
@@ -90,9 +92,11 @@ if ($info === false) {
 
 // get ageList, memTypes, memCategories, memList
 $ageList = array();
+$ageListIdx = array();
 $QR = dbSafeQuery("SELECT * FROM ageList WHERE conid = ? ORDER BY sortorder;", 'i', array($conid));
 while ($row = $QR->fetch_assoc()) {
     $ageList[] = $row;
+    $ageListIdx[$row['ageType']] = $row;
 }
 $QR->free();
 
@@ -100,7 +104,7 @@ $memTypes = array();
 $QR = dbQuery("SELECT * FROM memTypes WHERE active = 'Y' ORDER BY sortorder;");
 $memTypes = array();
 while ($row = $QR->fetch_assoc()) {
-    $memTypes[] = $row;
+    $memTypes[$row['memType']] = $row;
 }
 $QR->free();
 
@@ -108,11 +112,12 @@ $memCategories = array();
 $QR = dbQuery("SELECT * FROM memCategories WHERE active = 'Y' ORDER BY sortorder;");
 $memCategories = array();
 while ($row = $QR->fetch_assoc()) {
-    $memCategories[] = $row;
+    $memCategories[$row['memCategory']] = $row;
 }
 $QR->free();
 
 $memList = array();
+$melListIdx = array();
 $QQ = <<<EOS
 SELECT *
 FROM memList 
@@ -123,9 +128,68 @@ EOS;
 $QR = dbSafeQuery($QQ, 'ii', array($conid, $conid + 1));
 while ($row = $QR->fetch_assoc()) {
     $memList[] = $row;
+    $memListIdx[$row['id']] = $row;
 }
 $QR->free();
 
+// now get the Membership Rules
+$memRules = array();
+$QQ = <<<EOS
+SELECT *
+FROM memRules
+ORDER BY name;
+EOS;
+$QR = dbQuery($QQ);
+while ($row = $QR->fetch_assoc()) {
+    if ($row['typeList'] != null && $row['typeList'] != '') {
+        $row['typeListArray'] = explode(',', $row['typeList']);
+    }
+    if ($row['catList'] != null && $row['catList'] != '') {
+        $row['catListArray'] = explode(',', $row['catList']);
+    }
+    if ($row['ageList'] != null && $row['ageList'] != '') {
+        $row['ageListArray'] = explode(',', $row['ageList']);
+    }
+    if ($row['memList'] != null && $row['memList'] != '') {
+        $row['memListArray'] = explode(',', $row['memList']);
+    }
+    $memRules[$row['name']] = $row;
+}
+$QR->free();
+// now the more difficult task, get the membership rule items
+$QQ = <<<EOS
+SELECT *
+FROM memRuleItems
+ORDER BY name, step;
+EOS;
+
+$currentName = null;
+$currentRules = array();
+$QR = dbQuery($QQ);
+while ($row = $QR->fetch_assoc()) {
+    if ($currentName != $row['name']) {
+        if ($currentName != null) {
+            $memRules[$currentName]['ruleset'] = $currentRules;
+            $currentRules = array();
+        }
+        $currentName = $row['name'];
+    }
+    if ($row['typeList'] != null && $row['typeList'] != '') {
+        $row['typeListArray'] = explode(',', $row['typeList']);
+    }
+    if ($row['catList'] != null && $row['catList'] != '') {
+        $row['catListArray'] = explode(',', $row['catList']);
+    }
+    if ($row['ageList'] != null && $row['ageList'] != '') {
+        $row['ageListArray'] = explode(',', $row['ageList']);
+    }
+    if ($row['memList'] != null && $row['memList'] != '') {
+        $row['memListArray'] = explode(',', $row['memList']);
+    }
+    $currentRules[$row['step']] = $row;
+}
+if ($currentName != null)
+    $memRules[$currentName]['ruleset'] = $currentRules;
 
 // if we get here, we are logged in and it's a purely new person or we manage the person to be processed
 portalPageInit('addUpgrade', $info['fullname'] . ($personType == 'p' ? ' (ID: ' : 'Temporary ID: ') . $personId . ')',
@@ -137,16 +201,22 @@ portalPageInit('addUpgrade', $info['fullname'] . ($personType == 'p' ? ' (ID: ' 
         //'js/tinymce/tinymce.min.js',
         'js/base.js',
         'js/portal.js',
+        'jslib/membershipRules.js',
         'js/memberships.js',
     ),
 );
+$memRulesJSON = json_encode($memRules);
+$hold = 1;
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
     var ageList = <?php echo json_encode($ageList); ?>;
+    var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
     var memTypes = <?php echo json_encode($memTypes); ?>;
     var memCategories = <?php echo json_encode($memCategories); ?>;
     var memList = <?php echo json_encode($memList); ?>;
+    var memListIdx = <?php echo json_encode($memListIdx); ?>;
+    var memRules = <?php echo json_encode($memRules); ?>;
 </script>
 <?php
 // get the info for the current person or set it all to NULL
