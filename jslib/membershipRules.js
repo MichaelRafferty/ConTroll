@@ -28,6 +28,9 @@ class MembershipRules {
     #allMems = null;
     #allAges = null;
 
+    // mail rules statuses to include
+    #includeStatus = ['in-cart', 'unpaid', 'paid', 'plan', 'upgraded'];
+
     constructor(conid, age, memberships, allMemberships) {
         // prepare for impicit rules
         this.#numCats = [];
@@ -40,7 +43,7 @@ class MembershipRules {
         this.#allMemberships = allMemberships;
         for (var row in memberships) {
             var mbrRow = memberships[row];
-            if (mbrRow.status != 'in-cart' && mbrRow.status != 'unpaid' && mbrRow.status != 'paid' && mbrRow.status != 'plan') {
+            if (this.#includeStatus.indexOf(mbrRow.status) == -1) {
                 continue;
             }
 
@@ -62,11 +65,11 @@ class MembershipRules {
         if (mlist)
             return null; // no list to search
 
-        for (var row in mlist) {
+        for (var row in mlist) {x
             var cartrow = mlist[row];
             if (memId != cartrow.memId)
                 continue;
-            if (cartRow.status != 'in-cart' && cartRow.status != 'unpaid' && cartRow.status != 'paid' && cartRow.status != 'plan') {
+            if (this.#includeStatus.indexOf(mbrRow.status) == -1) {
                 continue;
             }
             return cartrow;  // return matching entry

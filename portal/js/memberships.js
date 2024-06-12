@@ -56,6 +56,7 @@ class Membership {
     #totalDue = 0;
     #countMemberships = 0;
     #unpaidMemberships = 0;
+    #newIDKey = -1;
 
     // flow items
     #auHeader = null
@@ -492,7 +493,17 @@ class Membership {
         this.#countMemberships = 0;
         this.#unpaidMemberships = 0;
         var statusCol;
-        var html = ''
+        var html = `
+            <div class="row">
+                <div class="col-sm-2"><b>Purchase Date</b></div>
+                <div class="col-sm-1" style='text-align: right;'><b>Balance Due</b></div>
+                <div class="col-sm-1" style='text-align: right;'><b>Price</b></div>
+                <div class="col-sm-1"><b>Type</b></div>
+                <div class="col-sm-1"><b>Category</b></div>
+                <div class="col-sm-4"><b>Membership</b></div>
+            </div>
+`;
+        var col1 = '';
         for (var row in this.#memberships) {
             this.#countMemberships++;
             var membershipRec = this.#memberships[row];
@@ -504,10 +515,19 @@ class Membership {
             else
                 statusCol = membershipRec.status;
 
+            if (membershipRec.toDelete) {
+                col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="membership.membershipRestore(' + row + ')">Restore</button>';
+            } else if (membershipRec.status == 'unpaid' && membershipRec.price > 0 && membershipRec.paid == 0) {
+                col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="membership.membershipDelete(' + row + ')">Delete</button>';
+            } else if (membershipRec.status == 'in-cart') {
+                col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="membership.membershipRemove(' + row + ')">Remove</button>';
+            } else {
+                col1 = membershipRec.create_date;
+            }
             html += `
     <div class="row">
-        <div class="col-sm-2">` + membershipRec.create_date + `</div>
-        <div class="col-sm-1">` + statusCol + `</div>
+        <div class="col-sm-2">` + col1 + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + statusCol + `</div>
         <div class="col-sm-1" style='text-align: right;'>` + membershipRec.price + `</div>
         <div class="col-sm-1">` + membershipRec.memType + `</div>
         <div class="col-sm-1">` + membershipRec.memCategory + `</div>
@@ -526,7 +546,7 @@ class Membership {
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-2"></div>
+        <div class="col-sm-1"></div>
         <div class="col-sm-1"><b>Total Due:</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>$` + Number(this.#totalDue).toFixed(2)+ `</b></div>
     </div>`
@@ -539,13 +559,14 @@ class Membership {
 
     // add to cart
     membershipAdd(id) {
+        clear_message();
         var memrow = findMembership(id);
         if (memrow == null)
             return;
 
         var now = new Date();
         var newMembership = [];
-        newMembership.id = -1;
+        newMembership.id = this.#newIDKey;
         newMembership.create_date = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2) + ' ' +
         ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
         newMembership.memId = id;
@@ -561,6 +582,73 @@ class Membership {
         if (!this.#memberships)
             this.#memberships = [];
         this.#memberships.push(newMembership);
+        this.newIDKey--;
+        this.updateCart();
+        this.buildMembershipButtons();
+    }
+
+    // remove an unsaved membership row from the cart
+    membershipRemove(row) {
+        clear_message();
+        if (this.#memberships == null) {
+            show_message("No memberships found", "warn");
+            return;
+        }
+
+        var mbr = this.#memberships[row];
+        if (mbr.status != 'in-cart') {
+            show_message("Cannot remove that membership, only in-cart memberships can be removed.", "warn");
+            return
+        }
+
+        this.#memberships.splice(row, 1);
+        this.updateCart();
+        this.buildMembershipButtons();
+    }
+
+    // mark an unpaid membership row to be deleted on save
+    membershipDelete(row) {
+        clear_message();
+        if (this.#memberships == null) {
+            show_message("No memberships found", "warn");
+            return;
+        }
+
+        var mbr = this.#memberships[row];
+        if (mbr.status != 'unpaid') {
+            show_message("Cannot remove that membership, only unpaid membershipd can be deleted.", "warn");
+            return
+        }
+
+        if (mbr.price == 0) {
+            show_message("Please contact Registration to delete free memberships.", "warn");
+            return;
+        }
+
+        if (mbr.paid > 0) {
+            show_message("Please contact Registration to resolve this partially paid membership.", "warn");
+            return;
+        }
+
+        mbr.toDelete = true;
+        this.updateCart();
+        this.buildMembershipButtons();
+    }
+
+    membershipRestore(row) {
+        clear_message();
+        if (this.#memberships == null) {
+            show_message("No memberships found", "warn");
+            return;
+        }
+
+        var mbr = this.#memberships[row];
+        if (!mbr.toDelete) {
+            show_message("Cannot restore this membership, it is not marked deleted.", "warn");
+            return
+        }
+
+        mbr.toDelete = undefined;
         this.updateCart();
         this.buildMembershipButtons();
     }
