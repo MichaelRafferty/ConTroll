@@ -50,6 +50,9 @@ class Membership {
     #memberships = null;
     #allMemberships = null;
     #membershipButtonsDiv = null;
+    #vpModal = null;
+    #vpBody = null;
+    #newMembershipSave = null;
 
     // cart items
     #cartDiv = null;
@@ -110,6 +113,11 @@ class Membership {
         this.#uspsDiv = document.getElementById("uspsblock");
 
         this.#saveCartBtn = document.getElementById("saveCartBtn");
+        this.#vpBody = document.getElementById("variablePriceBody");
+        var id = document.getElementById("variablePriceModal");
+        if (id) {
+            this.#vpModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+        }
 
         if (config['action'] != 'new') {
             this.#addUpdateType = config['upgradeType'];
@@ -594,7 +602,7 @@ class Membership {
         var newMembership = {};
         newMembership.id = this.#newIDKey;
         newMembership.create_date = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2) + ' ' +
-        ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
+            ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
         newMembership.memId = id;
         newMembership.conid = memrow.conid;
         newMembership.status = 'in-cart';
@@ -605,6 +613,40 @@ class Membership {
         newMembership.memCategory = memrow.memCategory;
         newMembership.memType = memrow.memType;
         newMembership.memAge = memrow.memAge;
+        var memCat = memCategories[memrow.memCategory];
+        if (memCat.variablePrice == 'Y') {
+            this.#newMembershipSave = newMembership;
+            var mem = memListIdx[newMembership.memId];
+            // update the modal with the item
+            this.#vpBody.innerHTML = `
+    <div class="row">
+        <div class="col-sm-auto">
+            <label for="vpPrice">How much for ` + mem.label + `?</label>
+        </div>
+        <div class="col-sm-auto">
+            <input type="number" class='no-spinners' inputmode="numeric" id="vpPrice" name="vpPrice" size="20" placeholder="How Much?" min="` + newMembership.price + `"/>
+        </div>
+    </div>
+`;
+            this.#vpModal.show();
+            return;
+        }
+        this.membershipAddFinal(newMembership);
+    }
+
+    // vpsubmit - handle return from modal popup
+    vpSubmit() {
+        var priceField = document.getElementById('vpPrice');
+        var price = Number(priceField.value).toFixed(2);
+        var newMembership = this.#newMembershipSave;
+        this.#newMembershipSave = null;
+        newMembership.price = price;
+        this.membershipAddFinal(newMembership);
+        this,this.#vpModal.hide();
+    }
+
+    // finish membership add
+    membershipAddFinal(newMembership) {
         if (!this.#memberships)
             this.#memberships = [];
         this.#memberships.push(newMembership);

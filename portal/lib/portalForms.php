@@ -280,3 +280,32 @@ function drawCart() {
     <div class="cart" id="cartContentsDiv"></div>
     <?php
 }
+
+// draw variable price membership set modal
+function drawVariablePriceModal() {
+?>
+    <div id='variablePriceModal' class='modal modal-lg fade' tabindex='-1' aria-labelledby='Variable Price' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='variablePriceTitle'>
+                        <strong>How Much?</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' stype='padding: 4px; background-color: lightcyan;'>
+                    <div class='container-fluid' id="variablePriceBody">
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-12' id='vpMessageDiv'></div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
+                    <button class='btn btn-sm btn-primary' id='vpSubmitButton' onClick='membership.vpSubmit()' tabindex='10102'>Set Amount</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php
+}

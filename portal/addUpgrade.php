@@ -222,7 +222,8 @@ $hold = 1;
 // get the info for the current person or set it all to NULL
 $person = null;
 $memberships = null;
-// for now draw the mockups
+// draw the skeleton
+drawVariablePriceModal();
 ?>
 <form id='addUpgradeForm' class='form-floating' action='javascript:void(0);'>
     <div class="row mt-3">
