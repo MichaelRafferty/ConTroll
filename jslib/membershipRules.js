@@ -35,11 +35,12 @@ class MembershipRules {
         this.#numFullYearAhead = 0;
         this.#numOneDay = 0;
         this.#age = age;
+        this.#conid = conid;
         this.#memberships = memberships;
         this.#allMemberships = allMemberships;
         for (var row in memberships) {
             var mbrRow = memberships[row];
-            if (mbrRow.status != 'unpaid' && mbrRow.status != 'paid' && mbrRow.status != 'plan') {
+            if (mbrRow.status != 'in-cart' && mbrRow.status != 'unpaid' && mbrRow.status != 'paid' && mbrRow.status != 'plan') {
                 continue;
             }
 
@@ -65,7 +66,7 @@ class MembershipRules {
             var cartrow = mlist[row];
             if (memId != cartrow.memId)
                 continue;
-            if (cartRow.status != 'unpaid' && cartRow.status != 'paid' && cartRow.status != 'plan') {
+            if (cartRow.status != 'in-cart' && cartRow.status != 'unpaid' && cartRow.status != 'paid' && cartRow.status != 'plan') {
                 continue;
             }
             return cartrow;  // return matching entry

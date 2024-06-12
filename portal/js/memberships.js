@@ -203,8 +203,8 @@ class Membership {
 
         this.updateCart();
 // temp for testing
-        this.#currentAge = 'adult';
-        this.gotoStep(3);
+// this.#currentAge = 'adult';
+// this.gotoStep(3);
     }
 
     // age functions
@@ -496,7 +496,7 @@ class Membership {
         for (var row in this.#memberships) {
             this.#countMemberships++;
             var membershipRec = this.#memberships[row];
-            var amount_due = membershipRec.price - (membershipRec.paid + membershipRec.couponDiscount);
+            var amount_due = Number(membershipRec.price) - (Number(membershipRec.paid) + Number(membershipRec.couponDiscount));
             this.#totalDue += amount_due;
 
             if (membershipRec.status == 'unpaid')
@@ -508,7 +508,7 @@ class Membership {
     <div class="row">
         <div class="col-sm-2">` + membershipRec.create_date + `</div>
         <div class="col-sm-1">` + statusCol + `</div>
-        <div class="col-sm-1">` + membershipRec.price + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + membershipRec.price + `</div>
         <div class="col-sm-1">` + membershipRec.memType + `</div>
         <div class="col-sm-1">` + membershipRec.memCategory + `</div>
         <div class="col-sm-4">` + (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label + ' [' + ageListIdx[membershipRec.memAge].label + `]</div>
@@ -526,8 +526,9 @@ class Membership {
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-2"><b>Total Due:</b></div>
-        <div class="col-sm-1"><b>$` + Number(this.#totalDue).toFixed(2)+ `</b></div>
+        <div class="col-sm-2"></div>
+        <div class="col-sm-1"><b>Total Due:</b></div>
+        <div class="col-sm-1" style='text-align: right;'><b>$` + Number(this.#totalDue).toFixed(2)+ `</b></div>
     </div>`
         }
         if (this.#countMemberships == 0) {
@@ -556,6 +557,9 @@ class Membership {
         newMembership.label = memrow.label;
         newMembership.memCategory = memrow.memCategory;
         newMembership.memType = memrow.memType;
+        newMembership.memAge = memrow.memAge;
+        if (!this.#memberships)
+            this.#memberships = [];
         this.#memberships.push(newMembership);
         this.updateCart();
         this.buildMembershipButtons();
