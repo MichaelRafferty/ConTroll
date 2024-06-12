@@ -177,6 +177,9 @@ class Membership {
             this.#email2Field.value = '';
             this.#phoneField.value = '';
             this.#badgenameField.value = '';
+            this.#personInfo['personType'] = 'n';
+            this.#personInfo['id'] = '-1';
+            this.#lastVerified = 0;
         } else {
             this.#fnameField.value = this.#personInfo['first_name'];
             this.#mnameField.value = this.#personInfo['middle_name'];
@@ -204,8 +207,6 @@ class Membership {
         this.#zipField.value = this.#personInfo['zip'];
         this.#countryField.value = this.#personInfo['country'];
         this.#uspsblock.innerHTML = '';
-        this.#email1Field.value = this.#personInfo['email_addr'];
-        this.#email2Field.value = this.#personInfo['email_addr'];
 
         this.#shareField.checked = (this.#personInfo['share_reg_ok'] == null || this.#personInfo['share_reg_ok'] == 'Y');
         this.#contactField.checked = (this.#personInfo['contact_ok'] == null || this.#personInfo['contact_ok'] == 'Y');
@@ -335,7 +336,7 @@ class Membership {
         this.#personInfo.zip = person.zip.trim();
         this.#personInfo.country = person.country.trim();
         this.#personInfo.share_reg_ok = person.hasOwnProperty('share') ? 'Y' : 'N';
-        this.#personInfo.contact_ok =  person.hasOwnProperty('scontact') ? 'Y' : 'N';
+        this.#personInfo.contact_ok =  person.hasOwnProperty('contact') ? 'Y' : 'N';
 
         // validation
         // emails must not be blank and must match
@@ -590,7 +591,7 @@ class Membership {
             return;
 
         var now = new Date();
-        var newMembership = [];
+        var newMembership = {};
         newMembership.id = this.#newIDKey;
         newMembership.create_date = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2) + ' ' +
         ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);

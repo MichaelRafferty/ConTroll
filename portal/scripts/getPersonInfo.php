@@ -40,10 +40,10 @@ if (array_key_exists('memberships', $_POST)) {
 }
 
 // get the record
-if ($personType == 'p') {
+if ($getType == 'p') {
     $getPersonQ =  <<<EOS
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip, country, 
-    share_reg_ok, contact_ok, managedBy, NULL AS managedByNew, lastVerified,
+    share_reg_ok, contact_ok, managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
 FROM perinfo
 WHERE id = ?;
@@ -51,7 +51,7 @@ EOS;
 } else {
     $getPersonQ =  <<<EOS
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip, country, 
-    share_reg_ok, contact_ok, managedBy, managedByNew, lastVerified,
+    share_reg_ok, contact_ok, managedBy, managedByNew, lastVerified, 'n' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
 FROM newperson
 WHERE id = ?;
@@ -79,7 +79,7 @@ if ($personId != $person['managedBy'] && $personId != $person['managedByNew'] &&
 $response['person'] = $person;
 
 // now if asked for memberships, get them as well
-if ($personType == 'p') {
+if ($getType == 'p') {
     $rfield = 'perid';
     $ptable = 'perinfo';
     $mfield = 'managedBy';

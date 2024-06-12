@@ -38,18 +38,18 @@ $response['currentPeron'] = $currentPerson;
 $response['personId'] = $personId;
 
 // update the record
-if ($personType == 'p') {
+if ($currentPersonType == 'p') {
     $updPersonQ =  <<<EOS
 UPDATE perinfo
 SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, 
-    share_reg_ok = ?, contact_ok = ?, updatedBy = ?
+    share_reg_ok = ?, contact_ok = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
 } else {
     $updPersonQ =  <<<EOS
 UPDATE newperson
 SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, 
-    share_reg_ok = ?, contact_ok = ?, updatedBy = ?
+    share_reg_ok = ?, contact_ok = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
 }
@@ -77,7 +77,7 @@ $value_arr = array(
     array_key_exists('contact', $person) ? $person['contact'] : 'Y',
     array_key_exists('share', $person) ? $person['share'] :'Y',
     $personId,
-    $currentPerson
+    $currentPerson,
 );
 
 $rows_upd = dbSafeCmd($updPersonQ, 'ssssssssssssssssii', $value_arr);

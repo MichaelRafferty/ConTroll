@@ -73,7 +73,7 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
     FROM newperson p    
     LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ?
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
-    WHERE managedBy = ? AND p.managedBy != ? AND p.perid IS NULL;
+    WHERE managedBy = ? AND p.id != ? AND p.perid IS NULL;
 EOS;
     $managedByR = dbSafeQuery($managedSQL, 'iiiii', array($conid, $personId, $conid, $personId, $personId));
 } else {
