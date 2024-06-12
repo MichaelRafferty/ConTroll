@@ -119,5 +119,99 @@ ALTER TABLE memCategories ADD COLUMN onlyOne enum('Y', 'N') NOT NULL DEFAULT 'Y'
 ALTER TABLE memCategories ADD COLUMN standAlone enum('Y', 'N') NOT NULL DEFAULT 'N' AFTER onlyOne;
 ALTER TABLE memCategories ADD COLUMN variablePrice enum('Y', 'N') NOT NULL DEFAULT 'N' AFTER standAlone;
 
+CREATE TABLE interests
+(
+    interest    varchar(16)     NOT NULL,
+    description varchar(4096)            DEFAULT NULL,
+    notifyList  varchar(512)             DEFAULT NULL,
+    sortOrder   int                      DEFAULT 0,
+    createDate  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updateDate  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updateBy    int                      DEFAULT NULL,
+    active      enum ('Y', 'N') NOT NULL DEFAULT 'Y',
+    csv         enum ('Y', 'N') NOT NULL DEFAULT 'N',
+    PRIMARY KEY (interest)
+);
+
+ALTER TABLE interests ADD FOREIGN KEY interests_updatdBy_fk (updateBy) REFERENCES perinfo(id) ON UPDATE CASCADE;
+
+
+CREATE TABLE memberInterests
+(
+    id int NOT NULL AUTO_INCREMENT,
+    perid int DEFAULT NULL,
+    newperid int DEFAULT NULL,
+    interest varchar(16) NOT NULL,
+    interested enum ('Y', 'N') NOT NULL DEFAULT 'N',
+    notifyDate datetime DEFAULT NULL,
+    csvDate datetime DEFAULT NULL,
+    createDate  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updateDate  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updateBy    int DEFAULT NULL,
+    PRIMARY KEY (id)
+);
+
+ALTER TABLE memberInterests ADD CONSTRAINT FOREIGN KEY (interest) REFERENCES interests(interest) ON UPDATE CASCADE;
+
+CREATE TABLE paymentPlans (
+    id int NOT NULL AUTO_INCREMENT,
+    name varchar(16) NOT NULL,
+    ddescription varchar(1024) DEFAULT NULL,
+    catList varchar(1024) DEFAULT NULL,
+    memList varchar(1024) DEFAULT NULL,
+    excludeList varchar(1024) DEFAULT NULL,
+    portalList varchar(1024) DEFAULT NULL,
+    downPercent decimal(8,2) DEFAULT NULL,
+    downAmt decimal(8,2) DEFAULT NULL,
+    numPaymentMax int DEFAULT NULL,
+    payByDate datetime DEFAULT NULL,
+    payType enum('manual','auto') DEFAULT 'manual',
+    modify enum ('Y', 'N') NOT NULL DEFAULT 'N',
+    reminders enum ('Y', 'N') NOT NULL DEFAULT 'N',
+    active enum ('Y', 'N') NOT NULL DEFAULT 'Y',
+    sortorder int NOT NULL DEFAULT 0,
+    createDate  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updateDate  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updateBy    int DEFAULT NULL,
+    PRIMARY KEY (id)
+);
+
+ALTER TABLE paymentPlans ADD FOREIGN KEY pp_updateBy_fk (updateBy) REFERENCES perinfo(id) ON UPDATE CASCADE;
+
+
+CREATE TABLE payorPlans (
+    id int NOT NULL AUTO_INCREMENT,
+    planId int NOT NULL,
+    perid int DEFAULT NULL,
+    newperid int default NULL,
+    initialAmt decimal(8,2) NOT NULL,
+    nonPlanAmt decimal(8,2) NOT NULL DEFAULT 0,
+    downPayment decimal(8,2) NOT NULL DEFAULT 0,
+    openingBalance decimal(8,2) NOT NULL DEFAULT 0,
+    numPayments int NOT NULL,
+    payByDate datetime NOT NULL,
+    payType enum('manual','auto') DEFAULT 'manual',
+    reminders enum ('Y', 'N') NOT NULL DEFAULT 'N',
+    status enum('active','paid','refunded','cancelled') DEFAULT 'active',
+    createTransaction int default NULL,
+    balanceDue decimal(8,2) NOT NULL DEFAULT 0,
+    createDate  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updateDate  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updateBy    int DEFAULT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE payorPlanPayments (
+    id int NOT NULL AUTO_INCREMENT,
+    planId int NOT NULL,
+    paymentNbr int NOT NULL DEFAULT 0,
+    dueDate datetime DEFAULT NULL,
+    payDate datetime DEFAULT NULL,
+    amount decimal(8,2) NOT NULL DEFAULT 0,
+    paymentId int DEFAULT NULL,
+    transactionId int DEFAULT NULL,
+    PRIMARY KEY (id)
+);
+
 
 INSERT INTO patchLog(id, name) values(ppx, 'Portal Changes');
