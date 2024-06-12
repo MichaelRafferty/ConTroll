@@ -14,7 +14,7 @@ function drawVerifyPersonInfo() {
 ?>
     <div class="row mt-3">
         <div class='col-sm-auto'>
-            <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(1);'>Return to step 1: Age Verification</button>
+            <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(1, true);'>Return to step 1: Age Verification</button>
         </div>
         <div class="col-sm-auto">
             <button class="btn btn-sm btn-primary" onclick="membership.verifyAddress();">Verify Address and move to next step</button>
@@ -84,59 +84,59 @@ function drawEditPersonBlock($con, $useUSPS) {
             <div class="col-sm-auto">
                 <label for="fname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
                                 class='text-danger'>&bigstar;</span>First Name</span></label><br/>
-                <input class="form-control-sm" type="text" name="fname" id='fname' size="22" maxlength="32" tabindex="2"/>
+                <input class="form-control-sm" type="text" name="fname" id='fname' size="22" maxlength="32" tabindex="100"/>
             </div>
             <div class="col-sm-auto">
                 <label for="mname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
-                <input class="form-control-sm" type="text" name="mname" id='mname' size="8" maxlength="32" tabindex="4"/>
+                <input class="form-control-sm" type="text" name="mname" id='mname' size="8" maxlength="32" tabindex="110"/>
             </div>
             <div class="col-sm-auto">
                 <label for="lname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Last Name</span></label><br/>
-                <input class="form-control-sm" type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="6"/>
+                <input class="form-control-sm" type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="120"/>
             </div>
             <div class="col-sm-auto">
                 <label for="suffix" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
-                <input class="form-control-sm" type="text" name="suffix" id='suffix' size="4" maxlength="4" tabindex="8"/>
+                <input class="form-control-sm" type="text" name="suffix" id='suffix' size="4" maxlength="4" tabindex="130"/>
             </div>
         </div>
         <div class='row'>
             <div class='col-sm-12'>
                 <label for='legalname' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
                 <input class='form-control-sm' type='text' name='legalname' id='legalname' size=64 maxlength='64'
-                       placeholder='Defaults to First Name Middle Name Last Name, Suffix' tabindex='10'/>
+                       placeholder='Defaults to First Name Middle Name Last Name, Suffix' tabindex='140'/>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-12">
                 <label for="addr" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
                                 class='text-danger'>&bigstar;</span>Address</span></label><br/>
-                <input class="form-control-sm" type="text" name='addr' id='addr' size=64 maxlength="64" tabindex='12'/>
+                <input class="form-control-sm" type="text" name='addr' id='addr' size=64 maxlength="64" tabindex='150'/>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-12">
                 <label for="addr2" class="form-label-sm"><span class="text-dark"
                                                                style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
-                <input class="form-control-sm" type="text" name='addr2' id='addr2' size=64 maxlength="64" tabindex='14'/>
+                <input class="form-control-sm" type="text" name='addr2' id='addr2' size=64 maxlength="64" tabindex='160'/>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-auto">
                 <label for="city" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
                                 class='text-danger'>&bigstar;</span>City</span></label><br/>
-                <input class="form-control-sm" type="text" name="city" id='city' size="22" maxlength="32" tabindex="16"/>
+                <input class="form-control-sm" type="text" name="city" id='city' size="22" maxlength="32" tabindex="170"/>
             </div>
             <div class="col-sm-auto">
                 <label for="state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>State: US/CAN 2 letter abv.</span></label><br/>
-                <input class="form-control-sm" type="text" name="state" id='state' size="16" maxlength="16" tabindex="18"/>
+                <input class="form-control-sm" type="text" name="state" id='state' size="16" maxlength="16" tabindex="180"/>
             </div>
             <div class="col-sm-auto">
                 <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Zip</span></label><br/>
-                <input class="form-control-sm" type="text" name="zip" id='zip' size="10" maxlength="10" tabindex="20"/>
+                <input class="form-control-sm" type="text" name="zip" id='zip' size="10" maxlength="10" tabindex="190"/>
             </div>
             <div class="col-sm-auto">
                 <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
-                <select name='country' tabindex='22' id='country' onchange="portal.countryChange();">
+                <select name='country' tabindex='200' id='country' onchange="portal.countryChange();">
                     <?php
                     $fh = fopen(__DIR__ . '/../../lib/countryCodes.csv', 'r');
                     while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {
@@ -164,23 +164,23 @@ function drawEditPersonBlock($con, $useUSPS) {
             <div class="col-sm-auto">
                 <label for="email1" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
                                 class='text-danger'>&bigstar;</span>Email</span></label><br/>
-                <input class="form-control-sm" type="email" name="email1" id='email1' size="35" maxlength="254" tabindex="24"/>
+                <input class="form-control-sm" type="email" name="email1" id='email1' size="35" maxlength="254" tabindex="210"/>
             </div>
             <div class="col-sm-auto">
                 <label for="email2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
                                 class='text-danger'>&bigstar;</span>Confirm Email</span></label><br/>
-                <input class="form-control-sm" type="email" name="email2" id='email2' size="35" maxlength="254" tabindex="26"/>
+                <input class="form-control-sm" type="email" name="email2" id='email2' size="35" maxlength="254" tabindex="220"/>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-auto">
                 <label for="phone" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
-                <input class="form-control-sm" type="text" name="phone" id='phone' size="20" maxlength="15" tabindex="28"/>
+                <input class="form-control-sm" type="text" name="phone" id='phone' size="20" maxlength="15" tabindex="230"/>
             </div>
             <div class="col-sm-auto">
                 <label for="badgename" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
                 <input class="form-control-sm" type="text" name="badgename" id='badgename' size="35" maxlength="32" placeholder='defaults to first and last name'
-                       tabindex="30"/>
+                       tabindex="240"/>
             </div>
         </div>
         <div class='row'>
@@ -264,13 +264,10 @@ function drawGetNewMemberships() {
     </div>
     <div class='row mt-3' id="step3submit">
         <div class='col-sm-auto'>
-            <button class='btn btn-sm btn-warning' onclick='membership.gotoStep(3);'>Retry step 3</button>
+            <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2, true);'>Return to step 2: Personal Information Verification</button>
         </div>
         <div class='col-sm-auto'>
-            <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2);'>Return to step 2: Personal Information Verification</button>
-        </div>
-        <div class='col-sm-auto'>
-            <button class='btn btn-sm btn-primary' onclick='membership.reviewCart();'>Move to the next step to review the cart.</button>
+            <button class='btn btn-sm btn-primary' id="saveCartBtn" onclick='membership.saveCart();'>Return to the home page</button>
         </div>
     </div>
     <?php

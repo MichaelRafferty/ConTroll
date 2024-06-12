@@ -31,6 +31,7 @@ class Membership {
     #contactField = null;
     #shareField = null;
     #uspsDiv= null;
+    #lastVerified = null;
 
     // this person info
     #addUpdateId = null;
@@ -57,6 +58,8 @@ class Membership {
     #countMemberships = 0;
     #unpaidMemberships = 0;
     #newIDKey = -1;
+    #saveCartBtn = null;
+    #cartChanges = 0;
 
     // flow items
     #auHeader = null
@@ -105,6 +108,8 @@ class Membership {
         this.#contactField = document.getElementById("contact");
         this.#shareField = document.getElementById("share");
         this.#uspsDiv = document.getElementById("uspsblock");
+
+        this.#saveCartBtn = document.getElementById("saveCartBtn");
 
         if (config['action'] != 'new') {
             this.#addUpdateType = config['upgradeType'];
@@ -183,6 +188,13 @@ class Membership {
             this.#badgenameField.value = this.#personInfo['badge_name'];
             this.#auHeader.innerHTML = 'Adding/Updating memberships for ' + this.#personInfo.fullname;
             this.#epHeader.innerHTML = 'Verifying personal information for ' + this.#personInfo.fullname;
+            if (this.#personInfo['lastVerified'] != null) {
+                var lvd = new Date(this.#personInfo['lastVerified']);
+                this.#lastVerified = lvd.getTime();
+            } else {
+                this.#lastVerified = 0;
+            }
+
         }
         this.#lnameField.value = this.#personInfo['last_name'];
         this.#addrField.value = this.#personInfo['address'];
@@ -259,14 +271,23 @@ class Membership {
     }
 
     // goto step: handle going directly to a step:
-    gotoStep(step) {
+    gotoStep(step, ignoreSkip = false) {
+        var nowD = new Date();
+        var now = nowD.getTime();
+        var dif = (now - this.#lastVerified);
+        if (!ignoreSkip && step == 2 && (now - this.#lastVerified) < (7 * 60 * 60 * 1000)) {
+            step = 3;
+        }
         this.#ageBracketDiv.hidden = step != 1;
         this.#verifyPersonDiv.hidden = step != 2;
         this.#getNewMembershipDiv.hidden = step != 3;
-        if (step == 3)
+        if (step == 3) {
+            this.updateCart;
             this.buildMembershipButtons();
-
+        }
+        this.#currentStep = step;
     }
+
     // ageSelect - redo all the age buttons on selecting one of them, then move on to the next page
     ageSelect(ageType) {
         if (this.#memberAge != null && ageType != this.#memberAge) {
@@ -292,9 +313,7 @@ class Membership {
             btn.classList.add((this.#currentAge == age.ageType || this.#memberAge == age.ageType) ? 'btn-primary' : color);
         }
 
-        this.#currentStep = 2;
-        this.#ageBracketDiv.hidden = true;
-        this.#verifyPersonDiv.hidden = false;
+        this.gotoStep(2, false);
     }
 
     // verifyAddress - verify with USPS if defined or go to step 3
@@ -395,6 +414,7 @@ class Membership {
             return false;
         }
 
+        this.#cartChanges++;
         // Check USPS for standardized address
         if (this.#uspsDiv != null && (person['country'] == 'USA')) {
             var script = "scripts/uspsCheck.php";
@@ -555,6 +575,11 @@ class Membership {
             html = "No memberships found";
         }
         this.#cartContentsDiv.innerHTML = html;
+
+        if (this.#cartChanges > 0)
+            this.#saveCartBtn.innerHTML = "Save the cart and return to the home page";
+        else
+            this.#saveCartBtn.innerHTML = "Return to the home page.";
     }
 
     // add to cart
@@ -583,6 +608,7 @@ class Membership {
             this.#memberships = [];
         this.#memberships.push(newMembership);
         this.newIDKey--;
+        this.#cartChanges++;
         this.updateCart();
         this.buildMembershipButtons();
     }
@@ -602,6 +628,7 @@ class Membership {
         }
 
         this.#memberships.splice(row, 1);
+        this.#cartChanges--;
         this.updateCart();
         this.buildMembershipButtons();
     }
@@ -631,6 +658,7 @@ class Membership {
         }
 
         mbr.toDelete = true;
+        this.#cartChanges++;
         this.updateCart();
         this.buildMembershipButtons();
     }
@@ -649,6 +677,7 @@ class Membership {
         }
 
         mbr.toDelete = undefined;
+        this.#cartChanges--;
         this.updateCart();
         this.buildMembershipButtons();
     }
@@ -664,5 +693,53 @@ class Membership {
             return cartrow;  // return matching entry
         }
         return null; // not found
+    }
+
+    // save cart / return home button
+    saveCart() {
+        var _this = this;
+        if (this.#cartChanges == 0) {
+            // go back to the home page
+            window.location = "portal.php";
+            return;
+        }
+        this.#saveCartBtn.disabled = true;
+
+        var script = 'scripts/updateFromCart.php';
+        var data = {
+            action: 'updateCart',
+            cart: JSON.stringify(this.#memberships),
+            person: JSON.stringify(this.#personInfo),
+        }
+
+        $.ajax({
+            method: 'POST',
+            url: script,
+            data: data,
+            success: function (data, textStatus, jqXhr) {
+                if (data['status'] == 'error') {
+                    show_message(data['message'], 'error');
+                    _this.#saveCartBtn.disabled = false;
+                } else if (data['status'] == 'warn') {
+                    show_message(data['message'], 'warn');
+                    _this.#saveCartBtn.disabled = false;
+                } else {
+                    if (config['debug'] & 1)
+                        console.log(data);
+                    membership.saveCartComplete(data);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showAjaxError(jqXHR, textStatus, errorThrown);
+                _this.#saveCartBtn.disabled = false;
+                return false;
+            },
+        });
+    }
+
+    saveCartComplete(data) {
+        // once saved, return home
+        window.location = "portal.php";
+        return;
     }
 }

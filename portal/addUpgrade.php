@@ -289,11 +289,6 @@ drawCart();
     <?php
 // ending wrapup section php
 ?>
-    <div id="wrapup">
-        <div class='row'>
-            <div class='col-sm-12'>wrap up Section</div>
-        </div>
-    </div>
 </form>
 <?php
 portalPageFoot();
