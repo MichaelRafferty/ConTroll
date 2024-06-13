@@ -69,18 +69,16 @@ $newPerid = null;
 
 // first update the person so we can build a transaction and memberships
 if ($personId < 0) {
-    $updateTransNewperid = false;
     if ($transId == null) {
-        $transId = getNewTransaction($conid, null, null);
-        $updateTransNewperid = true;
+        $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
     }
     // insert into newPerson
     $iQ = <<<EOS
-insert into newperson (newperson.transid, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip,
+insert into newperson (transid, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip,
                        country, share_reg_ok, contact_ok, managedBy, managedByNew, updatedBy, lastVerified)
 values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW());
 EOS;
-    $typeStr = 'ssssssssssssssssiii';
+    $typeStr = 'issssssssssssssssiii';
     $valArray = array(
         $transId,
         trim($person['last_name']),
@@ -112,15 +110,6 @@ EOS;
     $response['newPersonId'] = $personId;
     $response['message'] = "New person with Temporary ID $personId added";
     $newPerId = $personId;
-
-    if ($updateTransNewperid) {
-        $uQ = <<<EOS
-UPDATE transaction
-SET newperid = ?
-WHERE id = ?;
-EOS;
-    dbSafeCmd($uQ, 'ii', $newPerId, $transId);
-    }
 } else {
     // update the record
     if ($personType == 'p') {
@@ -216,14 +205,14 @@ EOS;
         }
         if ($cartRow['status'] == 'in-cart') {
             if ($transId == null) {
-                $tranId = getNewTransaction($conid, $personType == 'p' ? $personId : null, $personType == 'n' ? $personId : null)
+                $tranId = $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
             }
             // insert the new reg record into the cart
             $iQ = <<<EOS
 INSERT INTO reg(conid, perid, newperid, create_trans, price, create_user, memId, status)
 values (?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-            $typeStr = 'iiidiis';
+            $typeStr = 'iiiidiis';
             $valArray = array(
                 $conid,
                 $personType == 'p' ? $personId : null,
@@ -232,7 +221,7 @@ EOS;
                 $cartRow['price'],
                 $loginId,
                 $cartRow['memId'],
-                'unpaid'               
+                $cartRow['price'] == 0 ? 'paid' : 'unpaid'
             );
             $new_cartid = dbSafeInsert($iQ, $typeStr, $valArray);
             if ($new_cartid === false || $new_cartid < 0) {
@@ -256,7 +245,7 @@ JOIN sum s
 SET price = s.total
 WHERE id = ?;
 EOS;
-        dbSafeCmd($uQ, 'ii', $transId, $transId);
+        dbSafeCmd($uQ, 'ii', array($transId, $transId));
     }
     $response['message'] .= "<br/>$num_del Memberships Deleted, $num_ins Memberships Inserted";
 }

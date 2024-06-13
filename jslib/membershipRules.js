@@ -178,33 +178,36 @@ class MembershipRules {
             }
         }
 
-        this.#allTypes = [];
-        this.#allCats = [];
-        this.#allAges = [];
-        this.#allMems = [];
-        if (step.ruleType == 'needAll' || step.ruleType == 'notall') {
-            // set up the check matrix for 'All' rules
-            if (step.typeList != null) {
-                for (var row in step.typeListArray) {
-                    this.#allTypes[typeListArray[row]] = false;
+        if (step.ruleType == 'needAll' || step.ruleType == 'notAll') {
+            // for the all rules we need an access to all types
+            this.#allTypes = [];
+            this.#allCats = [];
+            this.#allAges = [];
+            this.#allMems = [];
+            if (step.ruleType == 'needAll' || step.ruleType == 'notall') {
+                // set up the check matrix for 'All' rules
+                if (step.typeList != null) {
+                    for (var row in step.typeListArray) {
+                        this.#allTypes[typeListArray[row]] = false;
+                    }
                 }
-            }
 
-            if (step.catList != null) {
-                for (var row in step.catListArray) {
-                    this.#allCats[catListArray[row]] = false;
+                if (step.catList != null) {
+                    for (var row in step.catListArray) {
+                        this.#allCats[catListArray[row]] = false;
+                    }
                 }
-            }
 
-            if (step.ageList != null) {
-                for (var row in step.ageListArray) {
-                    this.#allAges[ageListArray[row]] = false;
+                if (step.ageList != null) {
+                    for (var row in step.ageListArray) {
+                        this.#allAges[ageListArray[row]] = false;
+                    }
                 }
-            }
 
-            if (step.memList != null) {
-                for (var row in step.memListArray) {
-                    this.#allMems[memListArray[row]] = false;
+                if (step.memList != null) {
+                    for (var row in step.memListArray) {
+                        this.#allMems[memListArray[row]] = false;
+                    }
                 }
             }
         }

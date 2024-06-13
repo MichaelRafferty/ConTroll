@@ -88,6 +88,7 @@ if (isset($_SESSION['id'])) {
         session_destroy();
         unset($_SESSION['id']);
         unset($_SESSION['idType']);
+        unset($_SESSION['transId']);
         header('location:' . $portal_conf['portalsite']);
         exit();
     } else {

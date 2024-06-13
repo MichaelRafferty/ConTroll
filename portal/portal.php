@@ -57,23 +57,28 @@ if ($holderRegR == false || $holderRegR->num_rows == 0) {
 // get people managed by this account holder and their registrations
 if ($personType == 'p') {
     $managedSQL = <<<EOS
-SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
-    p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.contact_ok, p.share_reg_ok, p.managedBy, NULL AS managedByNew,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-    r.conid, r.status, r.memId, m.memCategory, m.memType, m.memAge, m.shortname, m. label, m.memGroup, 'p' AS personType
-    FROM perinfo p
-    LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ?
-    LEFT OUTER JOIN memLabel m ON m.id = r.memId
-    WHERE managedBy = ? AND p.id != p.managedBy
-UNION
-SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
-    'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.contact_ok, p.share_reg_ok, p.managedBy, p.managedByNew,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-    r.conid, r.status, r.memId, m.memCategory, m.memType, m.memAge, m.shortname, m. label, m.memGroup, 'n' AS personType
-    FROM newperson p    
-    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ?
-    LEFT OUTER JOIN memLabel m ON m.id = r.memId
-    WHERE managedBy = ? AND p.id != ? AND p.perid IS NULL;
+WITH ppl AS (
+    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+        p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.contact_ok, p.share_reg_ok, p.managedBy, NULL AS managedByNew,
+        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
+        r.conid, r.status, r.memId, m.memCategory, m.memType, m.memAge, m.shortname, m. label, m.memGroup, 'p' AS personType
+        FROM perinfo p
+        LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ?
+        LEFT OUTER JOIN memLabel m ON m.id = r.memId
+        WHERE managedBy = ? AND p.id != p.managedBy
+    UNION
+    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+        'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.contact_ok, p.share_reg_ok, p.managedBy, p.managedByNew,
+        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
+        r.conid, r.status, r.memId, m.memCategory, m.memType, m.memAge, m.shortname, m. label, m.memGroup, 'n' AS personType
+        FROM newperson p    
+        LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ?
+        LEFT OUTER JOIN memLabel m ON m.id = r.memId
+        WHERE managedBy = ? AND p.id != ? AND p.perid IS NULL
+)
+SELECT *
+FROM ppl
+ORDER BY personType DESC, id ASC;
 EOS;
     $managedByR = dbSafeQuery($managedSQL, 'iiiii', array($conid, $personId, $conid, $personId, $personId));
 } else {
@@ -82,10 +87,11 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
     'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.contact_ok, p.share_reg_ok, p.managedBy, NULL AS managedByNew,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
     r.conid, r.status, r.memId, m.memCategory, m.memType, m.memAge, m.shortname, m. label, m.memGroup, 'n' AS personType
-    FROM newperson p
-    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ?
-    LEFT OUTER JOIN memLabel m ON m.id = r.memId
-    WHERE p.managedByNew = ? AND p.id != p.managedBy;
+FROM newperson p
+LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ?
+LEFT OUTER JOIN memLabel m ON m.id = r.memId
+WHERE p.managedByNew = ? AND p.id != p.managedBy
+ORDER BY id ASC;
 EOS;
     $managedByR = dbSafeQuery($managedSQL, 'iiii', array($conid, $personId, $conid, $personId));
 }
@@ -257,7 +263,7 @@ WITH pn AS (
 )
 SELECT DISTINCT *
 FROM mems
-ORDER BY fullname, create_date
+ORDER BY memberId, create_date
 EOS;
     $membershipsR = dbSafeQuery($membershipsQ, 'iiiiii', array($personId, $personId, $personId, $conid,$personId, $conid));
 } else {
@@ -273,7 +279,7 @@ JOIN reg r ON t.id = r.create_trans
 JOIN memLabel m ON m.id = r.memId
 JOIN newperson p ON p.id = r.newperid
 WHERE t.newperid = ? AND t.conid = ?
-ORDER BY fullname, create_date
+ORDER BY memberId ASC, create_date
 EOS;
     $membershipsR = dbSafeQuery($membershipsQ, 'ii', array($personId, $conid));
 }
