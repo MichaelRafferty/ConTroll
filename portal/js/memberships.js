@@ -290,6 +290,7 @@ class Membership {
         this.#ageBracketDiv.hidden = step != 1;
         this.#verifyPersonDiv.hidden = step != 2;
         this.#getNewMembershipDiv.hidden = step != 3;
+        clear_message();
         if (step == 3) {
             this.updateCart;
             this.buildMembershipButtons();
@@ -327,6 +328,7 @@ class Membership {
 
     // verifyAddress - verify with USPS if defined or go to step 3
     verifyAddress() {
+        clear_message();
         var valid = true;
         var person = URLparamsToArray($('#addUpgradeForm').serialize());
         this.#personInfo.last_name = person.lname.trim();

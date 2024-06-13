@@ -166,6 +166,18 @@ class MembershipRules {
             mlist = this.#memberships;
         }
 
+        // check ageList against the person's age first
+        if (step.ageList != null && this.#age != null && this.#age != '' && step.applyTo == 'person') {
+            var match = step.ageListArray.indexOf(this.#age) != -1;
+            if (step.ruleType == 'notAny' || step.ruleType == 'notAll') {
+                if (match)
+                    return false;
+            } else {
+                if (!match)
+                    return false;
+            }
+        }
+
         this.#allTypes = [];
         this.#allCats = [];
         this.#allAges = [];
@@ -305,6 +317,8 @@ class MembershipRules {
                 return true;
         }
         if (step.ageList != null) {
+            if (step.ageListArray.indexOf(this.#age) != -1)
+                return true;
             if (step.ageListArray.indexOf(mbr.memAge.toString()) != -1)
                 return true;
         }
