@@ -50,8 +50,6 @@ class Membership {
     #memberships = null;
     #allMemberships = null;
     #membershipButtonsDiv = null;
-    #vpModal = null;
-    #vpBody = null;
     #newMembershipSave = null;
 
     // cart items
@@ -71,6 +69,11 @@ class Membership {
     #getNewMembershipDiv = null;
     #currentStep = 1;
     #step3submitDiv = null;
+
+    // variable price items
+    #amountField = null;
+    #vpModal = null;
+    #vpBody = null;
 
     constructor() {
         this.#memberships = [];
@@ -117,6 +120,7 @@ class Membership {
         var id = document.getElementById("variablePriceModal");
         if (id) {
             this.#vpModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            id.addEventListener('hidden.bs.modal', amountModalHiddenHelper);
         }
 
         if (config['action'] != 'new') {
@@ -616,7 +620,6 @@ class Membership {
         newMembership.memAge = memrow.memAge;
         var memCat = memCategories[memrow.memCategory];
         if (memCat.variablePrice == 'Y') {
-            this.#newMembershipSave = newMembership;
             var mem = memListIdx[newMembership.memId];
             // update the modal with the item
             this.#vpBody.innerHTML = `
@@ -625,14 +628,29 @@ class Membership {
             <label for="vpPrice">How much for ` + mem.label + `?</label>
         </div>
         <div class="col-sm-auto">
-            <input type="number" class='no-spinners' inputmode="numeric" id="vpPrice" name="vpPrice" size="20" placeholder="How Much?" min="` + newMembership.price + `"/>
+            <input type="number" class='no-spinners' inputmode="numeric" id="vpPrice" name="vpPrice" size="20" placeholder="How Much?" min="` + mem.price + `"/>
         </div>
     </div>
 `;
+            this.#amountField = document.getElementById("vpPrice");
+            this.#amountField.addEventListener('keyup', membership.amountEventListener);
             this.#vpModal.show();
+            this.#amountField.focus();
+            newMembership.minPrice = mem.price;
+            this.#newMembershipSave = newMembership;
             return;
         }
         this.membershipAddFinal(newMembership);
+    }
+
+    amountEventListener(e) {
+        if (e.code === 'Enter')
+            membership.vpSubmit();
+    }
+
+    amountModalHidden(e) {
+        clear_message('vpMessageDiv');
+        this.#amountField.removeEventListener('keyup', membership.amountEventListener);
     }
 
     // vpsubmit - handle return from modal popup
@@ -640,6 +658,10 @@ class Membership {
         var priceField = document.getElementById('vpPrice');
         var price = Number(priceField.value).toFixed(2);
         var newMembership = this.#newMembershipSave;
+        if (Number(price) < Number(newMembership.minPrice)) {
+            show_message("Your " + newMembership.label + " cannot be less than " + newMembership.minPrice, 'warn', 'vpMessageDiv');
+            return;
+        }
         this.#newMembershipSave = null;
         newMembership.price = price;
         this.membershipAddFinal(newMembership);
@@ -786,4 +808,8 @@ class Membership {
         window.location = "portal.php";
         return;
     }
+}
+
+function amountModalHiddenHelper(event) {
+    membership.amountModalHidden(event);
 }
