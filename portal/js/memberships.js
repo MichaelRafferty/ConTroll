@@ -236,8 +236,7 @@ class Membership {
             var mbr = this.#memberships[row];
             if (mbr.memAge != 'all') {
                 this.#memberAge = mbr.memAge;
-                this.#memberAgeLabel = mbr.status;
-                this.#memberAgeLabel = ageListIdx[this.#memberAge]
+                this.#memberAgeLabel = ageListIdx[this.#memberAge].label;
                 break;
             }
         }
@@ -302,11 +301,11 @@ class Membership {
     ageSelect(ageType) {
         if (this.#memberAge != null && ageType != this.#memberAge) {
             this.#memberAgeError = true;
-            show_message("You already have a membership of the age type " + this.#memberAgeLabel + '.<br/>' +
+            show_message("You already have a membership of the age '" + this.#memberAgeLabel + "'.<br/>" +
                 (this.#memberAgeStatus == 'cart' ? "You will need to remove this incorrect membership from your cart or change the age selected to continue." :
                     "If this new age is the correct age, please contact registration at " + config['regadminemail'] + " to assist you in correcting the prior membership.<br/>" +
-                    "You will not be able to purchase additional memberships for this person until this is corrected. " +
-                    "Otherwise, change the age selected to continue."), "warn");
+                    "You may not be able to purchase appropriate additional memberships for this person until this is corrected.<br/>" +
+                    "If this new age is not the correct age, select the proper age above to continue."), "warn");
             return;
         }
 
