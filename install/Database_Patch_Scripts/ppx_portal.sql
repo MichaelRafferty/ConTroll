@@ -213,5 +213,7 @@ CREATE TABLE payorPlanPayments (
     PRIMARY KEY (id)
 );
 
+ALTER TABLE reg ADD COLUMN planId int DEFAULT NULL AFTER coupon;
+ALTER TABLE reg ADD CONSTRAINT FOREIGN KEY (planId) REFERENCES paymentPlans (id) ON UPDATE CASCADE;
 
 INSERT INTO patchLog(id, name) values(ppx, 'Portal Changes');
