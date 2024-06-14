@@ -196,7 +196,7 @@ drawVerifyPersonInfo();
     <div id="getNewMembershipDiv">
         <div class='row'>
             <div class='col-sm-12'>
-                <h3>Step <?php echo $step4Num;?>: Add new memberships</h3>
+                <h3>Step <?php echo $step4num;?>: Add new memberships</h3>
             </div>
         </div>
 <?php
