@@ -62,7 +62,10 @@ foreach ($existingInterests as $existing) {
     $newVal = array_key_exists($existing['interest'], $newInterests) ? 'Y' : 'N';
     if (array_key_exists('interested', $existing)) {
         if ($newVal != $existing['interested']) { // only update changes
-            $upd = dbSafeCmd($updInterest, 'sii', array($newVal, $personId, $existing['id']));
+            $upd = 0;
+            if ($existing['id'] != null) {
+                $upd = dbSafeCmd($updInterest, 'sii', array($newVal, $personId, $existing['id']));
+            }
             if ($upd === false || $upd === 0) {
                 $newkey = dbSafeInsert($insInterest, 'issi', array($currentPerson, $existing['interest'], $newVal, $personId));
                 if ($newkey !== false && $newkey > 0)
