@@ -202,18 +202,22 @@ CREATE TABLE payorPlans (
 );
 
 CREATE TABLE payorPlanPayments (
-    id int NOT NULL AUTO_INCREMENT,
-    planId int NOT NULL,
+    payorPlanId int NOT NULL,
     paymentNbr int NOT NULL DEFAULT 0,
     dueDate datetime DEFAULT NULL,
     payDate datetime DEFAULT NULL,
+    /* add should have paid? */
     amount decimal(8,2) NOT NULL DEFAULT 0,
     paymentId int DEFAULT NULL,
     transactionId int DEFAULT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (payorPlanId, paymentNbr)
 );
 
+ALTER TABLE payorPlanPayments ADD CONSTRAINT ppp_payorplanid_fk FOREIGN KEY (payorPlanId) REFERENCES paymentPlans(id);
+
 ALTER TABLE reg ADD COLUMN planId int DEFAULT NULL AFTER coupon;
-ALTER TABLE reg ADD CONSTRAINT FOREIGN KEY (planId) REFERENCES paymentPlans (id) ON UPDATE CASCADE;
+ALTER TABLE reg ADD CONSTRAINT reg_planid_fk FOREIGN KEY (planId) REFERENCES payorPlans (id) ON UPDATE CASCADE;
+
+ALTER TABLE transaction DROP COLUMN ticket_num;
 
 INSERT INTO patchLog(id, name) values(ppx, 'Portal Changes');
