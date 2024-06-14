@@ -309,3 +309,63 @@ function drawVariablePriceModal() {
     </div>
 <?php
 }
+
+function drawManagedPerson($person, $memberships, $showInterests) {
+    ?>
+    <div class="row mb-1">
+        <div class='col-sm-1' style='text-align: right;'><?php echo ($person['personType'] == 'n' ? 'Temp ' : '') . $person['id']; ?></div>
+        <div class='col-sm-4'><?php echo $person['fullname']; ?></div>
+        <div class="col-sm-3"><?php echo $memberships; ?></div>
+        <div class='col-sm-4 p-1'>
+            <button class='btn btn-sm, btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.editPerson(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">Edit Person</button>
+<?php if ($showInterests) { ?>
+            <button class='btn btn-sm, btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.editInterests(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">Edit Interests</button>
+<?php } ?>
+            <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.addMembership(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">Add/Upgrade Memberships</button>
+        </div>
+    </div>
+    <?php
+}
+
+// draw_editInterests - draw the update interests form for the person
+function draw_editInterestsModal($interests) {
+    if ($interests != null) {
+    ?>
+    <div id='editInterestModal' class='modal modal-x1 fade' tabindex='-1' aria-labelledby='Edit Interests' aria-hidden='true' style='--bs-modal-width: 96%;'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='editInterestsTitle'>
+                        <strong>Edit Interests</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' stype='padding: 4px; background-color: lightcyan;'>
+                    <div class='container-fluid'>
+                        <form id='editInterests' class='form-floating' action='javascript:void(0);'>
+                            <input type='hidden' name='id' id='eiPersonId'/>
+                            <input type='hidden' name='type' id='eiPersonType'/>
+                            <div class="row">
+                                <div class="col-sm-auto">
+                                    <h3 class='text-primary' id='eiHeader'>Editing Interests for this new person</h3>
+                                </div>
+                            </div>
+                            <?php
+                            drawInterestList($interests);
+                            ?>
+                        </form>
+                        <div class='row'>
+                            <div class="col-sm-12" id='eiMessageDiv'></div>
+                        </div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10301'>Cancel</button>
+                    <button class='btn btn-sm btn-primary' id='editInterestSubmitBtn' onClick="portal.editInterestSubmit()" tabindex='10302'>Update Interests</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
+    }
+}

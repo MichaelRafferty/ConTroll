@@ -156,7 +156,7 @@ ALTER TABLE memberInterests ADD CONSTRAINT FOREIGN KEY (interest) REFERENCES int
 CREATE TABLE paymentPlans (
     id int NOT NULL AUTO_INCREMENT,
     name varchar(16) NOT NULL,
-    ddescription varchar(1024) DEFAULT NULL,
+    description varchar(1024) DEFAULT NULL,
     catList varchar(1024) DEFAULT NULL,
     memList varchar(1024) DEFAULT NULL,
     excludeList varchar(1024) DEFAULT NULL,
@@ -206,7 +206,7 @@ CREATE TABLE payorPlanPayments (
     paymentNbr int NOT NULL DEFAULT 0,
     dueDate datetime DEFAULT NULL,
     payDate datetime DEFAULT NULL,
-    /* add should have paid? */
+    planPaymentAmount decimal(8,2) NOT NULL DEFAULT 0,
     amount decimal(8,2) NOT NULL DEFAULT 0,
     paymentId int DEFAULT NULL,
     transactionId int DEFAULT NULL,

@@ -33,6 +33,13 @@ $response['personType'] = $personType;
 $response['personId'] = $personId;
 $getId = $_POST['getId'];
 $getType = $_POST['getType'];
+
+if (array_key_exists('interests', $_POST)) {
+    $interestReq = $_POST['interests'];
+} else {
+    $interestReq = '';
+}
+
 if (array_key_exists('memberships', $_POST)) {
     $membershipReq = $_POST['memberships'];
 } else {
@@ -78,7 +85,7 @@ if ($personId != $person['managedBy'] && $personId != $person['managedByNew'] &&
 // ok we have permission, return the person record
 $response['person'] = $person;
 
-// now if asked for memberships, get them as well
+// now if asked for interests or  memberships, get them as well
 if ($getType == 'p') {
     $rfield = 'perid';
     $ptable = 'perinfo';
@@ -89,7 +96,29 @@ if ($getType == 'p') {
     $mfield = 'managedByNew';
 }
 
-if ($membershipReq == 'Y') {
+// interests
+if ($interestReq == 'Y') {
+    $interests = [];
+
+    $iQ = <<<EOS
+SELECT i.interest, i.description, i.sortOrder, m.interested, m.id
+FROM interests i
+LEFT OUTER JOIN memberInterests m ON m.$rfield = ? AND m.interest = i.interest
+WHERE i.active = 'Y'
+ORDER BY i.sortOrder
+EOS;
+    $iR = dbSafeQuery($iQ, 'i', array($person['id']));
+    if ($iR !== false) {
+        while ($row = $iR->fetch_assoc()) {
+            $interests[] = $row;
+        }
+        $iR->free();
+    }
+    $response['interests'] = $interests;
+}
+
+// memberships of both Y and A types
+if ($membershipReq == 'Y' || $membershipReq == 'A') {
     $memberships = [];
     $mQ = <<<EOS
 SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory, m.memAge
@@ -103,6 +132,7 @@ EOS;
         while ($row = $mR->fetch_assoc()) {
             $memberships[] = $row;
         }
+        $mR->free();
     }
     $response['memberships'] = $memberships;
 }

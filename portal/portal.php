@@ -2,6 +2,7 @@
 // Registration  Portal - [prta;].php - Main page for the membership portal
 require_once("lib/base.php");
 require_once("lib/portalForms.php");
+require_once("../lib/interests.php");
 
 global $config_vars;
 
@@ -106,6 +107,26 @@ if ($managedByR != false) {
     $managedByR->free();
 }
 
+// get the information for the interest block
+$interests = null;
+$iQ = <<<EOS
+SELECT interest, description, sortOrder
+FROM interests
+WHERE active = 'Y'
+ORDER BY sortOrder ASC;
+EOS;
+$iR = dbQuery($iQ);
+if ($iQ !== false) {
+    $interests = [];
+    while ($row = $iR->fetch_assoc()) {
+        $interests[] = $row;
+    }
+    $iR->free();
+    if (count($interests) == 0) {
+        $interests = null;
+    }
+}
+
 portalPageInit('portal', $info['fullname'] . ($personType == 'p' ? ' (ID: ' : 'Temporary ID: ') . $personId . ')',
     /* css */ array($cdn['tabcss'],
         $cdn['tabbs5'],
@@ -124,6 +145,7 @@ portalPageInit('portal', $info['fullname'] . ($personType == 'p' ? ' (ID: ' : 'T
 <?php
 // draw all the modals for this screen
 draw_editPersonModal();
+draw_editInterestsModal($interests);
 
 // if this person is managed, print a banner and let them disassociate from the manager.
 if ($info['managedByName'] != null) {
@@ -142,16 +164,9 @@ if ($info['managedByName'] != null) {
     <div class="col-sm-3"><b>Memberships</b></div>
     <div class="col-sm-4"><b>Actions</b></div>
 </div>
-<div class="row">
-    <div class='col-sm-1' style='text-align: right;'><?php echo ($personType == 'n' ? 'Temp ' : '') . $personId; ?></div>
-    <div class='col-sm-4'><?php echo $info['fullname']; ?></div>
-    <div class="col-sm-3"><?php echo $holderMembership; ?></div>
-    <div class='col-sm-4 p-1'>
-        <button class='btn btn-sm, btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.editPerson(<?php echo $personId . ",'" . $personType . "'"; ?>);">Edit Person Record</button>
-        <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.addMembership(<?php echo $personId . ",'" . $personType . "'"; ?>);">Add/Upgrade Memberships</button>
-    </div>
-</div>
 <?php
+drawManagedPerson($info, $holderMembership, $interests != null);
+
 
 $managedMembershipList = '';
 $currentId = -1;
@@ -160,18 +175,7 @@ if (count($managed) > 0) {
     foreach ($managed as $m) {
         if ($currentId != $m['id']) {
             if ($currentId > 0) {
-            // output the prior row
-?>
-            <div class='row mt-3'>
-                <div class='col-sm-1' style='text-align: right;'><?php echo ($curPT == 'n' ? 'Temp ' : '') . $currentId; ?></div>
-                <div class='col-sm-4'><?php echo $curFN; ?></div>
-                <div class="col-sm-3"><?php echo $curMB; ?></div>
-                <div class='col-sm-4 p-1'>
-                    <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.editPerson(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Edit Person Record</button>
-                    <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.addMembership(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Add/Upgrade Memberships</button>
-                </div>
-            </div>
-<?php
+                drawManagedPerson(['id' => $currentId, 'personType' => $curPT, 'fullname' => $curFN ], $curMB,$interests != null);
             }
             $curPT = $m['personType'];
             $currentId = $m['id'];
@@ -184,17 +188,7 @@ if (count($managed) > 0) {
         $curMB .= $m['memId'] == null ? 'None' : (($m['conid'] != $conid ? $m['conid'] . ' ' : '') .  $m['label'] . ' (' . $m['status']) . ')';
     }
     if ($curMB != '') {
-?>
-        <div class='row mt-3'>
-            <div class='col-sm-1' style='text-align: right;'><?php echo ($curPT == 'n' ? 'Temp ' : '') . $currentId; ?></div>
-            <div class='col-sm-4'><?php echo $curFN; ?></div>
-            <div class="col-sm-3"><?php echo $curMB; ?></div>
-            <div class='col-sm-4 p-1'>
-                <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.editPerson(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Edit Person Record</button>
-                <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.addMembership(<?php echo $currentId . ",'" . $curPT . "'"; ?>);">Add/Upgrade Memberships</button>
-            </div>
-        </div>
-    <?php
+        drawManagedPerson(['id' => $currentId, 'personType' => $curPT, 'fullname' => $curFN ], $curMB,$interests != null);
     }
 }
 

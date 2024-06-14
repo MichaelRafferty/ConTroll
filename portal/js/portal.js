@@ -38,7 +38,6 @@ class Portal {
     #shareField = null;
     #uspsDiv= null;
 
-
     // person fields
     #currentPerson = null;
     #currentPersonType = null;
@@ -46,7 +45,13 @@ class Portal {
     #personSave = null;
     #uspsAddress = null;
 
-
+    // interests fields
+    #editInterestsModal = null;
+    #editInterestsTitle = null;
+    #eiHeaderDiv = null
+    #eiPersonIdField = null
+    #eiPersonTypeField = null;
+    #interests = null;
 
     constructor() {
         var id = document.getElementById("editPersonModal");
@@ -76,6 +81,14 @@ class Portal {
             this.#contactField = document.getElementById("contact");
             this.#shareField = document.getElementById("share");
             this.#uspsDiv = document.getElementById("uspsblock");
+        }
+        var id = document.getElementById("editInterestModal");
+        if (id) {
+            this.#editInterestsModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#editInterestsTitle = document.getElementById('editInterestsTitle');
+            this.#eiHeaderDiv = document.getElementById('eiHeader');
+            this.#eiPersonIdField = document.getElementById('eiPersonId');
+            this.#eiPersonTypeField = document.getElementById("eiPersonType");
         }
     }
 
@@ -568,5 +581,118 @@ class Portal {
         $('body').append(addForm);
         $('#AddUpgrade').submit();
         $('#AddUpgrade').remove();
+    }
+
+    // interests - edit interests for a person
+
+    // editInterests - open modal after getting data
+    editInterests(id, type) {
+        if (this.#editInterestsModal == null) {
+            show_message('Edit Interests is not available at this time', 'warn');
+            return;
+        }
+
+        this.#currentPerson = id;
+        this.#currentPersonType = type;
+        var data = {
+            getId: id,
+            getType: type,
+            memberships: 'N',
+            interests: 'Y'
+        }
+        var script = 'scripts/getPersonInfo.php';
+        $.ajax({
+            method: 'POST',
+            url: script,
+            data: data,
+            success: function (data, textStatus, jqXhr) {
+                if (data['status'] == 'error') {
+                    show_message(data['message'], 'error');
+                } else if (data['status'] == 'warn') {
+                    show_message(data['message'], 'warn');
+                } else {
+                    if (config['debug'] & 1)
+                        console.log(data);
+                    portal.editInterestsGetSuccess(data);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showAjaxError(jqXHR, textStatus, errorThrown);
+                return false;
+            },
+        });
+    }
+
+    // got the person, update the modal contents
+    editInterestsGetSuccess(data) {
+        // ok, it's legal to edit this person, now populate the fields
+        var person = data['person'];
+        var post = data['post'];
+        this.#interests = data['interests'];
+
+        var fullname = person['fullname'] + ' (';
+        if (post['getType'] == 'n') {
+            fullname += 'Temporary ';
+        }
+        fullname += 'ID: ' + person['id'] + ')</strong>';
+        this.#fullname = fullname;
+
+        this.#editInterestsTitle.innerHTML = '<strong>Editing Interests for: ' + fullname + '</strong>';
+
+        // now fill in the fields
+        this.#eiHeaderDiv.innerHTML = 'Editing Interests for: ' + fullname;
+        this.#eiPersonIdField.value = post['getId'];
+        this.#eiPersonTypeField.value = post['getType'];
+
+        for (var row in this.#interests) {
+            var interest = this.#interests[row];
+            var id = document.getElementById(interest.interest);
+            id.checked = interest.interested == 'Y';
+        }
+
+        this.#editInterestsModal.show();
+    }
+
+    // editInterestsSubmit - save back the interests
+    editInterestSubmit() {
+        clear_message();
+        var data = {
+            existingInterests: JSON.stringify(this.#interests),
+            newInterests: JSON.stringify(URLparamsToArray($('#editInterests').serialize())),
+            currentPerson: this.#currentPerson,
+            currentPersonType: this.#currentPersonType,
+        }
+        if (config['debug'] & 1)
+            console.log(data);
+
+        var script = 'scripts/updateInterests.php';
+        $.ajax({
+            method: 'POST',
+            url: script,
+            data: data,
+            success: function (data, textStatus, jqXhr) {
+                portal.updateInterestsSuccess(data);
+
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
+                return false;
+            },
+        });
+
+    }
+
+    updateInterestsSuccess(data){
+        if (data['status'] == 'error') {
+            show_message(data['message'], 'error', 'eiMessageDiv');
+        } else {
+            if (config['debug'] & 1)
+                console.log(data);
+            show_message(data['message']);
+            this.#editInterestsModal.hide();
+            if (data['rows_upd'] > 0) {
+                window.location.search = '?messageFwd=' + encodeURI(data['message']);
+            }
+        }
     }
 }

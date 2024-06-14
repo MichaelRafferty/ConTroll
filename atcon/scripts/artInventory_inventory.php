@@ -17,7 +17,7 @@ if($check_auth == false) {
 if(!isset($_POST['actions'])) {
     ajaxSuccess(array('error' => "No Actions"));
 }
-$actions = json_decode($_POST['actions']);
+$actions = json_decode($_POST['actions'], true);
 $response = array();
 $response['actions'] = $actions;
 $response['log'] = array();
