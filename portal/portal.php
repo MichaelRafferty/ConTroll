@@ -108,24 +108,7 @@ if ($managedByR != false) {
 }
 
 // get the information for the interest block
-$interests = null;
-$iQ = <<<EOS
-SELECT interest, description, sortOrder
-FROM interests
-WHERE active = 'Y'
-ORDER BY sortOrder ASC;
-EOS;
-$iR = dbQuery($iQ);
-if ($iQ !== false) {
-    $interests = [];
-    while ($row = $iR->fetch_assoc()) {
-        $interests[] = $row;
-    }
-    $iR->free();
-    if (count($interests) == 0) {
-        $interests = null;
-    }
-}
+$interests = getInterests();
 
 portalPageInit('portal', $info['fullname'] . ($personType == 'p' ? ' (ID: ' : 'Temporary ID: ') . $personId . ')',
     /* css */ array($cdn['tabcss'],

@@ -2,6 +2,8 @@
 // Registration  Portal - addUpgrade.php - add new person and membership(s) or just upgrade the memberships for an existing person you manage
 require_once("lib/base.php");
 require_once("lib/portalForms.php");
+require_once("../lib/interests.php");
+require_once("../lib/memRules.php");
 
 global $config_vars;
 
@@ -36,6 +38,8 @@ if (array_key_exists('action', $_POST)) {
     $action = $_POST['action'];
 }
 // if upgrade, get parameters, if none found change to new
+$upgradeType = '';
+$upgradeId = -9999999;
 if ($action == 'upgrade' && array_key_exists('upgradeType', $_POST)) {
     $upgradeType = $_POST['upgradeType'];
     $config_vars['upgradeType'] = $upgradeType;
@@ -82,6 +86,9 @@ EOS;
     }
     $updateName = $checkL['fullname'];
 }
+// get the information for the interest block
+$interests = getInterests();
+
 // build info array about the account holder
 $info = getPersonInfo();
 if ($info === false) {
@@ -90,106 +97,8 @@ if ($info === false) {
     exit();
 }
 
-// get ageList, memTypes, memCategories, memList
-$ageList = array();
-$ageListIdx = array();
-$QR = dbSafeQuery("SELECT * FROM ageList WHERE conid = ? ORDER BY sortorder;", 'i', array($conid));
-while ($row = $QR->fetch_assoc()) {
-    $ageList[] = $row;
-    $ageListIdx[$row['ageType']] = $row;
-}
-$QR->free();
-
-$memTypes = array();
-$QR = dbQuery("SELECT * FROM memTypes WHERE active = 'Y' ORDER BY sortorder;");
-$memTypes = array();
-while ($row = $QR->fetch_assoc()) {
-    $memTypes[$row['memType']] = $row;
-}
-$QR->free();
-
-$memCategories = array();
-$QR = dbQuery("SELECT * FROM memCategories WHERE active = 'Y' ORDER BY sortorder;");
-$memCategories = array();
-while ($row = $QR->fetch_assoc()) {
-    $memCategories[$row['memCategory']] = $row;
-}
-$QR->free();
-
-$memList = array();
-$melListIdx = array();
-$QQ = <<<EOS
-SELECT *
-FROM memList 
-WHERE ((conid = ? AND memCategory != 'yearahead') OR (conid = ? AND memCategory = 'yearahead'))
-  AND startdate <= NOW() AND enddate > NOW() AND online = 'Y'
-ORDER BY sort_order;
-EOS;
-$QR = dbSafeQuery($QQ, 'ii', array($conid, $conid + 1));
-while ($row = $QR->fetch_assoc()) {
-    $memList[] = $row;
-    $memListIdx[$row['id']] = $row;
-}
-$QR->free();
-
-// now get the Membership Rules
-$memRules = array();
-$QQ = <<<EOS
-SELECT *
-FROM memRules
-ORDER BY name;
-EOS;
-$QR = dbQuery($QQ);
-while ($row = $QR->fetch_assoc()) {
-    if ($row['typeList'] != null && $row['typeList'] != '') {
-        $row['typeListArray'] = explode(',', $row['typeList']);
-    }
-    if ($row['catList'] != null && $row['catList'] != '') {
-        $row['catListArray'] = explode(',', $row['catList']);
-    }
-    if ($row['ageList'] != null && $row['ageList'] != '') {
-        $row['ageListArray'] = explode(',', $row['ageList']);
-    }
-    if ($row['memList'] != null && $row['memList'] != '') {
-        $row['memListArray'] = explode(',', $row['memList']);
-    }
-    $memRules[$row['name']] = $row;
-}
-$QR->free();
-// now the more difficult task, get the membership rule items
-$QQ = <<<EOS
-SELECT *
-FROM memRuleItems
-ORDER BY name, step;
-EOS;
-
-$currentName = null;
-$currentRules = array();
-$QR = dbQuery($QQ);
-while ($row = $QR->fetch_assoc()) {
-    if ($currentName != $row['name']) {
-        if ($currentName != null) {
-            $memRules[$currentName]['ruleset'] = $currentRules;
-            $currentRules = array();
-        }
-        $currentName = $row['name'];
-    }
-    if ($row['typeList'] != null && $row['typeList'] != '') {
-        $row['typeListArray'] = explode(',', $row['typeList']);
-    }
-    if ($row['catList'] != null && $row['catList'] != '') {
-        $row['catListArray'] = explode(',', $row['catList']);
-    }
-    if ($row['ageList'] != null && $row['ageList'] != '') {
-        $row['ageListArray'] = explode(',', $row['ageList']);
-    }
-    if ($row['memList'] != null && $row['memList'] != '') {
-        $row['memListArray'] = explode(',', $row['memList']);
-    }
-    $currentRules[$row['step']] = $row;
-}
-if ($currentName != null)
-    $memRules[$currentName]['ruleset'] = $currentRules;
+// get the data for the rules usage
+$ruleData = getRulesData($conid);
 
 // if we get here, we are logged in and it's a purely new person or we manage the person to be processed
 portalPageInit('addUpgrade', $info['fullname'] . ($personType == 'p' ? ' (ID: ' : 'Temporary ID: ') . $personId . ')',
@@ -205,18 +114,16 @@ portalPageInit('addUpgrade', $info['fullname'] . ($personType == 'p' ? ' (ID: ' 
         'js/memberships.js',
     ),
 );
-$memRulesJSON = json_encode($memRules);
-$hold = 1;
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
-    var ageList = <?php echo json_encode($ageList); ?>;
-    var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
-    var memTypes = <?php echo json_encode($memTypes); ?>;
-    var memCategories = <?php echo json_encode($memCategories); ?>;
-    var memList = <?php echo json_encode($memList); ?>;
-    var memListIdx = <?php echo json_encode($memListIdx); ?>;
-    var memRules = <?php echo json_encode($memRules); ?>;
+    var ageList = <?php echo json_encode($ruleData['ageList']); ?>;
+    var ageListIdx = <?php echo json_encode($ruleData['ageListIdx']); ?>;
+    var memTypes = <?php echo json_encode($ruleData['memTypes']); ?>;
+    var memCategories = <?php echo json_encode($ruleData['memCategories']); ?>;
+    var memList = <?php echo json_encode($ruleData['memList']); ?>;
+    var memListIdx = <?php echo json_encode($ruleData['memListIdx']); ?>;
+    var memRules = <?php echo json_encode($ruleData['memRules']); ?>;
 </script>
 <?php
 // get the info for the current person or set it all to NULL
@@ -225,7 +132,6 @@ $memberships = null;
 // draw the skeleton
 drawVariablePriceModal();
 ?>
-<form id='addUpgradeForm' class='form-floating' action='javascript:void(0);'>
     <div class="row mt-3">
         <div class="col-sm-12">
             <h3 id="auHeader">Creating a new person in your account</h3>
@@ -248,6 +154,7 @@ drawVariablePriceModal();
 <?php
     // step 2 - enter/verify the information for this persom
 ?>
+<form id='addUpgradeForm' class='form-floating' action='javascript:void(0);'>
     <div id="verifyPersonDiv">
         <div class="row">
             <div class="col-sm-12">
@@ -259,13 +166,28 @@ drawVerifyPersonInfo();
 ?>
         <hr/>
     </div>
+</form>
 <?php
-// step 3 - draw the placeholder for memberships they can buy and add the memberships to the javascript
+// step 3 - enter/verify the interests for this persom
+?>
+    <div id="verifyInterestDiv">
+        <div class="row">
+            <div class="col-sm-12">
+                <h3>Step 3: Verify Interests</h3>
+            </div>
+        </div>
+        <?php
+        drawVerifyInterestsBlock($interests);
+        ?>
+        <hr/>
+    </div>
+    <?php
+// step 4 - draw the placeholder for memberships they can buy and add the memberships in the javascript
 ?>
     <div id="getNewMembershipDiv">
         <div class='row'>
             <div class='col-sm-12'>
-                <h3>Step 3: Add new memberships</h3>
+                <h3>Step 4: Add new memberships</h3>
             </div>
         </div>
 <?php
@@ -274,7 +196,7 @@ drawGetNewMemberships();
         <hr/>
     </div>
 <?php
-// step 4 - draw the placeholder for the cart and add the current cart info to the javascript
+// Only show the cart on step 4, draw the placeholder for the cart and add the current cart info in the javascript
 ?>
     <div id="cartDiv">
         <div class='row'>
@@ -282,15 +204,20 @@ drawGetNewMemberships();
                 <h3>Memberships:</h3>
             </div>
         </div>
-<?php
-drawCart();
-?>
+        <div id='cartContentsDiv'></div>
+        <div class='row mt-3' id='step4submit'>
+            <div class='col-sm-auto'>
+                <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(3, true);'>Return to step 3: Interest Verification</button>
+            </div>
+            <div class='col-sm-auto'>
+                <button class='btn btn-sm btn-primary' id='saveCartBtn' onclick='membership.saveCart();'>Return to the home page</button>
+            </div>
+        </div>
         <hr/>
     </div>
     <?php
-// ending wrapup section php
+// ending wrapup section php (currently none)
 ?>
-</form>
 <?php
 portalPageFoot();
 ?>

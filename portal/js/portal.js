@@ -646,7 +646,7 @@ class Portal {
 
         for (var row in this.#interests) {
             var interest = this.#interests[row];
-            var id = document.getElementById(interest.interest);
+            var id = document.getElementById('i_' + interest.interest);
             id.checked = interest.interested == 'Y';
         }
 

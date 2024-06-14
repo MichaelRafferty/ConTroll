@@ -11,7 +11,6 @@ class Membership {
     // current person info
     #epHeader = null;
     #personInfo = [];
-    #epHeaderDiv = null;
     #fnameField = null;
     #mnameField = null;
     #lnameField = null;
@@ -68,12 +67,17 @@ class Membership {
     #verifyPersonDiv = null;
     #getNewMembershipDiv = null;
     #currentStep = 1;
-    #step3submitDiv = null;
+    #step4submitDiv = null;
 
     // variable price items
     #amountField = null;
     #vpModal = null;
     #vpBody = null;
+
+    // Interests items
+    #interestDiv = null;
+    #oldInterests = null;
+    #newInterests = null;
 
     constructor() {
         this.#memberships = [];
@@ -88,11 +92,14 @@ class Membership {
         this.#getNewMembershipDiv = document.getElementById("getNewMembershipDiv");
         this.#cartDiv = document.getElementById("cartDiv");
         this.#cartContentsDiv = document.getElementById("cartContentsDiv");
-        this.#step3submitDiv = document.getElementById("step3submit");
+        this.#step4submitDiv = document.getElementById("step4submit");
+        this.#interestDiv = document.getElementById("verifyInterestDiv");
 
         this.#ageBracketDiv.hidden = false;
         this.#verifyPersonDiv.hidden = true;
         this.#getNewMembershipDiv.hidden = true;
+        this.#interestDiv.hidden = true;
+        this.#cartDiv.hidden = true;
 
         this.#epHeader = document.getElementById("epHeader");
         this.#fnameField = document.getElementById("fname");
@@ -144,6 +151,7 @@ class Membership {
             getType: type,
             memberships: newFlag ? 'A' : 'Y',
             ageButtons: ageButtons,
+            interests: 'Y',
         }
         var script = 'scripts/getPersonInfo.php';
         $.ajax({
@@ -179,6 +187,10 @@ class Membership {
             this.#allMemberships = data['allMemberships'];
         }
 
+        if (data['interests']) {
+            this.#oldInterests = data['interests'];
+        }
+
         // now fill in the fields
         if (newFlag) {
             this.#fnameField.value = '';
@@ -193,6 +205,7 @@ class Membership {
             this.#personInfo['id'] = '-1';
             this.#lastVerified = 0;
         } else {
+            // person fields
             this.#fnameField.value = this.#personInfo['first_name'];
             this.#mnameField.value = this.#personInfo['middle_name'];
             this.#suffixField.value = this.#personInfo['suffix'];
@@ -208,6 +221,22 @@ class Membership {
                 this.#lastVerified = lvd.getTime();
             } else {
                 this.#lastVerified = 0;
+            }
+
+            // interests
+            if (this.#oldInterests) {
+                for (var row in this.#oldInterests) {
+                    var interests = this.#oldInterests[row];
+                    var id = document.getElementById('i_' + interests.interest);
+                    if (id) {
+                        if (interests.interested) {
+                            id.checked = interests.interested == 'Y';
+                        } else {
+                            id.checked = false;
+                        }
+                    }
+                }
+                this.#newInterests =  URLparamsToArray($('#editInterests').serialize());
             }
 
         }
@@ -227,7 +256,6 @@ class Membership {
         if (ageButtons)
             this.buildAgeButtons();
 
-        this.updateCart();
 // temp for testing
 // this.#currentAge = 'adult';
 // this.gotoStep(3);
@@ -287,15 +315,17 @@ class Membership {
         var nowD = new Date();
         var now = nowD.getTime();
         var dif = (now - this.#lastVerified);
-        if (!ignoreSkip && step == 2 && (now - this.#lastVerified) < (7 * 60 * 60 * 1000)) {
-            step = 3;
+        if (!ignoreSkip && step == 2 && (now - this.#lastVerified) < (7 * 24 * 60 * 60 * 1000)) {
+            step = 4;
         }
         this.#ageBracketDiv.hidden = step != 1;
         this.#verifyPersonDiv.hidden = step != 2;
-        this.#getNewMembershipDiv.hidden = step != 3;
+        this.#interestDiv.hidden = step != 3;
+        this.#getNewMembershipDiv.hidden = step != 4;
+        this.#cartDiv.hidden = step != 4;
         clear_message();
-        if (step == 3) {
-            this.updateCart;
+        if (step == 4) {
+            this.updateCart();
             this.buildMembershipButtons();
         }
         this.#currentStep = step;
@@ -507,6 +537,7 @@ class Membership {
         this.#stateField.value = this.#personInfo['state'];
         this.#zipField.value = this.#personInfo['zip'];
         this.#uspsDiv.innerHTML = '';
+        this.#cartChanges++;
         this.gotoStep(3);
     }
 
@@ -517,7 +548,26 @@ class Membership {
 
     redoAddress() {
         this.#uspsDiv.innerHTML = '';
+        this.#cartChanges++;
         this.editPersonSubmit(false);
+    }
+
+    // save Interests
+    saveInterests() {
+        var newValues = URLparamsToArray($('#editInterests').serialize());
+        if (newValues.length != this.#newInterests.length) {
+            this.#cartChanges++;
+        } else {
+            for (var row in newValues) {
+                var oldValue = this.#newInterests[row];
+                var newValue = newValues[row];
+                if (oldValue != newValue) {
+                    this.#cartChanges++;
+                }
+            }
+        }
+        this.#newInterests =  newValues;
+        this.gotoStep(4);
     }
 
     // cart functions
@@ -766,7 +816,7 @@ class Membership {
         var _this = this;
         if (this.#cartChanges == 0) {
             // go back to the home page
-            window.location = "portal.php";
+            window.location = "portal.php?messageFwd=" + encodeURI("No Changes");
             return;
         }
         this.#saveCartBtn.disabled = true;
@@ -776,6 +826,8 @@ class Membership {
             action: 'updateCart',
             cart: JSON.stringify(this.#memberships),
             person: JSON.stringify(this.#personInfo),
+            oldInterests: JSON.stringify(this.#oldInterests),
+            newInterests: JSON.stringify(URLparamsToArray($('#editInterests').serialize())),
         }
 
         $.ajax({
@@ -805,7 +857,12 @@ class Membership {
 
     saveCartComplete(data) {
         // once saved, return home
-        window.location = "portal.php";
+        var location = "portal.php";
+        if (data['message']) {
+            window.location = location + '?messageFwd=' + encodeURI(data['message']);
+        } else {
+            window.location = location+ '?messageFwd=' + encodeURI("No Changes");
+        }
         return;
     }
 }

@@ -22,6 +22,26 @@ function drawVerifyPersonInfo() {
     </div>
 <?php
 }
+
+// drawVerifyInterestsBLock - non modal version of validate interests
+function drawVerifyInterestsBlock($interests) {
+    ?>
+    <form id='editInterests' class='form-floating' action='javascript:void(0);'>
+    <?php
+    drawInterestList($interests);
+    ?>
+    </form>
+    <div class="row mt-3">
+        <div class='col-sm-auto'>
+            <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2, true);'>Return to step 2: Personal Information Verification</button>
+        </div>
+        <div class="col-sm-auto">
+            <button class="btn btn-sm btn-primary" onclick="membership.saveInterests();">Save Interests and move to next step</button>
+        </div>
+    </div>
+    <?php
+}
+
 // draw_editPerson - draw the verify/update form for the Person
 function draw_editPersonModal() {
     $usps = get_conf('usps');
@@ -39,7 +59,7 @@ function draw_editPersonModal() {
                     </div>
                     <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                 </div>
-                <div class='modal-body' stype='padding: 4px; background-color: lightcyan;'>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
                         <form id='editPerson' class='form-floating' action='javascript:void(0);'>
                             <input type='hidden' name='id' id='epPersonId'/>
@@ -154,7 +174,7 @@ function drawEditPersonBlock($con, $useUSPS) {
             </div>
         </div>
         <div class='row'>
-            <div col='col-sm-12'>
+            <div class='col-sm-12'>
                 <p class='text-body'>Contact Information
                     (<a href="<?php echo escape_quotes($con['privacypolicy']); ?>" target='_blank'><?php echo $con['privacytext']; ?></a>).
                 </p>
@@ -262,22 +282,6 @@ function drawGetNewMemberships() {
             Select from the buttons above to add memberships.
         </div>
     </div>
-    <div class='row mt-3' id="step3submit">
-        <div class='col-sm-auto'>
-            <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2, true);'>Return to step 2: Personal Information Verification</button>
-        </div>
-        <div class='col-sm-auto'>
-            <button class='btn btn-sm btn-primary' id="saveCartBtn" onclick='membership.saveCart();'>Return to the home page</button>
-        </div>
-    </div>
-    <?php
-}
-
-// drawCart - membership cart
-function drawCart() {
-    ?>
-    </div>
-    <div class="cart" id="cartContentsDiv"></div>
     <?php
 }
 
@@ -293,7 +297,7 @@ function drawVariablePriceModal() {
                     </div>
                     <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                 </div>
-                <div class='modal-body' stype='padding: 4px; background-color: lightcyan;'>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid' id="variablePriceBody">
                     </div>
                     <div class='row'>
@@ -340,7 +344,7 @@ function draw_editInterestsModal($interests) {
                     </div>
                     <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                 </div>
-                <div class='modal-body' stype='padding: 4px; background-color: lightcyan;'>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
                         <form id='editInterests' class='form-floating' action='javascript:void(0);'>
                             <input type='hidden' name='id' id='eiPersonId'/>

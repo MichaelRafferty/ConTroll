@@ -2,6 +2,31 @@
 // interests - anything to do with the PHP side of interests so it can be used by multiple modules
 
 $replaceable = ['CONID', 'CONNAME', 'CONLABEL'];
+
+// getInterests - get the raw interest data (not for a member)
+function getInterests() {
+    $interests = null;
+    $iQ = <<<EOS
+SELECT interest, description, sortOrder
+FROM interests
+WHERE active = 'Y'
+ORDER BY sortOrder ASC;
+EOS;
+    $iR = dbQuery($iQ);
+    if ($iQ !== false) {
+        $interests = [];
+        while ($row = $iR->fetch_assoc()) {
+            $interests[] = $row;
+        }
+        $iR->free();
+        if (count($interests) == 0) {
+            $interests = null;
+        }
+    }
+    return $interests;
+}
+
+//drawInterestList - draw the inner block for interest editing
 function drawInterestList($interests) {
 ?>
     <div class='row'>
@@ -20,10 +45,10 @@ function drawInterestList($interests) {
 ?>
         <div class='row mt-1'>
             <div class='col-sm-auto'>
-                <input type='checkbox' id='<?php echo $interest['interest'];?>' name='<?php echo $interest['interest'];?>'>
+                <input type='checkbox' id='i_<?php echo $interest['interest'];?>' name='<?php echo $interest['interest'];?>'>
             </div>
             <div class='col-sm-auto'>
-                <label for='<?php echo $interest['interest'];?>'><?php echo $desc; ?></label>
+                <label for='i_<?php echo $interest['interest'];?>'><?php echo $desc; ?></label>
             </div>
         </div>
 <?php

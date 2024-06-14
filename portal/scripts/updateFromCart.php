@@ -57,6 +57,28 @@ catch (Exception $e) {
     ajaxSuccess($response);
     exit();
 }
+try {
+    $oldInterests = json_decode($_POST['oldInterests'], true, 512, JSON_THROW_ON_ERROR);
+}
+catch (Exception $e) {
+    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+    $response['status'] = 'error';
+    $response['message'] = $msg;
+    error_log($msg);
+    ajaxSuccess($response);
+    exit();
+}
+try {
+    $newInterests = json_decode($_POST['newInterests'], true, 512, JSON_THROW_ON_ERROR);
+}
+catch (Exception $e) {
+    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+    $response['status'] = 'error';
+    $response['message'] = $msg;
+    error_log($msg);
+    ajaxSuccess($response);
+    exit();
+}
 
 if (array_key_exists('personType', $person)) {
     $personType = $person['personType'];
@@ -249,6 +271,51 @@ EOS;
     }
     $response['message'] .= "<br/>$num_del Memberships Deleted, $num_ins Memberships Inserted";
 }
+
+$newInterests = json_decode($_POST['newInterests'], true);
+$existingInterests = json_decode($_POST['oldInterests'], true);
+
+// find the differences in the interests to update the record
+
+if ($personType == 'p') {
+    $pfield = 'perid';
+} else if ($personType == 'n') {
+    $pfield = 'newperid';
+}
+$updInterest = <<<EOS
+UPDATE memberInterests
+SET interested = ?, updateBy = ?
+WHERE id = ?;
+EOS;
+$insInterest = <<<EOS
+INSERT INTO memberInterests($pfield, interest, interested, updateBy)
+VALUES (?, ?, ?, ?);
+EOS;
+
+$int_upd = 0;
+foreach ($existingInterests as $existing) {
+    $newVal = array_key_exists($existing['interest'], $newInterests) ? 'Y' : 'N';
+    if (array_key_exists('interested', $existing)) {
+        if ($newVal != $existing['interested']) { // only update changes
+            $upd = dbSafeCmd($updInterest, 'sii', array($newVal, $loginId, $existing['id']));
+            if ($upd === false || $upd === 0) {
+                $newkey = dbSafeInsert($insInterest, 'issi', array($perdonId, $existing['interest'], $newVal, $loginId));
+                if ($newkey !== false && $newkey > 0)
+                    $int_upd++;
+            } else {
+                $int_upd++;
+            }
+        }
+    } else {
+        $newkey = dbSafeInsert($insInterest, 'issi', array($personId, $existing['interest'], $newVal, $loginId));
+        if ($newkey !== false && $newkey > 0)
+            $int_upd++;
+    }
+}
+
+$response['int_upd'] = $int_upd;
+
+$response['message'] .= "<br/>" . ($int_upd == 0 ? 'No interest changes' : "$int_upd  interests updated");
 $response['status'] = 'success';
 
 ajaxSuccess($response);

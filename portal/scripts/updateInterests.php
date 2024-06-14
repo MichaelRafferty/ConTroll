@@ -40,7 +40,7 @@ $response['currentPeron'] = $currentPerson;
 $response['personId'] =$personId;
 $response['personType'] = $personType;
 
-// find the differences to update the record
+// find the differences in the interests to update the record
 
 if ($currentPersonType == 'p') {
     $pfield = 'perid';
@@ -60,15 +60,21 @@ EOS;
 $rows_upd = 0;
 foreach ($existingInterests as $existing) {
     $newVal = array_key_exists($existing['interest'], $newInterests) ? 'Y' : 'N';
-    if (array_key_exists('interested', $existing) && $newVal != $existing['interested']) { // only update changes
-        $upd = dbSafeCmd($updInterest, 'sii', array($newVal, $personId, $existing['id']));
-        if ($upd === false || $upd === 0) {
-            $newkey = dbSafeInsert($insInterest, 'issi', array($currentPerson, $existing['interest'], $newVal, $personId));
-            if ($newkey !== false && $newkey > 0)
+    if (array_key_exists('interested', $existing)) {
+        if ($newVal != $existing['interested']) { // only update changes
+            $upd = dbSafeCmd($updInterest, 'sii', array($newVal, $personId, $existing['id']));
+            if ($upd === false || $upd === 0) {
+                $newkey = dbSafeInsert($insInterest, 'issi', array($currentPerson, $existing['interest'], $newVal, $personId));
+                if ($newkey !== false && $newkey > 0)
+                    $rows_upd++;
+            } else {
                 $rows_upd++;
-        } else {
-            $rows_upd++;
+            }
         }
+    } else {
+        $newkey = dbSafeInsert($insInterest, 'issi', array($currentPerson, $existing['interest'], $newVal, $personId));
+        if ($newkey !== false && $newkey > 0)
+            $rows_upd++;
     }
 }
 
