@@ -319,6 +319,8 @@ class Membership {
         if (!ignoreSkip && step == 2 && (now - this.#lastVerified) < (7 * 24 * 60 * 60 * 1000)) {
             step = 4;
         }
+        if (this.#oldInterests.length == 0 && step == 3)
+            step = 4;
         this.#ageBracketDiv.hidden = step != 1;
         this.#verifyPersonDiv.hidden = step != 2;
         this.#interestDiv.hidden = step != 3;

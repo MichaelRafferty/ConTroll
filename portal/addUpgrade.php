@@ -177,17 +177,26 @@ drawVerifyPersonInfo();
             </div>
         </div>
         <?php
-        drawVerifyInterestsBlock($interests);
+        if ($interests != null) {
+            drawVerifyInterestsBlock($interests);
+        }
         ?>
         <hr/>
     </div>
     <?php
+    if ($interests == null) {
+        $step3num = 2;
+        $step4num = 3;
+    } else {
+        $step3num = 3;
+        $step4num = 4;
+    }
 // step 4 - draw the placeholder for memberships they can buy and add the memberships in the javascript
 ?>
     <div id="getNewMembershipDiv">
         <div class='row'>
             <div class='col-sm-12'>
-                <h3>Step 4: Add new memberships</h3>
+                <h3>Step <?php echo $step4Num;?>: Add new memberships</h3>
             </div>
         </div>
 <?php
@@ -207,7 +216,11 @@ drawGetNewMemberships();
         <div id='cartContentsDiv'></div>
         <div class='row mt-3' id='step4submit'>
             <div class='col-sm-auto'>
+<?php if ($step3num == 3) { ?>
                 <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(3, true);'>Return to step 3: Interest Verification</button>
+<?php } else { ?>
+                <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2, true);'>Return to step 2: Personal Information Verification</button>
+<?php } ?>
             </div>
             <div class='col-sm-auto'>
                 <button class='btn btn-sm btn-primary' id='saveCartBtn' onclick='membership.saveCart();'>Return to the home page</button>
