@@ -39,7 +39,9 @@ $holderRegSQL = <<<EOS
 SELECT r.status, r.memId, m.*
 FROM reg r
 JOIN memLabel m ON m.id = r.memId
-WHERE r.conid >= ? AND (r.perid = ? OR r.newperid = ?);
+WHERE
+    status IN  ('unpaid', 'paid', 'plan', 'upgraded') AND
+    r.conid >= ? AND (r.perid = ? OR r.newperid = ?);
 EOS;
 $holderRegR = dbSafeQuery($holderRegSQL, 'iii', array($conid, $personType == 'p' ? $personId : -1, $personType == 'n' ? $personId : -1));
 if ($holderRegR == false || $holderRegR->num_rows == 0) {
@@ -252,14 +254,14 @@ WITH pn AS (
     JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN pn ON pn.memberId = r.perid AND (pn.managedBy = ? OR pn.memberId = ?)
     LEFT OUTER JOIN nn ON nn.memberId = r.newperid
-    WHERE t.perid = ? AND t.conid = ?
+    WHERE status IN  ('unpaid', 'paid', 'plan', 'upgraded') AND t.perid = ? AND t.conid = ?
     UNION
     SELECT t.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory, nn.managedBy, nn.managedByNew, nn.badge_name, nn.fullname, nn.memberId    
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
     JOIN memLabel m ON m.id = r.memId
     JOIN nn ON nn.memberId = r.newperid
-    WHERE t.perid = ? AND t.conid = ?
+    WHERE status IN  ('unpaid', 'paid', 'plan', 'upgraded') AND t.perid = ? AND t.conid = ?
 )
 SELECT DISTINCT *
 FROM mems
@@ -278,7 +280,7 @@ FROM transaction t
 JOIN reg r ON t.id = r.create_trans
 JOIN memLabel m ON m.id = r.memId
 JOIN newperson p ON p.id = r.newperid
-WHERE t.newperid = ? AND t.conid = ?
+WHERE status IN  ('unpaid', 'paid', 'plan', 'upgraded') AND t.newperid = ? AND t.conid = ?
 ORDER BY memberId ASC, create_date
 EOS;
     $membershipsR = dbSafeQuery($membershipsQ, 'ii', array($personId, $conid));

@@ -174,7 +174,7 @@ if (sizeof($cart) > 0) {
             $cQ = <<<EOS
 SELECT id, perid, newperid, status, price, paid, couponDiscount, create_trans
 FROM reg
-WHERE id = ?;
+WHERE id = ?
 EOS;
             $cR = dbSafeQuery($cQ, 'i', array($cartRow['id']));
             if ($cR === false || $cR->num_rows != 1) {
@@ -238,7 +238,7 @@ EOS;
 WITH sum AS (
     SELECT sum(price) AS total
     FROM reg
-    WHERE create_trans = ?
+    WHERE create_trans = ? AND status IN ('unpaid', 'paid', 'plan', 'upgraded')
 )
 UPDATE transaction t
 JOIN sum s
