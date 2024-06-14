@@ -118,7 +118,7 @@ EOS;
 }
 
 // memberships of both Y and A types
-if ($membershipReq == 'Y' || $membershipReq == 'A') {
+if ($membershipReq == 'Y' || $membershipReq == 'B') {
     $memberships = [];
     $mQ = <<<EOS
 SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory, m.memAge

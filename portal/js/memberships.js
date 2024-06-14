@@ -236,10 +236,9 @@ class Membership {
                         }
                     }
                 }
-                this.#newInterests =  URLparamsToArray($('#editInterests').serialize());
             }
-
         }
+        this.#newInterests =  URLparamsToArray($('#editInterests').serialize());
         this.#lnameField.value = this.#personInfo['last_name'];
         this.#addrField.value = this.#personInfo['address'];
         this.#addr2Field.value = this.#personInfo['addr_2'];
@@ -251,7 +250,9 @@ class Membership {
 
         this.#shareField.checked = (this.#personInfo['share_reg_ok'] == null || this.#personInfo['share_reg_ok'] == 'Y');
         this.#contactField.checked = (this.#personInfo['contact_ok'] == null || this.#personInfo['contact_ok'] == 'Y');
-        this.#memberships = data['memberships'];
+        if (data['memberships']) {
+            this.#memberships = data['memberships'];
+        }
 
         if (ageButtons)
             this.buildAgeButtons();
