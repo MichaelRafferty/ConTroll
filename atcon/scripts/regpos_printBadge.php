@@ -35,9 +35,29 @@ $response = array();
 $response['message'] = '';
 if (isset($_SESSION['badgePrinter'])) {
     $printer = $_SESSION['badgePrinter'];
-    $params = $_POST['params'];
+
+    try {
+        $params = json_decode($_POST['params'], true, 512, JSON_THROW_ON_ERROR);
+    }
+    catch (Exception $e) {
+        $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+        $response['error'] = $msg;
+        error_log($msg);
+        ajaxSuccess($response);
+        exit();
+    }
+
     if (array_key_exists('badges', $_POST)) {
-        $response['badges'] = $_POST['badges'];
+        try {
+            $response['badges'] = json_decode($_POST['badges'], true, 512, JSON_THROW_ON_ERROR);
+        }
+        catch (Exception $e) {
+            $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+            $response['error'] = $msg;
+            error_log($msg);
+            ajaxSuccess($response);
+            exit();
+        }
     }
 
     foreach ($params as $param) {
@@ -63,7 +83,7 @@ if (isset($_SESSION['badgePrinter'])) {
                 $response['message'] .= " <a href='$badgefile'>Badge</a>";
             }
             $response['message'] .= "<br/>";
-        } else if(($badge['type'] == 'one-day') || ($badge['type']=='oneday')) {
+        } else if(($badge['type'] == 'one-day') || ($badge['type']=='oneday') || ($badge['type']=='oneDay')) {
             $file_1day = init_file($printer);
             write_badge($badge, $file_1day, $printer);
             $badgefile = print_badge($printer, $file_1day);
@@ -73,7 +93,7 @@ if (isset($_SESSION['badgePrinter'])) {
             }
             $response['message'] .= "<br/>";
         } else { // unprintable badge
-            next;
+            continue;
         }
     }
     ajaxSuccess($response);

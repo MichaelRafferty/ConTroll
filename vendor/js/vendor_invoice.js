@@ -93,6 +93,9 @@ function openInvoice(id) {
         (additionalMemberships > 0 ? "the " : "no ") + "right to purchase " +
         (additionalMemberships > 0 ? "up to " +  additionalMemberships  : "no") +
         " additional memberships at a reduced rate of $" + Number(regionList.additionalMemPrice).toFixed(2) + ".</p>";
+    if((includedMemberships == 0) && (additionalMemberships ==0)) {
+        html += "<input type='hidden' name='agreeNone' value='on'></input>"
+    }
     if (spaces > 0) {
         switch (portalType) {
             case 'artist':
@@ -375,6 +378,10 @@ function makePurchase(token, label) {
                 console.log(data);
             if (data['error']) {
                 show_message(data['error'], 'error', 'inv_result_message');
+                var submitId = document.getElementById(purchase_label);
+                submitId.disabled = false;
+            } else if (data['status'] == 'error') {
+                show_message(data['data'], 'error', 'inv_result_message');
                 var submitId = document.getElementById(purchase_label);
                 submitId.disabled = false;
             } else if (data['status'] == 'success') {

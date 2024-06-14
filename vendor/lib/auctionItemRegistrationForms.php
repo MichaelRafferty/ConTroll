@@ -1,10 +1,34 @@
 <?php
 
 //draw the item registration modal
-function draw_itemRegistrationModal($portalType = '') {
+function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showcontrol=false) {
     if($portalType != 'artist') {
         return;
     }
+
+    $vendor = get_conf('vendor');
+    $auctionTitle = null;
+    $salesTitle = null;
+    $nfsTitle = null;
+
+    if (array_key_exists('artistItemAuctionTitle', $vendor))
+        $auctionTitle = $vendor['artistItemAuctionTitle'];
+
+    if ($auctionTitle == null || $auctionTitle == '')
+        $auctionTitle = 'Art Auction Items';
+
+    if (array_key_exists('artistItemSalesTitle', $vendor))
+        $salesTitle = $vendor['artistItemSalesTitle'];
+
+    if ($salesTitle == null || $salesTitle == '')
+        $salesTitle = 'Art Sales / Print Shop Items';
+
+    if (array_key_exists('artistItemNFSTitle', $vendor))
+        $nfsTitle = $vendor['artistItemNFSTitle'];
+
+    if ($nfsTitle == null || $nfsTitle == '')
+        $nfsTitle = 'Display Only / Not For Sale Items';
+
 ?>
     <div id='item_registration' class='modal modal-x1 fade' tabindex='-1' aria-labelledby='Register Items' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
@@ -19,7 +43,7 @@ function draw_itemRegistrationModal($portalType = '') {
                     <div class='container-fluid'>
                         <div class='row'> <?php /* art items */ ?>
                             <div class='col-sm-auto'>
-                                <h4> Registration for Art Auction Items</h4>
+                                <h4> Registration for <?php echo $auctionTitle; ?></h4>
                                 <div id='artItemTable'>placeholder</div>
                             </div>
                         </div>
@@ -33,7 +57,7 @@ function draw_itemRegistrationModal($portalType = '') {
                         </div>
                         <div class='row'> <?php /* print items */ ?>
                             <div class='col-sm-auto'>
-                                <h4>Registration for Art Sales / Print Shop Items</h4>
+                                <h4>Registration for <?php echo $salesTitle; ?></h4>
                                 <div id='printItemTable'>placeholder</div>
                             </div>
                         </div>
@@ -47,7 +71,7 @@ function draw_itemRegistrationModal($portalType = '') {
                         </div>
                         <div class='row'> <?php /* nfs items */ ?>
                             <div class='col-sm-auto'>
-                                <h4>Registration for Display Only / Not For Sale Items</h4>
+                                <h4>Registration for <?php echo $nfsTitle; ?></h4>
                                 <div id='nfsItemTable'>placeholder</div>
                             </div>
                         </div>
@@ -57,6 +81,19 @@ function draw_itemRegistrationModal($portalType = '') {
                                 <button id="nfs-redo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.redoNfs(); return false;" disabled>Redo</button>
                                 <button id="nfs-addrow" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.addrowNfs(); return false;">Add New</button>
                                 <button id="nfs-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.saveNfs(); return false;" disabled>Save Changes</button>
+                            </div>
+                        </div>
+                        <hr/>
+                        <div class='row'>
+                            <div class='col-sm-auto'>
+                            <h4>Buttons to print out bidsheets and control sheets.</h4>
+                            </div>
+                        </div>
+                        <div class='row'>
+                            <div class='col-sm-auto' id='print_buttons'>
+                                <button id='print_bidsheet' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('bidsheets'); return false;">Print Bidsheets</button>
+                                <button id='print_printshop' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('printshop'); return false;">Print Sales Tags</button>
+                                <button id='print_controlsheet' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('control'); return false;">Print Control Sheet</button>
                             </div>
                         </div>
                         <div class='row' id='ir_message_div'></div>

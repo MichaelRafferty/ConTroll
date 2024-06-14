@@ -2,6 +2,7 @@
 require_once('../lib/base.php');
 require_once('../../lib/email__load_methods.php');
 require_once('../../lib/cc__load_methods.php');
+require_once('../../lib/exhibitorArtistInventoryEmail.php');
 require_once('../../lib/log.php');
 require_once '../lib/email.php';
 
@@ -68,7 +69,8 @@ $aggreeNone = false;
 if (array_key_exists('agreeNone', $_POST))
     $aggreeNone = $_POST['agreeNone'] == 'on';
 
-$dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+$curLocale = locale_get_default();
+$dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 // get the specific information allowed
 $regionYearQ = <<<EOS
 SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice,
@@ -92,7 +94,7 @@ $regionYearR->free();
 
 // get current exhibitor information
 $exhibitorQ = <<<EOS
-SELECT exhibitorId, exhibitorName, exhibitorEmail, website, description, addr, addr2, city, state, zip, perid, newperid,
+SELECT exhibitorId, artistName, exhibitorName, exhibitorEmail, website, description, addr, addr2, city, state, zip, perid, newperid,
        contactEmail, contactName, ey.mailin
 FROM exhibitors e
 JOIN exhibitorYears ey ON e.id = ey.exhibitorId
@@ -373,7 +375,8 @@ INSERT INTO transaction(price, type, conid, notes)
     VALUES(?, ?, ?, ?);
 EOS;
 
-    $transid = dbSafeInsert($transQ, 'dsis', array($totprice, $portalName, $conid, "RegionYearID: $regionYearId"));
+    $notes = "exhibitorId: $exhId, exhibitorYearId: $eyID, exhibitsRegionYearId: $regionYearId, portal: $portalName, exhibitorName: " . $exhibitor['exhibitorName'];
+    $transid = dbSafeInsert($transQ, 'dsis', array($totprice, $portalName, $conid, $notes));
     if ($transid === false) {
         $status_msg .= "Add of transaction for $portalName " . $_POST['name'] . " failed.<br/>\n";
     }
@@ -402,7 +405,7 @@ while ($row = $all_badgeR->fetch_assoc()) {
 // prepare the credit card request
 $results = array(
     'transid' => $transid,
-    'counts' => null,$spacePrice,
+    'counts' => null,
     'spaceName' => $region['name'],
     'spaceDescription' => $region['description'],
     'spacePrice' => $spacePrice,
@@ -423,7 +426,7 @@ $results = array(
 //log requested badges
 logWrite(array('con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces, 'trans' => $transid, 'results' => $results, 'request' => $badges));
 
-$rtn = cc_charge_purchase($results, $ccauth);
+$rtn = cc_charge_purchase($results, $ccauth, true);
 if ($rtn === null) {
     ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
     exit();
@@ -486,7 +489,7 @@ foreach ($spaces as $id => $space) {
 // rule: if exhibitor is mailin, use largest exhibitor number + 1 that is greater than mailin base.
 //      if exhibitor is not mailin, use largest exhibitor number = 1 that is greater than atcon base and less that mailin base (if mailin base is != atconbase)
 $exNumQ = <<<EOS
-SELECT IFNULL(exhibitorNumber, 0) AS exhibitorNumber, exRY.id, agentPerid, agentNewperson, mailin
+SELECT IFNULL(exRY.exhibitorNumber, 0) AS exhibitorNumber, exRY.id, agentPerid, agentNewperson, mailin
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
 WHERE conid = ? and exhibitorId = ? and exRY.exhibitsRegionYearId = ?
@@ -617,7 +620,7 @@ EOS;
 
 
 $emails = payment($results);
-$return_arr = send_email($conf['regadminemail'], array($exhibitor['exhibitorEmail'], $buyer['email']), $region['ownerEmail'], $region['name'] . ' Payment', $emails[0], $emails[1]);
+$return_arr = send_email($region['ownerEmail'], array($exhibitor['exhibitorEmail'], $buyer['email']), $region['ownerEmail'], $region['name'] . ' Payment', $emails[0], $emails[1]);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];
@@ -643,6 +646,8 @@ while ($space = $exhibitorSR->fetch_assoc()) {
     $exhibitorSpaceList[$space['spaceId']] = $space;
 }
 $exhibitorSR->free();
+
+emailArtistInventoryReq($eryID, 'Payment');
 
 ajaxSuccess(array(
     'status' => $return_arr['status'],

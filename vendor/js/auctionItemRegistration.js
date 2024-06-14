@@ -1,7 +1,7 @@
 /* Auction Item Registration related functions
  */
 class AuctionItemRegistration {
-    
+
 // items related to artists, or other exhibitors registering items
     #item_registration = null;
     #item_registration_btn = null;
@@ -43,7 +43,11 @@ class AuctionItemRegistration {
     };
 
 
-    
+    printSheets(type) {
+        var script = "scripts/bidsheets.php?type=" + type + "&region=" + this.#region;
+        window.open(script, "_blank")
+    }
+
     open(region) {
         clear_message('ir_message_div');
         this.#region = region;
@@ -85,7 +89,7 @@ class AuctionItemRegistration {
         this.#nfsRedoBtn = document.getElementById('nfs-redo');
         this.drawNfsItemTable(data['items']);
 
-        this.#item_registration.show(); 
+        this.#item_registration.show();
     };
 
     close() {
@@ -108,7 +112,7 @@ class AuctionItemRegistration {
             this.#nfsItemTable.destroy();
             this.#nfsItemTable = null;
         }
-        this.#item_registration.hide(); 
+        this.#item_registration.hide();
     };
 
     dataChangedArt(data=null) {
@@ -121,7 +125,7 @@ class AuctionItemRegistration {
         if(data == null){
             this.#artSaveBtn.innerHTML = "Save Changes*";
             this.#artSaveBtn.disabled = false;
-         }
+        }
         this.checkArtUndoRedo();
     };
     checkArtUndoRedo() {
@@ -132,7 +136,7 @@ class AuctionItemRegistration {
 
     }
     redoArt() {
-           if (this.#artItemTable != null) {
+        if (this.#artItemTable != null) {
             this.#artItemTable.redo();
 
             if (this.checkArtUndoRedo() > 0) {
@@ -143,7 +147,7 @@ class AuctionItemRegistration {
         }
     };
     undoArt() {
-           if (this.#artItemTable != null) {
+        if (this.#artItemTable != null) {
             this.#artItemTable.undo();
 
             if (this.checkArtUndoRedo() > 0) {
@@ -195,26 +199,18 @@ class AuctionItemRegistration {
         }
     }
     saveArtComplete(data, textStatus, jhXHR) {
-        if('error' in data) {
-            if (data['error']) {
-                show_message(data['error'], 'error', 'ir_message_div');
-                this.#artSaveBtn.innerHTML = "Save Changes*";
-                this.#artSaveBtn.disabled = false;
-                return false;
-            }
-            if (data['message']) {
-                show_message(data['message'], 'error', 'ir_message_div');
-            }
+        if (data['error']) {
+            show_message(data['error'], 'error', 'ir_message_div');
             this.#artSaveBtn.innerHTML = "Save Changes*";
             this.#artSaveBtn.disabled = false;
             return false;
         }
-        if(data['message'] !== undefined) {
+        if(data['message']) {
             show_message(data['message'], 'success', 'ir_message_div');
-        }   
-        if(data['warn'] !== undefined) {
+        }
+        if(data['warn']) {
             show_message(data['warn'], 'warn', 'ir_message_div');
-        }   
+        }
 
         console.log(data);
         this.drawArtItemTable(data['items']);
@@ -232,7 +228,7 @@ class AuctionItemRegistration {
         if(data == null){
             this.#printSaveBtn.innerHTML = "Save Changes*";
             this.#printSaveBtn.disabled = false;
-         }
+        }
         this.checkPrintUndoRedo();
     };
     checkPrintUndoRedo() {
@@ -243,7 +239,7 @@ class AuctionItemRegistration {
 
     }
     redoPrint() {
-           if (this.#printItemTable != null) {
+        if (this.#printItemTable != null) {
             this.#printItemTable.redo();
 
             if (this.checkPrintUndoRedo() > 0) {
@@ -254,7 +250,7 @@ class AuctionItemRegistration {
         }
     };
     undoPrint() {
-           if (this.#printItemTable != null) {
+        if (this.#printItemTable != null) {
             this.#printItemTable.undo();
 
             if (this.checkPrintUndoRedo() > 0) {
@@ -322,10 +318,10 @@ class AuctionItemRegistration {
         }
         if(data['message'] !== undefined) {
             show_message(data['message'], 'success', 'ir_message_div');
-        }   
+        }
         if(data['warn'] !== undefined) {
             show_message(data['warn'], 'warn', 'ir_message_div');
-        }   
+        }
 
         console.log(data);
         this.drawPrintItemTable(data['items']);
@@ -341,7 +337,7 @@ class AuctionItemRegistration {
         if(data == null){
             this.#nfsSaveBtn.innerHTML = "Save Changes*";
             this.#nfsSaveBtn.disabled = false;
-         }
+        }
         this.checkNfsUndoRedo();
     };
     checkNfsUndoRedo() {
@@ -352,7 +348,7 @@ class AuctionItemRegistration {
 
     }
     redoNfs() {
-           if (this.#nfsItemTable != null) {
+        if (this.#nfsItemTable != null) {
             this.#nfsItemTable.redo();
 
             if (this.checkNfsUndoRedo() > 0) {
@@ -363,7 +359,7 @@ class AuctionItemRegistration {
         }
     };
     undoNfs() {
-           if (this.#nfsItemTable != null) {
+        if (this.#nfsItemTable != null) {
             this.#nfsItemTable.undo();
 
             if (this.checkNfsUndoRedo() > 0) {
@@ -431,15 +427,15 @@ class AuctionItemRegistration {
         }
         if(data['message'] !== undefined) {
             show_message(data['message'], 'success', 'ir_message_div');
-        }   
+        }
         if(data['warn'] !== undefined) {
             show_message(data['warn'], 'warn', 'ir_message_div');
-        }   
+        }
 
         console.log(data);
         this.drawNfsItemTable(data['items']);
     }
-
+    
     drawArtItemTable(data) {
         var _this = this;
         this.#artItemTable = new Tabulator('#artItemTable', {
@@ -452,11 +448,16 @@ class AuctionItemRegistration {
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
                 {title: 'id', field: 'id', visible: false},
-                {title: 'Item Num.', field: 'item_key', width: 10, headerSort: true, headerWordWrap: true},
-                {title: 'Title', field: 'title', width: 200, headerSort: true, headerFilter: true, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Material", field: "material", headerSort: true, headerFilter: true, width: 200, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Min. Bid", field: "min_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 50, editor: 'number', editorParams: {min: 1} },
-                {title: "Quick Sale", field: "sale_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 50, editor: 'number', editorParams: {min: 1} },
+                {title: '#', field: 'item_key', width: 50, hozAlign: "right"},
+                {title: 'Title', field: 'title', width: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
+                {title: "Material", field: "material", width: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
+                {title: "Minimim Bid", field: "min_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                    editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
+                    formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
+                {title: "Quick Sale", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                    editor: 'number', editable:artItemEditCheck, editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
+                    formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
+                {title: "Status", field: "status", width: 200, },
                 {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
             ]
@@ -483,11 +484,14 @@ class AuctionItemRegistration {
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
                 {title: 'id', field: 'id', visible: false},
-                {title: 'Item Num.', field: 'item_key', width: 10, headerSort: true, headerWordWrap: true},
-                {title: 'Title', field: 'title', width: 200, headerSort: true, headerFilter: true, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Material", field: "material", headerSort: true, headerFilter: true, width: 200, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Quantity", field: "original_qty", headerSort: true, headerFilter: true, headerWordWrap: true, width: 20, editor: 'number', editorParams: {min: 1} },
-                {title: "Quick Sale", field: "sale_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 20, editor: 'number', editorParams: {min: 1} },
+                {title: '#', field: 'item_key', width: 50, hozAlign: "right"},
+                {title: 'Title', field: 'title', width: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
+                {title: "Material", field: "material", width: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
+                {title: "Quantity", field: "original_qty", headerWordWrap: true, width: 100, hozAlign: "right", editor: 'number', editable:artItemEditCheck, editorParams: {min: 1} },
+                {title: "Quick Sale", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                    editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
+                    formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
+                {title: "Status", field: "status", width: 200, },
                 {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
             ]
@@ -514,10 +518,13 @@ class AuctionItemRegistration {
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
                 {title: 'id', field: 'id', visible: false},
-                {title: 'Item Num.', field: 'item_key', width: 10, headerSort: true, headerWordWrap: true},
-                {title: 'Title', field: 'title', width: 200, headerSort: true, headerFilter: true, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Material", field: "material", headerSort: true, headerFilter: true, width: 200, editor: 'input', editorParams: {maxLength: "64"} },
-                {title: "Insurance Price", field: "sale_price", headerSort: true, headerFilter: true, headerWordWrap: true, width: 20, editor: 'number', editorParams: {min: 1} },
+                {title: '#', field: 'item_key', width: 50, hozAlign: "right"},
+                {title: 'Title', field: 'title', width: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
+                {title: "Material", field: "material", width: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
+                {title: "Insurance Price", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                    editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
+                    formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
+                {title: "Status", field: "status", width: 200, },
                 {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
             ]
@@ -531,7 +538,7 @@ class AuctionItemRegistration {
         this.#nfsSaveBtn.innerHTML='Save Changes';
         this.#nfsSaveBtn.disbled=true;
     }
-    
+
 }
 
 auctionItemRegistration = null;
@@ -560,3 +567,11 @@ function deleterow(e, row) {
     }
 }
 
+function artItemEditCheck(cell) {
+    var data = cell.getRow().getData();
+    if (data.status == null)
+        return true;
+    if (data.status != 'Entered')
+        return false;
+    return true;
+}

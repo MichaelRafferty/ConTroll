@@ -434,7 +434,7 @@ $onsitesale = $startdate->format("l, F j");
                                  <select id='personList' onchange='updateAddr()'></select>
                              </div>
                              <div class="col-sm-auto ms-auto me-2 p-0">
-                                 <button class='btn btn-sm btn-secondary' onclick='toggleAddr()'>Edit</button>
+                                 <button class='btn btn-sm btn-secondary' onclick='toggleAddr()'>Edit Who<br/>is Paying</button>
                              </div>
                          </div>
                          <div class="row">
@@ -538,7 +538,7 @@ $onsitesale = $startdate->format("l, F j");
 <?php
       if($ini['test']==1) {
 ?>
-                 <h2 class='text-danger'><strong>This won't charge your credit card.<br/>It also won't get you membershipd.</strong></h2>
+                 <h2 class='text-danger'><strong>This won't charge your credit card.<br/>It also won't get you memberships.</strong></h2>
     <?php
       }
     ?>

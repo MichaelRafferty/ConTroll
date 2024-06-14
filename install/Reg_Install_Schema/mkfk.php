@@ -37,8 +37,13 @@ function strip_fk($fname, $lines)  {
     $table = preg_replace('/^[^_]*_(.*)$/', '\1', $fname);
 
     foreach ($lines as $line) {
-        if (str_starts_with($line, '/*!')) // skip comments
-            continue;
+        if (str_starts_with($line, '/*!')) {// skip comments, but let CREATE TRIGGER exist for later processing
+            if (preg_match('/CREATE.*TRIGGER/i', $line)) {
+                $line = preg_replace('/\/\*[^ ]* CREATE.* TRIGGER /i', 'CREATE DEFINER=CURRENT_USER TRIGGER ', $line);
+            } else {
+                continue;
+            }
+        }
 
         if (str_starts_with($line, 'CREATE DATABASE')) // this already exists as it's own sql file
             continue;
@@ -48,6 +53,15 @@ function strip_fk($fname, $lines)  {
 
         if (str_starts_with($line, '-- Dump completed on ')) // don't need the comment for one difference for no reason
             continue;
+
+        // trigger items
+        if (preg_match('/CREATE.* DEFINER=.* TRIGGER/i', $line)) { // create trigger
+            $line = preg_replace('/DEFINER=[^ \*\/]*/i', 'DEFINER=CURRENT_USER ', $line);
+        }
+
+        if (preg_match('/END \*\/;;/i', $line)) {
+            $line = preg_replace('/END \*\/;;/i', 'END;;', $line);
+        }
 
         $line = str_replace("\n", '', $line);
         $line = str_replace("utf8mb4_0900_ai_ci", "utf8mb4_general_ci", $line);
@@ -127,6 +141,8 @@ function strip_creator($fname, $lines) {
         } else  if (preg_match("/CREATE DEFINER=/i", $line)) { // create function or proc
             $line = preg_replace("/DEFINER=[\"'`][^\"'`]*[\"'`]@[\"'`][^\"'`]*[\"'`] */i", "", $line);
             $line .= "\nSQL SECURITY INVOKER";
+        } else if (preg_match("/CREATE.* DEFINER=.* TRIGGER/i", $line)) { // create trigger
+            $line = preg_replace("/DEFINER=[^ \*\/]*/i", "DEFINER=CURRENT_USER ", $line);
         } else if (str_contains($line, ' VIEW')) {
             $line = preg_replace('/^\/\*!\d+ (.*) *\*\/;$/', '$1;', $line);
         } else if (str_starts_with($line, '/*!')) // strip comments

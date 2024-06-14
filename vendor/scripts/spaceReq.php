@@ -17,7 +17,8 @@ $con = get_con();
 $conid=$con['id'];
 $conf = get_conf('con');
 $vendor_conf = get_conf('vendor');
-$dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+$curLocale = locale_get_default();
+$dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
 $response['conid'] = $conid;
 
@@ -40,7 +41,8 @@ $portalName = $_POST['name'];
 
 // get exhibitor info
 $exhibitorQ = <<<EOS
-SELECT e.id AS exhibitorId, ey.id AS exhibitorYearId, e.exhibitorName, e.exhibitorEmail, ey.contactName, ey.contactEmail, e.exhibitorName, e.website, e.description, exRY.id AS exhibitorRegionYearId
+SELECT e.id AS exhibitorId, ey.id AS exhibitorYearId, e.artistName, e.exhibitorName, e.exhibitorEmail, ey.contactName, ey.contactEmail, e.website, e.description,
+       exRY.id AS exhibitorRegionYearId
 FROM exhibitors e
 JOIN exhibitorYears ey ON e.id = ey.exhibitorId
 JOIN exhibitsRegionYears eRY
@@ -113,7 +115,7 @@ SELECT es.id, item_requested, item_approved, item_purchased, price, paid, transi
 FROM exhibitorYears ey
 JOIN exhibitorRegionYears exRY ON ey.id = exRY.exhibitorYearId
 JOIN exhibitorSpaces es ON exRY.id = es.exhibitorRegionYear
-WHERE spaceId = ? and exhibitorYearId = ?;
+WHERE spaceId = ? and exRY.exhibitorYearId = ?;
 EOS;
     $vendorR = dbSafeQuery($vendorQ, 'ii', array($spaceid, $eyId));
     if ($vendorR == false || $vendorR->num_rows == 1)
@@ -143,13 +145,13 @@ EOS;
 }
 
 load_email_procs();
-$emails = request($exhibitorInfo, $regionInfo, $portalName, $spaces);
+$emails = request($exhibitorInfo, $regionInfo, $portalName, $portalType, $spaces);
 if ($exhibitorInfo['exhibitorEmail'] == $exhibitorInfo['contactEmail'] || $exhibitorInfo['contactEmail'] == '')
     $cc = $exhibitorInfo['exhibitorEmail'];
 else
     $cc = array($exhibitorInfo['exhibitorEmail'], $exhibitorInfo['contactEmail']);
 
-    $return_arr = send_email($conf['regadminemail'], $regionInfo['ownerEmail'], $cc, $regionInfo['name'] . " Request", $emails[0] , $emails[1]);
+    $return_arr = send_email($regionInfo['ownerEmail'], $regionInfo['ownerEmail'], $cc, $regionInfo['name'] . " Request", $emails[0] , $emails[1]);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];

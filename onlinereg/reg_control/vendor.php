@@ -12,14 +12,12 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
 
+$cdn = getTabulatorIncludes();
 page_init($page,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
-                    'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
-                    'css/base.css'
-                   ),
+    /* css */ array($cdn['tabcss'], $cdn['tabbs5'],'css/base.css'),
     /* js  */ array(
-                    //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js',
+                    //$cdn['luxon'],
+                    $cdn['tabjs'],
                     //'js/d3.js',
                     'js/base.js',
                     'jslib/exhibitorProfile.js',
@@ -81,6 +79,99 @@ draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
 draw_exhibitorRequestModal('admin');
 draw_exhibitorReceiptModal('admin');
 ?>
+<!-- space detail modal -->
+    <div id='space_detail' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Space Detail' aria-hidden='true'
+    style='--bs-modal-width: 90%;'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='space-detail-title'>
+                        <strong>Space Detail</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <div class='container-fluid'>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <h4>Space Request/Approval/Payment Detail</h4>
+                            </div>
+                        </div>
+                        <div id='spaceDetailHTML'></div>
+                        <div class='row mt-3'>
+                            <div class='col-sm-12'>
+                                <h4>Information about this Exhibitor</h4>
+                            </div>
+                        </div>
+                        <div class="container-fluid" id='exhibitorInfoHTML'></div>
+                        <div class='row' id='spacedetail_message_div'></div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Dismiss</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- locations modal -->
+<div id='locations_edit' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Locations Edit' aria-hidden='true'
+     style='--bs-modal-width: 96%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title' id='locations-edit-title'>
+                    <strong>Locations Edit</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <input type = 'hidden' id = 'spaceRowId' name = 'spaceRowId'/>
+                <div class='container-fluid'>
+                    <div class='row'>
+                        <div class='col-sm-12'>
+                            <h4>Locations</h4>
+                        </div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-1'>Space:</div>
+                        <div class='col-sm-2' id='spaceHTML'></div>
+                        <div class='col-sm-9'>
+                            <input type="text" name="locations", id="locationsVal", placeholder="Enter locations separated by commas", maxlength="256" size="90"/>
+                        </div>
+                    </div>
+                    <div class='row mt-3'>
+                        <div class="col-sm-6 ms-0 me-0">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class='col-sm-12 ms-0 me-0'>
+                                        <h4>Information about this Exhibitor</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="container-fluid" id='locationsExhibitorInfoHTML'></div>
+                        </div>
+                        <div class='col-sm-6'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-12'>
+                                        <h4>Locations Used by all Artists</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="container-fluid" id='locationsUsedHTML'></div>
+                        </div>
+                    </div>
+                    <div id='locationsExhibitorInfoHTML'></div>
+                    <div class='row' id='locations_message_div'></div>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id="locationsSubmitBtn" onclick="exhibitors.submitLocations()">Update Locations</button>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- import modal -->
     <div id='import_exhibitor' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Import Past Vendors' aria-hidden='true'
          style='--bs-modal-width: 96%;'>

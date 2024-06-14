@@ -29,13 +29,11 @@ if (!check_atcon($method, $conid)) {
     exit(0);
 }
 
+$cdn = getTabulatorIncludes();
 page_init($page, $tab,
-    /* css */ array('https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator.min.css',
-                    'https://unpkg.com/tabulator-tables@5.6.1/dist/css/tabulator_bootstrap5.min.css',
-                    'css/atcon.css',
-                    'css/registration.css'),
-    /* js  */ array( //'https://cdn.jsdelivr.net/npm/luxon@3.1.0/build/global/luxon.min.js',
-                    'https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js','js/regpos_cart.js', 'js/regpos_coupon.js', 'js/regpos.js')
+    /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
+    /* js  */ array( ///$cdn['luxon'],
+                    $cdn['tabjs'], 'js/regpos_cart.js', 'js/regpos_coupon.js', 'js/regpos.js')
     );
 ?>
 <div id="pos" class="container-fluid">
@@ -93,7 +91,7 @@ page_init($page, $tab,
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-sm-12" id="find_results">
+                                <div class="col-sm-12 ms-0 me-0" id="find_results">
                                 </div>
                             </div>
                         </div>
@@ -212,7 +210,7 @@ page_init($page, $tab,
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-sm-12" id="add_results">
+                                <div class="col-sm-12 ms-0 me-0" id="add_results">
                             </div>
                             </div>
                             <div class="row">

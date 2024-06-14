@@ -304,6 +304,7 @@ function show_message(message, type = 'success', div='result_message') {
         message_div.classList.add('bg-warning');
     }
     message_div.innerHTML = message;
+    message_div.scrollIntoView(false);
 }
 
 function showAlert(str) {
@@ -449,6 +450,7 @@ function showEdit(classname, table, index, field, titlename, textitem) {
         height: 500,
         min_height: 400,
         menubar: false,
+        license_key: 'gpl',
         plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
         toolbar:  [
             'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +

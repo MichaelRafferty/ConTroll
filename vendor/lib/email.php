@@ -14,11 +14,11 @@ return $body;
 }
 
 // request for approval
-function approval($vendorId, $regionName, $ownerName, $ownerEmail, $portalName) {
+function approval($vendorId, $regionName, $ownerName, $ownerEmail, $portalName, $portalType) {
     $conf = get_conf('con');
     $conid = $conf['id'];
     $vendorQ = <<<EOS
-SELECT e.exhibitorName, e.exhibitorEmail, e.website, e.description, ey.contactName, ey.contactEmail
+SELECT e.artistName, e.exhibitorName, e.exhibitorEmail, e.website, e.description, ey.contactName, ey.contactEmail
 FROM exhibitors e
 JOIN exhibitorYears ey ON (e.id = ey.exhibitorId)
 WHERE e.id=? AND ey.conid = ?;
@@ -26,6 +26,10 @@ EOS;
     $vendorR = dbSafeQuery($vendorQ, 'ii', array($vendorId, $conid));
     $vendorL = $vendorR->fetch_assoc();
     $exhibitorName = $vendorL['exhibitorName'];
+    $artistName = $vendorL['artistName'];
+    if ($portalType == 'artist' && $artistName != null && $artistName != '' && $artistName != $exhibitorName) {
+        $exhibitorName .= "($artistName)";
+    }
     $exhibitorEmail = $vendorL['exhibitorEmail'];
     $website = $vendorL['website'];
     $description = $vendorL['description'];
@@ -65,12 +69,16 @@ EOS;
 }
 
 // request space
-function request($exhibitorInfo, $regionInfo, $portalName, $spaces) {
+function request($exhibitorInfo, $regionInfo, $portalName, $portalType, $spaces) {
     $conf = get_conf("con");
     $conid = $conf['id'];
 
     $ownerName = $regionInfo['ownerName'];
     $exhibitorName = $exhibitorInfo['exhibitorName'];
+    $artistName = $exhibitorInfo['artistName'];
+    if ($portalType == 'artist' && $artistName != null && $artistName != '' && $artistName != $exhibitorName) {
+        $exhibitorName .= "($artistName)";
+    }
     $contactName = $exhibitorInfo['contactName'];
     $contactEmail = $exhibitorInfo['contactEmail'];
     $description = $exhibitorInfo['description'];
@@ -125,17 +133,25 @@ function payment($results) {
     $buyer = $results['buyer'];
     $vendor = $results['vendor'];
     $region = $results['region'];
+    $portalType = $results['exhibits'];
+    $exhibitorName = $vendor['exhibitorName'];
+    if (array_key_exists('artistName', $vendor)) {
+        if ($portalType == 'artist' && $vendor['artistName'] != null && $vendor['artistName'] != '' && $vendor['artistName'] != $exhibitorName) {
+            $exhibitorName .= "(" . $vendor['artistName'] . ")";
+        }
+    }
+
 
     $conf = get_conf('con');
     $vendor_conf = get_conf('vendor');
-    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+    $curLocale = locale_get_default();
+    $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
     // plain text version
     $body = "Dear " . trim($buyer['fname'] . ' ' . $buyer['lname']) . ":\n\n" .
         "Here is your receipt for payment of " . $dolfmt->formatCurrency($results['approved_amt'], 'USD') . ' for ' . $conf['label'] . ' ' . $region['name'] . "\n\n" .
         "RECEIPT FOR PAYMENT TO: " . $conf['label'] . ' on ' . date('m/d/Y h:i:s A', time()) . "\n\n" .
-        "Vendor: \n" .
-        $vendor['exhibitorName'] . "\n" .
+        "Vendor: $exhibitorName\n" .
         $vendor['addr'] . "\n";
         if ($vendor['addr2'] && $vendor['addr2'] != '')
             $body .= $vendor['addr2'] . "\n";
@@ -146,17 +162,19 @@ function payment($results) {
             "Special Requests:\n" . $results['specialrequests'] . "\n\n";
 
         $body .= "Memberships purchased at this time:\n\n";
-        foreach ($results['formbadges'] as $badge) {
-            if ($badge['type'] == 'i')
-                $body .= "Included membership " . $badge['index'] . ":\n     ";
-            else
-                $body .= "Additional membership ". $badge['index'] . ": for " . $dolfmt->formatCurrency($badge['price'], 'USD') .  "\n     ";
-            $body .= $badge['fname'] . ' ' . ltrim($badge['mname'] . ' ') . $badge['lname'] . ' ' . $badge['suffix'] . "\n     " .
-                $badge['addr'] . "\n     ";
-            if ($badge['addr2'] && $badge['addr2'] != '')
-                $body .= $badge['addr2'] . "\n     ";
-            $body .= $badge['city'] . ', ' . $badge['state'] . ' ' . $badge['zip'] . ' ' . $badge['country'] . "\n     " .
-                'Badgename: ' . $badge['badgename'] . "\n\n";
+        if (array_key_exists('formbadges', $results) && is_array($results['formbadges'])) {
+            foreach ($results['formbadges'] as $badge) {
+                if ($badge['type'] == 'i')
+                    $body .= "Included membership " . $badge['index'] . ":\n     ";
+                else
+                    $body .= "Additional membership " . $badge['index'] . ": for " . $dolfmt->formatCurrency($badge['price'], 'USD') . "\n     ";
+                $body .= $badge['fname'] . ' ' . ltrim($badge['mname'] . ' ') . $badge['lname'] . ' ' . $badge['suffix'] . "\n     " .
+                    $badge['addr'] . "\n     ";
+                if ($badge['addr2'] && $badge['addr2'] != '')
+                    $body .= $badge['addr2'] . "\n     ";
+                $body .= $badge['city'] . ', ' . $badge['state'] . ' ' . $badge['zip'] . ' ' . $badge['country'] . "\n     " .
+                    'Badgename: ' . $badge['badgename'] . "\n\n";
+            }
         }
 
         $body .= "Total amount: " . $dolfmt->formatCurrency($results['total'], 'USD') . "\n\n" .
@@ -167,7 +185,7 @@ function payment($results) {
         '<p>Here is your receipt for payment of ' . $dolfmt->formatCurrency($results['approved_amt'], 'USD') . ' for ' . $conf['label'] . ' ' . $region['name'] . "</p>\n" .
         '<p>RECEIPT FOR PAYMENT TO: ' . $conf['label'] . ' on ' . date('m/d/Y h:i:s A', time()) . "</p>\n" .
         "<p>Vendor: <br/>\n" .
-        $vendor['exhibitorName'] . "<br/>\n" .
+        "$exhibitorName<br/>\n" .
         $vendor['addr'] . "<br/>\n";
     if ($vendor['addr2'] && $vendor['addr2'] != '')
         $bodyHtml .= $vendor['addr2'] . "<br/>\n";
@@ -177,19 +195,20 @@ function payment($results) {
         '<p>Price for Space: ' . $dolfmt->formatCurrency($region['price'], 'USD') . "</p>\n" .
         "<p>Special Requests:<br/>\n" . $results['specialrequests'] . "</p>\n";
 
-    //TODO put in if statement in case there are no badges in formbadges
-    $bodyHtml .= "<p>Memberships purchased at this time:</p>\n";
-    foreach ($results['formbadges'] as $badge) {
-        if ($badge['type'] == 'i')
-            $bodyHtml .= '<p style="margin-left: 40px;">Included membership ' . $badge['index'] . ":<br/>\n";
-        else
-            $bodyHtml .= '<p style="margin-left: 40px;">Additional membership ' . $badge['index'] . ': for ' . $dolfmt->formatCurrency($badge['price'], 'USD') . "<br/>\n";
-        $bodyHtml .= $badge['fname'] . ' ' . ltrim($badge['mname'] . ' ') . $badge['lname'] . ' ' . $badge['suffix'] . ",<br/>\n" .
-            $badge['addr'] . "<br/>\n";
-        if ($badge['addr2'] && $badge['addr2'] != '')
-            $bodyHtml .= $badge['addr2'] . "<br/>\n";
-        $bodyHtml .= $badge['city'] . ', ' . $badge['state'] . ' ' . $badge['zip'] . ' ' . $badge['country'] . "<br/>\n" .
-            'Badgename: ' . $badge['badgename'] . "</p>\n";
+    if (array_key_exists('formbadges', $results) && is_array($results['formbadges'])) {
+        $bodyHtml .= "<p>Memberships purchased at this time:</p>\n";
+        foreach ($results['formbadges'] as $badge) {
+            if ($badge['type'] == 'i')
+                $bodyHtml .= '<p style="margin-left: 40px;">Included membership ' . $badge['index'] . ":<br/>\n";
+            else
+                $bodyHtml .= '<p style="margin-left: 40px;">Additional membership ' . $badge['index'] . ': for ' . $dolfmt->formatCurrency($badge['price'], 'USD') . "<br/>\n";
+            $bodyHtml .= $badge['fname'] . ' ' . ltrim($badge['mname'] . ' ') . $badge['lname'] . ' ' . $badge['suffix'] . ",<br/>\n" .
+                $badge['addr'] . "<br/>\n";
+            if ($badge['addr2'] && $badge['addr2'] != '')
+                $bodyHtml .= $badge['addr2'] . "<br/>\n";
+            $bodyHtml .= $badge['city'] . ', ' . $badge['state'] . ' ' . $badge['zip'] . ' ' . $badge['country'] . "<br/>\n" .
+                'Badgename: ' . $badge['badgename'] . "</p>\n";
+        }
     }
 
     $bodyHtml .= '<p>Total amount: ' . $dolfmt->formatCurrency($results['total'], 'USD') . "</p>\n" .

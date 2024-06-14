@@ -1,10 +1,13 @@
 {
     "require": {
-        "square/square": "29.1.0.20230720",
+        "square/square": "*",
         "symfony/mailer": "^6.4.2",
         "symfony/amazon-mailer": "^6.4.2",
         "google/apiclient": "^2.15.3",
         "aws/aws-sdk-php": "^3.295.7",
-        "tinymce/tinymce": "^6.8"
+        "tinymce/tinymce": "^6.8",
+        "fpdf/fpdf": "^1.86",
+        "picqer/php-barcode-generator": "^2.4",
+        "erkens/fpdf-barcode": "^2.2"
     }
 }

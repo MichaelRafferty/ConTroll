@@ -65,6 +65,7 @@ class regpos_cart {
         filt_cat = new Array('upgrade')
         filt_shortname_regexp = null;
         var match = memList.filter(mem_filter);
+        var nonday = 0;
         for (row in match) {
             var label = match[row]['label'];
             var day = label.replace(/.*upgrade +(...).*/i, '$1').toLowerCase();
@@ -664,7 +665,7 @@ class regpos_cart {
             }
 
             if ((!non_primary_categories.includes(category)) && mrow['conid'] == conid) { // this is the current year membership
-                if (upgradable_types.includes(mrow['memType'])) {
+                if (upgradable_types.includes(mrow['memType'].toLowerCase())) {
                     upgrade_eligible = true;
                     if (mrow['memType'] == 'oneday' || mrow['memType'] == 'one-day') {
                         day = (mrow['label']).toLowerCase().substring(0, 3);
@@ -1200,7 +1201,7 @@ class regpos_cart {
         var updated_perinfo = data['updated_perinfo'];
         for (rownum in updated_perinfo) {
             newrow = updated_perinfo[rownum];
-            cartrow = this.#cart_perinfo[newrow['rownum']]
+            cartrow = this.#cart_perinfo[newrow['rownum']];
             cartrow['perid'] = newrow['perid'];
             cartrow['dirty'] = false;
         }
@@ -1285,7 +1286,7 @@ class regpos_cart {
     getBadge(index) {
 
         var row = this.#cart_perinfo[index];
-        var mrow = find_primary_membership_by_perid(this.#cart_membership, row['perid']);
+        var mrow = find_print_membership_by_perid(this.#cart_membership, row['perid']);
         var printrow = this.#cart_membership[mrow];
 
         var params = {};
@@ -1294,7 +1295,10 @@ class regpos_cart {
         params['full_name'] = (row['first_name'] + ' ' + row['last_name']).trim();
         params['category'] = printrow['memCategory'];
         params['badge_id'] = row['perid'];
-        params['day'] = dayFromLabel(printrow['label']);
+        if ((printrow['memType'].toLowerCase() == 'oneday') || (printrow['memType'].toLowerCase() == 'one-day'))
+            params['day'] = dayFromLabel(printrow['label']);
+        else
+            params['day'] = "";
         params['age'] = printrow['memAge'];
         return params;
     }

@@ -38,7 +38,7 @@ function google_init($mode) {
   session_start();
 
   // bypass for testing on Development PC
-  if (stripos(__DIR__, "/Volumes/Dock_Disk/") !== false) {
+  if (stripos(__DIR__, "/Users/syd/") !== false && $_SERVER['SERVER_ADDR'] == "127.0.0.1") {
       $token_data = array();
       $token_data['email'] = 'syd.weinstein@philcon.org'; // 'todd.dashoff@philcon.org'; // 
       $token_data['sub'] = '114007818392249665998'; //  '123'; //
@@ -148,24 +148,26 @@ function page_init($title, $css, $js, $auth) {
         newUser($auth['email'], array_key_exists('sub', $auth) ? $auth['sub'] : '');
     }
     
-    if(isWebRequest()) { 
+    if(isWebRequest()) {
+        $includes = getTabulatorIncludes();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
     <title><?php echo $title . '--' . $db_ini['con']['conname']?> Reg</title>
-    <link href='/csslib/jquery-ui-1.13.1.css' rel='stylesheet' type='text/css' />
-    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH' crossorigin='anonymous'>
+    <link rel='icon' type='image/x-icon' href='/lib/favicon.ico'>
+    <link href='<?php echo $includes['jquicss'];?>' rel='stylesheet' type='text/css' />
+    <link href='<?php echo $includes['bs5css'];?>' rel='stylesheet'/>
     <?php
     if(isset($css) && $css != null) { foreach ($css as $sheet) {
         ?><link href='<?php echo $sheet; ?>' rel=stylesheet type='text/css' />
 <?php
     }}
 ?>
-    <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js' integrity='sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz' crossorigin='anonymous'></script>
-    <script type='text/javascript' src='/jslib/jquery-3.7.1.min.js'></script>
-    <script type='text/javascript' src='/jslib/jquery-ui.min-1.13.1.js'></script>
+    <script src='<?php echo $includes['bs5js'];?>'></script>
+    <script type='text/javascript' src='<?php echo $includes['jqjs']; ?>'></script>
+    <script type='text/javascript' src='<?php echo $includes['jquijs']; ?>'></script>
     <?php
     if(isset($js) && $js != null) { foreach ($js as $script) {
         ?><script src='<?php echo $script; ?>' 

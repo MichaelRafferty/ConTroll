@@ -268,7 +268,7 @@ function apply_overall_discount($coupon, $total) {
         return min($total, $coupon['discount']);
     }
 
-    if ($couponType == '%off') {
+    if ($code == '%off') {
         if ($coupon['maxTransaction'] !== null)
             $discountable = $total > $coupon['maxTransaction'] ? $coupon['maxTransaction'] : $total;
         else

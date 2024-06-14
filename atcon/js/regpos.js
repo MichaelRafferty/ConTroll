@@ -389,6 +389,31 @@ function find_primary_membership_by_perid(tbl, perid) {
     return mem_index;
 }
 
+// given a perid, find it''s primary membership in the result_membership array
+function find_print_membership_by_perid(tbl, perid) {
+    var regitems = find_memberships_by_perid(tbl, perid);
+    var mem_index = null;
+    var mem_regid = null;
+    for (var item in regitems) {
+        var mi_row = find_memLabel(regitems[item]['memId']);
+        if (mi_row['conid'] != conid)
+            continue;
+
+        if (mem_regid) {
+            if (regitems[item]['id'] < mem_regid)
+                continue;
+        }
+
+        if (mi_row['mwmCategory'] != 'upgrade' && non_primary_categories.includes(mi_row['memCategory']))
+            continue;
+
+        mem_index = regitems[item]['index'];
+        mem_regid = regitems[item]['id'];
+        //break;
+    }
+    return mem_index;
+}
+
 // badge_name_default: build a default badge name if its empty
 function badge_name_default(badge_name, first_name, last_name) {
     if (badge_name === undefined | badge_name === null || badge_name === '') {
@@ -404,7 +429,7 @@ function void_trans() {
         ajax_request_action: 'voidPayment',
         user_id: user_id,
         pay_tid: pay_tid,
-        cart_membership: cart.getCartMembership(),
+        cart_membership: JSON.stringify(cart.getCartMembership()),
     };
     $("button[name='void_btn']").attr("disabled", true);
     $.ajax({
@@ -931,7 +956,7 @@ function add_found(data) {
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120,},
-                {title: "Note", width: 45, headerSort: false, headerFilter: false, formatter: perNotesIcons, formatterParams: {t:"add"}, },
+                {title: "Nt", width: 45, headerSort: false, headerFilter: false, formatter: perNotesIcons, formatterParams: {t:"add"}, },
                 {title: "Cart", width: 100, headerFilter: false, headerSort: false, formatter: addCartIcon, formatterParams: {t:"add"},},
                 {field: "index", visible: false,},
                 {field: "open_notes", visible: false,},
@@ -1130,7 +1155,11 @@ function draw_record(row, first) {
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-3">` + 'Badge Name:' + `</div>
+            <div class="col-sm-3">Person ID:</div>
+            <div class="col-sm-9">` + data['perid'] + `</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3">Badge Name:</div>
             <div class="col-sm-9">` + badge_name_default(data['badge_name'], data['first_name'], data['last_name']) + `</div>
         </div>
         <div class="row">
@@ -1141,7 +1170,7 @@ function draw_record(row, first) {
         </div>  
         <div class="row">
             <div class="col-sm-3">Legal Name:</div>
-            <div class="col-sm-9">\` + data['legalName'] + \`</div>
+            <div class="col-sm-9">` + data['legalName'] + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">Address:</div>
@@ -1625,7 +1654,7 @@ function found_record(data) {
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120,},
-                {title: "Note",width: 45, headerSort: false, headerFilter: false, formatter: perNotesIcons, formatterParams: {t:"result"}, },
+                {title: "Nt",width: 45, headerSort: false, headerFilter: false, formatter: perNotesIcons, formatterParams: {t:"result"}, },
                 {title: "Cart", width: 90, headerFilter: false, headerSort: false, formatter: addCartIcon, formatterParams: {t:"result"},},
                 {field: "index", visible: false,},
             ],
@@ -1733,9 +1762,9 @@ function review_nochanges() {
     // submit the current card data to update the database, retrieve all TID's/PERID's/REGID's of inserted data
     var postData = {
         ajax_request_action: 'updateCartElements',
-        cart_perinfo: cart.getCartPerinfo(),
-        cart_perinfo_map: cart.getCartMap(),
-        cart_membership: cart.getCartMembership(),
+        cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
+        cart_perinfo_map: JSON.stringify(cart.getCartMap()),
+        cart_membership: JSON.stringify(cart.getCartMembership()),
         user_id: user_id,
     };
     $.ajax({
@@ -1928,7 +1957,7 @@ function pay(nomodal, prow = null) {
     // process payment
     var postData = {
         ajax_request_action: 'processPayment',
-        cart_membership: cart.getCartMembership(),
+        cart_membership: JSON.stringify(cart.getCartMembership()),
         new_payment: prow,
         coupon: prow['coupon'],
         change: crow,
@@ -1986,9 +2015,9 @@ function print_receipt(receipt_type) {
     var postData = {
         ajax_request_action: 'printReceipt',
         header: header_text,
-        prows: cart.getCartPerinfo(),
-        mrows: cart.getCartMembership(),
-        pmtrows: cart.getCartPmt(),
+        prows: JSON.stringify(cart.getCartPerinfo()),
+        mrows: JSON.stringify(cart.getCartMembership()),
+        pmtrows: JSON.stringify(cart.getCartPmt()),
         footer: footer_text,
         receipt_type: receipt_type,
         email_addrs: emailAddreesRecipients,
@@ -2057,8 +2086,8 @@ function print_badge(index) {
     }
     var postData = {
         ajax_request_action: 'printBadge',
-        params: params,
-        badges: badges,
+        params: JSON.stringify(params),
+        badges: JSON.stringify(badges),
     };
     $("button[name='print_btn']").attr("disabled", true);
     $.ajax({
@@ -2317,7 +2346,7 @@ function pay_shown() {
     </div>
     <div class="row mt-2">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Paid:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-amt" name="paid-amt" size="6"/></div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-amt" name="paid-amt" style="width: 7em;"/></div>
     </div>
     <div class="row">
         <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
