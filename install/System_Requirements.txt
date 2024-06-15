@@ -29,7 +29,6 @@ System Requirements for Reg
     The top level lib directory has a PHP file cc__load_methods.php that calls the appropriate provider for credit cards based on the confiuration file.
     The current supported providers are:
         Square API: via cc_square.php
-        ConvergePay API: via cc_convergepay.php (Depreciated, no longer used by any known Convention using Reg)
     Two test harness providers are provided:
         cc_test.php: Allows selecting pass/fail at checkout time/call time to test paths
         cc_bypass.php: Bypasses all checking entirely, always returns true.
