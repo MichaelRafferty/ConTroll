@@ -3,6 +3,7 @@
 require_once("lib/base.php");
 require_once("lib/portalForms.php");
 require_once("../lib/interests.php");
+require_once("../lib/paymentPlans.php");
 
 global $config_vars;
 
@@ -25,6 +26,7 @@ $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['debug'] = $debug['portal'];
 $config_vars['uri'] = $portal_conf['portalsite'];
+$config_vars['loadPlans'] = true;
 $cdn = getTabulatorIncludes();
 
 // this section is for 'in-session' management
@@ -109,6 +111,8 @@ if ($managedByR != false) {
 
 // get the information for the interest block
 $interests = getInterests();
+// get the payment plans
+$paymentPlans = getPaymentPlans(true);
 
 portalPageInit('portal', $info['fullname'] . ($personType == 'p' ? ' (ID: ' : 'Temporary ID: ') . $personId . ')',
     /* css */ array($cdn['tabcss'],
@@ -117,6 +121,7 @@ portalPageInit('portal', $info['fullname'] . ($personType == 'p' ? ' (ID: ' : 'T
     /* js  */ array( //$cdn['luxon'],
         $cdn['tabjs'],
         //'js/tinymce/tinymce.min.js',
+        'jslib/paymentPlans.js',
         'js/base.js',
         'js/portal.js',
     ),
@@ -124,6 +129,8 @@ portalPageInit('portal', $info['fullname'] . ($personType == 'p' ? ' (ID: ' : 'T
 ?>
     <script type='text/javascript'>
         var config = <?php echo json_encode($config_vars); ?>;
+        var paymentPlans = <?php echo json_encode($paymentPlans['plans']); ?>;
+        var payorPlans = <?php echo json_encode($paymentPlans['payorPlans']); ?>;
     </script>
 <?php
 // draw all the modals for this screen

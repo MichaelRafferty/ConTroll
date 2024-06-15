@@ -51,7 +51,7 @@ echo <<<EOF
     <script type='text/javascript' src='$jquijs'></script>
     <script type="text/javascript" src="$tabjs"></script>
     <script type='text/javascript' src='js/base.js'></script>
-    <script type='text/javascript' src='js/portal.js'></script>
+    <script type='text/javascript' src='js/login.js'></script>
 </head>
 EOF;
 }

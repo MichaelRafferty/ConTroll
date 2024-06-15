@@ -12,7 +12,7 @@ function draw_login($config_vars, $result_message = '') {
             </div>
             <div class="row mb-2">
                 <div class='col-sm-auto'>
-                    <button class="btn btn-sm btn-primary" onclick="portal.loginWithToken();">Login with Authentication Link via Email</button>
+                    <button class="btn btn-sm btn-primary" onclick="login.loginWithToken();">Login with Authentication Link via Email</button>
                 </div>
             </div>
             <div id='token_email_div' hidden>
@@ -21,19 +21,19 @@ function draw_login($config_vars, $result_message = '') {
                         <label for='token_email'>*Email: </label>
                     </div>
                     <div class='col-sm-auto'>
-                        <input class='form-control-sm' type='email' name='token_email' id='token_email' size='40' onchange='portal.tokenEmailChanged();' required/>
+                        <input class='form-control-sm' type='email' name='token_email' id='token_email' size='40' onchange='login.tokenEmailChanged();' required/>
                     </div>
                 </div>
                 <div class='row mt-2 mb-2'>
                     <div class='col-sm-1'></div>
                     <div class='col-sm-auto'>
-                        <button type='button' class='btn btn-primary btn-sm' id='sendLinkBtn' onclick='portal.sendLink();' disabled>Send Link</button>
+                        <button type='button' class='btn btn-primary btn-sm' id='sendLinkBtn' onclick='login.sendLink();' disabled>Send Link</button>
                     </div>
                 </div>
             </div>
             <div class='row mb-2'>
                 <div class='col-sm-auto'>
-                    <button class='btn btn-sm btn-primary' onclick='portal.loginWithGoogle();'>Login with Google</button>
+                    <button class='btn btn-sm btn-primary' onclick='login.loginWithGoogle();'>Login with Google</button>
                 </div>
             </div>
             <?php
@@ -49,7 +49,7 @@ function draw_login($config_vars, $result_message = '') {
                     <input class='form-control-sm' type='email' name='dev_email' id='dev_email' size='40' required/>
                 </div>
                 <div class='col-sm-auto'>
-                    <button type="button" class='btn btn-sm btn-primary' onclick='portal.loginWithEmail();'>Login to Development</button>
+                    <button type="button" class='btn btn-sm btn-primary' onclick='login.loginWithEmail();'>Login to Development</button>
                 </div>
             </div>
             <div class='row mb-2'><div class="col-sm-12" id="matchList"></div></div>
