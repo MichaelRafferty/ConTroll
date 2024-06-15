@@ -109,84 +109,6 @@ if ($managedByR != false) {
     $managedByR->free();
 }
 
-// get the information for the interest block
-$interests = getInterests();
-// get the payment plans
-$paymentPlans = getPaymentPlans(true);
-
-portalPageInit('portal', $info['fullname'] . ($personType == 'p' ? ' (ID: ' : 'Temporary ID: ') . $personId . ')',
-    /* css */ array($cdn['tabcss'],
-        $cdn['tabbs5'],
-    ),
-    /* js  */ array( //$cdn['luxon'],
-        $cdn['tabjs'],
-        //'js/tinymce/tinymce.min.js',
-        'jslib/paymentPlans.js',
-        'js/base.js',
-        'js/portal.js',
-    ),
-);
-?>
-    <script type='text/javascript'>
-        var config = <?php echo json_encode($config_vars); ?>;
-        var paymentPlans = <?php echo json_encode($paymentPlans['plans']); ?>;
-        var payorPlans = <?php echo json_encode($paymentPlans['payorPlans']); ?>;
-    </script>
-<?php
-// draw all the modals for this screen
-draw_editPersonModal();
-draw_editInterestsModal($interests);
-
-// if this person is managed, print a banner and let them disassociate from the manager.
-if ($info['managedByName'] != null) {
-    ?>
-<div class='row mt-4' id="managedByDiv">
-    <div class='col-sm-auto'><b>This person record is managed by <?php echo $info['managedByName']; ?></b></div>
-    <div class='col-sm-auto'><button class="btn btn-warning btn-sm p-1" onclick="portal.disassociate();">Dissociate from <?php echo $info['managedByName']; ?></button></div>
-</div>
-<?php } ?>
-<div class='row mt-4'>
-    <div class='col-sm-12'><h3>People managed by this account:</h3></div>
-</div>
-<div class="row">
-    <div class="col-sm-1" style='text-align: right;'><b>ID</b></div>
-    <div class="col-sm-4"><b>Person</b></div>
-    <div class="col-sm-3"><b>Memberships</b></div>
-    <div class="col-sm-4"><b>Actions</b></div>
-</div>
-<?php
-drawManagedPerson($info, $holderMembership, $interests != null);
-
-
-$managedMembershipList = '';
-$currentId = -1;
-// now for the people managed by this account holder
-if (count($managed) > 0) {
-    foreach ($managed as $m) {
-        if ($currentId != $m['id']) {
-            if ($currentId > 0) {
-                drawManagedPerson(['id' => $currentId, 'personType' => $curPT, 'fullname' => $curFN ], $curMB,$interests != null);
-            }
-            $curPT = $m['personType'];
-            $currentId = $m['id'];
-            $curFN = $m['fullname'];
-            $curMB = '';
-        }
-        if ($curMB != '') {
-            $curMB .= '<br/>';
-        }
-        $curMB .= $m['memId'] == null ? 'None' : (($m['conid'] != $conid ? $m['conid'] . ' ' : '') .  $m['label'] . ' (' . $m['status']) . ')';
-    }
-    if ($curMB != '') {
-        drawManagedPerson(['id' => $currentId, 'personType' => $curPT, 'fullname' => $curFN ], $curMB,$interests != null);
-    }
-}
-
-?>
-<div class='row'>
-    <div class='col-sm-12'><h3>Memberships purchased by this account:</h3></div>
-</div>
-<?php
 // get memberships purchased by this person
 if ($personType == 'p') {
     $membershipsQ = <<<EOS
@@ -270,15 +192,105 @@ EOS;
     $membershipsR = dbSafeQuery($membershipsQ, 'ii', array($personId, $conid));
 }
 
+$memberships = [];
+if ($membershipsR !== false) {
+    while ($membership = $membershipsR->fetch_assoc()) {
+        if ($membership['fullname'] == null) {
+            $membership['fullname'] = 'Name Redacted';
+            $membership['badge_name'] = 'Name Redacted';
+        }
+        $memberships[] = $membership;
+    }
+    $membershipsR->free();
+}
+
+// get the information for the interest block
+$interests = getInterests();
+// get the payment plans
+$paymentPlans = getPaymentPlans(true);
+
+portalPageInit('portal', $info['fullname'] . ($personType == 'p' ? ' (ID: ' : 'Temporary ID: ') . $personId . ')',
+    /* css */ array($cdn['tabcss'],
+        $cdn['tabbs5'],
+    ),
+    /* js  */ array( //$cdn['luxon'],
+        $cdn['tabjs'],
+        //'js/tinymce/tinymce.min.js',
+        'jslib/paymentPlans.js',
+        'js/base.js',
+        'js/portal.js',
+    ),
+);
+?>
+<script type='text/javascript'>
+    var config = <?php echo json_encode($config_vars); ?>;
+    var paymentPlanList = <?php echo json_encode($paymentPlans['plans']); ?>;
+    var payorPlans = <?php echo json_encode($paymentPlans['payorPlans']); ?>;
+    var membershipsPurchased = <?php echo json_encode($memberships); ?>;
+</script>
+<?php
+// draw all the modals for this screen
+draw_editPersonModal();
+draw_editInterestsModal($interests);
+
+// if this person is managed, print a banner and let them disassociate from the manager.
+if ($info['managedByName'] != null) {
+?>
+    <div class='row mt-4' id="managedByDiv">
+        <div class='col-sm-auto'><b>This person record is managed by <?php echo $info['managedByName']; ?></b></div>
+        <div class='col-sm-auto'><button class="btn btn-warning btn-sm p-1" onclick="portal.disassociate();">Dissociate from <?php echo $info['managedByName']; ?></button></div>
+    </div>
+<?php } ?>
+<div class='row mt-4'>
+    <div class='col-sm-12'><h3>People managed by this account:</h3></div>
+</div>
+<div class="row">
+    <div class="col-sm-1" style='text-align: right;'><b>ID</b></div>
+    <div class="col-sm-4"><b>Person</b></div>
+    <div class="col-sm-3"><b>Memberships</b></div>
+    <div class="col-sm-4"><b>Actions</b></div>
+</div>
+<?php
+drawManagedPerson($info, $holderMembership, $interests != null);
+
+
+$managedMembershipList = '';
+$currentId = -1;
+// now for the people managed by this account holder
+if (count($managed) > 0) {
+    foreach ($managed as $m) {
+        if ($currentId != $m['id']) {
+            if ($currentId > 0) {
+                drawManagedPerson(['id' => $currentId, 'personType' => $curPT, 'fullname' => $curFN ], $curMB,$interests != null);
+            }
+            $curPT = $m['personType'];
+            $currentId = $m['id'];
+            $curFN = $m['fullname'];
+            $curMB = '';
+        }
+        if ($curMB != '') {
+            $curMB .= '<br/>';
+        }
+        $curMB .= $m['memId'] == null ? 'None' : (($m['conid'] != $conid ? $m['conid'] . ' ' : '') .  $m['label'] . ' (' . $m['status']) . ')';
+    }
+    if ($curMB != '') {
+        drawManagedPerson(['id' => $currentId, 'personType' => $curPT, 'fullname' => $curFN ], $curMB,$interests != null);
+    }
+}
+?>
+<div class='row'>
+    <div class='col-sm-12'><h3>Memberships purchased by this account:</h3></div>
+</div>
+<?php
 // loop over the transactions outputting the memberships
-if ($membershipsR == false || $membershipsR->num_rows == 0) {
-    ?>
+if (count($memberships) == 0) {
+?>
     <div class="row">
         <div class="col-sm-1"></div>
         <div class="col-sm-auto">None</div>
     </div>
 <?php
-} else if ($membershipsR->num_rows > 0) {
+} else {
 ?>
     <div class='row'>
         <div class='col-sm-1' style='text-align: right;'><b>Trans ID</b></div>
@@ -302,18 +314,14 @@ if ($membershipsR == false || $membershipsR->num_rows == 0) {
     $currentId = -99999;
     $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
     $total_due = 0;
-    while ($membership = $membershipsR->fetch_assoc()) {
-        if ($membership['fullname'] == null) {
-            $membership['fullname'] = 'Name Redacted';
-            $membership['badge_name'] = 'Name Redacted';
-        }
+    foreach ($memberships as $membership)  {
         if ($currentId > -10000 && $currentId != $membership['memberId']) {
 ?>
-    <div class='row'>
-        <div class='col-sm-12 ms-0 me-0 align-center'>
-            <hr style='height:4px;width:95%;margin:auto;margin-top:10px;margin-bottom:10px;color:#333333;background-color:#333333;'/>
+        <div class='row'>
+            <div class='col-sm-12 ms-0 me-0 align-center'>
+                <hr style='height:4px;width:95%;margin:auto;margin-top:10px;margin-bottom:10px;color:#333333;background-color:#333333;'/>
+            </div>
         </div>
-    </div>
 <?php
         }
         $currentId = $membership['memberId'];
@@ -327,44 +335,45 @@ if ($membershipsR == false || $membershipsR->num_rows == 0) {
         }
         else
             $status = $membership['status'];
-
 ?>
-<div class="row">
-    <div class='col-sm-1' style='text-align: right;'><?php echo $membership['id'];?></div>
-    <div class="col-sm-2"><?php echo $membership['create_date'];?></div>
-    <div class="col-sm-4"><?php echo $membership['badge_name'];?></div>
-    <div class="col-sm-5"><?php echo ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label'];?></div>
-</div>
-<div class='row'>
-    <div class="col-sm-1" style='text-align: right;'><button class="btn btn-sm btn-secondary p-1 pt-0 pb-0" style='--bs-btn-font-size: 80%;' onclick="portal.transReceipt(<?php echo $membership['id'] ?>);">Receipt</button></div>
-    <div class="col-sm-2"><?php echo $status; ?></div>
-    <div class="col-sm-7"><?php echo $membership['fullname']; ?></div>
-    <div class="col-sm-1"><?php echo $membership['memType']; ?></div>
-    <div class="col-sm-1"><?php echo $membership['memCategory']; ?></div>
-</div>
+    <div class="row">
+        <div class='col-sm-1' style='text-align: right;'><?php echo $membership['id'];?></div>
+        <div class="col-sm-2"><?php echo $membership['create_date'];?></div>
+        <div class="col-sm-4"><?php echo $membership['badge_name'];?></div>
+        <div class="col-sm-5"><?php echo ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label'];?></div>
+    </div>
+    <div class='row'>
+        <div class="col-sm-1" style='text-align: right;'><button class="btn btn-sm btn-secondary p-1 pt-0 pb-0" style='--bs-btn-font-size: 80%;' onclick="portal.transReceipt(<?php echo $membership['id'] ?>);">Receipt</button></div>
+        <div class="col-sm-2"><?php echo $status; ?></div>
+        <div class="col-sm-7"><?php echo $membership['fullname']; ?></div>
+        <div class="col-sm-1"><?php echo $membership['memType']; ?></div>
+        <div class="col-sm-1"><?php echo $membership['memCategory']; ?></div>
+    </div>
 <?php
     }
     $balance = 'Total due: ' . $dolfmt->formatCurrency((float) $total_due, 'USD');
     if ($total_due > 0) {
 ?>
-<div class='row'>
-    <div class='col-sm-12 ms-0 me-0 align-center'>
-        <hr color="black" style='height:3px;width:95%;margin:auto;margin-top:10px;margin-bottom:2px;'/>
+    <div class='row'>
+        <div class='col-sm-12 ms-0 me-0 align-center'>
+            <hr color="black" style='height:3px;width:95%;margin:auto;margin-top:10px;margin-bottom:2px;'/>
+        </div>
+        <div class='col-sm-12 ms-0 me-0 align-center'>
+            <hr color="black" style='height:3px;width:95%;margin:auto;margin-top:2px;margin-bottom:20px;'/>
+        </div>
     </div>
-    <div class='col-sm-12 ms-0 me-0 align-center'>
-        <hr color="black" style='height:3px;width:95%;margin:auto;margin-top:2px;margin-bottom:20px;'/>
-    </div>
-</div>
 <div class="row">
     <div class="col-sm-1"></div>
     <div class="col-sm-2"><b><?php echo $balance; ?></b></div>
-    <div class="col-sm-4"><button class="btn btn-sm btn-primary pt-1 pb-1" onclick="payBalance(<?php echo $total_due;?>)">Pay Balance (or start a payment plan)</button>
-</div>
+    <div class="col-sm-4"><button class="btn btn-sm btn-primary pt-1 pb-1" id="payBalanceBTN" onclick="payBalance(<?php echo $total_due;?>)">Pay Balance</button>
+    </div>
 <?php
+        }
     }
-}
 ?>
 </div>
 <?php
 portalPageFoot();
 ?>
+
+}

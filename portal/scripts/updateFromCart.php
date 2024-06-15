@@ -236,7 +236,7 @@ values (?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
             $typeStr = 'iiiidiis';
             $valArray = array(
-                $conid,
+                $cartrow['conid'],
                 $personType == 'p' ? $personId : null,
                 $personType == 'n' ? $personId : null,
                 $transId,

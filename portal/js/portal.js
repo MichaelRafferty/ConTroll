@@ -4,10 +4,10 @@ var portal = null;
 
 // initial setup
 window.onload = function () {
-    portal = new Portal();
     if (config.loadPlans) {
         paymentPlans = new PaymentPlans();
     }
+    portal = new Portal();
 }
 
 class Portal {
@@ -53,6 +53,9 @@ class Portal {
     #eiPersonTypeField = null;
     #interests = null;
 
+    // payment fields
+    #payBalanceBTN = null;
+
     constructor() {
         var id;
         id = document.getElementById("editPersonModal");
@@ -90,6 +93,14 @@ class Portal {
             this.#eiHeaderDiv = document.getElementById('eiHeader');
             this.#eiPersonIdField = document.getElementById('eiPersonId');
             this.#eiPersonTypeField = document.getElementById("eiPersonType");
+        }
+
+        this.#payBalanceBTN = document.getElementById('payBalanceBTN');
+        if (this.#payBalanceBTN != null && paymentPlanList != null) {
+            if (paymentPlans.plansEligible(membershipsPurchased)) {
+                this.#payBalanceBTN.innerHTML = "Pay Balance (or start a payment plan)";
+            }
+
         }
     }
 

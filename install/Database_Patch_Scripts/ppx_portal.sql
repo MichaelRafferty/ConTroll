@@ -161,9 +161,10 @@ CREATE TABLE paymentPlans (
     memList varchar(1024) DEFAULT NULL,
     excludeList varchar(1024) DEFAULT NULL,
     portalList varchar(1024) DEFAULT NULL,
-    downPercent decimal(8,2) DEFAULT NULL,
-    downAmt decimal(8,2) DEFAULT NULL,
-    numPaymentMax int DEFAULT NULL,
+    downPercent decimal(8,2) DEFAULT 0,
+    downAmt decimal(8,2) DEFAULT 25.00,
+    minPayment decimal(8,2) DEFAULT 10.00,
+    numPaymentMax int DEFAULT 4,
     payByDate datetime DEFAULT NULL,
     payType enum('manual','auto') DEFAULT 'manual',
     modify enum ('Y', 'N') NOT NULL DEFAULT 'N',
@@ -178,7 +179,6 @@ CREATE TABLE paymentPlans (
 
 ALTER TABLE paymentPlans ADD FOREIGN KEY pp_updateBy_fk (updateBy) REFERENCES perinfo(id) ON UPDATE CASCADE;
 
-
 CREATE TABLE payorPlans (
     id int NOT NULL AUTO_INCREMENT,
     planId int NOT NULL,
@@ -187,6 +187,7 @@ CREATE TABLE payorPlans (
     initialAmt decimal(8,2) NOT NULL,
     nonPlanAmt decimal(8,2) NOT NULL DEFAULT 0,
     downPayment decimal(8,2) NOT NULL DEFAULT 0,
+    minPayment decimal(8,2) DEFAULT 10.00,
     openingBalance decimal(8,2) NOT NULL DEFAULT 0,
     numPayments int NOT NULL,
     payByDate datetime NOT NULL,
@@ -200,6 +201,7 @@ CREATE TABLE payorPlans (
     updateBy    int DEFAULT NULL,
     PRIMARY KEY (id)
 );
+
 
 CREATE TABLE payorPlanPayments (
     payorPlanId int NOT NULL,
