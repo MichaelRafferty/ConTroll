@@ -4,6 +4,7 @@ require_once("lib/base.php");
 require_once("lib/portalForms.php");
 require_once("../lib/interests.php");
 require_once("../lib/paymentPlans.php");
+require_once('../lib/cc__load_methods.php');
 
 global $config_vars;
 
@@ -12,7 +13,9 @@ $conid = $con['id'];
 $portal_conf = get_conf('portal');
 $debug = get_conf('debug');
 $ini = get_conf('reg');
+$cc = get_conf('cc');
 $condata = get_con();
+load_cc_procs();
 
 if (array_key_exists('id', $_SESSION) && array_key_exists('idType', $_SESSION)) {
     $personType = $_SESSION['idType'];
@@ -232,6 +235,8 @@ portalPageInit('portal', $info['fullname'] . ($personType == 'p' ? ' (ID: ' : 'T
 // draw all the modals for this screen
 draw_editPersonModal();
 draw_editInterestsModal($interests);
+draw_paymentDueModal();
+draw_makePaymentModal();
 
 // if this person is managed, print a banner and let them disassociate from the manager.
 if ($info['managedByName'] != null) {
@@ -365,7 +370,7 @@ if (count($memberships) == 0) {
 <div class="row">
     <div class="col-sm-1"></div>
     <div class="col-sm-2"><b><?php echo $balance; ?></b></div>
-    <div class="col-sm-4"><button class="btn btn-sm btn-primary pt-1 pb-1" id="payBalanceBTN" onclick="payBalance(<?php echo $total_due;?>)">Pay Balance</button>
+    <div class="col-sm-4"><button class="btn btn-sm btn-primary pt-1 pb-1" id="payBalanceBTN" onclick="portal.payBalance(<?php echo $total_due;?>)">Pay Balance</button>
     </div>
 <?php
         }

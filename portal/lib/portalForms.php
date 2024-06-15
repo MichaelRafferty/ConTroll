@@ -1,6 +1,24 @@
 <?php
 // portalForms:  Forms used by the portal for person and membership work
 
+//// Step 1 - Age Bracket
+// drawGetAgeBracket - age bracket selection for filtering memberships
+function drawGetAgeBracket($updateName, $condata) {
+    $readableStartDate = date_format(date_create($condata['startdate']), 'l M j, Y');
+    ?>
+    <div class="row mt-2">
+        <div class="col-sm-12">
+            <h4 class='text-primary'>Please verify the age of <?php echo $updateName; ?> as of <?php echo $readableStartDate; ?></h4>
+        </div>
+        <div class="row mt-1" id="ageButtons"></div>
+        <div class="row mt-2">
+            <div class="col-sm-12">Please click on the proper age bracket above to continue to the next step.</div>
+        </div>
+    </div>
+    <?php
+}
+
+//// Step 2 - Person
 // drawVerifyPersonInfo - non modal version of validate person information
 function drawVerifyPersonInfo() {
     $usps = get_conf('usps');
@@ -21,25 +39,6 @@ function drawVerifyPersonInfo() {
         </div>
     </div>
 <?php
-}
-
-// drawVerifyInterestsBLock - non modal version of validate interests
-function drawVerifyInterestsBlock($interests) {
-    ?>
-    <form id='editInterests' class='form-floating' action='javascript:void(0);'>
-    <?php
-    drawInterestList($interests);
-    ?>
-    </form>
-    <div class="row mt-3">
-        <div class='col-sm-auto'>
-            <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2, true);'>Return to step 2: Personal Information Verification</button>
-        </div>
-        <div class="col-sm-auto">
-            <button class="btn btn-sm btn-primary" onclick="membership.saveInterests();">Save Interests and move to next step</button>
-        </div>
-    </div>
-    <?php
 }
 
 // draw_editPerson - draw the verify/update form for the Person
@@ -257,22 +256,27 @@ function drawEditPersonBlock($con, $useUSPS) {
 <?php
 }
 
-// drawGetAgeBracked - age bracket selection for filtering memberships
-function drawGetAgeBracket($updateName, $condata) {
-    $readableStartDate = date_format(date_create($condata['startdate']), "l M j, Y");
+//// step 3 - Interests
+// drawVerifyInterestsBLock - non modal version of validate interests
+function drawVerifyInterestsBlock($interests) {
     ?>
-    <div class="row mt-2">
-        <div class="col-sm-12">
-            <h4 class='text-primary'>Please verify the age of <?php echo $updateName; ?> as of <?php echo $readableStartDate;?></h4>
+    <form id='editInterests' class='form-floating' action='javascript:void(0);'>
+        <?php
+        drawInterestList($interests);
+        ?>
+    </form>
+    <div class="row mt-3">
+        <div class='col-sm-auto'>
+            <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2, true);'>Return to step 2: Personal Information Verification</button>
         </div>
-        <div class="row mt-1" id="ageButtons"></div>
-        <div class="row mt-2">
-            <div class="col-sm-12">Please click on the proper age bracket above to continue to the next step.</div>
+        <div class="col-sm-auto">
+            <button class="btn btn-sm btn-primary" onclick="membership.saveInterests();">Save Interests and move to next step</button>
         </div>
     </div>
     <?php
 }
 
+//// step 4 memberships
 // drawGetNewMemberships - membership selection
 function drawGetNewMemberships() {
     ?>
@@ -314,6 +318,7 @@ function drawVariablePriceModal() {
 <?php
 }
 
+//// buttons on portal screen
 function drawManagedPerson($person, $memberships, $showInterests) {
     ?>
     <div class="row mb-1">
@@ -331,7 +336,7 @@ function drawManagedPerson($person, $memberships, $showInterests) {
     <?php
 }
 
-// draw_editInterests - draw the update interests form for the person
+// draw_editInterests on portal screen - draw the update interests form for the person
 function draw_editInterestsModal($interests) {
     if ($interests != null) {
     ?>
@@ -372,4 +377,85 @@ function draw_editInterestsModal($interests) {
     </div>
     <?php
     }
+}
+
+//// payment items
+// drawPaymentModal- main payment modal popup
+function draw_PaymentDueModal() {
+    ?>
+    <div id='paymentDueModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Payments' aria-hidden='true' style='--bs-modal-width: 96%;'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='paymentDueTitle'>
+                        <strong>Pay Balance Due</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <div class='container-fluid' id="paymentDueBody">
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-12' id='payDueMessageDiv'></div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
+                    <button class='btn btn-sm btn-primary' id='payDueSubmitButton' onClick='portal.makePayment(null)' tabindex='10402'>Pay total amount due</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
+}
+
+function draw_makePaymentModal() {
+    $ini = get_conf('reg');
+    $cc = get_conf('cc');
+    ?>
+    <div id='makePaymentModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Payments' aria-hidden='true' style='--bs-modal-width: 96%;'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='makePaymentTitle'>
+                        <strong>Pay Via Credit Cart</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <div class="container-fluid" id="makePaymentBody"></div>
+                    <div class="container-fluid" id="creditCardDiv">
+                        <div class="row">
+                            <div class="col-sm-auto">
+                                We Accept<br/>
+                                <img src='cards_accepted_64.png' alt='Visa, Mastercard, American Express, and Discover'/>
+                            </div>
+
+                        </div>
+                        <div class='row'>
+                            <div class='col-sm-12'>
+<?php
+    if ($ini['test'] == 1) {
+?>
+                            <h2 class='text-danger'><strong>This won't charge your credit card.<br/>It also won't get you real memberships.</strong></h2>
+<?php
+    }
+?>
+                            </div>
+                        </div>
+                        <div class='row'>
+                            <div class='col-sm-12'><?php echo draw_cc_html($cc); ?></div>
+                        </div>
+                        <div class='row'>
+                            <div class='col-sm-12' id='payDueMessageDiv'></div>
+                        </div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
 }

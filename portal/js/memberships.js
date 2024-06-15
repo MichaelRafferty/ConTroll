@@ -55,6 +55,7 @@ class Membership {
     #cartDiv = null;
     #cartContentsDiv = null;
     #totalDue = 0;
+    #planDue = 0;
     #countMemberships = 0;
     #unpaidMemberships = 0;
     #newIDKey = -1;
@@ -577,6 +578,7 @@ class Membership {
     // updateCart - redraw the items in the cart
     updateCart() {
         this.#totalDue = 0;
+        this.#planDue = 0;
         this.#countMemberships = 0;
         this.#unpaidMemberships = 0;
         var statusCol;
@@ -595,7 +597,10 @@ class Membership {
             this.#countMemberships++;
             var membershipRec = this.#memberships[row];
             var amount_due = Number(membershipRec.price) - (Number(membershipRec.paid) + Number(membershipRec.couponDiscount));
-            this.#totalDue += amount_due;
+            if (membershipRec.status == 'unpaid')
+                this.#totalDue += amount_due;
+            if (membershipRec.status == 'plan')
+                this.#planDue += amount_due;
 
             if (membershipRec.status == 'unpaid')
                 statusCol = Number(amount_due).toFixed(2)

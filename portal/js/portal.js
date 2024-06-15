@@ -55,6 +55,15 @@ class Portal {
 
     // payment fields
     #payBalanceBTN = null;
+    #paymentDueModal = null;
+    #paymentDueTitle = null;
+    #paymentDueBody = null;
+    #makePaymentModal = null;
+    #makePaymentTitle = null;
+    #makePaymentBody = null;
+    #paymentPlan = null;
+    #totalAmountDue = null;
+    #paymentAmount = null;
 
     constructor() {
         var id;
@@ -100,7 +109,20 @@ class Portal {
             if (paymentPlans.plansEligible(membershipsPurchased)) {
                 this.#payBalanceBTN.innerHTML = "Pay Balance (or start a payment plan)";
             }
+        }
 
+        id = document.getElementById("paymentDueModal");
+        if (id) {
+            this.#paymentDueModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#paymentDueBody = document.getElementById("paymentDueBody");
+            this.#paymentDueTitle = document.getElementById("paymentDueTitle");
+        }
+
+        id = document.getElementById("makePaymentModal");
+        if (id) {
+            this.#makePaymentModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#makePaymentBody = document.getElementById("makePaymentBody");
+            this.#makePaymentTitle = document.getElementById("makePaymentTitle");
         }
     }
 
@@ -573,4 +595,99 @@ class Portal {
             }
         }
     }
+
+    // payment functions
+    payBalance(totalDue) {
+        var html = '';
+        var plans = paymentPlans.isMatchingPlans();
+
+        this.#totalAmountDue = totalDue;
+        this.#paymentAmount = totalDue;
+
+        if (!plans) {
+            this.makePayment(null);
+            return;
+        }
+
+        html = `
+    <div class="row mt-3">
+        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onClick='portal.makePayment(null);'>Pay Total Amount Due</button></div>
+        <div class="col-sm-auto">
+            <b>Your total amout due is ` + Number(totalDue).toFixed(2) + `</b>
+        </div>
+    </div>
+`;
+        if (plans) {
+            html += `
+    <div class="row mt-2">
+        <div class="col-sm-12">You can pay this balance in fill or create one of the following payment plans:</div>
+    </div>
+`;
+            html += paymentPlans.getMatchingPlansHTML();
+        }
+        
+        this.#paymentDueBody.innerHTML = html;
+        this.#paymentDueModal.show();
+    }
+
+    // make payment
+    makePayment(plan) {
+        if (plan == null) {
+            this.#makePaymentBody.innerHTML = `
+        <div class="row mt-4">
+            <div class="col-sm-auto"><b>The Total Amount Due is ` + Number(this.#totalAmountDue).toFixed(2) + `</b></div>
+        </div>
+        <div class="row mt-2 mb-4">
+            <div class="col-sm-auto">You are paying the total amount, so the payment amount is ` + Number(this.#paymentAmount).toFixed(2) + `</div>
+         </div>
+`;
+        }
+        this.#paymentDueModal.hide();
+        this.#makePaymentModal.show();
+    }
+
+    makePurchase(token, label = '') {
+        if (token == 'test_ccnum') {  // this is the test form
+            token = document.getElementById(token).value;
+        }
+
+        var id = document.getElementById("purchase");
+        if (id)
+            id.disabled = true;
+
+        // transaction comes from session, person paying come from session, we will compute what was paid
+        var data = {
+            action: 'portalPayment',
+            plan: false,
+            planRec: null,
+            nonce: token,
+            amount: this.#paymentAmount,
+        }
+        $.ajax({
+            url: "scripts/portalPurchase.php",
+            data: data,
+            method: 'POST',
+            success: function (data, textStatus, jqXhr) {
+                portal.makePurchaseSuccess(data);
+                return true;
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                id.disabled = false;
+                showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
+                return false;
+            },
+        });
+    }
+
+    makePurchaseSuccess(data) {
+        console.log(data);
+        if (data['message'])
+            window.location.search = '?messageFwd=' + encodeURI(data['message']);
+        else
+            window.location = "portal.php";
+    }
+}
+
+function makePurchase(token, label) {
+    portal.makePurchase(token, label);
 }

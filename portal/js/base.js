@@ -90,3 +90,9 @@ function findMembership(id) {
     }
     return null; // not found
 }
+
+// make_copy(associative array)
+// javascript passes by reference, can't slice an associative array, so you need to do a horrible JSON kludge
+function make_copy(arr) {
+    return JSON.parse(JSON.stringify(arr));  // horrible way to make an independent copy of an associative array
+}
