@@ -669,7 +669,7 @@ class Portal {
             data: data,
             method: 'POST',
             success: function (data, textStatus, jqXhr) {
-                portal.makePurchaseSuccess(data);
+                portal.makePurchaseSuccess(data, id);
                 return true;
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -680,8 +680,19 @@ class Portal {
         });
     }
 
-    makePurchaseSuccess(data) {
+    makePurchaseSuccess(data, id) {
         console.log(data);
+        if (data['status'] == 'error') {
+            id.disabled = false;
+            if (data['message']) {
+                show_message(data['message'], 'error', 'makePayMessageDiv');
+                return;
+            }
+            if (data['data']) {
+                show_message(data['data'], 'error', 'makePayMessageDiv');
+                return;
+            }
+        }
         if (data['message'])
             window.location.search = '?messageFwd=' + encodeURI(data['message']);
         else

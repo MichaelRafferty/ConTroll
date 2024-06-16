@@ -1,6 +1,7 @@
 <?php
 require_once('../lib/base.php');
 require_once('../lib/getAccountData.php');
+require_once('../lib/portalEmails.php');
 require_once('../../lib/paymentPlans.php');
 require_once('../../lib/log.php');
 require_once('../../lib/cc__load_methods.php');
@@ -44,6 +45,7 @@ $plan = $_POST['plan'];
 $newplan = $_POST['newplan'];
 $nonce = $_POST['nonce'];
 $amount = $_POST['amount'];
+$planRec = null;
 if ($plan) {
     $planRec = $_POST['planRec'];
 } else {
@@ -80,7 +82,7 @@ foreach ($memberships as $membership) {
     $badgeResults[] = ['age' => $membership['memAge'], 'memId' => $membership['memId'], 'price' => $membership['price']];
 }
 
-$inPlan = whatMembershipsInPlan($memberships, $plan);
+$inPlan = whatMembershipsInPlan($memberships, $planRec);
 
 $results = array(
     'custid' => "$loginType-$loginId",
@@ -132,7 +134,7 @@ $txnU = dbSafeCmd($txnUpdate, 'ddi', array($approved_amt, $totalDiscount, $trans
 $rows_upd = 0;
 
 if ($amount > 0) {
-    $regU = 'UPDATE reg SET paid=?, $couponDiscount = ?, complete_trans = ?, status = ? WHERE id=?;';
+    $regU = 'UPDATE reg SET paid=?, couponDiscount = ?, complete_trans = ?, status = ? WHERE id=?;';
     $balance = $approved_amt;
     // first all the out of plan ones
     foreach ($memberships as $membership) {
@@ -187,7 +189,7 @@ if ($amount > 0) {
     }
 }
 if ($amount > 0) {
-    $body = getEmailBody($transid, $info, $memberships, $plan, $newplan, $planRec, $rtn['rid'], $rtn['url']);
+    $body = getEmailBody($transid, $info, $memberships, $plan, $newplan, $planRec, $rtn['rid'], $rtn['url'], $amount);
 } else {
     $body = getNoChargeEmailBody($results, $info, $plan, $newplan, $planRec, $memberships);
 }

@@ -1,5 +1,5 @@
 <?php
-function getEmailBody($transid, $owner, $memberships, $plan, $newplan, $planRec, $rid, $url): string {
+function getEmailBody($transid, $owner, $memberships, $plan, $newplan, $planRec, $rid, $url, $amount): string {
     $condata = get_con();
     $ini = get_conf('reg');
     $con = get_conf('con');
@@ -15,14 +15,14 @@ function getEmailBody($transid, $owner, $memberships, $plan, $newplan, $planRec,
     if ($planRec != null)
         $body .= "and is part of the " . $planRec['name']  . " payment plan\n";
 
-    if ($owner['code'] != null) {
+    if (array_key_exists('code', $owner) && $owner['code'] != null) {
         $body .= 'A coupon of type ' . $owner['code'] . ' (' . $owner['name'] . ') was applied to this transaction';
         if ($owner['couponDiscount'] > 0)
             $body .= ' for a savings of ' . $owner['couponDiscount'];
         $body .= "\n";
     }
 
-    $body .= 'Your card was charged ' . $owner['paid'] . ' for this transaction' .
+    $body .= 'Your card was charged $amount for this transaction' .
         "\n\nThe following memberships were involved in this payment:\n\n";
 
 
@@ -68,7 +68,7 @@ function getNoChargeEmailBody($transid, $owner, $memberships, $plan, $newplan, $
     }
 
     $body .= "Your Transaction number is $transid\n";
-    if ($owner['code'] != null) {
+    if (array_key_exists('code', $owner) && $owner['code'] != null) {
         $body .= 'A coupon of type ' . $owner['code'] . ' (' . $owner['name'] . ') was applied to this transaction';
         if ($owner['couponDiscount'] > 0)
             $body .= ' for a savings of ' . $owner['couponDiscount'];

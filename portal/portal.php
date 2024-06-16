@@ -289,5 +289,3 @@ if (count($memberships) == 0) {
 <?php
 portalPageFoot();
 ?>
-
-}

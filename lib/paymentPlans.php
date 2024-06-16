@@ -85,8 +85,8 @@ EOS;
 
 function whatMembershipsInPlan($memberships, $plan) {
     $inPlan = [];
-    $inplan[$plan == null ? '' : $plan] = true;
-    if ($plan == null || $plan =='') {
+    $inPlan[$plan == null ? '' : $plan['name']] = true;
+    if ($plan == null) {
         foreach ($memberships as $membership) {
             $inPlan[$membership['regId']] = false;
         }

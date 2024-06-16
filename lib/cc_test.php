@@ -73,6 +73,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 			$rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 's', 's', 's', 's', 's', 'i');
 			$rtn['tnxdata'] = array($results['transid'],'credit',$category, 'test registration', 'online', $results['total'], '00-00-00 00:00:00',$_POST['nonce'],'txn id','000000','txn_id', $user_perid);
             $rtn['url'] = 'no test receipt';
+            $rtn['rid'] = 'test';
 			return $rtn;
 		default: 
 			ajaxSuccess(array('status'=>'error','data'=>'bad CC number'));

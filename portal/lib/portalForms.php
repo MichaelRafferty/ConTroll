@@ -447,7 +447,7 @@ function draw_makePaymentModal() {
                             <div class='col-sm-12'><?php echo draw_cc_html($cc); ?></div>
                         </div>
                         <div class='row'>
-                            <div class='col-sm-12' id='payDueMessageDiv'></div>
+                            <div class='col-sm-12' id='makePayMessageDiv'></div>
                         </div>
                     </div>
                 </div>
