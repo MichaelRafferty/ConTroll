@@ -55,6 +55,7 @@ class Portal {
 
     // payment fields
     #payBalanceBTN = null;
+    #payBalanceTopBTN = null;
     #paymentDueModal = null;
     #paymentDueTitle = null;
     #paymentDueBody = null;
@@ -105,9 +106,11 @@ class Portal {
         }
 
         this.#payBalanceBTN = document.getElementById('payBalanceBTN');
+        this.#payBalanceTopBTN = document.getElementById('payBalanceTopBTN');
         if (this.#payBalanceBTN != null && paymentPlanList != null) {
             if (paymentPlans.plansEligible(membershipsPurchased)) {
                 this.#payBalanceBTN.innerHTML = "Pay Balance (or start a payment plan)";
+                this.#payBalanceTopBTN.innerHTML = "Pay Balance (or start a payment plan)";
             }
         }
 

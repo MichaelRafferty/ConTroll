@@ -41,6 +41,8 @@ if ($info === false) {
     portalPageFoot();
     exit();
 }
+$dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+
 // get the account holder's registrations
 $holderRegSQL = <<<EOS
 SELECT r.status, r.memId, m.*
@@ -190,9 +192,22 @@ if (count($managed) > 0) {
         drawManagedPerson(['id' => $currentId, 'personType' => $curPT, 'fullname' => $curFN ], $curMB,$interests != null);
     }
 }
+// compute total due so we can display it up top as well...
+$totalDue = 0;
+foreach ($memberships as $membership) {
+    if ($membership['status'] == 'unpaid') {
+        $totalDue += round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
+    }
+}
+$payHtml = '';
+if ($totalDue > 0) {
+    $totalDueFormatted = 'Total due: ' . $dolfmt->formatCurrency((float) $totalDue, 'USD');
+    $payHtml = " $totalDueFormatted   " . '<button class="btn btn-sm btn-primary pt-1 pb-1" id="payBalanceTopBTN" onclick="portal.payBalance($totalDue);">Pay Balance</button>';
+    $_SESSION['totalDue'] = $totalDue; // used for validation in payment side
+}
 ?>
-<div class='row'>
-    <div class='col-sm-12'><h3>Memberships purchased by this account:</h3></div>
+<div class='row mt-4'>
+    <div class='col-sm-auto'><h3>Memberships purchased by this account:<?php echo $payHtml; ?></h3>
 </div>
 <?php
 // loop over the transactions outputting the memberships
@@ -225,8 +240,6 @@ if (count($memberships) == 0) {
 
     $rowId = -9999;
     $currentId = -99999;
-    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
-    $total_due = 0;
     foreach ($memberships as $membership)  {
         if ($currentId > -10000 && $currentId != $membership['memberId']) {
 ?>
@@ -243,7 +256,6 @@ if (count($memberships) == 0) {
         $rowId++;
         if ($membership['status'] == 'unpaid') {
             $due = round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
-            $total_due += $due;
             $status = 'Balance due: ' . $dolfmt->formatCurrency((float) $due, 'USD');
         }
         else
@@ -264,9 +276,7 @@ if (count($memberships) == 0) {
     </div>
 <?php
     }
-    $balance = 'Total due: ' . $dolfmt->formatCurrency((float) $total_due, 'USD');
-    $_SESSION['totalDue'] = $total_due; // used for validation in payment side
-    if ($total_due > 0) {
+    if ($totalDue > 0) {
 ?>
     <div class='row'>
         <div class='col-sm-12 ms-0 me-0 align-center'>
@@ -278,8 +288,8 @@ if (count($memberships) == 0) {
     </div>
 <div class="row">
     <div class="col-sm-1"></div>
-    <div class="col-sm-2"><b><?php echo $balance; ?></b></div>
-    <div class="col-sm-4"><button class="btn btn-sm btn-primary pt-1 pb-1" id="payBalanceBTN" onclick="portal.payBalance(<?php echo $total_due;?>)">Pay Balance</button>
+    <div class="col-sm-2"><b><?php echo $totalDueFormatted; ?></b></div>
+    <div class="col-sm-4"><button class="btn btn-sm btn-primary pt-1 pb-1" id="payBalanceBTN" onclick="portal.payBalance(<?php echo $totalDue;?>);">Pay Balance</button>
     </div>
 <?php
         }
