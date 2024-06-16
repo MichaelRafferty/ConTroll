@@ -202,7 +202,7 @@ foreach ($memberships as $membership) {
 $payHtml = '';
 if ($totalDue > 0) {
     $totalDueFormatted = 'Total due: ' . $dolfmt->formatCurrency((float) $totalDue, 'USD');
-    $payHtml = " $totalDueFormatted   " . '<button class="btn btn-sm btn-primary pt-1 pb-1" id="payBalanceTopBTN" onclick="portal.payBalance($totalDue);">Pay Balance</button>';
+    $payHtml = " $totalDueFormatted   " . '<button class="btn btn-sm btn-primary pt-1 pb-1" id="payBalanceTopBTN" onclick="portal.payBalance(' . $totalDue . ');">Pay Balance</button>';
     $_SESSION['totalDue'] = $totalDue; // used for validation in payment side
 }
 ?>
