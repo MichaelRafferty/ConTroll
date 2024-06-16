@@ -146,3 +146,33 @@ EOS;
 
     return $inPlan;
 }
+
+//// payment plan modals
+// drawCustomizePlanModal- main payment modal popup
+function draw_customizePlanModal($from) {
+    ?>
+    <div id='customizePlanModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='customizePlan' aria-hidden='true' style='--bs-modal-width: 96%;'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='customizePlanTitle'>
+                        <strong>Customize Payment Plan</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <div class='container-fluid' id="customizePlanBody">
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-12' id='customizePlanMessageDiv'></div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
+                    <button class='btn btn-sm btn-primary' id='customizePlanSubmit' onClick='paymentPlans.makePlan("<?php echo $from; ?>")' tabindex='20002'>Create Plan and pay amount due today of ???</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
+}

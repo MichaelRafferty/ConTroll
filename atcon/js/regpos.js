@@ -2325,7 +2325,7 @@ function pay_shown() {
     </div>
     <div class="row mt-1">
         <div class="col-sm-1 ms-0 me-0">&nbsp;</div>
-        <div class="col-sm-11 ms-0 me-0 p-0">` + coupon.couponDetails() + `</div>
+        <div class="col-sm-10 ms-0 me-0 p-0">` + coupon.couponDetails() + `</div>
     </div>
 `;
         }

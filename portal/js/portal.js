@@ -601,6 +601,8 @@ class Portal {
 
     // payment functions
     payBalance(totalDue) {
+        clear_message();
+        clear_message('payDueMessageDiv');
         var html = '';
         var plans = paymentPlans.isMatchingPlans();
 
@@ -626,11 +628,15 @@ class Portal {
         <div class="col-sm-12">You can pay this balance in fill or create one of the following payment plans:</div>
     </div>
 `;
-            html += paymentPlans.getMatchingPlansHTML();
+            html += paymentPlans.getMatchingPlansHTML('portal');
         }
         
         this.#paymentDueBody.innerHTML = html;
         this.#paymentDueModal.show();
+    }
+
+    closePaymentDueModal() {
+        this.#paymentDueModal.hide();
     }
 
     // make payment

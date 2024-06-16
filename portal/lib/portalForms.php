@@ -383,7 +383,7 @@ function draw_editInterestsModal($interests) {
 // drawPaymentModal- main payment modal popup
 function draw_PaymentDueModal() {
     ?>
-    <div id='paymentDueModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Payments' aria-hidden='true' style='--bs-modal-width: 96%;'>
+    <div id='paymentDueModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='paymentsDue' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
@@ -413,7 +413,7 @@ function draw_makePaymentModal() {
     $ini = get_conf('reg');
     $cc = get_conf('cc');
     ?>
-    <div id='makePaymentModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Payments' aria-hidden='true' style='--bs-modal-width: 96%;'>
+    <div id='makePaymentModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='makePayments' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>

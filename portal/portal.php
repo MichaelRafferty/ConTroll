@@ -147,6 +147,9 @@ draw_editPersonModal();
 draw_editInterestsModal($interests);
 draw_paymentDueModal();
 draw_makePaymentModal();
+if (count($paymentPlans) > 0) {
+    draw_customizePlanModal('portal');
+}
 
 // if this person is managed, print a banner and let them disassociate from the manager.
 if ($info['managedByName'] != null) {
