@@ -82,3 +82,67 @@ EOS;
 
     return $data;
 }
+
+function whatMembershipsInPlan($memberships, $plan) {
+    $inPlan = [];
+    $inplan[$plan == null ? '' : $plan] = true;
+    if ($plan == null || $plan =='') {
+        foreach ($memberships as $membership) {
+            $inPlan[$membership['regId']] = false;
+        }
+        return $inPlan;
+    }
+
+    // get the plan info from the database
+    $QQ = <<<EOS
+SELECT *
+FROM paymentPlans
+WHERE active = 'Y' AND name = ?;
+EOS;
+    $QR = dbSafeQuery($QQ, 's', array($plan));
+    if ($QR == false || $QR->num_rows != 1)
+        return null;
+    $planData = $QR->fetch_assoc();
+    $QR->free();
+    $memList = null;
+    $catList = null;
+    $excludeList = null;
+
+    if ($planData['catList'] != null && $planData['catList'] != '') {
+        $catList = explode(',', $planData['catList']);
+    }
+
+    if ($planData['memList'] != null && $planData['memList'] != '') {
+        $memList = explode(',', $planData['memList']);
+    }
+
+    if ($planData['excludeList'] != null && $planData['excludeList'] != '') {
+        $excludeList = explode(',', $planData['excludeList']);
+    }
+
+    foreach ($memberships as $membership) {
+        if ($membership['status'] != 'unpaid') {
+            $inPlan[$membership['regId']] = false;
+            continue;
+        }
+
+        if ($excludeList != null && in_array($membership['memId'], $excludeList)) {
+            $inPlan[$membership['regId']] = false;
+            continue;
+        }
+
+        if ($catList != null && in_array($membership['memCategory'], $catList)) {
+            $inPlan[$membership['regId']] = true;
+            continue;
+        }
+
+        if ($memList != null && !in_array($membership['memId'], $memList)) {
+            $inPlan[$membership['regId']] = true;
+            continue;
+        }
+
+        $inPlan[$membership['regId']] = false;
+    }
+
+    return $inPlan;
+}

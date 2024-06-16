@@ -152,7 +152,9 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     $order->setSource(new OrderSource);
     $order->getSource()->setName($con['conname'] . 'OnLineReg');
 
-    if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
+    if (array_key_exists('custid', $results)) {
+        $custid = $results['custid'];
+    } else if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
         $custid = 'r-' . $results['badges'][0]['badge'];
     } else if (array_key_exists('spaceName', $results) && array_key_exists('vendorId', $results)) {
         $custid = 'e-' . $results['vendorId'];
@@ -167,9 +169,13 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 
     if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
         foreach ($results['badges'] as $badge) {
+            if (array_key_exists('fullname', $badge))
+                $fullname = $badge['fullname'];
+            else
+                $fullname = trim(trim($badge['fname'] . ' ' . $badge['mname']) . ' ' . $badge['lname']));
             $item = new OrderLineItem ('1');
             $item->setUid('badge' . ($lineid + 1));
-            $item->setName($badge['age'] . ' Membership for ' . trim(trim($badge['fname'] . ' ' . $badge['mname']) . ' ' . $badge['lname']));
+            $item->setName($badge['age'] . ' Membership for ' . $fullname;
             $item->setNote($badge['memId'] . ': Membership Type Code');
             $item->setBasePriceMoney(new Money);
             $item->getBasePriceMoney()->setAmount($badge['price'] * 100);

@@ -40,15 +40,17 @@ class PaymentPlans {
                     if (mem.status != 'unpaid') // can't add anything without a balance due to a plan, and plan is already covered in a different plan
                         continue;
 
-                    var eligible = true;
+                    var eligible = false;
                     if (plan.catList != null) {
-                        if (plan.catListArray.indexOf(mem.memCategory.toString()) == -1)
-                            eligible = false;
+                        if (plan.catListArray.indexOf(mem.memCategory.toString())  != -1)
+                            eligible = true;
                     }
-                    if (eligible && plan.memList != null) {
+
+                    if (plan.memList != null) {
                         if (plan.memListArray.indexOf(mem.id.toString()) == -1)
-                            eligible = false;
+                            eligible = true;
                     }
+
                     if (plan.excludeList != null) {
                         if (plan.memListArray.indexOf(mem.id.toString()) != -1)
                             eligible = false;

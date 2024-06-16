@@ -660,6 +660,7 @@ class Portal {
             action: 'portalPayment',
             plan: false,
             planRec: null,
+            newplan: false,
             nonce: token,
             amount: this.#paymentAmount,
         }
