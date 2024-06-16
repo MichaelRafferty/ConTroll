@@ -695,8 +695,10 @@ class Portal {
         }
         if (data['message'])
             window.location.search = '?messageFwd=' + encodeURI(data['message']);
-        else
-            window.location = "portal.php";
+        else {
+            var message = 'Payment succeeded, ' + data['rows_upd'] + ' memberships updated';
+            window.location.search = '?messageFwd=' + encodeURI(message);
+        }
     }
 }
 

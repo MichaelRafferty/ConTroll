@@ -22,19 +22,24 @@ function getEmailBody($transid, $owner, $memberships, $plan, $newplan, $planRec,
         $body .= "\n";
     }
 
-    $body .= 'Your card was charged $amount for this transaction' .
+    $body .= "Your card was charged $amount for this transaction" .
         "\n\nThe following memberships were involved in this payment:\n\n";
 
 
+    $fullnames = [];
     foreach ($memberships as $membership) {
-        if ($membership['status'] != 'paid')
+        if ($membership['status'] == 'paid')
             continue;
         if ($newplan && $membership['status'] != 'unpaid')
             continue;
         if ($plan && !$newplan && $membership['status'] != 'plan')
             continue;
 
+        if (array_key_exists($membership['fullname'], $fullnames))
+            continue;
         $body .= '     * ' . $membership['fullname'] . ' (' . $membership['label'] . ")\n\n";
+
+        $fullnames[$membership['fullname']] = 1;
     }
 
     if ($url != '') {
