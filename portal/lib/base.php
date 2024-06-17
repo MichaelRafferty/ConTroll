@@ -176,7 +176,6 @@ function portalPageFoot() {
 function tab_bar($page, $portal_conf) {
     $page_list = [
         ['name' => 'addUpgrade', 'display' => 'Add New'],
-        ['name' => 'paymentPlan', 'display' => 'Manage Payment Plan'],
         ['name' => 'membershipHistory', 'display' => 'Membership History'],
         ['name' => 'editAccount', 'display' => 'Account Settings'],
         ['name' => 'portalHelp" target="_blank', 'display' => 'Help'],
