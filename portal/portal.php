@@ -271,13 +271,12 @@ if (count($memberships) > 0) {
         else
             $status = $membership['status'];
 
-        if ($membership['id'] != $transid) {
-            $id = $membership['id'];
+        $id = $membership['id'];
+        if ($membership['complete_trans']) {
             $receipt = "<button class='btn btn-sm btn-secondary p-1 pt-0 pb-0' style='--bs-btn-font-size: 80%;' " .
-                'onclick="portal.transReceipt(' . $id . ');">Receipt</button>';
+                'onclick="portal.transReceipt(' . $membership['complete_trans'] . ');">Receipt</button>';
         } else {
             $receipt = '';
-            $id = 'pending';
         }
 
 ?>
