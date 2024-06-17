@@ -45,20 +45,23 @@ $plan = $_POST['plan'];
 $newplan = $_POST['newplan'];
 $nonce = $_POST['nonce'];
 $amount = $_POST['amount'];
-$planRec = null;
-if ($plan) {
-    $planRec = $_POST['planRec'];
+$planRec = $_POST['planRec'];
+if ($planRec) {
+    $totalAmtDue = $planRec['totalAmountDue'];
 } else {
-    if (!array_key_exists('totalDue', $_SESSION)) {
-        ajaxSuccess(array('status'=>'error', 'message'=>'No confirm payment amount.'));
-        exit();
-    }
-    $totalDue = $_SESSION['totalDue'];
-    if ($amount != $totalDue) {
-        ajaxSuccess(array('status'=>'error', 'message'=>'Improper payment amount.'));
-        exit();
-    }
+    $totalAmtDue = $amount;
 }
+
+if (!array_key_exists('totalDue', $_SESSION)) {
+    ajaxSuccess(array('status'=>'error', 'message'=>'No confirm payment amount.'));
+    exit();
+}
+$totalDue = $_SESSION['totalDue'];
+if ($totalAmtDue != $totalDue) {
+    ajaxSuccess(array('status'=>'error', 'message'=>'Improper payment amount.'));
+    exit();
+}
+
 
 // all the records are in the database, so lets charge the credit card...
 
@@ -88,7 +91,7 @@ $results = array(
     'custid' => "$loginType-$loginId",
     'transid' => $transid,
     'counts' => $counts,
-    'price' => $amount,
+    'price' => $totalAmtDue,
     'badges' => $badgeResults,
     'total' => $amount,
     'nonce' => $nonce,
@@ -122,6 +125,63 @@ if ($amount > 0) {
 } else {
     $approved_amt = 0;
     $rtn = array('url' => '', 'rid' => '');
+}
+
+if ($loginType == 'p') {
+    $pfield = 'perid';
+} else {
+    $pfield = 'newperid';
+}
+if ($newplan) {
+// record the new plan
+
+    $iQ = <<<EOS
+    INSERT INTO payorPlans (planId, $pfield, initialAmt, nonPlanAmt, downPayment, minPayment, 
+                            openingBalance, numPayments, payByDate, payType, reminders, 
+                            createTransaction, balanceDue, updateBy)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    
+    EOS;
+    $typestr = 'iidddddisssidi';
+    $planData = $planRec['plan'];
+    $valArray = array($planData['id'], $loginId, $planRec['totalAmountDue'], $planRec['nonPlanAmt'], $planRec['downPayment'], $planRec['paymentAmt'],
+        $planRec['planAmt'], $planRec['numPayments'], $planData['payByDate'], $planData['payType'], $planData['reminders'],
+        $transid, $planRec['balanceDue'], $loginId
+
+    );
+    $newPlanId = dbSafeInsert($iQ, $typestr, $valArray);
+    if ($newPlanId == false || $newPlanId < 0) {
+        logWrite(array("plan msg"=>"create of plan failed", "plan data" => $valArray ));
+    } else {
+        logWrite(array("plan id" => $newPlanId, 'plan data' => $valArray));
+    }
+    $planRec['payorPlanId'] = $newPlanId;
+} else if ($plan) {
+    // update the plan for the payment
+    $uQ = <<<EOS
+UPDATE payorPlans SET balanceDue = balanceDue - ?, updateBy = ?
+WHERE id = ? AND $pfield = ?;
+EOS;
+    $typestr = 'diii';
+    $valArray = array($amount, $loginId, $planRec['payorPlanId'], $loginId);
+    $planUpd = dbSafeCmd($uQ, $typestr, $valArray);
+    dbSafeCmd("UPDATE payorPlans SET status = 'paid' WHERE $pfield = ? AND balanceDue = 0 AND status = 'active';", 'i', array($loginId));
+
+    // insert payment record
+    $nR = dbSafeQuery("SELECT MAX(paymentNbr) FROM payorPlanPayments WHERE payorPlanId = ?;", 'i', array($planRec['payorPlanId']));
+    if ($nR == false || $nR->num_rows != 1) {
+        $paymentNbr = 1;
+    } else {
+        $paymentNbr = $nR->fetch_row()[0] + 1;
+    }
+
+    $iQ = <<<EOS
+INSERT INTO payorPlanPayments(payorPlanId, paymentNbr, dueDate, payDate, planPaymentAmount, amount, paymentId, transactionId)
+VALUES (?, ?, ?, NOW(), ?, ?, ?, ?);
+EOS;
+    $typestr = 'iisddii';
+    $valArray = array($planRec['payorPlanId'], $paymentNbr, $planRec['dueDate'], $planRec['planPaymentAmount'], $amount, $txnid, $transid);
+    $paymntkey = dbSafeInsert($iQ, $typestr, $valArray);
 }
 
 $txnUpdate = 'UPDATE transaction SET ';
@@ -220,7 +280,7 @@ $response = array(
     'data' => $error_msg,
     'email' => $return_arr,
     'trans' => $transid,
-    //"email"=>$email_msg,
+    'payorPlanId' => $planRec['payorPlanId'],
     'email_error' => $error_code,
     'rows_upd' => $rows_upd,
 );

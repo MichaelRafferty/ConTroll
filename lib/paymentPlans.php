@@ -83,27 +83,24 @@ EOS;
     return $data;
 }
 
-function whatMembershipsInPlan($memberships, $plan) {
+function whatMembershipsInPlan($memberships, $computedPlan) {
     $inPlan = [];
-    $inPlan[$plan == null ? '' : $plan['name']] = true;
-    if ($plan == null) {
+
+    if ($computedPlan == null) {
+        $inPlan[''] = true;
+        $planData = null;
+    } else {
+        $planData = $computedPlan['plan'];
+        $inPlan[$planData['name']] = true;
+    }
+
+    if ($planData == null) {
         foreach ($memberships as $membership) {
             $inPlan[$membership['regId']] = false;
         }
         return $inPlan;
     }
 
-    // get the plan info from the database
-    $QQ = <<<EOS
-SELECT *
-FROM paymentPlans
-WHERE active = 'Y' AND name = ?;
-EOS;
-    $QR = dbSafeQuery($QQ, 's', array($plan));
-    if ($QR == false || $QR->num_rows != 1)
-        return null;
-    $planData = $QR->fetch_assoc();
-    $QR->free();
     $memList = null;
     $catList = null;
     $excludeList = null;

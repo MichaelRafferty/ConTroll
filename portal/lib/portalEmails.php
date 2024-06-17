@@ -12,8 +12,10 @@ function getEmailBody($transid, $owner, $memberships, $plan, $newplan, $planRec,
     }
 
     $body .= "Your Transaction number is $transid and Receipt number is $rid.\n";
-    if ($planRec != null)
-        $body .= "and is part of the " . $planRec['name']  . " payment plan\n";
+    if ($planRec != null) {
+        $planData = $planRec['plan'];
+        $body .= "and is part of the " . $planData['name'] . " payment plan\n";
+    }
 
     if (array_key_exists('code', $owner) && $owner['code'] != null) {
         $body .= 'A coupon of type ' . $owner['code'] . ' (' . $owner['name'] . ') was applied to this transaction';

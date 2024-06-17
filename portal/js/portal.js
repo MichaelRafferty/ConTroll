@@ -642,12 +642,24 @@ class Portal {
     // make payment
     makePayment(plan) {
         if (plan == null) {
+            this.#paymentPlan = null;
             this.#makePaymentBody.innerHTML = `
         <div class="row mt-4">
             <div class="col-sm-auto"><b>The Total Amount Due is ` + Number(this.#totalAmountDue).toFixed(2) + `</b></div>
         </div>
         <div class="row mt-2 mb-4">
             <div class="col-sm-auto">You are paying the total amount, so the payment amount is ` + Number(this.#paymentAmount).toFixed(2) + `</div>
+         </div>
+`;
+        } else {
+            this.#paymentPlan = plan;
+            this.#paymentAmount = plan.currentPayment;
+            this.#makePaymentBody.innerHTML = `
+        <div class="row mt-4">
+            <div class="col-sm-auto"><b>The Total Amount Due is ` + Number(this.#totalAmountDue).toFixed(2) + `</b></div>
+        </div>
+        <div class="row mt-2 mb-4">
+            <div class="col-sm-auto"><b>The Current Amount Due to create the payment plan ` + plan.plan.name + ' is ' + Number(plan.currentPayment).toFixed(2) + `</b></div>
          </div>
 `;
         }
@@ -664,12 +676,17 @@ class Portal {
         if (id)
             id.disabled = true;
 
+        var newplan = false;
+        if (this.#paymentPlan != null)
+            if (this.#paymentPlan['new'])
+                newplan = true;
+
         // transaction comes from session, person paying come from session, we will compute what was paid
         var data = {
             action: 'portalPayment',
             plan: false,
-            planRec: null,
-            newplan: false,
+            planRec: this.#paymentPlan,
+            newplan: newplan,
             nonce: token,
             amount: this.#paymentAmount,
         }

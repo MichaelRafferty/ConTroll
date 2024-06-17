@@ -29,7 +29,7 @@ class PaymentPlans {
         }
     }
 
-    // for which plans is a current car eligible
+    // plansEligible: for which plans is a current cart eligible
     plansEligible(purchased = null, space = null) {
         var nonPlanAmt;
         var planAmt;
@@ -125,6 +125,7 @@ class PaymentPlans {
         return matched > 0;
     }
 
+    // getMatchingPlans - return the array of plans as a copy so it cannot modify the original ones due to javascript pass object by reference
     getMatchingPlans() {
         if (this.#matchingPlans != null)
             return make_copy(this.#matchingPlans);
@@ -132,9 +133,12 @@ class PaymentPlans {
         return null;
     }
 
+    // isMatchingPlans - return true/false if there are any matching payment plans available for this 'cart'
     isMatchingPlans() {
         return this.#matchingPlans != null;
     }
+
+    // getMatchingPlansHTML - return the HTML for the modal popup for choose plan
     getMatchingPlansHTML(from) {
         if (this.#matchingPlans == null)
             return '';
@@ -181,7 +185,7 @@ class PaymentPlans {
         return html;
     }
 
-    // customize plans items
+    // customize plans items - fill in the modal and display it
     customizePlan(planId, from) {
         clear_message();
         clear_message('customizePlanMessageDiv');
@@ -258,12 +262,20 @@ class PaymentPlans {
                 break;
         }
 
+        this.#computedPlan.totalAmountDue = match.nonPlanAmt + match.planAmt;
         this.#computedPlan.currentPayment = match.nonPlanAmt + match.downPayment;
+        this.#computedPlan.numPayments = match.maxPayments;
+        this.#computedPlan.daysBetween = match.daysBetween;
+        this.#computedPlan.paymentAmt = match.paymentAmt;
+        this.#computedPlan.balanceDue = match.balanceDue;
+        this.#computedPlan.downPayment = match.downPayment;
+
         this.#customizePlanBody.innerHTML = html;
         this.#customizePlanSubmit.innerHTML = 'Create Plan and pay amount due today of ' + this.#computedPlan.currentPayment.toFixed(2);
         this.#customizePlanModal.show();
     }
 
+    // recompute - onchange from customize payment plan modal popup - when one field changes, recompute what else changes on the screem and update the class variables
     recompute() {
         clear_message('customizePlanMessageDiv');
 
@@ -352,5 +364,17 @@ class PaymentPlans {
 
         this.#computedPlan.currentPayment = Number(this.#computedOrig.nonPlanAmt) + Number(down);
         this.#customizePlanSubmit.innerHTML = 'Create Plan and pay amount due today of ' + this.#computedPlan.currentPayment.toFixed(2);
+    }
+
+    // makePlan - create the plan and bring up the payment screen to pay for it
+    makePlan(calledFrom) {
+        if (this.#computedPlan == null) {
+            console.log("makeplan(" + calledFrom + ") called, with no computed plan???");
+            return; // no plan to pay, why are we here?
+        }
+        this.#customizePlanModal.hide();
+        var plan = make_copy(this.#computedPlan);
+        plan.new = true;
+        portal.makePayment(plan);
     }
 }
