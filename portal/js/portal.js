@@ -63,6 +63,7 @@ class Portal {
     #makePaymentTitle = null;
     #makePaymentBody = null;
     #paymentPlan = null;
+    #existingPlan = null;
     #totalAmountDue = null;
     #paymentAmount = null;
 
@@ -667,6 +668,19 @@ class Portal {
         this.#makePaymentModal.show();
     }
 
+    // makePlanPayment - make a payment on a plan
+    makePlanPayment(payorPlan, planName, paymentAmt) {
+        this.#existingPlan = payorPlan;
+        this.#paymentAmount = paymentAmt;
+        this.#makePaymentBody.innerHTML = `
+        <div class="row mt-4 mb-4">
+            <div class="col-sm-auto"><b>You are making a payment on ` + planName + ' payment plan of ' + Number(paymentAmt).toFixed(2) + `</b></div>
+         </div>        
+`;
+        this.#makePaymentModal.show();
+    }
+
+    // makePurchase - make the membership/plan purchase.
     makePurchase(token, label = '') {
         if (token == 'test_ccnum') {  // this is the test form
             token = document.getElementById(token).value;
@@ -684,9 +698,10 @@ class Portal {
         // transaction comes from session, person paying come from session, we will compute what was paid
         var data = {
             action: 'portalPayment',
-            plan: false,
+            plan:   (this.#paymentPlan != null || this.#existingPlan != null) ? 1 : 0,
+            existingPlan: this.#existingPlan,
             planRec: this.#paymentPlan,
-            newplan: newplan,
+            newplan: newplan ? 1 : 0,
             nonce: token,
             amount: this.#paymentAmount,
         }

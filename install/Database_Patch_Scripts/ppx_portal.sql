@@ -216,7 +216,7 @@ CREATE TABLE payorPlanPayments (
     PRIMARY KEY (payorPlanId, paymentNbr)
 );
 
-ALTER TABLE payorPlanPayments ADD CONSTRAINT ppp_payorplanid_fk FOREIGN KEY (payorPlanId) REFERENCES paymentPlans(id);
+ALTER TABLE payorPlanPayments ADD CONSTRAINT ppp_payorplanid_fk FOREIGN KEY (payorPlanId) REFERENCES payorPlans(id);
 
 ALTER TABLE reg ADD COLUMN planId int DEFAULT NULL AFTER coupon;
 ALTER TABLE reg ADD CONSTRAINT reg_planid_fk FOREIGN KEY (planId) REFERENCES payorPlans (id) ON UPDATE CASCADE;

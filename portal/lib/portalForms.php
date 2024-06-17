@@ -471,14 +471,14 @@ function drawPaymentPlans($person, $paymentPlans) {
         <div class='col-sm-1'><b>Status</b></div>
         <div class="col-sm-1"><b>Plan Name</b></div>
         <div class="col-sm-1"><b>Payment Type</b></div>
-        <div class="col-sm-1"><b>Initial Amount</b></div>
-        <div class="col-sm-1"><b>Payments</b></div>
-        <div class="col-sm-1"><b>Remaining Balance</b></div>
+        <div class="col-sm-1" style='text-align: right;'><b>Initial Amount</b></div>
+        <div class="col-sm-1" style='text-align: right;'><b>Payments</b></div>
+        <div class="col-sm-1" style='text-align: right;'><b>Remaining Balance</b></div>
         <div class="col-sm-1"><b>Date Created</b></div>
         <div class="col-sm-1"><b>Pay By Date</b></div>
         <div class="col-sm-1"><b>Last Payment Date</b></div>
         <div class="col-sm-1"><b>Next Payment Due</b></div>
-        <div class="col-sm-1"><b>Minimum Payment Amount</b></div>
+        <div class="col-sm-1" style='text-align: right;'><b>Minimum Payment Amount</b></div>
     </div>
 <?php
     foreach ($payorPlans as $payorPlan) {
@@ -487,11 +487,11 @@ function drawPaymentPlans($person, $paymentPlans) {
         if (array_key_exists('payments', $payorPlan)) {
             $payments = $payorPlan['payments'];
             $numPmts = count($payments);
-            $lastPayment = $payments[$numPmts - 1];
+            $lastPayment = $payments[$numPmts];
             $lastPaidDate = $lastPayment['payDate'];
-            $nextPayDue = date_format(date_add(date_create($lastPayment['dueDate']), date_interval_create_from_date_string($payorPlan['daysBetween'] - 1 . ' days')),
+            $nextPayDue = date_format(date_add(date_create($payorPlan['createDate']), date_interval_create_from_date_string(($numPmts * $payorPlan['daysBetween']) - 1 . ' days')),
                 'Y-m-d');
-            $minAmt = $payorPlan['minAmount'] <= $payorPlan['balanceDue'] ? $payorPlan['minAmount'] : $payorPlan['balanceDue'];
+            $minAmt = $payorPlan['minPayment'] <= $payorPlan['balanceDue'] ? $payorPlan['minPayment'] : $payorPlan['balanceDue'];
         } else {
             $numPmts = '0';
             $lastPaidDate = 'None';
@@ -514,14 +514,14 @@ function drawPaymentPlans($person, $paymentPlans) {
             <div class="col-sm-1"><?php echo $col1;?></div>
             <div class="col-sm-1"><?php echo $plan['name'];?></div>
             <div class="col-sm-1"><?php echo $payorPlan['payType'];?></div>
-            <div class="col-sm-1"><?php echo $payorPlan['initialAmt'];?></div>
-            <div class="col-sm-1"><?php echo "$numPmts of " . $payorPlan['numPayments'];?></div>
-            <div class="col-sm-1"><?php echo $payorPlan['balanceDue'];?></div>
+            <div class="col-sm-1" style='text-align: right;'><?php echo $payorPlan['initialAmt'];?></div>
+            <div class="col-sm-1" style='text-align: right;'><?php echo "$numPmts of " . $payorPlan['numPayments'];?></div>
+            <div class="col-sm-1" style='text-align: right;'><?php echo $payorPlan['balanceDue'];?></div>
             <div class="col-sm-1"><?php echo $dateCreated;?></div>
             <div class="col-sm-1"><?php echo $payByDate;?></div>
             <div class="col-sm-1"><?php echo $lastPaidDate;?></div>
             <div class="col-sm-1"><?php echo $nextPayDue;?></div>
-            <div class="col-sm-1"><?php echo $minAmt;?></div>
+            <div class="col-sm-1" style='text-align: right;'><?php echo $minAmt;?></div>
         </div>
 
 <?php

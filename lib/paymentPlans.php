@@ -145,7 +145,7 @@ function whatMembershipsInPlan($memberships, $computedPlan) {
 }
 
 //// payment plan modals
-// drawCustomizePlanModal- main payment modal popup
+// draw_customizePlanModal- main payment modal popup
 function draw_customizePlanModal($from) {
     ?>
     <div id='customizePlanModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='customizePlan' aria-hidden='true' style='--bs-modal-width: 96%;'>
@@ -167,6 +167,35 @@ function draw_customizePlanModal($from) {
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
                     <button class='btn btn-sm btn-primary' id='customizePlanSubmit' onClick='paymentPlans.makePlan("<?php echo $from; ?>")' tabindex='20002'>Create Plan and pay amount due today of ???</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
+}
+
+// draw_payPlanModal- make a payment against a plan
+function draw_payPlanModal($from) {
+    ?>
+    <div id='payPlanModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='payPlan' aria-hidden='true' style='--bs-modal-width: 96%;'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='payPlanTitle'>
+                        <strong>Make a Plan Payment</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <div class='container-fluid' id="payPlanBody">
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-12' id='payPlanMessageDiv'></div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
+                    <button class='btn btn-sm btn-primary' id='payPlanSubmit' onClick='paymentPlans.makePlanPayment("<?php echo $from; ?>")' tabindex='20102'>Make Plan Payment</button>
                 </div>
             </div>
         </div>

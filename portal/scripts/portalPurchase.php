@@ -46,20 +46,24 @@ $newplan = $_POST['newplan'];
 $nonce = $_POST['nonce'];
 $amount = $_POST['amount'];
 $planRec = $_POST['planRec'];
+$existingPlan = $_POST['existingPlan'];
+
 if ($planRec) {
     $totalAmtDue = $planRec['totalAmountDue'];
 } else {
     $totalAmtDue = $amount;
 }
 
-if (!array_key_exists('totalDue', $_SESSION)) {
-    ajaxSuccess(array('status'=>'error', 'message'=>'No confirm payment amount.'));
-    exit();
-}
-$totalDue = $_SESSION['totalDue'];
-if ($totalAmtDue != $totalDue) {
-    ajaxSuccess(array('status'=>'error', 'message'=>'Improper payment amount.'));
-    exit();
+if ($plan == 0 || $newplan == 1) {
+    if (!array_key_exists('totalDue', $_SESSION)) {
+        ajaxSuccess(array('status' => 'error', 'message' => 'No confirm payment amount.'));
+        exit();
+    }
+    $totalDue = $_SESSION['totalDue'];
+    if ($totalAmtDue != $totalDue) {
+        ajaxSuccess(array('status' => 'error', 'message' => 'Improper payment amount.'));
+        exit();
+    }
 }
 
 
@@ -104,7 +108,7 @@ logWrite(array('con'=>$condata['name'], 'trans'=>$transid, 'results'=>$results, 
 // end compute
 if ($amount > 0) {
     $rtn = cc_charge_purchase($results, $ccauth, true);
-    if ($rtn === null) {
+    if ($rtn == null) {
         // note there is no reason cc_charge_purchase will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         logWrite(array('con' => $condata['name'], 'trans' => $transid, 'error' => 'Credit card transaction not approved'));
         ajaxSuccess(array('status' => 'error', 'error' => 'Credit card not approved'));
@@ -132,9 +136,9 @@ if ($loginType == 'p') {
 } else {
     $pfield = 'newperid';
 }
-if ($newplan) {
-// record the new plan
 
+if ($newplan == 1) {
+    // record the new plan
     $iQ = <<<EOS
     INSERT INTO payorPlans (planId, $pfield, initialAmt, nonPlanAmt, downPayment, minPayment, 
                             openingBalance, numPayments, daysBetween, payByDate, payType, reminders, 
@@ -156,34 +160,37 @@ if ($newplan) {
         logWrite(array("plan id" => $newPlanId, 'plan data' => $valArray));
     }
     $planRec['payorPlanId'] = $newPlanId;
-} else if ($plan) {
+} else if ($plan == 1) {
     // update the plan for the payment
     $uQ = <<<EOS
 UPDATE payorPlans SET balanceDue = balanceDue - ?, updateBy = ?
 WHERE id = ? AND $pfield = ?;
 EOS;
     $typestr = 'diii';
-    $valArray = array($amount, $loginId, $planRec['payorPlanId'], $loginId);
+    $valArray = array($amount, $loginId, $existingPlan['id'], $loginId);
     $planUpd = dbSafeCmd($uQ, $typestr, $valArray);
     dbSafeCmd("UPDATE payorPlans SET status = 'paid' WHERE $pfield = ? AND balanceDue = 0 AND status = 'active';", 'i', array($loginId));
 
     // insert payment record
-    $nR = dbSafeQuery("SELECT MAX(paymentNbr) FROM payorPlanPayments WHERE payorPlanId = ?;", 'i', array($planRec['payorPlanId']));
+    $nR = dbSafeQuery("SELECT MAX(paymentNbr) FROM payorPlanPayments WHERE payorPlanId = ?;", 'i', array($existingPlan['id']));
     if ($nR == false || $nR->num_rows != 1) {
         $paymentNbr = 1;
     } else {
         $paymentNbr = $nR->fetch_row()[0] + 1;
     }
+    $dueDate =  date_format(date_add(date_create($existingPlan['createDate']), date_interval_create_from_date_string(($paymentNbr * $existingPlan['daysBetween']) - 1 . ' days')),
+        'Y-m-d');
 
     $iQ = <<<EOS
 INSERT INTO payorPlanPayments(payorPlanId, paymentNbr, dueDate, payDate, planPaymentAmount, amount, paymentId, transactionId)
 VALUES (?, ?, ?, NOW(), ?, ?, ?, ?);
 EOS;
     $typestr = 'iisddii';
-    $valArray = array($planRec['payorPlanId'], $paymentNbr, $planRec['dueDate'], $planRec['planPaymentAmount'], $amount, $txnid, $transid);
+    $valArray = array($existingPlan['id'], $paymentNbr, $dueDate, $existingPlan['minPayment'], $amount, $txnid, $transid);
     $paymntkey = dbSafeInsert($iQ, $typestr, $valArray);
 }
 
+$txnUpdate = 'UPDATE transaction SET ';
 $txnUpdate = 'UPDATE transaction SET ';
 if ($approved_amt == $amount) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';

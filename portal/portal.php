@@ -154,6 +154,7 @@ draw_paymentDueModal();
 draw_makePaymentModal();
 if (count($paymentPlans) > 0) {
     draw_customizePlanModal('portal');
+    draw_payPlanModal('portal');
 }
 
 // if this person is managed, print a banner and let them disassociate from the manager.

@@ -10,6 +10,15 @@ class PaymentPlans {
     // account holder payment plan items
     #payorPlan = null;
     #payorPlanPayments = null
+    #payPlanModal = null;
+    #payPlanTitle = null;
+    #payPlanBody = null;
+    #payPlanSubmit = null;
+    #planPaymentAmount = null;
+    #planPaymentMinPayment = null;
+    #planPaymentBalanceDue = null;
+    #planPaymentPayorPlanId = null;
+    #planPaymentPayorPlanName = null;
 
     // customize plan items
     #customizePlanModal = null;
@@ -18,6 +27,7 @@ class PaymentPlans {
     #customizePlanSubmit = null;
     #computedPlan = null;
     #computedOrig = null;
+
     constructor() {
         this.#matchingPlans = {};
         var id = document.getElementById('customizePlanModal');
@@ -26,6 +36,13 @@ class PaymentPlans {
             this.#customizePlanTitle = document.getElementById('customizePlanTitle');
             this.#customizePlanBody = document.getElementById('customizePlanBody');
             this.#customizePlanSubmit = document.getElementById('customizePlanSubmit');
+        }
+        var id = document.getElementById('payPlanModal');
+        if (id) {
+            this.#payPlanModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#payPlanTitle = document.getElementById('payPlanTitle');
+            this.#payPlanBody = document.getElementById('payPlanBody');
+            this.#payPlanSubmit = document.getElementById('payPlanSubmit');
         }
     }
 
@@ -41,7 +58,7 @@ class PaymentPlans {
         var matched = 0;
         // how much is owed by the right type:
 
-        for (var prow in keys)  {
+        for (var prow in keys) {
             var plan = paymentPlanList[keys[prow]];
 
             // compute the plan and the not plan amount for this plan
@@ -56,7 +73,7 @@ class PaymentPlans {
 
                     var eligible = false;
                     if (plan.catList != null) {
-                        if (plan.catListArray.indexOf(mem.memCategory.toString())  != -1)
+                        if (plan.catListArray.indexOf(mem.memCategory.toString()) != -1)
                             eligible = true;
                     }
 
@@ -115,7 +132,8 @@ class PaymentPlans {
             var balanceDue = planAmt - downPayment;
             var paymentAmt = Math.ceil(100 * balanceDue / numPayments) / 100;
 
-            this.#matchingPlans[plan.id] = {id: plan.id, plan: plan,
+            this.#matchingPlans[plan.id] = {
+                id: plan.id, plan: plan,
                 planAmt: planAmt, nonPlanAmt: nonPlanAmt, downPayment: downPayment, maxPayments: numPayments, daysBetween: daysBetween,
                 minPayment: nonPlanAmt + downPayment, balanceDue: balanceDue, paymentAmt: paymentAmt,
             }
@@ -165,7 +183,7 @@ class PaymentPlans {
             html += `
     <div class="row">
         <div class="col-sm-3">
-            <button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="paymentPlans.customizePlan(` + keys[row] + ",'portal'" + ');">Customize payment plan: ' + plan.name + `</button>
+            <button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="paymentPlans.customizePlan(` + keys[row] + ",'" + from + "'" + ');">Customize payment plan: ' + plan.name + `</button>
         </div>
         <div class="col-sm-1" style='text-align: right;'>` + match.nonPlanAmt.toFixed(2) + `</div>
         <div class="col-sm-1" style='text-align: right;'>` + match.planAmt.toFixed(2) + `</div>
@@ -190,7 +208,7 @@ class PaymentPlans {
         clear_message();
         clear_message('customizePlanMessageDiv');
 
-        console.log('planid: ' + planId + ', from: ' + from);
+        console.log('planId: ' + planId + ', from: ' + from);
         console.log(this.#matchingPlans);
         this.#computedPlan = make_copy(this.#matchingPlans[planId]);
         this.#computedOrig = make_copy(this.#matchingPlans[planId]);
@@ -233,8 +251,8 @@ class PaymentPlans {
         <div class="col-sm-1" style='text-align: right;'>` + match.planAmt.toFixed(2) + `</div>
         <div class="col-sm-1" style='text-align: right;'>
             <input type="number" class='no-spinners' inputmode="numeric" id="downPayment" name="downPayment" style="width: 8em;" placeholder="down payment" ` +
-                'min="' + match.downPayment.toFixed(2) + '" max="' + match.planAmt.toFixed(2) + '" value="' + match.downPayment.toFixed(2) +
-                `" onchange="paymentPlans.recompute();"/>
+            'min="' + match.downPayment.toFixed(2) + '" max="' + match.planAmt.toFixed(2) + '" value="' + match.downPayment.toFixed(2) +
+            `" onchange="paymentPlans.recompute();"/>
         </div>
         <div class="col-sm-1" style='text-align: right;' id="balanceDue">` + match.balanceDue.toFixed(2) + `</div>
         <div class="col-sm-1" style='text-align: right;'>`;
@@ -247,7 +265,7 @@ class PaymentPlans {
         html += `</div>
         <div class="col-sm-1" style='text-align: right;'>
             <input type="number" class='no-spinners' inputmode="numeric" id="daysBetween" name="daysBetween" style="width: 3em;" placeholder="days" ` +
-                'min="7" max="' + match.daysBetween + '" value="' + match.daysBetween + `" onchange="paymentPlans.recompute();"/>
+            'min="7" max="' + match.daysBetween + '" value="' + match.daysBetween + `" onchange="paymentPlans.recompute();"/>
         </div>
         <div class="col-sm-1" style='text-align: right;' id="paymentAmt">` + match.paymentAmt.toFixed(2) + `</div>
         <div class="col-sm-2">` + plan.payByDate + `</div>
@@ -381,5 +399,80 @@ class PaymentPlans {
     // payPlan - make a payment against a plan
     payPlan(payorPlanId) {
         console.log("trying to pay plan " + payorPlanId);
+        var payorPlan = payorPlans[payorPlanId];
+        var payments = payorPlan['payments'];
+        var plan = paymentPlanList[payorPlan.planId];
+        console.log(payorPlan);
+        if (payments)
+            console.log(payments);
+        else
+            console.log('no payments');
+
+        var paymentAmt = Number(payorPlan.minPayment);
+        var balanceDue = Number(payorPlan.balanceDue);
+        if (paymentAmt > balanceDue)
+            paymentAmt = balanceDue
+
+        this.#planPaymentAmount = paymentAmt;
+        this.#planPaymentMinPayment = Number(payorPlan.minPayment);
+        this.#planPaymentBalanceDue = balanceDue;
+        this.#planPaymentPayorPlanId = payorPlanId;
+        this.#planPaymentPayorPlanName = plan.name;
+
+        var html = `
+    <div class="row mt-3">
+        <div class="col-sm-auto"><h3>Make a payment against the ` + plan.name + ` payment plan </h3></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2" style='text-align: right;'>Balance Due:</div>
+        <div class="col-sm-1 ms-2" style='text-align: right;'>` + balanceDue.toFixed(2) + `</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2" style='text-align: right;'>Payment Amount:</div>
+        <div class="col-sm-1 ms-2" style='text-align: right;'>
+            <input type="number" class='no-spinners' inputmode="numeric" id="newPaymentAmt" name="newPaymentAmt" style="width: 8em;" placeholder="amoutn" ` +
+            'min="' + paymentAmt.toFixed(2) + '" max="' + balanceDue.toFixed(2) + '" value="' + paymentAmt.toFixed(2) +
+            `" onchange="paymentPlans.updatePaymentAmt();"/>
+    </div>
+`;
+
+        this.#payPlanBody.innerHTML = html;
+        this.#payPlanSubmit.innerHTML = 'Make Plan Payment of ' + paymentAmt.toFixed(2);
+        this.#payPlanModal.show();
+    }
+
+
+    // update the amount to pay and submit button
+    updatePaymentAmt() {
+        var id = document.getElementById("newPaymentAmt");
+        var paymentAmt = Number(id.value);
+
+        clear_message('payPlanMessageDiv');
+
+        if (paymentAmt < this.#planPaymentMinPayment) {
+            show_message("Payment less than minimum allowed, set to " + this.#planPaymentMinPayment.toFixed(2), 'warn', 'payPlanMessageDiv');
+            paymentAmt = this.#planPaymentMinPayment.toFixed(2);
+        } else if (paymentAmt > this.#planPaymentBalanceDue) {
+            show_message("Payment greater than balance due, set to " + this.#planPaymentBalanceDue.toFixed(2), 'warn', 'payPlanMessageDiv');
+            paymentAmt = this.#planPaymentBalanceDue.toFixed(2);
+        }
+
+        id.value = Number(paymentAmt).toFixed(2);
+        this.#payPlanSubmit.innerHTML = 'Make Plan Payment of ' + paymentAmt;
+        document.getElementById('paymentPlans')
+    }
+
+    // makePlanPayment - make the plan payment
+    makePlanPayment(from) {
+        this.#payPlanModal.hide();
+        switch (from) {
+            case 'portal':
+                var existingPlan = make_copy(payorPlans[this.#planPaymentPayorPlanId]);
+                portal.makePlanPayment(existingPlan, this.#planPaymentPayorPlanName, this.#planPaymentAmount);
+                break;
+            default:
+                console.log('make plan payment invalid from: ' + from);
+                break;
+        }
     }
 }
