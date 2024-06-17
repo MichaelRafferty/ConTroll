@@ -137,15 +137,15 @@ if ($newplan) {
 
     $iQ = <<<EOS
     INSERT INTO payorPlans (planId, $pfield, initialAmt, nonPlanAmt, downPayment, minPayment, 
-                            openingBalance, numPayments, payByDate, payType, reminders, 
+                            openingBalance, numPayments, daysBetween, payByDate, payType, reminders, 
                             createTransaction, balanceDue, updateBy)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     
     EOS;
     $typestr = 'iidddddisssidi';
     $planData = $planRec['plan'];
     $valArray = array($planData['id'], $loginId, $planRec['totalAmountDue'], $planRec['nonPlanAmt'], $planRec['downPayment'], $planRec['paymentAmt'],
-        $planRec['planAmt'], $planRec['numPayments'], $planData['payByDate'], $planData['payType'], $planData['reminders'],
+        $planRec['planAmt'], $planRec['numPayments'], $planRec['daysBetween'], $planData['payByDate'], $planData['payType'], $planData['reminders'],
         $transid, $planRec['balanceDue'], $loginId
 
     );
@@ -284,6 +284,9 @@ $response = array(
     'email_error' => $error_code,
     'rows_upd' => $rows_upd,
 );
+
+unset($_SESSION['transId']);
+unset($_SESSION['totalDue']);
 //var_error_log($response);
 ajaxSuccess($response);
 return;

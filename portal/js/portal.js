@@ -726,6 +726,11 @@ class Portal {
             window.location.search = '?messageFwd=' + encodeURI(message);
         }
     }
+
+    // display a receipt
+    transReceipt(receiptTransId) {
+        console.log("trying to display receipt for transaction id " + receiptTransId);
+    }
 }
 
 function makePurchase(token, label) {

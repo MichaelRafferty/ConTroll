@@ -190,6 +190,7 @@ CREATE TABLE payorPlans (
     minPayment decimal(8,2) DEFAULT 10.00,
     openingBalance decimal(8,2) NOT NULL DEFAULT 0,
     numPayments int NOT NULL,
+    daysBetween int NOT NULL DEFAULT 30,
     payByDate datetime NOT NULL,
     payType enum('manual','auto') DEFAULT 'manual',
     reminders enum ('Y', 'N') NOT NULL DEFAULT 'N',

@@ -409,6 +409,7 @@ function draw_PaymentDueModal() {
     <?php
 }
 
+// draw_makePaymentModal - the modap popup to take a payment via credit card
 function draw_makePaymentModal() {
     $ini = get_conf('reg');
     $cc = get_conf('cc');
@@ -458,4 +459,71 @@ function draw_makePaymentModal() {
         </div>
     </div>
     <?php
+}
+
+//// payment plan items
+// drawPaymentPlans - show the status of the payment plans for this account
+function drawPaymentPlans($person, $paymentPlans) {
+    $plans = $paymentPlans['plans'];
+    $payorPlans = $paymentPlans['payorPlans'];
+?>
+    <div class='row mb-1'>
+        <div class='col-sm-1'><b>Status</b></div>
+        <div class="col-sm-1"><b>Plan Name</b></div>
+        <div class="col-sm-1"><b>Payment Type</b></div>
+        <div class="col-sm-1"><b>Initial Amount</b></div>
+        <div class="col-sm-1"><b>Payments</b></div>
+        <div class="col-sm-1"><b>Remaining Balance</b></div>
+        <div class="col-sm-1"><b>Date Created</b></div>
+        <div class="col-sm-1"><b>Pay By Date</b></div>
+        <div class="col-sm-1"><b>Last Payment Date</b></div>
+        <div class="col-sm-1"><b>Next Payment Due</b></div>
+        <div class="col-sm-1"><b>Minimum Payment Amount</b></div>
+    </div>
+<?php
+    foreach ($payorPlans as $payorPlan) {
+        $planid = $payorPlan['planId'];
+        $plan = $plans[$planid];
+        if (array_key_exists('payments', $payorPlan)) {
+            $payments = $payorPlan['payments'];
+            $numPmts = count($payments);
+            $lastPayment = $payments[$numPmts - 1];
+            $lastPaidDate = $lastPayment['payDate'];
+            $nextPayDue = date_format(date_add(date_create($lastPayment['dueDate']), date_interval_create_from_date_string($payorPlan['daysBetween'] - 1 . ' days')),
+                'Y-m-d');
+            $minAmt = $payorPlan['minAmount'] <= $payorPlan['balanceDue'] ? $payorPlan['minAmount'] : $payorPlan['balanceDue'];
+        } else {
+            $numPmts = '0';
+            $lastPaidDate = 'None';
+            $nextPayDue = date_format(date_add(date_create($payorPlan['createDate']), date_interval_create_from_date_string($payorPlan['daysBetween'] - 1 . " days")),
+            'Y-m-d');
+            $minAmt = $payorPlan['minPayment'];
+        }
+        if ($payorPlan['status'] != 'active') {
+            $nextPayDue = '';
+            $minAmt = '';
+            $col1 = $payorPlan['status'];
+        } else {
+            $id = $payorPlan['id'];
+            $col1 = "<button class='btn btn-sm btn-secondary pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Pmt</button>";
+        }
+        $dateCreated = date_format(date_create($payorPlan['createDate']), 'Y-m-d');
+        $payByDate = date_format(date_create($plan['payByDate']), 'Y-m-d');
+?>
+        <div class="row">
+            <div class="col-sm-1"><?php echo $col1;?></div>
+            <div class="col-sm-1"><?php echo $plan['name'];?></div>
+            <div class="col-sm-1"><?php echo $payorPlan['payType'];?></div>
+            <div class="col-sm-1"><?php echo $payorPlan['initialAmt'];?></div>
+            <div class="col-sm-1"><?php echo "$numPmts of " . $payorPlan['numPayments'];?></div>
+            <div class="col-sm-1"><?php echo $payorPlan['balanceDue'];?></div>
+            <div class="col-sm-1"><?php echo $dateCreated;?></div>
+            <div class="col-sm-1"><?php echo $payByDate;?></div>
+            <div class="col-sm-1"><?php echo $lastPaidDate;?></div>
+            <div class="col-sm-1"><?php echo $nextPayDue;?></div>
+            <div class="col-sm-1"><?php echo $minAmt;?></div>
+        </div>
+
+<?php
+    }
 }

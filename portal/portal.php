@@ -26,6 +26,11 @@ if (array_key_exists('id', $_SESSION) && array_key_exists('idType', $_SESSION)) 
     exit();
 }
 
+$transid = null;
+if (array_key_exists('transId', $_SESSION)) {
+    $transid = $_SESSION['transId'];
+}
+
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['debug'] = $debug['portal'];
@@ -171,7 +176,6 @@ if ($info['managedByName'] != null) {
 <?php
 drawManagedPerson($info, $holderMembership, $interests != null);
 
-
 $managedMembershipList = '';
 $currentId = -1;
 // now for the people managed by this account holder
@@ -208,21 +212,20 @@ if ($totalDue > 0) {
     $payHtml = " $totalDueFormatted   " . '<button class="btn btn-sm btn-primary pt-1 pb-1" id="payBalanceTopBTN" onclick="portal.payBalance(' . $totalDue . ');">Pay Balance</button>';
     $_SESSION['totalDue'] = $totalDue; // used for validation in payment side
 }
-?>
-<div class='row mt-4'>
-    <div class='col-sm-auto'><h3>Memberships purchased by this account:<?php echo $payHtml; ?></h3>
-</div>
-<?php
-// loop over the transactions outputting the memberships
-if (count($memberships) == 0) {
-?>
-    <div class="row">
-        <div class="col-sm-1"></div>
-        <div class="col-sm-auto">None</div>
+
+if (array_key_exists('payorPlans', $paymentPlans)) {
+    ?>
+    <div class='row mt-4'>
+        <div class='col-sm-12'><h3>Payment Plans for this account:</h3></div>
     </div>
-<?php
-} else {
+    <?php
+    drawPaymentPlans($info, $paymentPlans);
+}
+if (count($memberships) > 0) {
 ?>
+    <div class='row mt-4'>
+        <div class='col-sm-auto'><h3>Memberships purchased by this account:<?php echo $payHtml; ?></h3>
+    </div>
     <div class='row'>
         <div class='col-sm-1' style='text-align: right;'><b>Trans ID</b></div>
         <div class='col-sm-2'><b>Created</b></div>
@@ -240,7 +243,7 @@ if (count($memberships) == 0) {
         <div class="col-sm-12 ms-0 me-0 align-center"><hr style="height:4px;width:95%;margin:auto;margin-top:6px;margin-bottom:10px;color:#333333;background-color:#333333;"/></div>
     </div>
 <?php
-
+// loop over the transactions outputting the memberships
     $rowId = -9999;
     $currentId = -99999;
     foreach ($memberships as $membership)  {
@@ -263,15 +266,25 @@ if (count($memberships) == 0) {
         }
         else
             $status = $membership['status'];
+
+        if ($membership['id'] != $transid) {
+            $id = $membership['id'];
+            $receipt = "<button class='btn btn-sm btn-secondary p-1 pt-0 pb-0' style='--bs-btn-font-size: 80%;' " .
+                'onclick="portal.transReceipt(' . $id . ');">Receipt</button>';
+        } else {
+            $receipt = '';
+            $id = 'pending';
+        }
+
 ?>
     <div class="row">
-        <div class='col-sm-1' style='text-align: right;'><?php echo $membership['id'];?></div>
+        <div class='col-sm-1' style='text-align: right;'><?php echo $id;?></div>
         <div class="col-sm-2"><?php echo $membership['create_date'];?></div>
         <div class="col-sm-4"><?php echo $membership['badge_name'];?></div>
         <div class="col-sm-5"><?php echo ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label'];?></div>
     </div>
     <div class='row'>
-        <div class="col-sm-1" style='text-align: right;'><button class="btn btn-sm btn-secondary p-1 pt-0 pb-0" style='--bs-btn-font-size: 80%;' onclick="portal.transReceipt(<?php echo $membership['id'] ?>);">Receipt</button></div>
+        <div class="col-sm-1" style='text-align: right;'><?php echo $receipt;?></div>
         <div class="col-sm-2"><?php echo $status; ?></div>
         <div class="col-sm-7"><?php echo $membership['fullname']; ?></div>
         <div class="col-sm-1"><?php echo $membership['memType']; ?></div>

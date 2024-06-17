@@ -377,4 +377,9 @@ class PaymentPlans {
         plan.new = true;
         portal.makePayment(plan);
     }
+
+    // payPlan - make a payment against a plan
+    payPlan(payorPlanId) {
+        console.log("trying to pay plan " + payorPlanId);
+    }
 }
