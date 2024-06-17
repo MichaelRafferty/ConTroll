@@ -146,13 +146,11 @@ if ($newplan == 1) {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     
     EOS;
-    $typestr = 'iidddddisssidi';
+    $typestr = 'iidddddiisssidi';
     $planData = $planRec['plan'];
     $valArray = array($planData['id'], $loginId, $planRec['totalAmountDue'], $planRec['nonPlanAmt'], $planRec['downPayment'], $planRec['paymentAmt'],
         $planRec['planAmt'], $planRec['numPayments'], $planRec['daysBetween'], $planData['payByDate'], $planData['payType'], $planData['reminders'],
-        $transid, $planRec['balanceDue'], $loginId
-
-    );
+        $transid, $planRec['balanceDue'], $loginId);
     $newPlanId = dbSafeInsert($iQ, $typestr, $valArray);
     if ($newPlanId == false || $newPlanId < 0) {
         logWrite(array("plan msg"=>"create of plan failed", "plan data" => $valArray ));

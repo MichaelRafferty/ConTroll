@@ -215,12 +215,15 @@ if ($totalDue > 0) {
 }
 
 if (array_key_exists('payorPlans', $paymentPlans)) {
+    $payorPlan = $paymentPlans['payorPlans'];
+    if (count($payorPlan) > 0) {
     ?>
     <div class='row mt-4'>
         <div class='col-sm-12'><h3>Payment Plans for this account:</h3></div>
     </div>
     <?php
     drawPaymentPlans($info, $paymentPlans);
+    }
 }
 if (count($memberships) > 0) {
 ?>
