@@ -63,6 +63,9 @@ function draw_login($config_vars, $result_message = '') {
                 <div id='result_message' class='mt-4 p-2'><?php echo $result_message; ?></div>
             </div>
         </div>
+        <div class='row mt-2'>
+            <?php drawBug(12); ?>
+        </div>
     </div>
     </body>
     <script type='text/javascript'>
@@ -70,4 +73,63 @@ function draw_login($config_vars, $result_message = '') {
     </script>
 </html>
 <?php
+}
+
+// chooseAccountFromEmail - map an email address to a list of accounts
+function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationType) {
+    global $config_vars;
+
+    $portal_conf = get_conf('portal');
+
+    $loginData = getLoginMatch($email, $id);
+    if (!is_array($loginData)) {
+        return $loginData;  // return the error message from getLoginMatch
+    }
+    $matches = $loginData['matches'];
+    $count = count($matches);
+    if ($count == 1) {
+        $match = $matches[0];
+        $_SESSION['id'] = $match['id'];
+        $_SESSION['idType'] = $match['tablename'];
+        $_SESSION['idSource'] = $validationType;
+        unset($_SESSION['transId']);    // just in case it is hanging around, clear this
+        unset($_SESSION['totalDue']);   // just in case it is hanging around, clear this
+        $personId = $_SESSION['id'];
+        $personType = $_SESSION['idType'];
+        $in_session = true;
+        header('location:' . $portal_conf['portalsite'] . '/portal.php');
+        exit();
+    }
+
+    if (count($matches) == 0) {
+        // ask to create new account
+        ?>
+        <h2 class='warn'>Unable to Verify Password</h2>
+        <?php
+    // not logged in, draw signup stuff
+        //draw_registrationModal($portalType, $portalName, $con, $countryOptions);
+        draw_login($config_vars);
+        exit();
+    }
+
+    if (count($matches) > 1) {
+        echo "<h4>This email address has access to multiple membership accounts</h4>\n" .
+            "Please select one of the accounts below:<br/><ul>\n";
+
+        foreach ($matches as $match) {
+            $match['ts'] = time();
+            $match['lid'] = $linkid;
+            $string = json_encode($match);
+            $string = urlencode(openssl_encrypt($string, $cipherInfo['cipher'], $cipherInfo['key'], 0, $cipherInfo['iv']));
+            echo "<li><a href='?vid=$string'>" .  $match['fullname'] . "</a></li>\n";
+        }
+        ?>
+        </ul>
+        <button class='btn btn-secondary m-1' onclick="window.location='?logout';">Logout</button>
+        <script type='text/javascript'>
+            var config = <?php echo json_encode($config_vars); ?>;
+        </script>
+        <?php
+        exit();
+    }
 }

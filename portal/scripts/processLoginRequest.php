@@ -76,13 +76,13 @@ EOS;
         }
 
         $parms = array();
-        $parms['email'] = $email;
-        $parms['type'] = 'token-resp';
-        $parms['ts'] = time();
-        $parms['lid'] = $insid;
-        $string = json_encode($parms);
+        $parms['email'] = $email;       // address to verify via email
+        $parms['type'] = 'token-resp';  // verify type
+        $parms['ts'] = time();          // when requested for timeout check
+        $parms['lid'] = $insid;         // id in portalTokenLinks table
+        $string = json_encode($parms);  // convert object to json for making a string out of it, which is encrypted in the next line
         $string = urlencode(openssl_encrypt($string, $cipher, $key, 0, $iv));
-        $token = $portal_conf['portalsite'] . "/index.php?vid=$string";
+        $token = $portal_conf['portalsite'] . "/index.php?vid=$string";     // convert to link for emailing
 
         load_email_procs();
         $body = 'Here is the login link you requested for the ' . $conf['label'] . ' Membership Portal.' . PHP_EOL . PHP_EOL . $token . PHP_EOL . PHP_EOL .

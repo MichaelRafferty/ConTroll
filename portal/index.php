@@ -2,7 +2,7 @@
 // Registration  Portal - index.php - Login/re-login page for the membership portal
 require_once("lib/base.php");
 require_once("lib/getLoginMatch.php");
-require_once("lib/loginForms.php");
+require_once("lib/loginItems.php");
 
 global $config_vars;
 
@@ -22,6 +22,13 @@ $ivlen = openssl_cipher_iv_length($cipher);
 $ivdate = date_create("now");
 $iv = substr(date_format($ivdate, 'YmdzwLLwzdmY'), 0, $ivlen);
 $key = $conid . $con['label'] . $con['regadminemail'];
+$cipherInfo = [
+    'cipher' => $cipher,
+    'ivlen' => $ivlen,
+    'ivdate' => $ivdate,
+    'iv' => $iv,
+    'key' => $key
+];
 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
@@ -88,7 +95,9 @@ if (isset($_SESSION['id'])) {
         session_destroy();
         unset($_SESSION['id']);
         unset($_SESSION['idType']);
+        unset($_SESSION['idSource']);
         unset($_SESSION['transId']);
+        unset($_SESSION['totalDue']);
         header('location:' . $portal_conf['portalsite']);
         exit();
     } else {
@@ -149,53 +158,15 @@ EOS;
         web_error_log("Error updating link $linkid as used");
     }
 
-    $loginData = getLoginMatch($email, $id);
-    if (is_array($loginData))
-        $matches = $loginData['matches'];
-    else {
-        draw_login($config_vars);
-        show_message($loginData, 'error');
-        exit();
-    }
-    if (count($matches) == 0) {
-        ?>
-    <h2 class='warn'>Unable to Verify Password</h2>
-    <?php
-// not logged in, draw signup stuff
-        //draw_registrationModal($portalType, $portalName, $con, $countryOptions);
-        draw_login($config_vars);
-        exit();
-    }
-
-    if (count($matches) > 1) {
-        echo "<h4>This email address has access to multiple membership accounts</h4>\n" .
-            "Please select one of the accounts below:<br/><ul>\n";
-
-        foreach ($matches as $match) {
-            $match['ts'] = time();
-            $match['lid'] = $linkid;
-            $string = json_encode($match);
-            $string = urlencode(openssl_encrypt($string, $cipher, $key, 0, $iv));
-            echo "<li><a href='?vid=$string'>" .  $match['fullname'] . "</a></li>\n";
+    $account = chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, 'token');
+    if ($account == null || !is_numeric($account)) {
+        if ($account == null) {
+            $account = "Error looking up data for $email";
         }
-?>
-    </ul>
-    <button class='btn btn-secondary m-1' onclick="window.location='?logout';">Logout</button>
-    <script type='text/javascript'>
-        var config = <?php echo json_encode($config_vars); ?>;
-    </script>
-    <?php
-        exit();
+        draw_login($config_vars);
+        show_message($account, 'error');
     }
-
-    // a single  match....
-    $match = $matches[0];
-    $_SESSION['id'] = $match['id'];
-    $_SESSION['idType'] = $match['tablename'];
-    $personId = $_SESSION['id'];
-    $personType = $_SESSION['idType'];
-    $in_session = true;
-    header('location:' . $portal_conf['portalsite'] . "/portal.php");
+    exit();
 } else {
     draw_login($config_vars);
     exit();
