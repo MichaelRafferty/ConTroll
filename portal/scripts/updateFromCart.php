@@ -90,22 +90,51 @@ if (array_key_exists('personType', $person)) {
 $newPerid = null;
 
 // first update the person so we can build a transaction and memberships
+$matchId = null;
 if ($personId < 0) {
     if ($transId == null) {
         $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
     }
-    // insert into newPerson
-    $iQ = <<<EOS
-insert into newperson (transid, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip,
-                       country, share_reg_ok, contact_ok, managedBy, managedByNew, updatedBy, lastVerified)
-values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW());
-EOS;
-    $typeStr = 'issssssssssssssssiii';
-    $valArray = array(
-        $transId,
-        trim($person['last_name']),
-        trim($person['middle_name']),
+
+    // the exact match check for this new person will prevent adding newperson for existing people
+    // see if there is an exact match
+    $exactMsql = <<<EOF
+SELECT id
+FROM perinfo p
+WHERE
+	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.first_name, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.middle_name, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.last_name, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.suffix, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.email_addr, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.phone, ''))), '  *', ' ')
+  AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.badge_name, ''))), '  *', ' ')
+    AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.legalName, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.address, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.addr_2, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.city, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.state, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.zip, ''))), '  *', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.country, ''))), '  *', ' ');
+EOF;
+    $value_arr = array(
         trim($person['first_name']),
+        trim($person['middle_name']),
+        trim($person['last_name']),
         trim($person['suffix']),
         trim($person['email_addr']),
         trim($person['phone']),
@@ -117,22 +146,70 @@ EOS;
         trim($person['state']),
         trim($person['zip']),
         trim($person['country']),
-        $person['share_reg_ok'],
-        $person['contact_ok'],
-        $loginType == 'p' ? $loginId : null,
-        $loginType == 'n' ? $loginId : null,
-        $loginId
     );
-    $personId = dbSafeInsert($iQ, $typeStr, $valArray);
-    if ($personId === false || $personId < 0) {
-        $response['status'] = 'error';
-        $response['message'] = 'Error inserting the new person into the database. Seek assistance';
-        ajaxSuccess($response);
+    $res = dbSafeQuery($exactMsql, 'ssssssssssssss', $value_arr);
+    if ($res !== false) {
+        if ($res->num_rows > 0) {
+            $match = $res->fetch_assoc();
+            $matchId = $match['id'];
+            $personType = 'p';
+            $personId = $matchId;
+
+            // now update the perid to set the managed by flag
+            $updPQ = <<<EOS
+UPDATE perinfo
+SET managedBy = ?, managedReason = 'Exact Match'
+WHERE id = ?;
+EOS;
+            $upd = dbSafeCmd($updPQ, 'ii', array($loginId, $matchId));
+        }
     }
-    $response['newPersonId'] = $personId;
-    $response['message'] = "New person with Temporary ID $personId added";
-    $newPerId = $personId;
-} else {
+
+    if ($matchId == null) {
+        // no match found
+        // insert into newPerson
+        $iQ = <<<EOS
+insert into newperson (transid, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip,
+                       country, share_reg_ok, contact_ok, managedBy, managedByNew, managedReason, updatedBy, lastVerified)
+values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'creation',?,NOW());
+EOS;
+        $typeStr = 'issssssssssssssssiii';
+        $valArray = array(
+            $transId,
+            trim($person['last_name']),
+            trim($person['middle_name']),
+            trim($person['first_name']),
+            trim($person['suffix']),
+            trim($person['email_addr']),
+            trim($person['phone']),
+            trim($person['badge_name']),
+            trim($person['legalName']),
+            trim($person['address']),
+            trim($person['addr_2']),
+            trim($person['city']),
+            trim($person['state']),
+            trim($person['zip']),
+            trim($person['country']),
+            $person['share_reg_ok'],
+            $person['contact_ok'],
+            $loginType == 'p' ? $loginId : null,
+            $loginType == 'n' ? $loginId : null,
+            $loginId
+        );
+        $personId = dbSafeInsert($iQ, $typeStr, $valArray);
+        if ($personId === false || $personId < 0) {
+            $response['status'] = 'error';
+            $response['message'] = 'Error inserting the new person into the database. Seek assistance';
+            ajaxSuccess($response);
+        }
+        $response['newPersonId'] = $personId;
+        $response['message'] = "New person with Temporary ID $personId added";
+        $newPerid = $personId;
+        $personType = 'n';
+    }
+}
+
+if ($newPerid == null) {
     // update the record
     if ($personType == 'p') {
         $updPersonQ = <<<EOS
