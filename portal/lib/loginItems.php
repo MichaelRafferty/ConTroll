@@ -94,9 +94,6 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
         $_SESSION['idSource'] = $validationType;
         unset($_SESSION['transId']);    // just in case it is hanging around, clear this
         unset($_SESSION['totalDue']);   // just in case it is hanging around, clear this
-        $personId = $_SESSION['id'];
-        $personType = $_SESSION['idType'];
-        $in_session = true;
         header('location:' . $portal_conf['portalsite'] . '/portal.php');
         exit();
     }
@@ -129,7 +126,16 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
         <script type='text/javascript'>
             var config = <?php echo json_encode($config_vars); ?>;
         </script>
+        <div class='row mt-2'>
+            <?php drawBug(12); ?>
+        </div>
+    </div>
+</body>
         <?php
         exit();
     }
+
+    // if we get here, something is drasticlly wrong
+    draw_login($config_vars);
+    exit();
 }

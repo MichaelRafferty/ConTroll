@@ -47,10 +47,14 @@ switch ($type) {
         $count = sizeof($matches);
 
         if ($count == 0) {
-            $response['error'] = 'No matching emails found';
+            $response['status'] = 'error';
+            $response['message'] = 'No matching emails found';
         } else if ($count == 1) {
             $_SESSION['id'] = $matches[0]['id'];
             $_SESSION['idType'] = $matches[0]['tablename'];
+            $_SESSION['idSource'] = 'dev';
+            unset($_SESSION['transId']);    // just in case it is hanging around, clear this
+            unset($_SESSION['totalDue']);   // just in case it is hanging around, clear this
             $response['status'] = 'success';
         }
 
@@ -97,6 +101,7 @@ EOS;
             $error_code = null;
         }
         if (array_key_exists('email_error', $return_arr)) {
+            $response['status'] = 'error';
             $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error-code';
         }
         ajaxSuccess($response);
