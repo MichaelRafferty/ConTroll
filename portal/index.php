@@ -3,6 +3,7 @@
 require_once("lib/base.php");
 require_once("lib/getLoginMatch.php");
 require_once("lib/loginItems.php");
+require_once("lib/portalForms.php");
 
 global $config_vars;
 

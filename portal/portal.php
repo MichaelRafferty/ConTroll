@@ -59,7 +59,7 @@ WHERE
 EOS;
 $holderRegR = dbSafeQuery($holderRegSQL, 'iii', array($conid, $personType == 'p' ? $personId : -1, $personType == 'n' ? $personId : -1));
 if ($holderRegR == false || $holderRegR->num_rows == 0) {
-    $holderMemberhip = 'None';
+    $holderMembership = 'None';
 } else {
     $holderMembership = '';
     while ($holderL = $holderRegR->fetch_assoc()) {
@@ -109,7 +109,7 @@ LEFT OUTER JOIN memLabel m ON m.id = r.memId
 WHERE p.managedByNew = ? AND p.id != p.managedBy
 ORDER BY id ASC;
 EOS;
-    $managedByR = dbSafeQuery($managedSQL, 'iiii', array($conid, $personId, $conid, $personId));
+    $managedByR = dbSafeQuery($managedSQL, 'ii', array($conid, $personId));
 }
 
 $managed = [];

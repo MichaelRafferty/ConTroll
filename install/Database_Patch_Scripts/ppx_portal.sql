@@ -223,4 +223,8 @@ ALTER TABLE reg ADD CONSTRAINT reg_planid_fk FOREIGN KEY (planId) REFERENCES pay
 
 ALTER TABLE transaction DROP COLUMN ticket_num;
 
+
+INSERT INTO perinfo(id, last_name, first_name, banned, active, contact_ok, share_reg_ok, open_notes)
+VALUES(4, 'Internal', 'Portal', 'N', 'N', 'N', 'N', 'INTERNAL NOT FOR REGISTRAITON USE');
+
 INSERT INTO patchLog(id, name) values(ppx, 'Portal Changes');

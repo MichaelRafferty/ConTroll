@@ -76,6 +76,7 @@ function draw_login($config_vars, $result_message = '') {
 }
 
 // chooseAccountFromEmail - map an email address to a list of accounts
+// email is a validated email by the validationType.
 function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationType) {
     global $config_vars;
 
@@ -99,10 +100,35 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
     }
 
     if (count($matches) == 0) {
+        draw_editPersonModal();
         // ask to create new account
-        ?>
-        <h2 class='warn'>Unable to Verify Password</h2>
-        <?php
+?>
+        <h3>The email <?php echo $email;?> does not have an account.</h3>
+        <div class='row'>
+            <div class='col-sm-12'>
+<?php
+        if ($validationType == 'token') {
+?>
+                <p>You may have used a different email address for your account.
+                    If this is the case, please use the 'Login with Authentication Link via Email' button below to try a different email address.
+                </p>
+<?php
+        } else {
+ ?>
+                <p>Either try a different "Login with" button than <?php echo $validationType;?> below.</p>
+<?php
+        }
+?>
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-sm-12">
+                <p>Or, you can create a new account for this email address with</p>
+                <button class="btn btn-sm btn-primary" onclick='login.createAccount("<?php echo $email;?>","<?php echo $validationType;?>")'>Create New Account for <?php echo $email;?></button>
+            </div>
+        </div>
+        <hr/>
+<?php
     // not logged in, draw signup stuff
         //draw_registrationModal($portalType, $portalName, $con, $countryOptions);
         draw_login($config_vars);
