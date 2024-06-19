@@ -1,4 +1,4 @@
-// addUpdate javascript, also requires base.js
+// account settinga javascript, also requires base.js
 
 var settings = null;
 
