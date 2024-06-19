@@ -174,29 +174,34 @@ $memberships = null;
     </div>
 <?php
 // identities
+if ($personType == 'p') {
 ?>
     <div id="identitiesDiv">
         <div class="row mt-3"><h4>Identities:</h4></div>
         <div class="row">
-            <div class='col-sm-1'><b>Provider</b></div>
             <div class='col-sm-1'></div>
+            <div class='col-sm-1'><b>Provider</b></div>
             <div class='col-sm-4'><b>Email Address</b></div>
             <div class="col-sm-3"><b>Subscriber ID</b></div>
             <div class="col-sm-1"><b>Created</b></div>
             <div class="col-sm-1"><b>Last Used</b></div>
             <div class="col-sm-1"><b>Use Count</b></div>
+            <div class="col-sm-1"><b>Use Count</b></div>
         </div>
 <?php
         foreach ($identities as $identity) {
             $createDate = date_format(date_create($identity['creationTS']), 'Y-m-d');
-            $lastUsed = date_format(date_create($identity['lastUsedTS']), 'Y-m-d');
+            $lastUsed = '';
+            if ($identity['lastUseTS'] != null) {
+                $lastUsed = date_format(date_create($identity['lastUseTS']), 'Y-m-d');
+            }
             $key = $identity['provider'] . '~' . $identity['email_addr'];
 ?>
         <div class="row">
-            <div class="col-sm-1"><button class="btn btn-sm btn-warning" onclick="settings.deleteIdendity('<?php echo $key;?>')">Delete</button></div>
-            <div class='col-sm-1'><?php echo $identity['provider'];?>></div>
+            <div class="col-sm-1"><button class="btn btn-sm btn-warning pt-0 pb-0" onclick="settings.deleteIdentity('<?php echo $key;?>')">Delete</button></div>
+            <div class='col-sm-1'><?php echo $identity['provider'];?></div>
             <div class='col-sm-4'><?php echo $identity['email_addr'];?></div>
-            <div class='col-sm-3'><?php echo $identity['subscriberId'];?></div>
+            <div class='col-sm-3'><?php echo $identity['subscriberID'];?></div>
             <div class='col-sm-1'><?php echo $createDate;?></div>
             <div class='col-sm-1'><?php echo $lastUsed;?></div>
             <div class='col-sm-1'><?php echo $identity['useCount'];?></div>
@@ -206,12 +211,12 @@ $memberships = null;
 ?>
         <div class='row mt-4'>
             <div class='col-sm-1'>
-                <button class='btn btn-sm btn-primary id='newIdentity' onclick='settings.newIdentity();'>Add New</button>
+                <button class='btn btn-sm btn-primary' id='newIdentity' onclick='settings.newIdentity();'>Add New</button>
             </div>
             <div class='col-sm-auto'><label for='provider'>Provider:</label></div>
             <div class='col-sm-auto'><input type='text' id='provider' name='provider' size=16 maxlength=16 /></div>
             <div class='col-sm-auto'><label for="emaiLAddr">Email:</label></div>
-            <div class='col-sm-auto'><input type='text' id='emailAddr' name='emailAddr' size=64 maxlength=254 /></div>
+            <div class='col-sm-auto'><input type='text' id='identityEmailAddr' name='identityEmailAddr' size=64 maxlength=254 /></div>
         </div>
         <div class="row mt-1">
             <div class="col-sm-1"></div>
@@ -228,5 +233,6 @@ $memberships = null;
         <hr/>
     </div>
 <?php
+}
 portalPageFoot();
 ?>

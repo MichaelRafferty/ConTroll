@@ -117,6 +117,77 @@ EOS;
         echo "<div class='col-sm-auto'>Your request has been processed and your account is now managed by $managerEmail.</div>\n";
         break;
 
+    case 'identity':
+        $cipherInfo = getAttachCipher();
+        $match = openssl_decrypt($_GET['vid'], $cipherInfo['cipher'], $cipherInfo['key'], 0, $cipherInfo['iv']);
+        $match = json_decode($match, true);
+        if (!validateLink($match, $action, 7 * 24 * 3600)) {
+            break; // link is no longer valid, disregard, validate link puts out its own diagnostic.
+        }
+
+        // valid - process the attach request
+        $provider = $match['provider'];
+        $loginId = $match['loginId'];
+        $email = $match['email'];
+
+        // check if it's already there
+        // first check to see if this identity exists
+        $cQ = <<<EOS
+SELECT perid, provider, email_addr
+FROM perinfoIdentities
+WHERE provider=? AND email_addr = ?
+EOS;
+
+        $cR = dbSafeQuery($cQ, 'ss', array($provider, $email));
+        if ($cR == false) {
+            echo "<div class='col-sm-auto bg-danger text-white'>Error checking identity list, get help</div>\n";
+            break;
+        }
+
+        if ($cR->num_rows != 0) {
+            echo "<div class='col-sm-auto bg-danger text-white'>This entity already exists</div>\n";
+            break;
+        }
+
+// we just need the presence / absence, we never need to retrieve the data
+        $cR->free();
+
+// we have a match, see if this email address is someone elses or is already one of our email addresses and just add it for the new provider is one of our email addresses
+        $cQ = <<<EOS
+SELECT COUNT(*) AS emails
+FROM perinfoIdentities
+WHERE email_addr = ? AND perid != ?;
+EOS;
+        $cR = dbSafeQuery($cQ, 'si', array($provider, $loginId));
+        if ($cR == false || $cR->num_rows == 0) {
+            echo "<div class='col-sm-auto bg-danger text-white'>Error checking if this email belongs to someone else</div>\n";
+            break;
+        }
+
+        $counts = $cR->fetch_row()[0];
+        $cR->free();
+        if ($counts > 0) {
+            echo "<div class='col-sm-auto bg-danger text-white'>Someone else already has this email address in their identity list, " .
+                "if this email is yours contact the registation admin for assistance.</div>\n";
+            break;
+        }
+
+        // ok, insert it in the table.
+        $iQ = <<<EOS
+INSERT into perinfoIdentities(perid, provider, email_addr)
+VALUES (?, ?, ?);
+EOS;
+        $iKey = dbSafeInsert($iQ, 'iss', array($loginId, $provider, $email));
+        if ($iKey === false) {
+            echo "<div class='col-sm-auto bg-danger text-white'>Unable to add identity, get assistance</div>\n";
+            break;
+        }
+
+
+        echo "<div class='col-sm-auto'>Your request has been processed and the identity $provider:$email has been added.<br/>\n" .
+            "You will see this in your list the next time you log into the portal.</div>\n";
+        break;
+
     default:
         echo "<h3>Invalid Respond Link - Get Assistance</h3>\n";
 }

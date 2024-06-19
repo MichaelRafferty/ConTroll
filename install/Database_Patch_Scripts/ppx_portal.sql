@@ -4,7 +4,7 @@
 CREATE TABLE portalTokenLinks (
     id int NOT NULL AUTO_INCREMENT,
     email varchar(254) NOT NULL,
-    action enum('login','attach','other') NOT NULL DEFAULT 'other',
+    action enum('login','attach','identity','other') NOT NULL DEFAULT 'other',
     source_ip varchar(16) NOT NULL,
     createdTS timestamp NOT NULL default NOW(),
     useCnt int NOT NULL DEFAULT 0,
@@ -27,7 +27,7 @@ CREATE TABLE perinfoIdentities (
     subscriberID varchar(254) DEFAULT NULL,
     creationTS TIMESTAMP DEFAULT NOW(),
     lastUseTS TIMESTAMP DEFAULT NULL,
-    useCount int default NULL,
+    useCount int NOT NULL DEFAULT 0,
     PRIMARY KEY (perid, provider, email_addr)
 );
 ALTER TABLE perinfoIdentities ADD FOREIGN KEY pi_perinfo_fk (perid) REFERENCES perinfo(id) ON DELETE CASCADE ON UPDATE CASCADE;

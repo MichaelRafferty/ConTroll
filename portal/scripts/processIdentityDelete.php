@@ -1,0 +1,44 @@
+<?php
+require_once('../lib/base.php');
+require_once('../../lib/log.php');
+
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
+
+$response = array('post' => $_POST, 'get' => $_GET);
+
+$con = get_con();
+$conid=$con['id'];
+$conf = get_conf('con');
+$portal_conf = get_conf('portal');
+
+$response['conid'] = $conid;
+
+if (!array_key_exists('action', $_POST)) {
+    ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
+    exit();
+}
+
+if (!(array_key_exists('id', $_SESSION) && array_key_exists('idType', $_SESSION))) {
+    ajaxSuccess(array('status'=>'error', 'message'=>'Not logged in.'));
+    exit();
+}
+
+$loginId = $_SESSION['id'];
+$action = $_POST['action'];
+$provider = $_POST['provider'];
+$email = $_POST['email'];
+
+$dQ = <<<EOS
+DELETE FROM perinfoIdentities
+WHERE perid = ? AND provider = ? AND email_addr = ?;
+EOS;
+
+$delCnt = dbSafeCmd($dQ, 'iss', array($loginId, $provider, $email));
+if ($delCnt == 1) {
+    ajaxSuccess(array('status'=>'success', 'message'=>'The identity has been deleted.'));
+} else {
+    ajaxSuccess(array('status'=>'success', 'message'=>'The account already was deleted.'));
+}
