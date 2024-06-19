@@ -159,7 +159,17 @@ $memberships = null;
 <?php
         }
 ?>
-
+        <div class='row mt-4'>
+            <div class='col-sm-1'><button class="btn btn-sm btn-primary" id="attachBtn" onclick="settings.attach();">Attach</button></div>
+            <div class='col-sm-auto'><label for="acctId">Account id:</label></div>
+            <div class='col-sm-auto'><input type='number' class='no-spinners' inputmode='numeric' id='acctId' name='acctId' style='width:6em;'/></div>
+            <div class='col-sm-auto'><label for="emaiLAddr">Email:</label></div>
+            <div class='col-sm-auto'><input type='text' id='emailAddr' name='emailAddr' size=64 maxlength=254 /></div>
+        </div>
+        <div class='row mt-1'>
+            <div class='col-sm-1'></div>
+            <div class='col-sm-auto'>An email will be sent to the email address with a link to verify that they consent to allowing you access.<br/>The account will not be added until they click on the link in that email.</div>
+        </div>
         <hr/>
     </div>
 <?php
@@ -168,7 +178,8 @@ $memberships = null;
     <div id="identitiesDiv">
         <div class="row mt-3"><h4>Identities:</h4></div>
         <div class="row">
-            <div class='col-sm-2'><b>Provider</b></div>
+            <div class='col-sm-1'><b>Provider</b></div>
+            <div class='col-sm-1'></div>
             <div class='col-sm-4'><b>Email Address</b></div>
             <div class="col-sm-3"><b>Subscriber ID</b></div>
             <div class="col-sm-1"><b>Created</b></div>
@@ -179,9 +190,11 @@ $memberships = null;
         foreach ($identities as $identity) {
             $createDate = date_format(date_create($identity['creationTS']), 'Y-m-d');
             $lastUsed = date_format(date_create($identity['lastUsedTS']), 'Y-m-d');
+            $key = $identity['provider'] . '~' . $identity['email_addr'];
 ?>
         <div class="row">
-            <div class='col-sm-2'><?php echo $identity['provider'];?>></div>
+            <div class="col-sm-1"><button class="btn btn-sm btn-warning" onclick="settings.deleteIdendity('<?php echo $key;?>')">Delete</button></div>
+            <div class='col-sm-1'><?php echo $identity['provider'];?>></div>
             <div class='col-sm-4'><?php echo $identity['email_addr'];?></div>
             <div class='col-sm-3'><?php echo $identity['subscriberId'];?></div>
             <div class='col-sm-1'><?php echo $createDate;?></div>
@@ -191,6 +204,27 @@ $memberships = null;
 <?php
         }
 ?>
+        <div class='row mt-4'>
+            <div class='col-sm-1'>
+                <button class='btn btn-sm btn-primary id='newIdentity' onclick='settings.newIdentity();'>Add New</button>
+            </div>
+            <div class='col-sm-auto'><label for='provider'>Provider:</label></div>
+            <div class='col-sm-auto'><input type='text' id='provider' name='provider' size=16 maxlength=16 /></div>
+            <div class='col-sm-auto'><label for="emaiLAddr">Email:</label></div>
+            <div class='col-sm-auto'><input type='text' id='emailAddr' name='emailAddr' size=64 maxlength=254 /></div>
+        </div>
+        <div class="row mt-1">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-auto">Leave the provder name blank to allow the email address for any provider.</div>
+        </div>
+        <div class='row mt-1'>
+            <div class='col-sm-1'></div>
+            <div class="col-sm-auto">Currently supported providers are: email and google.</div>
+        </div>
+        <div class='row mt-1'>
+            <div class='col-sm-1'></div>
+            <div class='col-sm-auto'>An email will be sent to the email address with a link to verify that you own that email address.<br/>The identity will not be added until you click on the link in that email.</div>
+        </div>
         <hr/>
     </div>
 <?php

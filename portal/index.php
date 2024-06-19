@@ -4,6 +4,7 @@ require_once("lib/base.php");
 require_once("lib/getLoginMatch.php");
 require_once("lib/loginItems.php");
 require_once("lib/portalForms.php");
+require_once("../lib/cipher.php");
 
 global $config_vars;
 
@@ -17,19 +18,7 @@ $condata = get_con();
 $in_session = false;
 
 // encrypt/decrypt stuff (maybe needed?)
-$ciphers = openssl_get_cipher_methods();
-$cipher = 'aes-128-cbc';
-$ivlen = openssl_cipher_iv_length($cipher);
-$ivdate = date_create("now");
-$iv = substr(date_format($ivdate, 'YmdzwLLwzdmY'), 0, $ivlen);
-$key = $conid . $con['label'] . $con['regadminemail'];
-$cipherInfo = [
-    'cipher' => $cipher,
-    'ivlen' => $ivlen,
-    'ivdate' => $ivdate,
-    'iv' => $iv,
-    'key' => $key
-];
+$cipherInfo = getLoginCipher();
 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
@@ -109,7 +98,7 @@ if (isset($_SESSION['id'])) {
     }
 } else if (isset($_GET['vid'])) {
     // handle link login
-    $match = openssl_decrypt($_GET['vid'], $cipher, $key, 0, $iv);
+    $match = openssl_decrypt($_GET['vid'], $cipherInfo['cipher'], $cipherInfo['key'], 0, $cipherInfo['iv']);
     $match = json_decode($match, true);
     $linkid = $match['lid'];
     if (array_key_exists('id', $match)) {
@@ -129,7 +118,7 @@ if (isset($_SESSION['id'])) {
     $linkQ = <<<EOS
 SELECT id, email, useCnt
 FROM portalTokenLinks
-WHERE id = ?
+WHERE id = ? AND action = 'login'
 ORDER BY createdTS DESC;
 EOS;
     $linkR = dbSafeQuery($linkQ, 's', array($linkid));

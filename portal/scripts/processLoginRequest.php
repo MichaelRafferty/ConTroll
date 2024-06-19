@@ -3,6 +3,7 @@ require_once('../lib/base.php');
 require_once('../lib/getLoginMatch.php');
 require_once('../../lib/email__load_methods.php');
 require_once('../../lib/log.php');
+require_once('../../lib/cipher.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -62,17 +63,20 @@ switch ($type) {
         break;
 
     case 'token':
-        // encrypt/decrypt stuff
-        $ciphers = openssl_get_cipher_methods();
-        $cipher = 'aes-128-cbc';
-        $ivlen = openssl_cipher_iv_length($cipher);
-        $ivdate = date_create('now');
-        $iv = substr(date_format($ivdate, 'YmdzwLLwzdmY'), 0, $ivlen);
-        $key = $conid . $conf['label'] . $conf['regadminemail'];
+        $waittime = 5; // minutes
+        $ts = timeSinceLastToken('login', $email);
+        if ($ts != null && $ts < ($waittime * 60)) {
+            $mins = $waittime - floor($ts/60);
+            ajaxSuccess(array('status'=>'error', 'message'=>"There already is an outstanding login request to $email.<br/>" .
+                "Please check your spam folder for the request.<br/>You will have to wait $mins minutes before trying again."));
+            exit;
+        }
 
+        // encrypt/decrypt stuff
+        $cipherParams = getLoginCipher();
         $insQ = <<<EOS
-INSERT INTO portalTokenLinks(email, source_ip)
-VALUES(?, ?);
+INSERT INTO portalTokenLinks(email, action, source_ip)
+VALUES(?, 'login', ?);
 EOS;
         $insid = dbSafeInsert($insQ, 'ss', array($email, $_SERVER['REMOTE_ADDR']));
         if ($insid != false) {
@@ -85,7 +89,7 @@ EOS;
         $parms['ts'] = time();          // when requested for timeout check
         $parms['lid'] = $insid;         // id in portalTokenLinks table
         $string = json_encode($parms);  // convert object to json for making a string out of it, which is encrypted in the next line
-        $string = urlencode(openssl_encrypt($string, $cipher, $key, 0, $iv));
+        $string = urlencode(openssl_encrypt($string, $cipherParams['cipher'], $cipherParams['key'], 0, $cipherParams['iv']));
         $token = $portal_conf['portalsite'] . "/index.php?vid=$string";     // convert to link for emailing
 
         load_email_procs();

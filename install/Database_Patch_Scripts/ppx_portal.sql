@@ -4,6 +4,7 @@
 CREATE TABLE portalTokenLinks (
     id int NOT NULL AUTO_INCREMENT,
     email varchar(254) NOT NULL,
+    action enum('login','attach','other') NOT NULL DEFAULT 'other',
     source_ip varchar(16) NOT NULL,
     createdTS timestamp NOT NULL default NOW(),
     useCnt int NOT NULL DEFAULT 0,
