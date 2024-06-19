@@ -26,8 +26,18 @@ if (!(array_key_exists('id', $_SESSION) && array_key_exists('idType', $_SESSION)
     exit();
 }
 
-$personId = $_SESSION['id'];
-$personType = $_SESSION['idType'];
+$updateBy = $_SESSION['id'];
+$disType = $_POST['managedBy'];
+if ($disType == 'client') {
+    $personId = $_POST['idNum'];
+    $personType = $_POST['idType'];
+    $reason = 'Mgr Req';
+} else {
+    $personId = $_SESSION['id'];
+    $personType = $_SESSION['idType'];
+    $reason = 'Client Req';
+}
+
 
 if ($personType == 'p') {
     $personQ = <<<EOS
@@ -37,7 +47,7 @@ WHERE id = ?;
 EOS;
     $personU = <<<EOS
 UPDATE perinfo
-SET managedBy = NULL, updatedBy = ?
+SET managedBy = NULL, updatedBy = ?, managedReason = ?
 WHERE id = ?;
 EOS;
 } else {
@@ -48,13 +58,13 @@ WHERE id = ?;
 EOS;
     $personU = <<<EOS
 UPDATE newperson
-SET managedBy = NULL, managedByNew = NULL, updatedBy = ?
+SET managedBy = NULL, managedByNew = NULL, updatedBy = ?, managedReason = ?
 WHERE id = ?;
 EOS;
 }
 $personR = dbSafeQuery($personQ, 'i', array($personId));
 if ($personR === false || $personR->num_rows < 1) {
-    ajaxSuccess(array('status'=>'error', 'message'=>'Invalid Login Session, Please log out and back in again, if it still fails, seek assistance.'));
+    ajaxSuccess(array('status'=>'error', 'message'=>'Unable to disassociate, seek assistance.'));
     exit();
 }
 
@@ -62,13 +72,13 @@ $personL = $personR->fetch_assoc();
 $personR->free();
 
 if ($personL['managedBy'] == NULL && $personL['managedByNew'] == NULL) {
-    ajaxSuccess(array('status'=>'warn', 'message'=>'Your account is currently not managed.'));
+    ajaxSuccess(array('status'=>'warn', 'message'=>'This account is currently not managed.'));
     exit();
 }
 
-$num_rows = dbSafeCmd($personU, 'ii', array($personId, $personId));
+$num_rows = dbSafeCmd($personU, 'isi', array($updateBy, $reason, $personId));
 if ($num_rows == 1) {
-    ajaxSuccess(array('status'=>'success', 'message'=>'Your account has been changed to unmanaged.'));
+    ajaxSuccess(array('status'=>'success', 'message'=>'The account has been changed to unmanaged.'));
 } else {
-    ajaxSuccess(array('status'=>'success', 'message'=>'Your account already was unmanaged.'));
+    ajaxSuccess(array('status'=>'success', 'message'=>'The account already was unmanaged.'));
 }

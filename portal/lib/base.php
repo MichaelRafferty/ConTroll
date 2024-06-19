@@ -177,7 +177,7 @@ function tab_bar($page, $portal_conf) {
     $page_list = [
         ['name' => 'addUpgrade', 'display' => 'Add New'],
         ['name' => 'membershipHistory', 'display' => 'Membership History'],
-        ['name' => 'editAccount', 'display' => 'Account Settings'],
+        ['name' => 'accountSettings', 'display' => 'Account Settings'],
         ['name' => 'portalHelp" target="_blank', 'display' => 'Help'],
     ];
 
