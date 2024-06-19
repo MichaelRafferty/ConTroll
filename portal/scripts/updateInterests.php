@@ -53,8 +53,8 @@ SET interested = ?, updateBy = ?
 WHERE id = ?;
 EOS;
 $insInterest = <<<EOS
-INSERT INTO memberInterests($pfield, interest, interested, updateBy)
-VALUES (?, ?, ?, ?);
+INSERT INTO memberInterests($pfield, conid, interest, interested, updateBy)
+VALUES (?, ?, ?, ?, ?);
 EOS;
 
 $rows_upd = 0;
@@ -67,7 +67,7 @@ foreach ($existingInterests as $existing) {
                 $upd = dbSafeCmd($updInterest, 'sii', array($newVal, $personId, $existing['id']));
             }
             if ($upd === false || $upd === 0) {
-                $newkey = dbSafeInsert($insInterest, 'issi', array($currentPerson, $existing['interest'], $newVal, $personId));
+                $newkey = dbSafeInsert($insInterest, 'iissi', array($currentPerson, $conid, $existing['interest'], $newVal, $personId));
                 if ($newkey !== false && $newkey > 0)
                     $rows_upd++;
             } else {

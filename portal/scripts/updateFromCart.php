@@ -365,8 +365,8 @@ SET interested = ?, updateBy = ?
 WHERE id = ?;
 EOS;
 $insInterest = <<<EOS
-INSERT INTO memberInterests($pfield, interest, interested, updateBy)
-VALUES (?, ?, ?, ?);
+INSERT INTO memberInterests($pfield, conid, interest, interested, updateBy)
+VALUES (?, ?, ?, ?, ?);
 EOS;
 
 $int_upd = 0;
@@ -379,7 +379,7 @@ foreach ($existingInterests as $existing) {
                 $upd = dbSafeCmd($updInterest, 'sii', array($newVal, $loginId, $existing['id']));
             }
             if ($upd === false || $upd === 0) {
-                $newkey = dbSafeInsert($insInterest, 'issi', array($personId, $existing['interest'], $newVal, $loginId));
+                $newkey = dbSafeInsert($insInterest, 'iissi', array($personId, $conid, $existing['interest'], $newVal, $loginId));
                 if ($newkey !== false && $newkey > 0)
                     $int_upd++;
             } else {
@@ -387,7 +387,7 @@ foreach ($existingInterests as $existing) {
             }
         }
     } else {
-        $newkey = dbSafeInsert($insInterest, 'issi', array($personId, $existing['interest'], $newVal, $loginId));
+        $newkey = dbSafeInsert($insInterest, 'iissi', array($personId, $conid, $existing['interest'], $newVal, $loginId));
         if ($newkey !== false && $newkey > 0)
             $int_upd++;
     }

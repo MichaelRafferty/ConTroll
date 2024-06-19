@@ -143,6 +143,7 @@ CREATE TABLE memberInterests
 (
     id int NOT NULL AUTO_INCREMENT,
     perid int DEFAULT NULL,
+    conid int DEFAULT NULL,
     newperid int DEFAULT NULL,
     interest varchar(16) NOT NULL,
     interested enum ('Y', 'N') NOT NULL DEFAULT 'N',
