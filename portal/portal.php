@@ -50,25 +50,30 @@ $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
 // get the account holder's registrations
 $holderRegSQL = <<<EOS
-SELECT r.status, r.memId, m.*
+SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, r.price AS actPrice, r.conid
 FROM reg r
 JOIN memLabel m ON m.id = r.memId
+JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
 WHERE
     status IN  ('unpaid', 'paid', 'plan', 'upgraded') AND
     r.conid >= ? AND (r.perid = ? OR r.newperid = ?);
 EOS;
 $holderRegR = dbSafeQuery($holderRegSQL, 'iii', array($conid, $personType == 'p' ? $personId : -1, $personType == 'n' ? $personId : -1));
-if ($holderRegR == false || $holderRegR->num_rows == 0) {
-    $holderMembership = 'None';
-} else {
-    $holderMembership = '';
-    while ($holderL = $holderRegR->fetch_assoc()) {
-        if ($holderMembership != '')
-            $holderMembership .= '<br/>';
-        $holderMembership .= ($holderL['conid'] != $conid ? $holderL['conid'] . ' ' : '') . $holderL['label'] . ' (' . $holderL['status'] . ')';
+$holderMembership = [];
+if ($holderRegR != false && $holderRegR->num_rows > 0) {
+    while ($m = $holderRegR->fetch_assoc()) {
+        if ($m['memType'] == 'donation') {
+            $label = $dolfmt->formatCurrency((float) $m['actPrice'], 'USD') . ' ' . m['label'];
+            $shortname = $dolfmt->formatCurrency((float) $m['actPrice'], 'USD') . ' ' . $m['shortname'];
+        } else {
+            $label = $m['label'];
+            $shortname = $m['shortname'];
+        }
+        $holderMembership[] = array('label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label, 'status' => $m['status'],
+            'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
+            'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel']);
     }
-    if ($holderRegR != false)
-        $holderRegR->free();
+    $holderRegR->free();
 }
 // get people managed by this account holder and their registrations
 if ($personType == 'p') {
@@ -77,19 +82,21 @@ WITH ppl AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.contact_ok, p.share_reg_ok, p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-        r.conid, r.status, r.memId, m.memCategory, m.memType, m.memAge, m.shortname, m. label, m.memGroup, 'p' AS personType
+        r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup, a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType
         FROM perinfo p
         LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ?
         LEFT OUTER JOIN memLabel m ON m.id = r.memId
+        LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
         WHERE managedBy = ? AND p.id != p.managedBy
     UNION
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.contact_ok, p.share_reg_ok, p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-        r.conid, r.status, r.memId, m.memCategory, m.memType, m.memAge, m.shortname, m. label, m.memGroup, 'n' AS personType
+        r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup, a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType
         FROM newperson p    
         LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ?
         LEFT OUTER JOIN memLabel m ON m.id = r.memId
+        LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
         WHERE managedBy = ? AND p.id != ? AND p.perid IS NULL
 )
 SELECT *
@@ -102,10 +109,11 @@ EOS;
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
     'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.contact_ok, p.share_reg_ok, p.managedBy, NULL AS managedByNew,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-    r.conid, r.status, r.memId, m.memCategory, m.memType, m.memAge, m.shortname, m. label, m.memGroup, 'n' AS personType
+    r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup, a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType
 FROM newperson p
 LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ?
 LEFT OUTER JOIN memLabel m ON m.id = r.memId
+LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND a.conid = r.conid
 WHERE p.managedByNew = ? AND p.id != p.managedBy
 ORDER BY id ASC;
 EOS;
@@ -171,7 +179,7 @@ if ($info['managedByName'] != null) {
 <div class="row">
     <div class="col-sm-1" style='text-align: right;'><b>ID</b></div>
     <div class="col-sm-4"><b>Person</b></div>
-    <div class="col-sm-3"><b>Memberships</b></div>
+    <div class="col-sm-3"><b>Badge Name</b></div>
     <div class="col-sm-4"><b>Actions</b></div>
 </div>
 <?php
@@ -179,26 +187,35 @@ drawManagedPerson($info, $holderMembership, $interests != null);
 
 $managedMembershipList = '';
 $currentId = -1;
+$curMB = [];
 // now for the people managed by this account holder
-if (count($managed) > 0) {
-    foreach ($managed as $m) {
-        if ($currentId != $m['id']) {
-            if ($currentId > 0) {
-                drawManagedPerson(['id' => $currentId, 'personType' => $curPT, 'fullname' => $curFN ], $curMB,$interests != null);
-            }
-            $curPT = $m['personType'];
-            $currentId = $m['id'];
-            $curFN = $m['fullname'];
-            $curMB = '';
+
+foreach ($managed as $m) {
+    if ($currentId != $m['id']) {
+        if ($currentId > 0) {
+            drawManagedPerson($curPT, $curMB,$interests != null);
         }
-        if ($curMB != '') {
-            $curMB .= '<br/>';
+        $curPT = $m;
+        $currentId = $m['id'];
+        $currentId = $m['id'];
+        $curMB = [];
+    }
+    if ($m['memId'] != null) {
+        if ($m['memType'] == 'donation') {
+            $label = $dolfmt->formatCurrency((float) $m['actPrice'], 'USD') . ' ' . $m['label'];
+            $shortname = $dolfmt->formatCurrency((float) $m['actPrice'], 'USD') . ' ' . $m['shortname'];
+        } else {
+            $label = $m['label'];
+            $shortname = $m['shortname'];
         }
-        $curMB .= $m['memId'] == null ? 'None' : (($m['conid'] != $conid ? $m['conid'] . ' ' : '') .  $m['label'] . ' (' . $m['status']) . ')';
+        $curMB[] = array('label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label, 'status' => $m['status'],
+            'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
+            'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel']);
     }
-    if ($curMB != '') {
-        drawManagedPerson(['id' => $currentId, 'personType' => $curPT, 'fullname' => $curFN ], $curMB,$interests != null);
-    }
+}
+if (count($curMB) > 0) {
+    drawManagedPerson($curPT, $curMB,$interests != null);
+
 }
 // compute total due so we can display it up top as well...
 $totalDue = 0;

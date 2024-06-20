@@ -321,10 +321,10 @@ function drawVariablePriceModal() {
 //// buttons on portal screen
 function drawManagedPerson($person, $memberships, $showInterests) {
     ?>
-    <div class="row mb-1">
+    <div class="row mt-1">
         <div class='col-sm-1' style='text-align: right;'><?php echo ($person['personType'] == 'n' ? 'Temp ' : '') . $person['id']; ?></div>
         <div class='col-sm-4'><?php echo $person['fullname']; ?></div>
-        <div class="col-sm-3"><?php echo $memberships; ?></div>
+        <div class="col-sm-2"><?php echo $person['badge_name']; ?></div>
         <div class='col-sm-4 p-1'>
             <button class='btn btn-sm, btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.editPerson(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">Edit Person</button>
 <?php if ($showInterests) { ?>
@@ -334,6 +334,25 @@ function drawManagedPerson($person, $memberships, $showInterests) {
         </div>
     </div>
     <?php
+    if ($memberships != null && count($memberships) > 0) {
+        echo "<div class='row'>\n";
+        foreach ($memberships as $membership) {
+            $borderColor = '';
+            if ($membership['memAge'] == 'child' || $membership['memAge'] == 'kit')
+                $borderColor = 'border-danger';
+            else if ($membership['type'] == 'oneday')
+                $borderColor = 'border-warning';
+            else if ($membership['type'] == 'full')
+                $borderColor = 'border-primary';
+            else if ($membership['category'] == 'addon' || $membership['category'] == 'donation')
+                $borderColor = 'border-dark';
+?>
+        <div class="col-sm-3 ps-1 pe-1 m-0"><button class="btn btn-light border border-5 <?php echo $borderColor; ?>" style="width: 100%;"><b><?php echo $membership['shortname'] . "</b> (" . $membership['status'] . ")<br/>" .
+            "<b>" . $membership['ageShort'] . "</b> (" . $membership['ageLabel'] . ')'; ?></button></div>
+<?php
+        }
+    echo "</div>\n";
+    }
 }
 
 // draw_editInterests on portal screen - draw the update interests form for the person
