@@ -467,8 +467,8 @@ function drawPaymentPlans($person, $paymentPlans) {
     $plans = $paymentPlans['plans'];
     $payorPlans = $paymentPlans['payorPlans'];
 ?>
-    <div class='row mb-1'>
-        <div class='col-sm-1'><b>Status</b></div>
+    <div class='row mb-1 align-items-end'>
+        <div class="col-sm-1"><b>Status</b></div>
         <div class="col-sm-1"><b>Plan Name</b></div>
         <div class="col-sm-1"><b>Payment Type</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Initial Amount</b></div>
@@ -476,9 +476,9 @@ function drawPaymentPlans($person, $paymentPlans) {
         <div class="col-sm-1" style='text-align: right;'><b>Remaining Balance</b></div>
         <div class="col-sm-1"><b>Date Created</b></div>
         <div class="col-sm-1"><b>Pay By Date</b></div>
-        <div class="col-sm-1"><b>Last Payment Date</b></div>
-        <div class="col-sm-1"><b>Next Payment Due</b></div>
-        <div class="col-sm-1" style='text-align: right;'><b>Minimum Payment Amount</b></div>
+        <div class="col-sm-1"><b>Last Pmt Date</b></div>
+        <div class="col-sm-1"><b>Next Pmt Due</b></div>
+        <div class="col-sm-1" style='text-align: right;'><b>Minimum Pmt Amt</b></div>
     </div>
 <?php
     foreach ($payorPlans as $payorPlan) {
@@ -488,8 +488,10 @@ function drawPaymentPlans($person, $paymentPlans) {
             $payments = $payorPlan['payments'];
             $numPmts = count($payments);
             $lastPayment = $payments[$numPmts];
-            $lastPaidDate = $lastPayment['payDate'];
-            $nextPayDue = date_format(date_add(date_create($payorPlan['createDate']), date_interval_create_from_date_string(($numPmts * $payorPlan['daysBetween']) - 1 . ' days')),
+            $lastPaidDate = date_format(date_create($lastPayment['payDate']), 'Y-m-d');
+            // numPmts + 1 because we are looking for when the next payment (not the one that just got paid) is due.
+            $nextPayDue = date_format(date_add(date_create($payorPlan['createDate']),
+                date_interval_create_from_date_string((($numPmts + 1) * $payorPlan['daysBetween']) - 1 . ' days')),
                 'Y-m-d');
             $minAmt = $payorPlan['minPayment'] <= $payorPlan['balanceDue'] ? $payorPlan['minPayment'] : $payorPlan['balanceDue'];
         } else {
