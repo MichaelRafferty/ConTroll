@@ -50,10 +50,23 @@ $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
 // get the account holder's registrations
 $holderRegSQL = <<<EOS
-SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, r.price AS actPrice, r.conid
+SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, r.price AS actPrice, r.conid, 
+    nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
+    CASE
+        WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
+        WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
+        WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
+        ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
+    END AS purchaserName
 FROM reg r
 JOIN memLabel m ON m.id = r.memId
 JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
+LEFT OUTER JOIN transaction t ON r.create_trans = t.id
+LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
+LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
+LEFT OUTER JOIN newperson nc ON t.newperid = nc.id
+LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
+LEFT OUTER JOIN newperson np ON tp.newperid = np.id
 WHERE
     status IN  ('unpaid', 'paid', 'plan', 'upgraded') AND
     r.conid >= ? AND (r.perid = ? OR r.newperid = ?);
@@ -71,7 +84,10 @@ if ($holderRegR != false && $holderRegR->num_rows > 0) {
         }
         $holderMembership[] = array('label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label, 'status' => $m['status'],
             'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
-            'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel']);
+            'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'],
+            'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
+            'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName']
+        );
     }
     $holderRegR->free();
 }
@@ -82,22 +98,48 @@ WITH ppl AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.contact_ok, p.share_reg_ok, p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-        r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup, a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType
-        FROM perinfo p
-        LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
-        LEFT OUTER JOIN memLabel m ON m.id = r.memId
-        LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
-        WHERE managedBy = ? AND p.id != p.managedBy
+        r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup, a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType,
+        nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
+        CASE
+            WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
+            WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
+            WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
+            ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
+        END AS purchaserName
+    FROM perinfo p
+    LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
+    LEFT OUTER JOIN memLabel m ON m.id = r.memId
+    LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
+    LEFT OUTER JOIN transaction t ON r.create_trans = t.id
+    LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
+    LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
+    LEFT OUTER JOIN newperson nc ON t.newperid = nc.id
+    LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
+    LEFT OUTER JOIN newperson np ON tp.newperid = np.id
+    WHERE p.managedBy = ? AND p.id != p.managedBy
     UNION
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.contact_ok, p.share_reg_ok, p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-        r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup, a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType
-        FROM newperson p    
-        LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
-        LEFT OUTER JOIN memLabel m ON m.id = r.memId
-        LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
-        WHERE managedBy = ? AND p.id != ? AND p.perid IS NULL
+        r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup, a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType,
+        nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
+        CASE
+            WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
+            WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
+            WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
+            ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
+        END AS purchaserName
+    FROM newperson p    
+    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
+    LEFT OUTER JOIN memLabel m ON m.id = r.memId
+    LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
+    LEFT OUTER JOIN transaction t ON r.create_trans = t.id
+    LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
+    LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
+    LEFT OUTER JOIN newperson nc ON t.newperid = nc.id
+    LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
+    LEFT OUTER JOIN newperson np ON tp.newperid = np.id
+    WHERE p.managedBy = ? AND p.id != ? AND p.perid IS NULL
 )
 SELECT *
 FROM ppl
@@ -109,11 +151,24 @@ EOS;
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
     'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.contact_ok, p.share_reg_ok, p.managedBy, NULL AS managedByNew,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-    r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup, a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType
+    r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup, a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType,
+    nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
+    CASE
+        WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
+        WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
+        WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
+        ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
+    END AS purchaserName
 FROM newperson p
 LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ?  AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
 LEFT OUTER JOIN memLabel m ON m.id = r.memId
 LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND a.conid = r.conid
+LEFT OUTER JOIN transaction t ON r.create_trans = t.id
+LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
+LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
+LEFT OUTER JOIN newperson nc ON t.newperid = nc.id
+LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
+LEFT OUTER JOIN newperson np ON tp.newperid = np.id
 WHERE p.managedByNew = ? AND p.id != p.managedBy
 ORDER BY id ASC;
 EOS;
@@ -183,7 +238,7 @@ if ($info['managedByName'] != null) {
     <div class="col-sm-4"><b>Actions</b></div>
 </div>
 <?php
-drawManagedPerson($info, $holderMembership, $interests != null);
+drawManagedPerson($personId, $personType, $info, $holderMembership, $interests != null);
 
 $managedMembershipList = '';
 $currentId = -1;
@@ -193,7 +248,7 @@ $curMB = [];
 foreach ($managed as $m) {
     if ($currentId != $m['id']) {
         if ($currentId > 0) {
-            drawManagedPerson($curPT, $curMB,$interests != null);
+            drawManagedPerson($personId, $personType, $curPT, $curMB,$interests != null);
         }
         $curPT = $m;
         $currentId = $m['id'];
@@ -210,11 +265,14 @@ foreach ($managed as $m) {
         }
         $curMB[] = array('label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label, 'status' => $m['status'],
             'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
-            'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel']);
+            'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'],
+            'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
+            'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName']
+        );
     }
 }
 if (count($curMB) > 0) {
-    drawManagedPerson($curPT, $curMB,$interests != null);
+    drawManagedPerson($personId, $personType, $curPT, $curMB,$interests != null);
 
 }
 // compute total due so we can display it up top as well...
@@ -249,26 +307,24 @@ if (count($memberships) > 0) {
     </div>
     <div class='row'>
         <div class='col-sm-1' style='text-align: right;'><b>Trans ID</b></div>
-        <div class='col-sm-2'><b>Created</b></div>
-        <div class='col-sm-4'><b>Badge Name</b></div>
-        <div class='col-sm-5'><b>Membership</b></div>
+        <div class='col-sm-2'><b>Date</b></div>
+        <div class='col-sm-1'><b>Receipt</b></div>
     </div>
     <div class='row'>
         <div class='col-sm-1'></div>
         <div class='col-sm-2'><b>Status</b></div>
-        <div class='col-sm-7'><b>Full Name</b></div>
-        <div class='col-sm-1'><b>Type</b></div>
-        <div class='col-sm-1'><b>Category</b></div>
+        <div class='col-sm-3'><b>Membership</b></div>
+        <div class='col-sm-4'><b>Full Name / Badge Name</b></div>
     </div>
     <div class='row'>
         <div class="col-sm-12 ms-0 me-0 align-center"><hr style="height:4px;width:95%;margin:auto;margin-top:6px;margin-bottom:10px;color:#333333;background-color:#333333;"/></div>
     </div>
 <?php
 // loop over the transactions outputting the memberships
-    $rowId = -9999;
     $currentId = -99999;
     foreach ($memberships as $membership)  {
-        if ($currentId > -10000 && $currentId != $membership['memberId']) {
+        if ($currentId != $membership['sortTrans']) {
+            if ($currentId > -10000) {
 ?>
         <div class='row'>
             <div class='col-sm-12 ms-0 me-0 align-center'>
@@ -276,39 +332,36 @@ if (count($memberships) > 0) {
             </div>
         </div>
 <?php
+            }
+            $currentId = $membership['sortTrans'];
+            if ($membership['complete_trans']) {
+                $receipt = "<button class='btn btn-sm btn-secondary p-1 pt-0 pb-0' style='--bs-btn-font-size: 80%;' " .
+                    'onclick="portal.transReceipt(' . $membership['complete_trans'] . ');">Receipt</button>';
+            } else {
+                $receipt = '';
+            }
+            $transDate = date_format(date_create($membership['transDate']), 'Y-m-d');
+?>
+        <div class='row'>
+            <div class='col-sm-1' style='text-align: right;'><?php echo $currentId; ?></div>
+            <div class="col-sm-2"><?php echo $transDate; ?></div>
+            <div class='col-sm-1'><?php echo $receipt; ?></div>
+        </div>
+<?php
         }
-        $currentId = $membership['memberId'];
-        if ($currentId == null)
-            $currentId = $rowId;
-        $rowId++;
         if ($membership['status'] == 'unpaid') {
             $due = round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
             $status = 'Balance due: ' . $dolfmt->formatCurrency((float) $due, 'USD');
         }
-        else
+        else {
             $status = $membership['status'];
-
-        $id = $membership['id'];
-        if ($membership['complete_trans']) {
-            $receipt = "<button class='btn btn-sm btn-secondary p-1 pt-0 pb-0' style='--bs-btn-font-size: 80%;' " .
-                'onclick="portal.transReceipt(' . $membership['complete_trans'] . ');">Receipt</button>';
-        } else {
-            $receipt = '';
         }
-
 ?>
     <div class="row">
-        <div class='col-sm-1' style='text-align: right;'><?php echo $id;?></div>
-        <div class="col-sm-2"><?php echo $membership['create_date'];?></div>
-        <div class="col-sm-4"><?php echo $membership['badge_name'];?></div>
-        <div class="col-sm-5"><?php echo ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label'];?></div>
-    </div>
-    <div class='row'>
-        <div class="col-sm-1" style='text-align: right;'><?php echo $receipt;?></div>
-        <div class="col-sm-2"><?php echo $status; ?></div>
-        <div class="col-sm-7"><?php echo $membership['fullname']; ?></div>
-        <div class="col-sm-1"><?php echo $membership['memType']; ?></div>
-        <div class="col-sm-1"><?php echo $membership['memCategory']; ?></div>
+        <div class='col-sm-1'></div>
+        <div class='col-sm-2'><?php echo $status; ?></div>
+        <div class='col-sm-3'><?php echo ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label']; ?></div>
+        <div class="col-sm-6"><?php echo $membership['fullname'] . ' / ' . $membership['badge_name'];?></div>
     </div>
 <?php
     }

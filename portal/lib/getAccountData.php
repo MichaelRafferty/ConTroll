@@ -32,7 +32,11 @@ WITH pn AS (
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
     FROM newperson
 ), mems AS (
-    SELECT t.id, r.create_date, r.id as regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, m.label, m.memAge, m.memType, m.memCategory,
+    SELECT t.id, r.create_date, r.id as regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount,
+    CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
+            CASE WHEN tp.id IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
+
+    m.label, m.memAge, m.memType, m.memCategory,
         CASE 
             WHEN pn.memberId IS NOT NULL THEN pn.managedBy
             WHEN nn.memberId IS NOT NULL THEN nn.managedBy
@@ -60,37 +64,49 @@ WITH pn AS (
         END AS memberId
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
+    LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN pn ON pn.memberId = r.perid AND (pn.managedBy = ? OR pn.memberId = ?)
     LEFT OUTER JOIN nn ON nn.memberId = r.newperid
     WHERE status $statusCheck AND t.perid = ? AND t.conid = ?
     UNION
-    SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, m.label, m.memAge, m.memType, m.memCategory, nn.managedBy, nn.managedByNew, nn.badge_name, nn.fullname, nn.memberId    
+    SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, 
+        CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
+        CASE WHEN tp.id IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
+        m.label, m.memAge, m.memType, m.memCategory, nn.managedBy, nn.managedByNew, nn.badge_name, nn.fullname, nn.memberId
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
+    LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
     JOIN nn ON nn.memberId = r.newperid
     WHERE status $statusCheck AND t.perid = ? AND t.conid = ?
 )
 SELECT DISTINCT *
 FROM mems
-ORDER BY memberId, create_date
+ORDER BY sortTrans, create_date, memberId
 EOS;
         $membershipsR = dbSafeQuery($membershipsQ, 'iiiiii', array($personId, $personId, $personId, $conid,$personId, $conid));
     } else {
         $membershipsQ = <<<EOS
-SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, m.label, m.memAge, m.memType, m.memCategory, p.managedBy, p.managedByNew,
-    CASE 
-        WHEN p.badge_name IS NULL OR p.badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.last_name, '')) , '  *', ' ')) 
-        ELSE p.badge_name
-    END AS badge_name, p.id AS memberId,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname
-FROM transaction t
-JOIN reg r ON t.id = r.create_trans
-JOIN memLabel m ON m.id = r.memId
-JOIN newperson p ON p.id = r.newperid
-WHERE status $statusCheck AND t.newperid = ? AND t.conid = ?
-ORDER BY memberId ASC, create_date
+WITH mems AS (
+    SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, m.label, m.memAge, m.memType, m.memCategory, p.managedBy, p.managedByNew,
+        CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
+        CASE WHEN tp.id IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
+        CASE 
+            WHEN p.badge_name IS NULL OR p.badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.last_name, '')) , '  *', ' ')) 
+            ELSE p.badge_name
+        END AS badge_name, p.id AS memberId,
+        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname
+    FROM transaction t
+    JOIN reg r ON t.id = r.create_trans
+    LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
+    JOIN memLabel m ON m.id = r.memId
+    JOIN newperson p ON p.id = r.newperid
+    WHERE status $statusCheck AND t.newperid = ? AND t.conid = ?
+    )
+SELECT DISTINCT *
+FROM mems
+ORDER BY sortTrans, create_date, memberId
 EOS;
         $membershipsR = dbSafeQuery($membershipsQ, 'ii', array($personId, $conid));
     }

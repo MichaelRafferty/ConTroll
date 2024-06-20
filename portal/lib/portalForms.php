@@ -319,7 +319,7 @@ function drawVariablePriceModal() {
 }
 
 //// buttons on portal screen
-function drawManagedPerson($person, $memberships, $showInterests) {
+function drawManagedPerson($personId, $personType, $person, $memberships, $showInterests) {
     ?>
     <div class="row mt-1">
         <div class='col-sm-1' style='text-align: right;'><?php echo ($person['personType'] == 'n' ? 'Temp ' : '') . $person['id']; ?></div>
@@ -352,9 +352,32 @@ function drawManagedPerson($person, $memberships, $showInterests) {
 
            if ($membership['status'] == 'upgraded')
                 $disabled = ' disabled';
-?>
-        <div class="col-sm-3 ps-1 pe-1 m-0"><button class="btn btn-light border border-5 <?php echo $borderColor; ?>" style="width: 100%;" <?php echo $disabled; ?>><b><?php echo $membership['shortname'] . "</b> (" . $membership['status'] . ")<br/>" .
-            "<b>" . $membership['ageShort'] . "</b> (" . $membership['ageLabel'] . ')'; ?></button></div>
+
+           if ($membership['completePerid'] != NULL) {
+               $compareId = $membership['completePerid'];
+               $compareType = 'p';
+           } else if ($membership['completeNewperid'] != NULL) {
+               $compareId = $membership['completeNewperid'];
+               $compareType = 'n';
+           } else if ($membership['createPerid'] != NULL) {
+               $compareId = $membership['createPerid'];
+               $compareType = 'p';
+           } else if ($membership['createNewperid'] != NULL) {
+               $compareId = $membership['createNewperid'];
+               $compareType = 'n';
+           } else {
+               $compareId = '';
+               $compareType = '';
+           }
+           if ($compareId != $personId || $compareType != $personType) {
+               $row3 = '<br/>Purchased by ' . $membership['purchaserName'];
+           } else {
+               $row3 = '';
+           }
+           ?>
+        <div class="col-sm-3 ps-1 pe-1 m-0"><button class="btn btn-light border border-5 <?php echo $borderColor; ?>"
+            style="width: 100%;" <?php echo $disabled; ?>><b><?php echo $membership['shortname'] . "</b> (" . $membership['status'] . ")<br/>" .
+            "<b>" . $membership['ageShort'] . "</b> (" . $membership['ageLabel'] . ')' . $row3; ?></button></div>
 <?php
         }
     echo "</div>\n";
