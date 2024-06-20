@@ -343,7 +343,7 @@ function drawManagedPerson($person, $memberships, $showInterests) {
             else if ($membership['type'] == 'oneday')
                 $borderColor = 'border-warning';
             else if ($membership['type'] == 'full')
-                $borderColor = 'border-primary';
+                $borderColor = 'border-success';
             else if ($membership['category'] == 'addon' || $membership['category'] == 'donation')
                 $borderColor = 'border-dark';
 ?>
@@ -485,6 +485,8 @@ function draw_makePaymentModal() {
 function drawPaymentPlans($person, $paymentPlans) {
     $plans = $paymentPlans['plans'];
     $payorPlans = $paymentPlans['payorPlans'];
+
+    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 ?>
     <div class='row mb-1 align-items-end'>
         <div class="col-sm-1"><b>Status</b></div>
@@ -512,13 +514,13 @@ function drawPaymentPlans($person, $paymentPlans) {
             $nextPayDue = date_format(date_add(date_create($payorPlan['createDate']),
                 date_interval_create_from_date_string((($numPmts + 1) * $payorPlan['daysBetween']) - 1 . ' days')),
                 'Y-m-d');
-            $minAmt = $payorPlan['minPayment'] <= $payorPlan['balanceDue'] ? $payorPlan['minPayment'] : $payorPlan['balanceDue'];
+            $minAmt = $dolfmt->formatCurrency((float) $payorPlan['minPayment'] <= $payorPlan['balanceDue'] ? $payorPlan['minPayment'] : $payorPlan['balanceDue'], 'USD');
         } else {
             $numPmts = '0';
             $lastPaidDate = 'None';
             $nextPayDue = date_format(date_add(date_create($payorPlan['createDate']), date_interval_create_from_date_string($payorPlan['daysBetween'] - 1 . " days")),
             'Y-m-d');
-            $minAmt = $payorPlan['minPayment'];
+            $minAmt = $dolfmt->formatCurrency((float) $payorPlan['minPayment'], 'USD');
         }
         if ($payorPlan['status'] != 'active') {
             $nextPayDue = '';
@@ -530,14 +532,16 @@ function drawPaymentPlans($person, $paymentPlans) {
         }
         $dateCreated = date_format(date_create($payorPlan['createDate']), 'Y-m-d');
         $payByDate = date_format(date_create($plan['payByDate']), 'Y-m-d');
+        $balanceDue = $dolfmt->formatCurrency((float) $payorPlan['balanceDue'], 'USD');
+        $initialAmt = $dolfmt->formatCurrency((float) $payorPlan['initialAmt'], 'USD');
 ?>
         <div class="row">
             <div class="col-sm-1"><?php echo $col1;?></div>
             <div class="col-sm-1"><?php echo $plan['name'];?></div>
             <div class="col-sm-1"><?php echo $payorPlan['payType'];?></div>
-            <div class="col-sm-1" style='text-align: right;'><?php echo $payorPlan['initialAmt'];?></div>
+            <div class="col-sm-1" style='text-align: right;'><?php echo $initialAmt;?></div>
             <div class="col-sm-1" style='text-align: right;'><?php echo "$numPmts of " . $payorPlan['numPayments'];?></div>
-            <div class="col-sm-1" style='text-align: right;'><?php echo $payorPlan['balanceDue'];?></div>
+            <div class="col-sm-1" style='text-align: right;'><?php echo $balanceDue;?></div>
             <div class="col-sm-1"><?php echo $dateCreated;?></div>
             <div class="col-sm-1"><?php echo $payByDate;?></div>
             <div class="col-sm-1"><?php echo $lastPaidDate;?></div>
