@@ -24,7 +24,7 @@ INSERT INTO newperson (last_name, first_name, middle_name, suffix, email_addr, p
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 
-$parmtypes = 'ssssssssssssssss';
+$parmtypes = 'ssssssssssssssssi';
 $last_name = "";
 if (array_key_exists('lname', $_POST)) {
     $last_name = trim($_POST['lname']);
