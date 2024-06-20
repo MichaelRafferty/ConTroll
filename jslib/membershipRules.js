@@ -62,14 +62,14 @@ class MembershipRules {
     }
 
     findInCart(memId, mlist) {
-        if (mlist)
+        if (mlist == null)
             return null; // no list to search
 
-        for (var row in mlist) {x
+        for (var row in mlist) {
             var cartrow = mlist[row];
             if (memId != cartrow.memId)
                 continue;
-            if (this.#includeStatus.indexOf(mbrRow.status) == -1) {
+            if (this.#includeStatus.indexOf(cartrow.status) == -1) {
                 continue;
             }
             return cartrow;  // return matching entry
