@@ -84,7 +84,7 @@ WITH ppl AS (
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
         r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup, a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType
         FROM perinfo p
-        LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ?
+        LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
         LEFT OUTER JOIN memLabel m ON m.id = r.memId
         LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
         WHERE managedBy = ? AND p.id != p.managedBy
@@ -94,7 +94,7 @@ WITH ppl AS (
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
         r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup, a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType
         FROM newperson p    
-        LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ?
+        LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
         LEFT OUTER JOIN memLabel m ON m.id = r.memId
         LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
         WHERE managedBy = ? AND p.id != ? AND p.perid IS NULL
@@ -111,7 +111,7 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
     r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup, a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType
 FROM newperson p
-LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ?
+LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ?  AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
 LEFT OUTER JOIN memLabel m ON m.id = r.memId
 LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND a.conid = r.conid
 WHERE p.managedByNew = ? AND p.id != p.managedBy

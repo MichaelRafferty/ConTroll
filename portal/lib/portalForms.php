@@ -337,8 +337,11 @@ function drawManagedPerson($person, $memberships, $showInterests) {
     if ($memberships != null && count($memberships) > 0) {
         echo "<div class='row'>\n";
         foreach ($memberships as $membership) {
+            $disabled = '';
             $borderColor = '';
-            if ($membership['memAge'] == 'child' || $membership['memAge'] == 'kit')
+            if ($membership['category'] == 'yearahead')
+                $borderColor = 'border-muted';
+            else if ($membership['memAge'] == 'child' || $membership['memAge'] == 'kit')
                 $borderColor = 'border-danger';
             else if ($membership['type'] == 'oneday')
                 $borderColor = 'border-warning';
@@ -346,8 +349,11 @@ function drawManagedPerson($person, $memberships, $showInterests) {
                 $borderColor = 'border-success';
             else if ($membership['category'] == 'addon' || $membership['category'] == 'donation')
                 $borderColor = 'border-dark';
+
+           if ($membership['status'] == 'upgraded')
+                $disabled = ' disabled';
 ?>
-        <div class="col-sm-3 ps-1 pe-1 m-0"><button class="btn btn-light border border-5 <?php echo $borderColor; ?>" style="width: 100%;"><b><?php echo $membership['shortname'] . "</b> (" . $membership['status'] . ")<br/>" .
+        <div class="col-sm-3 ps-1 pe-1 m-0"><button class="btn btn-light border border-5 <?php echo $borderColor; ?>" style="width: 100%;" <?php echo $disabled; ?>><b><?php echo $membership['shortname'] . "</b> (" . $membership['status'] . ")<br/>" .
             "<b>" . $membership['ageShort'] . "</b> (" . $membership['ageLabel'] . ')'; ?></button></div>
 <?php
         }
