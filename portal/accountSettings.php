@@ -186,7 +186,6 @@ if ($personType == 'p') {
             <div class="col-sm-1"><b>Created</b></div>
             <div class="col-sm-1"><b>Last Used</b></div>
             <div class="col-sm-1"><b>Use Count</b></div>
-            <div class="col-sm-1"><b>Use Count</b></div>
         </div>
 <?php
         foreach ($identities as $identity) {

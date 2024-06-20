@@ -69,11 +69,6 @@ function draw_editPersonModal() {
                         </form>
                         <div class='row'>
                             <div class="col-sm-12" id='epMessageDiv'></div>
-                            <div class='row'>
-                                <div class='col-sm-12'>
-                                    Still need interests and perhaps to paginate this as it looks a bit long.
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -320,17 +315,33 @@ function drawVariablePriceModal() {
 
 //// buttons on portal screen
 function drawManagedPerson($personId, $personType, $person, $memberships, $showInterests) {
+    $badge_name = $person['badge_name'];
+    if ($badge_name == '') {
+        $badge_name = '<i>' . TRIM($person['first_name'] . ' ' . $person['last_name']) . '</i>';
+    }
+    $fn = '';
+    if ($person['first_name'] != '') {
+        $fn = $person['first_name'] . "'s ";
+    } else if ($person['last_name'] != '') {
+        $fn = $person['last_name'] . "'s ";
+    }
     ?>
     <div class="row mt-1">
         <div class='col-sm-1' style='text-align: right;'><?php echo ($person['personType'] == 'n' ? 'Temp ' : '') . $person['id']; ?></div>
         <div class='col-sm-4'><?php echo $person['fullname']; ?></div>
-        <div class="col-sm-2"><?php echo $person['badge_name']; ?></div>
-        <div class='col-sm-4 p-1'>
-            <button class='btn btn-sm, btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.editPerson(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">Edit Person</button>
+        <div class="col-sm-2"><?php echo $badge_name; ?></div>
+        <div class='col-sm-5 p-1'>
+            <button class='btn btn-sm, btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.editPerson(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">
+                Edit <?php echo $fn; ?>Profile
+            </button>
 <?php if ($showInterests) { ?>
-            <button class='btn btn-sm, btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.editInterests(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">Edit Interests</button>
+            <button class='btn btn-sm, btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.editInterests(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">
+                Edit <?php echo $fn; ?>Interests
+            </button>
 <?php } ?>
-            <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.addMembership(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">Add/Upgrade Memberships</button>
+            <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.addMembership(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">
+                Add/Upgrade Edit Memberships
+            </button>
         </div>
     </div>
     <?php
