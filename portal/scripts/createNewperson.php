@@ -13,6 +13,8 @@ $con = get_con();
 $conid=$con['id'];
 $conf = get_conf('con');
 $portal_conf = get_conf('portal');
+$log = get_conf('log');
+logInit($log['reg']);
 
 $response['conid'] = $conid;
 
@@ -83,14 +85,17 @@ if ($personId === false || $personId < 0) {
 $response['newPersonId'] = $personId;
 $response['message'] = "New person with Temporary ID $personId added";
 
+logWrite(array('con'=>$con['name'], 'action' => 'Create new person on login', 'person' => array('n', $personId), 'newperson' => $person ));
+
+
 if ($validationType == 'token') {
-$updSQL = <<<EOS
-UPDATE portalTokenLinks
-SET useCnt = 0, useCnt = 0, useIP = null, useTS = null
-WHERE email = ? AND useCnt = 1 AND TIMESTAMPDIFF(SECOND,createdTS,NOW()) < 3600;
-EOS;
-$num_upd = dbSafeCmd($updSQL, 's', array($valArray['email']));
-$response['valCleared'] = $num_upd;
+    $updSQL = <<<EOS
+    UPDATE portalTokenLinks
+    SET useCnt = 0, useCnt = 0, useIP = null, useTS = null
+    WHERE email = ? AND useCnt = 1 AND TIMESTAMPDIFF(SECOND,createdTS,NOW()) < 3600;
+    EOS;
+    $num_upd = dbSafeCmd($updSQL, 's', array($valArray['email']));
+    $response['valCleared'] = $num_upd;
 }
 
 ajaxSuccess($response);

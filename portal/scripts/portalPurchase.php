@@ -189,7 +189,6 @@ EOS;
 }
 
 $txnUpdate = 'UPDATE transaction SET ';
-$txnUpdate = 'UPDATE transaction SET ';
 if ($approved_amt == $amount) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }

@@ -12,6 +12,7 @@ $response = array('post' => $_POST, 'get' => $_GET);
 $con = get_con();
 $conid=$con['id'];
 $conf = get_conf('con');
+$log = get_conf('log');
 $portal_conf = get_conf('portal');
 
 $response['conid'] = $conid;
@@ -89,6 +90,8 @@ if (array_key_exists('personType', $person)) {
 }
 $newPerid = null;
 
+logInit($log['reg']);
+
 // first update the person so we can build a transaction and memberships
 $matchId = null;
 if ($personId < 0) {
@@ -114,7 +117,7 @@ WHERE
 		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.email_addr, ''))), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.phone, ''))), '  *', ' ')
-  AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
+    AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.badge_name, ''))), '  *', ' ')
     AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.legalName, ''))), '  *', ' ')
@@ -162,6 +165,7 @@ SET managedBy = ?, managedReason = 'Exact Match'
 WHERE id = ?;
 EOS;
             $upd = dbSafeCmd($updPQ, 'ii', array($loginId, $matchId));
+            logWrite(array('con'=>$con['name'], 'trans'=>$transId, 'action' => 'Exact Match for management', 'person' => $person, 'managedBy' => $loginId));
         }
     }
 
@@ -206,6 +210,7 @@ EOS;
         $response['message'] = "New person with Temporary ID $personId added";
         $newPerid = $personId;
         $personType = 'n';
+        logWrite(array('con'=>$con['name'], 'trans'=>$transId, 'action' => 'New managed person created', 'person' => $person, 'managedBy' => $loginId));
     }
 }
 
@@ -347,6 +352,7 @@ EOS;
         dbSafeCmd($uQ, 'ii', array($transId, $transId));
     }
     $response['message'] .= "<br/>$num_del Memberships Deleted, $num_ins Memberships Inserted";
+    logWrite(array('con'=>$con['name'], 'trans'=>$transId, 'action' => 'cart updated', 'cart' => $cart, 'updatedBy' => $loginId));
 }
 
 $newInterests = json_decode($_POST['newInterests'], true);
@@ -392,6 +398,8 @@ foreach ($existingInterests as $existing) {
             $int_upd++;
     }
 }
+logWrite(array('con'=>$con['name'], 'trans'=>$transId, 'action' => 'Interests added/updated', 'interests' => $existingInterests, 'person' => array($personType, $personId), 'updatedBy' => $loginId));
+
 
 $response['int_upd'] = $int_upd;
 
