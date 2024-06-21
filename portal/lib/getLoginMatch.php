@@ -9,7 +9,7 @@ function getLoginMatch($email, $id = null) {
 SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname, 'p' AS tablename
 FROM perinfo
-WHERE id = ? AND first_name != 'Merged' AND middle_name != 'into';
+WHERE id = ? AND IFNULL(first_name,'') != 'Merged' AND IFNULL(middle_name,'') != 'into';
 EOS;
         $regcountR = dbSafeQuery($regcountQ, 'i', array($email));
     } else if ($id != NULL) {
@@ -26,7 +26,7 @@ EOS;
 SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname, 'p' AS tablename
 FROM perinfo
-WHERE email_addr = ? AND first_name != 'Merged' AND middle_name != 'into'
+WHERE email_addr = ? AND IFNULL(first_name,'') != 'Merged' AND IFNULL(middle_name,'') != 'into'
 ORDER BY fullname;
 EOS;
         $regcountR = dbSafeQuery($regcountQ, 's', array($email));
