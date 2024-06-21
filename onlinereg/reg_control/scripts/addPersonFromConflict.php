@@ -36,6 +36,9 @@ $id = dbSafeInsert($newPersonQ, "ii", array($_POST['newID'], $_SESSION['user_id'
 $rows = dbSafeCmd("UPDATE newperson SET perid=?, updatedBy = ? WHERE id=?;", 'iii', array($id, $_SESSION['user_id'], $_POST['newID']));
 $rows = dbSafeCmd("UPDATE reg SET perid=? WHERE newperid=?;", 'ii', array($id, $_POST['newID']));
 $rows = dbSafeCmd("UPDATE transaction SET perid=? WHERE newperid=?;", 'ii', array($id, $_POST['newID']));
+$rows = dbSafeCmd("UPDATE exhibitors SET perid=? WHERE newperid=?;", 'ii', array($id, $_POST['newID']));
+$rows = dbSafeCmd("UPDATE memberInterests SET perid=? WHERE newperid=?;", 'ii', array($id, $_POST['newID']));
+$rows = dbSafeCmd("UPDATE payorPlans SET perid=? WHERE newperid=?;", 'ii', array($id, $_POST['newID']));
 
 $perQ = <<<EOQ
 SELECT banned, concat_ws(' ', first_name, middle_name, last_name) as full_name, email_addr
