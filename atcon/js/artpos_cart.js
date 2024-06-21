@@ -425,9 +425,9 @@ class artpos_cart {
             var keys = Object.keys(newrow);
             for (var keynum in keys) {
                 var key = keys[keynum];
-                this.#cart_art[newrow['rownum']][key] = newrow[key];
+                this.#cart_art[newrow['rowpos']][key] = newrow[key];
             }
-            this.#cart_art[newrow['rownum']]['dirty'] = false;
+            this.#cart_art[newrow['rowpos']]['dirty'] = false;
         }
 
 

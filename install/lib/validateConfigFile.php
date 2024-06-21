@@ -193,7 +193,7 @@ function validateConfigFile($options) : int {
 
         foreach ($required as $key => $help) {
             if (array_key_exists($key, $cfg)) {
-                if ($cfg[$key] === null || mb_strlen($cfg[$key] < 1)) {
+                if (($cfg[$key] === null) || (mb_strlen($cfg[$key]) < 1)) {
                     logEcho("$key cannot be empty, its $help");
                     $errors++;
                 }
