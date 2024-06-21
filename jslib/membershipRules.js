@@ -87,8 +87,8 @@ class MembershipRules {
 
         // first the implicit rules:
         // 1. Only one 'full' is allowed
-        if (mem.memType == 'full' && this.#numFull > 0 && mem.conid == this.#conid)
-            return false; // only one full membership is allowed
+        if (mem.memType == 'full' && mem.memCategory != 'upgrade' && this.#numFull > 0 && mem.conid == this.#conid)
+            return false; // only one full membership is allowed, unless it's an upgrade category one, let the fixed rules filter that issue
         if (mem.memType == 'full' && this.#numFullYearAhead > 0 && mem.conid != this.#conid)
             return false; // only one full membership for next year is allowed
 
