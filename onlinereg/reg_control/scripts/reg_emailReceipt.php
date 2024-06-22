@@ -36,6 +36,12 @@ if ($ajax_request_action != 'printReceipt') {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
+$con = get_conf('con');
+if (array_key_exists('currency', $con)) {
+    $currency = $con['currency'];
+} else {
+    $currency = 'USD';
+}
 
 // printReceipt: print the text receipt "text", if printer name starts with 0, then just log the receipt
 $header = $_POST['header'];
@@ -57,28 +63,28 @@ foreach ($prows as $prow) {
     $member_due = 0;
     foreach ($mrows as $mrow) {
         if ($mrow['perid'] == $prow['perid']) {
-            $receipt .= "   " . $mrow['label'] . ", " . $dolfmt->formatCurrency((float) $mrow['price'], 'USD') . "\n";
+            $receipt .= "   " . $mrow['label'] . ", " . $dolfmt->formatCurrency((float) $mrow['price'], $currency) . "\n";
             if (array_key_exists('prior_paid', $mrow))
                 $already_paid += $mrow['prior_paid'];
             $member_due += $mrow['price'];
         }
     }
     $member_due = round($member_due, 2);
-    $receipt .= "   Subtotal: " . $dolfmt->formatCurrency($member_due, 'USD') . "\n";
+    $receipt .= "   Subtotal: " . $dolfmt->formatCurrency($member_due, $currency) . "\n";
     $total_due += $member_due;
 }
-$receipt .= "Total Due:   " . $dolfmt->formatCurrency((float) $total_due, 'USD') . "\n\nPayment   Amount Description/Code\n";
+$receipt .= "Total Due:   " . $dolfmt->formatCurrency((float) $total_due, $currency) . "\n\nPayment   Amount Description/Code\n";
 $total_pmt = 0;
 if ($already_paid > 0) {
     $total_pmt += $already_paid;
-    $receipt .= sprintf("prior%15s Already Paid\n", $dolfmt->formatCurrency($already_paid, 'USD'));
+    $receipt .= sprintf("prior%15s Already Paid\n", $dolfmt->formatCurrency($already_paid, $currency));
 }
 
 foreach ($pmtrows as $pmtrow) {
     $type = $pmtrow['type'];
     $amtlen = 20 - mb_strlen($type);
 
-    $line = sprintf("%s%" . $amtlen . "s %s", $type, $dolfmt->formatCurrency($pmtrow['amt'], 'USD'), $pmtrow['desc']);
+    $line = sprintf("%s%" . $amtlen . "s %s", $type, $dolfmt->formatCurrency($pmtrow['amt'], $currency), $pmtrow['desc']);
     if ($type == 'check') {
         $line .= ' /' . $pmtrow['checkno'];
     }
@@ -91,7 +97,7 @@ foreach ($pmtrows as $pmtrow) {
 $endtext = "\n";
 if (array_key_exists('endtext', $con))
     $endtext = $con['endtext'] . "\n";
-$receipt .= "         ----------\n" . sprintf("total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, 'USD')) . "\n$footer\n" . "\n" . $endtext . "\n\n\n";
+$receipt .= "         ----------\n" . sprintf("total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, $currency)) . "\n$footer\n" . "\n" . $endtext . "\n\n\n";
 
 if (!array_key_exists('email_addrs', $_POST)) {
     $response['error'] = "No email recipeints specified";

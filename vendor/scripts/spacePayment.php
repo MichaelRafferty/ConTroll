@@ -20,6 +20,12 @@ $conf = get_conf('con');
 $vendor_conf = get_conf('vendor');
 
 $response['conid'] = $conid;
+$con = get_conf('con');
+if (array_key_exists('currency', $con)) {
+    $currency = $con['currency'];
+} else {
+    $currency = 'USD';
+}
 
 $ccauth = get_conf('cc');
 load_cc_procs();
@@ -449,7 +455,7 @@ $txnid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
 if ($txnid == false) {
     $error_msg .= "Insert of payment failed\n";
 } else {
-    $status_msg .= "Payment for " . $dolfmt->formatCurrency($rtn['amount'], 'USD') . " processed<br/>\n";
+    $status_msg .= "Payment for " . $dolfmt->formatCurrency($rtn['amount'], $currency) . " processed<br/>\n";
 }
 $approved_amt = $rtn['amount'];
 $results['approved_amt'] = $approved_amt;

@@ -258,6 +258,12 @@ if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclai
 
 // exhibitor_showInvoice -> show the current request and the change/cancel button
 function exhibitor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList, $region, $info) {
+    $con = get_conf('con');
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
@@ -271,17 +277,17 @@ function exhibitor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhib
                 $date = $spaceItem['time_approved'];
                 $date = date_create($date);
                 $date = date_format($date, 'F j, Y') . ' at ' . date_format($date, 'g:i A');
-                echo $spaceItem['approved_description'] . ' in ' . $spaceItem['regionName'] . ' for ' . $dolfmt->formatCurrency($spaceItem['approved_price'], 'USD') .
+                echo $spaceItem['approved_description'] . ' in ' . $spaceItem['regionName'] . ' for ' . $dolfmt->formatCurrency($spaceItem['approved_price'], $currency) .
                     " at $date<br/>\n";
                 $totalPrice += $spaceItem['approved_price'];
             }
         }
     }
     if ($info['mailin'] == 'Y' && $region['mailinFee'] > 0) {
-        echo "Mail in Fee of " . $dolfmt->formatCurrency($region['mailinFee'], 'USD') . "<br/>\n";
+        echo "Mail in Fee of " . $dolfmt->formatCurrency($region['mailinFee'], $currency) . "<br/>\n";
         $totalPrice += $region['mailinFee'];
     }
-    echo "__________________________________________________________<br/>\nTotal price for $regionName spaces " . $dolfmt->formatCurrency($totalPrice, 'USD') . "<br/>\n";
+    echo "__________________________________________________________<br/>\nTotal price for $regionName spaces " . $dolfmt->formatCurrency($totalPrice, $currency) . "<br/>\n";
     echo "<button class='btn btn-primary' onclick='openInvoice($regionYearId);'>Pay $regionName Invoice</button>";
 
 }
@@ -289,6 +295,12 @@ function exhibitor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhib
 
 // draw the paid for status block
 function vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList) {
+    $con = get_conf('con');
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
@@ -302,12 +314,12 @@ function vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpa
                 $date = $spaceItem['time_purchased'];
                 $date = date_create($date);
                 $date = date_format($date, 'F j, Y') . ' at ' . date_format($date, 'g:i A');
-                echo $spaceItem['purchased_description'] . ' in ' . $spaceItem['regionName'] . ' for ' . $dolfmt->formatCurrency($spaceItem['purchased_price'], 'USD') .
+                echo $spaceItem['purchased_description'] . ' in ' . $spaceItem['regionName'] . ' for ' . $dolfmt->formatCurrency($spaceItem['purchased_price'], $currency) .
                     " at $date<br/>\n";
                 $totalPrice += $spaceItem['purchased_price'];
             }
         }
     }
-    echo "__________________________________________________________<br/>\nTotal price for $regionName spaces " . $dolfmt->formatCurrency($totalPrice, 'USD') . "<br/>\n";
+    echo "__________________________________________________________<br/>\nTotal price for $regionName spaces " . $dolfmt->formatCurrency($totalPrice, $currency) . "<br/>\n";
     echo "<button class='btn btn-primary m-1' onclick='exhibitorReceipt.showReceipt($regionYearId);'>Show receipt for $regionName space</button>";
 }

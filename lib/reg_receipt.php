@@ -282,6 +282,12 @@ EOS;
 
 // reg_format_receipt - format a receipt in HTML and Text formats
 function reg_format_receipt($data) {
+    $con = get_conf('con');
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
     // ok, now there is all the data for the receipt
@@ -472,7 +478,7 @@ EOS;
             $spaceDesc = $space['purchased_description'];
             $spaceName = $space['name'];
             $total += $space['purchased_price'];
-            $spacePrice = $dolfmt->formatCurrency((float) $space['purchased_price'], 'USD');
+            $spacePrice = $dolfmt->formatCurrency((float) $space['purchased_price'], '$currency');
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-1"></div>
@@ -486,7 +492,7 @@ EOS;
 
         if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
             $total += $region['mailinFee'];
-            $fee = $dolfmt->formatCurrency((float) $region['mailinFee'], 'USD');
+            $fee = $dolfmt->formatCurrency((float) $region['mailinFee'], '$currency');
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-1"></div>
@@ -500,7 +506,7 @@ EOS;
     }
 
     // now the total due
-    $price = $dolfmt->formatCurrency((float) $total, 'USD');
+    $price = $dolfmt->formatCurrency((float) $total, '$currency');
     $receipt .= "\nTotal Due:: $price\n";
     $receipt_html .= <<<EOS
     <div class="row mt-2">
@@ -562,7 +568,7 @@ EOS;
             $id = $coupon['id'];
             $discount =  sum_coupon_discount($id, $data['memberships']);
             $payment_total += $discount;
-            $discount = $dolfmt->formatCurrency((float) $discount, 'USD');
+            $discount = $dolfmt->formatCurrency((float) $discount, '$currency');
             $receipt .= "Coupon: $name ($code): $discount\n";
             $receipt_html .= <<<EOS
     <div class='row'>
@@ -595,7 +601,7 @@ EOS;
         $url = $pmt['receipt_url'];
 
         $payment_total += $amt;
-        $amt = $dolfmt->formatCurrency((float)$amt, 'USD');
+        $amt = $dolfmt->formatCurrency((float)$amt, '$currency');
 
         if ($aprvl != '' && $cc != '')
             $aprvl = " (last 4: $cc, auth: $aprvl)";
@@ -632,7 +638,7 @@ EOS;
     }
 
     if ($payment_total > 0) {
-        $payment_total = $dolfmt->formatCurrency((float) $payment_total, 'USD');
+        $payment_total = $dolfmt->formatCurrency((float) $payment_total, '$currency');
         $receipt .= "\nTotal Payments: $payment_total\n";
         $receipt_html .= <<<EOS
     <div class='row'>
@@ -717,6 +723,12 @@ function sum_coupon_discount($id, $memberships) {
 
 // format a member block for the receipt
 function reg_format_mbr($data, $person, $list, &$receipt, &$receipt_html, &$receipt_tables) {
+    $con = get_conf('con');
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
     // first the name:
@@ -746,7 +758,7 @@ EOS;
     $subtotal = 0;
     // loop over their memberships
     foreach ($list AS $row) {
-        $price = $dolfmt->formatCurrency((float) $row['price'], 'USD');
+        $price = $dolfmt->formatCurrency((float) $row['price'], '$currency');
         $label = $row['label'];
         $id = $row['id'];
         $receipt .= "$id, $label: $price\n";
@@ -763,7 +775,7 @@ EOS;
 
         $subtotal += $row['price'];
     }
-    $price = $dolfmt->formatCurrency((float) $subtotal, 'USD');
+    $price = $dolfmt->formatCurrency((float) $subtotal, '$currency');
     $receipt .= "     Subtotal: $price\n";
     $receipt_html .= <<<EOS
     <div class="row">

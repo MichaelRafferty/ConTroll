@@ -523,6 +523,13 @@ function draw_makePaymentModal() {
 //// payment plan items
 // drawPaymentPlans - show the status of the payment plans for this account
 function drawPaymentPlans($person, $paymentPlans) {
+    $con = get_conf('con');
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
+
     $plans = $paymentPlans['plans'];
     $payorPlans = $paymentPlans['payorPlans'];
 
@@ -554,13 +561,13 @@ function drawPaymentPlans($person, $paymentPlans) {
             $nextPayDue = date_format(date_add(date_create($payorPlan['createDate']),
                 date_interval_create_from_date_string((($numPmts + 1) * $payorPlan['daysBetween']) - 1 . ' days')),
                 'Y-m-d');
-            $minAmt = $dolfmt->formatCurrency((float) $payorPlan['minPayment'] <= $payorPlan['balanceDue'] ? $payorPlan['minPayment'] : $payorPlan['balanceDue'], 'USD');
+            $minAmt = $dolfmt->formatCurrency((float) $payorPlan['minPayment'] <= $payorPlan['balanceDue'] ? $payorPlan['minPayment'] : $payorPlan['balanceDue'], $currency);
         } else {
             $numPmts = '0';
             $lastPaidDate = 'None';
             $nextPayDue = date_format(date_add(date_create($payorPlan['createDate']), date_interval_create_from_date_string($payorPlan['daysBetween'] - 1 . " days")),
             'Y-m-d');
-            $minAmt = $dolfmt->formatCurrency((float) $payorPlan['minPayment'], 'USD');
+            $minAmt = $dolfmt->formatCurrency((float) $payorPlan['minPayment'], $currency);
         }
         if ($payorPlan['status'] != 'active') {
             $nextPayDue = '';
@@ -572,8 +579,8 @@ function drawPaymentPlans($person, $paymentPlans) {
         }
         $dateCreated = date_format(date_create($payorPlan['createDate']), 'Y-m-d');
         $payByDate = date_format(date_create($plan['payByDate']), 'Y-m-d');
-        $balanceDue = $dolfmt->formatCurrency((float) $payorPlan['balanceDue'], 'USD');
-        $initialAmt = $dolfmt->formatCurrency((float) $payorPlan['initialAmt'], 'USD');
+        $balanceDue = $dolfmt->formatCurrency((float) $payorPlan['balanceDue'], $currency);
+        $initialAmt = $dolfmt->formatCurrency((float) $payorPlan['initialAmt'], $currency);
 ?>
         <div class="row">
             <div class="col-sm-1"><?php echo $col1;?></div>

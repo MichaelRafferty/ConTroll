@@ -24,6 +24,13 @@ $conid = $con['id'];
 $region = $_POST['region'];
 $regionId = $_POST['regionId'];
 
+$con = get_conf('con');
+if (array_key_exists('currency', $con)) {
+    $currency = $con['currency'];
+} else {
+    $currency = 'USD';
+}
+
 $exhibitorQ = <<<EOS
 SELECT e.id as exhibitorId, perid, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, publicity, 
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, archived,
@@ -210,7 +217,7 @@ while ($price = $priceR->fetch_assoc()) {
         $currentSpaceId = $price['spaceId'];
         $prices = '';
     }
-    $prices .= "<option value='" . $price['id'] . "'>(" . $price['units'] . ' units) ' . $price['description'] . ' for ' . $dolfmt->formatCurrency($price['price'], 'USD') . "</option>\n";
+    $prices .= "<option value='" . $price['id'] . "'>(" . $price['units'] . ' units) ' . $price['description'] . ' for ' . $dolfmt->formatCurrency($price['price'], $currency) . "</option>\n";
 }
 if ($prices != '')
     $price_list[$currentSpaceId] = $prices;

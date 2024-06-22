@@ -26,6 +26,13 @@ if (array_key_exists('id', $_SESSION) && array_key_exists('idType', $_SESSION)) 
     exit();
 }
 
+    $con = get_conf('con');
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
+
 $transid = null;
 if (array_key_exists('transId', $_SESSION)) {
     $transid = $_SESSION['transId'];
@@ -76,8 +83,8 @@ $holderMembership = [];
 if ($holderRegR != false && $holderRegR->num_rows > 0) {
     while ($m = $holderRegR->fetch_assoc()) {
         if ($m['memType'] == 'donation') {
-            $label = $dolfmt->formatCurrency((float) $m['actPrice'], 'USD') . ' ' . m['label'];
-            $shortname = $dolfmt->formatCurrency((float) $m['actPrice'], 'USD') . ' ' . $m['shortname'];
+            $label = $dolfmt->formatCurrency((float) $m['actPrice'], $currency) . ' ' . $m['label'];
+            $shortname = $dolfmt->formatCurrency((float) $m['actPrice'], $currency) . ' ' . $m['shortname'];
         } else {
             $label = $m['label'];
             $shortname = $m['shortname'];
@@ -258,8 +265,8 @@ foreach ($managed as $m) {
     }
     if ($m['memId'] != null) {
         if ($m['memType'] == 'donation') {
-            $label = $dolfmt->formatCurrency((float) $m['actPrice'], 'USD') . ' ' . $m['label'];
-            $shortname = $dolfmt->formatCurrency((float) $m['actPrice'], 'USD') . ' ' . $m['shortname'];
+            $label = $dolfmt->formatCurrency((float) $m['actPrice'], $currency) . ' ' . $m['label'];
+            $shortname = $dolfmt->formatCurrency((float) $m['actPrice'], $currency) . ' ' . $m['shortname'];
         } else {
             $label = $m['label'];
             $shortname = $m['shortname'];
@@ -285,7 +292,7 @@ foreach ($memberships as $membership) {
 }
 $payHtml = '';
 if ($totalDue > 0) {
-    $totalDueFormatted = 'Total due: ' . $dolfmt->formatCurrency((float) $totalDue, 'USD');
+    $totalDueFormatted = 'Total due: ' . $dolfmt->formatCurrency((float) $totalDue, $currency);
     $payHtml = " $totalDueFormatted   " . '<button class="btn btn-sm btn-primary pt-1 pb-1" id="payBalanceTopBTN" onclick="portal.payBalance(' . $totalDue . ');">Pay Balance</button>';
     $_SESSION['totalDue'] = $totalDue; // used for validation in payment side
 }
@@ -352,7 +359,7 @@ if (count($memberships) > 0) {
         }
         if ($membership['status'] == 'unpaid') {
             $due = round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
-            $status = 'Balance due: ' . $dolfmt->formatCurrency((float) $due, 'USD');
+            $status = 'Balance due: ' . $dolfmt->formatCurrency((float) $due, $currency);
         }
         else {
             $status = $membership['status'];
