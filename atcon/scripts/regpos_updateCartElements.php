@@ -157,7 +157,7 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         if ($new_perid === false) {
             $error_message .= "Insert of person $row failed<BR/>";
         } else {
-            $updated_perinfo[] = array('rownum' => $row, 'perid' => $new_perid);
+            $updated_perinfo[] = array('rowpos' => $row, 'perid' => $new_perid);
             $cart_perinfo_map[$new_perid] = $row;
             $update_permap[$cartrow['perid']] = $new_perid;
             $cart_perinfo[$row]['perid'] = $new_perid;
@@ -248,7 +248,7 @@ for ($row = 0; $row < sizeof($cart_membership); $row++) {
         if ($new_regid === false) {
             $error_message .= "Insert of membership $row failed<BR/>";
         }
-        $updated_membership[] = array('rownum' => $row, 'perid' => $cartrow['perid'], 'create_trans' => $master_perid, 'id' => $new_regid);
+        $updated_membership[] = array('rowpos' => $row, 'perid' => $cartrow['perid'], 'create_trans' => $master_perid, 'id' => $new_regid);
         $cartrow['regid'] = $new_regid;
         $cart_membership[$row]['regid'] = $new_regid;
         $reg_ins++;

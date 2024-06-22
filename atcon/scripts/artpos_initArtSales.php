@@ -136,7 +136,8 @@ for ($row = 0; $row < sizeof($cart_art); $row++) {
             if ($new_id === false) {
                 $error_message .= "Insert of artSales item for $row failed<BR/>";
             } else {
-                $updated_art[] = array('rownum' => $row, 'transid' => $pay_tid, 'artSalesId' => $new_id, 'artSalesStatus' => $cartrow['status'], 'perid' => $master_perid,
+                $updated_art[] = array('rowpos' => $row, 'transid' => $pay_tid, 'artSalesId' => $new_id, 'artSalesStatus' => $cartrow['status'], 'perid' =>
+                    $master_perid,
                     'amount' => $cartrow['display_price'], 'paid' => '0.00', 'quantity' => $cartrow['quantity']);
                 $artSales_ins++;
             }
