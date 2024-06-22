@@ -201,17 +201,24 @@ if ($amount > 0) {
     $regU = 'UPDATE reg SET paid=?, couponDiscount = ?, complete_trans = ?, status = ? WHERE id=?;';
     $balance = $approved_amt;
     // first all the out of plan ones
-    foreach ($memberships as $membership) {
+    for ($idx = 0; $idx < count($memberships); $idx++) {
+        $membership = $memberships[$idx];
         if (!$inPlan[$membership['regId']]) {
-            $paid_amt = $membership['price'] - ($membership['paid'] + $membership['couponDiscount']);
-            $balance -= $paid_amt;
-            $rows_upd += dbSafeCMD($regU, 'ddisi', array(
-                $membership['price'] - $membership['couponDiscount'],
-                $membership['couponDiscount'],
-                $transid,
-                'paid',
-                $membership['regId']
-            ));
+            $paid_amt = min($balance, $membership['price'] - ($membership['paid'] + $membership['couponDiscount']));
+            // only update those that were actually modified
+            if (($paid_amt > 0) || ($membership['price'] == 0  && $membership['complete_trans'] == null)) {
+                $rows_upd += dbSafeCMD($regU, 'ddisi', array (
+                    $membership['price'] - $membership['couponDiscount'],
+                    $membership['couponDiscount'],
+                    $paid_amt <= $balance ? $transid : null,
+                    $paid_amt <= $balance ? 'paid' : $membership['status'],
+                    $membership['regId']
+                ));
+                $balance -= $paid_amt;
+                $memberships[$idx]['modified'] = true;
+            }
+        } else {
+            $memberships[$idx]['modified'] = false;
         }
     }
     if ($balance > 0) {
@@ -229,7 +236,8 @@ if ($amount > 0) {
         if ($ratio > 0.990)
             $ratio = 1; // deal with rounding errors
         $applied = 0;
-        foreach ($memberships as $membership) {
+        for ($idx = 0; $idx < count($memberships); $idx++) {
+            $membership = $memberships[$idx];
             $applied++;
             if ($inPlan[$membership['regId']]) {
                 $due = $membership['price'] - ($membership['paid'] + $membership['couponDiscount']);
@@ -248,14 +256,15 @@ if ($amount > 0) {
                     $left < 0.01 ? 'paid' : 'plan',
                     $membership['regId']
                 ));
+                $memberships[$idx]['modified'] = true;
             }
         }
     }
 }
 if ($amount > 0) {
-    $body = getEmailBody($transid, $info, $memberships, $plan, $newplan, $planRec, $rtn['rid'], $rtn['url'], $amount);
+    $body = getEmailBody($transid, $info, $memberships, $planRec, $rtn['rid'], $rtn['url'], $amount);
 } else {
-    $body = getNoChargeEmailBody($results, $info, $plan, $newplan, $planRec, $memberships);
+    $body = getNoChargeEmailBody($results, $info, $memberships);
 }
 
 $regconfirmcc = null;

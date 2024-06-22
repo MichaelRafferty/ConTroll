@@ -1,5 +1,5 @@
 <?php
-function getEmailBody($transid, $owner, $memberships, $plan, $newplan, $planRec, $rid, $url, $amount): string {
+function getEmailBody($transid, $owner, $memberships, $planRec, $rid, $url, $amount): string {
     $condata = get_con();
     $ini = get_conf('reg');
     $con = get_conf('con');
@@ -30,18 +30,14 @@ function getEmailBody($transid, $owner, $memberships, $plan, $newplan, $planRec,
 
     $fullnames = [];
     foreach ($memberships as $membership) {
-        if ($membership['status'] == 'paid')
-            continue;
-        if ($newplan && $membership['status'] != 'unpaid')
-            continue;
-        if ($plan && !$newplan && $membership['status'] != 'plan')
-            continue;
+        // portalPurchase sets the modified flag to true on all regs changed by this payment, and false to all the others.
+        if ($membership['modified'] == true) {
+            if (array_key_exists($membership['fullname'], $fullnames))
+                continue;
+            $body .= '     * ' . $membership['fullname'] . ' (' . $membership['label'] . ")\n\n";
 
-        if (array_key_exists($membership['fullname'], $fullnames))
-            continue;
-        $body .= '     * ' . $membership['fullname'] . ' (' . $membership['label'] . ")\n\n";
-
-        $fullnames[$membership['fullname']] = 1;
+            $fullnames[$membership['fullname']] = 1;
+        }
     }
 
     if ($url != '') {
@@ -62,7 +58,7 @@ function getEmailBody($transid, $owner, $memberships, $plan, $newplan, $planRec,
     return $body;
 }
 
-function getNoChargeEmailBody($transid, $owner, $memberships, $plan, $newplan, $planRec): string {
+function getNoChargeEmailBody($transid, $owner, $memberships): string {
     $condata = get_con();
     $ini = get_conf('reg');
     $con = get_conf('con');
@@ -85,15 +81,16 @@ function getNoChargeEmailBody($transid, $owner, $memberships, $plan, $newplan, $
     $body .= "and as there is no charge for this transaction, this is your receipt.\n\n" .
         "\n\nThe following memberships were involved in this transaction:\n\n";
 
+    $fullnames = [];
     foreach ($memberships as $membership) {
-        if ($membership['status'] != 'paid')
-            continue;
-        if ($newplan && $membership['status'] != 'unpaid')
-            continue;
-        if ($plan && !$newplan && $membership['status'] != 'plan')
-            continue;
+        // portalPurchase sets the modified flag to true on all regs changed by this payment, and false to all the others.
+        if ($membership['modified'] == true) {
+            if (array_key_exists($membership['fullname'], $fullnames))
+                continue;
+            $body .= '     * ' . $membership['fullname'] . ' (' . $membership['label'] . ")\n\n";
 
-        $body .= '     * ' . $membership['fullname'] . ' (' . $membership['label'] . ")\n\n";
+            $fullnames[$membership['fullname']] = 1;
+        }
     }
 
     $body .= 'Please contact ' . $con['regemail'] . ' with any questions and we look forward to seeing you at ' . $condata['label'] . ".\n";

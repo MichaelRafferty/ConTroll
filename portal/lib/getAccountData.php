@@ -68,7 +68,7 @@ WITH pn AS (
     JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN pn ON pn.memberId = r.perid AND (pn.managedBy = ? OR pn.memberId = ?)
     LEFT OUTER JOIN nn ON nn.memberId = r.newperid
-    WHERE status $statusCheck AND t.perid = ? AND t.conid = ?
+    WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND t.perid = ? AND t.conid = ?
     UNION
     SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, 
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
@@ -79,7 +79,7 @@ WITH pn AS (
     LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
     JOIN nn ON nn.memberId = r.newperid
-    WHERE status $statusCheck AND t.perid = ? AND t.conid = ?
+    WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND t.perid = ? AND t.conid = ?
 )
 SELECT DISTINCT *
 FROM mems
@@ -102,7 +102,7 @@ WITH mems AS (
     LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
     JOIN newperson p ON p.id = r.newperid
-    WHERE status $statusCheck AND t.newperid = ? AND t.conid = ?
+    WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND t.newperid = ? AND t.conid = ?
     )
 SELECT DISTINCT *
 FROM mems
