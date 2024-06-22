@@ -116,7 +116,7 @@ $regQ = <<<EOS
 SELECT r.*
 FROM reg r
 JOIN transaction t ON (r.create_trans = t.id)
-WHERE r.complete_trans IS NULL AND r.perid IS NOT NULL AND r.conid in (?, ?) AND (IFNULL(r.paid, 0) = 0 AND IFNULL(r.price > 0)
+WHERE r.complete_trans IS NULL AND r.perid IS NOT NULL AND r.conid in (?, ?) AND (IFNULL(r.paid, 0) = 0 AND IFNULL(r.price, 0) > 0)
     AND IFNULL(r.paid, 0) + IFNULL(r.couponDiscount, 0) != IFNULL(r.price, 0)
     AND TIMESTAMPDIFF(SECOND,r.create_date,NOW()) > ? AND t.conid = ?;
 EOS;
