@@ -825,7 +825,7 @@ class Portal {
             okmsg: success,
             text: this.#receiptText.innerHTML,
             html: this.#receiptTables.innerHTML,
-            subject: this.#receiptDiv.innerHTML,
+            subject: this.#receiptTitle.innerHTML,
             success: success,
         };
         var _this = this;

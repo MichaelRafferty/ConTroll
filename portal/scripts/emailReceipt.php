@@ -51,19 +51,10 @@ if (array_key_exists('okmsg', $_POST)) {
 
 load_email_procs();
 $con = get_conf('con');
-$reg = get_conf('reg');
-if ($reg['test'] == 1 && $email != $con['regadminemail']) {
-    $send_email = $con['regadminemail'];
-    $send_subject = "Test email to $email for $subject";
-} else {
-    $send_email = $email;
-    $send_subject = $subject;
-}
+$response['email'] = $email;
+$response['subject'] = $subject;
 
-$response['email'] = $send_email;
-$response['subject'] = $send_subject;
-
-$return_arr = send_email($con['regadminemail'], trim($send_email), /* cc */ null, $send_subject, $text, $html);
+$return_arr = send_email($con['regadminemail'], trim($email), /* cc */ null, $subject, $text, $html);
 if ($return_arr['status'] == 'success') {
     $response['status'] = 'success';
     $response['message'] = $success;
