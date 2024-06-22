@@ -215,6 +215,7 @@ draw_editPersonModal();
 draw_editInterestsModal($interests);
 draw_paymentDueModal();
 draw_makePaymentModal();
+draw_recieptModal();
 if (count($paymentPlans) > 0) {
     draw_customizePlanModal('portal');
     draw_payPlanModal('portal');

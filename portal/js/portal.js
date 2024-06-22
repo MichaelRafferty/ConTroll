@@ -67,6 +67,15 @@ class Portal {
     #totalAmountDue = null;
     #paymentAmount = null;
 
+    // receipt fields
+    #receiptModal = null;
+    #receiptDiv = null;
+    #receiptTables = null;
+    #receiptText = null;
+    #receiptEmailBtn = null;
+    #receiptTitle = null;
+    #receiptEmailAddress = null;
+
     constructor() {
         var id;
         id = document.getElementById("editPersonModal");
@@ -127,6 +136,17 @@ class Portal {
             this.#makePaymentModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#makePaymentBody = document.getElementById("makePaymentBody");
             this.#makePaymentTitle = document.getElementById("makePaymentTitle");
+        }
+
+        id = document.getElementById("portalReceipt");
+        if (id) {
+            this.#receiptModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#receiptDiv = document.getElementById('portalReceipt-div');
+            this.#receiptTables = document.getElementById('portalReceipt-tables');
+            this.#receiptText = document.getElementById('portalReceipt-text');
+            this.#receiptEmailBtn = document.getElementById('portalEmailReceipt');
+            this.#receiptTitle = document.getElementById('portalReceiptTitle');
+
         }
     }
 
@@ -746,7 +766,93 @@ class Portal {
     transReceipt(receiptTransId) {
         console.log("trying to display receipt for transaction id " + receiptTransId);
     }
+
+    // fetch a receipt by transaction number
+    transReceipt(transId) {
+        this.#receiptEmailAddress = null;
+        clear_message();
+        var script = 'scripts/getReceipt.php';
+        var data = {
+            action: 'portalReceipt',
+            transId: transId,
+        }
+        $.ajax({
+            url: script,
+            data: data,
+            method: 'POST',
+            success: function (data, textStatus, jqXhr) {
+                portal.showReceipt(data);
+                return true;
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showAjaxError(jqXHR, textStatus, errorThrown);
+                return false;
+            },
+        });
+    }
+
+    showReceipt(data) {
+        if (data['message']) {
+            show_message(data['message'], 'error');
+            return;
+        }
+        if (data['data']) {
+            show_message(data['data'], 'error');
+            return;
+        }
+
+        clear_message();
+        var receipt = data['receipt'];
+        this.#receiptDiv.innerHTML = receipt['receipt_html'];
+        this.#receiptTables.innerHTML = receipt['receipt_tables'];
+        this.#receiptText.innerHTML = receipt['receipt'];
+        this.#receiptEmailAddress = receipt['payor_email'];
+        this.#receiptEmailBtn.innerHTML = "Email Receipt to " + receipt['payor_name'] + ' at ' + this.#receiptEmailAddress;
+        this.#receiptTitle.innerHTML = "Registration Receipt for " + receipt['payor_name'];
+        this.#receiptModal.show();
+    }
+
+    emailReceipt(addrchoice) {
+        var success='';
+        if (this.#receiptEmailAddress == null)
+            return;
+
+        if (success == '')
+            success = this.#receiptEmailBtn.innerHTML.replace("Email Receipt to", "Receipt sent to");
+
+        var data = {
+            email: this.#receiptEmailAddress,
+            okmsg: success,
+            text: this.#receiptText.innerHTML,
+            html: this.#receiptTables.innerHTML,
+            subject: this.#receiptDiv.innerHTML,
+            success: success,
+        };
+        var _this = this;
+        $.ajax({
+            method: "POST",
+            url: "scripts/emailReceipt.php",
+            data: data,
+            success: function (data, textstatus, jqxhr) {
+                if (data['status'] == 'error') {
+                    show_message(data['message'], 'error');
+                    return;
+                }
+                if (data['status'] == 'success') {
+                    show_message(data['message'], 'success');
+                }
+                if (data['status'] == 'warn') {
+                    show_message(data['message'], 'warn');
+                }
+                _this.#receiptModal.hide();
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showAjaxError(jqXHR, textStatus, errorThrown);
+            }
+        });
+    }
 }
+
 
 function makePurchase(token, label) {
     portal.makePurchase(token, label);

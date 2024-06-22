@@ -182,52 +182,16 @@ EOS;
     }
 
     $response['payor'] = $payorL;
-
-    //// get memberships referenced by this transaction
-    ///     can be directly via create_trans or complete_trans (memPeople)
-    ///     or indirectly via people referenced in this transaction and their reg transactions
-
-    $withTrans = <<<EOS
-WITH directReg AS (
-    SELECT DISTINCT perid, newperid
-    FROM reg
-    WHERE conid = ? AND (create_trans = ? OR complete_trans = ?)
-), indirectReg AS (
-    SELECT DISTINCT r.id
-    FROM reg r
-    JOIN directReg dr ON (dr.perid = r.perid OR dr.newperid = r.newperid)
-    WHERE r.conid = ?
-), transReg AS (
-    SELECT DISTINCT id
-    FROM indirectReg
-), allTrans AS (
-    SELECT DISTINCT create_trans AS transid
-    FROM reg r
-    JOIN transReg tr ON (tr.id = r.id)
-    WHERE r.conid = ?
-    UNION SELECT DISTINCT complete_trans AS transid
-    FROM reg r
-    JOIN transReg tr ON (tr.id = r.id)
-    WHERE r.conid = ?
-)
-EOS;
-
     $memSQL = <<<EOS
-$withTrans, allReg AS (
-    SELECT DISTINCT r.id
-    FROM reg r
-    JOIN allTrans t ON (r.create_trans = t.transid OR r.complete_trans = t.transid)
-    WHERE r.conid = ?
-)
 SELECT CASE WHEN r.perid IS NOT NULL THEN CONCAT('p-', r.perid) ELSE CONCAT('n-', r.newperid) END AS pid, r.*,
     m.label, m.shortname, m.memCategory, m.memType, m.memAge, m.price AS fullprice
 FROM reg r
-JOIN allReg al ON (r.id = al.id)
 JOIN memLabel m ON (r.memId = m.id)
-ORDER BY 1,2
+WHERE r.create_trans = ? OR r.complete_trans = ?
+ORDER BY 1,2;
 EOS;
 
-    $memR = dbSafeQuery($memSQL, 'iiiiiii', array($conid, $transid, $transid, $conid, $conid, $conid, $conid));
+    $memR = dbSafeQuery($memSQL, 'ii', array($transid, $transid));
     $memberships = [];
     while ($memL = $memR->fetch_assoc()) {
         $memberships[$memL['pid']][] = $memL;
@@ -236,15 +200,7 @@ EOS;
 
     //// now all the people mentioned in those memberships
     $peopleSQL = <<<EOS
-$withTrans, allReg AS (
-    SELECT DISTINCT r.id, r.perid, r.newperid
-    FROM reg r
-    JOIN memLabel m ON (r.memId = m.id)
-    JOIN allTrans t ON (r.create_trans = t.transid OR r.complete_trans = t.transid)
-    WHERE r.conid = ?
-)
-SELECT DISTINCT
-    CASE WHEN r.perid IS NOT NULL THEN CONCAT('p-', p.id) ELSE CONCAT('n-', n.id) END AS pid,
+SELECT DISTINCT CASE WHEN r.perid IS NOT NULL THEN CONCAT('p-', p.id) ELSE CONCAT('n-', n.id) END AS pid,
     r.perid, r.newperid,
     CASE WHEN r.perid IS NOT NULL THEN p.first_name ELSE n.first_name END AS first_name,
     CASE WHEN r.perid IS NOT NULL THEN p.last_name ELSE n.last_name END AS last_name,
@@ -252,13 +208,15 @@ SELECT DISTINCT
     CASE WHEN r.perid IS NOT NULL THEN p.suffix ELSE n.suffix END AS suffix,
     CASE WHEN r.perid IS NOT NULL THEN p.badge_name ELSE n.badge_name END AS badge_name,
     CASE WHEN r.perid IS NOT NULL THEN p.email_addr ELSE n.email_addr END AS email_addr
-FROM allReg r
+FROM reg r
 LEFT OUTER JOIN perinfo p ON (r.perid = p.id)
 LEFT OUTER JOIN newperson n ON (r.newperid = n.id)
+WHERE r.create_trans = ? OR r.complete_trans = ?
 ORDER BY 1
 EOS;
-    $peopleR = dbSafeQuery($peopleSQL, 'iiiiiii', array($conid, $transid, $transid, $conid, $conid, $conid, $conid));
+    $peopleR = dbSafeQuery($peopleSQL, 'ii', array($transid, $transid));
     $people = [];
+    $people[$payorL['pid']] = $payorL;
     while ($peopleL = $peopleR->fetch_assoc()) {
         $people[$peopleL['pid']] = $peopleL;
         if (!in_array($peopleL['email_addr'], $emails))
@@ -277,13 +235,13 @@ EOS;
         $payR = dbSafeQuery($paySQL, 'i', array($transid));
     } else {
         $paySQL = <<<EOS
-$withTrans
-SELECT p.*
-FROM payments p
-JOIN allTrans t ON (p.transid = t.transid)
+SELECT DISTINCT p.*
+FROM reg r
+JOIN payments p ON (r.create_trans = p.transid OR r.complete_trans = p.transid)
+WHERE r.create_trans = ? OR r.complete_trans = ?
 ORDER BY id;
 EOS;
-        $payR = dbSafeQuery($paySQL, 'iiiiii', array($conid, $transid, $transid, $conid, $conid, $conid));
+        $payR = dbSafeQuery($paySQL, 'ii', array($transid, $transid));
     }
     $payments = [];
     while ($payL = $payR->fetch_assoc()) {
@@ -293,16 +251,15 @@ EOS;
 
     // next, get all coupons used
     $couponSQL = <<<EOS
-    $withTrans
     SELECT DISTINCT c.*
-    FROM allTrans at
-    JOIN transaction t ON (t.id = at.transid)
+    FROM reg r
+    JOIN transaction t ON (t.id = r.id)
     JOIN coupon c ON (t.coupon = c.id)
-    WHERE t.coupon IS NOT NULL
+    WHERE r.create_trans = ? OR r.complete_trans = ? AND t.coupon IS NOT NULL 
     ORDER BY id;
 EOS;
 
-    $couponR = dbSafeQuery($couponSQL, 'iiiiii', array($conid, $transid, $transid, $conid, $conid, $conid));
+    $couponR = dbSafeQuery($couponSQL, 'ii', array($transid, $transid, ));
     $coupons = [];
     while ($couponL = $couponR->fetch_assoc()) {
         $coupons[] = $couponL;
@@ -462,15 +419,19 @@ EOS;
     $total = 0;
     $payor_pid = $payor['pid'];
     if (substr($payor_pid, 0, 1) != 'e') {
-        $list = $data['memberships'][$payor_pid];
-        $subtotal = reg_format_mbr($data, $data['people'][$payor_pid], $list, $receipt, $receipt_html, $receipt_tables);
-        $total += $subtotal;
+        foreach ($data['memberships'] as $pid => $list) {
+            if ($payor_pid == $pid) {
+                $list = $data['memberships'][$payor_pid];
+                $subtotal = reg_format_mbr($data, $data['people'][$payor_pid], $list, $receipt, $receipt_html, $receipt_tables);
+                $total += $subtotal;
+            }
+        }
     }
 
     // now all but the payor
     foreach ($data['memberships'] as $pid => $list) {
         if ($payor_pid == $pid)
-            continue;
+        continue;
 
         $subtotal = reg_format_mbr($data, $data['people'][$pid], $list, $receipt, $receipt_html, $receipt_tables);
         $total += $subtotal;
