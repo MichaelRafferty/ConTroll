@@ -15,8 +15,6 @@ $debug = get_conf('debug');
 $ini = get_conf('reg');
 $condata = get_con();
 
-$in_session = false;
-
 // encrypt/decrypt stuff (maybe needed?)
 $cipherInfo = getLoginCipher();
 
@@ -24,27 +22,60 @@ $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['debug'] = $debug['portal'];
 $config_vars['uri'] = $portal_conf['portalsite'];
+$loginId = null;
+$loginType = null;
 
-index_page_init($condata['label'] . " Membership Portal");
+if (isset($_SESSION['id'])) {
+// in session, is it a logout?
+    if (isset($_REQUEST['logout'])) {
+        unset($_SESSION['id']);
+        unset($_SESSION['idType']);
+        unset($_SESSION['idSource']);
+        unset($_SESSION['transId']);
+        unset($_SESSION['totalDue']);
+        header('location:' . $portal_conf['portalsite']);
+        exit();
+    }
+    // nope, just set the vendor id
+    $loginType = $_SESSION['idType'];
+    $loginId = $_SESSION['id'];
+    if (isset($_GET['vid'])) {
+        // we are logged in and took a vid link, if it decodes, log out and reload the page to reprocess the link
+        $match = openssl_decrypt($_GET['vid'], $cipherInfo['cipher'], $cipherInfo['key'], 0, $cipherInfo['iv']);
+        $match = json_decode($match, true);
+        if ($match != null) { // vid decodes, log us out
+            unset($_SESSION['id']);
+            unset($_SESSION['idType']);
+            unset($_SESSION['idSource']);
+            unset($_SESSION['transId']);
+            unset($_SESSION['totalDue']);
+            header("Location: http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]");
+            exit();
+        }
+    }
+}
+
+index_page_init($condata['label'] . ' Membership Portal');
 ?>
 <body id="membershipPortalBody">
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-12 p-0">
             <?php
-if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') {
-    if (array_key_exists('logoalt', $ini)) {
-        $altstring = $ini['logoalt'];
-    } else {
-        $altstring = 'Logo';
-    } ?>
-                <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring; ?>"/>
-<?php
-}
-if (array_key_exists('logotext', $ini) && $ini['logotext'] != '') {
-    echo $ini['logotext'];
-}
-?>
+                if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') {
+                    if (array_key_exists('logoalt', $ini)) {
+                        $altstring = $ini['logoalt'];
+                    }
+                    else {
+                        $altstring = 'Logo';
+                    } ?>
+                    <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring; ?>"/>
+                    <?php
+                }
+                if (array_key_exists('logotext', $ini) && $ini['logotext'] != '') {
+                    echo $ini['logotext'];
+                }
+            ?>
         </div>
     </div>
     <div class="row">
@@ -53,15 +84,16 @@ if (array_key_exists('logotext', $ini) && $ini['logotext'] != '') {
         </div>
     </div>
     <?php
-if ($portal_conf['open'] == 0) { ?>
-    <p class='text-primary'>The membership portal is currently closed. Please check the website to determine when it will open or try again tomorrow.</p>
-<?php
-    exit;
-}
-?>
+        if ($portal_conf['open'] == 0) { ?>
+            <p class='text-primary'>The membership portal is currently closed. Please check the website to determine when it will open or try again
+                tomorrow.</p>
+            <?php
+            exit;
+        }
+    ?>
     <div class="row p-1">
         <div class="col-sm-auto">
-            Welcome to the <?php echo $con['label']; ?>  Membership Portal.
+            Welcome to the <?php echo $con['label']; ?> Membership Portal.
         </div>
     </div>
     <div class="row p-1">
@@ -69,37 +101,25 @@ if ($portal_conf['open'] == 0) { ?>
             From here you can create and manage your membership account.
         </div>
     </div>
-<?php
-if ($portal_conf['test'] == 1) {
-?>
-    <div class="row">
-        <div class="col-sm-12">
-            <h2 class='warn'>This Page is for test purposes only</h2>
-        </div>
-    </div>
-<?php
-}
-if (isset($_SESSION['id'])) {
-// in session, is it a logout?
-    if (isset($_REQUEST['logout'])) {
-        session_destroy();
-        unset($_SESSION['id']);
-        unset($_SESSION['idType']);
-        unset($_SESSION['idSource']);
-        unset($_SESSION['transId']);
-        unset($_SESSION['totalDue']);
-        header('location:' . $portal_conf['portalsite']);
-        exit();
-    } else {
-        // nope, just set the vendor id
-        $personType = $_SESSION['idType'];
-        $personId = $_SESSION['id'];
-        $in_session = true;
-    }
-} else if (isset($_GET['vid'])) {
+    <?php
+        if ($portal_conf['test'] == 1) {
+            ?>
+            <div class="row">
+                <div class="col-sm-12">
+                    <h2 class='warn'>This Page is for test purposes only</h2>
+                </div>
+            </div>
+            <?php
+        }
+
+if (isset($_GET['vid'])) {
     // handle link login
     $match = openssl_decrypt($_GET['vid'], $cipherInfo['cipher'], $cipherInfo['key'], 0, $cipherInfo['iv']);
     $match = json_decode($match, true);
+    if ($match == null) {   // invalid vid link
+        draw_login($config_vars, "<div class='bg-danger text-white'>The link is invalid, please request a new link</div>");
+        exit();
+    }
     $linkid = $match['lid'];
     if (array_key_exists('id', $match)) {
         $email = $match['email_addr'];
@@ -157,7 +177,7 @@ EOS;
         show_message($account, 'error');
     }
     exit();
-} else {
+} else if ($loginId == null) {
     draw_login($config_vars);
     exit();
 }
