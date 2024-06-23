@@ -27,7 +27,7 @@ from exhibitors e
     join exhibitorRegionYears eRY on eRY.exhibitorYearId = eY.id 
     join exhibitsRegionYears xRY on xRY.id = eRY.exhibitsRegionYearId 
     JOIN exhibitsRegions xR on xR.id=xRY.exhibitsRegion 
-where eY.conid=58 and xR.regionType='Art Show' and exhibitorNumber=?;
+where eY.conid=58 and xR.regionType='Art Show' and eRY.id=?;
 EOS;
 
 $nameR = fetch_safe_array(dbSafeQuery($nameQuery, 'i', array($artid)));
