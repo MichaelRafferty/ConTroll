@@ -34,7 +34,7 @@ function getRulesData($conid) {
     $memList = array();
     $memListIdx = array();
     $QQ = <<<EOS
-SELECT *
+SELECT *, id as memId
 FROM memList 
 WHERE ((conid = ? AND memCategory != 'yearahead') OR (conid = ? AND memCategory = 'yearahead'))
   AND startdate <= NOW() AND enddate > NOW() AND online = 'Y'

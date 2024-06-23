@@ -47,14 +47,14 @@ class MembershipRules {
                 continue;
             }
 
-            if (mbrRow.memType == 'full') {
+            if (mbrRow.memType == 'full' && mbrRow.toDelete != true) {
                 if (mbrRow.conid == conid)
                     this.#numFull++;
                 else
                     this.#numFullYearAhead++;
             }
 
-            if (mbrRow.memType == 'oneday')
+            if (mbrRow.memType == 'oneday' && mbrRow.toDelete != true)
                 this.#numOneDay++;
         }
 
@@ -72,6 +72,9 @@ class MembershipRules {
             if (this.#includeStatus.indexOf(cartrow.status) == -1) {
                 continue;
             }
+            if (cartrow.toDelete == true)
+                continue;
+
             return cartrow;  // return matching entry
         }
         return null; // not found
@@ -97,7 +100,7 @@ class MembershipRules {
         if (mem.memType == 'oneday' && this.#numFull > 0)
             return false; // no oneday if full membership found
 
-        if (mem.memType == 'full' && this.#numOneDay > 0 && mem.conid == this.#conid)
+        if (mem.memType == 'full' && this.#numOneDay > 0 && mem.memCategory != 'upgrade' && mem.conid == this.#conid)
             return false; // no full that is not an upgrade if there is a one day
 
         // 3. if virtual, no memType full
@@ -106,8 +109,11 @@ class MembershipRules {
 
         // memCategory rule on duplicate- if onlyOne and it is in the cart, don't allow it again
         var memCat = memCategories[mem.memCategory];
-        if (memCat.onlyOne == 'Y' && this.findInCart(mem.id, this.#memberships))
-            return false; // only one allowed and one of this memId is in the list already
+        if (memCat.onlyOne == 'Y') {
+            var item = this.findInCart(mem.memId, this.#memberships);
+            if (item != null && item != mem) // for delete/remove, are we searching for ourselves, if so, it's allowed
+                return false; // only one allowed and one of this memId is in the list already
+        }
 
         // loop over the rulesets and see if they apply
         // to apply, each of the items (if present) typeList, catList, ageList and memList must match the memList item
@@ -126,7 +132,7 @@ class MembershipRules {
                     continue;
             }
             if (rule.memList != null) {
-                if (rule.memListArray.indexOf(mem.id.toString()) == -1)
+                if (rule.memListArray.indexOf(mem.memId.toString()) == -1)
                     continue;
             }
 
@@ -214,6 +220,8 @@ class MembershipRules {
 
         for (var mbrRow in mlist) {
             var mbr = mlist[mbrRow];
+            if (mbr.toDelete == true)
+                continue;
 
             switch (step.ruleType) {
                 case 'needAny':

@@ -751,6 +751,22 @@ class Membership {
             return
         }
 
+        // check if anything else in the cart depends on this membership
+        // trial the delete
+        mbr.toDelete = true;
+        var rules = new MembershipRules(config['conid'], this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        for (var nrow in this.#memberships) {
+            if (row == nrow)    // skip checking ourselves
+                continue;
+            var nmbr = this.#memberships[nrow];
+            if (rules.testMembership(nmbr) == false) {
+                mbr.toDelete = undefined;
+                show_message("You cannot remove " + mbr.label + " because " + nmbr.label + " requires it.  You must delete/remove " + nmbr.label + " first.", 'warn');
+                return;
+            }
+        }
+
+
         this.#memberships.splice(row, 1);
         this.#cartChanges--;
         this.updateCart();
@@ -781,7 +797,21 @@ class Membership {
             return;
         }
 
+        // check if anything else in the cart depends on this membership
+        // trial the delete
         mbr.toDelete = true;
+        var rules = new MembershipRules(config['conid'], this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        for (var nrow in this.#memberships) {
+            if (row == nrow)    // skip checking ourselves
+                continue;
+            var nmbr = this.#memberships[nrow];
+            if (rules.testMembership(nmbr) == false) {
+                mbr.toDelete = undefined;
+                show_message("You cannot delete " + mbr.label + " because " + nmbr.label + " requires it.  You must delete/remove " + nmbr.label + " first.", 'warn');
+            }
+        }
+
+
         this.#cartChanges++;
         this.updateCart();
         this.buildMembershipButtons();
