@@ -30,7 +30,7 @@ from exhibitors e
 where eY.conid=58 and xR.regionType='Art Show' and eRY.id=?;
 EOS;
 
-$nameR = fetch_safe_array(dbSafeQuery($nameQuery, 'i', array($artid)));
+$nameR = fetch_safe_array(dbSafeQuery($nameQuery, 'i', array($conid, $artid)));
 $name=$nameR[0];
 
 header('Content-Type: application/csv');
