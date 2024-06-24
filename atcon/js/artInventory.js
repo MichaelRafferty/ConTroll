@@ -51,7 +51,8 @@ function start_over() {
     //disable tabs...
 
     //set tab to find_tab
-    bootstrap.Tab.getOrCreateInstance(find_tab).show();
+    if (find_tab)
+        bootstrap.Tab.getOrCreateInstance(find_tab).show();
 }
 
 function init_cart() {
@@ -68,7 +69,9 @@ function init_table() {
         find_result_table.destroy();
         find_result_table = null;
     }
-    id_div.innerHTML = "";
+    if (id_div != null) {
+        id_div.innerHTML = "";
+    }
     datatbl = new Array();
 }
 
@@ -111,7 +114,7 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
         case 'Not In Show':
         case 'Checked Out':
         case 'Purchased/Released':
-            html += '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="add_to_cart(' + cell.getRow().getData().index + ',\'alert\')">N/A</button>';
+            html += '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0"' + btnStyle + '">N/A</button>';
             // no inventory action, gone
             break;
         case 'Sold Bid Sheet':
