@@ -35,6 +35,8 @@ function redirectTestEmails($to, $cc) {
             $testEmail = trim($reg['testemail']);
             if ($testEmail == '')
                 $test = false;
+        } else {
+            $test = false;
         }
     }
 
