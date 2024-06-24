@@ -133,6 +133,7 @@ foreach ($badges as $badge) {
     }
 }
 
+
 // now figure out if coupon applies
 $apply_discount = coupon_met($coupon, $total, $num_primary, $map, $counts);
 
@@ -265,6 +266,8 @@ EOF;
             trim($badge['zip']),
             $badge['country']
         );
+$value_arr = mb_convert_encoding($value_arr, 'Windows-1252', 'UTF-8');
+
         $res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
         if ($res !== false) {
             if ($res->num_rows > 0) {
@@ -295,6 +298,7 @@ EOF;
             array_key_exists('share', $badge) ? $badge['share'] :'Y',
             $id
         );
+$value_arr = mb_convert_encoding($value_arr, 'Windows-1252', 'UTF-8');
 
         $insertQ = <<<EOS
 INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone,
