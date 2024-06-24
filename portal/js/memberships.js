@@ -760,7 +760,7 @@ class Membership {
             if (row == nrow)    // skip checking ourselves
                 continue;
             var nmbr = this.#memberships[nrow];
-            if (rules.testMembership(nmbr) == false) {
+            if (rules.testMembership(nmbr, true) == false) {
                 mbr.toDelete = undefined;
                 show_message("You cannot remove " + mbr.label + " because " + nmbr.label + " requires it.  You must delete/remove " + nmbr.label + " first.", 'warn');
                 return;
@@ -806,7 +806,7 @@ class Membership {
             if (row == nrow)    // skip checking ourselves
                 continue;
             var nmbr = this.#memberships[nrow];
-            if (rules.testMembership(nmbr) == false) {
+            if (rules.testMembership(nmbr, true) == false) {
                 mbr.toDelete = undefined;
                 show_message("You cannot delete " + mbr.label + " because " + nmbr.label + " requires it.  You must delete/remove " + nmbr.label + " first.", 'warn');
             }

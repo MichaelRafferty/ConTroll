@@ -81,38 +81,40 @@ class MembershipRules {
     }
 
     // test the memList entry against implicit and explicit rules
-    testMembership(mem) {
+    testMembership(mem, skipImplicit = false) {
         // first check if its in the right age, if age is null, all are accepted
         if (this.#age != null) {
             if (mem.memAge != 'all' && mem.memAge != this.#age)
                 return false;   // skip this mem entry, its's not all or the current age bracket
         }
 
-        // first the implicit rules:
-        // 1. Only one 'full' is allowed
-        if (mem.memType == 'full' && mem.memCategory != 'upgrade' && this.#numFull > 0 && mem.conid == this.#conid)
-            return false; // only one full membership is allowed, unless it's an upgrade category one, let the fixed rules filter that issue
-        if (mem.memType == 'full' && this.#numFullYearAhead > 0 && mem.conid != this.#conid)
-            return false; // only one full membership for next year is allowed
+        if (skipImplicit == true ) {
+            // first the implicit rules:
+            // 1. Only one 'full' is allowed
+            if (mem.memType == 'full' && mem.memCategory != 'upgrade' && this.#numFull > 0 && mem.conid == this.#conid)
+                return false; // only one full membership is allowed, unless it's an upgrade category one, let the fixed rules filter that issue
+            if (mem.memType == 'full' && this.#numFullYearAhead > 0 && mem.conid != this.#conid)
+                return false; // only one full membership for next year is allowed
 
-        // 2. if full, no one-day, if one-day, no full
-        // implicit rule no one day if there is a full for this year
-        if (mem.memType == 'oneday' && this.#numFull > 0)
-            return false; // no oneday if full membership found
+            // 2. if full, no one-day, if one-day, no full
+            // implicit rule no one day if there is a full for this year
+            if (mem.memType == 'oneday' && this.#numFull > 0)
+                return false; // no oneday if full membership found
 
-        if (mem.memType == 'full' && this.#numOneDay > 0 && mem.memCategory != 'upgrade' && mem.conid == this.#conid)
-            return false; // no full that is not an upgrade if there is a one day
+            if (mem.memType == 'full' && this.#numOneDay > 0 && mem.memCategory != 'upgrade' && mem.conid == this.#conid)
+                return false; // no full that is not an upgrade if there is a one day
 
-        // 3. if virtual, no memType full
-        if (mem.memType == 'virtual' && this.#numFull > 0)
-            return false; // no virtual if memType full in cart
+            // 3. if virtual, no memType full
+            if (mem.memType == 'virtual' && this.#numFull > 0)
+                return false; // no virtual if memType full in cart
 
-        // memCategory rule on duplicate- if onlyOne and it is in the cart, don't allow it again
-        var memCat = memCategories[mem.memCategory];
-        if (memCat.onlyOne == 'Y') {
-            var item = this.findInCart(mem.memId, this.#memberships);
-            if (item != null && item != mem) // for delete/remove, are we searching for ourselves, if so, it's allowed
-                return false; // only one allowed and one of this memId is in the list already
+            // memCategory rule on duplicate- if onlyOne and it is in the cart, don't allow it again
+            var memCat = memCategories[mem.memCategory];
+            if (memCat.onlyOne == 'Y') {
+                var item = this.findInCart(mem.memId, this.#memberships);
+                if (item != null && item != mem) // for delete/remove, are we searching for ourselves, if so, it's allowed
+                    return false; // only one allowed and one of this memId is in the list already
+            }
         }
 
         // loop over the rulesets and see if they apply
