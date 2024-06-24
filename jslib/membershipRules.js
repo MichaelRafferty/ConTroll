@@ -88,7 +88,7 @@ class MembershipRules {
                 return false;   // skip this mem entry, its's not all or the current age bracket
         }
 
-        if (skipImplicit == true ) {
+        if (skipImplicit == false) {
             // first the implicit rules:
             // 1. Only one 'full' is allowed
             if (mem.memType == 'full' && mem.memCategory != 'upgrade' && this.#numFull > 0 && mem.conid == this.#conid)
