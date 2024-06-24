@@ -50,6 +50,7 @@ class Membership {
     #allMemberships = null;
     #membershipButtonsDiv = null;
     #newMembershipSave = null;
+    #primaryColorMemberships = ['standard', 'wsfs', 'suppliment','yearahead'];
 
     // cart items
     #cartDiv = null;
@@ -302,7 +303,7 @@ class Membership {
             // apply age filter from age select
             if (mem.memAge == 'all' || mem.memAge == this.#currentAge) {
                 var color = 'btn-secondary';
-                if (mem.memCategory == 'standard' || mem.memCategory == 'yearahead') {
+                if (this.#primaryColorMemberships.indexOf(mem.memCategory) > -1 ) {
                     color = 'btn-primary';
                 }
                 html += '<div class="col-sm-auto"><button id="memBtn-' + mem.id + '" class="btn btn-sm ' + color + '" onclick="membership.membershipAdd(' + "'" + mem.id + "'" + ')">' +
