@@ -50,7 +50,7 @@ class Membership {
     #allMemberships = null;
     #membershipButtonsDiv = null;
     #newMembershipSave = null;
-    #primaryColorMemberships = ['standard', 'wsfs', 'suppliment','yearahead'];
+    #primaryColorMemberships = ['standard', 'wsfs', 'supplement','yearahead'];
 
     // cart items
     #cartDiv = null;
