@@ -85,6 +85,7 @@ function inventory() {
                 $('#test').empty().append(JSON.stringify(data['log'], null, 2));
                 
                 start_over();
+                find_item('refresh');
                 }
             });
 }
@@ -98,7 +99,7 @@ function init_locations() {
             data: data,
             success: function(data, textStatus, jqXhr) {
                 locations = data['locations'];
-                //$('#test').empty().append(JSON.stringify(data, null, 2));
+                $('#test').empty();
                 }
             });
 }
@@ -147,7 +148,7 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
             }
             // manager can remove from show
             if(manager) {
-                html += '<br/><button type="button" class="'+btnClass+' btn-warning" '+btnStyle+' onclick="add_to_cart(' + cell.getRow().getData().index + ',\'remove\')">Remove</button> ';
+                html += '<button type="button" class="'+btnClass+' btn-warning" '+btnStyle+' onclick="add_to_cart(' + cell.getRow().getData().index + ',\'remove\')">Remove</button> ';
             }
             break;
         case 'Removed from Show':
@@ -188,12 +189,15 @@ function build_table(tableData) {
             datatbl.push(row);
         }
         find_result_table = new Tabulator('#find_results', {
-            maxHeight: "600px",
+            maxHeight: "700px",
             data: datatbl,
             layout: "fitColumns",
             responsiveLayout:true,
+            pagination: true,
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
-                { title: 'Key', field: 'id', hozAlign: "right", width:65, headerWordWrap: true, headerFilter: true, tooltip: build_record_hover, responsive: 0},
+                { title: 'Key', field: 'id', hozAlign: "right", width:75, headerWordWrap: true, headerFilter: true, tooltip: build_record_hover, responsive: 0},
                 { title: 'Artist', field: 'name', headerWordWrap: true, headerFilter: true, tooltip: true },
                 { title: 'Item', field: 'title', headerWordWrap: true, headerFilter: true, tooltip: true},
                 { title: 'Status', field: 'status', headerWordWrap: true, headerFilter: true, tooltip: true},
@@ -225,7 +229,7 @@ function find_item(action) {
                 alert("No matching Item Found");
             } else {
                 build_table(data['items']);
-                //$('#test').empty().append(JSON.stringify(data, null, 2));
+                $('#test').empty();
             }
         }
     });
@@ -254,7 +258,6 @@ function remove_from_cart(index) {
             case 'Send To Auction':
                 cart[index]['status']=cart[index]['prev_status'];
                 break;
-
             }
             actionlist.splice(action, 1);
         }
@@ -268,7 +271,11 @@ function remove_from_cart(index) {
 function add_to_cart(index, action) {
     var item = datatbl[index];
     actionlist.push(create_action(action, item.id, null));
-    $('#test').empty().append(action + '\n' + JSON.stringify(item, null, 2));
+    if (config.debug > 0)
+        $('#test').empty().append(action + '\n' + JSON.stringify(item, null, 2));
+    else
+        $('#test').empty();
+    clear_message();
 
     switch(action) {
     case 'Check In':
@@ -289,7 +296,7 @@ function add_to_cart(index, action) {
     case 'Release':
         break;
     default:
-        alert('not implemented');
+        show_message("Not Implimented", 'warn');
         return; 
     }
         

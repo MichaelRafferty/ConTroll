@@ -30,6 +30,14 @@ function page_init($title, $tab, $css, $js)
 {
     $con = get_conf('con');
     $label = $con['label'];
+    $debug = get_conf('debug');
+    if (array_key_exists('atcon', $debug))
+        $atconDebug = $debug['atcon'];
+    else
+        $atconDebug = 0;
+    $config_vars = array();
+    $config_vars['debug'] = $atconDebug;
+
     global $perms;
     if (isWebRequest()) {
         $includes = getTabulatorIncludes();
@@ -62,6 +70,9 @@ function page_init($title, $tab, $css, $js)
             }
         }
         ?>
+    <script type='text/javascript'>
+        var config = <?php echo json_encode($config_vars); ?>;
+    </script>
 </head>
 <body>
     <div class="container-fluid bg-primary text-white" id="page_banner">

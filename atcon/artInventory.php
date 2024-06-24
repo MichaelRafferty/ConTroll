@@ -184,6 +184,7 @@ while($artist = $artistR->fetch_assoc()) {
                     <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="start_over(0);" hidden>Next Customer</button>
                 </div>
             </div>
-        </div>       
+        </div>
     </div>
-<pre id='test'></pre>
+    <div id='result_message' class='mt-4 p-2'></div>
+    <pre id='test'></pre>
