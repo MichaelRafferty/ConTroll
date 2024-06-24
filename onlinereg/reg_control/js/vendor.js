@@ -770,7 +770,7 @@ class exhibitorsAdm {
             </div>
             <div class="row">
                 <div class="col-sm-2">Artist Name:</div>
-                <div class="col-sm-10 p-0 ms-0 me-0">\` + exhibitorData['artistName'] + \`</div>
+                <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorData['artistName'] + `</div>
             </div>
             <div class='row'>
                 <div class='col-sm-2'>Business Email:</div>
