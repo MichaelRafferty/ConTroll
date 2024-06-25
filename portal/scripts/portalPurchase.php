@@ -232,7 +232,11 @@ if ($amount > 0) {
                 $totalOwed += $membership['price'] - ($membership['paid'] + $membership['couponDiscount']);
             }
         }
-        $ratio = $balance / $totalOwed;
+        if ($totalOwed > 0) {
+            $ratio = $balance / $totalOwed;
+        } else {
+            $ratio = 1;
+        }
         if ($ratio > 0.990)
             $ratio = 1; // deal with rounding errors
         $applied = 0;
