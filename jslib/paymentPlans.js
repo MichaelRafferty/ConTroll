@@ -158,7 +158,8 @@ class PaymentPlans {
 
     // getMatchingPlansHTML - return the HTML for the modal popup for choose plan
     getMatchingPlansHTML(from) {
-        if (this.#matchingPlans == null)
+        var keys = Object.keys(this.#matchingPlans);
+        if (keys.length == 0)
             return '';
 
         var html = '<div class="row mt-2"><div class="col-sm-12"><b>Payment Plans Available:</b></div>' + `
@@ -175,7 +176,7 @@ class PaymentPlans {
         <div class="col-sm-2"><b>Must Pay In Full By</b></div>
     </div>
 `;
-        var keys = Object.keys(this.#matchingPlans);
+
         for (var row in keys) {
             var match = this.#matchingPlans[keys[row]];
             var plan = match.plan;
