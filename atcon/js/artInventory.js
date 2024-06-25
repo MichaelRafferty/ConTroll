@@ -481,7 +481,7 @@ function update_bid(row, to_auction=false, close=false) {
             if (cart[row]['min_price'] > price) {
                 if (!confirm("Price is less than minimum price of " + cart[row]['min_price'] + ", are you sure?")) {
                     document.getElementById('bid_' + item).value = cart[row]['final_price'];
-                    ddocument.getElementById('bidder_' + item).value = cart[row]['bidder'];
+                    document.getElementById('bidder_' + item).value = cart[row]['bidder'];
                     return;
                 }
             }
