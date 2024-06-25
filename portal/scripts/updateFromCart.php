@@ -339,13 +339,12 @@ EOS;
     if ($updateTransPrice) {
         // we changed a reg for this transaction, recompute the price portion of the record
         $uQ = <<<EOS
-WITH sum AS (
+UPDATE transaction t
+JOIN (
     SELECT sum(price) AS total
     FROM reg
     WHERE create_trans = ? AND status IN ('unpaid', 'paid', 'plan', 'upgraded')
-)
-UPDATE transaction t
-JOIN sum s
+    ) s
 SET price = s.total
 WHERE id = ?;
 EOS;
