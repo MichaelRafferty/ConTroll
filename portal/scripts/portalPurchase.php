@@ -47,6 +47,7 @@ $nonce = $_POST['nonce'];
 $amount = $_POST['amount'];
 $planRec = $_POST['planRec'];
 $existingPlan = $_POST['existingPlan'];
+$planPayment = $_POST['planPayment'];
 
 if ($planRec) {
     $totalAmtDue = $planRec['totalAmountDue'];
@@ -54,7 +55,7 @@ if ($planRec) {
     $totalAmtDue = $amount;
 }
 
-if ($plan == 0 || $newplan == 1) {
+if ($planPayment == 0 || $newplan == 1) {
     if (!array_key_exists('totalDue', $_SESSION)) {
         ajaxSuccess(array('status' => 'error', 'message' => 'No confirm payment amount.'));
         exit();
@@ -83,13 +84,17 @@ $totalDiscount = 0;
 $coupon = null;
 $counts=null;
 
-$memberships = getAccountRegistrations($loginId, $loginType, $conid, $newplan ? 'unpaid' : 'plan');
+$memberships = getAccountRegistrations($loginId, $loginType, $conid, ($newplan || $planPayment == 0) ? 'unpaid' : 'plan');
 $badgeResults = [];
 foreach ($memberships as $membership) {
     $badgeResults[] = ['age' => $membership['memAge'], 'memId' => $membership['memId'], 'price' => $membership['price']];
 }
 
-$inPlan = whatMembershipsInPlan($memberships, $planRec);
+if ($planPayment == 1 || $newplan == 1) {
+    $inPlan = whatMembershipsInPlan($memberships, $planRec);
+} else {
+    $inPlan = [];
+}
 
 $results = array(
     'custid' => "$loginType-$loginId",
@@ -158,7 +163,7 @@ if ($newplan == 1) {
         logWrite(array("plan id" => $newPlanId, 'plan data' => $valArray));
     }
     $planRec['payorPlanId'] = $newPlanId;
-} else if ($plan == 1) {
+} else if ($planPayment == 1) {
     // update the plan for the payment
     $uQ = <<<EOS
 UPDATE payorPlans SET balanceDue = balanceDue - ?, updateBy = ?
@@ -203,7 +208,7 @@ if ($amount > 0) {
     // first all the out of plan ones
     for ($idx = 0; $idx < count($memberships); $idx++) {
         $membership = $memberships[$idx];
-        if (!$inPlan[$membership['regId']]) {
+        if (!array_key_exists($membership['regId'], $inPlan) || !$inPlan[$membership['regId']]) {
             $paid_amt = min($balance, $membership['price'] - ($membership['paid'] + $membership['couponDiscount']));
             // only update those that were actually modified
             if (($paid_amt > 0) || ($membership['price'] == 0  && $membership['complete_trans'] == null)) {
@@ -228,7 +233,7 @@ if ($amount > 0) {
         $count = 0;
         foreach ($memberships as $membership) {
             $count++;
-            if ($inPlan[$membership['regId']]) {
+            if (array_key_exists($membership['regId'], $inPlan) && $inPlan[$membership['regId']]) {
                 $totalOwed += $membership['price'] - ($membership['paid'] + $membership['couponDiscount']);
             }
         }
@@ -243,7 +248,7 @@ if ($amount > 0) {
         for ($idx = 0; $idx < count($memberships); $idx++) {
             $membership = $memberships[$idx];
             $applied++;
-            if ($inPlan[$membership['regId']]) {
+            if (array_key_exists($membership['regId'], $inPlan) && $inPlan[$membership['regId']]) {
                 $due = $membership['price'] - ($membership['paid'] + $membership['couponDiscount']);
                 if ($applied == $count) // last row, give it all of the balance
                     $paid_amt = $balance;

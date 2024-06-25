@@ -66,6 +66,7 @@ class Portal {
     #existingPlan = null;
     #totalAmountDue = null;
     #paymentAmount = null;
+    #planPayment = 0;
 
     // receipt fields
     #receiptModal = null;
@@ -630,6 +631,7 @@ class Portal {
 
         this.#totalAmountDue = totalDue;
         this.#paymentAmount = totalDue;
+        this.#planPayment = 0;
 
         if (!plans) {
             this.makePayment(null);
@@ -693,6 +695,7 @@ class Portal {
     makePlanPayment(payorPlan, planName, paymentAmt) {
         this.#existingPlan = payorPlan;
         this.#paymentAmount = paymentAmt;
+        this.#planPayment = 1;
         this.#makePaymentBody.innerHTML = `
         <div class="row mt-4 mb-4">
             <div class="col-sm-auto"><b>You are making a payment on ` + planName + ' payment plan of ' + Number(paymentAmt).toFixed(2) + `</b></div>
@@ -723,6 +726,7 @@ class Portal {
             existingPlan: this.#existingPlan,
             planRec: this.#paymentPlan,
             newplan: newplan ? 1 : 0,
+            planPayment: this.#planPayment,
             nonce: token,
             amount: this.#paymentAmount,
         }
