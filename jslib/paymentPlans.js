@@ -153,7 +153,8 @@ class PaymentPlans {
 
     // isMatchingPlans - return true/false if there are any matching payment plans available for this 'cart'
     isMatchingPlans() {
-        return this.#matchingPlans != null;
+        var keys = Object.keys(this.#matchingPlans);
+        return keys.length > 0;
     }
 
     // getMatchingPlansHTML - return the HTML for the modal popup for choose plan
