@@ -691,12 +691,12 @@ class Membership {
         </div>
     </div>
 `;
+            this.#vpModal.show();
             this.#amountField = document.getElementById("vpPrice");
             this.#amountField.addEventListener('keyup', membership.amountEventListener);
-            this.#vpModal.show();
-            this.#amountField.focus();
             newMembership.minPrice = mem.price;
             this.#newMembershipSave = newMembership;
+            this.#amountField.focus({focusVisible: true});
             return;
         }
         this.membershipAddFinal(newMembership);
