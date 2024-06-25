@@ -318,6 +318,9 @@ class Membership {
         var nowD = new Date();
         var now = nowD.getTime();
         var dif = (now - this.#lastVerified);
+
+        clear_message();
+
         if (!ignoreSkip && step == 2 && (now - this.#lastVerified) < (7 * 24 * 60 * 60 * 1000)) {
             step = 4;
         }

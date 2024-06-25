@@ -624,6 +624,7 @@ class Portal {
     payBalance(totalDue) {
         clear_message();
         clear_message('payDueMessageDiv');
+        clear_message('makePayMessageDiv');
         var html = '';
         var plans = paymentPlans.isMatchingPlans();
 
