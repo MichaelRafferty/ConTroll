@@ -175,7 +175,7 @@ EOS;
         $iQ = <<<EOS
 insert into newperson (transid, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip,
                        country, share_reg_ok, contact_ok, managedBy, managedByNew, managedReason, updatedBy, lastVerified)
-values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'creation',?,NOW());
+values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'creation',?,NOW());
 EOS;
         $typeStr = 'issssssssssssssssiii';
         $valArray = array(
