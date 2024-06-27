@@ -61,7 +61,11 @@
             }
         }
 
-        $oauthParams = $ownerDetails;
+        if ($ownerDetails != null) {
+            $oauthParams['email'] = $ownerDetails->getEmail();
+        } else {
+            $oauthParams['nodetails'] = 'Something went wrong!';
+        }
         $oauthParams['token'] = $token->getToken();
         $oauthParams['refresh'] = $token->getRefreshToken();
         $oauthParams['expires'] = $token->getExpires();

@@ -172,10 +172,10 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
             if (array_key_exists('fullname', $badge))
                 $fullname = $badge['fullname'];
             else
-                $fullname = trim(trim($badge['fname'] . ' ' . $badge['mname']) . ' ' . $badge['lname']));
+                $fullname = trim(trim($badge['fname'] . ' ' . $badge['mname']) . ' ' . $badge['lname']);
             $item = new OrderLineItem ('1');
             $item->setUid('badge' . ($lineid + 1));
-            $item->setName($badge['age'] . ' Membership for ' . $fullname;
+            $item->setName($badge['age'] . ' Membership for ' . $fullname);
             $item->setNote($badge['memId'] . ': Membership Type Code');
             $item->setBasePriceMoney(new Money);
             $item->getBasePriceMoney()->setAmount($badge['price'] * 100);

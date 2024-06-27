@@ -5,6 +5,7 @@ require_once("lib/getLoginMatch.php");
 require_once("lib/loginItems.php");
 require_once("lib/portalForms.php");
 require_once("../lib/cipher.php");
+require_once("../lib/googleOauth2.php");
 
 global $config_vars;
 
@@ -26,6 +27,12 @@ $loginId = null;
 $loginType = null;
 
 // first lets check the Oauth2 stuff
+    if (isset($_GET['oauth2'])) {
+        if (!isset($_SESSION['oauth2'])) {
+            $_SESSION['oauth2'] = $_GET['oauth2'];
+            $_SESSION['oauth2pass'] = 'setup';
+        }
+    }
     if (isset($_SESSION['oauth2pass']) && isset($_SESSION['oauth2'])) {
         // ok, we are in the process of an oauth2 sequence
         $redirectURI = $portal_conf['redirect_base'];
@@ -36,8 +43,8 @@ $loginType = null;
                 $oauthParams = googleAuth($redirectURI);
                 if (isset($oauthParams['error'])) {
                     web_error_log($oauthParams['error']);
-                    unset $_SESSION['oauth2'];
-                    unset $_SESSION['oauth2pass'];
+                    unset($_SESSION['oauth2']);
+                    unset($_SESSION['oauth2pass']);
                     draw_login($config_vars);
                     show_message($oauthParams['error'], 'error');
                     exit();
@@ -45,6 +52,14 @@ $loginType = null;
 
         }
 
+        if ($oauthParams == null) {
+            // an error occured with login by googlr
+            draw_login($config_vars);
+            show_message('An error occured with the login with ' . $_SESSION['oauth2'], 'error');
+            unset($_SESSION['oauth2']);
+            unset($_SESSION['oauth2pass']);
+            exit();
+        }
         if (!isset($oauthParams['email'])) {
             web_error_log('no oauth2 email found');
             draw_login($config_vars);
@@ -52,13 +67,13 @@ $loginType = null;
             exit();
         }
         $email = $oauthParams['email'];
-        $account = chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $_SESSION['oauth2']);
+        $account = chooseAccountFromEmail($email, null, null, $cipherInfo, $_SESSION['oauth2']);
         if ($account == null || !is_numeric($account)) {
             if ($account == null) {
                 $account = "Error looking up data for $email";
             }
-            unset $_SESSION['oauth2'];
-            unset $_SESSION['oauth2pass'];
+            unset($_SESSION['oauth2']);
+            unset($_SESSION['oauth2pass']);
             draw_login($config_vars);
             show_message($account, 'error');
         }
