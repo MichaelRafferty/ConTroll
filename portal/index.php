@@ -181,7 +181,7 @@ if (isset($_GET['vid'])) {
         $id = null;
     }
     if (array_key_exists('validationType', $match)) {
-        $validation_type = $match['validationType'];
+        $validationType = $match['validationType'];
         if ($match['validationType'] != 'token') {
             if ($match['validationType'] != getSessionVar('oauth2') || $email != getSessionVar('email')) {
                 draw_login($config_vars, "<div class='bg-danger text-white'>The link is invalid</div>");
@@ -189,15 +189,15 @@ if (isset($_GET['vid'])) {
             }
         }
     } else {
-        $validation_type = 'token';
+        $validationType = 'token';
     }
     $timediff = time() - $match['ts'];
-    web_error_log('login @ ' . time() . ' with ts ' . $match['ts'] . " for $email/$id");
+    web_error_log('login @ ' . time() . ' with ts ' . $match['ts'] . " for $email/$id via $validationType");
     if ($timediff > (1*3600)) {
         draw_login($config_vars, "<div class='bg-danger text-white'>The link has expired, please request a new link</div>");
         exit();
     }
-    if ($validation_type == 'token') {
+    if ($validationType == 'token') {
         // check if the link has been used
         $linkQ = <<<EOS
 SELECT id, email, useCnt
