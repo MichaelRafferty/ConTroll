@@ -34,7 +34,7 @@ $loginType = null;
                 $_SESSION['oauth2pass'] = 'setup';
             }
         }
-        if (isset($_SESSION['oauth2pass'] && $_SESSION['oauth2pass'] != 'token') {
+        if (isset($_SESSION['oauth2pass']) && $_SESSION['oauth2pass'] != 'token') {
             // ok, we are in the process of an oauth2 sequence, continue it until token
             $redirectURI = $portal_conf['redirect_base'];
             if ($redirectURI == '')
