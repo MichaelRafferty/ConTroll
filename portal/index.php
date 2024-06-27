@@ -32,62 +32,63 @@ $loginType = null;
         clearSession();
         header('location:' . $portal_conf['portalsite']);
         exit();
-    } else {
-        if (isset($_GET['oauth2'])) {
-            if (!isSessionVar('oauth2pass')) {
-                setSessionVar('oauth2', $_GET['oauth2']);
-                setSessionVar('oauth2pass', 'setup');
-            }
+    }
+
+    if (isset($_GET['oauth2'])) {
+        if (!isSessionVar('oauth2pass')) {
+            setSessionVar('oauth2', $_GET['oauth2']);
+            setSessionVar('oauth2pass', 'setup');
         }
-        $oauthParams = null;
-        if (getSessionVar('oauth2pass') != 'token') {
-            // ok, we are in the process of an oauth2 sequence, continue it until token
-            $redirectURI = $portal_conf['redirect_base'];
-            if ($redirectURI == '')
-                $redirectURI = null;
-            switch (getSessionVar('oauth2')) {
-                case 'google':
-                    $oauthParams = googleAuth($redirectURI);
-                    if (isset($oauthParams['error'])) {
-                        web_error_log($oauthParams['error']);
-                        clearSession('oauth2');
-                        draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white');
-                        exit();
-                    }
+    }
 
-            }
-
-            if ($oauthParams == null) {
-                // an error occured with login by googlr
-                draw_login($config_vars, 'An error occured with the login with ' . getSessionVar('oauth2'), 'bg-danger text-white');
-                clearSession('oauth2');
-                exit();
-            }
-            if (!isset($oauthParams['email'])) {
-                web_error_log('no oauth2 email found');
-                draw_login($config_vars, getSessionVar('oauth2') . " did not return an email address.", 'bg-warning');
-                clearSession('oauth2');
-                exit();
-            }
-
-            $email = $oauthParams['email'];
-            setSessionVar('email', $email);
-            setSessionVar('displayName', $oauthParams['displayName']);
-            setSessionVar('firstName', $oauthParams['firstName']);
-            setSessionVar('lastName', $oauthParams['lastName']);
-            setSessionVar('avatarURL', $oauthParams['avatarURL']);
-            setsessionVar('subscriberId', $oauthParams['subscriberId']);
-
-            $account = chooseAccountFromEmail($email, null, null, $cipherInfo, getSessionVar('oauth2'));
-            if ($account == null || !is_numeric($account)) {
-                if ($account == null) {
-                    $account = "Error looking up data for $email";
+    $oauth2pass = getSessionVar('oauth2pass');
+    if ($oauth2pass != null && $oauth2pass != 'token') {
+        // ok, we are in the process of an oauth2 sequence, continue it until token
+        $redirectURI = $portal_conf['redirect_base'];
+        if ($redirectURI == '')
+            $redirectURI = null;
+        switch (getSessionVar('oauth2')) {
+            case 'google':
+                $oauthParams = googleAuth($redirectURI);
+                if (isset($oauthParams['error'])) {
+                    web_error_log($oauthParams['error']);
+                    clearSession('oauth2');
+                    draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white');
+                    exit();
                 }
-                clearSession('oauth2');;
-                draw_login($config_vars, $account, 'bg-danger text-white');
-            }
+
+        }
+
+        if ($oauthParams == null) {
+            // an error occured with login by googlr
+            draw_login($config_vars, 'An error occured with the login with ' . getSessionVar('oauth2'), 'bg-danger text-white');
+            clearSession('oauth2');
             exit();
         }
+        if (!isset($oauthParams['email'])) {
+            web_error_log('no oauth2 email found');
+            draw_login($config_vars, getSessionVar('oauth2') . " did not return an email address.", 'bg-warning');
+            clearSession('oauth2');
+            exit();
+        }
+
+        $email = $oauthParams['email'];
+        setSessionVar('email', $email);
+        setSessionVar('displayName', $oauthParams['displayName']);
+        setSessionVar('firstName', $oauthParams['firstName']);
+        setSessionVar('lastName', $oauthParams['lastName']);
+        setSessionVar('avatarURL', $oauthParams['avatarURL']);
+        setsessionVar('subscriberId', $oauthParams['subscriberId']);
+
+        $account = chooseAccountFromEmail($email, null, null, $cipherInfo, getSessionVar('oauth2'));
+        if ($account == null || !is_numeric($account)) {
+            if ($account == null) {
+                $account = "Error looking up data for $email";
+            }
+            clearSession('oauth2');;
+            draw_login($config_vars, $account, 'bg-danger text-white');
+        }
+        exit();
     }
 
 if (isSessionVar('id')) {
