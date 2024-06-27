@@ -143,7 +143,9 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
     }
 
     if (count($matches) > 1) {
-        echo "<h4>This email address has access to multiple membership accounts</h4>\n" .
+        $condata = get_con();
+        index_page_init($condata['label'] . ' Membership Portal');
+        echo "<body><h4>This email address has access to multiple membership accounts</h4>\n" .
             "Please select one of the accounts below:<br/><ul>\n";
 
         foreach ($matches as $match) {
@@ -155,7 +157,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
         }
         ?>
         </ul>
-        <button class='btn btn-secondary m-1' onclick="window.location='?logout';">Logout</button>
+        <button class='btn btn-sm btn-secondary m-1' onclick="window.location='?logout';">Logout</button>
         <script type='text/javascript'>
             var config = <?php echo json_encode($config_vars); ?>;
         </script>
