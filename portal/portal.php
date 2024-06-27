@@ -19,8 +19,8 @@ $condata = get_con();
 load_cc_procs();
 
 if (isSessionVar('id') && isSessionVar('idType')) {
-    $personType = getSessionVar('idType');
-    $personId = getSessionVar('id');
+    $loginType = getSessionVar('idType');
+    $loginType = getSessionVar('id');
 } else {
     header('location:' . $portal_conf['portalsite']);
     exit();
@@ -74,7 +74,7 @@ WHERE
     status IN  ('unpaid', 'paid', 'plan', 'upgraded') AND
     r.conid >= ? AND (r.perid = ? OR r.newperid = ?);
 EOS;
-$holderRegR = dbSafeQuery($holderRegSQL, 'iii', array($conid, $personType == 'p' ? $personId : -1, $personType == 'n' ? $personId : -1));
+$holderRegR = dbSafeQuery($holderRegSQL, 'iii', array($conid, $loginType == 'p' ? $loginType : -1, $loginType == 'n' ? $loginType : -1));
 $holderMembership = [];
 if ($holderRegR != false && $holderRegR->num_rows > 0) {
     while ($m = $holderRegR->fetch_assoc()) {
@@ -95,7 +95,7 @@ if ($holderRegR != false && $holderRegR->num_rows > 0) {
     $holderRegR->free();
 }
 // get people managed by this account holder and their registrations
-if ($personType == 'p') {
+if ($loginType == 'p') {
     $managedSQL = <<<EOS
 WITH ppl AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
@@ -148,7 +148,7 @@ SELECT *
 FROM ppl
 ORDER BY personType DESC, id ASC;
 EOS;
-    $managedByR = dbSafeQuery($managedSQL, 'iiiii', array($conid, $personId, $conid, $personId, $personId));
+    $managedByR = dbSafeQuery($managedSQL, 'iiiii', array($conid, $loginType, $conid, $loginType, $loginType));
 } else {
     $managedSQL = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
@@ -172,10 +172,10 @@ LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
 LEFT OUTER JOIN newperson nc ON t.newperid = nc.id
 LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
 LEFT OUTER JOIN newperson np ON tp.newperid = np.id
-WHERE p.managedByNew = ? AND p.id != p.managedBy
+WHERE p.managedByNew = ? AND p.id != p.managedByNew
 ORDER BY id ASC;
 EOS;
-    $managedByR = dbSafeQuery($managedSQL, 'ii', array($conid, $personId));
+    $managedByR = dbSafeQuery($managedSQL, 'ii', array($conid, $loginType));
 }
 
 $managed = [];
@@ -186,14 +186,14 @@ if ($managedByR != false) {
     $managedByR->free();
 }
 
-$memberships = getAccountRegistrations($personId, $personType, $conid, 'all');
+$memberships = getAccountRegistrations($loginType, $loginType, $conid, 'all');
 
 // get the information for the interest block
 $interests = getInterests();
 // get the payment plans
 $paymentPlans = getPaymentPlans(true);
 
-portalPageInit('portal', $info['fullname'] . ($personType == 'p' ? ' (ID: ' : 'Temporary ID: ') . $personId . ')',
+portalPageInit('portal', $info['fullname'] . ($loginType == 'p' ? ' (ID: ' : 'Temporary ID: ') . $loginType . ')',
     /* css */ array($cdn['tabcss'],
         $cdn['tabbs5'],
     ),
@@ -242,7 +242,7 @@ if ($info['managedByName'] != null) {
     <div class="col-sm-4"><b>Actions</b></div>
 </div>
 <?php
-drawManagedPerson($personId, $personType, $info, $holderMembership, $interests != null);
+drawManagedPerson($loginType, $loginType, $info, $holderMembership, $interests != null);
 
 $managedMembershipList = '';
 $currentId = -1;
@@ -252,7 +252,7 @@ $curMB = [];
 foreach ($managed as $m) {
     if ($currentId != $m['id']) {
         if ($currentId > 0) {
-            drawManagedPerson($personId, $personType, $curPT, $curMB,$interests != null);
+            drawManagedPerson($loginType, $loginType, $curPT, $curMB,$interests != null);
         }
         $curPT = $m;
         $currentId = $m['id'];
@@ -276,7 +276,7 @@ foreach ($managed as $m) {
     }
 }
 if (count($curMB) > 0) {
-    drawManagedPerson($personId, $personType, $curPT, $curMB,$interests != null);
+    drawManagedPerson($loginType, $loginType, $curPT, $curMB,$interests != null);
 
 }
 // compute total due so we can display it up top as well...
