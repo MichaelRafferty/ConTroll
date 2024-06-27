@@ -22,24 +22,11 @@ EOS;
 };
 
 function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
-    if (isset($_SESSION)) {
-        if (array_key_exists('user_perid', $_SESSION)) {
-            $user_perid = $_SESSION['user_perid'];
-        } else {
-            $user_perid = null;
-        }
-    } else {
-        $user_perid = null;
-    }
-
-    // set category based on if exhibits is a portal type
-    if (array_key_exists('exhibits', $results)) {
-        if ($results['exhibits'] == 'vendor')
-            $category = 'vendor';
-        else
-            $category = 'artshow';
-    } else {
-        $category = 'reg';
+    $loginPerid = getSessionVar('user_perid');
+    if ($loginPerid == null) {
+        $userType = getSessionVar('idType');
+        if ($userType == 'p')
+            $loginPerid = getSessionVar('id');
     }
 
     $rtn = array();
@@ -49,7 +36,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd',
             's', 's', 's', 's', 's', 's', 's', 's','i');
     $rtn['tnxdata'] = array($results['transid'],'other','reg','bypass','online',$results['total'],
-        strtotime("now"),'****','**n**','cctxid','bypass','bypass','ok','000',$user_perid);
+        strtotime("now"),'****','**n**','cctxid','bypass','bypass','ok','000',$loginPerid);
     $rtn['url'] = '';
     $rtn['rid'] = '000';
     return $rtn;

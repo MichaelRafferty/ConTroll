@@ -115,14 +115,11 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
         'environment' => $cc['env'],
     ]);
 
-    if (isset($_SESSION)) {
-        if (array_key_exists('user_perid', $_SESSION)) {
-            $user_perid = $_SESSION['user_perid'];
-        } else {
-            $user_perid = null;
-        }
-    } else {
-        $user_perid = null;
+    $loginPerid = getSessionVar('user_perid');
+    if ($loginPerid == null) {
+        $userType = getSessionVar('idType');
+        if ($userType == 'p')
+            $loginPerid = getSessionVar('id');
     }
 
     // square api steps
@@ -397,7 +394,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd',
             's', 's', 's', 's', 's', 's', 's', 's', 'i');
     $rtn['tnxdata'] = array($results['transid'],'credit',$category,$desc,'online',$approved_amt,
-        $txtime,$last4,$results['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $user_perid);
+        $txtime,$last4,$results['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $loginPerid);
     $rtn['url'] = $receipt_url;
     $rtn['rid'] = $receipt_number;
     return $rtn;

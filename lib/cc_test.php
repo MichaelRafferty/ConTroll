@@ -31,14 +31,11 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     $cc = get_conf('cc');
     //$con = get_conf('con');
     $reg = get_conf('reg');
-	if (isset($_SESSION)) {
-		if (array_key_exists('user_perid', $_SESSION)) {
-			$user_perid = $_SESSION['user_perid'];
-		} else {
-			$user_perid = null;
-		}
-	} else {
-		$user_perid = null;
+	$loginPerid = getSessionVar('user_perid');
+	if ($loginPerid == null) {
+		$userType = getSessionVar('idType');
+		if ($userType == 'p')
+			$loginPerid = getSessionVar('id');
 	}
 
     if(!isset($_POST['nonce'])) {
@@ -65,7 +62,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 			$rtn['amount'] = $results['total'];
 			$rtn['txnfields'] =  array('transid','type','category','description', 'source','amount', 'txn_time', 'nonce','cc_txn_id','cc_approval_code','receipt_id', 'cashier');
 			$rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 's', 's', 's', 's', 's', 'i');
-			$rtn['tnxdata'] = array($results['transid'],'credit',$category, 'test registration', 'online', $results['total'], '00-00-00 00:00:00',$_POST['nonce'],'txn id','000000','txn_id', $user_perid);
+			$rtn['tnxdata'] = array($results['transid'],'credit',$category, 'test registration', 'online', $results['total'], '00-00-00 00:00:00',$_POST['nonce'],'txn id','000000','txn_id', $loginPerid);
             $rtn['url'] = 'no test receipt';
             $rtn['rid'] = 'test';
 			return $rtn;
