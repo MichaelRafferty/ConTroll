@@ -1,6 +1,6 @@
 <?php
 // draw_login - draw the login options form
-function draw_login($config_vars, $result_message = '') {
+function draw_login($config_vars, $result_message = '', $result_color = '') {
     ?>
  <!-- signin form (at body level) -->
     <div id='signin'>
@@ -60,7 +60,7 @@ function draw_login($config_vars, $result_message = '') {
     <div class='container-fluid'>
         <div class='row'>
             <div class='col-sm-12 m-0 p-0'>
-                <div id='result_message' class='mt-4 p-2'><?php echo $result_message; ?></div>
+                <div id='result_message' class='mt-4 p-2 <?php echo $result_color; ?>'><?php echo $result_message; ?></div>
             </div>
         </div>
         <div class='row mt-2'>

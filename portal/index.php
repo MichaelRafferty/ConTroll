@@ -33,7 +33,7 @@ $loginType = null;
             $_SESSION['oauth2pass'] = 'setup';
         }
     }
-    if (isset($_SESSION['oauth2pass']) && isset($_SESSION['oauth2'])) {
+    if ((isset($_SESSION['oauth2pass'])  || isset($_SESSION['oauth2state'])) && isset($_SESSION['oauth2'])) {
         // ok, we are in the process of an oauth2 sequence
         $redirectURI = $portal_conf['redirect_base'];
         if ($redirectURI == '')
@@ -45,8 +45,8 @@ $loginType = null;
                     web_error_log($oauthParams['error']);
                     unset($_SESSION['oauth2']);
                     unset($_SESSION['oauth2pass']);
-                    draw_login($config_vars);
-                    show_message($oauthParams['error'], 'error');
+                    unset($_SESSION['oauth2state']);
+                    draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white');
                     exit();
                 }
 
@@ -54,16 +54,15 @@ $loginType = null;
 
         if ($oauthParams == null) {
             // an error occured with login by googlr
-            draw_login($config_vars);
-            show_message('An error occured with the login with ' . $_SESSION['oauth2'], 'error');
+            draw_login($config_vars, 'An error occured with the login with ' . $_SESSION['oauth2'], 'bg-danger text-white');
             unset($_SESSION['oauth2']);
             unset($_SESSION['oauth2pass']);
+            unset($_SESSION['oauth2state']);
             exit();
         }
         if (!isset($oauthParams['email'])) {
             web_error_log('no oauth2 email found');
-            draw_login($config_vars);
-            show_message($_SESSION['oauth2'] . " did not return an email address.", 'warning');
+            draw_login($config_vars, $_SESSION['oauth2'] . " did not return an email address.", 'bg-warning');
             exit();
         }
         $email = $oauthParams['email'];
@@ -74,8 +73,8 @@ $loginType = null;
             }
             unset($_SESSION['oauth2']);
             unset($_SESSION['oauth2pass']);
-            draw_login($config_vars);
-            show_message($account, 'error');
+            unset($_SESSION['oauth2state']);
+            draw_login($config_vars, $account, 'bg-danger text-white');
         }
         exit();
     }
@@ -90,6 +89,7 @@ if (isset($_SESSION['id'])) {
         unset($_SESSION['totalDue']);
         unset($_SESSION['oauth2']);
         unset($_SESSION['oauth2pass']);
+        unset($_SESSION['oauth2state']);
         header('location:' . $portal_conf['portalsite']);
         exit();
     }
@@ -108,6 +108,7 @@ if (isset($_SESSION['id'])) {
             unset($_SESSION['totalDue']);
             unset($_SESSION['oauth2']);
             unset($_SESSION['oauth2pass']);
+            unset($_SESSION['oauth2state']);
             header("Location: http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]");
             exit();
         }
@@ -232,8 +233,7 @@ EOS;
         if ($account == null) {
             $account = "Error looking up data for $email";
         }
-        draw_login($config_vars);
-        show_message($account, 'error');
+        draw_login($config_vars, $account, 'bg-danger text-white');
     }
     exit();
 } else if ($loginId == null) {
