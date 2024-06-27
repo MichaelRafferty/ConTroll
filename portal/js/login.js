@@ -163,6 +163,11 @@ class Login {
         token_email.hidden = false;
     }
 
+    // loginWithToken: show email for token
+    loginWithGoogle() {
+        window.location.search = '?oauth2=google';
+    }
+
     tokenEmailChanged() {
         var token_email = document.getElementById('token_email');
         if (!token_email) {
