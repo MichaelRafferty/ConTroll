@@ -97,6 +97,10 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
             $email = $match['email_addr'];
         }
         $id = $match['id'];
+        $ts = ' ';
+        if (array_key_exists('ts', $match)) {
+            $ts = " with ts ". $match['ts'];
+        }
         setSessionVar('id', $id);
         setSessionVar('idType', $match['tablename']);
         setSessionVar('idSource', $validationType);
@@ -104,7 +108,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
         unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
 
 
-        web_error_log('login @ ' . time() . ' with ts ' . $match['ts'] . " for $email/$id via $validationType");
+        web_error_log('login @ ' . time() . "$ts for $email/$id via $validationType");
         header('location:' . $portal_conf['portalsite'] . '/portal.php');
         exit();
     }
