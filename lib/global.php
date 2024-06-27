@@ -53,7 +53,7 @@ function getTabulatorIncludes(): array {
 // get value from session
 function getSessionVar($name) {
     global $appSessionPrefix;
-    var $sesName = $appSessionPrefix . $name;
+    $sesName = $appSessionPrefix . $name;
     if (isset($_SESSION[$sesName])) {
         return $_SESSION[$sesName];
     }
