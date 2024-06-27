@@ -88,6 +88,8 @@ if (isset($_SESSION['id'])) {
         unset($_SESSION['idSource']);
         unset($_SESSION['transId']);
         unset($_SESSION['totalDue']);
+        unset($_SESSION['oauth2']);
+        unset($_SESSION['oauth2pass']);
         header('location:' . $portal_conf['portalsite']);
         exit();
     }
@@ -104,6 +106,8 @@ if (isset($_SESSION['id'])) {
             unset($_SESSION['idSource']);
             unset($_SESSION['transId']);
             unset($_SESSION['totalDue']);
+            unset($_SESSION['oauth2']);
+            unset($_SESSION['oauth2pass']);
             header("Location: http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]");
             exit();
         }
