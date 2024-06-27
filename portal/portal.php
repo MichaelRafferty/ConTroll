@@ -186,7 +186,7 @@ if ($managedByR != false) {
     $managedByR->free();
 }
 
-$memberships = getAccountRegistrations($loginType, $loginType, $conid, 'all');
+$memberships = getAccountRegistrations($loginId, $loginType, $conid, 'all');
 
 // get the information for the interest block
 $interests = getInterests();
