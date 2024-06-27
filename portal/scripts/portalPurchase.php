@@ -98,7 +98,7 @@ if ($planPayment == 1 || $newplan == 1) {
 
 $results = array(
     'custid' => "$loginType-$loginId",
-    'transId' => $transId,
+    'transid' => $transId,
     'counts' => $counts,
     'price' => $totalAmtDue,
     'badges' => $badgeResults,
