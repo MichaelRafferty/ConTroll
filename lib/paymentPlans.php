@@ -31,8 +31,8 @@ EOS;
     $data['plans'] = $plans;
 
     if ($includeAccount) {
-        $accountId = $_SESSION['id'];
-        $accountType = $_SESSION['idType'];
+        $accountId = getSessionVar('id');
+        $accountType = getSessionVar('idType');
         if ($accountType == 'p') {
             $pfield = 'perid';
         } else {
