@@ -15,8 +15,8 @@ $ini = get_conf('reg');
 $condata = get_con();
 
 if (isSessionVar('id') && isSessionVar('idType')) {
-    $personType = getSessionVar('idType');
-    $personId = getSessionVar('id');
+    $loginType = getSessionVar('idType');
+    $loginId = getSessionVar('id');
 } else {
     header('location:' . $portal_conf['portalsite']);
     exit();
@@ -28,8 +28,8 @@ $config_vars['debug'] = $debug['portal'];
 $config_vars['conid'] = $conid;
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['regadminemail'] = $con['regadminemail'];
-$config_vars['personId'] = $personId;
-$config_vars['personType'] = $personType;
+$config_vars['personId'] = $loginId;
+$config_vars['personType'] = $loginType;
 $cdn = getTabulatorIncludes();
 
 // are we add new or upgrade existing
@@ -57,7 +57,7 @@ $config_vars['action'] = $action;
 $updateName = 'this new person';
 if ($action == 'upgrade') {
     // check if we alredy manage this person
-    if ($upgradeType == 'n' && $personType == 'n') {
+    if ($upgradeType == 'n' && $loginType == 'n') {
         // both are newperson, field table is newperson and field is manangedByNew to find the managed by id
         $table = 'newperson';
         $field = 'managedByNew';
@@ -80,7 +80,7 @@ EOS;
         exit();
     }
     $checkL = $checkR->fetch_assoc();
-    if ($personId != $checkL['id'] && $personId != $checkL['mid']) {
+    if ($loginId != $checkL['id'] && $loginId != $checkL['mid']) {
         header('location:' . $portal_conf['portalsite'] . '?messageFwd=' . urlencode('You no longer manage this person') . '&type=e');
         exit();
     }
@@ -101,7 +101,7 @@ if ($info === false) {
 $ruleData = getRulesData($conid);
 
 // if we get here, we are logged in and it's a purely new person or we manage the person to be processed
-portalPageInit('addUpgrade', $info['fullname'] . ($personType == 'p' ? ' (ID: ' : 'Temporary ID: ') . $personId . ')',
+portalPageInit('addUpgrade', $info['fullname'] . ($loginType == 'p' ? ' (ID: ' : 'Temporary ID: ') . $loginId . ')',
     /* css */ array($cdn['tabcss'],
         $cdn['tabbs5'],
     ),
