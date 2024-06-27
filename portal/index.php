@@ -26,57 +26,62 @@ $config_vars['uri'] = $portal_conf['portalsite'];
 $loginId = null;
 $loginType = null;
 
-// first lets check the Oauth2 stuff
-    if (isset($_GET['oauth2'])) {
-        if (!isset($_SESSION['oauth2'])) {
-            $_SESSION['oauth2'] = $_GET['oauth2'];
-            $_SESSION['oauth2pass'] = 'setup';
-        }
-    }
-    if ((isset($_SESSION['oauth2pass'])  || isset($_SESSION['oauth2state'])) && isset($_SESSION['oauth2'])) {
-        // ok, we are in the process of an oauth2 sequence
-        $redirectURI = $portal_conf['redirect_base'];
-        if ($redirectURI == '')
-            $redirectURI = null;
-        switch ($_SESSION['oauth2']) {
-            case 'google':
-                $oauthParams = googleAuth($redirectURI);
-                if (isset($oauthParams['error'])) {
-                    web_error_log($oauthParams['error']);
-                    unset($_SESSION['oauth2']);
-                    unset($_SESSION['oauth2pass']);
-                    unset($_SESSION['oauth2state']);
-                    draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white');
-                    exit();
-                }
-
-        }
-
-        if ($oauthParams == null) {
-            // an error occured with login by googlr
-            draw_login($config_vars, 'An error occured with the login with ' . $_SESSION['oauth2'], 'bg-danger text-white');
-            unset($_SESSION['oauth2']);
-            unset($_SESSION['oauth2pass']);
-            unset($_SESSION['oauth2state']);
-            exit();
-        }
-        if (!isset($oauthParams['email'])) {
-            web_error_log('no oauth2 email found');
-            draw_login($config_vars, $_SESSION['oauth2'] . " did not return an email address.", 'bg-warning');
-            exit();
-        }
-        $email = $oauthParams['email'];
-        $account = chooseAccountFromEmail($email, null, null, $cipherInfo, $_SESSION['oauth2']);
-        if ($account == null || !is_numeric($account)) {
-            if ($account == null) {
-                $account = "Error looking up data for $email";
+// first lets check the Oauth2 stuff. but only if not loging out
+    if (!isset($_REQUEST['logout'])) {
+        if (isset($_GET['oauth2'])) {
+            if (!isset($_SESSION['oauth2pass'])) {
+                $_SESSION['oauth2'] = $_GET['oauth2'];
+                $_SESSION['oauth2pass'] = 'setup';
             }
-            unset($_SESSION['oauth2']);
-            unset($_SESSION['oauth2pass']);
-            unset($_SESSION['oauth2state']);
-            draw_login($config_vars, $account, 'bg-danger text-white');
         }
-        exit();
+        if (isset($_SESSION['oauth2pass'] && $_SESSION['oauth2pass'] != 'token') {
+            // ok, we are in the process of an oauth2 sequence, continue it until token
+            $redirectURI = $portal_conf['redirect_base'];
+            if ($redirectURI == '')
+                $redirectURI = null;
+            switch ($_SESSION['oauth2']) {
+                case 'google':
+                    $oauthParams = googleAuth($redirectURI);
+                    if (isset($oauthParams['error'])) {
+                        web_error_log($oauthParams['error']);
+                        unset($_SESSION['oauth2']);
+                        unset($_SESSION['oauth2pass']);
+                        unset($_SESSION['oauth2state']);
+                        draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white');
+                        exit();
+                    }
+
+            }
+
+            if ($oauthParams == null) {
+                // an error occured with login by googlr
+                draw_login($config_vars, 'An error occured with the login with ' . $_SESSION['oauth2'], 'bg-danger text-white');
+                unset($_SESSION['oauth2']);
+                unset($_SESSION['oauth2pass']);
+                unset($_SESSION['oauth2state']);
+                exit();
+            }
+            if (!isset($oauthParams['email'])) {
+                web_error_log('no oauth2 email found');
+                draw_login($config_vars, $_SESSION['oauth2'] . " did not return an email address.", 'bg-warning');
+                unset($_SESSION['oauth2']);
+                unset($_SESSION['oauth2pass']);
+                unset($_SESSION['oauth2state']);
+                exit();
+            }
+            $email = $oauthParams['email'];
+            $account = chooseAccountFromEmail($email, null, null, $cipherInfo, $_SESSION['oauth2']);
+            if ($account == null || !is_numeric($account)) {
+                if ($account == null) {
+                    $account = "Error looking up data for $email";
+                }
+                unset($_SESSION['oauth2']);
+                unset($_SESSION['oauth2pass']);
+                unset($_SESSION['oauth2state']);
+                draw_login($config_vars, $account, 'bg-danger text-white');
+            }
+            exit();
+        }
     }
 
 if (isset($_SESSION['id'])) {

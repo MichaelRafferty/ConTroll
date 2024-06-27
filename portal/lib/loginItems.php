@@ -93,7 +93,6 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
         $_SESSION['id'] = $match['id'];
         $_SESSION['idType'] = $match['tablename'];
         $_SESSION['idSource'] = $validationType;
-        unset($_SESSION['oauth2pass']);
         unset($_SESSION['transId']);    // just in case it is hanging around, clear this
         unset($_SESSION['totalDue']);   // just in case it is hanging around, clear this
         header('location:' . $portal_conf['portalsite'] . '/portal.php');
