@@ -19,8 +19,8 @@
         }
 
         // so we get back to here, mark that we are doing a google authentication session
-        $_SESSION['oauth2'] = 'google';
-        $_SESSION['oauth2pass'] = 'startup';
+        setSessionVar('oauth2', 'google');
+        setSessionVar('oauth2pass', 'startup');
         $provider = new Google([
                                    'clientId' => $googleConf['client_id'],
                                    'clientSecret' => $googleConf['client_secret'],
@@ -30,16 +30,16 @@
         if (empty($_GET['code'])) {
 // If we don't have an authorization code then get one
             $authUrl = $provider->getAuthorizationUrl();
-            $_SESSION['oauth2state'] = $provider->getState();
-            $_SESSION['oauth2pass'] = 'auth';
+            setSessionVar('oauth2state', $provider->getState());
+            setSessionVar('oauth2pass', 'auth');
             header('Location: ' . $authUrl);
             exit;
         }
 
-        if (empty($_GET['state']) || ($_GET['state'] !== $_SESSION['oauth2state'])) {
+        if (empty($_GET['state']) || ($_GET['state'] !== getSessionVar('oauth2state'))) {
 // State is invalid, possible CSRF attack in progress
-            unset($_SESSION['oauth2state']);
-            $_SESSION['oauth2pass'] = 'invalid';
+            unsetSessionVar('oauth2state');
+            setSessionVar('oauth2pass', 'invalid');
             return null;
         }
         else {
@@ -50,7 +50,7 @@
             try {
 
 // We got an access token, let's now get the owner details
-                $_SESSION['oauth2pass'] = 'token';
+                setSessionVar('oauth2pass', 'token');
                 $ownerDetails = $provider->getResourceOwner($token);
             }
             catch (Exception $e) {
