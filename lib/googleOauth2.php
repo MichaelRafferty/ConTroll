@@ -63,6 +63,11 @@
 
         if ($ownerDetails != null) {
             $oauthParams['email'] = $ownerDetails->getEmail();
+            $oauthParams['displayName'] = $ownerDetails->getName();
+            $oauthParams['firstName'] = $ownerDetails->getFirstName();
+            $oauthParams['lastName'] = $ownerDetails->getLastName();
+            $oauthParams['avatarURL'] = $ownerDetails->getAvatar();
+            $oauthParams['subscriberId'] = $ownerDetails->getId();
         } else {
             $oauthParams['nodetails'] = 'Something went wrong!';
         }

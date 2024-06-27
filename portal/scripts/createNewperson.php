@@ -39,7 +39,7 @@ if (!array_key_exists('source', $_POST) || $_POST['source'] != 'login' || $curre
 }
 
 if ($currentPerson != -12345) {
-    $loginId = $_SESSION['id'];
+    $loginId = getSessionVar('id');
 } else {
     $loginId = 4;
 }

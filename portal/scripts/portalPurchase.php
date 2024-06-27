@@ -33,13 +33,13 @@ if (!(array_key_exists('action', $_POST) && array_key_exists('plan', $_POST) && 
     exit();
 }
 
-if (!(array_key_exists('id', $_SESSION) && array_key_exists('idType', $_SESSION))) {
+if (!(isSessionVar('id') && isSessionVar('idType'))) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Not logged in.'));
     exit();
 }
 
-$loginId = $_SESSION['id'];
-$loginType = $_SESSION['idType'];
+$loginId = getSessionVar('id');
+$loginType = getSessionVar('idType');
 
 $plan = $_POST['plan'];
 $newplan = $_POST['newplan'];
@@ -56,11 +56,12 @@ if ($planRec) {
 }
 
 if ($planPayment == 0 || $newplan == 1) {
-    if (!array_key_exists('totalDue', $_SESSION)) {
+    $totalDue = getSessionVar('totalDue');
+    if ($totalDue == null) {
         ajaxSuccess(array('status' => 'error', 'message' => 'No confirm payment amount.'));
         exit();
     }
-    $totalDue = $_SESSION['totalDue'];
+
     if ($totalAmtDue != $totalDue) {
         ajaxSuccess(array('status' => 'error', 'message' => 'Improper payment amount.'));
         exit();
@@ -70,10 +71,9 @@ if ($planPayment == 0 || $newplan == 1) {
 
 // all the records are in the database, so lets charge the credit card...
 
-if (array_key_exists('transId', $_SESSION)) {
-    $transid = $_SESSION['transId'];
-} else {
-    $transid = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
+$transId = getSessionVar('transId');
+if ($transId == null) {
+    $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
 }
 
 // get this person
@@ -98,7 +98,7 @@ if ($planPayment == 1 || $newplan == 1) {
 
 $results = array(
     'custid' => "$loginType-$loginId",
-    'transid' => $transid,
+    'transId' => $transId,
     'counts' => $counts,
     'price' => $totalAmtDue,
     'badges' => $badgeResults,
@@ -109,19 +109,19 @@ $results = array(
 );
 
 //log requested badges
-logWrite(array('con'=>$condata['name'], 'trans'=>$transid, 'results'=>$results, 'request'=>$memberships, 'inPlan' => $inPlan));
+logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'results'=>$results, 'request'=>$memberships, 'inPlan' => $inPlan));
 // end compute
 if ($amount > 0) {
     $rtn = cc_charge_purchase($results, $ccauth, true);
     if ($rtn == null) {
         // note there is no reason cc_charge_purchase will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        logWrite(array('con' => $condata['name'], 'trans' => $transid, 'error' => 'Credit card transaction not approved'));
+        logWrite(array('con' => $condata['name'], 'trans' => $transId, 'error' => 'Credit card transaction not approved'));
         ajaxSuccess(array('status' => 'error', 'error' => 'Credit card not approved'));
         exit();
     }
 
 //$tnx_record = $rtn['tnx'];
-    logWrite(array('con' => $condata['name'], 'trans' => $transid, 'ccrtn' => $rtn));
+    logWrite(array('con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
     $num_fields = sizeof($rtn['txnfields']);
     $val = array();
     for ($i = 0; $i < $num_fields; $i++) {
@@ -155,7 +155,7 @@ if ($newplan == 1) {
     $planData = $planRec['plan'];
     $valArray = array($planData['id'], $loginId, $planRec['totalAmountDue'], $planRec['nonPlanAmt'], $planRec['downPayment'], $planRec['paymentAmt'],
         $planRec['planAmt'], $planRec['numPayments'], $planRec['daysBetween'], $planData['payByDate'], $planData['payType'], $planData['reminders'],
-        $transid, $planRec['balanceDue'], $loginId);
+                      $transId, $planRec['balanceDue'], $loginId);
     $newPlanId = dbSafeInsert($iQ, $typestr, $valArray);
     if ($newPlanId == false || $newPlanId < 0) {
         logWrite(array("plan msg"=>"create of plan failed", "plan data" => $valArray ));
@@ -189,7 +189,7 @@ INSERT INTO payorPlanPayments(payorPlanId, paymentNbr, dueDate, payDate, planPay
 VALUES (?, ?, ?, NOW(), ?, ?, ?, ?);
 EOS;
     $typestr = 'iisddii';
-    $valArray = array($existingPlan['id'], $paymentNbr, $dueDate, $existingPlan['minPayment'], $amount, $txnid, $transid);
+    $valArray = array($existingPlan['id'], $paymentNbr, $dueDate, $existingPlan['minPayment'], $amount, $txnid, $transId);
     $paymntkey = dbSafeInsert($iQ, $typestr, $valArray);
 }
 
@@ -199,7 +199,7 @@ if ($approved_amt == $amount) {
 }
 
 $txnUpdate .= 'paid=?, couponDiscount = ? WHERE id=?;';
-$txnU = dbSafeCmd($txnUpdate, 'ddi', array($approved_amt, $totalDiscount, $transid));
+$txnU = dbSafeCmd($txnUpdate, 'ddi', array($approved_amt, $totalDiscount, $transId));
 $rows_upd = 0;
 
 if ($amount > 0) {
@@ -215,7 +215,7 @@ if ($amount > 0) {
                 $rows_upd += dbSafeCMD($regU, 'ddisi', array (
                     $membership['price'] - $membership['couponDiscount'],
                     $membership['couponDiscount'],
-                    $paid_amt <= $balance ? $transid : null,
+                    $paid_amt <= $balance ? $transId : null,
                     $paid_amt <= $balance ? 'paid' : $membership['status'],
                     $membership['regId']
                 ));
@@ -261,7 +261,7 @@ if ($amount > 0) {
                 $rows_upd += dbSafeCMD($regU, 'ddisi', array(
                     $paid_amt,
                     $membership['couponDiscount'],
-                    $left < 0.01 ? $transid : null,
+                    $left < 0.01 ? $transId : null,
                     $left < 0.01 ? 'paid' : 'plan',
                     $membership['regId']
                 ));
@@ -271,7 +271,7 @@ if ($amount > 0) {
     }
 }
 if ($amount > 0) {
-    $body = getEmailBody($transid, $info, $memberships, $planRec, $rtn['rid'], $rtn['url'], $amount);
+    $body = getEmailBody($transId, $info, $memberships, $planRec, $rtn['rid'], $rtn['url'], $amount);
 } else {
     $body = getNoChargeEmailBody($results, $info, $memberships);
 }
@@ -301,14 +301,14 @@ $response = array(
     'url' => $rtn['url'],
     'data' => $error_msg,
     'email' => $return_arr,
-    'trans' => $transid,
+    'trans' => $transId,
     'payorPlanId' => $planRec['payorPlanId'],
     'email_error' => $error_code,
     'rows_upd' => $rows_upd,
 );
 
-unset($_SESSION['transId']);
-unset($_SESSION['totalDue']);
+unsetSessionVar('transId');
+unsetSessionVar('totalDue');
 //var_error_log($response);
 ajaxSuccess($response);
 return;
@@ -319,6 +319,6 @@ INSERT INTO transaction (conid, perid, newperid, userid, price, couponDiscount, 
 VALUES (?, ?, ?, ?, 0, 0, 0, 'regportal');
 EOS;
     $transId = dbSafeInsert($iQ, 'iiii', array($conid, $perid, $newperid, $perid));
-    $_SESSION['transId'] = $transId;
+    setSessionVar('transId', $transId);
     return $transId;
 }

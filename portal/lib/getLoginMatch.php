@@ -92,8 +92,8 @@ EOS;
     if ($count == 0) {
         $response['error'] = 'No matching emails found';
     } else if ($count == 1) {
-        $_SESSION['id'] = $matches[0]['id'];
-        $_SESSION['idType'] = $matches[0]['tablename'];
+        setSessionVar('id', $matches[0]['id']);
+        setSessionVar('idType', $matches[0]['tablename']);
         $response['status'] = 'success';
     }
     return $response;

@@ -24,13 +24,13 @@ if (!(array_key_exists('action', $_POST) && array_key_exists('acctId', $_POST) &
     exit();
 }
 
-if (!(array_key_exists('id', $_SESSION) && array_key_exists('idType', $_SESSION))) {
+if (!(isSessionVar('id') && isSessionVar('idType'))) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Not logged in.'));
     exit();
 }
 
-$loginId = $_SESSION['id'];
-$loginType = $_SESSION['idType'];
+$loginId = getSessionVar('id');
+$loginType = getSessionVar('idType');
 $acctId = $_POST['acctId'];
 $email = $_POST['email'];
 

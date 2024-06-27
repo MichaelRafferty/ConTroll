@@ -14,7 +14,7 @@ $response = array('post' => $_POST, 'get' => $_GET);
 
 // check for source, login source does not need id and idtype
 if (!array_key_exists('source', $_POST) || $_POST['source'] != 'login') {
-    if (!(array_key_exists('id', $_SESSION) && array_key_exists('idType', $_SESSION))) {
+    if (!(isSessionVar('id') && isSessionVar('idType'))) {
         ajaxSuccess(array('status' => 'error', 'message' => 'Not logged in.'));
         exit();
     }

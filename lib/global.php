@@ -48,3 +48,46 @@ function getTabulatorIncludes(): array {
         'jquicss' => '/csslib/jquery-ui-1.13.1.css',
     ]);
 }
+
+// session functions to allow for prefixes
+// get value from session
+function getSessionVar($name) {
+    global $appSessionPrefix;
+    var $sesName = $appSessionPrefix . $name;
+    if (isset($_SESSION[$sesName])) {
+        return $_SESSION[$sesName];
+    }
+    return null;
+}
+
+// set value in session
+function setSessionVar($name, $value) {
+    global $appSessionPrefix;
+
+    $sesName = $appSessionPrefix . $name;
+    $_SESSION[$sesName] = $value;
+}
+
+// does session variable exist
+function isSessionVar($name) {
+    global $appSessionPrefix;
+
+    $sesName = $appSessionPrefix . $name;
+    return isset($_SESSION[$sesName]);
+}
+// unset session variable
+function unsetSessionVar($name) {
+    global $appSessionPrefix;
+    $sesName = $appSessionPrefix . $name;
+    unset($_SESSION[$sesName]);
+}
+// clear the session for re-use on logout
+function clearSessiomn($prefix = '') {
+    global $appSessionPrefix;
+    $checkPrefix = $appSessionPrefix . $prefix;
+    $len = strlen($prefix);
+    foreach ($_SESSION as $key => $value) {
+        if (mb_substr($key, 0, $len) == $prefix)
+            unset($_SESSION[$key]);
+    }
+}

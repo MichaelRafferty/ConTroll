@@ -1,6 +1,8 @@
 <?php
-// vendor - base.php - base functions for membership portal
+// portal - base.php - base functions for membership portal
 global $db_ini;
+global $appSessionPrefix;
+
 if (!$db_ini) {
     $db_ini = parse_ini_file(__DIR__ . '/../../config/reg_conf.ini', true);
 }
@@ -18,6 +20,7 @@ require_once(__DIR__ . '/../../lib/ajax_functions.php');
 require_once(__DIR__ . '/../../lib/global.php');
 
 db_connect();
+$appSessionPrefix = 'Ctrl/Portal/';
 session_start();
 
 date_default_timezone_set('America/New_York');
@@ -227,8 +230,8 @@ function isWebRequest() {
     // build info array about the account holder
 
 function getPersonInfo() {
-    $personType = $_SESSION['idType'];
-    $personId = $_SESSION['id'];
+    $personType = getSessionVar('idType');
+    $personId = getSessionVar('id');
     if ($personType == 'p') {
         $personSQL = <<<EOS
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,

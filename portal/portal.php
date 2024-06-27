@@ -18,9 +18,9 @@ $cc = get_conf('cc');
 $condata = get_con();
 load_cc_procs();
 
-if (array_key_exists('id', $_SESSION) && array_key_exists('idType', $_SESSION)) {
-    $personType = $_SESSION['idType'];
-    $personId = $_SESSION['id'];
+if (isSessionVar('id') && isSessionVar('idType')) {
+    $personType = getSessionVar('idType');
+    $personId = getSessionVar('id');
 } else {
     header('location:' . $portal_conf['portalsite']);
     exit();
@@ -33,11 +33,7 @@ if (array_key_exists('id', $_SESSION) && array_key_exists('idType', $_SESSION)) 
         $currency = 'USD';
     }
 
-$transid = null;
-if (array_key_exists('transId', $_SESSION)) {
-    $transid = $_SESSION['transId'];
-}
-
+$transId = getSessionVar('transId');
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['debug'] = $debug['portal'];
@@ -294,7 +290,7 @@ $payHtml = '';
 if ($totalDue > 0) {
     $totalDueFormatted = 'Total due: ' . $dolfmt->formatCurrency((float) $totalDue, $currency);
     $payHtml = " $totalDueFormatted   " . '<button class="btn btn-sm btn-primary pt-1 pb-1" id="payBalanceTopBTN" onclick="portal.payBalance(' . $totalDue . ');">Pay Balance</button>';
-    $_SESSION['totalDue'] = $totalDue; // used for validation in payment side
+    setSessionVar('totalDue', $totalDue); // used for validation in payment side
 }
 
 if (array_key_exists('payorPlans', $paymentPlans)) {

@@ -14,9 +14,9 @@ $debug = get_conf('debug');
 $ini = get_conf('reg');
 $condata = get_con();
 
-if (array_key_exists('id', $_SESSION) && array_key_exists('idType', $_SESSION)) {
-    $personType = $_SESSION['idType'];
-    $personId = $_SESSION['id'];
+if (isSessionVar('id') && isSessionVar('idType')) {
+    $personType = getSessionVar('idType');
+    $personId = getSessionVar('id');
 } else {
     header('location:' . $portal_conf['portalsite']);
     exit();

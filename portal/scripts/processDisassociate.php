@@ -20,21 +20,20 @@ if (!array_key_exists('managedBy', $_POST)) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
     exit();
 }
-
-if (!(array_key_exists('id', $_SESSION) && array_key_exists('idType', $_SESSION))) {
+if (!(isSessionVar('id') && isSessionVar('idType'))) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Not logged in.'));
     exit();
 }
 
-$updateBy = $_SESSION['id'];
+$updateBy = getSessionVar('id');
 $disType = $_POST['managedBy'];
 if ($disType == 'client') {
     $personId = $_POST['idNum'];
     $personType = $_POST['idType'];
     $reason = 'Mgr Req';
 } else {
-    $personId = $_SESSION['id'];
-    $personType = $_SESSION['idType'];
+    $personId = getSessionVar('id');
+    $personType = getSessionVar('idType');
     $reason = 'Client Req';
 }
 

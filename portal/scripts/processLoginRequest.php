@@ -51,11 +51,11 @@ switch ($type) {
             $response['status'] = 'error';
             $response['message'] = 'No matching emails found';
         } else if ($count == 1) {
-            $_SESSION['id'] = $matches[0]['id'];
-            $_SESSION['idType'] = $matches[0]['tablename'];
-            $_SESSION['idSource'] = 'dev';
-            unset($_SESSION['transId']);    // just in case it is hanging around, clear this
-            unset($_SESSION['totalDue']);   // just in case it is hanging around, clear this
+            setSessionVar('id', $matches[0]['id']);
+            setSessionVar('idType', $matches[0]['tablename']);
+            setSessionVar('idSource', 'dev');
+            unsetSessionVar('transId');    // just in case it is hanging around, clear this
+            unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
             $response['status'] = 'success';
         }
 

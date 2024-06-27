@@ -90,11 +90,11 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
     $count = count($matches);
     if ($count == 1) {
         $match = $matches[0];
-        $_SESSION['id'] = $match['id'];
-        $_SESSION['idType'] = $match['tablename'];
-        $_SESSION['idSource'] = $validationType;
-        unset($_SESSION['transId']);    // just in case it is hanging around, clear this
-        unset($_SESSION['totalDue']);   // just in case it is hanging around, clear this
+        setSessionVar('id', $match['id']);
+        setSessionVar('idType', $match['tablename']);
+        setSessionVar('idSource', $validationType);
+        unsetSessionVar('transId');    // just in case it is hanging around, clear this
+        unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
         header('location:' . $portal_conf['portalsite'] . '/portal.php');
         exit();
     }

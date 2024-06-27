@@ -22,18 +22,14 @@ if (!(array_key_exists('person', $_POST) && array_key_exists('cart', $_POST) && 
     exit();
 }
 
-if (!(array_key_exists('id', $_SESSION) && array_key_exists('idType', $_SESSION))) {
+if (!(isSessionVar('id') && isSessionVar('idType'))) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Not logged in.'));
     exit();
 }
 
-$loginId = $_SESSION['id'];
-$loginType = $_SESSION['idType'];
-if (array_key_exists('transId', $_SESSION)) {
-    $transId = $_SESSION['transId'];
-} else {
-    $transId = null;
-}
+$loginId = getSessionVar('id');
+$loginType = getSessionVar('idType');
+$transId = getSessionVar('transid');
 
 $action = $_POST['action'];
 try {
@@ -413,6 +409,6 @@ INSERT INTO transaction (conid, perid, newperid, userid, price, couponDiscount, 
 VALUES (?, ?, ?, ?, 0, 0, 0, 'regportal');
 EOS;
     $transId = dbSafeInsert($iQ, 'iiii', array($conid, $perid, $newperid, $perid));
-    $_SESSION['transId'] = $transId;
+    setSessionVar('transId', $transId);
     return $transId;
 }
