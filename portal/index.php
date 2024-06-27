@@ -29,7 +29,7 @@ $loginType = null;
 // first lets check the Oauth2 stuff. but only if not loging out
     // in session, is it a logout?
     if (isset($_REQUEST['logout'])) {
-        clearSessiomn();
+        clearSession();
         header('location:' . $portal_conf['portalsite']);
         exit();
     } else {
@@ -39,6 +39,7 @@ $loginType = null;
                 setSessionVar('oauth2pass', 'setup');
             }
         }
+        $oauthParams = null;
         if (getSessionVar('oauth2pass') != 'token') {
             // ok, we are in the process of an oauth2 sequence, continue it until token
             $redirectURI = $portal_conf['redirect_base'];

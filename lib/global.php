@@ -82,7 +82,7 @@ function unsetSessionVar($name) {
     unset($_SESSION[$sesName]);
 }
 // clear the session for re-use on logout
-function clearSessiomn($prefix = '') {
+function clearSession($prefix = '') {
     global $appSessionPrefix;
     $checkPrefix = $appSessionPrefix . $prefix;
     $len = strlen($prefix);
