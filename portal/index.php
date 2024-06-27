@@ -183,7 +183,7 @@ if (isset($_GET['vid'])) {
     if (array_key_exists('validationType', $match)) {
         $validation_type = $match['validationType'];
         if ($match['validationType'] != 'token') {
-            if ($match['validationType'] != getSessionVar('auth2') || $email != getSessionVar('email')) {
+            if ($match['validationType'] != getSessionVar('oauth2') || $email != getSessionVar('email')) {
                 draw_login($config_vars, "<div class='bg-danger text-white'>The link is invalid</div>");
                 exit();
             }
