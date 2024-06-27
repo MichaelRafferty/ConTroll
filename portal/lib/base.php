@@ -152,8 +152,8 @@ function portalPageFoot() {
         $msg = $_GET['messageFwd'];
         $class = ' bg-success text-white';
 
-        if (array_key_exists('t', $_GET)) {
-            $type = $_GET['t'];
+        if (array_key_exists('type', $_GET)) {
+            $type = $_GET['type'];
             if ($type == 'w')
                 $class = ' bg-warning';
             else if ($type == 'e')
