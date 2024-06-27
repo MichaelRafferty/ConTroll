@@ -20,7 +20,7 @@ load_cc_procs();
 
 if (isSessionVar('id') && isSessionVar('idType')) {
     $loginType = getSessionVar('idType');
-    $loginType = getSessionVar('id');
+    $loginId = getSessionVar('id');
 } else {
     header('location:' . $portal_conf['portalsite']);
     exit();
@@ -74,7 +74,7 @@ WHERE
     status IN  ('unpaid', 'paid', 'plan', 'upgraded') AND
     r.conid >= ? AND (r.perid = ? OR r.newperid = ?);
 EOS;
-$holderRegR = dbSafeQuery($holderRegSQL, 'iii', array($conid, $loginType == 'p' ? $loginType : -1, $loginType == 'n' ? $loginType : -1));
+$holderRegR = dbSafeQuery($holderRegSQL, 'iii', array($conid, $loginType == 'p' ? $loginId : -1, $loginType == 'n' ? $loginId : -1));
 $holderMembership = [];
 if ($holderRegR != false && $holderRegR->num_rows > 0) {
     while ($m = $holderRegR->fetch_assoc()) {
@@ -148,7 +148,7 @@ SELECT *
 FROM ppl
 ORDER BY personType DESC, id ASC;
 EOS;
-    $managedByR = dbSafeQuery($managedSQL, 'iiiii', array($conid, $loginType, $conid, $loginType, $loginType));
+    $managedByR = dbSafeQuery($managedSQL, 'iiiii', array($conid, $loginType, $conid, $loginId, $loginId));
 } else {
     $managedSQL = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
@@ -175,7 +175,7 @@ LEFT OUTER JOIN newperson np ON tp.newperid = np.id
 WHERE p.managedByNew = ? AND p.id != p.managedByNew
 ORDER BY id ASC;
 EOS;
-    $managedByR = dbSafeQuery($managedSQL, 'ii', array($conid, $loginType));
+    $managedByR = dbSafeQuery($managedSQL, 'ii', array($conid, $loginId));
 }
 
 $managed = [];
@@ -193,7 +193,7 @@ $interests = getInterests();
 // get the payment plans
 $paymentPlans = getPaymentPlans(true);
 
-portalPageInit('portal', $info['fullname'] . ($loginType == 'p' ? ' (ID: ' : 'Temporary ID: ') . $loginType . ')',
+portalPageInit('portal', $info['fullname'] . ($loginType == 'p' ? ' (ID: ' : 'Temporary ID: ') . $loginId . ')',
     /* css */ array($cdn['tabcss'],
         $cdn['tabbs5'],
     ),
@@ -242,7 +242,7 @@ if ($info['managedByName'] != null) {
     <div class="col-sm-4"><b>Actions</b></div>
 </div>
 <?php
-drawManagedPerson($loginType, $loginType, $info, $holderMembership, $interests != null);
+drawManagedPerson($loginId, $loginType, $info, $holderMembership, $interests != null);
 
 $managedMembershipList = '';
 $currentId = -1;
@@ -252,7 +252,7 @@ $curMB = [];
 foreach ($managed as $m) {
     if ($currentId != $m['id']) {
         if ($currentId > 0) {
-            drawManagedPerson($loginType, $loginType, $curPT, $curMB,$interests != null);
+            drawManagedPerson($loginId, $loginType, $curPT, $curMB,$interests != null);
         }
         $curPT = $m;
         $currentId = $m['id'];
@@ -276,7 +276,7 @@ foreach ($managed as $m) {
     }
 }
 if (count($curMB) > 0) {
-    drawManagedPerson($loginType, $loginType, $curPT, $curMB,$interests != null);
+    drawManagedPerson($loginId, $loginType, $curPT, $curMB,$interests != null);
 
 }
 // compute total due so we can display it up top as well...
