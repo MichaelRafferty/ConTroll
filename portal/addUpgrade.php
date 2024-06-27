@@ -69,7 +69,7 @@ if ($action == 'upgrade') {
         $field = 'managedBy';
     }
         $checkQ = <<<EOS
-SELECT IFNULL($field, id) AS id,
+SELECT IFNULL($field, -1) AS mid, id,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
 FROM $table
 WHERE id = ?;
@@ -80,7 +80,7 @@ EOS;
         exit();
     }
     $checkL = $checkR->fetch_assoc();
-    if ($personId != $checkL['id']) {
+    if ($personId != $checkL['id'] && $personId != $checkL['mid']) {
         header('location:' . $portal_conf['portalsite'] . '?messageFwd=' . urlencode('You no longer manage this person') . '&type=e');
         exit();
     }
