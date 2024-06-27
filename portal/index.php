@@ -178,44 +178,58 @@ if (isset($_GET['vid'])) {
         $email = $match['email'];
         $id = null;
     }
+    if (array_key_exists('validationType', $match)) {
+        $validation_type = $match['validationType'];
+        if ($match['validationType'] != 'token') {
+            if ($match['validationType'] != getSessionVar('auth2') || $email != getSessionVar('email')) {
+                draw_login($config_vars, "<div class='bg-danger text-white'>The link is invalid</div>");
+                exit();
+            }
+        }
+    } else {
+        $validation_type = 'token';
+    }
     $timediff = time() - $match['ts'];
     web_error_log('login @ ' . time() . ' with ts ' . $match['ts'] . " for $email/$id");
     if ($timediff > (1*3600)) {
         draw_login($config_vars, "<div class='bg-danger text-white'>The link has expired, please request a new link</div>");
         exit();
     }
-    // check if the link has been used
-    $linkQ = <<<EOS
+    if ($validation_type == 'token') {
+        // check if the link has been used
+        $linkQ = <<<EOS
 SELECT id, email, useCnt
 FROM portalTokenLinks
 WHERE id = ? AND action = 'login'
 ORDER BY createdTS DESC;
 EOS;
-    $linkR = dbSafeQuery($linkQ, 's', array($linkid));
-    if ($linkR == false || $linkR->num_rows != 1) {
-        draw_login($config_vars, "<div class='bg-danger text-white'>The link is invalid, please request a new link</div>");
-        exit();
-    }
-    $linkL = $linkR->fetch_assoc();
-    if ($linkL['email'] != $email) {
-        draw_login($config_vars, "<div class='bg-danger text-white'>The link is invalid, please request a new link</div>");
-        exit();
-    }
+        $linkR = dbSafeQuery($linkQ, 's', array ($linkid));
+        if ($linkR == false || $linkR->num_rows != 1) {
+            draw_login($config_vars, "<div class='bg-danger text-white'>The link is invalid, please request a new link</div>");
+            exit();
+        }
+        $linkL = $linkR->fetch_assoc();
+        if ($linkL['email'] != $email) {
+            draw_login($config_vars, "<div class='bg-danger text-white'>The link is invalid, please request a new link</div>");
+            exit();
+        }
 
-    if (($linkL['useCnt'] > 0 && $id == NULL) || ($linkL['useCnt'] > 1 && $id != null)) {
-        draw_login($config_vars, "<div class='bg-danger text-white'>The link has already been used, please request a new link</div>");
-        exit();
-    }
+        if (($linkL['useCnt'] > 0 && $id == null) || ($linkL['useCnt'] > 1 && $id != null)) {
+            draw_login($config_vars, "<div class='bg-danger text-white'>The link has already been used, please request a new link</div>");
+            exit();
+        }
 
-    // mark link as used
-    $updQ = <<<EOS
+
+        // mark link as used
+        $updQ = <<<EOS
 UPDATE portalTokenLinks
-SET useCnt = useCnt + 1, useIP = ?, useTS = now()
+SET useCnt = useCnt + 1, useIP = ?, useTS = NOW()
 WHERE id = ?;
 EOS;
-    $updcnt = dbSafeCmd($updQ, 'si', array($_SERVER['REMOTE_ADDR'], $linkid));
-    if ($updcnt != 1) {
-        web_error_log("Error updating link $linkid as used");
+        $updcnt = dbSafeCmd($updQ, 'si', array ($_SERVER['REMOTE_ADDR'], $linkid));
+        if ($updcnt != 1) {
+            web_error_log("Error updating link $linkid as used");
+        }
     }
 
     $account = chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, 'token');

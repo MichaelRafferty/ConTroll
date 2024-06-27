@@ -176,6 +176,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
         foreach ($matches as $match) {
             $match['ts'] = time();
             $match['lid'] = $linkid;
+            $match['validationType'] = $validationType;
             $string = json_encode($match);
             $string = urlencode(openssl_encrypt($string, $cipherInfo['cipher'], $cipherInfo['key'], 0, $cipherInfo['iv']));
             echo "<li><a href='?vid=$string'>" .  $match['fullname'] . "</a></li>\n";
