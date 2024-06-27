@@ -148,7 +148,7 @@ SELECT *
 FROM ppl
 ORDER BY personType DESC, id ASC;
 EOS;
-    $managedByR = dbSafeQuery($managedSQL, 'iiiii', array($conid, $loginType, $conid, $loginId, $loginId));
+    $managedByR = dbSafeQuery($managedSQL, 'iiiii', array($conid, $loginId, $conid, $loginId, $loginId));
 } else {
     $managedSQL = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
