@@ -121,14 +121,8 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
         } else {
             $user_perid = null;
         }
-        if (array_key_exists('user_id', $_SESSION)) {
-            $user_id = $_SESSION['user_id'];
-        } else {
-            $user_id = null;
-        }
     } else {
         $user_perid = null;
-        $user_id = null;
     }
 
     // square api steps
