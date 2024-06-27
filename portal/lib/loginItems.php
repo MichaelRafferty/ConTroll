@@ -93,6 +93,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
         $_SESSION['id'] = $match['id'];
         $_SESSION['idType'] = $match['tablename'];
         $_SESSION['idSource'] = $validationType;
+        unset($_SESSION['oauth2pass']);
         unset($_SESSION['transId']);    // just in case it is hanging around, clear this
         unset($_SESSION['totalDue']);   // just in case it is hanging around, clear this
         header('location:' . $portal_conf['portalsite'] . '/portal.php');
@@ -111,6 +112,13 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
 ?>
                 <p>You may have used a different email address for your account.
                     If this is the case, please use the 'Login with Authentication Link via Email' button below to try a different email address.
+                </p>
+<?php
+        } else if ($validationType == 'google') {
+?>
+                <p>You may have used a different email address for your account.
+                    If this is the case, please use the 'Login with Authentication Link via Email' button below to try a different email address. Once logged
+                    in with that address use the 'Account Settings' menu item to add this address as an alternate identity.
                 </p>
 <?php
         } else {
