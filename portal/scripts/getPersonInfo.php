@@ -26,11 +26,11 @@ if (!(isSessionVar('id') && isSessionVar('idType'))) {
     exit();
 }
 
-$personId = getSessionVar('id');
-$personType = getSessionVar('idType');
+$loginId = getSessionVar('id');
+$loginType = getSessionVar('idType');
 
-$response['personType'] = $personType;
-$response['personId'] = $personId;
+$response['personType'] = $loginType;
+$response['personId'] = $loginId;
 $getId = $_POST['getId'];
 $getType = $_POST['getType'];
 
@@ -77,7 +77,7 @@ if ($person['country'] == null || $person['country'] == '')
     $person['country'] = 'USA';
 
 // now we have the person, lets see if we can edit it.
-if ($personId != $person['managedBy'] && $personId != $person['managedByNew'] && $personId != $person['id']) {
+if ($loginId != $person['managedBy'] && $loginId != $person['managedByNew'] && $loginId != $person['id']) {
     ajaxSuccess(array('status'=>'error', 'message'=>'You have no permission to edit this person.'));
     exit();
 }
@@ -139,16 +139,36 @@ EOS;
 
 if ($membershipReq == 'A') {
     $allMemberships = [];
-    $mQ = <<<EOS
+    if ($loginType == 'p') {
+        $mQ = <<<EOS
 SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory, m.memAge
 FROM reg r
 JOIN memList m ON m.id = r.memId
-JOIN $ptable p ON p.id = r.$rfield
-LEFT OUTER JOIN $ptable pm ON p.$mfield = pm.id
-WHERE r.$rfield = p.id AND r.conid IN (?, ?) AND (pm.id = ? OR p.id = ?)
-ORDER BY r.create_date;
+JOIN perinfo p ON p.id = r.perid
+LEFT OUTER JOIN perinfo pm ON p.managedBy = pm.id
+WHERE r.conid IN (?, ?) AND (pm.id = ? OR p.id = ?)
+UNION
+SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory, m.memAge
+FROM reg r
+JOIN memList m ON m.id = r.memId
+JOIN newperson n ON n.id = r.newperid
+LEFT OUTER JOIN perinfo pm ON n.managedBy = pm.id
+WHERE r.conid IN (?, ?) AND (pm.id = ?)
+ORDER BY create_date;
 EOS;
-    $mR = dbSafeQuery($mQ, 'iiii', array($conid, $conid + 1, $personId, $personId));
+        $mR = dbSafeQuery($mQ, 'iiiiiii', array ($conid, $conid + 1, $loginId, $loginId, $conid, $conid + 1, $loginId));
+    } else {
+        $mq = <<<EOS
+SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory, m.memAge
+FROM reg r
+JOIN memList m ON m.id = r.memId
+JOIN newperson n ON n.id = r.newperid
+LEFT OUTER JOIN newperson nm ON n.managedByNew = nm.id
+WHERE r.conid IN (?, ?) AND (nm.id = ? OR n.id = ?)
+ORDER BY create_date;
+EOS;
+        $mR = dbSafeQuery($mQ, 'iiii', array ($conid, $conid + 1, $loginId, $loginId));
+    }
     if ($mR !== false) {
         while ($row = $mR->fetch_assoc()) {
             $allMemberships[] = $row;
