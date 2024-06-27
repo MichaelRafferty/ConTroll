@@ -27,7 +27,19 @@ $loginId = null;
 $loginType = null;
 
 // first lets check the Oauth2 stuff. but only if not loging out
-    if (!isset($_REQUEST['logout'])) {
+    // in session, is it a logout?
+    if (isset($_REQUEST['logout'])) {
+        unset($_SESSION['id']);
+        unset($_SESSION['idType']);
+        unset($_SESSION['idSource']);
+        unset($_SESSION['transId']);
+        unset($_SESSION['totalDue']);
+        unset($_SESSION['oauth2']);
+        unset($_SESSION['oauth2pass']);
+        unset($_SESSION['oauth2state']);
+        header('location:' . $portal_conf['portalsite']);
+        exit();
+    } else {
         if (isset($_GET['oauth2'])) {
             if (!isset($_SESSION['oauth2pass'])) {
                 $_SESSION['oauth2'] = $_GET['oauth2'];
@@ -85,20 +97,7 @@ $loginType = null;
     }
 
 if (isset($_SESSION['id'])) {
-// in session, is it a logout?
-    if (isset($_REQUEST['logout'])) {
-        unset($_SESSION['id']);
-        unset($_SESSION['idType']);
-        unset($_SESSION['idSource']);
-        unset($_SESSION['transId']);
-        unset($_SESSION['totalDue']);
-        unset($_SESSION['oauth2']);
-        unset($_SESSION['oauth2pass']);
-        unset($_SESSION['oauth2state']);
-        header('location:' . $portal_conf['portalsite']);
-        exit();
-    }
-    // nope, just set the vendor id
+    // In a session, just set the id and type
     $loginType = $_SESSION['idType'];
     $loginId = $_SESSION['id'];
     if (isset($_GET['vid'])) {
