@@ -90,7 +90,12 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
     $count = count($matches);
     if ($count == 1) {
         $match = $matches[0];
-        $email = $match['email'];
+        if (array_key_exists('email', $match)) {
+            $email = $match['email'];
+        }
+        if (array_key_exists('email_addr', $match)) {
+            $email = $match['email_addr'];
+        }
         $id = $match['id'];
         setSessionVar('id', $id);
         setSessionVar('idType', $match['tablename']);
