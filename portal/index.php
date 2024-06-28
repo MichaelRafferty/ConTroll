@@ -289,7 +289,7 @@ EOS;
     // set expiration for email
     $hrs = $portal_conf['emailhrs'];
     if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 24;
-    setSessionVar('tokenExpiration', ($hrs * 3600));
+    setSessionVar('tokenExpiration', time() + ($hrs * 3600));
     setSessionVar('email', $email);
     setSessionVar('tokenType', 'token');
 

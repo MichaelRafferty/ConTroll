@@ -1,6 +1,4 @@
 <?php
-    require_once('../lib/email__load_methods.php');
-    require_once('../lib/cipher.php');
 
 // refreshSession:  using the session variables, get the session to refresh via index.php
 
