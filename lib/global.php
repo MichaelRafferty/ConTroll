@@ -85,9 +85,9 @@ function unsetSessionVar($name) {
 function clearSession($prefix = '') {
     global $appSessionPrefix;
     $checkPrefix = ($appSessionPrefix != null ? $appSessionPrefix : '') . $prefix;
-    $len = strlen($prefix);
+    $len = strlen($checkPrefix);
     foreach ($_SESSION as $key => $value) {
-        if (mb_substr($key, 0, $len) == $prefix)
+        if (mb_substr($key, 0, $len) == $checkPrefix)
             unset($_SESSION[$key]);
     }
 }

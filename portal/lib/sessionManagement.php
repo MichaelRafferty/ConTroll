@@ -22,7 +22,18 @@ function refreshSession() {
             exit();
 
         case 'oauth2':
-            echo "working on login via oauth2 token\n";
+            $portal_conf = get_conf('portal');
+
+            echo "<br/>working on login via oauth2 token<br/>\n";
+            $provider = getSessionVar('oauth2');
+            echo "provider: $provider<br/>\n";
+            $redirect = $portal_conf['portalsite'] . "?oauth2=$provider&refresh";
+            echo "Redirect: $redirect<br/>\n";
+?>
+    <script type='text/javascript'>
+        window.location = "<?php echo $redirect; ?>";
+    </script>
+<?php
             exit();
     }
     echo "Unknown refresh request\n";
