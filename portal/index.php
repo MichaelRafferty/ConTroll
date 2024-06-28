@@ -111,7 +111,7 @@ $loginType = null;
         setSessionVar('tokenType', 'oauth2');
         $hrs = $portal_conf['oauthhrs'];
         if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 8;
-        setSessionVar('tokenExpiration', time() + 60; // ($hrs * 3600));
+        setSessionVar('tokenExpiration', time() + 60); // ($hrs * 3600));
 
         if ($oldemail != null) {
             // this is a refresh, don't choose the account again, just return to the home page of the portal, don't disturb any other session variables
