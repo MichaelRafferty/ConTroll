@@ -141,7 +141,7 @@ EOS;
             return;
         }
 
-        if ($iR->row_count == 1) {
+        if ($iR->num_rows == 1) {
             $identity = $iR->fetch_assoc();
             $iR->free();
             $uQ = <<<EOS

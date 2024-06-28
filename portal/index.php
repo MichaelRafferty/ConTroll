@@ -4,6 +4,7 @@ require_once("lib/base.php");
 require_once("lib/getLoginMatch.php");
 require_once("lib/loginItems.php");
 require_once("lib/portalForms.php");
+require_once("lib/sessionManagement.php");
 require_once("../lib/cipher.php");
 require_once("../lib/googleOauth2.php");
 
@@ -110,7 +111,12 @@ $loginType = null;
         setSessionVar('subscriberId', $oauthParams['subscriberId']);
         setSessionVar('tokenType', 'oauth2');
         updateSubscriberId(getSessionVar('oauth2'), $email, $oauthParams['subscriberId']);
-        $hrs = $portal_conf['oauthhrs'];
+
+        if (array_key_exists('oauthhrs', $portal_conf)) {
+            $hrs = $portal_conf['oauthhrs'];
+        } else {
+            $hrs = 8;
+        }
         if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 8;
         setSessionVar('tokenExpiration', time() + ($hrs * 3600));
 
@@ -151,7 +157,11 @@ if (isSessionVar('id')) {
                 clearSession();
             } else {
                 $refresh = true;
-                $hrs = $portal_conf['emailhrs'];
+                if (array_key_exists('emailhrs', $portal_conf)) {
+                    $hrs = $portal_conf['emailhrs'];
+                } else {
+                    $hrs = 24;
+                }
                 if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 24;
                 setSessionVar('tokenExpiration', time() + ($hrs * 3600));
                 header('location:' . $portal_conf['portalsite'] . '/portal.php');
@@ -234,7 +244,11 @@ EOS;
     }
 
     // set expiration for email
-    $hrs = $portal_conf['emailhrs'];
+    if (array_key_exists('emailhrs', $portal_conf)) {
+        $hrs = $portal_conf['emailhrs'];
+    } else {
+        $hrs = 24;
+    }
     if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 24;
     setSessionVar('tokenExpiration', time() + ($hrs * 3600));
     setSessionVar('email', $email);
