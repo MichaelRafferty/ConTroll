@@ -116,3 +116,48 @@ EOS;
     }
     return null;
 }
+
+// updateSubscriberId - update the subsccriber id in the identites area and if necessary create it
+    function updateSubscriberId($provider, $email, $subscriberId) {
+        // first check if this entry already exists
+        $uQ = <<<EOS
+UPDATE perinfoIdentities
+SET email_addr = ?
+WHERE provider = ? AND subscriberID = ?;
+EOS;
+       $num_upd = dbSafeCmd($uQ, 'sss', array($email, $provider, $subscriberId));
+    }
+
+    // updateIdentityUsage - create or update the identity and set it's last used date, subscriber id if needed, and the use count
+    function updateIdentityUsage($id, $provider, $email) {
+        $iQ = <<<EOS
+SELECT *
+FROM perinfoIdentities
+WHERE perid = ? AND provider = ? AND email_addr = ?;
+EOS;
+        $iR = dbSafeQuery($iQ, 'iss', array($id, $provider, $email));
+        if ($iR == false) {
+            web_error_log('Error inserting finding identity for ' . $provider);
+            return;
+        }
+
+        if ($iR->row_count == 1) {
+            $identity = $iR->fetch_assoc();
+            $iR->free();
+            $uQ = <<<EOS
+UPDATE perinfoIdentities
+SET 
+    lastUseTs = current_timestamp(), useCount = useCount + 1
+WHERE perid = ? AND provider = ? AND email_addr = ?; 
+EOS;
+            $num_upd = dbSafeCmd($uQ, 'iss', array($id, $provider, $email));
+        } else {
+            $iR->free();
+            // it doesn't exist, create it
+            $cQ = <<<EOS
+INSERT INTO perinfoIdentities(perid, provider, email_addr, subscriberID, lastUseTS, useCount)
+VALUES (?,?,?,?,current_timestamp(),1);
+EOS;
+            $num_uod = dbSafeInsert($cQ, 'isss', array($id, $provider, $email, getSessionVar('subscriberId')));
+        }
+    }

@@ -101,14 +101,25 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
         if (array_key_exists('ts', $match)) {
             $ts = " with ts ". $match['ts'];
         }
+        if (isSessionVar('id')) {
+            // we had a prior session
+            if (getSessionVar('id') != $id) {
+                // not same id, treat it as a new login
+                unsetSessionVar('transId');    // just in case it is hanging around, clear this
+                unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
+                $type = 'id change login';
+            } else {
+                $type = 'refresh';
+            }
+        } else {
+            $type = 'new login';
+        }
         setSessionVar('id', $id);
         setSessionVar('idType', $match['tablename']);
         setSessionVar('idSource', $validationType);
-        unsetSessionVar('transId');    // just in case it is hanging around, clear this
-        unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
 
-
-        web_error_log('login @ ' . time() . "$ts for $email/$id via $validationType");
+        updateIdentityUsage($id, $validationType, $email)
+        web_error_log("$type @ " . time() . "$ts for $email/$id via $validationType");
         header('location:' . $portal_conf['portalsite'] . '/portal.php');
         exit();
     }

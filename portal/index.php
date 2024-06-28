@@ -109,6 +109,7 @@ $loginType = null;
         setSessionVar('avatarURL', $oauthParams['avatarURL']);
         setSessionVar('subscriberId', $oauthParams['subscriberId']);
         setSessionVar('tokenType', 'oauth2');
+        updateSubscriberId(getSessionVar('oauth2'), $email, $oauthParams['subscriberId']);
         $hrs = $portal_conf['oauthhrs'];
         if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 8;
         setSessionVar('tokenExpiration', time() + ($hrs * 3600));
