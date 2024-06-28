@@ -98,9 +98,11 @@ update_date, active, banned,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname, 'p' AS tablename
 FROM perinfoIdentities pi
 JOIN perinfo p ON (p.id = pi.perid)
-WHERE pi.email_addr = ? AND pi.provider = ? AND pi.subscriberID = ? AND IFNULL(first_name,'') != 'Merged' AND IFNULL(middle_name,'') != 'into';
+WHERE pi.email_addr = ? AND pi.provider = ? AND (pi.subscriberID = ? OR pi.subscriberID IS NULL) 
+  AND pi.email_addr != p.email_addr
+  AND IFNULL(first_name,'') != 'Merged' AND IFNULL(middle_name,'') != 'into';
 EOS;
-        $regcountQ = dbSafeQuery($regcountQ, 'sss', array($email, getSessionVar('oauth2'), getSessionVar('subscriberId')));
+        $regcountR = dbSafeQuery($regcountQ, 'sss', array($email, getSessionVar('oauth2'), getSessionVar('subscriberId')));
         if ($regcountR == false) {
             return('Query Error - seek assistance');
         }
@@ -120,9 +122,10 @@ update_date, active, banned,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname, 'p' AS tablename
 FROM perinfoIdentities pi
 JOIN perinfo p ON (p.id = pi.perid)
-WHERE pi.email_addr = ? AND pi.provider = ? AND IFNULL(first_name,'') != 'Merged' AND IFNULL(middle_name,'') != 'into';
+WHERE pi.email_addr = ? AND pi.provider = ? AND pi.email_addr != p.email_addr
+  AND IFNULL(first_name,'') != 'Merged' AND IFNULL(middle_name,'') != 'into';
 EOS;
-        $regcountQ = dbSafeQuery($regcountQ, 'ss', array($email, 'email'));
+        $regcountR = dbSafeQuery($regcountQ, 'ss', array($email, 'email'));
         if ($regcountR == false) {
             return('Query Error - seek assistance');
         }

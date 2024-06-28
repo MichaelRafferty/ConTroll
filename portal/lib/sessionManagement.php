@@ -126,6 +126,14 @@ SET email_addr = ?
 WHERE provider = ? AND subscriberID = ?;
 EOS;
        $num_upd = dbSafeCmd($uQ, 'sss', array($email, $provider, $subscriberId));
+
+       $uQ = <<<EOS
+UPDATE perinfoIdentities
+SET subscriberID = ?
+WHERE provider = ? AND email_addr = ? AND subscriberID IS NULL;
+EOS;
+
+        $num_upd = dbSafeCmd($uQ, 'sss', array($subscriberId, $provider, $email));
     }
 
     // updateIdentityUsage - create or update the identity and set it's last used date, subscriber id if needed, and the use count
@@ -147,10 +155,10 @@ EOS;
             $uQ = <<<EOS
 UPDATE perinfoIdentities
 SET 
-    lastUseTs = current_timestamp(), useCount = useCount + 1, subscriberID = ?
+    lastUseTs = current_timestamp(), useCount = useCount + 1
 WHERE perid = ? AND provider = ? AND email_addr = ?; 
 EOS;
-            $num_upd = dbSafeCmd($uQ, 'siss', array(getSessionVar('subscriberId'), $id, $provider, $email));
+            $num_upd = dbSafeCmd($uQ, 'iss', array($id, $provider, $email));
         } else {
             $iR->free();
             // it doesn't exist, create it
