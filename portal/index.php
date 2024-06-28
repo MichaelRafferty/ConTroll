@@ -118,6 +118,7 @@ $loginType = null;
             header('location:' . $portal_conf['portalsite'] . '/portal.php');
         }
 
+        draw_indexPageTop($condata);
         // not a refresh, choose the account from the email
         $account = chooseAccountFromEmail($email, null, null, $cipherInfo, getSessionVar('oauth2'));
         if ($account == null || !is_numeric($account)) {
@@ -159,62 +160,7 @@ if (isSessionVar('id')) {
     }
 }
 
-index_page_init($condata['label'] . ' Membership Portal');
-?>
-<body id="membershipPortalBody">
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-sm-12 p-0">
-            <?php
-                if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') {
-                    if (array_key_exists('logoalt', $ini)) {
-                        $altstring = $ini['logoalt'];
-                    }
-                    else {
-                        $altstring = 'Logo';
-                    } ?>
-                    <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring; ?>"/>
-                    <?php
-                }
-                if (array_key_exists('logotext', $ini) && $ini['logotext'] != '') {
-                    echo $ini['logotext'];
-                }
-            ?>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-12 mt-2">
-            <h1>Membership Portal</h1>
-        </div>
-    </div>
-    <?php
-        if ($portal_conf['open'] == 0) { ?>
-            <p class='text-primary'>The membership portal is currently closed. Please check the website to determine when it will open or try again
-                tomorrow.</p>
-            <?php
-            exit;
-        }
-    ?>
-    <div class="row p-1">
-        <div class="col-sm-auto">
-            Welcome to the <?php echo $con['label']; ?> Membership Portal.
-        </div>
-    </div>
-    <div class="row p-1">
-        <div class="col-sm-12">
-            From here you can create and manage your membership account.
-        </div>
-    </div>
-    <?php
-        if ($portal_conf['test'] == 1) {
-            ?>
-            <div class="row">
-                <div class="col-sm-12">
-                    <h2 class='warn'>This Page is for test purposes only</h2>
-                </div>
-            </div>
-            <?php
-        }
+draw_indexPageTop($condata);
 
 if (isset($_GET['vid'])) {
     // handle link login
@@ -311,3 +257,67 @@ EOS;
     <script type='text/javascript'>
         window.location = "<?php echo $portal_conf['portalsite'] . '/portal.php' ?>";
     </script>
+<?php
+function draw_indexPageTop($condata) {
+    $con = get_conf('con');
+    $conid = $con['id'];
+    $portal_conf = get_conf('portal');
+    $ini = get_conf('reg');
+
+    index_page_init($condata['label'] . ' Membership Portal');
+    echo <<<EOS
+<body id="membershipPortalBody">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12 p-0">
+EOS;
+    if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') {
+        if (array_key_exists('logoalt', $ini)) {
+            $altstring = $ini['logoalt'];
+        } else {
+            $altstring = 'Logo';
+        }
+        echo '<img class="img-fluid" src="images/' . $ini['logoimage'] . '"' . " alt='$altstring'/>\n";
+    }
+    if (array_key_exists('logotext', $ini) && $ini['logotext'] != '') {
+        echo $ini['logotext'];
+    }
+    echo <<<EOS
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12 mt-2">
+            <h1>Membership Portal</h1>
+        </div>
+    </div>
+EOS;
+
+    if ($portal_conf['open'] == 0) { ?>
+        <p class='text-primary'>The membership portal is currently closed. Please check the website to determine when it will open or try again
+            tomorrow.</p>
+        <?php
+        exit;
+    }
+    $label = $con['label'];
+    echo <<<EOS
+    <div class="row p-1">
+        <div class="col-sm-auto">
+            Welcome to the $label Membership Portal.
+        </div>
+    </div>
+    <div class="row p-1">
+        <div class="col-sm-12">
+            From here you can create and manage your membership account.
+        </div>
+    </div>
+EOS;
+    if ($portal_conf['test'] == 1) {
+        echo <<<EOS
+        <div class="row">
+            <div class="col-sm-12">
+                <h2 class='warn'>This Page is for test purposes only</h2>
+            </div>
+        </div>
+EOS;
+    }
+}
