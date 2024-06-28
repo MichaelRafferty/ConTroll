@@ -86,8 +86,9 @@ echo $conid;
                 $regionName = $regionInfo['regionName']; 
                 $actual_link = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
                 ?>
-        <li class='nav-item <?php if($isRegion) { echo 'active'; } ?>' role='presentation'>
-            <button class='nav-link' id='<?php echo $regionName; ?>-tab'data-bs-toggle='pill' type='button' role='tab' aria-controls='nav-<?php echo $regionName; ?>' aria-selected='<?php echo $isRegion?'true':'false'; ?>' onclick='window.location = "<?php echo $actual_link . '?region=' . $regionName; ?>"'>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link <?php if($isRegion) { echo 'active'; } ?>' id='<?php echo $regionName; ?>-tab'data-bs-toggle='pill' type='button' role='tab' aria-controls='nav-<?php echo $regionName; ?>' aria-selected='<?php echo $isRegion?'true':'false'; ?>'
+                    onclick='window.location = "<?php echo $actual_link . '?region=' . $regionName; ?>"'>
                 <?php echo $regionName; ?>
             </button>
         </li>
@@ -183,6 +184,7 @@ while($artist = $artistR->fetch_assoc()) {
                     <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="start_over(0);" hidden>Next Customer</button>
                 </div>
             </div>
-        </div>       
+        </div>
     </div>
-<pre id='test'></pre>
+    <div id='result_message' class='mt-4 p-2'></div>
+    <pre id='test'></pre>

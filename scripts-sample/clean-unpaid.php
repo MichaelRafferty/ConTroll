@@ -20,19 +20,20 @@ $regQ = <<<EOS
 WITH UNPAID AS (
     SELECT *
     FROM reg 
-    WHERE complete_trans IS NULL AND perid IS NOT NULL AND conid in (?, ?) AND IFNULL(paid, 0) = 0
+    WHERE complete_trans IS NULL AND perid IS NOT NULL AND conid in (?, ?) AND (IFNULL(paid, 0) = 0 AND IFNULL(price, 0) > 0)
+        AND IFNULL(paid, 0) + IFNULL(couponDiscount, 0) != IFNULL(price, 0)
 )
 SELECT DISTINCT u.*
 FROM UNPAID u
 JOIN memList mu ON (u.memId = mu.id)
 JOIN reg r ON (r.perid = u.perid and r.memId = u.memId and r.complete_trans is not null AND r.conid = ?
-    AND TIMESTAMPDIFF(SECOND,u.create_date,r.create_date) > 0 AND TIMESTAMPDIFF(SECOND,u.create_date,r.create_date) < ?)
+    AND TIMESTAMPDIFF(SECOND,u.create_date,r.create_date) > 0 AND TIMESTAMPDIFF(SECOND,u.create_date,r.create_date) < ?);
 EOS;
 $regR = dbSafeQuery($regQ, 'iiii', array($id, $id + 1, $id, $maxDiff));
 if ($regR === false)
     exit(1);
 if ($regR->num_rows == 0) {
-    echo "No unpaid -> paid records to process\n";
+    echo "Phase 1: No unpaid -> paid records to process\n";
 } else {
     $unpaidsReg = [];
     $regRollback = [];
@@ -71,7 +72,7 @@ EOS;
     if ($transR === false)
         exit(1);
     if ($transR->num_rows == 0) {
-        echo "No unpaid -> paid transactions to process\n";
+        echo "Phase 1: No unpaid -> paid transactions to process\n";
     } else {
         $unpaidsTrans = [];
         $transRollback = [];
@@ -106,24 +107,24 @@ EOS;
             //echo "DELETE FROM transaction WHERE id = ?;', 'i', " . $trans['id'] . ")\n";
             $num_trans = dbSafeCmd('DELETE FROM transaction WHERE id = ?;', 'i', array($trans['id']));
         }
-        echo "$num_reg registrations deleted from unpaid attempts becoming paid with a later transaction, $num_trans transactions deleted\n";
+        echo "Phase 1: $num_reg registrations deleted from unpaid attempts becoming paid with a later transaction, $num_trans transactions deleted\n";
     }
 }
 //  now for just unpaid ones
 $maxDiff = 14*24*60*60;
-$reqQ = <<<EOS
+$regQ = <<<EOS
 SELECT r.*
 FROM reg r
 JOIN transaction t ON (r.create_trans = t.id)
-WHERE r.complete_trans IS NULL AND r.perid IS NOT NULL 
-    AND r.conid IN (?, ?) AND IFNULL(r.paid, 0) = 0 AND r.price > 0
+WHERE r.complete_trans IS NULL AND r.perid IS NOT NULL AND r.conid in (?, ?) AND (IFNULL(r.paid, 0) = 0 AND IFNULL(r.price, 0) > 0)
+    AND IFNULL(r.paid, 0) + IFNULL(r.couponDiscount, 0) != IFNULL(r.price, 0)
     AND TIMESTAMPDIFF(SECOND,r.create_date,NOW()) > ? AND t.conid = ?;
 EOS;
 $regR = dbSafeQuery($regQ, 'iiii', array($id, $id + 1, $maxDiff, $id));
 if ($regR === false)
     exit(1);
 if ($regR->num_rows == 0) {
-    echo "No old unpaid records to process\n";
+    echo "Phase 2: No old unpaid records to process\n";
 } else {
     $unpaidsReg = [];
     $regRollback = [];
@@ -149,14 +150,14 @@ WITH UNPAID AS (
     FROM reg r
     JOIN transaction t ON (r.create_trans = t.id)
     WHERE r.complete_trans IS NULL AND r.perid IS NOT NULL 
-        AND r.conid IN (?, ?) AND IFNULL(r.paid, 0) = 0 AND r.price > 0
-        AND TIMESTAMPDIFF(SECOND,r.create_date,NOW()) > ? AND t.conid = ?;
+        AND r.conid IN (?, ?) AND IFNULL(r.paid, 0) = 0 AND IFNULL(r.price, 0) > 0
+        AND TIMESTAMPDIFF(SECOND,r.create_date,NOW()) > ? AND t.conid = ?
 )
 SELECT DISTINCT t.*
 FROM UNPAID u
 JOIN transaction t on (u.create_trans = t.id) AND t.conid = ?
 EOS;
-    $transR = dbSafeQuery($transQ, 'iiii', array($id, $id + 1, $maxDiff, $id));
+    $transR = dbSafeQuery($transQ, 'iiiii', array($id, $id + 1, $maxDiff, $id, $id));
     if ($transR === false)
         exit(1);
 
@@ -193,7 +194,7 @@ EOS;
         //echo "DELETE FROM transaction WHERE id = ?;', 'i', " . $trans['id'] . ")\n";
         $num_trans = dbSafeCmd('DELETE FROM transaction WHERE id = ?;', 'i', array($trans['id']));
     }
-    echo "$num_reg registrations deleted from expired unpaid, $num_trans transactions deleted\n";
+    echo "Phase 2: $num_reg registrations deleted from expired unpaid, $num_trans transactions deleted\n";
 }
 
 exit(0);
