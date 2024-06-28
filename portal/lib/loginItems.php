@@ -118,7 +118,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
         setSessionVar('idType', $match['tablename']);
         setSessionVar('idSource', $validationType);
 
-        updateIdentityUsage($id, $validationType, $email)
+        updateIdentityUsage($id, $validationType, $email);
         web_error_log("$type @ " . time() . "$ts for $email/$id via $validationType");
         header('location:' . $portal_conf['portalsite'] . '/portal.php');
         exit();
