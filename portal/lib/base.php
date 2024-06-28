@@ -100,15 +100,19 @@ function portalPageInit($page, $title, $css, $js, $refresh = false) {
             <div class='row'>
                 <div class='col-sm-1 p-1'>
                     <?php
-                    if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') {
-                        if (array_key_exists('logoalt', $ini)) {
-                            $altstring = $ini['logoalt'];
-                        } else {
-                            $altstring = 'Logo';
-                        } ?>
-                        <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring; ?>" style="width:'100vw'; height:'auto';"/>
-                        <?php
+                    if (array_key_exists('logoimage', $portal_conf) && $portal_conf['logoimage'] != '') {
+                        $logoImage = $portal_conf['logoimage'];
+                    } else if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') {
+                        $logoImage = $ini['logoimage'];
                     }
+                    if (array_key_exists('logoalt', $portal_conf) && $portal_conf['logoalt'] != '') {
+                        $logoAlt = $portal_conf['logoalt'];
+                    } else if (array_key_exists('logoalt', $ini) && $ini['logoalt'] != '') {
+                            $altstring = $ini['logoalt'];
+                    } else {
+                            $altstring = 'Logo';
+                    }
+                    echo "<img class='img-fluid' src='images/$logoImage' alt='$altstring'/>\n";
                     ?>
                 </div>
                 <div class="col-sm-11 text-bg-primary text-white">
