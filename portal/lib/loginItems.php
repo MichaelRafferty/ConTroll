@@ -82,7 +82,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
 
     $portal_conf = get_conf('portal');
 
-    $loginData = getLoginMatch($email, $id);
+    $loginData = getLoginMatch($email, $id, $validationType);
     if (!is_array($loginData)) {
         return $loginData;  // return the error message from getLoginMatch
     }

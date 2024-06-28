@@ -1,8 +1,9 @@
 <?php
 // getLoginMatch: retrieve all rows from perinfo and newperinfo that match the info the user provided
 
-function getLoginMatch($email, $id = null) {
+function getLoginMatch($email, $id = null, $validationType = null) {
     $response = [];
+    // first the perinfo table items
 // check if it's a numeric response
     if (is_numeric($email)) {
         $regcountQ = <<<EOS
@@ -87,8 +88,56 @@ EOS;
         $matches[] = $person;
     }
     $regcountR->free();
+
+    // now lets add in the perinfoIdentity items (which just give us alternate emails to look for
+    // if the provider is known, we search for that provider, else we search for email as the provider.
+    if (isSessionVar('oauth2')) {
+        $regcountQ = <<<EOS
+SELECT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip, country, creation_date, 
+update_date, active, banned,
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname, 'p' AS tablename
+FROM perinfoIdentities pi
+JOIN perinfo p ON (p.id = pi.perid)
+WHERE pi.email_addr = ? AND pi.provider = ? AND pi.subscriberID = ? AND IFNULL(first_name,'') != 'Merged' AND IFNULL(middle_name,'') != 'into';
+EOS;
+        $regcountQ = dbSafeQuery($regcountQ, 'sss', array($email, getSessionVar('oauth2'), getSessionVar('subscriberId')));
+        if ($regcountR == false) {
+            return('Query Error - seek assistance');
+        }
+
+        $count += $regcountR->num_rows;
+        $response['count'] = $count;
+        while ($person = $regcountR->fetch_assoc()) {
+            $matches[] = $person;
+        }
+        $regcountR->free();
+    }
+
+    if ($validationType != null && $validationType == 'token') {
+        $regcountQ = <<<EOS
+SELECT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip, country, creation_date, 
+update_date, active, banned,
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname, 'p' AS tablename
+FROM perinfoIdentities pi
+JOIN perinfo p ON (p.id = pi.perid)
+WHERE pi.email_addr = ? AND pi.provider = ? AND IFNULL(first_name,'') != 'Merged' AND IFNULL(middle_name,'') != 'into';
+EOS;
+        $regcountQ = dbSafeQuery($regcountQ, 'ss', array($email, 'email'));
+        if ($regcountR == false) {
+            return('Query Error - seek assistance');
+        }
+
+        $count += $regcountR->num_rows;
+        $response['count'] = $count;
+        while ($person = $regcountR->fetch_assoc()) {
+            $matches[] = $person;
+        }
+        $regcountR->free();
+    }
+
     $response['matches'] = $matches;
 
+    // now we have them all
     if ($count == 0) {
         $response['error'] = 'No matching emails found';
     } else if ($count == 1) {
