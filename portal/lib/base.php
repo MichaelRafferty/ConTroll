@@ -269,3 +269,21 @@ function getPersonInfo() {
     $personR->free();
     return $info;
 }
+
+// timeSinceLastToken - how many seconds since the last token send for this reason to this email - to avoid flooding
+// used in index for login and in account settings for attach and identity
+    function timeSinceLastToken($action, $email) {
+        $cQ = <<<EOS
+SELECT MIN(TIMESTAMPDIFF(SECOND,createdTS,NOW())) AS TS
+FROM portalTokenLinks
+WHERE action = ? and email = ? AND useCnt = 0;
+EOS;
+        $cR = dbSafeQuery($cQ, 'ss', array($action, $email));
+        if ($cR === false || $cR->num_rows == 0) {
+            return null;
+        }
+
+        $seconds = $cR->fetch_row()[0];
+        $cR->free();
+        return $seconds;
+    }

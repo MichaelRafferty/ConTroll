@@ -122,7 +122,7 @@ $loginInfo = $cR->fetch_assoc();
 $cR->free();
 
 $waittime = 1; // hours
-$ts = timeSinceLastToken('attach', $email);
+$ts = timeSinceLastToken('identity', $email);
 if ($ts != null && $ts < $waittime * 60 * 60) {
     $hrs = $waittime - floor($ts/(60*60));
     ajaxSuccess(array('status'=>'error', 'message'=>"There already is an outstanding identity request to $provider:$email.<br/>" .
