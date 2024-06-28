@@ -1,9 +1,7 @@
 <?php
 require_once('../lib/base.php');
 require_once('../lib/getLoginMatch.php');
-require_once('../../lib/email__load_methods.php');
-require_once('../../lib/log.php');
-require_once('../../lib/cipher.php');
+require_once('../lib/sessionManagement.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -51,11 +49,11 @@ switch ($type) {
             $response['status'] = 'error';
             $response['message'] = 'No matching emails found';
         } else if ($count == 1) {
+            clearSession();  // clean logout
             setSessionVar('id', $matches[0]['id']);
             setSessionVar('idType', $matches[0]['tablename']);
             setSessionVar('idSource', 'dev');
-            unsetSessionVar('transId');    // just in case it is hanging around, clear this
-            unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
+            setSessionVar('tokenExpiration', time() + (999999 * 3600));
             $response['status'] = 'success';
         }
 
@@ -63,52 +61,11 @@ switch ($type) {
         break;
 
     case 'token':
-        $waittime = 5; // minutes
-        $ts = timeSinceLastToken('login', $email);
-        if ($ts != null && $ts < ($waittime * 60)) {
-            $mins = $waittime - floor($ts/60);
-            ajaxSuccess(array('status'=>'error', 'message'=>"There already is an outstanding login request to $email.<br/>" .
-                "Please check your spam folder for the request.<br/>You will have to wait $mins minutes before trying again."));
+        $message = sendEmailToken($email, false);
+        if ($message != null) {
+            ajaxSuccess(array('status'=>'error', 'message'=>$message));
             exit;
         }
-
-        // encrypt/decrypt stuff
-        $cipherParams = getLoginCipher();
-        $insQ = <<<EOS
-INSERT INTO portalTokenLinks(email, action, source_ip)
-VALUES(?, 'login', ?);
-EOS;
-        $insid = dbSafeInsert($insQ, 'ss', array($email, $_SERVER['REMOTE_ADDR']));
-        if ($insid == false) {
-            web_error_log('Error inserting tracking ID for email link');
-        }
-
-        $parms = array();
-        $parms['email'] = $email;       // address to verify via email
-        $parms['type'] = 'token-resp';  // verify type
-        $parms['ts'] = time();          // when requested for timeout check
-        $parms['lid'] = $insid;         // id in portalTokenLinks table
-        $string = json_encode($parms);  // convert object to json for making a string out of it, which is encrypted in the next line
-        $string = urlencode(openssl_encrypt($string, $cipherParams['cipher'], $cipherParams['key'], 0, $cipherParams['iv']));
-        $token = $portal_conf['portalsite'] . "/index.php?vid=$string";     // convert to link for emailing
-
-        load_email_procs();
-        $body = 'Here is the login link you requested for the ' . $conf['label'] . ' Membership Portal.' . PHP_EOL . PHP_EOL . $token . PHP_EOL . PHP_EOL .
-            'Click the link to verify your email address' . PHP_EOL;
-        $htmlbody = '<p>Here is the login link you requested for the ' . $conf['label'] . ' Membership Portal.</p><p><a href="' . $token . '">' .
-            'Click this link to verify your email address' . '</a></p>' . PHP_EOL;
-
-        $return_arr = send_email($conf['regadminemail'], trim($email), /* cc */ null, $conf['label'] . ' Membership Portal Login Link', $body, $htmlbody);
-        if (array_key_exists('error_code', $return_arr)) {
-            $error_code = $return_arr['error_code'];
-        } else {
-            $error_code = null;
-        }
-        if (array_key_exists('email_error', $return_arr)) {
-            $response['status'] = 'error';
-            $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error-code';
-        }
-        ajaxSuccess($response);
         break;
 
     default:

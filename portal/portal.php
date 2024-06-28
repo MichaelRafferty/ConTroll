@@ -3,6 +3,7 @@
 require_once("lib/base.php");
 require_once("lib/portalForms.php");
 require_once('lib/getAccountData.php');
+require_once('lib/sessionManagement.php');
 require_once("../lib/interests.php");
 require_once("../lib/paymentPlans.php");
 require_once('../lib/cc__load_methods.php');
@@ -21,6 +22,8 @@ load_cc_procs();
 if (isSessionVar('id') && isSessionVar('idType')) {
     $loginType = getSessionVar('idType');
     $loginId = getSessionVar('id');
+    $expiration = getSessionVar('tokenExpiration');
+    $refresh = time() > $expiration;
 } else {
     header('location:' . $portal_conf['portalsite']);
     exit();
@@ -51,8 +54,9 @@ if ($info === false) {
 }
 $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
+if (!$refresh) {
 // get the account holder's registrations
-$holderRegSQL = <<<EOS
+    $holderRegSQL = <<<EOS
 SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, r.price AS actPrice, r.conid, 
     nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
     CASE
@@ -74,29 +78,30 @@ WHERE
     status IN  ('unpaid', 'paid', 'plan', 'upgraded') AND
     r.conid >= ? AND (r.perid = ? OR r.newperid = ?);
 EOS;
-$holderRegR = dbSafeQuery($holderRegSQL, 'iii', array($conid, $loginType == 'p' ? $loginId : -1, $loginType == 'n' ? $loginId : -1));
-$holderMembership = [];
-if ($holderRegR != false && $holderRegR->num_rows > 0) {
-    while ($m = $holderRegR->fetch_assoc()) {
-        if ($m['memType'] == 'donation') {
-            $label = $dolfmt->formatCurrency((float) $m['actPrice'], $currency) . ' ' . $m['label'];
-            $shortname = $dolfmt->formatCurrency((float) $m['actPrice'], $currency) . ' ' . $m['shortname'];
-        } else {
-            $label = $m['label'];
-            $shortname = $m['shortname'];
+    $holderRegR = dbSafeQuery($holderRegSQL, 'iii', array ($conid, $loginType == 'p' ? $loginId : -1, $loginType == 'n' ? $loginId : -1));
+    $holderMembership = [];
+    if ($holderRegR != false && $holderRegR->num_rows > 0) {
+        while ($m = $holderRegR->fetch_assoc()) {
+            if ($m['memType'] == 'donation') {
+                $label = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['label'];
+                $shortname = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['shortname'];
+            }
+            else {
+                $label = $m['label'];
+                $shortname = $m['shortname'];
+            }
+            $holderMembership[] = array ('label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label, 'status' => $m['status'],
+                                         'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
+                                         'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'],
+                                         'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
+                                         'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName']
+            );
         }
-        $holderMembership[] = array('label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label, 'status' => $m['status'],
-            'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
-            'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'],
-            'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
-            'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName']
-        );
+        $holderRegR->free();
     }
-    $holderRegR->free();
-}
 // get people managed by this account holder and their registrations
-if ($loginType == 'p') {
-    $managedSQL = <<<EOS
+    if ($loginType == 'p') {
+        $managedSQL = <<<EOS
 WITH ppl AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.contact_ok, p.share_reg_ok, p.managedBy, NULL AS managedByNew,
@@ -148,9 +153,10 @@ SELECT *
 FROM ppl
 ORDER BY personType DESC, id ASC;
 EOS;
-    $managedByR = dbSafeQuery($managedSQL, 'iiiii', array($conid, $loginId, $conid, $loginId, $loginId));
-} else {
-    $managedSQL = <<<EOS
+        $managedByR = dbSafeQuery($managedSQL, 'iiiii', array ($conid, $loginId, $conid, $loginId, $loginId));
+    }
+    else {
+        $managedSQL = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
     'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.contact_ok, p.share_reg_ok, p.managedBy, NULL AS managedByNew,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
@@ -175,23 +181,24 @@ LEFT OUTER JOIN newperson np ON tp.newperid = np.id
 WHERE p.managedByNew = ? AND p.id != p.managedByNew
 ORDER BY id ASC;
 EOS;
-    $managedByR = dbSafeQuery($managedSQL, 'ii', array($conid, $loginId));
-}
-
-$managed = [];
-if ($managedByR != false) {
-    while ($p = $managedByR->fetch_assoc()) {
-        $managed[] = $p;
+        $managedByR = dbSafeQuery($managedSQL, 'ii', array ($conid, $loginId));
     }
-    $managedByR->free();
-}
 
-$memberships = getAccountRegistrations($loginId, $loginType, $conid, 'all');
+    $managed = [];
+    if ($managedByR != false) {
+        while ($p = $managedByR->fetch_assoc()) {
+            $managed[] = $p;
+        }
+        $managedByR->free();
+    }
+
+    $memberships = getAccountRegistrations($loginId, $loginType, $conid, 'all');
 
 // get the information for the interest block
-$interests = getInterests();
+    $interests = getInterests();
 // get the payment plans
-$paymentPlans = getPaymentPlans(true);
+    $paymentPlans = getPaymentPlans(true);
+}
 
 portalPageInit('portal', $info['fullname'] . ($loginType == 'p' ? ' (ID: ' : 'Temporary ID: ') . $loginId . ')',
     /* css */ array($cdn['tabcss'],
@@ -204,7 +211,13 @@ portalPageInit('portal', $info['fullname'] . ($loginType == 'p' ? ' (ID: ' : 'Te
         'js/base.js',
         'js/portal.js',
     ),
+    false // refresh
 );
+if ($refresh) {
+    echo "refresh needed<br/>\n";
+    echo refreshSession();
+    exit();
+}
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;

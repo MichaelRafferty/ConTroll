@@ -187,6 +187,17 @@ max_failures=10
 url="https://reg.conname.org/artshow"
 [portal]
 ;; membership portal items
+test=0
+open=1
+https=1
+; portalsite = URL to login page (the default index.php location is all you need)
+; redirect_base = URI for OAUTH2 returns, it should also be the login page and must match what you configured in the OAUTH2 providers
+; emailHrs = number of hours a login by email session can last, not the link expiration time
+; oauthHrs = number of hours an oauth session can last
+portalsite=""
+redirect_base=""
+emailhrs=24
+oauthhrs=8
 [api]
 path = "" ; full path to the api directory
 oauthEncryptionKey= "" ; set your oauth2Server encryption key

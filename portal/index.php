@@ -33,17 +33,29 @@ $loginType = null;
         header('location:' . $portal_conf['portalsite']);
         exit();
     }
+    $refresh = isset($_REQUEST['refresh']) && isSessionVar('id');
+    // oauth2= indicates a new account login via oAUTH2 or the selected account is re-verifying, clear the old information,
+    //  unless the GET variable of 'refresh' is found
+    if (isset($_REQUEST['oauth2'])) {
+        if ($refresh) {
+            // just refresh the token
+            setSessionVar('sessionEmail', getSessionVar('email'));
+            clearSession('oauth2');
+        } else {
+            // no update of token, force it to be a logout
+            clearSession();
+        }
 
-    if (isset($_GET['oauth2'])) {
         if (!isSessionVar('oauth2pass')) {
-            setSessionVar('oauth2', $_GET['oauth2']);
+            setSessionVar('oauth2', $_REQUEST['oauth2']);
             setSessionVar('oauth2pass', 'setup');
         }
     }
 
+    // are we in an oAUTH2 session, and if so, is it yet complete or needs the next exchange?
     $oauth2pass = getSessionVar('oauth2pass');
     if ($oauth2pass != null && $oauth2pass != 'token') {
-        // ok, we are in the process of an oauth2 sequence, continue it until token
+        // ok, we are in the process of an oauth2 sequence, continue it until returns the token
         $redirectURI = $portal_conf['redirect_base'];
         if ($redirectURI == '')
             $redirectURI = null;
@@ -73,13 +85,40 @@ $loginType = null;
         }
 
         $email = $oauthParams['email'];
+        // if this is a refresh, check that it returned the same email address
+        $oldemail = getSessionVar('sessionEmail');
+        if ($oldemail != null && $oldemail != $email) {
+            // this is a change in email address, treat this as a new login.
+            // first save off the oauth session variables
+            $oauth2 = getSessionVar('oauth2');
+            $oauth2pass = getSessionVar('oauth2pass');
+            $oauth2state = getSessionVar('oauth2state');
+            // now clear the session to log the old session out
+            clearSession();
+            $oldemail = null;
+            // now restore those
+            if ($oauth2 != null) setSessionVar('oauth2', $oauth2);
+            if ($oauth2pass != null) setSessionVar('oauth2pass', $oauth2pass);
+            if ($oauth2state != null) setSessionVar('oauth2state', $oauth2state);
+        }
+
         setSessionVar('email', $email);
         setSessionVar('displayName', $oauthParams['displayName']);
         setSessionVar('firstName', $oauthParams['firstName']);
         setSessionVar('lastName', $oauthParams['lastName']);
         setSessionVar('avatarURL', $oauthParams['avatarURL']);
-        setsessionVar('subscriberId', $oauthParams['subscriberId']);
+        setSessionVar('subscriberId', $oauthParams['subscriberId']);
+        setSessionVar('tokenType', 'oauth2');
+        $hrs = $portal_conf['oauthhrs'];
+        if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 8;
+        setSessionVar('tokenExpiration', time() + ($hrs * 3600));
 
+        if ($oldemail != null) {
+            // this is a refresh, don't choose the account again, just return to the home page of the portal, don't disturb any other session variables
+            header('location:' . $portal_conf['portalsite'] . '/portal.php');
+        }
+
+        // not a refresh, choose the account from the email
         $account = chooseAccountFromEmail($email, null, null, $cipherInfo, getSessionVar('oauth2'));
         if ($account == null || !is_numeric($account)) {
             if ($account == null) {
@@ -100,9 +139,22 @@ if (isSessionVar('id')) {
         $match = openssl_decrypt($_GET['vid'], $cipherInfo['cipher'], $cipherInfo['key'], 0, $cipherInfo['iv']);
         $match = json_decode($match, true);
         if ($match != null) { // vid decodes, log us out
-            clearSession();
-            header("Location: http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]");
-            exit();
+            $oldEmail = getSessionVar('email');
+            if (array_key_exists('id', $match)) {
+                $email = $match['email_addr'];
+            } else {
+                $email = $match['email'];
+            }
+            if ($email != $oldEmail) { // treat this as a logout and try it again
+                clearSession();
+            } else {
+                $refresh = true;
+                $hrs = $portal_conf['emailhrs'];
+                if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 24;
+                setSessionVar('tokenExpiration', time() + ($hrs * 3600));
+                header('location:' . $portal_conf['portalsite'] . '/portal.php');
+                exit();
+            }
         }
     }
 }
@@ -234,11 +286,20 @@ EOS;
         }
     }
 
+    // set expiration for email
+    $hrs = $portal_conf['emailhrs'];
+    if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 24;
+    setSessionVar('tokenExpiration', ($hrs * 3600));
+    setSessionVar('email', $email);
+    setSessionVar('tokenType', 'token');
+
+    // now choose the account from the email
     $account = chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, 'token');
     if ($account == null || !is_numeric($account)) {
         if ($account == null) {
             $account = "Error looking up data for $email";
         }
+        clearSession(); // force a logout
         draw_login($config_vars, $account, 'bg-danger text-white');
     }
     exit();

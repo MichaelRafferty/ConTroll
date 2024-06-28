@@ -59,7 +59,7 @@ echo <<<EOF
 EOF;
 }
 
-function portalPageInit($page, $title, $css, $js) {
+function portalPageInit($page, $title, $css, $js, $refresh = false) {
     global $db_ini;
 
     $con = get_conf('con');
@@ -131,7 +131,7 @@ function portalPageInit($page, $title, $css, $js) {
                     <?php
                     } ?>
                         <div class="row">
-                            <div class='col-sm-12'><?php tab_bar($page, $portal_conf);?></div>
+                            <div class='col-sm-12'><?php tab_bar($page, $portal_conf, $refresh);?></div>
                         </div>
                     </div>
                 </div>
@@ -176,13 +176,17 @@ function portalPageFoot() {
     <?php
 }
 
-function tab_bar($page, $portal_conf) {
-    $page_list = [
-        ['name' => 'addUpgrade', 'display' => 'Add New'],
-        ['name' => 'membershipHistory', 'display' => 'Membership History'],
-        ['name' => 'accountSettings', 'display' => 'Account Settings'],
-        ['name' => 'portalHelp" target="_blank', 'display' => 'Help'],
-    ];
+function tab_bar($page, $portal_conf, $refresh = false) {
+    if ($refresh) {
+        $page_list = [];
+    } else {
+        $page_list = [
+            ['name' => 'addUpgrade', 'display' => 'Add New'],
+            ['name' => 'membershipHistory', 'display' => 'Membership History'],
+            ['name' => 'accountSettings', 'display' => 'Account Settings'],
+            ['name' => 'portalHelp" target="_blank', 'display' => 'Help'],
+        ];
+    }
 
     $active = $page == 'portal' ? 'active' : '';
     $ariainfo = $page == 'portal' ? 'aria-current="page"' : '';
@@ -260,21 +264,4 @@ function getPersonInfo() {
     $info = $personR->fetch_assoc();
     $personR->free();
     return $info;
-}
-
-// timeSinceLastToken - how many seconds since the last token send for this reason to this email - to avoid flooding
-function timeSinceLastToken($action, $email) {
-    $cQ = <<<EOS
-SELECT MIN(TIMESTAMPDIFF(SECOND,createdTS,NOW())) AS TS
-FROM portalTokenLinks
-WHERE action = ? and email = ? AND useCnt = 0;
-EOS;
-    $cR = dbSafeQuery($cQ, 'ss', array($action, $email));
-    if ($cR === false || $cR->num_rows == 0) {
-        return null;
-    }
-
-    $seconds = $cR->fetch_row()[0];
-    $cR->free();
-    return $seconds;
 }
