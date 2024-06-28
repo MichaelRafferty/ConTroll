@@ -17,20 +17,29 @@ function refreshSession() {
             <div class="col-sm-12 bg-danger text-white"><?php echo $message; ?></div>
         </div>
 <?php
+            } else {
+?>
+        <div class='row'>
+            <div class='col-sm-12 bg-success text-white'>Your session has expired, a refresh session email has been sent.
+                Please check your inbox and click on the refresh link.
+            </div>
+        </div>
+<?php
             }
-            echo "sent token<br/>\n";
             exit();
 
         case 'oauth2':
             $portal_conf = get_conf('portal');
 
-            echo "<br/>working on login via oauth2 token<br/>\n";
             $provider = getSessionVar('oauth2');
-            echo "provider: $provider<br/>\n";
             $redirect = $portal_conf['portalsite'] . "?oauth2=$provider&refresh";
-            echo "Redirect: $redirect<br/>\n";
 ?>
-    <script type='text/javascript'>
+            <div class="row">
+                <div class='col-sm-12 bg-success text-white'>
+                    Your session has expired, you are being redirected to $provider to refresh your session.
+                </div>
+            </div>
+            <script type='text/javascript'>
         window.location = "<?php echo $redirect; ?>";
     </script>
 <?php
