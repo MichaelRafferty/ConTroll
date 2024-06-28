@@ -106,11 +106,11 @@ function portalPageInit($page, $title, $css, $js, $refresh = false) {
                         $logoImage = $ini['logoimage'];
                     }
                     if (array_key_exists('logoalt', $portal_conf) && $portal_conf['logoalt'] != '') {
-                        $logoAlt = $portal_conf['logoalt'];
+                        $altstring = $portal_conf['logoalt'];
                     } else if (array_key_exists('logoalt', $ini) && $ini['logoalt'] != '') {
-                            $altstring = $ini['logoalt'];
+                        $altstring = $ini['logoalt'];
                     } else {
-                            $altstring = 'Logo';
+                        $altstring = 'Logo';
                     }
                     echo "<img class='img-fluid' src='images/$logoImage' alt='$altstring'/>\n";
                     ?>
