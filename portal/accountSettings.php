@@ -11,7 +11,7 @@ $debug = get_conf('debug');
 $ini = get_conf('reg');
 $condata = get_con();
 
-if (isSessionVar('id') && isSessionVar('idType') {
+if (isSessionVar('id') && isSessionVar('idType')) {
     $personType = getSessionVar('idType');
     $personId = getSessionVar('id');
 } else {
