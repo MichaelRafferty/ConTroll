@@ -254,6 +254,7 @@ class PaymentPlans {
         <div class="col-sm-1" style='text-align: right;'><b>Non Plan Amount</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Plan Amount</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Down Payment</b></div>
+        <div class="col-sm-1" style='text-align: right;'><b>Due Today</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Balance Due</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Number Payments</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Days Between</b></div>
@@ -269,6 +270,7 @@ class PaymentPlans {
             'min="' + match.downPayment.toFixed(2) + '" max="' + match.planAmt.toFixed(2) + '" value="' + match.downPayment.toFixed(2) +
             `" onchange="paymentPlans.recompute();"/>
         </div>
+        <div class="col-sm-1" style='text-align: right;' id="dueToday">` + match.dueToday.toFixed(2) + `</div>
         <div class="col-sm-1" style='text-align: right;' id="balanceDue">` + match.balanceDue.toFixed(2) + `</div>
         <div class="col-sm-1" style='text-align: right;'>`;
         if (match.maxPayments > 1) {
@@ -295,16 +297,16 @@ class PaymentPlans {
                 break;
         }
 
-        this.#computedPlan.totalAmountDue = match.nonPlanAmt + match.planAmt;
-        this.#computedPlan.currentPayment = match.nonPlanAmt + match.downPayment;
+        this.#computedPlan.totalAmountDue = (match.nonPlanAmt + match.planAmt).toFixed(2) + ``;
+        this.#computedPlan.currentPayment = (match.nonPlanAmt + match.downPayment).toFixed(2) + ``;
         this.#computedPlan.numPayments = match.maxPayments;
         this.#computedPlan.daysBetween = match.daysBetween;
-        this.#computedPlan.paymentAmt = match.paymentAmt;
-        this.#computedPlan.balanceDue = match.balanceDue;
-        this.#computedPlan.downPayment = match.downPayment;
+        this.#computedPlan.paymentAmt = match.paymentAmt.toFixed(2) + ``;
+        this.#computedPlan.balanceDue = match.balanceDue.toFixed(2) + ``;
+        this.#computedPlan.downPayment = match.downPayment.toFixed(2) + ``;
 
         this.#customizePlanBody.innerHTML = html;
-        this.#customizePlanSubmit.innerHTML = 'Create Plan and pay amount due today of ' + this.#computedPlan.currentPayment.toFixed(2);
+        this.#customizePlanSubmit.innerHTML = 'Create Plan and pay amount due today of ' + this.#computedPlan.currentPayment;
         this.#customizePlanModal.show();
     }
 
@@ -313,7 +315,8 @@ class PaymentPlans {
         clear_message('customizePlanMessageDiv');
 
         var downPaymentField = document.getElementById("downPayment");
-        var blanaceDueField = document.getElementById("balanceDue");
+        var balanceDueField = document.getElementById("balanceDue");
+        var dueTodayField = document.getElementById("dueToday");
         var maxPayments = document.getElementById("maxPayments");
         var daysBetweenField = document.getElementById("daysBetween");
         var paymentAmtField = document.getElementById("paymentAmt");
@@ -401,20 +404,21 @@ class PaymentPlans {
         }
 
         // update the plan
-        this.#computedPlan.balanceDue = balanceDue;
-        this.#computedPlan.downPayment = down;
+        this.#computedPlan.balanceDue = Number(balanceDue).toFixed(2);
+        this.#computedPlan.downPayment = Number(down).toFixed(2);
         this.#computedPlan.numPayments = numPayments;
         this.#computedPlan.daysBetween = days;
-        this.#computedPlan.paymentAmt = paymentAmt;
 
         // update the screen
         downPaymentField.value = down;
-        blanaceDueField.innerHTML = balanceDue;
+        balanceDueField.innerHTML = balanceDue;
+        dueTodayField.innerHTML = dueToday;
         maxPayments.value = numPayments;
         daysBetweenField.value = days;
         paymentAmtField.innerHTML = paymentAmt;
 
         this.#computedPlan.currentPayment = Number(this.#computedOrig.nonPlanAmt) + Number(down);
+        dueTodayField.innerHTML = this.#computedPlan.currentPayment.toFixed(2);
         this.#customizePlanSubmit.innerHTML = 'Create Plan and pay amount due today of ' + this.#computedPlan.currentPayment.toFixed(2);
         if (messageHTML != '')
             show_message(messageHTML, 'warn', 'customizePlanMessageDiv');
