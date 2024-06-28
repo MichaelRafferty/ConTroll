@@ -147,10 +147,10 @@ EOS;
             $uQ = <<<EOS
 UPDATE perinfoIdentities
 SET 
-    lastUseTs = current_timestamp(), useCount = useCount + 1
+    lastUseTs = current_timestamp(), useCount = useCount + 1, subscriberID = ?
 WHERE perid = ? AND provider = ? AND email_addr = ?; 
 EOS;
-            $num_upd = dbSafeCmd($uQ, 'iss', array($id, $provider, $email));
+            $num_upd = dbSafeCmd($uQ, 'siss', array(getSessionVar('subscriberId'), $id, $provider, $email));
         } else {
             $iR->free();
             // it doesn't exist, create it

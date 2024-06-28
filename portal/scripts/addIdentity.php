@@ -35,7 +35,7 @@ $provider = $_POST['provider'];
 $email = $_POST['email'];
 
 if ($provider == NULL || $provider == '')
-    $provider = 'allow';
+    $provider = 'email';
 
 // first check to see if this identity exists
 $cQ = <<<EOS

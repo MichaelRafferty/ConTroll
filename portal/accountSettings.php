@@ -219,7 +219,7 @@ if ($personType == 'p') {
         </div>
         <div class="row mt-1">
             <div class="col-sm-1"></div>
-            <div class="col-sm-auto">Leave the provder name blank to allow the email address for any provider.</div>
+            <div class="col-sm-auto">Leave the provder name blank for Authentication Link via Email.</div>
         </div>
         <div class='row mt-1'>
             <div class='col-sm-1'></div>
