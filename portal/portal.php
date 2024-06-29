@@ -290,7 +290,9 @@ foreach ($managed as $m) {
         );
     }
 }
-drawManagedPerson($loginId, $loginType, $curPT, $curMB,$interests != null);
+if ($currentId > 0) { // if there are any at all
+    drawManagedPerson($loginId, $loginType, $curPT, $curMB, $interests != null);
+}
 
 // compute total due so we can display it up top as well...
 $totalDue = 0;
