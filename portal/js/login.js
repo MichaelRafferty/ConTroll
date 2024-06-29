@@ -37,6 +37,10 @@ class Login {
     #contactField = null;
     #shareField = null;
     #uspsDiv= null;
+    #sendLinkBtn = null;
+    #tokenEmailDiv = null
+    #tokenEmail = null;
+    #devEmail = null;
 
     #email = null;
     #validationType = null;
@@ -74,16 +78,28 @@ class Login {
             this.#shareField = document.getElementById("share");
             this.#uspsDiv = document.getElementById("uspsblock");
         }
+
+        this.#sendLinkBtn = document.getElementById("sendLinkBtn");
+        this.#devEmail = document.getElementById("dev_email");
+        this.#tokenEmail = document.getElementById("token_email");
+        this.#tokenEmailDiv = document.getElementById('token_email_div');
+
+        if (this.#tokenEmail) {
+            this.#tokenEmail.addEventListener('keyup', (e)=> { if (e.code === 'Enter') login.tokenEmailChanged(1); });
+            this.#tokenEmail.addEventListener('mouseout', (e)=> {  login.tokenEmailChanged(0); });
+        }
+        if (this.#devEmail) {
+            this.#devEmail.addEventListener('keyup', (e)=> { if (e.code === 'Enter') login.loginWithEmail(); });
+        }
     }
 
 // login functions
 // loginWithEmail: dev only
     loginWithEmail(id = null) {
-        var emaildiv = document.getElementById('dev_email');
-        if (!emaildiv) {
+        if (!this.#devEmail) {
             return;
         }
-        var dev_email = emaildiv.value;
+        var dev_email = this.#devEmail.value;
         if (dev_email == null || dev_email == "") {
             show_message('Please enter a valid email address', 'warn');
             return
@@ -156,11 +172,11 @@ class Login {
 
     // loginWithToken: show email for token
     loginWithToken() {
-        var token_email = document.getElementById('token_email_div');
-        if (!token_email) {
+        if (!this.#tokenEmailDiv) {
             return;
         }
-        token_email.hidden = false;
+        this.#tokenEmailDiv.hidden = false;
+        this.#tokenEmail.focus();
     }
 
     // loginWithToken: show email for token
@@ -168,28 +184,36 @@ class Login {
         window.location.search = '?oauth2=google';
     }
 
-    tokenEmailChanged() {
-        var token_email = document.getElementById('token_email');
-        if (!token_email) {
-            document.getElementById('sendLinkBtn').disabled = true;
+    tokenEmailChanged(autocall) {
+        clear_message();
+        if (!this.#tokenEmail) {
+            this.#sendLinkBtn.disabled = true;
             return;
         }
-        var email = token_email.value;
+        var email = this.#tokenEmail.value;
         if (email == null || email == "") {
-            document.getElementById('sendLinkBtn').disabled = true;
+            this.#sendLinkBtn.disabled = true;
             return;
         }
 
-        document.getElementById('sendLinkBtn').disabled = !validateAddress(email);
+        var valid = validateAddress(email);
+        this.#sendLinkBtn.disabled = !valid;
+        if (!valid) {
+            show_message("Please enter a valid email address", 'warn');
+            return;
+        }
+        if (autocall)
+            this.sendLink();
     }
 
     // sendLink: send the login linkl
     sendLink() {
-        var token_email = document.getElementById('token_email').value;
+        var token_email = this.#tokenEmail.value;
         if (!validateAddress(token_email)) {
             show_message('Please enter a valid email address', 'warn');
             return
         }
+        this.#sendLinkBtn.disabled = true;
         var data = {
             'email': token_email,
             'type': 'token',
@@ -205,7 +229,8 @@ class Login {
                 } else {
                     if (config['debug'] & 1)
                         console.log(data);
-                    show_message("Link sent, check your email and click on the link to login.");
+                    show_message("Link sent to " + token_email + ", check your email and click on the link to login.");
+                    login.clearTokenEmail();
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -213,6 +238,11 @@ class Login {
                 return false;
             },
         });
+    }
+
+    // clear token email for success of send link
+    clearTokenEmail() {
+        this.#tokenEmail.value = '';
     }
 
     // create account, use the edit person modal to enter a new account

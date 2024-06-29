@@ -21,7 +21,8 @@ function draw_login($config_vars, $result_message = '', $result_color = '') {
                         <label for='token_email'>*Email: </label>
                     </div>
                     <div class='col-sm-auto'>
-                        <input class='form-control-sm' type='email' name='token_email' id='token_email' size='40' onchange='login.tokenEmailChanged();' required/>
+                        <input class='form-control-sm' type='email' name='token_email' id='token_email' size='40' onchange='login.tokenEmailChanged(0);'
+                               required/>
                     </div>
                 </div>
                 <div class='row mt-2 mb-2'>
