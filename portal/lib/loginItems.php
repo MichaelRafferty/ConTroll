@@ -97,6 +97,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
             $email = $match['email_addr'];
         }
         $id = $match['id'];
+        $idType = $match['tablename']
         $ts = ' ';
         if (array_key_exists('ts', $match)) {
             $ts = " with ts ". $match['ts'];
@@ -115,10 +116,11 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
             $type = 'new login';
         }
         setSessionVar('id', $id);
-        setSessionVar('idType', $match['tablename']);
+        setSessionVar('idType', $idType);
         setSessionVar('idSource', $validationType);
 
-        updateIdentityUsage($id, $validationType, $email);
+        if ($idType == 'p')
+            updateIdentityUsage($id, $validationType, $email);
         web_error_log("$type @ " . time() . "$ts for $email/$id via $validationType");
         header('location:' . $portal_conf['portalsite'] . '/portal.php');
         exit();
