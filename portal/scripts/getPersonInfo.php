@@ -158,7 +158,7 @@ ORDER BY create_date;
 EOS;
         $mR = dbSafeQuery($mQ, 'iiiiiii', array ($conid, $conid + 1, $loginId, $loginId, $conid, $conid + 1, $loginId));
     } else {
-        $mq = <<<EOS
+        $mQ = <<<EOS
 SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory, m.memAge
 FROM reg r
 JOIN memList m ON m.id = r.memId

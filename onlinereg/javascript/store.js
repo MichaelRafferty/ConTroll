@@ -55,6 +55,7 @@ function process(formRef) {
     var valid = true;
     var formData = URLparamsToArray($(formRef).serialize(), true);
 
+    clear_message('addMessageDiv');
     // validation
     // emails must not be blank and must match
     if (formData['email1'] == '' || formData['email2'] == '' || formData['email1'] != formData['email2']) {
@@ -172,6 +173,7 @@ function countryChange() {
     if (uspsDiv == null)
         return;
 
+    clear_message('addMessageDiv');
     var country = countryField.value;
     if (country == 'USA') {
         addToCartBtn.innerHTML = 'Validate Address To Add Membership To Cart';
@@ -184,16 +186,26 @@ function addressError(JqXHR, textStatus, errorThrown) {
 }
 
 function addressSuccess(data, textStatus, jqXHR) {
+    if (data['status'] == 'error') {
+        show_message(data['message'], 'error', 'addMessageDiv');
+        return false;
+    }
     showValidatedAddress(data);
 }
 
 function showValidatedAddress(data) {
+    var html = '';
+    clear_message('addMessageDiv');
     if (data['error']) {
-        html = "<h4>USPS Returned an error validating the address</h4>" +
-            "<pre>" + data['error'] + "</pre>\n";
+        var errormsg = data['error'];
+        if (errormsg.substring(0, 5) == '400: ') {
+            errormsg = errormsg.substring(5);
+        }
+        html = "<h4>USPS Returned an error<br/>validating the address</h4>" +
+            "<pre>" + errormsg + "</pre>\n";
     } else {
         uspsAddress = data['address'];
-        var html = "<h4>USPS Returned: " + uspsAddress['valid'] + "</h4>";
+        html = "<h4>USPS Returned: " + uspsAddress['valid'] + "</h4>";
         if (data['status'] == 'error') {
             html += "<p>USPS uspsAddress Validation Failed: " + data['error'] + "</p>";
         } else {
@@ -637,4 +649,63 @@ window.onload = function () {
             newBadge.show();
     }
 
+}
+
+function clear_message(div='result_message') {
+    show_message('', '', div);
+}
+
+// show_message:
+// apply colors to the message div and place the text in the div, first clearing any existing class colors
+// type:
+//  error: (white on red) bg-danger
+//  warn: (black on yellow-orange) bg-warning
+//  success: (white on green) bg-success
+function show_message(message, type = 'success', div='result_message') {
+    if (div == null)
+        div = 'result_message';
+
+    var message_div = document.getElementById(div);
+
+    if (message_div.classList.contains('bg-danger')) {
+        message_div.classList.remove('bg-danger');
+    }
+    if (message_div.classList.contains('bg-success')) {
+        message_div.classList.remove('bg-success');
+    }
+    if (message_div.classList.contains('bg-warning')) {
+        message_div.classList.remove('bg-warning');
+    }
+    if (message_div.classList.contains('text-white')) {
+        message_div.classList.remove('text-white');
+    }
+    if (message === undefined || message === '') {
+        message_div.innerHTML = '';
+        return;
+    }
+    if (type === 'error') {
+        message_div.classList.add('bg-danger');
+        message_div.classList.add('text-white');
+    }
+    if (type === 'success') {
+        message_div.classList.add('bg-success');
+        message_div.classList.add('text-white');
+    }
+    if (type === 'warn') {
+        message_div.classList.add('bg-warning');
+    }
+    message_div.innerHTML = message;
+}
+
+function showAjaxError(jqXHR, textStatus, errorThrown, divElement = null) {
+    var message = '';
+    if (jqXHR && jqXHR.responseText) {
+        message = jqXHR.responseText;
+    } else {
+        message = 'An error occurred on the server.';
+    }
+    if (textStatus != '' && textStatus != 'error')
+        message += '<BR/>' + textStatus;
+    message += '<BR/>Error Thrown: ' + errorThrown;
+    show_message(message, 'error', divElement);
 }

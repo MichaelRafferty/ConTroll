@@ -272,6 +272,7 @@ class Login {
         if (this.#uspsDiv == null)
             return;
 
+        clear_message();
         var country = this.#countryField.value;
         if (this.#uspsDiv && country == 'USA') {
             this.#editPersonSubmitBtn.innerHTML = 'Validate Address and Create Portal Account for ' + this.#email;
@@ -283,6 +284,7 @@ class Login {
 // validate the edit person form for saving
     validate(person) {
         //process(formRef) {
+        clear_message();
         var valid = true;
 
         // validation
@@ -374,6 +376,10 @@ class Login {
                 data: data,
                 method: 'POST',
                 success: function (data, textStatus, jqXhr) {
+                    if (data['status'] == 'error') {
+                        show_message(data['message'], 'error');
+                        return false;
+                    }
                     login.showValidatedAddress(data);
                     return true;
                 },
@@ -387,33 +393,35 @@ class Login {
     }
 
     showValidatedAddress(data) {
+        clear_message();
         var html = '';
         if (data['error']) {
-            html = "<h4>USPS Returned an error validating the address</h4>" +
-                "<pre>" + data['error'] + "</pre>\n";
+            var errormsg = data['error'];
+            if (errormsg.substring(0, 5) == '400: ') {
+                errormsg = errormsg.substring(5);
+            }
+            html = "<h4>USPS Returned an error<br/>validating the address</h4>" +
+                "<pre>" + errormsg + "</pre>\n";
         } else {
             this.#uspsAddress = data['address'];
             if (this.#uspsAddress['address2'] == undefined)
                 this.#uspsAddress['address2'] = '';
 
             html = "<h4>USPS Returned: " + this.#uspsAddress['valid'] + "</h4>";
-            if (data['status'] == 'error') {
-                html += "<p>USPS this.#uspsAddress Validation Failed: " + data['error'] + "</p>";
-            } else {
                 // ok, we got a valid uspsAddress, if it doesn't match, show the block
-                var person = this.#personSave;
-                if (person['addr'] == this.#uspsAddress['address'] && person['addr2'] == this.#uspsAddress['address2'] &&
-                    person['city'] == this.#uspsAddress['city'] && person['state'] == this.#uspsAddress['state'] &&
-                    person['zip'] == this.#uspsAddress['zip']) {
-                    login.useMyAddress();
-                    return;
-                }
-
-                html += "<pre>" + this.#uspsAddress['address'] + "\n";
-                if (this.#uspsAddress['address2'])
-                    html += this.#uspsAddress['address2'] + "\n";
-                html += this.#uspsAddress['city'] + ', ' + this.#uspsAddress['state'] + ' ' + this.#uspsAddress['zip'] + "</pre>\n";
+            var person = this.#personSave;
+            if (person['addr'] == this.#uspsAddress['address'] && person['addr2'] == this.#uspsAddress['address2'] &&
+                person['city'] == this.#uspsAddress['city'] && person['state'] == this.#uspsAddress['state'] &&
+                person['zip'] == this.#uspsAddress['zip']) {
+                login.useMyAddress();
+                return;
             }
+
+            html += "<pre>" + this.#uspsAddress['address'] + "\n";
+            if (this.#uspsAddress['address2'])
+                html += this.#uspsAddress['address2'] + "\n";
+            html += this.#uspsAddress['city'] + ', ' + this.#uspsAddress['state'] + ' ' + this.#uspsAddress['zip'] + "</pre>\n";
+
             if (this.#uspsAddress['valid'] == 'Valid')
                 html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="login.useUSPS();">Update using USPS Validated Address</button>'
         }
