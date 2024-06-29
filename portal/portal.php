@@ -290,10 +290,8 @@ foreach ($managed as $m) {
         );
     }
 }
-if (count($curMB) > 0) {
-    drawManagedPerson($loginId, $loginType, $curPT, $curMB,$interests != null);
+drawManagedPerson($loginId, $loginType, $curPT, $curMB,$interests != null);
 
-}
 // compute total due so we can display it up top as well...
 $totalDue = 0;
 foreach ($memberships as $membership) {
