@@ -84,7 +84,8 @@ if ($personId === false || $personId < 0) {
 }
 $response['newPersonId'] = $personId;
 $response['message'] = "New person with Temporary ID $personId added";
-
+setSessionVar("id", $personId);
+setSessionVar("idType", 'n');
 logWrite(array('con'=>$con['name'], 'action' => 'Create new person on login', 'person' => array('n', $personId), 'newperson' => $person ));
 
 
