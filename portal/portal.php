@@ -202,7 +202,7 @@ EOS;
     $paymentPlans = getPaymentPlans(true);
 }
 
-portalPageInit('portal', $info['fullname'] . ($loginType == 'p' ? ' (ID: ' : 'Temporary ID: ') . $loginId . ')',
+portalPageInit('portal', $info['fullname'] . ($loginType == 'p' ? ' (ID: ' : ' (Temporary ID: ') . $loginId . ')',
     /* css */ array($cdn['tabcss'],
         $cdn['tabbs5'],
     ),
