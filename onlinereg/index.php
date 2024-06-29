@@ -353,6 +353,7 @@ $onsitesale = $startdate->format("l, F j");
                         </form>
                          <div class="row">
                              <div class="col-sm-12" id="addMessageDiv"></div>
+                         </div>
                     </div>
                 </div>
             </div>
