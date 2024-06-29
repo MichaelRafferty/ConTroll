@@ -97,7 +97,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
             $email = $match['email_addr'];
         }
         $id = $match['id'];
-        $idType = $match['tablename']
+        $idType = $match['tablename'];
         $ts = ' ';
         if (array_key_exists('ts', $match)) {
             $ts = " with ts ". $match['ts'];
