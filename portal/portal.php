@@ -248,7 +248,14 @@ if ($info['managedByName'] != null) {
     </div>
 <?php } ?>
 <div class='row mt-4'>
-    <div class='col-sm-12'><h3>People managed by this account:</h3></div>
+    <div class='col-sm-12'>
+        <h3>
+            People managed by this account:
+            <a href="<?php echo $portal_conf['portalsite']; ?>/addUpgrade.php">
+                <button class="btn btn-sm btn-primary" type="button">Add New</button>
+            </a>
+        </h3>
+    </div>
 </div>
 <div class="row">
     <div class="col-sm-1" style='text-align: right;'><b>ID</b></div>
@@ -257,7 +264,7 @@ if ($info['managedByName'] != null) {
     <div class="col-sm-4"><b>Actions</b></div>
 </div>
 <?php
-drawManagedPerson($loginId, $loginType, $info, $holderMembership, $interests != null);
+drawManagedPerson($loginId, $loginType, $info, $holderMembership, $interests != null, false);
 
 $managedMembershipList = '';
 $currentId = -1;
@@ -267,7 +274,7 @@ $curMB = [];
 foreach ($managed as $m) {
     if ($currentId != $m['id']) {
         if ($currentId > 0) {
-            drawManagedPerson($loginId, $loginType, $curPT, $curMB,$interests != null);
+            drawManagedPerson($loginId, $loginType, $curPT, $curMB,$interests != null, true);
         }
         $curPT = $m;
         $currentId = $m['id'];
@@ -291,7 +298,7 @@ foreach ($managed as $m) {
     }
 }
 if ($currentId > 0) { // if there are any at all
-    drawManagedPerson($loginId, $loginType, $curPT, $curMB, $interests != null);
+    drawManagedPerson($loginId, $loginType, $curPT, $curMB, $interests != null, true);
 }
 
 // compute total due so we can display it up top as well...
@@ -312,7 +319,7 @@ if (array_key_exists('payorPlans', $paymentPlans)) {
     $payorPlan = $paymentPlans['payorPlans'];
     if (count($payorPlan) > 0) {
     ?>
-    <div class='row mt-4'>
+    <div class='row mt-5'>
         <div class='col-sm-12'><h3>Payment Plans for this account:</h3></div>
     </div>
     <?php
@@ -322,7 +329,7 @@ if (array_key_exists('payorPlans', $paymentPlans)) {
 if (count($memberships) > 0) {
 ?>
     <div class='row mt-4'>
-        <div class='col-sm-auto'><h3>Memberships purchased by this account:<?php echo $payHtml; ?></h3>
+        <div class='col-sm-auto'><h3>Purchased by this account:<?php echo $payHtml; ?></h3>
     </div>
     <div class='row'>
         <div class='col-sm-1' style='text-align: right;'><b>Trans ID</b></div>
@@ -341,13 +348,14 @@ if (count($memberships) > 0) {
 <?php
 // loop over the transactions outputting the memberships
     $currentId = -99999;
+    $color = false;
     foreach ($memberships as $membership)  {
         if ($currentId != $membership['sortTrans']) {
             if ($currentId > -10000) {
 ?>
         <div class='row'>
             <div class='col-sm-12 ms-0 me-0 align-center'>
-                <hr style='height:4px;width:95%;margin:auto;margin-top:10px;margin-bottom:10px;color:#333333;background-color:#333333;'/>
+                <hr style='height:4px;width:95%;margin:auto;margin-top:0px;margin-bottom:0px;color:#333333;background-color:#333333;'/>
             </div>
         </div>
 <?php
@@ -360,8 +368,10 @@ if (count($memberships) > 0) {
                 $receipt = '';
             }
             $transDate = date_format(date_create($membership['transDate']), 'Y-m-d');
+            $bgcolor = $color ? " bg-light" : "";
+            $color = !$color
 ?>
-        <div class='row'>
+        <div class='row pt-1 <?php echo $bgcolor;?>'>
             <div class='col-sm-1' style='text-align: right;'><?php echo $currentId; ?></div>
             <div class="col-sm-2"><?php echo $transDate; ?></div>
             <div class='col-sm-1'><?php echo $receipt; ?></div>
@@ -376,7 +386,7 @@ if (count($memberships) > 0) {
             $status = $membership['status'];
         }
 ?>
-    <div class="row">
+    <div class='row pb-1 <?php echo $bgcolor;?>'>
         <div class='col-sm-1'></div>
         <div class='col-sm-2'><?php echo $status; ?></div>
         <div class='col-sm-3'><?php echo ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label']; ?></div>

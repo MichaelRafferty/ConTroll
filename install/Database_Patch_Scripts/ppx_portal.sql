@@ -208,6 +208,7 @@ CREATE TABLE payorPlans (
     PRIMARY KEY (id)
 );
 
+ALTER TABLE payorPlans ADD CONSTRAINT pp_planid_fk FOREIGN KEY (planId) REFERENCES paymentPlans(id);
 
 CREATE TABLE payorPlanPayments (
     payorPlanId int NOT NULL,

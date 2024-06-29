@@ -314,7 +314,7 @@ function drawVariablePriceModal() {
 }
 
 //// buttons on portal screen
-function drawManagedPerson($personId, $personType, $person, $memberships, $showInterests) {
+function drawManagedPerson($personId, $personType, $person, $memberships, $showInterests, $showHR) {
     $badge_name = $person['badge_name'];
     if ($badge_name == '') {
         $badge_name = '<i>' . TRIM($person['first_name'] . ' ' . $person['last_name']) . '</i>';
@@ -322,8 +322,18 @@ function drawManagedPerson($personId, $personType, $person, $memberships, $showI
     $fn = '';
     if ($person['first_name'] != '') {
         $fn = $person['first_name'] . "'s ";
-    } else if ($person['last_name'] != '') {
+    }
+    else if ($person['last_name'] != '') {
         $fn = $person['last_name'] . "'s ";
+    }
+    if ($showHR) {
+?>
+    <div class='row'>
+        <div class='col-sm-12 ms-0 me-0 align-center'>
+            <hr style='height:4px;width:95%;margin:auto;margin-top:18px;margin-bottom:10px;color:#333333;background-color:#333333;'/>
+        </div>
+    </div>
+<?php
     }
     ?>
     <div class="row mt-1">
@@ -350,10 +360,11 @@ function drawManagedPerson($personId, $personType, $person, $memberships, $showI
         foreach ($memberships as $membership) {
             $disabled = '';
             $borderColor = '';
+            $borderStyle = '';
             if ($membership['category'] == 'yearahead')
                 $borderColor = 'border-muted';
             else if ($membership['memAge'] == 'child' || $membership['memAge'] == 'kit')
-                $borderColor = 'border-danger';
+                $borderStyle = 'border-color: #dd9e14 !important; ';
             else if ($membership['type'] == 'oneday')
                 $borderColor = 'border-warning';
             else if ($membership['type'] == 'full')
@@ -387,11 +398,13 @@ function drawManagedPerson($personId, $personType, $person, $memberships, $showI
            }
            ?>
         <div class="col-sm-3 ps-1 pe-1 m-0"><button class="btn btn-light border border-5 <?php echo $borderColor; ?>"
-            style="width: 100%;" <?php echo $disabled; ?>><b><?php echo $membership['shortname'] . "</b> (" . $membership['status'] . ")<br/>" .
+            style="width: 100%; <?php echo $borderStyle; ?>" <?php echo $disabled; ?>><b><?php echo $membership['shortname'] . "</b> (" . $membership['status']
+            . ")
+            <br/>" .
             "<b>" . $membership['ageShort'] . "</b> (" . $membership['ageLabel'] . ')' . $row3; ?></button></div>
 <?php
         }
-    echo "</div>\n";
+        echo "</div>\n";;
     }
 }
 

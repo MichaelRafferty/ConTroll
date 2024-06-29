@@ -195,12 +195,14 @@ https=1
 ; emailHrs = number of hours a login by email session can last, not the link expiration time
 ; oauthHrs = number of hours an oauth session can last
 ; the portal also has it's own logo variables as logoimage and logoalt
+; history = 1 = show membership history menu item, 0 = suppress, missing/null = show
 portalsite=""
 redirect_base=""
 logoimage=""
 logoalt=""
 emailhrs=24
 oauthhrs=8
+history=1
 [api]
 path = "" ; full path to the api directory
 oauthEncryptionKey= "" ; set your oauth2Server encryption key

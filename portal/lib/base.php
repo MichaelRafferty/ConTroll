@@ -181,15 +181,18 @@ function portalPageFoot() {
 }
 
 function tab_bar($page, $portal_conf, $refresh = false) {
-    if ($refresh) {
-        $page_list = [];
-    } else {
-        $page_list = [
-            ['name' => 'addUpgrade', 'display' => 'Add New'],
-            ['name' => 'membershipHistory', 'display' => 'Membership History'],
-            ['name' => 'accountSettings', 'display' => 'Account Settings'],
-            ['name' => 'portalHelp" target="_blank', 'display' => 'Help'],
-        ];
+    $page_list = [];
+    if (!$refresh) {
+        $showHistory = true;
+        if (array_key_exists('history', $portal_conf) && $portal_conf['history'] == '0') {
+            $showHistory = false;
+        }
+
+        if ($showHistory) {
+            $page_list[] = ['name' => 'membershipHistory', 'display' => 'Membership History'];
+        }
+        $page_list[] = ['name' => 'accountSettings', 'display' => 'Account Settings'];
+        $page_list[] = ['name' => 'portalHelp" target="_blank', 'display' => 'Help'];
     }
 
     $active = $page == 'portal' ? 'active' : '';
