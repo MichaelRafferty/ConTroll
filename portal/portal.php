@@ -303,15 +303,25 @@ if ($currentId > 0) { // if there are any at all
 
 // compute total due so we can display it up top as well...
 $totalDue = 0;
+$totalUnpaid = 0;
+$totalPaid = 0;
 foreach ($memberships as $membership) {
     if ($membership['status'] == 'unpaid') {
+        $totalUnpaid++;
         $totalDue += round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
+    }
+    if ($membership['status'] == 'plan') {
+        $totalUnpaid++;
+    }
+    if ($membership['status'] == 'paid') {
+        $totalPaid++;
     }
 }
 $payHtml = '';
 if ($totalDue > 0) {
-    $totalDueFormatted = 'Total due: ' . $dolfmt->formatCurrency((float) $totalDue, $currency);
-    $payHtml = " $totalDueFormatted   " . '<button class="btn btn-sm btn-primary pt-1 pb-1" id="payBalanceTopBTN" onclick="portal.payBalance(' . $totalDue . ');">Pay Balance</button>';
+    $totalDueFormatted = '&nbsp;&nbsp;Total due: ' . $dolfmt->formatCurrency((float) $totalDue, $currency);
+    $payHtml = " $totalDueFormatted   " . '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-5" id="payBalanceTopBTN" onclick="portal.payBalance(' .
+        $totalDue . ');">Pay Balance</button>';
     setSessionVar('totalDue', $totalDue); // used for validation in payment side
 }
 
@@ -327,9 +337,33 @@ if (array_key_exists('payorPlans', $paymentPlans)) {
     }
 }
 if (count($memberships) > 0) {
+    if ($totalUnpaid > 0) {
+        $showAll = '';
+        $showUnpaid = 'disabled';
+        $hideAll = '';
+    }
+    else {
+        $showAll = '';
+        $showUnpaid = 'hidden';
+        $hideAll = 'disabled';
+    }
 ?>
     <div class='row mt-4'>
-        <div class='col-sm-auto'><h3>Purchased by this account:<?php echo $payHtml; ?></h3>
+        <div class='col-sm-auto'>
+            <h3>
+                Purchased by this account: <?php echo $payHtml; ?>
+                <button class="btn btn-sm btn-info text-white me-1" id="btn-showAll" type="button" onclick="portal.showAll();"
+                    <?php echo $showAll;?>><b>Show All</b></button>
+<?php
+                    if ($totalUnpaid > 0) {
+?>
+                <button class="btn btn-sm btn-info text-white ms-1 me-1" id="btn-showUnpaid" type="button" onclick="portal.showUnpaid();"
+                    <?php echo $showUnpaid; ?>><b>Show Unpaid</b></button>
+<?php } ?>
+                <button class="btn btn-sm btn-info text-white ms-1" id="btn-hideAll" type="button"  onclick="portal.hideAll();"
+                    <?php echo $hideAll;?>><b>Hide All</b></button>
+            </h3>
+        </div>
     </div>
     <div class='row'>
         <div class='col-sm-1' style='text-align: right;'><b>Trans ID</b></div>
@@ -349,10 +383,13 @@ if (count($memberships) > 0) {
 // loop over the transactions outputting the memberships
     $currentId = -99999;
     $color = false;
+    echo '<div class="p-0 m-0" name="t-' . $membership['status'] . '">';
     foreach ($memberships as $membership)  {
         if ($currentId != $membership['sortTrans']) {
             if ($currentId > -10000) {
 ?>
+        </div>
+        <div class="p-0 m-0" name="t-<?php echo $membership['status'];?>">
         <div class='row'>
             <div class='col-sm-12 ms-0 me-0 align-center'>
                 <hr style='height:4px;width:95%;margin:auto;margin-top:0px;margin-bottom:0px;color:#333333;background-color:#333333;'/>
@@ -386,14 +423,15 @@ if (count($memberships) > 0) {
             $status = $membership['status'];
         }
 ?>
-    <div class='row pb-1 <?php echo $bgcolor;?>'>
-        <div class='col-sm-1'></div>
-        <div class='col-sm-2'><?php echo $status; ?></div>
-        <div class='col-sm-3'><?php echo ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label']; ?></div>
-        <div class="col-sm-6"><?php echo $membership['fullname'] . ' / ' . $membership['badge_name'];?></div>
-    </div>
+        <div class='row <?php echo $bgcolor;?>'>
+            <div class='col-sm-1'></div>
+            <div class='col-sm-2'><?php echo $status; ?></div>
+            <div class='col-sm-3'><?php echo ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label']; ?></div>
+            <div class="col-sm-6"><?php echo $membership['fullname'] . ' / ' . $membership['badge_name'];?></div>
+        </div>
 <?php
     }
+    echo "        </div>";
     if ($totalDue > 0) {
 ?>
     <div class='row'>

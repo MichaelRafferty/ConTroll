@@ -77,6 +77,11 @@ class Portal {
     #receiptTitle = null;
     #receiptEmailAddress = null;
 
+    // show-hide fields
+    #purchasedShowAll = null;
+    #purchasedShowUnpaid = null;
+    #purchasedHideAll = null;
+
     constructor() {
         var id;
         id = document.getElementById("editPersonModal");
@@ -147,7 +152,20 @@ class Portal {
             this.#receiptText = document.getElementById('portalReceipt-text');
             this.#receiptEmailBtn = document.getElementById('portalEmailReceipt');
             this.#receiptTitle = document.getElementById('portalReceiptTitle');
+        }
 
+        this.#purchasedShowAll = document.getElementById('btn-showAll');
+        this.#purchasedShowUnpaid = document.getElementById('btn-showUnpaid');
+        this.#purchasedHideAll = document.getElementById('btn-hideAll');
+
+        if (this.#purchasedShowUnpaid) {
+            if (this.#purchasedShowUnpaid.disabled == true)
+                this.showUnpaid();
+        } else if (this.#purchasedShowAll) {
+            if (this.#purchasedShowAll.disabled == true)
+                this.showAll();
+            else
+                this.hideAll();
         }
     }
 
@@ -863,6 +881,109 @@ class Portal {
                 showAjaxError(jqXHR, textStatus, errorThrown);
             }
         });
+    }
+
+    // show / hide the home page purchased section
+    showAll() {
+        $('[name="t-paid"]').show();
+        $('[name="t-unpaid"]').show();
+        $('[name="t-plan"]').show();
+
+        if (this.#purchasedShowAll) {
+            if (this.#purchasedShowAll.classList.contains('text-white')) 
+                this.#purchasedShowAll.classList.remove("text-white");
+            if (this.#purchasedShowAll.classList.contains('btn-info')) {
+                this.#purchasedShowAll.classList.remove("btn-info");
+                this.#purchasedShowAll.classList.add("btn-light");
+            }
+            this.#purchasedShowAll.disabled = true;
+        }
+        if (this.#purchasedShowUnpaid) {
+            if (!this.#purchasedShowUnpaid.classList.contains('text-white'))
+                this.#purchasedShowUnpaid.classList.add("text-white");
+            if (this.#purchasedShowUnpaid.classList.contains('btn-light')) {
+                this.#purchasedShowUnpaid.classList.remove("btn-light");
+                this.#purchasedShowUnpaid.classList.add("btn-info");
+            }
+            this.#purchasedShowUnpaid.disabled = false;
+        }
+        if (this.#purchasedHideAll) {
+            if (!this.#purchasedHideAll.classList.contains('text-white'))
+                this.#purchasedHideAll.classList.add("text-white");
+            if (this.#purchasedHideAll.classList.contains('btn-light')) {
+                this.#purchasedHideAll.classList.remove("btn-light");
+                this.#purchasedHideAll.classList.add("btn-info");
+            }
+            this.#purchasedHideAll.disabled = false;
+        }
+    }
+
+    showUnpaid() {
+        $('[name="t-paid"]').hide();
+        $('[name="t-unpaid"]').show();
+        $('[name="t-plan"]').show();
+
+        if (this.#purchasedShowAll) {
+            if (!this.#purchasedShowAll.classList.contains('text-white'))
+                this.#purchasedShowAll.classList.add("text-white");
+            if (this.#purchasedShowAll.classList.contains('btn-light')) {
+                this.#purchasedShowAll.classList.remove("btn-light");
+                this.#purchasedShowAll.classList.add("btn-info");
+            }
+            this.#purchasedShowAll.disabled = false;
+        }
+        if (this.#purchasedShowUnpaid) {
+            if (this.#purchasedShowUnpaid.classList.contains('text-white'))
+                this.#purchasedShowUnpaid.classList.remove("text-white");
+            if (this.#purchasedShowUnpaid.classList.contains('btn-info')) {
+                this.#purchasedShowUnpaid.classList.remove("btn-info");
+                this.#purchasedShowUnpaid.classList.add("btn-light");
+            }
+            this.#purchasedShowUnpaid.disabled = true;
+        }
+        if (this.#purchasedHideAll) {
+            if (!this.#purchasedHideAll.classList.contains('text-white'))
+                this.#purchasedHideAll.classList.add("text-white");
+            if (this.#purchasedHideAll.classList.contains('btn-light')) {
+                this.#purchasedHideAll.classList.remove("btn-light");
+                this.#purchasedHideAll.classList.add("btn-info");
+            }
+            this.#purchasedHideAll.disabled = false;
+        }
+    }
+
+    hideAll() {
+        $('[name="t-paid"]').hide();
+        $('[name="t-unpaid"]').hide();
+        $('[name="t-plan"]').hide();
+
+        if (this.#purchasedShowAll) {
+            if (!this.#purchasedShowAll.classList.contains('text-white'))
+                this.#purchasedShowAll.classList.add("text-white");
+            if (this.#purchasedShowAll.classList.contains('btn-light')) {
+                this.#purchasedShowAll.classList.remove("btn-light");
+                this.#purchasedShowAll.classList.add("btn-info");
+            }
+            this.#purchasedShowAll.disabled = false;
+        }
+        if (this.#purchasedShowUnpaid) {
+            if (!this.#purchasedShowUnpaid.classList.contains('text-white'))
+                this.#purchasedShowUnpaid.classList.add("text-white");
+            if (this.#purchasedShowUnpaid.classList.contains('btn-light')) {
+                this.#purchasedShowUnpaid.classList.remove("btn-light");
+                this.#purchasedShowUnpaid.classList.add("btn-info");
+            }
+            this.#purchasedShowUnpaid.disabled = false;
+        }
+        if (this.#purchasedHideAll) {
+            if (this.#purchasedHideAll.classList.contains('text-white'))
+                this.#purchasedHideAll.classList.remove("text-white");
+            if (this.#purchasedHideAll.classList.contains('btn-info')) {
+                this.#purchasedHideAll.classList.remove("btn-info");
+                this.#purchasedHideAll.classList.add("btn-light");
+            }
+            this.#purchasedHideAll.disabled = true;
+        }
     }
 }
 
