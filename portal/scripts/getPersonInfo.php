@@ -137,7 +137,7 @@ EOS;
     $response['memberships'] = $memberships;
 }
 
-if ($membershipReq == 'A') {
+if ($membershipReq == 'A' || $membershipReq == 'B') {
     $allMemberships = [];
     if ($loginType == 'p') {
         $mQ = <<<EOS
