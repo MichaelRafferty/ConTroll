@@ -398,7 +398,7 @@ logWrite(array('con'=>$con['name'], 'trans'=>$transId, 'action' => 'Interests ad
 
 $response['int_upd'] = $int_upd;
 
-$response['message'] .= "<br/>" . ($int_upd == 0 ? 'No interest changes' : "$int_upd  interests updated");
+$response['message'] .= "<br/>" . ($int_upd == 0 ? 'No Interests changed' : "$int_upd  Interests updated");
 $response['status'] = 'success';
 
 ajaxSuccess($response);
