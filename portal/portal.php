@@ -317,6 +317,18 @@ foreach ($memberships as $membership) {
         $totalPaid++;
     }
 }
+if (array_key_exists('payorPlans', $paymentPlans)) {
+    $payorPlan = $paymentPlans['payorPlans'];
+} else
+    $payorPlan = [];
+
+// create a div and bg color it to separate it logically from the other parts
+if ($totalDue > 0 || count($payorPlan) > 0) {
+?>
+    <div class='container-fluid p-0 m-0' style="background-color: #F0F0FF;">
+<?php
+}
+
 $payHtml = '';
 if ($totalDue > 0) {
     $totalDueFormatted = '&nbsp;&nbsp;Total due: ' . $dolfmt->formatCurrency((float) $totalDue, $currency);
@@ -325,17 +337,20 @@ if ($totalDue > 0) {
     setSessionVar('totalDue', $totalDue); // used for validation in payment side
 }
 
-if (array_key_exists('payorPlans', $paymentPlans)) {
-    $payorPlan = $paymentPlans['payorPlans'];
-    if (count($payorPlan) > 0) {
-    ?>
+if (count($payorPlan) > 0) {
+?>
     <div class='row mt-5'>
         <div class='col-sm-12'><h3>Payment Plans for this account:</h3></div>
     </div>
-    <?php
+<?php
     drawPaymentPlans($info, $paymentPlans);
-    }
 }
+if ($totalDue > 0 || count($payorPlan) > 0) {
+?>
+    </div>
+<?php
+}
+
 if (count($memberships) > 0) {
     if ($totalUnpaid > 0) {
         $showAll = '';
@@ -376,9 +391,6 @@ if (count($memberships) > 0) {
         <div class='col-sm-3'><b>Membership</b></div>
         <div class='col-sm-4'><b>Full Name / Badge Name</b></div>
     </div>
-    <div class='row'>
-        <div class="col-sm-12 ms-0 me-0 align-center"><hr style="height:4px;width:95%;margin:auto;margin-top:6px;margin-bottom:10px;color:#333333;background-color:#333333;"/></div>
-    </div>
 <?php
 // loop over the transactions outputting the memberships
     $currentId = -99999;
@@ -389,10 +401,10 @@ if (count($memberships) > 0) {
             if ($currentId > -10000) {
 ?>
         </div>
-        <div class="p-0 m-0" name="t-<?php echo $membership['status'];?>">
+        <div class="container-fluid p-0 m-0" name="t-<?php echo $membership['status'];?>">
         <div class='row'>
-            <div class='col-sm-12 ms-0 me-0 align-center'>
-                <hr style='height:4px;width:95%;margin:auto;margin-top:0px;margin-bottom:0px;color:#333333;background-color:#333333;'/>
+            <div class='col-sm-12 p-0 m-0 align-center'>
+                <hr style='height:4px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:#333333;background-color:#333333;'/>
             </div>
         </div>
 <?php
@@ -435,11 +447,11 @@ if (count($memberships) > 0) {
     if ($totalDue > 0) {
 ?>
     <div class='row'>
-        <div class='col-sm-12 ms-0 me-0 align-center'>
-            <hr color="black" style='height:3px;width:95%;margin:auto;margin-top:10px;margin-bottom:2px;'/>
+        <div class='col-sm-12 p-0 m-0 align-center'>
+            <hr color="black" style='height:3px;width:98%;margin:auto;margin-top:10px;margin-bottom:2px;'/>
         </div>
-        <div class='col-sm-12 ms-0 me-0 align-center'>
-            <hr color="black" style='height:3px;width:95%;margin:auto;margin-top:2px;margin-bottom:20px;'/>
+        <div class='col-sm-12 p-0 m-0 align-center'>
+            <hr color="black" style='height:3px;width:98%;margin:auto;margin-top:2px;margin-bottom:20px;'/>
         </div>
     </div>
 <div class="row">
