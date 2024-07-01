@@ -100,7 +100,7 @@ if ($do_update) {
         $types .= 'ss';
         array_push($values, trim($_POST['conflictFormNewShareReg']));
         array_push($values, trim($_POST['conflictFormNewContactOK']));
-        array_push($values, $_SESSION['user_id']));
+        array_push($values, $_SESSION['user_id']);
     }
 
 
