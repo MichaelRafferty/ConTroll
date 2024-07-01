@@ -775,6 +775,8 @@ class Membership {
             if (row == nrow)    // skip checking ourselves
                 continue;
             var nmbr = this.#memberships[nrow];
+            if (nmbr.toDelete)
+                continue;
             if (rules.testMembership(nmbr, true) == false) {
                 mbr.toDelete = undefined;
                 show_message("You cannot remove " + mbr.label + " because " + nmbr.label + " requires it.  You must delete/remove " + nmbr.label + " first.", 'warn');
@@ -821,6 +823,8 @@ class Membership {
             if (row == nrow)    // skip checking ourselves
                 continue;
             var nmbr = this.#memberships[nrow];
+            if (nmbr.toDelete)
+                continue;
             nmbr.toDelete = true;
             if (rules.testMembership(nmbr, true) == false) {
                 mbr.toDelete = undefined;
@@ -849,7 +853,13 @@ class Membership {
             return
         }
 
-        mbr.toDelete = undefined;
+        var rules = new MembershipRules(config['conid'], this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        if (rules.testMembership(mbr, false) == false) {
+            show_message("You cannot restore " + mbr.label + " because it requires some other deleted membership. Look at your memberships marked 'Restore'" +
+                " and restore its prerequesite", "warn");
+        } else {
+            mbr.toDelete = undefined;
+        }
         this.#cartChanges--;
         this.updateCart();
         this.buildMembershipButtons();
