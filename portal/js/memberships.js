@@ -302,7 +302,7 @@ class Membership {
 
             // apply age filter from age select
             if (mem.memAge == 'all' || mem.memAge == this.#currentAge) {
-                html += '<div class="col-sm-auto"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary" onclick="membership.membershipAdd(' + "'" + mem.id + "'" + ')">' +
+                html += '<div class="col-sm-auto m-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary" onclick="membership.membershipAdd(' + "'" + mem.id + "'" + ')">' +
                     (mem.conid != config['conid'] ? mem.conid + ' ' : '') + mem.label + '</button></div>' + "\n";
                 }
         }

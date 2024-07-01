@@ -211,7 +211,7 @@ drawGetNewMemberships();
     <div id="cartDiv">
         <div class='row'>
             <div class='col-sm-12'>
-                <h3>Memberships:</h3>
+                <h3>Cart:</h3>
             </div>
         </div>
         <div id='cartContentsDiv'></div>
