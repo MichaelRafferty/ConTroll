@@ -44,6 +44,7 @@ $config_vars['label'] = $con['label'];
 $config_vars['debug'] = $debug['portal'];
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['loadPlans'] = true;
+$config_vars['required'] = $ini['required'];
 $cdn = getTabulatorIncludes();
 
 // this section is for 'in-session' management
