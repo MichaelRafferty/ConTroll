@@ -45,9 +45,11 @@ if ($manager != NULL) {
 $newPersonQ = <<<EOQ
 INSERT INTO perinfo (last_name, first_name, middle_name, suffix
     , email_addr, phone, badge_name, address, addr_2, city, state, zip
-    , country, contact_ok, share_reg_ok, active, banned, updatedBy, managedBy)
+    , country, contact_ok, share_reg_ok, active, banned, updatedBy
+    , managedBy, managedReason, lastVerified
 SELECT last_name, first_name, middle_name, suffix, email_addr, phone
-    , badge_name, address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, 'Y', 'N', ?, managedBy
+    , badge_name, address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, 'Y', 'N', ?
+    , managedBy, managedReason, lastVerified
 FROM newperson
 WHERE id = ?;
 EOQ;
