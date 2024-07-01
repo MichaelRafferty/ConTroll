@@ -105,6 +105,8 @@ if ($new_payment['type'] == 'online') {
         'counts' => 0,
         'price' => null,
         'badges' => null,
+        'tax' => 0,
+        'pretax' => $amt,
         'total' => $amt,
         'nonce' => $new_payment['nonce'],
         'coupon' => $coupon,

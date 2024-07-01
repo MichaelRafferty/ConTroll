@@ -105,7 +105,8 @@ use Square\Models\Money;
 use Square\Models\CreatePaymentRequest;
 use Square\Models\CreatePaymentResponse;
 
-
+// charge the purchase making a customer, order, and payment
+//TODO Need to add the tax section to SQUARE, need to lookup how to do this in the API, right now it expects tax to be 0 passed in.
 function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     $cc = get_conf('cc');
     $con = get_conf('con');
@@ -392,11 +393,11 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 
     $rtn = array();
     $rtn['amount'] = $approved_amt;
-    $rtn['txnfields'] = array('transid','type','category','description','source','amount',
+    $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'tax', 'amount',
         'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'cashier');
-    $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd',
+    $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
             's', 's', 's', 's', 's', 's', 's', 's', 'i');
-    $rtn['tnxdata'] = array($results['transid'],'credit',$category,$desc,'online',$approved_amt,
+    $rtn['tnxdata'] = array($results['transid'],'credit',$category,$desc,'online',$results['pretax'], $results['tax'], $approved_amt,
         $txtime,$last4,$results['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $user_perid);
     $rtn['url'] = $receipt_url;
     $rtn['rid'] = $receipt_number;
