@@ -145,16 +145,16 @@ $upd_rows = 0;
 $cupd_rows = 0;
 if ($new_payment['type'] != 'online') { // online already added the payment record
     $insPmtSQL = <<<EOS
-INSERT INTO payments(transid, type,category, description, source, amount, time, cc_approval_code, cashier)
-VALUES (?,?,'reg',?,'cashier',?,now(),?, ?);
+INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier)
+VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?);
 EOS;
-    $typestr = 'issssi';
+    $typestr = 'issdddsi';
     if ($new_payment['type'] == 'check')
         $desc = 'Check No: ' . $new_payment['checkno'] . '; ';
     else
         $desc = '';
     $desc .= $new_payment['desc'];
-    $paramarray = array($master_tid, $new_payment['type'], $desc, $new_payment['amt'], $new_payment['ccauth'], $user_perid);
+    $paramarray = array($master_tid, $new_payment['type'], $desc, $new_payment['amt'], 0, $new_payment['amt'], $new_payment['ccauth'], $user_perid);
     $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
 }
 
