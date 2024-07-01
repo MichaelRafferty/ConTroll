@@ -84,6 +84,25 @@ function draw_editPersonModal() {
 
 // drawEditPersonBlock - just output the block to edit the person
 function drawEditPersonBlock($con, $useUSPS) {
+    $reg = get_conf('reg');
+    if (array_key_exists('required', $reg)) {
+        $required = $reg['required'];
+    } else {
+        $required = 'addr';
+    }
+    $firstStar = '';
+    $addrStar = '';
+    $allStar = '';
+    switch ($required) {
+        // cascading list of required fields, each case adds more so the breaks fall into the next section
+
+        case 'all':
+            $allStar = '<span class="text-danger">&bigstar;</span>';
+        case 'addr':
+            $addrStar = '<span class="text-danger">&bigstar;</span>';
+        case 'first':
+            $firstStar = '<span class="text-danger">&bigstar;</span>';
+    }
 ?>
         <h3 class='text-primary' id='epHeader'>Personal Information for this new person</h3>
         <div class='row' style='width:100%;'>
@@ -96,60 +115,78 @@ function drawEditPersonBlock($con, $useUSPS) {
         <?php if ($useUSPS) echo '<div class="row"><div class="col-sm-8 p-0 m-0"><div class="container-fluid">' . PHP_EOL; ?>
         <div class="row">
             <div class="col-sm-auto">
-                <label for="fname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
-                                class='text-danger'>&bigstar;</span>First Name</span></label><br/>
+                <label for="fname" class="form-label-sm">
+                    <span class="text-dark" style="font-size: 10pt;"><?php echo $firstStar; ?>First Name</span>
+                </label><br/>
                 <input class="form-control-sm" type="text" name="fname" id='fname' size="22" maxlength="32" tabindex="100"/>
             </div>
             <div class="col-sm-auto">
-                <label for="mname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
+                <label for="mname" class="form-label-sm">
+                    <span class="text-dark" style="font-size: 10pt;">Middle Name</span>
+                </label><br/>
                 <input class="form-control-sm" type="text" name="mname" id='mname' size="8" maxlength="32" tabindex="110"/>
             </div>
             <div class="col-sm-auto">
-                <label for="lname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Last Name</span></label><br/>
+                <label for="lname" class="form-label-sm">
+                    <span class="text-dark" style="font-size: 10pt;"><?php echo $allStar; ?>Last Name</span>
+                </label><br/>
                 <input class="form-control-sm" type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="120"/>
             </div>
             <div class="col-sm-auto">
-                <label for="suffix" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
+                <label for="suffix" class="form-label-sm">
+                    <span class="text-dark" style="font-size: 10pt;">Suffix</span>
+                </label><br/>
                 <input class="form-control-sm" type="text" name="suffix" id='suffix' size="4" maxlength="4" tabindex="130"/>
             </div>
         </div>
         <div class='row'>
             <div class='col-sm-12'>
-                <label for='legalname' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
+                <label for='legalname' class='form-label-sm'>
+                    <span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.
+                </label><br/>
                 <input class='form-control-sm' type='text' name='legalname' id='legalname' size=64 maxlength='64'
                        placeholder='Defaults to First Name Middle Name Last Name, Suffix' tabindex='140'/>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-12">
-                <label for="addr" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
-                                class='text-danger'>&bigstar;</span>Address</span></label><br/>
+                <label for="addr" class="form-label-sm">
+                    <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>Address</span>
+                </label><br/>
                 <input class="form-control-sm" type="text" name='addr' id='addr' size=64 maxlength="64" tabindex='150'/>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-12">
-                <label for="addr2" class="form-label-sm"><span class="text-dark"
-                                                               style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
+                <label for="addr2" class="form-label-sm">
+                    <span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span>
+                </label><br/>
                 <input class="form-control-sm" type="text" name='addr2' id='addr2' size=64 maxlength="64" tabindex='160'/>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-auto">
-                <label for="city" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
-                                class='text-danger'>&bigstar;</span>City</span></label><br/>
+                <label for="city" class="form-label-sm">
+                    <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>City</span>
+                </label><br/>
                 <input class="form-control-sm" type="text" name="city" id='city' size="22" maxlength="32" tabindex="170"/>
             </div>
             <div class="col-sm-auto">
-                <label for="state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>State: US/CAN 2 letter abv.</span></label><br/>
+                <label for="state" class="form-label-sm">
+                    <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>State: US/CAN 2 letter abv.</span>
+                </label><br/>
                 <input class="form-control-sm" type="text" name="state" id='state' size="16" maxlength="16" tabindex="180"/>
             </div>
             <div class="col-sm-auto">
-                <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Zip</span></label><br/>
+                <label for="zip" class="form-label-sm">
+                    <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>Zip</span>
+                </label><br/>
                 <input class="form-control-sm" type="text" name="zip" id='zip' size="10" maxlength="10" tabindex="190"/>
             </div>
             <div class="col-sm-auto">
-                <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
+                <label for="country" class="form-label-sm">
+                    <span class="text-dark" style="font-size: 10pt;">Country</span>
+                </label><br/>
                 <select name='country' tabindex='200' id='country' onchange="portal.countryChange();">
                     <?php
                     $fh = fopen(__DIR__ . '/../../lib/countryCodes.csv', 'r');
