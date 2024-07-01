@@ -885,9 +885,18 @@ class Portal {
 
     // show / hide the home page purchased section
     showAll() {
-        $('[name="t-paid"]').show();
-        $('[name="t-unpaid"]').show();
-        $('[name="t-plan"]').show();
+        $('div[name="t-paid"]').show();
+        $('div[name="t-unpaid"]').show();
+        $('div[name="t-plan"]').show();
+
+        var color = false;
+        $("div[name^='t-']").each(function() {
+            if (color)
+                $(this).addClass('bg-light')
+            else
+                $(this).removeClass('bg-light');
+            color = !color;
+        });
 
         if (this.#purchasedShowAll) {
             if (this.#purchasedShowAll.classList.contains('text-white')) 
@@ -919,9 +928,20 @@ class Portal {
     }
 
     showUnpaid() {
-        $('[name="t-paid"]').hide();
-        $('[name="t-unpaid"]').show();
-        $('[name="t-plan"]').show();
+        $('div[name="t-paid"]').hide();
+        $('div[name="t-unpaid"]').show();
+        $('div[name="t-plan"]').show();
+
+        var color = false;
+        $("div[name^='t-']").each(function() {
+            if ($(this).css("display") != "none") {
+                if (color)
+                    $(this).addClass('bg-light')
+                else
+                    $(this).removeClass('bg-light');
+                color = !color;
+            }
+        });
 
         if (this.#purchasedShowAll) {
             if (!this.#purchasedShowAll.classList.contains('text-white'))
