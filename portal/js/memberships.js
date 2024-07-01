@@ -860,7 +860,7 @@ class Membership {
         var _this = this;
         if (this.#cartChanges == 0) {
             // go back to the home page
-            window.location = "portal.php?messageFwd=" + encodeURI("No Changes");
+            window.location = "portal.php?messageFwdmessageFwd=" + encodeURI("No Changes");
             return;
         }
         this.#saveCartBtn.disabled = true;

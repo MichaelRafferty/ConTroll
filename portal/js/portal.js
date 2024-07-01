@@ -518,7 +518,7 @@ class Portal {
             show_message(data['message']);
             this.#editPersonModal.hide();
             if (data['rows_upd'] > 0) {
-                window.location.search = '?messageFwd=' + encodeURI(data['message']);
+                window.location = '?messageFwd=' + encodeURI(data['message']);
             }
         }
     }
@@ -642,7 +642,7 @@ class Portal {
             show_message(data['message']);
             this.#editInterestsModal.hide();
             if (data['rows_upd'] > 0) {
-                window.location.search = '?messageFwd=' + encodeURI(data['message']);
+                window.location = '?messageFwd=' + encodeURI(data['message']);
             }
         }
     }
@@ -786,10 +786,10 @@ class Portal {
             }
         }
         if (data['message'])
-            window.location.search = '?messageFwd=' + encodeURI(data['message']);
+            window.location = '?messageFwd=' + encodeURI(data['message']);
         else {
             var message = 'Payment succeeded, ' + data['rows_upd'] + ' memberships updated';
-            window.location.search = '?messageFwd=' + encodeURI(message);
+            window.location = '?messageFwd=' + encodeURI(message);
         }
     }
 

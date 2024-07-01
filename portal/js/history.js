@@ -6,5 +6,5 @@ function updateSelection() {
     var from = startOption.value;
     var to = endOption.value;
 
-    window.location.search = '?start=' + from + '&end=' + to;
+    window.location = '?start=' + from + '&end=' + to;
 }

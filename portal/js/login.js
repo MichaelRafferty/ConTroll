@@ -181,7 +181,7 @@ class Login {
 
     // loginWithToken: show email for token
     loginWithGoogle() {
-        window.location.search = '?oauth2=google';
+        window.location = '?oauth2=google';
     }
 
     tokenEmailChanged(autocall) {

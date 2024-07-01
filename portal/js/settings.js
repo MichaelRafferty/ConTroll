@@ -37,7 +37,7 @@ class Settings {
                 } else if (data['status'] == 'warn') {
                     show_message(data['message'], 'warn');
                 } else {
-                    window.location.search = '?messageFwd=' + encodeURI(data['message']);
+                    window.location = '?messageFwd=' + encodeURI(data['message']);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -96,7 +96,7 @@ class Settings {
                     show_message(data['message'], 'warn');
                     document.getElementById('attachBtn').disabled = false;
                 } else {
-                    window.location.search = '?messageFwd=' + encodeURI(data['message']);
+                    window.location = '?messageFwd=' + encodeURI(data['message']);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -126,7 +126,7 @@ class Settings {
                 } else if (data['status'] == 'warn') {
                     show_message(data['message'], 'warn');
                 } else {
-                    window.location.search = '?messageFwd=' + encodeURI(data['message']);
+                    window.location = '?messageFwd=' + encodeURI(data['message']);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -180,7 +180,7 @@ class Settings {
                     show_message(data['message'], 'warn');
                     document.getElementById('newIdentity').disabled = false;
                 } else {
-                    window.location.search = '?messageFwd=' + encodeURI(data['message']);
+                    window.location = '?messageFwd=' + encodeURI(data['message']);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
