@@ -173,30 +173,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
     if (count($matches) > 1) {
         $condata = get_con();
         $ini = get_conf('reg');
-        index_page_init($condata['label'] . ' Membership Portal');
-    ?>
-        <body id="membershipPortalBody">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-sm-12 p-0">
-                    <?php
-                        if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') {
-                            if (array_key_exists('logoalt', $ini)) {
-                                $altstring = $ini['logoalt'];
-                            }
-                            else {
-                                $altstring = 'Logo';
-                            } ?>
-                            <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring; ?>"/>
-                            <?php
-                        }
-                        if (array_key_exists('logotext', $ini) && $ini['logotext'] != '') {
-                            echo $ini['logotext'];
-                        }
-                    ?>
-                </div>
-            </div>
-        </div>
+?>
         <h4>This email address has access to multiple membership accounts</h4>
         Please select one of the accounts below:<br/><ul>
 <?php
