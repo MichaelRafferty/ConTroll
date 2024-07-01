@@ -391,17 +391,24 @@ if (count($memberships) > 0) {
         <div class='col-sm-3'><b>Membership</b></div>
         <div class='col-sm-4'><b>Full Name / Badge Name</b></div>
     </div>
+    <div class='row'>
+        <div class='col-sm-12 p-0 m-0 align-center'>
+            <hr style='height:4px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:#333333;background-color:#333333;'/>
+        </div>
+    </div>
 <?php
 // loop over the transactions outputting the memberships
     $currentId = -99999;
-    $color = false;
-    echo '<div class="p-0 m-0" name="t-' . $membership['status'] . '">';
+    $color = true;
+    echo '<div class="container-fluid p-0 m-0" name="t-' . $membership['status'] .'">' .  PHP_EOL;
     foreach ($memberships as $membership)  {
         if ($currentId != $membership['sortTrans']) {
             if ($currentId > -10000) {
+                $bgcolor = $color ? ' bg-light' : '';
+                $color = !$color
 ?>
         </div>
-        <div class="container-fluid p-0 m-0" name="t-<?php echo $membership['status'];?>">
+        <div class="container-fluid<?php echo $bgcolor; ?> p-0 m-0" name="t-<?php echo $membership['status'];?>">
         <div class='row'>
             <div class='col-sm-12 p-0 m-0 align-center'>
                 <hr style='height:4px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:#333333;background-color:#333333;'/>
@@ -417,10 +424,9 @@ if (count($memberships) > 0) {
                 $receipt = '';
             }
             $transDate = date_format(date_create($membership['transDate']), 'Y-m-d');
-            $bgcolor = $color ? " bg-light" : "";
-            $color = !$color
+
 ?>
-        <div class='row pt-1 <?php echo $bgcolor;?>'>
+        <div class='row pt-1'>
             <div class='col-sm-1' style='text-align: right;'><?php echo $currentId; ?></div>
             <div class="col-sm-2"><?php echo $transDate; ?></div>
             <div class='col-sm-1'><?php echo $receipt; ?></div>
@@ -435,7 +441,7 @@ if (count($memberships) > 0) {
             $status = $membership['status'];
         }
 ?>
-        <div class='row <?php echo $bgcolor;?>'>
+        <div class='row'>
             <div class='col-sm-1'></div>
             <div class='col-sm-2'><?php echo $status; ?></div>
             <div class='col-sm-3'><?php echo ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label']; ?></div>

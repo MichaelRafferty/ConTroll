@@ -296,13 +296,18 @@ if (array_key_exists('email_error', $return_arr)) {
     $error_msg = null;
 }
 
+if (array_key_exists('payorPlanId', $planRec))
+    $payorPlan = $planRec['payorPlanId'];
+else
+    $payorPlan = null;
+
 $response = array(
     'status' => $return_arr['status'],
     'url' => $rtn['url'],
     'data' => $error_msg,
     'email' => $return_arr,
     'trans' => $transId,
-    'payorPlanId' => $planRec['payorPlanId'],
+    'payorPlanId' => $payorPlan,
     'email_error' => $error_code,
     'rows_upd' => $rows_upd,
 );
