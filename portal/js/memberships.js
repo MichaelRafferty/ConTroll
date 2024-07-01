@@ -811,10 +811,13 @@ class Membership {
             if (row == nrow)    // skip checking ourselves
                 continue;
             var nmbr = this.#memberships[nrow];
+            nmbr.toDelete = true;
             if (rules.testMembership(nmbr, true) == false) {
                 mbr.toDelete = undefined;
+                nmbr.toDelete = undefined;
                 show_message("You cannot delete " + mbr.label + " because " + nmbr.label + " requires it.  You must delete/remove " + nmbr.label + " first.", 'warn');
             }
+            nmbr.toDelete = undefined;
         }
 
 
