@@ -67,6 +67,11 @@ server="https://reg.conname.org/"
 logoimage="conname2022.png"
 logotext="Tagline not alt=text"
 onsiteopen="3:00 PM"
+; required person field sets
+;   all = require all fields: first, last, addr, city, st, zip, country, email
+;   first = require only first name: first, country, email
+;   addr = first, addr, city, st, zip, country, email
+required="all"
 [atcon]
 ; valid types are
 ; 	manager - requires manager logged in
