@@ -22,12 +22,32 @@ if(!isset($_POST) || !isset($_POST['newID'])) {
     exit();
 }
 
+// check if this person is managed by a different new person
+$checkQ = <<<EOS
+SELECT managedByNew
+FROM newperson
+WHERE id = ?;
+EOS;
+$checkR = dbSafeQuery($checkQ,'i', array($_POST['newID']));
+if ($checkR === false) {
+    $response['error'] = "Cannot check new person for who manages them";
+    ajaxSuccess($response);
+    exit();
+}
+$manager = $checkR->fetch_row()[0];
+$checkR->free();
+if ($manager != NULL) {
+    $response['error'] = "Must first resolve their manager, newid $manager";
+    ajaxSuccess($response);
+    exit();
+}
+
 $newPersonQ = <<<EOQ
 INSERT INTO perinfo (last_name, first_name, middle_name, suffix
     , email_addr, phone, badge_name, address, addr_2, city, state, zip
-    , country, contact_ok, share_reg_ok, active, banned, updatedBy)
+    , country, contact_ok, share_reg_ok, active, banned, updatedBy, managedBy)
 SELECT last_name, first_name, middle_name, suffix, email_addr, phone
-    , badge_name, address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, 'Y', 'N', ?
+    , badge_name, address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, 'Y', 'N', ?, managedBy
 FROM newperson
 WHERE id = ?;
 EOQ;
@@ -35,6 +55,8 @@ EOQ;
 $id = dbSafeInsert($newPersonQ, "ii", array($_SESSION['user_perid'], $_POST['newID']));
 if ($id !== false) {
     $rows = dbSafeCmd("UPDATE newperson SET perid=?, updatedBy = ? WHERE id=?;", 'iii', array ($id, $_SESSION['user_id'], $_POST['newID']));
+    $rows = dbSafeCmd("UPDATE newperson SET updatedBy = ?, managedBy = ?, managedByNew = null WHERE managedByNew=?;", 'iii',
+                      array ($_SESSION['user_perid'], $id, $_POST['newID']));
     $rows = dbSafeCmd("UPDATE reg SET perid=? WHERE newperid=?;", 'ii', array ($id, $_POST['newID']));
     $rows = dbSafeCmd("UPDATE transaction SET perid=? WHERE newperid=?;", 'ii', array ($id, $_POST['newID']));
     $rows = dbSafeCmd("UPDATE exhibitors SET perid=? WHERE newperid=?;", 'ii', array ($id, $_POST['newID']));
