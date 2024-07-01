@@ -438,18 +438,41 @@ class PaymentPlans {
 
     // payPlan - make a payment against a plan
     payPlan(payorPlanId) {
-        console.log("trying to pay plan " + payorPlanId);
+        //console.log("trying to pay plan " + payorPlanId);
         var payorPlan = payorPlans[payorPlanId];
         var payments = payorPlan['payments'];
+        var numPmts = 0;
         var plan = paymentPlanList[payorPlan.planId];
-        console.log(payorPlan);
-        if (payments)
-            console.log(payments);
-        else
-            console.log('no payments');
+        //console.log(payorPlan);
+        //if (payments)
+        //    console.log(payments);
+        //else
+        //    console.log('no payments');
 
         var paymentAmt = Number(payorPlan.minPayment);
         var balanceDue = Number(payorPlan.balanceDue);
+        // compute if we're past due
+        if (payments) {
+            numPmts = Object.keys(payments).length;
+        }
+        var createDate = new Date(payorPlan.createDate);
+        var createTS = createDate.getTime();
+        var now = Date.now();
+        var daysDiff = Math.ceil((now - createTS) / (24 *3600 * 1000));
+        //console.log('daysDiff = ' + daysDiff);
+        //console.log('numPmts=' + numPmts);
+        var daysBetween = payorPlan.daysBetween;
+        //console.log('daysBetween=' + daysBetween);
+        var nextDue = ((numPmts + 1) * daysBetween) - (1 + daysDiff);
+        //console.log('nextDue = ' + nextDue);
+        var numDue = 1;
+        //console.log('numDue = ' + numDue);
+        if (nextDue < 0)  {
+            var pastDue = Math.ceil(-nextDue / daysBetween);
+            numDue += pastDue;
+            //console.log("pastDue = " + pastDue + ", numDue = " + numDue);
+        }
+        paymentAmt = numDue * paymentAmt;
         if (paymentAmt > balanceDue)
             paymentAmt = balanceDue
 

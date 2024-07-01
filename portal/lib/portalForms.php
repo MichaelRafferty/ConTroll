@@ -599,24 +599,25 @@ function drawPaymentPlans($person, $paymentPlans) {
         <div class="col-sm-1" style='text-align: right;'><b>Minimum Pmt Amt</b></div>
     </div>
 <?php
+    $now = time();
     foreach ($payorPlans as $payorPlan) {
         $planid = $payorPlan['planId'];
         $plan = $plans[$planid];
+        $nextPayColor = '';
         if (array_key_exists('payments', $payorPlan)) {
             $payments = $payorPlan['payments'];
             $numPmts = count($payments);
             $lastPayment = $payments[$numPmts];
             $lastPaidDate = date_format(date_create($lastPayment['payDate']), 'Y-m-d');
             // numPmts + 1 because we are looking for when the next payment (not the one that just got paid) is due.
-            $nextPayDue = date_format(date_add(date_create($payorPlan['createDate']),
-                date_interval_create_from_date_string((($numPmts + 1) * $payorPlan['daysBetween']) - 1 . ' days')),
-                'Y-m-d');
+            $nextPayDueDate = date_add(date_create($payorPlan['createDate']), date_interval_create_from_date_string((($numPmts + 1) * $payorPlan['daysBetween']) - 1 . ' days'));
+            $nextPayDue = date_format($nextPayDueDate, 'Y-m-d');
             $minAmt = $dolfmt->formatCurrency((float) $payorPlan['minPayment'] <= $payorPlan['balanceDue'] ? $payorPlan['minPayment'] : $payorPlan['balanceDue'], $currency);
         } else {
             $numPmts = '0';
             $lastPaidDate = 'None';
-            $nextPayDue = date_format(date_add(date_create($payorPlan['createDate']), date_interval_create_from_date_string($payorPlan['daysBetween'] - 1 . " days")),
-            'Y-m-d');
+            $nextPayDueDate = date_add(date_create($payorPlan['createDate']), date_interval_create_from_date_string($payorPlan['daysBetween'] - 1 . ' days'));
+            $nextPayDue = date_format($nextPayDueDate, 'Y-m-d');
             $minAmt = $dolfmt->formatCurrency((float) $payorPlan['minPayment'], $currency);
         }
         if ($payorPlan['status'] != 'active') {
@@ -625,7 +626,21 @@ function drawPaymentPlans($person, $paymentPlans) {
             $col1 = $payorPlan['status'];
         } else {
             $id = $payorPlan['id'];
-            $col1 = "<button class='btn btn-sm btn-secondary pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Pmt</button>";
+            $nextPayTimestamp = $nextPayDueDate->getTimestamp();
+            if ($nextPayTimestamp < $now) { // past due
+                $nextPayColor = ' bg-danger text-white';
+                $col1 = "<button class='btn btn-sm btn-danger pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Past Due Pmt</button>";
+                $numPmtsPastDue = 1 + ceil(($now - $nextPayTimestamp) / (24 * 3600 * $payorPlan['daysBetween']));
+                $minAmt = $numPmtsPastDue * $payorPlan['minPayment'];
+                if ($minAmt > $payorPlan['balanceDue'])
+                    $minAmt = $payorPlan['balanceDue'];
+                $minAmt = $dolfmt->formatCurrency((float) $minAmt, $currency);
+            } else if ($nextPayTimestamp < $now + 7 * 24 * 3600) { // are we within 7 days of a payment
+                $nextPayColor = ' bg-warning';
+                $col1 = "<button class='btn btn-sm btn-primary pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Pmt</button>";
+            } else {
+                $col1 = "<button class='btn btn-sm btn-secondary pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Pmt</button>";
+            }
         }
         $dateCreated = date_format(date_create($payorPlan['createDate']), 'Y-m-d');
         $payByDate = date_format(date_create($plan['payByDate']), 'Y-m-d');
@@ -642,7 +657,7 @@ function drawPaymentPlans($person, $paymentPlans) {
             <div class="col-sm-1"><?php echo $dateCreated;?></div>
             <div class="col-sm-1"><?php echo $payByDate;?></div>
             <div class="col-sm-1"><?php echo $lastPaidDate;?></div>
-            <div class="col-sm-1"><?php echo $nextPayDue;?></div>
+            <div class="col-sm-1<?php echo $nextPayColor;?>"><?php echo $nextPayDue;?></div>
             <div class="col-sm-1" style='text-align: right;'><?php echo $minAmt;?></div>
         </div>
 
