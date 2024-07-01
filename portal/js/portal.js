@@ -301,6 +301,7 @@ class Portal {
         //process(formRef) {
         clear_message('epMessageDiv');
         var valid = true;
+        var required = config['required'];
 
         // validation
         // emails must not be blank and must match
@@ -318,69 +319,78 @@ class Portal {
             $('#email2').removeClass('need');
         }
 
-        // first name is required
-        if (person['fname'] == '') {
-            valid = false;
-            $('#fname').addClass('need');
-        } else {
-            $('#fname').removeClass('need');
-        }
-
-        // last name is required
-        if (person['lname'] == '') {
-            valid = false;
-            $('#lname').addClass('need');
-        } else {
-            $('#lname').removeClass('need');
-        }
-
-        // address 1 is required, address 2 is optional
-        if (person['addr'] == '') {
-            valid = false;
-            $('#addr').addClass('need');
-        } else {
-            $('#addr').removeClass('need');
-        }
-
-        // city/state/zip required
-        if (person['city'] == '') {
-            valid = false;
-            $('#city').addClass('need');
-        } else {
-            $('#city').removeClass('need');
-        }
-
-        if (person['state'] == '') {
-            valid = false;
-            $('#state').addClass('need');
-        } else {
-            if (person['country'] == 'USA') {
-                if (person['state'].length != 2) {
-                    valid = false;
-                    $('#state').addClass('need');
-                } else {
-                    $('#state').removeClass('need');
-                }
+        if (required != '') {
+            // first name is required
+            if (person['fname'] == '') {
+                valid = false;
+                $('#fname').addClass('need');
             } else {
-                $('#state').removeClass('need');
+                $('#fname').removeClass('need');
             }
         }
 
-        if (person['zip'] == '') {
-            valid = false;
-            $('#zip').addClass('need');
-        } else {
-            $('#zip').removeClass('need');
+        if (required == 'all') {
+            // last name is required
+            if (person['lname'] == '') {
+                valid = false;
+                $('#lname').addClass('need');
+            } else {
+                $('#lname').removeClass('need');
+            }
+        }
+
+        if (required == 'addr' || required == 'all' || person['city'] != '' || person['state'] != '' || person['zip'] != '') {
+            // address 1 is required, address 2 is optional
+            if (person['addr'] == '') {
+                valid = false;
+                $('#addr').addClass('need');
+            } else {
+                $('#addr').removeClass('need');
+            }
+
+            // city/state/zip required
+            if (person['city'] == '') {
+                valid = false;
+                $('#city').addClass('need');
+            } else {
+                $('#city').removeClass('need');
+            }
+
+            if (person['state'] == '') {
+                valid = false;
+                $('#state').addClass('need');
+            } else {
+                if (person['country'] == 'USA') {
+                    if (person['state'].length != 2) {
+                        valid = false;
+                        $('#state').addClass('need');
+                    } else {
+                        $('#state').removeClass('need');
+                    }
+                } else {
+                    $('#state').removeClass('need');
+                }
+            }
+
+            if (person['zip'] == '') {
+                valid = false;
+                $('#zip').addClass('need');
+            } else {
+                $('#zip').removeClass('need');
+            }
         }
 
         // don't continue to process if any are missing
         if (!valid) {
-            show_message("Please correct the items highlighted in red and validate again", "error");
+            show_message("Please correct the items highlighted in red and validate again.<br/>" +
+                "Note: If any of the Address fields are used and the country is United States, " +
+                "then the Address, City, State, and Zip fields must all be entered.",
+            "error", 'epMessageDiv');
             return false;
         }
 
         // Check USPS for standardized address
-        if (this.#uspsDiv != null && (person['country'] == 'USA')) {
+        if (this.#uspsDiv != null && person['country'] == 'USA' && person['city'] != '') {
             this.#personSave = person;
             this.#uspsAddress = null;
             var script = "scripts/uspsCheck.php";
@@ -403,6 +413,9 @@ class Portal {
             });
             return false;
         }
+
+        // no usps, we're done, save the changes
+        this.editPersonSubmit(true);
     }
 
     showValidatedAddress(data) {
