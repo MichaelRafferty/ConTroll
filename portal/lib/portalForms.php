@@ -387,7 +387,7 @@ function drawManagedPerson($personId, $personType, $person, $memberships, $showI
             </button>
 <?php } ?>
             <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.addMembership(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">
-                Add/Edit Cart
+                Add To/Edit Cart
             </button>
         </div>
     </div>

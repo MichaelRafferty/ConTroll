@@ -180,11 +180,11 @@ class PaymentPlans {
         <div class="col-sm-1"><b>Plan Name</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Non Plan Amount</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Plan Amount</b></div>
-        <div class="col-sm-1" style='text-align: right;'><b>Down Payment</b></div>
+        <div class="col-sm-1" style='text-align: right;'><b>Minimum Down Payment</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Due Today</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Balance Due</b></div>
-        <div class="col-sm-1" style='text-align: right;'><b>Maximim Number Payments</b></div>
-        <div class="col-sm-1" style='text-align: right;'><b>Days Between Payments</b></div>
+        <div class="col-sm-1" style='text-align: right;'><b>Maximum Number Payments</b></div>
+        <div class="col-sm-1" style='text-align: right;'><b>Max Days Between Payments</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Minimum Payment Amount</b></div>
         <div class="col-sm-2"><b>Must Pay In Full By</b></div>
     </div>
@@ -287,6 +287,17 @@ class PaymentPlans {
         <div class="col-sm-1" style='text-align: right;' id="paymentAmt">` + match.paymentAmt.toFixed(2) + `</div>
         <div class="col-sm-2">` + plan.payByDate + `</div>
     </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-1" style='text-align: right;'>Min: ` + this.#computedOrig.downPayment.toFixed(2) + `</div>
+        <div class="col-sm-2"></div>
+        <div class="col-sm-1" style='text-align: right;'>`;
+        if (match.maxPayments > 1) {
+            html += 'Max: ' + this.#computedOrig.maxPayments;
+        }
+        html += `</div>
+        <div class="col-sm-1" style='text-align: right;'>Max: ` + this.#computedOrig.daysBetween + `</div>
+    </div>
     </form>
 </div>
 `;
@@ -329,9 +340,9 @@ class PaymentPlans {
         var days = daysBetweenField.value;
         var messageHTML = '';
 
-        console.log('days: ' + days + ', numPayments: ' + numPayments + ', days: ' + days);
+        //console.log('days: ' + days + ', numPayments: ' + numPayments + ', days: ' + days);
 
-        var pbDate = new Date(this.#computedOrig.payByDate);
+        var pbDate = new Date(this.#computedOrig.plan.payByDate);
         var today = new Date();
         var diff = Math.floor((pbDate.getTime() - today.getTime()) / (1000 * 3600 * 24)); // milliseconds to days and no fractional days
 
@@ -347,13 +358,16 @@ class PaymentPlans {
                 messageHTML += "The shortest interval between payments is one week<br/>";
             }
             numPayments = Math.ceil(diff / days);
-            if (numPayments > this.#computedOrig.numPaymentMax) {
-                numPayments = this.#computedOrig.numPaymentMax;
+            if (numPayments > this.#computedOrig.maxPayments) {
+                numPayments = this.#computedOrig.maxPayments;
             }
             // given the number of payments, compute the payment amount
             paymentAmt = Math.ceil(100 * balanceDue / numPayments) / 100;
             if (paymentAmt < this.#computedPlan.minPayment) {
-                var numPayments = Math.floor(balanceDue / plan.minPayment);
+                numPayments = Math.floor(balanceDue / plan.minPayment);
+                if (numPayments > this.#computedOrig.maxPayments) {
+                    numPayments = this.#computedOrig.maxPayments;
+                }
                 paymentAmt = Math.ceil(100 * balanceDue / numPayments) / 100;
                 messageHTML += "Payment cannot be less than " +  plan.minPayment + "<br/>";
             }
@@ -410,12 +424,12 @@ class PaymentPlans {
         this.#computedPlan.daysBetween = days;
 
         // update the screen
-        downPaymentField.value = down;
-        balanceDueField.innerHTML = balanceDue;
-        dueTodayField.innerHTML = dueToday;
+        downPaymentField.value = Number(down).toFixed(2);
+        balanceDueField.innerHTML = Number(balanceDue).toFixed(2);
+        dueTodayField.innerHTML = Number(dueToday).toFixed(2);
         maxPayments.value = numPayments;
         daysBetweenField.value = days;
-        paymentAmtField.innerHTML = paymentAmt;
+        paymentAmtField.innerHTML = Number(paymentAmt).toFixed(2);
 
         this.#computedPlan.currentPayment = Number(this.#computedOrig.nonPlanAmt) + Number(down);
         dueTodayField.innerHTML = this.#computedPlan.currentPayment.toFixed(2);
