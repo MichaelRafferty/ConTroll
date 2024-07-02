@@ -369,17 +369,17 @@ class PaymentPlans {
                     numPayments = this.#computedOrig.maxPayments;
                 }
                 paymentAmt = Math.ceil(100 * balanceDue / numPayments) / 100;
-                messageHTML += "Payment cannot be less than " +  plan.minPayment + "<br/>";
+                messageHTML += "Payment cannot be less than " +  Number(plan.minPayment).tofixed(2) + "<br/>";
             }
         } else if (down != this.#computedPlan.downPayment) {
             console.log('down changed');
             if (down < this.#computedOrig.downPayment) {
                 down = this.#computedOrig.downPayment;
-                messageHTML += "Down payment cannot be lower than " + this.#computedOrig.downPayment + "<br/>";
+                messageHTML += "Down payment cannot be lower than " + Number(this.#computedOrig.downPayment).toFixed(2) + "<br/>";
             }
             if (down > (this.#computedOrig.planAmt - plan.minPayment)) {
                 down = this.#computedOrig.planAmt - plan.minPayment;
-                messageHTML += "Down payment adjusted to allow for one payment greater than the plan minimum payment of " + plan.minPayment + "<br/>";
+                messageHTML += "Down payment adjusted to allow for one payment greater than the plan minimum payment of " + Number(plan.minPayment).tofixed(2) + "<br/>";
             }
             // recompute balance due
             balanceDue = this.#computedPlan.planAmt - down;
@@ -390,7 +390,7 @@ class PaymentPlans {
             if (numPayments < 1) {
                 down = balanceDue - plan.minPayment;
                 numPayments = 1;
-                messageHTML += "Adjusted down payment and number of payments to keep minimum payment amount of " + plan.minPayment + "<br/>";
+                messageHTML += "Adjusted down payment and number of payments to keep minimum payment amount of " + Number(plan.minPayment).toFixed(2) + "<br/>";
             }
 
             // with new down payment, compute payment amount
@@ -404,7 +404,7 @@ class PaymentPlans {
             var computedNumPayments = Math.floor(balanceDue / plan.minPayment);
             if (computedNumPayments < numPayments) {
                 numPayments = computedNumPayments;
-                messageHTML += "Adjusted number of payments to maintain minimum payment of " + plan.minPayment + "<br/>";
+                messageHTML += "Adjusted number of payments to maintain minimum payment of " + Number(plan.minPayment).toFixed(2) + "<br/>";
             }
             if (numPayments > this.#computedOrig.maxPayments) {
                 numPayments = this.#computedOrig.maxPayments;
