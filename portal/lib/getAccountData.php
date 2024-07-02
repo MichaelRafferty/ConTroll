@@ -17,26 +17,26 @@ function getAccountRegistrations($personId, $personType, $conid, $getTypes = 'al
         $membershipsQ = <<<EOS
 WITH pn AS (
     SELECT id AS memberId, managedBy, NULL AS managedByNew,
-    CASE 
-        WHEN badge_name IS NULL OR badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(last_name, '')) , '  *', ' ')) 
-        ELSE badge_name 
-    END AS badge_name,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
+        CASE 
+            WHEN badge_name IS NULL OR badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(last_name, '')) , '  *', ' ')) 
+            ELSE badge_name 
+        END AS badge_name,
+        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
     FROM perinfo
 ), nn AS (
     SELECT id AS memberId, managedBy, managedByNew,
-    CASE 
-        WHEN badge_name IS NULL OR badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(last_name, '')) , '  *', ' ')) 
-        ELSE badge_name 
-    END AS badge_name,
+        CASE 
+            WHEN badge_name IS NULL OR badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(last_name, '')) , '  *', ' ')) 
+            ELSE badge_name 
+        END AS badge_name,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
     FROM newperson
+    WHERE perid IS NULL
 ), mems AS (
     SELECT t.id, r.create_date, r.id as regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount,
-    CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
-            CASE WHEN tp.id IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
-
-    m.label, m.memAge, m.memType, m.memCategory,
+        CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
+        CASE WHEN tp.id IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
+        m.label, m.memAge, m.memType, m.memCategory,
         CASE 
             WHEN pn.memberId IS NOT NULL THEN pn.managedBy
             WHEN nn.memberId IS NOT NULL THEN nn.managedBy

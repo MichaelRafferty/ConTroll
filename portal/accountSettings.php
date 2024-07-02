@@ -54,7 +54,7 @@ WITH ppl AS (
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
          'n' AS personType
         FROM newperson p
-        WHERE managedBy = ? AND p.id != ? AND p.perid IS NULL
+        WHERE managedByNew = ? AND p.id != ? AND p.perid IS NULL
 )
 SELECT *
 FROM ppl
@@ -68,7 +68,7 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
     managedReason, 'n' AS personType
 FROM newperson p
-WHERE p.managedByNew = ? AND p.id != p.managedBy
+WHERE p.managedByNew = ? AND p.id != p.managedByNew
 ORDER BY id ASC;
 EOS;
     $managedByR = dbSafeQuery($managedSQL, 'i', array($personId));

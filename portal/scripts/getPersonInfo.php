@@ -153,7 +153,7 @@ FROM reg r
 JOIN memList m ON m.id = r.memId
 JOIN newperson n ON n.id = r.newperid
 LEFT OUTER JOIN perinfo pm ON n.managedBy = pm.id
-WHERE r.conid IN (?, ?) AND (pm.id = ?)
+WHERE r.conid IN (?, ?) AND (pm.id = ?) AND n.perid IS NULL
 ORDER BY create_date;
 EOS;
         $mR = dbSafeQuery($mQ, 'iiiiiii', array ($conid, $conid + 1, $loginId, $loginId, $conid, $conid + 1, $loginId));
@@ -164,7 +164,7 @@ FROM reg r
 JOIN memList m ON m.id = r.memId
 JOIN newperson n ON n.id = r.newperid
 LEFT OUTER JOIN newperson nm ON n.managedByNew = nm.id
-WHERE r.conid IN (?, ?) AND (nm.id = ? OR n.id = ?)
+WHERE r.conid IN (?, ?) AND (nm.id = ? OR n.id = ?) AND n.perid IS NULL
 ORDER BY create_date;
 EOS;
         $mR = dbSafeQuery($mQ, 'iiii', array ($conid, $conid + 1, $loginId, $loginId));

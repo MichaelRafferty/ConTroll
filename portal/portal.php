@@ -181,7 +181,7 @@ LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
 LEFT OUTER JOIN newperson nc ON t.newperid = nc.id
 LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
 LEFT OUTER JOIN newperson np ON tp.newperid = np.id
-WHERE p.managedByNew = ? AND p.id != p.managedByNew
+WHERE p.managedByNew = ? AND p.id != p.managedByNew AND p.perid IS NULL
 ORDER BY id ASC;
 EOS;
         $managedByR = dbSafeQuery($managedSQL, 'ii', array ($conid, $loginId));

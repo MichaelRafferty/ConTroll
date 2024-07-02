@@ -74,8 +74,7 @@ SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n
         END AS fullname,
     'n' AS tablename
 FROM newperson n
-LEFT OUTER JOIN perinfo p ON n.perid = p.id
-WHERE n.id = ? AND p.id IS NULL
+WHERE n.id = ? AND n.perid IS NULL
 ORDER BY fullname;
 EOS;
         $regcountR = dbSafeQuery($regcountQ, 'i', array($email));
@@ -92,8 +91,7 @@ SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n
         END AS fullname,
     'n' AS tablename
 FROM newperson n
-LEFT OUTER JOIN perinfo p ON n.perid = p.id
-WHERE n.email_addr = ? AND n.id = ? AND p.id IS NULL
+WHERE n.email_addr = ? AND n.id = ? AND n.perid IS NULL
 ORDER BY fullname;
 EOS;
         $regcountR = dbSafeQuery($regcountQ, 'si', array($email, $id));
@@ -110,8 +108,7 @@ SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n
         END AS fullname,
     'n' AS tablename
 FROM newperson n
-LEFT OUTER JOIN perinfo p ON n.perid = p.id
-WHERE n.email_addr = ? AND p.id IS NULL
+WHERE n.email_addr = ? AND n.perid IS NULL
 ORDER BY fullname;
 EOS;
         $regcountR = dbSafeQuery($regcountQ, 's', array($email));
