@@ -296,7 +296,7 @@ if (array_key_exists('email_error', $return_arr)) {
     $error_msg = null;
 }
 
-if (array_key_exists('payorPlanId', $planRec))
+if (is_array($planRec) && array_key_exists('payorPlanId', $planRec))
     $payorPlan = $planRec['payorPlanId'];
 else
     $payorPlan = null;
