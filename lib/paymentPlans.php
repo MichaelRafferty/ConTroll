@@ -191,8 +191,10 @@ function draw_payPlanModal($from) {
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid' id="payPlanBody">
                     </div>
-                    <div class='row'>
-                        <div class='col-sm-12' id='payPlanMessageDiv'></div>
+                    <div class='container-fluid'>
+                        <div class='row'>
+                            <div class='col-sm-12' id='payPlanMessageDiv'></div>
+                        </div>
                     </div>
                 </div>
                 <div class='modal-footer'>

@@ -507,7 +507,7 @@ class PaymentPlans {
     <div class="row">
         <div class="col-sm-2" style='text-align: right;'>Payment Amount:</div>
         <div class="col-sm-1 ms-2" style='text-align: right;'>
-            <input type="number" class='no-spinners' inputmode="numeric" id="newPaymentAmt" name="newPaymentAmt" style="width: 8em;" placeholder="amoutn" ` +
+            <input type="number" class='no-spinners' inputmode="numeric" id="newPaymentAmt" name="newPaymentAmt" style="width: 8em;" placeholder="amount" ` +
             'min="' + paymentAmt.toFixed(2) + '" max="' + balanceDue.toFixed(2) + '" value="' + paymentAmt.toFixed(2) +
             `" onchange="paymentPlans.updatePaymentAmt();"/>
     </div>
@@ -523,24 +523,32 @@ class PaymentPlans {
     updatePaymentAmt() {
         var id = document.getElementById("newPaymentAmt");
         var paymentAmt = Number(id.value);
+        var retVal = true;
 
         clear_message('payPlanMessageDiv');
 
         if (paymentAmt < this.#planPaymentMinPayment) {
             show_message("Payment less than minimum allowed, set to " + this.#planPaymentMinPayment.toFixed(2), 'warn', 'payPlanMessageDiv');
             paymentAmt = this.#planPaymentMinPayment.toFixed(2);
+            retVal = false;
         } else if (paymentAmt > this.#planPaymentBalanceDue) {
             show_message("Payment greater than balance due, set to " + this.#planPaymentBalanceDue.toFixed(2), 'warn', 'payPlanMessageDiv');
             paymentAmt = this.#planPaymentBalanceDue.toFixed(2);
+            retVal = false;
         }
 
-        id.value = Number(paymentAmt).toFixed(2);
+        this.#planPaymentAmount = Number(paymentAmt).toFixed(2);
+        id.value = this.#planPaymentAmount;
         this.#payPlanSubmit.innerHTML = 'Make Plan Payment of ' + paymentAmt;
         document.getElementById('paymentPlans')
+        return retVal;
     }
 
     // makePlanPayment - make the plan payment
     makePlanPayment(from) {
+        if (this.updatePaymentAmt() == false)
+            return;
+
         this.#payPlanModal.hide();
         switch (from) {
             case 'portal':
