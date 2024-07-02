@@ -587,16 +587,16 @@ function drawPaymentPlans($person, $paymentPlans) {
 ?>
     <div class='row mb-1 align-items-end'>
         <div class="col-sm-1"><b>Status</b></div>
+        <div class='col-sm-1'><b>Next Pmt Due</b></div>
+        <div class='col-sm-1' style='text-align: right;'><b>Minimum Pmt Amt</b></div>
+        <div class='col-sm-1' style='text-align: right;'><b>Remaining Balance</b></div>
+        <div class='col-sm-1'><b>Last Pmt Date</b></div>
+        <div class='col-sm-1'><b>Pay By Date</b></div>
         <div class="col-sm-1"><b>Plan Name</b></div>
         <div class="col-sm-1"><b>Payment Type</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Initial Amount</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Payments</b></div>
-        <div class="col-sm-1" style='text-align: right;'><b>Remaining Balance</b></div>
         <div class="col-sm-1"><b>Date Created</b></div>
-        <div class="col-sm-1"><b>Pay By Date</b></div>
-        <div class="col-sm-1"><b>Last Pmt Date</b></div>
-        <div class="col-sm-1"><b>Next Pmt Due</b></div>
-        <div class="col-sm-1" style='text-align: right;'><b>Minimum Pmt Amt</b></div>
     </div>
 <?php
     $now = time();
@@ -649,16 +649,16 @@ function drawPaymentPlans($person, $paymentPlans) {
 ?>
         <div class="row">
             <div class="col-sm-1"><?php echo $col1;?></div>
+            <div class="col-sm-1<?php echo $nextPayColor;?>"><?php echo $nextPayDue;?></div>
+            <div class="col-sm-1" style='text-align: right;'><?php echo $minAmt;?></div>
+            <div class='col-sm-1' style='text-align: right;'><?php echo $balanceDue; ?></div>
+            <div class='col-sm-1'><?php echo $lastPaidDate; ?></div>
+            <div class='col-sm-1'><?php echo $payByDate; ?></div>
             <div class="col-sm-1"><?php echo $plan['name'];?></div>
             <div class="col-sm-1"><?php echo $payorPlan['payType'];?></div>
             <div class="col-sm-1" style='text-align: right;'><?php echo $initialAmt;?></div>
             <div class="col-sm-1" style='text-align: right;'><?php echo "$numPmts of " . $payorPlan['numPayments'];?></div>
-            <div class="col-sm-1" style='text-align: right;'><?php echo $balanceDue;?></div>
             <div class="col-sm-1"><?php echo $dateCreated;?></div>
-            <div class="col-sm-1"><?php echo $payByDate;?></div>
-            <div class="col-sm-1"><?php echo $lastPaidDate;?></div>
-            <div class="col-sm-1<?php echo $nextPayColor;?>"><?php echo $nextPayDue;?></div>
-            <div class="col-sm-1" style='text-align: right;'><?php echo $minAmt;?></div>
         </div>
 
 <?php
