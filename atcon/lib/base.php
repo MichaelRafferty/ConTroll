@@ -37,6 +37,7 @@ function page_init($title, $tab, $css, $js)
         $atconDebug = 0;
     $config_vars = array();
     $config_vars['debug'] = $atconDebug;
+    $config_vars['taxRate'] = $con['taxRate'];
 
     global $perms;
     if (isWebRequest()) {

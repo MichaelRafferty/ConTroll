@@ -115,7 +115,7 @@ if ($new_payment['type'] == 'check')
 else
     $desc = '';
 $desc .= $new_payment['desc'];
-$paramarray = array($master_tid, $new_payment['type'], $desc, $new_payment['amt'], 0, $new_payment['ccauth'], $user_id);
+$paramarray = array($master_tid, $new_payment['type'], $desc, $new_payment['amt'], 0, $new_payment['amt'], $new_payment['ccauth'], $user_id);
 $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
 if ($new_pid === false) {
     ajaxError("Error adding payment to database");
