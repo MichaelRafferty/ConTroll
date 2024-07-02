@@ -100,7 +100,7 @@ if ($identitiesR != false) {
 }
 
 // if we get here, we are logged in and it's a purely new person or we manage the person to be processed
-portalPageInit('accountSettings', $info['fullname'] . ($personType == 'p' ? ' (ID: ' : ' (Temporary ID: ') . $personId . ')',
+portalPageInit('accountSettings', $info,
     /* css */ array($cdn['tabcss'],
         $cdn['tabbs5'],
     ),

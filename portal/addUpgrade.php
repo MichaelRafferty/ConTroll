@@ -102,7 +102,7 @@ if ($info === false) {
 $ruleData = getRulesData($conid);
 
 // if we get here, we are logged in and it's a purely new person or we manage the person to be processed
-portalPageInit('addUpgrade', $info['fullname'] . ($loginType == 'p' ? ' (ID: ' : ' (Temporary ID: ') . $loginId . ')',
+portalPageInit('addUpgrade', $info,
     /* css */ array($cdn['tabcss'],
         $cdn['tabbs5'],
     ),

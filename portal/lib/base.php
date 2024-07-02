@@ -59,7 +59,7 @@ echo <<<EOF
 EOF;
 }
 
-function portalPageInit($page, $title, $css, $js, $refresh = false) {
+function portalPageInit($page, $info, $css, $js, $refresh = false) {
     global $db_ini;
 
     $con = get_conf('con');
@@ -68,6 +68,9 @@ function portalPageInit($page, $title, $css, $js, $refresh = false) {
     $portal_conf = get_conf('portal');
     if(isWebRequest()) {
         $includes = getTabulatorIncludes();
+        $loginId = getSessionVar('id');
+        $loginType = getSessionVar('idType');
+        $title = $info['fullname'] . ($loginType == 'p' ? ' (ID: ' : ' (Temporary ID: ') . $loginId . ')';
         ?>
         <!DOCTYPE html>
         <html lang="en">
@@ -135,7 +138,7 @@ function portalPageInit($page, $title, $css, $js, $refresh = false) {
                     <?php
                     } ?>
                         <div class="row">
-                            <div class='col-sm-12'><?php tab_bar($page, $portal_conf, $refresh);?></div>
+                            <div class='col-sm-12'><?php tabBar($page, $portal_conf, $info, $refresh);?></div>
                         </div>
                     </div>
                 </div>
@@ -180,7 +183,7 @@ function portalPageFoot() {
     <?php
 }
 
-function tab_bar($page, $portal_conf, $refresh = false) {
+function tabBar($page, $portal_conf, $info, $refresh = false) {
     $page_list = [];
     if (!$refresh) {
         $showHistory = true;
@@ -191,7 +194,9 @@ function tab_bar($page, $portal_conf, $refresh = false) {
         if ($showHistory) {
             $page_list[] = ['name' => 'membershipHistory', 'display' => 'Membership History'];
         }
-        $page_list[] = ['name' => 'accountSettings', 'display' => 'Account Settings'];
+        if ($info['managedByName'] == null) {
+            $page_list[] = ['name' => 'accountSettings', 'display' => 'Account Settings'];
+        }
         $page_list[] = ['name' => 'portalHelp" target="_blank', 'display' => 'Help'];
     }
 

@@ -203,7 +203,7 @@ EOS;
     $paymentPlans = getPaymentPlans(true);
 }
 
-portalPageInit('portal', $info['fullname'] . ($loginType == 'p' ? ' (ID: ' : ' (Temporary ID: ') . $loginId . ')',
+portalPageInit('portal', $info,
     /* css */ array($cdn['tabcss'],
         $cdn['tabbs5'],
     ),
@@ -251,10 +251,20 @@ if ($info['managedByName'] != null) {
 <div class='row mt-4'>
     <div class='col-sm-12'>
         <h3>
+<?php
+    if ($info['managedByName'] == null) {
+?>
             People managed by this account:
             <a href="<?php echo $portal_conf['portalsite']; ?>/addUpgrade.php">
                 <button class="btn btn-sm btn-primary" type="button">Add New</button>
             </a>
+<?php
+    } else {
+?>
+            This account's information:
+<?php
+    }
+?>
         </h3>
     </div>
 </div>

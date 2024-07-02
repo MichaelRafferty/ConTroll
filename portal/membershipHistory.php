@@ -85,7 +85,7 @@ EOS;
 }
 
 // if we get here, we are logged in and it's a purely new person or we manage the person to be processed
-portalPageInit('membershipHistory', $info['fullname'] . ($loginType == 'p' ? ' (ID: ' : ' (Temporary ID: ') . $loginId . ')',
+portalPageInit('membershipHistory', $info,
     /* css */ array($cdn['tabcss'],
         $cdn['tabbs5'],
     ),
