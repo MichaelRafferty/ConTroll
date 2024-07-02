@@ -121,10 +121,11 @@ EOS;
 if ($membershipReq == 'Y' || $membershipReq == 'B') {
     $memberships = [];
     $mQ = <<<EOS
-SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory, m.memAge
+SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, r.perid, r.newperid,
+       m.label, m.memType, m.memCategory, m.memAge
 FROM reg r
 JOIN memList m ON m.id = r.memId
-WHERE r.$rfield = ? AND r.conid IN (?, ?)
+WHERE r.$rfield = ? AND r.conid IN (?, ?) AND status IN ('unpaid', 'paid', 'plan', 'upgraded')
 ORDER BY r.create_date;
 EOS;
     $mR = dbSafeQuery($mQ, 'iii', array($person['id'], $conid, $conid + 1));
@@ -159,7 +160,8 @@ EOS;
         $mR = dbSafeQuery($mQ, 'iiiiiii', array ($conid, $conid + 1, $loginId, $loginId, $conid, $conid + 1, $loginId));
     } else {
         $mQ = <<<EOS
-SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory, m.memAge
+SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, r.perid, r.newperid,
+       m.label, m.memType, m.memCategory, m.memAge
 FROM reg r
 JOIN memList m ON m.id = r.memId
 JOIN newperson n ON n.id = r.newperid

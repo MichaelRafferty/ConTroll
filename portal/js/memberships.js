@@ -150,7 +150,7 @@ class Membership {
         var data = {
             getId: id,
             getType: type,
-            memberships: newFlag? 'A' : 'B',
+            memberships: newFlag ? 'A' : 'B',
             ageButtons: ageButtons,
             interests: 'Y',
         }

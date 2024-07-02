@@ -202,6 +202,26 @@ $txnUpdate .= 'paid=?, couponDiscount = ? WHERE id=?;';
 $txnU = dbSafeCmd($txnUpdate, 'ddi', array($approved_amt, $totalDiscount, $transId));
 $rows_upd = 0;
 
+$mrQ = <<<EOS
+SELECT mRI.*
+FROM memRules mR
+JOIN memRuleItems mRI ON mR.name = mRI.name
+WHERE CONCAT(',', mR.memList, ',') like ?;
+EOS;
+
+$upgadedUP = <<<EOS
+UPDATE reg
+SET status = 'upgraded'
+WHERE conid = ? AND perid = ? AND memId = ? AND status = 'paid';
+EOS;
+
+    $upgadedUN = <<<EOS
+UPDATE reg
+SET status = 'upgraded'
+WHERE conid = ? AND newperid = ? AND memId = ? AND status = 'paid';
+EOS;
+
+$upgradedCnt = 0;
 if ($amount > 0) {
     $regU = 'UPDATE reg SET paid=?, couponDiscount = ?, complete_trans = ?, status = ? WHERE id=?;';
     $balance = $approved_amt;
@@ -212,7 +232,38 @@ if ($amount > 0) {
             $paid_amt = min($balance, $membership['price'] - ($membership['paid'] + $membership['couponDiscount']));
             // only update those that were actually modified
             if (($paid_amt > 0) || ($membership['price'] == 0  && $membership['complete_trans'] == null)) {
-                $rows_upd += dbSafeCMD($regU, 'ddisi', array (
+                if ($membership['memCategory'] == 'upgrade' && $paid_amt <= $balance) {
+                    // ok this upgrade is now paid for, mark the old one upgraded
+                    // upgrades require a role to allow them to be bought based on the prior membership being in the cart, get the rule for this membership
+
+                    $mrR = dbSafeQuery($mrQ, 's', array('%,' . $membership['memId'] . ',%'));
+                    if ($mrR != false) {
+                        if ($mrR->num_rows > 0) {
+                            while ($rule = $mrR->fetch_assoc()) {
+                                if ($rule['memList'] != null && $rule['memList'] != '') {
+                                    $memIds = explode(',', $rule['memList']);
+                                    foreach ($memIds as $memId) {
+                                        $argPerid = null;
+                                        $argNewPerid = null;
+                                        if (array_key_exists('perid', $membership)) {
+                                            $argPerid = $membership['perid'];
+                                        }
+                                        if (array_key_exists('newperid', $membership)) {
+                                            $argNewPerid = $membership['newperid'];
+                                        }
+                                        if ($argPerid != null) {
+                                            $upgradedCnt += dbSafeCmd($upgadedUP, 'iii', array ($conid, $argPerid, $memId));
+                                        } else if ($argNewPerid != null) {
+                                            $upgradedCnt += dbSafeCmd($upgadedU, 'iii', array ($conid, $argNewPerid, $memId));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        $mrR->free();
+                    }
+                }
+                $rows_upd += dbSafeCmd($regU, 'ddisi', array (
                     $membership['price'] - $membership['couponDiscount'],
                     $membership['couponDiscount'],
                     $paid_amt <= $balance ? $transId : null,
@@ -256,9 +307,43 @@ if ($amount > 0) {
                     $paid_amt = $ratio == 1 ? $due : round($ratio * $due, 2);
                 if ($paid_amt > $due)
                     $paid_amt = $due; // just in case
+
+                // only update those that were actually modified
+                if ($membership['memCatetory'] == 'upgrade' && $paid_amt <= $balance) {
+                    // ok this upgrade is now paid for, mark the old one upgraded
+                    // upgrades require a role to allow them to be bought based on the prior membership being in the cart, get the rule for this membership
+
+                    $mrR = dbSafeQuery($mrQ, 's', array ('%,' . $membership['memId'] . ',%'));
+                    if ($mrR != false) {
+                        if ($mrR->num_rows > 0) {
+                            while ($rule = $mrR->fetch_assoc()) {
+                                if ($rule['memList'] != null && $rule['memList'] != '') {
+                                    $memIds = explode(',', $rule['memList']);
+                                    foreach ($memIds as $memId) {
+                                        $argPerid = null;
+                                        $argNewPerid = null;
+                                        if (array_key_exists('perid', $membership)) {
+                                            $argPerid = $membership['perid'];
+                                        }
+                                        if (array_key_exists('newperid', $membership)) {
+                                            $argNewPerid = $membership['newperid'];
+                                        }
+                                        if ($argPerid != null) {
+                                            $upgradedCnt += dbSafeCmd($upgadedUP, 'iii', array ($conid, $argPerid, $memId));
+                                        } else if ($argNewPerid != null) {
+                                            $upgradedCnt += dbSafeCmd($upgadedU, 'iii', array ($conid, $argNewPerid, $memId));
+                                        }
+
+                                    }
+                                }
+                            }
+                        }
+                        $mrR->free();
+                    }
+                }
                 $balance -= $paid_amt;
                 $left = $due - $paid_amt;
-                $rows_upd += dbSafeCMD($regU, 'ddisi', array(
+                $rows_upd += dbSafeCmd($regU, 'ddisi', array(
                     $paid_amt,
                     $membership['couponDiscount'],
                     $left < 0.01 ? $transId : null,
