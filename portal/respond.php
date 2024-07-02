@@ -102,7 +102,7 @@ EOS;
 
         // ok, loginId and type are now updated
         $table = $acctType == 'p' ? 'perinfo' : 'newperson';
-        $pfield = $loginType == 'p' ? 'managedBy' : 'ManagedByNew';
+        $pfield = $loginType == 'p' ? 'managedBy' : 'managedByNew';
         $uQ = <<<EOS
 UPDATE $table
 SET $pfield = ?, managedReason = 'Client Response'
