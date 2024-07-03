@@ -30,6 +30,7 @@ if (!(isSessionVar('id') && isSessionVar('idType'))) {
 $loginId = getSessionVar('id');
 $loginType = getSessionVar('idType');
 $transId = getSessionVar('transid');
+$voidTransId = false; // void the transaction if a free membership was marked paid in this item
 
 $action = $_POST['action'];
 try {
@@ -309,15 +310,16 @@ EOS;
             }
             // insert the new reg record into the cart
             $iQ = <<<EOS
-INSERT INTO reg(conid, perid, newperid, create_trans, price, create_user, memId, status)
-values (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO reg(conid, perid, newperid, create_trans, complete_trans, price, create_user, memId, status)
+values (?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-            $typeStr = 'iiiidiis';
+            $typeStr = 'iiiiidiis';
             $valArray = array(
                 $cartRow['conid'],
                 $personType == 'p' ? $personId : null,
                 $personType == 'n' ? $personId : null,
                 $transId,
+                $cartRow['price'] > 0 ? null : $transId,
                 $cartRow['price'],
                 $loginId,
                 $cartRow['memId'],
@@ -329,6 +331,8 @@ EOS;
             } else {
                 $num_ins++;
                 $updateTransPrice = true;
+                if ($cartRow['price'] == 0)
+                    $voidTransId = true;
             }
         }
     }
@@ -400,6 +404,33 @@ $response['int_upd'] = $int_upd;
 
 $response['message'] .= "<br/>" . ($int_upd == 0 ? 'No Interests changed' : "$int_upd  Interests updated");
 $response['status'] = 'success';
+
+if ($voidTransId) {
+    // check to see if the price in the transaction = the paid for the transaction
+    $cQ = <<<EOS
+SELECT price, couponDiscount, paid
+FROM transaction 
+WHERE id = ?;
+EOS;
+    $cR = dbSafeQuery($cQ, 'i', array($transId));
+    if ($cR !== false) {
+        if ($cR->num_rows == 1) {
+            $cTrans = $cR->fetch_assoc();
+            $cR->free();
+            if ($cTrans['price'] == $cTrans['paid'] + $cTrans['couponDiscount']) {
+                // ok this transaction is 'complete', mark it so
+                $uT = <<<EOS
+UPDATE transaction
+SET complete_date = NOW()
+WHERE id = ?;
+EOS;
+                $num_upd = dbSafeCmd($uT, 'i', array ($transId));
+                if ($num_upd == 1)
+                    unsetSessionVar('transId');
+            }
+        }
+    }
+}
 
 ajaxSuccess($response);
 

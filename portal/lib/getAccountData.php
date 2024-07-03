@@ -35,7 +35,7 @@ WITH pn AS (
 ), mems AS (
     SELECT t.id, r.create_date, r.id as regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
-        CASE WHEN tp.id IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
+        CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
         m.label, m.memAge, m.memType, m.memCategory,
         CASE 
             WHEN pn.memberId IS NOT NULL THEN pn.managedBy
@@ -72,7 +72,7 @@ WITH pn AS (
     UNION
     SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
-        CASE WHEN tp.id IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
+        CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
         m.label, m.memAge, m.memType, m.memCategory, nn.managedBy, nn.managedByNew, nn.badge_name, nn.fullname, nn.memberId
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
@@ -92,7 +92,7 @@ WITH mems AS (
     SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
     m.label, m.memAge, m.memType, m.memCategory, p.managedBy, p.managedByNew,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
-        CASE WHEN tp.id IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
+        CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
         CASE 
             WHEN p.badge_name IS NULL OR p.badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.last_name, '')) , '  *', ' ')) 
             ELSE p.badge_name
