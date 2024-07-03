@@ -283,7 +283,9 @@ class Membership {
             if (age.ageType == 'all')
                 continue;
             html += '<div class="col-sm-auto"><button id="ageBtn-' + age.ageType + '" class="btn btn-sm ' +
-                ((this.#currentAge == age.ageType || this.#memberAge == age.ageType) ? 'btn-primary' : color) + '" onclick="membership.ageSelect(' + "'" + age.ageType + "'" + ')">' + age.label + '</button></div>' + "\n";
+                ((this.#currentAge == age.ageType || this.#memberAge == age.ageType) ? 'btn-primary' : color) + '" onclick="membership.ageSelect(' + "'" + age.ageType + "'" + ')">' +
+                age.label + ' (' + age.shortname + ')' +
+                '</button></div>' + "\n";
         }
         this.#ageButtonsDiv.innerHTML = html;
     }
