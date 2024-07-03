@@ -303,9 +303,13 @@ class Membership {
 
             // apply age filter from age select
             if (mem.memAge == 'all' || mem.memAge == this.#currentAge) {
+                var memLabel = mem.label;
+                if (memCategories[mem.memCategory].variablePrice != 'Y') {
+                    memLabel += ' (' + mem.price + ')';
+                }
                 html += '<div class="col-sm-auto mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary"' +
                     ' onclick="membership.membershipAdd(' + "'" + mem.id + "'" + ')">' +
-                    (mem.conid != config['conid'] ? mem.conid + ' ' : '') + mem.label + '</button></div>' + "\n";
+                    (mem.conid != config['conid'] ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
                 }
         }
         this.#membershipButtonsDiv.innerHTML = html;
