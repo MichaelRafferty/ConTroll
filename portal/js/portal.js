@@ -688,7 +688,10 @@ class Portal {
         if (plans) {
             html += `
     <div class="row mt-2">
-        <div class="col-sm-12">You can pay this balance in fill or create one of the following payment plans:</div>
+        <div class="col-sm-12">
+            You can pay this balance in full using the "Pay Total About Due" button above or<br/>
+            create one of the following payment plans using the "Select & Customize Payment Plan" buttons below.:
+        </div>
     </div>
 `;
             html += paymentPlans.getMatchingPlansHTML('portal');

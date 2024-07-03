@@ -197,7 +197,8 @@ class PaymentPlans {
             html += `
     <div class="row">
         <div class="col-sm-2">
-            <button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="paymentPlans.customizePlan(` + keys[row] + ",'" + from + "'" + ');">Customize payment plan: ' + plan.name + `</button>
+            <button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="paymentPlans.customizePlan(` + keys[row] + ",'" + from + "'" + ');">' +
+                'Select & Customize Payment Plan: ' + plan.name + `</button>
         </div>
         <div class="col-sm-1" style='text-align: right;'>` + match.nonPlanAmt.toFixed(2) + `</div>
         <div class="col-sm-1" style='text-align: right;'>` + match.planAmt.toFixed(2) + `</div>
