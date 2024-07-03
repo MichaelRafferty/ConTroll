@@ -375,7 +375,7 @@ function drawManagedPerson($personId, $personType, $person, $memberships, $showI
     ?>
     <div class="row mt-1">
         <div class='col-sm-1' style='text-align: right;'><?php echo ($person['personType'] == 'n' ? 'Temp ' : '') . $person['id']; ?></div>
-        <div class='col-sm-4'><?php echo $person['fullname']; ?></div>
+        <div class='col-sm-4'><strong><?php echo $person['fullname']; ?></strong></div>
         <div class="col-sm-2"><?php echo $badge_name; ?></div>
         <div class='col-sm-5 p-1'>
             <button class='btn btn-sm, btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.editPerson(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">
