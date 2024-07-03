@@ -256,7 +256,7 @@ if ($info['managedByName'] != null) {
 ?>
             People managed by this account:
             <a href="<?php echo $portal_conf['portalsite']; ?>/addUpgrade.php">
-                <button class="btn btn-sm btn-primary" type="button">Add New</button>
+                <button class="btn btn-sm btn-primary" type="button">Add New Person</button>
             </a>
 <?php
     } else {
