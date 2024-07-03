@@ -24,6 +24,7 @@ $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['debug'] = $debug['portal'];
 $config_vars['uri'] = $portal_conf['portalsite'];
+$config_vars['required'] = $ini['required'];
 $loginId = null;
 $loginType = null;
 
