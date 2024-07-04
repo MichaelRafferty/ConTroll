@@ -430,7 +430,7 @@ class exhibitorsAdm {
 
                 if (blankIfNull(space['requested_units']) != '') {
                     spaceHTML += '<div class="row"><div class="col-sm-2' + (blankIfNull(space['approved_units']) == '' ? ' text-danger' : '') + '">Requested: </div>' +
-                        '<div class="col-sm-2 text-right">' + blankIfNull(space['requested_units']) + '</div>' +
+                        '<div class="col-sm-2 text-end">' + blankIfNull(space['requested_units']) + '</div>' +
                         '<div class="col-sm-3">' + blankIfNull(space['requested_description']) + '</div>' +
                         '<div class="col-sm-4">' + blankIfNull(space['time_requested']) + '</div>' +
                         '</div>';
@@ -438,7 +438,7 @@ class exhibitorsAdm {
 
                 if (blankIfNull(space['approved_units']) != '') {
                     spaceHTML += '<div class="row"><div class="col-sm-2">Approved: </div>' +
-                        '<div class="col-sm-2 text-right">' + blankIfNull(space['approved_units']) + '</div>' +
+                        '<div class="col-sm-2 text-end">' + blankIfNull(space['approved_units']) + '</div>' +
                         '<div class="col-sm-3">' + blankIfNull(space['approved_description']) + '</div>' +
                         '<div class="col-sm-4">' + blankIfNull(space['time_approved']) + '</div>' +
                         '</div>';
@@ -446,7 +446,7 @@ class exhibitorsAdm {
 
                 if (blankIfNull(space['purchased_units']) != '') {
                     spaceHTML += '<div class="row"><div class="col-sm-2">Purchased: </div>' +
-                        '<div class="col-sm-2 text-right">' + blankIfNull(space['purchased_units']) + '</div>' +
+                        '<div class="col-sm-2 text-end">' + blankIfNull(space['purchased_units']) + '</div>' +
                         '<div class="col-sm-3">' + blankIfNull(space['purchased_description']) + '</div>' +
                         '<div class="col-sm-4">' + blankIfNull(space['time_purchased']) + '</div>' +
                         '</div>';

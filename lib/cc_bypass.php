@@ -50,11 +50,11 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 
     $rtn = array();
     $rtn['amount'] = $results['total'];
-    $rtn['txnfields'] = array('transid','type',$category,'description','source','amount',
+    $rtn['txnfields'] = array('transid','type',$category,'description','source','pretax', 'tax', 'amount',
         'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id','cashier');
-    $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd',
-            's', 's', 's', 's', 's', 's', 's', 's','i');
-    $rtn['tnxdata'] = array($results['transid'],'other','reg','bypass','online',$results['total'],
+    $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
+                             's', 's', 's', 's', 's', 's', 's', 's','i');
+    $rtn['tnxdata'] = array($results['transid'],'other','reg','bypass','online',$results['pretax'], $results['tax'], $results['total'],
         strtotime("now"),'****','**n**','cctxid','bypass','bypass','ok','000',$user_perid);
     $rtn['url'] = '';
     $rtn['rid'] = '000';
