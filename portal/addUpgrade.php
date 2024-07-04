@@ -148,6 +148,7 @@ drawVariablePriceModal();
             </div>
         </div>
         <?php
+        outputCustomText('main/step1');
         drawGetAgeBracket($updateName, $condata);
         ?>
         <hr/>
@@ -163,6 +164,7 @@ drawVariablePriceModal();
             </div>
         </div>
 <?php
+outputCustomText('main/step2');
 drawVerifyPersonInfo();
 ?>
         <hr/>
@@ -179,6 +181,7 @@ drawVerifyPersonInfo();
         </div>
         <?php
         if ($interests != null) {
+            outputCustomText('main/step3');
             drawVerifyInterestsBlock($interests);
         }
         ?>
@@ -201,7 +204,8 @@ drawVerifyPersonInfo();
             </div>
         </div>
 <?php
-drawGetNewMemberships();
+    outputCustomText('main/step4');
+    drawGetNewMemberships();
 ?>
         <hr/>
     </div>

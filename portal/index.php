@@ -336,5 +336,5 @@ EOS;
         </div>
 EOS;
     }
-    outputCustomTxt('main/top');
+    outputCustomText('main/top');
 }

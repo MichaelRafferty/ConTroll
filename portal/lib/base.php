@@ -28,17 +28,17 @@ session_start();
 date_default_timezone_set('America/New_York');
 
 function index_page_init($title) {
-$cdn = getTabulatorIncludes();
-$tabbs5=$cdn['tabbs5'];
-$tabcss=$cdn['tabcss'];
-$tabjs=$cdn['tabjs'];
-$bs5js=$cdn['bs5js'];
-$bs5css=$cdn['bs5css'];
-$jqjs=$cdn['jqjs'];
-$jquijs=$cdn['jquijs'];
-$jquicss=$cdn['jquicss'];
-loadCustomText('portal', basename($_SERVER['PHP_SELF'], '.php'));
-echo <<<EOF
+    $cdn = getTabulatorIncludes();
+    $tabbs5=$cdn['tabbs5'];
+    $tabcss=$cdn['tabcss'];
+    $tabjs=$cdn['tabjs'];
+    $bs5js=$cdn['bs5js'];
+    $bs5css=$cdn['bs5css'];
+    $jqjs=$cdn['jqjs'];
+    $jquijs=$cdn['jquijs'];
+    $jquicss=$cdn['jquicss'];
+    loadCustomText('portal', basename($_SERVER['PHP_SELF'], '.php'));
+    echo <<<EOF
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,7 +70,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
     $ini = get_conf('reg');
     $portal_conf = get_conf('portal');
     if(isWebRequest()) {
-        loadCustomText('portal', basename(__FILE__, '.php'));
+        loadCustomText('portal', basename($_SERVER['PHP_SELF'], '.php'));
         $includes = getTabulatorIncludes();
         $loginId = getSessionVar('id');
         $loginType = getSessionVar('idType');
@@ -153,6 +153,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
             <?php
             exit;
             }
+        outputCustomText('main/top');
     }
 }
 
@@ -171,6 +172,7 @@ function portalPageFoot() {
                 $class = ' bg-danger text-white';
         }
     }
+    outputCustomText('main/bottom');
     ?>
     <div class="container-fluid">
         <div class='row'>
@@ -321,8 +323,8 @@ EOS;
     $txtR->free();
 }
 
-// output CustomTxt - output in a <div container-fluid> a custom text field if it exists and is non empty
-function outputCustomTxt($key) {
+// output CustomText - output in a <div container-fluid> a custom text field if it exists and is non empty
+function outputCustomText($key) {
     global $customTxT, $keyPrefix;
 
     if (array_key_exists($keyPrefix . $key, $customTxT)) {

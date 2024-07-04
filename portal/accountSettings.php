@@ -132,6 +132,9 @@ $memberships = null;
 ?>
     <div id="managed">
         <div class='row mt-3'><h4>Managed:</h4></div>
+<?php
+            outputCustomText('main/managed');
+?>
         <div class='row'>
             <div class='col-sm-1'></div>
             <div class='col-sm-1'><b>ID</b></div>
@@ -175,9 +178,14 @@ $memberships = null;
 <?php
 // identities
 if ($personType == 'p') {
+
 ?>
     <div id="identitiesDiv">
         <div class="row mt-3"><h4>Identities:</h4></div>
+    </div>
+<?php
+    outputCustomText('main/identities');
+?>
         <div class="row">
             <div class='col-sm-1'></div>
             <div class='col-sm-1'><b>Provider</b></div>
@@ -188,7 +196,7 @@ if ($personType == 'p') {
             <div class="col-sm-1"><b>Use Count</b></div>
         </div>
 <?php
-        foreach ($identities as $identity) {
+    foreach ($identities as $identity) {
             $createDate = date_format(date_create($identity['creationTS']), 'Y-m-d');
             $lastUsed = '';
             if ($identity['lastUseTS'] != null) {

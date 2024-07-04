@@ -268,6 +268,9 @@ if ($info['managedByName'] != null) {
         </h3>
     </div>
 </div>
+<?php
+    outputCustomText('main/people');
+?>
 <div class="row">
     <div class="col-sm-1" style='text-align: right;'><b>ID</b></div>
     <div class="col-sm-4"><b>Person</b></div>
@@ -354,6 +357,7 @@ if (count($payorPlan) > 0) {
         <div class='col-sm-12'><h3>Payment Plans for this account:</h3></div>
     </div>
 <?php
+    outputCustomText('main/plan');
     drawPaymentPlans($info, $paymentPlans);
 }
 if ($totalDue > 0 || count($payorPlan) > 0) {
@@ -391,6 +395,9 @@ if (count($memberships) > 0) {
             </h3>
         </div>
     </div>
+<?php
+    outputCustomText('main/purchased');
+?>
     <div class='row'>
         <div class='col-sm-1' style='text-align: right;'><b>Trans ID</b></div>
         <div class='col-sm-2'><b>Date</b></div>
