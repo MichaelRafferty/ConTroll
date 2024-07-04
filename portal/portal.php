@@ -409,9 +409,28 @@ if (count($memberships) > 0) {
     </div>
 <?php
 // loop over the transactions outputting the memberships
+    // first find all the transactions and set their status
+    $currentId = -99999;
+    $status = 'paid';
+    foreach ($memberships as $membership) {
+        if ($currentId != $membership['sortTrans']) {
+            if ($currentId > -10000) {
+                $trans['t-' . $currentId] = $status;
+            }
+            $currentId = $membership['sortTrans'];
+            $status = 'paid';
+        }
+        if ($membership['status'] != $status) {
+            if ($membership['status'] == 'unpaid')
+                $status = 'unpaid';
+            if ($membership['status'] == 'plan' && $status = 'paid')
+                $status = 'plan';
+        }
+    }
+    $trans['t-' . $currentId] = $status;
     $currentId = -99999;
     $color = true;
-    echo '<div class="container-fluid p-0 m-0" name="t-' . $membership['status'] .'">' .  PHP_EOL;
+    echo '<div class="container-fluid p-0 m-0" name="t-' . $trans['t-' . $memberships[0]['sortTrans']] .'">' .  PHP_EOL;
     foreach ($memberships as $membership)  {
         if ($currentId != $membership['sortTrans']) {
             if ($currentId > -10000) {
@@ -419,7 +438,7 @@ if (count($memberships) > 0) {
                 $color = !$color
 ?>
         </div>
-        <div class="container-fluid<?php echo $bgcolor; ?> p-0 m-0" name="t-<?php echo $membership['status'];?>">
+        <div class="container-fluid<?php echo $bgcolor; ?> p-0 m-0" name="t-<?php echo $trans['t-' . $membership['sortTrans']];?>">
         <div class='row'>
             <div class='col-sm-12 p-0 m-0 align-center'>
                 <hr style='height:4px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:#333333;background-color:#333333;'/>
