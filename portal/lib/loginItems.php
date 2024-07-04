@@ -178,6 +178,9 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
         $ini = get_conf('reg');
 ?>
         <h4>This email address has access to multiple membership accounts</h4>
+<?php
+        outputCustomText('main/multiple');
+?>
         Please select one of the accounts below:<br/><ul>
 <?php
 
