@@ -2,6 +2,8 @@
 // portal - base.php - base functions for membership portal
 global $db_ini;
 global $appSessionPrefix;
+global $customTxT, $keyPrefix;
+$customTxt = [];
 
 if (!$db_ini) {
     $db_ini = parse_ini_file(__DIR__ . '/../../config/reg_conf.ini', true);
@@ -35,6 +37,7 @@ $bs5css=$cdn['bs5css'];
 $jqjs=$cdn['jqjs'];
 $jquijs=$cdn['jquijs'];
 $jquicss=$cdn['jquicss'];
+loadCustomText('portal', basename($_SERVER['PHP_SELF'], '.php'));
 echo <<<EOF
 <!DOCTYPE html>
 <html lang="en">
@@ -67,6 +70,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
     $ini = get_conf('reg');
     $portal_conf = get_conf('portal');
     if(isWebRequest()) {
+        loadCustomText('portal', basename(__FILE__, '.php'));
         $includes = getTabulatorIncludes();
         $loginId = getSessionVar('id');
         $loginType = getSessionVar('idType');
@@ -295,3 +299,38 @@ EOS;
         $cR->free();
         return $seconds;
     }
+
+// loadCustomText - load all the relevant custom text for this page
+function loadCustomText($app, $page) {
+    global $customTxT, $keyPrefix;
+
+    $keyPrefix = $app . '/' . $page . '/';
+    $customTxT = [];
+    $txtQ = <<<EOS
+SELECT *
+FROM controllTxtItems
+WHERE appName = ? AND appPage = ?;
+EOS;
+    $txtR = dbSafeQuery($txtQ, 'ss',array($app, $page));
+    if ($txtR == false)
+        return;
+    while ($txtL = $txtR->fetch_assoc()) {
+        $key = $txtL['appName'] . '/' . $txtL['appPage'] . '/' . $txtL['appSection'] . '/' . $txtL['txtItem'];
+        $customTxT[$key] = $txtL['contents'];
+    }
+    $txtR->free();
+}
+
+// output CustomTxt - output in a <div container-fluid> a custom text field if it exists and is non empty
+function outputCustomTxt($key) {
+    global $customTxT, $keyPrefix;
+
+    if (array_key_exists($keyPrefix . $key, $customTxT)) {
+        $contents = $customTxT[$keyPrefix . $key];
+        if ($contents != null && $contents != '') {
+            echo '<div class="container-fluid p-0 m-0">' . PHP_EOL .
+                $contents . PHP_EOL .
+                '</div>' . PHP_EOL;
+        }
+    }
+}

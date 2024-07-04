@@ -58,6 +58,9 @@ function draw_login($config_vars, $result_message = '', $result_color = '') {
     } ?>
         </div>
     </div>
+<?php
+    outputCustomTxt('main/bottom');
+?>
     <div class='container-fluid'>
         <div class='row'>
             <div class='col-sm-12 m-0 p-0'>

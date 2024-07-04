@@ -233,4 +233,45 @@ ALTER TABLE transaction DROP COLUMN ticket_num;
 INSERT INTO perinfo(id, last_name, first_name, banned, active, contact_ok, share_reg_ok, open_notes)
 VALUES(4, 'Internal', 'Portal', 'N', 'N', 'N', 'N', 'INTERNAL NOT FOR REGISTRAITON USE');
 
+CREATE TABLE controllAppPages (
+    appName  varchar(16) NOT NULL,
+    appPage varchar(32) NOT NULL,
+    pageDescription varchar(4096) DEFAULT '',
+    PRIMARY KEY (appName, appPage)
+);
+
+CREATE TABLE controllAppSections (
+    appName  varchar(16) NOT NULL,
+    appPage varchar(32) NOT NULL,
+    appSection varchar(32) NOT NULL,
+    sectionDescription varchar(4096) DEFAULT '',
+    PRIMARY KEY (appName, appPage, appSection)
+);
+
+ALTER TABLE controllAppSections ADD FOREIGN KEY (appName, appPage) REFERENCES controllAppPages(appName, appPage) ON UPDATE CASCADE;
+
+CREATE TABLE controllAppItems (
+    appName  varchar(16) NOT NULL,
+    appPage varchar(32) NOT NULL,
+    appsection varchar(32) NOT NULL,
+    txtItem varchar(32) NOT NULL,
+    txtItemDescription varchar(4096) DEFAULT '',
+    PRIMARY KEY (appName, appPage, appSection, txtItem)
+);
+
+ALTER TABLE controllAppItems ADD FOREIGN KEY (appName, appPage, appSection)
+    REFERENCES controllAppSections(appName, appPage, appSection) ON UPDATE CASCADE;
+
+CREATE TABLE controllTxtItems (
+    appName  varchar(16) NOT NULL,
+    appPage varchar(32) NOT NULL,
+    appSection varchar(32) NOT NULL,
+    txtItem varchar(32) NOT NULL,
+    contents text DEFAULT NULL,
+    PRIMARY KEY (appName, appPage, appSection, txtItem)
+);
+
+ALTER TABLE controllTxtItems ADD FOREIGN KEY (appName, appPage, appSection, txtItem)
+    REFERENCES controllAppItems(appName, appPage, appSection, txtItem) ON UPDATE CASCADE;
+
 INSERT INTO patchLog(id, name) values(ppx, 'Portal Changes');
