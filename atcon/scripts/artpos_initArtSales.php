@@ -72,12 +72,12 @@ catch (Exception $e) {
 if ($pay_tid == null || $pay_tid <= 0) {
     // create master transaction for this art sale
     $insTransactionSQL = <<<EOS
-INSERT INTO transaction(conid,perid,userid,price,paid,type,create_date)
-VALUES (?,?,?,?,?,'artpos',now());
+INSERT INTO transaction(conid,perid,userid,price,tax,withtax,paid,type,create_date)
+VALUES (?,?,?,0,0,0,0,'artpos',now());
 EOS;
 // now insert the master transaction
-    $paramarray = array($conid, $master_perid, $user_id, 0, 0);
-    $typestr = 'iiidd';
+    $paramarray = array($conid, $master_perid, $user_id);
+    $typestr = 'iii';
     $pay_tid = dbSafeInsert($insTransactionSQL, $typestr, $paramarray);
     if ($pay_tid === false) {
         RenderErrorAjax('Unable to create master transaction');
@@ -162,11 +162,11 @@ for ($row = 0; $row < sizeof($cart_art); $row++) {
 // update the transaction associated with this reg
 $updTransactionSQL = <<<EOS
 UPDATE transaction
-SET price = ?, paid = ?
+SET price = ?, paid = ?, withtax = ?
 WHERE id = ?
 EOS;
-$paramarray = array($total_price, $total_paid, $pay_tid);
-$typestr = 'ssi';
+$paramarray = array($total_price, $total_paid, $total_price, $pay_tid);
+$typestr = 'dddi';
 if (dbSafeCmd($updTransactionSQL, $typestr, $paramarray) === false) {
     $error_message .= "Update of master transaction failed";
 }

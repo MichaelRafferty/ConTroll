@@ -204,7 +204,7 @@ function build_table(tableData) {
                 { title: 'Updated', field: 'time_updated', headerWordWrap: true, headerFilter: true, tooltip: true, responsive: 2, width: 120, },
                 { title: 'Loc.', field: 'location', width: 80, headerWordWrap: true, headerFilter: true, tooltip: true},
                 {field: 'index', visible: false,},
-                { title: 'Qty.', field: 'qty', width: 60, headerSort: false, tooltip: true},
+                { title: 'Qty.', field: 'qty', width: 100, headerSort: false, tooltip: true},
                 { title: 'Actions', width: 150, hozAlign: "center", headerFilter: false, headerSort: false, formatter: addInventoryIcon, responsive:0},
             ],
         });
@@ -468,6 +468,24 @@ function update_bid(row, to_auction=false, close=false) {
         actionlist.push(create_action('Set Bidder', item, bidder));
         actionlist.push(create_action('Set Bid', item, price));
 
+        if (cart[row]['final_price'] != null) {
+            if (cart[row]['final_price'] > price) {
+                if (!confirm("Price is less than last bid, are you sure?")) {
+                    document.getElementById('bid_' + item).value = cart[row]['final_price'];
+                    return;
+                }
+            }
+        }
+
+        if (cart[row]['min_price'] != null) {
+            if (cart[row]['min_price'] > price) {
+                if (!confirm("Price is less than minimum price of " + cart[row]['min_price'] + ", are you sure?")) {
+                    document.getElementById('bid_' + item).value = cart[row]['final_price'];
+                    document.getElementById('bidder_' + item).value = cart[row]['bidder'];
+                    return;
+                }
+            }
+        }
         cart[row]['bidder']=bidder;
         cart[row]['final_price']=price;
 

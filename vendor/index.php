@@ -171,7 +171,7 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
     header('location:' . $_SERVER['PHP_SELF']);
 } else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
     // handle login submit
-    $login = strtolower(sql_safe($_POST['si_email']));
+    $login = trim(strtolower(sql_safe($_POST['si_email'])));
     $loginQ = <<<EOS
 SELECT e.id, e.artistName, e.exhibitorName, LOWER(e.exhibitorEmail) as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
        LOWER(ey.contactEmail) AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview
