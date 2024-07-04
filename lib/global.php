@@ -91,3 +91,53 @@ function clearSession($prefix = '') {
             unset($_SESSION[$key]);
     }
 }
+
+//// functions for custom text usage
+global $customTexT, $keyPrefix, $customTextFilter;
+
+
+// loadCustomText - load all the relevant custom text for this page
+    function loadCustomText($app, $page, $filter) {
+        global $customTexT, $keyPrefix, $customTextFilter;
+
+        $keyPrefix = $app . '/' . $page . '/';
+        $customTextFilter = $filter;
+        $keyApp = $app;
+        $customTexT = [];
+        $txtQ = <<<EOS
+SELECT *
+FROM controllTxtItems
+WHERE appName = ? AND appPage = ?;
+EOS;
+        $txtR = dbSafeQuery($txtQ, 'ss',array($app, $page));
+        if ($txtR == false)
+            return;
+        while ($txtL = $txtR->fetch_assoc()) {
+            $key = $txtL['appName'] . '/' . $txtL['appPage'] . '/' . $txtL['appSection'] . '/' . $txtL['txtItem'];
+            $customTexT[$key] = $txtL['contents'];
+        }
+        $txtR->free();
+    }
+
+// output CustomText - output in a <div container-fluid> a custom text field if it exists and is non empty
+    function outputCustomText($key) {
+        global $customTexT, $keyPrefix, $customTextFilter;
+
+        if ($customTextFilter == 'none')
+            return;
+
+        if (array_key_exists($keyPrefix . $key, $customTexT)) {
+            $contents = $customTexT[$keyPrefix . $key];
+            if ($contents != null && $contents != '') {
+                if ($customTextFilter == 'nodefault' || $customTextFilter == 'production') {
+                    $prefixStr = 'Controll-Default: ';
+                    if (substr($contents, 0, strlen($prefixStr)) == $prefixStr)
+                        return;
+                }
+
+                echo '<div class="container-fluid p-0 m-0">' . PHP_EOL .
+                    $contents . PHP_EOL .
+                    '</div>' . PHP_EOL;
+            }
+        }
+    }

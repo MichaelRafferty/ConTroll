@@ -2,8 +2,6 @@
 // portal - base.php - base functions for membership portal
 global $db_ini;
 global $appSessionPrefix;
-global $customTxT, $keyPrefix;
-$customTxt = [];
 
 if (!$db_ini) {
     $db_ini = parse_ini_file(__DIR__ . '/../../config/reg_conf.ini', true);
@@ -37,7 +35,13 @@ function index_page_init($title) {
     $jqjs=$cdn['jqjs'];
     $jquijs=$cdn['jquijs'];
     $jquicss=$cdn['jquicss'];
-    loadCustomText('portal', basename($_SERVER['PHP_SELF'], '.php'));
+    $portal_conf = get_conf('portal');
+    if (array_key_exists('customtext', $portal_conf)) {
+        $filter = $portal_conf['customtext'];
+    } else {
+        $filter = 'production';
+    }
+    loadCustomText('portal', basename($_SERVER['PHP_SELF'], '.php'), $filter);
     echo <<<EOF
 <!DOCTYPE html>
 <html lang="en">
@@ -70,7 +74,12 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
     $ini = get_conf('reg');
     $portal_conf = get_conf('portal');
     if(isWebRequest()) {
-        loadCustomText('portal', basename($_SERVER['PHP_SELF'], '.php'));
+        if (array_key_exists('customtext', $portal_conf)) {
+            $filter = $portal_conf['customtext'];
+        } else {
+            $filter = 'production';
+        }
+        loadCustomText('portal', basename($_SERVER['PHP_SELF'], '.php'), $filter);
         $includes = getTabulatorIncludes();
         $loginId = getSessionVar('id');
         $loginType = getSessionVar('idType');
@@ -302,37 +311,3 @@ EOS;
         return $seconds;
     }
 
-// loadCustomText - load all the relevant custom text for this page
-function loadCustomText($app, $page) {
-    global $customTxT, $keyPrefix;
-
-    $keyPrefix = $app . '/' . $page . '/';
-    $customTxT = [];
-    $txtQ = <<<EOS
-SELECT *
-FROM controllTxtItems
-WHERE appName = ? AND appPage = ?;
-EOS;
-    $txtR = dbSafeQuery($txtQ, 'ss',array($app, $page));
-    if ($txtR == false)
-        return;
-    while ($txtL = $txtR->fetch_assoc()) {
-        $key = $txtL['appName'] . '/' . $txtL['appPage'] . '/' . $txtL['appSection'] . '/' . $txtL['txtItem'];
-        $customTxT[$key] = $txtL['contents'];
-    }
-    $txtR->free();
-}
-
-// output CustomText - output in a <div container-fluid> a custom text field if it exists and is non empty
-function outputCustomText($key) {
-    global $customTxT, $keyPrefix;
-
-    if (array_key_exists($keyPrefix . $key, $customTxT)) {
-        $contents = $customTxT[$keyPrefix . $key];
-        if ($contents != null && $contents != '') {
-            echo '<div class="container-fluid p-0 m-0">' . PHP_EOL .
-                $contents . PHP_EOL .
-                '</div>' . PHP_EOL;
-        }
-    }
-}
