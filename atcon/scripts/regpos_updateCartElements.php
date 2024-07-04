@@ -214,12 +214,12 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
 $master_perid = $cart_perinfo[0]['perid'];
 $notes = 'Pickup by: ' . trim($cart_perinfo[0]['first_name'] . ' ' . $cart_perinfo[0]['last_name']);
 $insTransactionSQL = <<<EOS
-INSERT INTO transaction(conid,perid,userid,price,paid,type,create_date)
-VALUES (?,?,?,?,?,'atcon',now());
+INSERT INTO transaction(conid,perid,userid,price,withtax,tax,paid,type,create_date)
+VALUES (?,?,?,0,0,0,0,'atcon',now());
 EOS;
 // now insert the master transaction
-$paramarray = array($conid, $master_perid, $user_id, 0, 0);
-$typestr = 'iiidd';
+$paramarray = array($conid, $master_perid, $user_id);
+$typestr = 'iii';
 $master_transid = dbSafeInsert($insTransactionSQL, $typestr, $paramarray);
 if ($master_transid === false) {
     ajaxError('Unable to create master transaction');

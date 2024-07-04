@@ -29,15 +29,28 @@ function isWebRequest()
 function page_init($title, $tab, $css, $js)
 {
     $con = get_conf('con');
+    $vendor = get_conf('vendor');
     $label = $con['label'];
     $debug = get_conf('debug');
     if (array_key_exists('atcon', $debug))
         $atconDebug = $debug['atcon'];
     else
         $atconDebug = 0;
+
+    if (array_key_exists('taxRate', $con))
+        $taxRate = $con['taxRate'];
+    else
+        $taxRate = 0;
+
+    if (array_key_exists('taxidlabel', $vendor))
+        $taxLabel = $vendor['taxidlabel'];
+    else
+        $taxLabel = '';
+
     $config_vars = array();
     $config_vars['debug'] = $atconDebug;
-    $config_vars['taxRate'] = $con['taxRate'];
+    $config_vars['taxRate'] = $taxRate;
+    $config_vars['taxLabel'] = $taxLabel;
 
     global $perms;
     if (isWebRequest()) {
