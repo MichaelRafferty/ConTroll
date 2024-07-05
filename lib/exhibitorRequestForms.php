@@ -56,7 +56,9 @@ function draw_exhibitorRequestModal($portalType = '')
                             </div>
                             <?php } ?>
                         </form>
-                        <div class="row" id="sr_message_div"></div>
+                        <div class="row">
+                            <div class="col-sm-12" id="sr_message_div"></div>
+                        </div>
                     </div>
                 </div>
                 <div class='modal-footer'>

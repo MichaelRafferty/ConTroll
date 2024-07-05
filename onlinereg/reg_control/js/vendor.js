@@ -57,6 +57,13 @@ class exhibitorsAdm {
     #currentSpaceTab = null;
     #spacesTabs = {};
 
+    // mail order - exhibitor choice items
+    #exhibitorChooseModal = null;
+    #exhibitorChooseTitle = null;
+    #exhibitorHtml = null;
+    #exhibitorChooseBtn = null;
+    #exhibitorListTable = null;
+
     constructor(conid, debug) {
         this.#debug = debug;
         this.#conid = conid;
@@ -86,6 +93,14 @@ class exhibitorsAdm {
         id = document.getElementById("locations_edit");
         if (id)
             this.#locationsModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+
+        id = document.getElementById("exhibitor_choose");
+        if (id) {
+            this.#exhibitorChooseModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#exhibitorChooseTitle = document.getElementById('exhibitor_choose_title');
+            this.#exhibitorHtml = document.getElementById('exhibitorHtml');
+            this.#exhibitorChooseBtn = document.getElementById('exhibitor_choose_btn');
+        }
 
         // owners
         this.#ownerTabs['overview'] = document.getElementById('overview-content');
@@ -181,7 +196,9 @@ class exhibitorsAdm {
             url: "scripts/exhibitorsGetData.php",
             method: "POST",
             data: { region: tabname, regionId: regionid },
-            success: getExhibitorDataDraw,
+            success: function (data, textstatus, jqXHR) {
+            exhibitors.draw(data);
+            },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in getExhibitorData: " + textStatus, jqXHR);
                 return false;
@@ -199,6 +216,8 @@ class exhibitorsAdm {
         this.#pricelists = data['price_list'];
         if (data['locationsUsed'])
             this.#locationsUsed = data['locationsUsed'];
+
+        this.#regionId = data['post']['regionId'];
 
         if (this.#debug & 8)
             console.log(data);
@@ -302,7 +321,10 @@ class exhibitorsAdm {
             "    </div>\n" +
             "    <div class='row mt-2'>\n" +
             "        <div class='col-sm-12'>\n" +
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addVendorSpaceBtn' onClick=" + '"exhibitors.addNewSpace();"' + ">Add New Exhibitor Space</button>\n" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorSpaceBtn' onClick=" + '"exhibitors.addNewSpace();">' +
+                            "Add New Exhibitor Space to Existing Exhibitor</button>\n" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn2' onClick=" + '"exhibitors.addNew();">' +
+                            "Add New Exhibitor</button>\n" +
             "        </div>\n" +
             "    </div>\n" +
             "</div></div>\n"
@@ -1199,15 +1221,77 @@ class exhibitorsAdm {
 
         show_message("Not Yet", 'warn');
     }
+
+    // add exhibitor space - selecting the exhibitor and the space
+    addNewSpace() {
+        this.#exhibitorChooseTitle.innerHTML = 'Add Space to Which Exhibitor?';
+        this.#exhibitorChooseBtn.innerHTML = 'Add Space to Which Exhibitor?';
+        var script = 'scripts/exhibitorsGetList.php';
+        var data = {
+            regionId: this.#regionId,
+            action: 'list',
+        };
+        $.ajax({
+            url: script,
+            data: data,
+            method: "POST",
+            success: function (data, textstatus, jqXHR) {
+                exhibitors.getListSuccess(data);
+            },
+            error: showAjaxError
+        });
+
+    }
+
+    // getListSuccess - process the return of the list data
+    getListSuccess(data) {
+        if (data['error']) {
+            console.log(data);
+            show_message(data['error'], 'error');
+            return;
+        }
+        if (data['exhibitors'].length == 0) {
+            show_message('All exhibitors have already paid for their space.  Use Add New Exhibitor if necessary to add this mail order exhibitor.', 'warn');
+            return;
+        }
+        if (data['message']) {
+            show_message(data['message'], 'success', 'ce_message_div');
+        }
+        this.#exhibitorChooseModal.show();
+        this.#exhibitorListTable = new Tabulator('#exhibitorHtml', {
+            data: data['exhibitors'],
+            layout: "fitDataTable",
+            index: 'id',
+            pagination: true,
+            paginationSize: 25,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            columns: [
+                {title: "ID", field: "exhibitorId", visible: true, width: 65, },
+                {title: "Artist Name", field: "artistName", visible: true, width: 200, },
+                {title: "Name", field: "exhibitorName", visible: true, width: 200, },
+                {title: "Email", field: "exhibitorEmail", visible: true, width: 200, },
+                {title: "Website", field: "website", visible: true, width: 200, },
+                {title: "Actions", field: "s1", formatter: this.exhibitorListButtons, maxWidth: 300, headerSort: false },
+        ]});
+    }
+
+    // buttons for the exhibitorListTable
+    exhibitorListButtons(cell, formatterParams, onRendered) {
+        var data = cell.getData();
+        var id = data['exhibitorId'];
+        var buttons = '';
+
+        // add space button button
+        buttons += '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+            'onclick="exhibitors.addPaySpace(' + id + ', true)" >Add/Pay Space</button>&nbsp;';
+
+        return buttons;
+    }
 };
 
 exhibitors = null;
 
 // hook to public class function for exhibitor draw
-function getExhibitorDataDraw(data, textStatus, jqXHR) {
-    exhibitors.draw(data);
-}
-
 function updateExhibitorDataDraw(data, textStatus, jqXHR) {
     exhibitors.redraw(data);
 }
@@ -1220,44 +1304,6 @@ window.onload = function initpage() {
 }
 
 /*
-var summaryDiv = null;
-var vendortable = null;
-var update_profile = null;
-var approve_space = null;
-var price_lists = null;
-var add_space= null;
-var space_map = {};
-var receipt_modal = null;
-var receipt_email_address = null;
-
-$(document).ready(function () {
-    id = document.getElementById('update_profile');
-    if (id != null) {
-        update_profile = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-    }
-    id = document.getElementById('approve_space');
-    if (id != null) {
-        approve_space = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-    }
-    id = document.getElementById('add_vendorSpace');
-    if (id != null) {
-        add_space = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-    }
-    id = document.getElementById('receipt');
-    if (id != null) {
-        receipt_modal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-        $('#receipt').on('hide.bs.modal', function () {
-            receipt_email_address = null;
-        });
-    }
-    getData();
-
-    for (var opt in spacePriceList) {
-        var price = spacePriceList[opt];
-        space_map[price['id']] = opt;
-    }
-});
-
 // allow entry of a new space type for a vendor
 function addNewSpace() {
     // clear the form
@@ -1376,90 +1422,5 @@ function addVendorSpace() {
         }
     });
 }
-
-// display receipt: use the modal to show the receipt
-function displayReceipt(data) {
-    document.getElementById('receipt-div').innerHTML = data['receipt_html'];
-    document.getElementById('receipt-tables').innerHTML = data['receipt_tables'];
-    document.getElementById('receipt-text').innerHTML = data['receipt'];
-    receipt_email_address = data['payor_email'];
-    document.getElementById('emailReceipt').innerHTML = "Email Receipt to " + data['payor_name'] + ' at ' + receipt_email_address;
-    document.getElementById('receiptTitle').innerHTML = "Registration Receipt for " + data['payor_name'];
-    receipt_modal.show();
-}
-
-function receipt_email(addrchoice) {
-    var email = receipt_email_address;
-    var success='';
-    if (addrchoice == 'reg') {
-        email = document.getElementById('regadminemail').innerHTML;
-        success = 'Receipt sent to Regadmin at ' + email;
-    }
-
-    if (receipt_email_address == null)
-        return;
-
-    if (success == '')
-        success = document.getElementById('emailReceipt').innerHTML.replace("Email Receipt to", "Receipt sent to");
-
-    var data = {
-        email: email,
-        okmsg: success,
-        text: document.getElementById('receipt-text').innerHTML,
-        html: document.getElementById('receipt-tables').innerHTML,
-        subject: document.getElementById('receiptTitle').innerHTML,
-        success: success,
-    };
-    $.ajax({
-        method: "POST",
-        url: "scripts/emailReceipt.php",
-        data: data,
-        success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
-                return;
-            }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success');
-            }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
-            }
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            showError("ERROR in emailReceipt: " + textStatus, jqXHR);
-        }
-    });
-}
-// receipt - display a receipt for the transaction for this badge
-function receipt(index) {
-    var row = spacestable.getRow(index);
-    var transid = row.getCell("transid").getValue();
-    $.ajax({
-        method: "POST",
-        url: "scripts/getReceipt.php",
-        data: { transid },
-        success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
-                return;
-            }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success');
-            }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
-            }
-            displayReceipt(data);
-            if (data['success'] !== undefined)
-                show_message(data.success, 'success');
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            showError("ERROR in getReceipt: " + textStatus, jqXHR);
-        }
-    });
-
-}
-
 
  */

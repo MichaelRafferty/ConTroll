@@ -3,6 +3,7 @@ require_once "lib/base.php";
 require_once "../../lib/exhibitorRegistrationForms.php";
 require_once "../../lib/exhibitorRequestForms.php";
 require_once "../../lib/exhibitorReceiptForms.php";
+require_once "lib/exhibitorChooseExhibitor.php";
 
 //initialize google session
 $need_login = google_init("page");
@@ -78,6 +79,7 @@ $config_vars['debug'] = $debug['reg_control_exhibitors'];
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
 draw_exhibitorRequestModal('admin');
 draw_exhibitorReceiptModal('admin');
+draw_exhibitorChooseModal();
 ?>
 <!-- space detail modal -->
     <div id='space_detail' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Space Detail' aria-hidden='true'
@@ -318,62 +320,6 @@ foreach ($regionOwners AS $regionOwner => $regionList) {
 
 <?php /*
 
-<div id='approve_space' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Approve Vendor Space Request' aria-hidden='true' style='--bs-modal-width: 80%;'>
-    <div class='modal-dialog'>
-        <div class='modal-content'>
-            <div id="approve_header" class='modal-header bg-primary text-bg-primary'>
-                <div class='modal-title'>
-                    <strong id="approve_title">Approve Vendor Space Request</strong>
-                </div>
-                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-            </div>
-            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                <div class='container-fluid'>
-                    <form id='space_request' action='javascript:void(0)'>
-                        <input type='hidden' name='vendorId' id='sr_vendorId' value=''>
-                        <input type='hidden' name='spaceId' id='sr_spaceId' value=''>
-                        <input type='hidden' name='id' id='sr_id' value=''>
-                        <input type='hidden' name='operation' id='operation' value='approve'>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 p-0'>Name:</div>
-                            <div class='col-sm-10 p-0' id="sr_name"></div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 p-0'>Email:</div>
-                            <div class='col-sm-10 p-0' id="sr_email"></div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 p-0'>Website:</div>
-                            <div class='col-sm-10 p-0' id="sr_website"></div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 p-0'>Space:</div>
-                            <div class='col-sm-10 p-0' id='sr_spaceName'></div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-4 p-0'>Requested:</div>
-                            <div class='col-sm-6 p-0'>Approved:</div>
-                        </div>
-                        <div class="row">
-                            <div class='col-sm-1 p-0'>Units</div>
-                            <div class='col-sm-3 p-0'>Description</div>
-                            <div class='col-sm-6 p-0'>Approved Space</div>
-                        </div>
-                        <div class='row'>
-                            <div class='col-sm-1 p-0' id='sr_reqUnits'></div>
-                            <div class='col-sm-3 p-0' id="sr_reqDescription"></div>
-                            <div class='col-sm-6 p-0' id="sr_appOption"></div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div class='modal-footer'>
-                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button id="approve_button" class='btn btn-sm btn-primary' onClick='approveSpace(-1)'>Approve</button>
-            </div>
-        </div>
-    </div>
-</div>
 <div id='add_vendorSpace' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Add Vendor Space' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
@@ -495,57 +441,6 @@ foreach ($regionOwners AS $regionOwner => $regionList) {
         </div>
     </div>
 </div>
-<div id='receipt' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Registration Receipt' aria-hidden='true' style='--bs-modal-width: 80%;'>
-    <div class='modal-dialog'>
-        <div class='modal-content'>
-            <div class='modal-header bg-primary text-bg-primary'>
-                <div class='modal-title'>
-                    <strong id='receiptTitle'>Registration Receipt</strong>
-                </div>
-                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-            </div>
-            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                <div id='receipt-div'></div>
-                <div id='regadminemail' hidden='true'><?php echo $conf['regadminemail']; ?></div>
-                <div id="receipt-text" hidden="true"></div>
-                <div id="receipt-tables" hidden="true"></div>
-            </div>
-            <div class='modal-footer'>
-                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
-                <button class='btn btn-sm btn-primary' id='emailReceipt' onClick='receipt_email("payor")'>Email Receipt</button>
-                <button class='btn btn-sm btn-primary' id='emailReceiptReg' onClick='receipt_email("reg")'>Email Receipt to regadmin
-                    at <?php echo $conf['regadminemail']; ?></button>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="row">
-    <div class="col-sm-12">
-        <div id='summary-div'></div>
-    </div>
-</div>
-<div class='row'>
-    <div class='col-sm-12'>
-        <div id="VendorList">Vendor List Placeholder</div>
-    </div>
-</div>
-<div class='row'>
-    <div class='col-sm-12'>
-        <button class="btn btn-secondary" id="addVendorBtn" onclick="addNewVendor();">Add New Vendor</button>
-    </div>
-</div>
-<div class='row mt-4'>
-    <div class='col-sm-12'>
-        <div id="SpaceDetail">Space Detail Placeholder</div>
-    </div>
-</div>
-<div class='row'>
-    <div class='col-sm-12'>
-        <button class='btn btn-secondary' id='addVendorSpaceBtn' onclick="addNewSpace();">Add New Vendor Space</button>
-    </div>
-</div>
-<div id='result_message' class='mt-4 p-2'></div>
-<pre id='test'></pre>
 <?php
 */
 page_foot($page);
