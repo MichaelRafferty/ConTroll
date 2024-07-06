@@ -1292,6 +1292,7 @@ class exhibitorsAdm {
 
     // add/pay for space for an existing vendor
     addPaySpace(id) {
+        clear_message();
         this.#exhibitorId = id; // which exhibitor are we using
 
         this.#exhibitorChooseModal.hide();
@@ -1329,6 +1330,16 @@ class exhibitorsAdm {
         }
         console.log('getAddPaySpaceSuccess');
         console.log(data);
+
+        region_list = data['region_list'];
+        exhibits_spaces = data['exhibits_spaces'];
+        exhibitor_info = data['exhibitor_info'];
+        exhibitor_spacelist = data['exhibitor_spacelist'];
+        this.#regionYearId = data['exhibitor_perm']['exhibitsRegionYearId'];
+        // don't overwrite regions, it's already loaded and its correct for all uses in vendor, exhibitorRequest doesn't use it.
+        spaces = data['spaces'];
+        country_options = data['country_options'];
+        exhibitorRequest.openReq(this.#regionYearId, 3);
     }
 };
 

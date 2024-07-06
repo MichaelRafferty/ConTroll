@@ -119,21 +119,23 @@ fclose($fh);
 
 
 $vendorPQ = <<<EOS
-SELECT exRY.*
+SELECT exRY.*, ery.id AS exhibitsRegionYearId
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 JOIN exhibitsRegionYears ery ON exRY.exhibitsRegionYearId = ery.id
 JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id
 JOIN exhibitsRegionTypes ert ON er.regionType = ert.regionType
-WHERE exY.exhibitorId = ? AND er.id = ?;
+WHERE exY.exhibitorId = ? AND er.id = ? AND ery.conid = ?;
 EOS;
 
-$vendorPR = dbSafeQuery($vendorPQ, 'is', array($exhibitorId, $regionId));
-$vendor_permlist = array();
-while ($perm = $vendorPR->fetch_assoc()) {
-    $vendor_permlist[$perm['exhibitsRegionYearId']] = $perm;
+$vendor_perm = null;
+$vendorPR = dbSafeQuery($vendorPQ, 'iii', array($exhibitorId, $regionId, $conid));
+if ($vendorPR !== false) {
+    if ($vendorPR->num_rows > 0) {
+        $vendor_perm = $vendorPR->fetch_assoc();
+    }
+    $vendorPR->free();
 }
-$vendorPR->free();
 
 $exhibitorSQ = <<<EOS
 SELECT *
@@ -152,6 +154,7 @@ $response['region_list'] = $region_list;
 $response['exhibits_spaces'] = $space_list;
 $response['exhibitor_info'] = $info;
 $response['exhibitor_spacelist'] = $exhibitorSpaceList;
+$response['exhibitor_perm'] = $vendor_perm;
 $response['regions'] = $regions;
 $response['spaces'] = $spaces;
 $response['country_options'] = $countryOptions;
