@@ -29,7 +29,6 @@ function draw_exhibitorChooseModal() {
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='exhibitor_choose_btn' onClick="chooseExhibitor()">Choose which Exhibitor to process</button>
                 </div>
             </div>
         </div>

@@ -61,7 +61,6 @@ class exhibitorsAdm {
     #exhibitorChooseModal = null;
     #exhibitorChooseTitle = null;
     #exhibitorHtml = null;
-    #exhibitorChooseBtn = null;
     #exhibitorListTable = null;
 
     constructor(conid, debug) {
@@ -99,7 +98,6 @@ class exhibitorsAdm {
             this.#exhibitorChooseModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#exhibitorChooseTitle = document.getElementById('exhibitor_choose_title');
             this.#exhibitorHtml = document.getElementById('exhibitorHtml');
-            this.#exhibitorChooseBtn = document.getElementById('exhibitor_choose_btn');
         }
 
         // owners
@@ -1224,8 +1222,8 @@ class exhibitorsAdm {
 
     // add exhibitor space - selecting the exhibitor and the space
     addNewSpace() {
-        this.#exhibitorChooseTitle.innerHTML = 'Add Space to Which Exhibitor?';
-        this.#exhibitorChooseBtn.innerHTML = 'Add Space to Which Exhibitor?';
+        clear_message();
+        this.#exhibitorChooseTitle.innerHTML = 'Add Space to Which Exhibitor? (only exhibitors with no paid spaces in this region are shown)';
         var script = 'scripts/exhibitorsGetList.php';
         var data = {
             regionId: this.#regionId,
