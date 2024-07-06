@@ -24,18 +24,30 @@ $conid = $con['id'];
 $regionId = $_POST['regionId'];
 
 $exhibitorQ = <<<EOS
+WITH regionYear AS (
+    SELECT eRY.id, eY.exhibitorId
+    FROM exhibitorRegionYears eRY
+    JOIN exhibitsRegionYears ery ON ery.id = eRY.exhibitsRegionYearID
+    JOIN exhibitorYears eY ON eY.id = eRY.exhibitorYearId
+    WHERE ery.exhibitsRegion = ? AND eY.conid = ?
+), esNotNull AS (
+    SELECT rY.id
+    FROM exhibitorSpaces eS
+    JOIN regionYear rY ON (rY.id = eS.exhibitorRegionYear)
+    WHERE eS.item_purchased IS NOT NULL
+)
 SELECT DISTINCT e.id as exhibitorId, perid, artistName, exhibitorName, exhibitorEmail, website, city, state, zip, 
        eY.id as contactId, eY.conid, contactName, contactEmail
 FROM exhibitors e
 JOIN exhibitorYears eY ON e.id = eY.exhibitorId
 JOIN exhibitorRegionYears eRY ON eRY.exhibitorYearId = eY.id
 JOIN exhibitsRegionYears ery ON ery.id = eRY.exhibitsRegionYearId
-LEFT OUTER JOIN exhibitorSpaces eS ON eS.exhibitorRegionYear = eRY.id AND ery.conid = eY.conid
-WHERE ery.exhibitsRegion = ? AND eY.conid = ? AND eS.item_purchased IS NULL
+LEFT OUTER JOIN esNotNull nn ON nn.id = eRY.id
+WHERE ery.exhibitsRegion = ? AND eY.conid = ? AND nn.id IS NULL
 ORDER BY e.id;
 EOS;
 
-$exhibitorR = dbSafeQuery($exhibitorQ, 'ii', array($regionId, $conid));
+$exhibitorR = dbSafeQuery($exhibitorQ, 'iiii', array($regionId, $conid, $regionId, $conid));
 if (!$exhibitorR) {
     ajaxSuccess(array(
         "args" => $_POST,
