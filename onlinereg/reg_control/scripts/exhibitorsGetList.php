@@ -31,7 +31,7 @@ JOIN exhibitorYears eY ON e.id = eY.exhibitorId
 JOIN exhibitorRegionYears eRY ON eRY.exhibitorYearId = eY.id
 JOIN exhibitsRegionYears ery ON ery.id = eRY.exhibitsRegionYearId
 LEFT OUTER JOIN exhibitorSpaces eS ON eS.exhibitorRegionYear = eRY.id AND ery.conid = eY.conid
-WHERE ery.id = ? AND eY.conid = ? AND eS.item_purchased IS NULL
+WHERE ery.exhibitsRegion = ? AND eY.conid = ? AND eS.item_purchased IS NULL
 ORDER BY e.id;
 EOS;
 

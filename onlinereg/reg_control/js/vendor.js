@@ -322,7 +322,7 @@ class exhibitorsAdm {
             "    <div class='row mt-2'>\n" +
             "        <div class='col-sm-12'>\n" +
             "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorSpaceBtn' onClick=" + '"exhibitors.addNewSpace();">' +
-                            "Add New Exhibitor Space to Existing Exhibitor</button>\n" +
+                            "Add New / Pay for Exhibitor Space to Existing Exhibitor</button>\n" +
             "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn2' onClick=" + '"exhibitors.addNew();">' +
                             "Add New Exhibitor</button>\n" +
             "        </div>\n" +
@@ -1240,7 +1240,6 @@ class exhibitorsAdm {
             },
             error: showAjaxError
         });
-
     }
 
     // getListSuccess - process the return of the list data
@@ -1267,10 +1266,13 @@ class exhibitorsAdm {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {title: "ID", field: "exhibitorId", visible: true, width: 65, },
-                {title: "Artist Name", field: "artistName", visible: true, width: 200, },
-                {title: "Name", field: "exhibitorName", visible: true, width: 200, },
-                {title: "Email", field: "exhibitorEmail", visible: true, width: 200, },
-                {title: "Website", field: "website", visible: true, width: 200, },
+                {title: "Artist Name", field: "artistName", headerFilter: true, visible: true, width: 200, },
+                {title: "Name", field: "exhibitorName", headerFilter: true, visible: true, width: 200, },
+                {title: "Email", field: "exhibitorEmail", headerFilter: true, visible: true, width: 200, },
+                {title: "Website", field: "website", headerFilter: true, visible: true, width: 200, },
+                {title: "City", field: "city", visible: true, headerFilter: true, width: 200, },
+                {title: "State", field: "state", visible: true, headerFilter: true, width: 100, },
+                {title: "Zip", field: "zip", visible: true, headerFilter: true, width: 100, },
                 {title: "Actions", field: "s1", formatter: this.exhibitorListButtons, maxWidth: 300, headerSort: false },
         ]});
     }
@@ -1283,9 +1285,50 @@ class exhibitorsAdm {
 
         // add space button button
         buttons += '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-            'onclick="exhibitors.addPaySpace(' + id + ', true)" >Add/Pay Space</button>&nbsp;';
+            'onclick="exhibitors.addPaySpace(' + id + ')" >Add/Pay Space</button>&nbsp;';
 
         return buttons;
+    }
+
+    // add/pay for space for an existing vendor
+    addPaySpace(id) {
+        this.#exhibitorId = id; // which exhibitor are we using
+
+        this.#exhibitorChooseModal.hide();
+        this.#exhibitorListTable.destroy();
+        this.#exhibitorListTable = null;
+        console.log("add/pay for space for exhibitor " + this.#exhibitorId + ', in exhibitsRegion ' + this.#regionId);
+
+        var script = 'scripts/exhibitorGetSingleData.php';
+        var data = {
+            exhibitorId: this.#exhibitorId,
+            regionId: this.#regionId,
+            action: 'get',
+        };
+        $.ajax({
+            url: script,
+            data: data,
+            method: "POST",
+            success: function (data, textstatus, jqXHR) {
+                exhibitors.getAddPaySpaceSuccess(data);
+            },
+            error: showAjaxError
+        });
+    }
+
+    // now we have the data draw the scrren
+    getAddPaySpaceSuccess(data) {
+        if (data['error']) {
+            console.log(data);
+            show_message(data['error'], 'error');
+            return;
+        }
+
+        if (data['message']) {
+            show_message(data['message'], 'success');
+        }
+        console.log('getAddPaySpaceSuccess');
+        console.log(data);
     }
 };
 
