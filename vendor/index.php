@@ -1,7 +1,7 @@
 <?php
 // Vendor - index.php - Main page for vendor registration
 require_once("lib/base.php");
-require_once("lib/exhibitorInvoice.php");
+require_once("../lib/exhibitorInvoice.php");
 require_once("lib/changePassword.php");
 require_once("lib/auctionItemRegistrationForms.php");
 require_once('../lib/exhibitorYears.php');

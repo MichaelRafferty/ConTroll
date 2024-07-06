@@ -27,12 +27,11 @@ function draw_exhibitorRequestModal($portalType = '')
                                 </div>
                             </div>
                             <?php } ?>
-                            <div id="spaceHtml"></div>
+                            <div class="container-fluid p-0 m-0" id="spaceHtml"></div>
                             <div class='row p-1 pt-4 pb-3'>
                                 <div class='col-sm-12'>
                                     You will be able to identify people for the included memberships (if any) and purchase up to the allowed number of
-                                    discounted memberships later, if your request is
-                                    approved.
+                                    discounted memberships later, if your request is approved.
                                 </div>
                             </div>
                             <?php

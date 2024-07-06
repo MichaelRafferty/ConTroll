@@ -2,6 +2,25 @@
 // draw the invoice screen for buying space in the vendor/artist portal
 function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $cc, $portalName, $portalType) {
     $vendor_conf = get_conf('vendor');
+    if ($info == null) {
+        $exhibitorName = '';
+        $exhibitorEmail = '';
+        $addr = '';
+        $addr2 = '';
+        $city = '';
+        $state = '';
+        $zip = '';
+        $contactEmail = '';
+    } else {
+        $exhibitorName = escape_quotes($info['exhibitorName']);
+        $exhibitorEmail = escape_quotes($info['exhibitorEmail']);
+        $addr = escape_quotes($info['addr']);
+        $addr2 = escape_quotes($info['addr2']);
+        $city = escape_quotes($info['city']);
+        $state = escape_quotes($info['state']);
+        $zip = escape_quotes($info['zip']);
+        $contactEmail = escape_quotes($info['contactEmail']);
+    }
     ?>
     <!-- invoice -->
     <div id='vendor_invoice' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Vendor Invoice' aria-hidden='true' style='--bs-modal-width: 80%;'>
@@ -39,7 +58,8 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                 <label for="vendor_inv_name">Name:</label>
                             </div>
                             <div class="col-sm-10 p-0">
-                                <input class="form-control-sm" type='text' name='name' id='vendor_inv_name' value="<?php echo escape_quotes($info['exhibitorName']);  ?>" size="64" required/>
+                                <input class="form-control-sm" type='text' name='name' id='vendor_inv_name' value="<?php echo $exhibitorName; ?>"
+                                       size="64" required/>
                             </div>
                         </div>
                         <div class='row'>
@@ -47,7 +67,8 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                 <label for='vendor_inv_email'>Email:</label>
                             </div>
                             <div class='col-sm-10 p-0'>
-                                <input class='form-control-sm' type='text' name='email' id='vendor_inv_email' value="<?php echo escape_quotes($info['exhibitorEmail']); ?>" size="64" required/>
+                                <input class='form-control-sm' type='text' name='email' id='vendor_inv_email' value="<?php echo $exhibitorEmail; ?>"
+                                       size="64" required/>
                             </div>
                         </div>
                         <div class='row'>
@@ -55,7 +76,8 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                 <label for='vendor_inv_addr'>Address:</label>
                             </div>
                             <div class='col-sm-10 p-0'>
-                                <input class='form-control-sm' type='text' name='addr' id='vendor_inv_addr' value="<?php echo escape_quotes($info['addr']); ?>" size='64' required/>
+                                <input class='form-control-sm' type='text' name='addr' id='vendor_inv_addr' value="<?php echo $addr; ?>"
+                                       size='64' required/>
                             </div>
                         </div>
                         <div class='row'>
@@ -63,7 +85,8 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                 <label for='vendor_inv_addr2'>Company/ Addr2:</label>
                             </div>
                             <div class='col-sm-10 p-0'>
-                                <input class='form-control-sm' type='text' name='addr2' id='vendor_inv_addr2' value="<?php echo escape_quotes($info['addr2']); ?>" size='64'/>
+                                <input class='form-control-sm' type='text' name='addr2' id='vendor_inv_addr2' value="<?php echo $addr2; ?>"
+                                       size='64'/>
                             </div>
                         </div>
                         <div class='row'>
@@ -71,21 +94,22 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                 <label for='vendor_inv_city'>City: </label>
                             </div>
                             <div class='col-sm-auto p-0 me-0'>
-                                <input class='form-control-sm' id='vendor_inv_city' type='text' size='32' value="<?php echo escape_quotes($info['city']); ?>" name=' city' required/>
+                                <input class='form-control-sm' type='text' name='city' id='vendor_inv_city' value="<?php echo $city; ?>"
+                                       size='32' required/>
                             </div>
                             <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
                                 <label for='vendor_inv_state'> State: </label>
                             </div>
                             <div class='col-sm-auto p-0 ms-0 me-0 ps-1'>
-                                <input class='form-control-sm' id='vendor_inv_state' type='text' size='10' maxlength='16' value="<?php echo escape_quotes($info['state']); ?>"
-                                       name='state' required/>
+                                <input class='form-control-sm' type='text' name='state'  id='vendor_inv_state' value="<?php echo $state; ?>"
+                                       size='10' maxlength='16' required/>
                             </div>
                             <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
                                 <label for='vendor_inv_zip'> Zip: </label>
                             </div>
                             <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
-                                <input class='form-control-sm' id='vendor_inv_zip' type='text' size='11' maxlength='11' value="<?php echo escape_quotes($info['zip']); ?>" name='zip'
-                                       required/>
+                                <input class='form-control-sm' type='text' name='zip' id='vendor_inv_zip' value="<?php echo $zip; ?>"
+                                       size='11' maxlength='11' required/>
                             </div>
                         </div>
                         <div class="row">
@@ -135,6 +159,9 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                 Payment Information:
                             </div>
                         </div>
+<?php
+                            if ($cc != null) {
+?>
                          <div class='row'>
                              <div class='col-sm-2'>
                                  <label for='cc_fname'>
@@ -155,7 +182,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                  </label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_street' required='required' name='cc_addr' size='64' maxlength='64' value="<?php echo escape_quotes($info['addr']); ?>"/>
+                                 <input type='text' id='cc_street' required='required' name='cc_addr' size='64' maxlength='64' value="<?php echo $addr; ?>"/>
                              </div>
                          </div>
                          <div class='row'>
@@ -163,19 +190,19 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                  <label for='cc_city'>City:</label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_city' required='required' size='35' name='cc_city' maxlength='64' value="<?php echo escape_quotes($info['city']); ?>"/>
+                                 <input type='text' id='cc_city' required='required' size='35' name='cc_city' maxlength='64' value="<?php echo $city; ?>"/>
                              </div>
                              <div class='col-sm-auto ps-0 pe-0'>
                                  <label for='cc_state'>State:</label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_state' size=10 maxlength="16" required='required' name='cc_state' value="<?php echo escape_quotes($info['state']); ?>"/>
+                                 <input type='text' id='cc_state' size=10 maxlength="16" required='required' name='cc_state' value="<?php echo $state; ?>"/>
                              </div>
                              <div class='col-sm-auto ps-0 pe-0'>
                                  <label for='cc_zip'>Zip:</label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_zip' required='required' size=10 maxlength="10" name='cc_zip' value="<?php echo escape_quotes($info['zip']); ?>"/>
+                                 <input type='text' id='cc_zip' required='required' size=10 maxlength="10" name='cc_zip' value="<?php echo $zip; ?>"/>
                              </div>
                          </div>
                          <div class='row'>
@@ -193,7 +220,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                  <label for="cc_email">Email:</label>
                              </div>
                              <div class="col-sm-auto">
-                                  <input type='email' id='cc_email' name='cc_email' size="35" maxlength="254" value="<?php echo escape_quotes($info['contactEmail']); ?>"/>
+                                  <input type='email' id='cc_email' name='cc_email' size="35" maxlength="254" value="<?php echo $contactEmail; ?>"/>
                              </div>
                          </div>
                          <div class='row'>
@@ -243,6 +270,11 @@ if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclai
                                 <input type='reset'/>
                             </div>
                         </div>
+<?php
+                            } else {
+                                echo "<div class='row'><div class='col-sm-12'>need check payment info here</div></div>\n";
+                            }
+?>
                     </form>
                         <div class='row'>
                             <div class='col-sm-12' id="inv_result_message"></div>
@@ -252,7 +284,7 @@ if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclai
             </div>
         </div>
     </div>
-    </div>
+</div>
 <?php
 }
 

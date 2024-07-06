@@ -3,6 +3,7 @@ require_once "lib/base.php";
 require_once "../../lib/exhibitorRegistrationForms.php";
 require_once "../../lib/exhibitorRequestForms.php";
 require_once "../../lib/exhibitorReceiptForms.php";
+require_once "../../lib/exhibitorInvoice.php";
 require_once "lib/exhibitorChooseExhibitor.php";
 
 //initialize google session
@@ -31,7 +32,6 @@ page_init($page,
 
 $con = get_con();
 $conid = $con['id'];
-$conf = $con['id'];
 $debug = get_conf('debug');
 $vendor_conf = get_conf('vendor');
 if (array_key_exists('reg_control_exhibitors', $debug))
@@ -40,6 +40,7 @@ else
     $debug_exhibitors = 0;
 
 $conf = get_conf('con');
+$regConf = get_conf('reg');
 
 // to build tabs get the list of vendor types
 $regionOwnerQ = <<<EOS
@@ -79,42 +80,42 @@ $config_vars['debug'] = $debug['reg_control_exhibitors'];
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
 draw_exhibitorRequestModal('admin');
 draw_exhibitorReceiptModal('admin');
+draw_exhibitorInvoiceModal('', null, $countryOptions, $regConf, null, 'Exhibitors', 'admin');
 draw_exhibitorChooseModal();
 ?>
 <!-- space detail modal -->
-    <div id='space_detail' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Space Detail' aria-hidden='true'
-    style='--bs-modal-width: 90%;'>
-        <div class='modal-dialog'>
-            <div class='modal-content'>
-                <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title' id='space-detail-title'>
-                        <strong>Space Detail</strong>
-                    </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+<div id='space_detail' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Space Detail' aria-hidden='true' style='--bs-modal-width: 90%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title' id='space-detail-title'>
+                    <strong>Space Detail</strong>
                 </div>
-                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class='container-fluid'>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <h4>Space Request/Approval/Payment Detail</h4>
-                            </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <h4>Space Request/Approval/Payment Detail</h4>
                         </div>
-                        <div id='spaceDetailHTML'></div>
-                        <div class='row mt-3'>
-                            <div class='col-sm-12'>
-                                <h4>Information about this Exhibitor</h4>
-                            </div>
-                        </div>
-                        <div class="container-fluid" id='exhibitorInfoHTML'></div>
-                        <div class='row' id='spacedetail_message_div'></div>
                     </div>
+                    <div id='spaceDetailHTML'></div>
+                    <div class='row mt-3'>
+                        <div class='col-sm-12'>
+                            <h4>Information about this Exhibitor</h4>
+                        </div>
+                    </div>
+                    <div class="container-fluid" id='exhibitorInfoHTML'></div>
+                    <div class='row' id='spacedetail_message_div'></div>
                 </div>
-                <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Dismiss</button>
-                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Dismiss</button>
             </div>
         </div>
     </div>
+</div>
 <!-- locations modal -->
 <div id='locations_edit' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Locations Edit' aria-hidden='true'
      style='--bs-modal-width: 96%;'>
@@ -175,30 +176,30 @@ draw_exhibitorChooseModal();
     </div>
 </div>
 <!-- import modal -->
-    <div id='import_exhibitor' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Import Past Vendors' aria-hidden='true'
-         style='--bs-modal-width: 96%;'>
-        <div class='modal-dialog'>
-            <div class='modal-content'>
-                <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title' id='exhibitor_receipt_title'>
-                        <strong>Import Past Exhibitors</strong>
-                    </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+<div id='import_exhibitor' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Import Past Vendors' aria-hidden='true'
+     style='--bs-modal-width: 96%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title' id='exhibitor_receipt_title'>
+                    <strong>Import Past Exhibitors</strong>
                 </div>
-                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class='container-fluid'>
-                        <div id='importHTML'></div>
-                        <div class='row' id='import_message_div'></div>
-                    </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <div id='importHTML'></div>
+                    <div class='row' id='import_message_div'></div>
                 </div>
-                <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' onclick='exhibitors.importPastExhibitors()'>Import Selected Past Exhibitors</button>
-                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' onclick='exhibitors.importPastExhibitors()'>Import Selected Past Exhibitors</button>
             </div>
         </div>
     </div>
-<div id='main'>
+</div>
+<div class="container-fluid" id='main'>
     <ul class='nav nav-tabs mb-3' id='exhibitor-tab' role='tablist'>
         <li class='nav-item' role='presentation'>
             <button class='nav-link active' id='overview-tab' data-bs-toggle='pill' data-bs-target='#overview-pane' type='button' role='tab' aria-controls='nav-overview'

@@ -81,7 +81,7 @@ JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = er
 SET item_requested = item_approved, time_requested = time_approved 
 WHERE eS.spaceId = ? and ery.id = ? and eY.exhibitorId = ? and item_requested is NULL;
 EOS;
-$upCanQ = <<<EOS
+        $upCanQ = <<<EOS
 UPDATE exhibitorSpaces eS
 JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
 JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
@@ -90,7 +90,7 @@ JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = er
 SET item_approved = null, item_requested = null, time_requested = NOW(), time_approved = NOW()
 WHERE eS.spaceId = ? and ery.id = ? and eY.exhibitorId = ?;
 EOS;
-$existingQ = <<<EOS
+        $existingQ = <<<EOS
 SELECT item_requested, item_approved, time_requested, time_approved
 FROM exhibitorSpaces eS
 JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
@@ -132,7 +132,86 @@ EOS;
         }
         if ($num_rows > 0) {
             $response['status'] = 'success';
-            $response['success'] = 'Space Approvel Updated';
+            $response['success'] = 'Space Approval Updated';
+        }
+        if ($num_rows == 0) {
+            $response['status'] = 'success';
+            $response['success'] = 'Nothing to change';
+        }
+        break;
+
+    case 'pay': // set request, approve and purchased, as needed
+        if (!(array_key_exists('requests', $_POST) && array_key_exists('exhibitorYearId', $_POST))) {
+            ajaxError('No Data');
+        }
+
+        $exhibitorId = $_POST['exhibitorId'];
+        $exhibitorYearId = $_POST['exhibitorYearId'];
+
+        $upQ = <<<EOS
+UPDATE exhibitorSpaces eS
+JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
+JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
+JOIN exhibitsSpaces es ON es.id = eS.spaceId
+JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
+SET item_requested = ?, time_requested = NOW(),
+    item_approved = ?, time_approved = NOW(),
+    item_purchased = ?, time_purchased = NOW()
+WHERE eS.spaceId = ? and ery.id = ? AND eY.exhibitorId = ?;
+EOS;
+        $upCanQ = <<<EOS
+UPDATE exhibitorSpaces eS
+JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
+JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
+JOIN exhibitsSpaces es ON es.id = eS.spaceId
+JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
+SET item_approved = null, item_requested = null, 
+    time_requested = NOW(), time_approved = NOW()
+WHERE eS.spaceId = ? and ery.id = ? and eY.exhibitorId = ?;
+EOS;
+        $existingQ = <<<EOS
+SELECT item_requested, item_approved, time_requested, time_approved, item_purchased, time_purchased
+FROM exhibitorSpaces eS
+JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
+JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
+JOIN exhibitsSpaces es ON es.id = eS.spaceId
+JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
+WHERE eS.spaceId = ? and ery.id = ? and eY.exhibitorId = ?;
+EOS;
+
+        // requests = each space price id in the format
+        $requests = $_POST['requests'];
+        $exhibitorId = $_POST['exhibitorId'];
+        $exhibitorYearId = $_POST['exhibitorYearId'];
+        $regionYearId = $_POST['regionYearId'];
+        $requests = explode('&',$requests);
+        $num_rows = 0;
+        foreach ($requests as $req) {
+            $reqitems = explode('=', $req);
+            $spaceId = $reqitems[0];
+            $value = $reqitems[1];
+            $spaceId = str_replace('exhbibitor_req_price_id_', '', $spaceId);
+            $paramarray = array($spaceId, $regionYearId, $exhibitorId);
+            $typestr = 'iii';
+            $existingR = dbSafeQuery($existingQ, $typestr, $paramarray);
+            if ($existingR == false|| $existingR->num_rows != 1) {
+                web_error_log("Could not retrieve existing space request for $spaceId, $regionYearId, $exhibitorId");
+                continue;
+            }
+            $existing = $existingR->fetch_assoc();
+            $existingR->free();
+            // row already exists, update it,
+            if ($value > 0) { // update it to the new value
+                $num_rows += dbSafeCmd($upQ, 'iiiiii', array($value, $value, $value, $spaceId, $regionYearId, $exhibitorId));
+            } else { // it's cancelled, if its not already cancelled, cancel it
+                if ($existing['item_requested'] != null) { // only if there was something existing, cancel it}
+                    $num_rows += dbSafeCmd($upCanQ, $typestr, $paramarray);
+                }
+            }
+        }
+        if ($num_rows > 0) {
+            $response['status'] = 'success';
+            $response['success'] = 'Space Purchase Updated';
         }
         if ($num_rows == 0) {
             $response['status'] = 'success';
@@ -144,7 +223,7 @@ EOS;
         $response['error'] =  'Bad type passed, get help';
 }
 
-if (array_key_exists('success', $response)) {
+if (array_key_exists('success', $response) && $approvalType != 'pay') {
     // detail of space for this region
     $details = array();
     $detailQ = <<<EOS

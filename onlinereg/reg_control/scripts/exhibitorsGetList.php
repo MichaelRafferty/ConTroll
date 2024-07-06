@@ -34,7 +34,7 @@ WITH regionYear AS (
     SELECT rY.id
     FROM exhibitorSpaces eS
     JOIN regionYear rY ON (rY.id = eS.exhibitorRegionYear)
-    WHERE eS.item_purchased IS NOT NULL
+    WHERE eS.price IS NOT NULL
 )
 SELECT DISTINCT e.id as exhibitorId, perid, artistName, exhibitorName, exhibitorEmail, website, city, state, zip, 
        eY.id as contactId, eY.conid, contactName, contactEmail
