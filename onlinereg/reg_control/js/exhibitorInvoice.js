@@ -21,6 +21,7 @@ class ExhibitorInvoice {
     #paymentTypeDiv = null;
     #includedMemberships = 0;
     #additionalMemberships = 0;
+    #uspsChecked = [];
 
 // constructor function - intializes dom objects and inital privates
     constructor() {
@@ -437,6 +438,8 @@ class ExhibitorInvoice {
         var valid = true;
         var mnum = 0;
 
+        clear_message('inv_result_message');
+
         if (prow == null) {
             // validate the payment entry: It must be >0 and <= amount due
             //      a payment type must be specified
@@ -505,6 +508,19 @@ class ExhibitorInvoice {
                     '<br/>For fields in the membership area that are required and not available, use /r to indicate not available.',
                     'warn', 'inv_result_message')
                 return;
+            }
+
+            // fields are now validated, apply USPS validation to each item?
+            if (config['useUSPS']) {
+                // now validate the membership fields
+                for (mnum = 0; mnum < this.#includedMemberships; mnum++) {
+                    if (this.#checkMembershipUSPS('_i_' + mnum))
+                        return;
+                }
+                for (mnum = 0; mnum < this.#additionalMemberships; mnum++) {
+                    if (this.#checkMembershipUSPS('_a_' + mnum))
+                        return;
+                }
             }
 
             if (pay_amt > 0) {
@@ -624,6 +640,23 @@ class ExhibitorInvoice {
         }
 
         return valid;
+    }
+
+    // do USPS for a membership
+    this.#checkMembershipUSPS(suffix) {
+        if (uspsChecked[suffix])  // don't check it twice if we get all the way through the check on it.
+            return false;
+
+        var country = document.getElementById('country' + suffix);
+        if (country.value != 'USA') {
+            uspsChecked[suffix] = true;
+            return false;
+        }
+
+        var person =
+
+
+
     }
 
 // Create a receipt and email it
