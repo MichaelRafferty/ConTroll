@@ -4,6 +4,7 @@ class ExhibitorInvoice {
     #totalSpacePrice = 0;
     #regionYearId = null;
     #exhibitorId = null;
+    #exhibitorYearId = null;
     #membershipCostdiv = null;
     #mailin = null;
     #additional_cost = [];
@@ -52,13 +53,14 @@ class ExhibitorInvoice {
     }
 
 // openInvoice: display the vendor invoice (and registration items)
-    openInvoice(exhibitorId, regionYearId) {
+    openInvoice(exhibitorInfo, regionYearId) {
         var regionName = '';
         var html = '';
         var priceIdx = 0;
 
         this.#regionYearId = regionYearId;
-        this.#exhibitorId = exhibitorId;
+        this.#exhibitorId = exhibitorInfo['exhibitorId'];
+        this.#exhibitorYearId = exhibitorInfo['exhibitorYearId'];
         this.#totalSpacePrice = 0;
 
         if (config['debug'] & 1) {
@@ -136,8 +138,10 @@ class ExhibitorInvoice {
             (this.#additionalMemberships > 0 ? "up to " + this.#additionalMemberships : "no") +
             " additional memberships at a reduced rate of $" + Number(regionList.additionalMemPrice).toFixed(2) + ".</p>";
         if ((this.#includedMemberships == 0) && (this.#additionalMemberships == 0)) {
-            html += "<input type='hidden' name='agreeNone' value='on'></input>"
+            html += "<input type='hidden' name='agreeNone' value='on'></input>\n"
         }
+        html += "<input type='hidden' name='exhibitorId' value='" + this.#exhibitorId + "'></input>\n" +
+            "<input type='hidden' name='exhibitorYearId' value='"+ this.#exhibitorYearId + "'></input>\n";
         if (spaces > 0) {
              if (portalType == 'artist' && this.#mailin == 'N') {
                 html += "<p>In addition, all non-mail-in artists need to declare an on-site agent. " +
@@ -160,8 +164,7 @@ class ExhibitorInvoice {
         document.getElementById('vendor_inv_included').innerHTML = html;
         this.#totalAmountDue = Number(this.#totalSpacePrice);
         this.#totalInvCost.innerHTML = Number(this.#totalSpacePrice).toFixed(2);
-        document.getElementById('vendorSpacePrice').value = this.#totalSpacePrice;
-        document.getElementById('vendor_inv_region_id').value = regionYearId;
+        document.getElementById('vendorSpacePrice').value = this.#totalSpacePrice;document.getElementById('vendor_inv_region_id').value = regionYearId;
 
        this.#membershipCostdiv.hidden = (this.#includedMemberships == 0 && this.#additionalMemberships == 0);
 
@@ -197,10 +200,10 @@ class ExhibitorInvoice {
             html += "<input type='hidden' name='incl_mem_count' value='" + this.#includedMemberships + "'>\n" +
                 "<div class='container-fluid'>\n" +
                 "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Included Memberships: (up to " + this.#includedMemberships + ")</strong>" +
-                "<input type='hidden' name='this.#includedMemberships' value='" + String(this.#includedMemberships) + "'></div></div>";
+                "<input type='hidden' name='includedMemberships' value='" + String(this.#includedMemberships) + "'></div></div>";
             for (var mnum = 0; mnum < this.#includedMemberships; mnum++) {
                 // name fields including legal name
-                html += this.#drawMembershipBlock(mnum, '_i_' + mnum, country_options);
+                html += this.#drawMembershipBlock(mnum, '_i_' + mnum, country_options, false);
             }
             html += "<hr/>";
         }
@@ -209,10 +212,10 @@ class ExhibitorInvoice {
         if (this.#additionalMemberships > 0) {
             html += "<input type='hidden' name='addl_mem_count' value='" + this.#additionalMemberships + "'>\n" +
                 "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Additional Memberships: (up to " + this.#additionalMemberships + ")</strong>" +
-                "<input type='hidden' name='this.#additionalMemberships' value='" + String(this.#additionalMemberships) + "'></div></div>";
+                "<input type='hidden' name='additionalMemberships' value='" + String(this.#additionalMemberships) + "'></div></div>";
             for (var mnum = 0; mnum < this.#additionalMemberships; mnum++) {
                 // name fields includeing legal name
-                html += this.#drawMembershipBlock(mnum, '_a_' + mnum, country_options);
+                html += this.#drawMembershipBlock(mnum, '_a_' + mnum, country_options, true);
             }
             html += "</div><hr/>";
         }
@@ -242,7 +245,7 @@ class ExhibitorInvoice {
     }
 
 // draw a membership block
-    #drawMembershipBlock(mnum, suffix, country_options) {
+    #drawMembershipBlock(mnum, suffix, country_options, doOnChange) {
         var html = `
 <div class="row mt-4">
     <div class="col-sm-auto p-0">Included Member ` + (mnum + 1) + `:</div>
@@ -253,7 +256,8 @@ class ExhibitorInvoice {
             <div class="row">
                 <div class="col-sm-auto ms-0 me-2 p-0">
                     <label for="fname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#firstStar + `First Name</span></label><br/>
-                    <input class="form-control-sm" type="text" name="fname` + suffix + `" id="fname` + suffix + `" size="22" maxlength="32"/>
+                    <input class="form-control-sm" type="text" name="fname` + suffix + `" id="fname` + suffix +
+                        '" size="22" maxlength="32"' + (doOnChange ? 'onchange="exhibitorInvoice.updateCost(' + this.#regionYearId + "," + mnum + ');"' : '') + `/>
                 </div>
                 <div class="col-sm-auto ms-0 me-2 p-0">
                     <label for="mname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
@@ -479,46 +483,52 @@ class ExhibitorInvoice {
             }
         }
         // process payment
-        var postData = {
-            ajax_request_action: 'processPayment',
-            cart_membership: cart.getCartMembership(),
-            new_payment: prow,
-            nonce: 'offline',
-            user_id: user_id,
-            pay_tid: pay_tid,
-        };
-        pay_button_pay.disabled = true;
+
+        this.#payButton.disabled = true;
+        var formData = $('#vendor_invoice_form').serialize()
+        formData += "&nonce=" + 'admin';
         $.ajax({
-            method: "POST",
-            url: "scripts/reg_processPayment.php",
-            data: postData,
-            success: function (data, textstatus, jqxhr) {
-                var stop = true;
-                clear_message();
-                if (typeof data == 'string') {
-                    show_message(data, 'error');
-                } else if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
-                } else if (data['message'] !== undefined) {
-                    show_message(data['message'], 'success');
-                    stop = false;
-                } else if (data['warn'] !== undefined) {
-                    show_message(data['warn'], 'success');
-                    stop = false;
-                } else if (data['status'] == 'error') {
-                    show_message(data['data'], 'error');
-                }
-                if (!stop)
-                    updatedPayment(data);
-                pay_button_pay.disabled = false;
+            url: 'scripts/exhibitorsSpacePayment.php',
+            method: 'POST',
+            data: formData,
+            success: function(data, textStatus, jqXhr) {
+                exhibitorInvoice.paySuccess(data);
             },
-            error: function (jqXHR, textstatus, errorThrown) {
-                pay_button_pay.disabled = false;
-                showAjaxError(jqXHR, textstatus, errorThrown);
-            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showAjaxError(jqXHR, textStatus, errorThrown, 'inv_result_message');
+                exhibitorInvoice.enablePayButton();
+                return false;
+            }
         });
     }
 
+    // enablePayButton - for AJAX, re-enable the pay button
+        enablePayButton() {
+        this.#payButton.disabled = false;
+    }
+
+    // pay succeedd - deal with it
+        paySuccess(data) {
+            if (config['debug'] & 1)
+                console.log(data);
+            if (data['error']) {
+                show_message(data['error'], 'error', 'inv_result_message');
+                this.#payButton.disabled = false;
+            } else if (data['status'] == 'error') {
+                show_message(data['data'], 'error', 'inv_result_message');
+                this.#payButton.disabled = false;
+            } else if (data['status'] == 'success') {
+                this.#exhibitorInvoiceModal.hide();
+                show_message(data['message'] + "Payment for space recorded.");
+                if (data['exhibitor_spacelist']) {
+                    exhibitor_spacelist = data['exhibitor_spacelist'];
+                }
+                exhibitors.open(tabname);
+            } else {
+                show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
+                this.#payButton.disabled = false;
+            }
+        }
     // check if value is non blank
     #checkNonBlank(id) {
         if (id.value == '') {
