@@ -23,7 +23,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
     }
     ?>
     <!-- invoice -->
-    <div id='vendor_invoice' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Vendor Invoice' aria-hidden='true' style='--bs-modal-width: 80%;'>
+    <div id='vendor_invoice' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Vendor Invoice' aria-hidden='true' style='--bs-modal-width: 90%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
@@ -47,6 +47,9 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                         <input type='hidden' name='portalName' id='vendorPortalName' value='<?php echo $portalName; ?>'/>
                         <input type='hidden' name='portalType' id='vendorPortalType' value='<?php echo $portalType; ?>'/>
                         <input type='hidden' name='spacePrice' id='vendorSpacePrice'/>
+<?php
+    if ($exhibitor != null) {
+?>
                         <div class="row">
                             <div class="col-sm-12">
                                 <strong>Vendor Information</strong>
@@ -136,9 +139,13 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                             </div>
                         </div>
                         <hr/>
+<?php
+    }
+?>
+
                         <div id="vendor_inv_included_mbr"></div>
                         <div id="vendor_inv_additional_mbr"></div>
-                        <div id="membershipCost">
+                        <div class="container-fluid" id="membershipCost">
                             <div class="row">
                                 <div class="col-sm-2">
                                     Cost for Memberships:
@@ -151,7 +158,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                         </div>
                         <div class="row">
                             <div class="col-sm-auto">
-                                Total: <span id='vendor_inv_cost'></span>
+                                Total: $<span id='vendor_inv_cost'></span>
                             </div>
                         </div>
                         <div class="row">
@@ -271,8 +278,52 @@ if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclai
                             </div>
                         </div>
 <?php
-                            } else {
-                                echo "<div class='row'><div class='col-sm-12'>need check payment info here</div></div>\n";
+                            } else { // exhibitors module in ConTroll - cash/check/offline cc
+?>
+                            <div class="container-fluid">
+                                <div class='row mt-2'>
+                                    <div class='col-sm-2 ms-0 me-2 p-0'>Amount Paid:</div>
+                                    <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'>
+                                        <input type='number' class='no-spinners' id='pay-amt' name='paid-amt' size='6'/>
+                                    </div>
+                                </div>
+                                <div class='row'>
+                                    <div class='col-sm-2 m-0 mt-2 me-2 mb-2 p-0'>Payment Type:</div>
+                                    <div class='col-sm-auto m-0 mt-2 p-0 ms-0 me-2 mb-2 p-0' id='pt-div'>
+                                        <input type='radio' id='pt-credit' name='payment_type' value='credit' onchange='exhibitorInvoice.setPayType("credit")
+                                        ;'/>
+                                        <label for='pt-credit'>Credit Card</label>
+                                        <input type='radio' id='pt-check' name='payment_type' value='check' onchange='exhibitorInvoice.setPayType("check");'/>
+                                        <label for='pt-check'>Check</label>
+                                        <input type='radio' id='pt-cash' name='payment_type' value='cash' onchange='exhibitorInvoice.setPayType("cash");'/>
+                                        <label for='pt-cash'>Cash</label>
+                                    </div>
+                                </div>
+                                <div class='row mb-2' id='pay-check-div' hidden>
+                                    <div class='col-sm-2 ms-0 me-2 p-0'>Check Number:</div>
+                                    <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'><input type='text' size='8' maxlength='10' name='pay-checkno' id='pay-checkno'/></div>
+                                </div>
+                                <div class='row mb-2' id='pay-ccauth-div' hidden>
+                                    <div class='col-sm-2 ms-0 me-2 p-0'>CC Auth Code:</div>
+                                    <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'><input type='text' size='15' maxlength='16' name='pay-ccauth' id='pay-ccauth'/></div>
+                                </div>
+                                <div class='row'>
+                                    <div class='col-sm-2 ms-0 me-2 p-0'>Description:</div>
+                                    <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'><input type='text' size='60' maxlength='64' name='pay-desc' id='pay-desc'/></div>
+                                </div>
+                                <div class='row mt-3'>
+                                    <div class='col-sm-2 ms-0 me-2 p-0'>&nbsp;</div>
+                                    <div class='col-sm-auto ms-0 me-2 p-0'>
+                                        <button class='btn btn-primary btn-sm' type='button' id='pay-btn-pay' disabled
+                                                onclick="exhibitorInvoice.pay();">Confirm Pay</button>
+                                    </div>
+                                    <div class='col-sm-auto ms-0 me-2 p-0'>
+                                        <button class='btn btn-primary btn-sm' type='button' id='pay-btn-ercpt'
+                                                onclick="exhibitorInvoice.email_receipt('email');" hidden disabled>Email Receipt</button>
+                                    </div>
+                                </div>
+                            </div>
+<?php
                             }
 ?>
                     </form>

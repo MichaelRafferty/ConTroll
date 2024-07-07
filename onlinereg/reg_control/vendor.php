@@ -24,6 +24,7 @@ page_init($page,
                     'js/base.js',
                     'jslib/exhibitorProfile.js',
                     'js/vendor.js',
+                    'js/exhibitorInvoice.js',
                     'jslib/exhibitorRequest.js',
                     'jslib/exhibitorReceipt.js',
                     'js/tinymce/tinymce.min.js'
@@ -319,130 +320,6 @@ foreach ($regionOwners AS $regionOwner => $regionList) {
     <pre id='test'></pre>
 </div>
 
-<?php /*
-
-<div id='add_vendorSpace' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Add Vendor Space' aria-hidden='true' style='--bs-modal-width: 80%;'>
-    <div class='modal-dialog'>
-        <div class='modal-content'>
-            <div class='modal-header bg-primary text-bg-primary'>
-                <div class='modal-title'>
-                    <strong id='vendorAddEditTitle'>Add Vendor Space</strong>
-                </div>
-                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-            </div>
-            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                <div class='container-fluid'>
-                    <form id='add_space_form' action='javascript:void(0)'>
-                        <div class="row p-1">
-                            <div class='col-sm-2 ms-0 me-0 p-0 ps-2'>
-                                <label for='as_vendor'>Vendor: </label>
-                            </div>
-                            <div class='col-sm-10 p-0'>
-                                <select id="as_vendor" name="vendor">
-                                    <option value="0">No Vendor Selected</option>
-                                    <?php
-                                    foreach ($vendorList AS $row) {
-                                        echo "<option value=" . escape_quotes($row['id']) . ">" .
-                                            $row['name'] . " (" . $row['website'] . "), " . $row['city'] . ',' . $row['state'] . "</option>\n";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 ms-0 me-0 p-0 ps-2'>
-                                <label for='as_space'>Space: </label>
-                            </div>
-                            <div class='col-sm-10 p-0'>
-                                <select id='as_space' name="space" onchange="selectSpaceType()">
-                                    <option value='0'>No Space Selected</option>
-                                    <?php
-                                    foreach ($spaceList as $row) {
-                                        echo '<option value="' . escape_quotes($row['id']) . '">' . $row['name'] . "</option>\n";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 ms-0 me-0 p-0 ps-2'>
-                                <label for='as_spaceType'>Space Type:</label>
-                            </div>
-                            <div class='col-sm-10 p-0'>
-                                <select id='as_spaceType' name="type" onchange="selectSpacePrice()">
-                                    <option value='0'>No Type Selected</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 ms-0 me-0 p-0 ps-2'>
-                                <label for='as_state'>Req/App/Paid:</label>
-                            </div>
-                            <div class='col-sm-10 p-0'>
-                                <select id='as_state' name="state">
-                                    <option value='R'>Requested</option>
-                                    <option value='A'>Approved-Unpaid</option>
-                                    <option value='P'>Approved-Paid</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-auto ms-0 me-0 p-0 ps-2 pe-2'>
-                                <label for='as_included'>Included Memberships:</label>
-                            </div>
-                            <div class='col-sm-auto p-0 pe-1'>
-                                <select id='as_included', name='included'>
-                                    <option value='0'>0</option>
-                                </select>
-                            </div>
-                            <div class='col-sm-auto ms-0 me-0 p-0 ps-2 pe-2'>
-                                <label for='as_additional'>Additional Memberships:</label>
-                            </div>
-                            <div class='col-sm-auto p-0'>
-                                <select id='as_additional', name='additional' onchange="selectSpaceAdditional()">
-                                    <option value='0'>0</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 ms-0 me-0 p-0 ps-2'>
-                                <label for="as_totaldue">Total Amount due:</label>
-                            </div>
-                            <div class="col-sm-auto ms-0 me-0 p-0 pe-2">
-                                <input type="text" id="as_totaldue" name="price" value="0.00" readonly/>
-                            </div>
-                            <div class='col-sm-auto ms-0 me-0 p-0 ps-2 pe-2'>
-                                <label for='as_checkno'>Check Number:</label>
-                            </div>
-                            <div class='col-sm-auto p-0 pe-1'>
-                                <input type="text" id='as_checkno' name='checkno' size="10" maxlength="10"/>
-                            </div>
-                            <div class='col-sm-auto ms-0 me-0 p-0 ps-2 pe-2'>
-                                <label for='as_payment'>Amount Paid:</label>
-                            </div>
-                            <div class='col-sm-auto p-0'>
-                                <input type='text' id='as_payment' name="payment" size='10' maxlength='10'/>
-                            </div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 ms-0 me-0 p-0 ps-2'>
-                                <label for='as_desc'>Description:</label>
-                            </div>
-                            <div class='col-sm-10 p-0'>
-                                <input type='text' id='as_desc' name='description' size='32' maxlength='32'/>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' onClick='addVendorSpace()'>Add</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 <?php
-*/
 page_foot($page);
 ?>

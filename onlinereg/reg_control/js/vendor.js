@@ -5,6 +5,7 @@ exhibitorProfile = null;
 region_list = null;
 exhibits_spaces = null;
 exhibitor_spacelist = null;
+exhibitor_perm = null;
 regions = null;
 spaces =null;
 country_options = null;
@@ -1207,6 +1208,7 @@ class exhibitorsAdm {
         exhibits_spaces = data['exhibits_spaces'];
         exhibitor_info = data['exhibitor_info'];
         exhibitor_spacelist = data['exhibitor_spacelist'];
+        exhibitor_perm = data['exhibitor_perm'];
         // don't overwrite regions, it's already loaded and its correct for all uses in vendor, exhibitorRequest doesn't use it.
         spaces = data['spaces'];
         country_options = data['country_options'];
@@ -1353,126 +1355,5 @@ window.onload = function initpage() {
     exhibitors = new exhibitorsAdm(config['conid'], config['debug']);
     exhibitorRequestOnLoad();
     exhibitorReceiptOnLoad();
+    exhibitorInvoiceOnLoad();
 }
-
-/*
-// allow entry of a new space type for a vendor
-function addNewSpace() {
-    // clear the form
-    document.getElementById("as_vendor").value = 0;
-    document.getElementById("as_space").value = 0;
-    document.getElementById("as_spaceType").value = 0;
-    document.getElementById("as_state").value = 'R';
-    document.getElementById("as_checkno").value = '';
-    document.getElementById("as_payment").value = '';
-    document.getElementById("as_included").value = 0;
-    document.getElementById('as_additional').value = 0;
-    document.getElementById("as_totaldue").value = '';
-    document.getElementById('as_payment').value = '';
-    document.getElementById('as_checkno').value = '';
-    document.getElementById('as_desc').value = '';
-    add_space.show();
-}
-
-// populate the space type pulldown for the add space modal
-function selectSpaceType() {
-    var spaceid = document.getElementById('as_space').value;
-    var options = "<option value='0'>No Space Selected</option>\n";
-    for (var opt in spacePriceList) {
-        var price = spacePriceList[opt];
-        if (price['spaceId'] == spaceid) {
-            options += "<option value='" + price['id'] + "'>" + price['description'] + " (for $" + price['price'] + ")</option>\n";
-        }
-    }
-    document.getElementById("as_spaceType").innerHTML = options;
-}
-
-// set the total amount due and set the limits on the included and additional memberships
-function selectSpacePrice() {
-    var spaceid = document.getElementById('as_space').value;
-    var spaceid = document.getElementById('as_space').value;
-    var priceid = document.getElementById("as_spaceType").value;
-    var price = spacePriceList[space_map[priceid]];
-
-    // set initial price for just the spaces
-    document.getElementById('as_totaldue').value = price['price'];
-
-    // build the included select list
-    var opt = "<option value='0'>0</option>\n";
-    for (var index = 1; index <= price['includedMemberships']; index++) {
-        opt += "<option value='" + index + "'>" + index + "</option>\n";
-    }
-    document.getElementById("as_included").innerHTML = opt;
-
-    // build the optional select list
-    var opt = "<option value='0'>0</option>\n";
-    for (var index = 1; index <= price['additionalMemberships']; index++) {
-        opt += "<option value='" + index + "'>" + index + " ($" + (index * price['additionalPrice']) + ")</option>\n";
-    }
-    document.getElementById("as_additional").innerHTML = opt;
-}
-
-// update the price for the number of additional memberships purchased
-function selectSpaceAdditional() {
-    var spaceid = document.getElementById('as_space').value;
-    var priceid = document.getElementById("as_spaceType").value;
-    var price = spacePriceList[space_map[priceid]];
-    var additional = document.getElementById('as_additional').value;
-
-    // set new price for the spaces plus additional
-    document.getElementById('as_totaldue').value = parseFloat(parseFloat(price['price'])  + additional * parseFloat(price['additionalPrice'])).toFixed(2);
-}
-
-// add vendor space to the vendor_spaces table from the modal
-function addVendorSpace() {
-    // validate minimum requirements
-    var dataarr = $('#add_space_form').serializeArray();
-    var data = {};
-    for (var item in dataarr) {
-        data[dataarr[item]['name']] = dataarr[item]['value'];
-    }
-
-    var missing_items = '';
-    if (data['vendor'] <= 0) {
-        missing_items += 'vendor,';
-    }
-    if (data['space'] <=  0) {
-        missing_items += 'space,';
-    }
-    if (data['type'] <=  0) {
-        missing_items += 'space type,';
-    }
-    if (data['state'] == 'P') {
-        if (data['checkno'] == '') {
-            missing_items += 'check number,';
-        }
-        if (data['payment'] == '') {
-            missing_items += 'payment amount,';
-        }
-    }
-
-    if (missing_items != '') {
-        missing_items = "Required fields missing: " + missing_items.substring(0, missing_items.length-1);
-        alert(missing_items);
-        return;
-    }
-
-    $.ajax({
-        url: 'scripts/addVendorSpace.php',
-        data: data,
-        method: 'POST',
-        success: function(data, textstatus, jqXHR) {
-            if(data['status'] == 'error') {
-                alert(data['message']);
-            } else {
-                console.log(data);
-                if (data['success'])
-                    alert(data['success']);
-                add_space.hide();
-                getData();
-            }
-        }
-    });
-}
-
- */

@@ -37,8 +37,6 @@ class ExhibitorRequest {
 
         this.#cancelType = cancel;
         this.#regionYearId = regionYearId;
-
-        //console.log("open request modal for id =" + spaceid);
         var region = exhibits_spaces[regionYearId];
 
         if (!region)
@@ -236,7 +234,6 @@ class ExhibitorRequest {
 
 // Space Request - call scripts/spaceRequest.php to add a request record
     spaceReq(regionYearId, cancel) {
-        //console.log("spaceReq called for " + spaceId);
         if (this.#unitsRequested <= 0 && (cancel == 0 || cancel == 3)) {
             show_message("Select an amount of space to request", 'error', 'sr_message_div');
             return;
@@ -264,8 +261,9 @@ class ExhibitorRequest {
             data: dataobj,
             method: 'POST',
             success: function (data, textstatus, jqxhr) {
-                if (config['debug'] & 1)
+                if (config['debug'] & 1) {
                     console.log(data);
+                }
                 if (data['error'] !== undefined) {
                     show_message(data['error'], 'error', 'sr_message_div');
                     return;
@@ -278,7 +276,7 @@ class ExhibitorRequest {
                     show_message(data['success'], 'success');
                     if (cancel >= 2) {
                         exhibitors.updateSpace();
-                        exhibitorRequest.paySpace()
+                        exhibitorInvoice.openInvoice(exhibitor_info['exhibitorId'], _this.#regionYearId);
                     }
                     else
                         _this.updateRequestStatusBlock(regionYearId);
