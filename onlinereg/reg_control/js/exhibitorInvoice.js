@@ -19,6 +19,8 @@ class ExhibitorInvoice {
     #payDescription = null;
     #totalAmountDue = 0;
     #paymentTypeDiv = null;
+    #includedMemberships = 0;
+    #additionalMemberships = 0;
 
 // constructor function - intializes dom objects and inital privates
     constructor() {
@@ -45,8 +47,6 @@ class ExhibitorInvoice {
 // openInvoice: display the vendor invoice (and registration items)
     openInvoice(exhibitorId, regionYearId) {
         var regionName = '';
-        var includedMemberships = 0;
-        var additionalMemberships = 0;
         var html = '';
         var priceIdx = 0;
 
@@ -105,8 +105,8 @@ class ExhibitorInvoice {
                         if (prices[priceIdx].id == space.item_approved)
                             break;
                     }
-                    includedMemberships = Math.max(includedMemberships, prices[priceIdx].includedMemberships);
-                    additionalMemberships = Math.max(additionalMemberships, prices[priceIdx].additionalMemberships);
+                    this.#includedMemberships = Math.max(this.#includedMemberships, prices[priceIdx].includedMemberships);
+                    this.#additionalMemberships = Math.max(this.#additionalMemberships, prices[priceIdx].additionalMemberships);
                 }
             }
         }
@@ -121,14 +121,14 @@ class ExhibitorInvoice {
         // fill in the variable items
         document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + regionName + ' Invoice for ' + exhibitorName + '</strong>';
 
-        var spaces = includedMemberships + additionalMemberships;
+        var spaces = this.#includedMemberships + this.#additionalMemberships;
         html = "<p>This space comes with " +
-            (includedMemberships > 0 ? includedMemberships : "no") +
+            (this.#includedMemberships > 0 ? this.#includedMemberships : "no") +
             " memberships included and " +
-            (additionalMemberships > 0 ? "the " : "no ") + "right to purchase " +
-            (additionalMemberships > 0 ? "up to " + additionalMemberships : "no") +
+            (this.#additionalMemberships > 0 ? "the " : "no ") + "right to purchase " +
+            (this.#additionalMemberships > 0 ? "up to " + this.#additionalMemberships : "no") +
             " additional memberships at a reduced rate of $" + Number(regionList.additionalMemPrice).toFixed(2) + ".</p>";
-        if ((includedMemberships == 0) && (additionalMemberships == 0)) {
+        if ((this.#includedMemberships == 0) && (this.#additionalMemberships == 0)) {
             html += "<input type='hidden' name='agreeNone' value='on'></input>"
         }
         if (spaces > 0) {
@@ -156,26 +156,45 @@ class ExhibitorInvoice {
         document.getElementById('vendorSpacePrice').value = this.#totalSpacePrice;
         document.getElementById('vendor_inv_region_id').value = regionYearId;
 
-       this.#membershipCostdiv.hidden = (includedMemberships == 0 && additionalMemberships == 0);
+       this.#membershipCostdiv.hidden = (this.#includedMemberships == 0 && this.#additionalMemberships == 0);
 
         html = '';
+        var firstStar = '';
+        var addrStar = '';
+        var allStar = '';
         // now build the included memberships
-        if (includedMemberships > 0 || additionalMemberships > 0) {
+        if (this.#includedMemberships > 0 || this.#additionalMemberships > 0) {
             html += `
              <div class="row" style="width:100%;">
                 <div class="col-sm-12">
-                    <p class="text-body">Note: Please provide your legal name that will match a valid form of ID. Your legal name will not be publicly visible.  If you don't provide one, it will default to your First, Middle, Last Names and Suffix.</p>
-                    <p class="text-body">Items marked with <span class="text-danger">&bigstar;</span> are required fields.</p>
+                    <p class="text-body">
+                        <b>Note:</b> Please provide your legal name that will match a valid form of ID. 
+                        Your legal name will not be publicly visible.  
+                        If you don't provide one, it will default to your First, Middle, Last Names and Suffix.
+                    </p>
+                    <p class="text-body">
+                        Items marked with <span class="text-danger">&bigstar;</span> are required fields.
+                        If the information is not available, enter /r for the field.
+                    </p>
                 </div>
             </div>
 `;
+            // cascading list of required fields, each case adds more so the breaks fall into the next section
+            switch (config['required']) {
+                case 'all':
+                    allStar = '<span class="text-danger">&bigstar;</span>';
+                case 'addr':
+                    addrStar = '<span class="text-danger">&bigstar;</span>';
+                case 'first':
+                    firstStar = '<span class="text-danger">&bigstar;</span>';
+            }
         }
-        if (includedMemberships > 0) {
-            html += "<input type='hidden' name='incl_mem_count' value='" + includedMemberships + "'>\n" +
+        if (this.#includedMemberships > 0) {
+            html += "<input type='hidden' name='incl_mem_count' value='" + this.#includedMemberships + "'>\n" +
                 "<div class='container-fluid'>\n" +
-                "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Included Memberships: (up to " + includedMemberships + ")</strong>" +
-                "<input type='hidden' name='includedMemberships' value='" + String(includedMemberships) + "'></div></div>";
-            for (var mnum = 0; mnum < includedMemberships; mnum++) {
+                "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Included Memberships: (up to " + this.#includedMemberships + ")</strong>" +
+                "<input type='hidden' name='this.#includedMemberships' value='" + String(this.#includedMemberships) + "'></div></div>";
+            for (var mnum = 0; mnum < this.#includedMemberships; mnum++) {
                 // name fields including legal name
                 html += `
 <div class="row mt-4">
@@ -183,7 +202,7 @@ class ExhibitorInvoice {
 </div>
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="fname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>First Name</span></label><br/>
+        <label for="fname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + firstStar + `First Name</span></label><br/>
         <input class="form-control-sm" type="text" name="fname_i_` + mnum + `" id="fname_i_` + mnum + `" size="22" maxlength="32"/>
     </div>
     <div class="col-sm-auto ms-0 me-2 p-0">
@@ -191,7 +210,7 @@ class ExhibitorInvoice {
         <input class="form-control-sm" type="text" name="mname_i_` + mnum + `" id="mname_i_` + mnum + `" size="8" maxlength="32" />
     </div>
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="lname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Last Name</span></label><br/>
+        <label for="lname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + allStar + `Last Name</span></label><br/>
         <input class="form-control-sm" type="text" name="lname_i_` + mnum + `" id="lname_i_` + mnum + `" size="22" maxlength="32" />
     </div>
     <div class="col-sm-auto ms-0 me-0 p-0">
@@ -210,7 +229,7 @@ class ExhibitorInvoice {
                 html += `
 <div class="row">
     <div class="col-sm-12 ms-0 me-0 p-0">
-        <label for="addr_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Address</span></label><br/>
+        <label for="addr_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `Address</span></label><br/>
         <input class="form-control-sm" type="text" name='addr_i_` + mnum + `' id='addr_i_` + mnum + `' size=64 maxlength="64" />
     </div>
 </div>
@@ -222,15 +241,15 @@ class ExhibitorInvoice {
 </div>
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="city_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>City</span></label><br/>
+        <label for="city_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `City</span></label><br/>
         <input class="form-control-sm" type="text" name="city_i_` + mnum + `" id='city_i_` + mnum + `' size="22" maxlength="32" />
     </div>
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="state_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>State</span></label><br/>
+        <label for="state_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `State</span></label><br/>
         <input class="form-control-sm" type="text" name="state_i_` + mnum + `" id='state_i_` + mnum + `' size="10" maxlength=16" />
     </div>
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="zip_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Zip</span></label><br/>
+        <label for="zip_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `Zip</span></label><br/>
         <input class="form-control-sm" type="text" name="zip_i_` + mnum + `" id='zip_i_` + mnum + `' size="5" maxlength="10" />
     </div>
     <div class="col-sm-auto ms-0 me-0 p-0">
@@ -242,7 +261,7 @@ class ExhibitorInvoice {
 </div>
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="email_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Email</span></label><br/>
+        <label for="email_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + firstStar + `Email</span></label><br/>
         <input class="form-control-sm" type="email" name="email_i_` + mnum + `" id='email_i_` + mnum + `' size="35" maxlength="254" />
     </div>
     <div class="col-sm-auto ms-0 me-2 p-0">
@@ -260,11 +279,11 @@ class ExhibitorInvoice {
         }
 
         // now build the additional memberships
-        if (additionalMemberships > 0) {
-            html += "<input type='hidden' name='addl_mem_count' value='" + additionalMemberships + "'>\n" +
-                "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Additional Memberships: (up to " + additionalMemberships + ")</strong>" +
-                "<input type='hidden' name='additionalMemberships' value='" + String(additionalMemberships) + "'></div></div>";
-            for (var mnum = 0; mnum < additionalMemberships; mnum++) {
+        if (this.#additionalMemberships > 0) {
+            html += "<input type='hidden' name='addl_mem_count' value='" + this.#additionalMemberships + "'>\n" +
+                "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Additional Memberships: (up to " + this.#additionalMemberships + ")</strong>" +
+                "<input type='hidden' name='this.#additionalMemberships' value='" + String(this.#additionalMemberships) + "'></div></div>";
+            for (var mnum = 0; mnum < this.#additionalMemberships; mnum++) {
                 // name fields includeing legal name
                 html += `
 <div class="row mt-4">
@@ -272,7 +291,7 @@ class ExhibitorInvoice {
 </div>
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="fname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>First Name</span></label><br/>
+        <label for="fname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + firstStar + `First Name</span></label><br/>
         <input class="form-control-sm" type="text" name="fname_a_` + mnum + `" id="fname_a_` + mnum + `" size="22" maxlength="32" onchange="exhibitorInvoice.updateCost(` + regionYearId + "," + mnum + `)"/>
     </div>
     <div class="col-sm-auto ms-0 me-2 p-0">
@@ -280,7 +299,7 @@ class ExhibitorInvoice {
         <input class="form-control-sm" type="text" name="mname_a_` + mnum + `" id="mname_a_` + mnum + `" size="8" maxlength="32" />
     </div>
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="lname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Last Name</span></label><br/>
+        <label for="lname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + allStar + `Last Name</span></label><br/>
         <input class="form-control-sm" type="text" name="lname_a_` + mnum + `" id="lname_a_` + mnum + `" size="22" maxlength="32" />
     </div>
     <div class="col-sm-auto ms-0 me-0 p-0">
@@ -299,7 +318,7 @@ class ExhibitorInvoice {
                 html += `
 <div class="row">
     <div class="col-sm-12 ms-0 me-0 p-0">
-        <label for="addr_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Address</span></label><br/>
+        <label for="addr_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `>Address</span></label><br/>
         <input class="form-control-sm" type="text" name='addr_a_` + mnum + `' id='addr_a_` + mnum + `' size=64 maxlength="64" />
     </div>
 </div>
@@ -311,15 +330,15 @@ class ExhibitorInvoice {
 </div>
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="city_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>City</span></label><br/>
+        <label for="city_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `City</span></label><br/>
         <input class="form-control-sm" type="text" name="city_a_` + mnum + `" id='city_a_` + mnum + `' size="22" maxlength="32" />
     </div>   
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="state_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>State</span></label><br/>
+        <label for="state_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `State</span></label><br/>
         <input class="form-control-sm" type="text" name="state_a_` + mnum + `" id='state_a_` + mnum + `' size="10" maxlength="16" />
     </div>
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="zip_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Zip</span></label><br/>
+        <label for="zip_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `Zip</span></label><br/>
         <input class="form-control-sm" type="text" name="zip_a_` + mnum + `" id='zip_a_` + mnum + `' size="5" maxlength="10" />
     </div>
     <div class="col-sm-auto ms-0 me-0 p-0">
@@ -331,7 +350,7 @@ class ExhibitorInvoice {
 </div>
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="email_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Email</span></label><br/>
+        <label for="email_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + firstStar + `Email</span></label><br/>
         <input class="form-control-sm" type="email" name="email_a_` + mnum + `" id='email_a_` + mnum + `' size="35" maxlength="254" />
     </div>
     <div class="col-sm-auto ms-0 me-2 p-0">
@@ -349,7 +368,7 @@ class ExhibitorInvoice {
         }
         document.getElementById("vendor_inv_included_mbr").innerHTML = html;
         // fill in default information for the values of the addresses
-        for (mnum = 0; mnum < includedMemberships; mnum++) {
+        for (mnum = 0; mnum < this.#includedMemberships; mnum++) {
             document.getElementById('addr_i_' + mnum).value = exhibitor_info['addr'];
             document.getElementById('addr2_i_' + mnum).value = exhibitor_info['addr2'];
             document.getElementById('city_i_' + mnum).value = exhibitor_info['city'];
@@ -359,7 +378,7 @@ class ExhibitorInvoice {
             document.getElementById('email_i_' + mnum).value = exhibitor_info['exhibitorEmail'];
             document.getElementById('phone_i_' + mnum).value = exhibitor_info['exhibitorPhone'];
         }
-        for (mnum = 0; mnum < additionalMemberships; mnum++) {
+        for (mnum = 0; mnum < this.#additionalMemberships; mnum++) {
             document.getElementById('addr_a_' + mnum).value = exhibitor_info['addr'];
             document.getElementById('addr2_a_' + mnum).value = exhibitor_info['addr2'];
             document.getElementById('city_a_' + mnum).value = exhibitor_info['city'];
@@ -415,6 +434,8 @@ class ExhibitorInvoice {
         var pt_cash = document.getElementById('pt-cash').checked;
         var pt_check = document.getElementById('pt-check').checked;
         var pt_credit = document.getElementById('pt-credit').checked;
+        var valid = true;
+        var mnum = 0;
 
         if (prow == null) {
             // validate the payment entry: It must be >0 and <= amount due
@@ -425,11 +446,11 @@ class ExhibitorInvoice {
             var pay_amt = Number(this.#payAmt.value);
             if (pay_amt > 0 && pay_amt > this.#totalAmountDue) {
                 this.#payAmt.style.backgroundColor = 'var(--bs-warning)';
-                return;
+                valid = false;
             }
             if (pay_amt <= 0) {
                 this.#payAmt.style.backgroundColor = 'var(--bs-warning)';
-                return;
+                valid = false;
             }
 
             this.#payAmt.style.backgroundColor = '';
@@ -466,6 +487,23 @@ class ExhibitorInvoice {
 
             if (!checked) {
                 this.#paymentTypeDiv.style.backgroundColor = 'var(--bs-warning)';
+                valid = false;
+            }
+
+            // now validate the membership fields
+            for (mnum = 0; mnum < this.#includedMemberships; mnum++) {
+                if (!this.#checkValid('_i_' + mnum))
+                    valid = false;
+            }
+            for (mnum = 0; mnum < this.#additionalMemberships; mnum++) {
+                if (!this.#checkValid('_a_' + mnum))
+                    valid = false;
+            }
+
+            if (!valid) {
+                show_message('Please correct the items marked in yellow to process the payment.' +
+                    '<br/>For fields in the membership area that are required and not available, use /r to indicate not available.',
+                    'warn', 'inv_result_message')
                 return;
             }
 
@@ -514,6 +552,78 @@ class ExhibitorInvoice {
                 showAjaxError(jqXHR, textstatus, errorThrown);
             },
         });
+    }
+
+    // check if value is non blank
+    #checkNonBlank(id) {
+        if (id.value == '') {
+            id.style.backgroundColor = 'var(--bs-warning)';
+            return false;
+        }
+        id.style.backgroundColor = '';
+        return true;
+    }
+
+    // check the additional membership section for valid entries
+    #checkValid(suffix) {
+        var id = null;
+        var value = null;
+        var country = null;
+        var valid = true;
+
+        if (config['required'] != '') {
+            if (!this.#checkNonBlank(document.getElementById('fname' + suffix)))
+                valid = false;
+        }
+
+        if (config['required'] == 'all') {
+            if (!this.#checkNonBlank(document.getElementById('lname' + suffix)))
+                valid = false;
+        }
+
+        if (config['required'] == 'all' || config['required'] == 'addr') {
+            if (!this.#checkNonBlank(document.getElementById('addr' + suffix)))
+               valid = false;
+
+            if (!this.#checkNonBlank(document.getElementById('city' + suffix)))
+                valid = false;
+
+            if (!this.#checkNonBlank(document.getElementById('state' + suffix)))
+                valid = false;
+
+            country = document.getElementById('state' + suffix).value;
+            id = document.getElementById('state' + suffix);
+            value = id.value;
+            if (value == '') {
+                valid = false;
+                id.style.backgroundColor = 'var(--bs-warning)';
+            } else {
+                if (country == 'USA') {
+                    if (value.length != 2) {
+                        valid = false;
+                        id.style.backgroundColor = 'var(--bs-warning)';
+                    } else {
+                        id.style.backgroundColor = '';
+                    }
+                } else {
+                    id.style.backgroundColor = '';
+                }
+            }
+
+            if (!this.#checkNonBlank(document.getElementById('zip' + suffix)))
+                valid = false;
+        }
+
+        id = document.getElementById('email' + suffix);
+        value = id.value;
+        if (value != '/r' && !emailRegex.test(value)) {
+            valid = false;
+            id.style.backgroundColor = 'var(--bs-warning)';
+        } else {
+            id.style.backgroundColor = '';
+        }
+
+        return valid;
     }
 
 // Create a receipt and email it

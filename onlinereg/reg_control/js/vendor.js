@@ -12,6 +12,7 @@ country_options = null;
 tabname = null;
 regionid = null;
 exhibitorsData = null;
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // exhibitors class - functions for spae ownerto review and approve spaces requested by exhibitors
 class exhibitorsAdm {
@@ -413,7 +414,7 @@ class exhibitorsAdm {
                 }
                 currentExhibitor = newExhibitor;
                 spaceSUM = '';
-                spaceHTML = '<div class="container-fluid" style="width: 700;">';
+                spaceHTML = '<div class="container-fluid" style="width: 700px;">';
                 req += space['requested_units'];
                 app += space['approved_units'];
                 pur += space['purchased_units'];
