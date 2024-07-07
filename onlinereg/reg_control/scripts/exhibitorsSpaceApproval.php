@@ -223,6 +223,22 @@ EOS;
         $response['error'] =  'Bad type passed, get help';
 }
 
+if ($approvalType == 'pay') {
+    $exhibitorSQ = <<<EOS
+SELECT *
+FROM vw_ExhibitorSpace
+WHERE exhibitorId = ? and conid = ?;
+EOS;
+
+    $exhibitorSR = dbSafeQuery($exhibitorSQ, 'ii', array($exhibitorId, $conid));
+    $exhibitorSpaceList = array();
+    while ($space = $exhibitorSR->fetch_assoc()) {
+        $exhibitorSpaceList[$space['spaceId']] = $space;
+    }
+    $exhibitorSR->free();
+    $response['exhibitor_spacelist'] = $exhibitorSpaceList;
+}
+
 if (array_key_exists('success', $response) && $approvalType != 'pay') {
     // detail of space for this region
     $details = array();

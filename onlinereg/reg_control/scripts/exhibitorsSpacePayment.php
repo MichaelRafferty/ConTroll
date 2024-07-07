@@ -372,7 +372,7 @@ $txnQ = <<<EOS
 INSERT INTO reg.payments (transid, type, category, description, source, pretax, tax, amount, time, nonce, cc_approval_code, txn_time, userPerid)
 VALUES (?,?,?,?,?,?,?,?,NOW(),?,?,NOW(),?);
 EOS;
-$typestr = '';
+$typestr = 'issssdddssi';
 if ($_POST['payment_type'] == 'check') {
     $desc = 'Check No: ' . $_POST['pay-checkno']  . ', ' . $_POST['pay-desc'];
 } else {
@@ -397,14 +397,14 @@ if ($approved_amt == $totprice) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 
-$txnUpdate .= 'paid=? WHERE id=?;';
+$txnUpdate .= 'paid=?, withtax=price WHERE id=?;';
 $txnU = dbSafeCmd($txnUpdate, 'di', array($approved_amt, $transid));
+if ($txnU != 1) {
+    $error_msg .= "Unable to mark transaction completed\n";
+}
 // reg (badge)
 $regQ = 'UPDATE reg SET paid=price, complete_trans=? WHERE create_trans=?;';
 $numrows = dbSafeCmd($regQ, 'ii', array($transid, $transid));
-if ($numrows != 1) {
-    $error_msg .= "Unable to mark transaction completed\n";
-}
 
 // vendor_space
 $vendorUQ = <<<EOS
@@ -655,14 +655,21 @@ EOS;
     // if no tranasction yet, insert one
     if ($transid == null) {
         $transQ = <<<EOS
-INSERT INTO transaction(newperid, perid, price, type, conid)
-    VALUES(?, ?, ?, ?, ?);
+INSERT INTO transaction(newperid, perid, price, tax, withtax, type, conid)
+    VALUES(?, ?, ?, ?, ?, ?, ?);
 EOS;
 
-        $transid = dbSafeInsert($transQ, 'iidsi', array($newid, $id, $region['price'], $portalName, $conid));
+        $transid = dbSafeInsert($transQ, 'iidddsi', array($newid, $id, $region['price'], 0, $region['price'], $portalName, $conid));
         if ($transid === false) {
             $badge['error'] .= 'Add of transaction for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";
         }
+    } else {
+        $transQ = <<<EOS
+UPDATE transaction
+SET price=price + ?, withtax = withtax + ?
+WHERE id = ?;
+EOS;
+        $numrows = dbSafeCmd($transQ, 'ddi', array($region['price'], $region['price'], $transid));
     }
     $badge['transid'] = $transid;
     dbSafeCmd("UPDATE newperson SET transid=? WHERE id = ?;", 'ii', array($badge['transid'], $badge['newid']));

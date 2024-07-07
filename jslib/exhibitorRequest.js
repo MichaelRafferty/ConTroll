@@ -275,6 +275,7 @@ class ExhibitorRequest {
                     _this.#exhibitor_request.hide();
                     show_message(data['success'], 'success');
                     if (cancel >= 2) {
+                        exhibitor_spacelist = data['exhibitor_spacelist']
                         exhibitors.updateSpace();
                         exhibitorInvoice.openInvoice(exhibitor_info, _this.#regionYearId);
                     }
