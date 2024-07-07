@@ -1,8 +1,8 @@
 <?php
-    global $db_ini;
+global $db_ini;
 
 require_once '../lib/base.php';
-require_once('../../lib/uspsValidate.php');
+require_once('../../../lib/uspsValidate.php');
 
 $check_auth = google_init('ajax');
 $perm = 'admin';
@@ -16,6 +16,7 @@ if ($check_auth == false) {
     exit();
 }
 
+$response['post'] = $_POST;
 if (array_key_exists('addr', $_POST))
     $address = $_POST['addr'];
 else

@@ -22,6 +22,12 @@ class ExhibitorInvoice {
     #includedMemberships = 0;
     #additionalMemberships = 0;
     #uspsChecked = [];
+    #uspsAddress = null;
+    #firstStar = '';
+    #addrStar = '';
+    #allStar = '';
+    #currentSuffix = null;
+    #uspsDiv = null;
 
 // constructor function - intializes dom objects and inital privates
     constructor() {
@@ -160,9 +166,6 @@ class ExhibitorInvoice {
        this.#membershipCostdiv.hidden = (this.#includedMemberships == 0 && this.#additionalMemberships == 0);
 
         html = '';
-        var firstStar = '';
-        var addrStar = '';
-        var allStar = '';
         // now build the included memberships
         if (this.#includedMemberships > 0 || this.#additionalMemberships > 0) {
             html += `
@@ -183,11 +186,11 @@ class ExhibitorInvoice {
             // cascading list of required fields, each case adds more so the breaks fall into the next section
             switch (config['required']) {
                 case 'all':
-                    allStar = '<span class="text-danger">&bigstar;</span>';
+                    this.#allStar = '<span class="text-danger">&bigstar;</span>';
                 case 'addr':
-                    addrStar = '<span class="text-danger">&bigstar;</span>';
+                    this.#addrStar = '<span class="text-danger">&bigstar;</span>';
                 case 'first':
-                    firstStar = '<span class="text-danger">&bigstar;</span>';
+                    this.#firstStar = '<span class="text-danger">&bigstar;</span>';
             }
         }
         if (this.#includedMemberships > 0) {
@@ -197,84 +200,7 @@ class ExhibitorInvoice {
                 "<input type='hidden' name='this.#includedMemberships' value='" + String(this.#includedMemberships) + "'></div></div>";
             for (var mnum = 0; mnum < this.#includedMemberships; mnum++) {
                 // name fields including legal name
-                html += `
-<div class="row mt-4">
-    <div class="col-sm-auto p-0">Included Member ` + (mnum + 1) + `:</div>
-</div>
-<div class="row">
-    <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="fname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + firstStar + `First Name</span></label><br/>
-        <input class="form-control-sm" type="text" name="fname_i_` + mnum + `" id="fname_i_` + mnum + `" size="22" maxlength="32"/>
-    </div>
-    <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="mname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
-        <input class="form-control-sm" type="text" name="mname_i_` + mnum + `" id="mname_i_` + mnum + `" size="8" maxlength="32" />
-    </div>
-    <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="lname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + allStar + `Last Name</span></label><br/>
-        <input class="form-control-sm" type="text" name="lname_i_` + mnum + `" id="lname_i_` + mnum + `" size="22" maxlength="32" />
-    </div>
-    <div class="col-sm-auto ms-0 me-0 p-0">
-        <label for="suffix_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
-        <input class="form-control-sm" type="text" name="suffix_i_` + mnum + `" id='suffix_i_` + mnum + `' size="4" maxlength="4" />
-    </div>
-</div>
-<div class='row'>
-    <div class='col-sm-12 ms-0 me-0 p-0'>
-        <label for="legalname_i_` + mnum + `" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
-        <input class='form-control-sm' type='text' name="legalname_i_` + mnum + `" id=legalname_i_` + mnum + `" size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix'/>
-    </div>
-</div>
-`;
-                // address fields
-                html += `
-<div class="row">
-    <div class="col-sm-12 ms-0 me-0 p-0">
-        <label for="addr_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `Address</span></label><br/>
-        <input class="form-control-sm" type="text" name='addr_i_` + mnum + `' id='addr_i_` + mnum + `' size=64 maxlength="64" />
-    </div>
-</div>
-<div class="row">
-    <div class="col-sm-12 ms-0 me-0 p-0">
-        <label for="addr2_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
-        <input class="form-control-sm" type="text" name='addr2_i_` + mnum + `' id='addr2_i_` + mnum + `' size=64 maxlength="64" '/>
-    </div>
-</div>
-<div class="row">
-    <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="city_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `City</span></label><br/>
-        <input class="form-control-sm" type="text" name="city_i_` + mnum + `" id='city_i_` + mnum + `' size="22" maxlength="32" />
-    </div>
-    <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="state_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `State</span></label><br/>
-        <input class="form-control-sm" type="text" name="state_i_` + mnum + `" id='state_i_` + mnum + `' size="10" maxlength=16" />
-    </div>
-    <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="zip_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `Zip</span></label><br/>
-        <input class="form-control-sm" type="text" name="zip_i_` + mnum + `" id='zip_i_` + mnum + `' size="5" maxlength="10" />
-    </div>
-    <div class="col-sm-auto ms-0 me-0 p-0">
-        <label for="country_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
-        <select class="form-control-sm" name="country_i_` + mnum + `" id='country_i_` + mnum + `' >
-` + country_options + `
-        </select>
-    </div>
-</div>
-<div class="row">
-    <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="email_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + firstStar + `Email</span></label><br/>
-        <input class="form-control-sm" type="email" name="email_i_` + mnum + `" id='email_i_` + mnum + `' size="35" maxlength="254" />
-    </div>
-    <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="phone_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
-        <input class="form-control-sm" type="text" name="phone_i_` + mnum + `" id='phone_i_` + mnum + `' size="18" maxlength="15" />
-    </div>
-    <div class="col-sm-auto ms-0 p-0">
-        <label for="badgename_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
-        <input class="form-control-sm" type="text" name="badgename_i_` + mnum + `" id='badgename_i_` + mnum + `' size="35" maxlength="32"  placeholder='defaults to first and last name'/>
-    </div>
-</div>
-`;
+                html += this.#drawMembershipBlock(mnum, '_i_' + mnum, country_options);
             }
             html += "<hr/>";
         }
@@ -286,84 +212,7 @@ class ExhibitorInvoice {
                 "<input type='hidden' name='this.#additionalMemberships' value='" + String(this.#additionalMemberships) + "'></div></div>";
             for (var mnum = 0; mnum < this.#additionalMemberships; mnum++) {
                 // name fields includeing legal name
-                html += `
-<div class="row mt-4">
-    <div class="col-sm-auto p-0">Additional Member ` + (mnum + 1) + `:</div>
-</div>
-<div class="row">
-    <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="fname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + firstStar + `First Name</span></label><br/>
-        <input class="form-control-sm" type="text" name="fname_a_` + mnum + `" id="fname_a_` + mnum + `" size="22" maxlength="32" onchange="exhibitorInvoice.updateCost(` + regionYearId + "," + mnum + `)"/>
-    </div>
-    <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="mname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
-        <input class="form-control-sm" type="text" name="mname_a_` + mnum + `" id="mname_a_` + mnum + `" size="8" maxlength="32" />
-    </div>
-    <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="lname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + allStar + `Last Name</span></label><br/>
-        <input class="form-control-sm" type="text" name="lname_a_` + mnum + `" id="lname_a_` + mnum + `" size="22" maxlength="32" />
-    </div>
-    <div class="col-sm-auto ms-0 me-0 p-0">
-        <label for="suffix_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
-        <input class="form-control-sm" type="text" name="suffix_a_` + mnum + `" id='suffix_a_` + mnum + `' size="4" maxlength="4" />
-    </div>
-</div>
-<div class='row'>
-    <div class='col-sm-12 ms-0 me-0 p-0'>
-        <label for="legalname_a_` + mnum + `" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
-        <input class='form-control-sm' type='text' name="legalname_a_` + mnum + `" id=legalname_a_` + mnum + `" size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix'/>
-    </div>
-</div>
-`;
-                // address fields
-                html += `
-<div class="row">
-    <div class="col-sm-12 ms-0 me-0 p-0">
-        <label for="addr_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `>Address</span></label><br/>
-        <input class="form-control-sm" type="text" name='addr_a_` + mnum + `' id='addr_a_` + mnum + `' size=64 maxlength="64" />
-    </div>
-</div>
-<div class="row">
-    <div class="col-sm-12 ms-0 me-0 p-0">
-        <label for="addr2_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
-        <input class="form-control-sm" type="text" name='addr2_a_` + mnum + `' id='addr2_a_` + mnum + `' size=64 maxlength="64" '/>
-    </div>
-</div>
-<div class="row">
-    <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="city_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `City</span></label><br/>
-        <input class="form-control-sm" type="text" name="city_a_` + mnum + `" id='city_a_` + mnum + `' size="22" maxlength="32" />
-    </div>   
-    <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="state_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `State</span></label><br/>
-        <input class="form-control-sm" type="text" name="state_a_` + mnum + `" id='state_a_` + mnum + `' size="10" maxlength="16" />
-    </div>
-    <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="zip_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `Zip</span></label><br/>
-        <input class="form-control-sm" type="text" name="zip_a_` + mnum + `" id='zip_a_` + mnum + `' size="5" maxlength="10" />
-    </div>
-    <div class="col-sm-auto ms-0 me-0 p-0">
-        <label for="country_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
-        <select class="form-control-sm" name="country_a_` + mnum + `" id='country_a_` + mnum + `' >
-` + country_options + `
-        </select>
-    </div>
-</div>
-<div class="row">
-    <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="email_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + firstStar + `Email</span></label><br/>
-        <input class="form-control-sm" type="email" name="email_a_` + mnum + `" id='email_a_` + mnum + `' size="35" maxlength="254" />
-    </div>
-    <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="phone_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
-        <input class="form-control-sm" type="text" name="phone_a_` + mnum + `" id='phone_a_` + mnum + `' size="18" maxlength="15" />
-    </div>
-    <div class="col-sm-auto ms-0 p-0">
-        <label for="badgename_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
-        <input class="form-control-sm" type="text" name="badgename_a_` + mnum + `" id='badgename_a_` + mnum + `' size="35" maxlength="32"  placeholder='defaults to first and last name'/>
-    </div>
-</div>
-`;
+                html += this.#drawMembershipBlock(mnum, '_a_' + mnum, country_options);
             }
             html += "</div><hr/>";
         }
@@ -390,6 +239,102 @@ class ExhibitorInvoice {
             document.getElementById('phone_a_' + mnum).value = exhibitor_info['exhibitorPhone'];
         }
         this.#exhibitorInvoiceModal.show();
+    }
+
+// draw a membership block
+    #drawMembershipBlock(mnum, suffix, country_options) {
+        var html = `
+<div class="row mt-4">
+    <div class="col-sm-auto p-0">Included Member ` + (mnum + 1) + `:</div>
+</div>
+<div class="row">
+    <div class="col-sm-8">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-auto ms-0 me-2 p-0">
+                    <label for="fname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#firstStar + `First Name</span></label><br/>
+                    <input class="form-control-sm" type="text" name="fname` + suffix + `" id="fname` + suffix + `" size="22" maxlength="32"/>
+                </div>
+                <div class="col-sm-auto ms-0 me-2 p-0">
+                    <label for="mname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
+                    <input class="form-control-sm" type="text" name="mname` + suffix + `" id="mname` + suffix + `" size="8" maxlength="32" />
+                </div>
+                <div class="col-sm-auto ms-0 me-2 p-0">
+                    <label for="lname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#allStar + `Last Name</span></label><br/>
+                    <input class="form-control-sm" type="text" name="lname` + suffix + `" id="lname` + suffix + `" size="22" maxlength="32" />
+                </div>
+                <div class="col-sm-auto ms-0 me-0 p-0">
+                    <label for="suffix` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
+                    <input class="form-control-sm" type="text" name="suffix` + suffix + `" id='suffix` + suffix + `' size="4" maxlength="4" />
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-12 ms-0 me-0 p-0'>
+                    <label for="legalname` + suffix + `" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
+                    <input class='form-control-sm' type='text' name="legalname` + suffix + `" id=legalname` + suffix + `" size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix'/>
+                </div>
+            </div>
+`;
+                // address fields
+                html += `
+            <div class="row">
+                <div class="col-sm-12 ms-0 me-0 p-0">
+\                    <label for="addr` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#addrStar + `Address</span></label><br/>
+                    <input class="form-control-sm" type="text" name='addr` + suffix + `' id='addr` + suffix + `' size=64 maxlength="64" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12 ms-0 me-0 p-0">
+                    <label for="addr2` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
+                    <input class="form-control-sm" type="text" name='addr2` + suffix + `' id='addr2` + suffix + `' size=64 maxlength="64" '/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-auto ms-0 me-2 p-0">
+                    <label for="city` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#addrStar + `City</span></label><br/>
+                    <input class="form-control-sm" type="text" name="city` + suffix + `" id='city` + suffix + `' size="22" maxlength="32" />
+                </div>
+                <div class="col-sm-auto ms-0 me-2 p-0">
+                    <label for="state` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#addrStar + `State</span></label><br/>
+                    <input class="form-control-sm" type="text" name="state` + suffix + `" id='state` + suffix + `' size="10" maxlength=16" />
+                </div>
+                <div class="col-sm-auto ms-0 me-2 p-0">
+                    <label for="zip` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#addrStar + `Zip</span></label><br/>
+                    <input class="form-control-sm" type="text" name="zip` + suffix + `" id='zip` + suffix + `' size="5" maxlength="10" />
+                </div>
+                <div class="col-sm-auto ms-0 me-0 p-0">
+                    <label for="country` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
+                    <select class="form-control-sm" name="country` + suffix + `" id='country` + suffix + `' >
+            ` + country_options + `
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4" id="uspsBlock` + suffix + `"></div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-auto ms-0 me-2 p-0">
+                    <label for="email` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#firstStar + `Email</span></label><br/>
+                    <input class="form-control-sm" type="email" name="email` + suffix + `" id='email` + suffix + `' size="35" maxlength="254" />
+                </div>
+                <div class="col-sm-auto ms-0 me-2 p-0">
+                    <label for="phone` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
+                    <input class="form-control-sm" type="text" name="phone` + suffix + `" id='phone` + suffix + `' size="18" maxlength="15" />
+                </div>
+                <div class="col-sm-auto ms-0 p-0">
+                    <label for="badgename` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
+                    <input class="form-control-sm" type="text" name="badgename` + suffix + `" id='badgename` + suffix + `' size="35" maxlength="32"  placeholder='defaults to first and last name'/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+`;
+    return html;
     }
 
 // update invoice for the Cost of Memberships and total Cost when an additional member is started
@@ -495,11 +440,13 @@ class ExhibitorInvoice {
 
             // now validate the membership fields
             for (mnum = 0; mnum < this.#includedMemberships; mnum++) {
-                if (!this.#checkValid('_i_' + mnum))
+                this.#currentSuffix = '_i_' + mnum;
+                if (!this.#checkValid(this.#currentSuffix))
                     valid = false;
             }
             for (mnum = 0; mnum < this.#additionalMemberships; mnum++) {
-                if (!this.#checkValid('_a_' + mnum))
+                this.#currentSuffix = '_a_' + mnum;
+                if (!this.#checkValid(this.#currentSuffix))
                     valid = false;
             }
 
@@ -514,11 +461,13 @@ class ExhibitorInvoice {
             if (config['useUSPS']) {
                 // now validate the membership fields
                 for (mnum = 0; mnum < this.#includedMemberships; mnum++) {
-                    if (this.#checkMembershipUSPS('_i_' + mnum))
+                    this.#currentSuffix = '_i_' + mnum;
+                    if (this.#checkMembershipUSPS(this.#currentSuffix))
                         return;
                 }
                 for (mnum = 0; mnum < this.#additionalMemberships; mnum++) {
-                    if (this.#checkMembershipUSPS('_a_' + mnum))
+                    this.#currentSuffix = '_a_' + mnum;
+                    if (this.#checkMembershipUSPS(this.#currentSuffix))
                         return;
                 }
             }
@@ -643,20 +592,118 @@ class ExhibitorInvoice {
     }
 
     // do USPS for a membership
-    this.#checkMembershipUSPS(suffix) {
-        if (uspsChecked[suffix])  // don't check it twice if we get all the way through the check on it.
+    #checkMembershipUSPS(suffix) {
+        if (this.#uspsChecked[suffix])  // don't check it twice if we get all the way through the check on it.
             return false;
 
         var country = document.getElementById('country' + suffix);
         if (country.value != 'USA') {
-            uspsChecked[suffix] = true;
+            this.#uspsChecked[suffix] = true;
             return false;
         }
 
-        var person =
+        // get address fields
+        var addr = document.getElementById('addr' + suffix).value;
+        var addr2 = document.getElementById('addr2' + suffix).value;
+        var city = document.getElementById('city' + suffix).value;
+        var state = document.getElementById('state' + suffix).value;
+        var zip = document.getElementById('zip' + suffix).value;
 
+        var script = "scripts/uspsCheck.php";
+        var data = {
+            addr: addr,
+            addr2: addr2,
+            city: city,
+            state: state,
+            zip: zip,
+        };
+        $.ajax({
+            url: script,
+            data: data,
+            method: 'POST',
+            success: function (data, textStatus, jqXhr) {
+                if (data['status'] == 'error') {
+                    show_message(data['message'], 'error', 'inv_result_message');
+                    return false;
+                }
+                exhibitorInvoice.showValidatedAddress(data);
+                return true;
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showAjaxError(jqXHR, textStatus, errorThrown, 'inv_result_message');
+                return false;
+            },
+        })
+        return true;
+    }
 
+    // display the usps result
+    showValidatedAddress(data) {
+        var html = '';
+        clear_message('inv_result_message');
+        if (data['error']) {
+            var errormsg = data['error'];
+            if (errormsg.substring(0, 5) == '400: ') {
+                errormsg = errormsg.substring(5);
+            }
+            html = "<h4>USPS Returned an error<br/>validating the address</h4>" +
+                "<pre>" + errormsg + "</pre>\n";
+        } else {
+            this.#uspsAddress = data['address'];
+            if (this.#uspsAddress['address2'] == undefined)
+                this.#uspsAddress['address2'] = '';
 
+            html = "<h4>USPS Returned: " + this.#uspsAddress['valid'] + "</h4>";
+            // ok, we got a valid uspsAddress, if it doesn't match, show the block
+            var orig = data['post'];
+            if (orig['addr'] == this.#uspsAddress['address'] && orig['addr2'] == this.#uspsAddress['address2'] &&
+                orig['city'] == this.#uspsAddress['city'] && orig['state'] == this.#uspsAddress['state'] &&
+                orig['zip'] == this.#uspsAddress['zip']) {
+                this.useMyAddress();
+                return;
+            }
+
+            html += "<pre>" + this.#uspsAddress['address'] + "\n";
+            if (this.#uspsAddress['address2'])
+                html += this.#uspsAddress['address2'] + "\n";
+            html += this.#uspsAddress['city'] + ', ' + this.#uspsAddress['state'] + ' ' + this.#uspsAddress['zip'] + "</pre>\n";
+
+            if (this.#uspsAddress['valid'] == 'Valid')
+                html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="exhibitorInvoice.useUSPS();">Update using USPS Validated Address</button>'
+        }
+        html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="exhibitorInvoice.useMyAddress();">Update using Address as Entered</button><br/>' +
+            '<button class="btn btn-sm btn-secondary m-1 mt-2" onclick="exhibitorInvoice.redoAddress();">I fixed the address, validate it again.</button>';
+
+        this.#uspsDiv = document.getElementById('uspsBlock' + this.#currentSuffix);
+        this.#uspsDiv.innerHTML = html;
+        this.#uspsDiv.scrollIntoView({behavior: 'instant', block: 'center'});
+    }
+
+// address update functions
+    // usps address post functions
+    useUSPS() {
+        document.getElementById('addr' + this.#currentSuffix).value = this.#uspsAddress['address'];
+        var a2 = document.getElementById('addr2' + this.#currentSuffix);
+        if (this.#uspsAddress['address2'])
+            a2.value = this.#uspsAddress['address2'];
+        else
+            a2.value = '';
+        document.getElementById('city' + this.#currentSuffix).value = this.#uspsAddress['city'];
+        document.getElementById('state' + this.#currentSuffix).value = this.#uspsAddress['state'];
+        document.getElementById('zip' + this.#currentSuffix).value = this.#uspsAddress['zip'];
+        this.#uspsDiv.innerHTML = '';
+        this.pay();
+    }
+
+    useMyAddress() {
+        this.#uspsDiv.innerHTML = '';
+        this.#uspsChecked[this.#currentSuffix] = true;
+        this.pay();
+    }
+
+    redoAddress() {
+        this.#uspsDiv.innerHTML = '';
+        this.pay();
     }
 
 // Create a receipt and email it
