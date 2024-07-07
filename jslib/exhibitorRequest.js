@@ -24,6 +24,11 @@ class ExhibitorRequest {
 
 // openReq - update the modal for this space
 //      add all of the spaces in this 'region'
+//      cancel types:
+//          0: initial request, with 0'th selector being No Space requested
+//          1: change request, with 0'th selector being cancel space requested
+//          2: approve request, with 0'th selector being cancel and suppress the text the exhibitor text
+//          3: mail in request, with 0'th selector being no space approved, suppress the text for the exhibitor and accept payment
 
     openReq(regionYearId, cancel) {
         var spaceHtml = '';
@@ -32,8 +37,6 @@ class ExhibitorRequest {
 
         this.#cancelType = cancel;
         this.#regionYearId = regionYearId;
-
-        //console.log("open request modal for id =" + spaceid);
         var region = exhibits_spaces[regionYearId];
 
         if (!region)
@@ -55,6 +58,33 @@ class ExhibitorRequest {
             console.log("Unit limit: " + this.#unitLimit + ", countCombined: " + this.#countCombined);
         }
 
+        // set fields for values fields
+        var prompt = ' ';
+        var exhibitor = '';
+        var nospace = '';
+        switch (cancel) {
+            case 0:
+                exhibitor = ''
+                prompt = 'Request';
+                nospace = 'No Space Requested';
+                break;
+            case 1:
+                prompt = 'Change/Cancel ';
+                exhibitor = '';
+                nospace = 'No Space Requested';
+                break;
+            case 2:
+                prompt = 'Approve ';
+                exhibitor = ' for ' + (exhibitor_info['artistName'] ? exhibitor_info['artistName'] : exhibitor_info['exhibitorName']);
+                nospace = 'Cancel Space Requested';
+                break;
+            case 3:
+                prompt = 'Save Approved Space and go to Pay for ';
+                exhibitor = ' for ' + (exhibitor_info['artistName'] ? exhibitor_info['artistName'] : exhibitor_info['exhibitorName']);
+                nospace = 'No Space Approved';
+                break;
+        }
+
         // determine number of spaces in the region
         var keys = Object.keys(region);
         var spaceCount = keys.length;
@@ -73,7 +103,7 @@ class ExhibitorRequest {
         var sel = '';
 
         if (mailIn) {
-            if (cancel != 2) {
+            if (cancel < 2) {
                 spaceHtml += "<div class='row'>\n<div class='col-sm-12 p-0 m-2'><i>You are requesting space as mail-in. " +
                     "If this is not correct, please dismiss this form using the 'Cancel' button in grey below and update your profile.</i></div>"
             } else {
@@ -98,13 +128,13 @@ class ExhibitorRequest {
                 }
 
                 // build option pulldown
-                var options = "<option value='-1'" + (reg_item == -1 ? ' selected>' : '>') + (cancel ? 'Cancel' : 'No') + " Space Requested</option>\n";
+                var options = "<option value='-1'" + (reg_item == -1 ? ' selected>' : '>') + nospace + "</option>\n";
                 var prices = space.prices;
                 var price_keys = Object.keys(prices).sort();
                 var units = '';
                 for (var priceid in price_keys) {
                     var price = prices[price_keys[priceid]];
-                    if ((price.requestable == 1 && (price.units <= this.#unitLimit || this.#unitLimit == 0) || this.#cancelType == 2)) {
+                    if ((price.requestable == 1 && (price.units <= this.#unitLimit || this.#unitLimit == 0) || this.#cancelType >= 2)) {
                         if (this.#unitLimit > 0) {
                             units = ' (' + String(price.units) + ' unit' + (price.units > 1 ? 's' : '') + ')';
                         }
@@ -121,9 +151,9 @@ class ExhibitorRequest {
 
                 // now build block
                 spaceHtml += "<div class='col-sm-" + colWidth + " p-0 m-0'>\n" +
-                    "<div class='container-fluid'><div class='container-fluid m-1 border border-3 border-primary'>\n" +
+                    "<div class='container-fluid ms-0 me-0 mt-2 mb-1'><div class='container-fluid ms-0 me-0 border border-3 border-primary'>\n" +
                     "<div class='row'><div class='col-sm-12 p-0 m-0' style='text-align: center;'>\n" + space['spaceName'] + "</div></div>\n" +
-                    "<div class='row'><div class='col-sm-12 p-2 m-0'>\n" + space['description'] + "</div></div>\n" +
+                    "<div class='row'><div class='col-sm-12 p-2 m-0'>\n" + (space['description'] ? space['description'] : '') + "</div></div>\n" +
                     "<div class='row p-1'><div class='col-sm-auto p-0 pe-2'>\n" +
                     "<label htmlFor='exhibitor_req_price_id'>How many spaces are you requesting?</label>\n" +
                     "</div>\n" +
@@ -146,19 +176,10 @@ class ExhibitorRequest {
         this.#totalUnitsRequested_div = document.getElementById('totalUnitsRequested');
         this.#totalUnitsRequestedRow = document.getElementById('TotalUnitsRequestedRow');
 
-        // update fields
-        var prompt = ' ';
-        if (cancel == 1)
-            prompt = 'Change/Cancel ';
-        if (cancel == 2)
-            prompt = 'Approve ';
-        document.getElementById("exhibitor_req_title").innerHTML = "<strong>" + prompt + regionName + ' Space Request</strong>';
-        if (cancel == 0)
-            prompt = 'Request';
+        document.getElementById("exhibitor_req_title").innerHTML = "<strong>" + prompt + regionName + ' Space Request' + exhibitor + '</strong>';
         this.#exhibitor_req_btn.innerHTML = prompt + regionName + ' Space';
         var selection = document.getElementById('exhibibitor_req_price_id');
         //selection.innerHTML = options;
-        //if (cancel) selection.value = cancel;
         this.#exhibitor_req_btn.setAttribute('onClick', "exhibitorRequest.spaceReq(" + regionYearId + ',' + cancel + ')');
 
         // see if over limit already
@@ -198,13 +219,13 @@ class ExhibitorRequest {
 
         if (requestedUnits > this.#unitLimit && this.#unitLimit > 0 && this.#countCombined) {
             this.#totalUnitsRequestedRow.classList.add('bg-warning');
-            if (this.#cancelType != 2)
+            if (this.#cancelType < 2)
                 this.#exhibitor_req_btn.disabled = true;
             else
                 this.#exhibitor_req_btn.classList.add('bg-warning');
         } else {
             this.#totalUnitsRequestedRow.classList.remove('bg-warning');
-            if (this.#cancelType != 2)
+            if (this.#cancelType < 2)
                 this.#exhibitor_req_btn.disabled = false;
             else
                 this.#exhibitor_req_btn.classList.remove('bg-warning');
@@ -213,8 +234,7 @@ class ExhibitorRequest {
 
 // Space Request - call scripts/spaceRequest.php to add a request record
     spaceReq(regionYearId, cancel) {
-        //console.log("spaceReq called for " + spaceId);
-        if (this.#unitsRequested <= 0 && !cancel) {
+        if (this.#unitsRequested <= 0 && (cancel == 0 || cancel == 3)) {
             show_message("Select an amount of space to request", 'error', 'sr_message_div');
             return;
         }
@@ -228,11 +248,12 @@ class ExhibitorRequest {
             'name': config['portalName'],
         };
         var url = 'scripts/spaceReq.php';
-        if (cancel == 2) {
+        if (cancel >= 2) {
             url = 'scripts/exhibitorsSpaceApproval.php';
-            dataobj['approvalType'] = 'other';
+            dataobj['approvalType'] = cancel == 2 ? 'other' : 'pay';
             dataobj['exhibitorId'] = exhibitor_info['exhibitorId'];
             dataobj['exhibitorYearId'] = exhibitor_info['exhibitorYearId'];
+            dataobj['cancel'] = cancel;
         }
         var _this = this;
         $.ajax({
@@ -240,8 +261,9 @@ class ExhibitorRequest {
             data: dataobj,
             method: 'POST',
             success: function (data, textstatus, jqxhr) {
-                if (config['debug'] & 1)
+                if (config['debug'] & 1) {
                     console.log(data);
+                }
                 if (data['error'] !== undefined) {
                     show_message(data['error'], 'error', 'sr_message_div');
                     return;
@@ -252,10 +274,12 @@ class ExhibitorRequest {
                 if (data['success'] !== undefined) {
                     _this.#exhibitor_request.hide();
                     show_message(data['success'], 'success');
-                    if (cancel == 2)
-                        exhibitors.updateSpace();
-                    else
-                        _this.updateRequestStatusBlock(regionYearId);
+                    if (cancel >= 2) {
+                        exhibitor_spacelist = data['exhibitor_spacelist']
+                        exhibitorInvoice.openInvoice(exhibitor_info, _this.#regionYearId);
+                        return;
+                    }
+                    _this.updateRequestStatusBlock(regionYearId);
                 }
                 if (data['warn'] !== undefined) {
                     show_message(data['warn'], 'warn', 'sr_message_div');
