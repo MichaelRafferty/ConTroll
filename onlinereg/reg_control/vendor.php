@@ -35,6 +35,7 @@ $con = get_con();
 $conid = $con['id'];
 $debug = get_conf('debug');
 $vendor_conf = get_conf('vendor');
+$reg_conf = get_conf('reg');
 $usps = get_conf('usps');
 if (array_key_exists('reg_control_exhibitors', $debug))
     $debug_exhibitors = $debug['reg_control_exhibitors'];
@@ -82,7 +83,7 @@ $config_vars['portalName'] = $portalName;
 $config_vars['artistsite'] = $vendor_conf['artistsite'];
 $config_vars['vendorsite'] = $vendor_conf['vendorsite'];
 $config_vars['debug'] = $debug['reg_control_exhibitors'];
-$config_vars['required'] = $ini['required'];
+$config_vars['required'] = $reg_conf['required'];
 $config_vars['useUSPS'] = $useUSPS;
 
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
