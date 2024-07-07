@@ -276,11 +276,10 @@ class ExhibitorRequest {
                     show_message(data['success'], 'success');
                     if (cancel >= 2) {
                         exhibitor_spacelist = data['exhibitor_spacelist']
-                        exhibitors.updateSpace();
                         exhibitorInvoice.openInvoice(exhibitor_info, _this.#regionYearId);
+                        return;
                     }
-                    else
-                        _this.updateRequestStatusBlock(regionYearId);
+                    _this.updateRequestStatusBlock(regionYearId);
                 }
                 if (data['warn'] !== undefined) {
                     show_message(data['warn'], 'warn', 'sr_message_div');

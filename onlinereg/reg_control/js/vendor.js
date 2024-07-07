@@ -10,6 +10,7 @@ regions = null;
 spaces =null;
 country_options = null;
 tabname = null;
+fulltabname = null;
 regionid = null;
 exhibitorsData = null;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -185,6 +186,7 @@ class exhibitorsAdm {
 
     // open(tabname) - fetch the data and re-draw the region tab
     open(newtabname) {
+        fulltabname = newtabname;
         tabname = regionTabNames[newtabname]['name'];
         regionid = regionTabNames[newtabname]['id'];
 

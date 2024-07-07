@@ -445,13 +445,19 @@ class ExhibitorInvoice {
             // now validate the membership fields
             for (mnum = 0; mnum < this.#includedMemberships; mnum++) {
                 this.#currentSuffix = '_i_' + mnum;
-                if (!this.#checkValid(this.#currentSuffix))
-                    valid = false;
+                if (document.getElementById('fname' + this.#currentSuffix).value != '' ||
+                    document.getElementById('lname' + this.#currentSuffix).value != '') {
+                    if (!this.#checkValid(this.#currentSuffix))
+                        valid = false;
+                }
             }
             for (mnum = 0; mnum < this.#additionalMemberships; mnum++) {
                 this.#currentSuffix = '_a_' + mnum;
-                if (!this.#checkValid(this.#currentSuffix))
-                    valid = false;
+                if (document.getElementById('fname' + this.#currentSuffix).value != '' ||
+                    document.getElementById('lname' + this.#currentSuffix).value != '') {
+                    if (!this.#checkValid(this.#currentSuffix))
+                        valid = false;
+                }
             }
 
             if (!valid) {
@@ -466,13 +472,19 @@ class ExhibitorInvoice {
                 // now validate the membership fields
                 for (mnum = 0; mnum < this.#includedMemberships; mnum++) {
                     this.#currentSuffix = '_i_' + mnum;
-                    if (this.#checkMembershipUSPS(this.#currentSuffix))
-                        return;
+                    if (document.getElementById('fname' + this.#currentSuffix).value != '' ||
+                        document.getElementById('lname' + this.#currentSuffix).value != '') {
+                        if (this.#checkMembershipUSPS(this.#currentSuffix))
+                            return;
+                    }
                 }
                 for (mnum = 0; mnum < this.#additionalMemberships; mnum++) {
                     this.#currentSuffix = '_a_' + mnum;
-                    if (this.#checkMembershipUSPS(this.#currentSuffix))
-                        return;
+                    if (document.getElementById('fname' + this.#currentSuffix).value != '' ||
+                        document.getElementById('lname' + this.#currentSuffix).value != '') {
+                        if (this.#checkMembershipUSPS(this.#currentSuffix))
+                            return;
+                    }
                 }
             }
 
@@ -523,7 +535,7 @@ class ExhibitorInvoice {
                 if (data['exhibitor_spacelist']) {
                     exhibitor_spacelist = data['exhibitor_spacelist'];
                 }
-                exhibitors.open(tabname);
+                exhibitors.open(fulltabname);
             } else {
                 show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
                 this.#payButton.disabled = false;
@@ -545,6 +557,8 @@ class ExhibitorInvoice {
         var value = null;
         var country = null;
         var valid = true;
+
+        // if first name or last name is set, do the check, else it's not in use, skip it
 
         if (config['required'] != '') {
             if (!this.#checkNonBlank(document.getElementById('fname' + suffix)))

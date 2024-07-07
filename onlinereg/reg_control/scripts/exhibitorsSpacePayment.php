@@ -171,11 +171,23 @@ $missing_msg = '';
 $valid = true;
 $allrequired = true;
 $notfound = array();
+$email_addresses = [];
 
 // validate the form, returning any errors on missing data
 $includedMembershipStatus = array();
 $includedMemberships = 0;
 for ($num = 0; $num < $includedMembershipsMax; $num++) {
+    $fname = '';
+    $lname = '';
+    if (array_key_exists('fname_i_' . $num, $_POST))
+        $fname = $_POST['fname_i_' . $num];
+
+    if (array_key_exists('lname_i_' . $num, $_POST))
+        $lname = $_POST['lname_i_' . $num];
+
+    if ($fname == '' && $lname == '')
+        continue;
+
     $notfound = array();
     $allrequired = true;
     $nonefound = true;
@@ -220,6 +232,17 @@ $totprice = $spacePrice;
 $additionalMembershipStatus = array();
 $additionalMemberships = 0;
 for ($num = 0; $num < $additionalMembershipsMax; $num++) {
+    $fname = '';
+    $lname = '';
+    if (array_key_exists('fname_a_' . $num, $_POST))
+        $fname = $_POST['fname_i_' . $num];
+
+    if (array_key_exists('lname_a_' . $num, $_POST))
+        $lname = $_POST['lname_i_' . $num];
+
+    if ($fname == '' && $lname == '')
+        continue;
+
     $notfound = array();
     $allrequired = true;
     $nonefound = true;
