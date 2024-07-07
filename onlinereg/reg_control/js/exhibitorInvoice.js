@@ -160,8 +160,18 @@ class ExhibitorInvoice {
 
         html = '';
         // now build the included memberships
+        if (includedMemberships > 0 || additionalMemberships > 0) {
+            html += `
+             <div class="row" style="width:100%;">
+                <div class="col-sm-12">
+                    <p class="text-body">Note: Please provide your legal name that will match a valid form of ID. Your legal name will not be publicly visible.  If you don't provide one, it will default to your First, Middle, Last Names and Suffix.</p>
+                    <p class="text-body">Items marked with <span class="text-danger">&bigstar;</span> are required fields.</p>
+                </div>
+            </div>
+`;
+        }
         if (includedMemberships > 0) {
-            html = "<input type='hidden' name='incl_mem_count' value='" + includedMemberships + "'>\n" +
+            html += "<input type='hidden' name='incl_mem_count' value='" + includedMemberships + "'>\n" +
                 "<div class='container-fluid'>\n" +
                 "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Included Memberships: (up to " + includedMemberships + ")</strong>" +
                 "<input type='hidden' name='includedMemberships' value='" + String(includedMemberships) + "'></div></div>";

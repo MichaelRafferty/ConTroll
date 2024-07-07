@@ -17,6 +17,7 @@ $conid = $con['id'];
 $vendor_conf = get_conf('vendor');
 $debug = get_conf('debug');
 $ini = get_conf('reg');
+$usps = get_conf('usps');
 load_cc_procs();
 
 $condata = get_con();
@@ -46,6 +47,10 @@ if (str_starts_with($_SERVER['HTTP_HOST'], 'artist')){
     $portalType = 'vendor';
 }
 
+$useUSPS = false;
+if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
+    $useUSPS = true;
+
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['vemail'] = $vendor_conf[$portalType];
@@ -54,6 +59,8 @@ $config_vars['portalName'] = $portalName;
 $config_vars['artistsite'] = $vendor_conf['artistsite'];
 $config_vars['vendorsite'] = $vendor_conf['vendorsite'];
 $config_vars['debug'] = $debug['vendors'];
+$config_vars['required'] = $ini['required'];
+$config_vars['useUSPS'] = $useUSPS;
 
 vendor_page_init($condata['label'] . " $portalName Registration");
 
