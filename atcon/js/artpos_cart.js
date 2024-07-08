@@ -18,6 +18,8 @@ class artpos_cart {
     #total_price = 0;
     #total_paid = 0;
     #total_pmt = 0;
+    #total_art = 0;
+    #total_tax = 0;
     #unpaid_rows = 0;
     #cart_art = [];
     #cart_art_map = new map();
@@ -317,7 +319,7 @@ class artpos_cart {
 
 // draw a payment row in the cart
     #drawCartPmtRow(prow) {
-        //   index: cart_pmt.length, amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
+        //   index: cart_pmt.length, amt: pay_amt, pretax: art amount, tax, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
 
         var pmt = this.#cart_pmt[prow];
         var code = '';
@@ -325,6 +327,9 @@ class artpos_cart {
         if (pmt['type'] == 'check') {
             if ((!pmt['checkno']) || pmt['checkno'] == '') {
                 code = desc.substring(desc.indexOf(':') + 1, desc.indexOf(';'));
+                if (code == undefined || code == null) {
+                    code = '';
+                }
                 desc = desc.substring(desc.indexOf(';') + 1);
             } else {
                 code = pmt['checkno'];
@@ -333,16 +338,31 @@ class artpos_cart {
             code = pmt['ccauth'];
         }
         var ttype = pmt['type'];
+        var html = '';
         if (pmt['time']) {
-            ttype += ' (' + pmt['time'] + ')';
+            html = '<div class="row mt-1"><div class="col-sm-12 p-0">' + pmt['time'] + '</div></div>';
         }
-        return `<div class="row">
+        if (desc == '') {
+            html += `<div class="row">
     <div class="col-sm-4 p-0">` + ttype + `</div>
-    <div class="col-sm-4 p-0">` + desc + `</div>
     <div class="col-sm-2 p-0">` + code + `</div>
+    <div class="col-sm-2 text-end">` + Number(pmt['pretax']).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + Number(pmt['tax']).toFixed(2) + `</div>
     <div class="col-sm-2 text-end">` + Number(pmt['amt']).toFixed(2) + `</div>
 </div>
 `;
+        } else {
+            html += `<div class="row">
+    <div class="col-sm-2 p-0">` + ttype + `</div>
+    <div class="col-sm-2 p-0">` + desc + `</div>
+    <div class="col-sm-2 p-0">` + code + `</div>
+    <div class="col-sm-2 text-end">` + Number(pmt['pretax']).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + Number(pmt['tax']).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + Number(pmt['amt']).toFixed(2) + `</div>
+</div>
+`;
+        }
+        return html;
     }
 
 // draw/update by redrawing the entire cart
@@ -380,21 +400,35 @@ class artpos_cart {
         if (this.#cart_pmt.length > 0) {
             html += `
 <div class="row mt-3">
-    <div class="col-sm-8 text-bg-primary">Payment</div>
+    <div class="col-sm-4 text-bg-primary">Payment</div>
     <div class="col-sm-2 text-bg-primary">Code</div>
+    <div class="col-sm-2 text-bg-primary text-end">Art</div>
+    <div class="col-sm-2 text-bg-primary text-end">Tax</div>
     <div class="col-sm-2 text-bg-primary text-end">Amount</div>
 </div>
 `;
             this.#total_pmt = 0;
+            this.#total_art = 0;
+            this.#total_tax = 0;
             for (var prow in this.#cart_pmt) {
                 html += this.#drawCartPmtRow(prow);
                 this.#total_pmt += Number(this.#cart_pmt[prow]['amt']);
+                this.#total_art += Number(this.#cart_pmt[prow]['pretax']);
+                this.#total_tax += Number(this.#cart_pmt[prow]['tax']);
             }
             html += `<div class="row">
-    <div class="col-sm-8 p-0 text-end">Payment Total:</div>`;
+    <div class="col-sm-6 p-0"></div>
+    <div class="col-sm-6 p-0">
+        <hr style="height:4px; color:#0;background-color:#0;border-width:0;"/>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-6 p-0 text-end">Payment Total:</div>`;
             this.#total_pmt = Number(this.#total_pmt.toFixed(2));
             html += `
-    <div class="col-sm-4 text-end">$` + Number(this.#total_pmt).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">$` + Number(this.#total_art).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">$` + Number(this.#total_tax).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">$` + Number(this.#total_pmt).toFixed(2) + `</div>
 </div>
 `;
         }
@@ -425,9 +459,9 @@ class artpos_cart {
             var keys = Object.keys(newrow);
             for (var keynum in keys) {
                 var key = keys[keynum];
-                this.#cart_art[newrow['rownum']][key] = newrow[key];
+                this.#cart_art[newrow['rowpos']][key] = newrow[key];
             }
-            this.#cart_art[newrow['rownum']]['dirty'] = false;
+            this.#cart_art[newrow['rowpos']]['dirty'] = false;
         }
 
 

@@ -78,7 +78,14 @@ function google_init($mode) {
 
     //handle code responses
     if (array_key_exists('code', $_GET)) { // need to handle other auth responses
-        $client->authenticate($_GET['code']);
+        $code = $_GET['code'];
+        $decode_count = 0;
+        while(substr($code, 1,1) == '%') {
+            $code = urldecode($code);
+            if($decode_count > 3) { break; } else {$decode_count++;}
+        }
+        if($decode_count > 0) { web_error_log("decode called $decode_count times" . substr($code, 1, 1)); }
+        $client->authenticate($code);
         $token = $client->getAccessToken();
         $state = "";
         if(array_key_exists('state', $_GET)) {
@@ -270,6 +277,7 @@ function tab_bar($auth, $page) {
                 </ul>
             </div>
         </nav>
+    </div>
     <?php
 }
 

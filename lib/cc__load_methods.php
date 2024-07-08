@@ -7,9 +7,6 @@ function load_cc_procs() {
     $con = get_conf('con');
 
     switch ($cc['type']) {
-        case 'convergepay':
-            require_once("cc_convergepay.php");
-            break;
         case 'square':
             require_once (__DIR__ . "/../Composer/vendor/autoload.php");
             require_once("cc_square.php");

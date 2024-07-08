@@ -65,9 +65,11 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 	switch($_POST['nonce'][0]) {
 		case '1': // success
 			$rtn['amount'] = $results['total'];
-			$rtn['txnfields'] =  array('transid','type','category','description', 'source','amount', 'txn_time', 'nonce','cc_txn_id','cc_approval_code','receipt_id', 'cashier');
-			$rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 's', 's', 's', 's', 's', 'i');
-			$rtn['tnxdata'] = array($results['transid'],'credit',$category, 'test registration', 'online', $results['total'], '00-00-00 00:00:00',$_POST['nonce'],'txn id','000000','txn_id', $user_perid);
+			$rtn['txnfields'] =  array('transid','type','category','description', 'source','pretax', 'tax', 'amount', 'txn_time', 'nonce','cc_txn_id',
+			'cc_approval_code','receipt_id', 'cashier');
+			$rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd', 's', 's', 's', 's', 's', 'i');
+			$rtn['tnxdata'] = array($results['transid'],'credit',$category, 'test registration', 'online', $results['pretax'], $results['tax'], $results['total'],	'00-00-00 00:00:00',
+			$_POST['nonce'],'txn id','000000','txn_id', $user_perid);
             $rtn['url'] = 'no test receipt';
 			return $rtn;
 		default: 

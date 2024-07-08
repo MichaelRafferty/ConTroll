@@ -1,41 +1,36 @@
 <?php
-require_once('../lib/base.php');
-require_once('../../lib/email__load_methods.php');
-require_once('../../lib/cc__load_methods.php');
-require_once('../../lib/exhibitorArtistInventoryEmail.php');
-require_once('../../lib/log.php');
-require_once '../lib/email.php';
+global $db_ini;
+
+require_once '../lib/base.php';
+require_once '../../../lib/log.php';
+$check_auth = google_init('ajax');
+$perm = 'vendor';
+
+$response = array('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+
+if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
+    $response['error'] = 'Authentication Failed';
+    ajaxSuccess($response);
+    exit();
+}
+
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
 
-$response = array('post' => $_POST, 'get' => $_GET);
-
-global $con;
 $con = get_con();
 $conid=$con['id'];
 $conf = get_conf('con');
+$reg_conf = get_conf('reg');
 $vendor_conf = get_conf('vendor');
 
+$required = $reg_conf['required'];
 $response['conid'] = $conid;
-
-$ccauth = get_conf('cc');
-load_cc_procs();
-load_email_procs();
 
 $log = get_conf('log');
 logInit($log['vendors']);
-
-$email = "no send attempt or a failure";
-
-if(!isset($_SESSION['id'])) { ajaxSuccess(array('status'=>'error', 'message'=>'Session Failure')); exit; }
-
-$exhId = $_SESSION['id'];
-$eyID = $_SESSION['eyID'];
-
-$response = array("post" => $_POST, "get" => $_GET);
 
 // which space purchased
 if (!array_key_exists('regionYearId', $_POST)) {
@@ -49,8 +44,6 @@ else
     $portalType = 'exhibits';
 
 $regionYearId = $_POST['regionYearId'];
-$specialRequests = $_POST['requests'];
-$taxid = $_POST['taxid'];
 $portalName = $_POST['portalName'];
 if (array_key_exists('includedMemberships', $_POST))
     $includedMembershipsMax = $_POST['includedMemberships'];
@@ -65,9 +58,8 @@ if (array_key_exists('spacePrice', $_POST))
 else
     $spacePrice = 0;
 
-$aggreeNone = false;
-if (array_key_exists('agreeNone', $_POST))
-    $aggreeNone = $_POST['agreeNone'] == 'on';
+$exhId = $_POST['exhibitorId'];
+$eyID = $_POST['exhibitorYearId'];
 
 $curLocale = locale_get_default();
 $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
@@ -165,52 +157,37 @@ if ($spacePrice != $spacePriceComputed || $includedMembershipsComputed != $inclu
 $region['includedMemberships'] = $includedMembershipsComputed;
 $region['additionalMemberships'] = $additionalMembershipsComputed;
 
-// get the buyer info
-$buyer['fname'] = $_POST['cc_fname'];
-$buyer['lname'] = $_POST['cc_lname'];
-$buyer['addr'] = $_POST['cc_addr'];
-$buyer['city'] = $_POST['cc_city'];
-$buyer['state'] = $_POST['cc_state'];
-$buyer['zip'] = $_POST['cc_zip'];
-$buyer['country'] = $_POST['cc_country'];
-$buyer['email'] = $_POST['cc_email'];
-
-$membership_fields = array('fname' => 1, 'mname' => 0, 'lname' => 1, 'suffix' => 0, 'legalname' => 0, 'addr' => 1, 'addr2' => 0, 'city' => 1, 'state' => 1, 'zip' => 1,
-    'country' => 1, 'email' => 1, 'phone' => 0, 'badgename' => 0);
-$membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'legalname' => 'Legal Name', 'suffix' => 'Suffix',
-    'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State', 'zip' => 'Zip Code/Postal Code',
-    'country' => 'Country', 'email' => 'Email Address', 'phone' => 'Phone Number', 'badgename' => 'Badge Name');
+$membership_fields = array('fname' => $required != '', 'mname' => false, 'lname' => $required == 'all', 'suffix' => false, 'legalname' => false,
+                           'addr' => $required == 'addr' || $required == 'all', 'addr2' => false,
+                           'city' => $required == 'addr' || $required == 'all', 'state' => $required == 'addr' || $required == 'all',
+                           'zip' => $required == 'addr' || $required == 'all', 'country' => $required == 'addr' || $required == 'all',
+                           'email' => true, 'phone' => false, 'badgename' => false);
+$membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'suffix' => 'Suffix', 'legalname' => 'Legal Name',
+                          'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State',
+                          'zip' => 'Zip Code/Postal Code', 'country' => 'Country',
+                          'email' => 'Email Address', 'phone' => 'Phone Number', 'badgename' => 'Badge Name');
 
 $missing_msg = '';
 $valid = true;
 $allrequired = true;
 $notfound = array();
-// validate credit card fields
-foreach($membership_fields as $field => $required) {
-    $postfield = 'cc_' . $field;
-    if (array_key_exists($postfield, $_POST)) {
-        $val = trim($_POST[$postfield]);
-    } else {
-        $val = '';
-    }
-    if ($val == '') {
-        if ($required) {
-            $notfound[] = $membership_names[$field];
-            $allrequired = false;
-        }
-    }
-}
-if ($allrequired == false) {
-    $missing_msg .= 'Some credit card payment information is missing: ' . implode(',', $notfound) . "<br/>\n";
-    $valid = false;
-}
-
-$email_addresses = [ 'cc_email' => 'Payment Information Email'];
+$email_addresses = [];
 
 // validate the form, returning any errors on missing data
 $includedMembershipStatus = array();
 $includedMemberships = 0;
 for ($num = 0; $num < $includedMembershipsMax; $num++) {
+    $fname = '';
+    $lname = '';
+    if (array_key_exists('fname_i_' . $num, $_POST))
+        $fname = $_POST['fname_i_' . $num];
+
+    if (array_key_exists('lname_i_' . $num, $_POST))
+        $lname = $_POST['lname_i_' . $num];
+
+    if ($fname == '' && $lname == '')
+        continue;
+
     $notfound = array();
     $allrequired = true;
     $nonefound = true;
@@ -234,7 +211,7 @@ for ($num = 0; $num < $includedMembershipsMax; $num++) {
         }
         if ($field == 'email') {
             // add to email addresses
-            if ($nonefound == false && $val != '')
+            if ($nonefound == false && $val != '' && $val != '/r')
                 $email_addresses[$postfield] = "Included Membership $num Email";
         }
     }
@@ -255,6 +232,17 @@ $totprice = $spacePrice;
 $additionalMembershipStatus = array();
 $additionalMemberships = 0;
 for ($num = 0; $num < $additionalMembershipsMax; $num++) {
+    $fname = '';
+    $lname = '';
+    if (array_key_exists('fname_a_' . $num, $_POST))
+        $fname = $_POST['fname_i_' . $num];
+
+    if (array_key_exists('lname_a_' . $num, $_POST))
+        $lname = $_POST['lname_i_' . $num];
+
+    if ($fname == '' && $lname == '')
+        continue;
+
     $notfound = array();
     $allrequired = true;
     $nonefound = true;
@@ -284,11 +272,11 @@ for ($num = 0; $num < $additionalMembershipsMax; $num++) {
         if ($allrequired) {
             $totprice += $region['additionalPrice'];
             $additionalMemberships++;
+        } else {
+            // some required data is missing
+            $missing_msg .= 'Additional Membership ' . $num + 1 . ' is missing ' . implode(',', $notfound) . "<br/>\n";
+            $valid = false;
         }
-        continue;
-        // some required data is missing
-        $missing_msg .= 'Additional Membership ' . $num + 1 . ' is missing ' . implode(',', $notfound) . "<br/>\n";
-        $valid = false;
     }
 }
 
@@ -311,11 +299,6 @@ if ($additionalMembershipsMax > 0 || $includedMembershipsMax > 0) {
         $missing_msg .= "You must use all included memberships before using additional ones\n";
         $valid = false;
     }
-
-    if (($additionalMemberships + $includedMemberships == 0) && !$aggreeNone) {
-        $missing_msg .= "You must buy at least one membership for your space or check the box at the top of the invoice noting that you are not purchasing any memberships at this time and acknowledge the need for memberships for all working in your space.";
-        $valid = false;
-    }
 }
 
 if (!$valid) {
@@ -327,26 +310,8 @@ $region['totprice'] = $totprice;
 $region['price'] = $spacePrice;
 $status_msg = '';
 // the form passes validation, lets try running it.
-// first does the exhibitor profile need updating
-if ($_POST['name'] != $exhibitor['exhibitorName'] || $_POST['email'] != $exhibitor['exhibitorEmail'] || $_POST['addr'] != $exhibitor['addr'] || $_POST['addr2'] != $exhibitor['addr2'] ||
-    $_POST['city'] != $exhibitor['city'] ||  $_POST['state'] != $exhibitor['state'] || $_POST['zip'] != $exhibitor['zip']) {
-    // something doesn't match update these fields
-    $updateV = <<<EOS
-UPDATE exhibitors
-SET exhibitorName=?, exhibitorEmail=?, addr=?, addr2=?,city=?, state=?, zip=?
-WHERE id=?;
-EOS;
-    $exhibitorA = array(trim($_POST['name']), trim($_POST['email']), trim($_POST['addr']), trim($_POST['addr2']), trim($_POST['city']), trim($_POST['state']),
-        trim($_POST['zip']), $exhId);
-    $num_rows = dbSafeCmd($updateV, 'sssssssi',$exhibitorA);
-    if ($num_rows == 1)
-        $status_msg = "$portalName Profile Updated<br/>\n";
-    else
-        $status_msg = "Nothing to update in $portalName Profile<br/>\n";
-}
-
-// build the badges to insert into newperson and create the transaction
 //
+// build the badges to insert into newperson and create the transaction
 $error_msg = '';
 $badges = array();
 $transid = null;
@@ -381,7 +346,7 @@ EOS;
         $status_msg .= "Add of transaction for $portalName " . $_POST['name'] . " failed.<br/>\n";
     }
 }
-// now charge the credit card, built the result structure to log the item and build the order
+// built the result structure to log the item and build the order
 // first the badges
 $all_badgeQ = <<<EOS
 SELECT R.id AS badge,
@@ -417,43 +382,35 @@ $results = array(
     'total' => $totprice,
     'nonce' => $_POST['nonce'],
     'vendorId' => $exhId,
-    'taxid' => $taxid,
-    'specialrequests' => $specialRequests,
     'region' => $region,
     'vendor' => $exhibitor,
     'exhibits' => $portalType,
-    'buyer' => $buyer,
 );
 
 //log requested badges
 logWrite(array('con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces, 'trans' => $transid, 'results' => $results, 'request' => $badges));
 
-$rtn = cc_charge_purchase($results, $ccauth, true);
-if ($rtn === null) {
-    ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
-    exit();
+
+$txnQ = <<<EOS
+INSERT INTO reg.payments (transid, type, category, description, source, pretax, tax, amount, time, nonce, cc_approval_code, txn_time, userPerid)
+VALUES (?,?,?,?,?,?,?,?,NOW(),?,?,NOW(),?);
+EOS;
+$typestr = 'issssdddssi';
+if ($_POST['payment_type'] == 'check') {
+    $desc = 'Check No: ' . $_POST['pay-checkno']  . ', ' . $_POST['pay-desc'];
+} else {
+    $desc = $_POST['pay-desc'];
 }
+$values = array($transid, $_POST['payment_type'], 'vendor', $desc, 'reg_control', $totprice, 0, $totprice, 'admin', $_POST['pay-ccauth'],
+         $_SESSION['user_perid']);
 
-//$tnx_record = $rtn['tnx'];
-var_error_log($rtn);
-
-// create the payment record
-$num_fields = sizeof($rtn['txnfields']);
-$val = array();
-for ($i = 0; $i < $num_fields; $i++) {
-    $val[$i] = '?';
-}
-$txnQ = 'INSERT INTO payments(time,' . implode(',', $rtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
-$txnT = implode('', $rtn['tnxtypes']);
-//error_log("Payment Insert: $txnQ : " .implode(',', $rtn['tnxdata']) . "\n");
-
-$txnid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
+$txnid = dbSafeInsert($txnQ, $typestr, $values);
 if ($txnid == false) {
     $error_msg .= "Insert of payment failed\n";
 } else {
-    $status_msg .= "Payment for " . $dolfmt->formatCurrency($rtn['amount'], 'USD') . " processed<br/>\n";
+    $status_msg .= "Payment for " . $dolfmt->formatCurrency($totprice, 'USD') . " processed<br/>\n";
 }
-$approved_amt = $rtn['amount'];
+$approved_amt = $totprice;
 $results['approved_amt'] = $approved_amt;
 
 // update the other records with the payment information
@@ -463,14 +420,14 @@ if ($approved_amt == $totprice) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 
-$txnUpdate .= 'paid=? WHERE id=?;';
+$txnUpdate .= 'paid=?, withtax=price WHERE id=?;';
 $txnU = dbSafeCmd($txnUpdate, 'di', array($approved_amt, $transid));
+if ($txnU != 1) {
+    $error_msg .= "Unable to mark transaction completed\n";
+}
 // reg (badge)
 $regQ = 'UPDATE reg SET paid=price, complete_trans=? WHERE create_trans=?;';
 $numrows = dbSafeCmd($regQ, 'ii', array($transid, $transid));
-if ($numrows != 1) {
-    $error_msg .= "Unable to mark transaction completed\n";
-}
 
 // vendor_space
 $vendorUQ = <<<EOS
@@ -515,7 +472,7 @@ if ($exMailin == 'N') {
     else
         $agent = 'first';
 
-    $perid = null;;
+    $perid = null;
     $newperid = null;
     $agentRequest = null;
     if ($agent == 'first') {
@@ -531,7 +488,7 @@ if ($exMailin == 'N') {
     } else if ($agent = 'request') {
         $agentRequest = $_POST['agent_request'];
     } else {
-        if (substr($agent, 0, 1) == 'p')
+        if (str_starts_with($agent, 'p'))
             $perid = substr($agent, 1);
         else
             $newperid = substr($agent, 1);
@@ -620,46 +577,11 @@ EOS;
     }
 }
 
-
-$emails = payment($results);
-$return_arr = send_email($region['ownerEmail'], array($exhibitor['exhibitorEmail'], $buyer['email']), $region['ownerEmail'], $region['name'] . ' Payment', $emails[0], $emails[1]);
-
-if (array_key_exists('error_code', $return_arr)) {
-    $error_code = $return_arr['error_code'];
-} else {
-    $error_code = null;
-}
-
-if (array_key_exists('email_error', $return_arr)) {
-    $error_msg = $return_arr['email_error'];
-} else {
-    $error_msg = null;
-}
-
-$exhibitorSQ = <<<EOS
-SELECT *
-FROM vw_ExhibitorSpace
-WHERE exhibitorId = ? and conid = ? and portalType = ?;
-EOS;
-
-$exhibitorSR = dbSafeQuery($exhibitorSQ, 'iis', array($exhId, $conid, $_POST['portalType']));
-$exhibitorSpaceList = array();
-while ($space = $exhibitorSR->fetch_assoc()) {
-    $exhibitorSpaceList[$space['spaceId']] = $space;
-}
-$exhibitorSR->free();
-
-emailArtistInventoryReq($eryID, 'Payment');
-
 ajaxSuccess(array(
-    'status' => $return_arr['status'],
-    'url' => $rtn['url'],
+    'status' => $error_msg != '' ? 'error' : 'success',
     'error' => $error_msg,
-    'email' => $return_arr,
     'trans' => $transid,
-    'email_error' => $error_code,
     'message' => $status_msg,
-    'exhibitor_spacelist' => $exhibitorSpaceList
 ));
 return;
 
@@ -756,14 +678,21 @@ EOS;
     // if no tranasction yet, insert one
     if ($transid == null) {
         $transQ = <<<EOS
-INSERT INTO transaction(newperid, perid, price, type, conid)
-    VALUES(?, ?, ?, ?, ?);
+INSERT INTO transaction(newperid, perid, price, tax, withtax, type, conid)
+    VALUES(?, ?, ?, ?, ?, ?, ?);
 EOS;
 
-        $transid = dbSafeInsert($transQ, 'iidsi', array($newid, $id, $region['price'], $portalName, $conid));
+        $transid = dbSafeInsert($transQ, 'iidddsi', array($newid, $id, $region['price'], 0, $region['price'], $portalName, $conid));
         if ($transid === false) {
             $badge['error'] .= 'Add of transaction for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";
         }
+    } else {
+        $transQ = <<<EOS
+UPDATE transaction
+SET price=price + ?, withtax = withtax + ?
+WHERE id = ?;
+EOS;
+        $numrows = dbSafeCmd($transQ, 'ddi', array($region['price'], $region['price'], $transid));
     }
     $badge['transid'] = $transid;
     dbSafeCmd("UPDATE newperson SET transid=? WHERE id = ?;", 'ii', array($badge['transid'], $badge['newid']));
