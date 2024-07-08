@@ -104,6 +104,9 @@ function db_connect($nodb = false):bool
             return false;
         }
 
+        // set our character set of choice
+        $dbObject->set_charset('utf8mb4');
+
         // for mysql with nonstandard sql_mode (from zambia point of view) temporarily force ours
         $sql = "SET sql_mode='" .  $db_ini['mysql']['sql_mode'] . "';";
         try {
