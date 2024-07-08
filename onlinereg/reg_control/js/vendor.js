@@ -545,7 +545,7 @@ class exhibitorsAdm {
                     {title: "Stage", field: "stage", headerSort: true, headerFilter: 'list', headerFilterParams: { values: ['Requested', 'Purchased', 'Approved'], },},
                     {title: "Summary", field: "summary", width: 200, headerSort: false, headerFilter: true, formatter: "textarea", },
                     {field: "space", visible: false},
-                    { title: "Actions", field: "s1", formatter: this.spaceButtons, maxWidth: 700, headerSort: false },
+                    { title: "Actions", field: "s1", formatter: this.spaceButtons, maxWidth: 900, headerSort: false },
                 ]});
         } else {
             this.#spacesTable.replaceData(regionsLocal);
@@ -982,7 +982,9 @@ class exhibitorsAdm {
             buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.printPriceTags(' + id + ')" >Price Tags</button>&nbsp;';
             buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                'onclick="exhibitors.printControlSheet(' + id + ')" >Control Sheet</button>&nbsp;';
+                'onclick="exhibitors.printControlSheet(' + id + ', false)" >Control Sheet</button>&nbsp;';
+            buttons += '<button class="btn btn-sm btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                'onclick="exhibitors.printControlSheet(' + id + ', true)" >Control Sheet w/Emails</button>&nbsp;';
         }
 
         // agent
@@ -1137,10 +1139,10 @@ class exhibitorsAdm {
         window.open(script, "_blank")
     }
 
-    printControlSheet(id) {
+    printControlSheet(id, email) {
         this.#spaceRow = this.#spacesTable.getRow(id);
         var exhibitorData = this.#spaceRow.getData();
-        var script = "scripts/exhibitorsBidSheets.php?type=control&region=" + exhibitorData['regionYearId'] + "&eyid=" + exhibitorData['exhibitorYearId'];
+        var script = "scripts/exhibitorsBidSheets.php?type=control&region=" + exhibitorData['regionYearId'] + "&eyid=" + exhibitorData['exhibitorYearId'] + '&email=' + email;
         window.open(script, "_blank")
     }
 

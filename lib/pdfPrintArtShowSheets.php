@@ -847,7 +847,7 @@ EOS;
                 printXY($cStatus, $v, 'Status');
                 mprintXY($cFinal, $v, $wFinal, 'Winning Bid');
                 printXY($cWin, $v, 'Bidder');
-                if ($printContactInfo) {
+                if ($printContactInfo === true) {
                     printXY($cWEmail, $v, 'Bidder Email');
                 } else {
                     printXY($cWEmail, $v, 'Bidder Id');
@@ -907,7 +907,7 @@ EOS;
                 rightPrintXY($cFinal, $v, $wFinal, $dolfmt->formatCurrency((float)$artItem['final_price'], 'USD'));
             $y = mprintXY($cWin, $v, $wWin, $winnerName);
             if ($y > $maxY) $maxY = $y;
-            if ($printContactInfo) {
+            if ($printContactInfo === true) {
                 $y = mprintXY($cWEmail, $v, $wWEmail, $winnerEmail);
             } else {
                 $y = mprintXY($cWEmail, $v, $wWEmail, $winnerPerid);
