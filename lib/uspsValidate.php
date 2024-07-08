@@ -3,6 +3,9 @@ require_once("ajax_functions.php");
 $uspsAPIToken = null;
 $uspsAuthorization = null;
 $uspsKey = null;
+$validstate = ['AA','AE','AL','AK','AP','AS','AZ','AR','CA','CO','CT','DE','DC','FM','FL','GA','GU','HI','ID','IL','IN','IA','KS','KY','LA',
+               'ME','MH','MD','MA','MI','MN','MS','MO','MP','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PW','PA','PR','RI',
+               'SC','SD','TN','TX','UT','VT','VI','VA','WA','WV','WI','WY'];
 global $db_ini;
 
 if (!$db_ini) {
@@ -32,7 +35,8 @@ function getUSPSV3Token() {
     curl_close($tokenCURL);
 
     if ($response == false) {
-        ajaxError('unable to get token');
+        ajaxSuccess(array('status'=>'error', 'message'=>'unable to get token'));
+        exit();
     }
 
     $uspsAPIToken = $response['access_token'];
@@ -41,33 +45,73 @@ function getUSPSV3Token() {
 }
 
 function getUSPSNormalizedAddress($address, $address2, $city, $state, $zip) {
-    global $uspsAPIToken, $uspsKey, $uspsAuthorization;
+    global $uspsAPIToken, $uspsKey, $uspsAuthorization, $validstate;
     
-    if ($state == null || strlen($state) != 2)
-        ajaxError('State must be 2 character USPS State code');
+    if ($state == null || strlen($state) != 2) {
+        ajaxSuccess(array ('status' => 'error', 'message' => 'State must be 2 character USPS State code'));
+        exit();
+    }
     $state = strtoupper($state);
-
+    if (!in_array($state, $validstate)) {
+        ajaxSuccess(array('status'=>'error', 'message'=>'Invalid state, must be one of the valid USPS state codes'));
+        exit();
+    }
     $validate = array('state' => $state );
+
     if ($address !== null && $address != '') {
         $validate['streetAddress'] = $address;
     } else {
-        ajaxError('address required');
+        ajaxSuccess(array('status'=>'error', 'message'=>'address required'));
+        exit();
     }
+
     if ($address2 !== null && $address2 != '')
         $validate['secondaryAddress'] = $address2;
+
     if ($city !== null && $city != '')
         $validate['city'] = $city;
+
     if ($zip !== null && $zip != '') {
-        if (strlen($zip) == 5)
+        if (strlen($zip) == 5) {
+            if (!is_numeric($zip)) {
+                ajaxSuccess(array('status'=>'error', 'message'=>'Zip code must be a numeric value'));
+                exit();
+            }
             $validate['ZIPCode'] = $zip;
-        else if (strlen($zip) == 9) {
-            $validate['ZIPCode'] = substr($zip, 0, 5);
-            $validate['ZIPPlus4'] = substr($zip, 5, 4);
+        } else if (strlen($zip) == 9) {
+            $zc = substr($zip, 0, 5);
+            if (!is_numeric($zc)) {
+                ajaxSuccess(array('status'=>'error', 'message'=>'Five digit portion of the Zip code must be a numeric value'));
+                exit();
+            }
+            $validate['ZIPCode'] = $zc;
+            $zc = substr($zip, 5, 4);
+            if (!is_numeric($zc)) {
+                ajaxSuccess(array('status'=>'error', 'message'=>'Zip+4 portion must be a numeric value'));
+                exit();
+            }
+            $validate['ZIPPlus4'] = $zc;
         } else if (strlen($zip) == 10) {
-            $validate['ZIPCode'] = substr($zip, 0, 5);
-            $validate['ZIPPlus4'] = substr($zip, 6, 4);
-        } else
-            $validate['ZIPCode'] = substr($zip, 0, 5);
+            $zc = substr($zip, 0, 5);
+            if (!is_numeric($zc)) {
+                ajaxSuccess(array('status'=>'error', 'message'=>'Five digit portion of the Zip code must be a numeric value'));
+                exit();
+            }
+            $validate['ZIPCode'] = $zc;
+            $zc = substr($zip, 6, 4);
+            if (!is_numeric($zc)) {
+                ajaxSuccess(array('status'=>'error', 'message'=>'Zip+4 portion must be a numeric value'));
+                exit();
+            }
+            $validate['ZIPPlus4'] = $zc;
+        } else {
+            $zc = substr($zip, 0, 5);
+            if (!is_numeric($zc)) {
+                ajaxSuccess(array('status'=>'error', 'message'=>'Zip code must be a numeric value'));
+                exit();
+            }
+            $validate['ZIPCode'] = $zc;
+        }
     }
     
     if ($uspsAPIToken == null)
@@ -91,18 +135,26 @@ function getUSPSNormalizedAddress($address, $address2, $city, $state, $zip) {
 
 
 function getUSPSZipCode($address, $address2, $city, $state) {
-    global $uspsAPIToken, $uspsKey, $uspsAuthorization;
+    global $uspsAPIToken, $uspsKey, $uspsAuthorization, $validstate;
 
-    if ($state == null || strlen($state) != 2)
-        ajaxError('State must be 2 character USPS State code');
+    if ($state == null || strlen($state) != 2) {
+        ajaxSuccess(array ('status' => 'error', 'message' => 'State must be 2 character USPS State code'));
+        exit();
+    }
     $state = strtoupper($state);
-
+    if (!in_array($state, $validstate)) {
+        ajaxSuccess(array('status'=>'error', 'message'=>'Invalid state, must be one of the valid USPS state codes'));
+        exit();
+    }
     $query = array('state' => $state );
+
     if ($address !== null && $address != '') {
         $query['streetAddress'] = $address;
     } else {
-        ajaxError('address required');
+        ajaxSuccess(array('status'=>'error', 'message'=>'address required'));
+        exit();
     }
+
     if ($address2 !== null && $address2 != '')
         $query['secondaryAddress'] = $address2;
     if ($city !== null && $city != '')

@@ -275,7 +275,7 @@ class Users {
         }
         var numrows = data['rows'];
         if (numrows <= 0) {
-            show_message('Your search criteria returned no matchs', 'warning');
+            show_message('Your search criteria returned no matchs', 'warn');
             return;
         }
         show_message(data['message'], 'success');
