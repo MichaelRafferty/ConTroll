@@ -3,6 +3,8 @@ require_once "lib/base.php";
 require_once "../../lib/exhibitorRegistrationForms.php";
 require_once "../../lib/exhibitorRequestForms.php";
 require_once "../../lib/exhibitorReceiptForms.php";
+require_once "../../lib/exhibitorInvoice.php";
+require_once "lib/exhibitorChooseExhibitor.php";
 
 //initialize google session
 $need_login = google_init("page");
@@ -22,6 +24,7 @@ page_init($page,
                     'js/base.js',
                     'jslib/exhibitorProfile.js',
                     'js/vendor.js',
+                    'js/exhibitorInvoice.js',
                     'jslib/exhibitorRequest.js',
                     'jslib/exhibitorReceipt.js',
                     'js/tinymce/tinymce.min.js'
@@ -30,15 +33,17 @@ page_init($page,
 
 $con = get_con();
 $conid = $con['id'];
-$conf = $con['id'];
 $debug = get_conf('debug');
 $vendor_conf = get_conf('vendor');
+$reg_conf = get_conf('reg');
+$usps = get_conf('usps');
 if (array_key_exists('reg_control_exhibitors', $debug))
     $debug_exhibitors = $debug['reg_control_exhibitors'];
 else
     $debug_exhibitors = 0;
 
 $conf = get_conf('con');
+$regConf = get_conf('reg');
 
 // to build tabs get the list of vendor types
 $regionOwnerQ = <<<EOS
@@ -64,6 +69,10 @@ while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
 }
 fclose($fh);
 
+$useUSPS = false;
+if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
+    $useUSPS = true;
+
 $config_vars = array();
 $portalType = 'admin';
 $portalName = 'Exhibitor';
@@ -74,45 +83,48 @@ $config_vars['portalName'] = $portalName;
 $config_vars['artistsite'] = $vendor_conf['artistsite'];
 $config_vars['vendorsite'] = $vendor_conf['vendorsite'];
 $config_vars['debug'] = $debug['reg_control_exhibitors'];
+$config_vars['required'] = $reg_conf['required'];
+$config_vars['useUSPS'] = $useUSPS;
 
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
 draw_exhibitorRequestModal('admin');
 draw_exhibitorReceiptModal('admin');
+draw_exhibitorInvoiceModal('', null, $countryOptions, $regConf, null, 'Exhibitors', 'admin');
+draw_exhibitorChooseModal();
 ?>
 <!-- space detail modal -->
-    <div id='space_detail' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Space Detail' aria-hidden='true'
-    style='--bs-modal-width: 90%;'>
-        <div class='modal-dialog'>
-            <div class='modal-content'>
-                <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title' id='space-detail-title'>
-                        <strong>Space Detail</strong>
-                    </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+<div id='space_detail' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Space Detail' aria-hidden='true' style='--bs-modal-width: 90%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title' id='space-detail-title'>
+                    <strong>Space Detail</strong>
                 </div>
-                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class='container-fluid'>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <h4>Space Request/Approval/Payment Detail</h4>
-                            </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <h4>Space Request/Approval/Payment Detail</h4>
                         </div>
-                        <div id='spaceDetailHTML'></div>
-                        <div class='row mt-3'>
-                            <div class='col-sm-12'>
-                                <h4>Information about this Exhibitor</h4>
-                            </div>
-                        </div>
-                        <div class="container-fluid" id='exhibitorInfoHTML'></div>
-                        <div class='row' id='spacedetail_message_div'></div>
                     </div>
+                    <div id='spaceDetailHTML'></div>
+                    <div class='row mt-3'>
+                        <div class='col-sm-12'>
+                            <h4>Information about this Exhibitor</h4>
+                        </div>
+                    </div>
+                    <div class="container-fluid" id='exhibitorInfoHTML'></div>
+                    <div class='row' id='spacedetail_message_div'></div>
                 </div>
-                <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Dismiss</button>
-                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Dismiss</button>
             </div>
         </div>
     </div>
+</div>
 <!-- locations modal -->
 <div id='locations_edit' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Locations Edit' aria-hidden='true'
      style='--bs-modal-width: 96%;'>
@@ -173,30 +185,30 @@ draw_exhibitorReceiptModal('admin');
     </div>
 </div>
 <!-- import modal -->
-    <div id='import_exhibitor' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Import Past Vendors' aria-hidden='true'
-         style='--bs-modal-width: 96%;'>
-        <div class='modal-dialog'>
-            <div class='modal-content'>
-                <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title' id='exhibitor_receipt_title'>
-                        <strong>Import Past Exhibitors</strong>
-                    </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+<div id='import_exhibitor' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Import Past Vendors' aria-hidden='true'
+     style='--bs-modal-width: 96%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title' id='exhibitor_receipt_title'>
+                    <strong>Import Past Exhibitors</strong>
                 </div>
-                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class='container-fluid'>
-                        <div id='importHTML'></div>
-                        <div class='row' id='import_message_div'></div>
-                    </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <div id='importHTML'></div>
+                    <div class='row' id='import_message_div'></div>
                 </div>
-                <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' onclick='exhibitors.importPastExhibitors()'>Import Selected Past Exhibitors</button>
-                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' onclick='exhibitors.importPastExhibitors()'>Import Selected Past Exhibitors</button>
             </div>
         </div>
     </div>
-<div id='main'>
+</div>
+<div class="container-fluid" id='main'>
     <ul class='nav nav-tabs mb-3' id='exhibitor-tab' role='tablist'>
         <li class='nav-item' role='presentation'>
             <button class='nav-link active' id='overview-tab' data-bs-toggle='pill' data-bs-target='#overview-pane' type='button' role='tab' aria-controls='nav-overview'
@@ -316,237 +328,6 @@ foreach ($regionOwners AS $regionOwner => $regionList) {
     <pre id='test'></pre>
 </div>
 
-<?php /*
-
-<div id='approve_space' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Approve Vendor Space Request' aria-hidden='true' style='--bs-modal-width: 80%;'>
-    <div class='modal-dialog'>
-        <div class='modal-content'>
-            <div id="approve_header" class='modal-header bg-primary text-bg-primary'>
-                <div class='modal-title'>
-                    <strong id="approve_title">Approve Vendor Space Request</strong>
-                </div>
-                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-            </div>
-            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                <div class='container-fluid'>
-                    <form id='space_request' action='javascript:void(0)'>
-                        <input type='hidden' name='vendorId' id='sr_vendorId' value=''>
-                        <input type='hidden' name='spaceId' id='sr_spaceId' value=''>
-                        <input type='hidden' name='id' id='sr_id' value=''>
-                        <input type='hidden' name='operation' id='operation' value='approve'>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 p-0'>Name:</div>
-                            <div class='col-sm-10 p-0' id="sr_name"></div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 p-0'>Email:</div>
-                            <div class='col-sm-10 p-0' id="sr_email"></div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 p-0'>Website:</div>
-                            <div class='col-sm-10 p-0' id="sr_website"></div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 p-0'>Space:</div>
-                            <div class='col-sm-10 p-0' id='sr_spaceName'></div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-4 p-0'>Requested:</div>
-                            <div class='col-sm-6 p-0'>Approved:</div>
-                        </div>
-                        <div class="row">
-                            <div class='col-sm-1 p-0'>Units</div>
-                            <div class='col-sm-3 p-0'>Description</div>
-                            <div class='col-sm-6 p-0'>Approved Space</div>
-                        </div>
-                        <div class='row'>
-                            <div class='col-sm-1 p-0' id='sr_reqUnits'></div>
-                            <div class='col-sm-3 p-0' id="sr_reqDescription"></div>
-                            <div class='col-sm-6 p-0' id="sr_appOption"></div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div class='modal-footer'>
-                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button id="approve_button" class='btn btn-sm btn-primary' onClick='approveSpace(-1)'>Approve</button>
-            </div>
-        </div>
-    </div>
-</div>
-<div id='add_vendorSpace' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Add Vendor Space' aria-hidden='true' style='--bs-modal-width: 80%;'>
-    <div class='modal-dialog'>
-        <div class='modal-content'>
-            <div class='modal-header bg-primary text-bg-primary'>
-                <div class='modal-title'>
-                    <strong id='vendorAddEditTitle'>Add Vendor Space</strong>
-                </div>
-                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-            </div>
-            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                <div class='container-fluid'>
-                    <form id='add_space_form' action='javascript:void(0)'>
-                        <div class="row p-1">
-                            <div class='col-sm-2 ms-0 me-0 p-0 ps-2'>
-                                <label for='as_vendor'>Vendor: </label>
-                            </div>
-                            <div class='col-sm-10 p-0'>
-                                <select id="as_vendor" name="vendor">
-                                    <option value="0">No Vendor Selected</option>
-                                    <?php
-                                    foreach ($vendorList AS $row) {
-                                        echo "<option value=" . escape_quotes($row['id']) . ">" .
-                                            $row['name'] . " (" . $row['website'] . "), " . $row['city'] . ',' . $row['state'] . "</option>\n";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 ms-0 me-0 p-0 ps-2'>
-                                <label for='as_space'>Space: </label>
-                            </div>
-                            <div class='col-sm-10 p-0'>
-                                <select id='as_space' name="space" onchange="selectSpaceType()">
-                                    <option value='0'>No Space Selected</option>
-                                    <?php
-                                    foreach ($spaceList as $row) {
-                                        echo '<option value="' . escape_quotes($row['id']) . '">' . $row['name'] . "</option>\n";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 ms-0 me-0 p-0 ps-2'>
-                                <label for='as_spaceType'>Space Type:</label>
-                            </div>
-                            <div class='col-sm-10 p-0'>
-                                <select id='as_spaceType' name="type" onchange="selectSpacePrice()">
-                                    <option value='0'>No Type Selected</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 ms-0 me-0 p-0 ps-2'>
-                                <label for='as_state'>Req/App/Paid:</label>
-                            </div>
-                            <div class='col-sm-10 p-0'>
-                                <select id='as_state' name="state">
-                                    <option value='R'>Requested</option>
-                                    <option value='A'>Approved-Unpaid</option>
-                                    <option value='P'>Approved-Paid</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-auto ms-0 me-0 p-0 ps-2 pe-2'>
-                                <label for='as_included'>Included Memberships:</label>
-                            </div>
-                            <div class='col-sm-auto p-0 pe-1'>
-                                <select id='as_included', name='included'>
-                                    <option value='0'>0</option>
-                                </select>
-                            </div>
-                            <div class='col-sm-auto ms-0 me-0 p-0 ps-2 pe-2'>
-                                <label for='as_additional'>Additional Memberships:</label>
-                            </div>
-                            <div class='col-sm-auto p-0'>
-                                <select id='as_additional', name='additional' onchange="selectSpaceAdditional()">
-                                    <option value='0'>0</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 ms-0 me-0 p-0 ps-2'>
-                                <label for="as_totaldue">Total Amount due:</label>
-                            </div>
-                            <div class="col-sm-auto ms-0 me-0 p-0 pe-2">
-                                <input type="text" id="as_totaldue" name="price" value="0.00" readonly/>
-                            </div>
-                            <div class='col-sm-auto ms-0 me-0 p-0 ps-2 pe-2'>
-                                <label for='as_checkno'>Check Number:</label>
-                            </div>
-                            <div class='col-sm-auto p-0 pe-1'>
-                                <input type="text" id='as_checkno' name='checkno' size="10" maxlength="10"/>
-                            </div>
-                            <div class='col-sm-auto ms-0 me-0 p-0 ps-2 pe-2'>
-                                <label for='as_payment'>Amount Paid:</label>
-                            </div>
-                            <div class='col-sm-auto p-0'>
-                                <input type='text' id='as_payment' name="payment" size='10' maxlength='10'/>
-                            </div>
-                        </div>
-                        <div class='row p-1'>
-                            <div class='col-sm-2 ms-0 me-0 p-0 ps-2'>
-                                <label for='as_desc'>Description:</label>
-                            </div>
-                            <div class='col-sm-10 p-0'>
-                                <input type='text' id='as_desc' name='description' size='32' maxlength='32'/>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' onClick='addVendorSpace()'>Add</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<div id='receipt' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Registration Receipt' aria-hidden='true' style='--bs-modal-width: 80%;'>
-    <div class='modal-dialog'>
-        <div class='modal-content'>
-            <div class='modal-header bg-primary text-bg-primary'>
-                <div class='modal-title'>
-                    <strong id='receiptTitle'>Registration Receipt</strong>
-                </div>
-                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-            </div>
-            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                <div id='receipt-div'></div>
-                <div id='regadminemail' hidden='true'><?php echo $conf['regadminemail']; ?></div>
-                <div id="receipt-text" hidden="true"></div>
-                <div id="receipt-tables" hidden="true"></div>
-            </div>
-            <div class='modal-footer'>
-                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
-                <button class='btn btn-sm btn-primary' id='emailReceipt' onClick='receipt_email("payor")'>Email Receipt</button>
-                <button class='btn btn-sm btn-primary' id='emailReceiptReg' onClick='receipt_email("reg")'>Email Receipt to regadmin
-                    at <?php echo $conf['regadminemail']; ?></button>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="row">
-    <div class="col-sm-12">
-        <div id='summary-div'></div>
-    </div>
-</div>
-<div class='row'>
-    <div class='col-sm-12'>
-        <div id="VendorList">Vendor List Placeholder</div>
-    </div>
-</div>
-<div class='row'>
-    <div class='col-sm-12'>
-        <button class="btn btn-secondary" id="addVendorBtn" onclick="addNewVendor();">Add New Vendor</button>
-    </div>
-</div>
-<div class='row mt-4'>
-    <div class='col-sm-12'>
-        <div id="SpaceDetail">Space Detail Placeholder</div>
-    </div>
-</div>
-<div class='row'>
-    <div class='col-sm-12'>
-        <button class='btn btn-secondary' id='addVendorSpaceBtn' onclick="addNewSpace();">Add New Vendor Space</button>
-    </div>
-</div>
-<div id='result_message' class='mt-4 p-2'></div>
-<pre id='test'></pre>
 <?php
-*/
 page_foot($page);
 ?>

@@ -277,6 +277,7 @@ function tab_bar($auth, $page) {
                 </ul>
             </div>
         </nav>
+    </div>
     <?php
 }
 

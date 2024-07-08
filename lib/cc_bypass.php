@@ -22,21 +22,40 @@ EOS;
 };
 
 function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
-    $loginPerid = getSessionVar('user_perid');
-    if ($loginPerid == null) {
-        $userType = getSessionVar('idType');
-        if ($userType == 'p')
-            $loginPerid = getSessionVar('id');
+    if (isset($_SESSION)) {
+        if (array_key_exists('user_perid', $_SESSION)) {
+            $user_perid = $_SESSION['user_perid'];
+        } else {
+            $user_perid = null;
+        }
+        if (array_key_exists('user_id', $_SESSION)) {
+            $user_id = $_SESSION['user_id'];
+        } else {
+            $user_id = null;
+        }
+    } else {
+        $user_perid = null;
+        $user_id = null;
+    }
+
+    // set category based on if exhibits is a portal type
+    if (array_key_exists('exhibits', $results)) {
+        if ($results['exhibits'] == 'vendor')
+            $category = 'vendor';
+        else
+            $category = 'artshow';
+    } else {
+        $category = 'reg';
     }
 
     $rtn = array();
     $rtn['amount'] = $results['total'];
-    $rtn['txnfields'] = array('transid','type',$category,'description','source','amount',
+    $rtn['txnfields'] = array('transid','type',$category,'description','source','pretax', 'tax', 'amount',
         'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id','cashier');
-    $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd',
-            's', 's', 's', 's', 's', 's', 's', 's','i');
-    $rtn['tnxdata'] = array($results['transid'],'other','reg','bypass','online',$results['total'],
-        strtotime("now"),'****','**n**','cctxid','bypass','bypass','ok','000',$loginPerid);
+    $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
+                             's', 's', 's', 's', 's', 's', 's', 's','i');
+    $rtn['tnxdata'] = array($results['transid'],'other','reg','bypass','online',$results['pretax'], $results['tax'], $results['total'],
+        strtotime("now"),'****','**n**','cctxid','bypass','bypass','ok','000',$user_perid);
     $rtn['url'] = '';
     $rtn['rid'] = '000';
     return $rtn;

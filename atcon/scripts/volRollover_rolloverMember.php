@@ -55,8 +55,8 @@ $response['index'] = $_POST['index'];
 // create the controlling transaction for the rollover
 $notes = 'Volunteer Rollover';
 $insTransactionSQL = <<<EOS
-INSERT INTO transaction(conid,perid,userid,price,paid,type,create_date)
-VALUES (?,?,?,0,0,'atcon',now());
+INSERT INTO transaction(conid,perid,userid,price,tax,withtax,paid,type,create_date)
+VALUES (?,?,?,0,0,0,0,'atcon',now());
 EOS;
 // now insert the master transaction
 $paramarray = array($conid + 1, $member['perid'], $user_id);

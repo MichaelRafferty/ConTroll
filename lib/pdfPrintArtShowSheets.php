@@ -496,7 +496,7 @@ EOS;
 
 // pdfArtistControlSheet.php - creates the control sheet as a web page for printing
 
-function pdfArtistControlSheet($regionYearId, $region, $response) {
+function pdfArtistControlSheet($regionYearId, $region, $response, $printContactInfo = false) {
     $con = get_conf('con');
     if (array_key_exists('currency', $con)) {
         $currency = $con['currency'];
@@ -865,7 +865,11 @@ EOS;
                 printXY($cStatus, $v, 'Status');
                 mprintXY($cFinal, $v, $wFinal, 'Winning Bid');
                 printXY($cWin, $v, 'Bidder');
-                printXY($cWEmail, $v, 'Bidder Email');
+                if ($printContactInfo === true) {
+                    printXY($cWEmail, $v, 'Bidder Email');
+                } else {
+                    printXY($cWEmail, $v, 'Bidder Id');
+                }
 
                 $bv = $v - ($boxOffset + $pt);
                 $boxHeight = 2 * $minRowHeight;
@@ -921,7 +925,11 @@ EOS;
                 rightPrintXY($cFinal, $v, $wFinal, $dolfmt->formatCurrency((float)$artItem['final_price'], $currency));
             $y = mprintXY($cWin, $v, $wWin, $winnerName);
             if ($y > $maxY) $maxY = $y;
-            $y = mprintXY($cWEmail, $v, $wWEmail, $winnerEmail);
+            if ($printContactInfo === true) {
+                $y = mprintXY($cWEmail, $v, $wWEmail, $winnerEmail);
+            } else {
+                $y = mprintXY($cWEmail, $v, $wWEmail, $winnerPerid);
+            }
             if ($y > $maxY) $maxY = $y;
 
             // now draw the borders
