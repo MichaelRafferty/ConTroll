@@ -392,7 +392,7 @@ logWrite(array('con' => $conid, $portalName => $exhibitor, 'region' => $region, 
 
 
 $txnQ = <<<EOS
-INSERT INTO reg.payments (transid, type, category, description, source, pretax, tax, amount, time, nonce, cc_approval_code, txn_time, userPerid)
+INSERT INTO payments (transid, type, category, description, source, pretax, tax, amount, time, nonce, cc_approval_code, txn_time, userPerid)
 VALUES (?,?,?,?,?,?,?,?,NOW(),?,?,NOW(),?);
 EOS;
 $typestr = 'issssdddssi';
