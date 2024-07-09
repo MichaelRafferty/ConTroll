@@ -10,7 +10,7 @@ Database Calling Sequences
         $query is the text string of the query.  Variable substitution is performed with the prepare and ? notation of mysql/mariadb.
         $typestr is the string concatenating the data type of each argument in the $valueArray
             i = integer
-            d = float
+            d = fixed ppint decimal and floating point
             s = string
             b = blob
         $valueArray = array of values of each parameter to be substituted

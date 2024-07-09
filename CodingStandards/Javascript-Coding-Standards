@@ -1,7 +1,7 @@
 ConTroll Javascript Coding Standards
 (This file is a work in progress, it's just a start for now)
 
-ConTroll uses Bootstrap 5 and Tabulator 5 for Javascript Display
+ConTroll uses Bootstrap 5 and Tabulator 6 for Javascript Display
 
 Variable Naming Rules
     While ConTroll has lots of legacy code, going forward variables should be in lowerCamelCase.
