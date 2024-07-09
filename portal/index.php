@@ -242,18 +242,28 @@ EOS;
         if ($updcnt != 1) {
             web_error_log("Error updating link $linkid as used");
         }
-    }
 
-    // set expiration for email
-    if (array_key_exists('emailhrs', $portal_conf)) {
-        $hrs = $portal_conf['emailhrs'];
+        // set expiration for email
+        if (array_key_exists('emailhrs', $portal_conf)) {
+            $hrs = $portal_conf['emailhrs'];
+        }
+        else {
+            $hrs = 24;
+        }
+        $tokenType = 'token';
     } else {
-        $hrs = 24;
+        if (array_key_exists('oauthhrs', $portal_conf)) {
+            $hrs = $portal_conf['emailhrs'];
+        }
+        else {
+            $hrs = 8;
+        }
+        $tokenType = getSessionVar('oauth2');
     }
     if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 24;
     setSessionVar('tokenExpiration', time() + ($hrs * 3600));
     setSessionVar('email', $email);
-    setSessionVar('tokenType', 'token');
+    setSessionVar('tokenType', $tokenType);
 
     // now choose the account from the email
     $account = chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, 'token');
