@@ -370,7 +370,7 @@ class PaymentPlans {
                     numPayments = this.#computedOrig.maxPayments;
                 }
                 paymentAmt = Math.ceil(100 * balanceDue / numPayments) / 100;
-                messageHTML += "Payment cannot be less than " +  Number(plan.minPayment).tofixed(2) + "<br/>";
+                messageHTML += "Payment cannot be less than " +  Number(plan.minPayment).toFixed(2) + "<br/>";
             }
         } else if (down != this.#computedPlan.downPayment) {
             console.log('down changed');
@@ -380,7 +380,7 @@ class PaymentPlans {
             }
             if (down > (this.#computedOrig.planAmt - plan.minPayment)) {
                 down = this.#computedOrig.planAmt - plan.minPayment;
-                messageHTML += "Down payment adjusted to allow for one payment greater than the plan minimum payment of " + Number(plan.minPayment).tofixed(2) + "<br/>";
+                messageHTML += "Down payment adjusted to allow for one payment greater than the plan minimum payment of " + Number(plan.minPayment).toFixed(2) + "<br/>";
             }
             // recompute balance due
             balanceDue = this.#computedPlan.planAmt - down;
