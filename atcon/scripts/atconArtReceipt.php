@@ -1,15 +1,13 @@
 <?php
 require("../lib/base.php");
 
-$atcon_info = get_conf('atcon');
-
 function initReceipt() {
   $con = get_conf('con');
   $width = 30;
   $pad = floor($width/2 + strlen("Receipt")/2);
   $return = "\n" . sprintf("%${pad}s", "Receipt") . "\n";
   $pad = floor($width/2 + strlen($con['label'])/2);
-  $return = "\n" . sprintf("%${pad}s", $con['label']) . "\n";
+  $return .= "\n" . sprintf("%${pad}s", $con['label']) . "\n";
 
   date_default_timezone_set("America/New_York");
   $date = date("M j, Y H:m:s");
@@ -21,51 +19,53 @@ function initReceipt() {
     return $return;
 }
 function closeReceipt($info) {
-  $width=30;
+    $atcon_info = get_conf('atcon');
 
-  $type=$info['type'];
-  $sub = $info['price'];
-  $tax = $info['tax'];
-  $total=$info['withtax'];
-  $amt = $info['amount'];
-  $change = $info['change_due'];
-  $desc = $info['description'];
-  $cc_num = $info['cc'];
-  $cc_code = $info['cc_approval_code'];
+    $width = 30;
 
-  $return = "\n";
-  if($sub>0) {
-  $subStr = sprintf("%01.2f", $sub);
-  $pad = $width - strlen("Subtotal:");
-  $return .= "Subtotal:" . sprintf("%${pad}s",$subStr) . "\n";
+    $type = $info['type'];
+    $sub = $info['price'];
+    $tax = $info['tax'];
+    $total = $info['withtax'];
+    $amt = $info['amount'];
+    $change = $info['change_due'];
+    $desc = $info['description'];
+    $cc_num = $info['cc'];
+    $cc_code = $info['cc_approval_code'];
 
-  $subTax = sprintf("%01.2f", $tax);
-  $pad = $width - strlen("+ Tax:");
-  $return .= "+ Tax:" . sprintf("%${pad}s",$subTax) . "\n";
-  }
+    $return = "\n";
+    if ($sub > 0) {
+        $subStr = sprintf("%01.2f", $sub);
+        $pad = $width - strlen("Subtotal:");
+        $return .= "Subtotal:" . sprintf("%${pad}s", $subStr) . "\n";
 
-  $subTotal = sprintf("%01.2f", $total);
-  $pad = $width - strlen("Total:");
-  $return .= "Total:" . sprintf("%${pad}s",$subTotal) . "\n";
+        $subTax = sprintf("%01.2f", $tax);
+        $pad = $width - strlen("+ Tax:");
+        $return .= "+ Tax:" . sprintf("%${pad}s", $subTax) . "\n";
+    }
 
-  $subAmt = sprintf("%01.2f", $amt);
-  $pad = $width - strlen("Payment Received: $type");
-  $return .= "Payment Received" . sprintf("%${pad}s",$subAmt) . "\n";
-  if($type == "check") {
-    $return .= "  - Check #$desc\n";
-  }
-  if($type == "credit") {
-    $return .= "  - Card: " . $cc_num . "\n";
-    $return .= "  - Auth: " . $cc_code . "\n";
-  }
-  $return .= "\n";
+    $subTotal = sprintf("%01.2f", $total);
+    $pad = $width - strlen("Total:");
+    $return .= "Total:" . sprintf("%${pad}s", $subTotal) . "\n";
 
-  $subCng = sprintf("%01.2f", $change);
-  $pad = $width - strlen("Change:");
-  $return .= "Change:" . sprintf("%${pad}s",$subCng) . "\n";
-  $return .= "\n\n" . $atcon_info['endnote'] . "\n\n\n\n";
+    $subAmt = sprintf("%01.2f", $amt);
+    $pad = $width - strlen("Payment Received: $type");
+    $return .= "Payment Received" . sprintf("%${pad}s", $subAmt) . "\n";
+    if ($type == "check") {
+        $return .= "  - Check #$desc\n";
+    }
+    if ($type == "credit") {
+        $return .= "  - Card: " . $cc_num . "\n";
+        $return .= "  - Auth: " . $cc_code . "\n";
+    }
+    $return .= "\n";
 
-  return $return;
+    $subCng = sprintf("%01.2f", $change);
+    $pad = $width - strlen("Change:");
+    $return .= "Change:" . sprintf("%${pad}s", $subCng) . "\n";
+    $return .= "\n\n" . $atcon_info['endnote'] . "\n\n\n\n";
+
+    return $return;
 }
 
 
