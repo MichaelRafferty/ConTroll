@@ -20,13 +20,6 @@ require_once(__DIR__ . '/../../lib/global.php');
 db_connect();
 session_start();
 
-$db_conf = get_conf('mysql');
-if (array_key_exists('php_timezone', $db_conf)) {
-    date_default_timezone_set($db_conf['php_timezone']);
-} else {
-    date_default_timezone_set('America/New_York'); // default if not configured
-}
-
 function vendor_page_init($title) {
 $cdn = getTabulatorIncludes();
 $tabbs5=$cdn['tabbs5'];

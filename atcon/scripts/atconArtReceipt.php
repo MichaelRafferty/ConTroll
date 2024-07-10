@@ -9,15 +9,6 @@ function initReceipt() {
     $pad = floor($width / 2 + strlen($con['label']) / 2);
     $return .= "\n" . sprintf("%${pad}s", $con['label']) . "\n";
 
-    $db_conf = get_conf('mysql');
-    if (array_key_exists('php_timezone', $db_conf)) {
-        date_default_timezone_set($db_conf['php_timezone']);
-    }
-    else {
-        date_default_timezone_set('America/New_York'); // default if not configured
-    }
-
-
     $date = date("M j, Y H:m:s");
     $pad = floor($width / 2 + strlen($date) / 2);
     $return .= sprintf("%${pad}s", $date) . "\n";
