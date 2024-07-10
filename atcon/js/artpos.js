@@ -1089,8 +1089,8 @@ function pay_shown() {
         payHtml += `
     <div class="row mt-1">
         <div class="col-sm-4 ms-0 me-0 p-0"></div>
-        <div class="col-sm-2 ms-0 me-0 p-0 text-end"><b>Remaining<br/>Balance</b></div>
-        <div class="col-sm-2 ms-0 me-0 p-0 text-end"><b>This<br/>Payment</b></div>
+        <div class="col-sm-3 ms-0 me-0 p-0 text-end"><b>Remaining<br/>Balance</b></div>
+        <div class="col-sm-3 ms-0 me-0 p-0 text-end"><b>This<br/>Payment</b></div>
     </div>        
 `;
         // if tax rate exists show tax items
@@ -1098,13 +1098,13 @@ function pay_shown() {
             payHtml += `
     <div class="row mt-1">
         <div class="col-sm-4 m-0 p-0">Art Total:</div>
-        <div class="col-sm-2 m-0 p-0 text-end" id="total-art-due">$` + Number(total_art_due).toFixed(2) + `</div>
-        <div class="col-sm-2 m-0 p-0 text-end" id="thisPay-art">$` + Number(thisPay_art).toFixed(2) + `</div>
+        <div class="col-sm-3 m-0 p-0 text-end" id="total-art-due">$` + Number(total_art_due).toFixed(2) + `</div>
+        <div class="col-sm-3 m-0 p-0 text-end" id="thisPay-art">$` + Number(thisPay_art).toFixed(2) + `</div>
     </div>
     <div class="row mt-2">
         <div class="col-sm-4 m-0 p-0">` + config['taxLabel'] + ' ' + config['taxRate'] + ` % sales tax (if paid in full):</div>
-        <div class="col-sm-2 m-0 p-0 text-end" id="total-tax-due">$` + Number(total_tax_due).toFixed(2) + `</div>
-        <div class="col-sm-2 m-0 p-0 text-end" id="thisPay-tax">$` + Number(thisPay_tax).toFixed(2) + `</div>
+        <div class="col-sm-3 m-0 p-0 text-end" id="total-tax-due">$` + Number(total_tax_due).toFixed(2) + `</div>
+        <div class="col-sm-3 m-0 p-0 text-end" id="thisPay-tax">$` + Number(thisPay_tax).toFixed(2) + `</div>
     </div>
 `;
     }
@@ -1112,13 +1112,13 @@ function pay_shown() {
     payHtml += `
     <div class="row mt-1">
         <div class="col-sm-4 m-0 p-0">Amount Due:</div>
-        <div class="col-sm-2 m-0 p-0 text-end" id="total-amt-due">$` + Number(total_amount_due).toFixed(2) + `</div>
-        <div class="col-sm-2 m-0 p-0 text-end" id="thisPay-total">$` + Number(thisPay_total).toFixed(2) + `</div>
+        <div class="col-sm-3 m-0 p-0 text-end" id="total-amt-due">$` + Number(total_amount_due).toFixed(2) + `</div>
+        <div class="col-sm-3 m-0 p-0 text-end" id="thisPay-total">$` + Number(thisPay_total).toFixed(2) + `</div>
     </div>
     <div class="row mt-2">
         <div class="col-sm-4 m-0 p-0">Amount of "Art Total" to pay:</div>
-        <div class="col-sm-2 m-0 p-0 text-end"><button class="btn btn-sm btn-primary" type="button" onclick="setPayAmt('full');">Pay In Full</button></div>
-        <div class="col-sm-2 m-0 p-0 text-end"><input type="number" inputmode="numeric" class="no-spinners" id="pay-amt" name="paid-amt" onchange="setPayAmt('');" style="width: 7em;"/></div>
+        <div class="col-sm-3 m-0 p-0 text-end"><button class="btn btn-sm btn-primary" type="button" onclick="setPayAmt('full');">Pay In Full</button></div>
+        <div class="col-sm-3 m-0 p-0 text-end"><input type="number" inputmode="numeric" class="no-spinners" id="pay-amt" name="paid-amt" onchange="setPayAmt('');" style="width: 7em;"/></div>
     </div>
     <div class="row">
         <div class="col-sm-4 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
