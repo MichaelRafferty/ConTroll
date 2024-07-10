@@ -19,6 +19,7 @@
 /onlinereg/images/
 /vendor/images/
 /install/Reg_Install_Schema/old/
+/portal/images
 
 # stuff for local overrides
 .htaccess
