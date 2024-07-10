@@ -2,22 +2,31 @@
 require("../lib/base.php");
 
 function initReceipt() {
-  $con = get_conf('con');
-  $width = 30;
-  $pad = floor($width/2 + strlen("Receipt")/2);
-  $return = "\n" . sprintf("%${pad}s", "Receipt") . "\n";
-  $pad = floor($width/2 + strlen($con['label'])/2);
-  $return .= "\n" . sprintf("%${pad}s", $con['label']) . "\n";
+    $con = get_conf('con');
+    $width = 30;
+    $pad = floor($width / 2 + strlen("Receipt") / 2);
+    $return = "\n" . sprintf("%${pad}s", "Receipt") . "\n";
+    $pad = floor($width / 2 + strlen($con['label']) / 2);
+    $return .= "\n" . sprintf("%${pad}s", $con['label']) . "\n";
 
-  date_default_timezone_set("America/New_York");
-  $date = date("M j, Y H:m:s");
-  $pad =  floor($width/2 + strlen($date)/2);
-  $return .= sprintf("%${pad}s", $date) . "\n";
+    $db_conf = get_conf('mysql');
+    if (array_key_exists('php_timezone', $db_conf)) {
+        date_default_timezone_set($db_conf['php_timezone']);
+    }
+    else {
+        date_default_timezone_set('America/New_York'); // default if not configured
+    }
 
-  $return .= "\n" . str_repeat('-',$width) . "\n";
+
+    $date = date("M j, Y H:m:s");
+    $pad = floor($width / 2 + strlen($date) / 2);
+    $return .= sprintf("%${pad}s", $date) . "\n";
+
+    $return .= "\n" . str_repeat('-', $width) . "\n";
 
     return $return;
 }
+
 function closeReceipt($info) {
     $atcon_info = get_conf('atcon');
 

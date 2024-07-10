@@ -18,7 +18,12 @@ require_once('../../lib/pdfPrintArtShowSheets.php');
 db_connect();
 session_start();
 
-date_default_timezone_set('America/New_York');
+$db_conf = get_conf('mysql');
+if (array_key_exists('php_timezone', $db_conf)) {
+    date_default_timezone_set($db_conf['php_timezone']);
+} else {
+    date_default_timezone_set('America/New_York'); // default if not configured
+}
 
 $response = array('post' => $_POST, 'get' => $_GET);
 if(!array_key_exists('type', $_GET) || !array_key_exists('region', $_GET) || !array_key_exists('eyID', $_SESSION)) {
