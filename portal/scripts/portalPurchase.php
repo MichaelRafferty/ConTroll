@@ -367,7 +367,7 @@ if (array_key_exists('regconfirmcc', $conf)) {
     if ($regconfirmcc == '')
         $regconfirmcc = null;
 }
-$return_arr = send_email($conf['regadminemail'], trim($info['email_addr']), /* cc */ $regconfirmcc, $condata['label'] . ' Registration Portal Paymnet Receipt', $body, /* htmlbody */ null);
+$return_arr = send_email($conf['regadminemail'], trim($info['email_addr']), /* cc */ $regconfirmcc, $condata['label'] . ' Registration Portal Payment Receipt', $body, /* htmlbody */ null);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];
