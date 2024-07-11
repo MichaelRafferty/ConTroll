@@ -19,8 +19,6 @@ require_once(__DIR__ . '/../../lib/global.php');
 db_connect();
 session_start();
 
-date_default_timezone_set("America/New_York");
-
 function isWebRequest()
 {
     return isset($_SERVER) && isset($_SERVER['HTTP_USER_AGENT']);
@@ -570,7 +568,7 @@ EOS;
         if (mb_substr($printer['printerType'], 0, 7) == 'generic') $genericFound = true;
         if (mb_substr($printer['printerType'], 0, 7) == 'receipt') $receiptFound = true;
     }
-    mysqli_free_result($printerR);
+    $printerR->free();
 
     $html = <<<EOS
     <div class='row'>
@@ -631,7 +629,7 @@ EOS;
 EOS;
         foreach ($printers as $key => $printer) {
             if (mb_substr($printer['printerType'], 0, 7) == 'generic') {
-                '<option value="' . escape_quotes($key) . ':::' . escape_quotes($printer['address']) .
+                $html .= '<option value="' . escape_quotes($key) . ':::' . escape_quotes($printer['address']) .
                 ':-:' . escape_quotes($printer['printerName']) . ':-:' . escape_quotes($printer['printerType']) .
                 ':-:' . escape_quotes($printer['codePage']) . '">' . $key . "</option>\n";
             }
