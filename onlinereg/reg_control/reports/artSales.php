@@ -15,25 +15,31 @@ $conid=$con['id'];
 header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="art_sales.csv"');
 
-$query = "SELECT"
-    . " V.name"
-    . ", s.a_total, p.p_total"
-    . ", TRIM(concat_ws(' ', artist.ship_addr, artist.ship_addr2, artist.ship_city, artist.ship_state, artist.ship_zip, artist.ship_country))"
-    . " FROM artshow as A JOIN artist ON artist.id=A.artid"
-        . " JOIN vendors AS V on V.id=artist.vendor"
-        . " LEFT JOIN (SELECT A.art_key, SUM(I.final_price) as a_total"
-            . " FROM artshow as A JOIN artItems as I ON I.artshow=A.id"
-            . " WHERE A.conid=$conid and I.type='art'"
-            . " GROUP BY A.art_key) as s"
-            . " ON s.art_key=A.art_Key"
-        . " LEFT JOIN (SELECT A.art_key"
-            . ", SUM(I.sale_price * (I.original_qty - I.quantity)) as p_total"
-            . " FROM artshow as A JOIN artItems as I ON I.artshow=A.id"
-            . " WHERE A.conid=$conid and I.type='print'"
-            . " GROUP BY A.art_key) as p"
-            . " ON p.art_key=A.art_Key"
-    . " WHERE A.conid=$conid"
-    . " GROUP BY A.art_key;";
+$query = <<<EOS
+SELECT e.id, e.exhibitorName, eRY.exhibitorNumber, sum(a.a_total) as a_total, sum(p.p_total) as p_total,
+TRIM(concat_ws(' ', e.addr, e.addr2, e.city, e.state, e.zip, e.country)) as address,
+TRIM(concat_ws(' ', e.shipCompany, e.shipAddr, e.shipAddr2, e.shipCity, e.shipState, e.shipZip, e.shipCountry)) as shipAddr
+FROM exhibitors e 
+    join exhibitorYears eY on eY.exhibitorId=e.id
+    join exhibitorRegionYears eRY on eRY.exhibitorYearId = eY.id
+    join exhibitsRegionYears xRY on xRY.id = eRY.exhibitsRegionYearId
+    JOIN exhibitsRegions xR on xR.id=xRY.exhibitsRegion
+    LEFT JOIN (SELECT eRY.id as eRY, I.item_key, sum(I.final_price) as a_total 
+            FROM artItems I 
+                JOIN exhibitorRegionYears eRY ON eRY.id=I.exhibitorRegionYearId
+                join exhibitorYears eY on eRY.exhibitorYearId = eY.id
+            WHERE I.type='art' and eY.conId=? and I.status!='Checked Out'
+            GROUP BY eRY.id) as a 
+        ON a.eRY = eRY.id
+    LEFT JOIN (SELECT eRY.id as eRY, I.item_key, sum(I.sale_price * (I.original_qty-I.quantity)) as p_total 
+            FROM artItems I 
+                JOIN exhibitorRegionYears eRY ON eRY.id=I.exhibitorRegionYearId
+                join exhibitorYears eY on eRY.exhibitorYearId = eY.id
+            WHERE I.type='print' and eY.conId=?
+            GROUP BY eRY.id) as p 
+        ON p.eRY = eRY.id
+where eY.conid=? and xR.regionType='Art Show' group by e.id;
+EOS;
 
 //echo $query; exit();
 
@@ -41,14 +47,14 @@ $query = "SELECT"
 echo "Artist, Total, Address"
     . "\n";
 
-$reportR = dbQuery($query);
-while($reportL = fetch_safe_array($reportR)) {
-    $total = $reportL[1] + $reportL[2];
+$reportR = dbSafeQuery($query, 'iii', array($conid, $conid, $conid));
+while($reportL = $reportR->fetch_assoc()) {
+    #echo '"' . $reportL['exhibitorName'] . '","' . $reportL['a_total'] . '","' . $reportL['p_total'] . '","n/a","' . $reportL['address'] . "\"\n";
+    if($reportL['a_total'] == NULL) $reportL['a_total'] = 0;
+    if($reportL['p_total'] == NULL) $reportL['p_total'] = 0;
+    $total = $reportL['a_total'] + $reportL['p_total'];
     if($total > 0) {
-        printf("\"%s\",", html_entity_decode($reportL[0], ENT_QUOTES | ENT_HTML401));
-        printf("\"%s\",", $total);
-        printf("\"%s\",", html_entity_decode($reportL[3], ENT_QUOTES | ENT_HTML401));
-        echo "\n";
+        echo '"' . $reportL['exhibitorName'] . '","'. $total. '","' . $reportL['address'] . "\"\n";
     }
 }
 

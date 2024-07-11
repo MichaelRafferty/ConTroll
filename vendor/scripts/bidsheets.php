@@ -18,8 +18,6 @@ require_once('../../lib/pdfPrintArtShowSheets.php');
 db_connect();
 session_start();
 
-date_default_timezone_set('America/New_York');
-
 $response = array('post' => $_POST, 'get' => $_GET);
 if(!array_key_exists('type', $_GET) || !array_key_exists('region', $_GET) || !array_key_exists('eyID', $_SESSION)) {
     echo "Invalid Session\n";

@@ -5,12 +5,15 @@ exhibitorProfile = null;
 region_list = null;
 exhibits_spaces = null;
 exhibitor_spacelist = null;
+exhibitor_perm = null;
 regions = null;
 spaces =null;
 country_options = null;
 tabname = null;
+fulltabname = null;
 regionid = null;
 exhibitorsData = null;
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // exhibitors class - functions for spae ownerto review and approve spaces requested by exhibitors
 class exhibitorsAdm {
@@ -57,6 +60,12 @@ class exhibitorsAdm {
     #currentSpaceTab = null;
     #spacesTabs = {};
 
+    // mail order - exhibitor choice items
+    #exhibitorChooseModal = null;
+    #exhibitorChooseTitle = null;
+    #exhibitorHtml = null;
+    #exhibitorListTable = null;
+
     constructor(conid, debug) {
         this.#debug = debug;
         this.#conid = conid;
@@ -86,6 +95,13 @@ class exhibitorsAdm {
         id = document.getElementById("locations_edit");
         if (id)
             this.#locationsModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+
+        id = document.getElementById("exhibitor_choose");
+        if (id) {
+            this.#exhibitorChooseModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#exhibitorChooseTitle = document.getElementById('exhibitor_choose_title');
+            this.#exhibitorHtml = document.getElementById('exhibitorHtml');
+        }
 
         // owners
         this.#ownerTabs['overview'] = document.getElementById('overview-content');
@@ -170,6 +186,7 @@ class exhibitorsAdm {
 
     // open(tabname) - fetch the data and re-draw the region tab
     open(newtabname) {
+        fulltabname = newtabname;
         tabname = regionTabNames[newtabname]['name'];
         regionid = regionTabNames[newtabname]['id'];
 
@@ -181,7 +198,9 @@ class exhibitorsAdm {
             url: "scripts/exhibitorsGetData.php",
             method: "POST",
             data: { region: tabname, regionId: regionid },
-            success: getExhibitorDataDraw,
+            success: function (data, textstatus, jqXHR) {
+            exhibitors.draw(data);
+            },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in getExhibitorData: " + textStatus, jqXHR);
                 return false;
@@ -199,6 +218,8 @@ class exhibitorsAdm {
         this.#pricelists = data['price_list'];
         if (data['locationsUsed'])
             this.#locationsUsed = data['locationsUsed'];
+
+        this.#regionId = data['post']['regionId'];
 
         if (this.#debug & 8)
             console.log(data);
@@ -302,7 +323,10 @@ class exhibitorsAdm {
             "    </div>\n" +
             "    <div class='row mt-2'>\n" +
             "        <div class='col-sm-12'>\n" +
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addVendorSpaceBtn' onClick=" + '"exhibitors.addNewSpace();"' + ">Add New Exhibitor Space</button>\n" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorSpaceBtn' onClick=" + '"exhibitors.addNewSpace();">' +
+                            "Add New / Pay for Exhibitor Space to Existing Exhibitor</button>\n" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn2' onClick=" + '"exhibitors.addNew();">' +
+                            "Add New Exhibitor</button>\n" +
             "        </div>\n" +
             "    </div>\n" +
             "</div></div>\n"
@@ -392,7 +416,7 @@ class exhibitorsAdm {
                 }
                 currentExhibitor = newExhibitor;
                 spaceSUM = '';
-                spaceHTML = '<div class="container-fluid" style="width: 700;">';
+                spaceHTML = '<div class="container-fluid" style="width: 700px;">';
                 req += space['requested_units'];
                 app += space['approved_units'];
                 pur += space['purchased_units'];
@@ -430,7 +454,7 @@ class exhibitorsAdm {
 
                 if (blankIfNull(space['requested_units']) != '') {
                     spaceHTML += '<div class="row"><div class="col-sm-2' + (blankIfNull(space['approved_units']) == '' ? ' text-danger' : '') + '">Requested: </div>' +
-                        '<div class="col-sm-2 text-right">' + blankIfNull(space['requested_units']) + '</div>' +
+                        '<div class="col-sm-2 text-end">' + blankIfNull(space['requested_units']) + '</div>' +
                         '<div class="col-sm-3">' + blankIfNull(space['requested_description']) + '</div>' +
                         '<div class="col-sm-4">' + blankIfNull(space['time_requested']) + '</div>' +
                         '</div>';
@@ -438,7 +462,7 @@ class exhibitorsAdm {
 
                 if (blankIfNull(space['approved_units']) != '') {
                     spaceHTML += '<div class="row"><div class="col-sm-2">Approved: </div>' +
-                        '<div class="col-sm-2 text-right">' + blankIfNull(space['approved_units']) + '</div>' +
+                        '<div class="col-sm-2 text-end">' + blankIfNull(space['approved_units']) + '</div>' +
                         '<div class="col-sm-3">' + blankIfNull(space['approved_description']) + '</div>' +
                         '<div class="col-sm-4">' + blankIfNull(space['time_approved']) + '</div>' +
                         '</div>';
@@ -446,7 +470,7 @@ class exhibitorsAdm {
 
                 if (blankIfNull(space['purchased_units']) != '') {
                     spaceHTML += '<div class="row"><div class="col-sm-2">Purchased: </div>' +
-                        '<div class="col-sm-2 text-right">' + blankIfNull(space['purchased_units']) + '</div>' +
+                        '<div class="col-sm-2 text-end">' + blankIfNull(space['purchased_units']) + '</div>' +
                         '<div class="col-sm-3">' + blankIfNull(space['purchased_description']) + '</div>' +
                         '<div class="col-sm-4">' + blankIfNull(space['time_purchased']) + '</div>' +
                         '</div>';
@@ -521,7 +545,7 @@ class exhibitorsAdm {
                     {title: "Stage", field: "stage", headerSort: true, headerFilter: 'list', headerFilterParams: { values: ['Requested', 'Purchased', 'Approved'], },},
                     {title: "Summary", field: "summary", width: 200, headerSort: false, headerFilter: true, formatter: "textarea", },
                     {field: "space", visible: false},
-                    { title: "Actions", field: "s1", formatter: this.spaceButtons, maxWidth: 700, headerSort: false },
+                    { title: "Actions", field: "s1", formatter: this.spaceButtons, maxWidth: 900, headerSort: false },
                 ]});
         } else {
             this.#spacesTable.replaceData(regionsLocal);
@@ -770,7 +794,7 @@ class exhibitorsAdm {
             </div>
             <div class="row">
                 <div class="col-sm-2">Artist Name:</div>
-                <div class="col-sm-10 p-0 ms-0 me-0">\` + exhibitorData['artistName'] + \`</div>
+                <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorData['artistName'] + `</div>
             </div>
             <div class='row'>
                 <div class='col-sm-2'>Business Email:</div>
@@ -958,7 +982,9 @@ class exhibitorsAdm {
             buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.printPriceTags(' + id + ')" >Price Tags</button>&nbsp;';
             buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                'onclick="exhibitors.printControlSheet(' + id + ')" >Control Sheet</button>&nbsp;';
+                'onclick="exhibitors.printControlSheet(' + id + ', false)" >Control Sheet</button>&nbsp;';
+            buttons += '<button class="btn btn-sm btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                'onclick="exhibitors.printControlSheet(' + id + ', true)" >Control Sheet w/Emails</button>&nbsp;';
         }
 
         // agent
@@ -1113,10 +1139,10 @@ class exhibitorsAdm {
         window.open(script, "_blank")
     }
 
-    printControlSheet(id) {
+    printControlSheet(id, email) {
         this.#spaceRow = this.#spacesTable.getRow(id);
         var exhibitorData = this.#spaceRow.getData();
-        var script = "scripts/exhibitorsBidSheets.php?type=control&region=" + exhibitorData['regionYearId'] + "&eyid=" + exhibitorData['exhibitorYearId'];
+        var script = "scripts/exhibitorsBidSheets.php?type=control&region=" + exhibitorData['regionYearId'] + "&eyid=" + exhibitorData['exhibitorYearId'] + '&email=' + email;
         window.open(script, "_blank")
     }
 
@@ -1187,6 +1213,7 @@ class exhibitorsAdm {
         exhibits_spaces = data['exhibits_spaces'];
         exhibitor_info = data['exhibitor_info'];
         exhibitor_spacelist = data['exhibitor_spacelist'];
+        exhibitor_perm = data['exhibitor_perm'];
         // don't overwrite regions, it's already loaded and its correct for all uses in vendor, exhibitorRequest doesn't use it.
         spaces = data['spaces'];
         country_options = data['country_options'];
@@ -1199,15 +1226,131 @@ class exhibitorsAdm {
 
         show_message("Not Yet", 'warn');
     }
+
+    // add exhibitor space - selecting the exhibitor and the space
+    addNewSpace() {
+        clear_message();
+        this.#exhibitorChooseTitle.innerHTML = 'Add Space to Which Exhibitor? (only exhibitors with no paid spaces in this region are shown)';
+        var script = 'scripts/exhibitorsGetList.php';
+        var data = {
+            regionId: this.#regionId,
+            action: 'list',
+        };
+        $.ajax({
+            url: script,
+            data: data,
+            method: "POST",
+            success: function (data, textstatus, jqXHR) {
+                exhibitors.getListSuccess(data);
+            },
+            error: showAjaxError
+        });
+    }
+
+    // getListSuccess - process the return of the list data
+    getListSuccess(data) {
+        if (data['error']) {
+            console.log(data);
+            show_message(data['error'], 'error');
+            return;
+        }
+        if (data['exhibitors'].length == 0) {
+            show_message('All exhibitors have already paid for their space.  Use Add New Exhibitor if necessary to add this mail order exhibitor.', 'warn');
+            return;
+        }
+        if (data['message']) {
+            show_message(data['message'], 'success', 'ce_message_div');
+        }
+        this.#exhibitorChooseModal.show();
+        this.#exhibitorListTable = new Tabulator('#exhibitorHtml', {
+            data: data['exhibitors'],
+            layout: "fitDataTable",
+            index: 'id',
+            pagination: true,
+            paginationSize: 25,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            columns: [
+                {title: "ID", field: "exhibitorId", visible: true, width: 65, },
+                {title: "Artist Name", field: "artistName", headerFilter: true, visible: true, width: 200, },
+                {title: "Name", field: "exhibitorName", headerFilter: true, visible: true, width: 200, },
+                {title: "Email", field: "exhibitorEmail", headerFilter: true, visible: true, width: 200, },
+                {title: "Website", field: "website", headerFilter: true, visible: true, width: 200, },
+                {title: "City", field: "city", visible: true, headerFilter: true, width: 200, },
+                {title: "State", field: "state", visible: true, headerFilter: true, width: 100, },
+                {title: "Zip", field: "zip", visible: true, headerFilter: true, width: 100, },
+                {title: "Actions", field: "s1", formatter: this.exhibitorListButtons, maxWidth: 300, headerSort: false },
+        ]});
+    }
+
+    // buttons for the exhibitorListTable
+    exhibitorListButtons(cell, formatterParams, onRendered) {
+        var data = cell.getData();
+        var id = data['exhibitorId'];
+        var buttons = '';
+
+        // add space button button
+        buttons += '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+            'onclick="exhibitors.addPaySpace(' + id + ')" >Add/Pay Space</button>&nbsp;';
+
+        return buttons;
+    }
+
+    // add/pay for space for an existing vendor
+    addPaySpace(id) {
+        clear_message();
+        this.#exhibitorId = id; // which exhibitor are we using
+
+        this.#exhibitorChooseModal.hide();
+        this.#exhibitorListTable.destroy();
+        this.#exhibitorListTable = null;
+        console.log("add/pay for space for exhibitor " + this.#exhibitorId + ', in exhibitsRegion ' + this.#regionId);
+
+        var script = 'scripts/exhibitorGetSingleData.php';
+        var data = {
+            exhibitorId: this.#exhibitorId,
+            regionId: this.#regionId,
+            action: 'get',
+        };
+        $.ajax({
+            url: script,
+            data: data,
+            method: "POST",
+            success: function (data, textstatus, jqXHR) {
+                exhibitors.getAddPaySpaceSuccess(data);
+            },
+            error: showAjaxError
+        });
+    }
+
+    // now we have the data draw the scrren
+    getAddPaySpaceSuccess(data) {
+        if (data['error']) {
+            console.log(data);
+            show_message(data['error'], 'error');
+            return;
+        }
+
+        if (data['message']) {
+            show_message(data['message'], 'success');
+        }
+        console.log('getAddPaySpaceSuccess');
+        console.log(data);
+
+        region_list = data['region_list'];
+        exhibits_spaces = data['exhibits_spaces'];
+        exhibitor_info = data['exhibitor_info'];
+        exhibitor_spacelist = data['exhibitor_spacelist'];
+        this.#regionYearId = data['exhibitor_perm']['exhibitsRegionYearId'];
+        // don't overwrite regions, it's already loaded and its correct for all uses in vendor, exhibitorRequest doesn't use it.
+        spaces = data['spaces'];
+        country_options = data['country_options'];
+        exhibitorRequest.openReq(this.#regionYearId, 3);
+    }
 };
 
 exhibitors = null;
 
 // hook to public class function for exhibitor draw
-function getExhibitorDataDraw(data, textStatus, jqXHR) {
-    exhibitors.draw(data);
-}
-
 function updateExhibitorDataDraw(data, textStatus, jqXHR) {
     exhibitors.redraw(data);
 }
@@ -1217,249 +1360,5 @@ window.onload = function initpage() {
     exhibitors = new exhibitorsAdm(config['conid'], config['debug']);
     exhibitorRequestOnLoad();
     exhibitorReceiptOnLoad();
+    exhibitorInvoiceOnLoad();
 }
-
-/*
-var summaryDiv = null;
-var vendortable = null;
-var update_profile = null;
-var approve_space = null;
-var price_lists = null;
-var add_space= null;
-var space_map = {};
-var receipt_modal = null;
-var receipt_email_address = null;
-
-$(document).ready(function () {
-    id = document.getElementById('update_profile');
-    if (id != null) {
-        update_profile = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-    }
-    id = document.getElementById('approve_space');
-    if (id != null) {
-        approve_space = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-    }
-    id = document.getElementById('add_vendorSpace');
-    if (id != null) {
-        add_space = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-    }
-    id = document.getElementById('receipt');
-    if (id != null) {
-        receipt_modal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-        $('#receipt').on('hide.bs.modal', function () {
-            receipt_email_address = null;
-        });
-    }
-    getData();
-
-    for (var opt in spacePriceList) {
-        var price = spacePriceList[opt];
-        space_map[price['id']] = opt;
-    }
-});
-
-// allow entry of a new space type for a vendor
-function addNewSpace() {
-    // clear the form
-    document.getElementById("as_vendor").value = 0;
-    document.getElementById("as_space").value = 0;
-    document.getElementById("as_spaceType").value = 0;
-    document.getElementById("as_state").value = 'R';
-    document.getElementById("as_checkno").value = '';
-    document.getElementById("as_payment").value = '';
-    document.getElementById("as_included").value = 0;
-    document.getElementById('as_additional').value = 0;
-    document.getElementById("as_totaldue").value = '';
-    document.getElementById('as_payment').value = '';
-    document.getElementById('as_checkno').value = '';
-    document.getElementById('as_desc').value = '';
-    add_space.show();
-}
-
-// populate the space type pulldown for the add space modal
-function selectSpaceType() {
-    var spaceid = document.getElementById('as_space').value;
-    var options = "<option value='0'>No Space Selected</option>\n";
-    for (var opt in spacePriceList) {
-        var price = spacePriceList[opt];
-        if (price['spaceId'] == spaceid) {
-            options += "<option value='" + price['id'] + "'>" + price['description'] + " (for $" + price['price'] + ")</option>\n";
-        }
-    }
-    document.getElementById("as_spaceType").innerHTML = options;
-}
-
-// set the total amount due and set the limits on the included and additional memberships
-function selectSpacePrice() {
-    var spaceid = document.getElementById('as_space').value;
-    var spaceid = document.getElementById('as_space').value;
-    var priceid = document.getElementById("as_spaceType").value;
-    var price = spacePriceList[space_map[priceid]];
-
-    // set initial price for just the spaces
-    document.getElementById('as_totaldue').value = price['price'];
-
-    // build the included select list
-    var opt = "<option value='0'>0</option>\n";
-    for (var index = 1; index <= price['includedMemberships']; index++) {
-        opt += "<option value='" + index + "'>" + index + "</option>\n";
-    }
-    document.getElementById("as_included").innerHTML = opt;
-
-    // build the optional select list
-    var opt = "<option value='0'>0</option>\n";
-    for (var index = 1; index <= price['additionalMemberships']; index++) {
-        opt += "<option value='" + index + "'>" + index + " ($" + (index * price['additionalPrice']) + ")</option>\n";
-    }
-    document.getElementById("as_additional").innerHTML = opt;
-}
-
-// update the price for the number of additional memberships purchased
-function selectSpaceAdditional() {
-    var spaceid = document.getElementById('as_space').value;
-    var priceid = document.getElementById("as_spaceType").value;
-    var price = spacePriceList[space_map[priceid]];
-    var additional = document.getElementById('as_additional').value;
-
-    // set new price for the spaces plus additional
-    document.getElementById('as_totaldue').value = parseFloat(parseFloat(price['price'])  + additional * parseFloat(price['additionalPrice'])).toFixed(2);
-}
-
-// add vendor space to the vendor_spaces table from the modal
-function addVendorSpace() {
-    // validate minimum requirements
-    var dataarr = $('#add_space_form').serializeArray();
-    var data = {};
-    for (var item in dataarr) {
-        data[dataarr[item]['name']] = dataarr[item]['value'];
-    }
-
-    var missing_items = '';
-    if (data['vendor'] <= 0) {
-        missing_items += 'vendor,';
-    }
-    if (data['space'] <=  0) {
-        missing_items += 'space,';
-    }
-    if (data['type'] <=  0) {
-        missing_items += 'space type,';
-    }
-    if (data['state'] == 'P') {
-        if (data['checkno'] == '') {
-            missing_items += 'check number,';
-        }
-        if (data['payment'] == '') {
-            missing_items += 'payment amount,';
-        }
-    }
-
-    if (missing_items != '') {
-        missing_items = "Required fields missing: " + missing_items.substring(0, missing_items.length-1);
-        alert(missing_items);
-        return;
-    }
-
-    $.ajax({
-        url: 'scripts/addVendorSpace.php',
-        data: data,
-        method: 'POST',
-        success: function(data, textstatus, jqXHR) {
-            if(data['status'] == 'error') {
-                alert(data['message']);
-            } else {
-                console.log(data);
-                if (data['success'])
-                    alert(data['success']);
-                add_space.hide();
-                getData();
-            }
-        }
-    });
-}
-
-// display receipt: use the modal to show the receipt
-function displayReceipt(data) {
-    document.getElementById('receipt-div').innerHTML = data['receipt_html'];
-    document.getElementById('receipt-tables').innerHTML = data['receipt_tables'];
-    document.getElementById('receipt-text').innerHTML = data['receipt'];
-    receipt_email_address = data['payor_email'];
-    document.getElementById('emailReceipt').innerHTML = "Email Receipt to " + data['payor_name'] + ' at ' + receipt_email_address;
-    document.getElementById('receiptTitle').innerHTML = "Registration Receipt for " + data['payor_name'];
-    receipt_modal.show();
-}
-
-function receipt_email(addrchoice) {
-    var email = receipt_email_address;
-    var success='';
-    if (addrchoice == 'reg') {
-        email = document.getElementById('regadminemail').innerHTML;
-        success = 'Receipt sent to Regadmin at ' + email;
-    }
-
-    if (receipt_email_address == null)
-        return;
-
-    if (success == '')
-        success = document.getElementById('emailReceipt').innerHTML.replace("Email Receipt to", "Receipt sent to");
-
-    var data = {
-        email: email,
-        okmsg: success,
-        text: document.getElementById('receipt-text').innerHTML,
-        html: document.getElementById('receipt-tables').innerHTML,
-        subject: document.getElementById('receiptTitle').innerHTML,
-        success: success,
-    };
-    $.ajax({
-        method: "POST",
-        url: "scripts/emailReceipt.php",
-        data: data,
-        success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
-                return;
-            }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success');
-            }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
-            }
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            showError("ERROR in emailReceipt: " + textStatus, jqXHR);
-        }
-    });
-}
-// receipt - display a receipt for the transaction for this badge
-function receipt(index) {
-    var row = spacestable.getRow(index);
-    var transid = row.getCell("transid").getValue();
-    $.ajax({
-        method: "POST",
-        url: "scripts/getReceipt.php",
-        data: { transid },
-        success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
-                return;
-            }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success');
-            }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
-            }
-            displayReceipt(data);
-            if (data['success'] !== undefined)
-                show_message(data.success, 'success');
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            showError("ERROR in getReceipt: " + textStatus, jqXHR);
-        }
-    });
-
-}
-
-
- */

@@ -81,13 +81,13 @@ if(($paid + $amount) > $total) {
 }
 
 $paymentQ = <<<EOQ
-INSERT INTO payments (transid, userid, type, category, description, cc_approval_code, source, amount)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO payments (transid, userid, type, category, description, cc_approval_code, source, pretax, tax, amount)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOQ;
 
 $response['paymentQ'] = $paymentQ;
 $types = "iisssssd";
-$values = array($transid, $user, $type, 'reg', $description, $approvalcode, $user_s, $amount);
+$values = array($transid, $user, $type, 'reg', $description, $approvalcode, $user_s, $amount, 0, $amount);
 
 $payid = dbSafeInsert($paymentQ, $types, $values);
 

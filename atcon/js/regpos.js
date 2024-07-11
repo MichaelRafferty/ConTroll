@@ -2226,7 +2226,7 @@ function apply_coupon(cmd) {
 
 function pay_shown() {
     if (!isCashier) {
-        show_message("You do not have permission to handle payments", "warning");
+        show_message("You do not have permission to handle payments", "warn");
         return;
     }
     cart.clearInReview();

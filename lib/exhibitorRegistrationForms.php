@@ -209,7 +209,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions)
                                     </select>
                                 </div>
                             </div>
-                            <?php if ($portalType == 'artist') { /* TODO change this to 'mail-in allowed' */ ?>
+                            <?php if ($portalType == 'artist' || $portalType == 'admin') { /* TODO change this to 'mail-in allowed' */ ?>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
                                         <label for='mailin'> *Are you requesting a mail-in space: </label>

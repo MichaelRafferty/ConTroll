@@ -1211,15 +1211,15 @@ class reg_cart {
         var updated_perinfo = data['updated_perinfo'];
         for (rownum in updated_perinfo) {
             newrow = updated_perinfo[rownum];
-            cartrow = this.#cart_perinfo[newrow['rownum']]
+            cartrow = this.#cart_perinfo[newrow['rowpos']]
             cartrow['perid'] = newrow['perid'];
             cartrow['dirty'] = false;
         }
         var updated_membership = data['updated_membership'];
         for (rownum in updated_membership) {
             newrow = updated_membership[rownum];
-            cartrow = this.#cart_membership[newrow['rownum']];
-            //array('rownum' => $row, 'perid' => $cartrow['perid'], 'create_trans' => $master_perid, 'id' => $new_regid);
+            cartrow = this.#cart_membership[newrow['rowpos']];
+            //array('rowpos' => $row, 'perid' => $cartrow['perid'], 'create_trans' => $master_perid, 'id' => $new_regid);
             cartrow['create_trans'] = newrow['create_trans'];
             cartrow['regid'] = newrow['id'];
             cartrow['perid'] = newrow['perid'];

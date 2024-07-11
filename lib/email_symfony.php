@@ -90,6 +90,12 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody, $attachment
         }
     }
 
+    // clean up the to and cc address lists
+    $rtn = redirectTestEmails($to, $cc); // returns array of to, cc, subjectPrefix
+    $to = $rtn[0];
+    $cc = $rtn[1];
+    $subject = $rtn[2] . $subject;
+
     // now send the email
     try {
         $email = (new Email());

@@ -51,6 +51,12 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
         return $return_arr;
     }
 
+    // clean up the to and cc address lists
+    $rtn = redirectTestEmails($to, $cc); // returns array of to, cc, subjectPrefix
+    $to = $rtn[0];
+    $cc = $rtn[1];
+    $subject = $rtn[2] . $subject;
+
     $Destination = array();
     // to  can be single or array of addresses
     if (is_array($to)) {

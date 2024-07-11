@@ -25,6 +25,10 @@ if(!array_key_exists('type', $_GET) || !array_key_exists('region', $_GET) || !ar
 
 $eyID = $_GET['eyid'];
 $region = $_GET['region'];
+$email  = false;
+if (array_key_exists('email', $_GET)) {
+    $email = $_GET['email'] == 'true';
+}
 
 switch($_GET['type']) {
     case 'bidsheets':
@@ -34,7 +38,7 @@ switch($_GET['type']) {
         $response = pdfPrintShopPriceSheets($eyID, $region, $response);
         break;
     case 'control':
-        $response = pdfArtistControlSheet($eyID, $region, $response);
+        $response = pdfArtistControlSheet($eyID, $region, $response, $email);
         break;
     default:
 }

@@ -110,8 +110,8 @@ if (array_key_exists('country', $_POST)) {
         $country = "";
 }
 $share_ok = 'Y';
-if (array_key_exists('share_ok', $_POST)) {
-    $share_ok = trim($_POST['share_ok']);
+if (array_key_exists('share_reg', $_POST)) {
+    $share_ok = trim($_POST['share_reg']);
     if (is_null($share_ok))
         $share_ok = "Y";
 }

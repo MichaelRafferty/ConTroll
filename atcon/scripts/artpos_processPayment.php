@@ -71,7 +71,7 @@ if (array_key_exists('change', $_POST)) {
     $response['crow'] = $_POST['change'];
 }
 
-$amt = (float) $new_payment['amt'];
+$art = (float) $new_payment['pretax'];
 // validate that the payment amount is not too large
 $total_due = 0;
 foreach ($cart_art as $cart_row) {
@@ -95,27 +95,28 @@ foreach ($cart_art as $cart_row) {
     $total_due += $cart_row['amount'] - $cart_row['paid'];
 }
 
-if (round($amt,2) > round($total_due,2)) {
-    ajaxError('invalid payment amount passed exceeds total' . " amt: $amt total: $total_due");
+if (round($art,2) > round($total_due,2)) {
+    ajaxError('invalid payment amount passed exceeds total' . " art: $art total: $total_due");
     return;
 }
 
-$complete = round($amt,2) == round($total_due,2);
+$complete = round($art,2) == round($total_due,2);
 
 // now add the payment and process to which rows it applies
 $upd_rows = 0;
 $upd_cart = 0;
 $insPmtSQL = <<<EOS
-INSERT INTO payments(transid, type,category, description, source, amount, time, cc_approval_code, cashier)
-VALUES (?,?,'artshow',?,'cashier',?,now(),?, ?);
+INSERT INTO payments(transid, type, category, description, source, pretax, tax, amount, time, cc_approval_code, cashier)
+VALUES (?,?,'artshow',?,'cashier',?,?,?,now(),?, ?);
 EOS;
-$typestr = 'issssi';
+$typestr = 'issdddsi';
 if ($new_payment['type'] == 'check')
     $desc = 'Check No: ' . $new_payment['checkno'] . '; ';
 else
     $desc = '';
 $desc .= $new_payment['desc'];
-$paramarray = array($master_tid, $new_payment['type'], $desc, $new_payment['amt'], $new_payment['ccauth'], $user_id);
+$paramarray = array($master_tid, $new_payment['type'], $desc, $new_payment['pretax'], $new_payment['tax'], $new_payment['amt'], $new_payment['ccauth'],
+                    $user_id);
 $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
 if ($new_pid === false) {
     ajaxError("Error adding payment to database");
@@ -173,10 +174,10 @@ foreach ($cart_art as $cart_row) {
     $unpaid = $cart_row['amount'] - $cart_row['paid'];
     $quantity = $cart_row['purQuantity'];
     if ($unpaid > 0) {
-        $amt_paid = min($amt, $unpaid);
+        $amt_paid = min($art, $unpaid);
         $cart_row['paid'] += $amt_paid;
         $cart_art[$cart_row['index']] = $cart_row;
-        $amt -= $amt_paid;
+        $art -= $amt_paid;
         $upd_rows += dbSafeCmd($updArtSalesSQL, $atypestr, array($cart_row['paid'], $master_tid, $quantity, $cart_row['amount'], $cart_row['artSalesId']));
 
         // change status of items sold by quick sale to quicksale sold, decrease quantity of print items
@@ -200,10 +201,10 @@ foreach ($cart_art as $cart_row) {
 
     $updCompleteSQL = <<<EOS
 UPDATE transaction
-SET paid = IFNULL(paid,'0.00') + ?
+SET paid = IFNULL(paid,'0.00') + ?, tax = IFNULL(tax,'0') + ?, withtax = IFNULL(withtax,'0') + ?
 WHERE id = ?;
 EOS;
-$completed = dbSafeCmd($updCompleteSQL, 'si', array($new_payment['amt'], $master_tid));
+$completed = dbSafeCmd($updCompleteSQL, 'dddi', array($new_payment['amt'], $new_payment['tax'], $new_payment['tax'], $master_tid));
 $completed = 0;
 if ($complete) {
     // payment is in full, mark transaction complete

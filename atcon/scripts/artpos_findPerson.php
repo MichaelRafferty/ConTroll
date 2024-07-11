@@ -98,7 +98,7 @@ EOS;
         if ($transaction != null) {
             // get payments
             $paymentQ = <<<EOS
-SELECT id, transid, type, category, IFNULL(description, '') AS `desc`, source, amount AS amt, time
+SELECT id, transid, type, category, IFNULL(description, '') AS `desc`, source, amount AS amt, tax, pretax, time, cc_approval_code AS ccauth
 FROM payments
 WHERE transid = ? 
 EOS;
