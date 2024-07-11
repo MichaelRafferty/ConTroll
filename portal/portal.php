@@ -1,5 +1,5 @@
 <?php
-// Registration  Portal - [prta;].php - Main page for the membership portal
+// Registration  Portal - portal.php - Main page for the membership portal
 require_once("lib/base.php");
 require_once("lib/portalForms.php");
 require_once('lib/getAccountData.php');
@@ -31,12 +31,11 @@ if (isSessionVar('id') && isSessionVar('idType')) {
     exit();
 }
 
-    $con = get_conf('con');
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    } else {
-        $currency = 'USD';
-    }
+if (array_key_exists('currency', $con)) {
+    $currency = $con['currency'];
+} else {
+    $currency = 'USD';
+}
 
 $transId = getSessionVar('transId');
 $config_vars = array();

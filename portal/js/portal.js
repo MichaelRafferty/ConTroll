@@ -13,6 +13,7 @@ window.onload = function () {
 class Portal {
     // edit person modal
     #editPersonModal = null;
+    #editPersonModalElement = null;
     #editPersonTitle = null;
     #editPersonSubmitBtn = null;
     #epHeaderDiv = null;
@@ -44,14 +45,18 @@ class Portal {
     #fullname = null;
     #personSave = null;
     #uspsAddress = null;
+    #personSerializeStart = null;
 
     // interests fields
     #editInterestsModal = null;
+    #editInterestsModalElement = null;
     #editInterestsTitle = null;
     #eiHeaderDiv = null
     #eiPersonIdField = null
     #eiPersonTypeField = null;
     #interests = null;
+    #interestsSerializeStart = null;
+
 
     // payment fields
     #payBalanceBTN = null;
@@ -86,6 +91,7 @@ class Portal {
         var id;
         id = document.getElementById("editPersonModal");
         if (id) {
+            this.#editPersonModalElement = id;
             this.#editPersonModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#editPersonTitle = document.getElementById('editPersonTitle');
             this.#editPersonSubmitBtn = document.getElementById('editPersonSubmitBtn');
@@ -111,9 +117,15 @@ class Portal {
             this.#contactField = document.getElementById("contact");
             this.#shareField = document.getElementById("share");
             this.#uspsDiv = document.getElementById("uspsblock");
+
+            // now set up the stuff for the edit person modal actions
+            this.#editPersonModalElement.addEventListener('shown.bs.modal', () => {
+                this.#fnameField.focus()
+            })
         }
         id = document.getElementById("editInterestModal");
         if (id) {
+            this.#editInterestsModalElement = id;
             this.#editInterestsModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#editInterestsTitle = document.getElementById('editInterestsTitle');
             this.#eiHeaderDiv = document.getElementById('eiHeader');
@@ -280,7 +292,18 @@ class Portal {
         this.#shareField.checked = (person['share_reg_ok'] == null || person['share_reg_ok'] == 'Y');
         this.#contactField.checked = (person['contact_ok'] == null || person['contact_ok'] == 'Y');
 
+        this.#personSerializeStart = $("#editPerson").serialize();
         this.#editPersonModal.show();
+    }
+
+    // called on the close buttons for the modal, confirm close with changes pending
+    checkEditPersonClose() {
+        var beforeClose = $("#editPerson").serialize();
+        if (beforeClose != this.#personSerializeStart) {
+            if (!confirm("There are unsaved changes to the Edit Person Form.\nClick OK to close the form and discard the changes."))
+                return false;
+        }
+        this.#editPersonModal.hide();
     }
 
     // countryChange - if USPS and USA, then change button
@@ -614,9 +637,19 @@ class Portal {
             id.checked = interest.interested == 'Y';
         }
 
+        this.#interestsSerializeStart = $("#editInterests").serialize();
         this.#editInterestsModal.show();
     }
 
+    // called on the close buttons for the modal, confirm close with changes pending
+    checkEditInterestsClose() {
+        var beforeClose = $("#editInterests").serialize();
+        if (beforeClose != this.#interestsSerializeStart) {
+            if (!confirm("There are unsaved changes to the Edit Interests Form.\nClick OK to close the form and discard the changes."))
+                return false;
+        }
+        this.#editInterestsModal.hide();
+    }
     // editInterestsSubmit - save back the interests
     editInterestSubmit() {
         clear_message();

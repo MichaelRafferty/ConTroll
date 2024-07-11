@@ -56,7 +56,7 @@ function draw_editPersonModal() {
                     <div class='modal-title' id='editPersonTitle'>
                         <strong>Edit Person</strong>
                     </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                    <button type='button' class='btn-close' onclick="portal.checkEditPersonClose();" aria-label='Close'></button>
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
@@ -73,7 +73,7 @@ function draw_editPersonModal() {
                     </div>
                 </div>
                 <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10001'>Cancel</button>
+                    <button class='btn btn-sm btn-secondary' onclick='portal.checkEditPersonClose();' tabindex='10001'>Cancel</button>
                     <button class='btn btn-sm btn-primary' id='editPersonSubmitBtn' onClick="portal.editPersonSubmit()" tabindex='10002'>Update Person</button>
                 </div>
             </div>
@@ -456,7 +456,7 @@ function draw_editInterestsModal($interests) {
                     <div class='modal-title' id='editInterestsTitle'>
                         <strong>Edit Interests</strong>
                     </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                    <button type='button' class='btn-close' onclick='portal.checkEditInterestsClose();' aria-label='Close'></button>
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
@@ -478,7 +478,7 @@ function draw_editInterestsModal($interests) {
                     </div>
                 </div>
                 <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10301'>Cancel</button>
+                    <button class='btn btn-sm btn-secondary' onclick='portal.checkEditInterestsClose();' tabindex='10301'>Cancel</button>
                     <button class='btn btn-sm btn-primary' id='editInterestSubmitBtn' onClick="portal.editInterestSubmit()" tabindex='10302'>Update Interests</button>
                 </div>
             </div>
