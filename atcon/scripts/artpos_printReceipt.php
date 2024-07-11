@@ -17,6 +17,7 @@ $response = [];
 $con = get_conf('con');
 $conid = $con['id'];
 $atcon_info = get_conf('atcon');
+$vendor_conf = get_conf('vendor');
 $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
     $ajax_request_action = $_POST['ajax_request_action'];
@@ -129,12 +130,17 @@ if ($receipt_type == 'email') {
         $response['error'] = "No email recipeints specified";
     } else {
         load_email_procs();
+        if (array_key_exists('artist', $vendor_conf)) {
+            $from = $vendor_conf['artist'];
+        } else {
+            $from = $con['regadminemail'];
+        }
         $emails = $_POST['email_addrs'];
         foreach ($emails as $email_addr) {
             if (!filter_var($email_addr, FILTER_VALIDATE_EMAIL)) {
                 $response['error'] = "Unable to email receipt, email address of '$email_addr' is not in the valid format.";
             } else { // valid email, send the email
-                $return_arr = send_email($con['regadminemail'], $email_addr, null, $header, $receipt, null);
+                $return_arr = send_email($from, $email_addr, null, $header, $receipt, null);
                 if (array_key_exists('error_code', $return_arr)) {
                     $error_code = $return_arr['error_code'];
                 } else {
