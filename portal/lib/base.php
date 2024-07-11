@@ -212,7 +212,7 @@ function tabBar($page, $portal_conf, $info, $refresh = false) {
         if ($info['managedByName'] == null) {
             $page_list[] = ['name' => 'accountSettings', 'display' => 'Account Settings'];
         }
-        $page_list[] = ['name' => 'portalHelp" target="_blank', 'display' => 'Help'];
+        $page_list[] = ['name' => 'portalHelp.php" target="_blank', 'display' => 'Help'];
     }
 
     $active = $page == 'portal' ? 'active' : '';
