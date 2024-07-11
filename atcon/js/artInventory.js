@@ -86,8 +86,9 @@ function inventory() {
                 
                 start_over();
                 find_item('refresh');
-                }
-            });
+            },
+            error: showAjaxError,
+        });
 }
 
 function init_locations() {
@@ -100,8 +101,9 @@ function init_locations() {
             success: function(data, textStatus, jqXhr) {
                 locations = data['locations'];
                 $('#test').empty();
-                }
-            });
+            },
+            error: showAjaxError,
+        });
 }
 
 function addInventoryIcon(cell, formatterParams, onRendered) {
