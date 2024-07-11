@@ -1116,7 +1116,7 @@ function pay_shown() {
         <div class="col-sm-3 m-0 p-0 text-end" id="thisPay-total">$` + Number(thisPay_total).toFixed(2) + `</div>
     </div>
     <div class="row mt-2">
-        <div class="col-sm-4 m-0 p-0">Amount of "Art Total" to pay:</div>
+        <div class="col-sm-4 m-0 p-0">Amount to pay:</div>
         <div class="col-sm-3 m-0 p-0 text-end"><button class="btn btn-sm btn-primary" type="button" onclick="setPayAmt('full');">Pay In Full</button></div>
         <div class="col-sm-3 m-0 p-0 text-end"><input type="number" inputmode="numeric" class="no-spinners" id="pay-amt" name="paid-amt" onchange="setPayAmt('');" style="width: 7em;"/></div>
     </div>
@@ -1194,15 +1194,31 @@ function pay_shown() {
 function setPayAmt(type) {
     if (type == 'full') {
         thisPay_art = total_art_due;
-        document.getElementById('pay-amt').value = Number(thisPay_art);
         thisPay_tax = total_tax_due;
         thisPay_total = total_amount_due;
+        document.getElementById('pay-amt').value = Number(thisPay_total);
     } else {
-        thisPay_art = document.getElementById('pay-amt').value;
-        if (thisPay_art < 0 || thisPay_art > total_art_due)
-            thisPay_art = total_art_due;
-        thisPay_tax = Math.round(Number(thisPay_art) * Number(config['taxRate'])) / 100;
-        thisPay_total = Number(thisPay_art) + Number(thisPay_tax);
+        // back into the tax and art amounts, deal with rounding error
+        thisPay_total = document.getElementById('pay-amt').value;
+        if (thisPay_total < 0 || thisPay_total > total_amount_due)
+            thisPay_total = total_amount_due;
+        if (Number(config['taxRate']) > 0) {
+            var art = Math.round((10000 * thisPay_total) / (100 + Number(config['taxRate']))) / 100;
+            //console.log("computing art of " + config['taxRate'] + "% on " + thisPay_total + " at " + art)
+            var tax = Math.round(100 * (thisPay_total - art)) / 100;
+            //console.log("tax = " + tax);
+            var tax2 = Math.round(Number(art) * Number(config['taxRate'])) / 100;
+            if (tax2 != tax) {
+                tax = tax2;
+                art = thisPay_total - tax;
+                //console.log("rounded art to " + art + ", tax to " + tax);
+            }
+            thisPay_art = art;
+            thisPay_tax = tax;
+        } else {
+            thisPay_tax = 0;
+            thisPay_art = thisPay_total;
+        }
     }
 
     document.getElementById('thisPay-art').innerHTML = '$' + Number(thisPay_art).toFixed(2);
