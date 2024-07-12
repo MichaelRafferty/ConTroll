@@ -41,6 +41,6 @@
                    false // refresh
     );
 
-    echo "<h1>Coming soon. - we need your help, please help write this section.</h1>";
+    echo "<br/><span style='font-size:1.5rem;'><b>Coming soon. - we need your help, please help write this section.</b></span>";
 
     portalPageFoot();
