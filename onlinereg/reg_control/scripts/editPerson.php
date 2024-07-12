@@ -76,6 +76,26 @@ if(isset($_POST['suffix'])) {
   $types .= 's';
   $values[] = $_POST['suffix'];
 }
+  if (isset($_POST['legalName'])) {
+    if ($change) {
+      $query .= ', ';
+    }
+    $change = true;
+    $changeLog .= 'legalName, ';
+    $query .= 'legalName=?';
+    $types .= 's';
+    $values[] = $_POST['legalname'];
+  }
+  if (isset($_POST['pronouns'])) {
+    if ($change) {
+      $query .= ', ';
+    }
+    $change = true;
+    $changeLog .= 'pronouns, ';
+    $query .= 'pronouns=?';
+    $types .= 's';
+    $values[] = $_POST['pronouns'];
+  }
 if(isset($_POST['email'])) {
   if($change) { $query .= ", "; }
   $change = true;
@@ -212,7 +232,7 @@ if ($change) {
   $changeLog .= 'updatedBy, ';
   $query .= 'updatedBy=?';
   $types .= 'i';
-  $values[] = $_SESSION['user_id'];
+  $values[] = $_SESSION['user_perid'];
 }
 
 if($change) {

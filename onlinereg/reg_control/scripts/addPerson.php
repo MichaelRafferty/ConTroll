@@ -19,9 +19,9 @@ if(!isset($_POST)) {
 }
 
 $query = <<<EOS
-INSERT INTO newperson (last_name, first_name, middle_name, suffix, email_addr, phone, legalName, badge_name,
+INSERT INTO newperson (last_name, first_name, middle_name, legalName, pronouns, suffix, email_addr, phone, legalName, badge_name,
     address, addr_2, city, state, zip, country, share_reg_ok, contact_ok,updatedBy)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 
 $parmtypes = 'ssssssssssssssss';
@@ -48,6 +48,18 @@ if (array_key_exists('suffix', $_POST)) {
     $suffix = trim($_POST['suffix']);
     if (is_null($suffix))
         $suffix = "";
+}
+$legalName = '';
+if (array_key_exists('legalName', $_POST)) {
+    $legalname = trim($_POST['legalName']);
+    if (is_null($legalName))
+        $legalName = '';
+}
+$pronouns = '';
+if (array_key_exists('pronouns', $_POST)) {
+    $pronouns = trim($_POST['pronouns']);
+    if (is_null($pronouns))
+        $pronouns = '';
 }
 $email = "";
 if (array_key_exists('email', $_POST)) {
