@@ -27,11 +27,11 @@ EOS;
 }
 
 //drawInterestList - draw the inner block for interest editing
-function drawInterestList($interests) {
+function drawInterestList($interests, $modal = false) {
 ?>
     <div class='row'>
         <div class='col-sm-auto'>
-            <h3>Registration Follow-Up</h3>
+            <h<?php echo $modal ? '2 class="size-h3"' : '3 class="text-primary"';?>>Registration Follow-Up</h<?php echo $modal ? '2' : '3';?>>
         </div>
     </div>
     <div class='row mb-2'>

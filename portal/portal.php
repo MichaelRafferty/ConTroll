@@ -249,7 +249,7 @@ if ($info['managedByName'] != null) {
 <?php } ?>
 <div class='row mt-4'>
     <div class='col-sm-12'>
-        <h3>
+        <h1 class="size-h3">
 <?php
     if ($info['managedByName'] == null) {
 ?>
@@ -264,7 +264,7 @@ if ($info['managedByName'] != null) {
 <?php
     }
 ?>
-        </h3>
+        </h1>
     </div>
 </div>
 <?php
@@ -353,7 +353,7 @@ if ($totalDue > 0) {
 if (count($payorPlan) > 0) {
 ?>
     <div class='row mt-5'>
-        <div class='col-sm-12'><h3>Payment Plans for this account:</h3></div>
+        <div class='col-sm-12'><h1 class="size-h3">Payment Plans for this account:</h1></div>
     </div>
 <?php
     outputCustomText('main/plan');
@@ -379,7 +379,7 @@ if (count($memberships) > 0) {
 ?>
     <div class='row mt-4'>
         <div class='col-sm-auto'>
-            <h3>
+            <h1 class="size-h3">
                 Purchased by this account: <?php echo $payHtml; ?>
                 <button class="btn btn-sm btn-info text-white me-1" id="btn-showAll" type="button" onclick="portal.showAll();"
                     <?php echo $showAll;?>><b>Show All</b></button>
@@ -391,7 +391,7 @@ if (count($memberships) > 0) {
 <?php } ?>
                 <button class="btn btn-sm btn-info text-white ms-1" id="btn-hideAll" type="button"  onclick="portal.hideAll();"
                     <?php echo $hideAll;?>><b>Hide All</b></button>
-            </h3>
+            </h1>
         </div>
     </div>
 <?php

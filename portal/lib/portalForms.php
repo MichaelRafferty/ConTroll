@@ -8,7 +8,7 @@ function drawGetAgeBracket($updateName, $condata) {
     ?>
     <div class="row mt-2">
         <div class="col-sm-12">
-            <h4 class='text-primary'>Please verify the age of <?php echo $updateName; ?> as of <?php echo $readableStartDate; ?></h4>
+            <h3 class='text-primary'>Please verify the age of <?php echo $updateName; ?> as of <?php echo $readableStartDate; ?></h3>
         </div>
         <div class="row mt-1" id="ageButtons"></div>
         <div class="row mt-2">
@@ -64,7 +64,7 @@ function draw_editPersonModal() {
                             <input type='hidden' name='id' id='epPersonId'/>
                             <input type='hidden' name='type' id='epPersonType'/>
 <?php
-    drawEditPersonBlock($con, $useUSPS);
+    drawEditPersonBlock($con, $useUSPS, true);
 ?>
                         </form>
                         <div class='row'>
@@ -83,7 +83,7 @@ function draw_editPersonModal() {
 }
 
 // drawEditPersonBlock - just output the block to edit the person
-function drawEditPersonBlock($con, $useUSPS) {
+function drawEditPersonBlock($con, $useUSPS, $modal=false) {
     $reg = get_conf('reg');
     if (array_key_exists('required', $reg)) {
         $required = $reg['required'];
@@ -104,7 +104,9 @@ function drawEditPersonBlock($con, $useUSPS) {
             $firstStar = '<span class="text-danger">&bigstar;</span>';
     }
 ?>
-        <h3 class='text-primary' id='epHeader'>Personal Information for this new person</h3>
+        <h<?php echo $modal ? '1 class="size-h3"' : '3 class="text-primary"'?> id='epHeader'>
+            Personal Information for this new person
+        </h<?php echo $modal ? '1' : '3'?>>
         <div class='row' style='width:100%;'>
             <div class='col-sm-12'>
                 <p class='text-body'>Note: Please provide your legal name that will match a valid form of ID. Your legal name will not
@@ -465,11 +467,11 @@ function draw_editInterestsModal($interests) {
                             <input type='hidden' name='type' id='eiPersonType'/>
                             <div class="row">
                                 <div class="col-sm-auto">
-                                    <h3 class='text-primary' id='eiHeader'>Editing Interests for this new person</h3>
+                                    <h1 class='text-primary size-h2' id='eiHeader'>Editing Interests for this new person</h1>
                                 </div>
                             </div>
                             <?php
-                            drawInterestList($interests);
+                            drawInterestList($interests, true);
                             ?>
                         </form>
                         <div class='row'>
@@ -547,7 +549,9 @@ function draw_makePaymentModal() {
 <?php
     if ($ini['test'] == 1) {
 ?>
-                            <h2 class='text-danger'><strong>This won't charge your credit card.<br/>It also won't get you real memberships.</strong></h2>
+                            <span class='text-danger size-h2'><strong>This won't charge your credit card.<br/>It also won't get you real
+                                    memberships
+                                    .</strong></span>
 <?php
     }
 ?>

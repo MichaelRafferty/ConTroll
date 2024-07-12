@@ -135,7 +135,7 @@ drawVariablePriceModal();
 ?>
     <div class="row mt-3">
         <div class="col-sm-12">
-            <h3 id="auHeader">Creating a new person in your account</h3>
+            <h1 class="size-h2" id="auHeader">Creating a new person in your account</h1>
         </div>
     </div>
 <?php
@@ -144,7 +144,7 @@ drawVariablePriceModal();
     <div id="ageBracketDiv">
         <div class="row">
             <div class='col-sm-12'>
-                <h3>Step 1: Verify Age</h3>
+                <h2 class="size-h3">Step 1: Verify Age</h2>
             </div>
         </div>
         <?php
@@ -160,7 +160,7 @@ drawVariablePriceModal();
     <div id="verifyPersonDiv">
         <div class="row">
             <div class="col-sm-12">
-                <h3>Step 2: Verify Personal Information</h3>
+                <h2 class="size-h3">Step 2: Verify Personal Information</h2>
             </div>
         </div>
 <?php
@@ -176,7 +176,7 @@ drawVerifyPersonInfo();
     <div id="verifyInterestDiv">
         <div class="row">
             <div class="col-sm-12">
-                <h3>Step 3: Verify Interests</h3>
+                <h2 class="size-h3">Step 3: Verify Interests</h2>
             </div>
         </div>
         <?php
@@ -200,7 +200,7 @@ drawVerifyPersonInfo();
     <div id="getNewMembershipDiv">
         <div class='row'>
             <div class='col-sm-12'>
-                <h3>Step <?php echo $step4num;?>: Add new memberships</h3>
+                <h2 class="size-h3">Step <?php echo $step4num;?>: Add new memberships</h2>
             </div>
         </div>
 <?php
@@ -215,7 +215,7 @@ drawVerifyPersonInfo();
     <div id="cartDiv">
         <div class='row'>
             <div class='col-sm-12'>
-                <h3>Cart:</h3>
+                <h2 class="size-h3">Cart:</h2>
             </div>
         </div>
         <div id='cartContentsDiv'></div>

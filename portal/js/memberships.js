@@ -258,10 +258,6 @@ class Membership {
 
         if (ageButtons)
             this.buildAgeButtons();
-
-        window.addEventListener('beforeunload', event => {
-            membership.confirmExit(event);
-        })
     }
 
     // age functions
@@ -366,6 +362,10 @@ class Membership {
             btn.classList.remove('btn-warning');
             btn.classList.add((this.#currentAge == age.ageType || this.#memberAge == age.ageType) ? 'btn-primary' : color);
         }
+
+        window.addEventListener('beforeunload', event => {
+            membership.confirmExit(event);
+        })
 
         this.gotoStep(2, false);
     }
