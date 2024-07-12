@@ -111,7 +111,8 @@ $conListR->free();
 if ($loginType == 'n') {
 ?>
     <div class="row mt-3">
-        <div class="col-sm-auto"><h4>Membership history will not be available to you until you are assigned a permanant id</h4></div>
+        <div class="col-sm-auto"><span style="font-size: 1.5rem;"><b>Membership history will not be available to you until you are assigned a permanant
+                    id</b></span></div>
     </div>
 <?php
     portalPageFoot();
@@ -178,7 +179,6 @@ while ($reg = $membershipR->fetch_assoc()) {
         $person = $managed[$key];
         $curCon = 0;
 ?>
-        <hr/>
         <div class="row mt-1">
             <div class="col-sm-1"><?php echo $id; ?></div>
             <div class="col-sm-auto"><?php echo $person['fullname'] ;?></div>
