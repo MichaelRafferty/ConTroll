@@ -123,7 +123,7 @@ if ($loginType == 'n') {
     var config = <?php echo json_encode($config_vars); ?>;
 </script>
     <div class="row mt-3">
-        <div class="col-sm-auto">List of memberships for Conventions ID's from:</div>
+        <div class="col-sm-auto"><b>List of memberships for Conventions ID's from:</b></div>
         <div class="col-sm-auto">
             <select id="fromId" name="fromId">
 <?php
