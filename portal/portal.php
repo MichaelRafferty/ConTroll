@@ -387,16 +387,22 @@ if (count($memberships) > 0) {
         <div class='col-sm-auto'>
             <h1 class="size-h3">
                 Purchased by this account: <?php echo $payHtml; ?>
-                <button class="btn btn-sm btn-info text-white me-1" id="btn-showAll" type="button" onclick="portal.showAll();"
+                <div class="btn-group" data-toggle="buttons">
+                <button class="btn btn-sm btn-info text-white me-0 ps-3" style="border-top-left-radius: 20px; border-bottom-left-radius: 20px;" id="btn-showAll"
+                        type="button" onclick="portal.showAll();"
                     <?php echo $showAll;?>><b>Show All</b></button>
 <?php
                     if ($totalUnpaid > 0) {
 ?>
-                <button class="btn btn-sm btn-info text-white ms-1 me-1" id="btn-showUnpaid" type="button" onclick="portal.showUnpaid();"
+                <button class="btn btn-sm btn-info text-white m-0" id="btn-showUnpaid"
+                        type="button" onclick="portal.showUnpaid();"
                     <?php echo $showUnpaid; ?>><b>Show Unpaid</b></button>
 <?php } ?>
-                <button class="btn btn-sm btn-info text-white ms-1" id="btn-hideAll" type="button"  onclick="portal.hideAll();"
+                <button class="btn btn-sm btn-info text-white ms-0 pe-3" id="btn-hideAll" style='border-top-right-radius: 20px; border-bottom-right-radius:
+                20px;'
+                        type="button"  onclick="portal.hideAll();"
                     <?php echo $hideAll;?>><b>Hide All</b></button>
+                </div>
             </h1>
         </div>
     </div>

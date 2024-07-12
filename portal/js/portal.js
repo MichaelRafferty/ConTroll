@@ -951,29 +951,29 @@ class Portal {
         });
 
         if (this.#purchasedShowAll) {
-            if (this.#purchasedShowAll.classList.contains('text-white')) 
-                this.#purchasedShowAll.classList.remove("text-white");
-            if (this.#purchasedShowAll.classList.contains('btn-info')) {
-                this.#purchasedShowAll.classList.remove("btn-info");
-                this.#purchasedShowAll.classList.add("btn-light");
+            if (!this.#purchasedShowAll.classList.contains('text-white'))
+                this.#purchasedShowAll.classList.add("text-white");
+            if (this.#purchasedShowAll.classList.contains('btn-light')) {
+                this.#purchasedShowAll.classList.remove("btn-light");
+                this.#purchasedShowAll.classList.add("btn-info");
             }
             this.#purchasedShowAll.disabled = true;
         }
         if (this.#purchasedShowUnpaid) {
-            if (!this.#purchasedShowUnpaid.classList.contains('text-white'))
-                this.#purchasedShowUnpaid.classList.add("text-white");
-            if (this.#purchasedShowUnpaid.classList.contains('btn-light')) {
-                this.#purchasedShowUnpaid.classList.remove("btn-light");
-                this.#purchasedShowUnpaid.classList.add("btn-info");
+            if (this.#purchasedShowUnpaid.classList.contains('text-white'))
+                this.#purchasedShowUnpaid.classList.remove("text-white");
+            if (this.#purchasedShowUnpaid.classList.contains('btn-info')) {
+                this.#purchasedShowUnpaid.classList.remove("btn-info");
+                this.#purchasedShowUnpaid.classList.add("btn-light");
             }
             this.#purchasedShowUnpaid.disabled = false;
         }
         if (this.#purchasedHideAll) {
-            if (!this.#purchasedHideAll.classList.contains('text-white'))
-                this.#purchasedHideAll.classList.add("text-white");
-            if (this.#purchasedHideAll.classList.contains('btn-light')) {
-                this.#purchasedHideAll.classList.remove("btn-light");
-                this.#purchasedHideAll.classList.add("btn-info");
+            if (this.#purchasedHideAll.classList.contains('text-white'))
+                this.#purchasedHideAll.classList.remove("text-white");
+            if (this.#purchasedHideAll.classList.contains('btn-info')) {
+                this.#purchasedHideAll.classList.remove("btn-info");
+                this.#purchasedHideAll.classList.add("btn-light");
             }
             this.#purchasedHideAll.disabled = false;
         }
@@ -996,29 +996,29 @@ class Portal {
         });
 
         if (this.#purchasedShowAll) {
-            if (!this.#purchasedShowAll.classList.contains('text-white'))
-                this.#purchasedShowAll.classList.add("text-white");
-            if (this.#purchasedShowAll.classList.contains('btn-light')) {
-                this.#purchasedShowAll.classList.remove("btn-light");
-                this.#purchasedShowAll.classList.add("btn-info");
+            if (this.#purchasedShowAll.classList.contains('text-white'))
+                this.#purchasedShowAll.classList.remove("text-white");
+            if (this.#purchasedShowAll.classList.contains('btn-info')) {
+                this.#purchasedShowAll.classList.remove("btn-info");
+                this.#purchasedShowAll.classList.add("btn-light");
             }
             this.#purchasedShowAll.disabled = false;
         }
         if (this.#purchasedShowUnpaid) {
-            if (this.#purchasedShowUnpaid.classList.contains('text-white'))
-                this.#purchasedShowUnpaid.classList.remove("text-white");
-            if (this.#purchasedShowUnpaid.classList.contains('btn-info')) {
-                this.#purchasedShowUnpaid.classList.remove("btn-info");
-                this.#purchasedShowUnpaid.classList.add("btn-light");
+            if (!this.#purchasedShowUnpaid.classList.contains('text-white'))
+                this.#purchasedShowUnpaid.classList.add("text-white");
+            if (this.#purchasedShowUnpaid.classList.contains('btn-light')) {
+                this.#purchasedShowUnpaid.classList.remove("btn-light");
+                this.#purchasedShowUnpaid.classList.add("btn-info");
             }
             this.#purchasedShowUnpaid.disabled = true;
         }
         if (this.#purchasedHideAll) {
-            if (!this.#purchasedHideAll.classList.contains('text-white'))
-                this.#purchasedHideAll.classList.add("text-white");
-            if (this.#purchasedHideAll.classList.contains('btn-light')) {
-                this.#purchasedHideAll.classList.remove("btn-light");
-                this.#purchasedHideAll.classList.add("btn-info");
+            if (this.#purchasedHideAll.classList.contains('text-white'))
+                this.#purchasedHideAll.classList.remove("text-white");
+            if (this.#purchasedHideAll.classList.contains('btn-info')) {
+                this.#purchasedHideAll.classList.remove("btn-info");
+                this.#purchasedHideAll.classList.add("btn-light");
             }
             this.#purchasedHideAll.disabled = false;
         }
@@ -1030,29 +1030,29 @@ class Portal {
         $('[name="t-plan"]').hide();
 
         if (this.#purchasedShowAll) {
-            if (!this.#purchasedShowAll.classList.contains('text-white'))
-                this.#purchasedShowAll.classList.add("text-white");
-            if (this.#purchasedShowAll.classList.contains('btn-light')) {
-                this.#purchasedShowAll.classList.remove("btn-light");
+            if (this.#purchasedShowAll.classList.contains('text-white'))
+                this.#purchasedShowAll.classList.remove("text-white");
+            if (this.#purchasedShowAll.classList.contains('btn-info')) {
+                this.#purchasedShowAll.classList.remove("btn-info");
                 this.#purchasedShowAll.classList.add("btn-info");
             }
             this.#purchasedShowAll.disabled = false;
         }
         if (this.#purchasedShowUnpaid) {
-            if (!this.#purchasedShowUnpaid.classList.contains('text-white'))
-                this.#purchasedShowUnpaid.classList.add("text-white");
-            if (this.#purchasedShowUnpaid.classList.contains('btn-light')) {
-                this.#purchasedShowUnpaid.classList.remove("btn-light");
-                this.#purchasedShowUnpaid.classList.add("btn-info");
+            if (this.#purchasedShowUnpaid.classList.contains('text-white'))
+                this.#purchasedShowUnpaid.classList.remove("text-white");
+            if (this.#purchasedShowUnpaid.classList.contains('btn-info')) {
+                this.#purchasedShowUnpaid.classList.remove("btn-info");
+                this.#purchasedShowUnpaid.classList.add("btn-light");
             }
             this.#purchasedShowUnpaid.disabled = false;
         }
         if (this.#purchasedHideAll) {
-            if (this.#purchasedHideAll.classList.contains('text-white'))
-                this.#purchasedHideAll.classList.remove("text-white");
-            if (this.#purchasedHideAll.classList.contains('btn-info')) {
-                this.#purchasedHideAll.classList.remove("btn-info");
-                this.#purchasedHideAll.classList.add("btn-light");
+            if (!this.#purchasedHideAll.classList.contains('text-white'))
+                this.#purchasedHideAll.classList.add("text-white");
+            if (this.#purchasedHideAll.classList.contains('btn-light')) {
+                this.#purchasedHideAll.classList.remove("btn-light");
+                this.#purchasedHideAll.classList.add("btn-info");
             }
             this.#purchasedHideAll.disabled = true;
         }
