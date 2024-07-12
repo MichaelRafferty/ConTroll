@@ -69,6 +69,7 @@ class Membership {
     #getNewMembershipDiv = null;
     #currentStep = 1;
     #step4submitDiv = null;
+    #leaveBeforeChanges = true;
 
     // variable price items
     #amountField = null;
@@ -258,9 +259,9 @@ class Membership {
         if (ageButtons)
             this.buildAgeButtons();
 
-// temp for testing
-// this.#currentAge = 'adult';
-// this.gotoStep(3);
+        window.addEventListener('beforeunload', event => {
+            membership.confirmExit(event);
+        })
     }
 
     // age functions
@@ -889,6 +890,7 @@ class Membership {
         var _this = this;
         if (this.#cartChanges == 0) {
             // go back to the home page
+            this.#leaveBeforeChanges = false;
             window.location = "portal.php?messageFwdmessageFwd=" + encodeURI("No Changes");
             return;
         }
@@ -924,12 +926,13 @@ class Membership {
                 showAjaxError(jqXHR, textStatus, errorThrown);
                 _this.#saveCartBtn.disabled = false;
                 return false;
-            },
+            },z
         });
     }
 
     saveCartComplete(data) {
         // once saved, return home
+        this.#leaveBeforeChanges = false;
         var location = "portal.php";
         if (data['message']) {
             window.location = location + '?messageFwd=' + encodeURI(data['message']);
@@ -937,6 +940,20 @@ class Membership {
             window.location = location+ '?messageFwd=' + encodeURI("No Changes");
         }
         return;
+    }
+
+    // if they haven't used the save/return button, ask if they want to leave
+    confirmExit(event) {
+        if (this.#leaveBeforeChanges) {
+            var buttonName = this.#saveCartBtn.innerHTML;
+            event.preventDefault(); // if the browser lets us set our own variable
+            if (!confirm("You are leaving without saving any changes you have made.\nPlease go through all four steps and use the " +
+                buttonName + " button.\nDo you wish to leave anyway discarding any potential changes?")) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
 
