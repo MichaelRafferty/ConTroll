@@ -24,12 +24,13 @@ function drawBug($cols): void {
         <div class="col-sm-$textCols">
             <p>
             Powered by ConTroll™. Copyright 2015-2024, Michael Rafferty.</br>
-            <img src="/lib/apglv3-bug.png"> ConTroll™ is freely available for use under the GNU Affero General Public License, Version 3.
+            <img src="/lib/apglv3-bug.png" alt="GNU Affero General Public License logo"> ConTroll™ is freely available for use under the GNU Affero General 
+            Public License, Version 3.
             See the <a href="https://github.com/MichaelRafferty/ConTroll/blob/master/README.md" target="_blank">ConTroll™ ReadMe file</a>.
             </p>
         </div>
         <div class="col col-sm-1">
-            <img src="/lib/ConTroll-bug.png" alt="ConTroll Logo">
+            <img src="/lib/ConTroll-bug.png" alt="ConTroll Logo as a small 'bug'">
         </div>
 EOS;
 }
