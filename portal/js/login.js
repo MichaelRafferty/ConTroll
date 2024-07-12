@@ -23,6 +23,7 @@ class Login {
     #lnameField = null;
     #suffixField = null;
     #legalnameField = null;
+    #pronounsField = null;
     #addrField = null;
     #addr2Field = null;
     #cityField = null;
@@ -63,6 +64,7 @@ class Login {
             this.#lnameField = document.getElementById("lname");
             this.#suffixField = document.getElementById("suffix");
             this.#legalnameField = document.getElementById("legalname");
+            this.#pronounsField = document.getElementById("pronouns");
             this.#addrField = document.getElementById("addr");
             this.#addr2Field = document.getElementById("addr2");
             this.#cityField = document.getElementById("city");
@@ -140,7 +142,9 @@ class Login {
                         paginationSize: 10,
                         paginationSizeSelector: [10, 25, 50, 100, true], // enable page size select with these options
                         columns: [
-                            // phone, badge_name, legalName, address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
+                            // phone, badge_name, legalName, pronouns (not shown), address, addr_2, city, state, zip, country, creation_date, update_date,
+                            // active,
+                            // banned,
                             {title: 'T', field: 'tablename', headerWordWrap: true, headerFilter: true, width: 50,},
                             {title: 'ID', field: 'id', hozAlign: "right", width: 65, headerWordWrap: true, headerFilter: false,},
                             {title: 'Name', field: 'fullname', headerWordWrap: true, headerFilter: true, tooltip: true},

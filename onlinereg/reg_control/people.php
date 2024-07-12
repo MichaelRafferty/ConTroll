@@ -163,6 +163,15 @@ page_init($page,
                             <td><button id='useNewLegalName' onclick="setField('LegalName', 'User');">&lt;</button></td>
                             <td id='conflictFormUserLegalName'>User Input</td>
                         </tr>
+                        <tr><th>Pronouns</th>
+                            <td id='conflictFormDbPronouns'>dbPronouns</td>
+                            <td class='right'><button id='useDbPronouns' onclick="setField('Pronouns', 'Db');">&gt;</button></td>
+                            <td>
+                                <input id='conflictFormNewPronouns' type='text' name='pronouns'/>
+                            </td>
+                            <td><button id='useNewPronouns' onclick="setField('Pronouns', 'User');">&lt;</button></td>
+                            <td id='conflictFormUserPronouns'>User Input</td>
+                        </tr>
                         <tr><th>Badge</th>
                             <td id='conflictFormDbBadge'>dbBadge</td>
                             <td class='right'><button id='useDbBadge' onclick="setField('Badge', 'Db');">&gt;</button></td>
@@ -320,6 +329,14 @@ page_init($page,
                             <td class='formfield' colspan="5"><input type='text' name='legalName' size=80 maxlength="128"/></td>
                         </tr>
                         <tr>
+                        <tr>
+                            <td class='formlabel'>Pronouns</td>
+                            <td colspan=4></td>
+                        </tr>
+                        <tr>
+                            <td class='formfield' colspan='5'><input type='text' name='pronouns' size=64 maxlength='64'/></td>
+                        </tr>
+                        <tr>
                             <td class='formlabel'>Badge Name</td>
                             <td colspan=4></td>
                         </tr>
@@ -456,6 +473,13 @@ page_init($page,
                         </tr>
                         <tr>
                             <td class='formfield' colspan='5'><input type='text' name='legalName' size=80 maxlength='128'/></td>
+                        </tr>
+                        <tr>
+                            <td class='formlabel'>Pronouns</td>
+                            <td colspan=4></td>
+                        </tr>
+                        <tr>
+                            <td class='formfield' colspan='5'><input type='text' name='pronouns' size=64 maxlength='64'/></td>
                         </tr>
                         <tr>
                             <td class='formlabel'>Badge Name</td>

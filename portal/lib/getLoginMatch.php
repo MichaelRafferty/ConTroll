@@ -7,7 +7,8 @@ function getLoginMatch($email, $id = null, $validationType = null) {
 // check if it's a numeric response
     if (is_numeric($email)) {
         $regcountQ = <<<EOS
-SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
+SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, pronouns,
+       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN IFNULL(last_name, '') != '' THEN
             TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
@@ -22,7 +23,8 @@ EOS;
     } else if ($id != NULL) {
 // first get the perid items
         $regcountQ = <<<EOS
-SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
+SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, pronouns,
+       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN IFNULL(last_name, '') != '' THEN
             TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
@@ -36,7 +38,8 @@ EOS;
         $regcountR = dbSafeQuery($regcountQ, 'si', array($email, $id));
     } else {
         $regcountQ = <<<EOS
-SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
+SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, pronouns,
+       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN IFNULL(last_name, '') != '' THEN
             TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
@@ -63,8 +66,8 @@ EOS;
 // now add in the newperson records
     if (is_numeric($email)) {
         $regcountQ = <<<EOS
-SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.legalName, n.address, n.addr_2, n.city, n.state, n.zip, n.country,
-    createtime AS creation_date, 'Y' AS active, 'N' AS banned,
+SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.legalName, n.pronouns,
+       n.address, n.addr_2, n.city, n.state, n.zip, n.country, createtime AS creation_date, 'Y' AS active, 'N' AS banned,
     CASE 
         WHEN IFNULL(n.last_name, '') != '' THEN
             TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.last_name, ''), ', ', IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '  
@@ -80,8 +83,8 @@ EOS;
         $regcountR = dbSafeQuery($regcountQ, 'i', array($email));
     } else if ($id != NULL) {
         $regcountQ = <<<EOS
-SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.legalName, n.address, n.addr_2, n.city, n.state, n.zip, n.country,
-    n.createtime AS creation_date, 'Y' AS active, 'N' AS banned,
+SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.legalName, n.pronouns,
+       n.address, n.addr_2, n.city, n.state, n.zip, n.country, n.createtime AS creation_date, 'Y' AS active, 'N' AS banned,
     CASE 
         WHEN IFNULL(n.last_name, '') != '' THEN
             TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.last_name, ''), ', ', IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '  
@@ -97,8 +100,8 @@ EOS;
         $regcountR = dbSafeQuery($regcountQ, 'si', array($email, $id));
     } else {
         $regcountQ = <<<EOS
-SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.legalName, n.address, n.addr_2, n.city, n.state, n.zip, n.country,
-    createtime AS creation_date, 'Y' AS active, 'N' AS banned,
+SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.legalName, n.pronouns,
+       n.address, n.addr_2, n.city, n.state, n.zip, n.country, createtime AS creation_date, 'Y' AS active, 'N' AS banned,
     CASE 
         WHEN IFNULL(n.last_name, '') != '' THEN
             TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.last_name, ''), ', ', IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '  
@@ -129,8 +132,8 @@ EOS;
     // if the provider is known, we search for that provider, else we search for email as the provider.
     if (isSessionVar('oauth2')) {
         $regcountQ = <<<EOS
-SELECT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip, country, creation_date, 
-update_date, active, banned,
+SELECT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, legalName, pronouns,
+       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN IFNULL(last_name, '') != '' THEN
             TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
@@ -159,8 +162,8 @@ EOS;
 
     if ($validationType != null && $validationType == 'token') {
         $regcountQ = <<<EOS
-SELECT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip, country, creation_date, 
-update_date, active, banned,
+SELECT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, legalName, pronouns,
+       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN IFNULL(last_name, '') != '' THEN
             TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 

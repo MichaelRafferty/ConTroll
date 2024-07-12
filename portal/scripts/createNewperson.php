@@ -52,9 +52,9 @@ $response['personId'] = $loginId;
 
 // insert into newPerson
 $iQ = <<<EOS
-insert into newperson (last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip,
+insert into newperson (last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip,
                        country, share_reg_ok, contact_ok, updatedBy, lastVerified)
-values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW());
+values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW());
 EOS;
 $typeStr = 'ssssssssssssssssi';
 $valArray = array(
@@ -66,6 +66,7 @@ $valArray = array(
     trim($person['phone']),
     trim($person['badgename']),
     trim($person['legalname']),
+    trim($person['pronouns']),
     trim($person['addr']),
     trim($person['addr2']),
     trim($person['city']),

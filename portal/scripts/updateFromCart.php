@@ -118,6 +118,8 @@ WHERE
 		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.badge_name, ''))), '  *', ' ')
     AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.legalName, ''))), '  *', ' ')
+    AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.pronouns, ''))), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.address, ''))), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
@@ -140,6 +142,7 @@ EOF;
         trim($person['phone']),
         trim($person['badge_name']),
         trim($person['legalName']),
+        trim($person['pronouns']),
         trim($person['address']),
         trim($person['addr_2']),
         trim($person['city']),
@@ -170,9 +173,10 @@ EOS;
         // no match found
         // insert into newPerson
         $iQ = <<<EOS
-insert into newperson (transid, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, address, addr_2, city, state, zip,
+insert into newperson (transid, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, 
+                       address, addr_2, city, state, zip,
                        country, share_reg_ok, contact_ok, managedBy, managedByNew, managedReason, updatedBy, lastVerified)
-values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'creation',?,NOW());
+values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'creation',?,NOW());
 EOS;
         $typeStr = 'issssssssssssssssiii';
         $valArray = array(
@@ -185,6 +189,7 @@ EOS;
             trim($person['phone']),
             trim($person['badge_name']),
             trim($person['legalName']),
+            trim($person['pronouns']),
             trim($person['address']),
             trim($person['addr_2']),
             trim($person['city']),
@@ -216,19 +221,20 @@ if ($newPerid == null) {
     if ($personType == 'p') {
         $updPersonQ = <<<EOS
 UPDATE perinfo
-SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, 
-share_reg_ok = ?, contact_ok = ?, updatedBy = ?, lastVerified = NOW()
+SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
+    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, share_reg_ok = ?, contact_ok = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
     } else {
         $updPersonQ = <<<EOS
 UPDATE newperson
-SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, 
-share_reg_ok = ?, contact_ok = ?, updatedBy = ?, lastVerified = NOW()
+SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
+    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, share_reg_ok = ?, contact_ok = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
     }
-    $fields = ['last_name', 'middle_name', 'first_name', 'suffix', 'email_addr', 'phone', 'badge_name', 'legalName', 'address', 'addr_2', 'city', 'state', 'zip', 'country'];
+    $fields = ['last_name', 'middle_name', 'first_name', 'suffix', 'email_addr', 'phone', 'badge_name', 'legalName', 'pronouns', 'address', 'addr_2', 'city',
+    'state', 'zip', 'country'];
     foreach ($fields as $field) {
         if ($person[$field] == null)
             $person[$field] = '';
@@ -242,6 +248,7 @@ EOS;
         trim($person['phone']),
         trim($person['badge_name']),
         trim($person['legalName']),
+        trim($person['pronouns']),
         trim($person['address']),
         trim($person['addr_2']),
         trim($person['city']),

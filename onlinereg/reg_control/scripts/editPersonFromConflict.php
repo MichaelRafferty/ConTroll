@@ -46,10 +46,10 @@ if ($do_update) {
 
     // name fields if all or checked
     if ($nocheckboxes || $updatename) {
-        $query .= 'first_name = ?, middle_name = ?, last_name = ?, suffix = ?';
-        $types .= 'ssss';
+        $query .= 'first_name = ?, middle_name = ?, last_name = ?, suffix = ?, legalName = ?, pronouns = ?';
+        $types .= 'ssssss';
         array_push($values, trim($_POST['first_name']), trim($_POST['middle_name']),
-            trim($_POST['last_name']),trim($_POST['suffix']));
+            trim($_POST['last_name']),trim($_POST['suffix']),trim($_POST['legalName']),trim($_POST['pronouns']));
         $addcomma = true;
     }
 

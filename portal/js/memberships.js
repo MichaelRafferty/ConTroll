@@ -16,6 +16,7 @@ class Membership {
     #lnameField = null;
     #suffixField = null;
     #legalnameField = null;
+    #pronounsField = null;
     #addrField = null;
     #addr2Field = null;
     #cityField = null;
@@ -109,6 +110,7 @@ class Membership {
         this.#lnameField = document.getElementById("lname");
         this.#suffixField = document.getElementById("suffix");
         this.#legalnameField = document.getElementById("legalname");
+        this.#pronounsField = document.getElementById("pronouns");
         this.#addrField = document.getElementById("addr");
         this.#addr2Field = document.getElementById("addr2");
         this.#cityField = document.getElementById("city");
@@ -199,6 +201,7 @@ class Membership {
             this.#mnameField.value = '';
             this.#suffixField.value = '';
             this.#legalnameField.value = '';
+            this.#pronounsField.value = '';
             this.#email1Field.value = '';
             this.#email2Field.value = '';
             this.#phoneField.value = '';
@@ -212,6 +215,7 @@ class Membership {
             this.#mnameField.value = this.#personInfo['middle_name'];
             this.#suffixField.value = this.#personInfo['suffix'];
             this.#legalnameField.value = this.#personInfo['legalName'];
+            this.#pronounsField.value = this.#personInfo['pronouns'];
             this.#email1Field.value = this.#personInfo['email_addr'];
             this.#email2Field.value = this.#personInfo['email_addr'];
             this.#phoneField.value = this.#personInfo['phone'];
@@ -384,6 +388,7 @@ class Membership {
         this.#personInfo.phone = person.phone.trim();
         this.#personInfo.badge_name = person.badgename.trim();
         this.#personInfo.legalName = person.legalname.trim();
+        this.#personInfo.pronouns = person.pronouns.trim();
         this.#personInfo.address = person.addr.trim();
         this.#personInfo.addr_2 = person.addr2.trim();
         this.#personInfo.city = person.city.trim();

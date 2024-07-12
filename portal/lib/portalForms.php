@@ -150,6 +150,15 @@ function drawEditPersonBlock($con, $useUSPS, $modal=false) {
                        placeholder='Defaults to First Name Middle Name Last Name, Suffix' tabindex='140'/>
             </div>
         </div>
+        <div class='row'>
+            <div class='col-sm-12'>
+                <label for='pronouns' class='form-label-sm'>
+                        <span class='text-dark' style='font-size: 10pt;'>Pronouns
+                </label><br/>
+                <input class='form-control-sm' type='text' name='pronouns' id='pronouns' size=64 maxlength='64'
+                       placeholder='Optional pronouns' tabindex='140'/>
+            </div>
+        </div>
         <div class="row">
             <div class="col-sm-12">
                 <label for="addr" class="form-label-sm">

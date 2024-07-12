@@ -41,20 +41,22 @@ $response['personId'] = $personId;
 if ($currentPersonType == 'p') {
     $updPersonQ =  <<<EOS
 UPDATE perinfo
-SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, 
+SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
+    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, 
     share_reg_ok = ?, contact_ok = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
 } else {
     $updPersonQ =  <<<EOS
 UPDATE newperson
-SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, 
+SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
+    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, 
     share_reg_ok = ?, contact_ok = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
 }
 
-$fields = ['lname', 'mname', 'fname', 'suffix', 'email1', 'phone', 'badgename', 'legalname', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
+$fields = ['lname', 'mname', 'fname', 'suffix', 'email1', 'phone', 'badgename', 'legalname', 'pronouns', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
 foreach ($fields as $field) {
     if ($person[$field] == null)
         $person[$field] = '';
@@ -68,6 +70,7 @@ $value_arr = array(
     trim($person['phone']),
     trim($person['badgename']),
     trim($person['legalname']),
+    trim($person['pronouns']),
     trim($person['addr']),
     trim($person['addr2']),
     trim($person['city']),
@@ -80,7 +83,7 @@ $value_arr = array(
     $currentPerson,
 );
 
-$rows_upd = dbSafeCmd($updPersonQ, 'ssssssssssssssssii', $value_arr);
+$rows_upd = dbSafeCmd($updPersonQ, 'sssssssssssssssssii', $value_arr);
 if ($rows_upd === false) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Error updating person'));
     exit();
