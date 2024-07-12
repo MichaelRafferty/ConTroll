@@ -124,14 +124,14 @@ $memberships = null;
 ?>
     <div class="row mt-3">
         <div class="col-sm-12">
-            <h3 id="auHeader">Account Settings</h3>
+            <h1 class="size-h3" id="auHeader">Account Settings</h1>
         </div>
     </div>
 <?php
 // Members Managed
 ?>
     <div id="managed">
-        <div class='row mt-3'><h4>Managed:</h4></div>
+        <div class='row mt-3'><h2 class="size-h4">Managed:</h2></div>
 <?php
             outputCustomText('main/managed');
 ?>
@@ -163,7 +163,7 @@ $memberships = null;
         }
 ?>
         <div class='row mt-4'>
-            <div class='col-sm-1'><button class="btn btn-sm btn-primary" id="attachBtn" onclick="settings.attach();">Attach</button></div>
+            <div class='col-sm-auto'><button class="btn btn-sm btn-primary" id="attachBtn" onclick="settings.attach();">Request to Manage</button></div>
             <div class='col-sm-auto'><label for="acctId">Account id:</label></div>
             <div class='col-sm-auto'><input type='number' class='no-spinners' inputmode='numeric' id='acctId' name='acctId' style='width:6em;'/></div>
             <div class='col-sm-auto'><label for="emaiLAddr">Email:</label></div>
@@ -181,7 +181,7 @@ if ($personType == 'p') {
 
 ?>
     <div id="identitiesDiv">
-        <div class="row mt-3"><h4>Identities:</h4></div>
+        <div class="row mt-3"><h2 class="size-h4">Identities:</h2></div>
     </div>
 <?php
     outputCustomText('main/identities');

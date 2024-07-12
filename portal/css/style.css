@@ -24,3 +24,24 @@ span.req, .warn {
   -webkit-appearance: none;
   margin: 0;
 }
+
+/* this is the styles for each header level for use in a class= to shrink the sizes */
+
+.size-h1 {
+  font-size: 2.5rem;
+}
+.size-h2 {
+  font-size: 2rem;
+}
+.size-h3 {
+  font-size: 1.75rem;
+}
+.size-h4 {
+  font-size: 1.5rem;
+}
+.size-h5 {
+  font-size: 1.25rem;
+}
+.size-h6 {
+  font-size: 1.0rem;
+}
