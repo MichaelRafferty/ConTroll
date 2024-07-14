@@ -8,6 +8,7 @@ require_once('../lib/cipher.php');
 require_once('lib/sessionManagement.php');
 require_once("../lib/interests.php");
 require_once("../lib/paymentPlans.php");
+require_once("../lib/coupon.php");
 require_once('../lib/cc__load_methods.php');
 
 global $config_vars;
@@ -206,6 +207,9 @@ EOS;
     $interests = getInterests();
 // get the payment plans
     $paymentPlans = getPaymentPlans(true);
+// get valid coupons
+
+    $numCoupons = num_coupons();
 }
 
 portalPageInit('portal', $info,
@@ -216,7 +220,7 @@ portalPageInit('portal', $info,
         $cdn['tabjs'],
         //'js/tinymce/tinymce.min.js',
         'jslib/paymentPlans.js',
-        'js/base.js',
+        'jslib/coupon.js',
         'js/portal.js',
     ),
     false // refresh
@@ -232,6 +236,7 @@ if ($refresh) {
     var paymentPlanList = <?php echo json_encode($paymentPlans['plans']); ?>;
     var payorPlans = <?php echo json_encode($paymentPlans['payorPlans']); ?>;
     var membershipsPurchased = <?php echo json_encode($memberships); ?>;
+    var numCoupons = <?php echo $numCoupons; ?>;
 </script>
 <?php
 // draw all the modals for this screen
@@ -240,6 +245,7 @@ draw_editInterestsModal($interests);
 draw_paymentDueModal();
 draw_makePaymentModal();
 draw_recieptModal();
+draw_couponModal();
 if (count($paymentPlans) > 0) {
     draw_customizePlanModal('portal');
     draw_payPlanModal('portal');
@@ -351,9 +357,12 @@ if ($totalDue > 0 || count($payorPlan) > 0) {
 $payHtml = '';
 if ($totalDue > 0) {
     $totalDueFormatted = '&nbsp;&nbsp;Total due: ' . $dolfmt->formatCurrency((float) $totalDue, $currency);
-    $payHtml = " $totalDueFormatted   " . '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-5" id="payBalanceTopBTN" onclick="portal.payBalance(' .
+    $payHtml = " $totalDueFormatted   " . '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" id="payBalanceTopBTN" onclick="portal.payBalance(' .
         $totalDue . ');">Pay Balance</button>';
     setSessionVar('totalDue', $totalDue); // used for validation in payment side
+    if ($numCoupons > 0) {
+        $payHtml .= ' <button class="btn btn-primary btn-sm pt-1 pb-1 ms-0 me-2" id="addCouponButton" onclick="coupon.ModalOpen(1)">Add Coupon</button>';
+    }
 }
 
 if (count($payorPlan) > 0) {
@@ -408,6 +417,35 @@ if (count($memberships) > 0) {
     </div>
 <?php
     outputCustomText('main/purchased');
+    if ($numCoupons > 0) {
+?>
+    <div class='container-fluid' id='couponDiv' style="background-color: rgba(0,255,128,0.1)" hidden>
+        <div class="row">
+            <div class="col-sm-auto"><b>Coupon</b></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12" id="couponDetailDiv"></div>
+        </div>
+        <div class='row'>
+            <div class='col-sm-12'>
+                <button class='btn btn-sm btn-secondary' onclick='coupon.ModalOpen(1);' id='changeCouponBTN'>Change/Remove Coupon</button>
+            </div>
+        </div>
+        <div class='row mt-4'>
+            <div class='col-sm-4'>
+                Subtotal before coupon:
+            </div>
+            <div class='col-sm-auto' id='subTotalColDiv'></div>
+        </div>
+        <div class='row'>
+            <div class='col-sm-4'>
+                Coupon Discount:
+            </div>
+            <div class='col-sm-auto' id='couponDiscountDiv'></div>
+        </div>
+    </div>
+<?php
+    }
 ?>
     <div class='row'>
         <div class='col-sm-1' style='text-align: right;'><b>Trans ID</b></div>

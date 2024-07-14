@@ -1,6 +1,7 @@
 // Main portal javascript, also requires base.js
 
 var portal = null;
+var coupon = null;
 
 // initial setup
 window.onload = function () {
@@ -8,6 +9,7 @@ window.onload = function () {
         paymentPlans = new PaymentPlans();
     }
     portal = new Portal();
+    coupon = new Coupon();
 }
 
 class Portal {

@@ -279,3 +279,48 @@ function apply_overall_discount($coupon, $total) {
 
     return 0;
 }
+
+// portal coupon functions
+// draw variable price membership set modal
+    function draw_CouponModal() {
+        ?>
+        <div id='couponApplyModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Apply Coupon' aria-hidden='true' style='--bs-modal-width: 75%;'>
+            <div class='modal-dialog'>
+                <div class='modal-content'>
+                    <div class='modal-header bg-primary text-bg-primary'>
+                        <div class='modal-title' id='couponHeader'>
+                            <strong>Apply Coupon to Cart</strong>
+                        </div>
+                        <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                    </div>
+                    <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                        <div class="container-fluid">
+                            <div class="row mt-4">
+                                <div class="col-sm-3">Type Coupon Code Here:</div>
+                                <div class="col-sm-auto"><input typye="text" size=16 maxlength-16 id="couponCode" name="couponCode"
+                                    placeholder="type code here"/></div>
+                            </div>
+                            <div class='row mt-2 mb-2'>
+                                <div class='col-sm-3'></div>
+                                <div class='col-sm-auto'><b>OR</b></div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-sm-3'>Paste Coupon Link Here:</div>
+                                <div class='col-sm-auto'><input typye='text' size=64 maxlength="512" id='couponLink' name='couponLink'
+                                    placeholder='paste link here'/></div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-sm-12' id='couponMsgDiv'></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='modal-footer'>
+                        <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
+                        <button class='btn btn-sm btn-warning' type='button' onclick='coupon.RemoveCouponCode();' id='removeCouponBTN' hidden>Remove Coupon</button>
+                        <button class='btn btn-sm btn-primary' id='acSubmitButton' onClick='coupon.addCouponCode()' tabindex='10102'>Add Coupon</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+    }

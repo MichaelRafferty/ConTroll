@@ -34,7 +34,8 @@ function ol_page_init($title, $js = '') {
     <script src='<?php echo $includes['bs5js'];?>'></script>
     <script type='text/javascript' src='<?php echo $includes['jqjs']; ?>'></script>
     <script type='text/javascript' src='<?php echo $includes['jquijs']; ?>'></script>
-    <script type='text/javascript' src='javascript/coupon.js'></script>
+    <script type='text/javascript' src='jslib/global.js'></script>
+    <script type='text/javascript' src='jslib/coupon.js'></script>
     <script type='text/javascript' src='javascript/store.js'></script>
 <?php
     if ($js != '') {

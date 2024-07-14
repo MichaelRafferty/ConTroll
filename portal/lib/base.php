@@ -60,6 +60,7 @@ function index_page_init($title) {
     <script type='text/javascript' src='$jqjs''></script>
     <script type='text/javascript' src='$jquijs'></script>
     <script type="text/javascript" src="$tabjs"></script>
+    <script type="text/javascript" src="jslib/global.js"></script>
     <script type='text/javascript' src='js/base.js'></script>
     <script type='text/javascript' src='js/login.js'></script>
 </head>
@@ -103,6 +104,8 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
             <script src='<?php echo $includes['bs5js'];?>'></script>
             <script type='text/javascript' src='<?php echo $includes['jqjs']; ?>'></script>
             <script type='text/javascript' src='<?php echo $includes['jquijs']; ?>'></script>
+            <script type='text/javascript' src='jslib/global.js'></script>
+            <script type='text/javascript' src='js/base.js'></script>
             <?php
             if(isset($js) && $js != null) { foreach ($js as $script) {
                 ?><script src='<?php echo $script; ?>'
