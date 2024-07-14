@@ -110,7 +110,6 @@ portalPageInit('accountSettings', $info,
     /* js  */ array( //$cdn['luxon'],
         $cdn['tabjs'],
         //'js/tinymce/tinymce.min.js',
-        'js/base.js',
         'js/settings.js',
     ),
 );

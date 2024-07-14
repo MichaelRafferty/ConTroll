@@ -36,7 +36,6 @@
         /* css */ array(
                    ),
         /* js  */ array( //$cdn['luxon'],
-                         'js/base.js',
                    ),
                    false // refresh
     );

@@ -94,7 +94,6 @@ portalPageInit('membershipHistory', $info,
     /* js  */ array( //$cdn['luxon'],
         $cdn['tabjs'],
         //'js/tinymce/tinymce.min.js',
-        'js/base.js',
         'js/history.js',
     ),
 );
