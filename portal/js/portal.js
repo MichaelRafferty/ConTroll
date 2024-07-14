@@ -72,7 +72,8 @@ class Portal {
     #makePaymentBody = null;
     #paymentPlan = null;
     #existingPlan = null;
-    #totalAmountDue = null;
+    #totalAmountDue = 0;
+    #couponDiscount = 0;
     #paymentAmount = null;
     #planPayment = 0;
 
@@ -89,6 +90,10 @@ class Portal {
     #purchasedShowAll = null;
     #purchasedShowUnpaid = null;
     #purchasedHideAll = null;
+
+    // coupon fields:
+    #subTotalColDiv = null;
+    #couponDiscountDiv = null;
 
     constructor() {
         var id;
@@ -183,6 +188,9 @@ class Portal {
             else
                 this.hideAll();
         }
+
+        this.#subTotalColDiv = document.getElementById('subTotalColDiv');
+        this.#couponDiscountDiv = document.getElementById('couponDiscountDiv');
     }
 
     // disassociate: remove the managed by link for this logged in person
@@ -706,8 +714,14 @@ class Portal {
         var html = '';
         var plans = paymentPlans.isMatchingPlans();
 
-        this.#totalAmountDue = totalDue;
-        this.#paymentAmount = totalDue;
+        if (this.#totalAmountDue + this.#couponDiscount != totalDue) {
+            this.#totalAmountDue = totalDue - this.#couponDiscount;
+            if (this.#totalAmountDue < 0) {
+                this.#totalAmountDue = 0;
+            }
+        }
+
+        this.#paymentAmount = this.#totalAmountDue;
         this.#planPayment = 0;
 
         if (!plans) {
@@ -719,7 +733,7 @@ class Portal {
     <div class="row mt-3">
         <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onClick='portal.makePayment(null);'>Pay Total Amount Due</button></div>
         <div class="col-sm-auto">
-            <b>Your total amout due is ` + Number(totalDue).toFixed(2) + `</b>
+            <b>Your total amout due is ` + Number(this.#totalAmountDue).toFixed(2) + `</b>
         </div>
     </div>
 `;
@@ -1058,6 +1072,15 @@ class Portal {
             }
             this.#purchasedHideAll.disabled = true;
         }
+    }
+
+    // coupon related items
+    couponDiscountUpdate(couponAmounts) {
+        this.#subTotalColDiv.innerHTML = '$' + Number(couponAmounts.totalDue).toFixed(2);
+        this.#couponDiscount = Number(couponAmounts.discount);
+        this.#couponDiscountDiv.innerHTML = '$' + Number(couponAmounts.discount).toFixed(2);
+        this.#totalAmountDue = Number(couponAmounts.totalDue - couponAmounts.discount);
+        $('span[name="totalDueAmountSpan"]').html('$&nbsp;' + this.#totalAmountDue.toFixed(2));
     }
 }
 

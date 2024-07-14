@@ -356,7 +356,7 @@ if ($totalDue > 0 || count($payorPlan) > 0) {
 
 $payHtml = '';
 if ($totalDue > 0) {
-    $totalDueFormatted = '&nbsp;&nbsp;Total due: ' . $dolfmt->formatCurrency((float) $totalDue, $currency);
+    $totalDueFormatted = '&nbsp;&nbsp;Total due: <span name="totalDueAmountSpan">' . $dolfmt->formatCurrency((float) $totalDue, $currency) . "</span>";
     $payHtml = " $totalDueFormatted   " . '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" id="payBalanceTopBTN" onclick="portal.payBalance(' .
         $totalDue . ');">Pay Balance</button>';
     setSessionVar('totalDue', $totalDue); // used for validation in payment side
@@ -432,16 +432,16 @@ if (count($memberships) > 0) {
             </div>
         </div>
         <div class='row mt-4'>
-            <div class='col-sm-4'>
+            <div class='col-sm-2'>
                 Subtotal before coupon:
             </div>
-            <div class='col-sm-auto' id='subTotalColDiv'></div>
+            <div class='col-sm-1 text-end' id='subTotalColDiv'></div>
         </div>
         <div class='row'>
-            <div class='col-sm-4'>
+            <div class='col-sm-2'>
                 Coupon Discount:
             </div>
-            <div class='col-sm-auto' id='couponDiscountDiv'></div>
+            <div class='col-sm-1 text-end' id='couponDiscountDiv'></div>
         </div>
     </div>
 <?php

@@ -506,7 +506,7 @@ function repriceCart() {
     var couponmemberships = 0;
     var primarymemberships = 0;
 
-    if (typeof mtypes != 'undefined') {
+    if (typeof mtypes != 'undefined' && mtypes != null) {
         for (var row in mtypes) {
             var mbrtype = mtypes[row];
             var num = 0;
@@ -630,7 +630,7 @@ window.onload = function () {
     subTotalColDiv = document.getElementById('subTotalColDiv');
     couponDiscountDiv = document.getElementById('couponDiscountDiv');
 
-    if (typeof mtypes != 'undefined') { //v we got here from index (purchase a badge, not some other page)
+    if (typeof mtypes != 'undefined' && mtypes != null) { //v we got here from index (purchase a badge, not some other page)
         for (var row in mtypes) {
             var mbrtype = mtypes[row];
             var memId = mbrtype['id'];

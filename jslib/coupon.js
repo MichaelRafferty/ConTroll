@@ -1,6 +1,8 @@
 // Coupon Class - all functions and data related to processing / displaying a coupon on the reg screen
 // Coupons includes: selection, display, calculation, cart support
 
+var mtypes = null;
+
 class Coupon {
 // coupon items
     #couponCode = null;
@@ -100,73 +102,73 @@ class Coupon {
         if (this.#curCoupon == null)
             return 0;
 
-        if (this.#curCoupon['minMemberships'] == null)
+        if (this.#curCoupon.minMemberships == null)
             return 0;
 
-        return Number(this.#curCoupon['minMemberships']);
+        return Number(this.#curCoupon.minMemberships);
     }
 
     getMaxMemberships() {
         if (this.#curCoupon == null)
             return 999999999;
 
-        if (this.#curCoupon['maxMembersiphs'] == null)
+        if (this.#curCoupon.maxMembersiphs == null)
             return 999999999;
 
-        return Number(this.#curCoupon['maxMemberships']);
+        return Number(this.#curCoupon.maxMemberships);
     }
 
     getLimitMemberships() {
         if (this.#curCoupon == null)
             return 999999999;
 
-        if (this.#curCoupon['limitMemberships'] == null)
+        if (this.#curCoupon.limitMemberships == null)
             return 999999999;
 
-        return Number(this.#curCoupon['limitMemberships']);
+        return Number(this.#curCoupon.limitMemberships);
     }
 
     getMinCart() {
         if (this.#curCoupon == null)
             return 0;
 
-        if (this.#curCoupon['minTransaction'] == null)
+        if (this.#curCoupon.minTransaction == null)
             return 0;
 
-        return Number(this.#curCoupon['minTransaction']);
+        return Number(this.#curCoupon.minTransaction);
     }
 
     getMaxCart() {
         if (this.#curCoupon == null)
             return 999999999;
 
-        if (this.#curCoupon['maxTransaction'] == null)
+        if (this.#curCoupon.maxTransaction == null)
             return 999999999;
 
-        return Number(this.#curCoupon['maxTransaction']);
+        return Number(this.#curCoupon.maxTransaction);
     }
 
     getCouponCode() {
         if (this.#curCoupon == null)
             return null;
 
-        return this.#curCoupon['code'];
+        return this.#curCoupon.code;
     }
 
     getCouponSerial() {
         if (this.#curCoupon == null)
             return null;
 
-        return this.#curCoupon['guid'];
+        return this.#curCoupon.guid;
     }
     getMemGroup() {
         if (this.#curCoupon == null)
             return null;
 
-        if (this.#curCoupon['memId'] == null)
+        if (this.#curCoupon.memId == null)
             return null;
 
-        return this.#curCoupon['memId'];
+        return this.#curCoupon.memId;
     }
 
     // coupon modal area functions
@@ -177,6 +179,7 @@ class Coupon {
                 return;
             }
             this.#addCoupon.show();
+            this.#couponCode.focus();
             this.#addCouponBTN.disabled = false;
             if (this.#removeCouponBTN)
                 this.#removeCouponBTN.hidden = !this.#couponActive;
@@ -197,7 +200,7 @@ class Coupon {
     addCouponCode() {
         "use strict";
 
-        var couponCodeStr, couponSerialStr, couponLinkStr;
+        var couponCodeStr, couponSerialStr, couponLinkStr, parts;
 
         if (!this.#couponCode)  // field not found
             return;
@@ -211,7 +214,7 @@ class Coupon {
 
         if (this.#couponLink) {
             couponLinkStr = this.#couponLink.value;
-            var parts = couponLinkStr.split('?offer=');
+            parts = couponLinkStr.split('?offer=');
             if (parts.length > 1) {
                 couponLinkStr = parts[1];
             } else {
@@ -224,7 +227,7 @@ class Coupon {
                 return;
             }
             if (couponLinkStr) {
-                var parts = couponLinkStr.split('~!~');
+                parts = couponLinkStr.split('~!~');
                 couponCodeStr = parts[0];
                 couponSerialStr = parts[1];
             }
@@ -266,14 +269,14 @@ class Coupon {
     vc_success(data) {
         "use strict";
 
-        if (data['status'] == 'error') {
-            show_message(data['error'], 'error', this.#couponMsgDiv);
+        if (data.status == 'error') {
+            show_message(data.error, 'error', this.#couponMsgDiv);
             this.#addCouponBTN.disabled = false;
             return;
         }
-        if (data['status'] == 'echo')
+        if (data.status == 'echo')
             console.log(data);
-        if (data['maxRedemption'] != null) {
+        if (data.maxRedemption != null) {
             if (data['coupon']['maxRedemption'] <= data['coupon']['redeemedCount']) {
                 show_message('Redemption count exceeded, coupon is no longer valid', 'error', this.#couponMsgDiv);
                 this.#addCouponBTN.disabled = false;
@@ -284,7 +287,8 @@ class Coupon {
         if (data['coupon']['oneUse'] == 1) {
             if (data['coupon']['guid'] == null) {
                 this.ModalOpen(this.#lastCartSize);
-                this.#serialDiv.hidden = false;
+                if (this.#serialDiv)
+                    this.#serialDiv.hidden = false;
                 if (this.#couponSerial.value == '')
                     show_message("Please enter the one use serial number for this coupon", 'success', this.#couponMsgDiv);
                 else
@@ -293,26 +297,28 @@ class Coupon {
             } else {
                 if (data['coupon']['usedBy'] != null) {
                     this.ModalOpen(this.#lastCartSize);
-                    this.#serialDiv.hidden = false;
+                    if (this.#serialDiv)
+                        this.#serialDiv.hidden = false;
                     console.log(this.#curCoupon);
                     show_message("This one use coupon has already been redeemed", 'error', this.#couponMsgDiv);
                     return;
                 }
             }
         } else {
-            this.#serialDiv.hidden = true;
+            if (this.#serialDiv)
+                this.#serialDiv.hidden = true;
         }
 
-        this.#curCoupon = data['coupon'];
-        if (data['mtypes']) {
-            var mtypes = data['mtypes'];
+        this.#curCoupon = data.coupon;
+        if (data.mtypes) {
+            mtypes = data.mtypes;
             // rebuild select list
             var mlist = document.getElementById('memType');
             if (mlist) {
                 var html = '';
                 for (var row in mtypes) {
                     var mrow = mtypes[row];
-                    html += '<option value="' + mrow['id'] + '">' + mrow['label'] + "</option>\n";
+                    html += '<option value="' + mrow.id + '">' + mrow.label + "</option>\n";
                 }
                 mlist.innerHTML = html;
             }
@@ -330,13 +336,14 @@ class Coupon {
         this.#addCouponBTN.innerHTML = "Change Coupon";
         this.#couponActive = true;
         // recompute the coupon effects on the membership types
-        if (typeof mtypes !== 'undefined') {
+        if (mtypes) {
             // online reg
             this.UpdateMtypes();
             repriceCart();
+        } else if (typeof portal !== 'undefined') {
+            portal.couponDiscountUpdate(this.portalComputeCouponDiscount());
         } else {
-            // portal
-            show_message("Need to reprice cart", 'warn');
+            repriceCart();
         }
         this.#couponError = false;
     }
@@ -347,7 +354,7 @@ class Coupon {
             this.#couponCode.value = '';
         if (this.#couponSerial)
             this.#couponSerial.value = '';
-        if (this.#couponLink.value)
+        if (this.#couponLink)
             this.#couponLink.value = '';
         if (this.#serialDiv)
             this.#serialDiv.hidden = true;
@@ -360,11 +367,13 @@ class Coupon {
         this.ModalClose(this.#lastCartSize == 0);
         this.#curCoupon = null;
         this.#couponActive = false;
-        if (typeof mtypes !== 'undefined') {
+        if (mtypes) {
             this.UpdateMtypes();
             repriceCart();
+        } else if (typeof portal !== 'undefined') {
+            portal.couponDiscountUpdate(this.portalComputeCouponDiscount());
         } else {
-            show_message("Need to reprice cart", 'warn');
+            repriceCart();
         }
     }
 
@@ -375,57 +384,57 @@ class Coupon {
         var html = '';
         var label = 'non zero dollar';
 
-        if (this.#curCoupon['couponType'] == '$mem' || this.#curCoupon['couponType'] == '%mem') {
+        if (this.#curCoupon.couponType == '$mem' || this.#curCoupon.couponType == '%mem') {
             html += "<li>This coupon only applies to memberships, not add-ons</li>";
-            if (this.#curCoupon['couponType'] == '$mem') {
-                html += "<li>This coupon provides a $" + Number(this.#curCoupon['discount']).toFixed(2) + " discount on primary memberships.</li>";
+            if (this.#curCoupon.couponType == '$mem') {
+                html += "<li>This coupon provides a $" + Number(this.#curCoupon.discount).toFixed(2) + " discount on primary memberships.</li>";
             } else {
-                html += "<li>This coupon provides a " + String(this.#curCoupon['discount']) + "% discount on primary memberships.</li>";
+                html += "<li>This coupon provides a " + String(this.#curCoupon.discount) + "% discount on primary memberships.</li>";
             }
         }
-        if (this.#curCoupon['couponType'] == '$off' || this.#curCoupon['couponType'] == '%off') {
+        if (this.#curCoupon.couponType == '$off' || this.#curCoupon.couponType == '%off') {
             html += "<li>This coupon only applies to the cost of memberships in the cart, not add-ons</li>";
-            if (this.#curCoupon['couponType'] == '$off') {
-                html += "<li>This coupon provides a $" + Number(this.#curCoupon['discount']).toFixed(2) + " discount off the total of primary memberships in the cart.</li>";
+            if (this.#curCoupon.couponType == '$off') {
+                html += "<li>This coupon provides a $" + Number(this.#curCoupon.discount).toFixed(2) + " discount off the total of primary memberships in the cart.</li>";
             } else {
-                html += "<li>This coupon provides a " + String(this.#curCoupon['discount']) + "% discount off the total of primary memberships in the cart.</li>";
+                html += "<li>This coupon provides a " + String(this.#curCoupon.discount) + "% discount off the total of primary memberships in the cart.</li>";
             }
         }
-        if (this.#curCoupon['couponType'] == 'price') {
-            label = this.#curCoupon['shortname'];
-            html += "<li>This coupon applies a special price of " + Number(this.#curCoupon['discount']).toFixed(2) + " to " +
+        if (this.#curCoupon.couponType == 'price') {
+            label = this.#curCoupon.shortname;
+            html += "<li>This coupon applies a special price of " + Number(this.#curCoupon.discount).toFixed(2) + " to " +
                 label + " memberships in the cart.</li>";
         }
         if (this.getMinMemberships() > 1) {
             html += '<li>You must buy at least ' + this.getMinMemberships() + " " + label + " memberships</li>\n";
         }
-        if (this.#curCoupon['maxMemberships']) {
-            html += '<li>This coupon will only discount up to ' + this.#curCoupon['maxMemberships'] + " " + label + " memberships</li>\n";
+        if (this.#curCoupon.maxMemberships) {
+            html += '<li>This coupon will only discount up to ' + this.#curCoupon.maxMemberships + " " + label + " memberships</li>\n";
         }
 
         if (this.getMinCart()) {
             html += '<li>Your pre-discount cart value must be at least ' + this.getMinCart() + "</li>\n";
         }
-        if (this.#curCoupon['maxTransaction']) {
-            html += '<li>The discount will only apply to the first ' + this.#curCoupon['maxTransaction'] + " of the cart</li>\n";
+        if (this.#curCoupon.maxTransaction) {
+            html += '<li>The discount will only apply to the first ' + this.#curCoupon.maxTransaction + " of the cart</li>\n";
         }
         
-        if (this.#curCoupon['memId']) {
+        if (this.getMemGroup()) {
             html += '<li>Only valid on ';
             var plural = 's'
-            if (this.#curCoupon['limitMemberships']) {
-                if (this.#curCoupon['limitMemberships'] == 1) {
+            if (this.#curCoupon.limitMemberships) {
+                if (this.#curCoupon.limitMemberships == 1) {
                     html += 'one ';
                     plural = '';
                 } else {
-                    html += this.#curCoupon['limitMemberships'] + ' ';
+                    html += this.#curCoupon.limitMemberships + ' ';
                 }
             } else
                 html += ''
-            html += this.#curCoupon['shortname'] + ' membership' + plural + "</li>\n";
+            html += this.#curCoupon.shortname + ' membership' + plural + "</li>\n";
         }
 
-        return "Coupon Details for coupon code '" + this.#curCoupon['code'] + "': " + this.#curCoupon['name'] + "\n<ul>\n" + html + "</ul>\n";
+        return "Coupon Details for coupon code '" + this.#curCoupon.code + "': " + this.#curCoupon.name + "\n<ul>\n" + html + "</ul>\n";
     }
 
 
@@ -439,9 +448,9 @@ class Coupon {
 
             // first compute primary membership
             if (this.#couponActive) {
-                if (this.#curCoupon['memId'] == mbrtype['id']) {  // ok this is a forced primary
+                if (this.getMemGroup() == mbrtype.id) {  // ok this is a forced primary
                     primary = true; // need a statement here, as combining the if's gets difficult
-                } else if (mbrtype['price'] == 0 || (mbrtype['memCategory'] != 'standard' && mbrtype['memCategory'] != 'virtual')) {
+                } else if (mbrtype.price == 0 || (mbrtype.memCategory != 'standard' && mbrtype.memCategory != 'virtual')) {
                     primary = false;
                 }
             }
@@ -449,22 +458,22 @@ class Coupon {
             // now compute the discount
             if (!this.#couponActive) {
                 discount = 0; // no discount if no coupon, price is 0 or its not a primary membership
-            } else if (this.#curCoupon['couponType'] == '$off' || this.#curCoupon['couponType'] == '%off') {
+            } else if (this.#curCoupon.couponType == '$off' || this.#curCoupon.couponType == '%off') {
                 discount = 0; // cart type memberships don't discount rows
-            } else if (this.#curCoupon['memId'] == null || this.#curCoupon['memId'] == mbrtype['id']) { // ok, we have a coupon type that applies to this row
-                if (this.#curCoupon['couponType'] == 'price') {
+            } else if (this.getMemGroup() == null || this.getMemGroup() == mbrtype.id) { // ok, we have a coupon type that applies to this row
+                if (this.#curCoupon.couponType == 'price') {
                     // set price for a specific membership type, set the discount to the difference between the real price and the 'coupon price'
-                    discount = Number(mbrtype['price']) - Number(this.#curCoupon['discount']);
-                } else if (this.#curCoupon['couponType'] == '$mem') {
+                    discount = Number(mbrtype.price) - Number(this.#curCoupon.discount);
+                } else if (this.#curCoupon.couponType == '$mem') {
                     // flat $ discount on the primary membership
-                    discount = Number(this.#curCoupon['discount']);
-                } else if (this.#curCoupon['couponType'] == '%mem') {
+                    discount = Number(this.#curCoupon.discount);
+                } else if (this.#curCoupon.couponType == '%mem') {
                     // % off primaary membership set price.
-                    discount = (Number(mbrtype['price']) * Number(this.#curCoupon['discount']) / 100.0);
+                    discount = (Number(mbrtype.price) * Number(this.#curCoupon.discount) / 100.0);
                 }
                 // if the discount is > than the price limit it to the price.
-                if (Number(discount) > Number(mbrtype['price'])) {
-                    discount = Number(mbrtype['price']);
+                if (Number(discount) > Number(mbrtype.price)) {
+                    discount = Number(mbrtype.price);
                 }
             }
             mbrtype['primary'] = primary;
@@ -485,11 +494,11 @@ class Coupon {
         }
 
         var discount = 0;
-        if (this.#curCoupon['couponType'] == '$off') {
-            discount = this.#curCoupon['discount'];
-        } else if (this.#curCoupon['couponType'] == '%off') {
+        if (this.#curCoupon.couponType == '$off') {
+            discount = this.#curCoupon.discount;
+        } else if (this.#curCoupon.couponType == '%off') {
             var amountDiscountable = total > this.getMaxCart() ? this.getMaxCart() : total;
-            discount = Number(Number(this.#curCoupon['discount']) * amountDiscountable / 100).toFixed(2);
+            discount = Number(Number(this.#curCoupon.discount) * amountDiscountable / 100).toFixed(2);
         }
 
         if (discount > total) {
@@ -498,53 +507,95 @@ class Coupon {
 
         return discount;
     }
-}
 
-/*
+    // portal membership list discounts
+    portalComputeCouponDiscount() {
+        var discount = 0;
+        var totalDiscount = 0;
+        var totalDiscountable = 0;
+        var totalDue = 0;
+        var primaryCount = 0;
+        var couponAmounts = { totalDue: 0, discount: 0 };
+        for (var row in membershipsPurchased) {
+            var mp = membershipsPurchased[row];
 
+            if (mp.status != 'unpaid' || mp.paid > 0)
+                continue;
 
-    // check if the coupon code or link is valid
-    applyCouponSubmit() {
-        var code = this.#couponCodeField.value;
-        var link = this.#couponlinkField.value;
-        var script = 'scripts/couponGetDetails.php';
-        var data = {
-            action: 'lookup',
-            code: 'code',
-            link: 'link',
-        };
-        $.ajax({
-            method: 'POST',
-            url: script,
-            data: data,
-            success: function (data, textStatus, jqXhr) {
-                if (data['status'] == 'error') {
-                    show_message(data['message'], 'error', 'acMessageDiv');
-                } else if (data['status'] == 'warn') {
-                    show_message(data['message'], 'warn', 'acMessageDiv'');
+            totalDue += Number(mp.price);
+            // first compute primary membership
+            if (this.#couponActive) {
+                if (this.getMemGroup() != null && this.getMemGroup() == mp.memid) {  // ok this is a forced primary
+                    primaryCount++; // need a statement here, as combining the if's gets difficult
+                    membershipsPurchased[row]['primary'] = 'primary';
+                } else if (!(mp.price == 0 ||
+                    (mp.memCategory != 'standard' && mp.memCategory != 'virtual' && mp.memCategory != 'supplement' && mp.memCategory != 'upgrade')
+                    )) {
+                    primaryCount++;
+                    membershipsPurchased[row]['primary'] = 'primary';
                 } else {
-                    portal.applyCouponSubmitSuccess(data);
+                    membershipsPurchased[row]['primary'] = 'not primary';
                 }
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                showAjaxError(jqXHR, textStatus, errorThrown);
-                return false;
-            },
-        });
-    }
+            }
 
-    // continue with apply coupon, got the details, not draw the block explaining the coupon
-    applyCouponSubmitSuccess(data) {
-        var html = `
-        <div class="row">
-            <div class="col-sm-12">Coupon Details for coupon code <b>` + data['code'] + '</b>: ' + data['name'] + `</div>
-`       </div>
-        <div class="row">
-            <div class="col-sm-12"
-        </div>
+            couponAmounts = { totalDue: totalDue, discount: 0 };
+            // now compute the discount
+            discount = 0;
+            if (!this.#couponActive) {
+                discount = 0; // no discount if no coupon, price is 0 or its not a primary membership
+            } else if (this.#curCoupon.couponType == '$off' || this.#curCoupon.couponType == '%off') {
+                discount = 0; // cart type memberships don't discount rows
+                if (membershipsPurchased[row]['primary'] == 'primary') {
+                    // dollar and %off are only on primary memberships
+                    totalDiscountable += Number(mp.price);
+                }
+            } else if (this.getMemGroup() == null || this.this.getMemGroup() == mp.memId) { // ok, we have a coupon type that applies to this row
+                if (this.#curCoupon.couponType == 'price') {
+                    // set price for a specific membership type, set the discount to the difference between the real price and the 'coupon price'
+                    discount = Number(mp.price) - Number(this.#curCoupon.discount);
+                    totalDiscountable += Number(mp.price);
+                } else if (this.#curCoupon.couponType == '$mem') {
+                    if (membershipsPurchased[row]['primary'] == 'primary') {
+                        // flat $ discount on the primary membership
+                        discount = Number(this.#curCoupon.discount);
+                        totalDiscountable += Number(mp.price);
+                    }
+                } else if (this.#curCoupon.couponType == '%mem') {
+                    if (membershipsPurchased[row]['primary'] == 'primary') {
+                        // % off primaary membership set price.
+                        discount = (Number(mp.price) * Number(this.#curCoupon.discount) / 100.0);
+                        totalDiscountable += Number(mp.price);
+                    }
+                }
+                // if the discount is > than the price limit it to the price.
+                if (Number(discount) > Number(mp.price)) {
+                   discount = Number(mp.price);
+                }
+            }
+            membershipsPurchased[row]['couponDiscount'] = discount;
+            membershipsPurchased[row]['discountable'] = discount > 0;
+            totalDiscount += Number(discount);
+        }
 
-`;
-        this.#couponBlock.innerHTML = html;
-        this.#couponApplyModal.hide();
+        if (!this.#couponActive)
+            return couponAmounts
+
+        if (totalDiscountable < this.getMinCart()) {
+            return couponAmounts
+        }
+
+        if (this.#curCoupon['couponType'] == '$off') {
+            totalDiscount = this.#curCoupon.discount;
+        } else if (this.#curCoupon.couponType == '%off') {
+            var amountDiscountable = totalDue > this.getMaxCart() ? this.getMaxCart() : totalDiscountable;
+            totalDiscount = Number(Number(this.#curCoupon.discount) * amountDiscountable / 100).toFixed(2);
+        }
+
+        if (totalDiscount > totalDiscountable) {
+            totalDiscount = totalDiscountable;
+        }
+
+        couponAmounts.discount = totalDiscount;
+        return couponAmounts;
     }
- */
+}
