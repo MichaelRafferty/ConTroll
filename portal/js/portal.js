@@ -73,6 +73,7 @@ class Portal {
     #paymentPlan = null;
     #existingPlan = null;
     #totalAmountDue = 0;
+    #preCoupomAmountDue = 0;
     #couponDiscount = 0;
     #paymentAmount = null;
     #planPayment = 0;
@@ -823,7 +824,12 @@ class Portal {
             planPayment: this.#planPayment,
             nonce: token,
             amount: this.#paymentAmount,
-        }
+            totalAmountDue: this.#totalAmountDue,
+            couponDiscound: this.#couponDiscount,
+            preCoupomAmountDue: this.#preCoupomAmountDue,
+            couponCode: coupon.getCouponCode(),
+            couponSerial: coupon.getCouponSerial(),
+        };
         $.ajax({
             url: "scripts/portalPurchase.php",
             data: data,
@@ -1076,6 +1082,7 @@ class Portal {
 
     // coupon related items
     couponDiscountUpdate(couponAmounts) {
+        this.#preCoupomAmountDue = Number(couponAmounts.totalDue);
         this.#subTotalColDiv.innerHTML = '$' + Number(couponAmounts.totalDue).toFixed(2);
         this.#couponDiscount = Number(couponAmounts.discount);
         this.#couponDiscountDiv.innerHTML = '$' + Number(couponAmounts.discount).toFixed(2);
