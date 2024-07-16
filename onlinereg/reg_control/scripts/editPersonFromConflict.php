@@ -96,10 +96,28 @@ if ($do_update) {
         } else {
             $addcomma = true;
         }
+        if (array_key_exists('conflictFormNewShareReg', $_POST)) {
+            $shareReg = trim($_POST["conflictFormNewShareReg"]);
+            if ($shareReg != 'Y' && $shareReg != 'N') {
+                error_log("Inavalid shareReg value of $shareReg");
+                $shareReg = 'Y';
+            }
+        } else {
+            $shareReg = 'Y';
+        }
+        if (array_key_exists('conflictFormNewContactOK', $_POST)) {
+            $contactOK = trim($_POST["conflictFormNewContactOK"]);
+            if ($contactOK != 'Y' && $contactOK != 'N') {
+                error_log("Inavalid contactOK value of $contactOK");
+                $contactOK = 'Y';
+            }
+        } else {
+            $contactOK = 'Y';
+        }
         $query .= 'share_reg_ok = ?, contact_ok = ?, updatedBy = ?';
         $types .= 'ssi';
-        array_push($values, trim($_POST['conflictFormNewShareReg']));
-        array_push($values, trim($_POST['conflictFormNewContactOK']));
+        array_push($values, $shareReg);
+        array_push($values, $contactOK);
         array_push($values, $_SESSION['user_id']);
     }
 
@@ -139,7 +157,7 @@ if ($rows === false) {
     $errors .= "Unable to update reg entires for newperson $newperid to person $perid<br/>\n";
 }
 $rows = dbSafeCmd('UPDATE transaction SET perid=? WHERE newperid=?;', 'ii', array($perid, $newperid));
-if ($rows === false || $rows != 1) {
+if ($rows === false) {
     $errors .= "Unable to update transaction entire for newperson $newperid to person $perid<br/>\n";
 }
 

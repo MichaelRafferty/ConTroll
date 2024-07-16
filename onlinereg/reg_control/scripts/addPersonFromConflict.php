@@ -35,11 +35,23 @@ if ($checkR === false) {
     exit();
 }
 $manager = $checkR->fetch_row()[0];
+$managerPerid = null;
 $checkR->free();
 if ($manager != NULL) {
-    $response['error'] = "Must first resolve their manager, newid $manager";
-    ajaxSuccess($response);
-    exit();
+    // check if that manager has been resolved
+    $checkQ = <<<EOS
+SELECT perid
+FROM newperson
+WHERE id = ?;
+EOS;
+
+    $checkR = dbSafeQuery($checkQ,'i', array($manager));
+    $managerPerid = $checkR->fetch_row()[0];
+    if ($managerPerid == NULL) {
+        $response['error'] = "Must first resolve their manager, newid $manager";
+        ajaxSuccess($response);
+        exit();
+    }
 }
 
 $newPersonQ = <<<EOQ
@@ -50,12 +62,12 @@ INSERT INTO perinfo (last_name, first_name, middle_name, suffix, legalName, pron
 SELECT last_name, first_name, middle_name, suffix, legalName, pronouns
     , email_addr, phone, badge_name, address, addr_2, city, state, zip
     , country, contact_ok, share_reg_ok, 'Y', 'N', ?
-    , managedBy, managedReason, lastVerified
+    , ?, managedReason, lastVerified
 FROM newperson
 WHERE id = ?;
 EOQ;
 
-$id = dbSafeInsert($newPersonQ, "ii", array($_SESSION['user_perid'], $_POST['newID']));
+$id = dbSafeInsert($newPersonQ, "iii", array($_SESSION['user_perid'], $managerPerid, $_POST['newID']));
 if ($id !== false) {
     $rows = dbSafeCmd("UPDATE newperson SET perid=?, updatedBy = ? WHERE id=?;", 'iii', array ($id, $_SESSION['user_id'], $_POST['newID']));
     $rows = dbSafeCmd("UPDATE newperson SET updatedBy = ?, managedBy = ?, managedByNew = null WHERE managedByNew=?;", 'iii',
