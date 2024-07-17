@@ -328,15 +328,15 @@ function apply_overall_discount($coupon, $total) {
         $total = 0;
 // compute the pre-discount total to see if the ca
         foreach ($badges as $badge) {
-            if (!isset($badge) || !isset($badge['memType'])) {
+            if (!isset($badge) || !isset($badge['memId'])) {
                 continue;
             }
-            if (array_key_exists($badge['memType'], $counts)) {
-                if ($primary[$badge['memType']]) {
+            if (array_key_exists($badge['memId'], $counts)) {
+                if ($primary[$badge['memId']]) {
                     $num_primary++;
                 }
-                $total += $prices[$badge['memType']];
-                $counts[$badge['memType']]++;
+                $total += $prices[$badge['memId']];
+                $counts[$badge['memId']]++;
             }
         }
 

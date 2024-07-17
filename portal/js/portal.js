@@ -825,7 +825,7 @@ class Portal {
             nonce: token,
             amount: this.#paymentAmount,
             totalAmountDue: this.#totalAmountDue,
-            couponDiscound: this.#couponDiscount,
+            couponDiscount: this.#couponDiscount,
             preCoupomAmountDue: this.#preCoupomAmountDue,
             couponCode: coupon.getCouponCode(),
             couponSerial: coupon.getCouponSerial(),
@@ -850,6 +850,10 @@ class Portal {
         console.log(data);
         if (data['status'] == 'error') {
             id.disabled = false;
+            if (data['error']) {
+                show_message(data['error'], 'error', 'makePayMessageDiv');
+                return;
+            }
             if (data['message']) {
                 show_message(data['message'], 'error', 'makePayMessageDiv');
                 return;

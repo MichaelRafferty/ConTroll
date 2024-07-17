@@ -79,6 +79,8 @@ $discounts = $data['discounts'];
 $primary = $data['primary'];
 $map = $data['map'];
 $coupon = $data['coupon'];
+$memCategories = $data['memCategories'];
+$mtypes = $data['mtypes'];
 //// $rules = $data['rules'];
 //// TODO: load and apply rules checkshere to $badges
 
@@ -87,7 +89,7 @@ $coupon = $data['coupon'];
 $people = array();
 $newid_list = '';
 
-$data = computePurchaseTotals($coupon, $badges, $primary, $counts, $prices, $map, $discounts);
+$data = computePurchaseTotals($coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories);
 
 $maxMbrDiscounts = $data['origMaxMbrDiscounts'];
 $apply_discount = $data['applyDiscount'];
@@ -95,7 +97,7 @@ $preDiscount = $data['preDiscount'];
 $total = $data['total'];
 $totalDiscount = $data['totalDiscount'];
 
-if ($webtotal != $preDiscount) {
+if ($webtotal != $total) {
     error_log('bad total: post=' . $webtotal . ', calc=' . $preDiscount);
     ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
     exit();
@@ -112,21 +114,21 @@ if ($coupon != null) {
 // now process the people and the memberships to add them to the tables
 $count = 0;
 foreach ($badges as $badge) {
-    if (!isset($badge) || !isset($badge['memType'])) {
+    if (!isset($badge) || !isset($badge['memId'])) {
         continue;
     }
-    if (array_key_exists($badge['memType'], $counts)) {
+    if (array_key_exists($badge['memId'], $counts)) {
         $discount = 0;
-        if ($apply_discount && $primary[$badge['memType']]) {
+        if ($apply_discount && $primary[$badge['memId']]) {
             if ($maxMbrDiscounts > 0) {
-                $discount = $discounts[$badge['memType']];
+                $discount = $discounts[$badge['memId']];
                 $maxMbrDiscounts--;
             }
         }
         $people[$count] = array(
             'info' => $badge,
-            'price' => $prices[$badge['memType']],
-            'memId' => $memId[$badge['memType']],
+            'price' => $prices[$badge['memId']],
+            'memId' => $badge['memId'],
             'coupon' => $coupon,
             'discount' => $discount,
         );

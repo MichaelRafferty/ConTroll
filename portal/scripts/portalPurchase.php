@@ -3,6 +3,7 @@ require_once('../lib/base.php');
 require_once('../lib/getAccountData.php');
 require_once('../lib/portalEmails.php');
 require_once('../../lib/paymentPlans.php');
+require_once('../../lib/purchase.php');
 require_once('../../lib/coupon.php');
 require_once('../../lib/log.php');
 require_once('../../lib/cc__load_methods.php');
@@ -57,9 +58,9 @@ if (array_key_exists('totalAmountDue', $_POST)) {
     $totalAmountDue = $amount;
 }
 if (array_key_exists('couponDiscount', $_POST)) {
-    $couponDiscount = $_POST['couponDiscount'];
+    $webCouponDiscount = $_POST['couponDiscount'];
 } else {
-    $couponDiscount = 0;
+    $webCouponDiscount = 0;
 }
 if (array_key_exists('preCoupomAmountDue', $_POST)) {
     $preCoupomAmountDue = $_POST['preCoupomAmountDue'];
@@ -86,7 +87,7 @@ if ($planRec) {
     $totalAmtDue = $preCoupomAmountDue;
 }
 
-if ($planPayment == 0 || $newplan == 1) {
+/*if ($planPayment == 0 || $newplan == 1) {
     $totalDue = getSessionVar('totalDue');
     if ($totalDue == null) {
         ajaxSuccess(array('status' => 'error', 'message' => 'No confirm payment amount.'));
@@ -97,7 +98,7 @@ if ($planPayment == 0 || $newplan == 1) {
         ajaxSuccess(array('status' => 'error', 'message' => 'Improper payment amount.'));
         exit();
     }
-}
+}*/
 
 
 // all the records are in the database, so lets charge the credit card...
@@ -114,55 +115,48 @@ $info = getPersonInfo();
 $coupon = null;
 $counts = null;
 
-$memberships = getAccountRegistrations($loginId, $loginType, $conid, ($newplan || $planPayment == 0) ? 'unpaid' : 'plan');
-$badgeResults = [];
-foreach ($memberships as $membership) {
-    $badgeResults[] = ['age' => $membership['memAge'], 'memId' => $membership['memId'], 'price' => $membership['price']];
-}
+$badges = getAccountRegistrations($loginId, $loginType, $conid, ($newplan || $planPayment == 0) ? 'unpaid' : 'plan');
 
 if ($planPayment == 1 || $newplan == 1) {
-    $inPlan = whatMembershipsInPlan($memberships, $planRec);
+    $inPlan = whatMembershipsInPlan($badges, $planRec);
 } else {
     $inPlan = [];
 }
 
 // ok, the Portal data is now loaded, now deal with re-pricing things, based on the real tables
-$mtypes = null;
-// get the coupon data, if any
-if ($couponCode !== null) {
-    $result = load_coupon_data($couponCode, $couponSerial);
-    if ($result['status'] == 'error') {
-        ajaxSuccess($result);
-        exit();
-    }
-    $coupon = $result['coupon'];
-    if (array_key_exists('mtypes', $result))
-        $mtypes = $result['mtypes'];
-    //web_error_log("coupon:");
-    //var_error_log($coupon);
-}
-// now if the coupon didn't return it, get the mtypes array
-if ($mtypes == null) {
-    $priceQ = <<<EOQ
-SELECT m.id, m.memGroup, m.label, m.shortname, m.price, m.memCategory
-FROM memLabel m
-WHERE
-    m.conid=?
-    AND m.online = 'Y'
-    AND startdate <= CURRENT_TIMESTAMP()
-    AND enddate > CURRENT_TIMESTAMP()
-;
-EOQ;
-    $mtypes = array ();
-    $priceR = dbSafeQuery($priceQ, 'i', array ($condata['id']));
-    while ($priceL = $priceR->fetch_assoc()) {
-        $mtypes[$priceL['id']] = $priceL;
-    }
+$data = loadPurchaseData($conid, $couponCode, $couponSerial);
+$prices = $data['prices'];
+$memId = $data['memId'];
+$counts = $data['counts'];
+$discounts = $data['discounts'];
+$primary = $data['primary'];
+$map = $data['map'];
+$coupon = $data['coupon'];
+$memCategories = $data['memCategories'];
+$mtypes = $data['mtypes'];
+
+//// $rules = $data['rules'];
+//// TODO: load and apply rules checkshere to $badges
+$data = computePurchaseTotals($coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories);
+
+$maxMbrDiscounts = $data['origMaxMbrDiscounts'];
+$apply_discount = $data['applyDiscount'];
+$preDiscount = $data['preDiscount'];
+$total = $data['total'];
+$totalDiscount = $data['totalDiscount'];
+
+if ($totalAmtDue != $preDiscount) {
+    error_log('bad total: post=' . $totalAmtDue . ', calc=' . $preDiscount);
+    ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
+    exit();
 }
 
-// now apply the price discount to the array
-if ($coupon !== null) {
-    $mtypes =  apply_coupon_data($mtypes, $coupon);
+if ($coupon != null) {
+    if ($webCouponDiscount != $totalDiscount) {
+        error_log('bad coupon discount: post=' . $webCouponDiscount . ', calc=' . $totalDiscount);
+        ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad coupon data sent to Server'));
+        exit();
+    }
 }
 
 // now recompute the records in the badgeResults array
@@ -172,15 +166,17 @@ $results = array(
     'transid' => $transId,
     'counts' => $counts,
     'price' => $totalAmtDue,
-    'badges' => $badgeResults,
+    'tax' => 0,
+    'pretax' => $totalAmtDue,
+    'badges' => $badges,
     'total' => $amount,
     'nonce' => $nonce,
     'coupon' => $coupon,
-    'discount' => $couponDiscount,
+    'discount' => $totalDiscount,
 );
 
 //log requested badges
-logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'results'=>$results, 'request'=>$memberships, 'inPlan' => $inPlan));
+logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges, 'inPlan' => $inPlan));
 // end compute
 if ($amount > 0) {
     $rtn = cc_charge_purchase($results, $ccauth, true);
@@ -280,13 +276,13 @@ JOIN memRuleItems mRI ON mR.name = mRI.name
 WHERE CONCAT(',', mR.memList, ',') like ?;
 EOS;
 
-$upgadedUP = <<<EOS
+$upgradedUP = <<<EOS
 UPDATE reg
 SET status = 'upgraded'
 WHERE conid = ? AND perid = ? AND memId = ? AND status = 'paid';
 EOS;
 
-    $upgadedUN = <<<EOS
+    $upgradedUN = <<<EOS
 UPDATE reg
 SET status = 'upgraded'
 WHERE conid = ? AND newperid = ? AND memId = ? AND status = 'paid';
@@ -297,17 +293,17 @@ if ($amount > 0) {
     $regU = 'UPDATE reg SET paid=?, couponDiscount = ?, complete_trans = ?, status = ? WHERE id=?;';
     $balance = $approved_amt;
     // first all the out of plan ones
-    for ($idx = 0; $idx < count($memberships); $idx++) {
-        $membership = $memberships[$idx];
-        if (!array_key_exists($membership['regId'], $inPlan) || !$inPlan[$membership['regId']]) {
-            $paid_amt = min($balance, $membership['price'] - ($membership['paid'] + $membership['couponDiscount']));
+    for ($idx = 0; $idx < count($badges); $idx++) {
+        $badge = $badges[$idx];
+        if (!array_key_exists($badge['regId'], $inPlan) || !$inPlan[$badge['regId']]) {
+            $paid_amt = min($balance, $badge['price'] - ($badge['paid'] + $badge['couponDiscount']));
             // only update those that were actually modified
-            if (($paid_amt > 0) || ($membership['price'] == 0  && $membership['complete_trans'] == null)) {
-                if ($membership['memCategory'] == 'upgrade' && $paid_amt <= $balance) {
+            if (($paid_amt > 0) || ($badge['price'] == 0  && $badge['complete_trans'] == null)) {
+                if ($badge['memCategory'] == 'upgrade' && $paid_amt <= $balance) {
                     // ok this upgrade is now paid for, mark the old one upgraded
                     // upgrades require a role to allow them to be bought based on the prior membership being in the cart, get the rule for this membership
 
-                    $mrR = dbSafeQuery($mrQ, 's', array('%,' . $membership['memId'] . ',%'));
+                    $mrR = dbSafeQuery($mrQ, 's', array('%,' . $badge['memId'] . ',%'));
                     if ($mrR != false) {
                         if ($mrR->num_rows > 0) {
                             while ($rule = $mrR->fetch_assoc()) {
@@ -316,16 +312,16 @@ if ($amount > 0) {
                                     foreach ($memIds as $memId) {
                                         $argPerid = null;
                                         $argNewPerid = null;
-                                        if (array_key_exists('perid', $membership)) {
-                                            $argPerid = $membership['perid'];
+                                        if (array_key_exists('perid', $badge)) {
+                                            $argPerid = $badge['perid'];
                                         }
-                                        if (array_key_exists('newperid', $membership)) {
-                                            $argNewPerid = $membership['newperid'];
+                                        if (array_key_exists('newperid', $badge)) {
+                                            $argNewPerid = $badge['newperid'];
                                         }
                                         if ($argPerid != null) {
-                                            $upgradedCnt += dbSafeCmd($upgadedUP, 'iii', array ($conid, $argPerid, $memId));
+                                            $upgradedCnt += dbSafeCmd($upgradedUP, 'iii', array ($conid, $argPerid, $memId));
                                         } else if ($argNewPerid != null) {
-                                            $upgradedCnt += dbSafeCmd($upgadedU, 'iii', array ($conid, $argNewPerid, $memId));
+                                            $upgradedCnt += dbSafeCmd($upgradedUN, 'iii', array ($conid, $argNewPerid, $memId));
                                         }
                                     }
                                 }
@@ -335,17 +331,17 @@ if ($amount > 0) {
                     }
                 }
                 $rows_upd += dbSafeCmd($regU, 'ddisi', array (
-                    $membership['price'] - $membership['couponDiscount'],
-                    $membership['couponDiscount'],
+                    $badge['price'] - $badge['couponDiscount'],
+                    $badge['couponDiscount'],
                     $paid_amt <= $balance ? $transId : null,
-                    $paid_amt <= $balance ? 'paid' : $membership['status'],
-                    $membership['regId']
+                    $paid_amt <= $balance ? 'paid' : $badge['status'],
+                    $badge['regId']
                 ));
                 $balance -= $paid_amt;
-                $memberships[$idx]['modified'] = true;
+                $badges[$idx]['modified'] = true;
             }
         } else {
-            $memberships[$idx]['modified'] = false;
+            $badges[$idx]['modified'] = false;
         }
     }
     if ($balance > 0) {
@@ -353,10 +349,10 @@ if ($amount > 0) {
         // figure out the percentage to apply to each
         $totalOwed = 0;
         $count = 0;
-        foreach ($memberships as $membership) {
+        foreach ($badges as $badge) {
             $count++;
-            if (array_key_exists($membership['regId'], $inPlan) && $inPlan[$membership['regId']]) {
-                $totalOwed += $membership['price'] - ($membership['paid'] + $membership['couponDiscount']);
+            if (array_key_exists($badge['regId'], $inPlan) && $inPlan[$badge['regId']]) {
+                $totalOwed += $badge['price'] - ($badge['paid'] + $badge['couponDiscount']);
             }
         }
         if ($totalOwed > 0) {
@@ -367,11 +363,11 @@ if ($amount > 0) {
         if ($ratio > 0.990)
             $ratio = 1; // deal with rounding errors
         $applied = 0;
-        for ($idx = 0; $idx < count($memberships); $idx++) {
-            $membership = $memberships[$idx];
+        for ($idx = 0; $idx < count($badges); $idx++) {
+            $badge = $badges[$idx];
             $applied++;
-            if (array_key_exists($membership['regId'], $inPlan) && $inPlan[$membership['regId']]) {
-                $due = $membership['price'] - ($membership['paid'] + $membership['couponDiscount']);
+            if (array_key_exists($badge['regId'], $inPlan) && $inPlan[$badge['regId']]) {
+                $due = $badge['price'] - ($badge['paid'] + $badge['couponDiscount']);
                 if ($applied == $count) // last row, give it all of the balance
                     $paid_amt = $balance;
                 else
@@ -380,11 +376,11 @@ if ($amount > 0) {
                     $paid_amt = $due; // just in case
 
                 // only update those that were actually modified
-                if ($membership['memCatetory'] == 'upgrade' && $paid_amt <= $balance) {
+                if ($badge['memCatetory'] == 'upgrade' && $paid_amt <= $balance) {
                     // ok this upgrade is now paid for, mark the old one upgraded
                     // upgrades require a role to allow them to be bought based on the prior membership being in the cart, get the rule for this membership
 
-                    $mrR = dbSafeQuery($mrQ, 's', array ('%,' . $membership['memId'] . ',%'));
+                    $mrR = dbSafeQuery($mrQ, 's', array ('%,' . $badge['memId'] . ',%'));
                     if ($mrR != false) {
                         if ($mrR->num_rows > 0) {
                             while ($rule = $mrR->fetch_assoc()) {
@@ -393,16 +389,16 @@ if ($amount > 0) {
                                     foreach ($memIds as $memId) {
                                         $argPerid = null;
                                         $argNewPerid = null;
-                                        if (array_key_exists('perid', $membership)) {
-                                            $argPerid = $membership['perid'];
+                                        if (array_key_exists('perid', $badge)) {
+                                            $argPerid = $badge['perid'];
                                         }
-                                        if (array_key_exists('newperid', $membership)) {
-                                            $argNewPerid = $membership['newperid'];
+                                        if (array_key_exists('newperid', $badge)) {
+                                            $argNewPerid = $badge['newperid'];
                                         }
                                         if ($argPerid != null) {
-                                            $upgradedCnt += dbSafeCmd($upgadedUP, 'iii', array ($conid, $argPerid, $memId));
+                                            $upgradedCnt += dbSafeCmd($upgradedUP, 'iii', array ($conid, $argPerid, $memId));
                                         } else if ($argNewPerid != null) {
-                                            $upgradedCnt += dbSafeCmd($upgadedU, 'iii', array ($conid, $argNewPerid, $memId));
+                                            $upgradedCnt += dbSafeCmd($upgradedUN, 'iii', array ($conid, $argNewPerid, $memId));
                                         }
 
                                     }
@@ -416,20 +412,20 @@ if ($amount > 0) {
                 $left = $due - $paid_amt;
                 $rows_upd += dbSafeCmd($regU, 'ddisi', array(
                     $paid_amt,
-                    $membership['couponDiscount'],
+                    $badge['couponDiscount'],
                     $left < 0.01 ? $transId : null,
                     $left < 0.01 ? 'paid' : 'plan',
-                    $membership['regId']
+                    $badge['regId']
                 ));
-                $memberships[$idx]['modified'] = true;
+                $badges[$idx]['modified'] = true;
             }
         }
     }
 }
 if ($amount > 0) {
-    $body = getEmailBody($transId, $info, $memberships, $planRec, $rtn['rid'], $rtn['url'], $amount);
+    $body = getEmailBody($transId, $info, $badges, $planRec, $rtn['rid'], $rtn['url'], $amount);
 } else {
-    $body = getNoChargeEmailBody($results, $info, $memberships);
+    $body = getNoChargeEmailBody($results, $info, $badges);
 }
 
 $regconfirmcc = null;

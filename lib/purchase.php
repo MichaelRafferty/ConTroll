@@ -10,22 +10,36 @@
         $primary = array ();
         $map = array ();
         $coupon = null;
+        $memCategories = array();
 
+        // membership information
         $priceQ = <<<EOQ
-SELECT m.id, m.memGroup, m.label, m.shortname, m.price, m.memCategory
+SELECT m.id, m.memGroup, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge
 FROM memLabel m
 WHERE
-    m.conid=?
+    (m.conid=? OR m.conid=?)
     AND m.online = 'Y'
     AND startdate <= CURRENT_TIMESTAMP()
     AND enddate > CURRENT_TIMESTAMP()
 ;
 EOQ;
         $mtypes = array ();
-        $priceR = dbSafeQuery($priceQ, 'i', array ($conid));
+        $priceR = dbSafeQuery($priceQ, 'ii', array ($conid, $conid + 1));
         while ($priceL = $priceR->fetch_assoc()) {
             $mtypes[$priceL['id']] = $priceL;
         }
+        $priceR->free();
+
+        $memCatQ = <<<EOQ
+SELECT memCategory, onlyOne, standAlone, variablePrice
+FROM memCategories
+WHERE active = 'Y';
+EOQ;
+        $memCatR = dbQuery($memCatQ);
+        while ($memCatL = $memCatR->fetch_assoc()) {
+            $memCategories[$memCatL['memCategory']] = $memCatL;
+        }
+        $memCatR->free();
 
 // get the coupon data, if any
         if ($couponCode !== null) {
@@ -71,12 +85,14 @@ EOQ;
             'counts' => $counts,
             'map' => $map,
             'coupon' => $coupon,
+            'memCategories' => $memCategories,
+            'mtypes' => $mtypes,
         ];
         return $data;
     }
 
     // ccompute Purchase Totals
-    function computePurchaseTotals(&$coupon, $badges, $primary, $counts, $prices, $map, $discounts) {
+    function computePurchaseTotals(&$coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories) {
         $num_primary = 0;
         $total = 0;
 
@@ -85,19 +101,25 @@ EOQ;
             if (!isset($badge) || !isset($badge['memId'])) {
                 continue;
             }
-            if (array_key_exists($badge['memId'], $counts)) {
-                if ($primary[$badge['memId']]) {
-                    $num_primary++;
-                }
-                $total += $prices[$badge['memId']];
-                $counts[$badge['memId']]++;
+            $memId = $badge['memId'];
+            if (array_key_exists($memId, $counts)) {
+                $counts[$memId]++;
             }
+            if ($primary[$memId]) {
+                $num_primary++;
+            }
+            $mtype = $mtypes[$memId];
+            $memCategory = $memCategories[$mtype['memCategory']];
+            $price = $prices[$memId];
+            if ($memCategory['variablePrice'] == 'Y') {
+                if ($price < $badge['price'])
+                    $price = $badge['price'];
+            }
+            $total += $price;
         }
-
 
 // now figure out if coupon applies
         $apply_discount = coupon_met($coupon, $total, $num_primary, $map, $counts);
-
 
         $total = 0;
         $preDiscount = 0;
@@ -116,18 +138,24 @@ EOQ;
             if (!isset($badge) || !isset($badge['memId'])) {
                 continue;
             }
-            if (array_key_exists($badge['memId'], $counts)) {
-                $price = $prices[$badge['memId']];
-                $preDiscount += $price;
-                if ($apply_discount && $primary[$badge['memId']]) {
-                    if ($maxMbrDiscounts > 0) {
-                        $price -= $discounts[$badge['memId']];
-                        $maxMbrDiscounts--;
-                        $totalDiscount += $discounts[$badge['memId']];
-                    }
-                }
-                $total += $price;
+            $memId = $badge['memId'];
+
+            $mtype = $mtypes[$memId];
+            $memCategory = $memCategories[$mtype['memCategory']];
+            $price = $prices[$memId];
+            if ($memCategory['variablePrice'] == 'Y') {
+                if ($price < $badge['price'])
+                    $price = $badge['price'];
             }
+            $preDiscount += $price;
+            if ($apply_discount && $primary[$badge['memId']]) {
+                if ($maxMbrDiscounts > 0) {
+                    $price -= $discounts[$badge['memId']];
+                    $maxMbrDiscounts--;
+                    $totalDiscount += $discounts[$badge['memId']];
+                }
+            }
+            $total += $price;
         }
         if ($apply_discount) {
             $discount = apply_overall_discount($coupon, $total);
