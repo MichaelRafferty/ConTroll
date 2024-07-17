@@ -278,8 +278,9 @@ $onsitesale = $startdate->format("l, F j");
                                     <input class="form-control-sm" type="text" name="badgename" id='badgename' size="35" maxlength="32"  placeholder='defaults to first and last name' tabindex="30"/>
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0">
-                                    <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Membership Type</span></label><br/>
-                                    <select id='memType' name='memType' style="width:500px;" tabindex='32' title='Age is as of <?php echo substr($condata['startdate'], 0, 10); ?> (the first day of the convention)'>
+                                    <label for="memId" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
+                                                    class='text-danger'>&bigstar;</span>Membership Type</span></label><br/>
+                                    <select id='memId' name='memId' style="width:500px;" tabindex='32' title='Age is as of <?php echo substr($condata['startdate'], 0, 10); ?> (the first day of the convention)'>
                                         <?php foreach ($membershiptypes as $memType) { ?>
                                             <option value='<?php echo $memType['id'];?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price'];?>)</option>
                                         <?php    } ?>

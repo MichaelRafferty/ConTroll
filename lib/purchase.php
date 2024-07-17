@@ -82,15 +82,15 @@ EOQ;
 
 // compute the pre-discount total to see if the javascript passed prediscount total is correct
         foreach ($badges as $badge) {
-            if (!isset($badge) || !isset($badge['memType'])) {
+            if (!isset($badge) || !isset($badge['memId'])) {
                 continue;
             }
-            if (array_key_exists($badge['memType'], $counts)) {
-                if ($primary[$badge['memType']]) {
+            if (array_key_exists($badge['memId'], $counts)) {
+                if ($primary[$badge['memId']]) {
                     $num_primary++;
                 }
-                $total += $prices[$badge['memType']];
-                $counts[$badge['memType']]++;
+                $total += $prices[$badge['memId']];
+                $counts[$badge['memId']]++;
             }
         }
 
@@ -113,17 +113,17 @@ EOQ;
 
 // check that we got valid total from the post before anything is inserted into the database, the empty rows are deleted badges from the site
         foreach ($badges as $badge) {
-            if (!isset($badge) || !isset($badge['memType'])) {
+            if (!isset($badge) || !isset($badge['memId'])) {
                 continue;
             }
-            if (array_key_exists($badge['memType'], $counts)) {
-                $price = $prices[$badge['memType']];
+            if (array_key_exists($badge['memId'], $counts)) {
+                $price = $prices[$badge['memId']];
                 $preDiscount += $price;
-                if ($apply_discount && $primary[$badge['memType']]) {
+                if ($apply_discount && $primary[$badge['memId']]) {
                     if ($maxMbrDiscounts > 0) {
-                        $price -= $discounts[$badge['memType']];
+                        $price -= $discounts[$badge['memId']];
                         $maxMbrDiscounts--;
-                        $totalDiscount += $discounts[$badge['memType']];
+                        $totalDiscount += $discounts[$badge['memId']];
                     }
                 }
                 $total += $price;

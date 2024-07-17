@@ -130,21 +130,21 @@ function process(formRef) {
     }
 
     // a membership type is required
-    if (formData['memType'] == '') {
+    if (formData['memId'] == '') {
         valid = false;
-        $('#memType').addClass('need');
+        $('#memId').addClass('need');
     } else {
-        $('#memType').removeClass('need');
+        $('#memId').removeClass('need');
     }
 
-    if (badges['memTypeCount'][formData['memType']] == null)
-        badges['memTypeCount'][formData['memType']] = 0;
+    if (badges['memTypeCount'][formData['memId']] == null)
+        badges['memTypeCount'][formData['memId']] = 0;
 
     // check if there are too many limited memberships in the cart
-    if (coupon.getMemGroup() == formData['memType']) {
-        var cur = badges['memTypeCount'][formData['memType']];
+    if (coupon.getMemGroup() == formData['memId']) {
+        var cur = badges['memTypeCount'][formData['memId']];
         var lim = coupon.getLimitMemberships();
-        if (badges['memTypeCount'][formData['memType']] >= coupon.getLimitMemberships()) {
+        if (badges['memTypeCount'][formData['memId']] >= coupon.getLimitMemberships()) {
             alert("You already have the maximum number of memberships of this membership type in your cart based on the coupon applied. You must choose a different membership type.");
             valid = false;
         }
@@ -275,8 +275,8 @@ function addMembership(formData) {
     }
 
     badges['count'] +=  1;
-    badges['memTypeCount'][formData['memType']] += 1;
-    //badges['total'] += prices[formData['memType']];
+    badges['memTypeCount'][formData['memId']] += 1;
+    //badges['total'] += prices[formData['memId']];
     badges['badges'].push(formData);
 
     repriceCart();
@@ -299,7 +299,7 @@ function addMembership(formData) {
     }
 
     // build badge block in Badges list
-    var memId = formData['memType'];
+    var memId = formData['memId'];
     // find matching mtype in array
     var found = false;
     var mtype = null;
