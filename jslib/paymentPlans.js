@@ -87,16 +87,26 @@ class PaymentPlans {
                             eligible = false;
                     }
 
+                    // ignore coupon discount, it's handled later in the calc
                     if (eligible) {
-                        planAmt += Number(mem.price) - (Number(mem.paid) + Number(mem.couponDiscount));
+                        planAmt += Number(mem.price) - Number(mem.paid);
                     } else {
-                        nonPlanAmt += Number(mem.price) - (Number(mem.paid) + Number(mem.couponDiscount));
+                        nonPlanAmt += Number(mem.price) - Number(mem.paid);
                     }
                 }
             }
 
             if (space != null) {
                 console.log("Not yet for space payments in plan");
+            }
+
+            if (typeof coupon != 'undefined' && coupon != null) {
+                var cartDiscount = 0;
+                if (typeof portal !== 'undefined' && portal != null) {
+                    var portalDiscount = coupon.portalComputeCouponDiscount();
+                    cartDiscount = portalDiscount.discount;
+                }
+                planAmt -= cartDiscount;
             }
 
             planAmt = Math.round(planAmt * 100.0) / 100.0;

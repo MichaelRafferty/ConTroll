@@ -94,8 +94,8 @@ function clearSession($prefix = '') {
 }
 
 // is a memList item a primary membership type
-function isPrimary($mtype) {
-    if ($mtype['price'] == 0 ||
+function isPrimary($mtype, $conid) {
+    if ($mtype['price'] == 0 || $conid != $mtype['conid'] ||
         ($mtype['memCategory'] != 'standard' && $mtype['memCategory'] != 'supplement' && $mtype['memCategory'] != 'virtual')
     ) {
         return false;

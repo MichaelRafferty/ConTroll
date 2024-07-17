@@ -161,7 +161,7 @@ EOS;
     $result = array('status' => 'success', 'coupon' => $coupon);
     if ($coupon['memId']) {
         $priceQ = <<<EOS
-SELECT id, memGroup, label, shortname, sort_order, price, memAge, memCategory
+SELECT id, memGroup, label, shortname, price, memCategory, memType, memAge, conid
 FROM memLabel
 WHERE
     conid=? 
@@ -190,6 +190,9 @@ EOS;
 }
 // apply coupon data to mytpe array
 function apply_coupon_data($mtypes, $coupon) {
+    $con_conf = get_conf('con');
+    $conid = $con_conf['id'];
+
     foreach ($mtypes as $id => $mbrtype) {
         $primary = true; // if coupon is active, does this 'num' count toward min / max memberships
         $discount = 0;
@@ -198,7 +201,7 @@ function apply_coupon_data($mtypes, $coupon) {
         if ($coupon['memId'] && $coupon['memId'] == $mbrtype['id']) {  // ok this is a forced primary
             $primary = true; // need a statement here, as combining the if's gets difficult
         } else {
-            $primary = isPrimary($mbrtype);
+            $primary = isPrimary($mbrtype, $conid);
         }
 
         if ($coupon['couponType'] == '$off' || $coupon['couponType'] == '%off') {
@@ -282,7 +285,6 @@ function apply_overall_discount($coupon, $total) {
 // process counpon against badge array
     function applyCouponToBadges($badges, $prices, $couponCode, $couponSerial) {
         // get the membership prices
-        $memId = array ();
         $counts = array ();
         $discounts = array ();
         $primary = array ();
@@ -308,20 +310,19 @@ function apply_overall_discount($coupon, $total) {
         }
 
         foreach ($mtypes as $id => $mbrtype) {
-            $map[$mbrtype['id']] = $mbrtype['id'];
-            $prices[$mbrtype['id']] = $mbrtype['price'];
-            $memId[$mbrtype['id']] = $mbrtype['id'];
-            $counts[$mbrtype['id']] = 0;
+            $map[$id] = $id;
+            $prices[$id] = $mbrtype['price'];
+            $counts[$id] = 0;
             $isprimary = (!($mbrtype['price'] == 0 ||
                 ($mbrtype['memCategory'] != 'standard' && $mbrtype['memCategory'] != 'supplement' && $mbrtype['memCategory'] != 'virtual')
             ));
             if ($coupon !== null) {
-                $discounts[$mbrtype['id']] = $mbrtype['discount'];
-                if ($coupon['memId'] == $mbrtype['id']) {  // ok this is a forced primary
+                $discounts[$id] = $mbrtype['discount'];
+                if ($coupon['memId'] == $id) {  // ok this is a forced primary
                     $isprimary = true;                     // need a statement here, as combining the if's gets difficult
                 }
             }
-            $primary[$mbrtype['id']] = $isprimary;
+            $primary[$id] = $isprimary;
         }
 
         $num_primary = 0;

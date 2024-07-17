@@ -1092,6 +1092,16 @@ class Portal {
         this.#couponDiscountDiv.innerHTML = '$' + Number(couponAmounts.discount).toFixed(2);
         this.#totalAmountDue = Number(couponAmounts.totalDue - couponAmounts.discount);
         $('span[name="totalDueAmountSpan"]').html('$&nbsp;' + this.#totalAmountDue.toFixed(2));
+
+        if (this.#payBalanceBTN != null && paymentPlanList != null) {
+            if (paymentPlans.plansEligible(membershipsPurchased)) {
+                this.#payBalanceBTN.innerHTML = "Pay Balance (or start a payment plan)";
+                this.#payBalanceTopBTN.innerHTML = "Pay Balance (or start a payment plan)";
+            } else {
+                this.#payBalanceBTN.innerHTML = "Pay Balance";
+                this.#payBalanceTopBTN.innerHTML = "Pay Balance";
+            }
+        }
     }
 }
 

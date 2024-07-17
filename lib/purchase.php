@@ -14,7 +14,7 @@
 
         // membership information
         $priceQ = <<<EOQ
-SELECT m.id, m.memGroup, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge
+SELECT m.id, m.memGroup, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid
 FROM memLabel m
 WHERE
     (m.conid=? OR m.conid=?)
@@ -42,7 +42,7 @@ EOQ;
         $memCatR->free();
 
 // get the coupon data, if any
-        if ($couponCode !== null) {
+        if ($couponCode != null && $couponCode != "") {
             $result = load_coupon_data($couponCode, $couponSerial);
             if ($result['status'] == 'error') {
                 ajaxSuccess($result);
@@ -66,7 +66,7 @@ EOQ;
             $prices[$mbrtype['id']] = $mbrtype['price'];
             $memId[$mbrtype['id']] = $mbrtype['id'];
             $counts[$mbrtype['id']] = 0;
-            $isprimary = isPrimary($mbrtype);
+            $isprimary = isPrimary($mbrtype, $conid);
             if ($coupon !== null) {
                 $discounts[$mbrtype['id']] = $mbrtype['discount'];
                 if ($coupon['memId'] == $mbrtype['id']) {  // ok this is a forced primary
@@ -124,6 +124,7 @@ EOQ;
         $total = 0;
         $preDiscount = 0;
         $totalDiscount = 0;
+        $totalElibibleForDiscount = 0;
         $maxMbrDiscounts = 0;
         $discount = 0;
         if ($coupon != null) {
@@ -153,12 +154,13 @@ EOQ;
                     $price -= $discounts[$badge['memId']];
                     $maxMbrDiscounts--;
                     $totalDiscount += $discounts[$badge['memId']];
+                    $totalElibibleForDiscount += $price;
                 }
             }
             $total += $price;
         }
         if ($apply_discount) {
-            $discount = apply_overall_discount($coupon, $total);
+            $discount = apply_overall_discount($coupon, $totalElibibleForDiscount);
             $total -= $discount;
             $totalDiscount += $discount;
         }

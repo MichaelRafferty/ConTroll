@@ -376,7 +376,7 @@ if ($amount > 0) {
                     $paid_amt = $due; // just in case
 
                 // only update those that were actually modified
-                if ($badge['memCatetory'] == 'upgrade' && $paid_amt <= $balance) {
+                if ($badge['memCategory'] == 'upgrade' && $paid_amt <= $balance) {
                     // ok this upgrade is now paid for, mark the old one upgraded
                     // upgrades require a role to allow them to be bought based on the prior membership being in the cart, get the rule for this membership
 
