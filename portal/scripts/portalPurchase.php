@@ -81,26 +81,6 @@ if (array_key_exists('couponSerial', $_POST)) {
     $couponSerial = null;
 }
 
-if ($planRec) {
-    $totalAmtDue = $planRec['totalAmountDue'];
-} else {
-    $totalAmtDue = $preCoupomAmountDue;
-}
-
-/*if ($planPayment == 0 || $newplan == 1) {
-    $totalDue = getSessionVar('totalDue');
-    if ($totalDue == null) {
-        ajaxSuccess(array('status' => 'error', 'message' => 'No confirm payment amount.'));
-        exit();
-    }
-
-    if ($totalAmtDue != $totalDue) {
-        ajaxSuccess(array('status' => 'error', 'message' => 'Improper payment amount.'));
-        exit();
-    }
-}*/
-
-
 // all the records are in the database, so lets charge the credit card...
 
 $transId = getSessionVar('transId');
@@ -145,8 +125,8 @@ $preDiscount = $data['preDiscount'];
 $total = $data['total'];
 $totalDiscount = $data['totalDiscount'];
 
-if ($totalAmtDue != $preDiscount) {
-    error_log('bad total: post=' . $totalAmtDue . ', calc=' . $preDiscount);
+if ($totalAmountDue != $total) {
+    error_log('bad total: post=' . $totalAmountDue . ', calc=' . $total);
     ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
     exit();
 }
@@ -165,9 +145,9 @@ $results = array(
     'custid' => "$loginType-$loginId",
     'transid' => $transId,
     'counts' => $counts,
-    'price' => $totalAmtDue,
+    'price' => $totalAmountDue,
     'tax' => 0,
-    'pretax' => $totalAmtDue,
+    'pretax' => $totalAmountDue,
     'badges' => $badges,
     'total' => $amount,
     'nonce' => $nonce,
