@@ -16,6 +16,8 @@ var anotherBadge = null;
 var newBadge = null;
 // local variables for coupon processing
 var coupon = null;
+var couponSubtotal = null;
+var couponDiscount = null;
 
 // pricing area
 var memSummaryDiv = null;
@@ -443,6 +445,8 @@ function makePurchase(token, label) {
         purchaseform: URLparamsToArray($('#purchaseForm').serialize()),
         couponCode: coupon.getCouponCode(),
         couponSerial: coupon.getCouponSerial(),
+        couponSubtotal: couponSubtotal,
+        couponDiscount: couponDiscount,
     }
     console.log("MP Data");
     console.log(data);
@@ -530,6 +534,7 @@ function repriceCart() {
         if (mbrtotal >= coupon.getMinCart() && primarymemberships >= coupon.getMinMemberships())
             cartDiscountable = true;
         // reset total for below
+        couponSubtotal = Number(total);
         subTotalColDiv.innerHTML = '$' + Number(total).toFixed(2);
     }
 
@@ -576,6 +581,7 @@ function repriceCart() {
         couponDiscounts += cartDiscount;
         total -= cartDiscount;
     }
+    couponDiscount = Number(couponDiscounts);
     couponDiscountDiv.innerHTML = "$" + Number(couponDiscounts).toFixed(2) + html;
     totalCostDiv.innerHTML = "$" + Number(total).toFixed(2) + html;
 

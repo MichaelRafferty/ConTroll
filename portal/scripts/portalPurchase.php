@@ -3,6 +3,7 @@ require_once('../lib/base.php');
 require_once('../lib/getAccountData.php');
 require_once('../lib/portalEmails.php');
 require_once('../../lib/paymentPlans.php');
+require_once('../../lib/coupon.php');
 require_once('../../lib/log.php');
 require_once('../../lib/cc__load_methods.php');
 require_once('../../lib/email__load_methods.php');
@@ -49,10 +50,40 @@ $planRec = $_POST['planRec'];
 $existingPlan = $_POST['existingPlan'];
 $planPayment = $_POST['planPayment'];
 
+// load the amount valies
+if (array_key_exists('totalAmountDue', $_POST)) {
+    $totalAmountDue = $_POST['totalAmountDue'];
+} else {
+    $totalAmountDue = $amount;
+}
+if (array_key_exists('couponDiscount', $_POST)) {
+    $couponDiscount = $_POST['couponDiscount'];
+} else {
+    $couponDiscount = 0;
+}
+if (array_key_exists('preCoupomAmountDue', $_POST)) {
+    $preCoupomAmountDue = $_POST['preCoupomAmountDue'];
+} else {
+    $preCoupomAmountDue = $amount;
+}
+
+// and the coupon values
+if (array_key_exists('couponCode', $_POST)) {
+    $couponCode = $_POST['couponCode'];
+} else {
+    $couponCode = null;
+}
+
+if (array_key_exists('couponSerial', $_POST)) {
+    $couponSerial = $_POST['couponSerial'];
+} else {
+    $couponSerial = null;
+}
+
 if ($planRec) {
     $totalAmtDue = $planRec['totalAmountDue'];
 } else {
-    $totalAmtDue = $amount;
+    $totalAmtDue = $preCoupomAmountDue;
 }
 
 if ($planPayment == 0 || $newplan == 1) {
@@ -80,9 +111,8 @@ if ($transId == null) {
 $info = getPersonInfo();
 
 // compute the results array here
-$totalDiscount = 0;
 $coupon = null;
-$counts=null;
+$counts = null;
 
 $memberships = getAccountRegistrations($loginId, $loginType, $conid, ($newplan || $planPayment == 0) ? 'unpaid' : 'plan');
 $badgeResults = [];
@@ -96,6 +126,47 @@ if ($planPayment == 1 || $newplan == 1) {
     $inPlan = [];
 }
 
+// ok, the Portal data is now loaded, now deal with re-pricing things, based on the real tables
+$mtypes = null;
+// get the coupon data, if any
+if ($couponCode !== null) {
+    $result = load_coupon_data($couponCode, $couponSerial);
+    if ($result['status'] == 'error') {
+        ajaxSuccess($result);
+        exit();
+    }
+    $coupon = $result['coupon'];
+    if (array_key_exists('mtypes', $result))
+        $mtypes = $result['mtypes'];
+    //web_error_log("coupon:");
+    //var_error_log($coupon);
+}
+// now if the coupon didn't return it, get the mtypes array
+if ($mtypes == null) {
+    $priceQ = <<<EOQ
+SELECT m.id, m.memGroup, m.label, m.shortname, m.price, m.memCategory
+FROM memLabel m
+WHERE
+    m.conid=?
+    AND m.online = 'Y'
+    AND startdate <= CURRENT_TIMESTAMP()
+    AND enddate > CURRENT_TIMESTAMP()
+;
+EOQ;
+    $mtypes = array ();
+    $priceR = dbSafeQuery($priceQ, 'i', array ($condata['id']));
+    while ($priceL = $priceR->fetch_assoc()) {
+        $mtypes[$priceL['id']] = $priceL;
+    }
+}
+
+// now apply the price discount to the array
+if ($coupon !== null) {
+    $mtypes =  apply_coupon_data($mtypes, $coupon);
+}
+
+// now recompute the records in the badgeResults array
+
 $results = array(
     'custid' => "$loginType-$loginId",
     'transid' => $transId,
@@ -105,7 +176,7 @@ $results = array(
     'total' => $amount,
     'nonce' => $nonce,
     'coupon' => $coupon,
-    'discount' => $totalDiscount,
+    'discount' => $couponDiscount,
 );
 
 //log requested badges

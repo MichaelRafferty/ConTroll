@@ -36,8 +36,7 @@ EOS;
 }
 
 // retrieve the coupon data from the database
-function load_coupon_data($couponCode, $serial = null): array
-{
+function load_coupon_data($couponCode, $serial = null) : array {
     $con = get_conf('con');
 
     // coupon code is required, as this works for a single specific coupon code
@@ -198,8 +197,8 @@ function apply_coupon_data($mtypes, $coupon) {
         // first compute primary membership types
         if ($coupon['memId'] && $coupon['memId'] == $mbrtype['id']) {  // ok this is a forced primary
             $primary = true; // need a statement here, as combining the if's gets difficult
-        } else if ($mbrtype['price'] == 0 || ($mbrtype['memCategory'] != 'standard' && $mbrtype['memCategory'] != 'virtual')) {
-            $primary = false;
+        } else {
+            $primary = isPrimary($mbrtype);
         }
 
         if ($coupon['couponType'] == '$off' || $coupon['couponType'] == '%off') {
@@ -279,6 +278,77 @@ function apply_overall_discount($coupon, $total) {
 
     return 0;
 }
+
+// process counpon against badge array
+    function applyCouponToBadges($badges, $prices, $couponCode, $couponSerial) {
+        // get the membership prices
+        $memId = array ();
+        $counts = array ();
+        $discounts = array ();
+        $primary = array ();
+        $map = array ();
+
+// get the coupon data, if any
+        $coupon = null;
+        $result = load_coupon_data($couponCode, $couponSerial);
+        if ($result['status'] == 'error') {
+            ajaxSuccess($result);
+            exit();
+        }
+        $coupon = $result['coupon'];
+        if (array_key_exists('mtypes', $result))
+            $mtypes = $result['mtypes'];
+        //web_error_log("coupon:");
+        //var_error_log($coupon);
+
+
+// now apply the price discount to the array
+        if ($coupon !== null) {
+            $mtypes = apply_coupon_data($mtypes, $coupon);
+        }
+
+        foreach ($mtypes as $id => $mbrtype) {
+            $map[$mbrtype['id']] = $mbrtype['id'];
+            $prices[$mbrtype['id']] = $mbrtype['price'];
+            $memId[$mbrtype['id']] = $mbrtype['id'];
+            $counts[$mbrtype['id']] = 0;
+            $isprimary = (!($mbrtype['price'] == 0 ||
+                ($mbrtype['memCategory'] != 'standard' && $mbrtype['memCategory'] != 'supplement' && $mbrtype['memCategory'] != 'virtual')
+            ));
+            if ($coupon !== null) {
+                $discounts[$mbrtype['id']] = $mbrtype['discount'];
+                if ($coupon['memId'] == $mbrtype['id']) {  // ok this is a forced primary
+                    $isprimary = true;                     // need a statement here, as combining the if's gets difficult
+                }
+            }
+            $primary[$mbrtype['id']] = $isprimary;
+        }
+
+        $num_primary = 0;
+        $total = 0;
+// compute the pre-discount total to see if the ca
+        foreach ($badges as $badge) {
+            if (!isset($badge) || !isset($badge['memType'])) {
+                continue;
+            }
+            if (array_key_exists($badge['memType'], $counts)) {
+                if ($primary[$badge['memType']]) {
+                    $num_primary++;
+                }
+                $total += $prices[$badge['memType']];
+                $counts[$badge['memType']]++;
+            }
+        }
+
+
+// now figure out if coupon applies
+        $apply_discount = coupon_met($coupon, $total, $num_primary, $map, $counts);
+        $results = array();
+        $results['coupon'] = $coupon;
+        $results['apply_discount'] = $apply_discount;
+        $results['badges'] = $badges;
+        return $results;
+    }
 
 // portal coupon functions
 // draw variable price membership set modal

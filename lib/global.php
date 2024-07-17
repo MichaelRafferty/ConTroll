@@ -93,6 +93,16 @@ function clearSession($prefix = '') {
     }
 }
 
+// is a memList item a primary membership type
+function isPrimary($mtype) {
+    if ($mtype['price'] == 0 ||
+        ($mtype['memCategory'] != 'standard' && $mtype['memCategory'] != 'supplement' && $mtype['memCategory'] != 'virtual')
+    ) {
+        return false;
+    }
+    return true;
+}
+
 //// functions for custom text usage
 global $customTexT, $keyPrefix, $customTextFilter;
 

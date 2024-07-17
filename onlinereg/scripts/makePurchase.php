@@ -2,6 +2,7 @@
 require_once('../lib/base.php');
 require_once("../../lib/log.php");
 require_once("../../lib/cc__load_methods.php");
+require_once("../../lib/purchase.php");
 require_once("../../lib/coupon.php");
 require_once("../../lib/email__load_methods.php");
 require_once "../lib/email.php";
@@ -31,6 +32,14 @@ $nonce = $_POST['nonce'];
 $purchaseform = $_POST['purchaseform'];
 $badges = $badgestruct['badges'];
 $webtotal = $badgestruct['total'];
+$couponDiscount = null;
+$couponSubtotal = null;
+if (array_key_exists('couponDiscount', $_POST)) {
+    $couponDiscount = $_POST['couponDiscount'];
+}
+if (array_key_exists('couponSubtotal', $_POST)) {
+    $couponSubtotal = $_POST['couponSubtotal'];
+}
 
 if (count($badges) == 0) {
     ajaxSuccess(array('status' => 'error', 'error' => 'Error: No Badges Entered'));
@@ -49,6 +58,7 @@ load_email_procs();
 $condata = get_con();
 $log = get_conf('log');
 $con = get_conf('con');
+$conid = $condata['id'];
 logInit($log['reg']);
 //web_error_log("badgestruct");
 //var_error_log($badgestruct);
@@ -59,130 +69,48 @@ logInit($log['reg']);
 //web_error_log("purchaseform");
 //var_error_log($purchaseform);
 
+// we now have an array of badges, it needs to be priced, checked for rules, and have coupons applied.
+// first load all the data to process the items
+$data = loadPurchaseData($conid, $couponCode, $couponSerial);
+$prices = $data['prices'];
+$memId = $data['memId'];
+$counts = $data['counts'];
+$discounts = $data['discounts'];
+$primary = $data['primary'];
+$map = $data['map'];
+$coupon = $data['coupon'];
+//// $rules = $data['rules'];
+//// TODO: load and apply rules checkshere to $badges
 
-// get the membership prices
-$prices = array();
-$memId = array();
-$counts = array();
-$discounts = array();
-$primary = array();
-$map = array();
-
-$priceQ = <<<EOQ
-SELECT m.id, m.memGroup, m.label, m.shortname, m.price, m.memCategory
-FROM memLabel m
-WHERE
-    m.conid=?
-    AND m.online = 'Y'
-    AND startdate <= current_timestamp()
-    AND enddate > current_timestamp()
-;
-EOQ;
-$mtypes = array();
-$priceR = dbSafeQuery($priceQ, 'i', array($condata['id']));
-while($priceL = $priceR->fetch_assoc()) {
-    $mtypes[$priceL['id']] = $priceL;
-}
-
-// get the coupon data, if any
-$coupon = null;
-if ($couponCode !== null) {
-    $result = load_coupon_data($couponCode, $couponSerial);
-    if ($result['status'] == 'error') {
-        ajaxSuccess($result);
-        exit();
-    }
-    $coupon = $result['coupon'];
-    if (array_key_exists('mtypes', $result))
-        $mtypes = $result['mtypes'];
-    //web_error_log("coupon:");
-    //var_error_log($coupon);
-}
-
-// now apply the price discount to the array
-if ($coupon !== null) {
-    $mtypes =  apply_coupon_data($mtypes, $coupon);
-}
-
-foreach ($mtypes as $id => $mbrtype) {
-    $map[$mbrtype['id']] = $mbrtype['id'];
-    $prices[$mbrtype['id']] = $mbrtype['price'];
-    $memId[$mbrtype['id']] = $mbrtype['id'];
-    $counts[$mbrtype['id']] = 0;
-    $isprimary = (!$mbrtype['price'] == 0 || ($mbrtype['memCategory'] != 'standard' && $mbrtype['memCategory'] != 'virtual'));
-    if ($coupon !== null) {
-        $discounts[$mbrtype['id']] = $mbrtype['discount'];
-        if ($coupon['memId'] == $mbrtype['id']) {  // ok this is a forced primary
-            $isprimary = true; // need a statement here, as combining the if's gets difficult
-        }
-    }
-    $primary[$mbrtype['id']] = $isprimary;
-}
-
-$num_primary = 0;
-$total = 0;
-// compute the pre-discount total to see if the ca
-foreach ($badges as $badge) {
-    if(!isset($badge) || !isset($badge['memType'])) { continue; }
-    if (array_key_exists($badge['memType'], $counts)) {
-        if ($primary[$badge['memType']]) {
-            $num_primary++;
-        }
-        $total += $prices[$badge['memType']];
-        $counts[$badge['memType']]++;
-    }
-}
-
-
-// now figure out if coupon applies
-$apply_discount = coupon_met($coupon, $total, $num_primary, $map, $counts);
+// all of the data is now loaded
 
 $people = array();
+$newid_list = '';
 
-$total = 0;
-$preDiscount = 0;
-$count = 0;
-$totalDiscount = 0;
-$maxMbrDiscounts = 0;
-if ($coupon != NULL) {
-    if (array_key_exists('maxMemberships', $coupon)) {
-        $maxMbrDiscounts = $coupon['maxMemberships'] != null ? $coupon['maxMemberships'] : 999999;
-    }
-}
-$newid_list = "";
-$origMaxMbrDiscounts = $maxMbrDiscounts;
+$data = computePurchaseTotals($coupon, $badges, $primary, $counts, $prices, $map, $discounts);
 
-// check that we got valid total from the post before anything is inserted into the database, the empty rows are deleted badges from the site
-foreach ($badges as $badge) {
-    if(!isset($badge) || !isset($badge['memType'])) { continue; }
-    if (array_key_exists($badge['memType'], $counts)) {
-        $price = $prices[$badge['memType']];
-        $preDiscount += $price;
-        if ($apply_discount && $primary[$badge['memType']]) {
-            if ($maxMbrDiscounts > 0) {
-                $price -= $discounts[$badge['memType']];
-                $maxMbrDiscounts--;
-                $totalDiscount += $discounts[$badge['memType']];
-            }
-        }
-        $total += $price;
-    }
-}
-if ($apply_discount) {
-    $discount = apply_overall_discount($coupon, $total);
-    $total -= $discount;
-    $totalDiscount += $discount;
-}
+$maxMbrDiscounts = $data['origMaxMbrDiscounts'];
+$apply_discount = $data['applyDiscount'];
+$preDiscount = $data['preDiscount'];
+$total = $data['total'];
+$totalDiscount = $data['totalDiscount'];
 
-$total = round($total, 2);
-
-if($webtotal != $total) {
-    error_log("bad total: post=" . $webtotal . ", calc=" . $total);
-    ajaxSuccess(array('status'=>'error', 'error'=>'Unable to process, bad total sent to Server'));
+if ($webtotal != $preDiscount) {
+    error_log('bad total: post=' . $webtotal . ', calc=' . $preDiscount);
+    ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
     exit();
 }
 
-$maxMbrDiscounts = $origMaxMbrDiscounts;
+if ($coupon != null) {
+    if ($totalDiscount != $couponDiscount) {
+        error_log('bad coupon discount: post=' . $couponDiscount . ', calc=' . $totalDiscount);
+        ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad coupon data sent to Server'));
+        exit();
+    }
+}
+
+// now process the people and the memberships to add them to the tables
+$count = 0;
 foreach ($badges as $badge) {
     if (!isset($badge) || !isset($badge['memType'])) {
         continue;
