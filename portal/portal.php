@@ -270,9 +270,8 @@ if ($info['managedByName'] != null) {
     if ($info['managedByName'] == null) {
 ?>
             People managed by this account:
-            <a href="<?php echo $portal_conf['portalsite']; ?>/addUpgrade.php">
-                <button class="btn btn-sm btn-primary" type="button">Add New Person</button>
-            </a>
+                <button class='btn btn-sm btn-primary' type='button'
+                        onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/addUpgrade.php';">Add New Person</button>
 <?php
     } else {
 ?>
