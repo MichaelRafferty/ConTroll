@@ -228,13 +228,13 @@ function tabBar($page, $portal_conf, $info, $refresh = false) {
     <nav class="navbar navbar-dark bg-primary navbar-expand-lg mb-2">
         <div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
-                    aria-label="Toggle navigation">
+                    style="border-radius: 5px;" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
         </div>
         <div class="collapse navbar-collapse" id="navbarNav">
             <button class="btn btn-outline-light navitem me-3 <?php echo $active; ?>" type="button" <?php echo $ariainfo; ?>
-                onclick='window.location="portal.php";'>Home</button>
+                style='border-bottom-right-radius: 20px;' onclick='window.location="portal.php";'>Home</button>
 <?php
     if ($portal_conf['open'] != 0) {
         foreach ($page_list as $pageInfo) {
@@ -254,13 +254,13 @@ function tabBar($page, $portal_conf, $info, $refresh = false) {
             }
 ?>
             <button class="btn btn-outline-light navitem me-3 <?php echo $active; ?>" type='button' <?php echo $ariainfo; ?>
-                onclick="<?php echo $onclick; ?>"><?php echo $d;?></button>
+                style='border-top-left-radius: 20px; border-bottom-right-radius: 20px;' onclick="<?php echo $onclick; ?>"><?php echo $d;?></button>
 <?php
         }
     }
 ?>
-                <button class="btn btn-outline-light navitem <?php echo $active; ?>" type='button' <?php echo $ariainfo; ?>
-                onclick="window.location="index.php?logout";'>Logout</button>
+            <button class="btn btn-outline-light navitem <?php echo $active; ?>" type='button' <?php echo $ariainfo; ?>
+                style='border-top-left-radius: 20px;' onclick="window.location='index.php?logout';">Logout</button>
         </div>
     </nav>
     <?php
