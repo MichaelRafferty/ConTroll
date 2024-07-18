@@ -215,6 +215,9 @@ function tabBar($page, $portal_conf, $info, $refresh = false) {
         if ($info['managedByName'] == null) {
             $page_list[] = ['name' => 'accountSettings', 'display' => 'Account Settings'];
         }
+        if (isSessionVar('multiple')) {
+            $page_list[] = ['name' => 'index.php?switch=account" target="_self', 'display' => 'Switch Account'];
+        }
         $page_list[] = ['name' => 'portalHelp.php" target="_blank', 'display' => 'Help'];
     }
 

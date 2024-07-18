@@ -128,7 +128,7 @@ $loginType = null;
 
         draw_indexPageTop($condata);
         // not a refresh, choose the account from the email
-        $account = chooseAccountFromEmail($email, null, null, $cipherInfo, getSessionVar('oauth2'));
+        $account = chooseAccountFromEmail($email, null, null, null, $cipherInfo, getSessionVar('oauth2'));
         if ($account == null || !is_numeric($account)) {
             if ($account == null) {
                 $account = "Error looking up data for $email";
@@ -157,11 +157,21 @@ if (isSessionVar('id')) {
             if ($email != $oldEmail) { // treat this as a logout and try it again
                 clearSession();
             } else {
+                if ($loginId != $match['id']) {
+                    // this is a switch account request
+                    unsetSessionVar('transId');    // just in case it is hanging around, clear this
+                    unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
+                    setSessionVar('id', $match['id']);
+                    setSessionVar('idType', $match['tablename']);
+                }
                 $refresh = true;
                 if (array_key_exists('emailhrs', $portal_conf)) {
                     $hrs = $portal_conf['emailhrs'];
                 } else {
                     $hrs = 24;
+                }
+                if (array_key_exists('multiple', $match)) {
+                    setSessionVar('multiple', $match['multiple']);
                 }
                 if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 24;
                 setSessionVar('tokenExpiration', time() + ($hrs * 3600));
@@ -186,7 +196,8 @@ if (isset($_GET['vid'])) {
     if (array_key_exists('id', $match)) {
         $email = $match['email_addr'];
         $id = $match['id'];
-    } else {
+    }
+    else {
         $email = $match['email'];
         $id = null;
     }
@@ -198,23 +209,25 @@ if (isset($_GET['vid'])) {
                 exit();
             }
         }
-    } else {
+    }
+    else {
         $validationType = 'token';
     }
     $timediff = time() - $match['ts'];
     web_error_log('login @ ' . time() . ' with ts ' . $match['ts'] . " for $email/$id via $validationType");
-    if ($timediff > (1*3600)) {
+    if ($timediff > (1 * 3600)) {
         draw_login($config_vars, "<div class='bg-danger text-white'>The link has expired, please request a new link</div>");
         exit();
     }
+
     if ($validationType == 'token') {
         // check if the link has been used
         $linkQ = <<<EOS
-SELECT id, email, useCnt
-FROM portalTokenLinks
-WHERE id = ? AND action = 'login'
-ORDER BY createdTS DESC;
-EOS;
+        SELECT id, email, useCnt
+        FROM portalTokenLinks
+        WHERE id = ? AND action = 'login'
+        ORDER BY createdTS DESC;
+        EOS;
         $linkR = dbSafeQuery($linkQ, 's', array ($linkid));
         if ($linkR == false || $linkR->num_rows != 1) {
             draw_login($config_vars, "<div class='bg-danger text-white'>The link is invalid, please request a new link</div>");
@@ -234,10 +247,10 @@ EOS;
 
         // mark link as used
         $updQ = <<<EOS
-UPDATE portalTokenLinks
-SET useCnt = useCnt + 1, useIP = ?, useTS = NOW()
-WHERE id = ?;
-EOS;
+        UPDATE portalTokenLinks
+        SET useCnt = useCnt + 1, useIP = ?, useTS = NOW()
+        WHERE id = ?;
+        EOS;
         $updcnt = dbSafeCmd($updQ, 'si', array ($_SERVER['REMOTE_ADDR'], $linkid));
         if ($updcnt != 1) {
             web_error_log("Error updating link $linkid as used");
@@ -266,7 +279,17 @@ EOS;
     setSessionVar('tokenType', $tokenType);
 
     // now choose the account from the email
-    $account = chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, 'token');
+    $account = chooseAccountFromEmail($email, $id, $linkid, $match, $cipherInfo, 'token');
+    if ($account == null || !is_numeric($account)) {
+        if ($account == null) {
+            $account = "Error looking up data for $email";
+        }
+        clearSession(); // force a logout
+        draw_login($config_vars, $account, 'bg-danger text-white');
+    }
+    exit();
+} else if ($loginId != null && isSessionVar('multiple') && isset($_REQUEST['switch']) && $_REQUEST['switch'] == 'account') {
+    $account = chooseAccountFromEmail(getSessionVar('multiple'), null,null, null, $cipherInfo, 'token');
     if ($account == null || !is_numeric($account)) {
         if ($account == null) {
             $account = "Error looking up data for $email";

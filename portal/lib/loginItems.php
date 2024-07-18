@@ -81,7 +81,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '') {
 
 // chooseAccountFromEmail - map an email address to a list of accounts
 // email is a validated email by the validationType.
-function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationType) {
+function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $cipherInfo, $validationType) {
     global $config_vars;
 
     $portal_conf = get_conf('portal');
@@ -122,6 +122,18 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
         setSessionVar('id', $id);
         setSessionVar('idType', $idType);
         setSessionVar('idSource', $validationType);
+        $multiple = null;
+        if ($passedMatch != null) {
+            if (array_key_exists('multiple', $passedMatch)) {
+                $multiple = $passedMatch['multiple'];
+            }
+        }
+        if (array_key_exists('multiple', $match)) {
+            $multiple = $match['multiple'];
+        }
+        if ($multiple != null) {
+            setSessionVar('multiple', $multiple);
+        }
 
         if ($idType == 'p')
             updateIdentityUsage($id, $validationType, $email);
@@ -183,11 +195,11 @@ function chooseAccountFromEmail($email, $id, $linkid, $cipherInfo, $validationTy
 ?>
         Please select one of the accounts below:<br/><ul>
 <?php
-
         foreach ($matches as $match) {
             $match['ts'] = time();
             $match['lid'] = $linkid;
             $match['validationType'] = $validationType;
+            $match['multiple'] = $email;
             $string = json_encode($match);
             $string = urlencode(openssl_encrypt($string, $cipherInfo['cipher'], $cipherInfo['key'], 0, $cipherInfo['iv']));
             echo "<li><a href='?vid=$string'>" .  $match['fullname'] . "</a></li>\n";
