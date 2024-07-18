@@ -446,7 +446,8 @@ function drawManagedPerson($personId, $personType, $person, $memberships, $showI
            }
            ?>
         <div class="col-sm-3 ps-1 pe-1 m-0"><button class="btn btn-light border border-5 <?php echo $borderColor; ?>"
-            style="width: 100%; <?php echo $borderStyle; ?>" <?php echo $disabled; ?> tabindex="-1"><b><?php echo $membership['shortname'] . "</b> (" .
+            style="width: 100%; pointer-events:none; <?php echo $borderStyle; ?>" <?php echo $disabled; ?> tabindex="-1"><b><?php echo $membership['shortname']
+                    . "</b> (" .
                     $membership['status']
             . ")
             <br/>" .
