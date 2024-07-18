@@ -84,11 +84,6 @@ ALTER TABLE reg ADD COLUMN status ENUM('unpaid', 'plan', 'paid', 'cancelled', 'r
 
 UPDATE reg SET status = 'paid' WHERE price = (paid + couponDiscount);
 
-/* would like a reg chain
-ALTER TABLE reg ADD COLUMN
-
- */
-
 /*
  * Membership rules
  *   memCategory Items for default rules
@@ -278,5 +273,40 @@ CREATE TABLE controllTxtItems (
 
 ALTER TABLE controllTxtItems ADD FOREIGN KEY (appName, appPage, appSection, txtItem)
     REFERENCES controllAppItems(appName, appPage, appSection, txtItem) ON UPDATE CASCADE;
+
+CREATE TABLE policies (
+    policy varchar(16) COLLATE utf8mb4_general_ci NOT NULL,
+    prompt varchar(256) COLLATE utf8mb4_general_ci NOT NULL,
+    description varchar(4096) COLLATE utf8mb4_general_ci DEFAULT NULL,
+    sortOrder int DEFAULT '0',
+    required enum('Y','N') NOT NULL DEFAULT 'N',
+    defaultValue enum('Y', 'N') NOT NULL DEFAULT 'Y',
+    createDate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updateDate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updateBy int DEFAULT NULL,
+    active enum('Y','N') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Y',
+    PRIMARY KEY (policy)
+);
+
+ALTER TABLE policies ADD CONSTRAINT foreign key(updateBy) references perinfo(id) ON UPDATE CASCADE;
+
+CREATE TABLE memberPolicies (
+    id int NOT NULL AUTO_INCREMENT,
+    perid int DEFAULT NULL,
+    conid int DEFAULT NULL,
+    newperid int DEFAULT NULL,
+    policy varchar(16) COLLATE utf8mb4_general_ci NOT NULL,
+    response enum('Y','N') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
+    createDate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updateDate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updateBy int DEFAULT NULL,
+    PRIMARY KEY (id)
+);
+
+ALTER TABLE memberPolicies ADD CONSTRAINT foreign key(updateBy) references perinfo(id) ON UPDATE CASCADE;
+ALTER TABLE memberPolicies ADD CONSTRAINT foreign key(perid) references perinfo(id) ON UPDATE CASCADE;
+ALTER TABLE memberPolicies ADD CONSTRAINT foreign key(newperid) references newperson(id) ON UPDATE CASCADE;
+ALTER TABLE memberPolicies ADD CONSTRAINT foreign key(policy) references policies(policy) ON UPDATE CASCADE;
+
 
 INSERT INTO patchLog(id, name) values(ppx, 'Portal Changes');

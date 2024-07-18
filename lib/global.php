@@ -152,3 +152,13 @@ EOS;
             }
         }
     }
+
+    // replace in strings, items from the config file you can replace in strings
+    // used by interests and policies, available for emails as well
+    function replaceVariables($string) {
+        $con = get_conf('con');
+        $replaceSource = ['#CONID#', '#CONNAME#', '#CONLABEL#', '#POLICYLINK#', '#POLICYTEXT#'];
+        $replaceValue = [ $con['id'], $con['conname'], $con['label'], $con['policy'], $con['policytext'] ];
+
+        return str_replace($replaceSource, $replaceValue, $string);
+    }

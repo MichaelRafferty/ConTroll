@@ -84,6 +84,19 @@ function draw_editPersonModal() {
 
 // drawEditPersonBlock - just output the block to edit the person
 function drawEditPersonBlock($con, $useUSPS, $modal=false) {
+    $policies = array();
+    $policyQ = <<<EOS
+SELECT *
+FROM policies
+WHERE active = 'Y'
+ORDER BY sortOrder;
+EOS;
+    $policyR = dbQuery($policyQ);
+    while ($policy = $policyR->fetch_assoc()) {
+        $policies[] = $policy;
+    }
+    $policyR->free();
+
     $reg = get_conf('reg');
     if (array_key_exists('required', $reg)) {
         $required = $reg['required'];
@@ -266,36 +279,42 @@ function drawEditPersonBlock($con, $useUSPS, $modal=false) {
                 </p>
             </div>
         </div>
-        <div class="row">
-            <div class="col-sm-12">
-                <p class="text-body">
+<?php
+    foreach ($policies as $policy) {
+        $name = $policy['policy'];
+        $prompt = replaceVariables($policy['prompt']);
+        $description = replaceVariables($policy['description']);
+        if ($policy['defaultValue'] == 'Y') {
+            $checked = 'checked';
+            $value = 'Y';
+        } else {
+            $checked = '';
+            $value = 'N';
+        }
+
+?>
+        <div class='row'>
+            <div class='col-sm-12'>
+                <p class='text-body'>
                     <label>
-                        <input type='checkbox' checked name='contact' id='contact' value='Y'/>
-                        <?php echo $con['remindertext']; ?>
+                        <input type='checkbox' <?php echo $checked; ?> name='<?php echo $name;?>' id='<?php echo $name;?>' value='<?php echo $value;?>'/>
+                        <?php echo $prompt; ?>
                     </label>
-                    <span class='small'><a href='javascript:void(0)' onClick='$("#contactTip").toggle()'>(more info)</a></span>
-                <div id='contactTip' class='padded highlight' style='display:none'>
-                    <p class="text-body">
-                        We will not sell your contact information or use it for any purpose other than contacting you about this
-                        <?php echo $con['conname']; ?> or future <?php echo $con['conname']; ?>s.
-                        <span class='small'><a href='javascript:void(0)' onClick='$("#contactTip").toggle()'>(close)</a></span>
-                    </p>
-                </div>
+                    <?php if ($description != '') { ?>
+                    <span class="small"><a href='javascript:void(0)' onClick='$("#<?php echo $name;?>Tip").toggle()'>(more info)</a></span>
+                    <div id='<?php echo $name;?>Tip' class='padded highlight' style='display:none'>
+                        <p class='text-body'><?php echo $description; ?>
+                            <span class='small'><a href='javascript:void(0)' onClick='$("#contactTip").toggle()'>(close)</a></span>
+                        </p>
+                    </div>
+                    <?php } ?>
                 </p>
             </div>
         </div>
-        <div class="row">
-            <div class="col-sm-12">
-                <p class="text-body">
-                    <label>
-                        <input type='checkbox' checked name='share' id='share' value='Y'/>
-                        May we include you in our <a target='_blank' href='<?php echo $con['server']; ?>/checkReg.php'>Check Registration page</a>?
-                        This will others to check if you are registered displaying only your first initial, last name, and postal code.
-                        If you choose to opt out, only you can check your registration via the portal.
-                    </label>
-                </p>
-            </div>
-        </div>
+<?php
+    }
+?>
+
 <?php
 }
 

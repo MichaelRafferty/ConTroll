@@ -1,8 +1,5 @@
 <?php
 // interests - anything to do with the PHP side of interests so it can be used by multiple modules
-
-$replaceable = ['CONID', 'CONNAME', 'CONLABEL'];
-
 // getInterests - get the raw interest data (not for a member)
 function getInterests() {
     $interests = null;
@@ -41,7 +38,7 @@ function drawInterestList($interests, $modal = false) {
     </div>
 <?php
     foreach ($interests as $interest) {
-        $desc = interestReplaceVariable($interest['description']);
+        $desc = replaceVariables($interest['description']);
 ?>
         <div class='row mt-1'>
             <div class='col-sm-auto'>
@@ -55,27 +52,4 @@ function drawInterestList($interests, $modal = false) {
     }
 }
 
-function interestReplaceVariable($description) {
-    global $replaceable;
-    $con = get_conf('con');
 
-    foreach ($replaceable as $str) {
-        $src = '#' . $str . '#';
-        $rep = null;
-        switch ($str) {
-            case 'CONID':
-                $rep = $con['id'];
-                break;
-            case 'CONNAME':
-                $rep = $con['conname'];
-                break;
-            case 'CONLABEL':
-                $rep = $con['label'];
-                break;
-        }
-        if ($rep != null) {
-            $description = str_replace($src, $rep, $description);
-        }
-    }
-    return $description;
-}

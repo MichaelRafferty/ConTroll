@@ -28,8 +28,8 @@ class Membership {
     #email2Field = null;
     #phoneField = null;
     #badgenameField = null;
-    #contactField = null;
-    #shareField = null;
+    //#contactField = null;
+    //#shareField = null;
     #uspsDiv= null;
     #lastVerified = null;
 
@@ -122,8 +122,8 @@ class Membership {
         this.#email2Field = document.getElementById("email2");
         this.#phoneField = document.getElementById("phone");
         this.#badgenameField = document.getElementById("badgename");
-        this.#contactField = document.getElementById("contact");
-        this.#shareField = document.getElementById("share");
+        //this.#contactField = document.getElementById("contact");
+        //this.#shareField = document.getElementById("share");
         this.#uspsDiv = document.getElementById("uspsblock");
 
         this.#saveCartBtn = document.getElementById("saveCartBtn");
@@ -254,8 +254,8 @@ class Membership {
         this.#countryField.value = this.#personInfo['country'];
         this.#uspsblock.innerHTML = '';
 
-        this.#shareField.checked = (this.#personInfo['share_reg_ok'] == null || this.#personInfo['share_reg_ok'] == 'Y');
-        this.#contactField.checked = (this.#personInfo['contact_ok'] == null || this.#personInfo['contact_ok'] == 'Y');
+        // this.#shareField.checked = (this.#personInfo['share_reg_ok'] == null || this.#personInfo['share_reg_ok'] == 'Y');
+        // this.#contactField.checked = (this.#personInfo['contact_ok'] == null || this.#personInfo['contact_ok'] == 'Y');
         if (data['memberships']) {
             this.#memberships = data['memberships'];
         }
