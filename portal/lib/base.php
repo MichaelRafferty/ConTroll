@@ -117,7 +117,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
         <body id='membershipPortalBody'>
         <div class='container-fluid' id='LogoBar'>
             <div class='row'>
-                <div class='col-sm-1 p-1'>
+                <div class='col-sm-auto p-1'>
                     <?php
                     if (array_key_exists('logoimage', $portal_conf) && $portal_conf['logoimage'] != '') {
                         $logoImage = $portal_conf['logoimage'];
@@ -131,10 +131,10 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
                     } else {
                         $altstring = 'Logo';
                     }
-                    echo "<img class='img-fluid' src='images/$logoImage' alt='$altstring'/>\n";
+                    echo "<img class='img-fluid' src='images/$logoImage' style='max-height: 150px;' alt='$altstring'/>\n";
                     ?>
                 </div>
-                <div class="col-sm-11 text-bg-primary text-white">
+                <div class="col text-bg-primary text-white">
                     <div class='container-fluid'>
                         <div class='row'>
                             <div class='col-sm-12'>
