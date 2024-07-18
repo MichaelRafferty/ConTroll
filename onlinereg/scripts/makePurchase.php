@@ -41,6 +41,12 @@ if (array_key_exists('couponSubtotal', $_POST)) {
     $couponSubtotal = $_POST['couponSubtotal'];
 }
 
+if (array_key_exists('total', $_POST)) {
+    $totalDue = $_POST['total'];
+} else {
+    $totalDue = $webtotal;
+}
+
 if (count($badges) == 0) {
     ajaxSuccess(array('status' => 'error', 'error' => 'Error: No Badges Entered'));
     exit();
@@ -97,7 +103,7 @@ $preDiscount = $data['preDiscount'];
 $total = $data['total'];
 $totalDiscount = $data['totalDiscount'];
 
-if ($webtotal != $total) {
+if ($couponSubtotal != $preDiscount) {
     error_log('bad total: post=' . $webtotal . ', calc=' . $preDiscount);
     ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
     exit();
@@ -309,9 +315,9 @@ while ($row = $all_badgeR->fetch_assoc()) {
 $results = array(
     'transid' => $transid,
     'counts' => $counts,
-    'price' => $total,
+    'price' => $totalDue,
     'tax' => 0,
-    'pretax' => $total,
+    'pretax' => $totalDue,
     'badges' => $badgeResults,
     'total' => $total,
     'nonce' => $nonce,

@@ -2,7 +2,7 @@
 // total = sum(prices) * qty of badges
 // memTypeCount = array by memId of counts
 // badges = array of the data for individual badges
-var badges = { 'count': 0, 'total': 0, 'memTypeCount': {}, 'badges': [] };
+var badges = { count: 0, total: 0, memTypeCount: {}, badges: [] };
 // prices = array by memId of prices for badges
 var prices = {};
 var $purchase_label = 'purchase';
@@ -16,8 +16,9 @@ var anotherBadge = null;
 var newBadge = null;
 // local variables for coupon processing
 var coupon = null;
-var couponSubtotal = null;
-var couponDiscount = null;
+var couponSubtotal = 0;
+var couponDiscount = 0;
+var totalDue = 0;
 
 // pricing area
 var memSummaryDiv = null;
@@ -276,7 +277,6 @@ function addMembership(formData) {
 
     badges['count'] +=  1;
     badges['memTypeCount'][formData['memId']] += 1;
-    //badges['total'] += prices[formData['memId']];
     badges['badges'].push(formData);
 
     repriceCart();
@@ -447,6 +447,7 @@ function makePurchase(token, label) {
         couponSerial: coupon.getCouponSerial(),
         couponSubtotal: couponSubtotal,
         couponDiscount: couponDiscount,
+        total: totalDue,
     }
     console.log("MP Data");
     console.log(data);
@@ -589,6 +590,7 @@ function repriceCart() {
     emptyCart.hidden =  primarymemberships > 0;
     noChargeCart.hidden = primarymemberships == 0 || badges['total'] > 0;
     chargeCart.hidden = primarymemberships == 0 || badges['total'] == 0;
+    totalDue = total;
 }
 
 function togglePopup() {
