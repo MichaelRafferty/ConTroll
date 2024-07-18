@@ -216,9 +216,9 @@ function tabBar($page, $portal_conf, $info, $refresh = false) {
             $page_list[] = ['name' => 'accountSettings', 'display' => 'Account Settings'];
         }
         if (isSessionVar('multiple')) {
-            $page_list[] = ['name' => 'index.php?switch=account" target="_self', 'display' => 'Switch Account'];
+            $page_list[] = ['name' => 'index', 'args' => 'switch=account', 'display' => 'Switch Account'];
         }
-        $page_list[] = ['name' => 'portalHelp.php" target="_blank', 'display' => 'Help'];
+        $page_list[] = ['name' => 'portalHelp', 'target' =>  '_blank', 'display' => 'Help'];
     }
 
     $active = $page == 'portal' ? 'active' : '';
@@ -233,27 +233,34 @@ function tabBar($page, $portal_conf, $info, $refresh = false) {
             </button>
         </div>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto p-0">
-                <li>
-                    <a class="nav-link navitem <?php echo $active; ?>" <?php echo $ariainfo; ?> href="portal.php">Home</a>
-                </li>
-                <?php
-                if ($portal_conf['open'] != 0) {
-                    foreach ($page_list as $pageInfo) {
-                        $p = $pageInfo['name'];
-                        $d = $pageInfo['display'];
-                        $active = $page == $p ? 'active' : '';
-                        $ariainfo = $page == $p ? 'aria-current="page"' : '';
-                ?>
-                    <li>
-                        <a class="nav-link navitem <?php echo $active; ?>" <?php echo $ariainfo; ?> href="<?php echo $p; ?>.php"><?php echo $d; ?></a>
-                    </li>
-                <?php }
-                } ?>
-                <li>
-                    <a class="nav-link navitem" <?php echo $ariainfo; ?> href="index.php?logout">Logout</a>
-                </li>
-            </ul>
+            <button class="btn btn-outline-light navitem me-3 <?php echo $active; ?>" type="button" <?php echo $ariainfo; ?>
+                onclick='window.location="portal.php";'>Home</button>
+<?php
+    if ($portal_conf['open'] != 0) {
+        foreach ($page_list as $pageInfo) {
+            $p = $pageInfo['name'];
+            $d = $pageInfo['display'];
+            $active = $page == $p ? 'active' : '';
+            $ariainfo = $page == $p ? 'aria-current="page"' : '';
+            $url = $pageInfo['name'] . '.php';
+            if (array_key_exists('args', $pageInfo)) {
+                $url .= '?' . $pageInfo['args'];
+            }
+
+            if (array_key_exists('target', $pageInfo)) {
+                $onclick = "window.open('$url', '" . $pageInfo['target'] . "').focus();";
+            } else {
+                $onclick = "window.location.href='$url';";
+            }
+?>
+            <button class="btn btn-outline-light navitem me-3 <?php echo $active; ?>" type='button' <?php echo $ariainfo; ?>
+                onclick="<?php echo $onclick; ?>"><?php echo $d;?></button>
+<?php
+        }
+    }
+?>
+                <button class="btn btn-outline-light navitem <?php echo $active; ?>" type='button' <?php echo $ariainfo; ?>
+                onclick="window.location="index.php?logout";'>Logout</button>
         </div>
     </nav>
     <?php
