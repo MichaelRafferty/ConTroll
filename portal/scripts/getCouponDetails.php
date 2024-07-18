@@ -16,13 +16,19 @@ $conf = get_conf('con');
 $conid=$conf['id'];
 $response['conid'] = $conid;
 
-if (!array_key_exists('code', $_POST)) {
-    ajaxSuccess(array('status'=>'error', 'error'=>'Parameter error - get assistance'));
+if (!(isSessionVar('id') && isSessionVar('idType'))) {
+    ajaxSuccess(array('status'=>'error', 'error'=>'Not logged in.'));
     exit();
 }
 
-if (!(isSessionVar('id') && isSessionVar('idType'))) {
-    ajaxSuccess(array('status'=>'error', 'error'=>'Not logged in.'));
+if (array_key_exists('clear', $_POST)) {
+    unsetSessionVar('curCoupon');
+    unsetSessionVar('curCouponSerial');
+    exit();
+}
+
+if (!array_key_exists('code', $_POST)) {
+    ajaxSuccess(array('status'=>'error', 'error'=>'Parameter error - get assistance'));
     exit();
 }
 
@@ -35,5 +41,13 @@ if (array_key_exists('serial', $_POST))
     $serial = $_POST['serial'];
 
 $results = load_coupon_data($code, $serial);
+if ($results['status'] == 'success') {
+    setSessionVar('curCoupon', $code);
+    setSessionVar('curCouponSerial', $serial);
+} else {
+    unsetSessionVar('curCoupon');
+    unsetSessionVar('curCouponSerial');
+}
+
 ajaxSuccess($results);
 ?>

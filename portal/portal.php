@@ -39,12 +39,16 @@ if (array_key_exists('currency', $con)) {
 }
 
 $transId = getSessionVar('transId');
+$initCoupon = getSessionVar('curCoupon');
+$initCouponSerial = getSessionVar('curCouponSerial');
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['debug'] = $debug['portal'];
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['loadPlans'] = true;
 $config_vars['required'] = $ini['required'];
+$config_vars['initCoupon'] = $initCoupon;
+$config_vars['initCouponSerial'] = $initCouponSerial;
 $cdn = getTabulatorIncludes();
 
 // this section is for 'in-session' management

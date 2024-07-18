@@ -10,6 +10,9 @@ window.onload = function () {
     }
     portal = new Portal();
     coupon = new Coupon();
+    if (config['initCoupon'] && config['initCoupon'] != '') {
+        coupon.addCouponCode(config['initCoupon'], config['initCouponSerial']);
+    }
 }
 
 class Portal {

@@ -19,7 +19,7 @@ class Coupon {
     //#subTotalDiv = null;
     #couponDiv = null
     #couponDiscount = null;
-    #lastCartSize = 0;
+    #lastCartSize = 1;
 
     // portal coupon items
     #couponBlock = null;
@@ -197,52 +197,58 @@ class Coupon {
             newBadge.show();
     }
 
-    addCouponCode() {
-        "use strict";
-
+    addCouponCode(code = null, serial = null) {
         var couponCodeStr, couponSerialStr, couponLinkStr, parts;
 
         if (!this.#couponCode)  // field not found
             return;
 
-        couponCodeStr = this.#couponCode.value;
-        if (this.#couponSerial) {
-            couponSerialStr = this.#couponSerial.value;
-        } else {
+        if (code != null) {
+            couponCodeStr = code;
             couponSerialStr = null;
-        }
-
-        if (this.#couponLink) {
-            couponLinkStr = this.#couponLink.value;
-            parts = couponLinkStr.split('?offer=');
-            if (parts.length > 1) {
-                couponLinkStr = parts[1];
-            } else {
-                couponLinkStr = parts[0];
+            if (serial != null) {
+                couponSerialStr = serial;
             }
-            try {
-                couponLinkStr = atob(couponLinkStr);
-            } catch (e) {
-                show_message('Coupon Link Code invalid', 'warn', this.#couponMsgDiv);
+        } else {
+            couponCodeStr = this.#couponCode.value;
+            if (this.#couponSerial) {
+                couponSerialStr = this.#couponSerial.value;
+            } else {
+                couponSerialStr = null;
+            }
+
+            if (this.#couponLink) {
+                couponLinkStr = this.#couponLink.value;
+                parts = couponLinkStr.split('?offer=');
+                if (parts.length > 1) {
+                    couponLinkStr = parts[1];
+                } else {
+                    couponLinkStr = parts[0];
+                }
+                try {
+                    couponLinkStr = atob(couponLinkStr);
+                } catch (e) {
+                    show_message('Coupon Link Code invalid', 'warn', this.#couponMsgDiv);
+                    return;
+                }
+                if (couponLinkStr) {
+                    parts = couponLinkStr.split('~!~');
+                    couponCodeStr = parts[0];
+                    couponSerialStr = parts[1];
+                }
+            }
+
+            if (couponSerialStr == '')
+                couponSerialStr = null;
+
+            if (couponCodeStr == '') {
+                show_message('Please enter a coupon code', 'warn', this.#couponMsgDiv);
                 return;
             }
-            if (couponLinkStr) {
-                parts = couponLinkStr.split('~!~');
-                couponCodeStr = parts[0];
-                couponSerialStr = parts[1];
-            }
+
+            this.#addCouponBTN.disabled = true;
+            clear_message(this.#couponMsgDiv);
         }
-
-        if (couponSerialStr == '')
-            couponSerialStr = null;
-
-        if (couponCodeStr == '') {
-            show_message('Please enter a coupon code', 'warn', this.#couponMsgDiv);
-            return;
-        }
-
-        this.#addCouponBTN.disabled = true;
-        clear_message(this.#couponMsgDiv);
         // validate the coupon code
         $.ajax({
             url: "scripts/getCouponDetails.php",
@@ -375,6 +381,11 @@ class Coupon {
         } else {
             repriceCart();
         }
+        $.ajax({
+            url: "scripts/getCouponDetails.php",
+            data: { clear: 1, },
+            method: 'POST',
+        });
     }
 
     // couponDetails - a text line of the restrictions for this coupon
