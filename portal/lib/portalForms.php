@@ -20,7 +20,7 @@ function drawGetAgeBracket($updateName, $condata) {
 
 //// Step 2 - Person
 // drawVerifyPersonInfo - non modal version of validate person information
-function drawVerifyPersonInfo() {
+function drawVerifyPersonInfo($policies) {
     $usps = get_conf('usps');
     $useUSPS = false;
     if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -28,7 +28,7 @@ function drawVerifyPersonInfo() {
     $con = get_conf('con');
 ?>
 <?php
-    drawEditPersonBlock($con, $useUSPS);
+    drawEditPersonBlock($con, $useUSPS, $policies);
 ?>
     <div class="row mt-3">
         <div class='col-sm-auto'>
@@ -42,7 +42,7 @@ function drawVerifyPersonInfo() {
 }
 
 // draw_editPerson - draw the verify/update form for the Person
-function draw_editPersonModal() {
+function draw_editPersonModal($policies) {
     $usps = get_conf('usps');
     $useUSPS = false;
     if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -64,7 +64,7 @@ function draw_editPersonModal() {
                             <input type='hidden' name='id' id='epPersonId'/>
                             <input type='hidden' name='type' id='epPersonType'/>
 <?php
-    drawEditPersonBlock($con, $useUSPS, true);
+    drawEditPersonBlock($con, $useUSPS, $policies, true);
 ?>
                         </form>
                         <div class='row'>
@@ -83,20 +83,7 @@ function draw_editPersonModal() {
 }
 
 // drawEditPersonBlock - just output the block to edit the person
-function drawEditPersonBlock($con, $useUSPS, $modal=false) {
-    $policies = array();
-    $policyQ = <<<EOS
-SELECT *
-FROM policies
-WHERE active = 'Y'
-ORDER BY sortOrder;
-EOS;
-    $policyR = dbQuery($policyQ);
-    while ($policy = $policyR->fetch_assoc()) {
-        $policies[] = $policy;
-    }
-    $policyR->free();
-
+function drawEditPersonBlock($con, $useUSPS, $policies, $modal=false) {
     $reg = get_conf('reg');
     if (array_key_exists('required', $reg)) {
         $required = $reg['required'];
@@ -279,43 +266,10 @@ EOS;
                 </p>
             </div>
         </div>
+    </form>
+    <form id='editPolicies' class='form-floating' action='javascript:void(0);'>
 <?php
-    foreach ($policies as $policy) {
-        $name = $policy['policy'];
-        $prompt = replaceVariables($policy['prompt']);
-        $description = replaceVariables($policy['description']);
-        if ($policy['defaultValue'] == 'Y') {
-            $checked = 'checked';
-            $value = 'Y';
-        } else {
-            $checked = '';
-            $value = 'N';
-        }
-
-?>
-        <div class='row'>
-            <div class='col-sm-12'>
-                <p class='text-body'>
-                    <label>
-                        <input type='checkbox' <?php echo $checked; ?> name='<?php echo $name;?>' id='<?php echo $name;?>' value='<?php echo $value;?>'/>
-                        <?php echo $prompt; ?>
-                    </label>
-                    <?php if ($description != '') { ?>
-                    <span class="small"><a href='javascript:void(0)' onClick='$("#<?php echo $name;?>Tip").toggle()'>(more info)</a></span>
-                    <div id='<?php echo $name;?>Tip' class='padded highlight' style='display:none'>
-                        <p class='text-body'><?php echo $description; ?>
-                            <span class='small'><a href='javascript:void(0)' onClick='$("#contactTip").toggle()'>(close)</a></span>
-                        </p>
-                    </div>
-                    <?php } ?>
-                </p>
-            </div>
-        </div>
-<?php
-    }
-?>
-
-<?php
+    drawPoliciesBlock($policies);
 }
 
 //// step 3 - Interests

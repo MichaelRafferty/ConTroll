@@ -1,6 +1,7 @@
 <?php
 require_once('../lib/base.php');
 require_once('../../lib/log.php');
+require_once('../../lib/policies.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -31,6 +32,8 @@ $personType = getSessionVar('idType');
 
 $currentPerson = $_POST['currentPerson'];
 $currentPersonType = $_POST['currentPersonType'];
+$oldPolcies = $_POST['oldPolcies'];
+$newPolcies = $_POST['newPolcies'];
 $person = $_POST['person'];
 
 $response['currentPersonType'] = $currentPersonType;
@@ -88,6 +91,24 @@ if ($rows_upd === false) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Error updating person'));
     exit();
 }
+
+// now update the policies
+$policies = getPolicies();
+foreach ($policies as $policy) {
+    $old = '';
+    $new = '';
+    if (array_key_exists('p_' . $policy['name'], $oldPolicies))
+        $old = $oldPolicies['p_' . $policy['name']];
+    if (array_key_exists('p_' . $policy['name'], $newPolicies))
+        $new = $newPolicies['p_' . $policy['name']];
+
+    $upd = 0;
+
+    }
+
+
+}
+
 $response['rows_upd'] = $rows_upd;
 $response['status'] = 'success';
 $response['message'] = $rows_upd == 0 ? "No changes" : "$rows_upd person updated";

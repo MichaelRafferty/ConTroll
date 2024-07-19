@@ -82,6 +82,10 @@ class Membership {
     #oldInterests = null;
     #newInterests = null;
 
+    // policy Items
+    #oldPolicies = null;
+    #newPolicies = null;
+
     constructor() {
         this.#memberships = [];
         this.#allMemberships = [];
@@ -194,6 +198,9 @@ class Membership {
         if (data['interests']) {
             this.#oldInterests = data['interests'];
         }
+        if (data['policies']) {
+            this.#oldPolicies = data['policies'];
+    }
 
         // now fill in the fields
         if (newFlag) {
@@ -229,6 +236,21 @@ class Membership {
                 this.#lastVerified = 0;
             }
 
+            // policies
+            if (this.#oldPolicies) {
+                for (var row in this.#oldPolicies) {
+                    var policy = this.#oldPolicies[row];
+                    var id = document.getElementById('p_' + policy.policy);
+                    if (id) {
+                        if (policy.response) {
+                            id.checked = policy.response == 'Y';
+                        } else {
+                            id.checked = policy.defaultValue == 'Y';
+                        }
+                    }
+                }
+            }
+
             // interests
             if (this.#oldInterests) {
                 for (var row in this.#oldInterests) {
@@ -254,8 +276,6 @@ class Membership {
         this.#countryField.value = this.#personInfo['country'];
         this.#uspsblock.innerHTML = '';
 
-        // this.#shareField.checked = (this.#personInfo['share_reg_ok'] == null || this.#personInfo['share_reg_ok'] == 'Y');
-        // this.#contactField.checked = (this.#personInfo['contact_ok'] == null || this.#personInfo['contact_ok'] == 'Y');
         if (data['memberships']) {
             this.#memberships = data['memberships'];
         }
@@ -379,6 +399,9 @@ class Membership {
         clear_message();
         var valid = true;
         var required = config['required'];
+        var message = "Please correct the items highlighted in red and validate again.<br/>" +
+            "Note: If any of the Address fields are used and the country is United States, " +
+            "then the Address, City, State, and Zip fields must all be entered.";
         var person = URLparamsToArray($('#addUpgradeForm').serialize());
         this.#personInfo.last_name = person.lname.trim();
         this.#personInfo.middle_name = person.mname.trim();
@@ -395,8 +418,6 @@ class Membership {
         this.#personInfo.state = person.state.trim();
         this.#personInfo.zip = person.zip.trim();
         this.#personInfo.country = person.country.trim();
-        this.#personInfo.share_reg_ok = person.hasOwnProperty('share') ? 'Y' : 'N';
-        this.#personInfo.contact_ok =  person.hasOwnProperty('contact') ? 'Y' : 'N';
 
         // validation
         // emails must not be blank and must match
@@ -475,12 +496,29 @@ class Membership {
             }
         }
 
+        // now verify required policies
+        if (policies) {
+            this.#newPolicies = URLparamsToArray($('#editPolicies').serialize());
+            console.log("New Policies:");
+            console.log(this.#newPolicies);
+            for (var row in policies) {
+                var policy = policies[row];
+                if (policy.required == 'Y') {
+                    var field = '#l_' + policy.policy;
+                    if (typeof this.#newPolicies['p_' + policy.policy] === 'undefined') {
+                        console.log("required policy " + policy.policy + ' is not checked');
+                        message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
+                        $(field).addClass('need');
+                        valid = false;
+                    } else {
+                        $(field).removeClass('need');
+                    }
+                }
+            }
+        }
         // don't continue to process if any are missing
         if (!valid) {
-            show_message("Please correct the items highlighted in red and validate again.<br/>" +
-                "Note: If any of the Address fields are used and the country is United States, " +
-                "then the Address, City, State, and Zip fields must all be entered.",
-            "error");
+            show_message(message, "error");
             return false;
         }
 
@@ -908,6 +946,8 @@ class Membership {
             person: JSON.stringify(this.#personInfo),
             oldInterests: JSON.stringify(this.#oldInterests),
             newInterests: JSON.stringify(URLparamsToArray($('#editInterests').serialize())),
+            oldPolcies: JSON.stringify(this.#oldPolicies),
+            newPolicies: JSON.stringify(URLparamsToArray($('#newPolicies').serialize())),
         }
 
         $.ajax({

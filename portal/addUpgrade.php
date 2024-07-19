@@ -3,6 +3,7 @@
 require_once("lib/base.php");
 require_once("lib/portalForms.php");
 require_once("../lib/interests.php");
+require_once("../lib/policies.php");
 require_once("../lib/memRules.php");
 
 global $config_vars;
@@ -87,8 +88,9 @@ EOS;
     }
     $updateName = $checkL['fullname'];
 }
-// get the information for the interest block
+// get the information for the policies and interest blocks
 $interests = getInterests();
+$policies = getPolicies();
 
 // build info array about the account holder
 $info = getPersonInfo();
@@ -124,6 +126,7 @@ portalPageInit('addUpgrade', $info,
     var memList = <?php echo json_encode($ruleData['memList']); ?>;
     var memListIdx = <?php echo json_encode($ruleData['memListIdx']); ?>;
     var memRules = <?php echo json_encode($ruleData['memRules']); ?>;
+    var policies = <?php echo json_encode($policies); ?>;
 </script>
 <?php
 // get the info for the current person or set it all to NULL
@@ -164,7 +167,7 @@ drawVariablePriceModal();
         </div>
 <?php
 outputCustomText('main/step2');
-drawVerifyPersonInfo();
+drawVerifyPersonInfo($policies);
 ?>
         <hr/>
     </div>

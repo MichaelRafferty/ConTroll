@@ -96,6 +96,24 @@ if ($getType == 'p') {
     $mfield = 'managedByNew';
 }
 
+// now get the policies as that goes with the person record for the forms
+$policies = [];
+$pQ = <<<EOS
+SELECT p.policy, p.prompt, p.description, p.required, p.defaultValue, p.sortOrder, m.id, m.perid, m.conid, m.newperid, m.response
+FROM policies p
+LEFT OUTER JOIN memberPolicies m ON p.policy = m.policy AND m.$rfield = ? AND m.conid = ?
+WHERE p.active = 'Y'
+ORDER BY p.sortOrder;
+EOS;
+$pR = dbSafeQuery($pQ, 'ii', array($person['id'], $conid));
+if ($pR !== false) {
+    while ($row = $pR->fetch_assoc()) {
+        $policies[] = $row;
+    }
+    $pR->free();
+}
+$response['policies'] = $policies;
+
 // interests
 if ($interestReq == 'Y') {
     $interests = [];

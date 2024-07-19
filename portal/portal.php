@@ -7,6 +7,7 @@ require_once('../lib/email__load_methods.php');
 require_once('../lib/cipher.php');
 require_once('lib/sessionManagement.php');
 require_once("../lib/interests.php");
+require_once("../lib/policies.php");
 require_once("../lib/paymentPlans.php");
 require_once("../lib/coupon.php");
 require_once('../lib/cc__load_methods.php');
@@ -207,8 +208,9 @@ EOS;
 
     $memberships = getAccountRegistrations($loginId, $loginType, $conid, 'all');
 
-// get the information for the interest block
+// get the information for the interest  and policies blocks
     $interests = getInterests();
+    $policies = getPolicies();
 // get the payment plans
     $paymentPlans = getPaymentPlans(true);
 // get valid coupons
@@ -241,10 +243,12 @@ if ($refresh) {
     var payorPlans = <?php echo json_encode($paymentPlans['payorPlans']); ?>;
     var membershipsPurchased = <?php echo json_encode($memberships); ?>;
     var numCoupons = <?php echo $numCoupons; ?>;
+    var policies = <?php echo json_encode($policies); ?>;
 </script>
 <?php
 // draw all the modals for this screen
-draw_editPersonModal();
+$policies = getPolicies();
+draw_editPersonModal($policies);
 draw_editInterestsModal($interests);
 draw_paymentDueModal();
 draw_makePaymentModal();

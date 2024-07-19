@@ -41,8 +41,6 @@ class Portal {
     #email2Field = null;
     #phoneField = null;
     #badgenameField = null;
-    #contactField = null;
-    #shareField = null;
     #uspsDiv= null;
 
     // person fields
@@ -99,6 +97,10 @@ class Portal {
     #subTotalColDiv = null;
     #couponDiscountDiv = null;
 
+    // policy Items
+    #oldPolicies = null;
+    #newPolicies = null;
+
     constructor() {
         var id;
         id = document.getElementById("editPersonModal");
@@ -127,8 +129,6 @@ class Portal {
             this.#email2Field = document.getElementById("email2");
             this.#phoneField = document.getElementById("phone");
             this.#badgenameField = document.getElementById("badgename");
-            this.#contactField = document.getElementById("contact");
-            this.#shareField = document.getElementById("share");
             this.#uspsDiv = document.getElementById("uspsblock");
 
             // now set up the stuff for the edit person modal actions
@@ -306,8 +306,6 @@ class Portal {
         this.#email2Field.value = person['email_addr'];
         this.#phoneField.value = person['phone'];
         this.#badgenameField.value = person['badge_name'];
-        this.#shareField.checked = (person['share_reg_ok'] == null || person['share_reg_ok'] == 'Y');
-        this.#contactField.checked = (person['contact_ok'] == null || person['contact_ok'] == 'Y');
 
         this.#personSerializeStart = $("#editPerson").serialize();
         this.#editPersonModal.show();
@@ -342,6 +340,9 @@ class Portal {
         clear_message('epMessageDiv');
         var valid = true;
         var required = config['required'];
+        var message = "Please correct the items highlighted in red and validate again.<br/>" +
+        "Note: If any of the Address fields are used and the country is United States, " +
+        "then the Address, City, State, and Zip fields must all be entered.";
 
         // validation
         // emails must not be blank and must match
@@ -420,12 +421,30 @@ class Portal {
             }
         }
 
+        // now verify required policies
+        if (policies) {
+            this.#newPolicies = URLparamsToArray($('#editPolicies').serialize());
+            console.log("New Policies:");
+            console.log(this.#newPolicies);
+            for (var row in policies) {
+                var policy = policies[row];
+                if (policy.required == 'Y') {
+                    var field = '#l_' + policy.policy;
+                    if (typeof this.#newPolicies['p_' + policy.policy] === 'undefined') {
+                        console.log("required policy " + policy.policy + ' is not checked');
+                        message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
+                        $(field).addClass('need');
+                        valid = false;
+                    } else {
+                        $(field).removeClass('need');
+                    }
+                }
+            }
+        }
+
         // don't continue to process if any are missing
         if (!valid) {
-            show_message("Please correct the items highlighted in red and validate again.<br/>" +
-                "Note: If any of the Address fields are used and the country is United States, " +
-                "then the Address, City, State, and Zip fields must all be entered.",
-            "error", 'epMessageDiv');
+            show_message(message, "error", 'epMessageDiv');
             return false;
         }
 
@@ -542,6 +561,8 @@ class Portal {
             person: person,
             currentPerson: this.#currentPerson,
             currentPersonType: this.#currentPersonType,
+            oldPolcies: JSON.stringify(this.#oldPolicies),
+            newPolicies: JSON.stringify(URLparamsToArray($('#newPolicies').serialize())),
         }
         if (config['debug'] & 1)
             console.log(data);

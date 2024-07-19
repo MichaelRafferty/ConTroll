@@ -2,6 +2,10 @@ input.need {
   background-color: red;
 }
 
+span.need {
+  background-color: red;
+}
+
 span.req, .warn {
   font-weight: bold;
   color: red;
