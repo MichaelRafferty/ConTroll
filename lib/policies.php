@@ -32,18 +32,15 @@ function drawPoliciesBlock($policies) {
         $description = replaceVariables($policy['description']);
         if ($policy['defaultValue'] == 'Y') {
             $checked = 'checked';
-            $value = 'Y';
-        }
-        else {
+        } else {
             $checked = '';
-            $value = 'N';
         }
 ?>
 <div class='row'>
     <div class='col-sm-12'>
         <p class='text-body'>
             <label>
-                <input type='checkbox' <?php echo $checked; ?> name='p_<?php echo $name;?>' id='p_<?php echo $name;?>' value='<?php echo $value;?>'/>
+                <input type='checkbox' <?php echo $checked; ?> name='p_<?php echo $name;?>' id='p_<?php echo $name;?>' value='Y'/>
                 <span id="l_<?php echo $name;?>"><?php echo $prompt; ?></span>
             </label>
             <?php if ($description != '') { ?>

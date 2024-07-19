@@ -270,6 +270,8 @@ class Portal {
         // ok, it's legal to edit this person, now populate the fields
         var person = data['person'];
         var post = data['post'];
+        if (data['policies'])
+            this.#oldPolicies = data['policies'];
 
         var fullname = person['fullname'] + ' (';
         if (post['getType'] == 'n') {
@@ -308,6 +310,22 @@ class Portal {
         this.#badgenameField.value = person['badge_name'];
 
         this.#personSerializeStart = $("#editPerson").serialize();
+
+        // policies
+        if (this.#oldPolicies) {
+            for (var row in this.#oldPolicies) {
+                var policy = this.#oldPolicies[row];
+                var id = document.getElementById('p_' + policy.policy);
+                if (id) {
+                    if (policy.response) {
+                        id.checked = policy.response == 'Y';
+                    } else {
+                        id.checked = policy.defaultValue == 'Y';
+                    }
+                }
+            }
+        }
+
         this.#editPersonModal.show();
     }
 
@@ -561,8 +579,8 @@ class Portal {
             person: person,
             currentPerson: this.#currentPerson,
             currentPersonType: this.#currentPersonType,
-            oldPolcies: JSON.stringify(this.#oldPolicies),
-            newPolicies: JSON.stringify(URLparamsToArray($('#newPolicies').serialize())),
+            oldPolicies: JSON.stringify(this.#oldPolicies),
+            newPolicies: JSON.stringify(URLparamsToArray($('#editPolicies').serialize())),
         }
         if (config['debug'] & 1)
             console.log(data);
