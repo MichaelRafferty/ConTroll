@@ -153,13 +153,11 @@ if ($rows === false || $rows != 1) {
 }
 
 $rows = dbSafeCmd('UPDATE reg SET perid=? WHERE newperid=?;', 'ii', array($perid, $newperid));
-if ($rows === false) {
-    $errors .= "Unable to update reg entires for newperson $newperid to person $perid<br/>\n";
-}
-$rows = dbSafeCmd('UPDATE transaction SET perid=? WHERE newperid=?;', 'ii', array($perid, $newperid));
-if ($rows === false) {
-    $errors .= "Unable to update transaction entire for newperson $newperid to person $perid<br/>\n";
-}
+$rows = dbSafeCmd('UPDATE transaction SET perid=? WHERE newperid=?;', 'ii', array($perid, $newperid));;
+$rows = dbSafeCmd('UPDATE exhibitors SET perid=? WHERE newperid=?;', 'ii', array($perid, $newperid));
+$rows = dbSafeCmd('UPDATE memberInterests SET perid=? WHERE newperid=?;', 'ii', array($perid, $newperid));
+$rows = dbSafeCmd('UPDATE memberPolicies SET perid=? WHERE newperid=?;', 'ii', array($perid, $newperid));
+$rows = dbSafeCmd('UPDATE payorPlans SET perid=? WHERE newperid=?;', 'ii', array($perid, $newperid));
 
 $response['changeLog'] = $changeLog;
 if ($errors != '') {

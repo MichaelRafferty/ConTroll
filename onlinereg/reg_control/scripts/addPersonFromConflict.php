@@ -76,6 +76,7 @@ if ($id !== false) {
     $rows = dbSafeCmd("UPDATE transaction SET perid=? WHERE newperid=?;", 'ii', array ($id, $_POST['newID']));
     $rows = dbSafeCmd("UPDATE exhibitors SET perid=? WHERE newperid=?;", 'ii', array ($id, $_POST['newID']));
     $rows = dbSafeCmd("UPDATE memberInterests SET perid=? WHERE newperid=?;", 'ii', array ($id, $_POST['newID']));
+    $rows = dbSafeCmd("UPDATE memberPolicies SET perid=? WHERE newperid=?;", 'ii', array ($id, $_POST['newID']));
     $rows = dbSafeCmd("UPDATE payorPlans SET perid=? WHERE newperid=?;", 'ii', array ($id, $_POST['newID']));
 
     $perQ = <<<EOQ
