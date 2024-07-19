@@ -89,15 +89,23 @@ EOS;
     if ($policies != null) {
         $policy_upd = 0;
         foreach ($policies as $policy) {
-            $old = '';
+            $oldResponse = '';
+            $oldId = null;
             $new = 'N';
-            if (array_key_exists('p_' . $policy['policy'], $oldPolicies))
+            if (array_key_exists('p_' . $policy['policy'], $oldPolicies)) {
                 $old = $oldPolicies['p_' . $policy['policy']];
+                if (array_key_exists('response', $old)) {
+                    $oldResponse = $old['response'];
+                }
+                if (array_key_exists('id', $old)) {
+                    $oldId = $old['id'];
+                }
+            }
             if (array_key_exists('p_' . $policy['policy'], $newPolicies))
                 $new = $newPolicies['p_' . $policy['policy']];
 
             // ok the options if old is blank, there likely isn't an entry in the database, New if missing is a 'N';
-            if ($old == '') {
+            if ($oldResponse == '') {
                 $valueArray = array (
                     $personType == 'p' ? $personId : null,
                     $conid,
@@ -110,8 +118,8 @@ EOS;
                 if ($ins_key !== false) {
                     $policy_upd++;
                 }
-            } else if ($old != $new) {
-                $policy_upd += dbSafeCmd($uQ, 'sii', array($new, $loginType == 'p' ? $loginId : null, $old['id']));
+            } else if ($oldResponse != $new) {
+                $policy_upd += dbSafeCmd($uQ, 'sii', array($new, $loginType == 'p' ? $loginId : null, $oldId));
             }
         }
     }
