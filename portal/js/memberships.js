@@ -715,9 +715,9 @@ class Membership {
         this.#cartContentsDiv.innerHTML = html;
 
         if (this.#cartChanges > 0)
-            this.#saveCartBtn.innerHTML = "Save the cart and return to the home page";
+            this.#saveCartBtn.innerHTML = "Save the cart and any changes you made to your profile and interests, and return to the home page";
         else
-            this.#saveCartBtn.innerHTML = "Return to the home page.";
+            this.#saveCartBtn.innerHTML = "Save any changes you may have made to your profile and interests, and return to the home page.";
     }
 
     // add to cart
@@ -947,7 +947,7 @@ class Membership {
             oldInterests: JSON.stringify(this.#oldInterests),
             newInterests: JSON.stringify(URLparamsToArray($('#editInterests').serialize())),
             oldPolcies: JSON.stringify(this.#oldPolicies),
-            newPolicies: JSON.stringify(URLparamsToArray($('#newPolicies').serialize())),
+            newPolicies: JSON.stringify(URLparamsToArray($('#editPolicies').serialize())),
         }
 
         $.ajax({
@@ -971,7 +971,7 @@ class Membership {
                 showAjaxError(jqXHR, textStatus, errorThrown);
                 _this.#saveCartBtn.disabled = false;
                 return false;
-            },z
+            }
         });
     }
 

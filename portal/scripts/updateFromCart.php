@@ -1,6 +1,7 @@
 <?php
 require_once('../lib/base.php');
 require_once('../../lib/log.php');
+require_once('../../lib/policies.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -261,7 +262,7 @@ EOS;
         $personId
     );
 
-    $rows_upd = dbSafeCmd($updPersonQ, 'ssssssssssssssssii', $value_arr);
+    $rows_upd = dbSafeCmd($updPersonQ, 'sssssssssssssssssii', $value_arr);
     if ($rows_upd === false) {
         ajaxSuccess(array('status' => 'error', 'message' => 'Error updating person'));
         exit();
@@ -439,7 +440,10 @@ EOS;
     }
 }
 
-ajaxSuccess($response);
+$policy_upd = updateMemberPolicies($conid, $personId, $personType, $loginId, $loginType);
+
+
+    ajaxSuccess($response);
 
 function getNewTransaction($conid, $perid, $newperid) {
     $iQ = <<<EOS

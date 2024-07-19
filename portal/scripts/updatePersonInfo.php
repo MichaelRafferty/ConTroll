@@ -32,19 +32,6 @@ $personType = getSessionVar('idType');
 
 $currentPerson = $_POST['currentPerson'];
 $currentPersonType = $_POST['currentPersonType'];
-if (array_key_exists('oldPolicies', $_POST))
-    $oldPoliciesArr = json_decode($_POST['oldPolicies'], true);
-else
-    $oldPoliciesArr = array();
-if (array_key_exists('newPolicies', $_POST))
-    $newPolicies = json_decode($_POST['newPolicies'], true);
-else
-    $newPolicies = array();
-// convert oldPolicies to an associative array with the p_ in the front of the indicies
-$oldPolicies = array();
-foreach ($oldPoliciesArr as $oldPolicy) {
-    $oldPolicies['p_' . $oldPolicy['policy']] = $oldPolicy;
-}
 $person = $_POST['person'];
 
 $response['currentPersonType'] = $currentPersonType;
@@ -108,7 +95,7 @@ $message = $rows_upd == 0 ? 'No changes' : "$rows_upd person updated";
 // now update the policies
 $policies = getPolicies();
 $iQ = <<<EOS
-INSERt INTO memberPolicies(perid, conid, newperid, policy, response, updateBy)
+INSERT INTO memberPolicies(perid, conid, newperid, policy, response, updateBy)
 VALUES (?,?,?,?,?,?);
 EOS;
 $uQ = <<<EOS
@@ -117,37 +104,9 @@ SET response = ?, updateBy = ?
 WHERE id = ?;
 EOS;
 
-if ($policies != null) {
-    $policy_upd = 0;
-    foreach ($policies as $policy) {
-        $old = '';
-        $new = 'N';
-        if (array_key_exists('p_' . $policy['policy'], $oldPolicies))
-            $old = $oldPolicies['p_' . $policy['policy']];
-        if (array_key_exists('p_' . $policy['policy'], $newPolicies))
-            $new = $newPolicies['p_' . $policy['policy']];
-
-        // ok the options if old is blank, there likely isn't an entry in the database, New if missing is a 'N';
-        if ($old == '') {
-            $valueArray = array (
-                $currentPersonType == 'p' ? $currentPerson : null,
-                $conid,
-                $currentPersonType == 'n' ? $currentPerson : null,
-                $policy['policy'],
-                $new,
-                $personType == 'p' ? $personId : null
-            );
-            $ins_key = dbSafeInsert($iQ, 'iiissi', $valueArray);
-            if ($ins_key !== false) {
-                $policy_upd++;
-            }
-        } else if ($old != $new) {
-            $policy_upd += dbSafeCmd($uQ, 'sii', array($new, $personType == 'p' ? $personId : null, $old['id']));
-        }
-    }
-    if ($policy_upd > 0) {
-        $message .= "<br/>$policy_upd policy responses updated";
-    }
+$policy_upd =  updateMemberPolicies($conid, $currentPerson, $currentPersonType, $personId, $personType);
+if ($policy_upd > 0) {
+    $message .= "<br/>$policy_upd policy responses updated";
 }
 
 $response['rows_upd'] = $rows_upd;

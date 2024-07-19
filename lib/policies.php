@@ -57,3 +57,63 @@ function drawPoliciesBlock($policies) {
 <?php
     }
 }
+
+// update policies in memberPolicies and return number updated
+function updateMemberPolicies($conid, $personId, $personType, $loginId, $loginType) {
+    // now update the policies
+    $policies = getPolicies();
+    $iQ = <<<EOS
+INSERT INTO memberPolicies(perid, conid, newperid, policy, response, updateBy)
+VALUES (?,?,?,?,?,?);
+EOS;
+    $uQ = <<<EOS
+UPDATE memberPolicies
+SET response = ?, updateBy = ?
+WHERE id = ?;
+EOS;
+
+    if (array_key_exists('oldPolicies', $_POST))
+        $oldPoliciesArr = json_decode($_POST['oldPolicies'], true);
+    else
+        $oldPoliciesArr = array();
+    if (array_key_exists('newPolicies', $_POST))
+        $newPolicies = json_decode($_POST['newPolicies'], true);
+    else
+        $newPolicies = array();
+// convert oldPolicies to an associative array with the p_ in the front of the indicies
+    $oldPolicies = array();
+    foreach ($oldPoliciesArr as $oldPolicy) {
+        $oldPolicies['p_' . $oldPolicy['policy']] = $oldPolicy;
+    }
+
+    if ($policies != null) {
+        $policy_upd = 0;
+        foreach ($policies as $policy) {
+            $old = '';
+            $new = 'N';
+            if (array_key_exists('p_' . $policy['policy'], $oldPolicies))
+                $old = $oldPolicies['p_' . $policy['policy']];
+            if (array_key_exists('p_' . $policy['policy'], $newPolicies))
+                $new = $newPolicies['p_' . $policy['policy']];
+
+            // ok the options if old is blank, there likely isn't an entry in the database, New if missing is a 'N';
+            if ($old == '') {
+                $valueArray = array (
+                    $personType == 'p' ? $personId : null,
+                    $conid,
+                    $personType == 'n' ? $personId : null,
+                    $policy['policy'],
+                    $new,
+                    $loginType == 'p' ? $loginId : null
+                );
+                $ins_key = dbSafeInsert($iQ, 'iiissi', $valueArray);
+                if ($ins_key !== false) {
+                    $policy_upd++;
+                }
+            } else if ($old != $new) {
+                $policy_upd += dbSafeCmd($uQ, 'sii', array($new, $loginType == 'p' ? $loginId : null, $old['id']));
+            }
+        }
+    }
+    return  $policy_upd;
+}
