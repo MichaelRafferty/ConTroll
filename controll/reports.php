@@ -45,6 +45,9 @@ $conid=$con['id'];
     <input type='number' name='conid'/>
     <input type='submit' value='Get'/>
   </form>
+    <?php // this stuff below is obsolete and needs to be rewritten for mondern art show
+    if (false) {
+        ?>
   <form action='reports/artCheckout.php' method='GET'>
     <select name='artid'>
         <?php
@@ -65,6 +68,7 @@ EOS;
     </select>
     <input type='submit' value='Artshow Checkout'/>
   </form>
+    <?php } ?>
     <form action='reports/badgeHistory.php' method='GET'>
         <input type='number' name='perid' size=6/>
         <input type='submit' value='Get Badge History'/>
