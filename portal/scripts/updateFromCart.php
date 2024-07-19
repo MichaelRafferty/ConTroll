@@ -151,7 +151,7 @@ EOF;
         trim($person['zip']),
         trim($person['country']),
     );
-    $res = dbSafeQuery($exactMsql, 'ssssssssssssss', $value_arr);
+    $res = dbSafeQuery($exactMsql, 'sssssssssssssss', $value_arr);
     if ($res !== false) {
         if ($res->num_rows > 0) {
             $match = $res->fetch_assoc();
@@ -179,7 +179,7 @@ insert into newperson (transid, last_name, middle_name, first_name, suffix, emai
                        country, share_reg_ok, contact_ok, managedBy, managedByNew, managedReason, updatedBy, lastVerified)
 values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'creation',?,NOW());
 EOS;
-        $typeStr = 'issssssssssssssssiii';
+        $typeStr = 'isssssssssssssssssiii';
         $valArray = array(
             $transId,
             trim($person['last_name']),
