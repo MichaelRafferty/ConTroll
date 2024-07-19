@@ -175,7 +175,7 @@ function preConEmail_last_HTML($test) {
 <p>See you at the convention!</p>
 <br>
 EOT;
-  $addlemailhtml= __DIR__ . "/../../../config/ConSpecificReminderEmailAddlHTML.txt";
+  $addlemailhtml= __DIR__ . "/../../config/ConSpecificReminderEmailAddlHTML.txt";
   if (is_readable($addlemailhtml)) {
       $html .= file_get_contents($addlemailhtml);
   }
@@ -219,7 +219,7 @@ If you have any further questions, please feel free to contact us at $feedbackem
 See you at the convention!
 EOT;
 
-  $addlemailtxt= __DIR__ . "/../../../config/ConSpecificReminderEmailAddlText.txt";
+  $addlemailtxt= __DIR__ . "/../../config/ConSpecificReminderEmailAddlText.txt";
   if (is_readable($addlemailtxt)) {
       $text .= file_get_contents($addlemailtxt);
   }
@@ -274,7 +274,7 @@ function MarketingEmail_HTML($test) {
 <p>We hope to see you at the convention!</p>
 <br>
 EOT;
-    $addlemailhtml= __DIR__ . "/../../../config/ConSpecificMarketingEmailAddlHTML.txt";
+    $addlemailhtml= __DIR__ . "/../../config/ConSpecificMarketingEmailAddlHTML.txt";
     if (is_readable($addlemailhtml)) {
         $html .= file_get_contents($addlemailhtml);
     }
@@ -320,7 +320,7 @@ We hope to see you at the convention!
 
 EOT;
 
-    $addlemailtxt= __DIR__ . "/../../../config/ConSpecificMarketingEmailAddlText.txt";
+    $addlemailtxt= __DIR__ . "/../../config/ConSpecificMarketingEmailAddlText.txt";
     if (is_readable($addlemailtxt)) {
         $text .= file_get_contents($addlemailtxt);
     }
@@ -381,7 +381,7 @@ function ComeBackCouponEmail_HTML($test, $expirationDate)
 <p>We hope to see you at the convention!</p>
 <br>
 EOT;
-    $addlemailhtml = __DIR__ . '/../../../config/ConSpecificMarketingEmailAddlHTML.txt';
+    $addlemailhtml = __DIR__ . '/../../config/ConSpecificMarketingEmailAddlHTML.txt';
     if (is_readable($addlemailhtml)) {
         $html .= file_get_contents($addlemailhtml);
     }
@@ -430,7 +430,7 @@ We hope to see you at the convention!
 
 EOT;
 
-    $addlemailtxt = __DIR__ . '/../../../config/ConSpecificMarketingEmailAddlText.txt';
+    $addlemailtxt = __DIR__ . '/../../config/ConSpecificMarketingEmailAddlText.txt';
     if (is_readable($addlemailtxt)) {
         $text .= file_get_contents($addlemailtxt);
     }
