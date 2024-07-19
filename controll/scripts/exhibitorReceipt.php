@@ -1,6 +1,6 @@
 <?php
 require_once('../lib/base.php');
-require_once('../../../lib/reg_receipt.php');
+require_once('../../lib/reg_receipt.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;

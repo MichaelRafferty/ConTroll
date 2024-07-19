@@ -5,8 +5,8 @@
 // Print a receipt from the regcontrol registration screen
 
 require_once '../lib/base.php';
-require_once('../../../lib/log.php');
-require_once('../../../lib/email__load_methods.php');
+require_once('../../lib/log.php');
+require_once('../../lib/email__load_methods.php');
 
 $check_auth = google_init('ajax');
 $perm = 'registration';

@@ -2,7 +2,7 @@
 global $db_ini;
 
 require_once "../lib/base.php";
-require_once(__DIR__ . '/../../../lib/checkmerge.php');
+require_once(__DIR__ . '/../../lib/checkmerge.php');
 
 $check_auth = google_init("ajax");
 $perm = "admin";

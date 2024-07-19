@@ -113,7 +113,7 @@ $info = $infoR->fetch_assoc();
 $infoR->free();
 
 // load the country codes for the option pulldown
-$fh = fopen(__DIR__ . '/../../../lib/countryCodes.csv', 'r');
+$fh = fopen(__DIR__ . '/../../lib/countryCodes.csv', 'r');
 $countryOptions = '';
 while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
     $countryOptions .=  "<option value='".$data[1]."'>".$data[0]."</option>\n";

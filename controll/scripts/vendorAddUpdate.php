@@ -2,7 +2,7 @@
 global $db_ini;
 
 require_once '../lib/base.php';
-require_once('../../../lib/exhibitorYears.php');
+require_once('../../lib/exhibitorYears.php');
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;

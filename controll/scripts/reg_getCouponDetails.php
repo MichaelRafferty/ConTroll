@@ -5,7 +5,7 @@
 // Retrieve all the details for a specific coupomn
 
 require_once '../lib/base.php';
-require_once('../../../lib/coupon.php');
+require_once('../../lib/coupon.php');
 
 $check_auth = google_init('ajax');
 $perm = 'registration';

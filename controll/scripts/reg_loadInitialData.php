@@ -5,8 +5,8 @@
 // Retrieve load the mapping tables and session information into the javascript side of the registration tab
 
 require_once '../lib/base.php';
-require_once('../../../lib/cc__load_methods.php');
-require_once('../../../lib/coupon.php');
+require_once('../../lib/cc__load_methods.php');
+require_once('../../lib/coupon.php');
 
 $check_auth = google_init('ajax');
 $perm = 'registration';

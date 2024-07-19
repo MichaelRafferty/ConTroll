@@ -2,7 +2,7 @@
 global $db_ini;
 
 require_once '../lib/base.php';
-require_once('../../../lib/uspsValidate.php');
+require_once('../../lib/uspsValidate.php');
 
 $check_auth = google_init('ajax');
 $perm = 'overview';

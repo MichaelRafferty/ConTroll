@@ -2,7 +2,7 @@
 global $db_ini;
 
 require_once "../lib/base.php";
-require_once('../../../lib/exhibitorYears.php');
+require_once('../../lib/exhibitorYears.php');
 $check_auth = google_init("ajax");
 $perm = "vendor";
 
