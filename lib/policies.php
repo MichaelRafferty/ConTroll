@@ -96,6 +96,8 @@ EOS;
                 $old = $oldPolicies['p_' . $policy['policy']];
                 if (array_key_exists('response', $old)) {
                     $oldResponse = $old['response'];
+                    if ($oldResponse == null)
+                        $oldResponse = '';
                 }
                 if (array_key_exists('id', $old)) {
                     $oldId = $old['id'];
