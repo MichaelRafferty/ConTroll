@@ -44,9 +44,9 @@ EOS;
         web_error_log("ConTroll Admin login by $user_email($userid:$perid) from " . $_SERVER['REMOTE_ADDR']);
     }
     // get the version string, and the current DB patch level
-    $versionFile = '../../version.txt';
+    $versionFile = '../version.txt';
     if (is_readable($versionFile)) {
-        $versionText = file_get_contents("../../version.txt");
+        $versionText = file_get_contents("../version.txt");
     } else {
         $versionText = "Version information not available\n";
     }

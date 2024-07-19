@@ -1,6 +1,6 @@
 <?php
 require_once 'lib/base.php';
-require_once('../../lib/cc__load_methods.php');
+require_once('../lib/cc__load_methods.php');
 //initialize google session
 $need_login = google_init('page');
 
@@ -149,7 +149,7 @@ $conname = $con['conname'];
                                     <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
                                     <select name='country' id="country" tabindex='22'>
                                     <?php
-                                    $fh = fopen(__DIR__ . '/../../lib/countryCodes.csv', 'r');
+                                    $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
                                     while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
                                         echo "<option value='".$data[1]."'>".$data[0]."</option>";
                                     }

@@ -1,9 +1,9 @@
 <?php
 require_once "lib/base.php";
-require_once "../../lib/exhibitorRegistrationForms.php";
-require_once "../../lib/exhibitorRequestForms.php";
-require_once "../../lib/exhibitorReceiptForms.php";
-require_once "../../lib/exhibitorInvoice.php";
+require_once "../lib/exhibitorRegistrationForms.php";
+require_once "../lib/exhibitorRequestForms.php";
+require_once "../lib/exhibitorReceiptForms.php";
+require_once "../lib/exhibitorInvoice.php";
 require_once "lib/exhibitorChooseExhibitor.php";
 
 //initialize google session
@@ -63,7 +63,7 @@ if ($regionOwnerR == false || $regionOwnerR->num_rows == 0) {
 
 // load country select
 $countryOptions = '';
-$fh = fopen(__DIR__ . '/../../lib/countryCodes.csv', 'r');
+$fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
 while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
     $countryOptions .= '<option value="' . escape_quotes($data[1]) . '">' .$data[0] . '</option>' . PHP_EOL;
 }
