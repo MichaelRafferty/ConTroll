@@ -43,16 +43,14 @@ if ($currentPersonType == 'p') {
     $updPersonQ =  <<<EOS
 UPDATE perinfo
 SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
-    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, 
-    share_reg_ok = ?, contact_ok = ?, updatedBy = ?, lastVerified = NOW()
+    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
 } else {
     $updPersonQ =  <<<EOS
 UPDATE newperson
 SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
-    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, 
-    share_reg_ok = ?, contact_ok = ?, updatedBy = ?, lastVerified = NOW()
+    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
 }
@@ -78,13 +76,11 @@ $value_arr = array(
     trim($person['state']),
     trim($person['zip']),
     trim($person['country']),
-    array_key_exists('contact', $person) ? $person['contact'] : 'Y',
-    array_key_exists('share', $person) ? $person['share'] :'Y',
     $personId,
     $currentPerson,
 );
 
-$rows_upd = dbSafeCmd($updPersonQ, 'sssssssssssssssssii', $value_arr);
+$rows_upd = dbSafeCmd($updPersonQ, 'sssssssssssssssii', $value_arr);
 if ($rows_upd === false) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Error updating person'));
     exit();

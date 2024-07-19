@@ -53,10 +53,10 @@ $response['personId'] = $loginId;
 // insert into newPerson
 $iQ = <<<EOS
 insert into newperson (last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip,
-                       country, share_reg_ok, contact_ok, updatedBy, lastVerified)
-values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW());
+                       country, updatedBy, lastVerified)
+values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW());
 EOS;
-$typeStr = 'ssssssssssssssssi';
+$typeStr = 'ssssssssssssssi';
 $valArray = array(
     trim($person['lname']),
     trim($person['mname']),
@@ -73,8 +73,6 @@ $valArray = array(
     trim($person['state']),
     trim($person['zip']),
     trim($person['country']),
-    $person['share'],
-    $person['contact'],
     $loginId
 );
 $personId = dbSafeInsert($iQ, $typeStr, $valArray);

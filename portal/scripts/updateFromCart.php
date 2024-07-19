@@ -176,10 +176,10 @@ EOS;
         $iQ = <<<EOS
 insert into newperson (transid, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, 
                        address, addr_2, city, state, zip,
-                       country, share_reg_ok, contact_ok, managedBy, managedByNew, managedReason, updatedBy, lastVerified)
-values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'creation',?,NOW());
+                       country, managedBy, managedByNew, managedReason, updatedBy, lastVerified)
+values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'creation',?,NOW());
 EOS;
-        $typeStr = 'isssssssssssssssssiii';
+        $typeStr = 'isssssssssssssssiii';
         $valArray = array(
             $transId,
             trim($person['last_name']),
@@ -197,8 +197,6 @@ EOS;
             trim($person['state']),
             trim($person['zip']),
             trim($person['country']),
-            $person['share_reg_ok'],
-            $person['contact_ok'],
             $loginType == 'p' ? $loginId : null,
             $loginType == 'n' ? $loginId : null,
             $loginId
@@ -223,14 +221,14 @@ if ($newPerid == null) {
         $updPersonQ = <<<EOS
 UPDATE perinfo
 SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
-    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, share_reg_ok = ?, contact_ok = ?, updatedBy = ?, lastVerified = NOW()
+    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
     } else {
         $updPersonQ = <<<EOS
 UPDATE newperson
 SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
-    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, share_reg_ok = ?, contact_ok = ?, updatedBy = ?, lastVerified = NOW()
+    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
     }
@@ -256,13 +254,11 @@ EOS;
         trim($person['state']),
         trim($person['zip']),
         trim($person['country']),
-        $person['share_reg_ok'],
-        $person['contact_ok'],
         $loginId,
         $personId
     );
 
-    $rows_upd = dbSafeCmd($updPersonQ, 'sssssssssssssssssii', $value_arr);
+    $rows_upd = dbSafeCmd($updPersonQ, 'sssssssssssssssii', $value_arr);
     if ($rows_upd === false) {
         ajaxSuccess(array('status' => 'error', 'message' => 'Error updating person'));
         exit();
