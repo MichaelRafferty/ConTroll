@@ -44,10 +44,13 @@ function drawPoliciesBlock($policies) {
                 <span id="l_<?php echo $name;?>"><?php echo $prompt; ?></span>
             </label>
             <?php if ($description != '') { ?>
-            <span class="small"><a href='javascript:void(0)' onClick='$("#<?php echo $name;?>Tip").toggle()'>(more info)</a></span>
+            <span class="small"><a href='javascript:void(0)' onClick='$("#<?php echo $name;?>Tip").toggle()'>
+                    <img src="/lib/infoicon.png"  alt="click this info icon for more information" style="max-height: 25px;"></a></span>
         <div id='<?php echo $name;?>Tip' class='padded highlight' style='display:none'>
             <p class='text-body'><?php echo $description; ?>
-                <span class='small'><a href='javascript:void(0)' onClick='$("#contactTip").toggle()'>(close)</a></span>
+                <span class='small'><a href='javascript:void(0)' onClick='$("#<?php echo $name;?>Tip").toggle()'>
+                      <img src='/lib/closeicon.png' alt='click this close icon to close the more information window' style='max-height: 25px;'>
+                    </a></span>
             </p>
         </div>
         <?php } ?>
