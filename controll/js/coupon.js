@@ -1,5 +1,5 @@
 //import { TabulatorFull as Tabulator } from 'tabulator-tables';
-// Coupon Class - all ;unctions and data related to processing / displaying a coupon on the reg_control/coupon
+// Coupon Class - all ;unctions and data related to processing / displaying a coupon on the Control Admin coupon page
 // Coupons includes: selection, display, calculation, cart support
 
 var coupons = null;

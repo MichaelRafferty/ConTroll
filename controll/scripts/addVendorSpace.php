@@ -65,7 +65,7 @@ EOS;
 
     $insertP = <<<EOS
 INSERT INTO payments(transid, type, category, description, source, pretax, tax, amount, time, cashier) 
-VALUES (?, 'check', 'vendor', ?, 'reg_control', ?, ?, ?, now(), ?);
+VALUES (?, 'check', 'vendor', ?, 'controll', ?, ?, ?, now(), ?);
 EOS;
     $payid = dbSafeInsert($insertP, 'isdddi', array($transid, $desc, $_POST['payment'], 0, $_POST['payment'], $user_perid));
     $values[11] = $transid;

@@ -401,7 +401,7 @@ if ($_POST['payment_type'] == 'check') {
 } else {
     $desc = $_POST['pay-desc'];
 }
-$values = array($transid, $_POST['payment_type'], 'vendor', $desc, 'reg_control', $totprice, 0, $totprice, 'admin', $_POST['pay-ccauth'],
+$values = array($transid, $_POST['payment_type'], 'vendor', $desc, 'controll', $totprice, 0, $totprice, 'admin', $_POST['pay-ccauth'],
          $_SESSION['user_perid']);
 
 $txnid = dbSafeInsert($txnQ, $typestr, $values);

@@ -170,7 +170,7 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             }
         }
         if ($changes != '')
-            $new_change_notes = "\nreg_control/registration Updated " . date(DATE_RFC2822) . " by $user_perid:\n$changes\n" . $new_change_notes;
+            $new_change_notes = "\ncontroll/registration Updated " . date(DATE_RFC2822) . " by $user_perid:\n$changes\n" . $new_change_notes;
 
         $paramarray = array(
             $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$legalName,$cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],

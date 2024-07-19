@@ -46,8 +46,8 @@ server="https://reg.conname.org/"
 rollover_eligible="'upgrade', 'rollover', 'freebie', 'standard', 'yearahead', 'discount'"
 [debug]
 google=0 ; to enable google debug statements (1=enable, 0=disable)
-reg_control_admin=0 ; to enable reg_contol admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
-reg_control_exhibitors=0 ; to enable reg_contol exhibitors tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+controll_admin=0 ; to enable controll admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+controll_exhibitors=0 ; to enable controll exhibitors tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
 vendors=0 ; to enable vendor and artist admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
 usps=0 ; to enable usps address validation debug (currently bitmast from 1-31)
 api:0 ; to enable api inteface debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
@@ -152,10 +152,10 @@ pay_disclaimer=""
 artsheets=false ; true/false show sheet print buttons
 artcontrol=false ; true/false show control sheet print button
 [client]
-path = "/home/homedir/reg.conname.org/reg_control"
+path = "/home/homedir/reg.conname.org/controll"
 [google]
 app_name="ConTroll Registration Controller"
-redirect_base="https://reg.conname.org/reg_control"
+redirect_base="https://controll.conname.org"
 json="/home/homedir/config/conname.json"
 client_id=""
 client_secret=""

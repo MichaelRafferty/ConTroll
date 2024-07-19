@@ -38,8 +38,8 @@ $con = get_conf("con");
 $conid=$con['id'];
 $debug = get_conf('debug');
 
-if (array_key_exists('reg_control_admin', $debug))
-    $debug_admin=$debug['reg_control_admin'];
+if (array_key_exists('controll_admin', $debug))
+    $debug_admin=$debug['controll_admin'];
 else
     $debug_admin = 0;
 

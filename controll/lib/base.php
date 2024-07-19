@@ -2,8 +2,8 @@
 ## Pull INI for variables
 global $db_ini;
 if (!$db_ini) {    
-    $db_ini = parse_ini_file(__DIR__ . "/../../../config/reg_conf.ini", true);
-    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../../Composer";
+    $db_ini = parse_ini_file(__DIR__ . "/../../config/reg_conf.ini", true);
+    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../Composer";
 }
 
 if ($db_ini['reg']['https'] <> 0) {
@@ -16,9 +16,9 @@ if ($db_ini['reg']['https'] <> 0) {
 set_include_path(get_include_path(). $include_path_additions);
 
 require_once("vendor/autoload.php");
-require_once(__DIR__ . "/../../../lib/db_functions.php");
-require_once(__DIR__ . "/../../../lib/global.php");
-require_once(__DIR__ . "/../../../lib/ajax_functions.php");
+require_once(__DIR__ . "/../../lib/db_functions.php");
+require_once(__DIR__ . "/../../lib/global.php");
+require_once(__DIR__ . "/../../lib/ajax_functions.php");
 db_connect();
 
 
@@ -53,7 +53,7 @@ function google_init($mode) {
 
   // set redirect URI to current page -- maybe make this better later.
   $redirect_base = "https://" . $_SERVER['HTTP_HOST'];
-  $redirect_uri = $redirect_base . "/reg_control/index.php";
+  $redirect_uri = $redirect_base . "/index.php";
   $state = $_SERVER['PHP_SELF'];
 
   $client = new Google\Client();

@@ -177,7 +177,7 @@ function checkItemUndoRedo() {
 
 function addnewItem() {
     // need to do this as a modal
-    alert("Adding Items from reg_control is not implemented yet");
+    alert("Adding Items from ConTroll Admin is not implemented yet");
 }
 
 function saveItem() {
