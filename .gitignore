@@ -20,7 +20,7 @@
 /vendor/images/
 /install/Reg_Install_Schema/old/
 /portal/images/
-/control/images/
+/controll/images/
 
 # stuff for local overrides
 .htaccess
