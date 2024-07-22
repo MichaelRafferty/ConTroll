@@ -23,8 +23,6 @@ db_connect();
 $appSessionPrefix = 'Ctrl/Portal/';
 session_start();
 
-date_default_timezone_set('America/New_York');
-
 function index_page_init($title) {
     $cdn = getTabulatorIncludes();
     $tabbs5=$cdn['tabbs5'];
