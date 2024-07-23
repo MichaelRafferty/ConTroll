@@ -24,9 +24,6 @@ $changeLog = $check_auth['email'] . ": " . date(DATE_ATOM)
     . ": updating from conflict " . $_POST['newID'] . "=>"
     . $_POST['oldID'] . ": ";
 
-// Note which old record it matches
-$rows = dbSafeCmd("UPDATE newperson SET perid=?, updatedBy=? WHERE id = ?", "iii", array($_POST['oldID'],$_SESSION['user_id'], $_POST['newID']));
-
 // now build the update statement for the items to update
 $nocheckboxes = array_key_exists('honorcheckboxes', $_POST) == false;
 $updatename = array_key_exists('conflictFormName', $_POST) ? $_POST['conflictFormName'] == 'checked' : false;
@@ -151,13 +148,6 @@ $rows = dbSafeCmd($query2, $types, $values);
 if ($rows === false || $rows != 1) {
     $errors .= "Unable to add $changeLog to person $perid<br/>\n";
 }
-
-$rows = dbSafeCmd('UPDATE reg SET perid=? WHERE newperid=?;', 'ii', array($perid, $newperid));
-$rows = dbSafeCmd('UPDATE transaction SET perid=? WHERE newperid=?;', 'ii', array($perid, $newperid));;
-$rows = dbSafeCmd('UPDATE exhibitors SET perid=? WHERE newperid=?;', 'ii', array($perid, $newperid));
-$rows = dbSafeCmd('UPDATE memberInterests SET perid=? WHERE newperid=?;', 'ii', array($perid, $newperid));
-$rows = dbSafeCmd('UPDATE memberPolicies SET perid=? WHERE newperid=?;', 'ii', array($perid, $newperid));
-$rows = dbSafeCmd('UPDATE payorPlans SET perid=? WHERE newperid=?;', 'ii', array($perid, $newperid));
 
 $response['changeLog'] = $changeLog;
 if ($errors != '') {

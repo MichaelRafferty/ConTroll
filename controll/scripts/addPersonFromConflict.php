@@ -69,9 +69,15 @@ EOQ;
 
 $id = dbSafeInsert($newPersonQ, "iii", array($_SESSION['user_perid'], $managerPerid, $_POST['newID']));
 if ($id !== false) {
-    $rows = dbSafeCmd("UPDATE newperson SET perid=?, updatedBy = ? WHERE id=?;", 'iii', array ($id, $_SESSION['user_id'], $_POST['newID']));
+    // fix this person's newperson record with their new perid
+    $rows = dbSafeCmd("UPDATE newperson SET perid=?, updatedBy = ? WHERE id=?;", 'iii', array ($id, $_SESSION['user_perid'], $_POST['newID']));
+    // fix people they manage from newperson to map to their new perid
     $rows = dbSafeCmd("UPDATE newperson SET updatedBy = ?, managedBy = ?, managedByNew = null WHERE managedByNew=?;", 'iii',
                       array ($_SESSION['user_perid'], $id, $_POST['newID']));
+    // fix people they manage from perinfo to map to their new perid
+    $rows = dbSafeCmd('UPDATE perinfo SET updatedBy = ?, managedBy = ?, managedByNew = null WHERE managedByNew=?;', 'iii',
+                      array ($_SESSION['user_perid'], $id, $_POST['newID']));
+    // update referenced tables reg, transaction, exhibiors, memberInterests, memberPolciies and payorPlans to now point to the perid
     $rows = dbSafeCmd("UPDATE reg SET perid=? WHERE newperid=?;", 'ii', array ($id, $_POST['newID']));
     $rows = dbSafeCmd("UPDATE transaction SET perid=? WHERE newperid=?;", 'ii', array ($id, $_POST['newID']));
     $rows = dbSafeCmd("UPDATE exhibitors SET perid=? WHERE newperid=?;", 'ii', array ($id, $_POST['newID']));
