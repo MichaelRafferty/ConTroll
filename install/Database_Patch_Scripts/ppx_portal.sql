@@ -33,17 +33,21 @@ CREATE TABLE perinfoIdentities (
 ALTER TABLE perinfoIdentities ADD FOREIGN KEY pi_perinfo_fk (perid) REFERENCES perinfo(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE perinfo ADD COLUMN managedBy int DEFAULT NULL;
+ALTER TABLE perinfo ADD COLUMN managedByNew int DEFAULT NULL after managedBy;
 ALTER TABLE perinfo ADD COLUMN managedReason varchar(16) DEFAULT NULL;
 ALTER TABLE perinfo ADD COLUMN lastVerified datetime DEFAULT NULL;
 ALTER TABLE perinfo ADD COLUMN pronouns varchar(64) DEFAULT NULL AFTER legalName;
 
 ALTER TABLE perinfoHistory ADD COLUMN managedBy int DEFAULT NULL;
+ALTER TABLE perinfoHistory ADD COLUMN managedByNew int DEFAULT NULL after managedBy;
+
 ALTER TABLE perinfoHistory ADD COLUMN managedReason varchar(16) DEFAULT NULL;
 ALTER TABLE perinfoHistory ADD COLUMN lastVerified datetime DEFAULT NULL;
 ALTER TABLE perinfoHistory ADD COLUMN pronouns varchar(64) DEFAULT NULL AFTER legalName;
 
 ALTER TABLE perinfo ADD COLUMN updatedBy int DEFAULT NULL;
 ALTER TABLE perinfo ADD FOREIGN KEY pi_managedBy_fk (managedBy) REFERENCES perinfo(id) ON UPDATE CASCADE;
+ALTER TABLE perinfo ADD FOREIGN KEY pi_managedByNew_fk (managedByNew) REFERENCES newperson(id) ON UPDATE CASCADE;
 ALTER TABLE perinfo ADD FOREIGN KEY pi_updatedBy_fk (updatedBy) REFERENCES perinfo(id) ON UPDATE CASCADE;
 
 ALTER TABLE newperson ADD COLUMN managedBy int DEFAULT NULL;
@@ -66,14 +70,17 @@ CREATE DEFINER=CURRENT_USER  TRIGGER `perinfo_update` BEFORE UPDATE ON `perinfo`
         OR OLD.country != NEW.country OR OLD.banned != NEW.banned OR OLD.creation_date != NEW.creation_date OR OLD.update_date != NEW.update_date
         OR OLD.change_notes != NEW.change_notes OR OLD.active != NEW.active OR OLD.open_notes != NEW.open_notes OR OLD.admin_notes != NEW.admin_notes
         OR OLD.old_perid != NEW.old_perid OR OLD.contact_ok != NEW.contact_ok OR OLD.share_reg_ok != NEW.share_reg_ok
-        OR OLD.managedBy != NEW.managedBy OR OLD.managedReason != NEW.managedReason OR OLD.lastVerified != NEW.lastVerified)
+        OR OLD.managedBy != NEW.managedBy OR OLD.managedByNew != NEW.managedByNew
+        OR OLD.managedReason != NEW.managedReason OR OLD.lastVerified != NEW.lastVerified)
     THEN
         INSERT INTO perinfoHistory(id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, pronouns,
                                    address, addr_2, city, state, zip, country, banned, creation_date, update_date, change_notes, active,
-                                   open_notes, admin_notes, old_perid, contact_ok, share_reg_ok, managedBy, managedReason, lastVerified)
+                                   open_notes, admin_notes, old_perid, contact_ok, share_reg_ok, managedBy, managedByNew,
+                                   managedReason, lastVerified)
         VALUES (OLD.id, OLD.last_name, OLD.first_name, OLD.middle_name, OLD.suffix, OLD.email_addr, OLD.phone, OLD.badge_name, OLD.legalName, OLD.pronouns,
                 OLD.address, OLD.addr_2, OLD.city, OLD.state, OLD.zip, OLD.country, OLD.banned, OLD.creation_date, OLD.update_date, OLD.change_notes,
-                OLD.active, OLD.open_notes, OLD.admin_notes, OLD.old_perid, OLD.contact_ok, OLD.share_reg_ok, OLD.managedBy, OLD.managedReason, OLD.lastVerified);
+                OLD.active, OLD.open_notes, OLD.admin_notes, OLD.old_perid, OLD.contact_ok, OLD.share_reg_ok, OLD.managedBy, OLD.managedByNew,
+                OLD.managedReason, OLD.lastVerified);
     END IF;
 END;;
 DELIMITER ;
