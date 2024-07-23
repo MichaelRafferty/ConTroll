@@ -274,7 +274,9 @@ if ($info['managedByName'] != null) {
 ?>
             People managed by this account:
                 <button class='btn btn-sm btn-primary' type='button'
-                        onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/addUpgrade.php';">Add New Person</button>
+                        onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/addUpgrade.php';">
+                    Add New Person and Buy Memberships for THem
+                </button>
 <?php
     } else {
 ?>

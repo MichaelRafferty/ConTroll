@@ -28,8 +28,6 @@ class Membership {
     #email2Field = null;
     #phoneField = null;
     #badgenameField = null;
-    //#contactField = null;
-    //#shareField = null;
     #uspsDiv= null;
     #lastVerified = null;
 
@@ -65,12 +63,14 @@ class Membership {
 
     // flow items
     #auHeader = null
+    #emailDiv = null;
     #ageBracketDiv = null;
     #verifyPersonDiv = null;
     #getNewMembershipDiv = null;
     #currentStep = 1;
     #step4submitDiv = null;
     #leaveBeforeChanges = true;
+    #newEmail = null;
 
     // variable price items
     #amountField = null;
@@ -94,6 +94,7 @@ class Membership {
         // set up div elements
         this.#ageButtonsDiv = document.getElementById("ageButtons");
         this.#membershipButtonsDiv = document.getElementById("membershipButtons");
+        this.#emailDiv = document.getElementById("emailDiv");
         this.#ageBracketDiv = document.getElementById("ageBracketDiv");
         this.#verifyPersonDiv = document.getElementById("verifyPersonDiv");
         this.#getNewMembershipDiv = document.getElementById("getNewMembershipDiv");
@@ -126,8 +127,6 @@ class Membership {
         this.#email2Field = document.getElementById("email2");
         this.#phoneField = document.getElementById("phone");
         this.#badgenameField = document.getElementById("badgename");
-        //this.#contactField = document.getElementById("contact");
-        //this.#shareField = document.getElementById("share");
         this.#uspsDiv = document.getElementById("uspsblock");
 
         this.#saveCartBtn = document.getElementById("saveCartBtn");
@@ -143,7 +142,100 @@ class Membership {
             this.#addUpdateId = config['upgradeId'];
             this.getPersonInfo(this.#addUpdateId, this.#addUpdateType, true, false);
         } else {
-            this.getPersonInfo(config.personId, config.personType, true, true);
+            if (config.personId == null) {
+                this.getPersonInfo(config.personId, config.personType, true, true);
+            } else {
+                this.buildAgeButtons();
+                this.gotoStep(0);
+            }
+        }
+    }
+
+// add new person functions
+// check new email: check if this email exists
+    checkNewEmail() {
+        var newEmail = document.getElementById("newEmailAddr").value;
+        if (!validateAddress(newEmail)) {
+            $('#newEmailAddr').addClass('need');
+            show_message("Please enter a valid email address", 'error');
+            return false;
+        }
+        clear_message();
+        $('#newEmailAddr').removeClass('need');
+        var data = {
+            email: newEmail,
+            action: 'exist',
+        }
+        var script='scripts/checkExistance.php';
+        $.ajax({
+            method: 'POST',
+            url: script,
+            data: data,
+            success: function (data, textStatus, jqXhr) {
+                if (data['status'] == 'error') {
+                    show_message(data['message'], 'error');
+                } else if (data['status'] == 'warn') {
+                    show_message(data['message'], 'warn');
+                } else {
+                    if (config['debug'] & 1)
+                        console.log(data);
+                    membership.checkNewEmailSuccess(data);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showAjaxError(jqXHR, textStatus, errorThrown);
+                return false;
+            },
+        });
+    }
+
+    // continue with the results of the email
+    checkNewEmailSuccess(data) {
+        var email = data['email'];
+        var managedBy = data['managedBy'];
+        var countFound = data['countFound'];
+        var accountType = data['accountType'];
+
+        if (countFound == 0) {
+            this.#email1Field.value = email;
+            this.#email2Field.value = email;
+            this.#newEmail = email;
+            this.gotoStep(1);
+            return;
+        } else if (countFound > 1) {
+            show_message("More than one account has this email address, you cannot add this account.<br/>" +
+                "If you feel you should be able to add these accounts, please email registration for assistance.<br/>" +
+                "Click the Home menu button to return to the portal.", 'error');
+            return;
+        } else if (managedBy > 0) {
+            show_message("This account is already managed by someone else.<br/>" +
+                "If you feel you this is in error, please email registration for assistance.<br/>" +
+                "Click the Home menu button to return to the portal.", 'error');
+        } else {
+            var html = `
+            <div class='row'>
+                <div class'col-sm-12'>
+                    <h2 class='size-h3 text-primary'>Ask to manage ` + email + `</h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <p>This email address already has an account.  For you to manage their account we need their permission.</p>
+                    <p>We can send them an email with a link for them to click on to allow you to manage their account.
+                    When they click on the link we will add their account to yours.  The link is valid for 24 hours.</p>
+                    <p>You can check back later to see if they have clicked on the link.</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-auto"> Should we send them an email asking if you may manage their account?</div>
+                <div class="col-sm-auto">
+                    <button class="btn btn-primary btn-sm" onclick="membership.sendManageEmail('` + email + `');">Yes</button>
+                </div>
+                <div class="col-sm-auto">
+                    <button class="btn btn-primary btn-sm" onclick="window.location='portal.php?messageFwdmessageFwd=` + encodeURI("Add New Cancelled") + `'">No, return to the portal</button>
+                </div>
+            </div>`;
+            this.#emailDiv.innerHTML = html;
         }
     }
 
@@ -282,6 +374,7 @@ class Membership {
 
         if (ageButtons)
             this.buildAgeButtons();
+        gotoStep(1);
     }
 
     // age functions
@@ -347,8 +440,9 @@ class Membership {
         if (!ignoreSkip && step == 2 && (now - this.#lastVerified) < (7 * 24 * 60 * 60 * 1000)) {
             step = 4;
         }
-        if (this.#oldInterests.length == 0 && step == 3)
+        if (this.#oldInterests && this.#oldInterests.length == 0 && step == 3)
             step = 4;
+        this.#emailDiv.hidden = step != 0;
         this.#ageBracketDiv.hidden = step != 1;
         this.#verifyPersonDiv.hidden = step != 2;
         this.#interestDiv.hidden = step != 3;

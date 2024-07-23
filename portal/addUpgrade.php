@@ -137,16 +137,34 @@ drawVariablePriceModal();
 ?>
     <div class="row mt-3">
         <div class="col-sm-12">
-            <h1 class="size-h2" id="auHeader">Creating a new person in your account</h1>
+            <h1 class="size-h2" id="auHeader">Creating a new person in your account and buy them memberships</h1>
         </div>
     </div>
+<?php
+// for new additions, step 0 is get the email address and check if it exists
+// step 0
+?>
+    <div id="emailDiv">
+        <div class='row'>
+            <div class='col-sm-12'>
+                <h2 class='size-h3 text-primary'>Check if this new person is already in the system</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-auto">Enter the email address for this new person</div>
+            <div class="col-sm-auto"><input type="text" size="64", maxlength="254" id="newEmailAddr", name="newEmailAddr"></div>
+            <div class="col-sm-auto"><button class="btn btn-sm btn-primary" type="button" onclick="membership.checkNewEmail();">Check Email
+                    Address</button></div>
+        </div>
+    </div>
+
 <?php
 // step 1 - get their current age bracket (should we store this in perinfo?)
 ?>
     <div id="ageBracketDiv">
         <div class="row">
             <div class='col-sm-12'>
-                <h2 class="size-h3">Step 1: Verify Age</h2>
+                <h3 class="size-h3">Step 1: Verify Age</h3>
             </div>
         </div>
         <?php
