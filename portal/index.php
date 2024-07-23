@@ -6,6 +6,7 @@ require_once("lib/loginItems.php");
 require_once("lib/portalForms.php");
 require_once("lib/sessionManagement.php");
 require_once("../lib/cipher.php");
+require_once("../lib/policies.php");
 require_once("../lib/googleOauth2.php");
 
 global $config_vars;
@@ -221,6 +222,7 @@ if (isset($_GET['vid'])) {
     }
 
     if ($validationType == 'token') {
+        /* - comment out token checks
         // check if the link has been used
         $linkQ = <<<EOS
         SELECT id, email, useCnt
@@ -255,7 +257,7 @@ if (isset($_GET['vid'])) {
         if ($updcnt != 1) {
             web_error_log("Error updating link $linkid as used");
         }
-
+end comment out token use check */
         // set expiration for email
         if (array_key_exists('emailhrs', $portal_conf)) {
             $hrs = $portal_conf['emailhrs'];
