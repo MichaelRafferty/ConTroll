@@ -195,6 +195,7 @@ class Membership {
         var managedBy = data['managedBy'];
         var countFound = data['countFound'];
         var accountType = data['accountType'];
+        var accountId = data['accountId'];
 
         if (countFound == 0) {
             this.#email1Field.value = email;
@@ -229,14 +230,49 @@ class Membership {
             <div class="row">
                 <div class="col-sm-auto"> Should we send them an email asking if you may manage their account?</div>
                 <div class="col-sm-auto">
-                    <button class="btn btn-primary btn-sm" onclick="membership.sendManageEmail('` + email + `');">Yes</button>
+                    <button class="btn btn-primary btn-sm" id="sendManageRequestBTN"
+                        onclick="membership.sendManageEmail('` + email + "'," + accountId + `);">Yes</button>
                 </div>
                 <div class="col-sm-auto">
-                    <button class="btn btn-primary btn-sm" onclick="window.location='portal.php?messageFwdmessageFwd=` + encodeURI("Add New Cancelled") + `'">No, return to the portal</button>
+                    <button class="btn btn-primary btn-sm"
+                        onclick="window.location='portal.php?messageFwdmessageFwd=` + encodeURI("Add New Cancelled") + `'">No, return to the portal</button>
                 </div>
             </div>`;
             this.#emailDiv.innerHTML = html;
         }
+    }
+
+    // sendManageEmail - send the email to 'associate for management' an account to this account
+    sendManageEmail(email, acctId) {
+        document.getElementById('sendManageRequestBTN').disabled = true;
+        var script = 'scripts/requestAssociate.php';
+        var data = {
+            acctId: acctId,
+            email: email,
+            action: 'request',
+        }
+
+        $.ajax({
+            method: 'POST',
+            url: script,
+            data: data,
+            success: function (data, textStatus, jqXhr) {
+                if (data['status'] == 'error') {
+                    show_message(data['message'], 'error');
+                    document.getElementById('sendManageRequestBTN').disabled = false;
+                } else if (data['status'] == 'warn') {
+                    show_message(data['message'], 'warn');
+                    document.getElementById('sendManageRequestBTN').disabled = false;
+                } else {
+                    window.location = 'portal.php?messageFwd=' + encodeURI(data['message']);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showAjaxError(jqXHR, textStatus, errorThrown);
+                document.getElementById('attachBtn').disabled = false;
+                return false;
+            },
+        });
     }
 
 // membership add/update functions

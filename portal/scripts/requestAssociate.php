@@ -85,7 +85,7 @@ EOS;
     $cR = dbSafeQuery($cQ, 'is', array($loginId, $email));
 }
 if ($cR == false || $cR->num_rows == 0) {
-    ajaxSuccess(array('status'=>'error', 'message'=>'Error occurred retrieving syour email addresses, seek assistance.'));
+    ajaxSuccess(array('status'=>'error', 'message'=>'Error occurred retrieving your email addresses, seek assistance.'));
     exit();
 }
 $numMatch = $cR->fetch_row()[0];
