@@ -314,10 +314,10 @@ EOS;
             }
             // insert the new reg record into the cart
             $iQ = <<<EOS
-INSERT INTO reg(conid, perid, newperid, create_trans, complete_trans, price, create_user, memId, status)
-values (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO reg(conid, perid, newperid, create_trans, complete_trans, price, status, create_user, memId, status)
+values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-            $typeStr = 'iiiiidiis';
+            $typeStr = 'iiiiidsiis';
             $valArray = array(
                 $cartRow['conid'],
                 $personType == 'p' ? $personId : null,
@@ -325,6 +325,7 @@ EOS;
                 $transId,
                 $cartRow['price'] > 0 ? null : $transId,
                 $cartRow['price'],
+                $cartRow['price'] > 0 ? 'unpaid' : 'paid',
                 $loginId,
                 $cartRow['memId'],
                 $cartRow['price'] == 0 ? 'paid' : 'unpaid'
