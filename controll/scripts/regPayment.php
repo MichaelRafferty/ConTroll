@@ -45,7 +45,7 @@ SELECT DISTINCT R.id, M.label, (IFNULL(R.price, 0)-IFNULL(R.paid,0)) AS remainde
 FROM reg_history H 
 JOIN reg R ON (R.id = H.regid)
 JOIN memLabel M ON (M.id=R.memId)
-WHERE H.tid = ? AND H.action='attach')
+WHERE H.tid = ? AND H.action='attach';
 EOQ;
 
 $total = 0;
@@ -109,7 +109,8 @@ foreach ($badgeList as $badge) {
     $amt = $badge['remainder'];
     if ($amt > 0) {
         $paid = $remainder >= $amt ? $amt : $remainder;
-        $rows = dbSafeCmd("UPDATE reg set paid = IFNULL(paid, 0) + ?, create_trans = ? WHERE id = ?", "dii", array($paid, $badge['id'], $transid));
+        $rows = dbSafeCmd("UPDATE reg SET paid = IFNULL(paid, 0) + ?, create_trans = ? WHERE id = ?;", "dii", array($paid, $transid, $badge['id']));
+        dbSafeCmd("UPDATE reg SET status = 'paid' WHERE id = ? AND paid >= price;", 'i', array($badge['id']));
         $remainder -= $amt;
     }
 }
