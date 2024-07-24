@@ -472,7 +472,7 @@ if ($approved_amt == $totprice) {
 $txnUpdate .= 'paid=? WHERE id=?;';
 $txnU = dbSafeCmd($txnUpdate, 'di', array($approved_amt, $transid));
 // reg (badge)
-$regQ = 'UPDATE reg SET paid=price, complete_trans=? WHERE create_trans=?;';
+$regQ = "UPDATE reg SET paid=price, complete_trans=?, status='paid' WHERE create_trans=?;";
 $numrows = dbSafeCmd($regQ, 'ii', array($transid, $transid));
 if ($numrows != 1) {
     $error_msg .= "Unable to mark transaction completed\n";
@@ -775,15 +775,16 @@ EOS;
     dbSafeCmd("UPDATE newperson SET transid=? WHERE id = ?;", 'ii', array($badge['transid'], $badge['newid']));
 
     $badgeQ = <<<EOS
-INSERT INTO reg(conid, newperid, perid, create_trans, price, memID)
-VALUES(?, ?, ?, ?, ?, ?);
+INSERT INTO reg(conid, newperid, perid, create_trans, price, status, memID)
+VALUES(?, ?, ?, ?, ?, ?, ?);
 EOS;
-    $badgeId = dbSafeInsert($badgeQ,  'iiiidi', array(
+    $badgeId = dbSafeInsert($badgeQ,  'iiiidsi', array(
             $conid,
             $badge['newid'],
             $badge['perid'],
             $transid,
             $badge['price'],
+            $badge['price'] > 0 ? 'unpaid' : 'paid',
             $badge['memId'])
         );
 
