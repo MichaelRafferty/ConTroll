@@ -35,6 +35,29 @@ $userQ = "SELECT id FROM user WHERE email=?;";
 $userR = dbSafeQuery($userQ, 's', array($user))->fetch_assoc();
 $userid = $userR['id'];
 
+if ($merge == $remain) {
+    ajaxSuccess(array('status'=>'error', 'error'=>'Merge cannot be the sane as Survive'));
+    exit();
+}
+
+$mQ = <<<EOS
+SELECT first_name, middle_name, last_name, email_addr
+FROM perinfo
+WHERE id IN (?,?);
+EOS;
+$mR = dbSafeQuery($mQ, 'ii', array($merge, $remain));
+if ($mR === false) {
+    ajaxSuccess(array('status'=>'error', 'error'=>'Database error retrieving perinfo rows'));
+    exit();
+}
+while ($mL = $mR->fetch_assoc()) {
+    if (($mL['first_name'] == 'Merged' && $mL['middle_name'] == 'into') || str_starts_with($mL['email_addr'], 'merged into')) {
+        ajaxSuccess(array('status'=>'error', 'error'=>'One of the candidiates is already a merged record, not allowed to merge a merged record'));
+        exit();
+    }
+}
+$mR->free();
+
 $mergeSQL = <<<EOS
     CALL mergePerid($userid, $merge, $remain, @status, @rollback); select @status AS status, @rollback AS rollback;
 EOS;

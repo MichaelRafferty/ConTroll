@@ -119,8 +119,8 @@ class mergesetup {
         var clear_error = true;
         if (data) {
             if (data['error']) {
-                show_message($data['error'], 'error');
-                clear_error = false;
+                show_message(data['error'], 'error');
+                return;
             } else if (data['success']) {
                 show_message(data['success'] + ': ' + data['status'], 'success');
                 clear_error = false;
@@ -137,8 +137,10 @@ class mergesetup {
             this.#mergeCandidatesTable.destroy();
             this.#mergeCandidatesTable = null;
         }
-        if (clear_error)
+        if (clear_error) {
             clearError();
+            clear_message();
+        }
         var script = "scripts/mergeFindCandidates.php";
         var data = {
             remain: this.#remainPid.value,
@@ -231,6 +233,7 @@ class mergesetup {
             return;
 
         clearError();
+        clear_message();
         this.#mergeCheck_div.innerHTML = "";
         var script = "scripts/mergeCheckCandidates.php";
         var data = {
@@ -281,6 +284,7 @@ class mergesetup {
             return;
 
         clearError();
+        clear_message();
         var script = "scripts/mergeExecuteMerge.php";
         var data = {
             merge: mergePID,
@@ -319,7 +323,6 @@ class mergesetup {
             return;
 
         clear_message('result_message_merge');
-        clear_message();
         var name_search = document.getElementById('merge_name_search').value.toLowerCase().trim();
         if (name_search == null || name_search == '')  {
             show_message("No search criteria specified", "warn", 'result_message_merge');
@@ -336,6 +339,7 @@ class mergesetup {
         }
 
         clearError();
+        clear_message();
         $.ajax({
             method: "POST",
             url: "scripts/mergeFindRecord.php",
