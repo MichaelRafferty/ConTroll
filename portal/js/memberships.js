@@ -410,7 +410,7 @@ class Membership {
 
         if (ageButtons)
             this.buildAgeButtons();
-        gotoStep(1);
+        this.gotoStep(1);
     }
 
     // age functions
