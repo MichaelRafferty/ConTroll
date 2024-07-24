@@ -79,7 +79,6 @@ DROP PROCEDURE IF EXISTS `mergePerid` ;
 DELIMITER ;;
 CREATE PROCEDURE "mergePerid"(IN userid INT, IN to_mergePID INT, IN to_survivePID INT, OUT statusmsg TEXT, OUT rollback_log TEXT)
 SQL SECURITY INVOKER
-    SQL SECURITY INVOKER
 BEGIN
 /* updates the database to change records with to_mergePID to to_survivePID to preserver referential integrity as it merges two perinfo records together
 /* tables with perinfo refs:
