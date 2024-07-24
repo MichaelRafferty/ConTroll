@@ -41,7 +41,7 @@ $priceQ = <<<EOS
 SELECT id, label, shortname
 FROM memLabel
 WHERE
-    conid = ? AND shortname in ('Volunteer', 'Rollover-Volunteer');
+    conid = ? AND shortname in ('Volunteer');
 EOS;
 
 $memarray = array();
