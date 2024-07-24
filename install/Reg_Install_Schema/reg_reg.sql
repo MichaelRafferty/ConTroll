@@ -28,6 +28,9 @@ CREATE TABLE `reg` (
   `create_user` int DEFAULT NULL,
   `memId` int DEFAULT NULL,
   `coupon` int DEFAULT NULL,
+  `planId` int DEFAULT NULL,
+  `printable` enum('N','Y') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
+  `status` enum('unpaid','plan','paid','cancelled','refunded','transfered','upgraded','rolled-over') COLLATE utf8mb4_general_ci DEFAULT 'unpaid',
   PRIMARY KEY (`id`),
   KEY `reg_perid_fk` (`perid`),
   KEY `reg_conid_fk` (`conid`),
@@ -36,7 +39,8 @@ CREATE TABLE `reg` (
   KEY `reg_create_trans_fk` (`create_trans`),
   KEY `reg_memId_fk` (`memId`),
   KEY `reg_coupon_fk` (`coupon`),
-  KEY `reg_complete_fk` (`complete_trans`)
+  KEY `reg_complete_fk` (`complete_trans`),
+  KEY `reg_planid_fk` (`planId`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

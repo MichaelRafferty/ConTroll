@@ -17,6 +17,8 @@ CREATE TABLE `payments` (
   `category` enum('reg','artshow','vendor','exhibits','other') COLLATE utf8mb4_general_ci DEFAULT NULL,
   `description` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `source` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `pretax` decimal(8,2) DEFAULT NULL,
+  `tax` decimal(8,2) DEFAULT '0.00',
   `amount` decimal(8,2) DEFAULT NULL,
   `time` datetime DEFAULT NULL,
   `cc` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
