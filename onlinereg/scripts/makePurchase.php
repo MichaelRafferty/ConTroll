@@ -273,10 +273,10 @@ $person_update = "UPDATE newperson SET transid='$transid' WHERE $newid_list;";
 dbQuery($person_update);
 
 $badgeQ = <<<EOS
-INSERT INTO reg(conid, newperid, perid, create_trans, price, couponDiscount, coupon, memID)
-VALUES(?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO reg(conid, newperid, perid, create_trans, status, price, couponDiscount, coupon, memID)
+VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-$badge_types = "iiiiddii";
+$badge_types = "iiiisddii";
 
 foreach($people as $person) {
     $badge_data = array(
@@ -284,6 +284,7 @@ foreach($people as $person) {
       $person['newid'],
       $person['perid'],
       $transid,
+      $person['price'] > 0 ? 'unpaid' : 'paid',
       $person['price'],
       $person['discount'],
       $cid,
@@ -360,7 +361,7 @@ if($approved_amt == $total) {
 $txnUpdate .= "paid=?, couponDiscount = ? WHERE id=?;";
 $txnU = dbSafeCmd($txnUpdate, "ddi", array($approved_amt, $totalDiscount, $transid) );
 
-$regQ = "UPDATE reg SET paid=price-couponDiscount, complete_trans = ? WHERE create_trans=?;";
+$regQ = "UPDATE reg SET paid=price-couponDiscount, complete_trans = ?, status = 'paid' WHERE create_trans=?;";
 dbSafeCmd($regQ, "ii", array($transid, $transid));
 
 // mark coupon used
