@@ -426,7 +426,7 @@ if ($txnU != 1) {
     $error_msg .= "Unable to mark transaction completed\n";
 }
 // reg (badge)
-$regQ = 'UPDATE reg SET paid=price, complete_trans=? WHERE create_trans=?;';
+$regQ = "UPDATE reg SET paid=price, status='paid', complete_trans=? WHERE create_trans=?;";
 $numrows = dbSafeCmd($regQ, 'ii', array($transid, $transid));
 
 // vendor_space
@@ -698,8 +698,8 @@ EOS;
     dbSafeCmd("UPDATE newperson SET transid=? WHERE id = ?;", 'ii', array($badge['transid'], $badge['newid']));
 
     $badgeQ = <<<EOS
-INSERT INTO reg(conid, newperid, perid, create_trans, price, memID)
-VALUES(?, ?, ?, ?, ?, ?);
+INSERT INTO reg(conid, newperid, perid, create_trans, price, status, memID)
+VALUES(?, ?, ?, ?, ?, ?, ?);
 EOS;
     $badgeId = dbSafeInsert($badgeQ,  'iiiidi', array(
             $conid,
@@ -707,6 +707,7 @@ EOS;
             $badge['perid'],
             $transid,
             $badge['price'],
+            $badge['price'] > 0 ? 'unpaid' : 'paid';
             $badge['memId'])
         );
 

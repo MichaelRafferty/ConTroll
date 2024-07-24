@@ -80,11 +80,11 @@ UPDATE perinfo SET
 WHERE id = ?;
 EOS;
 $insRegSQL = <<<EOS
-INSERT INTO reg(conid,perid,price,paid,create_user,create_trans,memId,create_date)
-VALUES (?,?,?,?,?,?,?,now());
+INSERT INTO reg(conid,perid,price,paid,status,create_user,create_trans,memId,create_date)
+VALUES (?,?,?,?,?,?,?,?,now());
 EOS;
 $updRegSQL = <<<EOS
-UPDATE reg SET price=?,paid=?,memId=?,change_date=now()
+UPDATE reg SET price=?,paid=?,status = ?, memId=?,change_date=now()
 WHERE id = ?;
 EOS;
 $delRegSQL = <<<EOS
@@ -215,8 +215,10 @@ for ($row = 0; $row < sizeof($cart_membership); $row++) {
         if ($cartrow['perid'] <= 0) {
             $cartrow['perid'] = $update_permap[$cartrow['perid']];
         }
-        $paramarray = array($cartrow['conid'], $cartrow['perid'], $cartrow['price'], $cartrow['paid'], $user_perid, $master_transid, $cartrow['memId']);
-        $typestr = 'iissiii';
+        $paramarray = array($cartrow['conid'], $cartrow['perid'], $cartrow['price'],
+                            $cartrow['price'] > $cartrow['paid'] ? 'unpaid' : 'paid',
+                            $cartrow['paid'], $user_perid, $master_transid, $cartrow['memId']);
+        $typestr = 'iiddsiii';
         $new_regid = dbSafeInsert($insRegSQL, $typestr, $paramarray);
         if ($new_regid === false) {
             $error_message .= "Insert of membership $row failed<BR/>";
@@ -233,8 +235,10 @@ for ($row = 0; $row < sizeof($cart_membership); $row++) {
             $reg_del += dbSafeCmd($delRegSQL, $typestr, $paramarray);
         } else {
             // update membership
-            $paramarray = array($cartrow['price'], $cartrow['paid'], $cartrow['memId'], $cartrow['regid']);
-            $typestr = 'ssii';
+            $paramarray = array($cartrow['price'], $cartrow['paid'],
+                                $cartrow['price'] > $cartrow['paid'] ? 'unpaid' : 'paid',
+                                $cartrow['memId'], $cartrow['regid']);
+            $typestr = 'ddsii';
             $reg_upd += dbSafeCmd($updRegSQL, $typestr, $paramarray);
         }
     }
