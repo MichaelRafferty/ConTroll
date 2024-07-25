@@ -35,6 +35,32 @@ $config_vars['personEmail'] = getSessionVar('email');
 $config_vars['required'] = $ini['required'];
 $cdn = getTabulatorIncludes();
 
+if ($loginType == 'n') {
+    $mfield  = 'managedByNew';
+} else {
+    $mfield = 'managedBy';
+}
+// we need the list of people we are managing so we can check for matching email addresses and allow them
+$emQ = <<<EOS
+SELECT LOWER(email_addr) AS email_addr,
+TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
+FROM newperson
+WHERE $mfield = ?
+UNION SELECT LOWER(email_addr) AS email_addr,
+TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
+FROM perinfo
+WHERE $mfield = ?;
+EOS;
+$emails = [];
+$emR = dbSafeQuery($emQ, 'ii', array($loginId, $loginId));
+if ($emR !== false) {
+    while ($emL = $emR->fetch_assoc()) {
+        $emails[$emL['email_addr']] = $emL['fullname'];
+    }
+    $emR->free();
+}
+$emails[getSessionVar('email')] = 'Yourself';
+
 // are we add new or upgrade existing
 $action = 'new';
 if (array_key_exists('action', $_POST)) {
@@ -128,6 +154,7 @@ portalPageInit('addUpgrade', $info,
     var memListIdx = <?php echo json_encode($ruleData['memListIdx']); ?>;
     var memRules = <?php echo json_encode($ruleData['memRules']); ?>;
     var policies = <?php echo json_encode($policies); ?>;
+    var emailsManaged = <?php echo json_encode($emails); ?>;
 </script>
 <?php
 // get the info for the current person or set it all to NULL
@@ -158,7 +185,7 @@ drawVariablePriceModal();
                     Address</button></div>
         </div>
         <div class="row mt-2" id="verifyMe" hidden>
-            <div class='col-sm-auto'>This is your email address, do you wish to create the new person with the same email address as yourself?</div>
+            <div class='col-sm-auto'>This is an email address you manage, do you wish to create the new person with this same email address?</div>
             <div class="col-sm-auto">
                 <button class="btn btn-sm btn-primary" type='button' onclick="membership.checkNewEmail(1);">Yes, Use the same email address</button>
             </div>

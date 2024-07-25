@@ -165,10 +165,20 @@ class Membership {
         }
 
         if (skipMe == 0) {
-            if (newEmail.toLowerCase() == config['personEmail'].toLowerCase()) {
+            var lcEmail = newEmail.toLowerCase();
+            if (lcEmail == config['personEmail'].toLowerCase()) {
                 document.getElementById('verifyMe').hidden = false;
-                show_message("Please verify you want to use the same email address", 'warn');
+                show_message("Please verify you want to use the same email address as your own", 'warn');
                 return false;
+            }
+            var keys = Object.keys(emailsManaged);
+            for (var index in keys) {
+                var emailAddr = keys[index];
+                if (emailAddr = lcEmail) {
+                    document.getElementById('verifyMe').hidden = false;
+                    show_message("Please verify you want to use the same email address as that for " + emailsManaged[emailAddr], 'warn');
+                    return false;
+                }
             }
         } else {
             document.getElementById('verifyMe').hidden = true;
