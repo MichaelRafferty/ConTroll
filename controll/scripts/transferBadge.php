@@ -56,18 +56,36 @@ if ($newtid === false) {
     return;
 }
 
+$nQ = <<<EOS
+INSERT INTO reg(conid, perid, oldperid, create_date, change_date, pickup_date, price, couponDiscount, paid,
+                create_trans, complete_trans, create_user, memId, coupon, printable, status)
+SELECT conid, ?, ?, create_date, CURRENT_TIMESTAMP(), pickup_date, price, couponDiscount, paid, 
+       ?, ?, ?, memId, coupon, printable, status
+FROM reg
+WHERE id = ?;
+EOS;
+$uQ = <<<EOS
+UPDATE reg
+SET status = 'transfered', price=0, paid=0, change_date=CURRENT_TIMESTAMP(), couponDiscount=0, planId=null
+WHERE id = ?;
+EOS;
+$iN = <<<EOS
+INSERT INTO reg_history(logdate,userid,tid,regid,action,notes)
+VALUES (NOW(), ?, ?, ?, 'notes', ?);
+EOS;
 
-$query = "UPDATE reg SET oldperid = perid, perid=? WHERE id=?;";
-
-$response['query'] = $query;
-$num_rows = dbSafeCmd($query, 'ii', array($to, $from));
+$response['query'] = $nQ . PHP_EOL . $uQ . PHP_EOL . $iN;
+$newRegId = dbSafeInsert($nQ, 'iiiii', array($to, $from_person, $newtid, $newtid, $user_perid));
+$num_rows = dbSafeCmd($uQ, 'i', array($from));
+$notes = "Transfer membership $from from $from_person to $to by $user_perid";
+$notesKey = dbSafeInsert($iN, 'iiis', array($user_perid, $newtid, $newRegId, $notes));
 
 if ($num_rows === false) {
-    $response['error'] = 'Database error transferring badge';
+    $response['error'] = 'Database error transferring membership';
 } else if ($num_rows == 1) {
-    $response['success'] = "Badge transferred from $from to $to";
+    $response['success'] = "Membership $from transferred from $from_person to $to as reg $newRegId";
 } else {
-    $response['warning'] = "Badge is already assigned to person $to";
+    $response['warning'] = "Error updating old membership $to";
 }
 
 ajaxSuccess($response);
