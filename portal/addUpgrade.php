@@ -31,6 +31,7 @@ $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['personId'] = $loginId;
 $config_vars['personType'] = $loginType;
+$config_vars['personEmail'] = getSessionVar('email');
 $config_vars['required'] = $ini['required'];
 $cdn = getTabulatorIncludes();
 
