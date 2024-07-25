@@ -71,6 +71,7 @@ class Membership {
     #step4submitDiv = null;
     #leaveBeforeChanges = true;
     #newEmail = null;
+    #newEmailField = null;
 
     // variable price items
     #amountField = null;
@@ -146,6 +147,8 @@ class Membership {
                 this.getPersonInfo(config.personId, config.personType, true, true);
             } else {
                 this.buildAgeButtons();
+                this.#newEmailField = document.getElementById("newEmailAddr");
+                this.#newEmailField.addEventListener('keyup', (e)=> { if (e.code === 'Enter') membership.checkNewEmail(0); });
                 this.gotoStep(0);
             }
         }
@@ -153,15 +156,32 @@ class Membership {
 
 // add new person functions
 // check new email: check if this email exists
-    checkNewEmail() {
-        var newEmail = document.getElementById("newEmailAddr").value;
+    checkNewEmail(skipMe) {
+        var newEmail = this.#newEmailField.value;
         if (!validateAddress(newEmail)) {
             $('#newEmailAddr').addClass('need');
             show_message("Please enter a valid email address", 'error');
             return false;
         }
+
+        if (skipMe == 0) {
+            if (newEmail.toLowerCase() == config['personEmail'].toLowerCase()) {
+                document.getElementById('verifyMe').hidden = false;
+                show_message("Please verify you want to use the same email address", 'warn');
+                return false;
+            }
+        } else {
+            document.getElementById('verifyMe').hidden = true;
+        }
         clear_message();
         $('#newEmailAddr').removeClass('need');
+        if (newEmail.toLowerCase() == config['personEmail'].toLowerCase()) {
+            this.#email1Field.value = newEmail;
+            this.#email2Field.value = newEmail;
+            this.#newEmail = newEmail;
+            this.gotoStep(1);
+            return;
+        }
         var data = {
             email: newEmail,
             action: 'exist',

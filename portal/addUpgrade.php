@@ -154,8 +154,14 @@ drawVariablePriceModal();
         <div class="row">
             <div class="col-sm-auto">Enter the email address for this new person</div>
             <div class="col-sm-auto"><input type="text" size="64", maxlength="254" id="newEmailAddr", name="newEmailAddr"></div>
-            <div class="col-sm-auto"><button class="btn btn-sm btn-primary" type="button" onclick="membership.checkNewEmail();">Check Email
+            <div class="col-sm-auto"><button class="btn btn-sm btn-primary" type="button" onclick="membership.checkNewEmail(0);">Check Email
                     Address</button></div>
+        </div>
+        <div class="row mt-2" id="verifyMe" hidden>
+            <div class='col-sm-auto'>This is your email address, do you wish to create the new person with the same email address as yourself?</div>
+            <div class="col-sm-auto">
+                <button class="btn btn-sm btn-primary" type='button' onclick="membership.checkNewEmail(1);">Yes, Use the same email address</button>
+            </div>
         </div>
     </div>
 
