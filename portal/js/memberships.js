@@ -174,7 +174,7 @@ class Membership {
             var keys = Object.keys(emailsManaged);
             for (var index in keys) {
                 var emailAddr = keys[index];
-                if (emailAddr = lcEmail) {
+                if (emailAddr == lcEmail) {
                     document.getElementById('verifyMe').hidden = false;
                     show_message("Please verify you want to use the same email address as that for " + emailsManaged[emailAddr], 'warn');
                     return false;
