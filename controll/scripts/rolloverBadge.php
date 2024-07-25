@@ -182,7 +182,7 @@ EOS;
             return false;
         }
 
-        $newlabel = 'rollover-volunteer';
+        $newlabel = 'volunteer';
         // insert a controlling transaction to cover this rollover
         $tType = 'regctl-adm-volroll/' . $user_perid;
         $notes = "Volunteer Rollover from $conid to $nextcon by $user_perid";
@@ -206,8 +206,8 @@ EOS;
 
 // now insert the new reg for 2023
 $inssql = <<<EOS
-INSERT INTO reg(conid, perid, create_date, price, couponDiscount, paid, memId, create_trans)
-SELECT ?, ?, NOW(), 0, 0, 0, id, ?
+INSERT INTO reg(conid, perid, create_date, price, status, couponDiscount, paid, memId, create_trans)
+SELECT ?, ?, NOW(), 0, 0, 0, 'paid', id, ?
 FROM memList
 WHERE conid = ? AND LOWER(label) = ?;
 EOS;
