@@ -66,7 +66,9 @@ $loginType = null;
         }
         if (time() > $oauth2timeout) {
             clearSession('oauth2'); // end the validation loop
-            show_message("Login Authentication took too long, please try again.", 'error');
+            header('location:' . $portal_conf['portalsite']);
+            draw_login($config_vars, 'Login Authentication took too long, please try again.', 'bg-danger text-white');
+            exit();
         }
         else {
             // ok, we are in the process of an oauth2 sequence, continue it until returns the token
