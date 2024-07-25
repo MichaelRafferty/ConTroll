@@ -56,7 +56,7 @@ insert into newperson (last_name, middle_name, first_name, suffix, email_addr, p
                        country, updatedBy, lastVerified)
 values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW());
 EOS;
-$typeStr = 'ssssssssssssssi';
+$typeStr = 'sssssssssssssssi';
 $valArray = array(
     trim($person['lname']),
     trim($person['mname']),
