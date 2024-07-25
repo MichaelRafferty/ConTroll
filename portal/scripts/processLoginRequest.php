@@ -57,6 +57,7 @@ switch ($type) {
             setSessionVar('idSource', 'dev');
             setSessionVar('tokenType', 'dev');
             setSessionVar('tokenExpiration', time() + (999999 * 3600));
+            setSessionVar('email', $matches[0]['email_addr']);
             $response['status'] = 'success';
         }
 
