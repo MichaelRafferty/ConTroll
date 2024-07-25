@@ -30,7 +30,7 @@ $loginId = null;
 $loginType = null;
 
 // first lets check the Oauth2 stuff. but only if not loging out
-    // in session, is it a logout?
+    // in session or not, is it a logout? (force clear session method, as well as logout)
     if (isset($_REQUEST['logout'])) {
         clearSession();
         header('location:' . $portal_conf['portalsite']);
@@ -58,86 +58,100 @@ $loginType = null;
     // are we in an oAUTH2 session, and if so, is it yet complete or needs the next exchange?
     $oauth2pass = getSessionVar('oauth2pass');
     if ($oauth2pass != null && $oauth2pass != 'token') {
-        // ok, we are in the process of an oauth2 sequence, continue it until returns the token
-        $redirectURI = $portal_conf['redirect_base'];
-        if ($redirectURI == '')
-            $redirectURI = null;
-        switch (getSessionVar('oauth2')) {
-            case 'google':
-                $oauthParams = googleAuth($redirectURI);
-                if (isset($oauthParams['error'])) {
-                    web_error_log($oauthParams['error']);
-                    clearSession('oauth2');
-                    draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white');
-                    exit();
-                }
-
+        // is this session validation taking too long?
+        $oauth2timeout = getSessionVar('oauth2timeout');
+        if ($oauth2timeout == null) {  // no timeout set one
+            $oauth2timeout = time() + 5 * 60;
+            setSessionVar('oauth2timeout', $oauth2timeout);
         }
-
-        if ($oauthParams == null) {
-            // an error occured with login by googlr
-            draw_login($config_vars, 'An error occured with the login with ' . getSessionVar('oauth2'), 'bg-danger text-white');
-            clearSession('oauth2');
-            exit();
+        if (time() > $oauth2timeout) {
+            clearSession('oauth2'); // end the validation loop
+            show_message("Login Authentication took too long, please try again.", 'error');
         }
-        if (!isset($oauthParams['email'])) {
-            web_error_log('no oauth2 email found');
-            draw_login($config_vars, getSessionVar('oauth2') . " did not return an email address.", 'bg-warning');
-            clearSession('oauth2');
-            exit();
-        }
+        else {
+            // ok, we are in the process of an oauth2 sequence, continue it until returns the token
+            $redirectURI = $portal_conf['redirect_base'];
+            if ($redirectURI == '')
+                $redirectURI = null;
+            switch (getSessionVar('oauth2')) {
+                case 'google':
+                    $oauthParams = googleAuth($redirectURI);
+                    if (isset($oauthParams['error'])) {
+                        web_error_log($oauthParams['error']);
+                        clearSession('oauth2');
+                        draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white');
+                        exit();
+                    }
 
-        $email = $oauthParams['email'];
-        // if this is a refresh, check that it returned the same email address
-        $oldemail = getSessionVar('sessionEmail');
-        if ($oldemail != null && $oldemail != $email) {
-            // this is a change in email address, treat this as a new login.
-            // first save off the oauth session variables
-            $oauth2 = getSessionVar('oauth2');
-            $oauth2pass = getSessionVar('oauth2pass');
-            $oauth2state = getSessionVar('oauth2state');
-            // now clear the session to log the old session out
-            clearSession();
-            $oldemail = null;
-            // now restore those
-            if ($oauth2 != null) setSessionVar('oauth2', $oauth2);
-            if ($oauth2pass != null) setSessionVar('oauth2pass', $oauth2pass);
-            if ($oauth2state != null) setSessionVar('oauth2state', $oauth2state);
-        }
-
-        setSessionVar('email', $email);
-        setSessionVar('displayName', $oauthParams['displayName']);
-        setSessionVar('firstName', $oauthParams['firstName']);
-        setSessionVar('lastName', $oauthParams['lastName']);
-        setSessionVar('avatarURL', $oauthParams['avatarURL']);
-        setSessionVar('subscriberId', $oauthParams['subscriberId']);
-        setSessionVar('tokenType', 'oauth2');
-        updateSubscriberId(getSessionVar('oauth2'), $email, $oauthParams['subscriberId']);
-
-        if (array_key_exists('oauthhrs', $portal_conf)) {
-            $hrs = $portal_conf['oauthhrs'];
-        } else {
-            $hrs = 8;
-        }
-        if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 8;
-        setSessionVar('tokenExpiration', time() + ($hrs * 3600));
-
-        if ($oldemail != null) {
-            // this is a refresh, don't choose the account again, just return to the home page of the portal, don't disturb any other session variables
-            header('location:' . $portal_conf['portalsite'] . '/portal.php');
-        }
-
-        draw_indexPageTop($condata);
-        // not a refresh, choose the account from the email
-        $account = chooseAccountFromEmail($email, null, null, null, $cipherInfo, getSessionVar('oauth2'));
-        if ($account == null || !is_numeric($account)) {
-            if ($account == null) {
-                $account = "Error looking up data for $email";
             }
-            clearSession('oauth2');;
-            draw_login($config_vars, $account, 'bg-danger text-white');
+
+            if ($oauthParams == null) {
+                // an error occured with login by googlr
+                draw_login($config_vars, 'An error occured with the login with ' . getSessionVar('oauth2'), 'bg-danger text-white');
+                clearSession('oauth2');
+                exit();
+            }
+            if (!isset($oauthParams['email'])) {
+                web_error_log('no oauth2 email found');
+                draw_login($config_vars, getSessionVar('oauth2') . " did not return an email address.", 'bg-warning');
+                clearSession('oauth2');
+                exit();
+            }
+
+            $email = $oauthParams['email'];
+            // if this is a refresh, check that it returned the same email address
+            $oldemail = getSessionVar('sessionEmail');
+            if ($oldemail != null && $oldemail != $email) {
+                // this is a change in email address, treat this as a new login.
+                // first save off the oauth session variables
+                $oauth2 = getSessionVar('oauth2');
+                $oauth2pass = getSessionVar('oauth2pass');
+                $oauth2state = getSessionVar('oauth2state');
+                // now clear the session to log the old session out
+                clearSession();
+                $oldemail = null;
+                // now restore those
+                if ($oauth2 != null) setSessionVar('oauth2', $oauth2);
+                if ($oauth2pass != null) setSessionVar('oauth2pass', $oauth2pass);
+                if ($oauth2state != null) setSessionVar('oauth2state', $oauth2state);
+            }
+
+            clearSession("oauth2timeout");  // reset the timeout
+            setSessionVar('email', $email);
+            setSessionVar('displayName', $oauthParams['displayName']);
+            setSessionVar('firstName', $oauthParams['firstName']);
+            setSessionVar('lastName', $oauthParams['lastName']);
+            setSessionVar('avatarURL', $oauthParams['avatarURL']);
+            setSessionVar('subscriberId', $oauthParams['subscriberId']);
+            setSessionVar('tokenType', 'oauth2');
+            updateSubscriberId(getSessionVar('oauth2'), $email, $oauthParams['subscriberId']);
+
+            if (array_key_exists('oauthhrs', $portal_conf)) {
+                $hrs = $portal_conf['oauthhrs'];
+            }
+            else {
+                $hrs = 8;
+            }
+            if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 8;
+            setSessionVar('tokenExpiration', time() + ($hrs * 3600));
+
+            if ($oldemail != null) {
+                // this is a refresh, don't choose the account again, just return to the home page of the portal, don't disturb any other session variables
+                header('location:' . $portal_conf['portalsite'] . '/portal.php');
+            }
+
+            draw_indexPageTop($condata);
+            // not a refresh, choose the account from the email
+            $account = chooseAccountFromEmail($email, null, null, null, $cipherInfo, getSessionVar('oauth2'));
+            if ($account == null || !is_numeric($account)) {
+                if ($account == null) {
+                    $account = "Error looking up data for $email";
+                }
+                clearSession('oauth2');;
+                draw_login($config_vars, $account, 'bg-danger text-white');
+            }
+            exit();
         }
-        exit();
     }
 
 if (isSessionVar('id')) {
