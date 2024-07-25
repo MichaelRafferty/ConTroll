@@ -275,9 +275,10 @@ class Portal {
 
         var fullname = person['fullname'] + ' (';
         if (post['getType'] == 'n') {
-            fullname += 'Temporary ';
+            fullname += 'In Progress)</strong>';
+        } else {
+            fullname += 'ID: ' + person['id'] + ')</strong>';
         }
-        fullname += 'ID: ' + person['id'] + ')</strong>';
         this.#fullname = fullname;
 
         this.#editPersonTitle.innerHTML = '<strong>Editing: ' + fullname + '</strong>';
@@ -675,9 +676,11 @@ class Portal {
 
         var fullname = person['fullname'] + ' (';
         if (post['getType'] == 'n') {
-            fullname += 'Temporary ';
+            fullname += 'In Progress)</strong>';
+        } else {
+            fullname += 'ID: ' + person['id'] + ')</strong>';
         }
-        fullname += 'ID: ' + person['id'] + ')</strong>';
+
         this.#fullname = fullname;
 
         this.#editInterestsTitle.innerHTML = '<strong>Editing Interests for: ' + fullname + '</strong>';

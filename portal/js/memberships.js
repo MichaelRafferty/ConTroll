@@ -785,7 +785,7 @@ class Membership {
     // save Interests
     saveInterests() {
         var newValues = URLparamsToArray($('#editInterests').serialize());
-        if (newValues.length != this.#newInterests.length) {
+        if (this.#newInterests == null || (newValues.length != this.#newInterests.length)) {
             this.#cartChanges++;
         } else {
             for (var row in newValues) {
