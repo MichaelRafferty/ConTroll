@@ -82,7 +82,11 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
         $includes = getTabulatorIncludes();
         $loginId = getSessionVar('id');
         $loginType = getSessionVar('idType');
-        $title = $info['fullname'] . ($loginType == 'p' ? ' (ID: ' : ' (Temporary ID: ') . $loginId . ')';
+        if ($loginType == 'p') {
+            $title = $info['fullname'] . ' (ID: ' . $loginId . ')';
+        } else {
+            $title = $info['fullname'] . ' (ID: In Progress)';
+        }
         ?>
         <!DOCTYPE html>
         <html lang="en">
