@@ -149,7 +149,7 @@ $memberships = null;
             if ($person['personType'] == 'p') {
                 $id = $person['id'];
             } else {
-                $id = 'Temp ' . $person['id'];
+                $id = 'In Progress';
             }
 ?>
         <div class='row'>
