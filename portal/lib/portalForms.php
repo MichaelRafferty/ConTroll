@@ -28,7 +28,7 @@ function drawVerifyPersonInfo($policies) {
     $con = get_conf('con');
 ?>
 <?php
-    drawEditPersonBlock($con, $useUSPS, $policies);
+    drawEditPersonBlock($con, $useUSPS, $policies, 'membership');
 ?>
     <div class="row mt-3">
         <div class='col-sm-auto'>
@@ -74,7 +74,7 @@ function draw_editPersonModal($source, $policies) {
                             <input type='hidden' name='id' id='epPersonId'/>
                             <input type='hidden' name='type' id='epPersonType'/>
 <?php
-    drawEditPersonBlock($con, $useUSPS, $policies, true);
+    drawEditPersonBlock($con, $useUSPS, $policies, $source, true);
 ?>
                         </form>
                         <div class='row'>
@@ -93,7 +93,7 @@ function draw_editPersonModal($source, $policies) {
 }
 
 // drawEditPersonBlock - just output the block to edit the person
-function drawEditPersonBlock($con, $useUSPS, $policies, $modal=false) {
+function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false) {
     $reg = get_conf('reg');
     $portal_conf = get_conf('portal');
     if (array_key_exists('required', $reg)) {
@@ -209,7 +209,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $modal=false) {
                 <label for="country" class="form-label-sm">
                     <span class="text-dark" style="font-size: 10pt;">Country</span>
                 </label><br/>
-                <select name='country' tabindex='200' id='country' onchange="portal.countryChange();">
+                <select name='country' tabindex='200' id='country' onchange="<?php echo $class; ?>.countryChange();">
                     <?php
                     $fh = fopen(__DIR__ . '/../../lib/countryCodes.csv', 'r');
                     while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {

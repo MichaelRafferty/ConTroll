@@ -554,6 +554,12 @@ class Membership {
         this.gotoStep(2, false);
     }
 
+    // countryChange - if USPS and USA, then change button
+    countryChange() {
+        // not used in addUpdate, in the step progression
+        return;
+    }
+
     // verifyAddress - verify with USPS if defined or go to step 3
     verifyAddress() {
         clear_message();
