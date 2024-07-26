@@ -202,8 +202,6 @@ class Portal {
             var dataset = obj.dataset;
             var id = dataset.id;
             var type = dataset.type;
-            console.log(id);
-            console.log(type);
             show_message('Required Policies are not accepted', "error", 'epMessageDiv');
             _this.editPerson(id, type);
         });
@@ -246,6 +244,28 @@ class Portal {
             show_message('Edit Person is not available at this time', 'warn');
             return;
         }
+
+        clear_message('epMessageDiv');
+        // clear the old validation colors, first the policies
+        if (policies) {
+            for (var row in policies) {
+                var policy = policies[row];
+                if (policy.required == 'Y') {
+                    var field = '#l_' + policy.policy;
+                    $(field).removeClass('need');
+                }
+            }
+        }
+        // now clear the input fields
+        $('#email1').removeClass('need');
+        $('#email2').removeClass('need');
+        $('#fname').removeClass('need');
+        $('#lname').removeClass('need');
+        $('#addr').removeClass('need');
+        $('#city').removeClass('need');
+        $('#state').removeClass('need');
+        $('#state').removeClass('need');
+        $('#zip').removeClass('need');
 
         this.#currentPerson = id;
         this.#currentPersonType = type;
@@ -455,14 +475,14 @@ class Portal {
         // now verify required policies
         if (policies) {
             this.#newPolicies = URLparamsToArray($('#editPolicies').serialize());
-            console.log("New Policies:");
-            console.log(this.#newPolicies);
+            //console.log("New Policies:");
+            //console.log(this.#newPolicies);
             for (var row in policies) {
                 var policy = policies[row];
                 if (policy.required == 'Y') {
                     var field = '#l_' + policy.policy;
                     if (typeof this.#newPolicies['p_' + policy.policy] === 'undefined') {
-                        console.log("required policy " + policy.policy + ' is not checked');
+                        //console.log("required policy " + policy.policy + ' is not checked');
                         message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
                         $(field).addClass('need');
                         valid = false;
