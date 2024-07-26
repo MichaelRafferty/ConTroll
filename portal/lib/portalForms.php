@@ -361,9 +361,9 @@ function drawManagedPerson($personId, $personType, $person, $memberships, $showI
         $fn = $person['last_name'] . "'s ";
     }
     if (array_key_exists('missingPolicies', $person) && $person['missingPolicies'] == 0) {
-        $profileColor = 'btn-primary';
+        $profileClass = 'btn-primary';
     } else {
-        $profileColor = 'btn-warning';
+        $profileClass = 'btn-warning need-policies';
     }
     if ($showHR) {
 ?>
@@ -380,9 +380,9 @@ function drawManagedPerson($personId, $personType, $person, $memberships, $showI
         <div class='col-sm-4'><strong><?php echo $person['fullname']; ?></strong></div>
         <div class="col-sm-2"><?php echo $badge_name; ?></div>
         <div class='col-sm-5 p-1'>
-            <button class='btn btn-sm <?php echo $profileColor; ?> p-1' style='--bs-btn-font-size: 80%;' onclick="portal.editPerson(<?php echo $person['id']
-             . ",'" .
-            $person['personType'] . "'"; ?>);">
+            <button class='btn btn-sm <?php echo $profileClass; ?> p-1' style='--bs-btn-font-size: 80%;'
+                data-id="<?php echo $person['id']?>", data-type="<?php echo $person['personType']; ?>"
+                onclick="portal.editPerson(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">
                 Edit <?php echo $fn; ?>Profile
             </button>
 <?php if ($showInterests) { ?>

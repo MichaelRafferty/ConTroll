@@ -195,6 +195,18 @@ class Portal {
 
         this.#subTotalColDiv = document.getElementById('subTotalColDiv');
         this.#couponDiscountDiv = document.getElementById('couponDiscountDiv');
+        var _this = this;
+
+        // do any people need to have their profiles edited to handle missing policies
+        $('.need-policies').each(function(i, obj) {
+            var dataset = obj.dataset;
+            var id = dataset.id;
+            var type = dataset.type;
+            console.log(id);
+            console.log(type);
+            show_message('Required Policies are not accepted', "error", 'epMessageDiv');
+            _this.editPerson(id, type);
+        });
     }
 
     // disassociate: remove the managed by link for this logged in person
