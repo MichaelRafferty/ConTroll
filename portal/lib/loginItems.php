@@ -1,6 +1,7 @@
 <?php
 // draw_login - draw the login options form
 function draw_login($config_vars, $result_message = '', $result_color = '') {
+    $policies = getPolicies();
     ?>
  <!-- signin form (at body level) -->
     <div id='signin'>
@@ -74,6 +75,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '') {
     </body>
     <script type='text/javascript'>
         var config = <?php echo json_encode($config_vars); ?>;
+        var policies = <?php echo json_encode($policies); ?>;
     </script>
 </html>
 <?php

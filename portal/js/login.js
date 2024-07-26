@@ -369,6 +369,28 @@ class Login {
                 $('#zip').removeClass('need');
             }
         }
+
+        // now verify required policies
+        if (policies) {
+            this.#newPolicies = URLparamsToArray($('#editPolicies').serialize());
+            console.log("New Policies:");
+            console.log(this.#newPolicies);
+            for (var row in policies) {
+                var policy = policies[row];
+                if (policy.required == 'Y') {
+                    var field = '#l_' + policy.policy;
+                    if (typeof this.#newPolicies['p_' + policy.policy] === 'undefined') {
+                        console.log("required policy " + policy.policy + ' is not checked');
+                        message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
+                        $(field).addClass('need');
+                        valid = false;
+                    } else {
+                        $(field).removeClass('need');
+                    }
+                }
+            }
+        }
+
         // don't continue to process if any are missing
         if (!valid) {
             show_message("Please correct the items highlighted in red and validate again.<br/>" +
