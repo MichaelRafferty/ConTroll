@@ -85,6 +85,7 @@ function draw_editPersonModal($policies) {
 // drawEditPersonBlock - just output the block to edit the person
 function drawEditPersonBlock($con, $useUSPS, $policies, $modal=false) {
     $reg = get_conf('reg');
+    $portal_conf = get_conf('portal');
     if (array_key_exists('required', $reg)) {
         $required = $reg['required'];
     } else {
@@ -258,6 +259,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $modal=false) {
                 </p>
             </div>
         </div>
+<?php       if (!(array_key_exists('showVolunteerPolicy',$portal_conf) && $portal_conf['showVolunteerPolicy'] == 0)) { ?>
         <div class="row">
             <div class="col-sm-12">
                 <p class="text-body"><?php echo $con['conname']; ?> is entirely run by volunteers.
@@ -266,6 +268,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $modal=false) {
                 </p>
             </div>
         </div>
+<?php       } ?>
     </form>
     <form id='editPolicies' class='form-floating' action='javascript:void(0);'>
 <?php

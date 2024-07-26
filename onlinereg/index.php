@@ -7,7 +7,7 @@ require_once("../lib/coupon.php");
 
 $cc = get_conf('cc');
 $con = get_conf('con');
-$ini = get_conf('reg');
+$reg_conf = get_conf('reg');
 $usps = get_conf('usps');
 load_cc_procs();
 
@@ -67,25 +67,25 @@ $onsitesale = $startdate->format("l, F j");
 ?>
 <body class="regPaybody">
     <div class="container-fluid">
-        <?php if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') {
-                  if (array_key_exists('logoalt', $ini)) {
-                      $altstring=$ini['logoalt'];
+        <?php if (array_key_exists('logoimage', $reg_conf) && $reg_conf['logoimage'] != '') {
+                  if (array_key_exists('logoalt', $reg_conf)) {
+                      $altstring=$reg_conf['logoalt'];
                   }
          ?>
-        <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo escape_quotes($altstring); ?>"/>
+        <img class="img-fluid" src="images/<?php echo $reg_conf['logoimage']; ?>" alt="<?php echo escape_quotes($altstring); ?>"/>
         <?php }
-               if(array_key_exists('logotext', $ini) && $ini['logotext'] != '') { ?>
-        <div style='display:inline-block' class='display-1'><?php echo $ini['logotext']; ?></div>
+               if(array_key_exists('logotext', $reg_conf) && $reg_conf['logotext'] != '') { ?>
+        <div style='display:inline-block' class='display-1'><?php echo $reg_conf['logotext']; ?></div>
         <?php } ?>
     </div>
     <h1> Welcome to the <?php echo $condata['label']; ?> Online Registration Page</h1>
 <?php
-  if($ini['test']==1) {
+  if($reg_conf['test']==1) {
     ?>
     <h2 class='text-danger'><strong>This Page is for test purposes only</strong></h2>
     <?php
   }
-  if($ini['open']==1 and $ini['close']==0 and $ini['suspended']==0) {
+  if($reg_conf['open']==1 and $reg_conf['close']==0 and $reg_conf['suspended']==0) {
     ?>
 
      <!--- aother membership modal popup -->
@@ -300,6 +300,7 @@ $onsitesale = $startdate->format("l, F j");
                                     </p>
                                 </div>
                             </div>
+<?php               if (!(array_key_exists('showVolunteerPolicy', $reg_conf) && $reg_conf['showVolunteerPolicy'] == '0')) { ?>
                             <div class="row">
                                 <div class="col-sm-12">
                                     <p class="text-body"><?php echo $con['conname']; ?> is entirely run by volunteers.
@@ -308,6 +309,7 @@ $onsitesale = $startdate->format("l, F j");
                                     </p>
                                 </div>
                             </div>
+<?                      } ?>
                             <div class="row">
                                 <div class="col-sm-12">
                                     <p class="text-body">
@@ -540,7 +542,7 @@ $onsitesale = $startdate->format("l, F j");
                  <p class="text-body">We Accept</p>
                  <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/><br/>
 <?php
-      if($ini['test']==1) {
+      if($reg_conf['test']==1) {
 ?>
                  <h2 class='text-danger'><strong>This won't charge your credit card.<br/>It also won't get you memberships.</strong></h2>
     <?php
@@ -569,17 +571,17 @@ $onsitesale = $startdate->format("l, F j");
              </div>
          </div>
      </div>
-<?php } else if($ini['cancelled']==1) { ?>
+<?php } else if($reg_conf['cancelled']==1) { ?>
 <p class='text-primary'>
 <?php echo $condata['label']; ?> has been canceled.  If you had previously purchased a membership you should have received an email with instructions. Please go to our <a href='cancelation.php'>Membership Cancelation Page</a> to tell us how you'd like your membership handled.
 </p>
-<?php } else if($ini['suspended']==1) { ?>
+<?php } else if($reg_conf['suspended']==1) { ?>
 <p class="text-primary">
-<?php echo $con['conname']; ?> has temporarily suspended online registration <?php echo $ini['suspendreason']; ?>
+<?php echo $con['conname']; ?> has temporarily suspended online registration <?php echo $reg_conf['suspendreason']; ?>
 </p>
-<?php } else if($ini['close']==1) { ?>
+<?php } else if($reg_conf['close']==1) { ?>
 <p class="text-primary">Preregistration for <?php echo $condata['label']; ?> is now closed.
-Memberships will be available for purchase starting <?php echo $onsitesale; ?> by <?php echo $ini['onsiteopen'] . ' ' . $con['pickupareatext']; ?>
+Memberships will be available for purchase starting <?php echo $onsitesale; ?> by <?php echo $reg_conf['onsiteopen'] . ' ' . $con['pickupareatext']; ?>
 <a href="<?php echo escape_quotes($con['hotelwebsite']); ?>"> <?php echo $con['hotelname']; ?></a>.
 Daily rates are posted on <a href="<?php echo escape_quotes($con['dailywebsite']); ?>">The <?php echo $con['conname']; ?> website</a></p>
 <p class="text-body"><?php echo $con['addlpickuptext']; ?></p>
@@ -589,7 +591,7 @@ Daily rates are posted on <a href="<?php echo escape_quotes($con['dailywebsite']
 <p class="text-primary">Online registration for <?php echo $condata['id']; ?> is not yet open. We aim to have online registration open 6 months before the convention.
 
 We will post a notice when online registration opens on the
-<a href="<?php echo escape_quotes($ini['registrationpage']); ?>">The <?php echo $con['conname']; ?> Registration Page</a>.  Mail-in forms are also available on that page.</p>
+<a href="<?php echo escape_quotes($reg_conf['registrationpage']); ?>">The <?php echo $con['conname']; ?> Registration Page</a>.  Mail-in forms are also available on that page.</p>
 
 <?php } ?>
     <div class='container-fluid'>
