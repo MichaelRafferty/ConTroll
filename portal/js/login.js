@@ -42,6 +42,7 @@ class Login {
     #tokenEmailDiv = null
     #tokenEmail = null;
     #devEmail = null;
+    #newPolicies = null;
 
     #email = null;
     #validationType = null;
@@ -292,6 +293,9 @@ class Login {
         clear_message('epMessageDiv');
         var valid = true;
         var required = config['required'];
+        var message = "Please correct the items highlighted in red and validate again.<br/>" +
+            "Note: If any of the Address fields are used and the country is United States, " +
+            "then the Address, City, State, and Zip fields must all be entered.";
 
         // validation
         // emails must not be blank and must match
@@ -393,10 +397,7 @@ class Login {
 
         // don't continue to process if any are missing
         if (!valid) {
-            show_message("Please correct the items highlighted in red and validate again.<br/>" +
-                "Note: If any of the Address fields are used and the country is United States, " +
-                "then the Address, City, State, and Zip fields must all be entered.",
-                "error", 'epMessageDiv');
+            show_message(message, "error", 'epMessageDiv');
             return false;
         }
 
