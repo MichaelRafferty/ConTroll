@@ -287,7 +287,7 @@ class Login {
     }
 
 // validate the edit person form for saving
-    validate(person) {
+    validate(person, validateUSPS = 0) {
         //process(formRef) {
         clear_message();
         clear_message('epMessageDiv');
@@ -402,7 +402,7 @@ class Login {
         }
 
         // Check USPS for standardized address
-        if (this.#uspsDiv != null && (person['country'] == 'USA')) {
+        if (this.#uspsDiv != null && person['city'] != '' && validateUSPS == 0) {
             this.#personSave = person;
             this.#uspsAddress = null;
             var script = "scripts/uspsCheck.php";
@@ -427,6 +427,7 @@ class Login {
             });
             return false;
         }
+        this.editPersonSubmit(2);
     }
 
     showValidatedAddress(data) {
@@ -487,26 +488,27 @@ class Login {
         this.#stateField.value = person['state'];
         this.#zipField.value = person['zip'];
         this.#uspsDiv.innerHTML = '';
-        this.editPersonSubmit(true);
+        this.editPersonSubmit(1);
     }
 
     useMyAddress() {
         this.#uspsDiv.innerHTML = '';
-        this.editPersonSubmit(true);
+        this.editPersonSubmit(1);
     }
 
     redoAddress() {
         this.#uspsDiv.innerHTML = '';
-        this.editPersonSubmit(false);
+        this.editPersonSubmit(0);
     }
 
     // now submit the updates to the person
-    editPersonSubmit(novalidate = false) {
+    editPersonSubmit(validateUSPS = 0) {
         clear_message();
         var person = URLparamsToArray($('#editPerson').serialize());
-        if (!novalidate)
-            if (!this.validate(person))
+        if (validateUSPS != 2) {
+            if (!this.validate(person, validateUSPS))
                 return;
+        }
 
         var data = {
             person: person,

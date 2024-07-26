@@ -561,7 +561,8 @@ class Membership {
     }
 
     // verifyAddress - verify with USPS if defined or go to step 3
-    verifyAddress() {
+    // validateUSPS = 0 for do USPS validation, 1 = validate form, but not USPS, 2 = skip all validation
+    verifyAddress(validateUSPS = 0) {
         clear_message();
         var valid = true;
         var required = config['required'];
@@ -690,7 +691,7 @@ class Membership {
 
         this.#cartChanges++;
         // Check USPS for standardized address
-        if (this.#uspsDiv != null && person['country'] == 'USA' && person['city'] != '') {
+        if (this.#uspsDiv != null && person['country'] == 'USA' && person['city'] != '' && validateUSPS == 0) {
             var script = "scripts/uspsCheck.php";
             $.ajax({
                 url: script,
@@ -774,18 +775,18 @@ class Membership {
         this.#zipField.value = this.#personInfo['zip'];
         this.#uspsDiv.innerHTML = '';
         this.#cartChanges++;
-        this.gotoStep(3);
+        this.verifyAddress(1);
     }
 
     useMyAddress() {
         this.#uspsDiv.innerHTML = '';
-        this.gotoStep(3);
+        this.verifyAddress(1);
     }
 
     redoAddress() {
         this.#uspsDiv.innerHTML = '';
         this.#cartChanges++;
-        this.verifyAddress();
+        this.verifyAddress(0);
     }
 
     // save Interests
