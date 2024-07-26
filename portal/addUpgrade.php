@@ -273,15 +273,21 @@ drawVerifyPersonInfo($policies);
             </div>
         </div>
         <div id='cartContentsDiv'></div>
-        <div class='row mt-3' id='step4submit'>
-            <div class='col-sm-auto'>
+        <div class='row' id='step4submit'>
+            <div class='col-sm-auto  mt-3'>
 <?php if ($step3num == 3) { ?>
                 <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(3, true);'>Return to step 3: Interest Verification</button>
+            </div>
+            <div class='col-sm-auto mt-3'>
+                <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2, true);'>Return to step 2: Personal Information Verification</button>
 <?php } else { ?>
                 <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2, true);'>Return to step 2: Personal Information Verification</button>
 <?php } ?>
             </div>
-            <div class='col-sm-auto'>
+            <div class='col-sm-auto mt-3'>
+                <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(1, true);'>Return to step 1: Age Verification</button>
+            </div>
+            <div class='col-sm-auto mt-3'>
                 <button class='btn btn-sm btn-primary' id='saveCartBtn' onclick='membership.saveCart();'>Return to the home page</button>
             </div>
         </div>
