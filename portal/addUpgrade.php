@@ -120,7 +120,7 @@ $interests = getInterests();
 $policies = getPolicies();
 
 // build info array about the account holder
-$info = getPersonInfo();
+$info = getPersonInfo($conid);
 if ($info === false) {
     echo 'Invalid Login, seek assistance';
     portalPageFoot();

@@ -30,7 +30,7 @@
         $currency = 'USD';
     }
 
-    $info = getPersonInfo();
+    $info = getPersonInfo($conid);
 
     portalPageInit('help', $info,
         /* css */ array(

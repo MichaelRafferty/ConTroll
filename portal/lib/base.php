@@ -275,10 +275,11 @@ function isWebRequest() {
 // getPersonInfo - retrieve the data for the logged in person
     // build info array about the account holder
 
-function getPersonInfo() {
+function getPersonInfo($conid) {
     $personType = getSessionVar('idType');
     $personId = getSessionVar('id');
     if ($personType == 'p') {
+        $pfield = 'perid';
         $personSQL = <<<EOS
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
            p.address, p.addr_2, p.city, p.state, p.zip, p.country,
@@ -290,6 +291,7 @@ function getPersonInfo() {
         WHERE p.id = ?;
     EOS;
     } else {
+        $pfield = 'newperid';
         $personSQL = <<<EOS
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
            p.address, p.addr_2, p.city, p.state, p.zip, p.country,
@@ -307,6 +309,22 @@ function getPersonInfo() {
     }
     $info = $personR->fetch_assoc();
     $personR->free();
+    // not get the count of the number required policies answered no by this person
+    $pQ = <<<EOS
+SELECT IFNULL(count(*), 0) AS requiredMissing
+FROM policies p
+LEFT OUTER JOIN memberPolicies m ON (m.policy = p.policy AND m.conid = ? AND IFNULL(m.$pfield, -1) = ?)
+WHERE p.ACTIVE = 'Y'  AND p.required = 'Y' AND IFNULL(m.response, 'N') = 'N';
+EOS;
+    $pR = dbSafeQuery($pQ, 'ii', array($conid, $personId));
+    $missingPolicies = 0;
+    if ($pR !== false) {
+        while ($pL = $pR->fetch_assoc()) {
+            $missingPolicies += intval($pL['requiredMissing']);
+        }
+        $pR->free();
+    }
+    $info['missingPolicies'] = $missingPolicies;
     return $info;
 }
 

@@ -54,7 +54,7 @@ $cdn = getTabulatorIncludes();
 
 // this section is for 'in-session' management
 // build info array about the account holder
-$info = getPersonInfo();
+$info = getPersonInfo($conid);
 if ($info === false) {
     echo 'Invalid Login, seek assistance';
     portalPageFoot();
@@ -116,7 +116,8 @@ WITH ppl AS (
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active,
         p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-        r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup, a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType,
+        r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup,
+        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
@@ -141,7 +142,8 @@ WITH ppl AS (
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active,
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-        r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup, a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType,
+        r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup,
+        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
@@ -160,41 +162,97 @@ WITH ppl AS (
     LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
     LEFT OUTER JOIN newperson np ON tp.newperid = np.id
     WHERE p.managedBy = ? AND p.id != ? AND p.perid IS NULL
+), uppl AS (
+    SELECT DISTINCT ppl.id, ppl.personType
+    FROM ppl
+), missPol AS (
+    SELECT uppl.id, uppl.personType, IFNULL(count(*), 0) AS requiredMissing
+    FROM uppl
+    JOIN policies pl
+    LEFT OUTER JOIN memberPolicies m ON m.policy = pl.policy AND m.conid = ? AND 
+        ((uppl.id = IFNULL(m.perid, -1) AND uppl.personType = 'p') OR (uppl.id = IFNULL(m.newperid, -1) AND uppl.personType = 'n'))
+    WHERE pl.ACTIVE = 'Y'  AND pl.required = 'Y' AND IFNULL(m.response, 'N') = 'N'
+    GROUP BY uppl.id, uppl.personType
 )
-SELECT *
+SELECT ppl.*, IFNULL(missPol.requiredMissing,0) AS missingPolicies
 FROM ppl
+LEFT OUTER JOIN missPol ON ppl.id = missPol.id
 ORDER BY personType DESC, id ASC;
 EOS;
-        $managedByR = dbSafeQuery($managedSQL, 'iiiii', array ($conid, $loginId, $conid, $loginId, $loginId));
+        $managedByR = dbSafeQuery($managedSQL, 'iiiiii', array ($conid, $loginId, $conid, $loginId, $loginId, $conid));
     }
     else {
         $managedSQL = <<<EOS
-SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
-       p.address, p.addr_2, p.city, p.state, p.zip, p.country,
-       'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.managedBy, NULL AS managedByNew,
-       TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-       r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup, a.shortname AS ageShort, a.label AS ageLabel,
-       'n' AS personType, nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
-    CASE
-        WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
-        WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
-        WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
-        ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
-    END AS purchaserName
-FROM newperson p
-LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ?  AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
-LEFT OUTER JOIN memLabel m ON m.id = r.memId
-LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND a.conid = r.conid
-LEFT OUTER JOIN transaction t ON r.create_trans = t.id
-LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
-LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
-LEFT OUTER JOIN newperson nc ON t.newperid = nc.id
-LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
-LEFT OUTER JOIN newperson np ON tp.newperid = np.id
-WHERE p.managedByNew = ? AND p.id != p.managedByNew AND p.perid IS NULL
-ORDER BY id ASC;
+WITH ppl AS (
+    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
+        p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+        p.banned, p.creation_date, p.update_date, p.change_notes, p.active,
+        p.managedBy, NULL AS managedByNew,
+        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
+        r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup,
+        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType,
+        nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
+        CASE
+            WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
+            WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
+            WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
+            ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
+        END AS purchaserName
+    FROM perinfo p
+    LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
+    LEFT OUTER JOIN memLabel m ON m.id = r.memId
+    LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
+    LEFT OUTER JOIN transaction t ON r.create_trans = t.id
+    LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
+    LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
+    LEFT OUTER JOIN newperson nc ON t.newperid = nc.id
+    LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
+    LEFT OUTER JOIN newperson np ON tp.newperid = np.id
+    WHERE p.managedByNew = ? AND p.id != p.managedByNew
+    UNION
+    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
+        p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+        'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active,
+        p.managedBy, p.managedByNew,
+        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
+        r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.memGroup,
+        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType,
+        nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
+        CASE
+            WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
+            WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
+            WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
+            ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
+        END AS purchaserName
+    FROM newperson p    
+    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
+    LEFT OUTER JOIN memLabel m ON m.id = r.memId
+    LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
+    LEFT OUTER JOIN transaction t ON r.create_trans = t.id
+    LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
+    LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
+    LEFT OUTER JOIN newperson nc ON t.newperid = nc.id
+    LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
+    LEFT OUTER JOIN newperson np ON tp.newperid = np.id
+    WHERE p.managedByNew = ? AND p.id != ? AND p.perid IS NULL
+), uppl AS (
+    SELECT DISTINCT ppl.id, ppl.personType
+    FROM ppl
+), missPol AS (
+    SELECT uppl.id, uppl.personType, IFNULL(count(*), 0) AS requiredMissing
+    FROM uppl
+    JOIN policies pl
+    LEFT OUTER JOIN memberPolicies m ON m.policy = pl.policy AND m.conid = ? AND 
+        ((uppl.id = IFNULL(m.perid, -1) AND uppl.personType = 'p') OR (uppl.id = IFNULL(m.newperid, -1) AND uppl.personType = 'n'))
+    WHERE pl.ACTIVE = 'Y'  AND pl.required = 'Y' AND IFNULL(m.response, 'N') = 'N'
+    GROUP BY uppl.id, uppl.personType
+)
+SELECT ppl.*, IFNULL(missPol.requiredMissing, 0) AS missingPolicies
+FROM ppl
+LEFT OUTER JOIN missPol ON ppl.id = missPol.id
+ORDER BY personType DESC, id ASC;
 EOS;
-        $managedByR = dbSafeQuery($managedSQL, 'ii', array ($conid, $loginId));
+        $managedByR = dbSafeQuery($managedSQL, 'iiiiii', array ($conid, $loginId, $conid, $loginId, $loginId, $conid));
     }
 
     $managed = [];

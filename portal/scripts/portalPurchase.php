@@ -89,7 +89,7 @@ if ($transId == null) {
 }
 
 // get this person
-$info = getPersonInfo();
+$info = getPersonInfo($conid);
 
 // compute the results array here
 $coupon = null;
