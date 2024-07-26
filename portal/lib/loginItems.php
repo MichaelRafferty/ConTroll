@@ -152,26 +152,10 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $cipherInfo,
         <h3>The email <?php echo $email;?> does not have an account.</h3>
         <div class='row'>
             <div class='col-sm-12'>
-<?php
-        if ($validationType == 'token') {
-?>
                 <p>You may have used a different email address for your account.
-                    If this is the case, please use the 'Login with Authentication Link via Email' button below to try a different email address.
+                    If this is the case, please use one of the login buttons below to use the original email address.
+                    Once logged in with that address use the 'Account Settings' menu item to add that address as an alternate identity.
                 </p>
-<?php
-        } else if ($validationType == 'google') {
-?>
-                <p>You may have used a different email address for your account.
-                    If this is the case, please use the 'Login with Authentication Link via Email' button below to try a different email address. Once logged
-                    in with that address use the 'Account Settings' menu item to add this address as an alternate identity.
-                </p>
-<?php
-        } else {
- ?>
-                <p>Either try a different "Login with" button than <?php echo $validationType;?> below.</p>
-<?php
-        }
-?>
             </div>
         </div>
         <div class="row mb-4">

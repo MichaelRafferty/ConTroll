@@ -911,7 +911,7 @@ class Portal {
         if (data['message'])
             window.location = '?messageFwd=' + encodeURI(data['message']);
         else {
-            var message = 'Payment succeeded, ' + data['rows_upd'] + ' memberships updated';
+            var message = 'Payment succeeded, ' + data['rows_upd'] + ' memberships and other items updated';
             window.location = '?messageFwd=' + encodeURI(message);
         }
     }

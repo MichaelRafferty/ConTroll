@@ -870,7 +870,7 @@ class Membership {
     </div>`
         }
         if (this.#countMemberships == 0) {
-            html = "No memberships found";
+            html = "Nothing in the Cart";
         }
         this.#cartContentsDiv.innerHTML = html;
 
