@@ -312,7 +312,7 @@ function drawGetNewMemberships() {
     <div class='row mt-1' id='membershipButtons'></div>
     <div class="row mt-2">
         <div class="col-sm-12">
-            Select from the buttons above to add memberships.
+            Select from the buttons above to add memberships and other items.
         </div>
     </div>
     <?php
