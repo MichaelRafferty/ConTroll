@@ -42,12 +42,22 @@ function drawVerifyPersonInfo($policies) {
 }
 
 // draw_editPerson - draw the verify/update form for the Person
-function draw_editPersonModal($policies) {
+function draw_editPersonModal($source, $policies) {
     $usps = get_conf('usps');
     $useUSPS = false;
     if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
         $useUSPS = true;
     $con = get_conf('con');
+    switch ($source) {
+        case 'login':
+            $closeClick = 'login.newpersonClose()';
+            break;
+        case 'portal':
+            $closeClick = 'portal.checkEditPersonClose()';
+            break;
+        default:
+            $closeClick = 'badClose()';
+    }
 ?>
     <div id='editPersonModal' class='modal modal-x1 fade' tabindex='-1' aria-labelledby='Edit Person' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
@@ -56,7 +66,7 @@ function draw_editPersonModal($policies) {
                     <div class='modal-title' id='editPersonTitle'>
                         <strong>Edit Person</strong>
                     </div>
-                    <button type='button' class='btn-close' onclick="portal.checkEditPersonClose();" aria-label='Close'></button>
+                    <button type='button' class='btn-close' onclick="<?php echo $closeClick; ?>;" aria-label='Close'></button>
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
@@ -73,7 +83,7 @@ function draw_editPersonModal($policies) {
                     </div>
                 </div>
                 <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' onclick='portal.checkEditPersonClose();' tabindex='10001'>Cancel</button>
+                    <button class='btn btn-sm btn-secondary' onclick='<?php echo $closeClick; ?>;' tabindex='10001'>Cancel</button>
                     <button class='btn btn-sm btn-primary' id='editPersonSubmitBtn' onClick="portal.editPersonSubmit()" tabindex='10002'>Update Person</button>
                 </div>
             </div>

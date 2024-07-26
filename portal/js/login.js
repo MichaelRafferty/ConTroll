@@ -289,6 +289,7 @@ class Login {
     validate(person) {
         //process(formRef) {
         clear_message();
+        clear_message('epMessageDiv');
         var valid = true;
         var required = config['required'];
 
@@ -373,7 +374,7 @@ class Login {
             show_message("Please correct the items highlighted in red and validate again.<br/>" +
                 "Note: If any of the Address fields are used and the country is United States, " +
                 "then the Address, City, State, and Zip fields must all be entered.",
-                "error");
+                "error", 'epMessageDiv');
             return false;
         }
 
@@ -390,7 +391,7 @@ class Login {
                 method: 'POST',
                 success: function (data, textStatus, jqXhr) {
                     if (data['status'] == 'error') {
-                        show_message(data['message'], 'error');
+                        show_message(data['message'], 'error', 'epMessageDiv');
                         return false;
                     }
                     login.showValidatedAddress(data);

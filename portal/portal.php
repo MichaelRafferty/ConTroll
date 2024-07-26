@@ -247,7 +247,7 @@ if ($refresh) {
 <?php
 // draw all the modals for this screen
 $policies = getPolicies();
-draw_editPersonModal($policies);
+draw_editPersonModal('portal', $policies);
 draw_editInterestsModal($interests);
 draw_paymentDueModal();
 draw_makePaymentModal();

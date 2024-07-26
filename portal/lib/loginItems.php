@@ -144,7 +144,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $cipherInfo,
 
     if (count($matches) == 0) {
         $policies = getPolicies();
-        draw_editPersonModal($policies);
+        draw_editPersonModal('login', $policies);
         // ask to create new account
 ?>
         <h3>The email <?php echo $email;?> does not have an account.</h3>
