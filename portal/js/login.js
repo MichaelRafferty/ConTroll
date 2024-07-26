@@ -525,4 +525,11 @@ class Login {
             }
         }
     }
+
+    newpersonClose() {
+        show_message("The new account was not created.<br/" +
+            'Your data is still there if you click the "Create New Account" button again.',
+            'warn')
+        this.#editPersonModal.hide();
+    }
 }
