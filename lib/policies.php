@@ -30,6 +30,9 @@ function drawPoliciesBlock($policies) {
         $name = $policy['policy'];
         $prompt = replaceVariables($policy['prompt']);
         $description = replaceVariables($policy['description']);
+        if ($policy['required'] == 'Y') {
+            $prompt = "<span class='text-danger'>&bigstar;</span>" . $prompt;
+        }
         if ($policy['defaultValue'] == 'Y') {
             $checked = 'checked';
         } else {
