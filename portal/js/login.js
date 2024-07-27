@@ -80,6 +80,9 @@ class Login {
             this.#contactField = document.getElementById("contact");
             this.#shareField = document.getElementById("share");
             this.#uspsDiv = document.getElementById("uspsblock");
+
+            $('#email1').attr('readonly', true);
+            $('#email2').attr('readonly', true);
         }
 
         this.#sendLinkBtn = document.getElementById("sendLinkBtn");
@@ -303,10 +306,14 @@ class Login {
             this.#email1Field.value = person['email1'];
             $('#email1').addClass('need');
             $('#email2').addClass('need');
+            $('#email1').attr('readonly', false);
+            $('#email2').attr('readonly', false);
             valid = false;
         } else if (!validateAddress(person['email1'])) {
             $('#email1').addClass('need');
             $('#email2').addClass('need');
+            $('#email1').attr('readonly', false);
+            $('#email2').attr('readonly', false);
             valid = false;
         } else {
             $('#email1').removeClass('need');
