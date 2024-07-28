@@ -50,6 +50,7 @@ class PaymentPlans {
     plansEligible(purchased = null, space = null) {
         var nonPlanAmt;
         var planAmt;
+        var notInPlanItems;
         // any plans in the system?
         var keys = Object.keys(paymentPlanList);
         if (keys.length == 0)
@@ -64,6 +65,7 @@ class PaymentPlans {
             // compute the plan and the not plan amount for this plan
             planAmt = 0;
             nonPlanAmt = 0;
+            notInPlanItems = '';
 
             if (purchased != null && purchased.length > 0) {
                 for (var mrow in membershipsPurchased) {
@@ -92,6 +94,8 @@ class PaymentPlans {
                         planAmt += Number(mem.price) - Number(mem.paid);
                     } else {
                         nonPlanAmt += Number(mem.price) - Number(mem.paid);
+                        notInPlanItems += '<br/>' + mem.fullname + ', ' + mem.label + ', ' +
+                            (Number(mem.price) - (Number(mem.paid) + Number(mem.couponDiscount))).toFixed(2);
                     }
                 }
             }
@@ -157,6 +161,7 @@ class PaymentPlans {
                 id: plan.id, plan: plan,
                 planAmt: planAmt, nonPlanAmt: nonPlanAmt, downPayment: downPayment, dueToday: dueToday, maxPayments: numPayments, daysBetween: daysBetween,
                 minPayment: nonPlanAmt + downPayment, balanceDue: balanceDue, paymentAmt: paymentAmt,
+                notInPlanItems: notInPlanItems != '' ?  'Not in Plan:' + notInPlanItems : ''
             }
             matched++;
         }
@@ -186,8 +191,7 @@ class PaymentPlans {
 
         var html = '<div class="row mt-2"><div class="col-sm-12"><b>Payment Plans Available:</b></div>' + `
     <div class="row">
-        <div class="col-sm-1"></div>
-        <div class="col-sm-1"><b>Plan Name</b></div>
+        <div class="col-sm-2"></div>
         <div class="col-sm-1" style='text-align: right;'><b>Non Plan Amount</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Plan Amount</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Minimum Down Payment</b></div>
@@ -220,11 +224,14 @@ class PaymentPlans {
         <div class="col-sm-1" style='text-align: right;'>` + match.paymentAmt.toFixed(2) + `</div>
         <div class="col-sm-2">` + plan.payByDate + `</div>
     </div>
-    <div class="row mb-2">
+    <div class="row` + (match.notInPlanItems != '' ? '' : ' mb-3') + `">
         <div class="col-sm-1"></div>
         <div class="col-sm-10">` + plan.description + `</div>
     </div>
 `;
+            if (match.notInPlanItems != '') {
+                html += '<div class="row mb-4"><div class="col-sm-2"></div><div class="col-sm-10">' + match.notInPlanItems + '</div></div>';
+            }
         }
         return html;
     }
