@@ -107,7 +107,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
                 ?><link href='<?php echo $sheet; ?>' rel=stylesheet type='text/css' />
                 <?php
             }}
-           $versions = get_conf('js');
+            $versions = get_conf('js');
             $portal = $versions['portal'];
             $global = $versions['global'];
             $jslib = $versions['jslib'];
@@ -115,8 +115,8 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
             <script src='<?php echo $includes['bs5js'];?>'></script>
             <script type='text/javascript' src='<?php echo $includes['jqjs']; ?>'></script>
             <script type='text/javascript' src='<?php echo $includes['jquijs']; ?>'></script>
-            <script type='text/javascript' src='jslib/global.js?v=$global'></script>
-            <script type='text/javascript' src='js/base.js?v=$portal'></script>
+            <script type='text/javascript' src='jslib/global.js?v=<?php echo $global;?>'></script>
+            <script type='text/javascript' src='js/base.js?v=<?php echo $portal;?>'></script>
             <?php
             if(isset($js) && $js != null) { foreach ($js as $script) {
                 ?><script src='<?php echo $script . '?v=$portal'; ?>' type='text/javascript'></script><?php
