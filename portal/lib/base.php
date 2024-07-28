@@ -40,6 +40,11 @@ function index_page_init($title) {
         $filter = 'production';
     }
     loadCustomText('portal', basename($_SERVER['PHP_SELF'], '.php'), $filter);
+
+    $versions = get_conf('js');
+    $portal = $versions['portal'];
+    $global = $versions['global'];
+    $jslib = $versions['jslib'];
     echo <<<EOF
 <!DOCTYPE html>
 <html lang="en">
@@ -58,9 +63,9 @@ function index_page_init($title) {
     <script type='text/javascript' src='$jqjs''></script>
     <script type='text/javascript' src='$jquijs'></script>
     <script type="text/javascript" src="$tabjs"></script>
-    <script type="text/javascript" src="jslib/global.js"></script>
-    <script type='text/javascript' src='js/base.js'></script>
-    <script type='text/javascript' src='js/login.js'></script>
+    <script type="text/javascript" src="jslib/global.js?v=$global"></script>
+    <script type='text/javascript' src='js/base.js?v=$portal'></script>
+    <script type='text/javascript' src='js/login.js?v=$portal'></script>
 </head>
 EOF;
 }
@@ -102,16 +107,19 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
                 ?><link href='<?php echo $sheet; ?>' rel=stylesheet type='text/css' />
                 <?php
             }}
+           $versions = get_conf('js');
+            $portal = $versions['portal'];
+            $global = $versions['global'];
+            $jslib = $versions['jslib'];
             ?>
             <script src='<?php echo $includes['bs5js'];?>'></script>
             <script type='text/javascript' src='<?php echo $includes['jqjs']; ?>'></script>
             <script type='text/javascript' src='<?php echo $includes['jquijs']; ?>'></script>
-            <script type='text/javascript' src='jslib/global.js'></script>
-            <script type='text/javascript' src='js/base.js'></script>
+            <script type='text/javascript' src='jslib/global.js?v=$global'></script>
+            <script type='text/javascript' src='js/base.js?v=$portal'></script>
             <?php
             if(isset($js) && $js != null) { foreach ($js as $script) {
-                ?><script src='<?php echo $script; ?>'
-                          type='text/javascript'></script><?php
+                ?><script src='<?php echo $script . '?v=$portal'; ?>' type='text/javascript'></script><?php
             }}
             ?>
         </head>
