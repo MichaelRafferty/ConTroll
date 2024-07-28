@@ -117,9 +117,15 @@ class PaymentPlans {
             nonPlanAmt = Math.round(nonPlanAmt * 100.0) / 100.0;
 
             // now handle the rules for this plan once we have all the amounts
-            var downPayment = Math.round(Number(plan.downPercent) * planAmt) / 100.0;
+            var downPayment = downPayment = Math.round(Number(plan.downPercent) * planAmt) / 100.0;
             if (Number(plan.downAmt) > downPayment)
                 downPayment = Number(plan.downAmt);
+            // can they reduce the plan down payment by the amount due today for non plan amounts
+            if (plan.downIncludeNonPlan == 'Y') {
+                downPayment -= nonPlanAmt;
+                if (downPayment < 0)
+                    downPayment = 0;
+            }
 
             if ((downPayment + Number(plan.minPayment)) >= planAmt) // not eligible for plan
                 continue;
@@ -138,11 +144,17 @@ class PaymentPlans {
                 continue;   // has to be time for at least one payment beyond down payment
 
             // limit to the max allowed for this plan.
-            if (numPayments > plan.numPaymentMax)
-                numPayments = plan.numPaymentMax;
+            if (numPayments > Number(plan.numPaymentMax))
+                numPayments = Number(plan.numPaymentMax);
 
-            // limit to min payment amount
-            var computedNumPayments = Math.floor(balanceDue / plan.minPayment);
+            // limit to min payment amount, but if allowed allow the last payment to be less
+            var computedNumPayments = Math.floor(balanceDue / Number(plan.minPayment));
+            if (computedNumPayments * Number(plan.minPayment) != balanceDue && plan.lastPaymentPartial == 'Y') {
+                // allow one more partial payment
+                computedNumPayments++;
+            }
+
+            // limit it to the maximum allowed by the time frame
             if (computedNumPayments < numPayments)
                 numPayments = computedNumPayments;
 
@@ -156,11 +168,16 @@ class PaymentPlans {
                 daysBetween = 30;
 
             var paymentAmt = Math.ceil(100 * balanceDue / numPayments) / 100;
+            var finalPaymentAmt = paymentAmt;
+            if (paymentAmt < Number(plan.minPayment)) {
+                paymentAmt = Number(plan.minPayment);
+                finalPaymentAmt = balanceDue - (numPayments - 1) * paymentAmt;
+            }
 
             this.#matchingPlans[plan.id] = {
                 id: plan.id, plan: plan,
                 planAmt: planAmt, nonPlanAmt: nonPlanAmt, downPayment: downPayment, dueToday: dueToday, maxPayments: numPayments, daysBetween: daysBetween,
-                minPayment: nonPlanAmt + downPayment, balanceDue: balanceDue, paymentAmt: paymentAmt,
+                minPayment: nonPlanAmt + downPayment, balanceDue: balanceDue, paymentAmt: paymentAmt, finalPaymentAmt: finalPaymentAmt,
                 notInPlanItems: notInPlanItems != '' ?  'Not in Plan:' + notInPlanItems : ''
             }
             matched++;
@@ -200,7 +217,8 @@ class PaymentPlans {
         <div class="col-sm-1" style='text-align: right;'><b>Maximum Number Payments</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Max Days Between Payments</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Minimum Payment Amount</b></div>
-        <div class="col-sm-2"><b>Must Pay In Full By</b></div>
+        <div class="col-sm-1" style='text-align: right;'><b>Final Payment Amount</b></div>
+        <div class="col-sm-1"><b>Must Pay In Full By</b></div>
     </div>
 `;
 
@@ -211,8 +229,17 @@ class PaymentPlans {
             html += `
     <div class="row">
         <div class="col-sm-2">
-            <button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="paymentPlans.customizePlan(` + keys[row] + ",'" + from + "'" + ');">' +
-                'Select & Customize Payment Plan: ' + plan.name + `</button>
+`;
+            if (plan.modify == 'Y') {
+                html += '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="paymentPlans.customizePlan(' +
+                    keys[row] + ",'" + from + "'" + ');">' +
+                    'Customize Payment Plan:<br/>' + plan.name + '</button>';
+            } else {
+                html += '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="paymentPlans.selectPlan(' +
+                    keys[row] + ",'" + from + "'" + ');">' +
+                    'Select Payment Plan:<br/>' + plan.name + '</button>';
+            }
+            html += `
         </div>
         <div class="col-sm-1" style='text-align: right;'>` + match.nonPlanAmt.toFixed(2) + `</div>
         <div class="col-sm-1" style='text-align: right;'>` + match.planAmt.toFixed(2) + `</div>
@@ -222,7 +249,8 @@ class PaymentPlans {
         <div class="col-sm-1" style='text-align: right;'>` + match.maxPayments + `</div>
         <div class="col-sm-1" style='text-align: right;'>` + match.daysBetween + `</div>
         <div class="col-sm-1" style='text-align: right;'>` + match.paymentAmt.toFixed(2) + `</div>
-        <div class="col-sm-2">` + plan.payByDate + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + match.finalPaymentAmt.toFixed(2) + `</div>
+        <div class="col-sm-1">` + plan.payByDate + `</div>
     </div>
     <div class="row` + (match.notInPlanItems != '' ? '' : ' mb-3') + `">
         <div class="col-sm-1"></div>
@@ -234,6 +262,29 @@ class PaymentPlans {
             }
         }
         return html;
+    }
+
+    // select this plan - build data structures and create the plan
+    selectPlan(planId, from) {
+        clear_message();
+        clear_message('customizePlanMessageDiv');
+
+        console.log('planId: ' + planId + ', from: ' + from);
+        console.log(this.#matchingPlans);
+        var match = make_copy(this.#matchingPlans[planId]);
+        var plan = match.plan;
+        console.log(match);
+
+        match.totalAmountDue = (match.nonPlanAmt + match.planAmt).toFixed(2) + ``;
+        match.currentPayment = (match.nonPlanAmt + match.downPayment).toFixed(2) + ``;
+        match.numPayments = match.maxPayments;
+        match.daysBetween = match.daysBetween;
+        match.paymentAmt = match.paymentAmt.toFixed(2) + ``;
+        match.finalPaymentAmt = match.finalPaymentAmt.toFixed(2) + ``;
+        match.balanceDue = match.balanceDue.toFixed(2) + ``;
+        match.downPayment = match.downPayment.toFixed(2) + ``;
+        match.new = true;
+        portal.makePayment(match);
     }
 
     // customize plans items - fill in the modal and display it
@@ -282,7 +333,8 @@ class PaymentPlans {
         <div class="col-sm-1" style='text-align: right;'><b>Number Payments</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Days Between</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Payment Amount</b></div>
-        <div class="col-sm-2"><b>Must Pay In Full By</b></div>
+        <div class="col-sm-1" style='text-align: right;'><b>Final Payment Amount</b></div>
+        <div class="col-sm-1"><b>Must Pay In Full By</b></div>
     </div>
     <form id="customizePlanForm" class='form-floating' action='javascript:void(0);'>
     <div class="row">
@@ -308,7 +360,8 @@ class PaymentPlans {
             'min="7" max="' + match.daysBetween + '" value="' + match.daysBetween + `" onchange="paymentPlans.recompute();"/>
         </div>
         <div class="col-sm-1" style='text-align: right;' id="paymentAmt">` + match.paymentAmt.toFixed(2) + `</div>
-        <div class="col-sm-2">` + plan.payByDate + `</div>
+        <div class="col-sm-1" style='text-align: right;' id="finalPaymentAmt">` + match.finalPaymentAmt.toFixed(2) + `</div>
+        <div class="col-sm-1">` + plan.payByDate + `</div>
     </div>
     <div class="row">
         <div class="col-sm-2"></div>

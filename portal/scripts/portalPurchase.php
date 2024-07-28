@@ -192,17 +192,18 @@ if ($loginType == 'p') {
 if ($newplan == 1) {
     // record the new plan
     $iQ = <<<EOS
-    INSERT INTO payorPlans (planId, $pfield, initialAmt, nonPlanAmt, downPayment, minPayment, 
+    INSERT INTO payorPlans (planId, $pfield, initialAmt, nonPlanAmt, downPayment, minPayment, finalPayment,
                             openingBalance, numPayments, daysBetween, payByDate, payType, reminders, 
                             createTransaction, balanceDue, updateBy)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     
     EOS;
-    $typestr = 'iidddddiisssidi';
+    $typestr = 'iiddddddiisssidi';
     $planData = $planRec['plan'];
     $valArray = array($planData['id'], $loginId, $planRec['totalAmountDue'], $planRec['nonPlanAmt'], $planRec['downPayment'], $planRec['paymentAmt'],
+        $planRec['finalPayment'],
         $planRec['planAmt'], $planRec['numPayments'], $planRec['daysBetween'], $planData['payByDate'], $planData['payType'], $planData['reminders'],
-                      $transId, $planRec['balanceDue'], $loginId);
+        $transId, $planRec['balanceDue'], $loginId);
     $newPlanId = dbSafeInsert($iQ, $typestr, $valArray);
     if ($newPlanId == false || $newPlanId < 0) {
         logWrite(array("plan msg"=>"create of plan failed", "plan data" => $valArray ));

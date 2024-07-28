@@ -204,6 +204,7 @@ CREATE TABLE payorPlans (
     nonPlanAmt decimal(8,2) NOT NULL DEFAULT 0,
     downPayment decimal(8,2) NOT NULL DEFAULT 0,
     minPayment decimal(8,2) DEFAULT 10.00,
+    finalPayment decimal(8,2) DEFAULT 10.00,
     openingBalance decimal(8,2) NOT NULL DEFAULT 0,
     numPayments int NOT NULL,
     daysBetween int NOT NULL DEFAULT 30,
