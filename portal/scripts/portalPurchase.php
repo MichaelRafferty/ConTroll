@@ -201,7 +201,7 @@ if ($newplan == 1) {
     $typestr = 'iiddddddiisssidi';
     $planData = $planRec['plan'];
     $valArray = array($planData['id'], $loginId, $planRec['totalAmountDue'], $planRec['nonPlanAmt'], $planRec['downPayment'], $planRec['paymentAmt'],
-        $planRec['finalPayment'],
+        $planRec['finalPaymentAmt'],
         $planRec['planAmt'], $planRec['numPayments'], $planRec['daysBetween'], $planData['payByDate'], $planData['payType'], $planData['reminders'],
         $transId, $planRec['balanceDue'], $loginId);
     $newPlanId = dbSafeInsert($iQ, $typestr, $valArray);
