@@ -928,7 +928,8 @@ class Membership {
             this.#amountField.addEventListener('keyup', membership.amountEventListener);
             newMembership.minPrice = mem.price;
             this.#newMembershipSave = newMembership;
-            this.#amountField.focus({focusVisible: true});
+            var amountField = this.#amountField;
+            setTimeout(() => { amountField.focus({focusVisible: true}); }, 600);
             return;
         }
         this.membershipAddFinal(newMembership);
