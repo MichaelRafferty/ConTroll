@@ -152,15 +152,15 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $cipherInfo,
         <h3>The email <?php echo $email;?> does not have an account.</h3>
         <div class='row'>
             <div class='col-sm-12'>
-                <p>You may have used a different email address for your account.
-                    If this is the case, please use one of the login buttons below to use the original email address.
-                    Once logged in with that address use the 'Account Settings' menu item to add that address as an alternate identity.
+                <p>If you don’t have a membership or account click the “Create New Account” button.</p>
+                <p>If you believe you already have a membership or account you may have used a different email address.
+                    If this is the case, please use one of the login buttons below using the original email address.
+                    Once logged in with the original email address, you can use the 'Account Settings’ menu item to add email addresses to your account.
                 </p>
             </div>
         </div>
         <div class="row mb-4">
             <div class="col-sm-12">
-                <p>Or, you can create a new account for this email address with</p>
                 <button class="btn btn-sm btn-primary" onclick='login.createAccount("<?php echo $email;?>","<?php echo $validationType;?>")'>Create New Account for <?php echo $email;?></button>
             </div>
         </div>
