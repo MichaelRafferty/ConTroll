@@ -119,7 +119,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
             <script type='text/javascript' src='js/base.js?v=<?php echo $portal;?>'></script>
             <?php
             if(isset($js) && $js != null) { foreach ($js as $script) {
-                ?><script src='<?php echo $script . '?v=$portal'; ?>' type='text/javascript'></script><?php
+                ?><script src='<?php echo $script . "?v=$portal"; ?>' type='text/javascript'></script><?php
             }}
             ?>
         </head>
