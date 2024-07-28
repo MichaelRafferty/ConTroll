@@ -190,6 +190,7 @@ drawVariablePriceModal();
                 <button class="btn btn-sm btn-primary" type='button' onclick="membership.checkNewEmail(1);">Yes, Use the same email address</button>
             </div>
         </div>
+        <?php outputCustomText('main/step0');?>
     </div>
 
 <?php
