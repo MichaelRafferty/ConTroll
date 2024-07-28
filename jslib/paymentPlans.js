@@ -267,7 +267,12 @@ class PaymentPlans {
         <div class="row">
             <div class="col-sm-1"></div>
             <div class="col-sm-10">` + plan.description + `</div>
-    </div>
+        </div>
+`;
+        if (match.notInPlanItems != '') {
+            html += '<div class="row mb-2"><div class="col-sm-2"></div><div class="col-sm-10">' + match.notInPlanItems + '</div></div>';
+        }
+        html += `
     <div class="row">
         <div class="col-sm-1" style='text-align: right;'><b>Non Plan Amount</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Plan Amount</b></div>
