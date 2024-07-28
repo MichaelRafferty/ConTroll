@@ -183,6 +183,8 @@ CREATE TABLE paymentPlans (
     payType enum('manual','auto') DEFAULT 'manual',
     modify enum ('Y', 'N') NOT NULL DEFAULT 'N',
     reminders enum ('Y', 'N') NOT NULL DEFAULT 'N',
+    downIncludeNonPlan enum('Y','N') NOT NULL DEFAULT 'N',
+    lastPatymentPartial enum('Y','N') NOT NULL DEFAULT 'N',
     active enum ('Y', 'N') NOT NULL DEFAULT 'Y',
     sortorder int NOT NULL DEFAULT 0,
     createDate  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP,
