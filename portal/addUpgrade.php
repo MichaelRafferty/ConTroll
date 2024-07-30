@@ -199,7 +199,7 @@ drawVariablePriceModal();
     <div id="ageBracketDiv">
         <div class="row">
             <div class='col-sm-12'>
-                <h3 class="size-h3">Step 1: Verify Age</h3>
+                <h3 class="size-h3">Verify Age</h3>
             </div>
         </div>
         <?php
@@ -215,7 +215,7 @@ drawVariablePriceModal();
     <div id="verifyPersonDiv">
         <div class="row">
             <div class="col-sm-12">
-                <h2 class="size-h3">Step 2: Verify Personal Information</h2>
+                <h2 class="size-h3">Verify Personal Information</h2>
             </div>
         </div>
 <?php
@@ -231,7 +231,7 @@ drawVerifyPersonInfo($policies);
     <div id="verifyInterestDiv">
         <div class="row">
             <div class="col-sm-12">
-                <h2 class="size-h3">Step 3: Verify Interests</h2>
+                <h2 class="size-h3">Verify Interests</h2>
             </div>
         </div>
         <?php
@@ -255,7 +255,7 @@ drawVerifyPersonInfo($policies);
     <div id="getNewMembershipDiv">
         <div class='row'>
             <div class='col-sm-12'>
-                <h2 class="size-h3">Step <?php echo $step4num;?>: Add new memberships</h2>
+                <h2 class="size-h3">Add new memberships</h2>
             </div>
         </div>
 <?php
@@ -277,16 +277,13 @@ drawVerifyPersonInfo($policies);
         <div class='row' id='step4submit'>
             <div class='col-sm-auto  mt-3'>
 <?php if ($step3num == 3) { ?>
-                <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(3, true);'>Return to step 3: Interest Verification</button>
+                <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(3, true);'>Return to Interest Verification</button>
+</div><?php } ?>
+            <div class='col-sm-auto mt-3'>
+                <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2, true);'>Return to Personal Information Verification</button>
             </div>
             <div class='col-sm-auto mt-3'>
-                <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2, true);'>Return to step 2: Personal Information Verification</button>
-<?php } else { ?>
-                <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2, true);'>Return to step 2: Personal Information Verification</button>
-<?php } ?>
-            </div>
-            <div class='col-sm-auto mt-3'>
-                <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(1, true);'>Return to step 1: Age Verification</button>
+                <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(1, true);'>Return to Age Verification</button>
             </div>
             <div class='col-sm-auto mt-3'>
                 <button class='btn btn-sm btn-primary' id='saveCartBtn' onclick='membership.saveCart();'>Return to the home page</button>

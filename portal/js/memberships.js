@@ -431,7 +431,7 @@ class Membership {
         this.#zipField.value = this.#personInfo['zip'];
         this.#countryField.value = this.#personInfo['country'];
         this.#uspsDiv.innerHTML = '';
-        this.#uspsDiv.classList.remove('border','border-4',border-dark','rounded);
+        this.#uspsDiv.classList.remove('border','border-4','border-dark','rounded');
 
         if (data['memberships']) {
             this.#memberships = data['memberships'];
@@ -759,7 +759,7 @@ class Membership {
             '<button class="btn btn-sm btn-secondary m-1 mt-2" onclick="membership.redoAddress();">I fixed the address, validate it again.</button>';
 
         this.#uspsDiv.innerHTML = html;
-        this.#uspsDiv.classList.add('border','border-4',border-dark','rounded);
+        this.#uspsDiv.classList.add('border','border-4','border-dark','rounded');
         this.#uspsDiv.scrollIntoView({behavior: 'instant', block: 'center'});
     }
 
@@ -780,20 +780,20 @@ class Membership {
         this.#stateField.value = this.#personInfo['state'];
         this.#zipField.value = this.#personInfo['zip'];
         this.#uspsDiv.innerHTML = '';
-        this.#uspsDiv.classList.remove('border','border-4',border-dark','rounded);
+        this.#uspsDiv.classList.remove('border','border-4','border-dark','rounded');
         this.#cartChanges++;
         this.verifyAddress(1);
     }
 
     useMyAddress() {
         this.#uspsDiv.innerHTML = '';
-        this.#uspsDiv.classList.remove('border','border-4',border-dark','rounded);
+        this.#uspsDiv.classList.remove('border','border-4','border-dark','rounded');
         this.verifyAddress(1);
     }
 
     redoAddress() {
         this.#uspsDiv.innerHTML = '';
-        this.#uspsDiv.classList.remove('border','border-4',border-dark','rounded);
+        this.#uspsDiv.classList.remove('border','border-4','border-dark','rounded');
         this.#cartChanges++;
         this.verifyAddress(0);
     }
