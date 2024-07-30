@@ -569,21 +569,11 @@ class Membership {
             "Note: If any of the address fields are used and the country is United States, " +
             "then the Address, City, State, and Zip fields must all be entered.";
         var person = URLparamsToArray($('#addUpgradeForm').serialize());
-        this.#personInfo.last_name = person.lname.trim();
-        this.#personInfo.middle_name = person.mname.trim();
-        this.#personInfo.first_name = person.fname.trim();
-        this.#personInfo.suffix = person.suffix.trim();
-        this.#personInfo.email_addr = person.email1.trim();
-        this.#personInfo.phone = person.phone.trim();
-        this.#personInfo.badge_name = person.badgename.trim();
-        this.#personInfo.legalName = person.legalname.trim();
-        this.#personInfo.pronouns = person.pronouns.trim();
-        this.#personInfo.address = person.addr.trim();
-        this.#personInfo.addr_2 = person.addr2.trim();
-        this.#personInfo.city = person.city.trim();
-        this.#personInfo.state = person.state.trim();
-        this.#personInfo.zip = person.zip.trim();
-        this.#personInfo.country = person.country.trim();
+        var keys = Object.keys(person);
+        for (var i = 0; i < keys.length; i++) {
+            person[keys[i]] = person[keys[i]].trim();
+        }
+        this.#personInfo = person;
 
         // validation
         // emails must not be blank and must match
@@ -694,7 +684,7 @@ class Membership {
             var script = "scripts/uspsCheck.php";
             $.ajax({
                 url: script,
-                data: this.#personInfo,
+                data: person,
                 method: 'POST',
                 success: function (data, textStatus, jqXhr) {
                     if (data['status'] == 'error') {

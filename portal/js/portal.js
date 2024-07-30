@@ -382,6 +382,11 @@ class Portal {
         "Note: If any of the address fields are used and the country is United States, " +
         "then the Address, City, State, and Zip fields must all be entered.";
 
+        // trim trailing blanks
+        var keys = Object.keys(person);
+        for (var i = 0; i < keys.length; i++) {
+            person[keys[i]] = person[keys[i]].trim();
+        }
         // validation
         // emails must not be blank and must match
         if (person['email1'] == '' || person['email2'] == '' || person['email1'] != person['email2']) {

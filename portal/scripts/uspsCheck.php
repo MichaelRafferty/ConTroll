@@ -4,6 +4,7 @@
 
 require_once('../lib/base.php');
 require_once('../../lib/uspsValidate.php');
+require_once('../../lib/log.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -11,7 +12,8 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 $response = array('post' => $_POST, 'get' => $_GET);
-
+$log = get_conf('log');
+logInit($log['db']);
 // check for source, login source does not need id and idtype
 if (!array_key_exists('source', $_POST) || $_POST['source'] != 'login') {
     if (!(isSessionVar('id') && isSessionVar('idType'))) {
@@ -57,8 +59,12 @@ if (array_key_exists('zip', $_POST))
 else
     $zip = null;
 
+logWrite($response);
+logWrite(array('address' => $address, 'address2' => $address2, 'city'=> $city, 'state'=> $state, 'zip'=> $zip));
 $validated = getUSPSNormalizedAddress($address, $address2, $city, $state, $zip);
 $response['usps'] = $validated;
+
+logWrite($response);
 
 if (!is_array($validated)) {
     $response['error'] = $validated;
