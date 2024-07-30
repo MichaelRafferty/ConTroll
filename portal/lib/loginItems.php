@@ -13,7 +13,9 @@ function draw_login($config_vars, $result_message = '', $result_color = '') {
             </div>
             <div class="row mb-2">
                 <div class='col-sm-auto'>
-                    <button class="btn btn-sm btn-primary" onclick="login.loginWithToken();">Login with Authentication Link via Email</button>
+                    <button class="btn btn-sm btn-primary" onclick="login.loginWithToken();">
+                        Create Account or Login with Email with Authentication
+                    </button>
                 </div>
             </div>
             <div id='token_email_div' hidden>
@@ -35,7 +37,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '') {
             </div>
             <div class='row mb-2'>
                 <div class='col-sm-auto'>
-                    <button class='btn btn-sm btn-primary' onclick='login.loginWithGoogle();'>Login with Google</button>
+                    <button class='btn btn-sm btn-primary' onclick='login.loginWithGoogle();'>Create Account or Login with Google</button>
                 </div>
             </div>
             <?php
