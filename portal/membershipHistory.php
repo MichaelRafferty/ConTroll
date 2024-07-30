@@ -172,7 +172,7 @@ while ($reg = $membershipR->fetch_assoc()) {
     if ($curP != $reg['perid'] || $curN != $reg['newperid']) {
         if ($reg['nperid'] == null && $reg['newperid'] != null) {
             $key = 'n' . $reg['newperid'];
-            $id = 'In Progress';
+            $id = 'Pending';
         } else {
             $key = 'p' . $reg['perid'];
             $id = $reg['perid'];

@@ -305,23 +305,16 @@ class Portal {
         if (data['policies'])
             this.#oldPolicies = data['policies'];
 
-        var fullname = person['fullname'] + ' (';
-        if (post['getType'] == 'n') {
-            fullname += 'In Progress)</strong>';
-        } else {
-            fullname += 'ID: ' + person['id'] + ')</strong>';
-        }
-        this.#fullname = fullname;
-
-        this.#editPersonTitle.innerHTML = '<strong>Editing: ' + fullname + '</strong>';
+        this.#fullname = person['fullname'];
+        this.#editPersonTitle.innerHTML = '<strong>Editing: ' + this.#fullname + '</strong>';
         if (this.#uspsDiv && person['country'] == 'USA') {
-            this.#editPersonSubmitBtn.innerHTML = 'Validate Address and Update ' + fullname;
+            this.#editPersonSubmitBtn.innerHTML = 'Validate Address and Update ' + this.#fullname;
         } else {
-            this.#editPersonSubmitBtn.innerHTML = 'Update ' + fullname;
+            this.#editPersonSubmitBtn.innerHTML = 'Update ' + this.#fullname;
         }
 
         // now fill in the fields
-        this.#epHeaderDiv.innerHTML = '<strong>Editing: ' + fullname + '</strong>';
+        this.#epHeaderDiv.innerHTML = '<strong>Editing: ' + this.#fullname + '</strong>';
         this.#epPersonIdField.value = post['getId'];
         this.#epPersonTypeField.value = post['getType'];
         this.#fnameField.value = person['first_name'];
@@ -708,19 +701,11 @@ class Portal {
         var post = data['post'];
         this.#interests = data['interests'];
 
-        var fullname = person['fullname'] + ' (';
-        if (post['getType'] == 'n') {
-            fullname += 'In Progress)</strong>';
-        } else {
-            fullname += 'ID: ' + person['id'] + ')</strong>';
-        }
-
-        this.#fullname = fullname;
-
-        this.#editInterestsTitle.innerHTML = '<strong>Editing Interests for: ' + fullname + '</strong>';
+        this.#fullname = person['fullname'] ;
+        this.#editInterestsTitle.innerHTML = '<strong>Editing Interests for: ' + this.#fullname + '</strong>';
 
         // now fill in the fields
-        this.#eiHeaderDiv.innerHTML = 'Editing Interests for: ' + fullname;
+        this.#eiHeaderDiv.innerHTML = 'Editing Interests for: ' + this.#fullname;
         this.#eiPersonIdField.value = post['getId'];
         this.#eiPersonTypeField.value = post['getType'];
 
