@@ -148,7 +148,7 @@ class Portal {
         this.#payBalanceBTN = document.getElementById('payBalanceBTN');
         if (this.#payBalanceBTN != null && paymentPlanList != null) {
             if (paymentPlans.plansEligible(membershipsPurchased)) {
-                this.#payBalanceBTN.innerHTML = "Pay Balance (or start a payment plan)";
+                this.#payBalanceBTN.innerHTML = "Show payment plan options";
             }
         }
 
@@ -1156,7 +1156,7 @@ class Portal {
 
         if (this.#payBalanceBTN != null && paymentPlanList != null) {
             if (paymentPlans.plansEligible(membershipsPurchased)) {
-                this.#payBalanceBTN.innerHTML = "Pay Balance (or start a payment plan)";
+                this.#payBalanceBTN.innerHTML = "Show payment plan options";
             } else {
                 this.#payBalanceBTN.innerHTML = "Pay Balance";
             }
