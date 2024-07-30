@@ -297,7 +297,7 @@ class Login {
         var valid = true;
         var required = config['required'];
         var message = "Please correct the items highlighted in red and validate again.<br/>" +
-            "Note: If any of the Address fields are used and the country is United States, " +
+            "Note: If any of the address fields are used and the country is United States, " +
             "then the Address, City, State, and Zip fields must all be entered.";
 
         // validation
