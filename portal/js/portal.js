@@ -64,7 +64,6 @@ class Portal {
 
     // payment fields
     #payBalanceBTN = null;
-    #payBalanceTopBTN = null;
     #paymentDueModal = null;
     #paymentDueTitle = null;
     #paymentDueBody = null;
@@ -147,11 +146,9 @@ class Portal {
         }
 
         this.#payBalanceBTN = document.getElementById('payBalanceBTN');
-        this.#payBalanceTopBTN = document.getElementById('payBalanceTopBTN');
         if (this.#payBalanceBTN != null && paymentPlanList != null) {
             if (paymentPlans.plansEligible(membershipsPurchased)) {
                 this.#payBalanceBTN.innerHTML = "Pay Balance (or start a payment plan)";
-                this.#payBalanceTopBTN.innerHTML = "Pay Balance (or start a payment plan)";
             }
         }
 
@@ -772,7 +769,7 @@ class Portal {
     }
 
     // payment functions
-    payBalance(totalDue) {
+    payBalance(totalDue, skipPlan=false) {
         clear_message();
         clear_message('payDueMessageDiv');
         clear_message('makePayMessageDiv');
@@ -789,7 +786,7 @@ class Portal {
         this.#paymentAmount = this.#totalAmountDue;
         this.#planPayment = 0;
 
-        if (!plans) {
+        if (skipPlan || !plans) {
             this.makePayment(null);
             return;
         }
@@ -1160,10 +1157,8 @@ class Portal {
         if (this.#payBalanceBTN != null && paymentPlanList != null) {
             if (paymentPlans.plansEligible(membershipsPurchased)) {
                 this.#payBalanceBTN.innerHTML = "Pay Balance (or start a payment plan)";
-                this.#payBalanceTopBTN.innerHTML = "Pay Balance (or start a payment plan)";
             } else {
                 this.#payBalanceBTN.innerHTML = "Pay Balance";
-                this.#payBalanceTopBTN.innerHTML = "Pay Balance";
             }
         }
     }

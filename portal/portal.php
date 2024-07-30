@@ -423,8 +423,8 @@ if ($totalDue > 0 || count($payorPlan) > 0) {
 $payHtml = '';
 if ($totalDue > 0) {
     $totalDueFormatted = '&nbsp;&nbsp;Total due: <span name="totalDueAmountSpan">' . $dolfmt->formatCurrency((float) $totalDue, $currency) . "</span>";
-    $payHtml = " $totalDueFormatted   " . '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" id="payBalanceTopBTN" onclick="portal.payBalance(' .
-        $totalDue . ');">Pay Balance</button>';
+    $payHtml = " $totalDueFormatted   " . '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2"
+        onclick="portal.payBalance(' . $totalDue . ', true);">Pay Total Amount Due</button>';
     setSessionVar('totalDue', $totalDue); // used for validation in payment side
     if ($numCoupons > 0) {
         $payHtml .= ' <button class="btn btn-primary btn-sm pt-1 pb-1 ms-0 me-2" id="addCouponButton" onclick="coupon.ModalOpen(1)">Add Coupon</button>';
