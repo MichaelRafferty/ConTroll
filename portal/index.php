@@ -312,10 +312,12 @@ if (isset($_GET['vid'])) {
             $account = "Error looking up data for $email";
         }
         clearSession(); // force a logout
+        outputCustomText('main/notloggedin');
         draw_login($config_vars, $account, 'bg-danger text-white');
     }
     exit();
 } else if ($loginId == null) {
+    outputCustomText('main/notloggedin');
     draw_login($config_vars);
     exit();
 }

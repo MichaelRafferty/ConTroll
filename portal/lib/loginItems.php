@@ -2,7 +2,6 @@
 // draw_login - draw the login options form
 function draw_login($config_vars, $result_message = '', $result_color = '') {
     $policies = getPolicies();
-    outputCustomText('main/notloggedin');
     ?>
  <!-- signin form (at body level) -->
     <div id='signin'>
