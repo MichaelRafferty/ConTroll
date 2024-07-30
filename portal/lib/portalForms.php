@@ -155,7 +155,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false) {
         <div class='row'>
             <div class='col-sm-12'>
                 <label for='legalname' class='form-label-sm'>
-                    <span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.
+                    <span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to registration staff.
                 </label><br/>
                 <input class='form-control-sm' type='text' name='legalname' id='legalname' size=64 maxlength='64'
                        placeholder='Defaults to First Name Middle Name Last Name, Suffix' tabindex='140'/>
@@ -195,7 +195,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false) {
             </div>
             <div class="col-sm-auto">
                 <label for="state" class="form-label-sm">
-                    <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>State: US/CAN 2 letter abv.</span>
+                    <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>State: U.S./CAN 2-letter abv.</span>
                 </label><br/>
                 <input class="form-control-sm" type="text" name="state" id='state' size="16" maxlength="16" tabindex="180"/>
             </div>
@@ -252,7 +252,8 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false) {
             </div>
             <div class="col-sm-auto">
                 <label for="badgename" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
-                <input class="form-control-sm" type="text" name="badgename" id='badgename' size="35" maxlength="32" placeholder='defaults to first and last name'
+                <input class="form-control-sm" type="text" name="badgename" id='badgename' size="35" maxlength="32" placeholder='Defaults to first and last
+                name'
                        tabindex="240"/>
             </div>
         </div>
