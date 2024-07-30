@@ -18,7 +18,7 @@
 // All session tokens use the same set of names/values within the prefix of the application
 //  1. The session prefix is a global variable $appSessionPrefix, which is defined with base.php
 //  2. Tokens will start with the prefix T/ and will be re-labeled from their existing names to new ones accessed by this package once converted
-//  3. Existing Session Variables related to the token
+//  3. Existing Session Variables related to the token  (new names will be T/)
 //      a.  email: the matching email for this validated session (actual email validated, which may be a different perinfoIdentity from the perinfo email)
 //      b.  id: the perid/newperid for this person in the table based on:
 //      c.  idtype: the table id refers to, 'n' for newperson (temp id), 'p' for perinfo (permanent id)
@@ -31,6 +31,8 @@
 //          3. lastName: their last name
 //          4. avatarURL: url to a thumbnail avatar or picture
 //          5. subscriberId: unique number identifying this subscriber, remains constant even if email address is updated
+//          6. oauth2pass: the multi-pass process of oauth2 is in progress, continue the redirect
+//          7. oauth2timeout: a max amount of time to honor the oauth2pass variable to avoid loops (? should this become a loop count instead)
 //      f.  tokenExpiration: unix time in seconds when the token expires
 
 // isTokenValid(script = false) - check if a token exists and is still valid
@@ -53,7 +55,7 @@ function isTokenValid($script = false) {
     if ($now < $tokenExpiration)  // if < expiration, we are within that hour refsoon;
         return 'refsoon';
 
-    if ($script && $now < ($tokenExpiration + 7200)) // extra two hours for a script
+    if ($now < ($tokenExpiration + ($script ? 1 : 2) * 3600)) // 1 hour for front end, 2 hour for script, allow refresh
         return 'refresh';
 
     return 'expired';
