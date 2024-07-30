@@ -385,7 +385,7 @@ class Membership {
             this.#email2Field.value = this.#personInfo['email_addr'];
             this.#phoneField.value = this.#personInfo['phone'];
             this.#badgenameField.value = this.#personInfo['badge_name'];
-            this.#auHeader.innerHTML = 'Adding/Updating memberships for ' + this.#personInfo.fullname;
+            this.#auHeader.innerHTML = 'Purchase/Upgrade memberships or other items for ' + this.#personInfo.fullname;
             this.#epHeader.innerHTML = 'Verifying personal information for ' + this.#personInfo.fullname;
             if (this.#personInfo['lastVerified'] != null) {
                 var lvd = new Date(this.#personInfo['lastVerified']);
