@@ -23,7 +23,6 @@ class Membership {
     #stateField = null;
     #zipField = null;
     #countryField = null;
-    #uspsblock = null;
     #email1Field = null;
     #email2Field = null;
     #phoneField = null;
@@ -123,7 +122,6 @@ class Membership {
         this.#stateField = document.getElementById("state");
         this.#zipField = document.getElementById("zip");
         this.#countryField = document.getElementById("country");
-        this.#uspsblock = document.getElementById("uspsblock");
         this.#email1Field = document.getElementById("email1");
         this.#email2Field = document.getElementById("email2");
         this.#phoneField = document.getElementById("phone");
@@ -432,7 +430,8 @@ class Membership {
         this.#stateField.value = this.#personInfo['state'];
         this.#zipField.value = this.#personInfo['zip'];
         this.#countryField.value = this.#personInfo['country'];
-        this.#uspsblock.innerHTML = '';
+        this.#uspsDiv.innerHTML = '';
+        this.#uspsDiv.classList.remove('border','border-4',border-dark','rounded);
 
         if (data['memberships']) {
             this.#memberships = data['memberships'];
@@ -726,13 +725,17 @@ class Membership {
                 errormsg = errormsg.substring(5);
             }
             html = "<h4>USPS Returned an error<br/>validating the address</h4>" +
-                "<pre>" + errormsg + "</pre>\n";
+                "<div class='bg-danger text-white'><pre>" + errormsg + "</pre></div>\n";
         } else {
             this.#uspsAddress = data['address'];
             if (this.#uspsAddress['address2'] == undefined)
                 this.#uspsAddress['address2'] = '';
 
-            html = "<h4>USPS Returned: " + this.#uspsAddress['valid'] + "</h4>";
+            html = '';
+            if (this.#uspsAddress['valid'] != 'Valid') {
+                html += "<div class='p-2 bg-danger text-white'>";
+            }
+            html += "<h4>USPS Returned: " + this.#uspsAddress['valid'] + "</h4>";
             // ok, we got a valid uspsAddress, if it doesn't match, show the block
             if ((this.#personInfo['addr'] == this.#uspsAddress['address'] || this.#personInfo['address'] == this.#uspsAddress['address']) &&
                 (this.#personInfo['addr2'] == this.#uspsAddress['address2'] || this.#personInfo['addr_2'] == this.#uspsAddress['address2']) &&
@@ -749,11 +752,14 @@ class Membership {
 
             if (this.#uspsAddress['valid'] == 'Valid')
                 html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="membership.useUSPS();">Update using USPS Validated Address</button>'
+            else
+                html += "<p>Please check/verify the address you entered on the left.</p></div>";
         }
         html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="membership.useMyAddress();">Update using Address as Entered</button><br/>' +
             '<button class="btn btn-sm btn-secondary m-1 mt-2" onclick="membership.redoAddress();">I fixed the address, validate it again.</button>';
 
         this.#uspsDiv.innerHTML = html;
+        this.#uspsDiv.classList.add('border','border-4',border-dark','rounded);
         this.#uspsDiv.scrollIntoView({behavior: 'instant', block: 'center'});
     }
 
@@ -774,17 +780,20 @@ class Membership {
         this.#stateField.value = this.#personInfo['state'];
         this.#zipField.value = this.#personInfo['zip'];
         this.#uspsDiv.innerHTML = '';
+        this.#uspsDiv.classList.remove('border','border-4',border-dark','rounded);
         this.#cartChanges++;
         this.verifyAddress(1);
     }
 
     useMyAddress() {
         this.#uspsDiv.innerHTML = '';
+        this.#uspsDiv.classList.remove('border','border-4',border-dark','rounded);
         this.verifyAddress(1);
     }
 
     redoAddress() {
         this.#uspsDiv.innerHTML = '';
+        this.#uspsDiv.classList.remove('border','border-4',border-dark','rounded);
         this.#cartChanges++;
         this.verifyAddress(0);
     }

@@ -32,12 +32,10 @@ function show_message(message, type = 'success', div='result_message') {
         return;
     }
     if (type === 'error') {
-        message_div.classList.add('bg-danger');
-        message_div.classList.add('text-white');
+        message_div.classList.add('bg-danger','text-white');
     }
     if (type === 'success') {
-        message_div.classList.add('bg-success');
-        message_div.classList.add('text-white');
+        message_div.classList.add('bg-success','text-white');
     }
     if (type === 'warn') {
         message_div.classList.add('bg-warning');

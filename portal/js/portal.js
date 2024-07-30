@@ -36,7 +36,6 @@ class Portal {
     #stateField = null;
     #zipField = null;
     #countryField = null;
-    #uspsblock = null;
     #email1Field = null;
     #email2Field = null;
     #phoneField = null;
@@ -123,7 +122,6 @@ class Portal {
             this.#stateField = document.getElementById("state");
             this.#zipField = document.getElementById("zip");
             this.#countryField = document.getElementById("country");
-            this.#uspsblock = document.getElementById("uspsblock");
             this.#email1Field = document.getElementById("email1");
             this.#email2Field = document.getElementById("email2");
             this.#phoneField = document.getElementById("phone");
@@ -326,7 +324,6 @@ class Portal {
         this.#stateField.value = person['state'];
         this.#zipField.value = person['zip'];
         this.#countryField.value = person['country'];
-        this.#uspsblock.innerHTML = '';
         this.#email1Field.value = person['email_addr'];
         this.#email2Field.value = person['email_addr'];
         this.#phoneField.value = person['phone'];
@@ -527,13 +524,17 @@ class Portal {
                 errormsg = errormsg.substring(5);
             }
             html = "<h4>USPS Returned an error<br/>validating the address</h4>" +
-                "<pre>" + errormsg + "</pre>\n";
+                "<div class='bg-dangrer text-white'><pre>" + errormsg + "</pre></div>\n";
         } else {
             this.#uspsAddress = data['address'];
             if (this.#uspsAddress['address2'] == undefined)
                 this.#uspsAddress['address2'] = '';
 
-            html = "<h4>USPS Returned: " + this.#uspsAddress['valid'] + "</h4>";
+            html = '';
+            if (this.#uspsAddress['valid'] != 'Valid') {
+                html += "<div class='p-2 bg-danger text-white'>";
+            }
+            html += "<h4>USPS Returned: " + this.#uspsAddress['valid'] + "</h4>";
 
             // ok, we got a valid uspsAddress, if it doesn't match, show the block
             var person = this.#personSave;
@@ -551,11 +552,14 @@ class Portal {
 
             if (this.#uspsAddress['valid'] == 'Valid')
                 html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="portal.useUSPS();">Update using USPS Validated Address</button>'
+            else
+                html += "<p>Please check/verify the address you entered on the left.</p></div>";
         }
         html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="portal.useMyAddress();">Update using Address as Entered</button><br/>' +
             '<button class="btn btn-sm btn-secondary m-1 mt-2" onclick="portal.redoAddress();">I fixed the address, validate it again.</button>';
 
         this.#uspsDiv.innerHTML = html;
+        this.#uspsDiv.classList.add('border','border-4','border-dark','rounded');
         this.#uspsDiv.scrollIntoView({behavior: 'instant', block: 'center'});
     }
 
@@ -576,17 +580,21 @@ class Portal {
         this.#cityField.value = person['city'];
         this.#stateField.value = person['state'];
         this.#zipField.value = person['zip'];
+        this.#uspsDiv.classList.remove('border','border-4','border-dark','rounded');
         this.#uspsDiv.innerHTML = '';
+
         this.editPersonSubmit(1);
     }
 
     useMyAddress() {
         this.#uspsDiv.innerHTML = '';
+        this.#uspsDiv.classList.remove('border','border-4','border-dark','rounded');
         this.editPersonSubmit(1);
     }
 
     redoAddress() {
         this.#uspsDiv.innerHTML = '';
+        this.#uspsDiv.classList.remove('border','border-4','border-dark','rounded');
         this.editPersonSubmit(0);
     }
 
