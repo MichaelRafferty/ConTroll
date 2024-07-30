@@ -91,7 +91,13 @@ class Login {
         this.#tokenEmailDiv = document.getElementById('token_email_div');
 
         if (this.#tokenEmail) {
-            this.#tokenEmail.addEventListener('keyup', (e)=> { if (e.code === 'Enter') login.tokenEmailChanged(1); });
+            this.#tokenEmail.addEventListener('keyup', (e)=> {
+                    if (e.code === 'Enter') {
+                        login.tokenEmailChanged(2);
+                    } else {
+                        login.tokenEmailChanged(1);
+                    }
+                });
             this.#tokenEmail.addEventListener('mouseout', (e)=> {  login.tokenEmailChanged(0); });
         }
         if (this.#devEmail) {
@@ -192,7 +198,7 @@ class Login {
         window.location = '?oauth2=google';
     }
 
-    tokenEmailChanged(autocall) {
+    tokenEmailChanged(autoCall) {
         clear_message();
         if (!this.#tokenEmail) {
             this.#sendLinkBtn.disabled = true;
@@ -206,11 +212,14 @@ class Login {
 
         var valid = validateAddress(email);
         this.#sendLinkBtn.disabled = !valid;
+        if (autoCall == 1)
+            return;
+
         if (!valid) {
             show_message("Please enter a valid email address", 'warn');
             return;
         }
-        if (autocall)
+        if (autoCall == 2)
             this.sendLink();
     }
 
