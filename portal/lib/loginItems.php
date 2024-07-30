@@ -89,6 +89,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $cipherInfo,
     global $config_vars;
 
     $portal_conf = get_conf('portal');
+    $con_conf = get_conf('con');
 
     $loginData = getLoginMatch($email, $id, $validationType);
     if (!is_array($loginData)) {
@@ -154,11 +155,11 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $cipherInfo,
         <h3>The email <?php echo $email;?> does not have an account.</h3>
         <div class='row'>
             <div class='col-sm-12'>
-                <p>If you don’t have a membership or account click the “Create New Account” button.</p>
-                <p>If you believe you already have a membership or account you may have used a different email address.
-                    If this is the case, please use one of the login buttons below using the original email address.
-                    Once logged in with the original email address, you can use the 'Account Settings’ menu item to add email addresses to your account.
-                </p>
+                <p>If you believe you already have a membership or account it may been created using a different email address. If this is the case, please
+                    login again using the correct email address. If you cannot remember what email you used, please contact
+                    <?php echo $con_conf['regadminemail']?>.</p>
+                <p>Once you have logged in using the correct email address, you can use the 'Account
+                    Settings’ menu item to add email addresses to your account.</p>
             </div>
         </div>
         <div class="row mb-4">
