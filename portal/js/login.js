@@ -491,9 +491,11 @@ class Login {
         html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="login.useMyAddress();">Update using Address as Entered</button><br/>' +
             '<button class="btn btn-sm btn-secondary m-1 mt-2" onclick="login.redoAddress();">I fixed the address, validate it again.</button>';
 
-        this.#uspsDiv.innerHTML = html;
-        this.#uspsDiv.classList.add('border','border-4','border-dark','rounded');
-        this.#uspsDiv.scrollIntoView({behavior: 'instant', block: 'center'});
+        if (this.#uspsDiv != null) {
+            this.#uspsDiv.innerHTML = html;
+            this.#uspsDiv.classList.add('border', 'border-4', 'border-dark', 'rounded');
+            this.#uspsDiv.scrollIntoView({behavior: 'instant', block: 'center'});
+        }
     }
 
     // usps address post functions
@@ -513,20 +515,26 @@ class Login {
         this.#cityField.value = person['city'];
         this.#stateField.value = person['state'];
         this.#zipField.value = person['zip'];
-        this.#uspsDiv.innerHTML = '';
-        this.#uspsDiv.classList.remove('border','border-4','border-dark','rounded');
+        if (this.#uspsDiv != null) {
+            this.#uspsDiv.innerHTML = '';
+            this.#uspsDiv.classList.remove('border', 'border-4', 'border-dark', 'rounded');
+        }
         this.editPersonSubmit(1);
     }
 
     useMyAddress() {
-        this.#uspsDiv.innerHTML = '';
-        this.#uspsDiv.classList.remove('border','border-4','border-dark','rounded');
+        if (this.#uspsDiv != null) {
+            this.#uspsDiv.innerHTML = '';
+            this.#uspsDiv.classList.remove('border', 'border-4', 'border-dark', 'rounded');
+        }
         this.editPersonSubmit(1);
     }
 
     redoAddress() {
-        this.#uspsDiv.innerHTML = '';
-        this.#uspsDiv.classList.remove('border','border-4','border-dark','rounded');
+        if (this.#uspsDiv != null) {
+            this.#uspsDiv.innerHTML = '';
+            this.#uspsDiv.classList.remove('border', 'border-4', 'border-dark', 'rounded');
+        }
         this.editPersonSubmit(0);
     }
 
