@@ -175,7 +175,7 @@ if (isSessionVar('id')) {
             if ($email != $oldEmail) { // treat this as a logout and try it again
                 clearSession();
             } else {
-                if ($loginId != $match['id']) {
+                if (array_key_exists('id', $match) && $loginId != $match['id']) {
                     // this is a switch account request
                     unsetSessionVar('transId');    // just in case it is hanging around, clear this
                     unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
