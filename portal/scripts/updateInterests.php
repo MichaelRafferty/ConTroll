@@ -13,6 +13,7 @@ $con = get_con();
 $conid=$con['id'];
 $conf = get_conf('con');
 $portal_conf = get_conf('portal');
+$log = get_conf('log');
 
 $response['conid'] = $conid;
 
@@ -83,5 +84,8 @@ foreach ($existingInterests as $existing) {
 
 $response['rows_upd'] = $rows_upd;
 $response['status'] = 'success';
-$response['message'] = $rows_upd == 0 ? "No changes" : "$rows_upd interests updated";
+$response['logmessage'] = $rows_upd == 0 ? "No changes" : "$rows_upd interests updated";
+$response['message'] = 'Interests successfully updated';
+logInit($log['reg']);
+logWrite($response);
 ajaxSuccess($response);

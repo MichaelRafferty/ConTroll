@@ -17,6 +17,8 @@ $log = get_conf('log');
 $portal_conf = get_conf('portal');
 
 $response['conid'] = $conid;
+$response['logmessage'] = '';
+$response['message'] = '';
 
 if (!(array_key_exists('person', $_POST) && array_key_exists('cart', $_POST) && array_key_exists('action', $_POST))) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
@@ -208,7 +210,7 @@ EOS;
             ajaxSuccess($response);
         }
         $response['newPersonId'] = $personId;
-        $response['message'] = "New person with Temporary ID $personId added";
+        $response['logmessage'] .= "New person with Temporary ID $personId added" . PHP_EOL;
         $newPerid = $personId;
         $personType = 'n';
         logWrite(array('con'=>$con['name'], 'trans'=>$transId, 'action' => 'New managed person created', 'person' => $person, 'managedBy' => $loginId));
@@ -265,7 +267,7 @@ EOS;
     }
     $response['person_rows_upd'] = $rows_upd;
     $response['status'] = 'success';
-    $response['message'] = $rows_upd == 0 ? "No changes" : "$rows_upd person updated";
+    $response['logmessage'] = $rows_upd == 0 ? "No changes" : "$rows_upd person updated" . PHP_EOL;
 }
 
 $num_del = 0;
@@ -354,7 +356,7 @@ WHERE id = ?;
 EOS;
         dbSafeCmd($uQ, 'ii', array($transId, $transId));
     }
-    $response['message'] .= "<br/>$num_del Memberships Deleted, $num_ins Memberships Inserted";
+    $response['logmessage'] .= "$num_del Memberships Deleted, $num_ins Memberships Inserted" . PHP_EOL;
     logWrite(array('con'=>$con['name'], 'trans'=>$transId, 'action' => 'cart updated', 'cart' => $cart, 'updatedBy' => $loginId));
 }
 
@@ -406,8 +408,7 @@ logWrite(array('con'=>$con['name'], 'trans'=>$transId, 'action' => 'Interests ad
 
 $response['int_upd'] = $int_upd;
 
-$response['message'] .= "<br/>" . ($int_upd == 0 ? 'No Interests changed' : "$int_upd  Interests updated");
-$response['status'] = 'success';
+$response['logmessage'] .= ($int_upd == 0 ? 'No Interests changed' : "$int_upd  Interests updated") . PHP_EOL;
 
 if ($voidTransId) {
     // check to see if the price in the transaction = the paid for the transaction
@@ -438,8 +439,17 @@ EOS;
 
 $policy_upd = updateMemberPolicies($conid, $personId, $personType, $loginId, $loginType);
 
+if ($response['message'] == '') {
+    $response['status'] = 'success';
+    $response['message'] = 'All information updated successfully';
+} else {
+    $response['status'] = 'warn';
+}
 
-    ajaxSuccess($response);
+logInit($log['reg']);
+logWrite($response);
+
+ajaxSuccess($response);
 
 function getNewTransaction($conid, $perid, $newperid) {
     $iQ = <<<EOS
