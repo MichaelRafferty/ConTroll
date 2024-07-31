@@ -377,7 +377,7 @@ function drawManagedPerson($personId, $personType, $person, $memberships, $showI
     }
     ?>
     <div class="row mt-1">
-        <div class='col-sm-1' style='text-align: right;'><?php echo $person['personType'] == 'n' ? 'In Progress' : $person['id']; ?></div>
+        <div class='col-sm-1' style='text-align: right;'><?php echo $person['personType'] == 'n' ? 'Pending' : $person['id']; ?></div>
         <div class='col-sm-4'><strong><?php echo $person['fullname']; ?></strong></div>
         <div class="col-sm-2"><?php echo $badge_name; ?></div>
         <div class='col-sm-5 p-1'>
