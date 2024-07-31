@@ -812,14 +812,11 @@ class Membership {
         this.#totalDue = 0;
         this.#countMemberships = 0;
         this.#unpaidMemberships = 0;
-        var statusCol;
         var html = `
             <div class="row">
-                <div class="col-sm-2"><b>Purchase Date</b></div>
-                <div class="col-sm-1" style='text-align: right;'><b>Balance Due</b></div>
+                <div class="col-sm-2"><b>Remove/Delete</b></div>
+                <div class="col-sm-1" style='text-align: right;'><b>Status</b></div>
                 <div class="col-sm-1" style='text-align: right;'><b>Price</b></div>
-                <div class="col-sm-1"><b>Type</b></div>
-                <div class="col-sm-1"><b>Category</b></div>
                 <div class="col-sm-4"><b>Membership</b></div>
             </div>
 `;
@@ -834,11 +831,6 @@ class Membership {
             if (membershipRec.status == 'unpaid')
                 this.#totalDue += amount_due;
 
-            if (membershipRec.status == 'unpaid')
-                statusCol = Number(amount_due).toFixed(2)
-            else
-                statusCol = membershipRec.status;
-
             if (membershipRec.toDelete) {
                 col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="membership.membershipRestore(' + row + ')">Restore</button>';
             } else if (membershipRec.status == 'unpaid' && membershipRec.price > 0 && membershipRec.paid == 0) {
@@ -851,10 +843,8 @@ class Membership {
             html += `
     <div class="row">
         <div class="col-sm-2">` + col1 + `</div>
-        <div class="col-sm-1" style='text-align: right;'>` + statusCol + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + membershipRec.status + `</div>
         <div class="col-sm-1" style='text-align: right;'>` + membershipRec.price + `</div>
-        <div class="col-sm-1">` + membershipRec.memType + `</div>
-        <div class="col-sm-1">` + membershipRec.memCategory + `</div>
         <div class="col-sm-4">` + (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label + ' [' + ageListIdx[membershipRec.memAge].label + `]</div>
     </div>
 `;
@@ -870,8 +860,8 @@ class Membership {
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-1"></div>
-        <div class="col-sm-1"><b>Total Due:</b></div>
+        <div class="col-sm-2"></div>
+        <div class="col-sm-1" style='text-align: right;'><b>Total Due:</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>$` + Number(this.#totalDue).toFixed(2)+ `</b></div>
     </div>`
         }
