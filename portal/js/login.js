@@ -421,7 +421,7 @@ class Login {
         }
 
         // Check USPS for standardized address
-        if (this.#uspsDiv != null && person['city'] != '' && validateUSPS == 0) {
+        if (this.#uspsDiv != null && person['city'] != '' && validateUSPS == 0 && person['country'] == 'USA') {
             this.#personSave = person;
             this.#uspsAddress = null;
             var script = "scripts/uspsCheck.php";

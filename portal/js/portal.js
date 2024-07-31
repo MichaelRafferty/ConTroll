@@ -492,7 +492,7 @@ class Portal {
         }
 
         // Check USPS for standardized address
-        if (this.#uspsDiv != null && person['country'] == 'USA' && person['city'] != '' && validateUSPS == 0) {
+        if (this.#uspsDiv != null && person['country'] == 'USA' && person['city'] != '' && validateUSPS == 0 && person['country'] == 'USA') {
             this.#personSave = person;
             this.#uspsAddress = null;
             var script = "scripts/uspsCheck.php";
