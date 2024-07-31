@@ -75,6 +75,7 @@ $loginType = null;
             $redirectURI = $portal_conf['redirect_base'];
             if ($redirectURI == '')
                 $redirectURI = null;
+            $oauthParams = null;
             switch (getSessionVar('oauth2')) {
                 case 'google':
                     $oauthParams = googleAuth($redirectURI);
@@ -88,7 +89,7 @@ $loginType = null;
             }
 
             if ($oauthParams == null) {
-                // an error occured with login by googlr
+                // an error occured with login by google
                 draw_login($config_vars, 'An error occured with the login with ' . getSessionVar('oauth2'), 'bg-danger text-white');
                 clearSession('oauth2');
                 exit();
