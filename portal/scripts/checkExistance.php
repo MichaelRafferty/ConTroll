@@ -61,11 +61,11 @@ if (strtolower($myEmail) == strtolower($email)) {
 $cQ = <<<EOS
 SELECT COUNT(*) AS accounts, COUNT(managedBy) AS managedBy, COUNT(managedByNew) AS managedByNew, 'p' AS accountType, MIN(id) AS acctId
 FROM perinfo
-WHERE email_addr = ? AND id != ? AND first_name != 'Merged' AND middle_name != 'into'
+WHERE email_addr = ? AND id != ? AND NOT (first_name = 'Merged' AND middle_name = 'into')
 UNION
 SELECT COUNT(*) AS accounts, COUNT(managedBy) AS managedBy, COUNT(managedByNew) AS managedByNew, 'n' AS accountType, MIN(id) AS acctId
 FROM newperson
-WHERE email_addr = ? and perid IS NULL and id != ? AND first_name != 'Merged' AND middle_name != 'into';
+WHERE email_addr = ? and perid IS NULL and id != ? AND  NOT (first_name = 'Merged' AND middle_name = 'into');
 EOS;
 
 $cR = dbSafeQuery($cQ, 'sisi', array($email, $pcheckid, $email, $ncheckid));
