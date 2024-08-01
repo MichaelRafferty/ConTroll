@@ -40,13 +40,13 @@ SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_
     managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
 FROM perinfo
-WHERE id=? AND email_addr = ?
+WHERE id=? AND email_addr = ? AND first_name != 'Merged' AND middle_name != 'into'
 UNION
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip, country, 
     managedBy, managedByNew, lastVerified, 'n' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
 FROM newperson
-WHERE id=? AND email_addr = ? AND perid IS NULL;
+WHERE id=? AND email_addr = ? AND perid IS NULL AND first_name != 'Merged' AND middle_name != 'into';
 EOS;
 
 $cR = dbSafeQuery($cQ, 'isis', array($acctId, $email, $acctId, $email));
