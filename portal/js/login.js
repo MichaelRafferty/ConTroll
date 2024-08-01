@@ -549,6 +549,7 @@ class Login {
 
         var data = {
             person: person,
+            newPolicies: JSON.stringify(URLparamsToArray($('#editPolicies').serialize())),
             currentPerson: -12345,
             currentPersonType: 'n',
             source: 'login',

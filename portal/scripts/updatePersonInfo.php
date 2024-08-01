@@ -90,17 +90,6 @@ if ($rows_upd === false) {
 $message = $rows_upd == 0 ? 'No changes' : "$rows_upd person updated";
 
 // now update the policies
-$policies = getPolicies();
-$iQ = <<<EOS
-INSERT INTO memberPolicies(perid, conid, newperid, policy, response, updateBy)
-VALUES (?,?,?,?,?,?);
-EOS;
-$uQ = <<<EOS
-UPDATE memberPolicies
-SET response = ?, updateBy = ?
-WHERE id = ?;
-EOS;
-
 $policy_upd =  updateMemberPolicies($conid, $currentPerson, $currentPersonType, $personId, $personType);
 if ($policy_upd > 0) {
     $message .= "<br/>$policy_upd policy responses updated";

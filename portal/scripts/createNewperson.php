@@ -1,6 +1,7 @@
 <?php
 require_once('../lib/base.php');
 require_once('../../lib/log.php');
+require_once('../../lib/policies.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -82,11 +83,16 @@ if ($personId === false || $personId < 0) {
     ajaxSuccess($response);
 }
 $response['newPersonId'] = $personId;
+
+// now update the policies
+$policy_upd =  updateMemberPolicies($conid, $personId, 'n', $personId, 'n');
+$policy_msg = "<br/>$policy_upd policy responses updated";
+
 $response['message'] = "New person successfully added";
 setSessionVar("id", $personId);
 setSessionVar("idType", 'n');
-logWrite(array('con'=>$con['name'], 'action' => 'Create new person on login', 'person' => array('n', $personId), 'newperson' => $person ));
-
+logWrite(array('con'=>$con['name'], 'action' => 'Create new person on login', 'person' => array('n', $personId), 'newperson' => $person,
+               'PolicyUpd' => $policy_msg));
 
 if ($validationType == 'token') {
     $updSQL = <<<EOS
