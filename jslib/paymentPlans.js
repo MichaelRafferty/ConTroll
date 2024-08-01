@@ -85,7 +85,7 @@ class PaymentPlans {
                     }
 
                     if (plan.excludeList != null) {
-                        if (plan.memListArray.indexOf(mem.id.toString()) != -1)
+                        if (plan.excludeListArray.indexOf(mem.id.toString()) != -1)
                             eligible = false;
                     }
 
