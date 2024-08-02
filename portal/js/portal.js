@@ -824,8 +824,8 @@ class Portal {
             html += `
     <div class="row mt-2">
         <div class="col-sm-12">
-            You can pay this balance in full using the "Pay Total About Due" button above or<br/>
-            create one of the following payment plans using the "Select & Customize Payment Plan" buttons below.:
+            You can pay this balance in full using the "Pay Total Amount Due" button above or<br/>
+            create one of the following payment plans using the "Select & Customize Payment Plan" buttons below:
         </div>
     </div>
 `;
