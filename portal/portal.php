@@ -331,7 +331,7 @@ if ($info['managedByName'] != null) {
     if ($info['managedByName'] == null) {
 ?>
             People managed by this account:
-                <button class='btn btn-sm btn-primary' type='button'
+                <button class='btn btn-primary ms-2' type='button'
                         onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/addUpgrade.php';">
                     Add Another Person and Create a New Membership for Them
                 </button>
