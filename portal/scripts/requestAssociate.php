@@ -179,19 +179,38 @@ load_email_procs();
 $loginFullname = $loginInfo['fullname'];
 $loginEmail = $loginInfo['email_addr'];
 $personFullname = $personInfo['fullname'];
+$personEmail = $personInfo['email_addr'];
+$label = $conf['label'];
+$regadminemail = $conf['regadminemail'];
+if ($personFullname == '') {
+    $greeting = $personEmail;
+} else {
+    $greeting = "$personFullname ($personEmail)";
+}
 
-$body = "Dear $personFullname," . PHP_EOL . PHP_EOL .
-    "$loginFullname requested to manage your " . $conf['label'] . " account.  They did this by entering your account id and email address." . PHP_EOL . PHP_EOL .
-    "If you have any questions about this request, please contact them at $loginEmail." . PHP_EOL . PHP_EOL .
-    "If you agree to this request and wish them to have access to your account, please click the link below." . PHP_EOL . PHP_EOL . $token . PHP_EOL . PHP_EOL;
+$body = "Dear $greeting," . PHP_EOL . PHP_EOL .
+    "$loginFullname requested to manage your $label account." . PHP_EOL . PHP_EOL .
+    "If you have any questions about why this request was made, please contact them directly at $loginFullname, $loginEmail)" . PHP_EOL . PHP_EOL .
+    "If you fine with $loginFullname managing your account and with giving them access to your information, please click the link below." . PHP_EOL . PHP_EOL .
+    $token . PHP_EOL . PHP_EOL .
+    "This link expires in 24 hours." . PHP_EOL . PHP_EOL .
+    "Thank you;" . PHP_EOL .
+    "$label - Registration" . PHP_EOL .
+    "$regadminemail" . PHP_EOL . PHP_EOL;
 
-$htmlbody = "<p>Dear $personFullname,</p>" . PHP_EOL .
-    "<p>$loginFullname requested to manage your " . $conf['label'] . ' account.  They did this by entering your account id and email address.</p>' . PHP_EOL .
-    "<p>If you have any questions about this request, please contact them at $loginEmail.</p>" . PHP_EOL .
-    '<p>If you agree to this request and wish them to have access to your account, please click the link below.<p>' . PHP_EOL .
-    '<p><a href="' . $token . '">Click this link to approve the management request</a></p>' .    PHP_EOL;
 
-$return_arr = send_email($conf['regadminemail'], trim($email), /* cc */ null, $conf['label'] . ' Membership Portal Account Managment Request', $body, $htmlbody);
+$htmlbody = "<p>Dear $greeting,</p>" . PHP_EOL .
+    "<p>$loginFullname requested to manage your $label account.</p>" . PHP_EOL .
+    "<p>If you have any questions about why this request was made, please contact them directly at $loginFullname, " .
+    "<a href='mailto:$loginEmail'>$loginEmail</a>)</p>" . PHP_EOL .
+    "<p>If you fine with $loginFullname managing your account and with giving them access to your information, please click the link below.</p>" . PHP_EOL .
+    '<p><a href="' . $token . '">Click this link to approve the management request</a></p>' . PHP_EOL .
+    '<p>This link expires in 24 hours.</p>' . PHP_EOL .
+    '<p>Thank you;</p>' . PHP_EOL .
+    "<p>$label - Registration<br/>" . PHP_EOL .
+    "<a href='mailto:$regadminemail'>$regadminemail</a></p>" . PHP_EOL . PHP_EOL;
+
+$return_arr = send_email($regadminemail, trim($email), /* cc */ null, $label . ' Membership Portal Account Managment Request', $body, $htmlbody);
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];
 } else {
