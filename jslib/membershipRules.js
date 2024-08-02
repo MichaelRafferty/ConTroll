@@ -91,11 +91,12 @@ class MembershipRules {
             console.log(mem);
         }
         if (this.#age != null) {
-            if (mem.memAge != 'all' && mem.memAge != this.#age)
+            if (mem.memAge != 'all' && mem.memAge != this.#age) {
                 if (this.#debug & 8) {
                     console.log("testMembership: return false due to not applying to this age");
                 }
                 return false;   // skip this mem entry, its's not all or the current age bracket
+                }
         }
 
         if (skipImplicit == false) {
@@ -357,11 +358,12 @@ class MembershipRules {
                         checkMore = false;
             } // end of switch
 
-        if (checkMore == false)
-            if (this.#debug & 16) {
-                console.log("Step return on checkMore == false " + stepPass);
+            if (checkMore == false) {
+                if (this.#debug & 16) {
+                    console.log("Step return on checkMore == false " + stepPass);
+                }
+                return stepPass;
             }
-            return stepPass;
         } // end of membership list loop
         if (step.ruleType == 'needAll') {
             for (var row in this.#allTypes) {
