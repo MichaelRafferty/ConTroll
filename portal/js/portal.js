@@ -556,12 +556,12 @@ class Portal {
             html += this.#uspsAddress['city'] + ', ' + this.#uspsAddress['state'] + ' ' + this.#uspsAddress['zip'] + "</pre>\n";
 
             if (this.#uspsAddress['valid'] == 'Valid')
-                html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="portal.useUSPS();">Update using USPS Validated Address</button>'
+                html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="portal.useUSPS();">Update using the USPS validated address</button>'
             else
                 html += "<p>Please check/verify the address you entered on the left.</p></div>";
         }
-        html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="portal.useMyAddress();">Update using Address as Entered</button><br/>' +
-            '<button class="btn btn-sm btn-secondary m-1 mt-2" onclick="portal.redoAddress();">I fixed the address, validate it again.</button>';
+        html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="portal.useMyAddress();">Update using the address as entered</button><br/>' +
+            '<button class="btn btn-sm btn-secondary m-1 mt-2" onclick="portal.redoAddress();">I fixed the address, validate it again</button>';
 
         if (this.#uspsDiv != null) {
             this.#uspsDiv.innerHTML = html;

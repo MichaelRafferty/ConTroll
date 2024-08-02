@@ -693,10 +693,16 @@ class ExhibitorInvoice {
             html += this.#uspsAddress['city'] + ', ' + this.#uspsAddress['state'] + ' ' + this.#uspsAddress['zip'] + "</pre>\n";
 
             if (this.#uspsAddress['valid'] == 'Valid')
-                html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="exhibitorInvoice.useUSPS();">Update using USPS Validated Address</button>'
+                html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="exhibitorInvoice.useUSPS();">' +
+                    'Update using the USPS validated address' +
+                    '</button>'
         }
-        html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="exhibitorInvoice.useMyAddress();">Update using Address as Entered</button><br/>' +
-            '<button class="btn btn-sm btn-secondary m-1 mt-2" onclick="exhibitorInvoice.redoAddress();">I fixed the address, validate it again.</button>';
+        html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="exhibitorInvoice.useMyAddress();">' +
+            'Update using the address as Entered' +
+            '</button><br/>' +
+            '<button class="btn btn-sm btn-secondary m-1 mt-2" onclick="exhibitorInvoice.redoAddress();">' +
+            'I fixed the address, validate it again' +
+            '</button>';
 
         this.#uspsDiv = document.getElementById('uspsBlock' + this.#currentSuffix);
         this.#uspsDiv.innerHTML = html;
