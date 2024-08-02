@@ -83,6 +83,25 @@ class MembershipRules {
         return null; // not found
     }
 
+    findCatInCart(category, mlist) {
+        if (mlist == null)
+            return null; // no list to search
+
+        for (var row in mlist) {
+            var cartrow = mlist[row];
+            if (category != cartrow.memCategory)
+                continue;
+            if (this.#includeStatus.indexOf(cartrow.status) == -1) {
+                continue;
+            }
+            if (cartrow.toDelete == true)
+                continue;
+
+            return cartrow;  // return matching entry
+        }
+        return null; // not found
+    }
+
     // test the memList entry against implicit and explicit rules
     testMembership(mem, skipImplicit = false) {
         // first check if its in the right age, if age is null, all are accepted
@@ -142,7 +161,7 @@ class MembershipRules {
             // memCategory rule on duplicate- if onlyOne and it is in the cart, don't allow it again
             var memCat = memCategories[mem.memCategory];
             if (memCat.onlyOne == 'Y') {
-                var item = this.findInCart(mem.memId, this.#memberships);
+                var item = this.findCatInCart(mem.memCategory, this.#memberships);
                 if (item != null && item != mem) { // for delete/remove, are we searching for ourselves, if so, it's allowed
                     if (this.#debug & 8) {
                         console.log("testMembership Implicit: return false-only one allowed and one of this memId is in the list already");
