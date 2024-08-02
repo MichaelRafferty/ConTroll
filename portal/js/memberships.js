@@ -526,6 +526,17 @@ class Membership {
             this.buildMembershipButtons();
         }
         this.#currentStep = step;
+        var focusField = null;
+        switch (step) {
+            case 0:
+                focusField = this.#newEmailField;
+                setTimeout(() => { focusField.focus({focusVisible: true}); }, 600);
+                break;
+            case '2':
+                focusField = this.#fnameField;
+                setTimeout(() => { focusField.focus({focusVisible: true}); }, 600);
+                break;
+        }
     }
 
     // ageSelect - redo all the age buttons on selecting one of them, then move on to the next page
@@ -1037,12 +1048,12 @@ class Membership {
         }
 
         if (mbr.price == 0) {
-            show_message("Please contact Registration to delete free memberships.", "warn");
+            show_message("Please contact registration at " + config['regadminemail'] + "  to delete free memberships.", "warn");
             return;
         }
 
         if (mbr.paid > 0) {
-            show_message("Please contact Registration to resolve this partially paid membership.", "warn");
+            show_message("Please contact registration at " + config['regadminemail'] + " to resolve this partially paid membership.", "warn");
             return;
         }
 
