@@ -142,16 +142,9 @@ class Membership {
         if (config['action'] != 'new') {
             this.#addUpdateType = config['upgradeType'];
             this.#addUpdateId = config['upgradeId'];
-            this.getPersonInfo(this.#addUpdateId, this.#addUpdateType, true, false);
+            this.getPersonInfo(this.#addUpdateId, this.#addUpdateType, true, false, 1);
         } else {
-            if (config.personId == null) {
-                this.getPersonInfo(config.personId, config.personType, true, true);
-            } else {
-                this.buildAgeButtons();
-                this.#newEmailField = document.getElementById("newEmailAddr");
-                this.#newEmailField.addEventListener('keyup', (e)=> { if (e.code === 'Enter') membership.checkNewEmail(0); });
-                this.gotoStep(0);
-            }
+            this.getPersonInfo(config.personId, config.personType, true, true, 0);
         }
     }
 
@@ -308,7 +301,7 @@ class Membership {
 
 // membership add/update functions
     // getPersonInfo
-    getPersonInfo(id, type, ageButtons, newFlag) {
+    getPersonInfo(id, type, ageButtons, newFlag, nextStep) {
         if (id == null) {
             return;
         }
@@ -333,7 +326,7 @@ class Membership {
                 } else {
                     if (config['debug'] & 1)
                         console.log(data);
-                    membership.getPersonInfoSuccess(data, ageButtons, newFlag);
+                    membership.getPersonInfoSuccess(data, ageButtons, newFlag, nextStep);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -344,7 +337,7 @@ class Membership {
     }
 
     // got the person, update the modal contents
-    getPersonInfoSuccess(data, ageButtons, newFlag) {
+    getPersonInfoSuccess(data, ageButtons, newFlag, nextStep) {
         // ok, it's legal to edit this person, now populate the fields
         this.#personInfo = data['person'];
         if (data['memberships']) {
@@ -444,7 +437,16 @@ class Membership {
 
         if (ageButtons)
             this.buildAgeButtons();
-        this.gotoStep(1);
+
+        if (nextStep == 0) {
+            this.#newEmailField = document.getElementById("newEmailAddr");
+            this.#newEmailField.addEventListener('keyup', (e) => {
+                if (e.code === 'Enter') membership.checkNewEmail(0);
+            });
+            this.gotoStep(0);
+        } else {
+            this.gotoStep(1);
+        }
     }
 
     // age functions
