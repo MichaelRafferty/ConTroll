@@ -216,26 +216,27 @@ class Membership {
     // continue with the results of the email
     checkNewEmailSuccess(data) {
         var email = data['email'];
-        var managedBy = data['managedBy'];
+        var managedByMe = data['managedByMe'];
+        var managedByOther = data['managedByOther'];
         var countFound = data['countFound'];
         var accountType = data['accountType'];
         var accountId = data['accountId'];
 
-        if (countFound == 0) {
+        if (countFound == 0 || (countFound == managedByMe)) {
             this.#email1Field.value = email;
             this.#email2Field.value = email;
             this.#newEmail = email;
             this.gotoStep(1);
             return;
-        } else if (countFound > 1) {
+        } else if (managedByOther > 0) {
+            show_message("This account is already managed by someone else.<br/>" +
+                "If you feel you this is in error, please email registration at " + config['regadminemail'] + " for assistance.<br/>" +
+                "Click the Home menu button to return to the portal.", 'error');
+        } else if (countFound > (managedByMe + 1)) {
             show_message("More than one account has this email address, you cannot add this account.<br/>" +
-                "If you feel you should be able to add these accounts, please email registration for assistance.<br/>" +
+                "If you feel you should be able to add these accounts, please email registration at " + config['regadminemail'] + " for assistance.<br/>" +
                 "Click the Home menu button to return to the portal.", 'error');
             return;
-        } else if (managedBy > 0) {
-            show_message("This account is already managed by someone else.<br/>" +
-                "If you feel you this is in error, please email registration for assistance.<br/>" +
-                "Click the Home menu button to return to the portal.", 'error');
         } else {
             var html = `
             <div class='row'>

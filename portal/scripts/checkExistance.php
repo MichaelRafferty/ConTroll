@@ -57,13 +57,19 @@ if (strtolower($myEmail) == strtolower($email)) {
     exit();
 }
 
+if ($loginType == 'p')
+    $pfield = 'managedBy';
+else
+    $pfield = 'managedByNew';
+
+
 // how many match
 $cQ = <<<EOS
-SELECT COUNT(*) AS accounts, COUNT(managedBy) AS managedBy, COUNT(managedByNew) AS managedByNew, 'p' AS accountType, MIN(id) AS acctId
+SELECT managedBy, managedByNew, 'p' AS accountType, id
 FROM perinfo
 WHERE email_addr = ? AND id != ? AND NOT (first_name = 'Merged' AND middle_name = 'into')
 UNION
-SELECT COUNT(*) AS accounts, COUNT(managedBy) AS managedBy, COUNT(managedByNew) AS managedByNew, 'n' AS accountType, MIN(id) AS acctId
+SELECT managedBy, managedByNew, 'n' AS accountType, id
 FROM newperson
 WHERE email_addr = ? and perid IS NULL and id != ? AND  NOT (first_name = 'Merged' AND middle_name = 'into');
 EOS;
@@ -75,21 +81,35 @@ if ($cR === false) {
 }
 
 $accounts = 0;
-$managed = 0;
+$managedByMe = 0;
+$managedByOther = 0;
 $accountType = '';
 $accountId = 0;
 while ($cL= $cR->fetch_assoc()) {
-    $accounts += $cL['accounts'];
-    if ($cL['accounts'] == 1) {
-        $accountType = $cL['accountType'];
-        $accountId = $cL['acctId'];
+    $accounts++;
+    if ($cL['managedBy'] != null) {
+        if ($loginType == 'p' && $cL['mangedBy'] == $loginId) {
+            $managedByMe++;
+        } else {
+            $mangedByOther++;
+            $accountType = $cL['accountType'];
+            $accountId = $cL['acctId'];
+        }
+    } else if ($cL['managedByNew'] != null) {
+        if ($loginType == 'n' && $cL['mangedBy'] == $loginId) {
+            $managedByMe++;
+        } else {
+            $mangedByOther++;
+            $accountType = $cL['accountType'];
+            $accountId = $cL['acctId'];
+        }
     }
-    $managed += $cL['managedBy'] + $cL['managedByNew'];
 }
 $cR->free();
 
 $response['countFound'] = $accounts;
-$response['managedBy'] = $managed;
+$response['managedByMe'] = $managedByMe;
+$response['managedByOther'] = $managedByOther;
 $response['accountType'] = $accountType;
 $response['accountId'] = $accountId;
 ajaxSuccess($response);
