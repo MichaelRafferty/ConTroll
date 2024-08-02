@@ -191,7 +191,8 @@ if ($personFullname == '') {
 $body = "Dear $greeting," . PHP_EOL . PHP_EOL .
     "$loginFullname requested to manage your $label account." . PHP_EOL . PHP_EOL .
     "If you have any questions about why this request was made, please contact them directly at $loginFullname, $loginEmail)" . PHP_EOL . PHP_EOL .
-    "If you fine with $loginFullname managing your account and with giving them access to your information, please click the link below." . PHP_EOL . PHP_EOL .
+    "If you are fine with $loginFullname managing your account and with giving them access to your information, please click the link below." . PHP_EOL .
+    PHP_EOL .
     $token . PHP_EOL . PHP_EOL .
     "This link expires in 24 hours." . PHP_EOL . PHP_EOL .
     "Thank you;" . PHP_EOL .
@@ -203,7 +204,7 @@ $htmlbody = "<p>Dear $greeting,</p>" . PHP_EOL .
     "<p>$loginFullname requested to manage your $label account.</p>" . PHP_EOL .
     "<p>If you have any questions about why this request was made, please contact them directly at $loginFullname, " .
     "<a href='mailto:$loginEmail'>$loginEmail</a>)</p>" . PHP_EOL .
-    "<p>If you fine with $loginFullname managing your account and with giving them access to your information, please click the link below.</p>" . PHP_EOL .
+    "<p>If you are fine with $loginFullname managing your account and with giving them access to your information, please click the link below.</p>" . PHP_EOL .
     '<p><a href="' . $token . '">Click this link to approve the management request</a></p>' . PHP_EOL .
     '<p>This link expires in 24 hours.</p>' . PHP_EOL .
     '<p>Thank you;</p>' . PHP_EOL .
