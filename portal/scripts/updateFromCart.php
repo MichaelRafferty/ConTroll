@@ -218,6 +218,7 @@ EOS;
     }
 }
 
+// newPerid is set above when it inserts the person as a new person, if it's null, it means it exists already
 if ($newPerid == null) {
     // update the record
     if ($personType == 'p') {
