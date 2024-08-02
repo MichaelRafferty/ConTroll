@@ -87,7 +87,7 @@ class MembershipRules {
     testMembership(mem, skipImplicit = false) {
         // first check if its in the right age, if age is null, all are accepted
         if (this.#debug & 8) {
-            console.log("testMembership: " + skipImplicit.toString());
+            console.log("testMembership:: skipImplicit: " + skipImplicit.toString());
             console.log(mem);
         }
         if (this.#age != null) {
@@ -197,6 +197,9 @@ class MembershipRules {
             }
         }
         // either none applied or all passed
+        if (this.#debug & 8) {
+            console.log("testMembership: return true");
+        }
         return true;
     }
 
