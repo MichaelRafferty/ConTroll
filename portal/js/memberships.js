@@ -576,6 +576,10 @@ class Membership {
             person[keys[i]] = person[keys[i]].trim();
         }
         this.#personInfo = person;
+        if (config.upgradeType) {
+            this.#personInfo.personType = config.upgradeType;
+            this.#personInfo.id = config.upgradeId;
+        }
 
         // validation
         // emails must not be blank and must match
