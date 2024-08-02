@@ -199,7 +199,7 @@ drawVariablePriceModal();
     <div id="ageBracketDiv">
         <div class="row">
             <div class='col-sm-12'>
-                <h3 class="size-h3">Verify Age</h3>
+                <h3 class="size-h3">Age Verification</h3>
             </div>
         </div>
         <?php
