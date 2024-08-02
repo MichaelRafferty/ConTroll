@@ -46,7 +46,7 @@ function load_coupon_data($couponCode, $serial = null) : array {
 
     $couponQ = <<<EOS
 SELECT c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.memId, c.minMemberships, c.maxMemberships, c.limitMemberships,
-       c.minTransaction, c.maxTransaction, c.maxRedemption,
+       c.minTransaction, c.maxTransaction, c.maxRedemption, c.startDate, c.endDate,
        count(t.id) AS redeemedCount, m.memAge, m.shortname, m.memGroup, m.label,
        CASE WHEN c.startDate > now() THEN 'early' ELSE null END as start, 
        CASE WHEN c.endDate <= now() THEN 'expired' ELSE null END as end,
@@ -79,8 +79,11 @@ EOS;
             $ec = '';
             break;
         }
-        if ($l['start'] != null)
-            $ec = 'Coupon has not started yet, starts ' . $l['startDate'];
+        if ($l['start'] != null) {
+            $start = $l['startDate'];
+            $start = str_replace('00:00:00', '', $start);
+            $ec = "Coupon has not started yet, starts $start";
+        }
         if ($l['end'] != null)
             $ec = 'Coupon is expired';
         if ($l['usedBy'] != null)
