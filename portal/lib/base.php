@@ -176,6 +176,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
 }
 
 function portalPageFoot() {
+    $con = get_conf('con');
     $msg = '';
     $class='';
     if (array_key_exists('messageFwd', $_GET)) {
@@ -192,6 +193,14 @@ function portalPageFoot() {
     }
     outputCustomText('main/bottom');
     ?>
+    <div class="row mt-4">
+        <div class="col-sm-12">
+            For any difficulties with the regitration system please contact registration at
+            <a href="mailto:<?php echo $con['regadminemail'];?>?subject=Portal%20Difficulties">
+            <?php echo $con['regadminemail']; ?>
+            </a>
+        </div>
+    </div>
     <div class="container-fluid">
         <div class='row'>
             <div class='col-sm-12 m-0 p-0'>
