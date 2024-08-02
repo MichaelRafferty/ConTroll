@@ -2,6 +2,7 @@
 require_once('../lib/base.php');
 require_once('../../lib/log.php');
 require_once('../../lib/policies.php');
+require_once('../../lib/interests.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -137,17 +138,17 @@ WHERE
 		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.country, ''))), '  *', ' ');
 EOF;
     $value_arr = array(
-        trim($person['first_name']),
-        trim($person['middle_name']),
-        trim($person['last_name']),
+        trim($person['fname']),
+        trim($person['mname']),
+        trim($person['lname']),
         trim($person['suffix']),
-        trim($person['email_addr']),
+        trim($person['email1']),
         trim($person['phone']),
-        trim($person['badge_name']),
-        trim($person['legalName']),
+        trim($person['badgename']),
+        trim($person['legalname']),
         trim($person['pronouns']),
-        trim($person['address']),
-        trim($person['addr_2']),
+        trim($person['addr']),
+        trim($person['addr2']),
         trim($person['city']),
         trim($person['state']),
         trim($person['zip']),
@@ -184,17 +185,17 @@ EOS;
         $typeStr = 'isssssssssssssssiii';
         $valArray = array(
             $transId,
-            trim($person['last_name']),
-            trim($person['middle_name']),
-            trim($person['first_name']),
+            trim($person['lname']),
+            trim($person['mname']),
+            trim($person['fname']),
             trim($person['suffix']),
-            trim($person['email_addr']),
+            trim($person['email1']),
             trim($person['phone']),
-            trim($person['badge_name']),
-            trim($person['legalName']),
+            trim($person['badgename']),
+            trim($person['legalname']),
             trim($person['pronouns']),
-            trim($person['address']),
-            trim($person['addr_2']),
+            trim($person['addr']),
+            trim($person['addr2']),
             trim($person['city']),
             trim($person['state']),
             trim($person['zip']),
@@ -234,24 +235,24 @@ SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, 
 WHERE id = ?;
 EOS;
     }
-    $fields = ['last_name', 'middle_name', 'first_name', 'suffix', 'email_addr', 'phone', 'badge_name', 'legalName', 'pronouns', 'address', 'addr_2', 'city',
+    $fields = ['lname', 'mname', 'fname', 'suffix', 'email1', 'phone', 'badgename', 'legalname', 'pronouns', 'addr', 'addr2', 'city',
     'state', 'zip', 'country'];
     foreach ($fields as $field) {
         if ($person[$field] == null)
             $person[$field] = '';
     }
     $value_arr = array(
-        trim($person['last_name']),
-        trim($person['middle_name']),
-        trim($person['first_name']),
+        trim($person['lname']),
+        trim($person['mname']),
+        trim($person['fname']),
         trim($person['suffix']),
-        trim($person['email_addr']),
+        trim($person['email1']),
         trim($person['phone']),
-        trim($person['badge_name']),
-        trim($person['legalName']),
+        trim($person['badgename']),
+        trim($person['legalname']),
         trim($person['pronouns']),
-        trim($person['address']),
-        trim($person['addr_2']),
+        trim($person['addr']),
+        trim($person['addr2']),
         trim($person['city']),
         trim($person['state']),
         trim($person['zip']),
@@ -362,6 +363,8 @@ EOS;
 
 $newInterests = json_decode($_POST['newInterests'], true);
 $existingInterests = json_decode($_POST['oldInterests'], true);
+if ($existingInterests == null)
+    $existingInterests = array();
 
 // find the differences in the interests to update the record
 
@@ -381,16 +384,26 @@ VALUES (?, ?, ?, ?, ?);
 EOS;
 
 $int_upd = 0;
-foreach ($existingInterests as $existing) {
-    $newVal = array_key_exists($existing['interest'], $newInterests) ? 'Y' : 'N';
-    if (array_key_exists('interested', $existing)) {
-        if ($newVal != $existing['interested']) { // only update changes
+$interests = getInterests();
+foreach ($interests as $interest) {
+    $interestName = $interest['interest'];
+    $newVal = array_key_exists($interestName, $newInterests) ? 'Y' : 'N';
+    if (array_key_exists($interestName, $existingInterests)) {
+        // this is an update, there is a record already in the memberInterests table for this interest.
+        $existing = $existingInterests[$interestName];
+        if (array_key_exists('interested', $existing)) {
+            $oldVal = $existing['interested'];
+        } else {
+            $oldVal = '';
+        }
+        // only update if changed
+        if ($newVal != $oldVal) {
             $upd = 0;
             if ($existing['id'] != null) {
                 $upd = dbSafeCmd($updInterest, 'sii', array($newVal, $loginId, $existing['id']));
             }
             if ($upd === false || $upd === 0) {
-                $newkey = dbSafeInsert($insInterest, 'iissi', array($personId, $conid, $existing['interest'], $newVal, $loginId));
+                $newkey = dbSafeInsert($insInterest, 'iissi', array($personId, $conid, $interestName, $newVal, $loginId));
                 if ($newkey !== false && $newkey > 0)
                     $int_upd++;
             } else {
@@ -398,13 +411,14 @@ foreach ($existingInterests as $existing) {
             }
         }
     } else {
-        $newkey = dbSafeInsert($insInterest, 'iissi', array($personId, $conid, $existing['interest'], $newVal, $loginId));
+        // row doesn't exist in existing interests
+        $newkey = dbSafeInsert($insInterest, 'iissi', array($personId, $conid, $interestName, $newVal, $loginId));
         if ($newkey !== false && $newkey > 0)
             $int_upd++;
     }
 }
-logWrite(array('con'=>$con['name'], 'trans'=>$transId, 'action' => 'Interests added/updated', 'interests' => $existingInterests, 'person' => array($personType, $personId), 'updatedBy' => $loginId));
-
+logWrite(array('con'=>$con['name'], 'trans'=>$transId, 'action' => 'Interests added/updated', 'interests' => $existingInterests,
+               'person' => array($personType, $personId), 'updatedBy' => $loginId));
 
 $response['int_upd'] = $int_upd;
 

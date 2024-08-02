@@ -1,6 +1,7 @@
 <?php
 require_once('../lib/base.php');
 require_once('../../lib/log.php');
+require_once('../../lib/interests.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -35,6 +36,8 @@ $currentPerson = $_POST['currentPerson'];
 $currentPersonType = $_POST['currentPersonType'];
 $newInterests = json_decode($_POST['newInterests'], true);
 $existingInterests = json_decode($_POST['existingInterests'], true);
+if ($existingInterests == null)
+    $existingInterests = array();
 
 $response['currentPersonType'] = $currentPersonType;
 $response['currentPeron'] = $currentPerson;
@@ -59,16 +62,26 @@ VALUES (?, ?, ?, ?, ?);
 EOS;
 
 $rows_upd = 0;
-foreach ($existingInterests as $existing) {
-    $newVal = array_key_exists($existing['interest'], $newInterests) ? 'Y' : 'N';
-    if (array_key_exists('interested', $existing)) {
-        if ($newVal != $existing['interested']) { // only update changes
+$interests = getInterests();
+foreach ($interests as $interest) {
+    $interestName = $interest['interest'];
+    $newVal = array_key_exists($interestName, $newInterests) ? 'Y' : 'N';
+    if (array_key_exists($interestName, $existingInterests)) {
+        // this is an update, there is a record already in the memberInterests table for this interest.
+        $existing = $existingInterests[$interestName];
+        if (array_key_exists('interested', $existing)) {
+            $oldVal = $existing['interested'];
+        } else {
+            $oldVal = '';
+        }
+        // only update if changed
+        if ($newVal != $oldVal) {
             $upd = 0;
             if ($existing['id'] != null) {
                 $upd = dbSafeCmd($updInterest, 'sii', array($newVal, $personId, $existing['id']));
             }
             if ($upd === false || $upd === 0) {
-                $newkey = dbSafeInsert($insInterest, 'iissi', array($currentPerson, $conid, $existing['interest'], $newVal, $personId));
+                $newkey = dbSafeInsert($insInterest, 'iissi', array($currentPerson, $conid, $interestName, $newVal, $personId));
                 if ($newkey !== false && $newkey > 0)
                     $rows_upd++;
             } else {
@@ -76,7 +89,8 @@ foreach ($existingInterests as $existing) {
             }
         }
     } else {
-        $newkey = dbSafeInsert($insInterest, 'issi', array($currentPerson, $existing['interest'], $newVal, $personId));
+        // row doesn't exist in existing interests
+        $newkey = dbSafeInsert($insInterest, 'iissi', array($currentPerson, $conid, $interestName, $newVal, $personId));
         if ($newkey !== false && $newkey > 0)
             $rows_upd++;
     }

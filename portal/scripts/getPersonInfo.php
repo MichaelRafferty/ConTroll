@@ -128,7 +128,7 @@ EOS;
     $iR = dbSafeQuery($iQ, 'ii', array($person['id'], $conid));
     if ($iR !== false) {
         while ($row = $iR->fetch_assoc()) {
-            $interests[] = $row;
+            $interests[$row['interest']] = $row;
         }
         $iR->free();
     }
