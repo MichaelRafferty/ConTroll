@@ -847,10 +847,12 @@ class Membership {
 
             this.#countMemberships++;
             var amount_due = Number(membershipRec.price) - (Number(membershipRec.paid) + Number(membershipRec.couponDiscount));
-            if (membershipRec.status == 'unpaid')
+            if (membershipRec.status == 'unpaid' && !membershipRec.toDelete)
                 this.#totalDue += amount_due;
 
+            var strike = false
             if (membershipRec.toDelete) {
+                strike = true;
                 col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="membership.membershipRestore(' + row + ')">Restore</button>';
             } else if (membershipRec.status == 'unpaid' && membershipRec.price > 0 && membershipRec.paid == 0) {
                 col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="membership.membershipDelete(' + row + ')">Delete</button>';
@@ -862,9 +864,12 @@ class Membership {
             html += `
     <div class="row">
         <div class="col-sm-2">` + col1 + `</div>
-        <div class="col-sm-1" style='text-align: right;'>` + membershipRec.status + `</div>
-        <div class="col-sm-1" style='text-align: right;'>` + membershipRec.price + `</div>
-        <div class="col-sm-4">` + (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label + ' [' + ageListIdx[membershipRec.memAge].label + `]</div>
+        <div class="col-sm-1" style='text-align: right;'>` + (strike ? '<s>' : '') + membershipRec.status + (strike ? '</s>' : '') + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + (strike ? '<s>' : '') + membershipRec.price + (strike ? '</s>' : '') + `</div>
+        <div class="col-sm-4">` + (strike ? '<s>' : '') +
+                (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label + ' [' + ageListIdx[membershipRec.memAge].label + ']' +
+            (strike ? '</s>' : '') + `
+        </div>
     </div>
 `;
         }
