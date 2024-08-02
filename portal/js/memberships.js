@@ -71,6 +71,7 @@ class Membership {
     #leaveBeforeChanges = true;
     #newEmail = null;
     #newEmailField = null;
+    #debug = 0;
 
     // variable price items
     #amountField = null;
@@ -87,6 +88,8 @@ class Membership {
     #newPolicies = null;
 
     constructor() {
+        if (config['debug'])
+            this.#debug = config['debug'];
         this.#memberships = [];
         this.#allMemberships = [];
 
