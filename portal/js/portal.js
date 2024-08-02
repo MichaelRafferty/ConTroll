@@ -347,6 +347,8 @@ class Portal {
         }
 
         this.#editPersonModal.show();
+        var focusField = this.#fnameField;
+        setTimeout(() => { focusField.focus({focusVisible: true}); }, 600);
     }
 
     // called on the close buttons for the modal, confirm close with changes pending
@@ -1142,7 +1144,7 @@ class Portal {
                 this.#purchasedShowAll.classList.remove("text-white");
             if (this.#purchasedShowAll.classList.contains('btn-info')) {
                 this.#purchasedShowAll.classList.remove("btn-info");
-                this.#purchasedShowAll.classList.add("btn-info");
+                this.#purchasedShowAll.classList.add("btn-light");
             }
             this.#purchasedShowAll.disabled = false;
         }
