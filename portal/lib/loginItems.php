@@ -1,6 +1,7 @@
 <?php
 // draw_login - draw the login options form
 function draw_login($config_vars, $result_message = '', $result_color = '') {
+    $con = get_conf('con');
     $policies = getPolicies();
     ?>
  <!-- signin form (at body level) -->
@@ -65,6 +66,24 @@ function draw_login($config_vars, $result_message = '', $result_color = '') {
     outputCustomText('main/bottom');
 ?>
     <div class='container-fluid'>
+        <div class="row">
+            <div class="col-sm-11 m-4">
+                <p>
+                    Accessibility note: This system is not fully accessible for assistive technology; disabled users may need assistance to complete registration.
+                    Known issues vary by browser and specific assistive technology but include only partial keyboard access to all interface elements.
+                    We are working on improving accessibility with future updates.
+                    We apologize for the inconvenience and appreciate your understanding.
+                </p>
+            </div>
+        </div>
+        <div class='row mt-4'>
+            <div class='col-sm-11'>
+                For any difficulties with the regitration system please contact registration at
+                <a href="mailto:<?php echo $con['regadminemail']; ?>?subject=Portal%20Difficulties">
+                    <?php echo $con['regadminemail']; ?>
+                </a>
+            </div>
+        </div>
         <div class='row'>
             <div class='col-sm-12 m-0 p-0'>
                 <div id='result_message' class='mt-4 p-2 <?php echo $result_color; ?>'><?php echo $result_message; ?></div>
