@@ -53,7 +53,7 @@ function getEmailBody($transid, $owner, $memberships, $planRec, $rid, $url, $amo
         'Click ' . $con['policy'] . ' for the ' . $con['policytext'] . ".\n" .
         'For more information about ' . $con['conname'] . ' please email ' . $con['infoemail'] . ".\n" .
         'For questions about ' . $con['conname'] . ' Registration, email ' . $con['regemail'] . ".\n" .
-        $con['conname'] . " memberships are not refundable, except in case of emergency. For details and questions about transfers and rollovers to future conventions, please see The Registration Policies Page.\n";
+        $con['conname'] . " memberships are not refundable. For details and questions about transfers and rollovers to future conventions, please see The Registration Policies Page.\n";
 
     return $body;
 }
