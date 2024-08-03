@@ -239,8 +239,14 @@ EOS;
     $fields = ['lname', 'mname', 'fname', 'suffix', 'email1', 'phone', 'badgename', 'legalname', 'pronouns', 'addr', 'addr2', 'city',
     'state', 'zip', 'country'];
     foreach ($fields as $field) {
-        if ($person[$field] == null)
+        if ((!array_key_exists($field, $person)) || $person[$field] == null) {
+            if ($field == 'fname') {
+                // log the *** out of this issue, lets see whats going on
+                logWrite(array('title'> 'Missing field error trap', 'get' => $_GET, 'post' => $_POST, 'session' => $_SESSION,
+                               'response' => $response));
+            }
             $person[$field] = '';
+        }
     }
     $value_arr = array(
         trim($person['lname']),
