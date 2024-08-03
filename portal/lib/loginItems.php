@@ -78,7 +78,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '') {
         </div>
         <div class='row mt-4'>
             <div class='col-sm-11'>
-                For any difficulties with the regitration system please contact registration at
+                For any difficulties with the registration system please contact registration at
                 <a href="mailto:<?php echo $con['regadminemail']; ?>?subject=Portal%20Difficulties">
                     <?php echo $con['regadminemail']; ?>
                 </a>
