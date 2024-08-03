@@ -37,8 +37,17 @@ $transId = getSessionVar('transid');
 $voidTransId = false; // void the transaction if a free membership was marked paid in this item
 
 $action = $_POST['action'];
+
+logInit($log['reg']);
 try {
     $person = json_decode($_POST['person'], true, 512, JSON_THROW_ON_ERROR);
+    if ($person == null || (!(array_key_exists('fname', $person) || array_key_exists('first_name', $person) ))) {
+        logWrite(array('title'> 'Missing field error trap', 'get' => $_GET, 'post' => $_POST, 'session' => $_SESSION));
+        $response['status'] = 'error';
+        $response['message'] = 'Error: fname and first_name fields are missing from person, please seek assistance';
+        ajaxSuccess($response);
+        exit();
+    }
 }
 catch (Exception $e) {
     $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
@@ -91,18 +100,17 @@ if (array_key_exists('personType', $person)) {
 }
 $newPerid = null;
 
-logInit($log['reg']);
-
 // first update the person so we can build a transaction and memberships
 $matchId = null;
 if ($personId < 0) {
-    if ($transId == null) {
-        $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
-    }
+    if (array_key_exists('fname', $person)) {
+        if ($transId == null) {
+            $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
+        }
 
-    // the exact match check for this new person will prevent adding newperson for existing people
-    // see if there is an exact match
-    $exactMsql = <<<EOF
+        // the exact match check for this new person will prevent adding newperson for existing people
+        // see if there is an exact match
+        $exactMsql = <<<EOF
 SELECT id
 FROM perinfo p
 WHERE
@@ -137,57 +145,10 @@ WHERE
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.country, ''))), '  *', ' ');
 EOF;
-    $value_arr = array(
-        trim($person['fname']),
-        trim($person['mname']),
-        trim($person['lname']),
-        trim($person['suffix']),
-        trim($person['email1']),
-        trim($person['phone']),
-        trim($person['badgename']),
-        trim($person['legalname']),
-        trim($person['pronouns']),
-        trim($person['addr']),
-        trim($person['addr2']),
-        trim($person['city']),
-        trim($person['state']),
-        trim($person['zip']),
-        trim($person['country']),
-    );
-    $res = dbSafeQuery($exactMsql, 'sssssssssssssss', $value_arr);
-    if ($res !== false) {
-        if ($res->num_rows > 0) {
-            $match = $res->fetch_assoc();
-            $matchId = $match['id'];
-            $personType = 'p';
-            $personId = $matchId;
-
-            // now update the perid to set the managed by flag
-            $updPQ = <<<EOS
-UPDATE perinfo
-SET managedBy = ?, managedReason = 'Exact Match'
-WHERE id = ?;
-EOS;
-            $upd = dbSafeCmd($updPQ, 'ii', array($loginId, $matchId));
-            logWrite(array('con'=>$con['name'], 'trans'=>$transId, 'action' => 'Exact Match for management', 'person' => $person, 'managedBy' => $loginId));
-        }
-    }
-
-    if ($matchId == null) {
-        // no match found
-        // insert into newPerson
-        $iQ = <<<EOS
-insert into newperson (transid, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, 
-                       address, addr_2, city, state, zip,
-                       country, managedBy, managedByNew, managedReason, updatedBy, lastVerified)
-values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'creation',?,NOW());
-EOS;
-        $typeStr = 'isssssssssssssssiii';
-        $valArray = array(
-            $transId,
-            trim($person['lname']),
-            trim($person['mname']),
+        $value_arr = array (
             trim($person['fname']),
+            trim($person['mname']),
+            trim($person['lname']),
             trim($person['suffix']),
             trim($person['email1']),
             trim($person['phone']),
@@ -200,21 +161,74 @@ EOS;
             trim($person['state']),
             trim($person['zip']),
             trim($person['country']),
-            $loginType == 'p' ? $loginId : null,
-            $loginType == 'n' ? $loginId : null,
-            $loginId
         );
-        $personId = dbSafeInsert($iQ, $typeStr, $valArray);
-        if ($personId === false || $personId < 0) {
-            $response['status'] = 'error';
-            $response['message'] = 'Error inserting the new person into the database. Seek assistance';
-            ajaxSuccess($response);
+        $res = dbSafeQuery($exactMsql, 'sssssssssssssss', $value_arr);
+        if ($res !== false) {
+            if ($res->num_rows > 0) {
+                $match = $res->fetch_assoc();
+                $matchId = $match['id'];
+                $personType = 'p';
+                $personId = $matchId;
+
+                // now update the perid to set the managed by flag
+                $updPQ = <<<EOS
+UPDATE perinfo
+SET managedBy = ?, managedReason = 'Exact Match'
+WHERE id = ?;
+EOS;
+                $upd = dbSafeCmd($updPQ, 'ii', array ($loginId, $matchId));
+                logWrite(array ('con' => $con['name'], 'trans' => $transId, 'action' => 'Exact Match for management', 'person' => $person, 'managedBy' => $loginId));
+            }
         }
-        $response['newPersonId'] = $personId;
-        $response['logmessage'] .= "New person with Temporary ID $personId added" . PHP_EOL;
-        $newPerid = $personId;
-        $personType = 'n';
-        logWrite(array('con'=>$con['name'], 'trans'=>$transId, 'action' => 'New managed person created', 'person' => $person, 'managedBy' => $loginId));
+
+        if ($matchId == null) {
+            // no match found
+            // insert into newPerson
+            $iQ = <<<EOS
+INSERT INTO newperson (transid, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, 
+                       address, addr_2, city, state, zip,
+                       country, managedBy, managedByNew, managedReason, updatedBy, lastVerified)
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'creation',?,NOW());
+EOS;
+            $typeStr = 'isssssssssssssssiii';
+            $valArray = array (
+                $transId,
+                trim($person['lname']),
+                trim($person['mname']),
+                trim($person['fname']),
+                trim($person['suffix']),
+                trim($person['email1']),
+                trim($person['phone']),
+                trim($person['badgename']),
+                trim($person['legalname']),
+                trim($person['pronouns']),
+                trim($person['addr']),
+                trim($person['addr2']),
+                trim($person['city']),
+                trim($person['state']),
+                trim($person['zip']),
+                trim($person['country']),
+                $loginType == 'p' ? $loginId : null,
+                $loginType == 'n' ? $loginId : null,
+                $loginId
+            );
+            $personId = dbSafeInsert($iQ, $typeStr, $valArray);
+            if ($personId === false || $personId < 0) {
+                $response['status'] = 'error';
+                $response['message'] = 'Error inserting the new person into the database. Seek assistance';
+                ajaxSuccess($response);
+            }
+            $response['newPersonId'] = $personId;
+            $response['logmessage'] .= "New person with Temporary ID $personId added" . PHP_EOL;
+            $newPerid = $personId;
+            $personType = 'n';
+            logWrite(array ('con' => $con['name'], 'trans' => $transId, 'action' => 'New managed person created', 'person' => $person, 'managedBy' => $loginId));
+        }
+    } else {
+        $response['status'] = 'error';
+        $response['message'] = 'Error no person information passed. Seek assistance';
+        ajaxError($response);
+        exit();
     }
 }
 
@@ -236,46 +250,53 @@ SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, 
 WHERE id = ?;
 EOS;
     }
-    $fields = ['lname', 'mname', 'fname', 'suffix', 'email1', 'phone', 'badgename', 'legalname', 'pronouns', 'addr', 'addr2', 'city',
-    'state', 'zip', 'country'];
-    foreach ($fields as $field) {
-        if ((!array_key_exists($field, $person)) || $person[$field] == null) {
-            if ($field == 'fname') {
-                // log the *** out of this issue, lets see whats going on
-                logWrite(array('title'> 'Missing field error trap', 'get' => $_GET, 'post' => $_POST, 'session' => $_SESSION,
-                               'response' => $response));
+    // there are two possible items here for passing the data, from the database, which means no changes were passed in,
+    // for from the form which means a correction was passed.  If fname exists, it's from the form, handle that.
+    // if first_name, its from the database, so do not update the database.
+    if (array_key_exists('fname', $person)) {
+        $fields = ['lname', 'mname', 'fname', 'suffix', 'email1', 'phone', 'badgename', 'legalname', 'pronouns', 'addr', 'addr2', 'city',
+                   'state', 'zip', 'country'];
+        foreach ($fields as $field) {
+            if ((!array_key_exists($field, $person)) || $person[$field] == null) {
+                if ($field == 'fname') {
+                    // log the *** out of this issue, lets see whats going on
+                    logWrite(array ('title' > 'Missing field error trap', 'get' => $_GET, 'post' => $_POST, 'session' => $_SESSION,
+                                    'response' => $response));
+                }
+                $person[$field] = '';
             }
-            $person[$field] = '';
         }
-    }
-    $value_arr = array(
-        trim($person['lname']),
-        trim($person['mname']),
-        trim($person['fname']),
-        trim($person['suffix']),
-        trim($person['email1']),
-        trim($person['phone']),
-        trim($person['badgename']),
-        trim($person['legalname']),
-        trim($person['pronouns']),
-        trim($person['addr']),
-        trim($person['addr2']),
-        trim($person['city']),
-        trim($person['state']),
-        trim($person['zip']),
-        trim($person['country']),
-        $loginId,
-        $personId
-    );
+        $value_arr = array (
+            trim($person['lname']),
+            trim($person['mname']),
+            trim($person['fname']),
+            trim($person['suffix']),
+            trim($person['email1']),
+            trim($person['phone']),
+            trim($person['badgename']),
+            trim($person['legalname']),
+            trim($person['pronouns']),
+            trim($person['addr']),
+            trim($person['addr2']),
+            trim($person['city']),
+            trim($person['state']),
+            trim($person['zip']),
+            trim($person['country']),
+            $loginId,
+            $personId
+        );
 
-    $rows_upd = dbSafeCmd($updPersonQ, 'sssssssssssssssii', $value_arr);
-    if ($rows_upd === false) {
-        ajaxSuccess(array('status' => 'error', 'message' => 'Error updating person'));
-        exit();
+        $rows_upd = dbSafeCmd($updPersonQ, 'sssssssssssssssii', $value_arr);
+        if ($rows_upd === false) {
+            ajaxSuccess(array ('status' => 'error', 'message' => 'Error updating person'));
+            exit();
+        }
+        $response['person_rows_upd'] = $rows_upd;
+        $response['status'] = 'success';
+        $response['logmessage'] .= $rows_upd == 0 ? "No changes" : "$rows_upd person updated" . PHP_EOL;
+    } else {
+        $response['logmessage'] .= 'No person passed, no update to person information' . PHP_EOL;
     }
-    $response['person_rows_upd'] = $rows_upd;
-    $response['status'] = 'success';
-    $response['logmessage'] = $rows_upd == 0 ? "No changes" : "$rows_upd person updated" . PHP_EOL;
 }
 
 $num_del = 0;
