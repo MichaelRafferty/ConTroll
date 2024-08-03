@@ -113,7 +113,7 @@ CREATE TABLE memRuleItems
 (
     name     varchar(16) NOT NULL,
     step     int NOT NULL,
-    ruleType enum ('needAny', 'needAll', 'notAny', 'notAll', 'limitAge') NOT NULL,
+    ruleType enum ('needAny', 'needAll', 'notAny', 'notAll', 'limitAge', 'currentAge') NOT NULL,
     applyTo  enum ('person','all') NOT NULL DEFAULT 'person',
     typeList varchar(1024) DEFAULT NULL,
     catList  varchar(1024) DEFAULT NULL,
@@ -323,4 +323,4 @@ ALTER TABLE memberPolicies ADD CONSTRAINT foreign key(newperid) references newpe
 ALTER TABLE memberPolicies ADD CONSTRAINT foreign key(policy) references policies(policy) ON UPDATE CASCADE;
 
 
-INSERT INTO patchLog(id, name) values(ppx, 'Portal Changes');
+INSERT INTO patchLog(id, name) values(30, 'Portal Changes');
