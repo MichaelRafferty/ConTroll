@@ -317,7 +317,7 @@ class MembershipRules {
 
                 if (step.memList != null) {
                     for (var row in step.memListArray) {
-                        this.#allMems[memListArray[row]] = false;
+                        this.#allMems[step.memListArray[row]] = false;
                     }
                 }
             }
