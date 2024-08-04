@@ -348,7 +348,7 @@ function drawVariablePriceModal() {
 // draw change email address modal
 function drawChangeEmailModal() {
 ?>
-    <div id='changeEmailModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Change Email' aria-hidden='true'>
+    <div id='changeEmailModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Change Email' aria-hidden='true' style='--bs-modal-width: 90%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
@@ -359,7 +359,7 @@ function drawChangeEmailModal() {
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid' id="changeEmailBody">
-                        <div class='row'>
+                        <div class='row mt-3 mb-3'>
                             <div class='col-sm-12'>
                                 <h1 class='size-h3 text-primary' id="changeEmailH1">Change Email Address For </h1>
                             </div>
@@ -375,6 +375,7 @@ function drawChangeEmailModal() {
                                 address</button>
                             </div>
                         </div>
+                        <div class="row"><div class="col-sm-1">&nbsp;</div></div>
                         <?php outputCustomText('main/changeEmail');?>
                         <div class='row'>
                             <div class='col-sm-12' id='ceMessageDiv'></div>

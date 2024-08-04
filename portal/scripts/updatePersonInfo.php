@@ -43,20 +43,20 @@ $response['personId'] = $personId;
 if ($currentPersonType == 'p') {
     $updPersonQ =  <<<EOS
 UPDATE perinfo
-SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
+SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
     address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
 } else {
     $updPersonQ =  <<<EOS
 UPDATE newperson
-SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
+SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
     address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
 }
 
-$fields = ['lname', 'mname', 'fname', 'suffix', 'email1', 'phone', 'badgename', 'legalname', 'pronouns', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
+$fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badgename', 'legalname', 'pronouns', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
 foreach ($fields as $field) {
     if ($person[$field] == null)
         $person[$field] = '';
@@ -66,7 +66,6 @@ $value_arr = array(
     trim($person['mname']),
     trim($person['fname']),
     trim($person['suffix']),
-    trim($person['email1']),
     trim($person['phone']),
     trim($person['badgename']),
     trim($person['legalname']),
@@ -81,7 +80,7 @@ $value_arr = array(
     $currentPerson,
 );
 
-$rows_upd = dbSafeCmd($updPersonQ, 'sssssssssssssssii', $value_arr);
+$rows_upd = dbSafeCmd($updPersonQ, 'ssssssssssssssii', $value_arr);
 if ($rows_upd === false) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Error updating person'));
     exit();
