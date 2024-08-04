@@ -384,7 +384,8 @@ function drawChangeEmailModal() {
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='vpSubmitButton' onClick='portal.checkNewEmail(0)' tabindex='10102'>Change Email Address</button>
+                    <button class='btn btn-sm btn-primary' id='changeEmailSubmitBtn' onClick='portal.checkNewEmail(0)' tabindex='10102' disabled>Change Email
+                    Address</button>
                 </div>
             </div>
         </div>

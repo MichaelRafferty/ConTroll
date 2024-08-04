@@ -148,6 +148,19 @@ class Portal {
             this.#changeEmailSubmitBtn = document.getElementById('changeEmailSubmitBtn');
             this.#changeEmailNewEmailAddr = document.getElementById('changeEmailNewEmailAddr');
             this.#changeEmailH1 = document.getElementById('changeEmailH1');
+
+            if (this.#changeEmailNewEmailAddr != null) {
+                this.#changeEmailNewEmailAddr.addEventListener('keyup', (e) => {
+                    if (e.code === 'Enter') {
+                        portal.changeEmailChanged(2);
+                    } else {
+                        portal.changeEmailChanged(1);
+                    }
+                });
+                this.#changeEmailNewEmailAddr.addEventListener('mouseout', (e) => {
+                    portal.changeEmailChanged(0);
+                });
+            }
         }
         
         id = document.getElementById("editInterestModal");
@@ -399,7 +412,77 @@ class Portal {
         // change modal fields
         this.#changeEmailH1.innerHTML = '<strong>Change Email Address for ' + personData['fullname'] + '</strong>';
 
+        this.#changeEmailSubmitBtn.disabled = true;
         this.#changeEmailModal.show();
+    }
+
+    // process auto enable of submit button
+    changeEmailChanged(autoCall) {
+        clear_message('ceMessageDiv');
+        if (!this.#changeEmailNewEmailAddr) {
+            this.#changeEmailSubmitBtn.disabled = true;
+            return;
+        }
+        var email = this.#changeEmailNewEmailAddr.value;
+        if (email == null || email == "") {
+            this.#changeEmailSubmitBtn.disabled = true;
+            return;
+        }
+
+        var valid = validateAddress(email);
+        this.#changeEmailSubmitBtn.disabled = !valid;
+        if (autoCall == 1)
+            return;
+
+        if (!valid) {
+            show_message("Please enter a valid email address", 'warn');
+            return;
+        }
+        if (autoCall == 2)
+            this.checkNewEmail(0);
+    }
+
+    // checkNewEmail - make sure the email address is valid, and the check if it's allowed for changing
+    checkNewEmail() {
+        // validate the email address
+        var email = this.#changeEmailNewEmailAddr.value;
+        if (!validateAddress(email)) {
+            show_message("Please enter a valid email address", 'warn');
+            this.#changeEmailSubmitBtn.disabled = true;
+            return;
+        }
+
+        // ok valid email address, check if it's a legal one for us to use
+        var data = {
+            email: email, // new email address
+            currentPerson:  this.#currentPerson,
+            currentType: this.#currentPersonType,
+            action: 'validate'
+        }
+        var script = 'scripts/changeEmail.php';
+        $.ajax({
+            url: script,
+            data: data,
+            method: 'POST',
+            success: function (data, textStatus, jqXhr) {
+                if (data['status'] == 'error') {
+                    show_message(data['message'], 'error', 'ceMessageDiv');
+                    return false;
+                }
+                if (data['status'] == 'warn') {
+                    show_message(data['message'], 'warn', 'ceMessageDiv');
+                    return false;
+                }
+                if (data['message']) {
+                    show_message(data['message'], 'success', 'ceMessageDiv');
+                }
+                return true;
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showAjaxError(jqXHR, textStatus, errorThrown, 'epMessageDiv');
+                return false;
+            },
+        });
     }
 
     // countryChange - if USPS and USA, then change button
