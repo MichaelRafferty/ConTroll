@@ -24,7 +24,6 @@ class Membership {
     #zipField = null;
     #countryField = null;
     #email1Field = null;
-    #email2Field = null;
     #phoneField = null;
     #badgenameField = null;
     #uspsDiv= null;
@@ -126,7 +125,6 @@ class Membership {
         this.#zipField = document.getElementById("zip");
         this.#countryField = document.getElementById("country");
         this.#email1Field = document.getElementById("email1");
-        this.#email2Field = document.getElementById("email2");
         this.#phoneField = document.getElementById("phone");
         this.#badgenameField = document.getElementById("badgename");
         this.#uspsDiv = document.getElementById("uspsblock");
@@ -180,8 +178,7 @@ class Membership {
         clear_message();
         $('#newEmailAddr').removeClass('need');
         if (newEmail.toLowerCase() == config['personEmail'].toLowerCase()) {
-            this.#email1Field.value = newEmail;
-            this.#email2Field.value = newEmail;
+            this.#email1Field.innerHTML = newEmail;
             this.#newEmail = newEmail;
             this.gotoStep(1);
             return;
@@ -223,8 +220,7 @@ class Membership {
         var accountId = data['accountId'];
 
         if (countFound == 0 || (countFound == managedByMe)) {
-            this.#email1Field.value = email;
-            this.#email2Field.value = email;
+            this.#email1Field.innerHTML = email;
             this.#newEmail = email;
             this.gotoStep(1);
             return;
@@ -362,8 +358,7 @@ class Membership {
             this.#suffixField.value = '';
             this.#legalnameField.value = '';
             this.#pronounsField.value = '';
-            this.#email1Field.value = '';
-            this.#email2Field.value = '';
+            this.#email1Field.innerHTML = '';
             this.#phoneField.value = '';
             this.#badgenameField.value = '';
             this.#personInfo['personType'] = 'n';
@@ -376,8 +371,7 @@ class Membership {
             this.#suffixField.value = this.#personInfo['suffix'];
             this.#legalnameField.value = this.#personInfo['legalName'];
             this.#pronounsField.value = this.#personInfo['pronouns'];
-            this.#email1Field.value = this.#personInfo['email_addr'];
-            this.#email2Field.value = this.#personInfo['email_addr'];
+            this.#email1Field.innerHTML = this.#newEmail;
             this.#phoneField.value = this.#personInfo['phone'];
             this.#badgenameField.value = this.#personInfo['badge_name'];
             this.#auHeader.innerHTML = 'Purchase/Upgrade memberships or other items for ' + this.#personInfo.fullname;
@@ -599,21 +593,6 @@ class Membership {
         }
 
         // validation
-        // emails must not be blank and must match
-        if (person['email1'] == '' || person['email2'] == '' || person['email1'] != person['email2']) {
-            this.#email1Field.value = person['email1'];
-            $('#email1').addClass('need');
-            $('#email2').addClass('need');
-            valid = false;
-        } else if (!validateAddress(person['email1'])) {
-            $('#email1').addClass('need');
-            $('#email2').addClass('need');
-            valid = false;
-        } else {
-            $('#email1').removeClass('need');
-            $('#email2').removeClass('need');
-        }
-
         if (required != '') {
             // first name is required
             if (person['fname'] == '') {
@@ -1137,6 +1116,7 @@ class Membership {
             action: 'updateCart',
             cart: JSON.stringify(this.#memberships),
             person: JSON.stringify(this.#personInfo),
+            newEmail: this.#newEmail,
             oldInterests: JSON.stringify(this.#oldInterests),
             newInterests: JSON.stringify(URLparamsToArray($('#editInterests').serialize())),
             oldPolcies: JSON.stringify(this.#oldPolicies),

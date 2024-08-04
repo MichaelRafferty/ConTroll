@@ -37,6 +37,7 @@ $transId = getSessionVar('transid');
 $voidTransId = false; // void the transaction if a free membership was marked paid in this item
 
 $action = $_POST['action'];
+$newEmail = $_POST['newEmail'];
 
 logInit($log['reg']);
 try {
@@ -150,7 +151,7 @@ EOF;
             trim($person['mname']),
             trim($person['lname']),
             trim($person['suffix']),
-            trim($person['email1']),
+            trim($newEmail),
             trim($person['phone']),
             trim($person['badgename']),
             trim($person['legalname']),
@@ -197,7 +198,7 @@ EOS;
                 trim($person['mname']),
                 trim($person['fname']),
                 trim($person['suffix']),
-                trim($person['email1']),
+                trim($newEmail),
                 trim($person['phone']),
                 trim($person['badgename']),
                 trim($person['legalname']),
@@ -238,14 +239,14 @@ if ($newPerid == null) {
     if ($personType == 'p') {
         $updPersonQ = <<<EOS
 UPDATE perinfo
-SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
+SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
     address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
     } else {
         $updPersonQ = <<<EOS
 UPDATE newperson
-SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
+SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
     address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
@@ -254,7 +255,7 @@ EOS;
     // for from the form which means a correction was passed.  If fname exists, it's from the form, handle that.
     // if first_name, its from the database, so do not update the database.
     if (array_key_exists('fname', $person)) {
-        $fields = ['lname', 'mname', 'fname', 'suffix', 'email1', 'phone', 'badgename', 'legalname', 'pronouns', 'addr', 'addr2', 'city',
+        $fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badgename', 'legalname', 'pronouns', 'addr', 'addr2', 'city',
                    'state', 'zip', 'country'];
         foreach ($fields as $field) {
             if ((!array_key_exists($field, $person)) || $person[$field] == null) {
@@ -271,7 +272,6 @@ EOS;
             trim($person['mname']),
             trim($person['fname']),
             trim($person['suffix']),
-            trim($person['email1']),
             trim($person['phone']),
             trim($person['badgename']),
             trim($person['legalname']),
@@ -286,7 +286,7 @@ EOS;
             $personId
         );
 
-        $rows_upd = dbSafeCmd($updPersonQ, 'sssssssssssssssii', $value_arr);
+        $rows_upd = dbSafeCmd($updPersonQ, 'ssssssssssssssii', $value_arr);
         if ($rows_upd === false) {
             ajaxSuccess(array ('status' => 'error', 'message' => 'Error updating person'));
             exit();
