@@ -133,11 +133,6 @@ class Portal {
             this.#phoneField = document.getElementById("phone");
             this.#badgenameField = document.getElementById("badgename");
             this.#uspsDiv = document.getElementById("uspsblock");
-
-            // now set up the stuff for the edit person modal actions
-            this.#editPersonModalElement.addEventListener('shown.bs.modal', () => {
-                this.#fnameField.focus()
-            })
         }
 
         id = document.getElementById("changeEmailModal");
@@ -395,7 +390,9 @@ class Portal {
             return;
         }
 
+        // clear old stuff
         clear_message('ceMessageDiv');
+        this.#changeEmailNewEmailAddr.value = '';
 
         var personData = null;
         try {
@@ -414,11 +411,12 @@ class Portal {
 
         this.#changeEmailSubmitBtn.disabled = true;
         this.#changeEmailModal.show();
+        var focusField = this.#changeEmailNewEmailAddr;
+        setTimeout(() => { focusField.focus({focusVisible: true}); }, 600);
     }
 
     // process auto enable of submit button
     changeEmailChanged(autoCall) {
-        clear_message('ceMessageDiv');
         if (!this.#changeEmailNewEmailAddr) {
             this.#changeEmailSubmitBtn.disabled = true;
             return;
@@ -455,10 +453,10 @@ class Portal {
         // ok valid email address, check if it's a legal one for us to use
         var data = {
             email: email, // new email address
-            currentPerson:  this.#currentPerson,
-            currentType: this.#currentPersonType,
+            currentPersonId:  this.#currentPerson,
+            currentPersonType: this.#currentPersonType,
             action: 'validate'
-        }
+        };
         var script = 'scripts/changeEmail.php';
         $.ajax({
             url: script,
@@ -474,7 +472,7 @@ class Portal {
                     return false;
                 }
                 if (data['message']) {
-                    show_message(data['message'], 'success', 'ceMessageDiv');
+                    portal.changeEmailSuccess(data);
                 }
                 return true;
             },
@@ -483,6 +481,16 @@ class Portal {
                 return false;
             },
         });
+    }
+
+    // change email success - clean up from changing the email address
+    changeEmailSuccess(data) {
+        if (data['message'])
+            show_message(data['message'], 'success');
+
+        this.#changeEmailModal.hide();
+        clear_message('ceMessageDiv');
+        this.#changeEmailNewEmailAddr.value = '';
     }
 
     // countryChange - if USPS and USA, then change button
@@ -846,6 +854,7 @@ class Portal {
 
         this.#interestsSerializeStart = $("#editInterests").serialize();
         this.#editInterestsModal.show();
+
     }
 
     // called on the close buttons for the modal, confirm close with changes pending
