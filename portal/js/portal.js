@@ -37,10 +37,17 @@ class Portal {
     #zipField = null;
     #countryField = null;
     #email1Field = null;
-    #email2Field = null;
     #phoneField = null;
     #badgenameField = null;
     #uspsDiv= null;
+    
+    /// change email modal
+    #changeEmailModal = null;
+    #changeEmailModalElement = null;
+    #changeEmailTitle = null;
+    #changeEmailSubmitBtn = null;
+    #changeEmailNewEmailAddr = null;
+    #changeEmailH1 = null;
 
     // person fields
     #currentPerson = null;
@@ -123,7 +130,6 @@ class Portal {
             this.#zipField = document.getElementById("zip");
             this.#countryField = document.getElementById("country");
             this.#email1Field = document.getElementById("email1");
-            this.#email2Field = document.getElementById("email2");
             this.#phoneField = document.getElementById("phone");
             this.#badgenameField = document.getElementById("badgename");
             this.#uspsDiv = document.getElementById("uspsblock");
@@ -133,6 +139,17 @@ class Portal {
                 this.#fnameField.focus()
             })
         }
+
+        id = document.getElementById("changeEmailModal");
+        if (id) {
+            this.#changeEmailModalElement = id;
+            this.#changeEmailModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#changeEmailTitle = document.getElementById('changeEmailTitle');
+            this.#changeEmailSubmitBtn = document.getElementById('changeEmailSubmitBtn');
+            this.#changeEmailNewEmailAddr = document.getElementById('changeEmailNewEmailAddr');
+            this.#changeEmailH1 = document.getElementById('changeEmailH1');
+        }
+        
         id = document.getElementById("editInterestModal");
         if (id) {
             this.#editInterestsModalElement = id;
@@ -252,8 +269,6 @@ class Portal {
             }
         }
         // now clear the input fields
-        $('#email1').removeClass('need');
-        $('#email2').removeClass('need');
         $('#fname').removeClass('need');
         $('#lname').removeClass('need');
         $('#addr').removeClass('need');
@@ -324,8 +339,7 @@ class Portal {
         this.#stateField.value = person['state'];
         this.#zipField.value = person['zip'];
         this.#countryField.value = person['country'];
-        this.#email1Field.value = person['email_addr'];
-        this.#email2Field.value = person['email_addr'];
+        this.#email1Field.innerHTML = person['email_addr'];
         this.#phoneField.value = person['phone'];
         this.#badgenameField.value = person['badge_name'];
 
@@ -361,6 +375,33 @@ class Portal {
         this.#editPersonModal.hide();
     }
 
+    // editPerson - edit a person you manage (or your self)
+    changeEmail(personJson) {
+        if (this.#changeEmailModal == null) {
+            show_message('Change Email is not available at this time', 'warn');
+            return;
+        }
+
+        clear_message('ceMessageDiv');
+
+        var personData = null;
+        try {
+            personData = JSON.parse(personJson);
+        } catch (error) {
+            console.log(error);
+            show_message('Change Email passed invalid arguments, get assistqnce', 'error');
+            return;
+        }
+
+        this.#currentPerson = personData['id'];
+        this.#currentPersonType = personData['type'];
+
+        // change modal fields
+        this.#changeEmailH1.innerHTML = '<strong>Change Email Address for ' + personData['fullname'] + '</strong>';
+
+        this.#changeEmailModal.show();
+    }
+
     // countryChange - if USPS and USA, then change button
     countryChange() {
         if (this.#uspsDiv == null)
@@ -390,21 +431,6 @@ class Portal {
             person[keys[i]] = person[keys[i]].trim();
         }
         // validation
-        // emails must not be blank and must match
-        if (person['email1'] == '' || person['email2'] == '' || person['email1'] != person['email2']) {
-            this.#email1Field.value = person['email1'];
-            $('#email1').addClass('need');
-            $('#email2').addClass('need');
-            valid = false;
-        } else if (!validateAddress(person['email1'])) {
-            $('#email1').addClass('need');
-            $('#email2').addClass('need');
-            valid = false;
-        } else {
-            $('#email1').removeClass('need');
-            $('#email2').removeClass('need');
-        }
-
         if (required != '') {
             // first name is required
             if (person['fname'] == '') {

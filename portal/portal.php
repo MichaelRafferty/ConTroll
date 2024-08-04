@@ -311,6 +311,7 @@ draw_paymentDueModal();
 draw_makePaymentModal();
 draw_recieptModal();
 draw_couponModal();
+drawChangeEmailModal();
 if (count($paymentPlans) > 0) {
     draw_customizePlanModal('portal');
     draw_payPlanModal('portal');
@@ -350,9 +351,9 @@ if ($info['managedByName'] != null) {
 ?>
 <div class="row">
     <div class="col-sm-1" style='text-align: right;'><b>ID</b></div>
-    <div class="col-sm-4"><b>Person</b></div>
+    <div class="col-sm-3"><b>Person</b></div>
     <div class="col-sm-3"><b>Badge Name</b></div>
-    <div class="col-sm-4"><b>Actions</b></div>
+    <div class="col-sm-1"><b>Actions</b></div>
 </div>
 <?php
 drawManagedPerson($loginId, $loginType, $info, $holderMembership, $interests != null, false);

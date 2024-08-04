@@ -235,14 +235,12 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false) {
         </div>
         <div class="row">
             <div class="col-sm-auto">
-                <label for="email1" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
-                                class='text-danger'>&bigstar;</span>Email</span></label><br/>
-                <input class="form-control-sm" type="email" name="email1" id='email1' size="35" maxlength="254" tabindex="210"/>
+                Email Address: <span id='email1'></span>
             </div>
             <div class="col-sm-auto">
-                <label for="email2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
-                                class='text-danger'>&bigstar;</span>Confirm Email</span></label><br/>
-                <input class="form-control-sm" type="email" name="email2" id='email2' size="35" maxlength="254" tabindex="220"/>
+                <p><strong>Note:</strong> Email Address is entered at the start of creating the account or edited using the Change Email Address button on the home
+                page
+                .</p>
             </div>
         </div>
         <div class="row">
@@ -252,9 +250,8 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false) {
             </div>
             <div class="col-sm-auto">
                 <label for="badgename" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
-                <input class="form-control-sm" type="text" name="badgename" id='badgename' size="35" maxlength="32" placeholder='Defaults to first and last
-                name'
-                       tabindex="240"/>
+                <input class="form-control-sm" type="text" name="badgename" id='badgename' size="35" maxlength="32"
+                        placeholder='Defaults to first and last name' tabindex="240"/>
             </div>
         </div>
         <div class='row'>
@@ -348,6 +345,52 @@ function drawVariablePriceModal() {
 <?php
 }
 
+// draw change email address modal
+function drawChangeEmailModal() {
+?>
+    <div id='changeEmailModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Change Email' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='changeEmailTitle'>
+                        <strong>Change Email Address</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <div class='container-fluid' id="changeEmailBody">
+                        <div class='row'>
+                            <div class='col-sm-12'>
+                                <h1 class='size-h3 text-primary' id="changeEmailH1">Change Email Address For </h1>
+                            </div>
+                        </div>
+                        <div class='row'>
+                            <div class='col-sm-auto'>Enter the new email address:</div>
+                            <div class='col-sm-auto'><input type='text' size='64', maxlength='254' id='changeEmailNewEmailAddr', name='newEmailAddr'></div>
+                        </div>
+                        <div class='row mt-2' id='changeEmailVerifyMe' hidden>
+                            <div class='col-sm-auto'>This is an email address you manage, do you wish to change to this same email address?</div>
+                            <div class='col-sm-auto'>
+                                <button class='btn btn-sm btn-primary' type='button' onclick='portal.checkNewEmail(1);'>Yes, use the same email
+                                address</button>
+                            </div>
+                        </div>
+                        <?php outputCustomText('main/changeEmail');?>
+                        <div class='row'>
+                            <div class='col-sm-12' id='ceMessageDiv'></div>
+                        </div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
+                    <button class='btn btn-sm btn-primary' id='vpSubmitButton' onClick='portal.checkNewEmail(0)' tabindex='10102'>Change Email Address</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php
+}
+
 //// buttons on portal screen
 function drawManagedPerson($personId, $personType, $person, $memberships, $showInterests, $showHR) {
     $badge_name = $person['badge_name'];
@@ -375,12 +418,21 @@ function drawManagedPerson($personId, $personType, $person, $memberships, $showI
     </div>
 <?php
     }
+    $personArgs = json_encode(array('id' => $person['id'] , 'type' => $person['personType'], 'fullname' => $person['fullname'],
+                                'first_name' => $person['first_name'], 'last_name' => $person['last_name']));
+    $personArgs = str_replace('"', '\\u0022', $personArgs);
+    $personArgs = str_replace("'", '\\u0027', $personArgs);
     ?>
     <div class="row mt-1">
         <div class='col-sm-1' style='text-align: right;'><?php echo $person['personType'] == 'n' ? 'Pending' : $person['id']; ?></div>
-        <div class='col-sm-4'><strong><?php echo $person['fullname']; ?></strong></div>
+        <div class='col-sm-3'><strong><?php echo $person['fullname']; ?></strong></div>
         <div class="col-sm-2"><?php echo $badge_name; ?></div>
-        <div class='col-sm-5 p-1'>
+        <div class='col-sm-6 p-1'>
+                <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;'
+                data-id="<?php echo $person['id']?>", data-type="<?php echo $person['personType']; ?>"
+                onclick="portal.changeEmail('<?php echo $personArgs; ?>');">
+                Change <?php echo $fn; ?>Email
+            </button>
             <button class='btn btn-sm <?php echo $profileClass; ?> p-1' style='--bs-btn-font-size: 80%;'
                 data-id="<?php echo $person['id']?>", data-type="<?php echo $person['personType']; ?>"
                 onclick="portal.editPerson(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">
