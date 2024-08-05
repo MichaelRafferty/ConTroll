@@ -11,6 +11,8 @@ var membershipRules = null;
 //     var memListIdx
 //     var memRules
 
+//      note memRuleItems table (steps) step 999 is special, it's applied on add, but not on remove or delete.  It's to prevent more than one of this item.
+
 class MembershipRules {
     // rule checking info
     #debug = 0;
@@ -103,6 +105,7 @@ class MembershipRules {
     }
 
     // test the memList entry against implicit and explicit rules
+    // if check implicit is false, it will not run the implicit rules and will ignore any NotAny against itself as well.
     testMembership(mem, skipImplicit = false) {
         // first check if its in the right age, if age is null, all are accepted
         if (this.#debug & 8) {
@@ -209,7 +212,7 @@ class MembershipRules {
             }
 
             // ok this rule applies to this memList entry, now apply it
-            if (!this.testMembershipRule(rule, mem)) {
+            if (!this.testMembershipRule(rule, mem, skipImplicit)) {
                 if (this.#debug & 8) {
                     console.log("testMembership: return false-failed test on rule steps");
                 }
@@ -224,7 +227,7 @@ class MembershipRules {
     }
 
     // test if the mem entry meets the rule (all steps must pass)
-    testMembershipRule(rule,  mem) {
+    testMembershipRule(rule,  mem, skipSelfChecks) {
         var steps = rule.ruleset;
         if (this.#debug & 16) {
             console.log("testing rule " + rule.name);
@@ -237,7 +240,7 @@ class MembershipRules {
                 console.log('step ' + step.step + ', type=' + step.ruleType);
             }
 
-            if (!this.testMembershipRuleStep(step, mem)) {
+            if (!this.testMembershipRuleStep(step, mem, skipSelfChecks)) {
                 if (this.#debug & 16) {
                     console.log('returning false: failed step');
                 }
@@ -252,7 +255,7 @@ class MembershipRules {
     }
 
     // test if a step passes
-    testMembershipRuleStep(step, mem) {
+    testMembershipRuleStep(step, mem, skipSelfChecks) {
         var checkMore= true;
         var stepPass = step.ruleType == 'notAny' || step.ruleType == 'notAll';
         var mlist = null;
@@ -330,7 +333,7 @@ class MembershipRules {
 
             switch (step.ruleType) {
                 case 'needAny':
-                    if (this.checkAny(step, mbr)) {
+                    if (this.checkAny(step, mbr, false)) {
                         stepPass = true;
                         checkMore = false;
                     }
@@ -343,7 +346,7 @@ class MembershipRules {
 
                 case 'notAny':
                     stepPass = true;
-                    if (this.checkAny(step, mbr)) {
+                    if (this.checkAny(step, mbr, skipSelfChecks)) {
                         stepPass = false;
                         checkMore = false;
                     }
@@ -467,8 +470,11 @@ class MembershipRules {
     } // end of functiontestMemberShipRuleStep
 
     // checkAny - check if a membership matches any of the requirements
-    checkAny(step, mbr) {
+    checkAny(step, mbr, skipSelfChecks) {
         // any one of anything defined succeeds the rule test
+        if (step.step = 999 && skipSelfChecks == true)
+            return false; // shortcut this check for removes, as its only a not itself for adds.
+
         if (step.typeList != null) {
             if (step.typeListArray.indexOf(mbr.memType.toString()) != -1)
                 return true;
