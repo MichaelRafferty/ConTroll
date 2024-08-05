@@ -44,7 +44,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '') {
             <?php
             // bypass for testing on Development PC
     if ((stripos(__DIR__, '/Users/syd/') !== false && $_SERVER['SERVER_ADDR'] == '127.0.0.1')  ||
-        (stripos(__DIR__, '/home/seattle/regtest.seattlein2025.org/ConTroll') !== false && $_SERVER['SERVER_ADDR'] == '20.122.89.117')) {
+        (stripos(__DIR__, '/home/seattle/regtest.seattlein2025.org/ConTroll') !== false && $_SERVER['SERVER_ADDR'] == '192.168.88.4')) {
                 ?>
             <div class="row mt-3><div class="col-sm-12"><hr></div></div>
             <div class='row mt-2'>
