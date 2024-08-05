@@ -514,7 +514,7 @@ class Portal {
         var required = config['required'];
         var message = "Please correct the items highlighted in red and validate again.<br/>" +
         "Note: If any of the address fields are used and the country is United States, " +
-        "then the Address, City, State, and Zip fields must all be entered.";
+        "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
 
         // trim trailing blanks
         var keys = Object.keys(person);
