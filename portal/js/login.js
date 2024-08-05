@@ -528,7 +528,7 @@ class Login {
             currentPerson: -12345,
             currentPersonType: 'n',
             source: 'login',
-            validate: this.#validationType,
+            validation: this.#validationType,
             valEmail: this.#email,
         }
         if (config['debug'] & 1)
