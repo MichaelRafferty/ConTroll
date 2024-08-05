@@ -31,7 +31,11 @@ page_init($page,
                     'js/admin_consetup.js',
                     'js/admin_memconfig.js',
                     'js/admin_exhibits.js',
-                    'js/admin_merge.js'
+                    'js/admin_merge.js',
+                    'js/admin_customText.js',
+                    'js/admin_policy.js',
+                    'js/admin_interests.js',
+                    'js/admin_rules.js',
                    ),
               $need_login);
 $con = get_conf("con");
@@ -185,6 +189,26 @@ else
                     aria-controls='nav-merge' aria-selected='false' onclick="settab('merge-pane');">Merge People
             </button>
         </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='customtext-tab' data-bs-toggle='pill' data-bs-target='#customtext-pane' type='button' role='tab'
+                    aria-controls='nav-customtext' aria-selected='false' onclick="settab('customtext-pane');">Custom Text
+            </button>
+        </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='policy-tab' data-bs-toggle='pill' data-bs-target='#policy-pane' type='button' role='tab'
+                    aria-controls='nav-policy' aria-selected='false' onclick="settab('policy-pane');">Policies
+            </button>
+        </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='interests-tab' data-bs-toggle='pill' data-bs-target='#interests-pane' type='button' role='tab'
+                    aria-controls='nav-interests' aria-selected='false' onclick="settab('interests-pane');">Interests
+            </button>
+        </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='rules-tab' data-bs-toggle='pill' data-bs-target='#rules-pane' type='button' role='tab'
+                    aria-controls='nav-rules' aria-selected='false' onclick="settab('rules-pane');">Membership Rules
+            </button>
+        </li>
     </ul>
     <div class="tab-content ms-2" id="admin-content">
         <div class="tab-pane fade show active" id="users-pane" role="tabpanel" aria-labelledby="users-tab" tabindex="0">
@@ -296,6 +320,10 @@ else
     <div class="tab-pane fade" id="memconfig-pane" role="tabpanel" aria-labelledby="memconfig-tab" tabindex="0"></div>
     <div class="tab-pane fade" id="exhibits-pane" role="tabpanel" aria-labelledby="exhibits-tab" tabindex="0"></div>
     <div class='tab-pane fade' id='merge-pane' role='tabpanel' aria-labelledby='merge-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='customtext-pane' role='tabpanel' aria-labelledby='customtext-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='policy-pane' role='tabpanel' aria-labelledby='policy-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='interests-pane' role='tabpanel' aria-labelledby='interests-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='rules-pane' role='tabpanel' aria-labelledby='rules-tab' tabindex='0'></div>
     <div id='result_message' class='mt-4 p-2'></div>
 </div>
 <script>

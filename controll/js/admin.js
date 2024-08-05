@@ -3,6 +3,10 @@ next = null;
 mem = null;
 exhibits = null;
 merge = null;
+customText = null;
+policy = null;
+interests = null;
+rules = null;
 conid = null;
 // debug meaning
 //  1 = console.logs
@@ -210,95 +214,73 @@ function selectUser(perid) {
 }
 
 function settab(tabname) {
-    switch (tabname) {
-        case 'users-pane':
-            if (current != null)
-                current.close();
-            if (next != null)
-                next.close();
-            if (mem != null)
-                mem.close();
-            if (merge != null)
-                merge.close();
-            if (exhibits != null)
-                exhibits.close();
-            break;
+    // close all of them
+    if (current != null)
+        current.close();
+    if (mem != null)
+        mem.close();
+    if (next != null)
+        next.close();
+    if (merge != null)
+        merge.close();
+    if (exhibits != null)
+        exhibits.close();
+    if (customText != null)
+        customText.close();
+    if (policy != null)
+        policy.close();
+    if (interests != null)
+        interests.close();
+    if (rules != null)
+        rules.close();
 
-        case 'consetup-pane':            
-            if (next != null)
-                next.close();
-            if (current != null)
-                current.close();
-            if (mem != null)
-                mem.close();
-            if (merge != null)
-                merge.close();
-            if (exhibits != null)
-                exhibits.close();
+    // now open the relevant one, and create the class if needed
+    switch (tabname) {
+        case 'consetup-pane':
             if (current == null)
                 current = new consetup('current');
             current.open();
             break;
 
         case 'nextconsetup-pane':
-            if (current != null)
-                current.close();
-            if (mem != null)
-                mem.close();
-            if (next != null)
-                next.close();
-            if (merge != null)
-                merge.close();
-            if (exhibits != null)
-                exhibits.close();
             if (next == null)
                 next = new consetup('next');
             next.open();
             break;
         case 'memconfig-pane':
-            if (current != null)
-                current.close();
-            if (next != null)
-                next.close();
-            if (mem != null)
-                mem.close();
-            if (merge != null)
-                merge.close();
-            if (exhibits != null)
-                exhibits.close();
             if (mem == null)
                 mem = new memsetup();
             mem.open();
             break;
         case 'exhibits-pane':
-            if (current != null)
-                current.close();
-            if (next != null)
-                next.close();
-            if (mem != null)
-                mem.close();
-            if (merge != null)
-                merge.close();
-            if (merge != null)
-                merge.close();
             if (exhibits == null)
                 exhibits = new exhibitssetup(conid, debug);
             exhibits.open();
             break;
         case 'merge-pane':
-            if (current != null)
-                current.close();
-            if (next != null)
-                next.close();
-            if (mem != null)
-                mem.close();
-            if (merge != null)
-                merge.close();
-            if (exhibits != null)
-                exhibits.close();
             if (merge == null)
                 merge = new mergesetup();
             merge.open();
+            break;
+        case 'customtext-pane':
+            if (customText == null)
+                customText = new customTextSetup();
+            customText.open();
+            break;
+        case 'policy-pane':
+            if (policy == null)
+                policy = new policySetup();
+            policy.open();
+            break;
+        case 'interests-pane':
+            if (interests == null)
+                interests = new interestsSetup();
+            interests.open();
+            break;
+        case 'rules-pane':
+            if (rules == null)
+                rules = new rulesSetup();
+            rules.open();
             break;
     }
 }
