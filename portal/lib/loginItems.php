@@ -43,18 +43,19 @@ function draw_login($config_vars, $result_message = '', $result_color = '') {
             </div>
             <?php
             // bypass for testing on Development PC
-    if (stripos(__DIR__, '/Users/syd/') !== false && $_SERVER['SERVER_ADDR'] == '127.0.0.1') {
+    if ((stripos(__DIR__, '/Users/syd/') !== false && $_SERVER['SERVER_ADDR'] == '127.0.0.1')  ||
+        (stripos(__DIR__, '/home/seattle/regtest.seattlein2025.org/ConTroll') !== false && $_SERVER['SERVER_ADDR'] == '20.122.89.117')) {
                 ?>
             <div class="row mt-3><div class="col-sm-12"><hr></div></div>
             <div class='row mt-2'>
                 <div class='col-sm-auto'>
-                    <label for='dev_email'>*Dev Email/Perid/Newperid: </label>
+                    <label for='dev_email'>*Direct to Email/Perid/Newperid: </label>
                 </div>
                 <div class='col-sm-auto'>
                     <input class='form-control-sm' type='email' name='dev_email' id='dev_email' size='40' required/>
                 </div>
                 <div class='col-sm-auto'>
-                    <button type="button" class='btn btn-sm btn-primary' onclick='login.loginWithEmail();'>Login to Development</button>
+                    <button type="button" class='btn btn-sm btn-primary' onclick='login.loginWithEmail();'>Direct Login</button>
                 </div>
             </div>
             <div class='row mb-2'><div class="col-sm-12" id="matchList"></div></div>
