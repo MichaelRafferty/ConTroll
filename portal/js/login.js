@@ -31,7 +31,6 @@ class Login {
     #zipField = null;
     #countryField = null;
     #email1Field = null;
-    #email2Field = null;
     #phoneField = null;
     #badgenameField = null;
     #contactField = null;
@@ -72,15 +71,11 @@ class Login {
             this.#zipField = document.getElementById("zip");
             this.#countryField = document.getElementById("country");
             this.#email1Field = document.getElementById("email1");
-            this.#email2Field = document.getElementById("email2");
             this.#phoneField = document.getElementById("phone");
             this.#badgenameField = document.getElementById("badgename");
             this.#contactField = document.getElementById("contact");
             this.#shareField = document.getElementById("share");
             this.#uspsDiv = document.getElementById("uspsblock");
-
-            $('#email1').attr('readonly', true);
-            $('#email2').attr('readonly', true);
         }
 
         this.#sendLinkBtn = document.getElementById("sendLinkBtn");
@@ -266,8 +261,7 @@ class Login {
         this.#editPersonSubmitBtn.setAttribute("onclick", 'login.editPersonSubmit()');
         this.#countryField.setAttribute("onchange", 'login.countryChange()');
         this.#epHeaderDiv.innerHTML = "Personal Information for " + email;
-        this.#email1Field.value = email;
-        this.#email2Field.value = email;
+        this.#email1Field.innerHTML = email;
         this.#email = email;
         this.#validationType = validationType;
 
@@ -313,25 +307,6 @@ class Login {
             person[keys[i]] = person[keys[i]].trim();
         }
         // validation
-        // emails must not be blank and must match
-        if (person['email1'] == '' || person['email2'] == '' || person['email1'] != person['email2']) {
-            this.#email1Field.value = person['email1'];
-            $('#email1').addClass('need');
-            $('#email2').addClass('need');
-            $('#email1').attr('readonly', false);
-            $('#email2').attr('readonly', false);
-            valid = false;
-        } else if (!validateAddress(person['email1'])) {
-            $('#email1').addClass('need');
-            $('#email2').addClass('need');
-            $('#email1').attr('readonly', false);
-            $('#email2').attr('readonly', false);
-            valid = false;
-        } else {
-            $('#email1').removeClass('need');
-            $('#email2').removeClass('need');
-        }
-
         if (required != '') {
             // first name is required
             if (person['fname'] == '') {
