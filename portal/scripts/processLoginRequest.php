@@ -32,7 +32,8 @@ if (array_key_exists('id', $_POST))
 
 switch ($type) {
     case 'dev':
-        if (stripos(__DIR__, '/Users/syd/') === false || $_SERVER['SERVER_ADDR'] != '127.0.0.1') {
+        if ((stripos(__DIR__, '/Users/syd/') !== false && $_SERVER['SERVER_ADDR'] == '127.0.0.1')  ||
+            (stripos(__DIR__, '/home/seattle/regtest.seattlein2025.org/ConTroll') !== false && $_SERVER['SERVER_ADDR'] == '192.168.88.4')) {
             ajaxSuccess(array('status'=>'error', 'message'=> 'Development login not valid outside of development:'));
             exit();
         }
