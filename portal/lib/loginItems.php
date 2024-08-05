@@ -43,6 +43,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '') {
             </div>
             <?php
             // bypass for testing on Development PC
+                // TODO: back out seattle regtest from here.
     if ((stripos(__DIR__, '/Users/syd/') !== false && $_SERVER['SERVER_ADDR'] == '127.0.0.1')  ||
         (stripos(__DIR__, '/home/seattle/regtest.seattlein2025.org/ConTroll') !== false && $_SERVER['SERVER_ADDR'] == '192.168.88.4')) {
                 ?>
