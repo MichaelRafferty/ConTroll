@@ -233,7 +233,9 @@ function tabBar($page, $portal_conf, $info, $refresh = false) {
         if (isSessionVar('multiple')) {
             $page_list[] = ['name' => 'index', 'args' => 'switch=account', 'display' => 'Switch Account'];
         }
+        if (false) { // TODO: create help page later
         $page_list[] = ['name' => 'portalHelp', 'target' =>  '_blank', 'display' => 'Help'];
+        }
     }
 
     $active = $page == 'portal' ? 'active' : '';
