@@ -155,39 +155,57 @@ function page_init($title, $css, $js, $auth) {
         newUser($auth['email'], array_key_exists('sub', $auth) ? $auth['sub'] : '');
     }
     
-    if(isWebRequest()) {
-        $includes = getTabulatorIncludes();
-?>
+    $cdn = getTabulatorIncludes();
+    $tabbs5=$cdn['tabbs5'];
+    $tabcss=$cdn['tabcss'];
+    $tabjs=$cdn['tabjs'];
+    $bs5js=$cdn['bs5js'];
+    $bs5css=$cdn['bs5css'];
+    $jqjs=$cdn['jqjs'];
+    $jquijs=$cdn['jquijs'];
+    $jquicss=$cdn['jquicss'];
+    $pageTitle = $title . '--' . $db_ini['con']['conname'];
+
+    $versions = get_conf('js');
+    $controll = $versions['controll'];
+    $global = $versions['global'];
+    $jslib = $versions['jslib'];
+
+echo <<<EOF
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <title><?php echo $title . '--' . $db_ini['con']['conname']?> Reg</title>
+    <title>$pageTitle Reg</title>
     <link rel='icon' type='image/x-icon' href='/lib/favicon.ico'>
-    <link href='<?php echo $includes['jquicss'];?>' rel='stylesheet' type='text/css' />
-    <link href='<?php echo $includes['bs5css'];?>' rel='stylesheet'/>
-    <?php
-    if(isset($css) && $css != null) { foreach ($css as $sheet) {
-        ?><link href='<?php echo $sheet; ?>' rel=stylesheet type='text/css' />
+    <link href='$jquicss' rel='stylesheet' type='text/css' />
+    <link href='$bs5css' rel='stylesheet'/>
+EOF;
+    if(isset($css) && $css != null) {
+        foreach ($css as $sheet) {
+?><link href='<?php echo $sheet; ?>' rel=stylesheet type='text/css' />
 <?php
-    }}
+        }
+    }
+echo <<<EOF
+    <script src='$bs5js'></script>
+    <script type='text/javascript' src='$jqjs'></script>
+    <script type='text/javascript' src='$jquijs'></script>
+    <script type='text/javascript' src='jslib/global.js?v=$global'></script>
+    <script type='text/javascript' src='js/base.js?v=$controll'></script>
+EOF;
+    if(isset($js) && $js != null) {
+        foreach ($js as $script) { ?>
+    <script src='<?php echo $script . "?v=$controll"; ?>' type='text/javascript'></script>
+<?php    }
+    }
 ?>
-    <script src='<?php echo $includes['bs5js'];?>'></script>
-    <script type='text/javascript' src='<?php echo $includes['jqjs']; ?>'></script>
-    <script type='text/javascript' src='<?php echo $includes['jquijs']; ?>'></script>
-    <?php
-    if(isset($js) && $js != null) { foreach ($js as $script) {
-        ?><script src='<?php echo $script; ?>' 
-                type='text/javascript'></script><?php
-    }}
-    ?>
 </head>
 <body>
     <?php
     page_head($title, $auth);
     con_info($auth);
     tab_bar($auth, $title);
-    }
 }
 
 function page_head($title, $auth) {

@@ -18,7 +18,6 @@ page_init("Badge List",
                     ),
     /* js  */ array(//$cdn['luxon'],
                     $cdn['tabjs'],
-                    'js/base.js',
                     'js/reg_admin.js',
                     'jslib/emailBulkSend.js'),
                     $need_login);
