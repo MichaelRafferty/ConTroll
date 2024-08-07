@@ -25,11 +25,11 @@ SELECT R.create_date, R.change_date, R.price, R.couponDiscount, R.paid, R.id AS 
         ELSE
             TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(P.first_name, ''), IFNULL(P.middle_name, ''))), IFNULL(P.last_name, ''))), IFNULL(P.suffix, '')))
       END AS p_name
-    , P.email_addr as p_email, P.badge_name AS p_badge, NP.badge_name AS np_badge
+    , P.legalName, P.pronouns, P.email_addr as p_email, P.badge_name AS p_badge, NP.badge_name AS np_badge
     , CONCAT_WS('-', M.memCategory, M.memType, M.memAge) as memTyp
     , M.memCategory AS category, M.memType AS type, M.memAge AS age, M.label
     , ifnull(C.name, ' None ') as name
-    , R.create_trans, R.complete_trans, IFNULL(R.complete_trans, R.create_trans) AS display_trans
+    , R.create_trans, R.complete_trans, IFNULL(R.complete_trans, R.create_trans) AS display_trans, R.status
 FROM reg R
 JOIN memLabel M ON (M.id=R.memId)
 LEFT OUTER JOIN perinfo P ON (P.id=R.perid)
@@ -198,5 +198,29 @@ while($coupon = $couponA->fetch_assoc()) {
 }
 
 $response['coupons'] = $coupons;
+
+$statusQ = <<<EOS
+WITH listitems AS (
+    SELECT ifnull(R.status, ' None ') as name, count(*) occurs
+    FROM reg R
+    WHERE R.conid=?
+    GROUP BY R.status
+), totalrow AS (
+    SELECT SUM(occurs) AS total
+    FROM listitems
+)
+SELECT name, occurs, 100 * occurs / total AS percent
+FROM listitems
+JOIN totalrow
+ORDER BY name;
+EOS;
+
+$statuses = array();
+$statusA = dbSafeQuery($statusQ, 'i', array($conid));
+while($status = $statusA->fetch_assoc()) {
+    $statuses[] = $status;
+}
+
+$response['statuses'] = $statuses;
 ajaxSuccess($response);
 ?>

@@ -5,12 +5,14 @@ var paid = null;
 var label = null;
 var age = null;
 var coupon = null;
+var statusTable = null;
 var typefilter = null;
 var catfilter = null;
 var agefilter = null;
 var paidfilter = null;
 var labelfilter = null;
 var couponfilter = null;
+var statusfilter = null;
 var transfer_modal = null;
 var receipt_modal = null;
 var receipt_email_address = null;
@@ -162,6 +164,26 @@ function couponclicked(e, cell) {
     }
 }
 
+function statusclicked(e, cell) {
+    var filtercell = cell.getRow().getCell("name");
+    value = filtercell.getValue();
+    if (filtercell.getElement().style.backgroundColor) {
+        badgetable.removeFilter("status", "in", statusfilter);
+        statusfilter = statusfilter.filter(arrayItem => arrayItem !== value);
+        if (statusfilter.length > 0) {
+            badgetable.addFilter("status", "in", statusfilter);
+        }
+        filtercell.getElement().style.backgroundColor = "";
+    } else {
+        if (statusfilter.length > 0) {
+            badgetable.removeFilter("status", "in", statusfilter);
+        }
+        statusfilter.push(value);
+        badgetable.addFilter("status", "in", statusfilter);
+        filtercell.getElement().style.backgroundColor = "#C0FFC0";
+    }
+}
+
 function clearfilter() {
     if (typefilter.length > 0) {
         badgetable.removeFilter("type", "in", typefilter);
@@ -207,6 +229,14 @@ function clearfilter() {
         badgetable.removeFilter("name", "in", couponfilter);
         couponfilter = [];
         var rows = coupon.getRows();
+        for (var row of rows) {
+            row.getCell("name").getElement().style.backgroundColor = "";
+        }
+    }
+    if (statusfilter.length > 0) {
+        badgetable.removeFilter("name", "in", statusfilter);
+        statusfilter = [];
+        var rows = statusTable.getRows();
         for (var row of rows) {
             row.getCell("name").getElement().style.backgroundColor = "";
         }
@@ -337,12 +367,34 @@ function draw_stats(data) {
     });
     coupon.on("cellClick",  couponclicked);
     couponfilter = [];
+
+    if (statusTable !== null) {
+        statusTable.off("cellClick");
+        statusTable.destroy();
+        statusTable = null;
+    }
+    statusTable = new Tabulator('#status-table', {
+        data: data['statuses'],
+        layout: "fitDataTable",
+        columns: [
+            {
+                title: "status", columns: [
+                    { field: "name" },
+                    { field: "percent", formatter: "progress", width: 100, headerSort: false, },
+                    { field: "occurs", hozAlign: "right" },
+                ]
+            },
+        ],
+    });
+    statusTable.on("cellClick",  statusclicked);
+    statusfilter = [];
 }
 
 // display actions as buttons in a cell for this membership
 function actionbuttons(cell, formatterParams, onRendered) {
     var data = cell.getData();
     var category = data['category'];
+    var status = data['status'];
     if (category == 'cancel')  // no actions can be taken on a cancelled membership
         return "";
 
@@ -353,19 +405,21 @@ function actionbuttons(cell, formatterParams, onRendered) {
     var complete_trans = data['complete_trans'];
 
     if (category != 'dealers') { // dealers can't roll over, and transfer is handled on-site only in atcon re-assigning the name.
-        // transfer buttons
-        if ((category == 'addon' || category == 'add-on') && paid > 0) {
-            btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" onclick="transfer(' + index + ')">Transfer</button>';
-        } else if (price > 0 && paid > 0)
-            btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index + ')">Transfer</button>';
-        else if (price == 0 && paid == 0)
-            btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index + ')">Transfer</button>';
+        if (status == 'paid') {
+            // transfer buttons
+            if ((category == 'addon' || category == 'add-on') && paid > 0) {
+                btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" onclick="transfer(' + index + ')">Transfer</button>';
+            } else if (price > 0 && paid > 0)
+                btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index + ')">Transfer</button>';
+            else if (price == 0 && paid == 0)
+                btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index + ')">Transfer</button>';
 
-        // rollover buttons
-        if (price > 0 && paid > 0)
-            btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
-        else if (price == 0 && paid == 0)
-            btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
+            // rollover buttons
+            if (price > 0 && paid > 0)
+                btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
+            else if (price == 0 && paid == 0)
+                btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
+        }
     }
 
     // receipt buttons
@@ -502,6 +556,9 @@ function transfer(index) {
     if (data['price'] > 0 && data['paid'] == 0)
         return;
 
+    if (data['status'] != 'paid')
+        return;
+
     if (data['price'] == 0) {
         if (confirm("This is a free badge, really transfer it?\n(Is it an included exhibitor badge or similar situation?)") == false)
             returm;
@@ -604,21 +661,17 @@ function build_record_hover(e, cell, onRendered) {
     return hover_text;
 }
 
-// tabulator formatter for the transfer column for the find results, displays the "transfer" to transfer the membrership
+// tabulator formatter for the transfer column for the find results, displays the "transfer" to transfer the membership
 // color based on number of reg records this person already has for this con
 function addTransferIcon(cell, formatterParams, onRendered) { //plain text value
     var tid;
     var html = '';
-    var banned = cell.getRow().getData().banned == 'Y';
-    var regcnt = cell.getRow().getData().regcnt;
+    var banned = cell.getData().banned == 'Y';
+    var regcnt = cell.getData().regcnt;
     var color = 'btn-success';
     var from = cell.getRow().getData().from;
     var to = cell.getRow().getData().perid;
-    if (banned == undefined) {
-        tid = Number(cell.getRow().getData().tid);
-        html = '<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" onclick="add_unpaid(' + tid + ')">Pay</button > ';
-        return html;
-    }
+
     if (banned) {
         color = 'btn-danger';
     } else if (regcnt > 0) {
@@ -680,9 +733,10 @@ function draw_badges(data) {
             { title: "Membership Type", field: "label", headerSort: true, headerFilter: true, },
             { title: "memId", field: "memId", hozAlign: "right", headerSort: true, headerFilter: true, },
             { title: "Price", field: "price", hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
-            { title: "Discount", field: "couponDiscount", hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
+            { title: "Disc", field: "couponDiscount", hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
             { title: "Paid", field: "paid", hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
             { title: "Coupon", field: "name", headerSort: true, headerFilter: true, },
+            { title: "Status", field: "status", headerSort: true, headerFilter: true, },
             { title: "Created", field: "create_date", headerSort: true, headerFilter: true },
             { title: "Changed", field: "change_date", headerSort: true, headerFilter: true },
             { field: "category", visible: false },

@@ -25,6 +25,14 @@ page_init("Badge List",
 
 // first the modal for transfer to
 $con_conf = get_conf('con');
+$controll = get_conf('controll');
+if (array_key_exists('badgelistfilter', $controll)) {
+    $badgeListFilter = $controll['badgelistfilter'];
+    if ($badgeListFilter != "top" && $badgeListFilter != "bottom")
+        $badgeListFilter = "top";
+} else
+    $badgeListFilter = "top";
+
 ?>
 <div id='transfer_to' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Transfer Registration' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
@@ -102,38 +110,19 @@ $con_conf = get_conf('con');
         </div>
     </div>
 </div>
-<div class="container-fluid">
-    <div class="row mb-2">
-        <div class="col-sm-auto me-1 p-0">Click on a row to toggle filtering by that value</div>
-        <div class="col-sm-auto me-1 p-0">
-            <button class="btn btn-primary btn-sm" onclick="clearfilter();">Clear All Filters</button>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-auto me-1 p-0">
-            <div id="category-table"></div>
-        </div>
-        <div class="col-sm-auto me-1  p-0">
-            <div id="type-table"></div>
-        </div>
-        <div class="col-sm-auto me-1  p-0">
-            <div id="age-table"></div>
-        </div>
-        <div class="col-sm-auto me-1  p-0">
-            <div id="paid-table"></div>
-        </div>
-        <div class="col-sm-auto me-1 p-0">
-            <div id="label-table"></div>
-        </div>
-        <div class='col-sm-auto me-1 p-0'>
-            <div id='coupon-table'></div>
-        </div>
-    </div>
+<?php
+    if ($badgeListFilter == "top")
+        drawFilters();
+?>
     <div class="row">
         <div class="col-sm-auto p-0">
             <div id="badge-table"></div>
         </div>
     </div>
+<?php
+    if ($badgeListFilter == 'bottom')
+        drawFilters();
+?>
     <div class="row">
         <div class="col-sm-auto p-2">
             <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/allEmails.php';">Download Email List</button>
@@ -174,4 +163,39 @@ $con_conf = get_conf('con');
 <?php
 
 page_foot($page);
+
+function drawFilters() {
+?>
+<div class="container-fluid">
+    <div class="row mb-2">
+        <div class="col-sm-auto me-1 p-0">Click on a row to toggle filtering by that value</div>
+        <div class="col-sm-auto me-1 p-0">
+            <button class="btn btn-primary btn-sm" onclick="clearfilter();">Clear All Filters</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-auto me-1 p-0">
+            <div id="category-table"></div>
+        </div>
+        <div class="col-sm-auto me-1  p-0">
+            <div id="type-table"></div>
+        </div>
+        <div class="col-sm-auto me-1  p-0">
+            <div id="age-table"></div>
+        </div>
+        <div class="col-sm-auto me-1  p-0">
+            <div id="paid-table"></div>
+        </div>
+        <div class="col-sm-auto me-1 p-0">
+            <div id="label-table"></div>
+        </div>
+        <div class='col-sm-auto me-1 p-0'>
+            <div id='coupon-table'></div>
+        </div>
+        <div class='col-sm-auto me-1 p-0'>
+            <div id='status-table'></div>
+        </div>
+    </div>
+    <?php
+}
 ?>
