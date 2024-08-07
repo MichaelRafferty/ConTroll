@@ -14,7 +14,6 @@ page_init($page,
                 'css/base.css'
             ),
     /*js*/  array('js/d3.js',
-                'js/base.js',
                 'js/overview.js'
             ),
             $need_login);

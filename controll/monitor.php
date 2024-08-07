@@ -14,7 +14,6 @@ page_init($page,
                    ),
     /* js  */ array('js/d3.js',
                     'js/lodash.min.js',
-                    'js/base.js',
                     'js/monitor.js'
                    ),
               $need_login);

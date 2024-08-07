@@ -19,7 +19,6 @@ page_init($page,
     /* css */ array('css/base.css'
                    ),
     /* js  */ array('js/d3.js',
-                    'js/base.js',
                     'js/badge.js'
                    ),
               $need_login);

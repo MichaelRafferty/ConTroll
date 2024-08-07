@@ -13,7 +13,6 @@ page_init($page,
                     'css/registration-old.css'
                    ),
     /* js  */ array('js/d3.js',
-                    'js/base.js',
                     'js/people.js',
                     'js/registration-old.js'
                    ),

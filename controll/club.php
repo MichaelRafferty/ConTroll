@@ -13,7 +13,6 @@ page_init($page,
                     'css/club.css'
                    ),
     /* js  */ array('js/d3.js',
-                    'js/base.js',
                     'js/people.js',
                     'js/club.js'
                    ),

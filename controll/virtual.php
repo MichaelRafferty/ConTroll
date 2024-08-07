@@ -12,7 +12,6 @@ page_init($page,
     /* css */ array('css/base.css'
                    ),
     /* js  */ array('js/d3.js',
-                    'js/base.js',
                     'js/virtual.js'
                    ),
               $need_login);

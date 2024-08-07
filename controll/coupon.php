@@ -17,7 +17,6 @@ page_init("Coupon",
                     ),
     /* js  */ array(//$cdn['luxon'],
                     $cdn['tabjs'],
-                    'js/base.js',
                     'js/coupon.js'),
                     $need_login);
 
