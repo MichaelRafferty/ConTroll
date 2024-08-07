@@ -337,8 +337,8 @@ function draw_stats(data) {
         columns: [
             {
                 title: "Label", columns: [
-                    { field: "label" },
-                    { field: "percent", formatter: "progress", width: 100, headerSort: false, },
+                    { field: "label", maxWidth: 400, },
+                    { field: "percent", formatter: "progress", width: 100, maxWidth: 100, headerSort: false, },
                     { field: "occurs", hozAlign: "right" },
                 ]
             },
