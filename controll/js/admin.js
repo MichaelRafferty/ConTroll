@@ -8,6 +8,7 @@ policy = null;
 interests = null;
 rules = null;
 conid = null;
+editPreviewClass = null;
 // debug meaning
 //  1 = console.logs
 //  2 = show hidden table fields
@@ -269,7 +270,7 @@ function settab(tabname) {
             break;
         case 'policy-pane':
             if (policy == null)
-                policy = new policySetup();
+                policy = new policySetup(debug);
             policy.open();
             break;
         case 'interests-pane':
