@@ -2,8 +2,8 @@
 require_once "../lib/base.php";
 
 $need_login = google_init("page");
-$control = get_conf('control');
-$page = sql_safe($control['clubperm']);
+$controll = get_conf('controll');
+$page = sql_safe($controll['clubperm']);
 
 if(!$need_login or !checkAuth($need_login['sub'], 'club')) {
     bounce_page("index.php");

@@ -247,5 +247,8 @@ oauthEncryptionKey= "" ; set your oauth2Server encryption key
 ;	if these are blank or missing, the usps validation is not enabled.
 clientId=
 secret=
-[control]
+[controll]
 clubname='Club Name'
+; badgelistfilter - where to put the filter elements on the badgelist page ("top", "bottom")
+badgelistfilter="top"
+
