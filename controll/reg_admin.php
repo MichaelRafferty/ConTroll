@@ -25,7 +25,7 @@ page_init("Badge List",
 // first the modal for transfer to
 $con_conf = get_conf('con');
 $controll = get_conf('controll');
-if (array_key_exists('badgelistfilter', $controll)) {
+if ($controll != null && array_key_exists('badgelistfilter', $controll)) {
     $badgeListFilter = $controll['badgelistfilter'];
     if ($badgeListFilter != "top" && $badgeListFilter != "bottom")
         $badgeListFilter = "top";
