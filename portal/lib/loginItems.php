@@ -122,12 +122,14 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $cipherInfo,
         $match = $matches[0];
         if (array_key_exists('banned', $match)) {
             if ($match['banned'] != 'N') {
-                return('There is an issue with your account, please contact ' . $conf['regadminemail'] . ' for assistance.');
+                return('There is an issue with your account, please contact registration at ' .
+                    $conf['regadminemail'] . ' for assistance.');
                 }
             }
         if (array_key_exists('issue', $match)) {
             if ($match['issue'] != 'N') {
-                return('There is an issue with your account, please contact ' . $conf['regadminemail'] . ' for assistance.');
+                return('There is an issue with your account, please contact registration at ' .
+                    $conf['regadminemail'] . ' for assistance.');
             }
         }
         if (array_key_exists('email', $match)) {

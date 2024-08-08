@@ -55,7 +55,8 @@ switch ($type) {
         } else if ($count == 1) {
             clearSession();  // clean logout
             if ($matches[0]['banned'] != 'N') {
-                ajaxSuccess(array('status'=>'error', 'message'=> 'There is an issue with your account, please contact ' . $conf['regadminemail'] . ' for assistance.'));
+                ajaxSuccess(array('status'=>'error', 'message'=> 'There is an issue with your account, please contact registration at ' .
+                    $conf['regadminemail'] . ' for assistance.'));
                 exit();
             }
             setSessionVar('id', $matches[0]['id']);

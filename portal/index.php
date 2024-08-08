@@ -178,11 +178,15 @@ if (isSessionVar('id')) {
                 if (array_key_exists('id', $match) && $loginId != $match['id']) {
                     // this is a switch account request
                     if (array_key_exists('banned', $match) && $match['banned'] != 'N') {
-                        ajaxSuccess(array('status'=>'error', 'message'=> 'There is an issue with your account, please contact ' . $con['regadminemail'] . ' for assistance.'));
+                        header('location:portal.php?type=e&messageFwd=' .
+                               urlencode("There is an issue with that account, please contact registration at " .
+                                         $con['regadminemail'] . ' for assistance.'));
                         exit();
                     }
                     if (array_key_exists('issue', $match) && $match['issue'] != 'N') {
-                        ajaxSuccess(array('status'=>'error', 'message'=> 'There is an issue with your account, please contact ' . $con['regadminemail'] . ' for assistance.'));
+                        header('location:portal.php?type=e&messageFwd=' .
+                               urlencode('There is an issue with that account, please contact registration at ' .
+                                         $con['regadminemail'] . ' for assistance.'));
                         exit();
                     }
                     unsetSessionVar('transId');    // just in case it is hanging around, clear this
