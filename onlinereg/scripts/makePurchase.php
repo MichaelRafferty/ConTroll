@@ -176,7 +176,7 @@ if ($apply_discount) {
 
 $total = round($total, 2);
 
-if($webtotal != $total) {
+if($webtotal != $preDiscount) {
     error_log("bad total: post=" . $webtotal . ", calc=" . $total);
     ajaxSuccess(array('status'=>'error', 'error'=>'Unable to process, bad total sent to Server'));
     exit();
