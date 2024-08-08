@@ -54,6 +54,10 @@ switch ($type) {
             $response['message'] = 'No matching emails found';
         } else if ($count == 1) {
             clearSession();  // clean logout
+            if ($matches[0]['banned'] != 'N') {
+                ajaxSuccess(array('status'=>'error', 'message'=> 'There is an issue with your account, please contact ' . $conf['regadminemail'] . ' for assistance.'));
+                exit();
+            }
             setSessionVar('id', $matches[0]['id']);
             setSessionVar('idType', $matches[0]['tablename']);
             setSessionVar('idSource', 'dev');
