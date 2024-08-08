@@ -177,6 +177,14 @@ if (isSessionVar('id')) {
             } else {
                 if (array_key_exists('id', $match) && $loginId != $match['id']) {
                     // this is a switch account request
+                    if (array_key_exists('banned', $match) && $match['banned'] != 'N') {
+                        ajaxSuccess(array('status'=>'error', 'message'=> 'There is an issue with your account, please contact ' . $con['regadminemail'] . ' for assistance.'));
+                        exit();
+                    }
+                    if (array_key_exists('issue', $match) && $match['issue'] != 'N') {
+                        ajaxSuccess(array('status'=>'error', 'message'=> 'There is an issue with your account, please contact ' . $con['regadminemail'] . ' for assistance.'));
+                        exit();
+                    }
                     unsetSessionVar('transId');    // just in case it is hanging around, clear this
                     unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
                     setSessionVar('id', $match['id']);
