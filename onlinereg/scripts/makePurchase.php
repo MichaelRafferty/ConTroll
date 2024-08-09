@@ -33,12 +33,15 @@ $purchaseform = $_POST['purchaseform'];
 $badges = $badgestruct['badges'];
 $webtotal = $badgestruct['total'];
 $couponDiscount = null;
-$couponSubtotal = null;
-if (array_key_exists('couponDiscount', $_POST)) {
-    $couponDiscount = $_POST['couponDiscount'];
-}
-if (array_key_exists('couponSubtotal', $_POST)) {
-    $couponSubtotal = $_POST['couponSubtotal'];
+if ($couponCode == null) {
+    $couponSubtotal = $webtotal;
+} else {
+    if (array_key_exists('couponDiscount', $_POST)) {
+        $couponDiscount = $_POST['couponDiscount'];
+    }
+    if (array_key_exists('couponSubtotal', $_POST)) {
+        $couponSubtotal = $_POST['couponSubtotal'];
+    }
 }
 
 if (array_key_exists('total', $_POST)) {
@@ -234,7 +237,6 @@ $value_arr = mb_convert_encoding($value_arr, 'Windows-1252', 'UTF-8');
             array_key_exists('share', $badge) ? $badge['share'] :'Y',
             $id
         );
-$value_arr = mb_convert_encoding($value_arr, 'Windows-1252', 'UTF-8');
 
         $insertQ = <<<EOS
 INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone,
