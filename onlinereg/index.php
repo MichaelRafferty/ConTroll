@@ -41,7 +41,7 @@ else {
 }
 $membershiptypes = array();
 $priceQ = <<<EOS
-SELECT id, memGroup, label, shortname, sort_order, price, memAge, memCategory
+SELECT id, label, shortname, sort_order, price, memAge, memCategory
 FROM memLabel
 WHERE
     conid=?

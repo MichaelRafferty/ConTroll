@@ -15,7 +15,7 @@ WITH keycounts AS (
     SELECT c.id,c.conid,c.oneUse,c.code,c.name,c.startDate,c.endDate,c.couponType,c.discount,c.memId,c.minMemberships,c.maxMemberships,c.limitMemberships,
         c.minTransaction,c.maxTransaction,c.maxRedemption,c.createTS,c.createBy,c.updateTS,c.updateBy,
         COUNT(t.id) AS redeemedCount, 
-        m.memAge, m.shortname, m.memGroup, m.label,
+        m.memAge, m.shortname, m.label,
         CASE WHEN c.startDate > now() THEN 'early' ELSE null END AS startFlag, 
         CASE WHEN c.endDate <= now() THEN 'expired' ELSE null END AS endFlag,
         CASE WHEN c.startDate < '2000-01-01' THEN null ELSE c.startDate END AS dispStart,
@@ -28,7 +28,7 @@ WITH keycounts AS (
     WHERE c.conid = ?
     GROUP BY c.id,c.conid,c.oneUse,c.code,c.name,c.startDate,c.endDate,c.couponType,c.discount,c.memId,c.minMemberships,c.maxMemberships,c.limitMemberships,
         c.minTransaction,c.maxTransaction,c.maxRedemption,c.createTS,c.createBy,c.updateTS,c.updateBy,
-        m.memAge, m.shortname, m.memGroup, m.label
+        m.memAge, m.shortname, m.label
     ORDER BY c.startDate, code
 )
 SELECT *, CASE WHEN redeemedCount >= maxRedemption THEN 'FULL' ELSE redeemedCount END AS redeemedCount

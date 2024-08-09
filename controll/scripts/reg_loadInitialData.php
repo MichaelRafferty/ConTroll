@@ -78,19 +78,19 @@ mysqli_free_result($r);
 // get all the memLabels
 $priceQ = <<<EOS
 WITH memitems AS (
-    SELECT conid, memCategory, memType, memAge, memGroup, shortname, price, min(startdate) as startdate, max(enddate) as enddate
+    SELECT conid, memCategory, memType, memAge, shortname, price, min(startdate) as startdate, max(enddate) as enddate
     FROM memLabel
     WHERE conid IN (?, ?)
-    GROUP BY conid, memCategory, memType, memAge, memGroup, shortname, price    
+    GROUP BY conid, memCategory, memType, memAge, shortname, price    
 ), useIDs AS (
     SELECT id AS matchid, m.startdate, m.enddate
     FROM memitems m
     JOIN memLabel l ON (
         l.conid = m.conid AND l.memCategory = m.memCategory AND l.memType = m.memType
-        AND l.memAge = m.memAge AND l.memGroup = m.memGroup AND l.shortname = m.shortname AND l.price = m.price
+        AND l.memAge = m.memAge AND l.shortname = m.shortname AND l.price = m.price
     )
 )
-SELECT id, conid, memCategory, memType, memAge, memGroup,
+SELECT id, conid, memCategory, memType, memAge,
        CASE WHEN conid = ? THEN label ELSE concat(conid, ' ', label) END AS label, 
        shortname, sort_order, price, CAST(m.startdate AS date) AS startdate, CAST(m.enddate AS date) AS enddate,
        CASE WHEN u.startdate = m.startdate AND u.enddate = m.enddate THEN 1 ELSE 0 END AS canSell

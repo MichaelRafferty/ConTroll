@@ -69,7 +69,7 @@ if (time() < strtotime($startdate) || strtotime($enddate) +24*60*60 < time()) {
 
 // get all the memLabels
 $priceQ = <<<EOS
-SELECT id, conid, memCategory, memType, memAge, memGroup,
+SELECT id, conid, memCategory, memType, memAge,
        CASE WHEN conid = ? THEN label ELSE concat(conid, ' ', label) END AS label, 
        shortname, sort_order, price,
     CASE 

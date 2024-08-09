@@ -96,16 +96,6 @@ class Coupon {
         return this.#curCoupon['guid'];
     }
 
-    getMemGroup() {
-        if (this.#curCoupon == null)
-            return null;
-
-        if (this.#curCoupon['memId'] == null)
-            return null;
-
-        return this.#curCoupon['memGroup'];
-    }
-
     getNameString() {
         if (this.#curCoupon == null)
             return '';

@@ -126,7 +126,7 @@ WHERE h.action = 'print'
 GROUP BY h.regid
 )
 SELECT DISTINCT r.perid, r.id as regid, m.conid, r.price, r.couponDiscount, r.paid, r.paid AS priorPaid, r.create_date, u.tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
-                n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, m.memGroup,
+                n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname,
                 CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label, r.coupon
 FROM uniqrids u
 JOIN reg r ON (r.id = u.regid)
@@ -231,7 +231,7 @@ WHERE h.action = 'attach'
 GROUP BY h.regid
 )
 SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r1.paid AS priorPaid, r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, IFNULL(pc.printcount, 0) AS printcount,
-                IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, m.memGroup, rs.tid as rstid,
+                IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, rs.tid as rstid,
                 CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label
 FROM regids rs
 JOIN reg r ON (rs.regid = r.id)
@@ -291,7 +291,7 @@ WHERE h.action = 'attach'
 GROUP BY h.regid
 )
 SELECT DISTINCT r.perid, r.id as regid, m.conid, r.price, r.paid, r.paid AS priorPaid, r.create_date, IFNULL(r.create_trans, -1) as tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
-                IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, m.memGroup, r.create_trans as rstid,
+                IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname,r.create_trans as rstid,
                 CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label
 FROM regids rs
 JOIN reg r ON (rs.regid = r.id)
@@ -371,7 +371,7 @@ WHERE h.action = 'print'
 GROUP BY h.regid
 )
 SELECT DISTINCT r.perid, t.regid, m.conid, r.price, r.couponDiscount, r.paid, r.paid AS priorPaid, r.create_date, t.tid, r.memId, IFNULL(pc.printcount, 0) AS printcount,
-                n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, m.memGroup,
+                n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname,
                 CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label, r.coupon      
 FROM maxtids t
 JOIN reg r ON (r.id = t.regid)

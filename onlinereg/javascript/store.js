@@ -6,8 +6,6 @@ var badges = { count: 0, total: 0, memTypeCount: {}, badges: [] };
 // prices = array by memId of prices for badges
 var prices = {};
 var $purchase_label = 'purchase';
-// ages = array by id for ages for color setting
-var ages = {};
 // shortnames are the memLabel short names for the memAge
 var shortnames = {};
 // anotherbadge = bootstrap 5 modal for the add another modal popup
@@ -642,7 +640,6 @@ window.onload = function () {
         for (var row in mtypes) {
             var mbrtype = mtypes[row];
             var memId = mbrtype['id'];
-            ages[memId] = mbrtype['memGroup'];
             prices[memId] = Number(mbrtype['price']);
             badges['memTypeCount'][memId] = 0;
             shortnames[memId] = mbrtype['shortname'].replace(',','<br/>');

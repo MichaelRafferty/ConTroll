@@ -14,7 +14,7 @@
 
         // membership information
         $priceQ = <<<EOQ
-SELECT m.id, m.memGroup, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid
+SELECT m.id, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid
 FROM memLabel m
 WHERE
     (m.conid=? OR m.conid=?)
