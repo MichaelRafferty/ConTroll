@@ -158,29 +158,29 @@ while($age = $ageA->fetch_assoc()) {
 
 $response['ages'] = $ages;
 
-$paidQ = <<<EOS
+$priceQ = <<<EOS
 WITH listitems AS (
-    SELECT R.paid, count(*) occurs
+    SELECT R.price, count(*) occurs
     FROM reg R
     WHERE R.conid=?
-    GROUP BY R.paid
+    GROUP BY R.price
 ), totalrow AS (
     SELECT SUM(occurs) AS total
     FROM listitems
 )
-SELECT paid, occurs, 100 * occurs / total AS percent
+SELECT price, occurs, 100 * occurs / total AS percent
 FROM listitems
 JOIN totalrow
-ORDER BY paid;
+ORDER BY price;
 EOS;
 
-$paids = array();
-$paidA = dbSafeQuery($paidQ, 'i', array($conid));
-while($paid = $paidA->fetch_assoc()) {
-    array_push($paids, $paid);
+$prices = array();
+$priceA = dbSafeQuery($priceQ, 'i', array($conid));
+while($price = $priceA->fetch_assoc()) {
+    array_push($prices, $price);
 }
 
-$response['paids'] = $paids;
+$response['prices'] = $prices;
 
 $couponQ = <<<EOS
 WITH listitems AS (

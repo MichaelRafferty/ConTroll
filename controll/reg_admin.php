@@ -201,7 +201,7 @@ function drawFilters() {
             <div id="age-table"></div>
         </div>
         <div class="col-sm-auto me-1  p-0">
-            <div id="paid-table"></div>
+            <div id="price-table"></div>
         </div>
         <div class="col-sm-auto me-1 p-0">
             <div id="label-table"></div>

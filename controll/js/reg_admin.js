@@ -1,7 +1,7 @@
 var badgetable = null;
 var category = null;
 var type = null;
-var paid = null;
+var price = null;
 var label = null;
 var age = null;
 var coupon = null;
@@ -9,7 +9,7 @@ var statusTable = null;
 var typefilter = null;
 var catfilter = null;
 var agefilter = null;
-var paidfilter = null;
+var pricefilter = null;
 var labelfilter = null;
 var couponfilter = null;
 var statusfilter = null;
@@ -109,22 +109,22 @@ function ageclicked(e, cell) {
     }
 }
 
-function paidclicked(e, cell) {
-    var filtercell = cell.getRow().getCell("paid");
+function priceclicked(e, cell) {
+    var filtercell = cell.getRow().getCell("price");
     var value = filtercell.getValue();
     if (filtercell.getElement().style.backgroundColor) {
-        badgetable.removeFilter("paid", "in", paidfilter);
-        paidfilter = paidfilter.filter(arrayItem => arrayItem !== value);
-        if (paidfilter.length > 0) {
-            badgetable.addFilter("paid", "in", paidfilter);
+        badgetable.removeFilter("price", "in", pricefilter);
+        pricefilter = pricefilter.filter(arrayItem => arrayItem !== value);
+        if (pricefilter.length > 0) {
+            badgetable.addFilter("price", "in", pricefilter);
         }
         filtercell.getElement().style.backgroundColor = "";
     } else {
-        if (paidfilter.length > 0) {
-            badgetable.removeFilter("paid", "in", paidfilter);
+        if (pricefilter.length > 0) {
+            badgetable.removeFilter("price", "in", pricefilter);
         }
-        paidfilter.push(value);
-        badgetable.addFilter("paid", "in", paidfilter);
+        pricefilter.push(value);
+        badgetable.addFilter("price", "in", pricefilter);
         filtercell.getElement().style.backgroundColor = "#C0FFC0";
     }
 }
@@ -214,12 +214,12 @@ function clearfilter() {
             row.getCell("memAge").getElement().style.backgroundColor = "";
         }
     }
-    if (paidfilter.length > 0) {
-        badgetable.removeFilter("paid", "in", paidfilter);
-        paidfilter = [];
-        var rows = paid.getRows();
+    if (pricefilter.length > 0) {
+        badgetable.removeFilter("price", "in", pricefilter);
+        pricefilter = [];
+        var rows = price.getRows();
         for (var row of rows) {
-            row.getCell("paid").getElement().style.backgroundColor = "";
+            row.getCell("price").getElement().style.backgroundColor = "";
         }
     }
     if (labelfilter.length > 0) {
@@ -310,26 +310,26 @@ function draw_stats(data) {
     age.on("cellClick", ageclicked);
     agefilter = [];
 
-    if (paid !== null) {
-        paid.off("cellClick");
-        paid.destroy();
-        paid = null;
+    if (price !== null) {
+        price.off("cellClick");
+        price.destroy();
+        price = null;
     }
-    paid = new Tabulator('#paid-table', {
-        data: data['paids'],
+    price = new Tabulator('#price-table', {
+        data: data['prices'],
         layout: "fitDataTable",
         columns: [
             {
-                title: "Paid", columns: [
-                    { field: "paid", hozAlign: "right" },
+                title: "price", columns: [
+                    { field: "price", hozAlign: "right" },
                     { field: "percent", formatter: "progress", width: 100, headerSort: false, },
                     { field: "occurs", hozAlign: "right" },
                 ]
             },
         ],
     });
-    paid.on("cellClick", paidclicked);
-    paidfilter = [];
+    price.on("cellClick", priceclicked);
+    pricefilter = [];
 
     if (label !== null) {
         label.off("cellClick");
@@ -636,10 +636,7 @@ function transfer(index) {
     var row = badgetable.getRow(index);
     var data = row.getData();
 
-    if (data['price'] > 0 && data['paid'] == 0)
-        return;
-
-    if (data['status'] != 'paid')
+    if (data['status'] != 'paid' && data['status'] != 'upgraded')
         return;
 
     if (data['price'] == 0) {
