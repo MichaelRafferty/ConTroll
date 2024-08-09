@@ -15,6 +15,7 @@ var couponfilter = null;
 var statusfilter = null;
 var transfer_modal = null;
 var receipt_modal = null;
+var notes_modal = null;
 var receipt_email_address = null;
 var find_result_table = null;
 var find_pattern_field = null;
@@ -40,6 +41,10 @@ $(document).ready(function () {
         });
     }
 
+    id = document.getElementById('notes');
+    if (id != null) {
+        notes_modal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+    }
     testdiv = document.getElementById('test');
     getData();
 });
@@ -402,9 +407,11 @@ function actionbuttons(cell, formatterParams, onRendered) {
     var index = cell.getRow().getIndex();
     var price = data['price'];
     var paid = data['paid'];
+    var ncount = data['ncount'];
     var complete_trans = data['complete_trans'];
 
-    if (category != 'dealers') { // dealers can't roll over, transfer does a status set and creates a new reg entry, you can only transfer a paid membership
+    if (category != 'dealer' && category != 'artist') { // dealers/artists can't roll over, transfer does a status set and creates a new reg entry, you can only transfer a
+        // paid membership
         if (status == 'paid') {
             // transfer buttons
             if (category == 'freebie' && (status == 'paid' || status == 'upgraded')) {
@@ -422,10 +429,17 @@ function actionbuttons(cell, formatterParams, onRendered) {
         }
     }
 
+
     // receipt buttons
     if (paid > 0 && complete_trans > 0)
         btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="receipt(' + index + ')">Receipt</button>';
-    return btns;
+
+    // notes button
+    if (ncount != null && ncount > 0)
+        btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="notes(' + index + ')">Notes</button>';
+
+return btns;
 }
 
 // display receipt: use the modal to show the receipt
@@ -512,7 +526,76 @@ function receipt(index) {
             showError("ERROR in getReceipt: " + textStatus, jqXHR);
         }
     });
+}
 
+// notes - display the notes for this badge
+function notes(index) {
+    var row = badgetable.getRow(index);
+    var rid = row.getCell("badgeId").getValue();
+    if (rid == null || rid == '') {
+        show_message("No registration id for this row, seek assistance", "error");
+        return;
+    }
+    $.ajax({
+        method: "POST",
+        url: "scripts/getNotes.php",
+        data: {
+            rid: rid,
+            index: index,
+        },
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['success'] !== undefined) {
+                show_message(data['success'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+            }
+            displayNotes(data);
+            if (data['success'] !== undefined)
+                show_message(data.success, 'success');
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in getReceipt: " + textStatus, jqXHR);
+        }
+    });
+}
+
+// displayNotes - display all registration notes for this reg record
+function displayNotes(data) {
+
+    var index = data['post']['index'];
+    var row = badgetable.getRow(index);
+    var fullname = row.getCell('p_name').getValue();
+    var label = row.getCell('label').getValue();
+    var badgeId = row.getCell('badgeId').getValue();
+    document.getElementById('notesTitle').innerHTML = "Registration Notes for " + fullname + '<br/>Membership: ' + badgeId + ': ' + label;
+
+    var notes = data['notes'];
+    var html = `
+        <div class="row mt-4">
+            <div class="col-sm-1"><b>TID</b></div>
+            <div class="col-sm-2"><b>Log Date</b></div>
+            <div class="col-sm-1"><b>UserId</b></div>
+            <div class="col-sm-8"><b>Note</b></div>
+        </div>
+`;
+    for (var i = 0; i < notes.length; i++) {
+        var note = notes[i];
+        html += `
+        <div class="row mt-2">
+            <div class="col-sm-1">` + note.tid + `</div>
+            <div class="col-sm-2">` + note.logdate + `</div>
+            <div class="col-sm-1">` + note.userid + `</div>
+            <div class="col-sm-8">` + note.notes + `</div>
+        </div>
+`;
+    }
+    document.getElementById('notesText').innerHTML = html;
+    notes_modal.show();
 }
 
 // rollover - cancel his years badge and create it as a rollover in next yeers con
@@ -746,6 +829,7 @@ function draw_badges(data) {
             { field: "perid", visible: false },
             { field: "create_trans", visible: false },
             { field: "complete_trans", visible: false },
+            { field: "ncount", visible: false,},
             { title: "Action", formatter: actionbuttons, hozAlign:"left", headerSort: false },
         ],
         initialSort: [

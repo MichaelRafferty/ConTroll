@@ -19,6 +19,13 @@ $conid= $con['id'];
 $response['conid'] = $conid;
 
 $badgeQ = <<<EOS
+WITH notes AS (
+SELECT R.id, count(N.id) AS ncount
+FROM reg R
+JOIN reg_history N on R.id = N.regId
+WHERE R.conid = ? AND N.action = 'notes'
+GROUP BY R.id
+)
 SELECT R.create_date, R.change_date, R.price, R.couponDiscount, R.paid, R.id AS badgeId, R.memId, P.id AS perid, NP.id AS np_id
     , CASE WHEN R.perid IS NULL THEN 
             TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(NP.first_name, ''), IFNULL(NP.middle_name, ''))), IFNULL(NP.last_name, ''))), IFNULL(NP.suffix, '')))
@@ -29,12 +36,13 @@ SELECT R.create_date, R.change_date, R.price, R.couponDiscount, R.paid, R.id AS 
     , CONCAT_WS('-', M.memCategory, M.memType, M.memAge) as memTyp
     , M.memCategory AS category, M.memType AS type, M.memAge AS age, M.label
     , ifnull(C.name, ' None ') as name
-    , R.create_trans, R.complete_trans, IFNULL(R.complete_trans, R.create_trans) AS display_trans, R.status
+    , R.create_trans, R.complete_trans, IFNULL(R.complete_trans, R.create_trans) AS display_trans, R.status, N.ncount
 FROM reg R
 JOIN memLabel M ON (M.id=R.memId)
 LEFT OUTER JOIN perinfo P ON (P.id=R.perid)
 LEFT OUTER JOIN newperson NP ON (NP.id=R.newperid)
 LEFT OUTER JOIN coupon C on (C.id = R.coupon)
+LEFT OUTER JOIN notes N on N.id = R.id
 WHERE R.conid=?
 ORDER BY R.create_date DESC;
 EOS;
@@ -43,7 +51,7 @@ $response['query'] = $badgeQ;
 
 $badges = array();
 
-$badgeA = dbSafeQuery($badgeQ, 'i', array($conid));
+$badgeA = dbSafeQuery($badgeQ, 'ii', array($conid, $conid));
 while($badge = $badgeA->fetch_assoc()) {
     array_push($badges, $badge);
 }

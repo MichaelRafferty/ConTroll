@@ -109,6 +109,24 @@ if ($controll != null && array_key_exists('badgelistfilter', $controll)) {
         </div>
     </div>
 </div>
+<div id='notes' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Registration Notes' aria-hidden='true' style='--bs-modal-width: 80%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='notesTitle'>Registration Notes</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class="container-fluid" id="notesText"></div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 <?php
     if ($badgeListFilter == "top")
         drawFilters();
