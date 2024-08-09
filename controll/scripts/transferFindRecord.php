@@ -41,8 +41,8 @@ if (is_numeric($name_search)) {
 WITH regcnt AS (
     SELECT p.id, COUNT(r.id) as regcnt, GROUP_CONCAT(m.label SEPARATOR ', ') AS regs
     FROM perinfo p
-    LEFT OUTER JOIN reg r ON (r.perid = p.id AND r.conid = ?)
-    LEFT OUTER JOIN memList m ON (r.memId = m.id AND r.status IN ('paid', 'unpaid', 'plan')
+    LEFT OUTER JOIN reg r ON r.perid = p.id AND r.conid = ?
+    LEFT OUTER JOIN memList m ON r.memId = m.id AND r.status IN ('paid', 'unpaid', 'plan', 'upgraded')
     WHERE p.id = ?
     GROUP BY p.id
 )
@@ -71,7 +71,7 @@ WITH regcnt AS (
     SELECT p.id, COUNT(r.id) as regcnt, GROUP_CONCAT(m.label SEPARATOR ', ') AS regs
     FROM perinfo p
     LEFT OUTER JOIN reg r ON (r.perid = p.id AND r.conid = ?)
-    LEFT OUTER JOIN memList m ON (r.memId = m.id AND r.status IN ('paid', 'unpaid', 'plan'))
+    LEFT OUTER JOIN memList m ON (r.memId = m.id AND r.status IN ('paid', 'unpaid', 'plan', 'upgraded'))
     WHERE (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ? OR LOWER(address) LIKE ? OR LOWER(addr_2) LIKE ?)
     GROUP BY p.id
 )

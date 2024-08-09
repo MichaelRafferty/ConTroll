@@ -42,6 +42,21 @@ if ($checkR->num_rows < 1) {
     ajaxSuccess($response);
     return;
 }
+$checkR->free();
+
+$checkR = dbSafeQuery("SELECT status FROM reg WHERE id=?;", 'i', array($from));
+if ($checkR->num_rows < 1) {
+    $response['error'] = "From registration $from does not exist";
+    ajaxSuccess($response);
+    return;
+}
+$status = $checkR->fetch_row()[0];
+$checkR->free();
+if ($status != 'paid' && $status != 'upgraded') {
+    $response['error'] = "From registration status of $status is not 'paid' or 'upgraded', it cannot be transferred";
+    ajaxSuccess($response);
+    return;
+}
 
 $tType = 'regctl-adm-tfr/' . $user_perid;
 $notes = "Transfer from $from_person to $to by $user_perid";
@@ -66,7 +81,7 @@ WHERE id = ?;
 EOS;
 $uQ = <<<EOS
 UPDATE reg
-SET status = 'transfered', price=0, paid=0, change_date=CURRENT_TIMESTAMP(), couponDiscount=0, planId=null
+SET status = 'transfered', change_date=CURRENT_TIMESTAMP()
 WHERE id = ?;
 EOS;
 $iN = <<<EOS
@@ -75,7 +90,7 @@ VALUES (NOW(), ?, ?, ?, 'notes', ?);
 EOS;
 
 $response['query'] = $nQ . PHP_EOL . $uQ . PHP_EOL . $iN;
-$newRegId = dbSafeInsert($nQ, 'iiiii', array($to, $from_person, $newtid, $newtid, $user_perid));
+$newRegId = dbSafeInsert($nQ, 'iiiiii', array($to, $from_person, $newtid, $newtid, $user_perid, $from));
 $num_rows = dbSafeCmd($uQ, 'i', array($from));
 $notes = "Transfer membership $from from $from_person to $to by $user_perid";
 $notesKey = dbSafeInsert($iN, 'iiis', array($user_perid, $newtid, $newRegId, $notes));

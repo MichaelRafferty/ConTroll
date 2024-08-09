@@ -404,21 +404,21 @@ function actionbuttons(cell, formatterParams, onRendered) {
     var paid = data['paid'];
     var complete_trans = data['complete_trans'];
 
-    if (category != 'dealers') { // dealers can't roll over, and transfer is handled on-site only in atcon re-assigning the name.
+    if (category != 'dealers') { // dealers can't roll over, transfer does a status set and creates a new reg entry, you can only transfer a paid membership
         if (status == 'paid') {
             // transfer buttons
-            if ((category == 'addon' || category == 'add-on') && paid > 0) {
+            if (category == 'freebie' && (status == 'paid' || status == 'upgraded')) {
                 btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" onclick="transfer(' + index + ')">Transfer</button>';
-            } else if (price > 0 && paid > 0)
+            } else if (category != 'donation' && (status == 'paid' || status == 'upgraded')) {
                 btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index + ')">Transfer</button>';
-            else if (price == 0 && paid == 0)
-                btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index + ')">Transfer</button>';
-
+            }
             // rollover buttons
-            if (price > 0 && paid > 0)
-                btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
-            else if (price == 0 && paid == 0)
+            if (category == 'freebie' && (status == 'paid' || status == 'upgraded')) {
                 btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
+            } else if (category != 'donation' && (status == 'paid' || status == 'upgraded')) {
+                btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+                    ' onclick="rollover(' + index + ')">Rollover</button>';
+            }
         }
     }
 
