@@ -392,8 +392,9 @@ foreach ($managed as $m) {
 }
 if ($currentId > 0) { // if there are any at all
     drawPersonRow($loginId, $loginType, $curPT, $curMB, $interests != null, true);
-    drawPortalLegend();
 }
+// always draw the legend even if no one has memberships
+drawPortalLegend();
 
 // compute total due so we can display it up top as well...
 $totalDue = 0;
