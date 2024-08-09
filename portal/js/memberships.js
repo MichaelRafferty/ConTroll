@@ -858,7 +858,8 @@ class Membership {
         <div class="col-sm-1" style='text-align: right;'>` + (strike ? '<s>' : '') + membershipRec.status + (strike ? '</s>' : '') + `</div>
         <div class="col-sm-1" style='text-align: right;'>` + (strike ? '<s>' : '') + membershipRec.price + (strike ? '</s>' : '') + `</div>
         <div class="col-sm-8">` + (strike ? '<s>' : '') +
-                (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label + ' [' + ageListIdx[membershipRec.memAge].label + ']' +
+                (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label +
+                (membershipRec.memAge != 'all' ? ' [' + ageListIdx[membershipRec.memAge].label + ']' : '') +
             (strike ? '</s>' : '') + `
         </div>
     </div>
