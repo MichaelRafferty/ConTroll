@@ -398,6 +398,11 @@ function drawChangeEmailModal() {
 function drawPortalLegend() {
 ?>
     <div class="row mt-2">
+        <div class='col-sm-12 ms-0 me-0 align-center'>
+            <hr style='height:4px;width:95%;margin:auto;margin-top:18px;margin-bottom:10px;color:#333333;background-color:#333333;'/>
+        </div>
+    </div>
+    <div class="row mt-2">
         <div class="col-sm-auto"><b>Legend:</b></div>
         <div class="col-sm-auto">
             <button class="btn btn-light border border-5 border-success" style="pointer-events:none;" tabindex="-1">
