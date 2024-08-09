@@ -101,7 +101,7 @@ while ($cL= $cR->fetch_assoc()) {
         }
     } else {
         $accountType = $cL['accountType'];
-        $accountId = $cL['acctId'];
+        $accountId = $cL['id'];
     }
 }
 $cR->free();
