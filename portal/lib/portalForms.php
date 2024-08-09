@@ -395,7 +395,18 @@ function drawChangeEmailModal() {
 
 //// membership items on portal screen
 // drawLegend - draw a legend row for the membership block of the portal home page
+
+$memershipButtonColors = array(
+        'full' => array('color' => 'border-success', 'style' => ''),
+        'minor' => array('color' => '', 'style' => 'border-color: #ff9000 !important;'),
+        'oneday' => array('color' => '', 'style' => 'border-color: #ffe000 !important;'),
+        'virtual' => array('color' => '', 'style' => 'border-color: #cc00cc !important;'),
+        'yearahead' => array('color' => '', 'style' => 'border-color: #00fdff !important'),
+        'addon' => array('color' => 'border-dark', 'style' => ''),
+        'other' => array('color' => '', 'style' => ''),
+);
 function drawPortalLegend() {
+    global $memershipButtonColors;
 ?>
     <div class="row mt-2">
         <div class='col-sm-12 ms-0 me-0 align-center'>
@@ -405,37 +416,44 @@ function drawPortalLegend() {
     <div class="row mt-2">
         <div class="col-sm-auto"><b>Legend:</b></div>
         <div class="col-sm-auto">
-            <button class="btn btn-light border border-5 border-success" style="pointer-events:none;" tabindex="-1">
+            <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['full']['color']; ?>"
+                    style="pointer-events:none; <?php echo $memershipButtonColors['full']['style']; ?>" tabindex="-1">
                 Full Attending
             </button>
         </div>
         <div class='col-sm-auto'>
-            <button class='btn btn-light border border-5 ' style='pointer-events:none; border-color: #ff9000 !important;' tabindex='-1'>
+            <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['minor']['color']; ?>"
+                    style="pointer-events:none; <?php echo $memershipButtonColors['minor']['style']; ?>" tabindex='-1'>
                 Requires Adult
             </button>
         </div>
         <div class='col-sm-auto'>
-            <button class='btn btn-light border border-5' style='pointer-events:none; border-color: #ffe000 !important;' tabindex='-1'>
+            <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['oneday']['color']; ?>"
+                    style="pointer-events:none; <?php echo $memershipButtonColors['oneday']['style']; ?>" tabindex='-1'>
                 One Day Attending
             </button>
         </div>
         <div class='col-sm-auto'>
-            <button class='btn btn-light border border-5' style='pointer-events:none; border-color: #cc00cc !important;' tabindex='-1'>
+            <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['virtual']['color']; ?>"
+                    style="pointer-events:none; <?php echo $memershipButtonColors['virtual']['style']; ?>" tabindex='-1'>
                 Virtual
-            </button>
+            </>
         </div>
         <div class='col-sm-auto'>
-            <button class='btn btn-light border border-5 border-secondary' style='pointer-events:none; border-color: #00fdff !important' tabindex='-1'>
+        <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['yearahead']['color']; ?>"
+                    style="pointer-events:none; <?php echo $memershipButtonColors['yearahead']['style']; ?>" tabindex='-1'>
                 Year Ahead
             </button>
         </div>
         <div class='col-sm-auto'>
-            <button class='btn btn-light border border-5 border-dark' style='pointer-events:none;' tabindex='-1'>
+            <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['addon']['color']; ?>"
+                    style="pointer-events:none; <?php echo $memershipButtonColors['addon']['style']; ?>" tabindex='-1'>
                 Add On to Membership
             </button>
         </div>
         <div class='col-sm-auto'>
-            <button class='btn btn-light border border-5 ' style='pointer-events:none;' tabindex='-1'>
+            <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['other']['color']; ?>"
+                    style="pointer-events:none; <?php echo $memershipButtonColors['other']['style']; ?>" tabindex='-1'>
                 All Others
             </button>
         </div>
@@ -444,6 +462,8 @@ function drawPortalLegend() {
 }
 // drawManagedRow: draw the memberships and buttons for a managed person or yourself
 function drawPersonRow($personId, $personType, $person, $memberships, $showInterests, $showHR) {
+        global $memershipButtonColors;
+
     $badge_name = $person['badge_name'];
     if ($badge_name == '') {
         $badge_name = '<i>' . TRIM($person['first_name'] . ' ' . $person['last_name']) . '</i>';
@@ -504,20 +524,22 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
         echo "<div class='row'>\n";
         foreach ($memberships as $membership) {
             $disabled = '';
-            $borderColor = '';
-            $borderStyle = '';
+            $type = 'other';
             if ($membership['category'] == 'yearahead')
-                $borderStyle = 'border-color: #00fdff !important';
+                $type = 'yearahead';
             else if ($membership['memAge'] == 'child' || $membership['memAge'] == 'kit')
-                $borderStyle = 'border-color: #ff9000 !important; ';
+                $type = 'minor';
             else if ($membership['type'] == 'oneday')
-                $borderStyle = 'border-color: #ffe000 !important';
+                $type = 'oneday';
             else if ($membership['type'] == 'virtual')
-                $borderStyle = 'border-color: #cc00cc !important';
+                $type = 'virtual';
             else if ($membership['type'] == 'full')
-                $borderColor = 'border-success';
+                $type = 'full';
             else if ($membership['category'] == 'addon' || $membership['category'] == 'add-on'|| $membership['category'] == 'donation')
-                $borderColor = 'border-dark';
+                $type = 'addon';
+
+            $borderColor = $memershipButtonColors[$type]['color'];
+            $borderStyle = $memershipButtonColors[$type]['style'];
 
            if ($membership['status'] == 'upgraded')
                 $disabled = ' disabled';
