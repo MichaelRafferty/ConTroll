@@ -92,17 +92,16 @@ while ($cL= $cR->fetch_assoc()) {
             $managedByMe++;
         } else {
             $mangedByOther++;
-            $accountType = $cL['accountType'];
-            $accountId = $cL['acctId'];
         }
     } else if ($cL['managedByNew'] != null) {
         if ($loginType == 'n' && $cL['mangedBy'] == $loginId) {
             $managedByMe++;
         } else {
             $mangedByOther++;
-            $accountType = $cL['accountType'];
-            $accountId = $cL['acctId'];
         }
+    } else {
+        $accountType = $cL['accountType'];
+        $accountId = $cL['acctId'];
     }
 }
 $cR->free();
