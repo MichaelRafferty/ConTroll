@@ -226,6 +226,7 @@ WITH ppl AS (
         END AS purchaserName
     FROM newperson p    
     LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
+    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id
@@ -356,7 +357,7 @@ if ($info['managedByName'] != null) {
     <div class="col-sm-1"><b>Actions</b></div>
 </div>
 <?php
-drawManagedPerson($loginId, $loginType, $info, $holderMembership, $interests != null, false);
+drawPersonRow($loginId, $loginType, $info, $holderMembership, $interests != null, false);
 
 $managedMembershipList = '';
 $currentId = -1;
@@ -366,7 +367,7 @@ $curMB = [];
 foreach ($managed as $m) {
     if ($currentId != $m['id']) {
         if ($currentId > 0) {
-            drawManagedPerson($loginId, $loginType, $curPT, $curMB,$interests != null, true);
+            drawPersonRow($loginId, $loginType, $curPT, $curMB, $interests != null, true);
         }
         $curPT = $m;
         $currentId = $m['id'];
@@ -390,7 +391,8 @@ foreach ($managed as $m) {
     }
 }
 if ($currentId > 0) { // if there are any at all
-    drawManagedPerson($loginId, $loginType, $curPT, $curMB, $interests != null, true);
+    drawPersonRow($loginId, $loginType, $curPT, $curMB, $interests != null, true);
+    drawPortalLegend();
 }
 
 // compute total due so we can display it up top as well...

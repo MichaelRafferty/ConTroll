@@ -393,8 +393,52 @@ function drawChangeEmailModal() {
 <?php
 }
 
-//// buttons on portal screen
-function drawManagedPerson($personId, $personType, $person, $memberships, $showInterests, $showHR) {
+//// membership items on portal screen
+// drawLegend - draw a legend row for the membership block of the portal home page
+function drawPortalLegend() {
+?>
+    <div class="row mt-2">
+        <div class="col-sm-auto"><b>Legend:</b></div>
+        <div class="col-sm-auto">
+            <button class="btn btn-light border border-5 border-success" style="pointer-events:none;" tabindex="-1">
+                Full Attending
+            </button>
+        </div>
+        <div class='col-sm-auto'>
+            <button class='btn btn-light border border-5 ' style='pointer-events:none; border-color: #ff9000 !important;' tabindex='-1'>
+                Requires Adult
+            </button>
+        </div>
+        <div class='col-sm-auto'>
+            <button class='btn btn-light border border-5' style='pointer-events:none; border-color: #ffe000 !important;' tabindex='-1'>
+                One Day Attending
+            </button>
+        </div>
+        <div class='col-sm-auto'>
+            <button class='btn btn-light border border-5' style='pointer-events:none; border-color: #cc00cc !important;' tabindex='-1'>
+                Virtual
+            </button>
+        </div>
+        <div class='col-sm-auto'>
+            <button class='btn btn-light border border-5 border-secondary' style='pointer-events:none; border-color: #00fdff !important' tabindex='-1'>
+                Year Ahead
+            </button>
+        </div>
+        <div class='col-sm-auto'>
+            <button class='btn btn-light border border-5 border-dark' style='pointer-events:none;' tabindex='-1'>
+                Add On to Membership
+            </button>
+        </div>
+        <div class='col-sm-auto'>
+            <button class='btn btn-light border border-5 ' style='pointer-events:none;' tabindex='-1'>
+                All Others
+            </button>
+        </div>
+    </div>
+<?php
+}
+// drawManagedRow: draw the memberships and buttons for a managed person or yourself
+function drawPersonRow($personId, $personType, $person, $memberships, $showInterests, $showHR) {
     $badge_name = $person['badge_name'];
     if ($badge_name == '') {
         $badge_name = '<i>' . TRIM($person['first_name'] . ' ' . $person['last_name']) . '</i>';
@@ -458,14 +502,16 @@ function drawManagedPerson($personId, $personType, $person, $memberships, $showI
             $borderColor = '';
             $borderStyle = '';
             if ($membership['category'] == 'yearahead')
-                $borderColor = 'border-muted';
+                $borderStyle = 'border-color: #00fdff !important';
             else if ($membership['memAge'] == 'child' || $membership['memAge'] == 'kit')
-                $borderStyle = 'border-color: #dd9e14 !important; ';
+                $borderStyle = 'border-color: #ff9000 !important; ';
             else if ($membership['type'] == 'oneday')
-                $borderColor = 'border-warning';
+                $borderStyle = 'border-color: #ffe000 !important';
+            else if ($membership['type'] == 'virtual')
+                $borderStyle = 'border-color: #cc00cc !important';
             else if ($membership['type'] == 'full')
                 $borderColor = 'border-success';
-            else if ($membership['category'] == 'addon' || $membership['category'] == 'donation')
+            else if ($membership['category'] == 'addon' || $membership['category'] == 'add-on'|| $membership['category'] == 'donation')
                 $borderColor = 'border-dark';
 
            if ($membership['status'] == 'upgraded')
@@ -492,14 +538,17 @@ function drawManagedPerson($personId, $personType, $person, $memberships, $showI
            } else {
                $row3 = '';
            }
+           if ($membership['memAge'] == 'all') {
+               $ageRow =  '';
+           } else {
+               $ageRow = '<br/><b>' . $membership['ageShort'] . '</b> (' . $membership['ageLabel'] . ')';
+           }
            ?>
         <div class="col-sm-3 ps-1 pe-1 m-0"><button class="btn btn-light border border-5 <?php echo $borderColor; ?>"
             style="width: 100%; pointer-events:none; <?php echo $borderStyle; ?>" <?php echo $disabled; ?> tabindex="-1"><b><?php echo $membership['shortname']
                     . "</b> (" .
                     $membership['status']
-            . ")
-            <br/>" .
-            "<b>" . $membership['ageShort'] . "</b> (" . $membership['ageLabel'] . ')' . $row3; ?></button></div>
+            . ")" . $ageRow . $row3; ?></button></div>
 <?php
         }
         echo "</div>\n";;
