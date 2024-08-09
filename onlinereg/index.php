@@ -309,7 +309,7 @@ $onsitesale = $startdate->format("l, F j");
                                     </p>
                                 </div>
                             </div>
-<?                      } ?>
+<?php                      } ?>
                             <div class="row">
                                 <div class="col-sm-12">
                                     <p class="text-body">
