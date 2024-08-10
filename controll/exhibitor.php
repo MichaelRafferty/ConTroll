@@ -20,7 +20,6 @@ page_init($page,
     /* js  */ array(
                     //$cdn['luxon'],
                     $cdn['tabjs'],
-                    //'js/d3.js',
                     'jslib/exhibitorProfile.js',
                     'js/vendor.js',
                     'js/exhibitorInvoice.js',

@@ -20,5 +20,5 @@ INSERT INTO `auth` VALUES (1,'overview','Y','Membership'),
 	(17,'atcon_checkin','N','N'),
 	(18,'atcon_register','N','N'),
 	(19,'coupon','Y','Coupon'),
-	(32,'vendor','Y','Exhibitors'),
+	(32,'exhibitor','Y','Exhibitors'),
 	(999,'registration-old','N','Old Reg');
