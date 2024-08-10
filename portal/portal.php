@@ -226,7 +226,6 @@ WITH ppl AS (
         END AS purchaserName
     FROM newperson p    
     LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
-    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id
