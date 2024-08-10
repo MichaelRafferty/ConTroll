@@ -57,7 +57,6 @@ class exhibitssetup {
     #debugVisible = false;
     #priceregexp = 'regex:^([0-9]+([.][0-9]*)?|[.][0-9]+)';
 
-
     // globals before open
     // none
 
@@ -230,6 +229,7 @@ class exhibitssetup {
                     return false;
                 }
                 _this.draw(data);
+                _this.settab('regionTypes-pane');
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -970,8 +970,8 @@ class exhibitssetup {
     // set undo / redo status for exhibits type buttons
     checkRegionsUndoRedo() {
         var undosize = this.#regionsTable.getHistoryUndoSize();
-        this.#regionTypeundobtn.disabled = undosize <= 0;
-        this.#regionTyperedobtn.disabled = this.#regionsTable.getHistoryRedoSize() <= 0;
+        this.#regionundobtn.disabled = undosize <= 0;
+        this.#regionredobtn.disabled = this.#regionsTable.getHistoryRedoSize() <= 0;
         return undosize;
     }
 
@@ -1323,7 +1323,7 @@ class exhibitssetup {
     };
 
     // rebutton for spaces
-    redoSpaces() {
+    redoSpacePrices() {
         if (this.#spacePricesTable != null) {
             this.#spacePricesTable.redo();
 
@@ -1348,7 +1348,7 @@ class exhibitssetup {
     // set undo / redo status for spaces buttons
     checkSpacePricesUndoRedo() {
         var undosize = this.#spacePricesTable.getHistoryUndoSize();
-        this.#spacePriceredobtn.disabled = undosize <= 0;
+        this.#spacePriceundobtn.disabled = undosize <= 0;
         this.#spacePriceredobtn.disabled = this.#spacePricesTable.getHistoryRedoSize() <= 0;
         return undosize;
     }
