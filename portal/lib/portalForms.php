@@ -417,6 +417,49 @@ $memershipButtonColors = array(
 );
 function drawPortalLegend() {
     global $memershipButtonColors;
+    $conf = get_conf('con');
+    $conid = $conf['id'];
+
+    // figure which legend item exist - we need categories and types from memList
+    $mlQ = <<<EOS
+SELECT 'yearahead' AS name, count(*) AS occurs
+FROM memList WHERE memCategory = 'yearahead' AND conid = ?
+UNION SELECT 'minor' AS name, count(*) AS occurs
+FROM memList WHERE memAge in ('kit', 'child') AND conid = ?
+UNION SELECT 'oneday' AS name, count(*) AS occurs
+FROM memList WHERE memType = 'oneday' AND conid = ?
+UNION SELECT 'virtual' AS name, count(*) AS occurs
+FROM memList WHERE memType = 'virtual' AND conid = ?
+UNION SELECT 'addon' AS name, count(*) AS occurs
+FROM memList WHERE memCategory in ('addon', 'add-on', 'donation') AND conid = ?
+EOS;
+    $mlR = dbSafeQuery($mlQ, 'iiiii', array($conid, $conid, $conid, $conid, $conid));
+    $yearahead = false;
+    $minor = false;
+    $oneday = false;
+    $virtual = false;
+    $addon = false;
+    if ($mlR !== false) {
+        while ($mlL = $mlR->fetch_assoc()) {
+            switch ($mlL['name']) {
+                case 'yearahead':
+                    $yearahead = $mlL['occurs'] > 0;
+                    break;
+                case 'minor':
+                    $minor = $mlL['occurs'] > 0;;
+                    break;
+                case 'oneday':
+                    $oneday = $mlL['occurs'] > 0;;
+                    break;
+                case 'virtual':
+                    $virtual = $mlL['occurs'] > 0;;
+                    break;
+                case 'addon':
+                    $addon = $mlL['occurs'] > 0;;
+                    break;
+            }
+        }
+    }
 ?>
     <div class="row mt-2">
         <div class='col-sm-12 ms-0 me-0 align-center'>
@@ -431,36 +474,46 @@ function drawPortalLegend() {
                 Full Attending
             </button>
         </div>
+        <?php if ($minor) { ?>
         <div class='col-sm-auto'>
             <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['minor']['color']; ?>"
                     style="pointer-events:none; <?php echo $memershipButtonColors['minor']['style']; ?>" tabindex='-1'>
                 Requires Adult
             </button>
         </div>
+        <?php }
+        if ($oneday) { ?>
         <div class='col-sm-auto'>
             <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['oneday']['color']; ?>"
                     style="pointer-events:none; <?php echo $memershipButtonColors['oneday']['style']; ?>" tabindex='-1'>
                 One Day Attending
             </button>
         </div>
+        <?php }
+        if ($virtual) { ?>
         <div class='col-sm-auto'>
             <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['virtual']['color']; ?>"
                     style="pointer-events:none; <?php echo $memershipButtonColors['virtual']['style']; ?>" tabindex='-1'>
                 Virtual
             </>
         </div>
+        <?php }
+        if ($yearahead) { ?>
         <div class='col-sm-auto'>
         <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['yearahead']['color']; ?>"
                     style="pointer-events:none; <?php echo $memershipButtonColors['yearahead']['style']; ?>" tabindex='-1'>
                 Year Ahead
             </button>
         </div>
+        <?php }
+        if ($addon) { ?>
         <div class='col-sm-auto'>
             <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['addon']['color']; ?>"
                     style="pointer-events:none; <?php echo $memershipButtonColors['addon']['style']; ?>" tabindex='-1'>
                 Add On to Membership
             </button>
         </div>
+        <?php } ?>
         <div class='col-sm-auto'>
             <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['other']['color']; ?>"
                     style="pointer-events:none; <?php echo $memershipButtonColors['other']['style']; ?>" tabindex='-1'>
