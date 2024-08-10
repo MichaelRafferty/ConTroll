@@ -29,7 +29,6 @@ page_init($page,
                     'js/admin.js',
                     'js/admin_consetup.js',
                     'js/admin_memconfig.js',
-                    'js/admin_exhibits.js',
                     'js/admin_merge.js',
                     'js/admin_customText.js',
                     'js/admin_policy.js',
@@ -201,11 +200,6 @@ else
             </button>
         </li>
         <li class='nav-item' role='presentation'>
-            <button class='nav-link' id='exhibits-tab' data-bs-toggle='pill' data-bs-target='#exhibits-pane' type='button' role='tab'
-                    aria-controls='nav-exhibitssetup' aria-selected='false' onclick="settab('exhibits-pane');">Exhibits Configuration
-            </button>
-        </li>
-        <li class='nav-item' role='presentation'>
             <button class='nav-link' id='merge-tab' data-bs-toggle='pill' data-bs-target='#merge-pane' type='button' role='tab'
                     aria-controls='nav-merge' aria-selected='false' onclick="settab('merge-pane');">Merge People
             </button>
@@ -339,7 +333,6 @@ else
     <div class="tab-pane fade" id="consetup-pane" role="tabpanel" aria-labelledby="consetup-tab" tabindex="0"></div>
     <div class="tab-pane fade" id="nextconsetup-pane" role="tabpanel" aria-labelledby="nextconsetup-tab" tabindex="0"></div>
     <div class="tab-pane fade" id="memconfig-pane" role="tabpanel" aria-labelledby="memconfig-tab" tabindex="0"></div>
-    <div class="tab-pane fade" id="exhibits-pane" role="tabpanel" aria-labelledby="exhibits-tab" tabindex="0"></div>
     <div class='tab-pane fade' id='merge-pane' role='tabpanel' aria-labelledby='merge-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='customtext-pane' role='tabpanel' aria-labelledby='customtext-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='policy-pane' role='tabpanel' aria-labelledby='policy-tab' tabindex='0'></div>

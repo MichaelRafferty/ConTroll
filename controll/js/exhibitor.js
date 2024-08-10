@@ -53,6 +53,7 @@ class exhibitorsAdm {
     // Owner items
     #ownerTabs = {};
     #currentOwner = null;
+    #currentPane = '';
 
     // Region items
     #currentRegion = null;
@@ -110,6 +111,7 @@ class exhibitorsAdm {
         this.#ownerTabs['overview'] = document.getElementById('overview-content');
         this.#ownerTabs['configuration'] = document.getElementById('configuration-content');
         this.#currentOwner = this.#ownerTabs['overview'];
+        this.#currentPane = 'overview';
         var ownerKeys = Object.keys(regionOwners);
         for (var idO in ownerKeys) {
             var owner = ownerKeys[idO];
@@ -142,19 +144,37 @@ class exhibitorsAdm {
         clear_message();
         var content = tabname.replace('-pane', '');
 
-        if (this.#currentOwner)
+        if (this.#currentOwner) {
             this.#currentOwner.hidden = true;
+        }
         this.#ownerTabs[content].hidden = false;
         this.#currentOwner = this.#ownerTabs[content];
+        this.#currentPane = content;
+        if (content != 'configuration') {
+            if (exhibits) {
+                exhibits.close();
+                exhibits = null;
+            }
+        }
         if (this.#currentRegion) {
             this.#currentRegion.hidden = true;
             this.#currentRegion = null;
         }
-        var ownerLookup = regionOwnersTabNames[tabname];
-        var regionsInOwner = regionOwners[ownerLookup];
-        var regionKey = Object.keys(regionsInOwner)[0];
-        var region = regionsInOwner[regionKey];
-        this.settabRegion(region['name'].replaceAll(' ', '-') + '-pane');
+
+        if (content == 'overview')
+            return;
+
+        if (content == 'configuration') {
+            if (exhibits == null)
+                exhibits = new exhibitssetup(config['conid'], config['debug']);
+            exhibits.open();
+        } else {
+            var ownerLookup = regionOwnersTabNames[tabname];
+            var regionsInOwner = regionOwners[ownerLookup];
+            var regionKey = Object.keys(regionsInOwner)[0];
+            var region = regionsInOwner[regionKey];
+            this.settabRegion(region['name'].replaceAll(' ', '-') + '-pane');
+        }
     }
 
     // second level - region

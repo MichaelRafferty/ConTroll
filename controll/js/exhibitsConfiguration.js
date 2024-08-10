@@ -65,7 +65,7 @@ class exhibitssetup {
         this.#debug = debug;
         this.#conid = conid;
         this.#message_div = document.getElementById('test');
-        this.#exhibits_pane = document.getElementById('exhibits-pane');
+        this.#exhibits_pane = document.getElementById('configuration-content');
         this.#result_message_div = document.getElementById('result_message');
         if (this.#debug & 1) {
             console.log("Debug = " + debug);
@@ -1412,3 +1412,24 @@ class exhibitssetup {
         }
     }
 };
+
+var dirty = false;
+function cellChanged(cell) {
+    dirty = true;
+    cell.getElement().style.backgroundColor = "#fff3cd";
+}
+
+function deleteicon(cell, formattParams, onRendered) {
+    var value = cell.getValue();
+    if (value == 0)
+        return "&#x1F5D1;";
+    return value;
+}
+
+function deleterow(e, row) {
+    var count = row.getCell("uses").getValue();
+    if (count == 0) {
+        row.getCell("to_delete").setValue(1);
+        row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
+    }
+}

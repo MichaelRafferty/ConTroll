@@ -223,8 +223,6 @@ function settab(tabname) {
         next.close();
     if (merge != null)
         merge.close();
-    if (exhibits != null)
-        exhibits.close();
     if (customText != null)
         customText.close();
     if (policy != null)
@@ -251,11 +249,6 @@ function settab(tabname) {
             if (mem == null)
                 mem = new memsetup();
             mem.open();
-            break;
-        case 'exhibits-pane':
-            if (exhibits == null)
-                exhibits = new exhibitssetup(conid, debug);
-            exhibits.open();
             break;
         case 'merge-pane':
             if (merge == null)

@@ -82,9 +82,11 @@ $config_vars['portalName'] = $portalName;
 $config_vars['artistsite'] = $vendor_conf['artistsite'];
 $config_vars['vendorsite'] = $vendor_conf['vendorsite'];
 $config_vars['debug'] = $debug['controll_exhibitors'];
+$config_vars['conid'] = $conid;
 $config_vars['required'] = $reg_conf['required'];
 $config_vars['useUSPS'] = $useUSPS;
 
+bs_tinymceModal();
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
 draw_exhibitorRequestModal('admin');
 draw_exhibitorReceiptModal('admin');
@@ -302,6 +304,8 @@ while ($regionL = $regionOwnerR->fetch_assoc()) {
                 </div>
             </div>
         </div>
+    </div>
+    <div class='tab-content ms-2' id='configuration-content'>
     </div>
 
     <?php
