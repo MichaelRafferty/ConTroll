@@ -18,6 +18,7 @@ set_include_path(get_include_path(). $include_path_additions);
 require_once("vendor/autoload.php");
 require_once(__DIR__ . "/../../lib/db_functions.php");
 require_once(__DIR__ . "/../../lib/global.php");
+require_once(__DIR__ . '/../../lib/jsVersions.php');
 require_once(__DIR__ . "/../../lib/ajax_functions.php");
 db_connect();
 
@@ -150,7 +151,9 @@ return isset($_SERVER['HTTP_USER_AGENT']);
 
 function page_init($title, $css, $js, $auth) {
     global $db_ini;
-// auth gets the token in need_login
+    global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
+
+    // auth gets the token in need_login
     if (is_array($auth) && array_key_exists('email', $auth)) {
         newUser($auth['email'], array_key_exists('sub', $auth) ? $auth['sub'] : '');
     }
@@ -165,11 +168,6 @@ function page_init($title, $css, $js, $auth) {
     $jquijs=$cdn['jquijs'];
     $jquicss=$cdn['jquicss'];
     $pageTitle = $title . '--' . $db_ini['con']['conname'];
-
-    $versions = get_conf('js');
-    $controll = $versions['controll'];
-    $global = $versions['global'];
-    $jslib = $versions['jslib'];
 
 echo <<<EOF
 <!DOCTYPE html>
@@ -191,12 +189,12 @@ echo <<<EOF
     <script src='$bs5js'></script>
     <script type='text/javascript' src='$jqjs'></script>
     <script type='text/javascript' src='$jquijs'></script>
-    <script type='text/javascript' src='jslib/global.js?v=$global'></script>
-    <script type='text/javascript' src='js/base.js?v=$controll'></script>
+    <script type='text/javascript' src='jslib/global.js?v=$globalJSversion'></script>
+    <script type='text/javascript' src='js/base.js?v=$controllJSversion'></script>
 EOF;
     if(isset($js) && $js != null) {
         foreach ($js as $script) { ?>
-    <script src='<?php echo $script . "?v=$controll"; ?>' type='text/javascript'></script>
+    <script src='<?php echo $script . "?v=$controllJSversion"; ?>' type='text/javascript'></script>
 <?php    }
     }
 ?>
