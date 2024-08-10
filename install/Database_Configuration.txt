@@ -9,7 +9,7 @@ Configuration Tables:
             '2', 'admin', 'Y', 'Admin'
             '3', 'people', 'Y', 'People'
             '5', 'registration', 'Y', 'Registration'
-            '6', 'reg_admin', 'Y', 'Badge List'
+            '6', 'reg_admin', 'Y', 'Registration Admin'
             '7', 'artist', 'Y', 'Artist'
             '8', 'artshow', 'Y', 'Artshow'
             '9', 'badge', 'Y', 'Free Badges'

@@ -210,7 +210,7 @@ function page_head($title, $auth) {
     global $db_ini;
     ?>
 
-    <div class="container-fluid">
+    <div class="container-fluid mb-2">
         <div class="row titlebar" id='titlebar'>
             <div class="col-sm-9">
                 <h1 class='title'>
@@ -268,29 +268,26 @@ function tab_bar($auth, $page) {
     $ariainfo = $page == "Home" ? 'aria-current="page"' : '';
 
     ?>
-
-        <nav class="navbar navbar-light navitem navbar-expand-lg mb-2">
+        <nav class="navbar navbar-light navitem navbar-expand-lg mb-2 ps-2">
             <div>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
             </div>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto p-0">
-                    <li>
-                         <a class="nav-link navitem <?php echo $active; ?>" <?php echo $ariainfo; ?> href="index.php">Home</a>
-                    </li> 
-                    <?php foreach ($page_list as $pageInfo) {
-                        $p = $pageInfo['name'];
-                        $d = $pageInfo['display'];
-                        $active = $page == $p ? "active" : "";
-                        $ariainfo = $page == $p ? 'aria-current="page"' : '';
-                    ?>
-                    <li>
-                         <a class="nav-link navitem <?php echo $active; ?>" <?php echo $ariainfo; ?> href="<?php echo $p; ?>.php"><?php echo $d; ?></a>
-                    </li>
-                    <?php  } ?>
-                </ul>
+                <button class="btn btn-outline-dark navitem me-3 <?php echo $active; ?>" type='button' <?php echo $ariainfo; ?>
+                        style='border-bottom-right-radius: 20px;' onclick='window.location="index.php";'>Home
+                </button>
+                <?php foreach ($page_list as $pageInfo) {
+                    $p = $pageInfo['name'];
+                    $d = $pageInfo['display'];
+                    $active = $page == $p ? "active" : "";
+                    $ariainfo = $page == $p ? 'aria-current="page"' : '';
+                ?>
+                <button class="btn btn-outline-dark navitem me-3 <?php echo $active; ?>" type='button' <?php echo $ariainfo; ?>
+                        style='border-top-left-radius: 20px; border-bottom-right-radius: 20px;' onclick="window.location='<?php echo $p; ?>.php';"><?php echo $d;
+                        ?></button>
+                <?php } ?>
             </div>
         </nav>
     </div>
