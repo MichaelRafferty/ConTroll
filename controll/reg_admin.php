@@ -142,31 +142,31 @@ if ($controll != null && array_key_exists('badgelistfilter', $controll)) {
 ?>
     <div class="row">
         <div class="col-sm-auto p-2">
-            <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/allEmails.php';">Download Email List</button>
+            <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/allEmails.php';" disabled>Download Email List</button>
         </div>
         <div class="col-sm-auto p-2">
-            <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/regReport.php';">Download Reg Report</button>
+            <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/regReport.php';" disabled>Download Reg Report</button>
         </div>
         <div class="col-sm-auto p-2">
-            <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')">Send Marketing Email</button>
+            <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')" disabled>Send Marketing Email</button>
         </div>
         <div class='col-sm-auto p-2'>
-            <button class='btn btn-primary btn-sm' onclick="sendEmail('comeback')">Send Come Back Email</button>
+            <button class='btn btn-primary btn-sm' onclick="sendEmail('comeback')" disabled>Send Come Back Email</button>
         </div>
         <div class="col-sm-auto p-2">
-            <button class="btn btn-primary btn-sm" onclick="sendEmail('reminder')">Send Attendance Reminder Email</button>
+            <button class="btn btn-primary btn-sm" onclick="sendEmail('reminder')" disabled>Send Attendance Reminder Email</button>
         </div>       
         <?php if ($db_ini['con']['survey_url']) { ?>
         <div class="col-sm-auto p-2">
-            <button class="btn btn-primary btn-sm" onclick="sendEmail('survey')">Send Survey Email</button>
+            <button class="btn btn-primary btn-sm" onclick="sendEmail('survey')" disabled>Send Survey Email</button>
         </div>
         <?php } ?>
         <?php if ($db_ini['reg']['cancelled']) { ?>
         <div class="col-sm-auto p-2">
-            <button class="btn btn-primary btn-sm" onclick="sendCancel()">Send Cancelation Instructions</button>
+            <button class="btn btn-primary btn-sm" onclick="sendCancel()" disabled>Send Cancelation Instructions</button>
         </div>
         <div class="col-sm-auto p-2">
-            <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/cancel.php';">Download Cancellation Report</button>
+            <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/cancel.php';" disabled>Download Cancellation Report</button>
         </div>
         <div class="col-sm-auto p-2">
             <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/processRefunds.php';">Download Process Refunds Report</button>
