@@ -186,30 +186,12 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false) {
                 <input class="form-control-sm" type="text" name='addr2' id='addr2' size=64 maxlength="64" tabindex='160'/>
             </div>
         </div>
-        <div class="row">
-            <div class="col-sm-auto">
-                <label for="city" class="form-label-sm">
-                    <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>City</span>
+        <div class='row'>
+            <div class='col-sm-auto'>
+                <label for='country' class='form-label-sm'>
+                    <span class='text-dark' style='font-size: 10pt;'>Country</span>
                 </label><br/>
-                <input class="form-control-sm" type="text" name="city" id='city' size="22" maxlength="32" tabindex="170"/>
-            </div>
-            <div class="col-sm-auto">
-                <label for="state" class="form-label-sm">
-                    <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>State: U.S./CAN 2-letter abv.</span>
-                </label><br/>
-                <input class="form-control-sm" type="text" name="state" id='state' size="16" maxlength="16" tabindex="180"/>
-            </div>
-            <div class="col-sm-auto">
-                <label for="zip" class="form-label-sm">
-                    <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>Zip</span>
-                </label><br/>
-                <input class="form-control-sm" type="text" name="zip" id='zip' size="10" maxlength="10" tabindex="190"/>
-            </div>
-            <div class="col-sm-auto">
-                <label for="country" class="form-label-sm">
-                    <span class="text-dark" style="font-size: 10pt;">Country</span>
-                </label><br/>
-                <select name='country' tabindex='200' id='country' onchange="<?php echo $class; ?>.countryChange();">
+                <select name='country' tabindex='170' id='country' onchange="<?php echo $class; ?>.countryChange();">
                     <?php
                     $fh = fopen(__DIR__ . '/../../lib/countryCodes.csv', 'r');
                     while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {
@@ -218,6 +200,26 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false) {
                     fclose($fh);
                     ?>
                 </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-auto">
+                <label for="city" class="form-label-sm">
+                    <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>City</span>
+                </label><br/>
+                <input class="form-control-sm" type="text" name="city" id='city' size="22" maxlength="32" tabindex="180"/>
+            </div>
+            <div class="col-sm-auto">
+                <label for="state" class="form-label-sm">
+                    <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>State: U.S./CAN 2-letter abv.</span>
+                </label><br/>
+                <input class="form-control-sm" type="text" name="state" id='state' size="16" maxlength="16" tabindex="190"/>
+            </div>
+            <div class="col-sm-auto">
+                <label for="zip" class="form-label-sm">
+                    <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>Zip</span>
+                </label><br/>
+                <input class="form-control-sm" type="text" name="zip" id='zip' size="10" maxlength="10" tabindex="200"/>
             </div>
         </div>
         <?php if ($useUSPS) echo '</div></div><div class="col-sm-4" id="uspsblock"></div></div>' . PHP_EOL; ?>
@@ -259,6 +261,9 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false) {
                 <hr/>
             </div>
         </div>
+<?php
+    if ((!array_key_exists('showConPolicy',$portal_conf)) || $portal_conf['showConPolicy'] == 1) {
+?>
         <div class='row'>
             <div class='col-sm-12'>
                 <p class='text-body'>
@@ -267,7 +272,10 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false) {
                 </p>
             </div>
         </div>
-<?php       if (!(array_key_exists('showVolunteerPolicy',$portal_conf) && $portal_conf['showVolunteerPolicy'] == 0)) { ?>
+<?php
+    }
+    if ((!array_key_exists('showVolunteerPolicy',$portal_conf)) || $portal_conf['showVolunteerPolicy'] == 1) {
+?>
         <div class="row">
             <div class="col-sm-12">
                 <p class="text-body"><?php echo $con['conname']; ?> is entirely run by volunteers.
@@ -276,7 +284,9 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false) {
                 </p>
             </div>
         </div>
-<?php       } ?>
+<?php
+    }
+?>
     </form>
     <form id='editPolicies' class='form-floating' action='javascript:void(0);'>
 <?php

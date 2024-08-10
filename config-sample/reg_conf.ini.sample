@@ -239,6 +239,12 @@ logoalt=""
 emailhrs=24
 oauthhrs=8
 history=1
+; showConPolicy - shows the "CLick here for the #conname# Policies",
+;     set to 0 if agree to policy is one of your policies or 1 otherwise
+showVolunteerPolicy=1
+; showVolunteerPolicy - shows the "#Conname# is entirely run by volunteers" line in the policy block,
+;      set to 0 if volunteers is in your interest section, 1 otherwise
+showVolunteerPolicy=1
 [api]
 path = "" ; full path to the api directory
 oauthEncryptionKey= "" ; set your oauth2Server encryption key
