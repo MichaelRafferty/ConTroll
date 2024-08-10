@@ -9,7 +9,7 @@ require_once "lib/exhibitorChooseExhibitor.php";
 //initialize google session
 $need_login = google_init("page");
 
-$page = "vendor";
+$page = "exhibitor";
 if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
@@ -21,7 +21,8 @@ page_init($page,
                     //$cdn['luxon'],
                     $cdn['tabjs'],
                     'jslib/exhibitorProfile.js',
-                    'js/vendor.js',
+                    'js/exhibitor.js',
+                    'js/exhibitsConfiguration.js',
                     'js/exhibitorInvoice.js',
                     'jslib/exhibitorRequest.js',
                     'jslib/exhibitorReceipt.js',
@@ -209,8 +210,13 @@ draw_exhibitorChooseModal();
 <div class="container-fluid" id='main'>
     <ul class='nav nav-tabs mb-3' id='exhibitor-tab' role='tablist'>
         <li class='nav-item' role='presentation'>
-            <button class='nav-link active' id='overview-tab' data-bs-toggle='pill' data-bs-target='#overview-pane' type='button' role='tab' aria-controls='nav-overview'
-            aria-selected="true" onclick="exhibitors.settabOwner('overview-pane');">Overview
+            <button class='nav-link active' id='overview-tab' data-bs-toggle='pill' data-bs-target='#overview-pane' type='button' role='tab'
+                    aria-controls='nav-overview' aria-selected="true" onclick="exhibitors.settabOwner('overview-pane');">Overview
+            </button>
+        </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='configuration-tab' data-bs-toggle='pill' data-bs-target='#configuration-pane' type='button' role='tab'
+                    aria-controls='nav-configuration' aria-selected='false' onclick="exhibitors.settabOwner('configuration-pane');">Exhibits Configuration
             </button>
         </li>
 <?php
@@ -264,8 +270,22 @@ while ($regionL = $regionOwnerR->fetch_assoc()) {
                         <li>Exhibits</li>
                         <li>Fan Tables</li>
                     </ol>
-                    <p>There is a separate tab within the Exhibitors tab for each Exhibitor Space within the convention.</p>
-                    <p>These space tabs handle:</p>
+                    <p>There is a separate tab within the Exhibitors tab for configuration of Exhibits Spaces and for each Exhibitor Space within the
+                        convention.</p>
+                    <p>The Exhibits configuration tab handles:</p>
+                    <ol>
+                        <li>Region Types - Rules configuration such as: portal type, approval requirements, mail-in among others.</li>
+                        <li>Regions - Room(s) that follow the rules of a Region Type</li>
+                        <li>Regions for this Year - which Room(s) are active in this years convention.  This includes the owners name and email.  It
+                            also specifies the type of memberships that are available to the exhibitors in this thse rooms.
+                        </li>
+                        <li>Spaces within the Region - this is the types of space an exhibitor can request within these rooms.  Examples are tables, panels,
+                            demo space, and anything else you can come up with.
+                        </li>
+                        <li>Space Pricing Options - What space within the region a exhibitor can request (1 table, 2 panels, etc.) and the price and
+                            membership options for same.</li>
+                    </ol>
+                    <p>The Exhibitor space tabs handle:</p>
                     <ol>
                         <li>Exhibitor Management</li>
                         <li>Permission to request space in this Exhibitor Space (if required)</li>

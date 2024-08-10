@@ -15,6 +15,9 @@ regionid = null;
 exhibitorsData = null;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// globals for exhibits configuration
+exhibits = null;
+
 // exhibitors class - functions for spae ownerto review and approve spaces requested by exhibitors
 class exhibitorsAdm {
     // global items
@@ -105,6 +108,7 @@ class exhibitorsAdm {
 
         // owners
         this.#ownerTabs['overview'] = document.getElementById('overview-content');
+        this.#ownerTabs['configuration'] = document.getElementById('configuration-content');
         this.#currentOwner = this.#ownerTabs['overview'];
         var ownerKeys = Object.keys(regionOwners);
         for (var idO in ownerKeys) {

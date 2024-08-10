@@ -18,7 +18,7 @@ Configuration Tables:
             '14', 'monitor', 'Y', 'Attendance'
             '15', 'reports', 'Y', 'Reports'
             '19', 'coupon', 'Y', 'Coupon'
-            '32', 'vendor', 'Y', 'Vendor'
+            '32', 'exhibitor', 'Y', 'Exhibitors'
 
         user: reg_control users
         user_auth: roles actually assigned to reg_control users

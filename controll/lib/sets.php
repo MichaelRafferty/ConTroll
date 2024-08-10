@@ -12,7 +12,7 @@ function get_admin_sets(): array
         'artshow_admin' => array('people', 'artist', 'artshow', 'art_control', 'art_sales', 'search', 'reports', 'vendor'),
         'artshow' => array('art_control', 'search'),
         'atcon' => array('monitor', 'atcon', 'atcon_checkin', 'atcon_register'),
-        'vendor' => array('people', 'search', 'reports', 'vendor'),
+        'exhibits' => array('people', 'search', 'reports', 'exhibitor'),
         'club' => array('club', 'reports', 'search', 'people'),
         'virtual' => array('virtual')
     );

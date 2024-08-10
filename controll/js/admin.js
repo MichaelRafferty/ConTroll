@@ -1,7 +1,6 @@
 current = null;
 next = null;
 mem = null;
-exhibits = null;
 merge = null;
 customText = null;
 policy = null;
