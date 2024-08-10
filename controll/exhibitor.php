@@ -54,11 +54,6 @@ WHERE conid = ?
 ORDER BY eRY.ownerName, eR.name;
 EOS;
 $regionOwnerR = dbSafeQuery($regionOwnerQ, 'i',array($conid));
-if ($regionOwnerR == false || $regionOwnerR->num_rows == 0) {
-    echo "No exhibits are configured.";
-    page_foot($page);
-    return;
-}
 
 // load country select
 $countryOptions = '';
