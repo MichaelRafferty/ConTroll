@@ -600,6 +600,8 @@ function displayNotes(data) {
 
 // rollover - cancel his years badge and create it as a rollover in next yeers con
 function rollover(index) {
+    clear_message();
+    test.innerHTML = '';
     var row = badgetable.getRow(index);
     var data = row.getData();
     var perid = data['perid'];
@@ -633,6 +635,9 @@ function rollover(index) {
 
 // transfer - get information to build modal popup to find person to transfer to
 function transfer(index) {
+    clear_message();
+    test.innerHTML = '';
+
     var row = badgetable.getRow(index);
     var data = row.getData();
 
