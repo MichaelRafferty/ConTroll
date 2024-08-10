@@ -743,11 +743,11 @@ class exhibitssetup {
                 },
                 {title: "Description", field: "description", editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, headerFilter: true, width: 450, headerSort: false,},
                 {
-                    title: 'Units', field: "units", width: 60, hozAlign: "right", headerSort: false, editor: "input", editorParams: {maxlength: "10"},
+                    title: 'Units', field: "units", headerHozAlign:"right", width: 100, hozAlign: "right", headerSort: false, editor: "input", editorParams: {maxlength: "10"},
                     headerFilter: true, headerFilterFunc: numberHeaderFilter,
                 },
                 {
-                    title: 'Price', field: "price", width: 60, hozAlign: "right", headerSort: false,
+                    title: 'Price', field: "price", headerHozAlign:"right", width: 120, hozAlign: "right", headerSort: false,
                     editor: "input", editorParams: {maxlength: "10"},
                     formatter: "money", formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
                     headerFilter: true, headerFilterFunc: numberHeaderFilter,
