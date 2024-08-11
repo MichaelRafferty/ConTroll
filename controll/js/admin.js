@@ -215,65 +215,15 @@ function selectUser(perid) {
 
 function settab(tabname) {
     // close all of them
-    if (current != null)
-        current.close();
     if (mem != null)
         mem.close();
-    if (next != null)
-        next.close();
-    if (merge != null)
-        merge.close();
-    if (customText != null)
-        customText.close();
-    if (policy != null)
-        policy.close();
-    if (interests != null)
-        interests.close();
-    if (rules != null)
-        rules.close();
 
     // now open the relevant one, and create the class if needed
     switch (tabname) {
-        case 'consetup-pane':
-            if (current == null)
-                current = new consetup('current');
-            current.open();
-            break;
-
-        case 'nextconsetup-pane':
-            if (next == null)
-                next = new consetup('next');
-            next.open();
-            break;
         case 'memconfig-pane':
             if (mem == null)
                 mem = new memsetup();
             mem.open();
-            break;
-        case 'merge-pane':
-            if (merge == null)
-                merge = new mergesetup();
-            merge.open();
-            break;
-        case 'customtext-pane':
-            if (customText == null)
-                customText = new customTextSetup();
-            customText.open();
-            break;
-        case 'policy-pane':
-            if (policy == null)
-                policy = new policySetup(debug);
-            policy.open();
-            break;
-        case 'interests-pane':
-            if (interests == null)
-                interests = new interestsSetup();
-            interests.open();
-            break;
-        case 'rules-pane':
-            if (rules == null)
-                rules = new rulesSetup();
-            rules.open();
             break;
     }
 }

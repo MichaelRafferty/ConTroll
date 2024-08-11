@@ -11,14 +11,22 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 }
 
 $cdn = getTabulatorIncludes();
-page_init("Badge List",
+page_init($page,
     /* css */ array($cdn['tabcss'],
                     // $cdn['tabbs5'],
                     'css/base.css',
                     ),
     /* js  */ array(//$cdn['luxon'],
                     $cdn['tabjs'],
+                    'js/tinymce/tinymce.min.js',
                     'js/reg_admin.js',
+                    'js/regadmin_consetup.js',
+                    /*'js/regadmin_memconfig.js',*/
+                    'js/regadmin_merge.js',
+                    'js/regadmin_customText.js',
+                    'js/regadmin_policy.js',
+                    'js/regadmin_interests.js',
+                    'js/regadmin_rules.js',
                     'jslib/emailBulkSend.js'),
                     $need_login);
 
@@ -32,7 +40,84 @@ if ($controll != null && array_key_exists('badgelistfilter', $controll)) {
 } else
     $badgeListFilter = "top";
 
+
+$conid = $con_conf['id'];
+$debug = get_conf('debug');
+
+if (array_key_exists('controll_regadmin', $debug))
+    $debug_admin=$debug['controll_regadmin'];
+else
+    $debug_regadmin = 0;
+
 ?>
+<div id='parameters' <?php if (!($debug_regadmin & 4)) echo 'hidden'; ?>>
+    <div id="debug"><?php echo $debug_regadmin; ?></div>
+    <div id="conid"><?php echo $conid; ?></div>
+</div>
+<?php bs_tinymceModal(); ?>
+<div id='merge-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Look up Merge Person' aria-hidden='true' style='--bs-modal-width: 80%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='mergeTitle'>Lookup Person for Merge</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <form id='merge-search' action='javascript:void(0)'>
+                        <div class='row p-1'>
+                            <div class='col-sm-3 p-0'>
+                                <label for='merge_name_search' id='mergeName'>Merge Name:</label>
+                            </div>
+                            <div class='col-sm-9 p-0'>
+                                <input class='form-control-sm' type='text' name='namesearch' id='merge_name_search' size='64'
+                                       placeholder='Name/Portion of Name, Person (Badge) ID'/>
+                            </div>
+                            <div class='row mt-3'>
+                                <div class='col-sm-12 text-bg-secondary'>
+                                    Search Results
+                                </div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-sm-12' id='merge_search_results'>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='mergeSearch' onClick='merge_find()'>Find Person</button>
+            </div>
+            <div id='result_message_merge' class='mt-4 p-2'></div>
+        </div>
+    </div>
+</div>
+<div id='editPreviewModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit and Preview Configuration' aria-hidden='true'
+     style='--bs-modal-width: 96%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='editPreviewTitle'>Edit Preview Title</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid' id='editBlockDiv'></div>
+                <div class='container-fluid' id='previewBlockDiv'></div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='editPreviewSaveBtn' onClick='editPreviewSave()'>Save Changes</button>
+            </div>
+            <div id='result_message_editPreview' class='mt-4 p-2'></div>
+        </div>
+    </div>
+</div>
 <div id='transfer_to' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Transfer Registration' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
@@ -127,52 +212,114 @@ if ($controll != null && array_key_exists('badgelistfilter', $controll)) {
         </div>
     </div>
 </div>
+<ul class='nav nav-tabs mb-3' id='regadmin-tab' role='tablist'>
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link active' id='badgelist-tab' data-bs-toggle='pill' data-bs-target='#badgelist-pane' type='button'
+                role='tab' aria-controls='nav-badgelist' aria-selected='true' onclick="settab('badgelist-pane');">Badge List
+        </button>
+    </li>
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='consetup-tab' data-bs-toggle='pill' data-bs-target='#consetup-pane' type='button' role='tab'
+                aria-controls='nav-consetup' aria-selected='false' onclick="settab('consetup-pane');">Current Convention Setup
+        </button>
+    </li>
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='nextconsetup-tab' data-bs-toggle='pill' data-bs-target='#nextconsetup-pane' type='button' role='tab'
+                aria-controls='nav-nextconsetup' aria-selected='false' onclick="settab('nextconsetup-pane');">Next Convention Setup
+        </button>
+    </li>
+    <!---
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='memconfig-tab' data-bs-toggle='pill' data-bs-target='#memconfig-pane' type='button' role='tab'
+                aria-controls='nav-memconfigsetup' aria-selected='false' onclick="settab('memconfig-pane');">Membership Configuration
+        </button>
+    </li>
+    --->
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='merge-tab' data-bs-toggle='pill' data-bs-target='#merge-pane' type='button' role='tab'
+                aria-controls='nav-merge' aria-selected='false' onclick="settab('merge-pane');">Merge People
+        </button>
+    </li>
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='customtext-tab' data-bs-toggle='pill' data-bs-target='#customtext-pane' type='button' role='tab'
+                aria-controls='nav-customtext' aria-selected='false' onclick="settab('customtext-pane');">Custom Text
+        </button>
+    </li>
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='policy-tab' data-bs-toggle='pill' data-bs-target='#policy-pane' type='button' role='tab'
+                aria-controls='nav-policy' aria-selected='false' onclick="settab('policy-pane');">Policies
+        </button>
+    </li>
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='interests-tab' data-bs-toggle='pill' data-bs-target='#interests-pane' type='button' role='tab'
+                aria-controls='nav-interests' aria-selected='false' onclick="settab('interests-pane');">Interests
+        </button>
+    </li>
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='rules-tab' data-bs-toggle='pill' data-bs-target='#rules-pane' type='button' role='tab'
+                aria-controls='nav-rules' aria-selected='false' onclick="settab('rules-pane');">Membership Rules
+        </button>
+    </li>
+</ul>
+<div class='tab-content ms-2' id='regadmin-content'>
+    <div class='tab-pane fade show active' id='badgelist-pane' role='tabpanel' aria-labelledby='badgelist-tab' tabindex='0'>
+        <div class="container-fluid">
 <?php
     if ($badgeListFilter == "top")
         drawFilters();
 ?>
-    <div class="row">
-        <div class="col-sm-auto p-0">
-            <div id="badge-table"></div>
+        <div class="row">
+            <div class="col-sm-auto p-0">
+                <div id="badge-table"></div>
+            </div>
         </div>
-    </div>
 <?php
     if ($badgeListFilter == 'bottom')
         drawFilters();
 ?>
-    <div class="row">
-        <div class="col-sm-auto p-2">
-            <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/allEmails.php';" disabled>Download Email List</button>
+        <div class="row">
+            <div class="col-sm-auto p-2">
+                <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/allEmails.php';" disabled>Download Email List</button>
+            </div>
+            <div class="col-sm-auto p-2">
+                <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/regReport.php';" disabled>Download Reg Report</button>
+            </div>
+            <div class="col-sm-auto p-2">
+                <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')" disabled>Send Marketing Email</button>
+            </div>
+            <div class='col-sm-auto p-2'>
+                <button class='btn btn-primary btn-sm' onclick="sendEmail('comeback')" disabled>Send Come Back Email</button>
+            </div>
+            <div class="col-sm-auto p-2">
+                <button class="btn btn-primary btn-sm" onclick="sendEmail('reminder')" disabled>Send Attendance Reminder Email</button>
+            </div>
+            <?php if ($db_ini['con']['survey_url']) { ?>
+            <div class="col-sm-auto p-2">
+                <button class="btn btn-primary btn-sm" onclick="sendEmail('survey')" disabled>Send Survey Email</button>
+            </div>
+            <?php } ?>
+            <?php if ($db_ini['reg']['cancelled']) { ?>
+            <div class="col-sm-auto p-2">
+                <button class="btn btn-primary btn-sm" onclick="sendCancel()" disabled>Send Cancelation Instructions</button>
+            </div>
+            <div class="col-sm-auto p-2">
+                <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/cancel.php';" disabled>Download Cancellation Report</button>
+            </div>
+            <div class="col-sm-auto p-2">
+                <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/processRefunds.php';">Download Process Refunds Report</button>
+            </div>
+            <?php } ?>
         </div>
-        <div class="col-sm-auto p-2">
-            <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/regReport.php';" disabled>Download Reg Report</button>
-        </div>
-        <div class="col-sm-auto p-2">
-            <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')" disabled>Send Marketing Email</button>
-        </div>
-        <div class='col-sm-auto p-2'>
-            <button class='btn btn-primary btn-sm' onclick="sendEmail('comeback')" disabled>Send Come Back Email</button>
-        </div>
-        <div class="col-sm-auto p-2">
-            <button class="btn btn-primary btn-sm" onclick="sendEmail('reminder')" disabled>Send Attendance Reminder Email</button>
-        </div>       
-        <?php if ($db_ini['con']['survey_url']) { ?>
-        <div class="col-sm-auto p-2">
-            <button class="btn btn-primary btn-sm" onclick="sendEmail('survey')" disabled>Send Survey Email</button>
-        </div>
-        <?php } ?>
-        <?php if ($db_ini['reg']['cancelled']) { ?>
-        <div class="col-sm-auto p-2">
-            <button class="btn btn-primary btn-sm" onclick="sendCancel()" disabled>Send Cancelation Instructions</button>
-        </div>
-        <div class="col-sm-auto p-2">
-            <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/cancel.php';" disabled>Download Cancellation Report</button>
-        </div>
-        <div class="col-sm-auto p-2">
-            <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/processRefunds.php';">Download Process Refunds Report</button>
-        </div>
-        <?php } ?>
     </div>
+    </div></div>
+    <div class='tab-pane fade' id='consetup-pane' role='tabpanel' aria-labelledby='consetup-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='nextconsetup-pane' role='tabpanel' aria-labelledby='nextconsetup-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='memconfig-pane' role='tabpanel' aria-labelledby='memconfig-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='merge-pane' role='tabpanel' aria-labelledby='merge-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='customtext-pane' role='tabpanel' aria-labelledby='customtext-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='policy-pane' role='tabpanel' aria-labelledby='policy-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='interests-pane' role='tabpanel' aria-labelledby='interests-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='rules-pane' role='tabpanel' aria-labelledby='rules-tab' tabindex='0'></div>
     <div id='result_message' class='mt-4 p-2'></div>
 </div>
 <pre id='test'>

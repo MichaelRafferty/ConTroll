@@ -1,3 +1,20 @@
+// globals for the regadmin tabs
+current = null;
+next = null;
+mem = null;
+merge = null;
+customText = null;
+policy = null;
+interests = null;
+rules = null;
+conid = null;
+editPreviewClass = null;
+// debug meaning
+//  1 = console.logs
+//  2 = show hidden table fields
+//  4 = show hidden div
+debug = 0;
+
 var badgetable = null;
 var category = null;
 var type = null;
@@ -22,7 +39,9 @@ var find_pattern_field = null;
 var testdiv = null;
 var conid = 0;
 
-$(document).ready(function () {
+
+
+window.onload = function initpage() {
     id = document.getElementById('transfer_to');
     if (id != null) {
         transfer_modal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
@@ -47,7 +66,7 @@ $(document).ready(function () {
     }
     testdiv = document.getElementById('test');
     getData();
-});
+}
 
 function catclicked(e, cell) {
     var filtercell = cell.getRow().getCell("memCategory");
@@ -942,4 +961,88 @@ function sendEmail(type) {
 
     var data = { 'action': action, 'email': email, 'type': type };
     emailBulkSend.getEmailAndList('scripts/sendEmail.php', data );
+}
+
+function settab(tabname) {
+    // close all of them
+    if (current != null)
+        current.close();
+    if (mem != null)
+        mem.close();
+    if (next != null)
+        next.close();
+    if (merge != null)
+        merge.close();
+    if (customText != null)
+        customText.close();
+    if (policy != null)
+        policy.close();
+    if (interests != null)
+        interests.close();
+    if (rules != null)
+        rules.close();
+
+    // now open the relevant one, and create the class if needed
+    switch (tabname) {
+        case 'consetup-pane':
+            if (current == null)
+                current = new consetup('current');
+            current.open();
+            break;
+
+        case 'nextconsetup-pane':
+            if (next == null)
+                next = new consetup('next');
+            next.open();
+            break;
+        /* case 'memconfig-pane':
+            if (mem == null)
+                mem = new memsetup();
+            mem.open();
+            break; */
+        case 'merge-pane':
+            if (merge == null)
+                merge = new mergesetup();
+            merge.open();
+            break;
+        case 'customtext-pane':
+            if (customText == null)
+                customText = new customTextSetup();
+            customText.open();
+            break;
+        case 'policy-pane':
+            if (policy == null)
+                policy = new policySetup(debug);
+            policy.open();
+            break;
+        case 'interests-pane':
+            if (interests == null)
+                interests = new interestsSetup();
+            interests.open();
+            break;
+        case 'rules-pane':
+            if (rules == null)
+                rules = new rulesSetup();
+            rules.open();
+            break;
+    }
+}
+function cellChanged(cell) {
+    dirty = true;
+    cell.getElement().style.backgroundColor = "#fff3cd";
+}
+
+function deleteicon(cell, formattParams, onRendered) {
+    var value = cell.getValue();
+    if (value == 0)
+        return "&#x1F5D1;";
+    return value;
+}
+
+function deleterow(e, row) {
+    var count = row.getCell("uses").getValue();
+    if (count == 0) {
+        row.getCell("to_delete").setValue(1);
+        row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
+    }
 }
