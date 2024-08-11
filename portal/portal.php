@@ -50,6 +50,8 @@ $config_vars['loadPlans'] = true;
 $config_vars['required'] = $ini['required'];
 $config_vars['initCoupon'] = $initCoupon;
 $config_vars['initCouponSerial'] = $initCouponSerial;
+$config_vars['id'] = $loginId;
+$config_vars['idType'] = $loginType;
 $cdn = getTabulatorIncludes();
 
 // this section is for 'in-session' management
@@ -268,6 +270,29 @@ EOS;
 // get the information for the interest  and policies blocks
     $interests = getInterests();
     $policies = getPolicies();
+// Does this person have interests, if none in the system force them to go to the interests modal
+    $config_vars['needInterests'] = 0;
+    if ($interests != NULL && count($interests) > 0) {
+        if ($loginType == 'p') {
+            $pfield = 'perid';
+            } else {
+            $pfield = 'newperid';
+        }
+        $iQ = <<<EOS
+SELECT COUNT(*)
+FROM memberInterests
+WHERE $pfield = ? AND conid = ?;
+EOS;
+        $iR = dbSafeQuery($iQ, 'ii', array($loginId, $conid));
+        if ($iR !== false) {
+            $intCount = $iR->fetch_row()[0];
+            $iR->free();
+            if ($intCount == 0) {
+                $config_vars['needInterests'] = 1;
+            }
+        }
+    }
+
 // get the payment plans
     $paymentPlans = getPaymentPlans(true);
 // get valid coupons

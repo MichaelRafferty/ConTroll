@@ -225,6 +225,10 @@ class Portal {
             show_message('Required Policies are not accepted', "error", 'epMessageDiv');
             _this.editPerson(id, type);
         });
+
+        if (config['needInterests'] == 1) {
+            _this.editInterests(config.id, config.idType);
+        }
     }
 
     // disassociate: remove the managed by link for this logged in person
