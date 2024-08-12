@@ -408,11 +408,12 @@ function drawChangeEmailModal() {
 
 $memershipButtonColors = array(
         'full' => array('color' => 'border-success', 'style' => ''),
+        'wsfs' => array('color' => 'border-dark', 'style' => ''),
         'minor' => array('color' => '', 'style' => 'border-color: #ff9000 !important;'),
         'oneday' => array('color' => '', 'style' => 'border-color: #ffe000 !important;'),
         'virtual' => array('color' => '', 'style' => 'border-color: #cc00cc !important;'),
         'yearahead' => array('color' => '', 'style' => 'border-color: #00fdff !important'),
-        'addon' => array('color' => 'border-dark', 'style' => ''),
+        'addon' => array('color' => '', 'style' => 'border-color: #adb5bd !important'),
         'other' => array('color' => '', 'style' => ''),
 );
 function drawPortalLegend() {
@@ -432,13 +433,16 @@ UNION SELECT 'virtual' AS name, count(*) AS occurs
 FROM memList WHERE memType = 'virtual' AND conid = ?
 UNION SELECT 'addon' AS name, count(*) AS occurs
 FROM memList WHERE memCategory in ('addon', 'add-on', 'donation') AND conid = ?
+UNION SELECT 'wsfs' AS name, count(*) AS occurs
+FROM memList WHERE memType ='wsfs' AND conid = ?;
 EOS;
-    $mlR = dbSafeQuery($mlQ, 'iiiii', array($conid, $conid, $conid, $conid, $conid));
+    $mlR = dbSafeQuery($mlQ, 'iiiiii', array($conid, $conid, $conid, $conid, $conid, $conid));
     $yearahead = false;
     $minor = false;
     $oneday = false;
     $virtual = false;
     $addon = false;
+    $wsfs = false;
     if ($mlR !== false) {
         while ($mlL = $mlR->fetch_assoc()) {
             switch ($mlL['name']) {
@@ -457,6 +461,9 @@ EOS;
                 case 'addon':
                     $addon = $mlL['occurs'] > 0;;
                     break;
+                case 'wsfs':
+                    $wsfs = $mlL['occurs'] > 0;;
+                    break;
             }
         }
     }
@@ -468,6 +475,14 @@ EOS;
     </div>
     <div class="row mt-2">
         <div class="col-sm-auto"><b>Legend:</b></div>
+        <?php if ($wsfs) { ?>
+        <div class='col-sm-auto'>
+            <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['wsfs']['color']; ?>"
+                    style="pointer-events:none; <?php echo $memershipButtonColors['minor']['wsfs']; ?>" tabindex='-1'>
+                WSFS
+            </button>
+        </div>
+        <?php } ?>
         <div class="col-sm-auto">
             <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['full']['color']; ?>"
                     style="pointer-events:none; <?php echo $memershipButtonColors['full']['style']; ?>" tabindex="-1">
@@ -510,7 +525,7 @@ EOS;
         <div class='col-sm-auto'>
             <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['addon']['color']; ?>"
                     style="pointer-events:none; <?php echo $memershipButtonColors['addon']['style']; ?>" tabindex='-1'>
-                Add On to Membership
+                Extras
             </button>
         </div>
         <?php } ?>
