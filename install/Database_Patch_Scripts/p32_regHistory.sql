@@ -36,6 +36,7 @@ CREATE TABLE regHistory (
     perid          int DEFAULT NULL,
     newperid       int DEFAULT NULL,
     oldperid       int DEFAULT NULL,
+    priorRegId     int DEFAULT NULL,
     create_date    datetime                                                                                                              NULL,
     change_date    timestamp                                                                                                             NULL,
     pickup_date    datetime                                                                                                              NULL,
