@@ -419,35 +419,15 @@ function actionbuttons(cell, formatterParams, onRendered) {
     var data = cell.getData();
     var category = data['category'];
     var status = data['status'];
-    if (category == 'cancel')  // no actions can be taken on a cancelled membership
-        return "";
 
     var btns = "";
     var index = cell.getRow().getIndex();
-    var price = data['price'];
     var paid = data['paid'];
     var ncount = data['ncount'];
     var complete_trans = data['complete_trans'];
 
-    if (category != 'dealer' && category != 'artist') { // dealers/artists can't roll over, transfer does a status set and creates a new reg entry, you can only transfer a
-        // paid membership
-        if (status == 'paid') {
-            // transfer buttons
-            if (category == 'freebie' && (status == 'paid' || status == 'upgraded')) {
-                btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" onclick="transfer(' + index + ')">Transfer</button>';
-            } else if (category != 'donation' && (status == 'paid' || status == 'upgraded')) {
-                btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="transfer(' + index + ')">Transfer</button>';
-            }
-            // rollover buttons
-            if (category == 'freebie' && (status == 'paid' || status == 'upgraded')) {
-                btns += '<button class="btn btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="rollover(' + index + ')">Rollover</button>';
-            } else if (category != 'donation' && (status == 'paid' || status == 'upgraded')) {
-                btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
-                    ' onclick="rollover(' + index + ')">Rollover</button>';
-            }
-        }
-    }
-
+    btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+        ' onclick="changeReg(' + index + ')">Changes</button>';
 
     // receipt buttons
     if (paid > 0 && complete_trans > 0)
