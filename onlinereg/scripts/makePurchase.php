@@ -205,7 +205,7 @@ EOF;
             trim($badge['zip']),
             $badge['country']
         );
-$value_arr = mb_convert_encoding($value_arr, 'Windows-1252', 'UTF-8');
+//$value_arr = mb_convert_encoding($value_arr, 'Windows-1252', 'UTF-8');
 
         $res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
         if ($res !== false) {
