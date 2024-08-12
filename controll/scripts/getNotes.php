@@ -17,7 +17,7 @@ if (array_key_exists('rid', $_POST)) {
     $regid = $_POST['rid'];
     $nQ = <<<EOS
 SELECT logdate, userid, tid, notes
-FROM reg_history
+FROM regActions
 WHERE regid = ?;
 EOS;
     $nR = dbSafeQuery($nQ, 'i', array($regid));

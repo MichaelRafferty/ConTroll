@@ -118,7 +118,7 @@ DELETE FROM reg
 WHERE id = ?;
 EOS;
 $insHistory = <<<EOS
-INSERT INTO reg_history(userid, tid, regid, action, notes)
+INSERT INTO regActions(userid, tid, regid, action, notes)
 VALUES (?, ?, ?, ?, ?);
 EOS;
 // insert/update all perinfo records,

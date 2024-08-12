@@ -27,7 +27,7 @@ SELECT R.id, TRIM(P.last_name) AS name
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
 JOIN memLabel M ON (M.id=R.memId)
-LEFT OUTER JOIN reg_history H ON (H.regid=R.id AND H.action='attach')
+LEFT OUTER JOIN regActions H ON (H.regid=R.id AND H.action='attach')
 WHERE R.conid=?
 GROUP BY P.id;
 EOS;

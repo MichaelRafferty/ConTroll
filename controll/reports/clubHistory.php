@@ -27,7 +27,7 @@ SELECT P.first_name, P.middle_name, P.last_name, P.address, P.addr_2, P.city, P.
 FROM club B
 JOIN perinfo P ON (P.id=B.perid)
 JOIN reg R ON (R.perid=P.id)
-LEFT OUTER JOIN reg_history H ON (H.regid=R.id)
+LEFT OUTER JOIN regActions H ON (H.regid=R.id)
 WHERE R.conid >= ? AND R.conid <= ? AND H.action='print'
 GROUP BY P.id
 ORDER BY con, status, P.id;

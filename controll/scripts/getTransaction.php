@@ -66,12 +66,12 @@ FROM transaction as T
 
 EOQ;
 
-$atconR = dbSafeQuery("SELECT id from reg_history where tid=?;", 'i', array($transactionId));
+$atconR = dbSafeQuery("SELECT id from regActions where tid=?;", 'i', array($transactionId));
 if($atconR->num_rows == 1) {
     $atcon = fetch_safe_assoc($atconR);
     $atconId = $atcon['id'];
     $badgeQuery .= <<<EOQ
-JOIN reg_history H ON (H.tid=T.id AND H.action='attach')
+JOIN regActions H ON (H.tid=T.id AND H.action='attach')
 JOIN reg as R ON (R.id = H.regid AND R.perid != T.perid
     AND (R.newperid != T.newperid OR T.newperid IS NULL))
 JOIN perinfo as P ON P.id=R.perid

@@ -85,7 +85,7 @@ SET status = 'transfered', change_date=CURRENT_TIMESTAMP()
 WHERE id = ?;
 EOS;
 $iN = <<<EOS
-INSERT INTO reg_history(logdate,userid,tid,regid,action,notes)
+INSERT INTO regActions(logdate,userid,tid,regid,action,notes)
 VALUES (NOW(), ?, ?, ?, 'notes', ?);
 EOS;
 

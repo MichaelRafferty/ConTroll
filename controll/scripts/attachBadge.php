@@ -26,7 +26,7 @@ $transid = $_POST['transid'];
 $badgeId = $_POST['id'];
 
 $attachQ = <<<EOQ
-INSERT INTO reg_history(userid, tid, regid, action)
+INSERT INTO regActions(userid, tid, regid, action)
 VALUES(?, ?, ?, 'attach');
 EOQ;
 $rowid = dbSafeInsert($attachQ, 'iii', array($user_perid, $transid, $badgeId));
@@ -34,7 +34,7 @@ $rowid = dbSafeInsert($attachQ, 'iii', array($user_perid, $transid, $badgeId));
 $response['history_id'] = $rowid;
 $actionQ = <<<EOQ
 SELECT * 
-FROM reg_history
+FROM regActions
 WHERE regid=? AND action !='attach';
 EOQ;
 $actionR = dbSafeQuery($actionQ, 'i', array($badgeId));

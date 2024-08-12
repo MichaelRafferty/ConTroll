@@ -104,7 +104,7 @@ switch($_GET['method']) {
 SELECT Distinct R.perid, M.shortname as label, R.conid, M.memType
     , FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(min(T.complete_date))/900)*900) AS time
     , DATEDIFF(CURRENT_TIMESTAMP(), MIN(T.complete_date)) as diff
-FROM reg_history H
+FROM regActions H
 JOIN reg R ON (R.id=H.regid)
 JOIN transaction T ON (T.id=H.tid)
 JOIN memLabel M ON (M.id=R.memId)
@@ -146,7 +146,7 @@ SELECT M.id, M.shortname as label, COUNT(distinct R.perid) AS c
 FROM reg R
 JOIN memLabel M ON (M.id=R.memId)
 JOIN conlist C ON (C.id=R.conid)
-LEFT OUTER JOIN reg_history H ON (H.regid = R.id AND H.action!='attach')
+LEFT OUTER JOIN regActions H ON (H.regid = R.id AND H.action!='attach')
 WHERE R.create_date < C.startdate and R.conid=? AND H.action is NULL
 GROUP BY M.shortname, M.id
 ORDER BY M.id;
@@ -171,7 +171,7 @@ SELECT COUNT(distinct T.id) AS trans, COUNT(distinct R.id) AS badge
     , M.memType
 FROM conlist C
 JOIN transaction T ON (T.conid=C.id)
-JOIN reg_history H ON (H.tid=T.id)
+JOIN regActions H ON (H.tid=T.id)
 JOIN reg R ON (R.id=H.regid)
 JOIN memList M ON (M.id=R.memId)
 WHERE C.id=?
@@ -216,7 +216,7 @@ SELECT COUNT(distinct P.cashier) AS reg
     , FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(P.time)/900)*900) AS t
 FROM transaction T
 LEFT OUTER JOIN payments P ON (P.transid=T.id and P.cashier IS NOT NULL)
-JOIN reg_history H ON (H.tid=T.id)
+JOIN regActions H ON (H.tid=T.id)
 WHERE T.conid=?
 GROUP BY t;
 EOF;

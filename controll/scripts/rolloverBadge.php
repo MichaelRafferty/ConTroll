@@ -62,7 +62,7 @@ $validateSQL = <<<EOS
 WITH prints AS (
 SELECT count(h.action) AS printCnt
 FROM reg r
-LEFT OUTER JOIN reg_history h ON h.regid = r.id AND h.action = 'print'
+LEFT OUTER JOIN regActions h ON h.regid = r.id AND h.action = 'print'
 WHERE r.id = ?
 )
 SELECT DISTINCT r.id, r.perid, r.price, r.couponDiscount, r.paid, r.status, r.memId, m.label, m.memAge, m.memCategory, m.memType,

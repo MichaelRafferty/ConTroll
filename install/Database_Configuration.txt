@@ -120,7 +120,7 @@ Membership Tables: (registrations) (everything sold by a convention in this syst
     reg:    master list of all registrations
     transactions: combination of actions under a transaction id.  A reg may be involved in many transactions
     payments: payments received, a single transaction may involve zero to many payments
-    reg_history: memberships effected by reg actions (including atcon) (all of these actions can occur many times on a single membership)
+    regActions: memberships effected by reg actions (including atcon) (all of these actions can occur many times on a single membership)
         attach: attach a membership to a transaction
         print: indicated a membership was printed on a badge
         notes: short note about a membership item.

@@ -24,13 +24,13 @@ $user_perid = $userR['perid'];
 $con = get_conf('con');
 $conid=$con['id'];
 
-$attachQ = "INSERT IGNORE INTO reg_history(userid, tid, regid, action, notes)
+$attachQ = "INSERT IGNORE INTO regActions(userid, tid, regid, action, notes)
 VALUES (?, ?, ?, ?, ?);";
 $attachR = dbSafeInsert($attachQ, 'iiiss', array($user_perid, $_POST['transid'], $_POST['badgeId'], 'notes', $user . ": " . $_POST['content']));
 
 $atconQ = <<<EOS
 SELECT logdate, action, notes
-FROM reg_history
+FROM regActions
 WHERE regid=? AND action != 'attach';
 EOS;
 $atconR = dbSafeQuery($atconQ, 'i', array($_POST['badgeId']));

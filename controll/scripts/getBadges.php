@@ -22,7 +22,7 @@ $badgeQ = <<<EOS
 WITH notes AS (
 SELECT R.id, count(N.id) AS ncount
 FROM reg R
-JOIN reg_history N on R.id = N.regId
+JOIN regActions N on R.id = N.regId
 WHERE R.conid = ? AND N.action = 'notes'
 GROUP BY R.id
 )

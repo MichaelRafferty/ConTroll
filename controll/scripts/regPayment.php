@@ -42,7 +42,7 @@ $complete = false;
 
 $badgeListQ = <<<EOQ
 SELECT DISTINCT R.id, M.label, (IFNULL(R.price, 0)-IFNULL(R.paid,0)) AS remainder
-FROM reg_history H 
+FROM regActions H 
 JOIN reg R ON (R.id = H.regid)
 JOIN memLabel M ON (M.id=R.memId)
 WHERE H.tid = ? AND H.action='attach';
