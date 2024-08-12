@@ -67,7 +67,7 @@ $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 if (!$refresh) {
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
-SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, r.price AS actPrice, r.conid, 
+SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, r.price AS actPrice, r.conid, r.create_date,
     nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
     CASE
         WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
@@ -86,7 +86,8 @@ LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
 LEFT OUTER JOIN newperson np ON tp.newperid = np.id
 WHERE
     status IN  ('unpaid', 'paid', 'plan', 'upgraded') AND
-    r.conid >= ? AND (r.perid = ? OR r.newperid = ?);
+    r.conid >= ? AND (r.perid = ? OR r.newperid = ?)
+ORDER BY create_date;
 EOS;
     $holderRegR = dbSafeQuery($holderRegSQL, 'iii', array ($conid, $loginType == 'p' ? $loginId : -1, $loginType == 'n' ? $loginId : -1));
     $holderMembership = [];
@@ -118,7 +119,7 @@ WITH ppl AS (
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active,
         p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-        r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        r.conid, r.status, r.memId, r.price AS actPrice, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
         a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
@@ -144,7 +145,7 @@ WITH ppl AS (
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active,
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-        r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        r.conid, r.status, r.memId, r.price AS actPrice, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
         a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
@@ -179,7 +180,7 @@ WITH ppl AS (
 SELECT ppl.*, IFNULL(missPol.requiredMissing,0) AS missingPolicies
 FROM ppl
 LEFT OUTER JOIN missPol ON ppl.id = missPol.id
-ORDER BY personType DESC, id ASC;
+ORDER BY personType DESC, id ASC, create_date;
 EOS;
         $managedByR = dbSafeQuery($managedSQL, 'iiiiii', array ($conid, $loginId, $conid, $loginId, $loginId, $conid));
     }
@@ -191,7 +192,7 @@ WITH ppl AS (
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active,
         p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-        r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        r.conid, r.status, r.memId, r.price AS actPrice, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
         a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
@@ -217,7 +218,7 @@ WITH ppl AS (
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active,
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-        r.conid, r.status, r.memId, r.price AS actPrice, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        r.conid, r.status, r.memId, r.price AS actPrice, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
         a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
@@ -252,7 +253,7 @@ WITH ppl AS (
 SELECT ppl.*, IFNULL(missPol.requiredMissing, 0) AS missingPolicies
 FROM ppl
 LEFT OUTER JOIN missPol ON ppl.id = missPol.id
-ORDER BY personType DESC, id ASC;
+ORDER BY personType DESC, id ASC, create_date;
 EOS;
         $managedByR = dbSafeQuery($managedSQL, 'iiiiii', array ($conid, $loginId, $conid, $loginId, $loginId, $conid));
     }
