@@ -603,7 +603,10 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
         foreach ($memberships as $membership) {
             $disabled = '';
             $type = 'other';
-            if ($membership['category'] == 'yearahead')
+
+            if ($membership['type'] == 'wsfs')
+                $type = 'wsfs';
+            else if ($membership['category'] == 'yearahead')
                 $type = 'yearahead';
             else if ($membership['memAge'] == 'child' || $membership['memAge'] == 'kit')
                 $type = 'minor';
