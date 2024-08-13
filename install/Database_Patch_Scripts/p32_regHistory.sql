@@ -5,6 +5,7 @@
  */
 
 ALTER TABLE reg ADD COLUMN priorRegId int DEFAULT NULL AFTER oldperid;
+ALTER TABLE reg ADD COLUMN updatedBy int DEFAULT NULL AFTER create_user;
 ALTER TABLE reg ADD CONSTRAINT FOREIGN KEY reg_priorRegId_fk(priorRegId) REFERENCES reg(id);
 
 CREATE TABLE regActions (
@@ -47,6 +48,7 @@ CREATE TABLE regHistory (
     complete_trans int                                                                                                                   NULL,
     locked         enum ('N','Y') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci                                                       NULL,
     create_user    int DEFAULT NULL,
+    updatedBy      int DEFAULT NULL,
     memId          int                                                                                                                   NULL,
     coupon         int                                                                                                                   NULL,
     planId         int                                                                                                                   NULL,
@@ -63,14 +65,14 @@ CREATE DEFINER=CURRENT_USER TRIGGER `reg_update` BEFORE UPDATE ON `reg` FOR EACH
         OR OLD.change_date != NEW.change_date OR OLD.pickup_date != NEW.pickup_date OR OLD.price != NEW.price
         OR OLD.couponDiscount != NEW.couponDiscount OR OLD.paid != NEW.paid OR OLD.create_trans != NEW.create_trans
         OR OLD.complete_trans != NEW.complete_trans OR OLD.locked != NEW.locked OR OLD.create_user != NEW.create_user
-        OR OLD.memId != NEW.memId OR OLD.coupon != NEW.coupon OR OLD.planId != NEW.planId
-        OR OLD.printable != NEW.printable OR OLD.status != NEW.status)
+        OR OLD.updatedBy != NEW.updatedBy OR OLD.memId != NEW.memId OR OLD.coupon != NEW.coupon
+        OR OLD.planId != NEW.planId OR OLD.printable != NEW.printable OR OLD.status != NEW.status)
     THEN
         INSERT INTO regHistory(id, conid, perid, newperid, oldperid, create_date, change_date, pickup_date, price, couponDiscount,
-                               paid, create_trans, complete_trans, locked, create_user, memId, coupon, planId, printable, status)
+                               paid, create_trans, complete_trans, locked, create_user, updatedBy, memId, coupon, planId, printable, status)
             VALUES (OLD.id, OLD.conid, OLD.perid, OLD.newperid, OLD.oldperid, OLD.create_date, OLD.change_date, OLD.pickup_date,
                     OLD.price, OLD.couponDiscount, OLD.paid, OLD.create_trans, OLD.complete_trans, OLD.locked, OLD.create_user,
-                    OLD.memId, OLD.coupon, OLD.planId, OLD.printable, OLD.status);
+                    OLD.updatedBy, OLD.memId, OLD.coupon, OLD.planId, OLD.printable, OLD.status);
     END IF;
 END;;
 DELIMITER ;
