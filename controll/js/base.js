@@ -265,6 +265,7 @@ function showAjaxError(jqXHR, textStatus, errorThrown) {
 
 function clear_message(div='result_message') {
     show_message('', '', div);
+    $('#test').empty();
 }
 
 // show_message:

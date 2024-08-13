@@ -30,7 +30,6 @@ page_init($page,
                     'jslib/emailBulkSend.js'),
                     $need_login);
 
-// first the modal for transfer to
 $con_conf = get_conf('con');
 $controll = get_conf('controll');
 if ($controll != null && array_key_exists('badgelistfilter', $controll)) {
@@ -39,7 +38,6 @@ if ($controll != null && array_key_exists('badgelistfilter', $controll)) {
         $badgeListFilter = "top";
 } else
     $badgeListFilter = "top";
-
 
 $conid = $con_conf['id'];
 $debug = get_conf('debug');
@@ -118,6 +116,31 @@ else
         </div>
     </div>
 </div>
+<div id='changeModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Change Registration' aria-hidden='true' style='--bs-modal-width: 96%;'>
+<div class='modal-dialog'>
+    <div class='modal-content'>
+        <div class='modal-header bg-primary text-bg-primary'>
+            <div class='modal-title'>
+                <strong id='changeTitle'>Change Registration</strong>
+            </div>
+            <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+        </div>
+        <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+            <div class='container-fluid' id="change-body-div">
+            </div>
+            <div class='container-fluid'>
+                <div "class=row mt-2">
+                    <div class="col-sm-12" id="changeMessageDiv"></div>
+                </div>
+            </div>
+        </div>
+        <div class='modal-footer'>
+            <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
+        </div>
+    </div>
+</div>
+</div>
+<!---
 <div id='transfer_to' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Transfer Registration' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
@@ -171,6 +194,7 @@ else
         </div>
     </div>
 </div>
+-->
 <div id='receipt' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Registration Receipt' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>

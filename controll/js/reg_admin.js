@@ -9,6 +9,7 @@ interests = null;
 rules = null;
 conid = null;
 editPreviewClass = null;
+memLabels = null;
 // debug meaning
 //  1 = console.logs
 //  2 = show hidden table fields
@@ -30,39 +31,39 @@ var pricefilter = null;
 var labelfilter = null;
 var couponfilter = null;
 var statusfilter = null;
-var transfer_modal = null;
-var receipt_modal = null;
-var notes_modal = null;
-var receipt_email_address = null;
+var changeModal = null;
+var changeBodyDiv = null;
+var receiptModal = null;
+var notesModal = null;
+var recepitEmailAddress = null;
 var find_result_table = null;
 var find_pattern_field = null;
 var testdiv = null;
 var conid = 0;
 
-
+// changes items
+var changeMemberships = [];
+var denyCancel = ['rolled-over', 'cancelled','refunded', 'transfered'];
+var currentIndex = null;
 
 window.onload = function initpage() {
-    id = document.getElementById('transfer_to');
+    id = document.getElementById('changeModal');
     if (id != null) {
-        transfer_modal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-        find_pattern_field = document.getElementById('transfer_name_search')
-        find_pattern_field.addEventListener('keyup', (e)=> { if (e.code === 'Enter') transfer_find(); });
-        id.addEventListener('shown.bs.modal', () => {
-            find_pattern_field.focus()
-        })
+        changeModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+        changeBodyDiv = document.getElementById("change-body-div");
     }
 
     id = document.getElementById('receipt');
     if (id != null) {
-        receipt_modal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+        receiptModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
         $('#receipt').on('hide.bs.modal', function () {
-            receipt_email_address = null;
+            recepitEmailAddress = null;
         });
     }
 
     id = document.getElementById('notes');
     if (id != null) {
-        notes_modal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+        notesModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
     testdiv = document.getElementById('test');
     getData();
@@ -417,21 +418,22 @@ function draw_stats(data) {
 // display actions as buttons in a cell for this membership
 function actionbuttons(cell, formatterParams, onRendered) {
     var data = cell.getData();
-    var category = data['category'];
-    var status = data['status'];
-
-    var btns = "";
-    var index = cell.getRow().getIndex();
+    var perid = data['perid'];
     var paid = data['paid'];
     var ncount = data['ncount'];
     var complete_trans = data['complete_trans'];
+    var index = cell.getRow().getIndex();
 
-    btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
-        ' onclick="changeReg(' + index + ')">Changes</button>';
+    var btns = "";
+    if (perid > 0) {
+        btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="changeReg(' + index + ')">Changes</button>';
+    }
 
     // receipt buttons
     if (paid > 0 && complete_trans > 0)
-        btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="receipt(' + index + ')">Receipt</button>';
+        btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="receipt(' + index + ')">Receipt</button>';
 
     // notes button
     if (ncount != null && ncount > 0)
@@ -446,21 +448,21 @@ function displayReceipt(data) {
     document.getElementById('receipt-div').innerHTML = data['receipt_html'];
     document.getElementById('receipt-tables').innerHTML = data['receipt_tables'];
     document.getElementById('receipt-text').innerHTML = data['receipt'];
-    receipt_email_address = data['payor_email'];
-    document.getElementById('emailReceipt').innerHTML = "Email Receipt to " + data['payor_name'] + ' at ' + receipt_email_address;
+    recepitEmailAddress = data['payor_email'];
+    document.getElementById('emailReceipt').innerHTML = "Email Receipt to " + data['payor_name'] + ' at ' + recepitEmailAddress;
     document.getElementById('receiptTitle').innerHTML = "Registration Receipt for " + data['payor_name'];
-    receipt_modal.show();
+    receiptModal.show();
 }
 
 function receipt_email(addrchoice) {
-    var email = receipt_email_address;
+    var email = recepitEmailAddress;
     var success='';
     if (addrchoice == 'reg') {
         email = document.getElementById('regadminemail').innerHTML;
         success = 'Receipt sent to Regadmin at ' + email;
     }
 
-    if (receipt_email_address == null)
+    if (recepitEmailAddress == null)
         return;
 
     if (success == '')
@@ -594,13 +596,13 @@ function displayNotes(data) {
 `;
     }
     document.getElementById('notesText').innerHTML = html;
-    notes_modal.show();
+    notesModal.show();
 }
 
+/*
 // rollover - cancel his years badge and create it as a rollover in next yeers con
 function rollover(index) {
     clear_message();
-    test.innerHTML = '';
     var row = badgetable.getRow(index);
     var data = row.getData();
     var perid = data['perid'];
@@ -631,29 +633,220 @@ function rollover(index) {
         });
     }
 }
+*/
+// change - display all reg records and decide what to do with them
+function changeReg(index, clear = true) {
+    if (clear)
+        clear_message('changeMessageDiv');
 
-// transfer - get information to build modal popup to find person to transfer to
-function transfer(index) {
-    clear_message();
-    test.innerHTML = '';
-
+    currentIndex = index;
     var row = badgetable.getRow(index);
-    var data = row.getData();
+    var rowdata = row.getData();
+    var perid = rowdata['perid'];
 
-    if (data['status'] != 'paid' && data['status'] != 'upgraded')
+    if (perid == null || perid == '' || perid <= 0)
         return;
 
-    if (data['price'] == 0) {
-        if (confirm("This is a free badge, really transfer it?\n(Is it an included exhibitor badge or similar situation?)") == false)
-            returm;
+    // get all the regs for this perid for this con to decide what changes to make
+    var data = {
+        perid: perid,
+        action: 'regregs',
+    };
+    var script = 'scripts/regadmin_getRegs.php';
+    $.ajax({
+        method: "POST",
+        url: script,
+        data: data,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['success'] !== undefined) {
+                show_message(data['success'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+                return;
+            }
+            changeRegsData(data, rowdata);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in rolloverBadge: " + textStatus, jqXHR);
+        }
+    });
+}
+
+function changeRegsData(data, rowdata) {
+    var html = '';
+
+    //console.log(data);
+    //console.log(rowdata);
+
+    // now have retrieved the memberships for this perid (person) and the rowdata is the actual row involved, display all the memberships with checkboxes
+    // and options
+
+    changeMemberships = data.memberships;
+
+    html += `
+    <div class="row mt-4 mb-2">
+        <div class="col-sm-12"><b>Registrations for ` + rowdata.p_name + ' (' + rowdata.p_email + '), id: ' + rowdata.perid + `</b></div>
+    </div>
+      <div class="row">
+        <div class="col-sm-12">
+            <button class="btn btn-small btn-light" onclick="changeSelectAll(1);">Select All</button>
+            <button class="btn btn-small btn-light" onclick="changeSelectAll(0);">Clear All</button>
+        </div>      
+    </div>
+    <div class="row">
+        <div class="col-sm-1" style="text-align: right;">Selected</div>
+        <div class="col-sm-1" style="text-align: right;">Reg ID</div>
+        <div class="col-sm-1" style="text-align: right;">Trans ID</div>
+        <div class="col-sm-1" style="text-align: right;">Mem ID</div>
+        <div class="col-sm-3">Label</div>
+        <div class="col-sm-1" style="text-align: right;">Price</div>
+        <div class="col-sm-1" style="text-align: right;">Paid</div>
+        <div class="col-sm-1" style="text-align: right;">Disc.</div>
+        <div class="col-sm-1">Status</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-1 text-primary" style="text-align: right;">
+            <input type="checkbox" id="m-` + rowdata.badgeId + `" value="Y" checked>
+        </div>
+        <div class="col-sm-1 text-primary" style="text-align: right;">
+            <label for="m-` + rowdata.badgeId + '">' + rowdata.badgeId + `</label></div>
+        <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.create_trans + `</div>
+        <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.memId + `</div>
+        <div class="col-sm-3 text-primary">` + rowdata.label + `</div>
+        <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.price + `</div>
+        <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.paid + `</div>
+        <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.couponDiscount + `.</div>
+        <div class="col-sm-1 text-primary">` + rowdata.status + `</div>
+        <div class="col-sm-1"><button class="btn btn-sm btn-secondary" onclick="changeEdit(` + rowdata.badgeId + `)";>Edit</button></div>
+    </div>
+`;
+
+    for (var i = 0; i < changeMemberships.length; i++) {
+        var membership = changeMemberships[i];
+        if (membership.id == rowdata.badgeId)
+            continue;
+
+        html += `
+    <div class="row mt-1">
+        <div class="col-sm-1" style="text-align: right;">
+            <input type="checkbox" id="m-` + membership.id + `" value="Y">
+        </div>
+        <div class="col-sm-1" style="text-align: right;">
+            <label for="m-` + membership.id + '">' + membership.id + `</label></div>
+        <div class="col-sm-1" style="text-align: right;">` + membership.create_trans + `</div>
+        <div class="col-sm-1" style="text-align: right;">` + membership.memId + `</div>
+        <div class="col-sm-3">` + membership.label + `</div>
+        <div class="col-sm-1" style="text-align: right;">` + membership.price + `</div>
+        <div class="col-sm-1" style="text-align: right;">` + membership.paid + `</div>
+        <div class="col-sm-1" style="text-align: right;">` + membership.couponDiscount + `.</div>
+        <div class="col-sm-1">` + membership.status + `</div>
+        <div class="col-sm-1"><button class="btn btn-sm btn-secondary" onclick="changeEdit(\` + membership.badgeId + \`)";>Edit</button></div>
+    </div>
+`;
+    }
+    html += `
+    <div class="row mt-2 mb-2">
+        <div class="col-sm-12" style="text-align: center;">
+            <button class="btn btn-sm btn-primary" onclick="changeCancel(0);">Cancel Selected</button>
+            <button class="btn btn-sm btn-warning me-4" onclick="changeCancel(1);">Restore Selected</button>
+            <button class="btn btn-sm btn-primary" onclick="changeTransfer(0);">Transfer Selected</button>
+            <button class="btn btn-sm btn-warning me-4" onclick="changeTransfer(1);">Cancel Transfer Selected</button>
+            <button class="btn btn-sm btn-primary" onclick="changeRollover(0);">Rollover Selected</button>
+            <button class="btn btn-sm btn-warning me-4" onclick="changeRollover(1);">Cancel Rollover Selected</button>
+            <button class="btn btn-sm btn-primary" onclick="changeRefund(0);">Refund Selected</button>
+        </div>
+    </div>
+`;
+    changeBodyDiv.innerHTML = html;
+    changeModal.show();
+}
+
+function changeSelectAll(direction) {
+    for (var i = 0; i < changeMemberships.length; i++) {
+        var membership = changeMemberships[i];
+        var id = document.getElementById('m-' + membership.id);
+        if (id)
+            id.checked = direction == 1;
+    }
+}
+
+function changeCancel(direction) {
+    // check which ones need to be ignored
+    var message = '';
+    var changeList = [];
+    for (var i = 0; i < changeMemberships.length; i++) {
+        var changeItem = changeMemberships[i];
+        var checked = document.getElementById('m-' + changeItem.id).checked;
+        if (!checked)
+            continue;
+
+        if (direction == 0 && denyCancel.indexOf(changeItem.status) != -1)  {
+            message += "Cannot change " + changeItem.id + " as status " + changeItem.status + " cannot be cancelled<br/>";
+            continue;
+        }
+        if (direction == 1 && changeItem.status != 'cancelled')  {
+            message += "Cannot change " + changeItem.id + " as status " + changeItem.status + " is not cancelled<br/>";
+            continue;
+        }
+        changeList.push(changeItem.id);
     }
 
-    var badgeid = data['badgeId'];
-    var fullname = data['p_name'];
-    var badgename = data['p_badge'];
-    var badgelabel = data['label'];
-    var perid = data['perid'];
+    if (changeList.length == 0) {
+        message += "Nothing to change";
+        show_message(message, 'warn', 'changeMessageDiv');
+        return;
+    }
 
+    if (message != '') {
+        show_message(message, 'error', 'changeMessageDiv');
+        return;
+    }
+
+    clear_message('changeMessageDiv')
+    var data = {
+        cancelList: changeList,
+        direction: direction,
+        action: 'cancel',
+    }
+    var script= 'scripts/regadmin_cancelReg.php';
+
+    $.ajax({
+        method: "POST",
+        url: script,
+        data: data,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error', 'changeMessageDiv');
+                return;
+            }
+            if (data['success'] !== undefined) {
+                show_message(data['success'], 'success', 'changeMessageDiv');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn', 'changeMessageDiv');
+                return;
+            }
+            cancelRegsSuccess(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in rolloverBadge: " + textStatus, jqXHR);
+        }
+    });
+}
+
+function cancelRegsSuccess(data) {
+    if (data['message'])
+        show_message(data['message'], 'success', 'changeMessageDiv');
+
+    changeReg(currentIndex, false);
+}
+
+/*
     find_pattern_field.value = '';
     if (find_result_table != null) {
         find_result_table.destroy();
@@ -666,10 +859,8 @@ function transfer(index) {
     document.getElementById('from_badgeid').value = badgeid;
     document.getElementById('from_perid').value = perid;
     document.getElementById('transfer_search_results').innerHTML = '';
-    test.innerHTML = '';
     transfer_modal.show();
-
-}
+     */
 
 // transfer_find - search for matching names
 function transfer_find() {
@@ -687,7 +878,6 @@ function transfer_find() {
 
     // search for matching names
     $("button[name='transferSearch']").attr("disabled", true);
-    test.innerHTML = '';
     clear_message();
 
     $.ajax({
@@ -842,13 +1032,14 @@ function draw_badges(data) {
 
 function draw(data, textStatus, jqXHR) {
     conid = Number(data['conid']);
+    memLabels = data['memLabels'];
     draw_stats(data);
     draw_badges(data);
 }
 
 function getData() {
     $.ajax({
-        url: "scripts/getBadges.php",
+        url: "scripts/regadmin_getBadges.php",
         method: "GET",
         success: draw,
         error: function (jqXHR, textStatus, errorThrown) {
