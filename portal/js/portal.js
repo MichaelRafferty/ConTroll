@@ -216,17 +216,23 @@ class Portal {
         this.#subTotalColDiv = document.getElementById('subTotalColDiv');
         this.#couponDiscountDiv = document.getElementById('couponDiscountDiv');
         var _this = this;
+        var modalCalled = false;
 
         // do any people need to have their profiles edited to handle missing policies
         $('.need-policies').each(function(i, obj) {
+            if (modalCalled)
+                return;
             var dataset = obj.dataset;
             var id = dataset.id;
             var type = dataset.type;
             show_message('Required Policies are not accepted', "error", 'epMessageDiv');
             _this.editPerson(id, type);
+            modalCalled = true;
         });
 
         if (config['needInterests'] == 1) {
+            if (modalCalled)
+                return;
             _this.editInterests(config.id, config.idType);
         }
     }

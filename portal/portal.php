@@ -342,7 +342,6 @@ if (count($paymentPlans) > 0) {
     draw_customizePlanModal('portal');
     draw_payPlanModal('portal');
 }
-
 // if this person is managed, print a banner and let them disassociate from the manager.
 if ($info['managedByName'] != null) {
 ?>
@@ -382,6 +381,7 @@ if ($info['managedByName'] != null) {
     <div class="col-sm-1"><b>Actions</b></div>
 </div>
 <?php
+$totalMemberships = count($holderMembership);
 drawPersonRow($loginId, $loginType, $info, $holderMembership, $interests != null, false);
 
 $managedMembershipList = '';
@@ -392,6 +392,7 @@ $curMB = [];
 foreach ($managed as $m) {
     if ($currentId != $m['id']) {
         if ($currentId > 0) {
+            $totalMemberships += count($curMB);
             drawPersonRow($loginId, $loginType, $curPT, $curMB, $interests != null, true);
         }
         $curPT = $m;
@@ -416,10 +417,12 @@ foreach ($managed as $m) {
     }
 }
 if ($currentId > 0) { // if there are any at all
+    $totalMemberships += count($curMB);
     drawPersonRow($loginId, $loginType, $curPT, $curMB, $interests != null, true);
 }
-// always draw the legend even if no one has memberships
-drawPortalLegend();
+// only draw the legend if someone has membership
+if ($totalMemberships > 0)
+    drawPortalLegend();
 
 // compute total due so we can display it up top as well...
 $totalDue = 0;
