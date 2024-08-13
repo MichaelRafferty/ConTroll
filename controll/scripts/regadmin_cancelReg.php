@@ -8,10 +8,6 @@ $perm = "reg_admin";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
-//  cancelList: cancelList,
-    //        direction: direction,
-    //        action: 'cancel',
-
 if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     $response['error'] = "Authentication Failed";
     ajaxSuccess($response);
@@ -40,12 +36,14 @@ $direction = $_POST['direction'];
 
 // loop over change list and update the status to cancelled
     if ($direction == 0) {
+        $noteMsg = "$user_perid cancelled the membership";
         $updQ = <<<EOS
 UPDATE reg
 SET status = 'cancelled', updatedBy = ?
 WHERE id IN (?);
 EOS;
     } else {
+        $noteMsg = "$user_perid restored the membership";
         $updQ = <<<EOS
 UPDATE reg
 SET status = CASE 
@@ -56,12 +54,22 @@ END, updatedBy = ?
 WHERE id IN (?);
 EOS;
     }
-$cancelList = implode(',', $cancelList);
-$num_upd = dbSafeCmd($updQ, 'is', array($user_perid, $cancelList));
+$cancelIn = implode(',', $cancelList);
+$num_upd = dbSafeCmd($updQ, 'is', array($user_perid, $cancelIn));
 if ($num_upd === false || $num_upd < 0) {
-    $response['error'] = "Error running $updQ on $cancelList";
+    $response['error'] = "Error running $updQ on $cancelIn";
 } else {
     $response['success'] = "$num_upd registrations changed";
+    // insert a reg note for the successful action
+    $insQ = <<<EOS
+INSERT INTO regActions(userid, regid, action, notes)
+VALUES (?, ?, ?, ?);
+EOS;
+    $typestr = 'iiss';
+    foreach ($x as $regId) {
+        $paramarray = array($user_perid, $regId, 'notes', $noteMsg);
+        $new_history = dbSafeInsert($insQ, $typestr, $paramarray);
+    }
 }
 
 ajaxSuccess($response);

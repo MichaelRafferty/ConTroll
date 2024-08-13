@@ -32,25 +32,37 @@ var labelfilter = null;
 var couponfilter = null;
 var statusfilter = null;
 var changeModal = null;
-var changeBodyDiv = null;
 var receiptModal = null;
 var notesModal = null;
 var recepitEmailAddress = null;
 var find_result_table = null;
-var find_pattern_field = null;
 var testdiv = null;
 var conid = 0;
 
 // changes items
 var changeMemberships = [];
+var changeList = [];
 var denyCancel = ['rolled-over', 'cancelled','refunded', 'transfered'];
+var denyTransfer = ['rolled-over', 'cancelled','refunded', 'transfered'];
 var currentIndex = null;
+var transferSearchDiv = null;
+var changeRowdata = null;
+var changeBodyDiv = null;
+var transferFromNameDiv = null;
+var transferFromBadgeDiv = null
+var transferNameSearchField = null;
+var changeDirection = null;
 
+// initialization at DOM complete
 window.onload = function initpage() {
     id = document.getElementById('changeModal');
     if (id != null) {
         changeModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
         changeBodyDiv = document.getElementById("change-body-div");
+        transferSearchDiv = document.getElementById("transfer-search-div");
+        transferFromNameDiv = document.getElementById("transfer_from");
+        transferFromBadgeDiv = document.getElementById('transfer_badge');
+        transferNameSearchField = document.getElementById('transfer_name_search');
     }
 
     id = document.getElementById('receipt');
@@ -69,6 +81,8 @@ window.onload = function initpage() {
     getData();
 }
 
+// filters for BadgeList
+// click functions to toggle a single row in a filter
 function catclicked(e, cell) {
     var filtercell = cell.getRow().getCell("memCategory");
     var value = filtercell.getValue();
@@ -209,6 +223,7 @@ function statusclicked(e, cell) {
     }
 }
 
+// clear all filter items from the clicked filter section
 function clearfilter() {
     if (typefilter.length > 0) {
         badgetable.removeFilter("type", "in", typefilter);
@@ -268,6 +283,7 @@ function clearfilter() {
     }
 }
 
+// draw all of the filter tables with the progress bar as statistics with counts
 function draw_stats(data) {
     if (category !== null) {
         category.off("cellClick");
@@ -529,7 +545,7 @@ function receipt(index) {
     });
 }
 
-// notes - display the notes for this badge
+// notes - display the notes for this badge - ajax call to fetch the notes
 function notes(index) {
     var row = badgetable.getRow(index);
     var rid = row.getCell("badgeId").getValue();
@@ -565,7 +581,7 @@ function notes(index) {
     });
 }
 
-// displayNotes - display all registration notes for this reg record
+// displayNotes - display all registration notes for this reg record - return from the AJAX call fetching the notes
 function displayNotes(data) {
 
     var index = data['post']['index'];
@@ -634,15 +650,15 @@ function rollover(index) {
     }
 }
 */
-// change - display all reg records and decide what to do with them
+// change - display all reg records for a perid based on this row and offer changes, also used to refresh the modal popup after changes
 function changeReg(index, clear = true) {
     if (clear)
         clear_message('changeMessageDiv');
 
     currentIndex = index;
     var row = badgetable.getRow(index);
-    var rowdata = row.getData();
-    var perid = rowdata['perid'];
+    changeRowdata = row.getData();
+    var perid =     changeRowdata['perid'];
 
     if (perid == null || perid == '' || perid <= 0)
         return;
@@ -669,7 +685,7 @@ function changeReg(index, clear = true) {
                 show_message(data['warn'], 'warn');
                 return;
             }
-            changeRegsData(data, rowdata);
+            changeRegsData(data, changeRowdata);
         },
         error: function (jqXHR, textStatus, errorThrown) {
             showError("ERROR in rolloverBadge: " + textStatus, jqXHR);
@@ -677,6 +693,7 @@ function changeReg(index, clear = true) {
     });
 }
 
+// return from the ajax call to fetch the regs for this perid, display the list of registrations
 function changeRegsData(data, rowdata) {
     var html = '';
 
@@ -754,8 +771,7 @@ function changeRegsData(data, rowdata) {
         <div class="col-sm-12" style="text-align: center;">
             <button class="btn btn-sm btn-primary" onclick="changeCancel(0);">Cancel Selected</button>
             <button class="btn btn-sm btn-warning me-4" onclick="changeCancel(1);">Restore Selected</button>
-            <button class="btn btn-sm btn-primary" onclick="changeTransfer(0);">Transfer Selected</button>
-            <button class="btn btn-sm btn-warning me-4" onclick="changeTransfer(1);">Cancel Transfer Selected</button>
+            <button class="btn btn-sm btn-primary me-4" onclick="changeTransfer();">Transfer Selected</button>
             <button class="btn btn-sm btn-primary" onclick="changeRollover(0);">Rollover Selected</button>
             <button class="btn btn-sm btn-warning me-4" onclick="changeRollover(1);">Cancel Rollover Selected</button>
             <button class="btn btn-sm btn-primary" onclick="changeRefund(0);">Refund Selected</button>
@@ -766,6 +782,7 @@ function changeRegsData(data, rowdata) {
     changeModal.show();
 }
 
+// select All/Clear all - set/clear all of the check boxes in the reg selection list for this perid
 function changeSelectAll(direction) {
     for (var i = 0; i < changeMemberships.length; i++) {
         var membership = changeMemberships[i];
@@ -775,10 +792,16 @@ function changeSelectAll(direction) {
     }
 }
 
+// process the cancel/restore requests, validate the selections and if allowed call the AJAX call to process the request
 function changeCancel(direction) {
+    // hide transfer block
+    clear_message();
+    clear_message('changeMessageDiv')
+    transferSearchDiv.hidden = true;
+    changeDirection = direction;
     // check which ones need to be ignored
     var message = '';
-    var changeList = [];
+    changeList = [];
     for (var i = 0; i < changeMemberships.length; i++) {
         var changeItem = changeMemberships[i];
         var checked = document.getElementById('m-' + changeItem.id).checked;
@@ -839,6 +862,7 @@ function changeCancel(direction) {
     });
 }
 
+// ajax success function display the message and refresh the data
 function cancelRegsSuccess(data) {
     if (data['message'])
         show_message(data['message'], 'success', 'changeMessageDiv');
@@ -846,55 +870,87 @@ function cancelRegsSuccess(data) {
     changeReg(currentIndex, false);
 }
 
-/*
-    find_pattern_field.value = '';
+// process the transfer/return requests, validate the selections and if allowed show the part of the modal to request to whom to transfer
+function changeTransfer() {
+    clear_message();
+    clear_message('changeMessageDiv')
+
+    // check which ones need to be ignored
+    var message = '';
+    changeList = [];
+    var badgeList = '';
+    for (var i = 0; i < changeMemberships.length; i++) {
+        var changeItem = changeMemberships[i];
+        var checked = document.getElementById('m-' + changeItem.id).checked;
+        if (!checked)
+            continue;
+
+        if (denyTransfer.indexOf(changeItem.status) != -1)  {
+            message += "Cannot transfer " + changeItem.id + " as status " + changeItem.status + " cannot be transfered<br/>";
+            continue;
+        }
+
+        changeList.push(changeItem.id);
+        badgeList += changeItem.id + ':' + changeItem.label + '  ';
+    }
+
+    if (changeList.length == 0) {
+        message += "Nothing to change";
+        show_message(message, 'warn', 'changeMessageDiv');
+        return;
+    }
+
+    if (message != '') {
+        show_message(message, 'error', 'changeMessageDiv');
+        return;
+    }
+
+    transferFromNameDiv.innerHTML = changeRowdata['perid'] + ': ' + changeRowdata['p_name'];
+    transferFromBadgeDiv.innerHTML =  badgeList;
+    transferNameSearchField.value = '';
+
+    transferNameSearchField.value = '';
     if (find_result_table != null) {
         find_result_table.destroy();
         find_result_table = null;
     }
-    if (badgename != null && badgename != '')
-        badgename = ' (' + badgename + ')';
-    document.getElementById('transfer_from').innerHTML = fullname + badgename;
-    document.getElementById('transfer_badge').innerHTML = badgelabel;
-    document.getElementById('from_badgeid').value = badgeid;
-    document.getElementById('from_perid').value = perid;
-    document.getElementById('transfer_search_results').innerHTML = '';
-    transfer_modal.show();
-     */
 
-// transfer_find - search for matching names
+    transferSearchDiv.hidden = false;
+}
+
+// transfer_find - search for matching names - call ajax routine to return matching names
 function transfer_find() {
     if (find_result_table != null) {
         find_result_table.destroy();
         find_result_table = null;
     }
 
-    clear_message();
-    var name_search = find_pattern_field.value.toLowerCase().trim();
+    clear_message('changeMessageDiv')
+    var name_search = transferNameSearchField.value.toLowerCase().trim();
     if (name_search == null || name_search == '')  {
-        show_message("No search criteria specified", "warn");
+        show_message("No search criteria specified", "warn", 'changeMessageDiv');
         return;
     }
 
     // search for matching names
     $("button[name='transferSearch']").attr("disabled", true);
-    clear_message();
+    clear_message('changeMessageDiv');
 
     $.ajax({
         method: "POST",
-        url: "scripts/transferFindRecord.php",
+        url: "scripts/regadmin_transferFindRecord.php",
         data: { name_search: name_search, },
         success: function (data, textstatus, jqxhr) {
             $("button[name='transferSearch']").attr("disabled", false);
             if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+                show_message(data['error'], 'error', 'changeMessageDiv');
                 return;
             }
             if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
+                show_message(data['message'], 'success', 'changeMessageDiv');
             }
             if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
+                show_message(data['warn'], 'warn','changeMessageDiv');
             }
             transfer_found(data);
         },
@@ -951,7 +1007,7 @@ function addTransferIcon(cell, formatterParams, onRendered) { //plain text value
     } else if (regcnt > 0) {
         color = 'btn-warning';
     }
-    return '<button type="button" class="btn btn-sm ' + color + ' pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="transferBadge(' + to + ',' + banned + ')">Transfer</button>';
+    return '<button type="button" class="btn btn-sm ' + color + ' pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="transferReg(' + to + ',' + banned + ')">Transfer</button>';
 }
 
 // transfer_found - display a list of potential transfer recipients
@@ -962,12 +1018,12 @@ function transfer_found(data) {
         find_result_table = new Tabulator('#transfer_search_results', {
             maxHeight: "600px",
             data: perinfo,
-            layout: "fitColumns",
+            layout: "fitDataTable",
             initialSort: [
                 {column: "fullname", dir: "asc"},
             ],
             columns: [
-                {field: "perid", visible: false,},
+                {title: "ID", field: "perid", width: 120, hozAlign: "right", headerHozAlign: "right" },
                 {field: "index", visible: false,},
                 {field: "regcnt", visible: false,},
                 {title: "Name", field: "fullname", width: 200, headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
@@ -986,6 +1042,55 @@ function transfer_found(data) {
     }
 }
 
+// execute the transfer request from the search list button of to whom to transfer
+function transferReg(to, banned) {
+    if (banned == 'Y') {
+        if (prompt("Transfer to banned user?") == false)
+            return;
+    }
+
+    clear_message('changeMessageDiv');
+    var script = 'scripts/regadmin_transferReg.php';
+    var data = {
+        action: 'transfer',
+        from: changeRowdata.perid,
+        to: to,
+        transferList: changeList,
+    }
+    $.ajax({
+        url: script,
+        data: data,
+        method: 'POST',
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in transferReg: " + textStatus, jqXHR);
+            return false;
+        },
+        success: function (data, textStatus, jqXHR) {
+            console.log(data);
+            if (data.error) {
+                show_message(data.error, 'error', 'changeMessageDiv');
+            } else if (data.warning) {
+                transfer_modal.hide();
+                show_message(data.warning, 'warn', 'changeMessageDiv');
+            } else {
+                transferSearchDiv.hidden = true;
+                transferNameSearchField.value = '';
+                transferFromNameDiv.innerHTML = '';
+                transferFromBadgeDiv.innerHTML = '';
+                if (find_result_table != null) {
+                    find_result_table.destroy();
+                    find_result_table = null;
+                }
+                changeModal.hide();
+                getData();
+                if (data.message)
+                    show_message(data.message, 'success');
+            }
+        }
+    });
+}
+
+// draws the badge List table of badges found
 function draw_badges(data) {
     if (badgetable !== null) {
         badgetable.destroy();
@@ -1030,6 +1135,7 @@ function draw_badges(data) {
     });
 }
 
+// called from data load - draws the filter stats block and the badges block
 function draw(data, textStatus, jqXHR) {
     conid = Number(data['conid']);
     memLabels = data['memLabels'];
@@ -1037,6 +1143,7 @@ function draw(data, textStatus, jqXHR) {
     draw_badges(data);
 }
 
+// ajax call to retrieve the starting set of data for the filters and the badge list
 function getData() {
     $.ajax({
         url: "scripts/regadmin_getBadges.php",
@@ -1047,42 +1154,6 @@ function getData() {
             return false;
         }
     })
-}
-
-
-function transferBadge(to, banned) {
-    if (banned == 'Y') {
-        if (prompt("Transfer to banned user?") == false)
-            return;
-    }
-
-    var from = document.getElementById('from_badgeid').value;
-    var from_perid = document.getElementById('from_perid').value;
-    var formData = { 'badge': from, 'perid': to, 'from_perid' : from_perid};
-    $.ajax({
-        url: 'scripts/transferBadge.php',
-        data: formData,
-        method: 'POST',
-        error: function (jqXHR, textStatus, errorThrown) {
-            showError("ERROR in transferBadge: " + textStatus, jqXHR);
-            return false;
-        },
-        success: function (data, textStatus, jqXHR) {
-            console.log(data);
-            if (data.error) {
-                show_message(data.error, 'error');
-            } else if (data.warning) {
-                transfer_modal.hide();
-                show_message(data.warning, 'warn');
-            } else {
-                transfer_modal.hide();
-                getData();
-                if (data.message)
-                    show_message(data.message, 'success');
-
-            }
-        }
-    });
 }
 
 function sendCancel() {

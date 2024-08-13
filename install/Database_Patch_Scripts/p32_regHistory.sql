@@ -12,7 +12,7 @@ CREATE TABLE regActions (
     id int NOT NULL AUTO_INCREMENT,
     logdate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     userid int NOT NULL,
-    tid int NOT NULL,
+    tid int NULL,
     regid int NOT NULL,
     action enum('attach','print','notes','transfer','rollover','overpayment','refund') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
     notes varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
