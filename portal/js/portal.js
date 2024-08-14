@@ -342,7 +342,7 @@ class Portal {
         }
 
         // now fill in the fields
-        this.#epHeaderDiv.innerHTML = '<strong>Editing: ' + this.#fullname + '</strong>';
+        this.#epHeaderDiv.innerHTML = '<strong>Editing: ' + this.#fullname + ' (' + person['email_addr'] + ')</strong>';
         this.#epPersonIdField.value = post['getId'];
         this.#epPersonTypeField.value = post['getType'];
         this.#fnameField.value = person['first_name'];

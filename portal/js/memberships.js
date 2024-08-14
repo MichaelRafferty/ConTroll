@@ -367,16 +367,19 @@ class Membership {
             this.#lastVerified = 0;
         } else {
             // person fields
+            var email_addr = this.#personInfo['email_addr'];
+            if (this.#newEmail != null)
+                email_addr = this.#newEmail;
             this.#fnameField.value = this.#personInfo['first_name'];
             this.#mnameField.value = this.#personInfo['middle_name'];
             this.#suffixField.value = this.#personInfo['suffix'];
             this.#legalnameField.value = this.#personInfo['legalName'];
             this.#pronounsField.value = this.#personInfo['pronouns'];
-            this.#email1Field.innerHTML = this.#newEmail;
+            this.#email1Field.innerHTML = email_addr;
             this.#phoneField.value = this.#personInfo['phone'];
             this.#badgenameField.value = this.#personInfo['badge_name'];
             this.#auHeader.innerHTML = 'Purchase/Upgrade memberships or other items for ' + this.#personInfo.fullname;
-            this.#epHeader.innerHTML = 'Verifying personal information for ' + this.#personInfo.fullname;
+            this.#epHeader.innerHTML = 'Verifying personal information for ' + this.#personInfo.fullname + ' (' + email_addr + ')';
             if (this.#personInfo['lastVerified'] != null) {
                 var lvd = new Date(this.#personInfo['lastVerified']);
                 this.#lastVerified = lvd.getTime();
