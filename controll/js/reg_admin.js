@@ -19,7 +19,7 @@ memLabelsNextIdx = null;
 //  4 = show hidden div
 debug = 0;
 
-var badgetable = null;
+var registrationtable = null;
 var category = null;
 var type = null;
 var price = null;
@@ -53,7 +53,7 @@ var transferSearchDiv = null;
 var changeRowdata = null;
 var changeBodyDiv = null;
 var transferFromNameDiv = null;
-var transferFromBadgeDiv = null
+var transferFromRegistrationDiv = null
 var transferNameSearchField = null;
 var rolloverDiv = null;
 var rolloverSelect = null;
@@ -67,7 +67,7 @@ window.onload = function initpage() {
         changeBodyDiv = document.getElementById("change-body-div");
         transferSearchDiv = document.getElementById("transfer-search-div");
         transferFromNameDiv = document.getElementById("transfer_from");
-        transferFromBadgeDiv = document.getElementById('transfer_badge');
+        transferFromRegistrationDiv = document.getElementById('transfer_registration');
         transferNameSearchField = document.getElementById('transfer_name_search');
         rolloverDiv = document.getElementById('rollover-div');
         rolloverSelect = document.getElementById('rollover_select');
@@ -89,24 +89,24 @@ window.onload = function initpage() {
     getData();
 }
 
-// filters for BadgeList
+// filters for RegistrationList
 // click functions to toggle a single row in a filter
 function catclicked(e, cell) {
     var filtercell = cell.getRow().getCell("memCategory");
     var value = filtercell.getValue();
     if (filtercell.getElement().style.backgroundColor) {
-        badgetable.removeFilter("category", "in", catfilter);
+        registrationtable.removeFilter("category", "in", catfilter);
         catfilter = catfilter.filter(arrayItem => arrayItem !== value);
         if (catfilter.length > 0) {
-            badgetable.addFilter("category", "in", catfilter);
+            registrationtable.addFilter("category", "in", catfilter);
         }
         filtercell.getElement().style.backgroundColor = "";
     } else {
         if (catfilter.length > 0) {
-            badgetable.removeFilter("category", "in", catfilter);
+            registrationtable.removeFilter("category", "in", catfilter);
         }
         catfilter.push(value);
-        badgetable.addFilter("category", "in", catfilter);
+        registrationtable.addFilter("category", "in", catfilter);
         filtercell.getElement().style.backgroundColor = "#C0FFC0";
     }
 }
@@ -115,18 +115,18 @@ function typeclicked(e, cell) {
     var filtercell = cell.getRow().getCell("memType");
     var value = filtercell.getValue();
     if (filtercell.getElement().style.backgroundColor) {
-        badgetable.removeFilter("type", "in", typefilter);
+        registrationtable.removeFilter("type", "in", typefilter);
         typefilter = typefilter.filter(arrayItem => arrayItem !== value);
         if (typefilter.length > 0) {
-            badgetable.addFilter("type", "in", typefilter);
+            registrationtable.addFilter("type", "in", typefilter);
         }
         filtercell.getElement().style.backgroundColor = "";
     } else {
         if (typefilter.length > 0) {
-            badgetable.removeFilter("type", "in", typefilter);
+            registrationtable.removeFilter("type", "in", typefilter);
         }
         typefilter.push(value);
-        badgetable.addFilter("type", "in", typefilter);
+        registrationtable.addFilter("type", "in", typefilter);
         filtercell.getElement().style.backgroundColor = "#C0FFC0";
     }
 }
@@ -135,18 +135,18 @@ function ageclicked(e, cell) {
     var filtercell = cell.getRow().getCell("memAge");
     var value = filtercell.getValue();
     if (filtercell.getElement().style.backgroundColor) {
-        badgetable.removeFilter("age", "in", agefilter);
+        registrationtable.removeFilter("age", "in", agefilter);
         agefilter = agefilter.filter(arrayItem => arrayItem !== value);
         if (agefilter.length > 0) {
-            badgetable.addFilter("age", "in", agefilter);
+            registrationtable.addFilter("age", "in", agefilter);
         }
         filtercell.getElement().style.backgroundColor = "";
     } else {
         if (agefilter.length > 0) {
-            badgetable.removeFilter("age", "in", agefilter);
+            registrationtable.removeFilter("age", "in", agefilter);
         }
         agefilter.push(value);
-        badgetable.addFilter("age", "in", agefilter);
+        registrationtable.addFilter("age", "in", agefilter);
         filtercell.getElement().style.backgroundColor = "#C0FFC0";
     }
 }
@@ -155,18 +155,18 @@ function priceclicked(e, cell) {
     var filtercell = cell.getRow().getCell("price");
     var value = filtercell.getValue();
     if (filtercell.getElement().style.backgroundColor) {
-        badgetable.removeFilter("price", "in", pricefilter);
+        registrationtable.removeFilter("price", "in", pricefilter);
         pricefilter = pricefilter.filter(arrayItem => arrayItem !== value);
         if (pricefilter.length > 0) {
-            badgetable.addFilter("price", "in", pricefilter);
+            registrationtable.addFilter("price", "in", pricefilter);
         }
         filtercell.getElement().style.backgroundColor = "";
     } else {
         if (pricefilter.length > 0) {
-            badgetable.removeFilter("price", "in", pricefilter);
+            registrationtable.removeFilter("price", "in", pricefilter);
         }
         pricefilter.push(value);
-        badgetable.addFilter("price", "in", pricefilter);
+        registrationtable.addFilter("price", "in", pricefilter);
         filtercell.getElement().style.backgroundColor = "#C0FFC0";
     }
 }
@@ -175,18 +175,18 @@ function labelclicked(e, cell) {
     var filtercell = cell.getRow().getCell("label");
     var value = filtercell.getValue();
     if (filtercell.getElement().style.backgroundColor) {
-        badgetable.removeFilter("label", "in", labelfilter);
+        registrationtable.removeFilter("label", "in", labelfilter);
         labelfilter = labelfilter.filter(arrayItem => arrayItem !== value);
         if (labelfilter.length > 0) {
-            badgetable.addFilter("label", "in", labelfilter);
+            registrationtable.addFilter("label", "in", labelfilter);
         }
         filtercell.getElement().style.backgroundColor = "";
     } else {
         if (labelfilter.length > 0) {
-            badgetable.removeFilter("label", "in", labelfilter);
+            registrationtable.removeFilter("label", "in", labelfilter);
         }
         labelfilter.push(value);
-        badgetable.addFilter("label", "in", labelfilter);
+        registrationtable.addFilter("label", "in", labelfilter);
         filtercell.getElement().style.backgroundColor = "#C0FFC0";
     }
 }
@@ -195,18 +195,18 @@ function couponclicked(e, cell) {
     var filtercell = cell.getRow().getCell("name");
     value = filtercell.getValue();
     if (filtercell.getElement().style.backgroundColor) {
-        badgetable.removeFilter("name", "in", couponfilter);
+        registrationtable.removeFilter("name", "in", couponfilter);
         couponfilter = couponfilter.filter(arrayItem => arrayItem !== value);
         if (couponfilter.length > 0) {
-            badgetable.addFilter("name", "in", couponfilter);
+            registrationtable.addFilter("name", "in", couponfilter);
         }
         filtercell.getElement().style.backgroundColor = "";
     } else {
         if (couponfilter.length > 0) {
-            badgetable.removeFilter("name", "in", couponfilter);
+            registrationtable.removeFilter("name", "in", couponfilter);
         }
         couponfilter.push(value);
-        badgetable.addFilter("name", "in", couponfilter);
+        registrationtable.addFilter("name", "in", couponfilter);
         filtercell.getElement().style.backgroundColor = "#C0FFC0";
     }
 }
@@ -215,18 +215,18 @@ function statusclicked(e, cell) {
     var filtercell = cell.getRow().getCell("name");
     value = filtercell.getValue();
     if (filtercell.getElement().style.backgroundColor) {
-        badgetable.removeFilter("status", "in", statusfilter);
+        registrationtable.removeFilter("status", "in", statusfilter);
         statusfilter = statusfilter.filter(arrayItem => arrayItem !== value);
         if (statusfilter.length > 0) {
-            badgetable.addFilter("status", "in", statusfilter);
+            registrationtable.addFilter("status", "in", statusfilter);
         }
         filtercell.getElement().style.backgroundColor = "";
     } else {
         if (statusfilter.length > 0) {
-            badgetable.removeFilter("status", "in", statusfilter);
+            registrationtable.removeFilter("status", "in", statusfilter);
         }
         statusfilter.push(value);
-        badgetable.addFilter("status", "in", statusfilter);
+        registrationtable.addFilter("status", "in", statusfilter);
         filtercell.getElement().style.backgroundColor = "#C0FFC0";
     }
 }
@@ -234,7 +234,7 @@ function statusclicked(e, cell) {
 // clear all filter items from the clicked filter section
 function clearfilter() {
     if (typefilter.length > 0) {
-        badgetable.removeFilter("type", "in", typefilter);
+        registrationtable.removeFilter("type", "in", typefilter);
         typefilter = [];
         var rows = type.getRows();
         for (var row of rows) {
@@ -242,7 +242,7 @@ function clearfilter() {
         }
     }
     if (catfilter.length > 0) {
-        badgetable.removeFilter("category", "in", catfilter);
+        registrationtable.removeFilter("category", "in", catfilter);
         catfilter = [];
         var rows = category.getRows();
         for (var row of rows) {
@@ -250,7 +250,7 @@ function clearfilter() {
         }
     }
     if (agefilter.length > 0) {
-        badgetable.removeFilter("age", "in", agefilter);
+        registrationtable.removeFilter("age", "in", agefilter);
         agefilter = [];
         var rows = age.getRows();
         for (var row of rows) {
@@ -258,7 +258,7 @@ function clearfilter() {
         }
     }
     if (pricefilter.length > 0) {
-        badgetable.removeFilter("price", "in", pricefilter);
+        registrationtable.removeFilter("price", "in", pricefilter);
         pricefilter = [];
         var rows = price.getRows();
         for (var row of rows) {
@@ -266,7 +266,7 @@ function clearfilter() {
         }
     }
     if (labelfilter.length > 0) {
-        badgetable.removeFilter("label", "in", labelfilter);
+        registrationtable.removeFilter("label", "in", labelfilter);
         labelfilter = [];
         var rows = label.getRows();
         for (var row of rows) {
@@ -274,7 +274,7 @@ function clearfilter() {
         }
     }
     if (couponfilter.length > 0) {
-        badgetable.removeFilter("name", "in", couponfilter);
+        registrationtable.removeFilter("name", "in", couponfilter);
         couponfilter = [];
         var rows = coupon.getRows();
         for (var row of rows) {
@@ -282,7 +282,7 @@ function clearfilter() {
         }
     }
     if (statusfilter.length > 0) {
-        badgetable.removeFilter("name", "in", statusfilter);
+        registrationtable.removeFilter("name", "in", statusfilter);
         statusfilter = [];
         var rows = statusTable.getRows();
         for (var row of rows) {
@@ -521,9 +521,9 @@ function receipt_email(addrchoice) {
         }
     });
 }
-// receipt - display a receipt for the transaction for this badge
+// receipt - display a receipt for the transaction for this registration
 function receipt(index) {
-    var row = badgetable.getRow(index);
+    var row = registrationtable.getRow(index);
     var transid = row.getCell("complete_trans").getValue();
     if (transid == null || transid == '') {
         transid = row.getCell("create_trans").getValue();
@@ -553,9 +553,9 @@ function receipt(index) {
     });
 }
 
-// notes - display the notes for this badge - ajax call to fetch the notes
+// notes - display the notes for this registration - ajax call to fetch the notes
 function notes(index) {
-    var row = badgetable.getRow(index);
+    var row = registrationtable.getRow(index);
     var rid = row.getCell("badgeId").getValue();
     if (rid == null || rid == '') {
         show_message("No registration id for this row, seek assistance", "error");
@@ -593,7 +593,7 @@ function notes(index) {
 function displayNotes(data) {
 
     var index = data['post']['index'];
-    var row = badgetable.getRow(index);
+    var row = registrationtable.getRow(index);
     var fullname = row.getCell('p_name').getValue();
     var label = row.getCell('label').getValue();
     var badgeId = row.getCell('badgeId').getValue();
@@ -629,7 +629,7 @@ function changeReg(index, clear = true) {
         clear_message('changeMessageDiv');
 
     currentIndex = index;
-    var row = badgetable.getRow(index);
+    var row = registrationtable.getRow(index);
     changeRowdata = row.getData();
     var perid = changeRowdata['perid'];
 
@@ -850,7 +850,7 @@ function changeTransfer() {
     // check which ones need to be ignored
     var message = '';
     changeList = [];
-    var badgeList = '';
+    var registrationList = '';
     for (var i = 0; i < changeMemberships.length; i++) {
         var changeItem = changeMemberships[i];
         var checked = document.getElementById('m-' + changeItem.id).checked;
@@ -863,7 +863,7 @@ function changeTransfer() {
         }
 
         changeList.push(changeItem.id);
-        badgeList += changeItem.id + ':' + changeItem.label + '  ';
+        registrationList += changeItem.id + ':' + changeItem.label + '  ';
     }
 
     if (changeList.length == 0) {
@@ -878,7 +878,7 @@ function changeTransfer() {
     }
 
     transferFromNameDiv.innerHTML = changeRowdata['perid'] + ': ' + changeRowdata['p_name'];
-    transferFromBadgeDiv.innerHTML =  badgeList;
+    transferFromRegistrationDiv.innerHTML =  registrationList;
     transferNameSearchField.value = '';
 
     transferNameSearchField.value = '';
@@ -1006,7 +1006,7 @@ function changeTransferFound(data) {
                 {title: "Badge Name", field: "badge_name", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 100, width: 100},
                 {title: "Email Address", field: "email_addr", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true,},
-                {title: "Current Badges", field: "regs", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Current Registrations", field: "regs", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Transfer", width: 90, headerFilter: false, headerSort: false, formatter: addTransferIcon, formatterParams: {t: "result"},},
                 {field: "index", visible: false,},
             ],
@@ -1048,7 +1048,7 @@ function transferReg(to, banned) {
                 transferSearchDiv.hidden = true;
                 transferNameSearchField.value = '';
                 transferFromNameDiv.innerHTML = '';
-                transferFromBadgeDiv.innerHTML = '';
+                transferFromRegistrationDiv.innerHTML = '';
                 if (find_result_table != null) {
                     find_result_table.destroy();
                     find_result_table = null;
@@ -1218,13 +1218,13 @@ function changeRefund() {
     show_message("Not Yet", 'warn', 'changeMessageDiv');
 }
 
-// draws the badge List table of badges found
-function draw_badges(data) {
-    if (badgetable !== null) {
-        badgetable.destroy();
-        badgetable = null;
+// draws the registration List table of registrations found
+function draw_registrations(data) {
+    if (registrationtable !== null) {
+        registrationtable.destroy();
+        registrationtable = null;
     }
-    badgetable = new Tabulator('#badge-table', {
+    registrationtable = new Tabulator('#registration-table', {
         data: data['badges'],
         layout: "fitDataTable",
         index: "badgeId",
@@ -1263,7 +1263,7 @@ function draw_badges(data) {
     });
 }
 
-// called from data load - draws the filter stats block and the badges block
+// called from data load - draws the filter stats block and the registrations block
 function draw(data, textStatus, jqXHR) {
     conid = Number(data['conid']);
     memLabels = data['memLabels'];
@@ -1277,10 +1277,10 @@ function draw(data, textStatus, jqXHR) {
         memLabelsNextIdx[memLabelsNext[i].id] = memLabelsNext[i];
     }
     draw_stats(data);
-    draw_badges(data);
+    draw_registrations(data);
 }
 
-// ajax call to retrieve the starting set of data for the filters and the badge list
+// ajax call to retrieve the starting set of data for the filters and the registration list
 function getData() {
     $.ajax({
         url: "scripts/regadmin_getBadges.php",

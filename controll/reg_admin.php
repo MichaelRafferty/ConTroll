@@ -71,7 +71,7 @@ else
                             </div>
                             <div class='col-sm-9 p-0'>
                                 <input class='form-control-sm' type='text' name='namesearch' id='merge_name_search' size='64'
-                                       placeholder='Name/Portion of Name, Person (Badge) ID'/>
+                                       placeholder='Name/Portion of Name, Person (Registration) ID'/>
                             </div>
                             <div class='row mt-3'>
                                 <div class='col-sm-12 text-bg-secondary'>
@@ -130,9 +130,9 @@ else
             <div class='container-fluid' id="transfer-search-div" hidden>
                 <div class='row p-1'>
                     <div class='col-sm-2 p-0'>
-                        <label for='name'>Transfer Badge:</label>
+                        <label for='name'>Transfer Registration:</label>
                     </div>
-                    <div class='col-sm-10 p-0' id='transfer_badge'></div>
+                    <div class='col-sm-10 p-0' id='transfer_registration'></div>
                 </div>
                 <div class='row p-1'>
                     <div class='col-sm-2 p-0'>
@@ -146,7 +146,7 @@ else
                     </div>
                     <div class='col-sm-10 p-0'>
                         <input class='form-control-sm' type='text' name='namesearch' id='transfer_name_search' size='64'
-                               placeholder='Name/Portion of Name, Person (Badge) ID'/>
+                               placeholder='Name/Portion of Name, Person (Registration) ID'/>
                     </div>
                 </div>
                 <div class='row mt-3'>
@@ -159,9 +159,9 @@ else
             <div class='container-fluid' id='rollover-div' hidden>
                 <div class='row p-1'>
                     <div class='col-sm-2 p-0'>
-                        <label for='name'>Rollover Badge:</label>
+                        <label for='name'>Rollover Registration:</label>
                     </div>
-                    <div class='col-sm-10 p-0' id='rollover_badge'></div>
+                    <div class='col-sm-10 p-0' id='rollover_registration'></div>
                 </div>
                 <div class='row p-1'>
                     <div class='col-sm-12 p-0'>
@@ -170,6 +170,28 @@ else
                 </div>
                 <div class='row p-1'>
                     <div class='col-sm-12 p-0' id="rollover_select"></div>
+                </div>
+                <div class='row mt-3 mb-2'>
+                    <div class='col-sm-1 p-0'></div>
+                    <div class='col-sm-10 p-0'>
+                        <button class='btn btn-sm btn-primary' id='rollover-execute' onClick='changeRolloverExecute()'>Execute Rollover</button>
+                    </div>
+                </div>
+            </div>
+            <div class='container-fluid' id='editReg-div' hidden>
+                <div class='row p-1'>
+                    <div class='col-sm-2 p-0'>
+                        <label for='name'>Edit Membershop:</label>
+                    </div>
+                    <div class='col-sm-10 p-0' id='rollover_registration'></div>
+                </div>
+                <div class='row p-1'>
+                    <div class='col-sm-12 p-0'>
+                        <label for='name'>Select Registration Type for the rollover</label>
+                    </div>
+                </div>
+                <div class='row p-1'>
+                    <div class='col-sm-12 p-0' id='rollover_select'></div>
                 </div>
                 <div class='row mt-3 mb-2'>
                     <div class='col-sm-1 p-0'></div>
@@ -233,8 +255,8 @@ else
 </div>
 <ul class='nav nav-tabs mb-3' id='regadmin-tab' role='tablist'>
     <li class='nav-item' role='presentation'>
-        <button class='nav-link active' id='badgelist-tab' data-bs-toggle='pill' data-bs-target='#badgelist-pane' type='button'
-                role='tab' aria-controls='nav-badgelist' aria-selected='true' onclick="settab('badgelist-pane');">Badge List
+        <button class='nav-link active' id='registrationlist-tab' data-bs-toggle='pill' data-bs-target='#registrationlist-pane' type='button'
+                role='tab' aria-controls='nav-registrationlist' aria-selected='true' onclick="settab('registrationlist-pane');">Registration List
         </button>
     </li>
     <li class='nav-item' role='presentation'>
@@ -281,7 +303,7 @@ else
     </li>
 </ul>
 <div class='tab-content ms-2' id='regadmin-content'>
-    <div class='tab-pane fade show active' id='badgelist-pane' role='tabpanel' aria-labelledby='badgelist-tab' tabindex='0'>
+    <div class='tab-pane fade show active' id='registrationlist-pane' role='tabpanel' aria-labelledby='registrationlist-tab' tabindex='0'>
         <div class="container-fluid">
 <?php
     if ($badgeListFilter == "top")
@@ -289,7 +311,7 @@ else
 ?>
         <div class="row">
             <div class="col-sm-auto p-0">
-                <div id="badge-table"></div>
+                <div id="registration-table"></div>
             </div>
         </div>
 <?php
