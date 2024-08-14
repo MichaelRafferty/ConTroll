@@ -747,7 +747,7 @@ function changeRegsData(data, rowdata) {
             <button class="btn btn-sm btn-primary me-4" onclick="changeTransfer();">Transfer Selected</button>
             <button class="btn btn-sm btn-primary" onclick="changeRollover(0);">Rollover Selected</button>
             <button class="btn btn-sm btn-warning me-4" onclick="changeRollover(1);">Cancel Rollover Selected</button>
-            <button class="btn btn-sm btn-primary" onclick="changeRefund(0);">Refund Selected</button>
+            <button class="btn btn-sm btn-primary" onclick="changeRefund();">Refund Selected</button>
         </div>
     </div>
 `;
@@ -1243,6 +1243,12 @@ function rolloverRegSuccess(data) {
 }
 
 //// Rollover End
+
+//// Refund start
+// changeRefund - validate / start the refund process
+function changeRefund() {
+    show_message("Not Yet", 'warn', 'changeMessageDiv');
+}
 
 // draws the badge List table of badges found
 function draw_badges(data) {
