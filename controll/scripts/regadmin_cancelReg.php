@@ -66,7 +66,7 @@ INSERT INTO regActions(userid, regid, action, notes)
 VALUES (?, ?, ?, ?);
 EOS;
     $typestr = 'iiss';
-    foreach ($x as $regId) {
+    foreach ($cancelList as $regId) {
         $paramarray = array($user_perid, $regId, 'notes', $noteMsg);
         $new_history = dbSafeInsert($insQ, $typestr, $paramarray);
     }

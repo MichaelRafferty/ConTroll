@@ -631,7 +631,7 @@ function changeReg(index, clear = true) {
     currentIndex = index;
     var row = badgetable.getRow(index);
     changeRowdata = row.getData();
-    var perid =     changeRowdata['perid'];
+    var perid = changeRowdata['perid'];
 
     if (perid == null || perid == '' || perid <= 0)
         return;
@@ -806,7 +806,7 @@ function changeRevoke(direction) {
 
     clear_message('changeMessageDiv');
     var data = {
-        revokeList: changeList,
+        cancelList: changeList,
         direction: direction,
         action: 'cancel',
     }
@@ -821,27 +821,22 @@ function changeRevoke(direction) {
                 show_message(data['error'], 'error', 'changeMessageDiv');
                 return;
             }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success', 'changeMessageDiv');
-            }
             if (data['warn'] !== undefined) {
                 show_message(data['warn'], 'warn', 'changeMessageDiv');
                 return;
             }
-            revokeRegsSuccess(data);
+            changeModal.hide();
+            getData();
+            if (data['success'] !== undefined) {
+                show_message(data['success'], 'success', 'changeMessageDiv');
+            }
+            if (data['message'])
+                show_message(data['message'], 'success', 'changeMessageDiv');
         },
         error: function (jqXHR, textStatus, errorThrown) {
             showError("ERROR in cancelReg: " + textStatus, jqXHR);
         }
     });
-}
-
-// ajax success function display the message and refresh the data
-function revokeRegsSuccess(data) {
-    if (data['message'])
-        show_message(data['message'], 'success', 'changeMessageDiv');
-
-    changeReg(currentIndex, false);
 }
 //// Revoke End
 
@@ -1203,24 +1198,18 @@ function changeRolloverExecute() {
                 show_message(data['warn'], 'warn', 'changeMessageDiv');
                 return;
             }
-            rolloverRegSuccess(data);
+            rolloverSelect.innerHTML = '';
+            rolloverDiv.hidden = true;
+            changeModal.hide();
+            getData();
+            if (data.message)
+                show_message(data.message, 'success');
         },
         error: function (jqXHR, textStatus, errorThrown) {
             showError("ERROR in rolloverReg: " + textStatus, jqXHR);
         }
     });
 }
-
-// clean up after rollover reg
-function rolloverRegSuccess(data) {
-    rolloverSelect.innerHTML = '';
-    rolloverDiv.hidden = true;
-    changeModal.hide();
-    getData();
-    if (data.message)
-        show_message(data.message, 'success');
-}
-
 //// Rollover End
 
 //// Refund start
