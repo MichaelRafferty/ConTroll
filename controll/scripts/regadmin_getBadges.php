@@ -243,5 +243,12 @@ while($memLabel = $memLabelA->fetch_assoc()) {
 }
 $response['memLabels'] = $memLabels;
 
+$memLabels = [];
+$memLabelA = dbSafeQuery($memLabelQ, 'i', array($conid +1));
+while($memLabel = $memLabelA->fetch_assoc()) {
+    $memLabels[] = $memLabel;
+}
+$response['memLabelsNext'] = $memLabels;
+
 ajaxSuccess($response);
 ?>

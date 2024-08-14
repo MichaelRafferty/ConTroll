@@ -130,13 +130,13 @@ else
             <div class='container-fluid' id="transfer-search-div" hidden>
                 <div class='row p-1'>
                     <div class='col-sm-2 p-0'>
-                        <label for='name'>Transfer Badge::</label>
+                        <label for='name'>Transfer Badge:</label>
                     </div>
                     <div class='col-sm-10 p-0' id='transfer_badge'></div>
                 </div>
                 <div class='row p-1'>
                     <div class='col-sm-2 p-0'>
-                        <label for='name'>Transfer From::</label>
+                        <label for='name'>Transfer From:</label>
                     </div>
                     <div class='col-sm-10 p-0' id='transfer_from'></div>
                 </div>
@@ -152,16 +152,30 @@ else
                 <div class='row mt-3'>
                     <div class='col-sm-2 p-0'></div>
                     <div class='col-sm-10 p-0'>
-                        <button class='btn btn-sm btn-primary' id='transferSearch' onClick='transfer_find()'>Find Person</button>
+                        <button class='btn btn-sm btn-primary' id='transferSearch' onClick='changeTransferFind()'>Find Person</button>
                     </div>
                 </div>
-                <div class='row mt-3'>
-                    <div class='col-sm-12 text-bg-secondary'>
-                        Search Results
+            </div>
+            <div class='container-fluid' id='rollover-div' hidden>
+                <div class='row p-1'>
+                    <div class='col-sm-2 p-0'>
+                        <label for='name'>Rollover Badge:</label>
+                    </div>
+                    <div class='col-sm-10 p-0' id='rollover_badge'></div>
+                </div>
+                <div class='row p-1'>
+                    <div class='col-sm-12 p-0'>
+                        <label for='name'>Select Registration Type for the rollover</label>
                     </div>
                 </div>
-                <div class='row'>
-                    <div class='col-sm-auto' id='transfer_search_results'></div>
+                <div class='row p-1'>
+                    <div class='col-sm-12 p-0' id="rollover_select"></div>
+                </div>
+                <div class='row mt-3 mb-2'>
+                    <div class='col-sm-1 p-0'></div>
+                    <div class='col-sm-10 p-0'>
+                        <button class='btn btn-sm btn-primary' id='rollover-execute' onClick='changeRolloverExecute()'>Execute Rollover</button>
+                    </div>
                 </div>
             </div>
             <div class='container-fluid'>

@@ -10,6 +10,9 @@ rules = null;
 conid = null;
 editPreviewClass = null;
 memLabels = null;
+memLabelsIdx = null;
+memLabelsNext = null;
+memLabelsNextIdx = null;
 // debug meaning
 //  1 = console.logs
 //  2 = show hidden table fields
@@ -44,6 +47,7 @@ var changeMemberships = [];
 var changeList = [];
 var denyCancel = ['rolled-over', 'cancelled','refunded', 'transfered'];
 var denyTransfer = ['rolled-over', 'cancelled','refunded', 'transfered'];
+var allowRolloverCategories = ['standard','freebie','upgrade','yearahead'];
 var currentIndex = null;
 var transferSearchDiv = null;
 var changeRowdata = null;
@@ -51,6 +55,8 @@ var changeBodyDiv = null;
 var transferFromNameDiv = null;
 var transferFromBadgeDiv = null
 var transferNameSearchField = null;
+var rolloverDiv = null;
+var rolloverSelect = null;
 var changeDirection = null;
 
 // initialization at DOM complete
@@ -63,6 +69,8 @@ window.onload = function initpage() {
         transferFromNameDiv = document.getElementById("transfer_from");
         transferFromBadgeDiv = document.getElementById('transfer_badge');
         transferNameSearchField = document.getElementById('transfer_name_search');
+        rolloverDiv = document.getElementById('rollover-div');
+        rolloverSelect = document.getElementById('rollover_select');
     }
 
     id = document.getElementById('receipt');
@@ -615,41 +623,6 @@ function displayNotes(data) {
     notesModal.show();
 }
 
-/*
-// rollover - cancel his years badge and create it as a rollover in next yeers con
-function rollover(index) {
-    clear_message();
-    var row = badgetable.getRow(index);
-    var data = row.getData();
-    var perid = data['perid'];
-    var confirm_msg = "Confirm rollover for " + data['p_name'].trim() + "'s badge of type " + data['label'] + " to " + (conid + 1) + '?';
-    if (confirm(confirm_msg)) {
-        $.ajax({
-            method: "POST",
-            url: "scripts/rolloverBadge.php",
-            data: {  badge: index, toconid: conid + 1, perid: perid, },
-            success: function (data, textstatus, jqxhr) {
-                if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
-                    return;
-                }
-                if (data['success'] !== undefined) {
-                    show_message(data['success'], 'success');
-                }
-                if (data['warn'] !== undefined) {
-                    show_message(data['warn'], 'warn');
-                }
-                getData();
-                if (data['success'] !== undefined)
-                    show_message(data.success, 'success');
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                showError("ERROR in rolloverBadge: " + textStatus, jqXHR);
-            }
-        });
-    }
-}
-*/
 // change - display all reg records for a perid based on this row and offer changes, also used to refresh the modal popup after changes
 function changeReg(index, clear = true) {
     if (clear)
@@ -792,12 +765,14 @@ function changeSelectAll(direction) {
     }
 }
 
+//// Cancel Start
 // process the cancel/restore requests, validate the selections and if allowed call the AJAX call to process the request
 function changeCancel(direction) {
     // hide transfer block
     clear_message();
-    clear_message('changeMessageDiv')
+    clear_message('changeMessageDiv');
     transferSearchDiv.hidden = true;
+    rolloverDiv.hidden = true;
     changeDirection = direction;
     // check which ones need to be ignored
     var message = '';
@@ -830,7 +805,7 @@ function changeCancel(direction) {
         return;
     }
 
-    clear_message('changeMessageDiv')
+    clear_message('changeMessageDiv');
     var data = {
         cancelList: changeList,
         direction: direction,
@@ -857,7 +832,7 @@ function changeCancel(direction) {
             cancelRegsSuccess(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            showError("ERROR in rolloverBadge: " + textStatus, jqXHR);
+            showError("ERROR in cancelReg: " + textStatus, jqXHR);
         }
     });
 }
@@ -869,11 +844,14 @@ function cancelRegsSuccess(data) {
 
     changeReg(currentIndex, false);
 }
+//// Cancel End
 
+//// Transfer Start
 // process the transfer/return requests, validate the selections and if allowed show the part of the modal to request to whom to transfer
 function changeTransfer() {
     clear_message();
-    clear_message('changeMessageDiv')
+    clear_message('changeMessageDiv');
+    rolloverDiv.hidden = true;
 
     // check which ones need to be ignored
     var message = '';
@@ -918,14 +896,14 @@ function changeTransfer() {
     transferSearchDiv.hidden = false;
 }
 
-// transfer_find - search for matching names - call ajax routine to return matching names
-function transfer_find() {
+// changeTransferFind - search for matching names - call ajax routine to return matching names
+function changeTransferFind() {
     if (find_result_table != null) {
         find_result_table.destroy();
         find_result_table = null;
     }
 
-    clear_message('changeMessageDiv')
+    clear_message('changeMessageDiv');
     var name_search = transferNameSearchField.value.toLowerCase().trim();
     if (name_search == null || name_search == '')  {
         show_message("No search criteria specified", "warn", 'changeMessageDiv');
@@ -952,7 +930,7 @@ function transfer_find() {
             if (data['warn'] !== undefined) {
                 show_message(data['warn'], 'warn','changeMessageDiv');
             }
-            transfer_found(data);
+            changeTransferFound(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
             $("button[name='transferSearch']").attr("disabled", false);
@@ -1010,8 +988,8 @@ function addTransferIcon(cell, formatterParams, onRendered) { //plain text value
     return '<button type="button" class="btn btn-sm ' + color + ' pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="transferReg(' + to + ',' + banned + ')">Transfer</button>';
 }
 
-// transfer_found - display a list of potential transfer recipients
-function transfer_found(data) {
+// changeTransferFound - display a list of potential transfer recipients
+function changeTransferFound(data) {
     var perinfo = data['perinfo'];
     var name_search = data['name_search'];
     if (perinfo.length > 0) {
@@ -1070,7 +1048,7 @@ function transferReg(to, banned) {
             if (data.error) {
                 show_message(data.error, 'error', 'changeMessageDiv');
             } else if (data.warning) {
-                transfer_modal.hide();
+                changeModal.hide();
                 show_message(data.warning, 'warn', 'changeMessageDiv');
             } else {
                 transferSearchDiv.hidden = true;
@@ -1089,6 +1067,182 @@ function transferReg(to, banned) {
         }
     });
 }
+//// Transfer end
+
+//// Rollover Start
+// process the rollover requests, validate the selections and if allowed call the AJAX call to process the request
+function changeRollover(direction) {
+    // hide transfer block
+    clear_message();
+    clear_message('changeMessageDiv');
+    transferSearchDiv.hidden = true;
+    changeDirection = direction;
+    // check which ones need to be ignored
+    var message = '';
+    changeList = [];
+    var ageList = {all: 1};
+    var memCat = null;
+    var memAge = null;
+
+    for (var i = 0; i < changeMemberships.length; i++) {
+        var changeItem = changeMemberships[i];
+        var checked = document.getElementById('m-' + changeItem.id).checked;
+        if (!checked)
+            continue;
+
+        // check statuses, only allow paid forward and rolled-over backwards
+        if (direction == 0 && changeItem.status != 'paid' && status != 'upgraded') {
+            message += "Cannot change " + changeItem.id + " as status " + changeItem.status + " cannot be rolled over, it must be paid.<br/>";
+            continue;
+        }
+        if (direction == 1 && changeItem.status != 'rolled-over') {
+            message += "Cannot change " + changeItem.id + " as status " + changeItem.status + " is not rolled over<br/>";
+            continue;
+        }
+
+        // now check the category
+        if (direction == 0) { // this year, going forwards
+            memCat = memLabelsIdx[changeItem.memId].memCategory;
+            memAge = memLabelsIdx[changeItem.memId].memAge;
+        } else {
+            memCat = memLabelsNextIdx[changeItem.memId].memCategory;
+            memAge = memLabelsNextIdx[changeItem.memId].memAge;
+        }
+
+        if (allowRolloverCategories.indexOf(memCat) == -1) {
+            message += "Cannot change " + changeItem.id + " as category " + memCat + " is not allowed to be rolled over<br/>";
+            continue;
+        }
+
+        changeList.push(changeItem.id);
+        if (ageList[memAge])
+            ageList[memAge]++;
+        else
+            ageList[memAge] = 1;
+    }
+
+    if (changeList.length == 0) {
+        message += "Nothing to change";
+        show_message(message, 'warn', 'changeMessageDiv');
+        return;
+    }
+
+    if (message != '') {
+        show_message(message, 'error', 'changeMessageDiv');
+        return;
+    }
+
+    clear_message('changeMessageDiv');
+
+    // now get the memList entry for this rollover
+    // first roll forward
+    memListSelect = [];
+    if (direction == 0) {
+        for (var i = 0; i < memLabelsNext.length; i++) {
+            var memItem = memLabelsNext[i];
+            if (ageList[memItem.memAge]) {
+                if (allowRolloverCategories.indexOf(memItem.memCategory) >= 0) {
+                    memListSelect.push(memItem);
+                }
+            }
+        }
+    } else {
+        for (var i = 0; i < memLabels.length; i++) {
+            var memItem = memLabels[i];
+            if (ageList[memItem.memAge]) {
+                if (allowRolloverCategories.indexOf(memItem.memCategory) >= 0) {
+                    memListSelect.push(memItem);
+                }
+            }
+        }
+    }
+    // build the select list
+    var optionList = "    <option value=''>Do Not Create New Registration for this row</option>\n";
+    for (var i = 0; i < memListSelect.length; i++) {
+        optionList += '   <option value="' + memListSelect[i].id + '">' + memListSelect[i].id + ':' + memListSelect[i].memAge + '-' +
+            memListSelect[i].memType + '-' + memListSelect[i].memCategory + ' $' + memListSelect[i].price + ' ' +
+            memListSelect[i].shortname + "</option>\n";
+    }
+    optionList += "</select>\n";
+    var html = ''
+    for (var i = 0; i < changeList.length; i++) {
+        var item = changeList[i];
+        html += `
+    <div class="row mt-2">
+        <div class="col-sm-1" style="text-align:right">` + item + `</div>
+        <div class="col-sm-2" style="text-align:right"><input type="checkbox" value="Y" id="c-` + i + '"/>' +
+            '<label for="c-' + item + `">&nbsp;Override Print Check</label>
+        </div>
+        <div class="col-sm-8">
+            <select id="rolloverMemId-` + i + '" name="rolloverMemId-"' + i + ">\n" +
+            optionList + `
+       </div>
+    </div>
+`;
+    }
+    rolloverSelect.innerHTML = html;
+    rolloverDiv.hidden = false;
+}
+
+function changeRolloverExecute() {
+    // check that at least one of the reg entries is not "do not create new"
+    var newIds = {};
+    var numIds = 0;
+    for (var i = 0; i < changeList.length; i++) {
+        var newId = document.getElementById('rolloverMemId-' + i).value;
+        var override = document.getElementById('c-' + i).checked;
+        newIds[changeList[i]] = { newid: newId, override: override ? 'Y' : 'N' };
+        if (newId != '')
+            numIds++;
+    }
+
+    if (numIds == 0) {
+        show_message('At least one membership needs to have a "Do Not Create" selection', 'error', 'changeMessageDiv');
+        return;
+    }
+
+    var data = {
+        rolloverList: newIds,
+        direction: changeDirection,
+        action: 'rollover',
+    }
+    var script= 'scripts/regadmin_rolloverReg.php';
+
+    $.ajax({
+        method: "POST",
+        url: script,
+        data: data,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error', 'changeMessageDiv');
+                return;
+            }
+            if (data['success'] !== undefined) {
+                show_message(data['success'], 'success', 'changeMessageDiv');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn', 'changeMessageDiv');
+                return;
+            }
+            rolloverRegSuccess(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in rolloverReg: " + textStatus, jqXHR);
+        }
+    });
+}
+
+// clean up after rollover reg
+function rolloverRegSuccess(data) {
+    rolloverSelect.innerHTML = '';
+    rolloverDiv.hidden = true;
+    changeModal.hide();
+    getData();
+    if (data.message)
+        show_message(data.message, 'success');
+}
+
+//// Rollover End
 
 // draws the badge List table of badges found
 function draw_badges(data) {
@@ -1139,6 +1293,15 @@ function draw_badges(data) {
 function draw(data, textStatus, jqXHR) {
     conid = Number(data['conid']);
     memLabels = data['memLabels'];
+    memLabelsNext = data['memLabelsNext'];
+    memLabelsIdx = {};
+    memLabelsNextIdx = {};
+    for (i = 0; i < memLabels.length; i++) {
+        memLabelsIdx[memLabels[i].id] = memLabels[i];
+    }
+    for (i = 0; i < memLabelsNext.length; i++) {
+        memLabelsNextIdx[memLabelsNext[i].id] = memLabelsNext[i];
+    }
     draw_stats(data);
     draw_badges(data);
 }
