@@ -22,8 +22,7 @@ else {
     return;
 }
 
-if (!isset($_POST) || !isset($_POST['rolloverList']) || !isset($_POST['action']) || !isset($_POST['direction'])
-    || $_POST['action'] != 'rollover') {
+if (!isset($_POST) || !isset($_POST['rolloverList']) || !isset($_POST['action']) || $_POST['action'] != 'rollover') {
     $response['error'] = 'Invalid Parameters';
     ajaxSuccess($response);
     exit();

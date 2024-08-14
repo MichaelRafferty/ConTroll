@@ -745,8 +745,7 @@ function changeRegsData(data, rowdata) {
             <button class="btn btn-sm btn-primary" onclick="changeCancel(0);">Cancel Selected</button>
             <button class="btn btn-sm btn-warning me-4" onclick="changeCancel(1);">Restore Selected</button>
             <button class="btn btn-sm btn-primary me-4" onclick="changeTransfer();">Transfer Selected</button>
-            <button class="btn btn-sm btn-primary" onclick="changeRollover(0);">Rollover Selected</button>
-            <button class="btn btn-sm btn-warning me-4" onclick="changeRollover(1);">Cancel Rollover Selected</button>
+            <button class="btn btn-sm btn-primary me-4" onclick="changeRollover();">Rollover Selected</button>
             <button class="btn btn-sm btn-primary" onclick="changeRefund();">Refund Selected</button>
         </div>
     </div>
@@ -1071,12 +1070,11 @@ function transferReg(to, banned) {
 
 //// Rollover Start
 // process the rollover requests, validate the selections and if allowed call the AJAX call to process the request
-function changeRollover(direction) {
+function changeRollover() {
     // hide transfer block
     clear_message();
     clear_message('changeMessageDiv');
     transferSearchDiv.hidden = true;
-    changeDirection = direction;
     // check which ones need to be ignored
     var message = '';
     changeList = [];
@@ -1090,24 +1088,16 @@ function changeRollover(direction) {
         if (!checked)
             continue;
 
-        // check statuses, only allow paid forward and rolled-over backwards
-        if (direction == 0 && changeItem.status != 'paid' && status != 'upgraded') {
+        // check statuses, only allow paid / upraded
+        if (changeItem.status != 'paid' && status != 'upgraded') {
             message += "Cannot change " + changeItem.id + " as status " + changeItem.status + " cannot be rolled over, it must be paid.<br/>";
-            continue;
-        }
-        if (direction == 1 && changeItem.status != 'rolled-over') {
-            message += "Cannot change " + changeItem.id + " as status " + changeItem.status + " is not rolled over<br/>";
             continue;
         }
 
         // now check the category
-        if (direction == 0) { // this year, going forwards
-            memCat = memLabelsIdx[changeItem.memId].memCategory;
-            memAge = memLabelsIdx[changeItem.memId].memAge;
-        } else {
-            memCat = memLabelsNextIdx[changeItem.memId].memCategory;
-            memAge = memLabelsNextIdx[changeItem.memId].memAge;
-        }
+
+        memCat = memLabelsIdx[changeItem.memId].memCategory;
+        memAge = memLabelsIdx[changeItem.memId].memAge;
 
         if (allowRolloverCategories.indexOf(memCat) == -1) {
             message += "Cannot change " + changeItem.id + " as category " + memCat + " is not allowed to be rolled over<br/>";
@@ -1137,25 +1127,15 @@ function changeRollover(direction) {
     // now get the memList entry for this rollover
     // first roll forward
     memListSelect = [];
-    if (direction == 0) {
-        for (var i = 0; i < memLabelsNext.length; i++) {
-            var memItem = memLabelsNext[i];
-            if (ageList[memItem.memAge]) {
-                if (allowRolloverCategories.indexOf(memItem.memCategory) >= 0) {
-                    memListSelect.push(memItem);
-                }
-            }
-        }
-    } else {
-        for (var i = 0; i < memLabels.length; i++) {
-            var memItem = memLabels[i];
-            if (ageList[memItem.memAge]) {
-                if (allowRolloverCategories.indexOf(memItem.memCategory) >= 0) {
-                    memListSelect.push(memItem);
-                }
+    for (var i = 0; i < memLabelsNext.length; i++) {
+        var memItem = memLabelsNext[i];
+        if (ageList[memItem.memAge]) {
+            if (allowRolloverCategories.indexOf(memItem.memCategory) >= 0) {
+                memListSelect.push(memItem);
             }
         }
     }
+
     // build the select list
     var optionList = "    <option value=''>Do Not Create New Registration for this row</option>\n";
     for (var i = 0; i < memListSelect.length; i++) {
@@ -1203,7 +1183,6 @@ function changeRolloverExecute() {
 
     var data = {
         rolloverList: newIds,
-        direction: changeDirection,
         action: 'rollover',
     }
     var script= 'scripts/regadmin_rolloverReg.php';
