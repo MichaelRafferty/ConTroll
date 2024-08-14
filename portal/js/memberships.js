@@ -71,6 +71,7 @@ class Membership {
     #newEmail = null;
     #newEmailField = null;
     #debug = 0;
+    #step0Listener = false;
 
     // variable price items
     #amountField = null;
@@ -434,10 +435,6 @@ class Membership {
             this.buildAgeButtons();
 
         if (nextStep == 0) {
-            this.#newEmailField = document.getElementById("newEmailAddr");
-            this.#newEmailField.addEventListener('keyup', (e) => {
-                if (e.code === 'Enter') membership.checkNewEmail(0);
-            });
             this.gotoStep(0);
         } else {
             this.gotoStep(1);
@@ -504,6 +501,12 @@ class Membership {
 
         clear_message();
 
+        // stop listening for enter key for new email address
+        if (this.#step0Listener) {
+            this.#newEmailField.removeEventListener('keyup', membershipStep0NewEmailListener);
+            this.#step0Listener = false;
+        }
+
         if (!ignoreSkip && step == 2 && (now - this.#lastVerified) < (7 * 24 * 60 * 60 * 1000)) {
             step = 4;
         }
@@ -524,6 +527,11 @@ class Membership {
         var focusField = null;
         switch (step) {
             case 0:
+                // listen for enter key for new email address
+                this.#newEmailField = document.getElementById("newEmailAddr");
+                this.#newEmailField.addEventListener('keyup', membershipStep0NewEmailListener);
+                this.#step0Listener = true;
+                // set focus
                 focusField = this.#newEmailField;
                 setTimeout(() => { focusField.focus({focusVisible: true}); }, 600);
                 break;
@@ -1178,4 +1186,9 @@ class Membership {
 
 function amountModalHiddenHelper(event) {
     membership.amountModalHidden(event);
+}
+
+function membershipStep0NewEmailListener(event) {
+    if (event.code === 'Enter')
+        membership.checkNewEmail(0);
 }
