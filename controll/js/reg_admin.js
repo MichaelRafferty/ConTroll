@@ -45,7 +45,7 @@ var conid = 0;
 // changes items
 var changeMemberships = [];
 var changeList = [];
-var denyCancel = ['rolled-over', 'cancelled','refunded', 'transfered'];
+var denyRevoke = ['rolled-over', 'cancelled','refunded', 'transfered'];
 var denyTransfer = ['rolled-over', 'cancelled','refunded', 'transfered'];
 var allowRolloverCategories = ['standard','freebie','upgrade','yearahead'];
 var currentIndex = null;
@@ -742,8 +742,8 @@ function changeRegsData(data, rowdata) {
     html += `
     <div class="row mt-2 mb-2">
         <div class="col-sm-12" style="text-align: center;">
-            <button class="btn btn-sm btn-primary" onclick="changeCancel(0);">Cancel Selected</button>
-            <button class="btn btn-sm btn-warning me-4" onclick="changeCancel(1);">Restore Selected</button>
+            <button class="btn btn-sm btn-primary" onclick="changeRevoke(0);">Revoke Selected</button>
+            <button class="btn btn-sm btn-warning me-4" onclick="changeRevoke(1);">Restore Selected</button>
             <button class="btn btn-sm btn-primary me-4" onclick="changeTransfer();">Transfer Selected</button>
             <button class="btn btn-sm btn-primary me-4" onclick="changeRollover();">Rollover Selected</button>
             <button class="btn btn-sm btn-primary" onclick="changeRefund();">Refund Selected</button>
@@ -764,9 +764,9 @@ function changeSelectAll(direction) {
     }
 }
 
-//// Cancel Start
-// process the cancel/restore requests, validate the selections and if allowed call the AJAX call to process the request
-function changeCancel(direction) {
+//// Revoke Start
+// process the revoke/restore requests, validate the selections and if allowed call the AJAX call to process the request
+function changeRevoke(direction) {
     // hide transfer block
     clear_message();
     clear_message('changeMessageDiv');
@@ -782,8 +782,8 @@ function changeCancel(direction) {
         if (!checked)
             continue;
 
-        if (direction == 0 && denyCancel.indexOf(changeItem.status) != -1)  {
-            message += "Cannot change " + changeItem.id + " as status " + changeItem.status + " cannot be cancelled<br/>";
+        if (direction == 0 && denyRevoke.indexOf(changeItem.status) != -1)  {
+            message += "Cannot change " + changeItem.id + " as status " + changeItem.status + " cannot be revoked<br/>";
             continue;
         }
         if (direction == 1 && changeItem.status != 'cancelled')  {
@@ -806,7 +806,7 @@ function changeCancel(direction) {
 
     clear_message('changeMessageDiv');
     var data = {
-        cancelList: changeList,
+        revokeList: changeList,
         direction: direction,
         action: 'cancel',
     }
@@ -828,7 +828,7 @@ function changeCancel(direction) {
                 show_message(data['warn'], 'warn', 'changeMessageDiv');
                 return;
             }
-            cancelRegsSuccess(data);
+            revokeRegsSuccess(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
             showError("ERROR in cancelReg: " + textStatus, jqXHR);
@@ -837,13 +837,13 @@ function changeCancel(direction) {
 }
 
 // ajax success function display the message and refresh the data
-function cancelRegsSuccess(data) {
+function revokeRegsSuccess(data) {
     if (data['message'])
         show_message(data['message'], 'success', 'changeMessageDiv');
 
     changeReg(currentIndex, false);
 }
-//// Cancel End
+//// Revoke End
 
 //// Transfer Start
 // process the transfer/return requests, validate the selections and if allowed show the part of the modal to request to whom to transfer
