@@ -183,20 +183,68 @@ else
                     <div class='col-sm-2 p-0'>
                         <label for='name'>Edit Membershop:</label>
                     </div>
-                    <div class='col-sm-10 p-0' id='rollover_registration'></div>
+                    <div class='col-sm-10 p-0' id='edit_registration_label'></div>
                 </div>
-                <div class='row p-1'>
-                    <div class='col-sm-12 p-0'>
-                        <label for='name'>Select Registration Type for the rollover</label>
+                <div class='row mt-1'>
+                    <div class='col-sm-1'>Reg Type:</div>
+                    <div class='col-sm-auto'>New:</div>
+                    <div class='col-sm-auto' id='edit_memSelect'></div>
+                    <div class='col-sm-auto'>Original:</div>
+                    <div class='col-sm-auto' id='edit_origMemLabel'></div>
+                </div>
+                <div class='row mt-1'>
+                    <div class='col-sm-1'>Price:</div>
+                    <div class='col-sm-auto'>New:</div>
+                    <div class='col-sm-auto'>
+                        <input type="number" placeholder="New Price" id="edit_newPrice"/>
                     </div>
+                    <div class='col-sm-auto'>Original:</div>
+                    <div class='col-sm-auto' id='edit_origPrice'></div>
+                    <div class='col-sm-auto'>New Reg:</div>
+                    <div class='col-sm-auto' id='edit_newRegPrice'></div>
                 </div>
-                <div class='row p-1'>
-                    <div class='col-sm-12 p-0' id='rollover_select'></div>
+                <div class='row mt-1'>
+                    <div class='col-sm-1'>Paid:</div>
+                    <div class='col-sm-auto'>New:</div>
+                    <div class='col-sm-auto'>
+                        <input type='number' placeholder='New Paid' id='edit_newPaid'/>
+                    </div>
+                    <div class='col-sm-auto'>Original:</div>
+                    <div class='col-sm-auto' id='edit_origPaid'></div>
+                </div>
+                <div class='row mt-1'>
+                    <div class='col-sm-1'>Coupon:</div>
+                    <div class='col-sm-auto'>New:</div>
+                    <div class='col-sm-auto'>
+                        <input type='number' placeholder='New Coupon' id='edit_newCoupon'/>
+                    </div>
+                    <div class='col-sm-auto'>Original:</div>
+                    <div class='col-sm-auto' id='edit_origCoupon'></div>
+                </div>
+                <div class='row mt-1'>
+                    <div class='col-sm-1'>Cpn Disc:</div>
+                    <div class='col-sm-auto'>New:</div>
+                    <div class='col-sm-auto'>
+                        <input type='number' placeholder='New Coupon' id='edit_newCouponDiscount'/>
+                    </div>
+                    <div class='col-sm-auto'>Original:</div>
+                    <div class='col-sm-auto' id='edit_origCouponDiscount'></div>
+                </div>
+                <div class='row mt-1'>
+                    <div class='col-sm-1'>Status:</div>
+                    <div class='col-sm-auto'>New:</div>
+                    <div class='col-sm-auto' id='edit_statusSelect'></div>
+                    <div class='col-sm-auto'>Original:</div>
+                    <div class='col-sm-auto' id='edit_origStatus'></div>
                 </div>
                 <div class='row mt-3 mb-2'>
                     <div class='col-sm-1 p-0'></div>
                     <div class='col-sm-10 p-0'>
-                        <button class='btn btn-sm btn-primary' id='rollover-execute' onClick='changeRolloverExecute()'>Execute Rollover</button>
+                        <button class='btn btn-sm btn-secondary' id='edit_discard' onClick='changeEditClose()'>Discard Changes</button>
+                        <button class='btn btn-sm btn-primary' id='edit_save' onClick='changeEditSave(0)'>Save Changes</button>
+                        <button class='btn btn-sm btn-warning' id='edit_saveOverride' onClick='changeEditSave(1)' hidden>
+                            Save Changes Overriding Warnings
+                        </button>
                     </div>
                 </div>
             </div>

@@ -49,6 +49,7 @@ var denyRevoke = ['rolled-over', 'cancelled','refunded', 'transfered'];
 var denyTransfer = ['rolled-over', 'cancelled','refunded', 'transfered'];
 var allowRolloverCategories = ['standard','freebie','upgrade','yearahead'];
 var currentIndex = null;
+var currentRow = null;
 var transferSearchDiv = null;
 var changeRowdata = null;
 var changeBodyDiv = null;
@@ -58,6 +59,23 @@ var transferNameSearchField = null;
 var rolloverDiv = null;
 var rolloverSelect = null;
 var changeDirection = null;
+var editRegDiv = null;
+var editRegLabel = null;
+var editMemSelect = null;
+var editOrigMemlabel = null;
+var editNewPrice = null;
+var editOrigPrice = null;
+var editNewRegPrice = null;
+var editNewPaid = null;
+var editOrigPaid = null;
+var editNewCoupon = null;
+var editOrigCoupon = null;
+var editNewCouponDiscount = null;
+var editOrigCouponDiscount = null;
+var editStatusSelect = null;
+var editOrigStatus = null;
+var editSaveOverride = null;
+
 
 // initialization at DOM complete
 window.onload = function initpage() {
@@ -71,6 +89,22 @@ window.onload = function initpage() {
         transferNameSearchField = document.getElementById('transfer_name_search');
         rolloverDiv = document.getElementById('rollover-div');
         rolloverSelect = document.getElementById('rollover_select');
+        editRegDiv = document.getElementById("editReg-div");
+        editRegLabel = document.getElementById("edit_registration_label");
+        editMemSelect = document.getElementById("edit_memSelect");
+        editOrigMemlabel = document.getElementById("edit_origMemLabel");
+        editNewPrice = document.getElementById("edit_newPrice");
+        editOrigPrice = document.getElementById("edit_origPrice");
+        editNewRegPrice = document.getElementById("edit_newRegPrice");
+        editNewPaid = document.getElementById("edit_newPaid");
+        editOrigPaid = document.getElementById("edit_origPaid");
+        editNewCoupon = document.getElementById("edit_newCoupon");
+        editOrigCoupon = document.getElementById("edit_origCoupon");
+        editNewCouponDiscount = document.getElementById("edit_newCouponDiscount");
+        editOrigCouponDiscount = document.getElementById("edit_origCouponDiscount");
+        editStatusSelect = document.getElementById("edit_statusSelect");
+        editOrigStatus = document.getElementById("edit_origStatus");
+        editSaveOverride = document.getElementById("edit_saveOverride");
     }
 
     id = document.getElementById('receipt');
@@ -735,7 +769,7 @@ function changeRegsData(data, rowdata) {
         <div class="col-sm-1" style="text-align: right;">` + membership.paid + `</div>
         <div class="col-sm-1" style="text-align: right;">` + membership.couponDiscount + `.</div>
         <div class="col-sm-1">` + membership.status + `</div>
-        <div class="col-sm-1"><button class="btn btn-sm btn-secondary" onclick="changeEdit(\` + membership.badgeId + \`)";>Edit</button></div>
+        <div class="col-sm-1"><button class="btn btn-sm btn-secondary" onclick="changeEdit(` + membership.badgeId + `)";>Edit</button></div>
     </div>
 `;
     }
@@ -772,6 +806,7 @@ function changeRevoke(direction) {
     clear_message('changeMessageDiv');
     transferSearchDiv.hidden = true;
     rolloverDiv.hidden = true;
+    editRegDiv.hidden = true;
     changeDirection = direction;
     // check which ones need to be ignored
     var message = '';
@@ -846,6 +881,7 @@ function changeTransfer() {
     clear_message();
     clear_message('changeMessageDiv');
     rolloverDiv.hidden = true;
+    editRegDiv.hidden = true;
 
     // check which ones need to be ignored
     var message = '';
@@ -1038,7 +1074,7 @@ function transferReg(to, banned) {
             return false;
         },
         success: function (data, textStatus, jqXHR) {
-            console.log(data);
+            //console.log(data);
             if (data.error) {
                 show_message(data.error, 'error', 'changeMessageDiv');
             } else if (data.warning) {
@@ -1070,6 +1106,7 @@ function changeRollover() {
     clear_message();
     clear_message('changeMessageDiv');
     transferSearchDiv.hidden = true;
+    editRegDiv.hidden = true;
     // check which ones need to be ignored
     var message = '';
     changeList = [];
@@ -1120,7 +1157,6 @@ function changeRollover() {
     clear_message('changeMessageDiv');
 
     // now get the memList entry for this rollover
-    // first roll forward
     memListSelect = [];
     for (var i = 0; i < memLabelsNext.length; i++) {
         var memItem = memLabelsNext[i];
@@ -1217,7 +1253,200 @@ function changeRolloverExecute() {
 function changeRefund() {
     show_message("Not Yet", 'warn', 'changeMessageDiv');
 }
+//// Refund End
 
+//// Edit Start
+// changeEdit - edit a single registration record within limits
+function changeEdit(badgeId) {
+    var ageList = {all: 1};
+
+    transferSearchDiv.hidden = true;
+    rolloverDiv.hidden = true;
+    editRegDiv.hidden = false;
+
+    currentIndex = badgeId;
+    currentRow = registrationtable.getRow(badgeId).getData();
+    var curMemId = currentRow.memId;
+    ageList[memLabelsIdx[curMemId].memAge] = 1;
+
+
+    // build the select list, first the ones for this mem Age and All
+    var memOptionList = '<select id="newMemId" onchange="changeEditRegChange();">' + "\n" +
+        "    <option value=''>Do Not Modify The Registration Type</option>\n";
+    for (var i = 0; i < memLabels.length; i++) {
+        var memItem = memLabels[i];
+        if (ageList[memItem.memAge]) {
+            memOptionList += '   <option value="' + memItem.id + '">' + memItem.id + ':' + memItem.memAge + '-' +
+                memItem.memType + '-' + memItem.memCategory + ' $' + memItem.price + ' ' +
+                memItem.shortname + "</option>\n";
+        }
+    }
+    // now the rest of them
+    for (var i = 0; i < memLabels.length; i++) {
+        var memItem = memLabels[i];
+        if (!ageList[memItem.memAge]) {
+            memOptionList += '   <option value="' + memItem.id + '">' + memItem.id + ':' + memItem.memAge + '-' +
+                memItem.memType + '-' + memItem.memCategory + ' $' + memItem.price + ' ' +
+                memItem.shortname + "</option>\n";
+        }
+    }
+    memOptionList += "</select>\n";
+
+    var statuses = ['unpaid','plan','paid','cancelled','refunded','transfered','upgraded','rolled-over'];
+    var statusSelect = "<select id='newStatus'>\n";
+    for (var i = 0; i < statuses.length; i++) {
+        statusSelect += '<option value="' + statuses[i] + '"' + (currentRow.status == statuses[i] ? ' selected' : '') +
+            ">" + statuses[i] + "</option>\n";
+    }
+    statusSelect += "</select>\n";
+
+    // now fill in the current data
+    editRegLabel.innerHTML = currentRow.badgeId + ': ' + currentRow.label;
+    editMemSelect.innerHTML = memOptionList;
+    editOrigMemlabel.innerHTML = currentRow.label;
+    editNewPrice.value = currentRow.price == null ? '' : currentRow.price;
+    editOrigPrice.innerHTML = currentRow.price == null ? '' : currentRow.price;
+    editNewRegPrice.innerHTML = '';
+    editNewPaid.value = currentRow.paid == null ? '' : currentRow.paid;
+    editOrigPaid.innerHTML = currentRow.paid == null ? '' : currentRow.paid;
+    editNewCoupon.value = currentRow.coupon == null ? '' : currentRow.coupon;
+    editOrigCoupon.innerHTML = currentRow.coupon == null ? '' : currentRow.coupon;
+    editNewCouponDiscount.value = currentRow.couponDiscount == null ? '' : currentRow.couponDiscount;
+    editOrigCouponDiscount.innerHTML = currentRow.couponDiscount == null ? '' : currentRow.couponDiscount;
+    editStatusSelect.innerHTML = statusSelect;
+    editOrigStatus.innerHTML = currentRow.status;
+}
+
+// changeEditRegChange - populate change fields on reg item change
+function changeEditRegChange() {
+    var regItemId = document.getElementById("newMemId").value;
+    if (regItemId != '') {
+        var newMemItem = memLabelsIdx[regItemId];
+        editNewRegPrice.innerHTML = newMemItem.price;
+    }
+}
+
+// changeEditSave - validate the changes and save them
+function changeEditSave(override) {
+    var newMemId = document.getElementById("newMemId").value;
+    var newPrice = editNewPrice.value;
+    var newPaid = editNewPaid.value;
+    var newCoupon = editNewCoupon.value;
+    var newDiscount = editNewCouponDiscount.value;
+    if (newDiscount == '')
+        newDiscount = 0.00;
+    var newStatus = document.getElementById('newStatus').value;
+
+    if (newMemId == '')
+        newMemId = currentRow.memId;
+
+    editSaveOverride.hidden = true;
+    if (override > 0) {
+        clear_message('changeMessageDiv');
+    } else {
+        // now some simple validations
+        var warnings = '';
+        var numWarnings = 0;
+        var balanceDue = Number(newPrice) - (Number(newPaid) + Number(newDiscount));
+        if (newPrice != (Number(newPaid) + Number(newDiscount))) {
+            warnings += 'Price of ' + newPrice + ' does not equal the sum of Paid + Coupon Discount of ' +
+                (Number(newPaid) + Number(newDiscount)) + '<br/>';
+            numWarnings++;
+        }
+
+        if (newPrice != Number(memLabelsIdx[newMemId].price)) {
+            warnings += 'Price of ' + newPrice + ' does not equal the registration item price of ' + memLabelsIdx[newMemId].price + '<br/>';
+            numWarnings++;
+        }
+
+        if (Number(newDiscount) > 0 && newCoupon == '') {
+            warnings += 'Coupon Discount of ' + Number(newDiscoint) + 'is > 0, yet the coupon is blank<br/>';
+            numWarnings++;
+        }
+
+        if (balanceDue > 0 && (newStatus == 'paid' || newStatus == 'upgraded')) {
+            warnings += 'There is a balance Due of ' + balanceDue + " and the record is paid/uograded, it needs to be 'unpaid'." +
+                " If you continue it will be set to unpaid.<br/>";
+            numWarnings++;
+        }
+
+        if (balanceDue < 0) {
+            warnings += 'There is a refund of ' + Number(-balanceDue) + ' due to your changes<br/>';
+            numWarnings++;
+        }
+
+        if (numWarnings > 0) {
+            editSaveOverride.hidden = false;
+            show_message("Please confirm you wish to save anyway due to these warnings:<br/>&nbsp;<br/>" + warnings,
+                'warn', 'changeMessageDiv');
+            return;
+        }
+    }
+    // ok, a clean validition or an overide, do the save
+    var data = {
+        action: 'edit',
+        old: currentRow,
+        id: currentRow.badgeId,
+        new: {
+            memId: newMemId,
+            price: newPrice,
+            paid: newPaid,
+            coupon: newCoupon,
+            couponDiscount: newDiscount,
+            status: newStatus,
+        },
+    };
+    var script = 'scripts/regadmin_editReg.php';
+    $.ajax({
+        method: "POST",
+        url: script,
+        data: data,
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error', 'changeMessageDiv');
+                return;
+            }
+            if (data['success'] !== undefined) {
+                show_message(data['success'], 'success', 'changeMessageDiv');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn', 'changeMessageDiv');
+                return;
+            }
+            changeEditClose();
+            getData();
+            if (data.message)
+                show_message(data.message, 'success');
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in rolloverReg: " + textStatus, jqXHR);
+        }
+    });
+    return;
+}
+// changeEditClose - clean up the form and close it, used for discard and after Save
+function changeEditClose() {
+    editRegLabel.innerHTML = '';
+    editMemSelect.innerHTML = '';
+    editOrigMemlabel.innerHTML = '';
+    editNewPrice.value = '';
+    editOrigPrice.innerHTML = '';
+    editNewRegPrice.innerHTML = '';
+    editNewPaid.value = '';
+    editOrigPaid.innerHTML = '';
+    editNewCoupon.value = '';
+    editOrigCoupon.innerHTML = '';
+    editNewCouponDiscount.value = '';
+    editOrigCouponDiscount.innerHTML = '';
+    editStatusSelect.innerHTML = '';
+    editOrigStatus.innerHTML = '';
+    currentRow = null;
+    currentItem = null;
+
+    editRegDiv.hidden = true;
+    changeModal.hide();
+}
+//// Edit End
 // draws the registration List table of registrations found
 function draw_registrations(data) {
     if (registrationtable !== null) {
