@@ -7,6 +7,8 @@
 ALTER TABLE reg ADD COLUMN priorRegId int DEFAULT NULL AFTER oldperid;
 ALTER TABLE reg ADD COLUMN updatedBy int DEFAULT NULL AFTER create_user;
 ALTER TABLE reg ADD CONSTRAINT FOREIGN KEY reg_priorRegId_fk(priorRegId) REFERENCES reg(id);
+ALTER TABLE payments MODIFY COLUMN type enum('credit','cash','check','discount','refund','other')
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL;
 
 CREATE TABLE regActions (
     id int NOT NULL AUTO_INCREMENT,
