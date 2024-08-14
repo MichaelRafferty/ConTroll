@@ -327,12 +327,8 @@ EOS;
                 $response['message'] .= '<br/>Membership ' . $cartRow['id'] . ' is not eligible for deletion, continuing with the remaining transactions.';
                 continue;
             }
-            $dQ = <<<EOS
-UPDATE reg
-SET status = 'cancelled'
-WHERE id = ?;
-EOS;
-            $num_del += dbSafeCmd($dQ, 'i', array($cartRow['id']));
+
+            $num_del += dbSafeCmd('DELETE FROM reg WHERE id = ?;', 'i', array($cartRow['id']));
             if ($item['create_trans'] == $transId) {
                 $updateTransPrice = true;
             }
