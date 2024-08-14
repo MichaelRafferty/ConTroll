@@ -88,7 +88,7 @@ $accountId = 0;
 while ($cL= $cR->fetch_assoc()) {
     $accounts++;
     if ($cL['managedBy'] != null) {
-        if ($loginType == 'p' && $cL['mangedBy'] == $loginId) {
+        if ($loginType == 'p' && $cL['managedBy'] == $loginId) {
             $managedByMe++;
         } else {
             $mangedByOther++;
