@@ -140,7 +140,7 @@ if ($membershipReq == 'Y' || $membershipReq == 'B') {
     $memberships = [];
     $mQ = <<<EOS
 SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, r.perid, r.newperid,
-       m.label, m.memType, m.memCategory, m.memAge
+       m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online
 FROM reg r
 JOIN memList m ON m.id = r.memId
 WHERE r.$rfield = ? AND r.conid IN (?, ?) AND status IN ('unpaid', 'paid', 'plan', 'upgraded')

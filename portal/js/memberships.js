@@ -842,6 +842,7 @@ class Membership {
             </div>
 `;
         var col1 = '';
+        var now = new Date();
         for (var row in this.#memberships) {
             var membershipRec = this.#memberships[row];
             if (membershipRec['status'] != 'in-cart' && membershipRec['status'] != 'unpaid')
@@ -849,29 +850,40 @@ class Membership {
 
             this.#countMemberships++;
             var amount_due = Number(membershipRec.price) - (Number(membershipRec.paid) + Number(membershipRec.couponDiscount));
+            var label = (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label +
+                (membershipRec.memAge != 'all' ? ' [' + ageListIdx[membershipRec.memAge].label + ']' : '');
+            var expired = false;
             if (membershipRec.status == 'unpaid' && !membershipRec.toDelete)
                 this.#totalDue += amount_due;
+            if (membershipRec.status == 'unpaid') {
+                var sd = new Date(membershipRec.startdate);
+                var ed = new Date(membershipRec.enddate);
+                if (membershipRec.online == 'N' || sd.getTime() > now.getTime() || ed.getTime() < now.getTime()) {
+                    expired = true;
+                    label = "<span class='text-danger'><b>Expired: </b>" + label + "</span>";
+                }
+            }
 
             var strike = false
+            var btncolor = expired ? 'btn-danger' : 'btn-secondary';
+            col1 = membershipRec.create_date;
             if (membershipRec.toDelete) {
                 strike = true;
-                col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="membership.membershipRestore(' + row + ')">Restore</button>';
+                if (!expired) {
+                    col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="membership.membershipRestore(' +
+                        row + ')">Restore</button>';
+                }
             } else if (membershipRec.status == 'unpaid' && membershipRec.price > 0 && membershipRec.paid == 0) {
-                col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="membership.membershipDelete(' + row + ')">Delete</button>';
+                col1 = '<button class="btn btn-sm ' + btncolor + ' pt-0 pb-0" onclick="membership.membershipDelete(' + row + ')">Delete</button>';
             } else if (membershipRec.status == 'in-cart') {
                 col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="membership.membershipRemove(' + row + ')">Remove</button>';
-            } else {
-                col1 = membershipRec.create_date;
             }
             html += `
     <div class="row">
         <div class="col-sm-2">` + col1 + `</div>
         <div class="col-sm-1" style='text-align: right;'>` + (strike ? '<s>' : '') + membershipRec.status + (strike ? '</s>' : '') + `</div>
         <div class="col-sm-1" style='text-align: right;'>` + (strike ? '<s>' : '') + membershipRec.price + (strike ? '</s>' : '') + `</div>
-        <div class="col-sm-8">` + (strike ? '<s>' : '') +
-                (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label +
-                (membershipRec.memAge != 'all' ? ' [' + ageListIdx[membershipRec.memAge].label + ']' : '') +
-            (strike ? '</s>' : '') + `
+        <div class="col-sm-8">` + (strike ? '<s>' : '') + label + (strike ? '</s>' : '') + `
         </div>
     </div>
 `;
