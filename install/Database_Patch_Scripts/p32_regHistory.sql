@@ -79,4 +79,16 @@ CREATE DEFINER=CURRENT_USER TRIGGER `reg_update` BEFORE UPDATE ON `reg` FOR EACH
 END;;
 DELIMITER ;
 
+DROP VIEW IF EXISTS memLabel;
+CREATE ALGORITHM=UNDEFINED
+    SQL SECURITY INVOKER
+    VIEW memLabel AS
+    SELECT m.id AS id,m.conid AS conid,m.sort_order AS sort_order,m.memCategory AS memCategory,m.memType AS memType,m.memAge AS memAge,
+           m.label AS shortname,concat(m.label,' [',a.label,']') AS label,m.notes AS notes,
+           concat(m.memCategory,'_',m.memType,'_',m.memAge) AS memGroup,m.price AS price,m.startdate AS startdate,
+           m.enddate AS enddate,m.atcon AS atcon,m.online AS online
+    from memList m
+    join ageList a on m.memAge = a.ageType and m.conid = a.conid;
+
+
 INSERT INTO patchLog(id, name) values(32, 'regHistory');
