@@ -1458,7 +1458,7 @@ function draw_registrations(data) {
         layout: "fitDataTable",
         index: "badgeId",
         pagination: true,
-        paginationSize: 10,
+        paginationSize: 25,
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         columns: [
             { title: "TID", field: "display_trans", hozAlign: "right",  headerSort: true, headerFilter: true },

@@ -238,14 +238,13 @@ class consetup {
             memListData = data['memList'];
         }
         this.#memtable = new Tabulator('#' + this.#setup_type + '-memlist', {
-            maxHeight: "600px",
             history: true,
             movableRows: true,
             data: data['memlist'],
             layout: "fitDataTable",
             pagination: true,
             paginationAddRow:"table",
-            paginationSize: 10,
+            paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
