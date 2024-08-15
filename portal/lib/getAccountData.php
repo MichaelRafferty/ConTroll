@@ -36,7 +36,7 @@ WITH pn AS (
     SELECT t.id, r.create_date, r.id as regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
-        m.label, m.memAge, m.memType, m.memCategory,
+        m.label, m.memAge, m.memType, m.memCategory, m.startdate, m.enddate, m.online,
         CASE 
             WHEN pn.memberId IS NOT NULL THEN pn.managedBy
             WHEN nn.memberId IS NOT NULL THEN nn.managedBy
@@ -73,7 +73,8 @@ WITH pn AS (
     SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
-        m.label, m.memAge, m.memType, m.memCategory, nn.managedBy, nn.managedByNew, nn.badge_name, nn.fullname, nn.memberId
+        m.label, m.memAge, m.memType, m.memCategory,  m.startdate, m.enddate, m.online,
+        nn.managedBy, nn.managedByNew, nn.badge_name, nn.fullname, nn.memberId
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
@@ -90,7 +91,8 @@ EOS;
         $membershipsQ = <<<EOS
 WITH mems AS (
     SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
-    m.label, m.memAge, m.memType, m.memCategory, p.managedBy, p.managedByNew,
+    m.label, m.memAge, m.memType, m.memCategory,  m.startdate, m.enddate, m.online,
+        p.managedBy, p.managedByNew,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
         CASE 

@@ -120,6 +120,7 @@ WITH ppl AS (
         p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
         r.conid, r.status, r.memId, r.price AS actPrice, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        m.startdate, m.enddate, m.online,
         a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
@@ -146,6 +147,7 @@ WITH ppl AS (
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
         r.conid, r.status, r.memId, r.price AS actPrice, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        m.startdate, m.enddate, m.online,
         a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
@@ -193,6 +195,7 @@ WITH ppl AS (
         p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
         r.conid, r.status, r.memId, r.price AS actPrice, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        m.startdate, m.enddate, m.online,
         a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
@@ -219,6 +222,7 @@ WITH ppl AS (
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
         r.conid, r.status, r.memId, r.price AS actPrice, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        m.startdate, m.enddate, m.online,
         a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
@@ -428,10 +432,26 @@ if ($totalMemberships > 0)
 $totalDue = 0;
 $totalUnpaid = 0;
 $totalPaid = 0;
-foreach ($memberships as $membership) {
+$now = date_format(date_create('now'), 'Y-m-d H:i:s');
+$numExpired = 0;
+$disablePay = '';
+
+foreach ($memberships as $key => $membership) {
+    $label = ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label'];
     if ($membership['status'] == 'unpaid') {
         $totalUnpaid++;
         $totalDue += round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
+
+        if ($membership['status'] == 'unpaid') {
+            $due = round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
+            $status = 'Balance due: ' . $dolfmt->formatCurrency((float) $due, $currency);
+
+            if ($membership['status'] == 'unpaid' &&
+                ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['startdate'] > $now || $membership['online'] == 'N')) {
+                $label = "<span class='text-danger'><b>Expired: </b>$label</span>";
+                $numExpired++;
+            }
+        }
     }
     if ($membership['status'] == 'plan') {
         $totalUnpaid++;
@@ -439,6 +459,10 @@ foreach ($memberships as $membership) {
     if ($membership['status'] == 'paid') {
         $totalPaid++;
     }
+    $memberships[$key]['displayLabel'] = $label;
+}
+if ($numExpired > 0) {
+    $disablePay = ' disabled';
 }
 if (array_key_exists('payorPlans', $paymentPlans)) {
     $payorPlan = $paymentPlans['payorPlans'];
@@ -455,8 +479,9 @@ if ($totalDue > 0 || count($payorPlan) > 0) {
 $payHtml = '';
 if ($totalDue > 0) {
     $totalDueFormatted = '&nbsp;&nbsp;Total due: <span name="totalDueAmountSpan">' . $dolfmt->formatCurrency((float) $totalDue, $currency) . "</span>";
-    $payHtml = " $totalDueFormatted   " . '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2"
-        onclick="portal.payBalance(' . $totalDue . ', true);">Pay Total Amount Due</button>';
+    $payHtml = " $totalDueFormatted   " .
+        '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.payBalance(' . $totalDue . ', true);"' .
+         $disablePay . '>Pay Total Amount Due</button>';
     setSessionVar('totalDue', $totalDue); // used for validation in payment side
     if ($numCoupons > 0) {
         $payHtml .= ' <button class="btn btn-primary btn-sm pt-1 pb-1 ms-0 me-2" id="addCouponButton" onclick="coupon.ModalOpen(1)">Add Coupon</button>';
@@ -499,12 +524,14 @@ if (count($memberships) > 0) {
                         type="button" onclick="portal.showAll();"
                     <?php echo $showAll;?>><b>Show All</b></button>
 <?php
-                    if ($totalUnpaid > 0) {
+    if ($totalUnpaid > 0) {
 ?>
                 <button class="btn btn-sm btn-info text-white m-0" id="btn-showUnpaid"
                         type="button" onclick="portal.showUnpaid();"
                     <?php echo $showUnpaid; ?>><b>Show Unpaid</b></button>
-<?php } ?>
+<?php
+    }
+?>
                 <button class="btn btn-sm btn-info text-white ms-0 pe-3" id="btn-hideAll" style='border-top-right-radius: 20px; border-bottom-right-radius:
                 20px;'
                         type="button"  onclick="portal.hideAll();"
@@ -628,7 +655,7 @@ if (count($memberships) > 0) {
         <div class='row'>
             <div class='col-sm-1'></div>
             <div class='col-sm-2'><?php echo $status; ?></div>
-            <div class='col-sm-3'><?php echo ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label']; ?></div>
+            <div class='col-sm-3'><?php echo $membership['displayLabel']; ?></div>
             <div class="col-sm-6"><?php echo $membership['fullname'] . ' / ' . $membership['badge_name'];?></div>
         </div>
 <?php
@@ -647,11 +674,40 @@ if (count($memberships) > 0) {
 <div class="row">
     <div class="col-sm-1"></div>
     <div class="col-sm-2"><b><?php echo $totalDueFormatted; ?></b></div>
-    <div class="col-sm-4"><button class="btn btn-sm btn-primary pt-1 pb-1" id="payBalanceBTN" onclick="portal.payBalance(<?php echo $totalDue;?>);">Pay Balance</button>
+    <div class="col-sm-4">
+        <button class="btn btn-sm btn-primary pt-1 pb-1" id="payBalanceBTN" onclick="portal.payBalance(<?php echo $totalDue;?>);"<?php echo $disablePay;?>>
+            Pay Balance
+        </button>
+    </div>
+<?php
+        if ($numExpired > 0) {
+            if ($numExpired == 1)
+                $expMsg = "one unpaid item  in your purchased list that is";
+            else
+                $expMsg = $numExpired . " unpaid items in your purchased list that are";
+?>
+    <div class="row mt-4">
+        <div class="col-sm-12">
+            <p>
+                <span class="text-danger"><b>NOTE:</span> You have <?php echo $expMsg;?> no longer valid for purchase. This is bacause they
+                either are either no longer available for sale via the portal or the dates for then they could be purchased has passed.</b>
+            </p>
+            <p>
+                You must use the "Add To/Edit Cart" for each person who has expired items in the list above and delete those items from the account.
+                You can then replace them with items that are currently available for purchase. If you have issues with this please reach out to registration at
+                the email address below.
+            </p>
+        </div>
+    </div>
+    <div class='row'>
+        <div class='col-sm-12 p-0 m-0 align-center'>
+            <hr style='height:4px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:#333333;background-color:#333333;'/>
+        </div>
     </div>
 <?php
         }
     }
+}
 ?>
 </div>
 <?php
