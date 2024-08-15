@@ -478,7 +478,7 @@ EOS;
         <?php if ($wsfs) { ?>
         <div class='col-sm-auto'>
             <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['wsfs']['color']; ?>"
-                    style="pointer-events:none; <?php echo $memershipButtonColors['minor']['wsfs']; ?>" tabindex='-1'>
+                    style="pointer-events:none; <?php echo $memershipButtonColors['wsfs']['style']; ?>" tabindex='-1'>
                 WSFS
             </button>
         </div>
