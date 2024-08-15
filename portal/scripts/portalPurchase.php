@@ -116,7 +116,7 @@ $memCategories = $data['memCategories'];
 $mtypes = $data['mtypes'];
 
 //// $rules = $data['rules'];
-//// TODO: load and apply rules checkshere to $badges
+//// TODO: load and apply rules checks here to $badges
 $data = computePurchaseTotals($coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories);
 
 $maxMbrDiscounts = $data['origMaxMbrDiscounts'];

@@ -885,7 +885,7 @@ function drawPaymentPlans($person, $paymentPlans) {
     }
 }
 
-// draw_makePaymentModal - the modap popup to take a payment via credit card
+// draw_receiptModal - modal to display a receipt
 function draw_recieptModal() {
 ?>
     <div id='portalReceipt' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Registration Portal Receipt' aria-hidden='true' style='--bs-modal-width:
