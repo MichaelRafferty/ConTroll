@@ -2,7 +2,7 @@
 //  purchase.php - library of modules related to performing a purchase of memberships
 
 // load purchase data: mtypes, prices, coupon, rules
-    function loadPurchaseData($conid, $couponCode, $couponSerial) {
+    function loadPurchaseData($conid, $couponCode, $couponSerial, $planPayment = 0) {
         $prices = array ();
         $memId = array ();
         $counts = array ();
@@ -13,7 +13,14 @@
         $memCategories = array();
 
         // membership information
-        $priceQ = <<<EOQ
+        if ($planPayment > 0) {
+            $priceQ = <<<EOQ
+SELECT m.id, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid
+FROM memLabel m
+WHERE m.conid=? OR m.conid=?;
+EOQ;
+        } else {
+            $priceQ = <<<EOQ
 SELECT m.id, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid
 FROM memLabel m
 WHERE
@@ -23,6 +30,7 @@ WHERE
     AND enddate > CURRENT_TIMESTAMP()
 ;
 EOQ;
+        }
         $mtypes = array ();
         $priceR = dbSafeQuery($priceQ, 'ii', array ($conid, $conid + 1));
         while ($priceL = $priceR->fetch_assoc()) {

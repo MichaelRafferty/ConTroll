@@ -104,7 +104,7 @@ if ($planPayment == 1 || $newplan == 1) {
 }
 
 // ok, the Portal data is now loaded, now deal with re-pricing things, based on the real tables
-$data = loadPurchaseData($conid, $couponCode, $couponSerial);
+$data = loadPurchaseData($conid, $couponCode, $couponSerial, $planPayment);
 $prices = $data['prices'];
 $memId = $data['memId'];
 $counts = $data['counts'];
@@ -125,18 +125,22 @@ $preDiscount = $data['preDiscount'];
 $total = $data['total'];
 $totalDiscount = $data['totalDiscount'];
 
-if ($totalAmountDue != $total) {
-    error_log('bad total: post=' . $totalAmountDue . ', calc=' . $total);
-    ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
-    exit();
-}
-
-if ($coupon != null) {
-    if ($webCouponDiscount != $totalDiscount) {
-        error_log('bad coupon discount: post=' . $webCouponDiscount . ', calc=' . $totalDiscount);
-        ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad coupon data sent to Server'));
+if ($planPayment == 0) {
+    if ($totalAmountDue != $total) {
+        error_log('bad total: post=' . $totalAmountDue . ', calc=' . $total);
+        ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
         exit();
     }
+
+    if ($coupon != null) {
+        if ($webCouponDiscount != $totalDiscount) {
+            error_log('bad coupon discount: post=' . $webCouponDiscount . ', calc=' . $totalDiscount);
+            ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad coupon data sent to Server'));
+            exit();
+        }
+    }
+} else {
+    $totalAmountDue = $total;
 }
 
 // now recompute the records in the badgeResults array
