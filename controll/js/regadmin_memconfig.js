@@ -208,7 +208,7 @@ class memsetup {
         this.#memtypetable = null;
         // memtype table
         this.#memtypetable = new Tabulator('#types-div', {
-            maxHeight: "300px",
+            maxHeight: "600px",
             movableRows: true,
             history: true,
             data: data['memtypes'],
@@ -263,7 +263,7 @@ class memsetup {
         this.#categorytable = null;
         // category table
         this.#categorytable = new Tabulator('#cat-div', {
-            maxHeight: "300px",
+            maxHeight: "600px",
             history: true,
             movableRows: true,
             data: data['categories'],
@@ -333,7 +333,7 @@ class memsetup {
         this.#curagetable = null;
         // current agelist table
         this.#curagetable = new Tabulator('#curage-div', {
-            maxHeight: "300px",
+            maxHeight: "400px",
             history: true,
             movableRows: true,
             data: data['current_agelist'],
@@ -381,7 +381,7 @@ class memsetup {
         this.#nextagetable = null;
         // next  agelist table
         this.#nextagetable = new Tabulator('#nextage-div', {
-            maxHeight: "300px",
+            maxHeight: "400px",
             history: true,
             movableRows: true,
             data: data['next_agelist'],
