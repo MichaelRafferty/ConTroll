@@ -325,11 +325,6 @@ else
     </li>
     --->
     <li class='nav-item' role='presentation'>
-        <button class='nav-link' id='merge-tab' data-bs-toggle='pill' data-bs-target='#merge-pane' type='button' role='tab'
-                aria-controls='nav-merge' aria-selected='false' onclick="settab('merge-pane');">Merge People
-        </button>
-    </li>
-    <li class='nav-item' role='presentation'>
         <button class='nav-link' id='customtext-tab' data-bs-toggle='pill' data-bs-target='#customtext-pane' type='button' role='tab'
                 aria-controls='nav-customtext' aria-selected='false' onclick="settab('customtext-pane');">Custom Text
         </button>
@@ -347,6 +342,11 @@ else
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='rules-tab' data-bs-toggle='pill' data-bs-target='#rules-pane' type='button' role='tab'
                 aria-controls='nav-rules' aria-selected='false' onclick="settab('rules-pane');">Membership Rules
+        </button>
+    </li>
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='merge-tab' data-bs-toggle='pill' data-bs-target='#merge-pane' type='button' role='tab'
+                aria-controls='nav-merge' aria-selected='false' onclick="settab('merge-pane');">Merge People
         </button>
     </li>
 </ul>

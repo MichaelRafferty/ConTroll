@@ -35,7 +35,7 @@ EOS;
 
 if ($type == 'memType' || $type == 'all') {
     $typeSQL = <<<EOS
-SELECT m.memType, m.active, m.sortorder, count(l.id) uses, m.memType AS memtypekey
+SELECT m.memType, m.active, m.sortorder, m.notes, count(l.id) uses, m.memType AS memtypekey
 FROM memTypes m
 LEFT OUTER JOIN memList l ON (l.memType = m.memType)
 GROUP BY m.memType, m.active, m.sortorder
@@ -46,6 +46,11 @@ EOS;
     $typelist = array();
     if($result->num_rows >= 1) {
         while($memtype = $result->fetch_assoc()) {
+            if ($memtype['notes'] == null)
+                $memtype['notes'] = "";
+            $memtype['required'] = str_starts_with($memtype['notes'], 'Req: ') ? 'Y' : 'N';
+            if ($memtype['required'] == 'Y')
+                $memtype['uses'] = "Req";
             array_push($typelist, $memtype);
         }
     }
@@ -54,7 +59,7 @@ EOS;
 
 if ($type == 'memCat' || $type == 'all') {
     $catSQL = <<<EOS
-SELECT m.memCategory, m.badgeLabel, m.onlyOne, m.standAlone, m.variablePrice, m.active, m.sortorder, count(l.id) uses, m.memCategory AS memcatkey
+SELECT m.memCategory, m.badgeLabel, m.onlyOne, m.standAlone, m.variablePrice, m.notes, m.active, m.sortorder, count(l.id) uses, m.memCategory AS memcatkey
 FROM memCategories m
 LEFT OUTER JOIN memList l ON (l.memCategory = m.memCategory)
 GROUP BY m.memCategory, m.active, m.sortorder
@@ -65,6 +70,11 @@ EOS;
     $catlist = array();
     if($result->num_rows >= 1) {
         while($memcat = $result->fetch_assoc()) {
+            if ($memcat['notes'] == null)
+                $memcat['notes'] = '';
+            $memcat['required'] = str_starts_with($memcat['notes'], 'Req: ') ? 'Y' : 'N';
+            if ($memcat['required'] == 'Y')
+                $memcat['uses'] = 'Req';
             array_push($catlist, $memcat);
         }
     }

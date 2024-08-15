@@ -216,8 +216,18 @@ class memsetup {
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
                 { field: "memtypekey", visible: false },
-                { title: "Type", field: "memType", headerSort: true, width: 150, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "unique", "required" ] },
-                { title: "Active", field: "active", headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], }, validator: "required" },
+                {
+                    title: "Type", field: "memType", headerSort: true, width: 150, editable: reqEditable,
+                    editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "unique", "required" ]
+                },
+                {
+                    title: "Notes", field: "notes", headerSort: true, width: 350, editable: reqEditable,
+                    editor: "input", editorParams: { elementAttributes: { maxlength: "1024" } },
+                },
+                {
+                    title: "Active", field: "active", headerSort: true,  editable: reqEditable,
+                    editor: "list", editorParams: { values: ["Y", "N"], }, validator: "required"
+                },
                 { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
@@ -261,12 +271,32 @@ class memsetup {
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
                 { field: "memcatkey", visible: false },
-                { title: "Category", field: "memCategory", width: 150, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "unique", "required" ] },
-                { title: "Only One", field: "onlyOne", headerWordWrap: true, headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required" },
-                { title: "Stand Alone", field: "standAlone", headerWordWrap: true, headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], }, width: 75, validator: "required" },
-                { title: "Variable Price", field: "variablePrice", headerWordWrap: true, headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], }, width: 85, validator: "required" },
-                { title: "Badge Label", field: "badgeLabel", width: 150, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "required" ] },
-                { title: "Active", field: "active", headerSort: true, editor: "list", editorParams: { values: ["Y", "N"], }, validator: "required" },
+                {
+                    title: "Category", field: "memCategory", width: 150, headerSort: true, editable: reqEditable,
+                    editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "unique", "required" ]
+                },
+                {
+                    title: "Notes", field: "notes", headerSort: true, width: 350, editable: reqEditable,
+                    editor: "input", editorParams: { elementAttributes: { maxlength: "1024" } },
+                },
+                {
+                    title: "Only One", field: "onlyOne", headerWordWrap: true, headerSort: true, editable: reqEditable,
+                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required" },
+                {
+                    title: "Stand Alone", field: "standAlone", headerWordWrap: true, headerSort: true, editable: reqEditable,
+                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 75, validator: "required" },
+                {
+                    title: "Variable Price", field: "variablePrice", headerWordWrap: true, headerSort: true, editable: reqEditable,
+                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 85, validator: "required"
+                },
+                {
+                    title: "Badge Label", field: "badgeLabel", width: 150, headerSort: true, editable: reqEditable,
+                    editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "required" ]
+                },
+                {
+                    title: "Active", field: "active", headerSort: true, editable: reqEditable,
+                    editor: "list", editorParams: { values: ["Y", "N"], }, validator: "required"
+                },
                 { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
@@ -861,3 +891,11 @@ class memsetup {
         }
     };
 };
+
+function reqEditable(cell) {
+    if (cell.getData().required == 'N')
+        return true;
+
+    cell.getElement().style.backgroundColor ="#E8FFE8";
+    return false;
+}

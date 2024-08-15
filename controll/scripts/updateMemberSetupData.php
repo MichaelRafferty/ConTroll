@@ -124,12 +124,12 @@ EOS;
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO memTypes(memType, active, sortorder)
-VALUES(?,?,?);
+INSERT INTO memTypes(memType, notes, active, sortorder)
+VALUES(?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE memTypes
-SET  memType = ?, active=?, sortorder=?
+SET  memType = ?, notes = ?, active=?, sortorder=?
 WHERE memType = ?;
 EOS;
         // now the updates, do the updates first in case we need to insert a new row with the same older key
@@ -140,7 +140,7 @@ EOS;
             }
 
             if (array_key_exists('memtypekey', $row)) { // if key is there, it's an update
-                $numrows = dbSafeCmd($updsql, 'ssis', array($row['memType'], $row['active'], $row['sortorder'], $row['memtypekey']));
+                $numrows = dbSafeCmd($updsql, 'sssis', array($row['memType'], $row['notes'], $row['active'], $row['sortorder'], $row['memtypekey']));
                 $updated += $numrows;
             }
         }
@@ -152,7 +152,7 @@ EOS;
             }
 
             if (!array_key_exists('memtypekey', $row)) { // if key is not there, its an insert
-                $numrows = dbSafeInsert($inssql, 'ssi', array($row['memType'], $row['active'], $row['sortorder']));
+                $numrows = dbSafeInsert($inssql, 'sssi', array($row['memType'],  $row['notes'], $row['active'], $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }
@@ -167,12 +167,12 @@ EOS;
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO memCategories(memCategory, onlyOne, standAlone, variablePrice, badgeLabel, active, sortorder)
-VALUES(?,?,?,?,?,?,?);
+INSERT INTO memCategories(memCategory, onlyOne, standAlone, variablePrice, badgeLabel, notes, active, sortorder)
+VALUES(?,?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE memCategories
-SET memCategory=?, onlyOne = ?, standAlone = ?, variablePrice = ?, badgeLabel = ?, active=?, sortorder=?
+SET memCategory=?, onlyOne = ?, standAlone = ?, variablePrice = ?, badgeLabel = ?, notes=?, active=?, sortorder=?
 WHERE memCategory=?;
 EOS;
         // now the updates, do the updates first in case we need to insert a new row with the same older key
@@ -183,8 +183,8 @@ EOS;
             }
 
             if (array_key_exists('memcatkey', $row)) { // if key is there, it's an update
-                $numrows = dbSafeCmd($updsql, 'ssssssis', array($row['memCategory'], $row['onlyOne'], $row['standAlone'], $row['variablePrice'],
-                    $row['badgeLabel'], $row['active'], $row['sortorder'], $row['memcatkey']));
+                $numrows = dbSafeCmd($updsql, 'sssssssis', array($row['memCategory'], $row['onlyOne'], $row['standAlone'], $row['variablePrice'],
+                    $row['badgeLabel'],  $row['notes'], $row['active'], $row['sortorder'], $row['memcatkey']));
                 $updated += $numrows;
             }
         }
@@ -197,8 +197,8 @@ EOS;
             }
 
             if (!array_key_exists('memcatkey', $row)) { // if key is not there, its an insert
-                $numrows = dbSafeInsert($inssql, 'ssssssi', array($row['memCategory'], $row['onlyOne'], $row['standAlone'], $row['variablePrice'],
-                    $row['badgeLabel'], $row['active'], $row['sortorder']));
+                $numrows = dbSafeInsert($inssql, 'sssssssi', array($row['memCategory'], $row['onlyOne'], $row['standAlone'], $row['variablePrice'],
+                    $row['badgeLabel'],  $row['notes'], $row['active'], $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }
