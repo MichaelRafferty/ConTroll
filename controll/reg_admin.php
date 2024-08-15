@@ -21,7 +21,7 @@ page_init($page,
                     'js/tinymce/tinymce.min.js',
                     'js/reg_admin.js',
                     'js/regadmin_consetup.js',
-                    /*'js/regadmin_memconfig.js',*/
+                    'js/regadmin_memconfig.js',
                     'js/regadmin_merge.js',
                     'js/regadmin_customText.js',
                     'js/regadmin_policy.js',
@@ -317,13 +317,11 @@ else
                 aria-controls='nav-nextconsetup' aria-selected='false' onclick="settab('nextconsetup-pane');">Next Convention Setup
         </button>
     </li>
-    <!---
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='memconfig-tab' data-bs-toggle='pill' data-bs-target='#memconfig-pane' type='button' role='tab'
                 aria-controls='nav-memconfigsetup' aria-selected='false' onclick="settab('memconfig-pane');">Membership Configuration
         </button>
     </li>
-    --->
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='customtext-tab' data-bs-toggle='pill' data-bs-target='#customtext-pane' type='button' role='tab'
                 aria-controls='nav-customtext' aria-selected='false' onclick="settab('customtext-pane');">Custom Text

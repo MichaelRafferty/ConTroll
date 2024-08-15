@@ -1597,17 +1597,16 @@ function settab(tabname) {
                 current = new consetup('current');
             current.open();
             break;
-
         case 'nextconsetup-pane':
             if (next == null)
                 next = new consetup('next');
             next.open();
             break;
-        /* case 'memconfig-pane':
+        case 'memconfig-pane':
             if (mem == null)
                 mem = new memsetup();
             mem.open();
-            break; */
+            break;
         case 'merge-pane':
             if (merge == null)
                 merge = new mergesetup();

@@ -25,9 +25,7 @@ page_init($page,
                    ),
     /* js  */ array( //$cdn['luxon'],
                     $cdn['tabjs'],
-                    'js/tinymce/tinymce.min.js',
                     'js/admin.js',
-                    'js/admin_memconfig.js',
                    ),
               $need_login);
 $con = get_conf("con");
@@ -178,11 +176,6 @@ else
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="users-tab" data-bs-toggle="pill" data-bs-target="#users-pane" type="button" role="tab" aria-controls="nav-users" aria-selected="true" onclick="settab('users-pane');">Users</button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="memconfig-tab" data-bs-toggle="pill" data-bs-target="#memconfig-pane" type="button" role="tab"
-                    aria-controls="nav-memconfigsetup" aria-selected="false" onclick="settab('memconfig-pane');">Membership Configuration
-            </button>
-        </li>
     </ul>
     <div class="tab-content ms-2" id="admin-content">
         <div class="tab-pane fade show active" id="users-pane" role="tabpanel" aria-labelledby="users-tab" tabindex="0">
@@ -289,7 +282,6 @@ else
             <button id='add_new_account' type='button' class='btn btn-primary btn-sm' onclick="addFindPerson(); return false;">New Account</button>
         </div>
     </div>
-    <div class="tab-pane fade" id="memconfig-pane" role="tabpanel" aria-labelledby="memconfig-tab" tabindex="0"></div>
     <div id='result_message' class='mt-4 p-2'></div>
 </div>
 <script>

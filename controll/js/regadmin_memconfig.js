@@ -415,7 +415,7 @@ class memsetup {
 
     open() {
         var _this = this;
-        var script = "scripts/getMemberSetupData.php";
+        var script = "scripts/regadmin_getMemberSetupData.php";
         $.ajax({
             url: script,
             method: 'POST',
@@ -522,7 +522,7 @@ class memsetup {
             showError(data['success']);    
         }
         this.#memtype_savebtn.innerHTML = "Save Changes";
-        var script = "scripts/getMemberSetupData.php";
+        var script = "scripts/regadmin_getMemberSetupData.php";
         $.ajax({
             url: script,
             method: 'POST',
@@ -550,7 +550,7 @@ class memsetup {
             this.#memtype_savebtn.innerHTML = "Saving...";
             this.#memtype_savebtn.disabled = true;
 
-            var script = "scripts/updateMemberSetupData.php";
+            var script = "scripts/regadmin_updateMemberSetupData.php";
 
             var postdata = {
                 ajax_request_action: 'memtype',
@@ -626,7 +626,7 @@ class memsetup {
             showError(data['success']);
         }
         this.#category_savebtn.innerHTML = "Save Changes";
-        var script = "scripts/getMemberSetupData.php";
+        var script = "scripts/regadmin_getMemberSetupData.php";
         $.ajax({
             url: script,
             method: 'POST',
@@ -654,7 +654,7 @@ class memsetup {
             this.#category_savebtn.innerHTML = "Saving...";
             this.#category_savebtn.disabled = true;
 
-            var script = "scripts/updateMemberSetupData.php";
+            var script = "scripts/regadmin_updateMemberSetupData.php";
 
             var postdata = {
                 ajax_request_action: 'category',
@@ -732,7 +732,7 @@ class memsetup {
             showError(data['success']);
         }
         this.#curage_savebtn.innerHTML = "Save Changes";
-        var script = "scripts/getMemberSetupData.php";
+        var script = "scripts/regadmin_getMemberSetupData.php";
         $.ajax({
             url: script,
             method: 'POST',
@@ -760,7 +760,7 @@ class memsetup {
             this.#curage_savebtn.innerHTML = "Saving...";
             this.#curage_savebtn.disabled = true;
 
-            var script = "scripts/updateMemberSetupData.php";
+            var script = "scripts/regadmin_updateMemberSetupData.php";
 
             var postdata = {
                 ajax_request_action: 'curage',
@@ -838,7 +838,7 @@ class memsetup {
             showError(data['success']);
         }
         this.#nextage_savebtn.innerHTML = "Save Changes";
-        var script = "scripts/getMemberSetupData.php";
+        var script = "scripts/regadmin_getMemberSetupData.php";
         $.ajax({
             url: script,
             method: 'POST',
@@ -866,7 +866,7 @@ class memsetup {
             this.#nextage_savebtn.innerHTML = "Saving...";
             this.#nextage_savebtn.disabled = true;
 
-            var script = "scripts/updateMemberSetupData.php";
+            var script = "scripts/regadmin_updateMemberSetupData.php";
 
             var postdata = {
                 ajax_request_action: 'nextage',
