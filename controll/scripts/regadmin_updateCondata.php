@@ -126,21 +126,21 @@ EOS;
         }
 
         $addSQL = <<<EOS
-INSERT INTO memList(conid,sort_order,memCategory,memType,memAge,label,price,startdate,enddate,atcon,online)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO memList(conid,sort_order,memCategory,memType,memAge,label,notes,price,startdate,enddate,atcon,online)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-        $addtypes = 'iisssssssss';
+        $addtypes = 'iissssssssss';
         $updSQL = <<<EOS
 UPDATE memList
-SET sort_order = ?,memCategory = ?,memType = ?,memAge = ?,label = ?,price = ?,startdate = ?,enddate = ?,atcon = ?,online = ?
+SET sort_order = ?,memCategory = ?,memType = ?,memAge = ?,label = ?,notes = ?,price = ?,startdate = ?,enddate = ?,atcon = ?,online = ?
 WHERE id = ?
 EOS;
-        $updtypes = 'isssssssssi';
+        $updtypes = 'issssssssssi';
 
         foreach ($data as $row) {
             if ($row['id'] < 0) {
                 $paramarray= array($row['conid'],$row['sort_order'],$row['memCategory'],
-                    $row['memType'],$row['memAge'],$row['shortname'],$row['price'],$row['startdate'],
+                    $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['price'],$row['startdate'],
                     $row['enddate'],$row['atcon'],$row['online']);
                 //web_error_log("add row: /$addSQL/, types '$addtypes', values:");
                 //var_error_log($paramarray);
@@ -149,7 +149,7 @@ EOS;
                     $inserted++;
             } else {
                 $paramarray = array($row['sort_order'],$row['memCategory'],
-                    $row['memType'],$row['memAge'],$row['shortname'],$row['price'],$row['startdate'],
+                    $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['price'],$row['startdate'],
                     $row['enddate'],$row['atcon'],$row['online'], $row['id']);
                 //web_error_log("update row: /$updSQL/, types = '$updtypes', values:");
                 //var_error_log($paramarray);

@@ -232,7 +232,7 @@ class consetup {
 
         this.#memtable = null;
         if (data['memlist'] == null) {
-            showError("Nothing defined yet")
+            show_message("Nothing defined yet", 'warn')
             memListData = new Array();
         } else {
             memListData = data['memList'];
@@ -253,7 +253,7 @@ class consetup {
                 { title: "Type", field: "memType", editor: "list", editorParams: { values: data['memTypes'], }, headerFilter: true, headerFilterParams: { values: data['memTypes'], } },
                 { title: "Age", field: "memAge", editor: "list", editorParams: { values: data['ageTypes'], }, headerFilter: true, headerFilterParams: { values: data['ageTypes'], }, },
                 {
-                    title: "Label", field: "shortname",
+                    title: "Label", field: "shortname", minWidth: 400,
                     tooltip: function (e, cell, onRendered) { return cell.getRow().getCell("label").getValue(); },
                     editor: "input", editorParams: { elementAttributes: { maxlength: "64" } },
                     headerFilter: true
@@ -263,15 +263,21 @@ class consetup {
                     title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
                     headerFilter: "input", headerFilterFunc:numberHeaderFilter,
                 },
-                { title: "Start Date", field: "startdate", width: 150, editor: "datetime", validator: "required", headerFilter: "input" },
-                { title: "End Date", field: "enddate", width: 150, editor: "datetime", validator: "required", headerFilter: "input" },
+                { title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required", headerFilter: "input" },
+                { title: "End Date", field: "enddate", width: 170, editor: "datetime", validator: "required", headerFilter: "input" },
                 {
                     title: "Atcon", field: "atcon", editor: "list", editorParams: { values: ["Y", "N"], },
                     headerFilter: true, headerFilterParams: { values: ["Y", "N"], }
                 },
                 {
                     title: "Online", field: "online", editor: "list", editorParams: { values: ["Y", "N"], },
-                    headerFilter: true, headerFilterParams: { values: ["Y", "N"], } },
+                    headerFilter: true, headerFilterParams: { values: ["Y", "N"], }
+                },
+                {
+                    title: "Notes", field: "notes", minWidth: 400,
+                    editor: "input", editorParams: { elementAttributes: { maxlength: "1024" } },
+                    headerFilter: true
+                },
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
                     cellClick: function (e, cell) {
@@ -341,7 +347,7 @@ class consetup {
     };
 
     open() {
-        var script = "scripts/getCondata.php";     
+        var script = "scripts/regadmin_getCondata.php";
         $.ajax({
             url: script,
             method: 'GET',
@@ -473,14 +479,15 @@ class consetup {
     saveConlistComplete(data, textStatus, jhXHR) {        
         this.#conlist_savebtn.innerHTML = "Save Changes";
 
-        var script = "scripts/getCondata.php";
+        clear_message();
+        var script = "scripts/regadmin_getCondata.php";
         $.ajax({
             url: script,
             method: 'GET',
             data: 'year=' + this.#setup_type + '&type=conlist',      
             success: function (data, textStatus, jhXHR) {
                 if (data['error']) {
-                    showError(data['error']);
+                    show_message(data['error'], 'error');
                     return false;
                 }
                 if (data['year'] == 'current') {
@@ -501,14 +508,14 @@ class consetup {
             var invalids = this.#contable.validate();
             if (!invalids === true) {
                 console.log(invalids);
-                alert("Conlist Table does not pass validation, please check for empty cells or cells in red");
+                show_message("Conlist Table does not pass validation, please check for empty cells or cells in red", 'error');
                 return false;
             }
 
             this.#conlist_savebtn.innerHTML = "Saving...";
             this.#conlist_savebtn.disabled = true;
 
-            var script = "scripts/updateCondata.php";
+            var script = "scripts/regadmin_updateCondata.php";
 
             var postdata = {
                 ajax_request_action: this.#setup_type,
@@ -516,14 +523,15 @@ class consetup {
                 tablename: "conlist",
                 indexcol: "id"
             };
+            clear_message();
             //console.log(postdata);
             $.ajax({
                 url: script,
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
-                    if (data['error'] != undefined) {
-                        showError(data['error']);
+                    if (data['error']) {
+                        show_message(data['error'], 'error');
                         // reset save button
                         if (data['year'] == 'current') {
                             current.conlist_dataChanged(data);
@@ -532,7 +540,7 @@ class consetup {
                         }
                         return false;
                     } else {
-                        showError(data['success']);
+                        show_message(data['success'], 'success');
                     }
                     if (data['year'] == 'current') {
                         current.saveConlistComplete(data, textStatus, jhXHR);
@@ -549,17 +557,14 @@ class consetup {
     };
 
     saveMemListComplete(data, textStatus, jhXHR) {
-        if (data['error'] != undefined) {
-            showError(data['error']);
+        if (data['error']) {
             this.#memlist_savebtn.innerHTML = "Save Changes*";
             this.#memlist_savebtn.disabled = false;
             return false;
-        } else {
-            showError(data['success']);
         }
         this.#memlist_savebtn.innerHTML = "Save Changes";
 
-        var script = "scripts/getCondata.php";
+        var script = "scripts/regadmin_getCondata.php";
         $.ajax({
             url: script,
             method: 'GET',
@@ -583,14 +588,14 @@ class consetup {
             var invalids = this.#memtable.validate();
             if (invalids !== true) {
                 console.log(invalids);
-                alert("MemList Table does not pass validation, please check for empty cells or cells in red");
+                show_message("MemList Table does not pass validation, please check for empty cells or cells in red", 'error');
                 return false;
             }
 
             this.#memlist_savebtn.innerHTML = "Saving...";
             this.#memlist_savebtn.disabled = true;
 
-            var script = "scripts/updateCondata.php";
+            var script = "scripts/regadmin_updateCondata.php";
 
             var postdata = {
                 ajax_request_action: this.#setup_type,
@@ -598,14 +603,15 @@ class consetup {
                 tablename: "memlist",
                 indexcol: "id"
             };
+            clear_message();
             //console.log(postdata);
             $.ajax({
                 url: script,
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
-                    if (data['error'] != undefined) {
-                        showError(data['error']);
+                    if (data['error']) {
+                        show_message(data['error'], 'error');
                         // reset save button
                         if (data['year'] == 'current') {
                             current.memlist_dataChanged(data);
@@ -614,7 +620,7 @@ class consetup {
                         }
                         return false;
                     } else {
-                        showError(data['success']);
+                        show_message(data['success'], 'success');
                     }
 
                     if (data['year'] == 'current') {                        
@@ -632,16 +638,7 @@ class consetup {
     };
 
     saveBreakListComplete(data, textStatus, jhXHR) {
-        var success;
-        if (data['error'] != undefined) {
-            showError(data['error']);
-            return false;
-        } else {
-            success = data['success'];
-            showError(success);
-        }
-
-        var script = "scripts/getCondata.php";
+        var script = "scripts/regadmin_getCondata.php";
         $.ajax({
             url: script,
             method: 'GET',
@@ -654,7 +651,6 @@ class consetup {
                     next.close();
                     next.draw(data, textStatus, jhXHR);
                 }
-                showError(success);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -668,29 +664,30 @@ class consetup {
             var invalids = this.#breaktable.validate();
             if (invalids !== true) {
                 console.log(invalids);
-                alert("Breakpoint Table does not pass validation, please check for empty cells or cells in red");
+                show_message("Breakpoint Table does not pass validation, please check for empty cells or cells in red", 'error');
                 return false;
             }
 
             this.#breaklist_savebtn.innerHTML = "Creating new membership type list...";
             this.#breaklist_savebtn.disabled = true;
 
-            var script = "scripts/updateCondata.php";
-
+            var script = "scripts/regadmin_updateCondata.php";
+            clear_message();
             var postdata = {
                 ajax_request_action: this.#setup_type,
                 tabledata: JSON.stringify(this.#breaktable.getData()),
                 tablename: "breaklist",
                 indexcol: "old"
             };
+            clear_message();
             //console.log(postdata);
             $.ajax({
                 url: script,
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
-                    if (data['error'] != undefined) {
-                        showError(data['error'])
+                    if (data['error']) {
+                        show_message(data['error'], 'error');
                         // reset save button
                         if (data['year'] == 'current') {
                             current.breaklist_dataChanged(data);
@@ -699,7 +696,7 @@ class consetup {
                         }   
                         return false;
                     } else {
-                        showError(data['success']);                        
+                        show_message(data['success'], 'success');
                     }
                     if (data['year'] == 'current') {
                         current.saveBreakListComplete(data, textStatus, jhXHR);
