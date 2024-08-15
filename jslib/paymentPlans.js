@@ -146,7 +146,7 @@ class PaymentPlans {
             // limit to the max allowed for this plan.
             if (numPayments > Number(plan.numPaymentMax))
                 numPayments = Number(plan.numPaymentMax);
-
+            var maxPayments = numPayments; // at this point this is time to payoff limited
             // limit to min payment amount, but if allowed allow the last payment to be less
             var computedNumPayments = Math.floor(balanceDue / Number(plan.minPayment));
             if (computedNumPayments * Number(plan.minPayment) != balanceDue && plan.lastPaymentPartial == 'Y') {
@@ -154,18 +154,22 @@ class PaymentPlans {
                 computedNumPayments++;
             }
 
-            // limit it to the maximum allowed by the time frame
-            if (computedNumPayments < numPayments)
-                numPayments = computedNumPayments;
+            if (computedNumPayments > maxPayments)
+                computedNumPayments = maxPayments; // limit it to fitting in time frame if the payment size allows too many payments
+            else
+                maxPayments = computedNumPayments; // limit max to number of payments by amount limit
 
+            numPayments = computedNumPayments; // set the payments to the amount divisor limited to max
             // has to be at least one payment
-            if (numPayments < 1)
+            if (maxPayments < 1)
                 continue;
 
-            // days beteeen payments, max 30 days
+            // days between payments, range: 7-30
             var daysBetween = Math.floor(diff / numPayments);
             if (daysBetween > 30)
                 daysBetween = 30;
+            else if (daysBetween < 7)
+                daysBetween = 7;
 
             var paymentAmt = Math.ceil(100 * balanceDue / numPayments) / 100;
             var finalPaymentAmt = paymentAmt;
@@ -176,13 +180,13 @@ class PaymentPlans {
 
             this.#matchingPlans[plan.id] = {
                 id: plan.id, plan: plan,
-                planAmt: planAmt, nonPlanAmt: nonPlanAmt, downPayment: downPayment, dueToday: dueToday, maxPayments: numPayments, daysBetween: daysBetween,
-                minPayment: nonPlanAmt + downPayment, balanceDue: balanceDue, paymentAmt: paymentAmt, finalPaymentAmt: finalPaymentAmt,
-                notInPlanItems: notInPlanItems != '' ?  'Not in Plan:' + notInPlanItems : ''
+                planAmt: planAmt, nonPlanAmt: nonPlanAmt, downPayment: downPayment, dueToday: dueToday, maxPayments: maxPayments, daysBetween: daysBetween,
+                balanceDue: balanceDue, paymentAmt: paymentAmt, finalPaymentAmt: finalPaymentAmt, numPayments: numPayments,
+                notInPlanItems: notInPlanItems != '' ?  'Not in Plan:' + notInPlanItems : '',
             }
             matched++;
         }
-        //console.log(this.#matchingPlans);
+        if (config.debug & 4) console.log(this.#matchingPlans);
         return matched > 0;
     }
 
@@ -269,15 +273,19 @@ class PaymentPlans {
         clear_message();
         clear_message('customizePlanMessageDiv');
 
-        console.log('planId: ' + planId + ', from: ' + from);
-        console.log(this.#matchingPlans);
         var match = make_copy(this.#matchingPlans[planId]);
         var plan = match.plan;
-        console.log(match);
+        if (config.debug & 2) {
+            console.log('planId: ' + planId + ', from: ' + from);
+            console.log("this.#matchingPlans");
+            console.log(this.#matchingPlans);
+            console.log("match");
+            console.log(match);
+        }
+
 
         match.totalAmountDue = (match.nonPlanAmt + match.planAmt).toFixed(2) + ``;
         match.currentPayment = (match.nonPlanAmt + match.downPayment).toFixed(2) + ``;
-        match.numPayments = match.maxPayments;
         match.daysBetween = match.daysBetween;
         match.paymentAmt = match.paymentAmt.toFixed(2) + ``;
         match.finalPaymentAmt = match.finalPaymentAmt.toFixed(2) + ``;
@@ -292,13 +300,18 @@ class PaymentPlans {
         clear_message();
         clear_message('customizePlanMessageDiv');
 
-        console.log('planId: ' + planId + ', from: ' + from);
-        console.log(this.#matchingPlans);
         this.#computedPlan = make_copy(this.#matchingPlans[planId]);
         this.#computedOrig = make_copy(this.#matchingPlans[planId]);
         var match = this.#computedPlan;
         var plan = match.plan;
-        console.log(match);
+        if (config.debug & 2) {
+            console.log('planId: ' + planId + ', from: ' + from);
+            console.log("this.#matchingPlans");
+            console.log(this.#matchingPlans);
+            console.log("match");
+            console.log(match);
+        }
+
         if (this.#customizePlanModal == null) {
             switch (from) {
                 case 'portal':
@@ -343,21 +356,21 @@ class PaymentPlans {
         <div class="col-sm-1" style='text-align: right;'>
             <input type="number" class='no-spinners' inputmode="numeric" id="downPayment" name="downPayment" style="width: 8em;" placeholder="down payment" ` +
             'min="' + match.downPayment.toFixed(2) + '" max="' + match.planAmt.toFixed(2) + '" value="' + match.downPayment.toFixed(2) +
-            `" onchange="paymentPlans.recompute();"/>
+            `" onchange="paymentPlans.recompute('p');"/>
         </div>
         <div class="col-sm-1" style='text-align: right;' id="dueToday">` + match.dueToday.toFixed(2) + `</div>
         <div class="col-sm-1" style='text-align: right;' id="balanceDue">` + match.balanceDue.toFixed(2) + `</div>
         <div class="col-sm-1" style='text-align: right;'>`;
         if (match.maxPayments > 1) {
-            html += `<input type="number" class='no-spinners' inputmode="numeric" id="maxPayments" name="maxPayments" style="width: 3em;" placeholder="max pmts" ` +
-                'min="1" max="' + match.maxPayments + '" value="' + match.maxPayments + `" onchange="paymentPlans.recompute();"/>`;
+            html += `<input type="number" class='no-spinners' inputmode="numeric" id="numPayments" name="numPayments" style="width: 3em;" placeholder="max pmts" ` +
+                'min="1" max="' + match.maxPayments + '" value="' + match.numPayments + `" onchange="paymentPlans.recompute('n');"/>`;
         } else {
             html += match.maxPayments;
         }
         html += `</div>
         <div class="col-sm-1" style='text-align: right;'>
             <input type="number" class='no-spinners' inputmode="numeric" id="daysBetween" name="daysBetween" style="width: 3em;" placeholder="days" ` +
-            'min="7" max="' + match.daysBetween + '" value="' + match.daysBetween + `" onchange="paymentPlans.recompute();"/>
+            'min="7" max="' + match.daysBetween + '" value="' + match.daysBetween + `" onchange="paymentPlans.recompute('d');"/>
         </div>
         <div class="col-sm-1" style='text-align: right;' id="paymentAmt">` + match.paymentAmt.toFixed(2) + `</div>
         <div class="col-sm-1" style='text-align: right;' id="finalPaymentAmt">` + match.finalPaymentAmt.toFixed(2) + `</div>
@@ -372,7 +385,7 @@ class PaymentPlans {
             html += 'Max: ' + this.#computedOrig.maxPayments;
         }
         html += `</div>
-        <div class="col-sm-1" style='text-align: right;'>Max: ` + this.#computedOrig.daysBetween + `</div>
+        <div class="col-sm-1" style='text-align: right;'>7-30</div>
     </div>
     </form>
 </div>
@@ -398,13 +411,13 @@ class PaymentPlans {
     }
 
     // recompute - onchange from customize payment plan modal popup - when one field changes, recompute what else changes on the screem and update the class variables
-    recompute() {
+    recompute(field) {
         clear_message('customizePlanMessageDiv');
 
         var downPaymentField = document.getElementById("downPayment");
         var balanceDueField = document.getElementById("balanceDue");
         var dueTodayField = document.getElementById("dueToday");
-        var maxPayments = document.getElementById("maxPayments");
+        var numPaymentsField = document.getElementById("numPayments");
         var daysBetweenField = document.getElementById("daysBetween");
         var paymentAmtField = document.getElementById("paymentAmt");
         var finalPaymentField = document.getElementById("finalPaymentAmt");
@@ -412,112 +425,111 @@ class PaymentPlans {
         var paymentAmt = this.#computedPlan.paymentAmt;
         var finalPaymentAmt = this.#computedPlan.finalPaymentAmt;
         var balanceDue = this.#computedPlan.balanceDue;
+        var maxPayments = this.#computedPlan.maxPayments;
 
         var down = downPaymentField.value;
-        var numPayments = maxPayments.value;
+        var numPayments = numPaymentsField.value;
         var days = daysBetweenField.value;
         var messageHTML = '';
 
-        //console.log('days: ' + days + ', numPayments: ' + numPayments + ', days: ' + days);
+        if (config.debug & 4) {
+            console.log('field: ' + field + ', days: ' + days + ', numPayments: ' + numPayments + ', days: ' + days);
+        }
 
         var pbDate = new Date(this.#computedOrig.plan.payByDate);
         var today = new Date();
         var diff = Math.floor((pbDate.getTime() - today.getTime()) / (1000 * 3600 * 24)); // milliseconds to days and no fractional days
 
-        if (days != this.#computedPlan.daysBetween) {
-            console.log('days changed');
-            // compute number of payments to make this work
-            if (days > 30) {
-                messageHTML += "Adjusted days between to plan maximum<br/>";
-                days = 30;
-            }
-            if (days < 7) {
-                days = 7;
-                messageHTML += "The shortest interval between payments is one week<br/>";
-            }
-            numPayments = Math.ceil(diff / days);
-            if (numPayments > this.#computedOrig.maxPayments) {
-                numPayments = this.#computedOrig.maxPayments;
-            }
-            // given the number of payments, compute the payment amount
-            paymentAmt = Math.ceil(100 * balanceDue / numPayments) / 100;
-            if (paymentAmt < this.#computedPlan.minPayment) {
-                messageHTML += "Payment cannot be less than " +  Number(this.#computedPlan.minPayment).toFixed(2) + "<br/>";
-                // too many payments
-                paymentAmt = this.#computedPlan.minPayment;
-                numPayments = Math.floor(balanceDue / paymentAmt);
-                if (numPayments * Number(paymentAmt) != balanceDue && plan.lastPaymentPartial == 'Y') {
-                    // allow one more partial payment
-                    numPayments++;
+        // now recompute based on what they changed, trying to old that value to what is possible
+        switch (field) {
+            case 'p': // down payment
+                // validate range
+                if (down < this.#computedOrig.downPayment) {
+                    down = this.#computedOrig.downPayment;
+                    messageHTML += "Adjusted down payment to not be lower than " + Number(this.#computedOrig.downPayment).toFixed(2) + "<br/>";
                 }
-            }
-            finalPaymentAmt = balanceDue - (numPayments - 1) * paymentAmt;
-        } else if (down != this.#computedPlan.downPayment) {
-            console.log('down changed');
-            if (down < this.#computedOrig.downPayment) {
-                down = this.#computedOrig.downPayment;
-                messageHTML += "Down payment cannot be lower than " + Number(this.#computedOrig.downPayment).toFixed(2) + "<br/>";
-            }
-            if (down > (this.#computedOrig.planAmt - plan.minPayment)) {
-                down = this.#computedOrig.planAmt - plan.minPayment;
-                messageHTML += "Down payment adjusted to allow for one payment greater than the plan minimum payment of " + Number(plan.minPayment).toFixed(2) + "<br/>";
-            }
-            // recompute balance due
-            balanceDue = this.#computedPlan.planAmt - down;
-            // recompute number of payments max
-            var computedNumPayments = Math.floor(balanceDue / plan.minPayment);
-            if (computedNumPayments * Number(plan.minPayment) != balanceDue && plan.lastPaymentPartial == 'Y') {
-                // allow one more partial payment
-                computedNumPayments++;
-            }
-            if (computedNumPayments < numPayments)
-                numPayments = computedNumPayments;
-            if (numPayments < 1) {
-                down = balanceDue - plan.minPayment;
-                numPayments = 1;
-                messageHTML += "Adjusted down payment and number of payments to keep minimum payment amount of " + Number(plan.minPayment).toFixed(2) + "<br/>";
-            }
+                if (down > (this.#computedOrig.planAmt - plan.minPayment)) { // force at least one payment of the minimum payment amount
+                    down = this.#computedOrig.planAmt - plan.minPayment;
+                    messageHTML += "Down payment adjusted to allow for one payment greater than the plan minimum payment of " + Number(plan.minPayment).toFixed(2) + "<br/>";
+                }
+                // recompute balance due
+                balanceDue = this.#computedPlan.planAmt - down;
+                // recompute number of payments max
+                var computedNumPayments = Math.floor(balanceDue / plan.minPayment);
+                if (computedNumPayments * Number(plan.minPayment) != balanceDue && plan.lastPaymentPartial == 'Y') {
+                    // allow one more partial payment
+                    computedNumPayments++;
+                }
+                // if this is less payments than already set for this days between, lower the number of payments
+                if (computedNumPayments < numPayments)
+                    numPayments = computedNumPayments;
+                // with new down payment, compute payment amount
+                paymentAmt = Math.ceil(100 * balanceDue / numPayments) / 100;
+                if (paymentAmt < plan.minPayment) {
+                    paymentAmt = plan.minPayment;
+                    numPayments = Math.floor(balanceDue / paymentAmt);
+                    if (numPayments * Number(paymentAmt) != balanceDue && plan.lastPaymentPartial == 'Y') {
+                        // allow one more partial payment
+                        numPayments++;
+                    }
+                }
+                finalPaymentAmt = balanceDue - (numPayments - 1) * paymentAmt;
+                break;
+            case 'n': // number of payments
+                // range check
+                if (numPayments < 1) {
+                    numPayments = 1;
+                    messageHTML += "Number of payments must be at least one<br/>";
 
-            // with new down payment, compute payment amount
-            paymentAmt = Math.ceil(100 * balanceDue / numPayments) / 100;
-            if (paymentAmt < this.#computedPlan.minPayment) {
-                messageHTML += "Payment cannot be less than " +  Number(this.#computedPlan.minPayment).toFixed(2) + "<br/>";
-                // too many payments
-                paymentAmt = this.#computedPlan.minPayment;
-                numPayments = Math.floor(balanceDue / paymentAmt);
-                if (numPayments * Number(paymentAmt) != balanceDue && plan.lastPaymentPartial == 'Y') {
-                    // allow one more partial payment
-                    numPayments++;
                 }
-            }
-            finalPaymentAmt = balanceDue - (numPayments - 1) * paymentAmt;
-        } else if (numPayments != this.#computedPlan.numPayments) {
-            console.log('numPayments changed');
-            if (numPayments < 1) {
-                numPayments = 1;
-                messageHTML += "number of payments must be at least one<br/>";
-            }
-            var computedNumPayments = Math.floor(balanceDue / plan.minPayment);
-            if (computedNumPayments < numPayments && plan.lastPaymentPartial == 'N' ) {
-                numPayments = computedNumPayments;
-                messageHTML += "Adjusted number of payments to maintain minimum payment of " + Number(plan.minPayment).toFixed(2) + "<br/>";
-            }
-            if ((computedNumPayments + 1) < numPayments && plan.lastPaymentPartial == 'Y') {
-                numPayments = computedNumPayments + 1;
-                messageHTML += "Adjusted number of payments to maintain minimum payment of " + Number(plan.minPayment).toFixed(2) + "<br/>";
-            }
-            if (numPayments > this.#computedOrig.maxPayments) {
-                numPayments = this.#computedOrig.maxPayments;
-                messageHTML += "Adjusted number of payments to plan maximum<br/>";
-            }
-            if ((numPayments * days) > diff)
-                days = Math.floor(diff / numPayments);
-            if (days > 30)
-                days = 30;
-            paymentAmt = Math.ceil(100 * balanceDue / numPayments) / 100;
-            if (paymentAmt < this.#computedPlan.minPayment)
-                paymentAmt = this.#computedPlan.minPayment;
-            finalPaymentAmt = balanceDue - (numPayments - 1) * paymentAmt;
+                if (numPayments > this.#computedOrig.maxPayments) {
+                    numPayments = this.#computedOrig.maxPayments;
+                    messageHTML += "Number of payments adjusted to not exceed plan maximum of " + this.#computedOrig.maxPayments + "<br/>";
+                }
+
+                // new payment amount
+                paymentAmt = Math.ceil(100 * balanceDue / numPayments) / 100;
+
+                // new days between payments
+                if ((numPayments * days) > diff)
+                    days = Math.floor(diff / numPayments);
+                if (days > 30)
+                    days = 30;
+                if (days < 7)
+                    days = 7;
+
+                if (paymentAmt < plan.minPayment)
+                    paymentAmt = plqn.minPayment;
+                finalPaymentAmt = balanceDue - (numPayments - 1) * paymentAmt;
+                break;
+            case 'd': // days between
+                // validate range
+                if (days > 30) {
+                    messageHTML += "Adjusted days between to plan maximum<br/>";
+                    days = 30;
+                }
+                if (days < 7) {
+                    days = 7;
+                    messageHTML += "The shortest interval between payments is one week<br/>";
+                }
+                // compute number of payments to make this work, limiting to max in range from passed in maxPayments
+                numPayments = Math.ceil(diff / days);
+                if (numPayments > this.#computedOrig.maxPayments) {
+                    numPayments = this.#computedOrig.maxPayments;
+                }
+                // given the number of payments, compute the payment amount
+                paymentAmt = Math.ceil(100 * balanceDue / numPayments) / 100;
+                if (paymentAmt < plan.minPayment) {
+                    // too many payments
+                    paymentAmt = plqn.minPayment;
+                    numPayments = Math.floor(balanceDue / paymentAmt);
+                    if (numPayments * Number(paymentAmt) != balanceDue && plan.lastPaymentPartial == 'Y') {
+                        // allow one more partial payment
+                        numPayments++;
+                    }
+                }
+                finalPaymentAmt = balanceDue - (numPayments - 1) * paymentAmt;
+                break;
         }
 
         // update the plan
@@ -530,7 +542,7 @@ class PaymentPlans {
         downPaymentField.value = Number(down).toFixed(2);
         balanceDueField.innerHTML = Number(balanceDue).toFixed(2);
         dueTodayField.innerHTML = Number(dueToday).toFixed(2);
-        maxPayments.value = numPayments;
+        numPaymentsField.value = numPayments;
         daysBetweenField.value = days;
         paymentAmtField.innerHTML = Number(paymentAmt).toFixed(2);
         finalPaymentField.innerHTML = Number(finalPaymentAmt).toFixed(2);
@@ -545,7 +557,7 @@ class PaymentPlans {
     // makePlan - create the plan and bring up the payment screen to pay for it
     makePlan(calledFrom) {
         if (this.#computedPlan == null) {
-            console.log("makeplan(" + calledFrom + ") called, with no computed plan???");
+            if (config.debug) console.log("makeplan(" + calledFrom + ") called, with no computed plan???");
             return; // no plan to pay, why are we here?
         }
         this.#customizePlanModal.hide();
@@ -556,16 +568,20 @@ class PaymentPlans {
 
     // payPlan - make a payment against a plan
     payPlan(payorPlanId) {
-        //console.log("trying to pay plan " + payorPlanId);
+        if (config.debug) console.log("trying to pay plan " + payorPlanId);
         var payorPlan = payorPlans[payorPlanId];
         var payments = payorPlan['payments'];
         var numPmts = 0;
         var plan = paymentPlanList[payorPlan.planId];
-        //console.log(payorPlan);
-        //if (payments)
-        //    console.log(payments);
-        //else
-        //    console.log('no payments');
+        if (config.debug) {
+            console.log("payorPlan");
+            console.log(payorPlan);
+            if (payments) {
+                console.log("payments");
+                console.log(payments);
+            } else
+                console.log('no payments');
+        }
 
         var paymentAmt = Number(payorPlan.minPayment);
         var balanceDue = Number(payorPlan.balanceDue);
@@ -577,18 +593,21 @@ class PaymentPlans {
         var createTS = createDate.getTime();
         var now = Date.now();
         var daysDiff = Math.ceil((now - createTS) / (24 *3600 * 1000));
-        //console.log('daysDiff = ' + daysDiff);
-        //console.log('numPmts=' + numPmts);
         var daysBetween = payorPlan.daysBetween;
-        //console.log('daysBetween=' + daysBetween);
         var nextDue = ((numPmts + 1) * daysBetween) - (1 + daysDiff);
-        //console.log('nextDue = ' + nextDue);
         var numDue = 1;
-        //console.log('numDue = ' + numDue);
+        if (config.debug & 2) {
+            console.log('daysDiff = ' + daysDiff);
+            console.log('numPmts=' + numPmts);
+            console.log('daysBetween=' + daysBetween);
+            console.log('nextDue = ' + nextDue);
+            console.log('numDue = ' + numDue);
+        }
+
         if (nextDue < 0)  {
             var pastDue = Math.ceil(-nextDue / daysBetween);
             numDue += pastDue;
-            //console.log("pastDue = " + pastDue + ", numDue = " + numDue);
+            if (config.debug & 2) console.log("pastDue = " + pastDue + ", numDue = " + numDue);
         }
         paymentAmt = numDue * paymentAmt;
         if (paymentAmt > balanceDue)
@@ -660,7 +679,7 @@ class PaymentPlans {
                 portal.makePlanPayment(existingPlan, this.#planPaymentPayorPlanName, this.#planPaymentAmount);
                 break;
             default:
-                console.log('make plan payment invalid from: ' + from);
+                console.log('make plan payment: invalid from of ' + from);
                 break;
         }
     }
