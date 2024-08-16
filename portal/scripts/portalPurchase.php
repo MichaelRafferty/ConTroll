@@ -157,6 +157,9 @@ $results = array(
     'nonce' => $nonce,
     'coupon' => $coupon,
     'discount' => $totalDiscount,
+    'newplan' => $newplan,
+    'planRec' => $planRec,
+    'planPayment' => $planPayment,
 );
 
 //log requested badges

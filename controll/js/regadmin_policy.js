@@ -19,6 +19,7 @@ class policySetup {
     #previewBlock = null;
     #editPreviewSaveBtn = null;
     #editPolicyName = null;
+    #editEditors = null;
 
     #debug = 0;
     #debugVisible = false;
@@ -89,6 +90,7 @@ class policySetup {
             this.#policyTable.off("rowMoved")
             this.#policyTable.off("cellEdited");
             this.#policyTable.destroy();
+            this.#policyTable = null;
         }
         if (!data['policies']) {
             show_message("Error loading policies", 'error');
@@ -208,7 +210,6 @@ class policySetup {
         }
     };
 
-
     // set undo / redo status for buttons
     checkUndoRedo() {
         var undosize = this.#policyTable.getHistoryUndoSize();
@@ -217,8 +218,78 @@ class policySetup {
         return undosize;
     }
 
+    // process the save button on the preview pane
     editPreviewSave() {
-        console.log("preview save called");
+        var policyPrompt = this.#editEditors[0].getContent();
+        var policyDesc = this.#editEditors[1].getContent();
+        tinyMCE.destroy();
+        this.#editEditors = null;
+
+        // these will be encoded in <p> tags already, so strip the leading and trailing ones.
+        if (policyPrompt.startsWith('<p>')) {
+            policyPrompt = policyPrompt.substring(3);
+        }
+        if (policyPrompt.startsWith('<p>')) {
+            policyPrompt = policyPrompt.substring(0, policyPrompt.length - 3);
+        }
+        if (policyDesc.startsWith('<p>')) {
+            policyDesc = policyDesc.substring(3);
+        }
+        if (policyDesc.startsWith('<p>')) {
+            policyDesc = policyDesc.substring(0, policyDesc.length - 3);
+        }
+
+        var policyRow = this.#policyTable.getRow(this.#editPolicyName);
+        policyRow.getCell("prompt").setValue(policyPrompt);
+        policyRow.getCell("description").setValue(policyDesc);
+        this.#editPreviewModal.hide();
+    }
+
+    // save - save the policy entries back to the database
+    save() {
+        if (this.#policyTable != null) {
+            var invalids = this.#policyTable.validate();
+            if (!invalids === true) {
+                console.log(invalids);
+                show_message("Policy Table does not pass validation, please check for empty cells or cells in red", 'error');
+                return false;
+            }
+
+            this.#policySaveBtn.innerHTML = "Saving...";
+            this.#policySaveBtn.disabled = true;
+
+            var script = "scripts/regadmin_updatePolicy.php";
+
+            var postdata = {
+                ajax_request_action: 'policy',
+                tabledata: JSON.stringify(this.#policyTable.getData()),
+                tablename: "policy",
+                indexcol: "policy"
+            };
+            clear_message();
+            //console.log(postdata);
+            $.ajax({
+                url: script,
+                method: 'POST',
+                data: postdata,
+                success: function (data, textStatus, jhXHR) {
+                    if (data['error']) {
+                        show_message(data['error'], 'error');
+                        // reset save button
+                        this.dataChanged(data);
+                        return false;
+                    } else {
+                        show_message(data['success'], 'success');
+                    }
+                    this.close();
+                    this.open();
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                    return false;
+                }
+            });
+        }
     }
 
     // open the previewEdit modal and populate it with the stuff for this entry and it's save back
@@ -244,7 +315,7 @@ class policySetup {
         </div>
         <div class="row mt-1">
             <div class="col-sm-12">
-                <textarea id="policyPrompt" name="policyPrompt">` + policyPrompt + `</textarea>
+                <textarea rows="5" cols="120" id="policyPrompt" name="policyPrompt">` + policyPrompt + `</textarea>
             </div>
         </div>
         <div class="row mt-4">
@@ -252,7 +323,7 @@ class policySetup {
         </div>
         <div class="row mt-1">
             <div class="col-sm-12">
-                <textarea id="policyDescription" name="policyDescription">\` + policyDescription + \`</textarea>
+                <textarea rows="5" cols="120" id="policyDescription" name="policyDescription">` + policyDescription + `</textarea>
             </div>
         </div>
         `;
@@ -261,25 +332,25 @@ class policySetup {
         html = `
         <div class="row mt-4">
             <div class="col-sm-12"><h4>Preview the ` + policyRow.policy +
-            ` policy <button class="btn btn-primary" onclick="updatePreview()">Update Preview</button></h4></div>
+            ` policy <button class="btn btn-primary" onclick="policy.updatePreview()">Update Preview</button></h4></div>
         </div>
         <div class='row'>
             <div class='col-sm-12'>
-                <p class='text-body'>
+                <p class='text-body' id="previewBody">
                     <label>
-                        <input type='checkbox' name='p_` + policyName + " id='p_" + policyName + `' value='Y'/>
-                        <span id="l_` + policyName + '">' +
+                        <input type='checkbox' name='p_preview' id='p_preview' value='Y'/>
+                        <span id="l_preview">` +
                             (polictRequired == 'Y' ? "<span class='warn'>&bigstar;</span>" : '') +
                             policyPrompt + `</span>
                     </label>
 `;
                     if (policyDescription != '') {
                         html += `
-                        <span class="small"><a href='javascript:void(0)' onClick='$("#` + policyName + `Tip").toggle()'>
+                        <span class="small"><a href='javascript:void(0)' onClick='$("#previewTip").toggle()'>
                             <img src="/images/infoicon.png"  alt="click this info icon for more information" style="max-height: 25px;"></a></span>
-                <div id='` + policyName + `Tip' class='padded highlight' style='display:none'>
+                <div id='previewTip' class='padded highlight' style='display:none'>
                     <p class='text-body'>` + policyDescription + `
-                        <span class='small'><a href='javascript:void(0)' onClick='$("#` + policyName + `Tip").toggle()'>
+                        <span class='small'><a href='javascript:void(0)' onClick='$("#previewTip").toggle()'>
                               <img src='/images/closeicon.png' alt='click this close icon to close the more information window' style='max-height: 25px;'>
                             </a></span>
                     </p>
@@ -296,13 +367,15 @@ class policySetup {
         // start the tinyMCE editors
         tinyMCE.init({
             selector: 'textarea#policyPrompt',
+            id: "prompt",
+            mode: "exact",
             height: 400,
             min_height: 300,
             menubar: false,
             license_key: 'gpl',
-            plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
+            plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace save',
             toolbar:  [
-                'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
+                'save help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
                 'bold italic underline strikethrough removeformat | '+
                 'visualchars nonbreaking charmap hr | ' +
                 'preview fullscreen ',
@@ -317,13 +390,15 @@ class policySetup {
         });
         tinyMCE.init({
             selector: 'textarea#policyDescription',
+            id: "desc",
+            mode: "exact",
             height: 400,
             min_height: 300,
             menubar: false,
             license_key: 'gpl',
-            plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
+            plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace save',
             toolbar:  [
-                'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
+                'save help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
                 'bold italic underline strikethrough removeformat | '+
                 'visualchars nonbreaking charmap hr | ' +
                 'preview fullscreen ',
@@ -336,8 +411,51 @@ class policySetup {
                 editor.setContent(policyDescription);
             }
         });
-
+        this.#editEditors = tinyMCE.get();
         this.#editPreviewModal.show();
+    }
+
+    updatePreview() {
+        var policyPrompt = this.#editEditors[0].getContent();
+        var policyDesc = this.#editEditors[1].getContent();
+
+        var policyRow = this.#policyTable.getRow(this.#editPolicyName).getData();
+        var polictRequired = policyRow.required;
+
+        // these are already in paragraph tags, strip off the leading and trailing ones in the string
+        if (policyPrompt.startsWith('<p>')) {
+            policyPrompt = policyPrompt.substring(3);
+        }
+        if (policyPrompt.startsWith('<p>')) {
+            policyPrompt = policyPrompt.substring(0, policyPrompt.length - 3);
+        }
+        if (policyDesc.startsWith('<p>')) {
+            policyDesc = policyDesc.substring(3);
+        }
+        if (policyDesc.startsWith('<p>')) {
+            policyDesc = policyDesc.substring(0, policyDesc.length - 3);
+        }
+
+        var html = `
+            <label>
+                <input type='checkbox' name='p_preview' id='p_preview' value='Y'/>
+                <span id="l_preview">` +
+                    (polictRequired == 'Y' ? "<span class='warn'>&bigstar;</span>" : '') +  policyPrompt + `</span>
+            </label>
+`;
+        if (policyDescription != '') {
+            html += `
+                <span class="small"><a href='javascript:void(0)' onClick='$("#previewTip").toggle()'>
+                    <img src="/images/infoicon.png"  alt="click this info icon for more information" style="max-height: 25px;"></a></span>
+                <div id='previewTip' class='padded highlight' style='display:none'>
+                    <p class='text-body'>` + policyDesc + `
+                        <span class='small'><a href='javascript:void(0)' onClick='$("#previewTip").toggle()'>
+                              <img src='/images/closeicon.png' alt='click this close icon to close the more information window' style='max-height: 25px;'>
+                            </a></span></p>
+                </div>
+`;
+        }
+        document.getElementById('previewBody').innerHTML = html;
     }
 
     // on close of the pane, clean up the items
@@ -346,7 +464,8 @@ class policySetup {
             this.#policyTable.off("dataChanged");
             this.#policyTable.off("rowMoved")
             this.#policyTable.off("cellEdited");
-            this.#policyTable.destroy();
+            this.#policyTable.remove();
+            this.#policyTable = null;
         }
 
         this.#policyPane.innerHTML = '';

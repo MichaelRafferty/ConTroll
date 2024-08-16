@@ -159,85 +159,127 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 
     // add order lines
 
-    if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
-        foreach ($results['badges'] as $badge) {
-            if (array_key_exists('fullname', $badge))
-                $fullname = $badge['fullname'];
-            else
-                $fullname = trim(trim($badge['fname'] . ' ' . $badge['mname']) . ' ' . $badge['lname']);
+    $order_value = 0;
+    if (array_key_exists('planPayment', $results))
+        $planPayment = $results['planPayment'];
+    else
+        $planPayment = 0;
+
+    if ($planPayment == 0) {
+        if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
+            foreach ($results['badges'] as $badge) {
+                if (array_key_exists('fullname', $badge))
+                    $fullname = $badge['fullname'];
+                else
+                    $fullname = trim(trim($badge['fname'] . ' ' . $badge['mname']) . ' ' . $badge['lname']);
+                $item = new OrderLineItem ('1');
+                $item->setUid('badge' . ($lineid + 1));
+                $item->setName($badge['age'] . ' Membership for ' . $fullname);
+                $item->setNote($badge['memId'] . ': Membership Type Code');
+                $item->setBasePriceMoney(new Money);
+                $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
+                $item->getBasePriceMoney()->setCurrency(Currency::USD);
+                $order_lineitems[$lineid] = $item;
+                $order_value += $badge['price'];
+                $lineid++;
+            }
+        }
+        if (array_key_exists('spaceName', $results)) {
             $item = new OrderLineItem ('1');
-            $item->setUid('badge' . ($lineid + 1));
-            $item->setName($badge['age'] . ' Membership for ' . $fullname);
-            $item->setNote($badge['memId'] . ': Membership Type Code');
+            $item->setUid('exhibits-space');
+            $item->setName($results['spaceName'] . ':' . mb_substr($results['spaceDescription'], 0, 128));
             $item->setBasePriceMoney(new Money);
-            $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
+            $item->getBasePriceMoney()->setAmount($results['spacePrice'] * 100);
             $item->getBasePriceMoney()->setCurrency(Currency::USD);
             $order_lineitems[$lineid] = $item;
+            $order_value += $results['spacePrice'];
             $lineid++;
         }
-    }
-    if (array_key_exists('spaceName', $results)) {
+
+        $order->setLineItems($order_lineitems);
+
+        // now apply the coupon
+        if (array_key_exists('discount', $results) && $results['discount'] > 0) {
+            $item = new OrderLineItemDiscount ();
+            $item->setUid('couponDiscount');
+            if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
+                $coupon = $results['coupon'];
+                $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . ')';
+            }
+            else {
+                $couponName = 'Coupon Applied';
+            }
+            $item->setName($couponName);
+            $item->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
+            $money = new Money;
+            $money->setAmount($results['discount'] * 100);
+            $money->setCurrency(Currency::USD);
+            $item->setAmountMoney($money);
+            $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
+            $order->setDiscounts(array ($item));
+            $order_value -= $results['discount'];
+        }
+
+        // if a plan, set a discount called deferred payment for plan to the amount not in this payment
+        if (array_key_exists('newplan', $results)) {
+            if ($results['newplan'] == 1) {
+                // deferment is total of the items - total of the payment
+                $deferment = $order_value - $results['total'];
+                // this is the down payment on a payment plan
+                $item = new OrderLineItemDiscount ();
+                $item->setUid('planDeferment');
+                $item->setName("Payment Plan - Payment Deferral Amount");
+                $item->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
+                $money = new Money;
+                $money->setAmount($deferment * 100);
+                $money->setCurrency(Currency::USD);
+                $item->setAmountMoney($money);
+                $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
+                $order->setDiscounts(array ($item));
+            }
+        }
+    } else {
+        // this is a plan payment make the order just the plan payment
         $item = new OrderLineItem ('1');
-        $item->setUid('exhibits-space');
-        $item->setName($results['spaceName'] . ':' . mb_substr($results['spaceDescription'], 0, 128));
+        $item->setUid('planPayment');
+        $item->setName('Payment on Payment Plan');
         $item->setBasePriceMoney(new Money);
-        $item->getBasePriceMoney()->setAmount($results['spacePrice'] * 100);
+        $item->getBasePriceMoney()->setAmount($results['total'] * 100);
         $item->getBasePriceMoney()->setCurrency(Currency::USD);
         $order_lineitems[$lineid] = $item;
-        $lineid++;
-    }
 
-    $order->setLineItems($order_lineitems);
-
-    // now apply the coupon
-    if (array_key_exists('discount', $results) && $results['discount'] > 0) {
-        $item = new OrderLineItemDiscount ();
-        $item->setUid('couponDiscount');
-        if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
-            $coupon = $results['coupon'];
-            $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . ')';
-        } else {
-            $couponName = 'Coupon Applied';
-        }
-        $item->setName($couponName);
-        $item->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
-        $money = new Money;
-        $money->setAmount($results['discount'] * 100);
-        $money->setCurrency(Currency::USD);
-        $item->setAmountMoney($money);
-        $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
-        $order->setDiscounts(array($item));
+        $order->setLineItems($order_lineitems);
     }
 
     // pass order to square and get order id
 
     try {
         $ordersApi = $client->getOrdersApi();
-//        if ($useLogWrite) {
-//            logWrite(array('ordersApi'=>$ordersApi, 'body'=>$body));
-//        } else {
-//            web_error_log("ordersApi"); var_error_log($ordersApi);
-//            web_error_log("body"); var_error_log($body);
-//        }
+        if ($useLogWrite) {
+            logWrite(array('ordersApi'=>$ordersApi, 'body'=>$body));
+        } else {
+            web_error_log("ordersApi"); var_error_log($ordersApi);
+            web_error_log("body"); var_error_log($body);
+        }
         
         $apiResponse = $ordersApi->createOrder($body);
 
-//        if ($useLogWrite) {
-//            logWrite(array('apiResponse'=>$apiResponse));
-//        } else {
-//            web_error_log("apiResponse");
-//            var_error_log($apiResponse);
-//        }
+        if ($useLogWrite) {
+            logWrite(array('apiResponse'=>$apiResponse));
+        } else {
+            web_error_log("apiResponse");
+            var_error_log($apiResponse);
+        }
         
         if ($apiResponse->isSuccess()) {
             $crerateorderresponse = $apiResponse->getResult();
 
-//            if ($useLogWrite) {
-//                logWrite(array('order: success' => $crerateorderresponse));
-//            } else {
-//                web_error_log("order: success");
-//                var_error_log($crerateorderresponse);
-//            }
+            if ($useLogWrite) {
+                logWrite(array('order: success' => $crerateorderresponse));
+            } else {
+                web_error_log("order: success");
+                var_error_log($crerateorderresponse);
+            }
         } else {
             $errors = $apiResponse->getErrors();
             if ($useLogWrite) {
@@ -278,12 +320,12 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     $pay_money->setAmount($results['total'] * 100);
     $pay_money->setCurrency(Currency::USD);
 
-//    if ($useLogWrite) {
-//        logWrite(array('CALLED WITH' => $results['total'], 'pay_money' => $pay_money));
-//    } else {
-//        web_error_log("CALLED WITH " . $results['total']);
-//        var_error_log($pay_money);
-//    }
+    if ($useLogWrite) {
+        logWrite(array('CALLED WITH' => $results['total'], 'pay_money' => $pay_money));
+    } else {
+        web_error_log("CALLED WITH " . $results['total']);
+        var_error_log($pay_money);
+    }
         
     $pbody = new CreatePaymentRequest($results['nonce'], $payuuid);
     $pbody->setAmountMoney($pay_money);
@@ -295,6 +337,13 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     $pbody->setNote('On-Line Registration');
 
 //var_error_log($pbody);
+    if ($useLogWrite) {
+        logWrite(array('payment' => $pbody));
+    }
+    else {
+        web_error_log('payment:');
+        var_error_log($pbody);
+    }
 
     try {
         $paymentsApi = $client->getPaymentsApi();
@@ -302,12 +351,12 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 
         if ($apiResponse->isSuccess()) {
             $createPaymentResponse = $apiResponse->getResult();
-//            if ($useLogWrite) {
-//                logWrite(array('payment: success' => $createPaymentResponse));
-//            } else {
-//                web_error_log("payment: success");
-//                var_error_log($createPaymentResponse);
-//            }
+            if ($useLogWrite) {
+                logWrite(array('payment: success' => $createPaymentResponse));
+            } else {
+                web_error_log("payment: success");
+                var_error_log($createPaymentResponse);
+            }
         } else {
             $errors = $apiResponse->getErrors();
             if ($useLogWrite) {
