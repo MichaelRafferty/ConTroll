@@ -255,46 +255,46 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 
     try {
         $ordersApi = $client->getOrdersApi();
-        if ($useLogWrite) {
-            logWrite(array('ordersApi'=>$ordersApi, 'body'=>$body));
-        } else {
-            web_error_log("ordersApi"); var_error_log($ordersApi);
-            web_error_log("body"); var_error_log($body);
-        }
+//        if ($useLogWrite) {
+//            logWrite(array('ordersApi'=>$ordersApi, 'body'=>$body));
+//        } else {
+//            web_error_log("ordersApi"); var_error_log($ordersApi);
+//            web_error_log("body"); var_error_log($body);
+//        }
         
         $apiResponse = $ordersApi->createOrder($body);
 
-        if ($useLogWrite) {
-            logWrite(array('apiResponse'=>$apiResponse));
-        } else {
-            web_error_log("apiResponse");
-            var_error_log($apiResponse);
-        }
+//        if ($useLogWrite) {
+//            logWrite(array('apiResponse'=>$apiResponse));
+//        } else {
+//            web_error_log("apiResponse");
+//            var_error_log($apiResponse);
+//        }
         
         if ($apiResponse->isSuccess()) {
             $crerateorderresponse = $apiResponse->getResult();
 
-            if ($useLogWrite) {
-                logWrite(array('order: success' => $crerateorderresponse));
-            } else {
-                web_error_log("order: success");
-                var_error_log($crerateorderresponse);
-            }
+//            if ($useLogWrite) {
+//                logWrite(array('order: success' => $crerateorderresponse));
+//            } else {
+//                web_error_log("order: success");
+//                var_error_log($crerateorderresponse);
+//            }
         } else {
             $errors = $apiResponse->getErrors();
-            if ($useLogWrite) {
-                logWrite(array('ordersApi' => 'Order returned non-success'));
-            } else {
-                web_error_log('Order returned non-success');
-            }
+//            if ($useLogWrite) {
+//                logWrite(array('ordersApi' => 'Order returned non-success'));
+//            } else {
+//                web_error_log('Order returned non-success');
+//            }
             
             $errorreturn = null;
             foreach ($errors as $error) {
-                if ($useLogWrite) {
-                    logWrite(array('Category' => $error->getCategory(), 'Code' => $error->getCode(), 'Detail' => $error->getDetail(), 'Field' => $error->getField()));
-                } else {
-                    var_error_log("Cat: " . $error->getCategory() . ": Code " . $error->getCode() . ". Detail: " . $error->getDetail() . ", [" . $error->getField() . "]");
-                }
+//                if ($useLogWrite) {
+//                    logWrite(array('Category' => $error->getCategory(), 'Code' => $error->getCode(), 'Detail' => $error->getDetail(), 'Field' => $error->getField()));
+//                } else {
+//                    var_error_log("Cat: " . $error->getCategory() . ": Code " . $error->getCode() . ". Detail: " . $error->getDetail() . ", [" . $error->getField() . "]");
+//                }
                 if ($errorreturn == null)
                     $errorreturn = array('status'=>'error','data'=>"Order Error: " . $error->getCategory() . "/" . $error->getCode() . ": " . $error->getDetail() . "[" . $error->getField() . "]");
             }
@@ -304,11 +304,11 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
             exit();
         }
     } catch (ApiException $e) {
-        if ($useLogWrite) {
-            logWrite('Order received error while calling Square: ' . $e->getMessage());
-        } else {
-            web_error_log("Order received error while calling Square: " . $e->getMessage());
-        }
+//        if ($useLogWrite) {
+//            logWrite('Order received error while calling Square: ' . $e->getMessage());
+//        } else {
+//            web_error_log("Order received error while calling Square: " . $e->getMessage());
+//        }
         ajaxSuccess(array('status'=>'error','data'=>"Error: Error connecting to Square"));
         exit();
     }
@@ -320,12 +320,12 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     $pay_money->setAmount($results['total'] * 100);
     $pay_money->setCurrency(Currency::USD);
 
-    if ($useLogWrite) {
-        logWrite(array('CALLED WITH' => $results['total'], 'pay_money' => $pay_money));
-    } else {
-        web_error_log("CALLED WITH " . $results['total']);
-        var_error_log($pay_money);
-    }
+//    if ($useLogWrite) {
+//        logWrite(array('CALLED WITH' => $results['total'], 'pay_money' => $pay_money));
+//    } else {
+//        web_error_log("CALLED WITH " . $results['total']);
+//        var_error_log($pay_money);
+//    }
         
     $pbody = new CreatePaymentRequest($results['nonce'], $payuuid);
     $pbody->setAmountMoney($pay_money);
@@ -337,13 +337,13 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     $pbody->setNote('On-Line Registration');
 
 //var_error_log($pbody);
-    if ($useLogWrite) {
-        logWrite(array('payment' => $pbody));
-    }
-    else {
-        web_error_log('payment:');
-        var_error_log($pbody);
-    }
+//    if ($useLogWrite) {
+//        logWrite(array('payment' => $pbody));
+//    }
+//    else {
+//        web_error_log('payment:');
+//        var_error_log($pbody);
+//    }
 
     try {
         $paymentsApi = $client->getPaymentsApi();
@@ -351,29 +351,29 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 
         if ($apiResponse->isSuccess()) {
             $createPaymentResponse = $apiResponse->getResult();
-            if ($useLogWrite) {
-                logWrite(array('payment: success' => $createPaymentResponse));
-            } else {
-                web_error_log("payment: success");
-                var_error_log($createPaymentResponse);
-            }
+//            if ($useLogWrite) {
+//                logWrite(array('payment: success' => $createPaymentResponse));
+//            } else {
+//                web_error_log("payment: success");
+//                var_error_log($createPaymentResponse);
+//            }
         } else {
             $errors = $apiResponse->getErrors();
-            if ($useLogWrite) {
-                logWrite('Payment returned non-success');
-            } else {
-                web_error_log("Payment returned non-success");
-            }
+//            if ($useLogWrite) {
+//                logWrite('Payment returned non-success');
+//            } else {
+//                web_error_log("Payment returned non-success");
+//            }
             foreach ($errors as $error) {
                 $cat = $error->getCategory();
                 $code = $error->getCode();
                 $detail = $error->getDetail();
                 $field = $error->getField();
-                if ($useLogWrite) {
-                    logWrite('Transid: ' . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail [$field]");
-                } else {
-                    web_error_log("Transid: " . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail [$field]");
-                }
+//                if ($useLogWrite) {
+//                    logWrite('Transid: ' . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail [$field]");
+//                } else {
+//                    web_error_log("Transid: " . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail [$field]");
+//                }
                 switch ($code) {
                     case "GENERIC_DECLINE":
                         $msg = "Card Declined";
@@ -390,28 +390,28 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                     default:
                         $msg = $code;
                 }
-                if ($useLogWrite) {
-                    logWrite("Square card payment error for " . $results['transid'] . " of $msg");
-                } else {
-                    web_error_log("Square card payment error for " . $results['transid'] . " of $msg");
-                }
+//                if ($useLogWrite) {
+//                    logWrite("Square card payment error for " . $results['transid'] . " of $msg");
+//                } else {
+//                    web_error_log("Square card payment error for " . $results['transid'] . " of $msg");
+//                }
                 ajaxSuccess(array('status'=>'error','data'=>"Payment Error: $msg"));
                 exit();
             }
-            if ($useLogWrite) {
-                logWrite('Square card payment error for ' . $results['transid'] . " of 'unknown'");
-            } else {
-                web_error_log("Square card payment error for " . $results['transid'] . " of 'unknown'");
-            }
+//            if ($useLogWrite) {
+//                logWrite('Square card payment error for ' . $results['transid'] . " of 'unknown'");
+//            } else {
+//                web_error_log("Square card payment error for " . $results['transid'] . " of 'unknown'");
+//            }
             ajaxSuccess(array('status'=>'error','data'=>"Unknown Payment Error"));
             exit();
         }
     } catch (ApiException $e) {
-        if ($useLogWrite) {
-            logWrite('Payment received error while calling Square: ' . $e->getMessage());
-        } else {
-            web_error_log('Payment received error while calling Square: ' . $e->getMessage());
-        }
+//        if ($useLogWrite) {
+//            logWrite('Payment received error while calling Square: ' . $e->getMessage());
+//        } else {
+//            web_error_log('Payment received error while calling Square: ' . $e->getMessage());
+//        }
         ajaxSuccess(array('status'=>'error','data'=>"Error: Error connecting to Square"));
         exit();
     }
