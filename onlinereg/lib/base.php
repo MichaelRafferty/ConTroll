@@ -15,6 +15,7 @@ if ($db_ini['reg']['https'] <> 0) {
 require_once(__DIR__ . "/../../lib/db_functions.php");
 require_once(__DIR__ . '/../../lib/ajax_functions.php');
 require_once(__DIR__ . '/../../lib/global.php');
+require_once(__DIR__ . '/../../lib/jsVersions.php');
 db_connect();
 
 function ol_page_init($title, $js = '') {
