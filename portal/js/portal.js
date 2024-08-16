@@ -1047,7 +1047,7 @@ class Portal {
             data: data,
             method: 'POST',
             success: function (data, textStatus, jqXhr) {
-                portal.makePurchaseSuccess(data, id);
+                portal.makePurchaseSuccess(data);
                 return true;
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -1058,10 +1058,12 @@ class Portal {
         });
     }
 
-    makePurchaseSuccess(data, id) {
+    makePurchaseSuccess(data) {
         console.log(data);
         if (data['status'] == 'error') {
-            id.disabled = false;
+            var id = document.getElementById("purchase");
+            if (id)
+                id.disabled = false;
             if (data['error']) {
                 show_message(data['error'], 'error', 'makePayMessageDiv');
                 return;
