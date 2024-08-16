@@ -10,6 +10,7 @@ class policySetup {
     #policyUndoBtn = null;
     #policyRedoBtn = null;
     #policyAddRowBtn = null;
+    #dirty = false;
 
     // edit & Preview items
     #editPreviewModal = null;
@@ -96,7 +97,6 @@ class policySetup {
         this.#policies = data['policies'];
         this.#policyDirty = false;
         this.#policyTable = new Tabulator('#policyTableDiv', {
-            maxHeight: "800px",
             history: true,
             movableRows: true,
             data: this.#policies,
@@ -167,12 +167,58 @@ class policySetup {
         });
     }
 
+    dataChanged(data) {
+        //data - the updated table data
+        if (!this.#dirty) {
+            this.#policySaveBtn.innerHTML = "Save Changes*";
+            this.#policySaveBtn.disabled = false;
+            this.#dirty = true;
+        }
+        this.checkUndoRedo();
+    };
+
+    rowMoved(row) {
+        this.#policySaveBtn.innerHTML = "Save Changes*";
+        this.#policySaveBtn.disabled = false;
+        this.#dirty = true;
+        this.checkUndoRedo();
+    }
+
+    undo() {
+        if (this.#policyTable != null) {
+            this.#policyTable.undo();
+
+            if (this.checkUndoRedo() <= 0) {
+                this.#dirty = false;
+                this.#policySaveBtn.innerHTML = "Save Changes";
+                this.#policySaveBtn.disabled = true;
+            }
+        }
+    };
+
+    redo() {
+        if (this.#policyTable != null) {
+            this.#policyTable.redo();
+
+            if (this.checkUndoRedo() > 0) {
+                this.#dirty = true;
+                this.#policySaveBtn.innerHTML = "Save Changes*";
+                this.#policySaveBtn.disabled = false;
+            }
+        }
+    };
+
+
     // set undo / redo status for buttons
     checkUndoRedo() {
         var undosize = this.#policyTable.getHistoryUndoSize();
         this.#policyUndoBtn.disabled = undosize <= 0;
         this.#policyRedoBtn.disabled = this.#policyTable.getHistoryRedoSize() <= 0;
         return undosize;
+    }
+
+    editPreviewSave() {
+        console.log("preview save called");
     }
 
     // open the previewEdit modal and populate it with the stuff for this entry and it's save back

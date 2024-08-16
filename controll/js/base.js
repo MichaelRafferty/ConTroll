@@ -498,6 +498,14 @@ function saveEdit() {
 
 }
 
+function editPreviewSave() {
+    switch (editPreviewClass) {
+        case 'policy':
+            policy.editPreviewSave();
+            break;
+    }
+}
+
 // blankIfNull - return empty string if argument is nullk
 function blankIfNull(value) {
     if (value == null)
