@@ -41,11 +41,29 @@ switch ($tablename) {
 
         $result = dbQuery($policySQL);
         $policies = array ();
-        while ($memage = $result->fetch_assoc()) {
-            array_push($policies, $memage);
+        while ($row = $result->fetch_assoc()) {
+            array_push($policies, $row);
         }
         $result->free();
         $response['policies'] = $policies;
+        break;
+
+    case 'interests':
+        $interestsSQL = <<<EOS
+SELECT i.interest, i.description, i.notifyList, i.sortOrder, i.createDate, i.updateDate, i.updateBy, i.active, i.csv, COUNT(*) AS uses
+FROM interests i
+LEFT OUTER JOIN memberInterests mI ON i.interest = mI.interest
+GROUP BY  i.interest, i.description, i.notifyList, i.sortOrder, i.createDate, i.updateDate, i.updateBy, i.active, i.csv
+ORDER BY i.sortorder, i.interest;
+EOS;
+
+        $result = dbQuery($interestsSQL);
+        $interests = array();
+        while ($row = $result->fetch_assoc()) {
+            array_push($interests, $row);
+        }
+        $result->free();
+        $response['interests'] = $interests;
         break;
 
     default:

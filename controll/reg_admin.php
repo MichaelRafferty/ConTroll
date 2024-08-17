@@ -94,7 +94,7 @@ else
         </div>
     </div>
 </div>
-<div id='editPreviewModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit and Preview Configuration' aria-hidden='true'
+<div id='editPreviewModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit and Preview Policy Configuration' aria-hidden='true'
      style='--bs-modal-width: 96%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
@@ -167,6 +167,57 @@ else
                 <button class='btn btn-sm btn-primary' id='editPreviewSaveBtn' onClick='editPreviewSave()'>Save Changes</button>
             </div>
             <div id='result_message_editPreview' class='mt-4 p-2'></div>
+        </div>
+    </div>
+</div>
+<div id='editInterestsModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit and Preview Interest Configuration' aria-hidden='true'
+     style='--bs-modal-width: 96%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='editInterestsTitle'>Edit Interests Title</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid' id='editInterestBlockDiv'>
+                    <div class='row mt-4'>
+                        <div class='col-sm-12'><h4>Edit the <span id='editInterestName'>interestName</span> interest</h4></div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-1'>
+                            <label for="interestName">Name:</label>
+                        </div>
+                        <div class="col-sm-11">
+                            <input type="text" id="iName" name="iName" size="20" maxlength="16" placeholder="name"/>
+                        </div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-1'>
+                            <label for='interestName'>Notify:</label>
+                        </div>
+                        <div class='col-sm-11'>
+                            <textarea rows='5' cols='120' id='iNotify' name='iNotify' maxlength="500" wrap="soft"
+                                      placeholder='comma separated list of email addresses, leave empty if CSV is Y'>
+                            </textarea>
+                        </div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-12'><b>Interest Description:</b></div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-12'>
+                            <textarea rows='5' cols='120' id='interestDescription' name='interestDescription'>interestDescription</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='editInterestSaveBtn' onClick='interests.editInterestSave()'>Save Changes</button>
+            </div>
+            <div id='result_message_editInterest' class='mt-4 p-2'></div>
         </div>
     </div>
 </div>

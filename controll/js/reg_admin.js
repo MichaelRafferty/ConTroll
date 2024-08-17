@@ -120,7 +120,8 @@ window.onload = function initpage() {
         notesModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
     testdiv = document.getElementById('test');
-    getData();
+
+    $('#registration-table').html('<button class="btn btn-primary mb-4 ms-4" onclick="getData();">Load Registration List</button>');
 }
 
 // filters for RegistrationList
@@ -1592,6 +1593,9 @@ function settab(tabname) {
 
     // now open the relevant one, and create the class if needed
     switch (tabname) {
+        case 'registrationlist-pane':
+            getData();
+            break;
         case 'consetup-pane':
             if (current == null)
                 current = new consetup('current');
