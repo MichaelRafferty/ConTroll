@@ -278,21 +278,21 @@ class policySetup {
 
     // process the save button on the preview pane
     editPreviewSave() {
-        var policyPrompt = tinyMCE.get('prompt').getContent();
-        var policyDesc = tinyMCE.get('description').getContent();
+        var policyPrompt = tinyMCE.get(0).getContent();
+        var policyDesc = tinyMCE.get(1).getContent();
 
         // these will be encoded in <p> tags already, so strip the leading and trailing ones.
         if (policyPrompt.startsWith('<p>')) {
             policyPrompt = policyPrompt.substring(3);
         }
-        if (policyPrompt.startsWith('<p>')) {
-            policyPrompt = policyPrompt.substring(0, policyPrompt.length - 3);
+        if (policyPrompt.endsWith('</p>')) {
+            policyPrompt = policyPrompt.substring(0, policyPrompt.length - 4);
         }
         if (policyDesc.startsWith('<p>')) {
             policyDesc = policyDesc.substring(3);
         }
-        if (policyDesc.startsWith('<p>')) {
-            policyDesc = policyDesc.substring(0, policyDesc.length - 3);
+        if (policyDesc.endsWith('</p>')) {
+            policyDesc = policyDesc.substring(0, policyDesc.length - 4);
         }
 
         var policyRow = this.#policyTable.getRow(this.#editPolicyName);
@@ -380,7 +380,6 @@ class policySetup {
     }
 
     updatePreview() {
-        var get = tinyMCE.get();
         var policyPrompt = tinyMCE.get(0).getContent();
         var policyDesc = tinyMCE.get(1).getContent();
 
