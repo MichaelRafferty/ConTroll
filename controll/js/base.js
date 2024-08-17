@@ -489,21 +489,19 @@ function saveEdit() {
     editor_modal.hide();
 
     // force a save and get the field from tinyMCE
-        switch (editClass) {
-            case 'exhibits':
-                exhibits.editReturn(editTable, editField,  editIndex, editValue);
-                break;
-            default:
-        }
-
-}
-
-function editPreviewSave() {
-    switch (editPreviewClass) {
-        case 'policy':
-            policy.editPreviewSave();
+    switch (editClass) {
+        case 'exhibits':
+            exhibits.editReturn(editTable, editField,  editIndex, editValue);
             break;
+
+        case 'customText':
+            customText.editReturn(editTable, editField, editIndex, editValue);
+            break;
+
+        default:
+            show_message("Bad class passed to showEdit: " + editClass, 'error');
     }
+
 }
 
 // blankIfNull - return empty string if argument is nullk

@@ -128,6 +128,9 @@ EOS;
                     $prefixStr = 'Controll-Default: ';
                     if (substr($contents, 0, strlen($prefixStr)) == $prefixStr)
                         return;
+                    $prefixStr = '<p>Controll-Default: ';
+                    if (substr($contents, 0, strlen($prefixStr)) == $prefixStr)
+                        return;
                 }
 
                 echo '<div class="container-fluid p-0 m-0">' . PHP_EOL .

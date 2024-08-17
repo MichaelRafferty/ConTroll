@@ -42,7 +42,6 @@ else
     <div id="debug"><?php echo $debug_admin; ?></div>
     <div id="conid"><?php echo $conid; ?></div>
 </div>
-<?php bs_tinymceModal(); ?>
 <div id='user-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Lookup Person to Add as User' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
@@ -122,28 +121,6 @@ else
                 <button class='btn btn-sm btn-primary' id='mergeSearch' onClick='merge_find()'>Find Person</button>
             </div>
             <div id='result_message_merge' class='mt-4 p-2'></div>
-        </div>
-    </div>
-</div>
-<div id='editPreviewModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit and Preview Configuration' aria-hidden='true'
-     style='--bs-modal-width: 96%;'>
-    <div class='modal-dialog'>
-        <div class='modal-content'>
-            <div class='modal-header bg-primary text-bg-primary'>
-                <div class='modal-title'>
-                    <strong id='editPreviewTitle'>Edit Preview Title</strong>
-                </div>
-                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-            </div>
-            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                <div class='container-fluid' id="editBlockDiv"></div>
-                <div class='container-fluid' id="previewBlockDiv"></div>
-            </div>
-            <div class='modal-footer'>
-                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='editPreviewSaveBtn' onClick='editPreviewSave()'>Save Changes</button>
-            </div>
-            <div id='result_message_editPreview' class='mt-4 p-2'></div>
         </div>
     </div>
 </div>

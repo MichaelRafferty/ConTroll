@@ -55,24 +55,27 @@ $updated = 0;
 $deleted = 0;
 $sortorder = 10;
 
+if ($tablename != 'customText') {
 // build list of keys to delete
-$delete_keys = '';
-$first = true;
+    $delete_keys = '';
+    $first = true;
 // compute delete keys in the array and redo the sort order
-$sort_order = 10;
-foreach ($tabledata as $index => $row ) {
-    if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists($keyfield, $row)) {
-        $delete_keys .= ($first ? "'" : ",'") . sql_safe($row[$keyfield]) . "'";
-        $first = false;
-    } else {
-        if (array_key_exists('sortorder', $row))
-            $roworder = $row['sortorder'];
-        else
-            $roworder = 500;
+    $sort_order = 10;
+    foreach ($tabledata as $index => $row) {
+        if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists($keyfield, $row)) {
+            $delete_keys .= ($first ? "'" : ",'") . sql_safe($row[$keyfield]) . "'";
+            $first = false;
+        }
+        else {
+            if (array_key_exists('sortorder', $row))
+                $roworder = $row['sortorder'];
+            else
+                $roworder = 500;
 
-        if ($roworder >= 0 && $roworder < 900) {
-            $tabledata[$index]['sortorder'] = $sort_order;
-            $sort_order += 10;
+            if ($roworder >= 0 && $roworder < 900) {
+                $tabledata[$index]['sortorder'] = $sort_order;
+                $sort_order += 10;
+            }
         }
     }
 }
@@ -168,6 +171,21 @@ EOS;
                 if ($numrows !== false)
                     $inserted++;
             }
+        }
+        break;
+
+    case 'customText':
+        $updsql = <<<EOS
+UPDATE controllTxtItems
+SET contents = ?
+WHERE appName = ? AND appPage = ? AND appSection = ? AND txtItem = ?;
+EOS;
+
+        // now the updates, do the updates first in case we need to insert a new row with the same older key
+        foreach ($tabledata as $row) {
+            $numrows = dbSafeCmd($updsql, 'sssss',
+                 array($row['contents'], $row['appName'], $row['appPage'], $row['appSection'], $row['txtItem']));
+            $updated += $numrows;
         }
         break;
 

@@ -67,6 +67,23 @@ EOS;
         $response['interests'] = $interests;
         break;
 
+    case 'customText':
+        $customTextSQL = <<<EOS
+SELECT ROW_NUMBER() OVER (ORDER BY appName, appPage, appSection, txtItem) AS rownum,
+    appName, appPage, appSection, txtItem, contents
+FROM controllTxtItems
+ORDER BY appName, appPage, appSection, txtItem
+EOS;
+
+        $result = dbQuery($customTextSQL);
+        $customText = array();
+        while ($row = $result->fetch_assoc()) {
+            array_push($customText, $row);
+        }
+        $result->free();
+        $response['customText'] = $customText;
+        break;
+
     default:
         $response['error'] = 'Invalid table';
 }

@@ -164,7 +164,7 @@ else
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='editPreviewSaveBtn' onClick='editPreviewSave()'>Save Changes</button>
+                <button class='btn btn-sm btn-primary' id='editPreviewSaveBtn' onClick='policy.editPreviewSave()'>Save Changes</button>
             </div>
             <div id='result_message_editPreview' class='mt-4 p-2'></div>
         </div>
