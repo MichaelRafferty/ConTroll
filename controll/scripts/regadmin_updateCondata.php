@@ -20,15 +20,9 @@ $nextconid=$conid + 1;
 
 //var_error_log($_POST);
 
-// ajax_request_action: 'policy',
-    //                tabledata: JSON.stringify(this.#policyTable.getData()),
-    //                tablename: "policy",
-    //                indexcol: "policy"
 
 $action=$_POST['ajax_request_action'];
 $tablename=$_POST['tablename'];
-$action=$_POST['$action'];
-$index=$_POST['index'];
 try {
     $tabledata = json_decode($_POST['tabledata'], true, 512, JSON_THROW_ON_ERROR);
 } catch (Exception $e) {
@@ -38,13 +32,16 @@ try {
     ajaxSuccess($response);
     exit();
 }
-
-$response['index'] = $index;
+//$data = $_POST['tabledata'];
+$response['year'] = $action;
 
 switch ($tablename) {
-    case 'policy':
-        $data = $tabledata[0];
-        $sql = <<<EOS
+    case 'conlist':
+        switch ($action) {
+            case 'next':
+            case 'current':
+                $data = $tabledata[0];
+                $sql = <<<EOS
 INSERT INTO conlist(id, name, label, startdate, enddate, create_date)
 VALUES(?,?,?,?,?,NOW())
 ON DUPLICATE KEY UPDATE name=?, label=?, startdate=?, enddate=?;
