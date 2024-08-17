@@ -12,7 +12,7 @@ class customTextSetup {
 
     #dirty = false;
     #debug = 0;
-    #debugVisible = true;
+    #debugVisible = false;
 
     // globals before open
     constructor() {
