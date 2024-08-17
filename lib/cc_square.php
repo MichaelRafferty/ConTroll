@@ -225,10 +225,13 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
             if ($results['newplan'] == 1) {
                 // deferment is total of the items - total of the payment
                 $deferment = $order_value - $results['total'];
+                $planName = $results['planRec']['plan']['name'];
+                $note = "TBA: Plan Id To Be Assigned, Name: $planName, Date: " . date_format(date_create('now'),'Y-m-d H:i:s');
                 // this is the down payment on a payment plan
                 $item = new OrderLineItemDiscount ();
                 $item->setUid('planDeferment');
                 $item->setName("Payment Plan - Payment Deferral Amount");
+                $item->setNote($note);
                 $item->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
                 $money = new Money;
                 $money->setAmount($deferment * 100);
@@ -243,6 +246,10 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
         $item = new OrderLineItem ('1');
         $item->setUid('planPayment');
         $item->setName('Payment on Payment Plan');
+        $planName = $results['planRec']['plan']['name'];
+        $planId = $results['planRec']['id'];
+        $note = "$planId: Plan Id , Name: $planName, Date: " . date_format(date_create('now'),'Y-m-d H:i:s');
+        $item->setNote($note);
         $item->setBasePriceMoney(new Money);
         $item->getBasePriceMoney()->setAmount($results['total'] * 100);
         $item->getBasePriceMoney()->setCurrency(Currency::USD);
