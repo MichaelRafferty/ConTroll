@@ -105,8 +105,62 @@ else
                 <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                <div class='container-fluid' id='editBlockDiv'></div>
-                <div class='container-fluid' id='previewBlockDiv'></div>
+                <div class='container-fluid' id='editBlockDiv'>
+                    <div class='row mt-4'>
+                        <div class='col-sm-12'><h4>Edit the <span id="editPolicyName">policyName</span> policy</h4></div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-12'><b>Policy Prompt:</b></div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-12'>
+                            <textarea rows='5' cols='120' id='policyPrompt' name='policyPrompt'>policyPrompt</textarea>
+                        </div>
+                    </div>
+                    <div class='row mt-4'>
+                        <div class='col-sm-12'><b>Policy Description:</b></div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-12'>
+                            <textarea rows='5' cols='120' id='policyDescription' name='policyDescription'></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class='container-fluid' id='previewBlockDiv'>
+                    <div class='row mt-4'>
+                        <div class='col-sm-12'>
+                            <h4>Preview the <span id='previewPolicyName'>policyName</span> policy
+                                <button class='btn btn-primary' onclick='policy.updatePreview()'>Update Preview</button>
+                            </h4>
+                        </div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-12'>
+                            <p class='text-body' id='previewBody'>
+                                <label>
+                                    <input type='checkbox' name='p_preview' id='p_preview' value='Y'/>
+                                    <span class='warn' id='l_required'>&bigstar;</span><span id='l_preview'>Preview Prompt</span>
+                                </label>
+                                <span class='small' id='previewDescIcon'>
+                                    <a href='javascript:void(0)' onClick='$("#previewTip").toggle()'>
+                                        <img src='/images/infoicon.png'
+                                            alt='click this info icon for more information' style='max-height: 25px;'>
+                                    </a>
+                                </span>
+                                <div id='previewTip' class='padded highlight' style="display:none">
+                                    <p class='text-body'><span id="previewDescriptionText">Preview Text</span>
+                                        <span class='small'>
+                                            <a href='javascript:void(0)' onClick='$("#previewTip").toggle()'>
+                                                <img src='/images/closeicon.png'
+                                                     alt='click this close icon to close the more information window' style='max-height: 25px;'>
+                                            </a>
+                                        </span>
+                                    </p>
+                                </div>
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>

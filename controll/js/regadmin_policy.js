@@ -19,7 +19,15 @@ class policySetup {
     #previewBlock = null;
     #editPreviewSaveBtn = null;
     #editPolicyName = null;
-    #editEditors = null;
+    #editPolicyNameDiv = null;
+    #policyPrompt = null;
+    #policyDescription = null;
+    #previewDescIcon = null;
+    #previewPolicyName = null;
+    #previewDescriptionText = null;
+    #p_preview = null;
+    #l_preview = null;
+    #l_required = null;
 
     #debug = 0;
     #debugVisible = false;
@@ -39,6 +47,56 @@ class policySetup {
             this.#editBlock = document.getElementById('editBlockDiv');
             this.#previewBlock = document.getElementById('previewBlockDiv');
             this.#editPreviewSaveBtn = document.getElementById('editPreviewSaveBtn');
+            this.#previewPolicyName = document.getElementById('previewPolicyName');
+            this.#editPolicyNameDiv = document.getElementById('previewPolicyName');
+            this.#policyPrompt = document.getElementById('policyPrompt');
+            this.#policyDescription = document.getElementById('policyDescription');
+            this.#p_preview = document.getElementById('p_preview');
+            this.#l_preview = document.getElementById('l_preview');
+            this.#l_required = document.getElementById('l_required');
+            this.#previewDescIcon = document.getElementById('previewDescIcon');
+            this.#previewDescriptionText = document.getElementById('previewDescriptionText');
+            // start the tinyMCE editors
+            tinyMCE.init({
+                selector: 'textarea#policyPrompt',
+                id: "prompt",
+                mode: "exact",
+                height: 400,
+                min_height: 300,
+                menubar: false,
+                license_key: 'gpl',
+                plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
+                toolbar:  [
+                    'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
+                    'bold italic underline strikethrough removeformat | '+
+                    'visualchars nonbreaking charmap hr | ' +
+                    'preview fullscreen ',
+                    'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
+                ],
+                content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
+                placeholder: 'Edit the policy prompt...',
+                auto_focus: 'editFieldArea',
+            });
+            tinyMCE.init({
+                selector: 'textarea#policyDescription',
+                id: "desc",
+                mode: "exact",
+                height: 400,
+                min_height: 300,
+                menubar: false,
+                license_key: 'gpl',
+                plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
+                toolbar:  [
+                    'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
+                    'bold italic underline strikethrough removeformat | '+
+                    'visualchars nonbreaking charmap hr | ' +
+                    'preview fullscreen ',
+                    'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
+                ],
+                content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
+                placeholder: 'Edit the description here...',
+                auto_focus: 'editFieldArea',
+            });
         }
     };
 
@@ -220,10 +278,8 @@ class policySetup {
 
     // process the save button on the preview pane
     editPreviewSave() {
-        var policyPrompt = this.#editEditors[0].getContent();
-        var policyDesc = this.#editEditors[1].getContent();
-        tinyMCE.destroy();
-        this.#editEditors = null;
+        var policyPrompt = tinyMCE.get('prompt').getContent();
+        var policyDesc = tinyMCE.get('description').getContent();
 
         // these will be encoded in <p> tags already, so strip the leading and trailing ones.
         if (policyPrompt.startsWith('<p>')) {
@@ -294,8 +350,8 @@ class policySetup {
 
     // open the previewEdit modal and populate it with the stuff for this entry and it's save back
     editPreview(table, policyName) {
-        console.log(table);
-        console.log(policyName);
+        //console.log(table);
+        //console.log(policyName);
         this.#editPolicyName = policyName;
         var policyRow = this.#policyTable.getRow(policyName).getData();
         editPreviewClass = 'policy';
@@ -306,118 +362,27 @@ class policySetup {
 
         // build the modal contents
         this.#editPreviewTitle.innerHTML = "Edit/Preview the " + policyName + " policy";
-        var html = `
-        <div class="row mt-4">
-            <div class="col-sm-12"><h4>Edit the ` + policyName + ` policy</h4></div>
-        </div>
-        <div class="row mt-2">
-            <div class="col-sm-12"><b>Policy Prompt:</b></div>
-        </div>
-        <div class="row mt-1">
-            <div class="col-sm-12">
-                <textarea rows="5" cols="120" id="policyPrompt" name="policyPrompt">` + policyPrompt + `</textarea>
-            </div>
-        </div>
-        <div class="row mt-4">
-            <div class="col-sm-12"><b>Policy Description:</b></div>
-        </div>
-        <div class="row mt-1">
-            <div class="col-sm-12">
-                <textarea rows="5" cols="120" id="policyDescription" name="policyDescription">` + policyDescription + `</textarea>
-            </div>
-        </div>
-        `;
-        this.#editBlock.innerHTML = html;
+        this.#previewPolicyName.innerHTML = policyName;
+        this.#editPolicyNameDiv.innerHTML = policyName;
+        this.#policyPrompt.innerHTML = policyPrompt;
+        this.#policyDescription.innerHTML = policyDescription;
+        this.#p_preview.checked = false;
+        this.#l_preview.innerHTML = policyPrompt;
+        this.#l_required.hidden = polictRequired != 'Y';
+        this.#previewDescIcon.hidden = policyDescription == '';
+        this.#previewDescriptionText.innerHTML = policyDescription;
+        $("#previewTip").hide();
 
-        html = `
-        <div class="row mt-4">
-            <div class="col-sm-12"><h4>Preview the ` + policyRow.policy +
-            ` policy <button class="btn btn-primary" onclick="policy.updatePreview()">Update Preview</button></h4></div>
-        </div>
-        <div class='row'>
-            <div class='col-sm-12'>
-                <p class='text-body' id="previewBody">
-                    <label>
-                        <input type='checkbox' name='p_preview' id='p_preview' value='Y'/>
-                        <span id="l_preview">` +
-                            (polictRequired == 'Y' ? "<span class='warn'>&bigstar;</span>" : '') +
-                            policyPrompt + `</span>
-                    </label>
-`;
-                    if (policyDescription != '') {
-                        html += `
-                        <span class="small"><a href='javascript:void(0)' onClick='$("#previewTip").toggle()'>
-                            <img src="/images/infoicon.png"  alt="click this info icon for more information" style="max-height: 25px;"></a></span>
-                <div id='previewTip' class='padded highlight' style='display:none'>
-                    <p class='text-body'>` + policyDescription + `
-                        <span class='small'><a href='javascript:void(0)' onClick='$("#previewTip").toggle()'>
-                              <img src='/images/closeicon.png' alt='click this close icon to close the more information window' style='max-height: 25px;'>
-                            </a></span>
-                    </p>
-                </div>
-`;
-                    }
-                    html += `
-                </p>
-            </div>
-        </div>         
-`;
-        this.#previewBlock.innerHTML = html;
+        tinyMCE.get(0).setContent(policyPrompt);
+        tinyMCE.get(1).setContent(policyDescription);
 
-        // start the tinyMCE editors
-        tinyMCE.init({
-            selector: 'textarea#policyPrompt',
-            id: "prompt",
-            mode: "exact",
-            height: 400,
-            min_height: 300,
-            menubar: false,
-            license_key: 'gpl',
-            plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace save',
-            toolbar:  [
-                'save help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
-                'bold italic underline strikethrough removeformat | '+
-                'visualchars nonbreaking charmap hr | ' +
-                'preview fullscreen ',
-                'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
-            ],
-            content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
-            placeholder: 'Edit the policy prompt...',
-            auto_focus: 'editFieldArea',
-            init_instance_callback: function (editor) {
-                editor.setContent(policyPrompt);
-            }
-        });
-        tinyMCE.init({
-            selector: 'textarea#policyDescription',
-            id: "desc",
-            mode: "exact",
-            height: 400,
-            min_height: 300,
-            menubar: false,
-            license_key: 'gpl',
-            plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace save',
-            toolbar:  [
-                'save help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
-                'bold italic underline strikethrough removeformat | '+
-                'visualchars nonbreaking charmap hr | ' +
-                'preview fullscreen ',
-                'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
-            ],
-            content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
-            placeholder: 'Edit the description here...',
-            auto_focus: 'editFieldArea',
-            init_instance_callback: function (editor) {
-                editor.setContent(policyDescription);
-            }
-        });
-        this.#editEditors = tinyMCE.get();
         this.#editPreviewModal.show();
     }
 
     updatePreview() {
-        var policyPrompt = this.#editEditors[0].getContent();
-        var policyDesc = this.#editEditors[1].getContent();
+        var get = tinyMCE.get();
+        var policyPrompt = tinyMCE.get(0).getContent();
+        var policyDesc = tinyMCE.get(1).getContent();
 
         var policyRow = this.#policyTable.getRow(this.#editPolicyName).getData();
         var polictRequired = policyRow.required;
@@ -426,36 +391,23 @@ class policySetup {
         if (policyPrompt.startsWith('<p>')) {
             policyPrompt = policyPrompt.substring(3);
         }
-        if (policyPrompt.startsWith('<p>')) {
-            policyPrompt = policyPrompt.substring(0, policyPrompt.length - 3);
+        if (policyPrompt.endsWith('</p>')) {
+            policyPrompt = policyPrompt.substring(0, policyPrompt.length - 4);
         }
         if (policyDesc.startsWith('<p>')) {
             policyDesc = policyDesc.substring(3);
         }
-        if (policyDesc.startsWith('<p>')) {
-            policyDesc = policyDesc.substring(0, policyDesc.length - 3);
+        if (policyDesc.endsWith('</p>')) {
+            policyDesc = policyDesc.substring(0, policyDesc.length - 4);
         }
 
-        var html = `
-            <label>
-                <input type='checkbox' name='p_preview' id='p_preview' value='Y'/>
-                <span id="l_preview">` +
-                    (polictRequired == 'Y' ? "<span class='warn'>&bigstar;</span>" : '') +  policyPrompt + `</span>
-            </label>
-`;
-        if (policyDescription != '') {
-            html += `
-                <span class="small"><a href='javascript:void(0)' onClick='$("#previewTip").toggle()'>
-                    <img src="/images/infoicon.png"  alt="click this info icon for more information" style="max-height: 25px;"></a></span>
-                <div id='previewTip' class='padded highlight' style='display:none'>
-                    <p class='text-body'>` + policyDesc + `
-                        <span class='small'><a href='javascript:void(0)' onClick='$("#previewTip").toggle()'>
-                              <img src='/images/closeicon.png' alt='click this close icon to close the more information window' style='max-height: 25px;'>
-                            </a></span></p>
-                </div>
-`;
-        }
-        document.getElementById('previewBody').innerHTML = html;
+        policyPrompt = policyPrompt.trim();
+        policyDesc = policyDesc.trim();
+        this.#p_preview.checked = false;
+        this.#l_preview.innerHTML = policyPrompt;
+        this.#previewDescIcon.hidden = policyDesc == '';
+        this.#previewDescriptionText.innerHTML = policyDesc;
+        $("#previewTip").hide();
     }
 
     // on close of the pane, clean up the items
@@ -464,7 +416,7 @@ class policySetup {
             this.#policyTable.off("dataChanged");
             this.#policyTable.off("rowMoved")
             this.#policyTable.off("cellEdited");
-            this.#policyTable.remove();
+            this.#policyTable.destroy();
             this.#policyTable = null;
         }
 
