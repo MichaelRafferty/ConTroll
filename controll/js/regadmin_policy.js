@@ -124,11 +124,17 @@ class policySetup {
         this.#policyPane.innerHTML = html;
         this.#policies = null;
         var _this = this;
-        var script = "scripts/regadmin_getPolicyConfig.php";
+        var script = "scripts/regadmin_getConfigTables.php";
+        var postdata = {
+            ajax_request_action: 'policy',
+            tablename: "policy",
+            indexcol: "policy"
+        };
+        clear_message();
         $.ajax({
             url: script,
             method: 'POST',
-            data: { type: 'all', },
+            data: postdata,
             success: function (data, textStatus, jhXHR) {
                 _this.draw(data, textStatus, jhXHR);
             },
