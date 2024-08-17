@@ -8,10 +8,8 @@ $perm = "reg_admin";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
-
-if($check_auth == false || (!checkAuth($check_auth['sub'], $perm) &&
-                            !checkAuth($check_auth['sub'], 'atcon'))) {
-    $response['error'] = "Authentication Failed";
+if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -22,9 +20,15 @@ $nextconid=$conid + 1;
 
 //var_error_log($_POST);
 
+// ajax_request_action: 'policy',
+    //                tabledata: JSON.stringify(this.#policyTable.getData()),
+    //                tablename: "policy",
+    //                indexcol: "policy"
 
 $action=$_POST['ajax_request_action'];
 $tablename=$_POST['tablename'];
+$action=$_POST['$action'];
+$index=$_POST['index'];
 try {
     $tabledata = json_decode($_POST['tabledata'], true, 512, JSON_THROW_ON_ERROR);
 } catch (Exception $e) {
@@ -34,16 +38,13 @@ try {
     ajaxSuccess($response);
     exit();
 }
-//$data = $_POST['tabledata'];
-$response['year'] = $action;
+
+$response['index'] = $index;
 
 switch ($tablename) {
-    case 'conlist':
-        switch ($action) {
-            case 'next':
-            case 'current':
-                $data = $tabledata[0];
-                $sql = <<<EOS
+    case 'policy':
+        $data = $tabledata[0];
+        $sql = <<<EOS
 INSERT INTO conlist(id, name, label, startdate, enddate, create_date)
 VALUES(?,?,?,?,?,NOW())
 ON DUPLICATE KEY UPDATE name=?, label=?, startdate=?, enddate=?;

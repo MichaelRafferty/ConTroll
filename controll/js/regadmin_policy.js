@@ -124,7 +124,7 @@ class policySetup {
         this.#policyPane.innerHTML = html;
         this.#policies = null;
         var _this = this;
-        var script = "scripts/getPolicyConfig.php";
+        var script = "scripts/regadmin_getPolicyConfig.php";
         $.ajax({
             url: script,
             method: 'POST',
@@ -177,6 +177,10 @@ class policySetup {
                 },
                 {
                     title: "Default Value", field: "defaultValue", headerWordWrap: true, headerSort: true,
+                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
+                },
+                {
+                    title: "Active", field: "active", headerWordWrap: true, headerSort: true,
                     editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
                 },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'policies' }, hozAlign:"left", headerSort: false },
@@ -314,7 +318,7 @@ class policySetup {
             this.#policySaveBtn.innerHTML = "Saving...";
             this.#policySaveBtn.disabled = true;
 
-            var script = "scripts/regadmin_updatePolicy.php";
+            var script = "scripts/regadmin_updateConfigTables.php";
 
             var postdata = {
                 ajax_request_action: 'policy',
@@ -337,8 +341,8 @@ class policySetup {
                     } else {
                         show_message(data['success'], 'success');
                     }
-                    this.close();
-                    this.open();
+                    policy.close();
+                    policy.open();
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     showError("ERROR in " + script + ": " + textStatus, jqXHR);
