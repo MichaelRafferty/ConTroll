@@ -313,6 +313,8 @@ class policySetup {
 
     // save - save the policy entries back to the database
     save() {
+        var _this = this;
+
         if (this.#policyTable != null) {
             var invalids = this.#policyTable.validate();
             if (!invalids === true) {
@@ -342,13 +344,12 @@ class policySetup {
                     if (data['error']) {
                         show_message(data['error'], 'error');
                         // reset save button
-                        this.dataChanged(data);
+                        _this.dataChanged(data);
                         return false;
-                    } else {
-                        show_message(data['success'], 'success');
                     }
                     policy.close();
                     policy.open();
+                    show_message(data['success'], 'success');
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     showError("ERROR in " + script + ": " + textStatus, jqXHR);

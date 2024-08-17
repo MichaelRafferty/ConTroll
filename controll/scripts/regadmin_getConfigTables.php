@@ -50,7 +50,8 @@ switch ($tablename) {
 
     case 'interests':
         $interestsSQL = <<<EOS
-SELECT i.interest, i.description, i.notifyList, i.sortOrder, i.createDate, i.updateDate, i.updateBy, i.active, i.csv, COUNT(*) AS uses
+SELECT i.interest, i.description, i.notifyList, i.sortOrder, i.createDate, i.updateDate, i.updateBy, i.active, i.csv,
+       i.interest AS interestKey, COUNT(*) AS uses
 FROM interests i
 LEFT OUTER JOIN memberInterests mI ON i.interest = mI.interest
 GROUP BY  i.interest, i.description, i.notifyList, i.sortOrder, i.createDate, i.updateDate, i.updateBy, i.active, i.csv

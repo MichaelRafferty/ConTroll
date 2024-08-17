@@ -125,6 +125,52 @@ EOS;
         }
         break;
 
+    case 'interests':
+        if ($delete_keys != '') {
+            $delsql = 'DELETE FROM interests WHERE interest in (?);';
+            web_error_log("Delete sql = /$delsql/");
+            $deleted += dbSafeCmd($delsql, 'i', array ($delete_keys));
+        }
+        $inssql = <<<EOS
+INSERT INTO interests (interest, description, notifyList, sortOrder, createDate, updateDate, updateBy, active, csv)
+VALUES (?,?,?,?,NOW(),NOW(),?,?,?);
+EOS;
+        $updsql = <<<EOS
+UPDATE interests
+SET interest = ?, description = ?, notifyList = ?, csv = ?, updateBy = ?, active = ?, sortorder = ?
+WHERE interest = ?;
+EOS;
+
+        // now the updates, do the updates first in case we need to insert a new row with the same older key
+        foreach ($tabledata as $row) {
+            if (array_key_exists('to_delete', $row)) {
+                if ($row['to_delete'] == 1)
+                    continue;
+            }
+            if (array_key_exists('interestKey', $row)) { // if key is there, it's an update
+                // interest = ?, description = ?, notifyList = ?, csv = ?, updateBy = ?, active = ?, sortorder = ?
+                $numrows = dbSafeCmd($updsql, 'ssssisis', array ($row['interest'], $row['description'], $row['notifyList'],
+                      $row['csv'], $user_perid, $row['active'], $row['sortorder'], $row['interestKey']));
+                $updated += $numrows;
+            }
+        }
+
+        // now the inserts, do the inserts last in case we need to insert a new row with the same older key
+        foreach ($tabledata as $row) {
+            if (array_key_exists('to_delete', $row)) {
+                if ($row['to_delete'] == 1)
+                    continue;
+            }
+            if (!array_key_exists('interestKey', $row)) { // if key is not there, its an insert
+                // interest, description, notifyList, sortOrder, createDate, updateDate, updateBy, active, csv)
+                $numrows = dbSafeInsert($inssql, 'sssiiss', array ($row['interest'], $row['description'], $row['notifyList'],
+                    $row['sortOrder'], $user_perid, $row['active'], $row['csv']));
+                if ($numrows !== false)
+                    $inserted++;
+            }
+        }
+        break;
+
     default:
         $response['error'] = 'Invalid table';
 }

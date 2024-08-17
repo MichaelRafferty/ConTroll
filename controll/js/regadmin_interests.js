@@ -168,7 +168,7 @@ class interestsSetup {
             ],
         });
         this.#interestsTable.on("dataChanged", function (data) {
-            _this.dataChanged(data);
+            _this.dataChanged();
         });
         this.#interestsTable.on("rowMoved", function (row) {
             _this.rowMoved(row)
@@ -205,7 +205,7 @@ class interestsSetup {
         });
     }
 
-    dataChanged(data) {
+    dataChanged() {
         //data - the updated table data
         if (!this.#dirty) {
             this.#interestsSaveBtn.innerHTML = "Save Changes*";
@@ -337,9 +337,57 @@ class interestsSetup {
         var row = this.#interestsTable.getRow(this.#editInterestName);
         row.getCell("description").setValue(description);
         row.getCell("interest").setValue(this.#iName.value);
-        console.log(this.#iNotify.value);
         row.getCell("notifyList").setValue(this.#iNotify.value);
         this.#editInterestModal.hide();
+    }
+
+    // save - save the interests entries back to the database
+    save() {
+        var _this = this;
+
+        if (this.#interestsTable != null) {
+            var invalids = this.#interestsTable.validate();
+            if (!invalids === true) {
+                console.log(invalids);
+                show_message("Interests Table does not pass validation, please check for empty cells or cells in red", 'error');
+                return false;
+            }
+
+            this.#interestsSaveBtn.innerHTML = "Saving...";
+            this.#interestsSaveBtn.disabled = true;
+
+            var script = "scripts/regadmin_updateConfigTables.php";
+
+            var postdata = {
+                ajax_request_action: 'interests',
+                tabledata: JSON.stringify(this.#interestsTable.getData()),
+                tablename: "interests",
+                indexcol: "interests"
+            };
+            clear_message();
+            this.#dirty = false;
+            //console.log(postdata);
+            $.ajax({
+                url: script,
+                method: 'POST',
+                data: postdata,
+                success: function (data, textStatus, jhXHR) {
+                    if (data['error']) {
+                        show_message(data['error'], 'error');
+                        // reset save button
+                        _this.dataChanged();
+                        return false;
+                    }
+                    interests.close();
+                    interests.open();
+                    show_message(data['success'], 'success');
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                    return false;
+                }
+            });
+        }
     }
 }
 
