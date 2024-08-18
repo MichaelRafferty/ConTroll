@@ -513,7 +513,11 @@ class PaymentPlans {
                     messageHTML += "The shortest interval between payments is one week<br/>";
                 }
                 // compute number of payments to make this work, limiting to max in range from passed in maxPayments
-                numPayments = Math.ceil(diff / days);
+                var newNumPayments = Math.ceil(diff / days);
+                if (newNumPayments < numPayments) {
+                    numPayments = newNumPayments;
+                    messageHTML += "The days between payments exceeds the pay by date, adjusting the numbrer of payments</br>";
+                }
                 if (numPayments > this.#computedOrig.maxPayments) {
                     numPayments = this.#computedOrig.maxPayments;
                 }
