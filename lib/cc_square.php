@@ -230,7 +230,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                 // this is the down payment on a payment plan
                 $item = new OrderLineItemDiscount ();
                 $item->setUid('planDeferment');
-                $item->setName("Payment Deferral Amount: " + $note);
+                $item->setName("Payment Deferral Amount: " . $note);
                 $item->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
                 $money = new Money;
                 $money->setAmount($deferment * 100);
