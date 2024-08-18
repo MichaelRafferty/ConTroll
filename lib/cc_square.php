@@ -226,12 +226,11 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                 // deferment is total of the items - total of the payment
                 $deferment = $order_value - $results['total'];
                 $planName = $results['planRec']['plan']['name'];
-                $note = "TBA: Plan Id To Be Assigned, Name: $planName, Date: " . date_format(date_create('now'),'Y-m-d H:i:s');
+                $note = "Name: $planName, ID: TBA, Date: " . date_format(date_create('now'),'Y-m-d H:i:s');
                 // this is the down payment on a payment plan
                 $item = new OrderLineItemDiscount ();
                 $item->setUid('planDeferment');
-                $item->setName("Payment Plan - Payment Deferral Amount");
-                $item->setNote($note);
+                $item->setName("Payment Deferral Amount: " + $note);
                 $item->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
                 $money = new Money;
                 $money->setAmount($deferment * 100);
