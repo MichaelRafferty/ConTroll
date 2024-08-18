@@ -182,6 +182,8 @@ class customTextSetup {
 
             var script = "scripts/regadmin_updateConfigTables.php";
 
+            // the btoa of encodeURI is to get past passing html code up to the servrer with commodo security checking in the way
+            // it's stupid but it works, may have to resort to this for interests and policies in the future too.
             var postdata = {
                 ajax_request_action: 'customText',
                 tabledata: btoa(encodeURI(JSON.stringify(this.#customTextTable.getData()))),
