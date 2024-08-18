@@ -36,7 +36,7 @@ WITH pn AS (
     SELECT t.id, r.create_date, r.id as regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
-        m.label, m.memAge, m.memAge AS age m.memType, m.memCategory, m.startdate, m.enddate, m.online,
+        m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory, m.startdate, m.enddate, m.online,
         CASE 
             WHEN pn.memberId IS NOT NULL THEN pn.managedBy
             WHEN nn.memberId IS NOT NULL THEN nn.managedBy
@@ -73,7 +73,7 @@ WITH pn AS (
     SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
-        m.label, m.memAge, m.memAge, AS age m.memType, m.memCategory,  m.startdate, m.enddate, m.online,
+        m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online,
         nn.managedBy, nn.managedByNew, nn.badge_name, nn.fullname, nn.memberId
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
