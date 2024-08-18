@@ -184,7 +184,7 @@ class customTextSetup {
 
             var postdata = {
                 ajax_request_action: 'customText',
-                tabledata: JSON.stringify(this.#customTextTable.getData()),
+                tabledata: btoa(encodeURI(JSON.stringify(this.#customTextTable.getData()))),
                 tablename: "customText",
                 indexcol: "customText"
             };
