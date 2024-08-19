@@ -28,7 +28,7 @@ function ol_page_init($title, $js = '') {
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title><?php echo $title; ?></title>
-    <link rel='icon' type='image/x-icon' href='/lib/favicon.ico'>
+    <link rel='icon' type='image/x-icon' href='/images/favicon.ico'>
     <link href='css/style.css' rel='stylesheet' type='text/css' />
     <link href='<?php echo $includes['jquicss'];?>' rel='stylesheet' type='text/css' />
     <link href='<?php echo $includes['bs5css'];?>' rel='stylesheet'/>
