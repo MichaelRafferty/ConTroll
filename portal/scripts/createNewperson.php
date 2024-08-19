@@ -100,7 +100,7 @@ if ($validationType == 'token') {
     SET useCnt = 0, useCnt = 0, useIP = null, useTS = null
     WHERE email = ? AND useCnt = 1 AND TIMESTAMPDIFF(SECOND,createdTS,NOW()) < 3600;
     EOS;
-    $num_upd = dbSafeCmd($updSQL, 's', array($valArray['email']));
+    $num_upd = dbSafeCmd($updSQL, 's', array($validationEmail));
     $response['valCleared'] = $num_upd;
 }
 
