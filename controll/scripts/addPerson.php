@@ -19,12 +19,12 @@ if(!isset($_POST)) {
 }
 
 $query = <<<EOS
-INSERT INTO newperson (last_name, first_name, middle_name, legalName, pronouns, suffix, email_addr, phone, legalName, badge_name,
+INSERT INTO newperson (last_name, first_name, middle_name, legalName, pronouns, suffix, email_addr, phone, badge_name,
     address, addr_2, city, state, zip, country, share_reg_ok, contact_ok,updatedBy)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 
-$parmtypes = 'ssssssssssssssss';
+$parmtypes = 'sssssssssssssss';
 $last_name = "";
 if (array_key_exists('lname', $_POST)) {
     $last_name = trim($_POST['lname']);
@@ -78,12 +78,6 @@ if (array_key_exists('badge', $_POST)) {
     $badge = trim($_POST['badge']);
     if (is_null($badge))
         $badge = "";
-}
-$legalName = '';
-if (array_key_exists('legalName', $_POST)) {
-    $legalName = trim($_POST['legalName']);
-    if (is_null($legalName))
-        $legalName = '';
 }
 $address = "";
 if (array_key_exists('address', $_POST)) {
