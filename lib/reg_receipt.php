@@ -497,7 +497,7 @@ EOS;
     <div class="row">
         <div class="col-sm-1"></div>
         <div class="col-sm-6">$spaceDesc in $spaceName</div>
-        <div class="col-sm-2">$spacePrice</div>
+        <div class="col-sm-5">$spacePrice</div>
     </div>
 EOS;
             $receipt_tables .= "<tr><td></td><td>$spaceDesc in $spaceName</td><td>$spacePrice</td></tr>\n";
@@ -511,7 +511,7 @@ EOS;
     <div class="row">
         <div class="col-sm-1"></div>
         <div class="col-sm-6">Mail In Fee</div>
-        <div class="col-sm-2">$fee</div>
+        <div class="col-sm-5">$fee</div>
     </div>
 EOS;
             $receipt_tables .= "<tr><td></td><td>Mail In Fee</td><td>$fee</td></tr>\n";
@@ -546,7 +546,7 @@ EOS;
     <div class='row mt-1'>
         <div class='col-sm-1'>Type</div>
         <div class="col-sm-6">Description/Code</div>
-        <div class="col-sm-2">Amount</div>
+        <div class="col-sm-5">Amount</div>
     </div>
 EOS;
     }
@@ -588,7 +588,7 @@ EOS;
     <div class='row'>
         <div class='col-sm-1'>Coupon</div>
         <div class="col-sm-6">$name ($code)</div>
-        <div class="col-sm-2">$discount</div>
+        <div class="col-sm-5">$discount</div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
@@ -630,7 +630,7 @@ EOS;
     <div class='row'>
         <div class='col-sm-1'>$type</div>
         <div class="col-sm-6">$desc$aprvl</div>
-        <div class="col-sm-2">$amt</div>
+        <div class="col-sm-5">$amt</div>
     </div>
 EOS;
         $receipt_tables .= <<<EOS
@@ -657,7 +657,7 @@ EOS;
         $receipt_html .= <<<EOS
     <div class='row'>
         <div class='col-sm-7'>Total Payments</div>
-        <div class="col-sm-2">$payment_total</div>
+        <div class="col-sm-5">$payment_total</div>
     </div>
 EOS;
         $receipt_tables .= <<<EOS
@@ -780,7 +780,7 @@ EOS;
     <div class="row">
         <div class="col-sm-1">$id</div>
         <div class="col-sm-6">$label</div>
-        <div class="col-sm-2">$price</div>
+        <div class="col-sm-5">$price</div>
     </div>
 EOS;
         $receipt_tables .= <<<EOS
@@ -795,7 +795,7 @@ EOS;
     <div class="row">
         <div class="col-sm-1"></div>
         <div class="col-sm-6">Subtotal</div>
-        <div class="col-sm-2">$price</div>
+        <div class="col-sm-5">$price</div>
     </div>
 EOS;
     $receipt_tables .= <<<EOS
