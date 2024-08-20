@@ -247,7 +247,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
         $planName = $results['planRec']['plan']['name'];
         $planId = $results['planRec']['id'];
         $note = "$planId: Plan Id , Name: $planName, Date: " . date_format(date_create('now'),'Y-m-d H:i:s');
-        $item->setName('Plan Payment $note');
+        $item->setName('Plan Payment . $note);
         $item->setBasePriceMoney(new Money);
         $item->getBasePriceMoney()->setAmount($results['total'] * 100);
         $item->getBasePriceMoney()->setCurrency(Currency::USD);
