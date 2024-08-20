@@ -643,7 +643,7 @@ EOS;
     <div class='row'>
         <div class='col-sm-1'></div>
         <div class="col-sm-auto">$url</div>
-    </div
+    </div>
 EOS;
             $receipt_tables .= <<<EOS
 <tr><td>&nbsp;</td><td colspan="2">$url</td></tr>
@@ -657,7 +657,7 @@ EOS;
         $receipt_html .= <<<EOS
     <div class='row'>
         <div class='col-sm-7'>Total Payments</div>
-        <div class="col-sm-4">$payment_total</div>
+        <div class="col-sm-5">$payment_total</div>
     </div>
 EOS;
         $receipt_tables .= <<<EOS
