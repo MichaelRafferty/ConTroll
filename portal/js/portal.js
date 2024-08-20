@@ -1085,11 +1085,6 @@ class Portal {
         }
     }
 
-    // display a receipt
-    transReceipt(receiptTransId) {
-        console.log("trying to display receipt for transaction id " + receiptTransId);
-    }
-
     // fetch a receipt by transaction number
     transReceipt(transId) {
         this.#receiptEmailAddress = null;
