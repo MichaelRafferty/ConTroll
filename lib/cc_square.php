@@ -175,7 +175,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                 $item = new OrderLineItem ('1');
                 $item->setUid('badge' . ($lineid + 1));
                 $item->setName($badge['age'] . ' Membership for ' . $fullname);
-                $item->setNote($badge['memId'] . ': Membership Type Code');
+                $item->setNote($badge['memId'] . ',' . $badge['perid'] . ': memId, perid');
                 $item->setBasePriceMoney(new Money);
                 $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
                 $item->getBasePriceMoney()->setCurrency(Currency::USD);
