@@ -365,6 +365,20 @@ EOS;
 EOS;
 
             break;
+        case 'regportal':
+            $receipt .= "By: $title_payor_name, Via: Registration Portal, Transaction: $master_tid\n";
+            $receipt_html .= <<<EOS
+    <div class="row">
+        <div class="col-sm-12">
+            By: $payor_name, Via: Registration Portal, Transaction: $master_tid
+        </div>
+    </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td colspan="3">By: $payor_name, Via: Registration Portal, Transaction: $master_tid</td></tr>
+EOS;
+
+            break;
         case 'vendor':
         case 'artist':
         case 'exhibitor':
@@ -478,7 +492,7 @@ EOS;
             $spaceDesc = $space['purchased_description'];
             $spaceName = $space['name'];
             $total += $space['purchased_price'];
-            $spacePrice = $dolfmt->formatCurrency((float) $space['purchased_price'], '$currency');
+            $spacePrice = $dolfmt->formatCurrency((float) $space['purchased_price'], $currency);
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-1"></div>
@@ -492,7 +506,7 @@ EOS;
 
         if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
             $total += $region['mailinFee'];
-            $fee = $dolfmt->formatCurrency((float) $region['mailinFee'], '$currency');
+            $fee = $dolfmt->formatCurrency((float) $region['mailinFee'], $currency);
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-1"></div>
@@ -506,7 +520,7 @@ EOS;
     }
 
     // now the total due
-    $price = $dolfmt->formatCurrency((float) $total, '$currency');
+    $price = $dolfmt->formatCurrency((float) $total, $currency);
     $receipt .= "\nTotal Due:: $price\n";
     $receipt_html .= <<<EOS
     <div class="row mt-2">
@@ -568,7 +582,7 @@ EOS;
             $id = $coupon['id'];
             $discount =  sum_coupon_discount($id, $data['memberships']);
             $payment_total += $discount;
-            $discount = $dolfmt->formatCurrency((float) $discount, '$currency');
+            $discount = $dolfmt->formatCurrency((float) $discount, $currency);
             $receipt .= "Coupon: $name ($code): $discount\n";
             $receipt_html .= <<<EOS
     <div class='row'>
@@ -601,7 +615,7 @@ EOS;
         $url = $pmt['receipt_url'];
 
         $payment_total += $amt;
-        $amt = $dolfmt->formatCurrency((float)$amt, '$currency');
+        $amt = $dolfmt->formatCurrency((float)$amt, $currency);
 
         if ($aprvl != '' && $cc != '')
             $aprvl = " (last 4: $cc, auth: $aprvl)";
@@ -629,7 +643,7 @@ EOS;
     <div class='row'>
         <div class='col-sm-1'></div>
         <div class="col-sm-auto">$url</div>
-    </div>
+    </div
 EOS;
             $receipt_tables .= <<<EOS
 <tr><td>&nbsp;</td><td colspan="2">$url</td></tr>
@@ -638,7 +652,7 @@ EOS;
     }
 
     if ($payment_total > 0) {
-        $payment_total = $dolfmt->formatCurrency((float) $payment_total, '$currency');
+        $payment_total = $dolfmt->formatCurrency((float) $payment_total, $currency);
         $receipt .= "\nTotal Payments: $payment_total\n";
         $receipt_html .= <<<EOS
     <div class='row'>
@@ -758,7 +772,7 @@ EOS;
     $subtotal = 0;
     // loop over their memberships
     foreach ($list AS $row) {
-        $price = $dolfmt->formatCurrency((float) $row['price'], '$currency');
+        $price = $dolfmt->formatCurrency((float) $row['price'], $currency);
         $label = $row['label'];
         $id = $row['id'];
         $receipt .= "$id, $label: $price\n";
@@ -775,7 +789,7 @@ EOS;
 
         $subtotal += $row['price'];
     }
-    $price = $dolfmt->formatCurrency((float) $subtotal, '$currency');
+    $price = $dolfmt->formatCurrency((float) $subtotal, $currency);
     $receipt .= "     Subtotal: $price\n";
     $receipt_html .= <<<EOS
     <div class="row">
