@@ -19,12 +19,12 @@ if(!isset($_POST)) {
 }
 
 $query = <<<EOS
-INSERT INTO newperson (last_name, first_name, middle_name, legalName, pronouns, suffix, email_addr, phone, badge_name,
+INSERT INTO newperson (last_name, first_name, middle_name, suffix, legalName, pronouns,email_addr, phone, badge_name,
     address, addr_2, city, state, zip, country, share_reg_ok, contact_ok,updatedBy)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 
-$parmtypes = 'sssssssssssssss';
+$parmtypes = 'sssssssssssssssssi';
 $last_name = "";
 if (array_key_exists('lname', $_POST)) {
     $last_name = trim($_POST['lname']);
@@ -128,8 +128,8 @@ if (array_key_exists('contact_ok', $_POST)) {
         $contact_ok = "Y";
 }
 
-
-$values = array($last_name, $first_name, $middle_name, $suffix, $email, $phone, $legalName, $badge, $address, $addr2, $city, $state, $zip, $country, $share_ok, $contact_ok, $_SESSION['user_id']);
+$values = array($last_name, $first_name, $middle_name, $suffix, $legalName, $pronouns, $email, $phone, $badge, $address, $addr2, $city, $state,
+                $zip, $country, $share_ok, $contact_ok, $_SESSION['user_id']);
 
 $id = dbSafeInsert($query, $parmtypes, $values);
 
