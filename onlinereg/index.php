@@ -69,6 +69,10 @@ $onsitesale = $startdate->format("l, F j");
 // overall header HTML and main body
   ol_page_init($condata['label'] . ' Online Registration', $js);
 ?>
+<script type='text/javascript'>
+    var numCoupons = <?php echo $numCoupons; ?>;
+    var policies = <?php echo json_encode($policies); ?>;
+</script>
 <body class="regPaybody">
     <div class="container-fluid">
         <?php if (array_key_exists('logoimage', $reg_conf) && $reg_conf['logoimage'] != '') {

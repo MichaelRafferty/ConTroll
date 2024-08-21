@@ -335,7 +335,6 @@ if ($refresh) {
 </script>
 <?php
 // draw all the modals for this screen
-$policies = getPolicies();
 draw_editPersonModal('portal', $policies);
 draw_editInterestsModal($interests);
 draw_paymentDueModal();
