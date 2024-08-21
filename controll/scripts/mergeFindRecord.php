@@ -54,7 +54,7 @@ SELECT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.middle_na
         WHEN IFNULL(p.last_name, '') != '' THEN
             TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), ' *', ' '))
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '\\s+', ' '))
         END AS fullname,
     r.regcnt, r.regs
 FROM regcnt r
@@ -88,7 +88,7 @@ SELECT DISTINCT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.
         WHEN IFNULL(p.last_name, '') != '' THEN
             TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), ' *', ' '))
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '\\s+', ' '))
         END AS fullname,
     r.regcnt, r.regs
 FROM regcnt r

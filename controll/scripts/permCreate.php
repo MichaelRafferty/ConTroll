@@ -53,9 +53,9 @@ INSERT INTO user(perid, email, name)
 SELECT id, email_addr, 
     CASE 
         WHEN IFNULL(last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '\\s+', ' ')) 
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '\\s+', ' ')) 
         END AS name
 FROM perinfo
 WHERE id = ?

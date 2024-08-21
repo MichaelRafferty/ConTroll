@@ -613,32 +613,32 @@ function build_badge($fields, $type, $index, $region, $conid, $transid, $portalN
 SELECT id
 FROM perinfo p
 WHERE
-	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.first_name, ''))), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.middle_name, ''))), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.last_name, ''))), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.suffix, ''))), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.email_addr, ''))), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.phone, ''))), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.badge_name, ''))), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.address, ''))), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.addr_2, ''))), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.city, ''))), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.state, ''))), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.zip, ''))), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.country, ''))), '  *', ' ');
+	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '\\s+', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.first_name, ''))), '\\s+', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '\\s+', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.middle_name, ''))), '\\s+', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '\\s+', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.last_name, ''))), '\\s+', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '\\s+', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.suffix, ''))), '\\s+', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '\\s+', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.email_addr, ''))), '\\s+', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '\\s+', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.phone, ''))), '\\s+', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '\\s+', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.badge_name, ''))), '\\s+', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '\\s+', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.address, ''))), '\\s+', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '\\s+', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.addr_2, ''))), '\\s+', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '\\s+', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.city, ''))), '\\s+', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '\\s+', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.state, ''))), '\\s+', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '\\s+', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.zip, ''))), '\\s+', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '\\s+', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.country, ''))), '\\s+', ' ');
 EOF;
     $value_arr = array($badge['fname'], $badge['mname'], $badge['lname'], $badge['suffix'], $badge['email'], $badge['phone'], $badge['badgename'],
                 $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country']);
