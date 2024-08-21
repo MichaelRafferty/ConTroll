@@ -38,13 +38,13 @@ $email = $_POST['email'];
 $cQ = <<<EOS
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip, country, 
     managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '\\s+', ' ')) AS fullname
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
 FROM perinfo
 WHERE id=? AND email_addr = ? AND NOT (first_name = 'Merged' AND middle_name = 'into')
 UNION
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip, country, 
     managedBy, managedByNew, lastVerified, 'n' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '\\s+', ' ')) AS fullname
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
 FROM newperson
 WHERE id=? AND email_addr = ? AND perid IS NULL AND NOT (first_name = 'Merged' AND middle_name = 'into');
 EOS;
@@ -128,7 +128,7 @@ if ($loginType == 'p') {
 $cQ = <<<EOS
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip, country, 
     managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '\\s+', ' ')) AS fullname
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
 FROM $table
 WHERE id=?;
 EOS;
