@@ -152,7 +152,8 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
     <div class='row'>
         <div class='col-sm-12'>
             <p class='text-body'>Contact Information
-                (<a href="<?php echo escape_quotes($con['privacypolicy']); ?>" target='_blank'><?php echo $con['privacytext']; ?></a>).
+                (<a href="<?php echo escape_quotes($con['privacypolicy']); ?>" target='_blank'
+                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"><?php echo $con['privacytext']; ?></a>).
             </p>
         </div>
     </div>
@@ -242,5 +243,5 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
     </form>
     <form id='editPolicies' class='form-floating' action='javascript:void(0);'>
     <?php
-    drawPoliciesBlock($policies);
+    drawPoliciesBlock($policies, $tabIndexStart + 500);
 }
