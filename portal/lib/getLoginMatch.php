@@ -70,8 +70,7 @@ SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n
        n.address, n.addr_2, n.city, n.state, n.zip, n.country, createtime AS creation_date, 'Y' AS active, 'N' AS banned,
     CASE 
         WHEN IFNULL(n.last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.last_name, ''), ', ', IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '  
-            *', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.last_name, ''), ', ', IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '  *', ' ')) 
         ELSE
             TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '  *', ' ')) 
         END AS fullname,
@@ -87,8 +86,8 @@ SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n
        n.address, n.addr_2, n.city, n.state, n.zip, n.country, n.createtime AS creation_date, 'Y' AS active, 'N' AS banned,
     CASE 
         WHEN IFNULL(n.last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.last_name, ''), ', ', IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '  
-            *', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.last_name, ''), ', ', IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', 
+                IFNULL(n.suffix, '')), '  *', ' ')) 
         ELSE
             TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '  *', ' ')) 
         END AS fullname,
@@ -104,8 +103,7 @@ SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n
        n.address, n.addr_2, n.city, n.state, n.zip, n.country, createtime AS creation_date, 'Y' AS active, 'N' AS banned,
     CASE 
         WHEN IFNULL(n.last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.last_name, ''), ', ', IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '  
-            *', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.last_name, ''), ', ', IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '  *', ' ')) 
         ELSE
             TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '  *', ' ')) 
         END AS fullname,

@@ -770,7 +770,7 @@ function changeRegsData(data, rowdata) {
         <div class="col-sm-1" style="text-align: right;">` + membership.paid + `</div>
         <div class="col-sm-1" style="text-align: right;">` + membership.couponDiscount + `.</div>
         <div class="col-sm-1">` + membership.status + `</div>
-        <div class="col-sm-1"><button class="btn btn-sm btn-secondary" onclick="changeEdit(` + membership.badgeId + `)";>Edit</button></div>
+        <div class="col-sm-1"><button class="btn btn-sm btn-secondary" onclick="changeEdit(` + membership.id + `)";>Edit</button></div>
     </div>
 `;
     }

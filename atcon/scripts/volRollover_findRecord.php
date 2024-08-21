@@ -49,7 +49,7 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
     CASE 
         WHEN IFNULL(p.last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), ' *', ' '))
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
         ELSE
             TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
         END AS fullname,
@@ -83,7 +83,7 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
     CASE 
         WHEN IFNULL(p.last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), ' *', ' '))
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
         ELSE
             TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
         END AS fullname,

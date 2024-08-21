@@ -175,7 +175,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                 $item = new OrderLineItem ('1');
                 $item->setUid('badge' . ($lineid + 1));
                 $item->setName($badge['age'] . ' Membership for ' . $fullname);
-                $item->setNote($badge['memId'] . ': Membership Type Code');
+                $item->setNote($badge['memId'] . ',' . $badge['perid'] . ': memId, perid');
                 $item->setBasePriceMoney(new Money);
                 $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
                 $item->getBasePriceMoney()->setCurrency(Currency::USD);
@@ -226,7 +226,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                 // deferment is total of the items - total of the payment
                 $deferment = $order_value - $results['total'];
                 $planName = $results['planRec']['plan']['name'];
-                $note = "Name: $planName, ID: TBA, Date: " . date_format(date_create('now'),'Y-m-d H:i:s');
+                $note = "Name: $planName, ID: TBA, Perid: $loginPerid";
                 // this is the down payment on a payment plan
                 $item = new OrderLineItemDiscount ();
                 $item->setUid('planDeferment');
@@ -246,8 +246,8 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
         $item->setUid('planPayment');
         $planName = $results['planRec']['plan']['name'];
         $planId = $results['planRec']['id'];
-        $note = "$planId: Plan Id , Name: $planName, Date: " . date_format(date_create('now'),'Y-m-d H:i:s');
-        $item->setName('Plan Payment $note');
+        $note = "$planId: Plan Id , Name: $planName, Perid: $loginPerid";
+        $item->setName('Plan Payment' . $note);
         $item->setBasePriceMoney(new Money);
         $item->getBasePriceMoney()->setAmount($results['total'] * 100);
         $item->getBasePriceMoney()->setCurrency(Currency::USD);
