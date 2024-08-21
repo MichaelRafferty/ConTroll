@@ -11,9 +11,9 @@ SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN IFNULL(last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '\\s+', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '\\s+', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
         END AS fullname,
     'p' AS tablename
 FROM perinfo
@@ -27,9 +27,9 @@ SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN IFNULL(last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '\\s+', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '\\s+', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
         END AS fullname,
     'p' AS tablename
 FROM perinfo
@@ -42,9 +42,9 @@ SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN IFNULL(last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '\\s+', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '\\s+', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
         END AS fullname,
     'p' AS tablename
 FROM perinfo
@@ -70,9 +70,9 @@ SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n
        n.address, n.addr_2, n.city, n.state, n.zip, n.country, createtime AS creation_date, 'Y' AS active, 'N' AS banned,
     CASE 
         WHEN IFNULL(n.last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.last_name, ''), ', ', IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '\\s+', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.last_name, ''), ', ', IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '  *', ' ')) 
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '\\s+', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '  *', ' ')) 
         END AS fullname,
     'n' AS tablename
 FROM newperson n
@@ -87,9 +87,9 @@ SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n
     CASE 
         WHEN IFNULL(n.last_name, '') != '' THEN
             TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.last_name, ''), ', ', IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', 
-                IFNULL(n.suffix, '')), '\\s+', ' ')) 
+                IFNULL(n.suffix, '')), '  *', ' ')) 
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '\\s+', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '  *', ' ')) 
         END AS fullname,
     'n' AS tablename
 FROM newperson n
@@ -103,9 +103,9 @@ SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n
        n.address, n.addr_2, n.city, n.state, n.zip, n.country, createtime AS creation_date, 'Y' AS active, 'N' AS banned,
     CASE 
         WHEN IFNULL(n.last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.last_name, ''), ', ', IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '\\s+', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.last_name, ''), ', ', IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '  *', ' ')) 
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '\\s+', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.suffix, '')), '  *', ' ')) 
         END AS fullname,
     'n' AS tablename
 FROM newperson n
@@ -134,9 +134,9 @@ SELECT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badg
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN IFNULL(last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '\\s+', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '\\s+', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
         END AS fullname,
     'p' AS tablename
 FROM perinfoIdentities pi
@@ -164,9 +164,9 @@ SELECT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badg
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN IFNULL(last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '\\s+', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '\\s+', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
         END AS fullname,
     'p' AS tablename
 FROM perinfoIdentities pi
