@@ -466,6 +466,7 @@ function makePurchase(token, label) {
         badges: badges,
         nonce: token,
         purchaseform: URLparamsToArray($('#purchaseForm').serialize()),
+        policyInterestForm: URLparamsToArray($('#editPolicies').serialize()),
         couponCode: coupon.getCouponCode(),
         couponSerial: coupon.getCouponSerial(),
         couponSubtotal: couponSubtotal,

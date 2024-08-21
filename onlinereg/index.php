@@ -5,6 +5,7 @@ require_once('../lib/global.php');
 require_once("../lib/cc__load_methods.php");
 require_once("../lib/profile.php");
 require_once("../lib/policies.php");
+require_once("../lib/interests.php");
 require_once("../lib/coupon.php");
 
 $cc = get_conf('cc');
@@ -43,6 +44,7 @@ else {
     }
 }
 $policies = getPolicies();
+$interests = getInterests();
 $membershiptypes = array();
 $priceQ = <<<EOS
 SELECT id, label, shortname, sort_order, price, memAge, memCategory
@@ -58,7 +60,10 @@ $priceR = dbSafeQuery($priceQ, "i", array($condata['id']));
 while($priceL = $priceR->fetch_assoc()) {
     $membershiptypes[] = $priceL;
 }
-$js = "var mtypes = " . json_encode($membershiptypes);
+$js = "var mtypes = " . json_encode($membershiptypes) . PHP_EOL .
+    "var numCoupons = " . $numCoupons . ";" . PHP_EOL .
+    "var policies = " . json_encode($policies) . PHP_EOL .
+    "var interests = " . json_encode($interests) . PHP_EOL;
 $startdate = new DateTime($condata['startdate']);
 $enddate = new DateTime($condata['enddate']);
 $daterange = $startdate->format("F j-") . $enddate->format("j, Y");
@@ -69,10 +74,6 @@ $onsitesale = $startdate->format("l, F j");
 // overall header HTML and main body
   ol_page_init($condata['label'] . ' Online Registration', $js);
 ?>
-<script type='text/javascript'>
-    var numCoupons = <?php echo $numCoupons; ?>;
-    var policies = <?php echo json_encode($policies); ?>;
-</script>
 <body class="regPaybody">
     <div class="container-fluid">
         <?php if (array_key_exists('logoimage', $reg_conf) && $reg_conf['logoimage'] != '') {
@@ -172,7 +173,17 @@ $onsitesale = $startdate->format("l, F j");
 <?php
     drawEditPersonBlock($con, $useUSPS, $policies, $class, /* modal */ true,
         /* editEmail */ true, $ageByDate, $membershiptypes, /* tabIndexStart  */ 100);
-?>                            <div class="row">
+    if (count($interests) > 0) {
+?>
+        <div class='row'>
+            <div class='col-sm-12'>
+                <hr/>
+            </div>
+        </div>
+<?php
+        drawInterestList($interests);
+    }
+?>                            <div class="row mt-4">
                                 <div class="col-sm-12">
                                     <button type="button" id="addToCartBtn" class="btn btn-sm btn-primary me-1"
                                             onclick="process('#newBadgeForm');" tabindex="980">Add Membership To Cart</button>
