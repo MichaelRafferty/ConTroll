@@ -19,6 +19,7 @@ CREATE TABLE `payorPlans` (
   `nonPlanAmt` decimal(8,2) NOT NULL DEFAULT '0.00',
   `downPayment` decimal(8,2) NOT NULL DEFAULT '0.00',
   `minPayment` decimal(8,2) DEFAULT '10.00',
+  `finalPayment` decimal(8,2) DEFAULT '10.00',
   `openingBalance` decimal(8,2) NOT NULL DEFAULT '0.00',
   `numPayments` int NOT NULL,
   `daysBetween` int NOT NULL DEFAULT '30',
@@ -32,7 +33,9 @@ CREATE TABLE `payorPlans` (
   `updateDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `updateBy` int DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `pp_planid_fk` (`planId`)
+  KEY `pp_planid_fk` (`planId`),
+  KEY `pp_newperid_fk` (`newperid`),
+  KEY `pp_perid_fk` (`perid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS `memRuleItems`;
 CREATE TABLE `memRuleItems` (
   `name` varchar(16) COLLATE utf8mb4_general_ci NOT NULL,
   `step` int NOT NULL,
-  `ruleType` enum('needAny','needAll','notAny','notAll','limitAge') COLLATE utf8mb4_general_ci NOT NULL,
+  `ruleType` enum('needAny','needAll','notAny','notAll','limitAge','currentAge') COLLATE utf8mb4_general_ci NOT NULL,
   `applyTo` enum('person','all') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'person',
   `typeList` varchar(1024) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `catList` varchar(1024) COLLATE utf8mb4_general_ci DEFAULT NULL,
