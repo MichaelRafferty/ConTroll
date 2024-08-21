@@ -2,9 +2,13 @@
 // profile - anything to do with the PHP side of editing your name/address/... profile
 
 // drawEditPersonBlock - just output the block to edit the person
-function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $editEmail=false, $tabIndexStart = 100) {
+function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $editEmail=false, $ageByDate = '',
+                             $membershipTypes = [], $tabIndexStart = 100) {
     $reg = get_conf('reg');
-    $portal_conf = get_conf('portal');
+    if ($editEmail)
+        $polConf = $reg;
+    else
+        $polConf = get_conf('portal');
     if (array_key_exists('required', $reg)) {
         $required = $reg['required'];
     } else {
@@ -24,10 +28,14 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
             $firstStar = '<span class="text-danger">&bigstar;</span>';
     }
     $tabindex = $tabIndexStart;
+    if ($editEmail == false) {
     ?>
     <h<?php echo $modal ? '1 class="size-h3"' : '3 class="text-primary"'?> id='epHeader'>
         Personal Information for this new person
     </h<?php echo $modal ? '1' : '3'?>>
+<?php
+    }
+?>
     <div class='row' style='width:100%;'>
         <div class='col-sm-12'>
             <p class='text-body'>Note: Please provide your legal name that will match a valid form of ID. Your legal name will not
@@ -180,7 +188,35 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
     </div>
-<?php
+    <div class='row'>
+        <div class='col-sm-12'>
+            <hr/>
+        </div>
+    </div>
+    <div class='row'>
+        <div class='col-sm-12'>
+            <p class='text-body'>
+                Select membership type from the drop-down menu below.
+                Eligibility for Child and Young Adult rates are based on age on <?php echo $ageByDate; ?>
+                (the first day of the convention).</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-auto me-2">
+            <label for="badgename" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
+            <input class="form-control-sm" type="text" name="badgename" id='badgename' size="35" maxlength="32"
+                   placeholder='defaults to first and last name' tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
+        </div>
+        <div class="col-sm-auto">
+            <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Membership Type</span></label><br/>
+            <select id='memType' name='memType' style="width:500px;" tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
+                <?php foreach ($membershipTypes as $memType) { ?>
+                    <option value='<?php echo $memType['id']; ?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price']; ?>)</option>
+                <?php } ?>
+            </select>
+        </div>
+    </div>
+        <?php
     } else {
 ?>
     <div class="row">
@@ -215,25 +251,27 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
     </div>
     <?php
-    if ((!array_key_exists('showConPolicy',$portal_conf)) || $portal_conf['showConPolicy'] == 1) {
+    if ((!array_key_exists('showConPolicy',$polConf)) || $polConf['showConPolicy'] == 1) {
         ?>
         <div class='row'>
             <div class='col-sm-12'>
                 <p class='text-body'>
-                    <a href="<?php echo escape_quotes($con['policy']); ?>" target='_blank'>Click here for
+                    <a href="<?php echo escape_quotes($con['policy']); ?>" target='_blank'
+                       tabindex="<?php echo $tabindex; $tabindex += 10;?>">Click here for
                         the <?php echo $con['policytext']; ?></a>.
                 </p>
             </div>
         </div>
         <?php
     }
-    if ((!array_key_exists('showVolunteerPolicy',$portal_conf)) || $portal_conf['showVolunteerPolicy'] == 1) {
+    if ((!array_key_exists('showVolunteerPolicy',$polConf)) || $polConf['showVolunteerPolicy'] == 1) {
         ?>
         <div class="row">
             <div class="col-sm-12">
                 <p class="text-body"><?php echo $con['conname']; ?> is entirely run by volunteers.
                     If you're interested in helping us run the convention please email
-                    <a href="mailto:<?php echo escape_quotes($con['volunteers']); ?>"><?php echo $con['volunteers']; ?></a>.
+                    <a href="mailto:<?php echo escape_quotes($con['volunteers']); ?>"
+                       tabindex="<?php echo $tabindex; $tabindex += 10;?>"><?php echo $con['volunteers']; ?></a>.
                 </p>
             </div>
         </div>

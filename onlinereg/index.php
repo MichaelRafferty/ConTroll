@@ -62,7 +62,7 @@ $js = "var mtypes = " . json_encode($membershiptypes);
 $startdate = new DateTime($condata['startdate']);
 $enddate = new DateTime($condata['enddate']);
 $daterange = $startdate->format("F j-") . $enddate->format("j, Y");
-$agebydate = $startdate->format("F j, Y");
+$ageByDate = $startdate->format("F j, Y");
 $altstring = $con['org'] . '. ' . $condata['label'] . ' . ' . $daterange;
 $onsitesale = $startdate->format("l, F j");
 
@@ -166,29 +166,16 @@ $onsitesale = $startdate->format("l, F j");
                         <h3 class="text-primary">New Convention Memberships</h3>
                         <form id='newBadgeForm' action='javascript:void(0);' class="form-floating">
 <?php
-    drawEditPersonBlock($con, $useUSPS, $policies, $class, /* modal */ true, /* editEmail */ true,
-                        /* tabIndexStart  */ 100);
-?>
-
-<?php
-    if (!(array_key_exists('showVolunteerPolicy', $reg_conf) && $reg_conf['showVolunteerPolicy'] == '0')) {
-?>
-                            <div class="row">
+    drawEditPersonBlock($con, $useUSPS, $policies, $class, /* modal */ true,
+        /* editEmail */ true, $ageByDate, $membershiptypes, /* tabIndexStart  */ 100);
+?>                            <div class="row">
                                 <div class="col-sm-12">
-                                    <p class="text-body"><?php echo $con['conname']; ?> is entirely run by volunteers.
-                                    If you're interested in helping us run the convention please email
-                                    <a href="mailto:<?php echo escape_quotes($con['volunteers']); ?>"><?php echo $con['volunteers']; ?></a>.
-                                    </p>
-                                </div>
-                            </div>
-<?php
-    }
-?>
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <button type="button" id="addToCartBtn" class="btn btn-sm btn-primary me-1" onclick="process('#newBadgeForm');">Add Membership To Cart</button>
-                                    <button type="button" class="btn btn-sm btn-primary ms-1 me-1" onclick='newBadgeModalClose();'>Review and Pay</button>
-                                    <button type="reset" class="btn btn-sm btn-secondary ms-1">Reset</button>
+                                    <button type="button" id="addToCartBtn" class="btn btn-sm btn-primary me-1"
+                                            onclick="process('#newBadgeForm');" tabindex="980">Add Membership To Cart</button>
+                                    <button type="button" class="btn btn-sm btn-primary ms-1 me-1"
+                                            onclick='newBadgeModalClose();' tabindex="985">Review and Pay</button>
+                                    <button type="reset" class="btn btn-sm btn-secondary ms-1"
+                                        tabindex="990">Reset</button>
                                 </div>
                             </div>
                         </form>

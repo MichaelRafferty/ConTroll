@@ -31,6 +31,13 @@ function drawPoliciesBlock($policies, $tabIndexStart) {
         $name = $policy['policy'];
         $prompt = replaceVariables($policy['prompt']);
         $description = replaceVariables($policy['description']);
+        /* fix prompt for an optional <a tag tab index */
+        if (preg_match("/<a href/", $prompt)) {
+            $prompt = preg_replace("/<a href=[^>]*/", '$0 tabindex="' . ($tabindex + 1) . '"', $prompt, 1);
+        }
+        if (preg_match('/<a href/', $description)) {
+            $description = preg_replace('/<a href=[^>]*/', '$0 tabindex="' . ($tabindex + 11) . '"', $description, 1);
+        }
         if ($policy['required'] == 'Y') {
             $prompt = "<span class='text-danger'>&bigstar;</span>" . $prompt;
         }
