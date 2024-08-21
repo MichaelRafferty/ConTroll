@@ -46,9 +46,9 @@ if (is_numeric($name_search)) {
 SELECT DISTINCT P.id as perid, IFNULL(P.first_name, '') as first_name, IFNULL(P.middle_name, '') as middle_name, IFNULL(P.last_name, '') as last_name, IFNULL(P.suffix, '') as suffix, IFNULL(P.badge_name, '') as badge_name, IFNULL(P.email_addr, '') as email_addr, IFNULL(P.phone, '') as phone,
     CASE 
         WHEN IFNULL(p.last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '\\s+', ' '))
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '\\s+', ' '))
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
         END AS fullname
     FROM perinfo P 
     WHERE P.id=?
@@ -67,9 +67,9 @@ EOS;
 SELECT DISTINCT P.id as perid, IFNULL(P.first_name, '') as first_name, IFNULL(P.middle_name, '') as middle_name, IFNULL(P.last_name, '') as last_name, IFNULL(P.suffix, '') as suffix, IFNULL(P.badge_name, '') as badge_name, IFNULL(P.email_addr, '') as email_addr, IFNULL(P.phone, '') as phone,
     CASE 
         WHEN IFNULL(p.last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '\\s+', ' '))
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '\\s+', ' '))
+            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
         END AS fullname
 FROM perinfo P
 WHERE 
