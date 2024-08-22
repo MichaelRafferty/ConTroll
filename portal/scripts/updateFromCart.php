@@ -95,9 +95,11 @@ catch (Exception $e) {
 if (array_key_exists('personType', $person)) {
     $personType = $person['personType'];
     $personId = $person['id'];
+    $existingPerson = true;
 } else {
     $personId = -1;
     $personType = 'n';
+    $existingPerson = false;
 }
 $newPerid = null;
 
@@ -386,9 +388,14 @@ EOS;
 }
 
 $newInterests = json_decode($_POST['newInterests'], true);
-$existingInterests = json_decode($_POST['oldInterests'], true);
-if ($existingInterests == null)
+if ($existingPerson) {
+    $existingInterests = json_decode($_POST['oldInterests'], true);
+    if ($existingInterests == null)
+        $existingInterests = array();
+} else {
     $existingInterests = array();
+}
+
 
 // find the differences in the interests to update the record
 
