@@ -25,11 +25,19 @@ EOS;
 }
 
 //drawInterestList - draw the inner block for interest editing
-function drawPoliciesBlock($policies) {
+function drawPoliciesBlock($policies, $tabIndexStart) {
+    $tabindex = $tabIndexStart;
     foreach ($policies as $policy) {
         $name = $policy['policy'];
         $prompt = replaceVariables($policy['prompt']);
         $description = replaceVariables($policy['description']);
+        /* fix prompt for an optional <a tag tab index */
+        if (preg_match("/<a href/", $prompt)) {
+            $prompt = preg_replace("/<a href=[^>]*/", '$0 tabindex="' . ($tabindex + 1) . '"', $prompt, 1);
+        }
+        if (preg_match('/<a href/', $description)) {
+            $description = preg_replace('/<a href=[^>]*/', '$0 tabindex="' . ($tabindex + 11) . '"', $description, 1);
+        }
         if ($policy['required'] == 'Y') {
             $prompt = "<span class='text-danger'>&bigstar;</span>" . $prompt;
         }
@@ -43,16 +51,20 @@ function drawPoliciesBlock($policies) {
     <div class='col-sm-12'>
         <p class='text-body'>
             <label>
-                <input type='checkbox' <?php echo $checked; ?> name='p_<?php echo $name;?>' id='p_<?php echo $name;?>' value='Y'/>
-                <span id="l_<?php echo $name;?>"><?php echo $prompt; ?></span>
+                <input type='checkbox' <?php echo $checked; ?> name='p_<?php echo $name;?>' id='p_<?php echo $name;?>' value='Y'
+                       tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
+                <span id="l_<?php echo $name;?>" name="l_<?php echo $name;?>"><?php echo $prompt; ?></span>
             </label>
             <?php if ($description != '') { ?>
             <span class="small"><a href='javascript:void(0)' onClick='$("#<?php echo $name;?>Tip").toggle()'>
-                    <img src="/lib/infoicon.png"  alt="click this info icon for more information" style="max-height: 25px;"></a></span>
+                    <img src="/lib/infoicon.png"  alt="click this info icon for more information" style="max-height: 25px;"
+                         tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
+                </a></span>
         <div id='<?php echo $name;?>Tip' class='padded highlight' style='display:none'>
             <p class='text-body'><?php echo $description; ?>
                 <span class='small'><a href='javascript:void(0)' onClick='$("#<?php echo $name;?>Tip").toggle()'>
-                      <img src='/lib/closeicon.png' alt='click this close icon to close the more information window' style='max-height: 25px;'>
+                      <img src='/lib/closeicon.png' alt='click this close icon to close the more information window' style='max-height: 25px;'
+                           tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
                     </a></span>
             </p>
         </div>

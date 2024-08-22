@@ -56,7 +56,7 @@ if ($checkR->num_rows != count($transferList)) {
 $message = '';
 while ($row = $checkR->fetch_assoc()) {
     if (in_array($row['status'], $denyTransfer)) {
-        $message .= "Registration " + $row['id'] . " of status " + $row['status'] . " is denied for transfers.<br/>";
+        $message .= "Registration " . $row['id'] . " of status " . $row['status'] . " is denied for transfers.<br/>";
     }
 }
 $checkR->free();

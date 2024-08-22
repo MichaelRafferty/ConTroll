@@ -26,6 +26,8 @@ CREATE TABLE `paymentPlans` (
   `payType` enum('manual','auto') COLLATE utf8mb4_general_ci DEFAULT 'manual',
   `modify` enum('Y','N') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
   `reminders` enum('Y','N') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
+  `downIncludeNonPlan` enum('Y','N') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
+  `lastPaymentPartial` enum('Y','N') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
   `active` enum('Y','N') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Y',
   `sortorder` int NOT NULL DEFAULT '0',
   `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

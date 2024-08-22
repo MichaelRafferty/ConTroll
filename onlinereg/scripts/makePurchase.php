@@ -3,6 +3,8 @@ require_once('../lib/base.php');
 require_once("../../lib/log.php");
 require_once("../../lib/cc__load_methods.php");
 require_once("../../lib/purchase.php");
+require_once("../../lib/policies.php");
+require_once("../../lib/interests.php");
 require_once("../../lib/coupon.php");
 require_once("../../lib/email__load_methods.php");
 require_once "../lib/email.php";
@@ -30,6 +32,7 @@ else {
 }
 $nonce = $_POST['nonce'];
 $purchaseform = $_POST['purchaseform'];
+$policyInterestForm = $_POST['policyInterestForm'];
 $badges = $badgestruct['badges'];
 $webtotal = $badgestruct['total'];
 $couponDiscount = null;
@@ -224,6 +227,7 @@ EOF;
             trim($badge['fname']),
             trim($badge['suffix']),
             trim($badge['legalname']),
+            trim($badge['pronouns']),
             trim($badge['email1']),
             trim($badge['phone']),
             trim($badge['badgename']),
@@ -239,12 +243,12 @@ EOF;
         );
 
         $insertQ = <<<EOS
-INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone,
+INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, pronouns, email_addr, phone,
     badge_name, address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, perid)
-    VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 
-        $newid = dbSafeInsert($insertQ, 'ssssssssssssssssi', $value_arr);
+        $newid = dbSafeInsert($insertQ, 'sssssssssssssssssi', $value_arr);
         $people[$count]['newid'] = $newid;
         $people[$count]['perid'] = $id;
 
@@ -370,6 +374,44 @@ dbSafeCmd($regQ, "ii", array($transid, $transid));
 if ($coupon !== null && $coupon['keyId'] !== null) {
     $cupQ = 'UPDATE couponKeys SET usedBy = ?, useTS = current_timestamp WHERE id = ?';
     dbSafeCmd($cupQ, 'ii', array($transid, $coupon['keyId']));
+}
+
+// insert policies
+$policies = getPolicies();
+$iQ = <<<EOS
+INSERT INTO memberPolicies(conid, newperid, policy, response)
+VALUES (?,?,?,?);
+EOS;
+
+if ($policies != null) {
+    $policy_upd = 0;
+    foreach ($policies as $policy) {
+        $policyName = $policy['policy'];
+        $newVal = array_key_exists('p_' . $policyName, $policyInterestForm) ? 'Y' : 'N';
+        $ins_key = dbSafeInsert($iQ, 'iiss', array($conid, $newid, $policyName, $newVal));
+        if ($ins_key !== false) {
+            $policy_upd++;
+        }
+    }
+}
+
+// insert interests
+$insInterest = <<<EOS
+INSERT INTO memberInterests(newperid, conid, interest, interested)
+VALUES (?, ?, ?, ?);
+EOS;
+
+$rows_upd = 0;
+$interests = getInterests();
+if ($interests != null) {
+    foreach ($interests as $interest) {
+        $interestName = $interest['interest'];
+        $newVal = array_key_exists($interestName, $policyInterestForm) ? 'Y' : 'N';
+        // row doesn't exist in existing interests
+        $newkey = dbSafeInsert($insInterest, 'iiss', array ($newid, $conid, $interestName, $newVal));
+        if ($newkey !== false && $newkey > 0)
+            $rows_upd++;
+    }
 }
 
 if ($total > 0) {

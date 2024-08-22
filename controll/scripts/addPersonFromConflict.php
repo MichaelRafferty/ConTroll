@@ -24,7 +24,7 @@ if(!isset($_POST) || !isset($_POST['newID'])) {
 
 // check if this person is managed by a different new person
 $checkQ = <<<EOS
-SELECT managedByNew
+SELECT managedByNew, managedBy
 FROM newperson
 WHERE id = ?;
 EOS;
@@ -34,7 +34,9 @@ if ($checkR === false) {
     ajaxSuccess($response);
     exit();
 }
-$manager = $checkR->fetch_row()[0];
+$mby = $checkR->fetch_assoc();
+$manager = $mby['managedByNew'];
+$managerP = $mby['managedBy'];
 $managerPerid = null;
 $checkR->free();
 if ($manager != NULL) {
@@ -47,11 +49,17 @@ EOS;
 
     $checkR = dbSafeQuery($checkQ,'i', array($manager));
     $managerPerid = $checkR->fetch_row()[0];
+    $checkR->free();
     if ($managerPerid == NULL) {
         $response['error'] = "Must first resolve their manager, newid $manager";
         ajaxSuccess($response);
         exit();
     }
+}
+if ($managerPerid != null && $managerP != $managerPerid) {
+    $response['error'] = "Conflict in resolved managers:  $managerP vs $managerPerid";
+    ajaxSuccess($response);
+    exit();
 }
 
 $newPersonQ = <<<EOQ
@@ -67,7 +75,7 @@ FROM newperson
 WHERE id = ?;
 EOQ;
 
-$id = dbSafeInsert($newPersonQ, "iii", array($_SESSION['user_perid'], $managerPerid, $_POST['newID']));
+$id = dbSafeInsert($newPersonQ, "iii", array($_SESSION['user_perid'], $managerP, $_POST['newID']));
 if ($id !== false) {
     // fix this person's newperson record with their new perid
     $rows = dbSafeCmd("UPDATE newperson SET perid=?, updatedBy = ? WHERE id=?;", 'iii', array ($id, $_SESSION['user_perid'], $_POST['newID']));

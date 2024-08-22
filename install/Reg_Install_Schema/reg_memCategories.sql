@@ -12,6 +12,7 @@
 DROP TABLE IF EXISTS `memCategories`;
 CREATE TABLE `memCategories` (
   `memCategory` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `notes` varchar(1024) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `onlyOne` enum('Y','N') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Y',
   `standAlone` enum('Y','N') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
   `variablePrice` enum('Y','N') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',

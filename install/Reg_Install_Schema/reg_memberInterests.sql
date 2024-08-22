@@ -23,7 +23,9 @@ CREATE TABLE `memberInterests` (
   `updateDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `updateBy` int DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `interest` (`interest`)
+  KEY `interest` (`interest`),
+  KEY `newperid` (`newperid`),
+  KEY `perid` (`perid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

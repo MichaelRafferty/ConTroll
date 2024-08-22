@@ -169,6 +169,27 @@ function add_found(data) {
     }
 }
 
+// show the full perinfo record as a hover in the table
+function build_record_hover(e, cell, onRendered) {
+    var data = cell.getData();
+    //console.log(data);
+    var hover_text = 'Person id: ' + data['perid'] + '<br/>' +
+        (data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name']).trim() + '<br/>' +
+        data['address_1'] + '<br/>';
+    if (data['address_2'] != '') {
+        hover_text += data['address_2'] + '<br/>';
+    }
+    hover_text += data['city'] + ', ' + data['state'] + ' ' + data['postal_code'] + '<br/>';
+    if (data['country'] != '' && data['country'] != 'USA') {
+        hover_text += data['country'] + '<br/>';
+    }
+    hover_text += 'Badge Name: ' + badge_name_default(data['badge_name'], data['first_name'], data['last_name']) + '<br/>' +
+        'Email: ' + data['email_addr'] + '<br/>' + 'Phone: ' + data['phone'] + '<br/>' +
+        'Active:' + data['active'] + ' Contact?:' + data['contact_ok'] + ' Share?:' + data['share_reg_ok'] + '<br/>';
+
+    return hover_text;
+}
+
 // tabulator formatter for the merge column for the find results, displays the "Select" to mark the user to add
 function addNewUser(cell, formatterParams, onRendered) { //plain text value
     var tid;

@@ -3,6 +3,14 @@ input.need {
   background-color: red;
 }
 
+span.need {
+    background-color: rgba(255,0,0,0.3);
+}
+
+span.req, .warn {
+    font-weight: bold;
+    color: red;
+}
 
 h3 { 
   text-align: center;

@@ -138,7 +138,7 @@ INSERT INTO portalTokenLinks(email, action, source_ip)
 VALUES(?, 'identity', ?);
 EOS;
 $insid = dbSafeInsert($insQ, 'ss', array($email, $_SERVER['REMOTE_ADDR']));
-if ($insid != false) {
+if ($insid === false) {
     web_error_log('Error inserting tracking ID for email link');
 }
 

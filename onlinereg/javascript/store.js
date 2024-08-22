@@ -55,6 +55,10 @@ function URLparamsToArray(urlargs, doTrim = false) {
 function process(formRef) {
     var valid = true;
     var formData = URLparamsToArray($(formRef).serialize(), true);
+    var policyData = URLparamsToArray($('#editPolicies').serialize(), true);
+    var message = "Please correct the items highlighted in red and validate again.<br/>" +
+        "Note: If any of the address fields are used and the country is United States, " +
+        "then the Address, City, State, and Zip fields must all be entered.";
 
     clear_message('addMessageDiv');
     // validation
@@ -136,6 +140,10 @@ function process(formRef) {
         $('#memId').removeClass('need');
     }
 
+    if (!valid) {
+        message += '';
+    }
+
     if (badges['memTypeCount'][formData['memId']] == null)
         badges['memTypeCount'][formData['memId']] = 0;
 
@@ -149,9 +157,26 @@ function process(formRef) {
         }
     }
 
+    for (var row in policies) {
+        var policy = policies[row];
+        if (policy.required == 'Y') {
+            var field = '#l_' + policy.policy;
+            if (typeof policyData['p_' + policy.policy] === 'undefined') {
+                console.log("required policy " + policy.policy + ' is not checked');
+                message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
+                $(field).addClass('need');
+                valid = false;
+            } else {
+                $(field).removeClass('need');
+            }
+        }
+    }
+
     // don't continue to process if any are missing
-    if (!valid)
+    if (!valid) {
+        show_message(message, "error", 'addMessageDiv');
         return false;
+    }
 
     // Check USPS for standardized address
     if (uspsDiv != null && (formData['country'] == 'USA')) {
@@ -441,6 +466,7 @@ function makePurchase(token, label) {
         badges: badges,
         nonce: token,
         purchaseform: URLparamsToArray($('#purchaseForm').serialize()),
+        policyInterestForm: URLparamsToArray($('#editPolicies').serialize()),
         couponCode: coupon.getCouponCode(),
         couponSerial: coupon.getCouponSerial(),
         couponSubtotal: couponSubtotal,
@@ -545,9 +571,10 @@ function repriceCart() {
     var itemtype = '';
     for (row in mtypes) {
         mbrtype = mtypes[row];
-        num = 0;
         if (nbrs[mbrtype['id']] > 0) {
             num = nbrs[mbrtype['id']];
+        } else {
+            continue;
         }
         // need to set num here
         if (mbrtype['memCategory'] == 'add-on' || mbrtype['memCategory'] == 'addon')

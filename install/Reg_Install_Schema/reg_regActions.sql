@@ -6,22 +6,22 @@
 
 
 --
--- Table structure for table `reg_history`
+-- Table structure for table `regActions`
 --
 
-DROP TABLE IF EXISTS `reg_history`;
-CREATE TABLE `reg_history` (
+DROP TABLE IF EXISTS `regActions`;
+CREATE TABLE `regActions` (
   `id` int NOT NULL AUTO_INCREMENT,
   `logdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `userid` int NOT NULL,
-  `tid` int NOT NULL,
+  `tid` int DEFAULT NULL,
   `regid` int NOT NULL,
   `action` enum('attach','print','notes','transfer','rollover','overpayment','refund') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `notes` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `notes` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `atcon_history_tid_fk` (`tid`),
-  KEY `atcon_history_regid_fk` (`regid`),
-  KEY `atcon_history_userid_fk` (`userid`)
+  KEY `regActions_tid_fk` (`tid`),
+  KEY `regActions_regid_fk` (`regid`),
+  KEY `regActions_userid_fk` (`userid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

@@ -3,6 +3,9 @@
 require_once("lib/base.php");
 require_once('../lib/global.php');
 require_once("../lib/cc__load_methods.php");
+require_once("../lib/profile.php");
+require_once("../lib/policies.php");
+require_once("../lib/interests.php");
 require_once("../lib/coupon.php");
 
 $cc = get_conf('cc');
@@ -15,6 +18,7 @@ $condata = get_con();
 $urlCouponCode = '';
 $urlSerialNum = '';
 $serialHidden = 'hidden';
+$class = '';
 
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -39,6 +43,8 @@ else {
         }
     }
 }
+$policies = getPolicies();
+$interests = getInterests();
 $membershiptypes = array();
 $priceQ = <<<EOS
 SELECT id, label, shortname, sort_order, price, memAge, memCategory
@@ -54,11 +60,14 @@ $priceR = dbSafeQuery($priceQ, "i", array($condata['id']));
 while($priceL = $priceR->fetch_assoc()) {
     $membershiptypes[] = $priceL;
 }
-$js = "var mtypes = " . json_encode($membershiptypes);
+$js = "var mtypes = " . json_encode($membershiptypes) . PHP_EOL .
+    "var numCoupons = " . $numCoupons . ";" . PHP_EOL .
+    "var policies = " . json_encode($policies) . PHP_EOL .
+    "var interests = " . json_encode($interests) . PHP_EOL;
 $startdate = new DateTime($condata['startdate']);
 $enddate = new DateTime($condata['enddate']);
 $daterange = $startdate->format("F j-") . $enddate->format("j, Y");
-$agebydate = $startdate->format("F j, Y");
+$ageByDate = $startdate->format("F j, Y");
 $altstring = $con['org'] . '. ' . $condata['label'] . ' . ' . $daterange;
 $onsitesale = $startdate->format("l, F j");
 
@@ -161,196 +170,27 @@ $onsitesale = $startdate->format("l, F j");
                      <div id='newBadgeBody' class="container-fluid form-floating" style="background:#f4f4ff;">
                         <h3 class="text-primary">New Convention Memberships</h3>
                         <form id='newBadgeForm' action='javascript:void(0);' class="form-floating">
-                            <div class="row" style="width:100%;">
+<?php
+    drawEditPersonBlock($con, $useUSPS, $policies, $class, /* modal */ true,
+        /* editEmail */ true, $ageByDate, $membershiptypes, /* tabIndexStart  */ 100);
+    if (count($interests) > 0) {
+?>
+        <div class='row'>
+            <div class='col-sm-12'>
+                <hr/>
+            </div>
+        </div>
+<?php
+        drawInterestList($interests);
+    }
+?>                            <div class="row mt-4">
                                 <div class="col-sm-12">
-                                    <p class="text-body">Note: Please provide your legal name that will match a valid form of ID. Your legal name will not be publicly visible.  If you don't provide one, it will default to your First, Middle, Last Names and Suffix.</p>
-                                    <p class="text-body">Items marked with <span class="text-danger">&bigstar;</span> are required fields.</p>
-                                </div>
-                            </div>
-                            <?php if ($useUSPS) echo '<div class="row"><div class="col-sm-8"><div class="container-fluid">' . PHP_EOL; ?>
-                                <div class="row">
-                                    <div class="col-sm-auto ms-0 me-2 p-0">
-                                        <label for="fname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>First Name</span></label><br/>
-                                        <input class="form-control-sm" type="text" name="fname" id='fname' size="22" maxlength="32" tabindex="2"/>
-                                    </div>
-                                    <div class="col-sm-auto ms-0 me-2 p-0">
-                                        <label for="mname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
-                                        <input class="form-control-sm" type="text" name="mname" id='mname' size="8" maxlength="32" tabindex="4"/>
-                                    </div>
-                                    <div class="col-sm-auto ms-0 me-2 p-0">
-                                        <label for="lname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Last Name</span></label><br/>
-                                        <input class="form-control-sm" type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="6"/>
-                                    </div>
-                                    <div class="col-sm-auto ms-0 me-0 p-0">
-                                        <label for="suffix" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
-                                        <input class="form-control-sm" type="text" name="suffix" id='suffix' size="4" maxlength="4" tabindex="8"/>
-                                    </div>
-                                </div>
-                                <div class='row'>
-                                    <div class='col-sm-12 ms-0 me-0 p-0'>
-                                        <label for='legalname' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
-                                        <input class='form-control-sm' type='text' name='legalname' id='legalname' size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix' tabindex='10'/>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-sm-12 ms-0 me-0 p-0">
-                                        <label for="addr" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Address</span></label><br/>
-                                        <input class="form-control-sm" type="text" name='addr' id='addr' size=64 maxlength="64" tabindex='12'/>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-sm-12 ms-0 me-0 p-0">
-                                        <label for="addr2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
-                                        <input class="form-control-sm" type="text" name='addr2' id='addr2' size=64 maxlength="64" tabindex='14'/>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-sm-auto ms-0 me-2 p-0">
-                                        <label for="city" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>City</span></label><br/>
-                                        <input class="form-control-sm" type="text" name="city" id='city' size="22" maxlength="32" tabindex="16"/>
-                                    </div>
-                                    <div class="col-sm-auto ms-0 me-2 p-0">
-                                        <label for="state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>State: US/CAN 2 letter abv.</span></label><br/>
-                                        <input class="form-control-sm" type="text" name="state" id='state' size="16" maxlength="16" tabindex="18"/>
-                                    </div>
-                                    <div class="col-sm-auto ms-0 me-2 p-0">
-                                        <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Zip</span></label><br/>
-                                        <input class="form-control-sm" type="text" name="zip" id='zip' size="5" maxlength="10" tabindex="20"/>
-                                    </div>
-                                    <div class="col-sm-auto ms-0 me-0 p-0">
-                                        <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
-                                        <select name='country' tabindex='22' id='country' onchange="countryChange();">
-                                    <?php
-                      $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-                      while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-                          echo '<option value="' . escape_quotes($data[1]) . '">' .$data[0]. '</option>';
-                      }
-                      fclose($fh);
-                                    ?>
-                                        </select>
-                                    </div>
-                                </div>
-                                <?php if ($useUSPS) echo '</div></div><div class="col-sm-4" id="uspsblock"></div></div>' . PHP_EOL; ?>
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <hr/>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div col="col-sm-12">
-                                    <p class="text-body">Contact Information
-                                     (<a href="<?php echo escape_quotes($con['privacypolicy']);?>" target='_blank'><?php echo $con['privacytext'];?></a>).</p>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="email1" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Email</span></label><br/>
-                                    <input class="form-control-sm" type="email" name="email1" id='email1' size="35" maxlength="254" tabindex="24"/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-0 p-0">
-                                    <label for="email2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Confirm Email</span></label><br/>
-                                    <input class="form-control-sm" type="email" name="email2" id='email2' size="35" maxlength="254" tabindex="26"/>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-6 ms-0 me-0 p-0">
-                                    <label for="phone" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="phone" id='phone' size="20" maxlength="15" tabindex="28"/>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <hr/>
-                                </div>
-                            </div>
-                             <div class="row">
-                                <div class="col-sm-12">
-                                    <p class="text-body">
-                                Select membership type from the drop-down menu below.
-                                Eligibility for Child and Young Adult rates are based on age on <?php echo $agebydate; ?>
-                                (the first day of the convention).</p>
-                                </div>
-                             </div>
-                            <div class="row">
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="badgename" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
-                                    <input class="form-control-sm" type="text" name="badgename" id='badgename' size="35" maxlength="32"  placeholder='defaults to first and last name' tabindex="30"/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-0 p-0">
-                                    <label for="memId" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
-                                                    class='text-danger'>&bigstar;</span>Membership Type</span></label><br/>
-                                    <select id='memId' name='memId' style="width:500px;" tabindex='32' title='Age is as of <?php echo substr($condata['startdate'], 0, 10); ?> (the first day of the convention)'>
-                                        <?php foreach ($membershiptypes as $memType) { ?>
-                                            <option value='<?php echo $memType['id'];?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price'];?>)</option>
-                                        <?php    } ?>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class='row'>
-                                <div class='col-sm-12'>
-                                    <hr/>
-                                </div>
-                            </div>
-                            <div class='row'>
-                                <div class='col-sm-12'>
-                                    <p class='text-body'>
-                                        <a href="<?php echo escape_quotes($con['policy']); ?>" target='_blank'>Click here for
-                                            the <?php echo $con['policytext']; ?></a>.
-                                    </p>
-                                </div>
-                            </div>
-<?php               if (!(array_key_exists('showVolunteerPolicy', $reg_conf) && $reg_conf['showVolunteerPolicy'] == '0')) { ?>
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <p class="text-body"><?php echo $con['conname']; ?> is entirely run by volunteers.
-                                    If you're interested in helping us run the convention please email
-                                    <a href="mailto:<?php echo escape_quotes($con['volunteers']); ?>"><?php echo $con['volunteers']; ?></a>.
-                                    </p>
-                                </div>
-                            </div>
-<?php                      } ?>
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <p class="text-body">
-                                        <label>
-                                            <input type='checkbox' checked name='contact' id='contact' value='Y'/>
-                                            <?php echo $con['remindertext']; ?>
-                                        </label>
-                                        <span class='small'><a href='javascript:void(0)' onClick='$("#contactTip").toggle()'>(more info)</a></span>
-                                        <div id='contactTip' class='padded highlight' style='display:none'>
-                                            <p class="text-body">
-                                                We will not sell your contact information or use it for any purpose other than contacting you about this
-                                                <?php echo $con['conname']; ?> or future <?php echo $con['conname']; ?>s.
-                                                <span class='small'><a href='javascript:void(0)' onClick='$("#contactTip").toggle()'>(close)</a></span>
-                                            </p>
-                                        </div>
-                                    </p>
-                                </div>
-                            </div>
-                             <div class="row">
-                                <div class="col-sm-12">
-                                    <p class="text-body">
-                                        <label>
-                                            <input type='checkbox' checked name='share' id='share' value='Y'/>
-                                            May we include you in our <a target='_blank' href='checkReg.php'>Check Registration page</a>?
-                                            This will allow you to check the status of your registration at your convenience.
-                                            If you choose to opt out, you can only check the status of your registration status by contacting
-                                            one of our volunteer staff at <?php echo $con['regemail']; ?> (please allow several days for a reply).
-                                        </label>
-                                    </p>
-                                </div>
-                             </div>
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <hr/>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <button type="button" id="addToCartBtn" class="btn btn-sm btn-primary me-1" onclick="process('#newBadgeForm');">Add Membership To Cart</button>
-                                    <button type="button" class="btn btn-sm btn-primary ms-1 me-1" onclick='newBadgeModalClose();'>Review and Pay</button>
-                                    <button type="reset" class="btn btn-sm btn-secondary ms-1">Reset</button>
+                                    <button type="button" id="addToCartBtn" class="btn btn-sm btn-primary me-1"
+                                            onclick="process('#newBadgeForm');" tabindex="980">Add Membership To Cart</button>
+                                    <button type="button" class="btn btn-sm btn-primary ms-1 me-1"
+                                            onclick='newBadgeModalClose();' tabindex="985">Review and Pay</button>
+                                    <button type="reset" class="btn btn-sm btn-secondary ms-1"
+                                        tabindex="990">Reset</button>
                                 </div>
                             </div>
                         </form>

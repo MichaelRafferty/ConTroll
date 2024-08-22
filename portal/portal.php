@@ -7,6 +7,7 @@ require_once('../lib/email__load_methods.php');
 require_once('../lib/cipher.php');
 require_once('lib/sessionManagement.php');
 require_once("../lib/interests.php");
+require_once("../lib/profile.php");
 require_once("../lib/policies.php");
 require_once("../lib/paymentPlans.php");
 require_once("../lib/coupon.php");
@@ -334,7 +335,6 @@ if ($refresh) {
 </script>
 <?php
 // draw all the modals for this screen
-$policies = getPolicies();
 draw_editPersonModal('portal', $policies);
 draw_editInterestsModal($interests);
 draw_paymentDueModal();
