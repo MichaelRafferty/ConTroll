@@ -155,5 +155,17 @@ if ($errors != '') {
     error_log($errors);
 }
 
-ajaxSuccess($response);
+// ok, we edit the person for a reason, they were a conflict, they should have regs and other records outstanding,
+
+// update referenced tables reg, transaction, exhibiors, memberInterests, memberPolciies and payorPlans to now point to the perid
+$rows = dbSafeCmd('UPDATE newperson SET perid=? WHERE id=? AND perid IS NULL;', 'ii', array ($perid, $newperid));
+$rows = dbSafeCmd('UPDATE reg SET perid=? WHERE newperid=? AND perid IS NULL;', 'ii', array ($perid, $newperid));
+$rows = dbSafeCmd('UPDATE transaction SET perid=? WHERE newperid=? AND perid IS NULL;', 'ii', array ($perid, $newperid));
+$rows = dbSafeCmd('UPDATE exhibitors SET perid=? WHERE newperid=? AND perid IS NULL;', 'ii', array ($perid, $newperid));
+$rows = dbSafeCmd('UPDATE memberInterests SET perid=? WHERE newperid=? AND perid IS NULL;', 'ii', array ($perid, $newperid));
+$rows = dbSafeCmd('UPDATE memberPolicies SET perid=? WHERE newperid=? AND perid IS NULL;', 'ii', array ($perid, $newperid));
+$rows = dbSafeCmd('UPDATE payorPlans SET perid=? WHERE newperid=? AND perid IS NULL;', 'ii', array ($perid, $newperid));
+
+
+    ajaxSuccess($response);
 ?>
