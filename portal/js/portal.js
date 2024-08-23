@@ -913,7 +913,11 @@ class Portal {
                 console.log(data);
             show_message(data['message']);
             this.#editInterestsModal.hide();
-            if (data['rows_upd'] > 0) {
+            // ok, if we got here because of needInterests, go to add/update for the cart
+            if (config['needInterests'] == 1) {
+                if (confirm("Add memberships to your account now?"))
+                    this.addMembership(config['id'], config['idType']);
+            } else if (data['rows_upd'] > 0) {
                 window.location = '?messageFwd=' + encodeURI(data['message']);
             }
         }
