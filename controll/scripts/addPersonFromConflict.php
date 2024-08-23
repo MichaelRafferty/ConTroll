@@ -55,9 +55,17 @@ EOS;
         ajaxSuccess($response);
         exit();
     }
+    // ok, the managerPerid (the perid assigned to the newperson who manages this record, has been updated,
+    //   we need to update this record to match
+    $rows = dbSafeCmd("UPDATE newperson SET managedBy = ?, managedByNew = null WHERE id = ?;",
+            'ii', array($managerPerid, $_POST['newID']));
+    if ($rows == 1) {
+        $manager = null;
+        $managerP = $managerPerid; // update to match what would have been returned if it was already updated.
+    }
 }
 if ($managerPerid != null && $managerP != $managerPerid) {
-    $response['error'] = "Conflict in resolved managers:  $managerP vs $managerPerid";
+    $response['error'] = "Conflict in resolved managers:  '$managerP' vs '$managerPerid'";
     ajaxSuccess($response);
     exit();
 }
