@@ -95,6 +95,9 @@ global $customTexT, $keyPrefix, $customTextFilter;
     function loadCustomText($app, $page, $filter) {
         global $customTexT, $keyPrefix, $customTextFilter;
 
+        if ($customTexT != null)
+            return; // already loaded
+
         $keyPrefix = $app . '/' . $page . '/';
         $customTextFilter = $filter;
         $keyApp = $app;
@@ -120,6 +123,11 @@ EOS;
 
         if ($customTextFilter == 'none')
             return;
+
+        if ($customTexT == null) {
+            return; // custom text not loaded.
+        }
+
 
         if (array_key_exists($keyPrefix . $key, $customTexT)) {
             $contents = $customTexT[$keyPrefix . $key];
