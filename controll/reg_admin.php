@@ -260,6 +260,9 @@ else
                         <button class='btn btn-sm btn-primary' id='transferSearch' onClick='changeTransferFind()'>Find Person</button>
                     </div>
                 </div>
+                <div class='row mt-3'>
+                    <div class='col-sm-12 p-0' id="transfer_search_results"></div>
+                </div>
             </div>
             <div class='container-fluid' id='rollover-div' hidden>
                 <div class='row p-1'>
