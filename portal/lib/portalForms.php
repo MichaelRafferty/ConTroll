@@ -367,7 +367,8 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
 <?php
     }
     $personArgs = json_encode(array('id' => $person['id'] , 'type' => $person['personType'], 'fullname' => $person['fullname'],
-                                'first_name' => $person['first_name'], 'last_name' => $person['last_name']));
+                                'first_name' => $person['first_name'], 'last_name' => $person['last_name'],
+                                'email_addr' => $person['email_addr']));
     $personArgs = str_replace('"', '\\u0022', $personArgs);
     $personArgs = str_replace("'", '\\u0027', $personArgs);
     ?>

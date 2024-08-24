@@ -419,7 +419,7 @@ class Portal {
         this.#currentPersonType = personData['type'];
 
         // change modal fields
-        this.#changeEmailH1.innerHTML = '<strong>Change Email Address for ' + personData['fullname'] + '</strong>';
+        this.#changeEmailH1.innerHTML = '<strong>Change Email Address for ' + personData['fullname'] + ' (' + personData['email_addr'] + ')</strong>';
 
         this.#changeEmailSubmitBtn.disabled = true;
         this.#changeEmailModal.show();
