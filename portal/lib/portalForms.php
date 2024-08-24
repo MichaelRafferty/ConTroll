@@ -338,7 +338,7 @@ EOS;
 <?php
 }
 // drawManagedRow: draw the memberships and buttons for a managed person or yourself
-function drawPersonRow($personId, $personType, $person, $memberships, $showInterests, $showHR) {
+function drawPersonRow($personId, $personType, $person, $memberships, $showInterests, $showHR, $now) {
         global $memershipButtonColors;
 
     $badge_name = $person['badge_name'];
@@ -451,15 +451,20 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
            } else {
                $ageRow = '<br/><b>' . $membership['ageShort'] . '</b> (' . $membership['ageLabel'] . ')';
            }
+           $expired = $membership['status'] == 'unpaid' &&
+                ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['startdate'] > $now || $membership['online'] == 'N');
            ?>
-        <div class="col-sm-3 ps-1 pe-1 m-0"><button class="btn btn-light border border-5 <?php echo $borderColor; ?>"
-            style="width: 100%; pointer-events:none; <?php echo $borderStyle; ?>" <?php echo $disabled; ?> tabindex="-1"><b><?php echo $membership['shortname']
-                    . "</b> (" .
-                    $membership['status']
-            . ")" . $ageRow . $row3; ?></button></div>
+        <div class="col-sm-3 ps-1 pe-1 m-0"><button class="btn btn-light border border-5 mt-1 <?php echo $borderColor; ?>"
+            style="width: 100%; pointer-events:none; <?php echo $borderStyle; ?>" <?php echo $disabled; ?> tabindex="-1"><b><?php
+                if ($expired)
+                    echo '<span class="text-danger">Expired: ';
+                echo $membership['shortname'] . "</b> (" . $membership['status']. ")";
+                if ($expired)
+                    echo '</span>';
+                echo $ageRow . $row3; ?></button></div>
 <?php
         }
-        echo "</div>\n";;
+        echo "</div>\n";
     }
 }
 

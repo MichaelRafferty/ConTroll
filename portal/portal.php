@@ -112,7 +112,8 @@ EOS;
                                          'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
                                          'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'],
                                          'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
-                                         'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName']
+                                         'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
+                                         'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
             );
         }
         $holderRegR->free();
@@ -311,6 +312,7 @@ EOS;
 
     $numCoupons = num_coupons();
 }
+$now = date_format(date_create('now'), 'Y-m-d H:i:s');
 
 portalPageInit('portal', $info,
     /* css */ array($cdn['tabcss'],
@@ -392,7 +394,7 @@ if ($info['managedByName'] != null) {
 </div>
 <?php
 $totalMemberships = count($holderMembership);
-drawPersonRow($loginId, $loginType, $info, $holderMembership, $interests != null, false);
+drawPersonRow($loginId, $loginType, $info, $holderMembership, $interests != null, false, $now);
 
 $managedMembershipList = '';
 $currentId = -1;
@@ -403,7 +405,7 @@ foreach ($managed as $m) {
     if ($currentId != $m['id']) {
         if ($currentId > 0) {
             $totalMemberships += count($curMB);
-            drawPersonRow($loginId, $loginType, $curPT, $curMB, $interests != null, true);
+            drawPersonRow($loginId, $loginType, $curPT, $curMB, $interests != null, true, $now);
         }
         $curPT = $m;
         $currentId = $m['id'];
@@ -422,13 +424,14 @@ foreach ($managed as $m) {
             'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
             'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'],
             'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
-            'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName']
+            'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
+            'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
         );
     }
 }
 if ($currentId > 0) { // if there are any at all
     $totalMemberships += count($curMB);
-    drawPersonRow($loginId, $loginType, $curPT, $curMB, $interests != null, true);
+    drawPersonRow($loginId, $loginType, $curPT, $curMB, $interests != null, true, $now);
 }
 // only draw the legend if someone has membership
 if ($totalMemberships > 0)
@@ -438,7 +441,6 @@ if ($totalMemberships > 0)
 $totalDue = 0;
 $totalUnpaid = 0;
 $totalPaid = 0;
-$now = date_format(date_create('now'), 'Y-m-d H:i:s');
 $numExpired = 0;
 $disablePay = '';
 
@@ -610,7 +612,7 @@ if (count($memberships) > 0) {
         if ($membership['status'] != $status) {
             if ($membership['status'] == 'unpaid')
                 $status = 'unpaid';
-            if ($membership['status'] == 'plan' && $status = 'paid')
+            if ($membership['status'] == 'plan' && $status == 'paid')
                 $status = 'plan';
         }
     }
@@ -652,10 +654,12 @@ if (count($memberships) > 0) {
         }
         if ($membership['status'] == 'unpaid') {
             $due = round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
-            $status = 'Balance due: ' . $dolfmt->formatCurrency((float) $due, $currency);
-        }
-        else {
-            $status = $membership['status'];
+            $status = '<b>Balance due: ' . $dolfmt->formatCurrency((float) $due, $currency) . '</b>';
+        } else if ($membership['status'] == 'paid') {
+            $status = 'paid: ' . $dolfmt->formatCurrency((float) $membership['price'], $currency);
+        } else if ($membership['status'] == 'plan') {
+            $status = 'plan: ' . $dolfmt->formatCurrency((float) $membership['paid'], $currency) .
+                ' of ' . $dolfmt->formatCurrency((float) $membership['price'], $currency);
         }
 ?>
         <div class='row'>
