@@ -967,7 +967,7 @@ class Portal {
     <div class="row mt-2">
         <div class="col-sm-12">
             You can pay this balance in full using the "Pay Total Amount Due" button above or<br/>
-            create one of the following payment plans using the "Select & Customize Payment Plan" buttons below:
+            create one of the following payment plans using the "Select" or "Customize" payment plan buttons below:
         </div>
     </div>
 `;
