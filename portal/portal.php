@@ -193,8 +193,7 @@ LEFT OUTER JOIN missPol ON ppl.id = missPol.id
 ORDER BY personType DESC, id ASC, create_date;
 EOS;
         $managedByR = dbSafeQuery($managedSQL, 'iiiiii', array ($conid, $loginId, $conid, $loginId, $loginId, $conid));
-    }
-    else {
+    } else {
         $managedSQL = <<<EOS
 WITH ppl AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
@@ -285,7 +284,7 @@ EOS;
     $policies = getPolicies();
 // Does this person have interests, if none in the system force them to go to the interests modal
     $config_vars['needInterests'] = 0;
-    if ($interests != NULL && count($interests) > 0) {
+    if ($interests != null && count($interests) > 0) {
         if ($loginType == 'p') {
             $pfield = 'perid';
             } else {
@@ -305,14 +304,55 @@ EOS;
             }
         }
     }
+}
 
 // get the payment plans
-    $paymentPlans = getPaymentPlans(true);
-// get valid coupons
+$paymentPlans = getPaymentPlans(true);
 
-    $numCoupons = num_coupons();
-}
+// get valid coupons
+$numCoupons = num_coupons();
+
 $now = date_format(date_create('now'), 'Y-m-d H:i:s');
+
+// compute total due so we can display it up top as well...
+$totalDue = 0;
+$totalUnpaid = 0;
+$totalPaid = 0;
+$numExpired = 0;
+$disablePay = '';
+
+foreach ($memberships as $key => $membership) {
+    $label = ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label'];
+    if ($membership['status'] == 'unpaid') {
+        $totalUnpaid++;
+        $totalDue += round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
+
+        if ($membership['status'] == 'unpaid') {
+            $due = round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
+            $status = 'Balance due: ' . $dolfmt->formatCurrency((float) $due, $currency);
+
+            if ($membership['status'] == 'unpaid' &&
+                ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['startdate'] > $now || $membership['online'] == 'N')) {
+                $label = "<span class='text-danger'><b>Expired: </b>$label</span>";
+                $numExpired++;
+            }
+        }
+    }
+    if ($membership['status'] == 'plan') {
+        $totalUnpaid++;
+    }
+    if ($membership['status'] == 'paid') {
+        $totalPaid++;
+    }
+    $memberships[$key]['displayLabel'] = $label;
+}
+if ($numExpired > 0) {
+    $disablePay = ' disabled';
+}
+if (array_key_exists('payorPlans', $paymentPlans)) {
+    $payorPlan = $paymentPlans['payorPlans'];
+} else
+    $payorPlan = [];
 
 portalPageInit('portal', $info,
     /* css */ array($cdn['tabcss'],
@@ -361,7 +401,27 @@ if ($info['managedByName'] != null) {
         <div class='col-sm-auto'><b>This person record is managed by <?php echo $info['managedByName']; ?></b></div>
         <div class='col-sm-auto'><button class="btn btn-warning btn-sm p-1" onclick="portal.disassociate();">Dissociate from <?php echo $info['managedByName']; ?></button></div>
     </div>
-<?php } ?>
+<?php
+}
+if ($totalDue > 0) {
+    $totalDueFormatted = 'Total due: ' . $dolfmt->formatCurrency((float) $totalDue, $currency);
+    $payHtml = " $totalDueFormatted   " .
+        '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.setFocus(\'totalDue\');"' .
+        $disablePay . '>Go to Payment Section</button>';
+?>
+    <div class='row mt-4'>
+        <div class='col-sm-12'>
+            <h1 class='size-h3'><?php echo $payHtml;?></h1>
+        </div>
+    </div>
+    <div class='row'>
+        <div class='col-sm-12 p-0 m-0 align-center'>
+            <hr style='height:4px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:#333333;background-color:#333333;'/>
+        </div>
+    </div>
+<?php
+}
+?>
 <div class='row mt-4'>
     <div class='col-sm-12'>
         <h1 class="size-h3">
@@ -437,46 +497,6 @@ if ($currentId > 0) { // if there are any at all
 if ($totalMemberships > 0)
     drawPortalLegend();
 
-// compute total due so we can display it up top as well...
-$totalDue = 0;
-$totalUnpaid = 0;
-$totalPaid = 0;
-$numExpired = 0;
-$disablePay = '';
-
-foreach ($memberships as $key => $membership) {
-    $label = ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label'];
-    if ($membership['status'] == 'unpaid') {
-        $totalUnpaid++;
-        $totalDue += round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
-
-        if ($membership['status'] == 'unpaid') {
-            $due = round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
-            $status = 'Balance due: ' . $dolfmt->formatCurrency((float) $due, $currency);
-
-            if ($membership['status'] == 'unpaid' &&
-                ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['startdate'] > $now || $membership['online'] == 'N')) {
-                $label = "<span class='text-danger'><b>Expired: </b>$label</span>";
-                $numExpired++;
-            }
-        }
-    }
-    if ($membership['status'] == 'plan') {
-        $totalUnpaid++;
-    }
-    if ($membership['status'] == 'paid') {
-        $totalPaid++;
-    }
-    $memberships[$key]['displayLabel'] = $label;
-}
-if ($numExpired > 0) {
-    $disablePay = ' disabled';
-}
-if (array_key_exists('payorPlans', $paymentPlans)) {
-    $payorPlan = $paymentPlans['payorPlans'];
-} else
-    $payorPlan = [];
-
 // create a div and bg color it to separate it logically from the other parts
 if ($totalDue > 0 || count($payorPlan) > 0) {
 ?>
@@ -486,20 +506,20 @@ if ($totalDue > 0 || count($payorPlan) > 0) {
 
 $payHtml = '';
 if ($totalDue > 0) {
-    $totalDueFormatted = '&nbsp;&nbsp;Total due: <span name="totalDueAmountSpan">' . $dolfmt->formatCurrency((float) $totalDue, $currency) . "</span>";
+    $totalDueFormatted = '&nbsp;&nbsp;Total due: <span name="totalDueAmountSpan">' . $dolfmt->formatCurrency((float) $totalDue, $currency) . '</span>';
     $payHtml = " $totalDueFormatted   " .
         '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.payBalance(' . $totalDue . ', true);"' .
-         $disablePay . '>Pay Total Amount Due</button>';
+        $disablePay . '>Pay Total Amount Due</button>';
     setSessionVar('totalDue', $totalDue); // used for validation in payment side
     if ($numCoupons > 0) {
         $payHtml .= ' <button class="btn btn-primary btn-sm pt-1 pb-1 ms-0 me-2" id="addCouponButton" onclick="coupon.ModalOpen(1)">Add Coupon</button>';
     }
 }
 
-if (count($payorPlan) > 0) {
-?>
-    <div class='row mt-5'>
-        <div class='col-sm-12'><h1 class="size-h3">Payment Plans for this account:</h1></div>
+    if (count($payorPlan) > 0) {
+        ?>
+        <div class='row mt-5'>
+            <div class='col-sm-12'><h1 class="size-h3">Payment Plans for this account:</h1></div>
     </div>
 <?php
     outputCustomText('main/plan');
