@@ -8,8 +8,6 @@ $return500errors = true;
 
 $response = array('post' => $_POST, 'get' => $_GET);
 
-
-
 if (!(array_key_exists('action', $_POST) && array_key_exists('email', $_POST))) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
     exit();
@@ -18,6 +16,22 @@ if (!(array_key_exists('action', $_POST) && array_key_exists('email', $_POST))) 
 if (!(isSessionVar('id') && isSessionVar('idType'))) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Not logged in.'));
     exit();
+}
+
+// check for being resolved/baned
+$resolveUpdates = isResolvedBanned();
+$response['resolveUpdates'] = $resolveUpdates;
+if ($resolveUpdates != null && $resolveUpdates['logout'] == 1) {
+    ajaxSuccess($response);
+    return;
+}
+
+// check for being resolved/baned
+$resolveUpdates = isResolvedBanned();
+$response['resolveUpdates'] = $resolveUpdates;
+if ($resolveUpdates != null && $resolveUpdates['logout'] == 1) {
+    ajaxSuccess($response);
+    return;
 }
 
 $loginId = getSessionVar('id');

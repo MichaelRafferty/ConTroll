@@ -29,6 +29,14 @@ if (!(isSessionVar('id') && isSessionVar('idType'))) {
     exit();
 }
 
+// check for being resolved/baned
+$resolveUpdates = isResolvedBanned();
+$response['resolveUpdates'] = $resolveUpdates;
+if ($resolveUpdates != null && $resolveUpdates['logout'] == 1) {
+    ajaxSuccess($response);
+    return;
+}
+
 $loginId = getSessionVar('id');
 $loginType = getSessionVar('idType');
 $acctId = $_POST['acctId'];
