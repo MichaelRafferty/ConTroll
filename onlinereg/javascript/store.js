@@ -56,8 +56,8 @@ function process(formRef) {
     var valid = true;
     var formData = URLparamsToArray($(formRef).serialize(), true);
     var policyData = URLparamsToArray($('#editPolicies').serialize(), true);
-    var message = "Please correct the items highlighted in red and validate again.<br/>" +
-        "Note: If any of the address fields are used and the country is United States, " +
+    var message = "Please correct the items highlighted in red and validate again.";
+        "<br/>Note: If any of the address fields are used and the country is United States, " +
         "then the Address, City, State, and Zip fields must all be entered.";
 
     clear_message('addMessageDiv');
@@ -76,6 +76,10 @@ function process(formRef) {
         $('#email2').removeClass('need');
     }
 
+    if (formData['country'] == 'USA') {
+        message += "<br/>Note: If any of the address fields Address, City, State or Zip are used and the country is United States, " +
+            "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
+    }
     // first name is required
     if (formData['fname'] == '') {
         valid = false;

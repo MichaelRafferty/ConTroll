@@ -525,14 +525,17 @@ class Portal {
         clear_message('epMessageDiv');
         var valid = true;
         var required = config['required'];
-        var message = "Please correct the items highlighted in red and validate again.<br/>" +
-        "Note: If any of the address fields are used and the country is United States, " +
-        "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
+        var message = "Please correct the items highlighted in red and validate again.";
 
         // trim trailing blanks
         var keys = Object.keys(person);
         for (var i = 0; i < keys.length; i++) {
             person[keys[i]] = person[keys[i]].trim();
+        }
+
+        if (person['country'] == 'USA') {
+            message += "<br/>Note: If any of the address fields Address, City, State or Zip are used and the country is United States, " +
+                "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
         }
         // validation
         if (required != '') {
