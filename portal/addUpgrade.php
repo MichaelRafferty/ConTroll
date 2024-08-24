@@ -17,6 +17,12 @@ $ini = get_conf('reg');
 $condata = get_con();
 
 if (isSessionVar('id') && isSessionVar('idType')) {
+    // check for being resolved/baned
+    $resolveUpdates = isResolvedBanned();
+    if ($resolveUpdates != null && $resolveUpdates['logout'] == 1) {
+        header('location:' . $portal_conf['portalsite']);
+        exit();
+    }
     $loginType = getSessionVar('idType');
     $loginId = getSessionVar('id');
 } else {
@@ -30,8 +36,8 @@ $config_vars['debug'] = $debug['portal'];
 $config_vars['conid'] = $conid;
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['regadminemail'] = $con['regadminemail'];
-$config_vars['personId'] = $loginId;
-$config_vars['personType'] = $loginType;
+$config_vars['id'] = $loginId;
+$config_vars['idType'] = $loginType;
 $config_vars['personEmail'] = getSessionVar('email');
 $config_vars['required'] = $ini['required'];
 $cdn = getTabulatorIncludes();

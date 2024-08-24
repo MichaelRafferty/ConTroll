@@ -26,14 +26,6 @@ if ($resolveUpdates != null && $resolveUpdates['logout'] == 1) {
     return;
 }
 
-// check for being resolved/baned
-$resolveUpdates = isResolvedBanned();
-$response['resolveUpdates'] = $resolveUpdates;
-if ($resolveUpdates != null && $resolveUpdates['logout'] == 1) {
-    ajaxSuccess($response);
-    return;
-}
-
 $loginId = getSessionVar('id');
 $loginType = getSessionVar('idType');
 $email = $_POST['email'];

@@ -143,7 +143,7 @@ class Membership {
             this.#addUpdateId = config['upgradeId'];
             this.getPersonInfo(this.#addUpdateId, this.#addUpdateType, true, false, 1);
         } else {
-            this.getPersonInfo(config.personId, config.personType, true, true, 0);
+            this.getPersonInfo(config.id, config.idType, true, true, 0);
         }
     }
 
@@ -194,6 +194,7 @@ class Membership {
             url: script,
             data: data,
             success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
                 if (data['status'] == 'error') {
                     show_message(data['message'], 'error');
                 } else if (data['status'] == 'warn') {
@@ -279,6 +280,7 @@ class Membership {
             url: script,
             data: data,
             success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
                 if (data['status'] == 'error') {
                     show_message(data['message'], 'error');
                     document.getElementById('sendManageRequestBTN').disabled = false;
@@ -317,6 +319,7 @@ class Membership {
             url: script,
             data: data,
             success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
                 if (data['status'] == 'error') {
                     show_message(data['message'], 'error');
                 } else if (data['status'] == 'warn') {
@@ -1152,6 +1155,7 @@ class Membership {
             url: script,
             data: data,
             success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
                 if (data['status'] == 'error') {
                     show_message(data['message'], 'error');
                     _this.#saveCartBtn.disabled = false;

@@ -32,13 +32,7 @@ if (!array_key_exists('code', $_POST)) {
     exit();
 }
 
-// check for being resolved/baned
-$resolveUpdates = isResolvedBanned();
-$response['resolveUpdates'] = $resolveUpdates;
-if ($resolveUpdates != null && $resolveUpdates['logout'] == 1) {
-    ajaxSuccess($response);
-    return;
-}
+// DO NOT CHECK FOR isResolveBanned - this is a variant of a call from a global library, let another JS handle it.
 
 $loginId = getSessionVar('id');
 $loginType = getSessionVar('idType');

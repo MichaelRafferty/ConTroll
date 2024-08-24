@@ -248,6 +248,7 @@ class Portal {
             url: script,
             data: data,
             success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
                 if (data['status'] == 'error') {
                     show_message(data['message'], 'error');
                 } else if (data['status'] == 'warn') {
@@ -308,6 +309,7 @@ class Portal {
             url: script,
             data: data,
             success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
                 if (data['status'] == 'error') {
                     show_message(data['message'], 'error');
                 } else if (data['status'] == 'warn') {
@@ -473,6 +475,7 @@ class Portal {
             data: data,
             method: 'POST',
             success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
                 if (data['status'] == 'error') {
                     show_message(data['message'], 'error', 'ceMessageDiv');
                     return false;
@@ -630,6 +633,7 @@ class Portal {
                 data: person,
                 method: 'POST',
                 success: function (data, textStatus, jqXhr) {
+                    checkResolveUpdates(data);
                     if (data['status'] == 'error') {
                         show_message(data['message'], 'error', 'epMessageDiv');
                         return false;
@@ -766,8 +770,8 @@ class Portal {
             url: script,
             data: data,
             success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
                 portal.updatePersonSuccess(data);
-
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showAjaxError(jqXHR, textStatus, errorThrown, 'epMessageDiv');
@@ -824,6 +828,7 @@ class Portal {
             url: script,
             data: data,
             success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
                 if (data['status'] == 'error') {
                     show_message(data['message'], 'error');
                 } else if (data['status'] == 'warn') {
@@ -894,8 +899,8 @@ class Portal {
             url: script,
             data: data,
             success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
                 portal.updateInterestsSuccess(data);
-
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
@@ -1051,6 +1056,7 @@ class Portal {
             data: data,
             method: 'POST',
             success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
                 portal.makePurchaseSuccess(data);
                 return true;
             },
@@ -1103,6 +1109,7 @@ class Portal {
             data: data,
             method: 'POST',
             success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
                 portal.showReceipt(data);
                 return true;
             },
@@ -1156,6 +1163,7 @@ class Portal {
             url: "scripts/emailReceipt.php",
             data: data,
             success: function (data, textstatus, jqxhr) {
+                checkResolveUpdates(data);
                 if (data['status'] == 'error') {
                     show_message(data['message'], 'error');
                     return;

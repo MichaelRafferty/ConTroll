@@ -12,6 +12,12 @@ $ini = get_conf('reg');
 $condata = get_con();
 
 if (isSessionVar('id') && isSessionVar('idType')) {
+    // check for being resolved/baned
+    $resolveUpdates = isResolvedBanned();
+    if ($resolveUpdates != null && $resolveUpdates['logout'] == 1) {
+        header('location:' . $portal_conf['portalsite']);
+        exit();
+    }
     $personType = getSessionVar('idType');
     $personId = getSessionVar('id');
 } else {
@@ -25,8 +31,8 @@ $config_vars['debug'] = $debug['portal'];
 $config_vars['conid'] = $conid;
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['regadminemail'] = $con['regadminemail'];
-$config_vars['personId'] = $personId;
-$config_vars['personType'] = $personType;
+$config_vars['id'] = $personId;
+$config_vars['idType'] = $personType;
 $cdn = getTabulatorIncludes();
 
 // build info array about the account holder

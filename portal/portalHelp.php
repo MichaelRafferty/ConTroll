@@ -13,6 +13,12 @@
     $condata = get_con();
 
     if (isSessionVar('id') && isSessionVar('idType')) {
+        // check for being resolved/baned
+        $resolveUpdates = isResolvedBanned();
+        if ($resolveUpdates != null && $resolveUpdates['logout'] == 1) {
+            header('location:' . $portal_conf['portalsite']);
+            exit();
+        }
         $loginType = getSessionVar('idType');
         $loginId = getSessionVar('id');
         $expiration = getSessionVar('tokenExpiration');

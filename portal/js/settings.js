@@ -32,6 +32,7 @@ class Settings {
             url: script,
             data: data,
             success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
                 if (data['status'] == 'error') {
                     show_message(data['message'], 'error');
                 } else if (data['status'] == 'warn') {
@@ -89,6 +90,7 @@ class Settings {
             url: script,
             data: data,
             success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
                 if (data['status'] == 'error') {
                     show_message(data['message'], 'error');
                     document.getElementById('attachBtn').disabled = false;
@@ -121,6 +123,7 @@ class Settings {
             url: script,
             data: data,
             success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
                 if (data['status'] == 'error') {
                     show_message(data['message'], 'error');
                 } else if (data['status'] == 'warn') {
@@ -173,6 +176,7 @@ class Settings {
             url: script,
             data: data,
             success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
                 if (data['status'] == 'error') {
                     show_message(data['message'], 'error');
                     document.getElementById('newIdentity').disabled = false;
