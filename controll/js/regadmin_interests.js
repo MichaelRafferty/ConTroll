@@ -29,6 +29,11 @@ class interestsSetup {
 
     // globals before open
     constructor() {
+        this.#debug = debug;
+        if (this.#debug & 2) {
+            this.#debugVisible = true;
+        }
+
         this.#messageDiv = document.getElementById('test');
         this.#interestsPane = document.getElementById('interests-pane');
 

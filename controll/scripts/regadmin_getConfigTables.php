@@ -84,6 +84,95 @@ EOS;
         $response['customText'] = $customText;
         break;
 
+    case 'rules':
+        // first the rules stuff itself (rules, ruleItems)
+        $rulesSQL = <<<EOS
+SELECT r.name, r.optionName, r.description, r.typeList, r.catList, r.ageList, r.memList, COUNT(*) AS uses
+FROM memRules r
+LEFT OUTER JOIN memRuleItems i on (i.name = r.name)
+GROUP BY r.name, r.optionName, r.description, r.typeList, r.catList, r.ageList, r.memList
+ORDER BY r.name
+EOS;
+        $result = dbQuery($rulesSQL);
+        $rules = array();
+        while ($row = $result->fetch_assoc()) {
+            array_push($rules, $row);
+        }
+        $result->free();
+        $response['rules'] = $rules;
+
+        $ruleItemsSQL = <<<EOS
+SELECT ROW_NUMBER() OVER (ORDER BY name, step) AS rownum,
+    name, step, ruleType, applyTo, typeList, catList, ageList, memList, 0 AS uses
+FROM memRuleItems
+ORDER BY name, step
+EOS;
+        $result = dbQuery($ruleItemsSQL);
+        $ruleItems = array();
+        while ($row = $result->fetch_assoc()) {
+            array_push($ruleItems, $row);
+        }
+        $result->free();
+        $response['ruleItems'] = $ruleItems;
+
+        // now the memconfig items for helping to fill in typelist, catlist, agelist, memlist
+        $typeSQL = <<<EOS
+SELECT memType, notes
+FROM memTypes
+ORDER BY sortorder;
+EOS;
+        $result = dbQuery($typeSQL);
+        $typeItems = array();
+        while ($row = $result->fetch_assoc()) {
+            array_push($typeItems, $row);
+        }
+        $result->free();
+        $response['memTypes'] = $typeItems;
+
+        $catSQL = <<<EOS
+SELECT memCategory, notes
+FROM memCategories
+ORDER BY sortorder;
+EOS;
+        $result = dbQuery($catSQL);
+        $catItems = array();
+        while ($row = $result->fetch_assoc()) {
+            array_push($catItems, $row);
+        }
+        $result->free();
+        $response['memCategories'] = $catItems;
+
+        $ageSQL = <<<EOS
+SELECT ageType, label
+FROM ageList
+WHERE conid = ?
+ORDER BY sortorder;
+EOS;
+        $result = dbSafeQuery($ageSQL, 'i', array($conid));
+        $ageItems = array();
+        while ($row = $result->fetch_assoc()) {
+            array_push($ageItems, $row);
+        }
+        $result->free();
+        $response['ageList'] = $ageItems;
+
+        // now the memList items for filling in that field
+        $memSQL = <<<EOS
+SELECT id, conid, label, notes, price, startdate, enddate
+FROM memList
+WHERE conid IN (?, ?)
+ORDER BY sort_order;
+EOS;
+        $result = dbSafeQuery($memSQL, 'ii', array($conid, $nextconid));
+        $memListItems = array();
+        while ($row = $result->fetch_assoc()) {
+            array_push($memListItems, $row);
+        }
+        $result->free();
+        $response['memList'] = $memListItems;
+
+        break;
+
     default:
         $response['error'] = 'Invalid table';
 }
