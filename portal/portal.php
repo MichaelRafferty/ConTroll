@@ -27,7 +27,7 @@ load_cc_procs();
 if (isSessionVar('id') && isSessionVar('idType')) {
     // check for being resolved/baned
     $resolveUpdates = isResolvedBanned();
-    if ($resolveUpdates != null && $resolveUpdates['logout'] == 1) {
+    if ($resolveUpdates != null && array_key_exists('logout', $resolveUpdates) && $resolveUpdates['logout'] == 1) {
         header('location:' . $portal_conf['portalsite']);
         exit();
     }
