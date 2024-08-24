@@ -1,4 +1,5 @@
 <?php
+require_once("isResolvedBaned.php");
 // portal - base.php - base functions for membership portal
 global $db_ini;
 global $appSessionPrefix;
