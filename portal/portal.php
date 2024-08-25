@@ -410,9 +410,15 @@ if ($info['managedByName'] != null) {
 }
 if ($totalDue > 0) {
     $totalDueFormatted = 'Total due: ' . $dolfmt->formatCurrency((float) $totalDue, $currency);
-    $payHtml = " $totalDueFormatted   " .
-        '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.setFocus(\'totalDue\');"' .
-        $disablePay . '>Go to Payment Section</button>';
+    if (count($paymentPlans) > 0) {
+        $payHtml = " $totalDueFormatted   " .
+            '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.setFocus(\'totalDue\');"' .
+            $disablePay . '>Go to Payment Section</button>';
+    } else {
+        $payHtml = " $totalDueFormatted   " .
+            '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.payBalance(' . $totalDue . ', true);"' .
+            $disablePay . '>Pay Total Amount Due</button>';
+    }
 ?>
     <div class='row mt-4'>
         <div class='col-sm-12'>
