@@ -99,7 +99,7 @@ EOQ;
         return $data;
     }
 
-    // ccompute Purchase Totals
+    // compute Purchase Totals
     function computePurchaseTotals(&$coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories) {
         $num_primary = 0;
         $total = 0;
