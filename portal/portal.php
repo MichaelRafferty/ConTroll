@@ -307,7 +307,15 @@ EOS;
 }
 
 // get the payment plans
-$paymentPlans = getPaymentPlans(true);
+$paymentPlansData = getPaymentPlans(true);
+if (array_key_exists('payorPlans', $paymentPlansData)) {
+    $payorPlan = $paymentPlansData['payorPlans'];
+} else
+    $payorPlan = [];
+if (array_key_exists('plans', $paymentPlansData)) {
+    $paymentPlans = $paymentPlansData['payorPlans'];
+} else
+    $paymentPlans = [];
 
 // get valid coupons
 $numCoupons = num_coupons();
@@ -349,10 +357,7 @@ foreach ($memberships as $key => $membership) {
 if ($numExpired > 0) {
     $disablePay = ' disabled';
 }
-if (array_key_exists('payorPlans', $paymentPlans)) {
-    $payorPlan = $paymentPlans['payorPlans'];
-} else
-    $payorPlan = [];
+
 
 portalPageInit('portal', $info,
     /* css */ array($cdn['tabcss'],
@@ -375,8 +380,8 @@ if ($refresh) {
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
-    var paymentPlanList = <?php echo json_encode($paymentPlans['plans']); ?>;
-    var payorPlans = <?php echo json_encode($paymentPlans['payorPlans']); ?>;
+    var paymentPlanList = <?php echo json_encode($paymentPlans); ?>;
+    var payorPlans = <?php echo json_encode($payorPlan); ?>;
     var membershipsPurchased = <?php echo json_encode($memberships); ?>;
     var numCoupons = <?php echo $numCoupons; ?>;
     var policies = <?php echo json_encode($policies); ?>;
@@ -523,7 +528,7 @@ if ($totalDue > 0) {
     </div>
 <?php
     outputCustomText('main/plan');
-    drawPaymentPlans($info, $paymentPlans);
+    drawPaymentPlans($info, $paymentPlansData);
 }
 if ($totalDue > 0 || count($payorPlan) > 0) {
 ?>
