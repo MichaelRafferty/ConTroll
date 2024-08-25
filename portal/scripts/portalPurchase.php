@@ -286,7 +286,7 @@ EOS;
 
 $upgradedCnt = 0;
 if ($amount > 0) {
-    $regU = 'UPDATE reg SET paid=?, couponDiscount = ?, complete_trans = ?, status = ? WHERE id=?;';
+    $regU = 'UPDATE reg SET paid=?, couponDiscount = ?, complete_trans = ?, status = ?, planId = ? WHERE id=?;';
     $balance = $approved_amt;
     // first all the out of plan ones
     for ($idx = 0; $idx < count($badges); $idx++) {
@@ -326,11 +326,12 @@ if ($amount > 0) {
                         $mrR->free();
                     }
                 }
-                $rows_upd += dbSafeCmd($regU, 'ddisi', array (
+                $rows_upd += dbSafeCmd($regU, 'ddisii', array (
                     $badge['price'] - $badge['couponDiscount'],
                     $badge['couponDiscount'],
                     $paid_amt <= $balance ? $transId : null,
                     $paid_amt <= $balance ? 'paid' : $badge['status'],
+                    $newplan ? $newPlanId : null,
                     $badge['regId']
                 ));
                 $balance -= $paid_amt;
