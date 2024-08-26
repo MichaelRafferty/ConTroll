@@ -39,6 +39,11 @@ if ($resolveUpdates != null && array_key_exists('logout', $resolveUpdates) && $r
     return;
 }
 
+if ($resolveUpdates != null)
+    $updateMap = $resolveUpdates['remap'];
+else
+    $updateMap = [];
+
 $loginId = getSessionVar('id');
 $loginType = getSessionVar('idType');
 $transId = getSessionVar('transid');
@@ -103,6 +108,10 @@ catch (Exception $e) {
 if (array_key_exists('personType', $person)) {
     $personType = $person['personType'];
     $personId = $person['id'];
+    if ($personType == 'n' && array_key_exists($personId, $updateMap)) {
+        $personType = 'p';
+        $personId = $updateMap[$personId];
+    }
     $existingPerson = true;
 } else {
     $personId = -1;

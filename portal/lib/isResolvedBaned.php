@@ -35,6 +35,30 @@ EOS;
         $updates = [];
         $updates['idType'] = 'p';
         $updates['id'] = $perid;
+        $checks = [];
+        $checks[$loginId] = $perid;
+        // figure out all of the perinfo items out of date
+        $checkQ = <<<EOS
+SELECT DISTINCT n.id, n.perid
+FROM newperson n
+JOIN reg r ON r.newperid = n.id AND r.perid IS NULL
+UNION 
+SELECT DISTINCT n.id, n.perid
+FROM newperson n
+JOIN memberInterests r ON r.newperid = n.id AND r.perid IS NULL
+UNION 
+SELECT DISTINCT n.id, n.perid
+FROM newperson n
+JOIN memberPolicies r ON r.newperid = n.id AND r.perid IS NULL;
+EOS;
+        $checkR = dbQuery($checkQ);
+        if ($checkR !== false) {
+            while ($row = $checkR->fetch_assoc()) {
+                $checks[$row['id']] = $row['perid'];
+            }
+        }
+        $checkR->free();
+        $updates['remap'] = $checks;
 
         // tables needing updating: reg, transaction, exhibitors, memberInterests, memberPolicies, payorPlans, perinfo
         $upQ = <<<EOS

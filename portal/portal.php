@@ -66,6 +66,7 @@ $cdn = getTabulatorIncludes();
 $info = getPersonInfo($conid);
 if ($info === false) {
     echo 'Invalid Login, seek assistance';
+    clearSession();
     portalPageFoot();
     exit();
 }
