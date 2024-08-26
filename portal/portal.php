@@ -313,7 +313,7 @@ if (array_key_exists('payorPlans', $paymentPlansData)) {
 } else
     $payorPlan = [];
 if (array_key_exists('plans', $paymentPlansData)) {
-    $paymentPlans = $paymentPlansData['payorPlans'];
+    $paymentPlans = $paymentPlansData['plans'];
 } else
     $paymentPlans = [];
 

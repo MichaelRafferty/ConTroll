@@ -123,6 +123,9 @@ $coupon = $data['coupon'];
 $memCategories = $data['memCategories'];
 $mtypes = $data['mtypes'];
 
+$rows_upd = 0;
+$newPlanId = null;
+
 //// $rules = $data['rules'];
 //// TODO: load and apply rules checks here to $badges
 $data = computePurchaseTotals($coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories);
@@ -172,6 +175,13 @@ $results = array(
 
 //log requested badges
 logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges, 'inPlan' => $inPlan));
+$upT = <<<EOS
+UPDATE transaction
+SET price = ?, withTax = ?, couponDiscount = ?, tax = ?
+WHERE id = ?;
+EOS;
+$rows_upd += dbSafeCmd($upT, 'ddddi', array($totalAmountDue, $totalAmountDue, $totalDiscount, 0, $transId));
+
 // end compute
 if ($amount > 0) {
     $rtn = cc_charge_purchase($results, $ccauth, true);
@@ -254,172 +264,55 @@ EOS;
     $typestr = 'iisddii';
     $valArray = array($existingPlan['id'], $paymentNbr, $dueDate, $existingPlan['minPayment'], $amount, $txnid, $transId);
     $paymntkey = dbSafeInsert($iQ, $typestr, $valArray);
+
+    // now allocate the payment to the items in the plan
+    // $amount needs to be allocated across each item based on it's unpaid balances
+    $bQ = <<<EOS
+SELECT r.*, r.id as regId, m.conid AS mConid, m.memCategory, m.memType, m.memAge, m.label, m.price AS mPrice, m.startdate, m.enddate
+FROM reg r
+JOIN memList m ON (m.id = r.memId)
+WHERE planId = ? AND status = 'plan';
+EOS;
+    $bR = dbSafeQuery($bQ, 'i', array($existingPlan['id']));
+    if ($bR === false || $bR->num_rows == 0) {
+        error_log("Error: unable to find the plan reg records for existing plan " . $existingPlan['id']);
+    } else {
+        $regs = [];
+        $inPlan = [];
+        $balance = 0;
+        while ($row = $bR->fetch_assoc()) {
+            $regs[] = $row;
+            $inPlan[$row['regId']] = true;
+            $balance += $row['price'] - ($row['paid'] + $row['couponDiscount']);
+        }
+        $bR->free();
+
+        if ($balance > 0) {
+            $rows_upd += allocateBalance($amount, $regs, $inPlan, $conid, $existingPlan['id'], $transId, true );
+        }
+    }
 }
 
 $txnUpdate = 'UPDATE transaction SET ';
-if ($approved_amt == $amount) {
+if ($approved_amt == $totalAmountDue) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 
 $txnUpdate .= 'paid=?, couponDiscount = ? WHERE id=?;';
 $txnU = dbSafeCmd($txnUpdate, 'ddi', array($approved_amt, $totalDiscount, $transId));
-$rows_upd = 0;
-
-$mrQ = <<<EOS
-SELECT mRI.*
-FROM memRules mR
-JOIN memRuleItems mRI ON mR.name = mRI.name
-WHERE CONCAT(',', mR.memList, ',') like ?;
-EOS;
-
-$upgradedUP = <<<EOS
-UPDATE reg
-SET status = 'upgraded'
-WHERE conid = ? AND perid = ? AND memId = ? AND status = 'paid';
-EOS;
-
-    $upgradedUN = <<<EOS
-UPDATE reg
-SET status = 'upgraded'
-WHERE conid = ? AND newperid = ? AND memId = ? AND status = 'paid';
-EOS;
 
 $upgradedCnt = 0;
-if ($amount > 0) {
-    $regU = 'UPDATE reg SET paid=?, couponDiscount = ?, complete_trans = ?, status = ?, planId = ? WHERE id=?;';
+if ($amount > 0 && $planPayment != 1) {
     $balance = $approved_amt;
     // first all the out of plan ones
-    for ($idx = 0; $idx < count($badges); $idx++) {
-        $badge = $badges[$idx];
-        if (!array_key_exists($badge['regId'], $inPlan) || !$inPlan[$badge['regId']]) {
-            $paid_amt = min($balance, $badge['price'] - ($badge['paid'] + $badge['couponDiscount']));
-            // only update those that were actually modified
-            if (($paid_amt > 0) || ($badge['price'] == 0  && $badge['complete_trans'] == null)) {
-                if ($badge['memCategory'] == 'upgrade' && $paid_amt <= $balance) {
-                    // ok this upgrade is now paid for, mark the old one upgraded
-                    // upgrades require a role to allow them to be bought based on the prior membership being in the cart, get the rule for this membership
-
-                    $mrR = dbSafeQuery($mrQ, 's', array('%,' . $badge['memId'] . ',%'));
-                    if ($mrR != false) {
-                        if ($mrR->num_rows > 0) {
-                            while ($rule = $mrR->fetch_assoc()) {
-                                if ($rule['memList'] != null && $rule['memList'] != '') {
-                                    $memIds = explode(',', $rule['memList']);
-                                    foreach ($memIds as $memId) {
-                                        $argPerid = null;
-                                        $argNewPerid = null;
-                                        if (array_key_exists('perid', $badge)) {
-                                            $argPerid = $badge['perid'];
-                                        }
-                                        if (array_key_exists('newperid', $badge)) {
-                                            $argNewPerid = $badge['newperid'];
-                                        }
-                                        if ($argPerid != null) {
-                                            $upgradedCnt += dbSafeCmd($upgradedUP, 'iii', array ($conid, $argPerid, $memId));
-                                        } else if ($argNewPerid != null) {
-                                            $upgradedCnt += dbSafeCmd($upgradedUN, 'iii', array ($conid, $argNewPerid, $memId));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        $mrR->free();
-                    }
-                }
-                $rows_upd += dbSafeCmd($regU, 'ddisii', array (
-                    $badge['price'] - $badge['couponDiscount'],
-                    $badge['couponDiscount'],
-                    $paid_amt <= $balance ? $transId : null,
-                    $paid_amt <= $balance ? 'paid' : $badge['status'],
-                    $newplan ? $newPlanId : null,
-                    $badge['regId']
-                ));
-                $balance -= $paid_amt;
-                $badges[$idx]['modified'] = true;
-            }
-        } else {
-            $badges[$idx]['modified'] = false;
-        }
-    }
+    $rows_upd += allocateBalance($balance, $badges, $inPlan, $conid, $newPlanId, $transId, false );
     if ($balance > 0) {
         // now all the in plan ones
         // figure out the percentage to apply to each
-        $totalOwed = 0;
-        $count = 0;
-        foreach ($badges as $badge) {
-            $count++;
-            if (array_key_exists($badge['regId'], $inPlan) && $inPlan[$badge['regId']]) {
-                $totalOwed += $badge['price'] - ($badge['paid'] + $badge['couponDiscount']);
-            }
-        }
-        if ($totalOwed > 0) {
-            $ratio = $balance / $totalOwed;
-        } else {
-            $ratio = 1;
-        }
-        if ($ratio > 0.990)
-            $ratio = 1; // deal with rounding errors
-        $applied = 0;
-        for ($idx = 0; $idx < count($badges); $idx++) {
-            $badge = $badges[$idx];
-            $applied++;
-            if (array_key_exists($badge['regId'], $inPlan) && $inPlan[$badge['regId']]) {
-                $due = $badge['price'] - ($badge['paid'] + $badge['couponDiscount']);
-                if ($applied == $count) // last row, give it all of the balance
-                    $paid_amt = $balance;
-                else
-                    $paid_amt = $ratio == 1 ? $due : round($ratio * $due, 2);
-                if ($paid_amt > $due)
-                    $paid_amt = $due; // just in case
-
-                // only update those that were actually modified
-                if ($badge['memCategory'] == 'upgrade' && $paid_amt <= $balance) {
-                    // ok this upgrade is now paid for, mark the old one upgraded
-                    // upgrades require a role to allow them to be bought based on the prior membership being in the cart, get the rule for this membership
-
-                    $mrR = dbSafeQuery($mrQ, 's', array ('%,' . $badge['memId'] . ',%'));
-                    if ($mrR != false) {
-                        if ($mrR->num_rows > 0) {
-                            while ($rule = $mrR->fetch_assoc()) {
-                                if ($rule['memList'] != null && $rule['memList'] != '') {
-                                    $memIds = explode(',', $rule['memList']);
-                                    foreach ($memIds as $memId) {
-                                        $argPerid = null;
-                                        $argNewPerid = null;
-                                        if (array_key_exists('perid', $badge)) {
-                                            $argPerid = $badge['perid'];
-                                        }
-                                        if (array_key_exists('newperid', $badge)) {
-                                            $argNewPerid = $badge['newperid'];
-                                        }
-                                        if ($argPerid != null) {
-                                            $upgradedCnt += dbSafeCmd($upgradedUP, 'iii', array ($conid, $argPerid, $memId));
-                                        } else if ($argNewPerid != null) {
-                                            $upgradedCnt += dbSafeCmd($upgradedUN, 'iii', array ($conid, $argNewPerid, $memId));
-                                        }
-
-                                    }
-                                }
-                            }
-                        }
-                        $mrR->free();
-                    }
-                }
-                $balance -= $paid_amt;
-                $left = $due - $paid_amt;
-                $rows_upd += dbSafeCmd($regU, 'ddisi', array(
-                    $paid_amt,
-                    $badge['couponDiscount'],
-                    $left < 0.01 ? $transId : null,
-                    $left < 0.01 ? 'paid' : 'plan',
-                    $badge['regId']
-                ));
-                $badges[$idx]['modified'] = true;
-            }
-        }
+        $rows_upd += allocateBalance($balance, $badges, $inPlan, $conid, $newPlanId, $transId, true);
     }
 }
-if ($amount > 0) {
+if ($totalAmountDue > 0) {
     $body = getEmailBody($transId, $info, $badges, $planRec, $rtn['rid'], $rtn['url'], $amount);
 } else {
     $body = getNoChargeEmailBody($results, $info, $badges);
@@ -475,4 +368,109 @@ EOS;
     $transId = dbSafeInsert($iQ, 'iiii', array($conid, $perid, $newperid, $perid));
     setSessionVar('transId', $transId);
     return $transId;
+}
+
+// now all the in plan ones
+// figure out the percentage to apply to each
+function allocateBalance(&$balance, $badges, $inPlan, $conid, $newPlanId, $transId, $planOnly) {
+    // now all the in plan ones
+    // figure out the percentage to apply to each
+    $totalOwed = 0;
+    $count = 0;
+    $rows_upd = 0;
+
+    $mrQ = <<<EOS
+SELECT mRI.*
+FROM memRules mR
+JOIN memRuleItems mRI ON mR.name = mRI.name
+WHERE CONCAT(',', mR.memList, ',') like ?;
+EOS;
+
+    $upgradedUP = <<<EOS
+UPDATE reg
+SET status = 'upgraded'
+WHERE conid = ? AND perid = ? AND memId = ? AND status = 'paid';
+EOS;
+
+    $upgradedUN = <<<EOS
+UPDATE reg
+SET status = 'upgraded'
+WHERE conid = ? AND newperid = ? AND memId = ? AND status = 'paid';
+EOS;
+
+    $regU = 'UPDATE reg SET paid=paid + ?, couponDiscount = ?, complete_trans = ?, status = ?, planId = ? WHERE id=?;';
+    foreach ($badges as $badge) {
+        if (array_key_exists($badge['regId'], $inPlan) && $inPlan[$badge['regId']] == ($planOnly ? 1 : 0)) {
+            $count++;
+            $totalOwed += $badge['price'] - ($badge['paid'] + $badge['couponDiscount']);
+        }
+    }
+    if ($totalOwed > 0) {
+        $ratio = $balance / $totalOwed;
+    }
+    else {
+        $ratio = 1;
+    }
+    if ($ratio > 0.990)
+        $ratio = 1; // deal with rounding errors
+    $applied = 0;
+    for ($idx = 0; $idx < count($badges); $idx++) {
+        $badge = $badges[$idx];
+        if (array_key_exists($badge['regId'], $inPlan) && $inPlan[$badge['regId']] == ($planOnly ? 1 : 0)) {
+            $applied++;
+            $due = $badge['price'] - ($badge['paid'] + $badge['couponDiscount']);
+            if ($applied == $count) // last row, give it all of the balance
+                $paid_amt = ($due < ($balance + 0.01)) ? $due : $balance; //deal with rounding error
+            else
+                $paid_amt = ($ratio == 1) ? $due : round($ratio * $due, 2);
+            if ($paid_amt > ($due - 0.01)) // deal with rounding error
+                $paid_amt = $due; // just in case
+
+            // only update those that were actually modified
+            if ($badge['memCategory'] == 'upgrade' && $paid_amt <= $balance) {
+                // ok this upgrade is now paid for, mark the old one upgraded
+                // upgrades require a role to allow them to be bought based on the prior membership being in the cart, get the rule for this membership
+
+                $mrR = dbSafeQuery($mrQ, 's', array ('%,' . $badge['memId'] . ',%'));
+                if ($mrR != false) {
+                    if ($mrR->num_rows > 0) {
+                        while ($rule = $mrR->fetch_assoc()) {
+                            if ($rule['memList'] != null && $rule['memList'] != '') {
+                                $memIds = explode(',', $rule['memList']);
+                                foreach ($memIds as $memId) {
+                                    $argPerid = null;
+                                    $argNewPerid = null;
+                                    if (array_key_exists('perid', $badge)) {
+                                        $argPerid = $badge['perid'];
+                                    }
+                                    if (array_key_exists('newperid', $badge)) {
+                                        $argNewPerid = $badge['newperid'];
+                                    }
+                                    if ($argPerid != null) {
+                                        $upgradedCnt += dbSafeCmd($upgradedUP, 'iii', array ($conid, $argPerid, $memId));
+                                    }
+                                    else if ($argNewPerid != null) {
+                                        $upgradedCnt += dbSafeCmd($upgradedUN, 'iii', array ($conid, $argNewPerid, $memId));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    $mrR->free();
+                }
+            }
+            $balance -= $paid_amt;
+            $left = $due - $paid_amt;
+            $rows_upd += dbSafeCmd($regU, 'ddisii', array (
+                $paid_amt,
+                $badge['couponDiscount'],
+                ($left < 0.01) ? $transId : null,
+                ($left < 0.01) ? 'paid' : 'plan',
+                $newPlanId == null ? $badge['planId'] : $newPlanId,
+                $badge['regId']
+            ));
+            $badges[$idx]['modified'] = true;
+        }
+    }
+    return $rows_upd;
 }
