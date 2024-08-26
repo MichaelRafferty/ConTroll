@@ -245,7 +245,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
         $item = new OrderLineItem ('1');
         $item->setUid('planPayment');
         $planName = $results['existingPlan']['name'];
-        $planId = $results['planRec']['id'];
+        $planId = $results['existingPlan']['id'];
         $note = "$planId: Plan Id , Name: $planName, Perid: $loginPerid";
         $item->setName('Plan Payment' . $note);
         $item->setBasePriceMoney(new Money);
