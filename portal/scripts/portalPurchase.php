@@ -171,6 +171,7 @@ $results = array(
     'newplan' => $newplan,
     'planRec' => $planRec,
     'planPayment' => $planPayment,
+    'existingPlan' => $existingPlan,
 );
 
 //log requested badges

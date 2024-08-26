@@ -244,7 +244,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
         // this is a plan payment make the order just the plan payment
         $item = new OrderLineItem ('1');
         $item->setUid('planPayment');
-        $planName = $results['planRec']['plan']['name'];
+        $planName = $results['existingPlan']['name'];
         $planId = $results['planRec']['id'];
         $note = "$planId: Plan Id , Name: $planName, Perid: $loginPerid";
         $item->setName('Plan Payment' . $note);

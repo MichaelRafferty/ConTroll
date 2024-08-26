@@ -41,7 +41,8 @@ EOS;
 
         // the plans for this payor
         $QQ = <<<EOS
-SELECT * FROM payorPlans
+SELECT pp.*, p.name FROM payorPlans pp
+JOIN paymentPlans p on (pp.planId = p.id)
 WHERE $pfield = ?;
 EOS;
         $QR = dbSafeQuery($QQ, 'i', array($accountId));
