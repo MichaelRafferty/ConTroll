@@ -439,8 +439,8 @@ if ($totalDue > 0) {
         <h1 class="size-h3">
 <?php
     if ($info['managedByName'] == null) {
+        echo "People manged by " . $info['first_name'] . ' (' . $info['email_addr'] . '):';
 ?>
-            People managed by this account:
                 <button class='btn btn-primary ms-2' type='button'
                         onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/addUpgrade.php';">
                     Add Another Person and Create a New Membership for Them
