@@ -106,9 +106,7 @@ $counts = null;
 $badges = getAccountRegistrations($loginId, $loginType, $conid, ($newplan || $planPayment == 0) ? 'unpaid' : 'plan');
 
 if ($planPayment == 1 || $newplan == 1) {
-    $inPlan = whatMembershipsInPlan($badges, $planRec);
-} else {
-    $inPlan = [];
+    $badges = whatMembershipsInPlan($badges, $planRec);
 }
 
 // ok, the Portal data is now loaded, now deal with re-pricing things, based on the real tables
@@ -175,7 +173,7 @@ $results = array(
 );
 
 //log requested badges
-logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges, 'inPlan' => $inPlan));
+logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
 $upT = <<<EOS
 UPDATE transaction
 SET price = ?, withTax = ?, couponDiscount = ?, tax = ?
@@ -279,17 +277,16 @@ EOS;
         error_log("Error: unable to find the plan reg records for existing plan " . $existingPlan['id']);
     } else {
         $regs = [];
-        $inPlan = [];
         $balance = 0;
-        while ($row = $bR->fetch_assoc()) {
-            $regs[] = $row;
-            $inPlan[$row['regId']] = true;
+        while ($row = $bR->fetch_assoc()) {;
+            $row['inPlan'] = true;
             $balance += $row['price'] - ($row['paid'] + $row['couponDiscount']);
+            $regs[] = $row;
         }
         $bR->free();
 
         if ($balance > 0) {
-            $rows_upd += allocateBalance($amount, $regs, $inPlan, $conid, $existingPlan['id'], $transId, true );
+            $rows_upd += allocateBalance($amount, $regs, $conid, $existingPlan['id'], $transId, true );
         }
     }
 }
@@ -306,11 +303,11 @@ $upgradedCnt = 0;
 if ($amount > 0 && $planPayment != 1) {
     $balance = $approved_amt;
     // first all the out of plan ones
-    $rows_upd += allocateBalance($balance, $badges, $inPlan, $conid, $newPlanId, $transId, false );
+    $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, false );
     if ($balance > 0) {
         // now all the in plan ones
         // figure out the percentage to apply to each
-        $rows_upd += allocateBalance($balance, $badges, $inPlan, $conid, $newPlanId, $transId, true);
+        $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, true);
     }
 }
 if ($totalAmountDue > 0) {
@@ -373,7 +370,7 @@ EOS;
 
 // now all the in plan ones
 // figure out the percentage to apply to each
-function allocateBalance(&$balance, $badges, $inPlan, $conid, $newPlanId, $transId, $planOnly) {
+function allocateBalance(&$balance, $badges, $conid, $newPlanId, $transId, $planOnly) {
     // now all the in plan ones
     // figure out the percentage to apply to each
     $totalOwed = 0;
@@ -401,7 +398,7 @@ EOS;
 
     $regU = 'UPDATE reg SET paid=paid + ?, couponDiscount = ?, complete_trans = ?, status = ?, planId = ? WHERE id=?;';
     foreach ($badges as $badge) {
-        if (array_key_exists($badge['regId'], $inPlan) && $inPlan[$badge['regId']] == ($planOnly ? 1 : 0)) {
+        if (array_key_exists('inPlan', $badge) && $badge['inPlan'] == ($planOnly ? true : false)) {
             $count++;
             $totalOwed += $badge['price'] - ($badge['paid'] + $badge['couponDiscount']);
         }
@@ -417,7 +414,7 @@ EOS;
     $applied = 0;
     for ($idx = 0; $idx < count($badges); $idx++) {
         $badge = $badges[$idx];
-        if (array_key_exists($badge['regId'], $inPlan) && $inPlan[$badge['regId']] == ($planOnly ? 1 : 0)) {
+        if (array_key_exists('inPlan', $badge) && $badge['inPlan'] == ($planOnly ? true : false)) {
             $applied++;
             $due = $badge['price'] - ($badge['paid'] + $badge['couponDiscount']);
             if ($applied == $count) // last row, give it all of the balance

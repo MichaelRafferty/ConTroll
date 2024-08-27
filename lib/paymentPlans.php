@@ -85,21 +85,18 @@ EOS;
 }
 
 function whatMembershipsInPlan($memberships, $computedPlan) {
-    $inPlan = [];
 
     if ($computedPlan == null) {
-        $inPlan[''] = true;
         $planData = null;
     } else {
         $planData = $computedPlan['plan'];
-        $inPlan[$planData['name']] = true;
     }
 
     if ($planData == null) {
-        foreach ($memberships as $membership) {
-            $inPlan[$membership['regId']] = false;
+        foreach ($memberships as $key => $membership) {
+            $memberships[$key]['inPlan'] = false;
         }
-        return $inPlan;
+        return $memberships;
     }
 
     $memList = null;
@@ -118,31 +115,31 @@ function whatMembershipsInPlan($memberships, $computedPlan) {
         $excludeList = explode(',', $planData['excludeList']);
     }
 
-    foreach ($memberships as $membership) {
+    foreach ($memberships as $key => $membership) {
         if ($membership['status'] != 'unpaid') {
-            $inPlan[$membership['regId']] = false;
+            $memberships[$key]['inPlan'] = false;
             continue;
         }
 
         if ($excludeList != null && in_array($membership['memId'], $excludeList)) {
-            $inPlan[$membership['regId']] = false;
+            $memberships[$key]['inPlan'] = false;
             continue;
         }
 
         if ($catList != null && in_array($membership['memCategory'], $catList)) {
-            $inPlan[$membership['regId']] = true;
+            $memberships[$key]['inPlan'] = true;
             continue;
         }
 
         if ($memList != null && !in_array($membership['memId'], $memList)) {
-            $inPlan[$membership['regId']] = true;
+            $memberships[$key]['inPlan'] = true;
             continue;
         }
 
-        $inPlan[$membership['regId']] = false;
+        $memberships[$key]['inPlan'] = false;
     }
 
-    return $inPlan;
+    return $memberships;
 }
 
 //// payment plan modals

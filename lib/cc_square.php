@@ -165,6 +165,22 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     else
         $planPayment = 0;
 
+    $planName = '';
+    $planId = '';
+    if ($results['newplan'] == 1) {
+        if (array_key_exists('planRec', $results) && array_key_exists('plan', $results['planRec']) &&
+            array_key_exists('name', $results['planRec']['plan'])) {
+            $planName = $results['planRec']['plan']['name'];
+            $planId = 'TBA';
+        }
+    }
+    if ($planPayment == 1) {
+        if (array_key_exists('existingPlan', $results) && array_key_exists('name', $results['existingPlan'])) {
+            $planName = $results['existingPlan']['name'];
+            $planId = $results['existingPlan']['id'];
+        }
+    }
+
     if ($planPayment == 0) {
         if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
             foreach ($results['badges'] as $badge) {
@@ -172,10 +188,15 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                     $fullname = $badge['fullname'];
                 else
                     $fullname = trim(trim($badge['fname'] . ' ' . $badge['mname']) . ' ' . $badge['lname']);
+                if (array_key_exists('perid', $badge) && $badge['perid'] != null) {
+                    $id = 'p' . $badge['perid'];
+                } else {
+                    $id = 'n' . $badge['newperid'];
+                }
                 $item = new OrderLineItem ('1');
                 $item->setUid('badge' . ($lineid + 1));
                 $item->setName($badge['age'] . ' Membership for ' . $fullname);
-                $item->setNote($badge['memId'] . ',' . $badge['perid'] . ': memId, perid');
+                $item->setNote($badge['memId'] . ',' . $id . ': memId, p/n id' . $badge['inPlan'] ? (', Plan:' . $planName) : '');
                 $item->setBasePriceMoney(new Money);
                 $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
                 $item->getBasePriceMoney()->setCurrency(Currency::USD);
@@ -225,7 +246,6 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
             if ($results['newplan'] == 1) {
                 // deferment is total of the items - total of the payment
                 $deferment = $order_value - $results['total'];
-                $planName = $results['planRec']['plan']['name'];
                 $note = "Name: $planName, ID: TBA, Perid: $loginPerid";
                 // this is the down payment on a payment plan
                 $item = new OrderLineItemDiscount ();
@@ -244,8 +264,6 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
         // this is a plan payment make the order just the plan payment
         $item = new OrderLineItem ('1');
         $item->setUid('planPayment');
-        $planName = $results['existingPlan']['name'];
-        $planId = $results['existingPlan']['id'];
         $note = "$planId: Plan Id , Name: $planName, Perid: $loginPerid";
         $item->setName('Plan Payment' . $note);
         $item->setBasePriceMoney(new Money);
