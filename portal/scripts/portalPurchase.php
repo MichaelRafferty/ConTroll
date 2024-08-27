@@ -304,11 +304,10 @@ if ($amount > 0 && $planPayment != 1) {
     $balance = $approved_amt;
     // first all the out of plan ones
     $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, false );
-    if ($balance > 0) {
-        // now all the in plan ones
-        // figure out the percentage to apply to each
-        $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, true);
-    }
+
+    // now all the in plan ones
+    // figure out the percentage to apply to each
+    $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, true);
 }
 if ($totalAmountDue > 0) {
     $body = getEmailBody($transId, $info, $badges, $planRec, $rtn['rid'], $rtn['url'], $amount);
@@ -412,6 +411,10 @@ EOS;
     if ($ratio > 0.990)
         $ratio = 1; // deal with rounding errors
     $applied = 0;
+    $planId = null;
+    if ($planOnly == true) {
+        $planId = ($newPlanId == null) ? $badge['planId'] : $newPlanId;
+    }
     for ($idx = 0; $idx < count($badges); $idx++) {
         $badge = $badges[$idx];
         if (array_key_exists('inPlan', $badge) && $badge['inPlan'] == ($planOnly ? true : false)) {
@@ -464,7 +467,7 @@ EOS;
                 $badge['couponDiscount'],
                 ($left < 0.01) ? $transId : null,
                 ($left < 0.01) ? 'paid' : 'plan',
-                $newPlanId == null ? $badge['planId'] : $newPlanId,
+                $planId,
                 $badge['regId']
             ));
             $badges[$idx]['modified'] = true;
