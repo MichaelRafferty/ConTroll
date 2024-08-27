@@ -67,6 +67,14 @@ $personInfo = $cR->fetch_assoc();
 $cR->free();
 $acctType = $personInfo['personType'];
 
+if ($acctType == 'n' && $resolveUpdates != null) {
+    $updateMap = $resolveUpdates['remap'];
+    if (array_key_exists($acctId, $updateMap)) {
+        $acctType = 'p';
+        $accId = $updateMap[$acctId];
+    }
+}
+
 // we have a match, see if this person is one of our email addresses
 if ($loginType == 'p') {
     $cQ = <<<EOS

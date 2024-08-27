@@ -43,6 +43,14 @@ $currentPerson = $_POST['currentPerson'];
 $currentPersonType = $_POST['currentPersonType'];
 $person = $_POST['person'];
 
+if ($currentPersonType == 'n' && $resolveUpdates != null) {
+    $updateMap = $resolveUpdates['remap'];
+    if (array_key_exists($currentPerson, $updateMap)) {
+        $currentPersonType = 'p';
+        $currentPerson = $updateMap[$currentPerson];
+    }
+}
+
 $response['currentPersonType'] = $currentPersonType;
 $response['currentPeron'] = $currentPerson;
 $response['personId'] = $personId;

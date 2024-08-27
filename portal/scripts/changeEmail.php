@@ -43,6 +43,15 @@ $personType = getSessionVar('idType');
 
 $currentPersonId = $_POST['currentPersonId'];
 $currentPersonType = $_POST['currentPersonType'];
+
+if ($currentPersonType == 'n' && $resolveUpdates != null) {
+    $updateMap = $resolveUpdates['remap'];
+    if (array_key_exists($currentPersonId, $updateMap)) {
+        $currentPersonType = 'p';
+        $currentPersonId = $updateMap[$currentPersonId];
+    }
+}
+
 $email = trim($_POST['email']);
 $action = $_POST['action'];
 $lcemail = strtolower($email);
@@ -129,7 +138,7 @@ EOS;
     $typeStr = 'ii';
     $values = array($personId, $personId);
     if ($personType == 'N') {
-        $vQ += <<<EOS
+        $vQ .= <<<EOS
 UNION SELECT DISTINCT LOWER(TRIM(email_addr))
 FROM newperson
 WHERE id = ?
