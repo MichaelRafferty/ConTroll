@@ -41,7 +41,7 @@ class Portal {
     #badgenameField = null;
     #uspsDiv= null;
     
-    /// change email modal
+    // change email modal
     #changeEmailModal = null;
     #changeEmailModalElement = null;
     #changeEmailTitle = null;

@@ -24,6 +24,10 @@ $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
     $useUSPS = true;
 
+$config_vars = array();
+$config_vars['label'] = $con['label'];
+$config_vars['required'] = $reg_conf['required'];
+
 $numCoupons = num_coupons();
 if ($numCoupons == 0)
     $costCols = 4;
@@ -63,7 +67,8 @@ while($priceL = $priceR->fetch_assoc()) {
 $js = "var mtypes = " . json_encode($membershiptypes) . PHP_EOL .
     "var numCoupons = " . $numCoupons . ";" . PHP_EOL .
     "var policies = " . json_encode($policies) . PHP_EOL .
-    "var interests = " . json_encode($interests) . PHP_EOL;
+    "var interests = " . json_encode($interests) . PHP_EOL .
+    "var config = " . json_encode($config_vars) . PHP_EOL;
 $startdate = new DateTime($condata['startdate']);
 $enddate = new DateTime($condata['enddate']);
 $daterange = $startdate->format("F j-") . $enddate->format("j, Y");

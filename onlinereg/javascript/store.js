@@ -57,8 +57,7 @@ function process(formRef) {
     var formData = URLparamsToArray($(formRef).serialize(), true);
     var policyData = URLparamsToArray($('#editPolicies').serialize(), true);
     var message = "Please correct the items highlighted in red and validate again.";
-        "<br/>Note: If any of the address fields are used and the country is United States, " +
-        "then the Address, City, State, and Zip fields must all be entered.";
+    var required = config['required'];
 
     clear_message('addMessageDiv');
     // validation
@@ -80,60 +79,67 @@ function process(formRef) {
         message += "<br/>Note: If any of the address fields Address, City, State or Zip are used and the country is United States, " +
             "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
     }
-    // first name is required
-    if (formData['fname'] == '') {
-        valid = false;
-        $('#fname').addClass('need');
-    } else {
-        $('#fname').removeClass('need');
-    }
-
-    // last name is required
-    if (formData['lname'] == '') {
-        valid = false;
-        $('#lname').addClass('need');
-    } else {
-        $('#lname').removeClass('need');
-
-    }
-
-    // address 1 is required, address 2 is optional
-    if (formData['addr'] == '') {
-        valid = false;
-        $('#addr').addClass('need');
-    } else {
-        $('#addr').removeClass('need');
-    }
-
-    // city/state/zip required
-    if (formData['city'] == '') {
-        valid = false;
-        $('#city').addClass('need');
-    } else {
-        $('#city').removeClass('need');
-    }
-
-    if (formData['state'] == '') {
-        valid = false;
-        $('#state').addClass('need');
-    } else {
-        if (formData['country'] == 'USA') {
-            if (formData['state'].length != 2) {
-                valid = false;
-                $('#state').addClass('need');
-            } else {
-                $('#state').removeClass('need');
-            }
+    // validation
+    if (required != '') {
+        // first name is required
+        if (formData['fname'] == '') {
+            valid = false;
+            $('#fname').addClass('need');
         } else {
-            $('#state').removeClass('need');
+            $('#fname').removeClass('need');
         }
     }
 
-    if (formData['zip'] == '') {
-        valid = false;
-        $('#zip').addClass('need');
-    } else {
-        $('#zip').removeClass('need');
+    if (required == 'all') {
+        // last name is required
+        if (formData['lname'] == '') {
+            valid = false;
+            $('#lname').addClass('need');
+        } else {
+            $('#lname').removeClass('need');
+
+        }
+    }
+
+    if (required == 'addr' || required == 'all' || person['addr'] != '' || person['city'] != '' || person['state'] != '' || person['zip'] != '') {
+        // address 1 is required, address 2 is optional
+        if (formData['addr'] == '') {
+            valid = false;
+            $('#addr').addClass('need');
+        } else {
+            $('#addr').removeClass('need');
+        }
+
+        // city/state/zip required
+        if (formData['city'] == '') {
+            valid = false;
+            $('#city').addClass('need');
+        } else {
+            $('#city').removeClass('need');
+        }
+
+        if (formData['state'] == '') {
+            valid = false;
+            $('#state').addClass('need');
+        } else {
+            if (formData['country'] == 'USA') {
+                if (formData['state'].length != 2) {
+                    valid = false;
+                    $('#state').addClass('need');
+                } else {
+                    $('#state').removeClass('need');
+                }
+            } else {
+                $('#state').removeClass('need');
+            }
+        }
+
+        if (formData['zip'] == '') {
+            valid = false;
+            $('#zip').addClass('need');
+        } else {
+            $('#zip').removeClass('need');
+        }
     }
 
     // a membership type is required
@@ -144,10 +150,6 @@ function process(formRef) {
         $('#memId').removeClass('need');
     }
 
-    if (!valid) {
-        message += '';
-    }
-
     if (badges['memTypeCount'][formData['memId']] == null)
         badges['memTypeCount'][formData['memId']] = 0;
 
@@ -156,7 +158,8 @@ function process(formRef) {
         var cur = badges['memTypeCount'][formData['memId']];
         var lim = coupon.getLimitMemberships();
         if (badges['memTypeCount'][formData['memId']] >= coupon.getLimitMemberships()) {
-            alert("You already have the maximum number of memberships of this membership type in your cart based on the coupon applied. You must choose a different membership type.");
+            $message += "<br/>You already have the maximum number of memberships of this membership type in your cart based on the coupon applied. " +
+                "You must choose a different membership type.";
             valid = false;
         }
     }
