@@ -41,8 +41,8 @@ function ol_page_init($title, $js = '') {
     <link rel='icon' type='image/x-icon' href='/images/favicon.ico'>
     <link href='css/style.css' rel='stylesheet' type='text/css' />
     <link href="$jquicss" rel='stylesheet' type='text/css' />
-    <link href="$bs5css" rel='stylesheet'/>
-    <script src="$bs5js"></script>
+    <link href='$bs5css' rel='stylesheet'/>
+    <script src='$bs5js'></script>
     <script type='text/javascript' src="$jqjs"></script>
     <script type='text/javascript' src="$jquijs"></script>
     <script type='text/javascript' src="jslib/global.js?v=$globalJSversion"></script>
