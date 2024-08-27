@@ -16,10 +16,11 @@ function getTabulatorIncludes(): array {
 }
 
 // JS Version items
-global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
+global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion, $onlineregJSversion;
 $portalJSVersion = '0.3.12';
 $libJSversion = '0.3.9';
 $controllJSversion = '0.3.9';
 $globalJSversion = '0.3.9';
 $atJSversion = '0.3.8';
 $exhibitorJSversion = '0.3.8';
+$onlineregJSversion = '0.3.8';
