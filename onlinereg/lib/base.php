@@ -21,7 +21,7 @@ db_connect();
 function ol_page_init($title, $js = '') {
     global $libJSversion, $globalJSversion, $onlineregJSversion;
 
-    $includes = getTabulatorIncludes();
+    $cdn = getTabulatorIncludes();
     $tabbs5=$cdn['tabbs5'];
     $tabcss=$cdn['tabcss'];
     $tabjs=$cdn['tabjs'];
