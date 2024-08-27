@@ -261,7 +261,7 @@ $onsitesale = $startdate->format("l, F j");
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-sm-4 ms-0 me-0 p-0">
+                             <div class="col-sm-4">
                                  Total Cost:
                              </div>
                              <div class="col-sm-<?php echo $costCols; ?>" id="totalCostDiv"></div>
@@ -280,78 +280,16 @@ $onsitesale = $startdate->format("l, F j");
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-sm-9 mb-4">
-                                 <label>Choose who's paying for the order:</label><br/>
-                                 <select id='personList' onchange='updateAddr()'></select>
-                             </div>
-                             <div class="col-sm-auto ms-auto me-2 p-0">
-                                 <button class='btn btn-sm btn-secondary' onclick='toggleAddr()'>Edit Who<br/>is Paying</button>
+                             <div class="col-sm-auto">
+                                 <label class="me-2">Send the receipt to:</label>
+                                 <select id='personList' onchange='updateAddr();'></select>
                              </div>
                          </div>
-                         <div class="row">
-                             <div class="col-sm-2 ms-0 me-0 p-0">
-                                 <label for="cc_fname">
-                                     Name:
-                                 </label>
+                         <div class="row mt-1">
+                             <div class="col-sm-auto">
+                                 <label for="cc_email" class="me-2">Email:</label>
                              </div>
-                             <div class="col-sm-auto ms-0 me-1 p-0">
-                                 <input type='text' name='fname' class='ccdata' id='cc_fname' required='required' placeholder='First Name'/>
-                             </div>
-                             <div class="col-sm-auto ms-0 me-0 p-0">
-                                 <input type='text' name='lname' id='cc_lname' required='required' class='ccdata' placeholder='Last Name'/>
-                             </div>
-                         </div>
-                         <div class="row">
-                             <div class="col-sm-2 ms-0 me-0 p-0">
-                                 <label for="cc_street">
-                                     Street:
-                                 </label>
-                             </div>
-                             <div class="col-sm-auto ms-0 me-0 p-0">
-                                 <input type='text' size=40 class='ccdata' id='cc_street' required='required' name='street'/>
-                             </div>
-                         </div>
-                         <div class="row">
-                             <div class="col-sm-2 ms-0 me-0 p-0">
-                                 <label for="cc_city">City:</label>
-                             </div>
-                             <div class="col-sm-auto ms-0 me-2 p-0">
-                                 <input type='text' id='cc_city' required='required' size="20" class='ccdata' name='city'/>
-                             </div>
-                             <div class="col-sm-auto ms-0 me-1 p-0">
-                                 <label for="cc_state">State:</label>
-                             </div>
-                             <div class="col-sm-auto ms-0 me-2 p-0">
-                                 <input type='text' id='cc_state' size="10" maxlength="16" required='required' class='ccdata' name='state/'>
-                             </div>
-                             <div class="col-sm-auto ms-0 me-1 p-0">
-                                 <label for="cc_zip">Zip:</label>
-                             </div>
-                             <div class="col-sm-auto ms-0 me-0 p-0">
-                                 <input type='text' id='cc_zip' required='required' size=10 class='ccdata' name='zip/'>
-                             </div>
-                         </div>
-                         <div class="row">
-                             <div class="col-sm-2 ms-0 me-0 p-0">
-                                 <label for="cc_country">Country:</label>
-                             </div>
-                             <div class="col-sm-auto ms-0 me-0 p-0">
-                                  <select id='cc_country' class='ccdata' required='required' name='country' size=1>
-                                      <?php
-                                      $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-                                      while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-                                          echo '<option value="' . escape_quotes($data[1]) . '">' . $data[0] . "</option>";
-                                      }
-                                      fclose($fh);
-                                      ?>
-                                  </select>
-                             </div>
-                         </div>
-                         <div class="row">
-                             <div class="col-sm-2 ms-0 me-0 p-0">
-                                 <label for="cc_email">Email:</label>
-                             </div>
-                             <div class="col-sm-auto ms-0 me-0 p-0">
+                             <div class="col-sm-auto">
                                   <input type='email' id='cc_email' class='ccdata' name='cc_email'/>
                              </div>
                          </div>
@@ -361,19 +299,19 @@ $onsitesale = $startdate->format("l, F j");
                              </div>
                          </div>
                          <div class="row" id="emptyCart">
-                             <div class="col-sm-12 ms-0 me-0 p-0">
+                             <div class="col-sm-12">
                                  Your cart does not contain any primary memberships.  Please add memberships to the cart before checking out.
                              </div>
                          </div>
                          <div class='row' id='noChargeCart' hidden>
-                             <div class='col-sm-12 ms-0 me'-0 p-0'>
+                             <div class='col-sm-12'>
                                  No payment is required on your cart. Click "Purchase" to check out now or add more items to the cart using "Add Memberships".<br/>
                                  <button id='ncpurchase' class='btn btn-sm btn-primary' onclick="makePurchase('no-charge', 'purchase')">Purchase</button>&nbsp;
                                  <button class='btn btn-sm btn-primary' onclick='newBadgeModalOpen();'>Add Memberships</button>
                              </div>
                          </div>
                          <div class="row" id='chargeCart' hidden>
-                             <div class="col-sm-12 ms-0 me-0 p-0">
+                             <div class="col-sm-12">
                                    <?php echo draw_cc_html($cc); ?>
                              </div>
                          </div>
@@ -384,18 +322,34 @@ $onsitesale = $startdate->format("l, F j");
                          </div>
                      </div>
                  </form>
-                 <p class="text-body">We Accept</p>
-                 <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/><br/>
+                 <div class='container-fluid'>
+                     <div class='row'>
+                         <div class="col-sm-12">We Accept</div>
+                     </div>
+                     <div class="row mt-1">
+                         <div class="col-sm-12">
+                             <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/>
+                         </div>
+                     </div>
 <?php
       if($reg_conf['test']==1) {
 ?>
-                 <h2 class='text-danger'><strong>This won't charge your credit card.<br/>It also won't get you memberships.</strong></h2>
+                     <div class='row mt-2'>
+                         <div class='col-sm-12'>
+                             <h2 class='text-danger'><strong>This won't charge your credit card.<br/>It also won't get you memberships.</strong></h2>
+                         </div>
+                     </div>
     <?php
       }
     ?>
-                 <p class="text-body"><?php echo $con['conname']; ?> memberships are not refundable, except in case of emergency.
-                 For details and questions about transfers and rollovers to future conventions, please see
-                 <a href="<?php echo escape_quotes($con['regpolicy']); ?>">The Registration Policies Page.</a></p>
+                     <div class="row mt-1">
+                         <div class="col-sm-12">
+                             <?php echo $con['conname']; ?> memberships are not refundable, except in case of emergency.
+                                 For details and questions about transfers and rollovers to future conventions, please see
+                                 <a href="<?php echo escape_quotes($con['regpolicy']); ?>">The Registration Policies Page.</a>
+                         </div>
+                     </div>
+                 </div>
              </div>
              <div class="col-sm-6 p-2 border border-2 border-primary">
                  <div class="container-fluid">

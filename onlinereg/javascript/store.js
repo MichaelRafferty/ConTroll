@@ -101,7 +101,7 @@ function process(formRef) {
         }
     }
 
-    if (required == 'addr' || required == 'all' || person['addr'] != '' || person['city'] != '' || person['state'] != '' || person['zip'] != '') {
+    if (required == 'addr' || required == 'all' || formData['addr'] != '' || formData['city'] != '' || formData['state'] != '' || formData['zip'] != '') {
         // address 1 is required, address 2 is optional
         if (formData['addr'] == '') {
             valid = false;
@@ -186,7 +186,7 @@ function process(formRef) {
     }
 
     // Check USPS for standardized address
-    if (uspsDiv != null && (formData['country'] == 'USA')) {
+    if (this.#uspsDiv != null && formData['country'] == 'USA' && formData['city'] != '') {
         formDataSave = formData;
         uspsAddress = null;
         $.ajax({
@@ -399,27 +399,10 @@ function removeBadge(bdivid) {
     toRemove.remove();
 }
 
-
-
 function updateAddr() {
     var selOpt = $("#personList option:selected");
     var optData = selOpt.data('info');
-    
-    $('#cc_fname').val(optData['fname']);
-    $('#cc_lname').val(optData['lname']);
-    $('#cc_street').val(optData['addr']);
-    $('#cc_city').val(optData['city']);
-    $("#cc_state").val(optData['state']);
-    $('#cc_zip').val(optData['zip']);
-    $('#cc_country').val(optData['country']);
     $('#cc_email').val(optData['email1']);
-
-    $('.ccdata').attr('readonly', 'readonly');
-
-}
-   
-function toggleAddr() {
-    $('.ccdata').attr('readonly', false);
 }
 
 function mp_ajax_error(JqXHR, textStatus, errorThrown) {
