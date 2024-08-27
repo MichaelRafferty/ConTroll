@@ -107,6 +107,10 @@ $badges = getAccountRegistrations($loginId, $loginType, $conid, ($newplan || $pl
 
 if ($planPayment == 1 || $newplan == 1) {
     $badges = whatMembershipsInPlan($badges, $planRec);
+} else {
+    foreach ($badges as $key => $badge) {
+        $badges[$key]['inPlan'] = false;
+    }
 }
 
 // ok, the Portal data is now loaded, now deal with re-pricing things, based on the real tables
@@ -413,7 +417,11 @@ EOS;
     $applied = 0;
     $planId = null;
     if ($planOnly == true) {
-        $planId = ($newPlanId == null) ? $badge['planId'] : $newPlanId;
+        if ($newPlanId != null) {
+            $planId = $newPlanId;
+        } else if (array_key_exists('planId', $badge)) {
+            $planId = $badge['planId'];
+        }
     }
     for ($idx = 0; $idx < count($badges); $idx++) {
         $badge = $badges[$idx];
