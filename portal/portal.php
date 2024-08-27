@@ -690,8 +690,7 @@ if (count($memberships) > 0) {
         } else if ($membership['status'] == 'paid') {
             $status = 'paid: ' . $dolfmt->formatCurrency((float) $membership['price'], $currency);
         } else if ($membership['status'] == 'plan') {
-            $status = 'plan: ' . $dolfmt->formatCurrency((float) $membership['paid'], $currency) .
-                ' of ' . $dolfmt->formatCurrency((float) $membership['price'], $currency);
+            $status = 'plan';
         }
 ?>
         <div class='row'>
