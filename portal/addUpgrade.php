@@ -282,10 +282,12 @@ drawVerifyPersonInfo($policies);
         </div>
         <div id='cartContentsDiv'></div>
         <div class='row' id='step4submit'>
-            <div class='col-sm-auto  mt-3'>
+
 <?php if ($step3num == 3) { ?>
+            <div class='col-sm-auto  mt-3'>
                 <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(3, true);'>Return to Interest Verification</button>
-</div><?php } ?>
+            </div>
+<?php } ?>
             <div class='col-sm-auto mt-3'>
                 <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2, true);'>Return to Personal Information Verification</button>
             </div>
