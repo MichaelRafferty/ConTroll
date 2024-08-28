@@ -196,7 +196,7 @@ class rulesSetup {
         this.#ruleItems = data['ruleItems'];
         this.#memTypes = data['memTypes'];
         this.#memCategories = data['memCategories'];
-        this.#memAges = data['memAges'];
+        this.#memAges = data['ageList'];
         this.#memList = data['memList'];
 
         this.#rulesDirty = false;
@@ -299,6 +299,61 @@ class rulesSetup {
                 this.#editRuleSelTable.on("cellClick", rules.clickedSelection)
                 this.#selIndexName = 'memType';
                 this.#selField = this.#rTypeList;
+                $('#editRuleSelButtons').show();
+                setTimeout(setInitialSel, 100);
+                break;
+            case 'i':
+                break;
+        }
+    }
+
+    // editCategories - select the category list for this rule
+    editCategories(table) {
+        this.closeSelTable();
+        switch (table) {
+            case 'r':
+                this.#selValues = ',' + this.#rCatList.innerHTML + ',';
+                this.#editRuleSelLabel.innerHTML = "<b>Select which Mem Catrgories apply to this rule:</b>"
+                this.#editRuleSelTable = new Tabulator('#editRuleSelTable', {
+                    data: this.#memCategories,
+                    layout: "fitDataTable",
+                    index: "memCategory",
+                    columns: [
+                        {title: "Category", field: "memCategory", width: 200, },
+                        {title: "Notes", field: "notes", width: 750, headerFilter: true, },
+                    ],
+                });
+                this.#editRuleSelTable.on("cellClick", rules.clickedSelection)
+                this.#selIndexName = 'memCategory';
+                this.#selField = this.#rCatList;
+                $('#editRuleSelButtons').show();
+                setTimeout(setInitialSel, 100);
+                break;
+            case 'i':
+                break;
+        }
+    }
+
+    // editAges - select the age list for this rule
+    editAges(table) {
+        this.closeSelTable();
+        switch (table) {
+            case 'r':
+                this.#selValues = ',' + this.#rAgeList.innerHTML + ',';
+                this.#editRuleSelLabel.innerHTML = "<b>Select which Ages apply to this rule:</b>"
+                this.#editRuleSelTable = new Tabulator('#editRuleSelTable', {
+                    data: this.#memAges,
+                    layout: "fitDataTable",
+                    index: "ageType",
+                    columns: [
+                        {title: "Age", field: "ageType", width: 200, },
+                        {title: "Short Name", field: "shortname", width: 200, },
+                        {title: "Label", field: "label", width: 450, headerFilter: true, },
+                    ],
+                });
+                this.#editRuleSelTable.on("cellClick", rules.clickedSelection)
+                this.#selIndexName = 'ageType';
+                this.#selField = this.#rAgeList;
                 $('#editRuleSelButtons').show();
                 setTimeout(setInitialSel, 100);
                 break;

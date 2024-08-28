@@ -119,6 +119,7 @@ EOS;
         $typeSQL = <<<EOS
 SELECT memType, notes
 FROM memTypes
+WHERE active = 'Y'
 ORDER BY sortorder;
 EOS;
         $result = dbQuery($typeSQL);
@@ -132,6 +133,7 @@ EOS;
         $catSQL = <<<EOS
 SELECT memCategory, notes
 FROM memCategories
+WHERE active = 'Y'
 ORDER BY sortorder;
 EOS;
         $result = dbQuery($catSQL);
@@ -143,7 +145,7 @@ EOS;
         $response['memCategories'] = $catItems;
 
         $ageSQL = <<<EOS
-SELECT ageType, label
+SELECT ageType, label, shortname
 FROM ageList
 WHERE conid = ?
 ORDER BY sortorder;
