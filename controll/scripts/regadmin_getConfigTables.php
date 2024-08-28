@@ -160,7 +160,7 @@ EOS;
 
         // now the memList items for filling in that field
         $memSQL = <<<EOS
-SELECT id, conid, label, notes, price, startdate, enddate
+SELECT *
 FROM memList
 WHERE conid IN (?, ?)
 ORDER BY sort_order;

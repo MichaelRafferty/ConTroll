@@ -50,6 +50,9 @@ class rulesSetup {
     #selIndexName = null;
     #selField = null;
     #selValues = null;
+    #filterTypes = [];
+    #filterAges = []
+    #filterCats = [];
 
 
     // selection items
@@ -199,6 +202,21 @@ class rulesSetup {
         this.#memAges = data['ageList'];
         this.#memList = data['memList'];
 
+        this.#filterAges = [];
+        this.#filterCats = [];
+        this.#filterTypes = [];
+
+        // load the filter arrays
+        for (var row of this.#memTypes) {
+            this.#filterTypes.push(row['memType']);
+        }
+        for (var row of this.#memAges) {
+            this.#filterAges.push(row['ageType']);
+        }
+        for (var row of this.#memCategories) {
+            this.#filterCats.push(row['memCategory']);
+        }
+
         this.#rulesDirty = false;
         this.#rulesTable = new Tabulator('#rulesTableDiv', {
             history: true,
@@ -229,7 +247,7 @@ class rulesSetup {
             ],
         });
         this.#rulesTable.on("dataChanged", function (data) {
-            _this.dataChanged();
+            rulesDataChanged();
         });
         this.#rulesTable.on("cellEdited", cellChanged);
 
@@ -300,7 +318,7 @@ class rulesSetup {
                 this.#selIndexName = 'memType';
                 this.#selField = this.#rTypeList;
                 $('#editRuleSelButtons').show();
-                setTimeout(setInitialSel, 100);
+                setTimeout(rulesSetInitialSel, 100);
                 break;
             case 'i':
                 break;
@@ -327,7 +345,7 @@ class rulesSetup {
                 this.#selIndexName = 'memCategory';
                 this.#selField = this.#rCatList;
                 $('#editRuleSelButtons').show();
-                setTimeout(setInitialSel, 100);
+                setTimeout(rulesSetInitialSel, 100);
                 break;
             case 'i':
                 break;
@@ -355,7 +373,46 @@ class rulesSetup {
                 this.#selIndexName = 'ageType';
                 this.#selField = this.#rAgeList;
                 $('#editRuleSelButtons').show();
-                setTimeout(setInitialSel, 100);
+                setTimeout(rulesSetInitialSel, 100);
+                break;
+            case 'i':
+                break;
+        }
+    }
+
+    // editMemList - select the mem id list for this rule
+    editMemList(table) {
+        this.closeSelTable();
+        switch (table) {
+            case 'r':
+                this.#selValues = ',' + this.#rMemList.innerHTML + ',';
+                this.#editRuleSelLabel.innerHTML = "<b>Select which memId's apply to this rule:</b>"
+                this.#editRuleSelTable = new Tabulator('#editRuleSelTable', {
+                    data: this.#memList,
+                    layout: "fitDataTable",
+                    index: "id",
+                    pagination: true,
+                    paginationAddRow:"table",
+                    paginationSize: 25,
+                    paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+                    columns: [
+                        {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", },
+                        {title: "ConId", field: "conid", width: 80, headerWordWrap: true, headerHozAlign:"right", hozAlign: "right",  headerFilter: true, },
+                        {title: "Cat", field: "memCategory", width: 90, headerFilter: 'list', headerFilterParams: { values: this.#filterCats }, },
+                        {title: "Type", field: "memType", width: 90, headerFilter: 'list', headerFilterParams: { values: this.#filterTypes },  },
+                        {title: "Age", field: "memAge", width: 90, headerFilter: 'list', headerFilterParams: { values: this.#filterAges },  },
+                        {title: "Label", field: "label", width: 250, headerFilter: true, },
+                        {title: "Price", field: "price", width: 80, headerFilter: true, headerHozAlign:"right", hozAlign: "right", },
+                        {title: "Notes", field: "notes", width: 200, headerFilter: true, },
+                        {title: "Start Date", field: "startDate", width: 200, visible:false, },
+                        {title: "End Date", field: "endDate", width: 200, visible:false, },
+                    ],
+                });
+                this.#editRuleSelTable.on("cellClick", rules.clickedSelection)
+                this.#selIndexName = 'id';
+                this.#selField = this.#rMemList;
+                $('#editRuleSelButtons').show();
+                setTimeout(rulesSetInitialSel, 100);
                 break;
             case 'i':
                 break;
@@ -408,7 +465,7 @@ class rulesSetup {
         }
         if (filter != '')
             filter = filter.substring(1);
-        console.log(filter);
+        //console.log(filter);
         this.#selField.innerHTML = filter;
         this.closeSelTable();
     }
@@ -524,7 +581,7 @@ class rulesSetup {
             ],
         });
         this.#rulesTable.on("dataChanged", function (data) {
-            _this.dataChanged();
+            rulesDataChanged();
         });
         this.#rulesTable.on("cellEdited", cellChanged);
 
@@ -539,7 +596,6 @@ class rulesSetup {
     editRuleSave() {
         var description = tinyMCE.activeEditor.getContent();
 
-        /*
         // these will be encoded in <p> tags already, so strip the leading and trailing ones.
         if (description.startsWith('<p>')) {
             description = description.substring(3);
@@ -547,12 +603,47 @@ class rulesSetup {
         if (description.endsWith('</p>')) {
             description = description.substring(0, description.length - 4);
         }
-        */
 
+        // store all the fields back into the table row
         var row = this.#rulesTable.getRow(this.#editRuleName);
-        row.getCell("description").setValue(description);
-        /*row.getCell("interest").setValue(this.#iName.value);
-        row.getCell("notifyList").setValue(this.#iNotify.value);*/
+        if (row.getCell("description").getValue() != description) {
+            row.getCell("description").setValue(description);
+        }
+
+        var newValue = this.#rName.value;
+        if (row.getCell("name").getValue() != newValue) {
+            row.getCell("name").setValue(newValue);
+        }
+        newValue = this.#rOptionName.value;
+        if (row.getCell("optionName").getValue() != newValue) {
+            row.getCell("optionName").setValue(newValue);
+        }
+        newValue = this.#rAgeList.innerHTML;
+        if (newValue == '')
+            newValue = null;
+        if (row.getCell("ageList").getValue() != newValue) {
+            row.getCell("ageList").setValue(newValue);
+        }
+        newValue = this.#rTypeList.innerHTML;
+        if (newValue == '')
+            newValue = null;
+        if (row.getCell("typeList").getValue() != newValue) {
+            row.getCell("typeList").setValue(newValue);
+        }
+        newValue = this.#rCatList.innerHTML;
+        if (newValue == '')
+            newValue = null;
+        if (row.getCell("catList").getValue() != newValue) {
+            row.getCell("catList").setValue(newValue);
+        }
+        newValue = this.#rMemList.innerHTML;
+        if (newValue == '')
+            newValue = null;
+        if (row.getCell("memList").getValue() != newValue) {
+            row.getCell("memList").setValue(newValue);
+        }
+
+
         if (this.#ruleStepsTable != null) {
             this.#ruleStepsTable.off("dataChanged");
             this.#ruleStepsTable.off("cellEdited");
@@ -577,6 +668,10 @@ function rulesDrawPreviewPane() {
     rules.drawPreviewPane();
 }
 
-function setInitialSel() {
+function rulesSetInitialSel() {
     rules.setInitialSel();
+}
+
+function rulesDataChanged() {
+    rules.dataChanged();
 }
