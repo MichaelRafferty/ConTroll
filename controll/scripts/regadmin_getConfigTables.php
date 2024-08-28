@@ -87,7 +87,7 @@ EOS;
     case 'rules':
         // first the rules stuff itself (rules, ruleItems)
         $rulesSQL = <<<EOS
-SELECT r.name, r.optionName, r.description, r.typeList, r.catList, r.ageList, r.memList, COUNT(*) AS uses
+SELECT r.name, r.optionName, r.description, r.typeList, r.catList, r.ageList, r.memList, COUNT(*) AS uses, r.name AS origName
 FROM memRules r
 LEFT OUTER JOIN memRuleItems i on (i.name = r.name)
 GROUP BY r.name, r.optionName, r.description, r.typeList, r.catList, r.ageList, r.memList
@@ -103,7 +103,7 @@ EOS;
 
         $ruleItemsSQL = <<<EOS
 SELECT ROW_NUMBER() OVER (ORDER BY name, step) AS rownum,
-    name, step, ruleType, applyTo, typeList, catList, ageList, memList, 0 AS uses
+    name, step, ruleType, applyTo, typeList, catList, ageList, memList, 0 AS uses, name AS origName, step AS origStep
 FROM memRuleItems
 ORDER BY name, step
 EOS;

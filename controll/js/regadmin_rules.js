@@ -25,12 +25,12 @@ class rulesSetup {
     #memAges = null;
     #memList = null;
 
-    // editing a rule items
+    // editing a rule
     #editRuleModal = null;
     #editRuleTitle = null;
     #editRuleBlock = null
     #editRuleSel = null
-    #editSaveBtn = null;
+    #editRuleSaveBtn = null;
     #editRuleName = null;
     #editRuleSelLabel = null;
     #editRuleNameDiv = null;
@@ -45,7 +45,25 @@ class rulesSetup {
     #ruleStepDiv = null;
     #ruleSimulator = null;
 
+    // editing a ruleItem (step)
+    #editRuleStepModal = null;
+    #editRuleStepTitle = null;
+    #editRuleStepBlock = null
+    #editRuleStepSel = null
+    #editRuleStepSaveBtn = null;
+    #editRuleStepName = null;
+    #editRuleStepSelLabel = null;
+    #editRuleStepNameDiv = null;
+    #iName = null;
+    #iStep = null;
+    #iRuleType = null;
+    #iApplyTo = null;
+    #iTypeList = null;
+    #iCatList = null;
+    #iAgeList = null;
+    #iMemList = null;
     #ruleItems = null;
+
     #editRuleSelTable = null;
     #selIndexName = null;
     #selField = null;
@@ -81,7 +99,7 @@ class rulesSetup {
             this.#editRuleBlock = document.getElementById('editRuleBlockDiv');
             this.#editRuleSel = document.getElementById('editRuleSelDiv');
             this.#editRuleSelLabel = document.getElementById('editRuleSelLabel');
-            this.#editSaveBtn = document.getElementById('editRuleSaveBtn');
+            this.#editRuleSaveBtn = document.getElementById('editRuleSaveBtn');
             this.#editRuleNameDiv = document.getElementById('editRuleName');
             this.#ruleDescription = document.getElementById('ruleDescription');
             this.#rName = document.getElementById('rName');
@@ -113,6 +131,26 @@ class rulesSetup {
                 placeholder: 'Edit the rules description...',
                 auto_focus: 'editFieldArea',
             });
+        }
+
+        var id = document.getElementById('editRuleStepModal');
+        if (id) {
+            this.#editRuleStepModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#editRuleStepTitle = document.getElementById('editRuleStepTitle');
+            this.#editRuleStepBlock = document.getElementById('editRuleStepBlockDiv');
+            this.#editRuleStepSel = document.getElementById('editRuleStepSelDiv');
+            this.#editRuleStepSelLabel = document.getElementById('editRuleStepSelLabel');
+            this.#editRuleStepSaveBtn = document.getElementById('editRuleStepSaveBtn');
+            this.#editRuleStepNameDiv = document.getElementById('editRuleStepName');
+            this.#ruleDescription = document.getElementById('ruleDescription');
+            this.#iName = document.getElementById('iName');
+            this.#iRuleType = document.getElementById('iRuleType');
+            this.#iApplyTo = document.getElementById('iApplyTo');
+            this.#iTypeList = document.getElementById('iTypeList');
+            this.#iCatList = document.getElementById('iCatList');
+            this.#iAgeList = document.getElementById('iAgeList');
+            this.#iMemList = document.getElementById('iMemList');
+            this.#ruleStepDiv = document.getElementById('ruleStepDiv');
         }
 
         id = document.getElementById('selectionModal');
@@ -236,7 +274,7 @@ class rulesSetup {
                 {title: "ageList", field: "ageList", headerSort: false, headerFilter: true, width: 200, },
                 {title: "memList", field: "memList", headerSort: false, headerFilter: true, width: 200, },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'rules', label: 'Edit Rule' }, hozAlign:"left", headerSort: false },
-                {title: "Orig Key", field: "rulesKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
+                {title: "Orig Key", field: "origName", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
                     cellClick: function (e, cell) {
@@ -285,7 +323,16 @@ class rulesSetup {
 
     // edit step - display a modal to edit a step
     editStep(type, item) {
-        show_message("NOT YET", 'warn', 'result_message_editRule');
+        // populate the modal
+        this.#editRuleModal.hide();
+        this.#editRuleStepModal.show();
+    }
+
+    editRuleStepSave() {
+        // save the results back to the underlying table
+        this.#editRuleStepModal.hide();
+        this.#editRuleModal.show();
+
     }
 
     closeSelTable(level) {
@@ -570,7 +617,8 @@ class rulesSetup {
                 {title: "ageList", field: "ageList", width: 300, },
                 {title: "memList", field: "memList", width: 300, },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'ruleItems', label: 'Edit Step' }, hozAlign:"left", headerSort: false },
-                {title: "Orig Key", field: "rulesKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
+                {title: "Orig Name", field: "origName", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
+                {title: "Orig Step", field: "origStep", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
                     cellClick: function (e, cell) {

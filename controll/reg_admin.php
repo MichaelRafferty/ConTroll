@@ -221,8 +221,8 @@ else
         </div>
     </div>
 </div>
-<div id='editRuleModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit and Test Rules Configuration' aria-hidden='true'
-     style='--bs-modal-width: 96%;'>
+<div id='editRuleModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit and Test Rules Configuration'
+     aria-hidden='true' style='--bs-modal-width: 96%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
             <div class='modal-header bg-primary text-bg-primary'>
@@ -234,7 +234,7 @@ else
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid' id='editRuleBlockDiv'>
                     <div class='row mt-4'>
-                        <div class='col-sm-12'><h4>Edit the <span id='editRuleName'>rulesName</span> Rule</h4></div>
+                        <div class='col-sm-12'><h4>Edit the <span id='editRuleName'>Rule Name</span> Rule</h4></div>
                     </div>
                     <div class='row mt-1'>
                         <div class='col-sm-6'>
@@ -341,28 +341,134 @@ else
         </div>
     </div>
 </div>
-<!---
-<div id='selectionModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='CSV selection Block' aria-hidden='true'
+<div id='editRuleStepModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Rule Step Block' aria-hidden='true'
      style='--bs-modal-width: 96%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
             <div class='modal-header bg-primary text-bg-primary'>
                 <div class='modal-title'>
-                    <strong id='selectionTitle'>Selection Title</strong>
+                    <strong id='editRuleStepTitle'>Edit Rule Step Title</strong>
                 </div>
                 <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                <div class='container-fluid' id='selectionBlockDiv'></div>
+                <div class='container-fluid' id='editRuleStepBlockDiv'>
+                    <div class='row mt-4'>
+                        <div class='col-sm-12'><h4>Edit the <span id='editRuleStepName'>Rule Step Name</span> Rule</h4></div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-6'>
+                            <div class='container-fluid' id='editRuleStepFieldDiv'>
+                                <div class='row'>
+                                    <div class='col-sm-2'>
+                                        <label for='iName'>Step Name:</label>
+                                    </div>
+                                    <div class='col-sm-10'>
+                                        <input type='text' id='iName' name='rName' size='20' maxlength='16' placeholder='step name'/>
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>
+                                        <label for='iStepNum'>Step #:</label>
+                                    </div>
+                                    <div class='col-sm-10'>
+                                        <input type='number' class='no-spinners' inputmode='numeric' id='iStepNum' name='iStemNum'
+                                               size='10' min="1" max="999" placeholder='Step #'/>
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>
+                                        <label for='iRuleType'>Rule Type:</label>
+                                    </div>
+                                    <div class='col-sm-10'>
+                                        <select id='iRuleType' name='iRuleType'>
+                                            <option value="">--Select Rule Type--</option>
+                                            <option value="needAny">Need Any</option>
+                                            <option value="needAll">Need All</option>
+                                            <option value='notAny'>Not Any</option>
+                                            <option value='notAll'>Not All</option>
+                                            <option value='limitAge'>Limit Age</option>
+                                            <option value='currentAge'>Current Age</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>
+                                        <label for='iApplyTo'>Apply To:</label>
+                                    </div>
+                                    <div class='col-sm-10'>
+                                        <select id='iApplyTo' name='iApplyTo'>
+                                            <option value=''>--Select Apply To--</option>
+                                            <option value='person'>Person</option>
+                                            <option value='all'>All in Account</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-3'>
+                                        <button class='btn btn-sm btn-primary' type='button' onclick="rules.editTypes('i');">Edit Mem Types</button>
+                                    </div>
+                                    <div class='col-sm-9' id='iTypeList'><i>None</i></div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-3'>
+                                        <button class='btn btn-sm btn-primary' type='button' onclick="rules.editCategories('i');">Edit Mem Cats</button>
+                                    </div>
+                                    <div class='col-sm-9' id='iCatList'><i>None</i></div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-3'>
+                                        <button class='btn btn-sm btn-primary' type='button' onclick="rules.editAges('i');">Edit Mem Ages</button>
+                                    </div>
+                                    <div class='col-sm-9' id='iAgeList'><i>None</i></div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-3'>
+                                        <button class='btn btn-sm btn-primary' type='button' onclick="rules.editMemList('i');">Edit Mem Ids</button>
+                                    </div>
+                                    <div class='col-sm-9' id='iMemList'><i>None</i></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class='col-sm-6'>
+                            <div class='container-fluid' id='editRuleStepSelDiv'>
+                                <div class='row mb-2'>
+                                    <div class='col-sm-12' id='editRuleStepSelLabel'></div>
+                                </div>
+                                <div class='row'>
+                                    <div class='col-sm-12 m-0 p-0' id='editRuleStepSelTable'></div>
+                                </div>
+                                <div class='row mt-1' id='editRuleSelStepButtons' name='editRuleStepSelButtons'>
+                                    <div class='col-sm-auto'>
+                                        <button class='btn btn-secondary btn-sm' type='button' onclick="rules.closeSelTable('i');">Cancel Changes</button>
+                                    </div>
+                                    <div class='col-sm-auto'>
+                                        <button class='btn btn-secondary btn-sm' type='button' onclick="rules.setRuleSel('i', false);">
+                                            Clear All Items
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto'>
+                                        <button class='btn btn-secondary btn-sm' type='button' onclick="rules.setRuleSel('i', true);">
+                                            Select All Items
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto'>
+                                        <button class='btn btn-primary btn-sm' type='button' onclick="rules.applyRuleSel('i');">Apply Selections</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id='result_message_editRule' class='mt-4 p-2'></div>
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='selectionSaveBtn' onClick='rules.saveSelection()'>Save Selection</button>
+                <button class='btn btn-sm btn-primary' id='editRuleSaveBtn' onClick='rules.editRuleStepSave()'>Save Changes</button>
             </div>
         </div>
     </div>
 </div>
---->
 <div id='changeModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Change Registration' aria-hidden='true' style='--bs-modal-width: 96%;'>
 <div class='modal-dialog'>
     <div class='modal-content'>
