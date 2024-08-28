@@ -237,44 +237,78 @@ else
                         <div class='col-sm-12'><h4>Edit the <span id='editRuleName'>rulesName</span> Rule</h4></div>
                     </div>
                     <div class='row mt-1'>
-                        <div class='col-sm-2'>
-                            <label for='rName'>Name:</label>
+                        <div class='col-sm-6'>
+                            <div class='container-fluid' id='editRuleFieldDiv'>
+                                <div class="row">
+                                    <div class='col-sm-2'>
+                                        <label for='rName'>Name:</label>
+                                    </div>
+                                    <div class='col-sm-10'>
+                                        <input type='text' id='rName' name='rName' size='20' maxlength='16' placeholder='name'/>
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>
+                                        <label for='rOptionName'>Option Name:</label>
+                                    </div>
+                                    <div class='col-sm-10'>
+                                        <input type='text' id='rOptionName' name='rOptionName' size='64' maxlength='64' placeholder='option name'/>
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-3'>
+                                        <button class="btn btn-sm btn-primary" type="button" onclick="rules.editTypes('r');">Edit Mem Types</button>
+                                    </div>
+                                    <div class='col-sm-9' id="rTypeList"><i>None</i></div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-3'>
+                                        <button class='btn btn-sm btn-primary' type='button' onclick="rules.editCategories('r');">Edit Mem Cats</button>
+                                    </div>
+                                    <div class='col-sm-9' id='rCatList'><i>None</i></div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-3'>
+                                        <button class='btn btn-sm btn-primary' type='button' onclick="rules.editAges('r');">Edit Mem Ages</button>
+                                    </div>
+                                    <div class='col-sm-9' id='rAgeList'><i>None</i></div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-3'>
+                                        <button class='btn btn-sm btn-primary' type='button' onclick="rules.editMemList('r');">Edit Mem Ids</button>
+                                    </div>
+                                    <div class='col-sm-9' id='rMemList'><i>None</i></div>
+                                </div>
+                            </div>
                         </div>
-                        <div class='col-sm-10'>
-                            <input type='text' id='rName' name='rName' size='20' maxlength='16' placeholder='name'/>
+                        <div class="col-sm-6">
+                            <div class='container-fluid' id='editRuleSelDiv'>
+                                <div class='row mb-2'>
+                                    <div class='col-sm-12' id="editRuleSelLabel"></div>
+                                </div>
+                                <div class='row'>
+                                    <div class='col-sm-12 m-0 p-0' id='editRuleSelTable'></div>
+                                </div>
+                                <div class='row mt-1' id="editRuleSelButtons" name="editRuleSelButtons">
+                                    <div class='col-sm-auto'>
+                                        <button class="btn btn-secondary btn-sm" type="button" onclick="rules.closeSelTable('r');">Cancel Changes</button>
+                                    </div>
+                                    <div class='col-sm-auto'>
+                                        <button class='btn btn-secondary btn-sm' type='button' onclick="rules.setRuleSel('r', false);">
+                                            Clear All Items
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto'>
+                                        <button class='btn btn-secondary btn-sm' type='button' onclick="rules.setRuleSel('r', true);">
+                                            Select All Items
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto'>
+                                        <button class='btn btn-primary btn-sm' type='button' onclick="rules.applyRuleSel('r');">Apply Selections</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class='row mt-1'>
-                        <div class='col-sm-2'>
-                            <label for='rOptionName'>Option Name:</label>
-                        </div>
-                        <div class='col-sm-10'>
-                            <input type='text' id='rOptionName' name='rOptionName' size='64' maxlength='64' placeholder='option name'/>
-                        </div>
-                    </div>
-                    <div class='row mt-1'>
-                        <div class='col-sm-2'>
-                            <button class="btn btn-sm btn-primary" type="button" onclick="rules.editTypes('r');">Edit Mem Types</button>
-                        </div>
-                        <div class='col-sm-10' id="rTypeList"><i>None</i></div>
-                    </div>
-                    <div class='row mt-1'>
-                        <div class='col-sm-2'>
-                            <button class='btn btn-sm btn-primary' type='button' onclick="rules.editCategories('r');">Edit Mem Categories</button>
-                        </div>
-                        <div class='col-sm-10' id='rCatList'><i>None</i></div>
-                    </div>
-                    <div class='row mt-1'>
-                        <div class='col-sm-2'>
-                            <button class='btn btn-sm btn-primary' type='button' onclick="rules.editAges('r');">Edit Mem Ages</button>
-                        </div>
-                        <div class='col-sm-10' id='rAgeList'><i>None</i></div>
-                    </div>
-                    <div class='row mt-1'>
-                        <div class='col-sm-2'>
-                            <button class='btn btn-sm btn-primary' type='button' onclick="rules.editMemList('r');">Edit Mem Ids</button>
-                        </div>
-                        <div class='col-sm-10' id='rMemList'><i>None</i></div>
                     </div>
                     <div class='row mt-2'>
                         <div class='col-sm-12'><b>Rule Description:</b></div>
@@ -288,7 +322,7 @@ else
                         <div class='col-sm-12'><b>Steps:</b></div>
                     </div>
                     <div class="row">
-                        <div class="col-sm-12" id="ruleStepDiv"></div>
+                        <div class="col-sm-12 m-0 p-0" id="ruleStepDiv"></div>
                     </div>
                     <div class='row mt-2'>
                         <div class='col-sm-auto' id='steps-buttons'>
@@ -307,6 +341,7 @@ else
         </div>
     </div>
 </div>
+<!---
 <div id='selectionModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='CSV selection Block' aria-hidden='true'
      style='--bs-modal-width: 96%;'>
     <div class='modal-dialog'>
@@ -327,6 +362,7 @@ else
         </div>
     </div>
 </div>
+--->
 <div id='changeModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Change Registration' aria-hidden='true' style='--bs-modal-width: 96%;'>
 <div class='modal-dialog'>
     <div class='modal-content'>

@@ -28,9 +28,11 @@ class rulesSetup {
     // editing a rule items
     #editRuleModal = null;
     #editRuleTitle = null;
-    #editBlock = null
+    #editRuleBlock = null
+    #editRuleSel = null
     #editSaveBtn = null;
     #editRuleName = null;
+    #editRuleSelLabel = null;
     #editRuleNameDiv = null;
     #ruleDescription = null;
     #rules = null;
@@ -44,6 +46,11 @@ class rulesSetup {
     #ruleSimulator = null;
 
     #ruleItems = null;
+    #editRuleSelTable = null;
+    #selIndexName = null;
+    #selField = null;
+    #selValues = null;
+
 
     // selection items
     #selectionModal = null;
@@ -68,7 +75,9 @@ class rulesSetup {
         if (id) {
             this.#editRuleModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#editRuleTitle = document.getElementById('editRuleTitle');
-            this.#editBlock = document.getElementById('editRuleBlockDiv');
+            this.#editRuleBlock = document.getElementById('editRuleBlockDiv');
+            this.#editRuleSel = document.getElementById('editRuleSelDiv');
+            this.#editRuleSelLabel = document.getElementById('editRuleSelLabel');
             this.#editSaveBtn = document.getElementById('editRuleSaveBtn');
             this.#editRuleNameDiv = document.getElementById('editRuleName');
             this.#ruleDescription = document.getElementById('ruleDescription');
@@ -145,6 +154,7 @@ class rulesSetup {
 `;
         this.#rulesPane.innerHTML = html;
         this.#rules = null;
+        this.closeSelTable();
         var _this = this;
         var script = "scripts/regadmin_getConfigTables.php";
         var postdata = {
@@ -260,26 +270,92 @@ class rulesSetup {
         show_message("NOT YET", 'warn', 'result_message_editRule');
     }
 
+    closeSelTable(level) {
+        if (this.#editRuleSelTable) {
+            this.#editRuleSelTable.destroy();
+            this.#editRuleSelTable = null;
+        }
+        $('#editRuleSelButtons').hide();
+        this.#editRuleSelLabel.innerHTML = '';
+        this.#selIndexName = null;
+    }
+
     // editTypes - select the types list for this rule
     editTypes(table) {
+        this.closeSelTable();
         switch (table) {
             case 'r':
-                var values = ',' + this.#rTypeList.innerHTML + ',';
-                var data = this.#memTypes;
-                this.drawSelection('Rule xxx memTypes', data, values);
+                this.#selValues = ',' + this.#rTypeList.innerHTML + ',';
+                this.#editRuleSelLabel.innerHTML = "<b>Select which Mem Types apply to this rule:</b>"
+                this.#editRuleSelTable = new Tabulator('#editRuleSelTable', {
+                    data: this.#memTypes,
+                    layout: "fitDataTable",
+                    index: "memType",
+                    columns: [
+                        {title: "Type", field: "memType", width: 200, },
+                        {title: "Notes", field: "notes", width: 750, headerFilter: true, },
+                    ],
+                });
+                this.#editRuleSelTable.on("cellClick", rules.clickedSelection)
+                this.#selIndexName = 'memType';
+                this.#selField = this.#rTypeList;
+                $('#editRuleSelButtons').show();
+                setTimeout(setInitialSel, 100);
                 break;
             case 'i':
                 break;
         }
     }
 
-    // drawSelection
-    drawSelection(title, data, values) {
-        this.#selectionTitle.innerHTML = title;
+    getSelIndexName() {
+        return this.#selIndexName;
+    }
 
+    // table functions
+    // setInitialSel - set the initial selected items based on the current values
+    setInitialSel() {
+        var rows = this.#editRuleSelTable.getRows();
+        for (var row of rows) {
+            var name = row.getCell(rules.getSelIndexName()).getValue();
+            if (this.#selValues.includes(name)) {
+                row.getCell(rules.getSelIndexName()).getElement().style.backgroundColor = "#C0FFC0";
+            }
+        }
+    }
 
+    // toggle the selection color of the clicked cell
+    clickedSelection(e, cell) {
+        var filtercell = cell.getRow().getCell(rules.getSelIndexName());
+        var value = filtercell.getValue();
+        if (filtercell.getElement().style.backgroundColor) {
+            filtercell.getElement().style.backgroundColor = "";
+        } else {
+            filtercell.getElement().style.backgroundColor = "#C0FFC0";
+        }
+    }
 
-        this.#selectionModal.show();
+    // set all/clear all sections in table based on direction
+    setRuleSel(level, direction) {
+        var rows = this.#editRuleSelTable.getRows();
+        for (var row of rows) {
+            row.getCell(rules.getSelIndexName()).getElement().style.backgroundColor = direction ? "#C0FFC0" : "";
+        }
+    }
+
+    // retrieve the selected rows and set the field values
+    applyRuleSel(level) {
+        var filter = '';
+        var rows = this.#editRuleSelTable.getRows();
+        for (var row of rows) {
+            if (row.getCell(rules.getSelIndexName()).getElement().style.backgroundColor != '') {
+                filter += ',' + row.getCell(rules.getSelIndexName()).getValue();
+            }
+        }
+        if (filter != '')
+            filter = filter.substring(1);
+        console.log(filter);
+        this.#selField.innerHTML = filter;
+        this.closeSelTable();
     }
 
     // add row to  table and scroll to that new row
@@ -376,7 +452,7 @@ class rulesSetup {
                 {title: "Name", field: "name", width: 200, validator: "required", },
                 {title: "Step", field: "step", width: 70, headerHozAlign:"right", hozAlign: "right", headerSort: false, validator: "required", },
                 {title: "Rule Type", field: "ruleType", headerWordWrap: true, width: 100, headerSort: false, validator: "required", },
-                {title: "Apply To", field: "applyTo", width: 100, validator: "required", },
+                {title: "Apply To", field: "applyTo", width: 100, headerWordWrap: true, validator: "required", },
                 {title: "typeList", field: "typeList", width: 300, },
                 {title: "catList", field: "catList", width: 300, },
                 {title: "ageList", field: "ageList", width: 300, },
@@ -444,4 +520,8 @@ class rulesSetup {
 
 function rulesDrawPreviewPane() {
     rules.drawPreviewPane();
+}
+
+function setInitialSel() {
+    rules.setInitialSel();
 }
