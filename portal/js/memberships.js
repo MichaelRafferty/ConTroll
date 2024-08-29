@@ -475,7 +475,7 @@ class Membership {
     }
 
     buildMembershipButtons() {
-        // now loop over age list and build each button
+        // now loop over memList and build each button
         var html = '';
         var rules = new MembershipRules(config['conid'], this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
 
