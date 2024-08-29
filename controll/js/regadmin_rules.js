@@ -765,6 +765,9 @@ class rulesSetup {
         this.#rulesRedoBtn = document.getElementById('rules-redo');
         this.#rulesAddRowBtn = document.getElementById('rules-addrow');
         this.#rulesSaveBtn = document.getElementById('rules-save');
+        this.#rulesSaveBtn.innerHTML = "Save Changes";
+        this.#rulesSaveBtn.disabled = true;
+        this.#rulesDirty = false;
         this.#editRuleModal.show();
     }
 
@@ -849,6 +852,10 @@ class rulesSetup {
             this.#ruleStepsTable.destroy();
             this.#ruleStepsTable = null;
         }
+        this.#rulesDirty = true;
+        this.#rulesSaveBtn.innerHTML = "Save Changes";
+        this.#rulesSaveBtn.disabled = false;
+        this.checkUndoRedo();
         this.#editRuleModal.hide();
     }
 
