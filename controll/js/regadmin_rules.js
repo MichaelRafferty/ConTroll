@@ -14,16 +14,16 @@ class rulesSetup {
     #rulesAddRowBtn = null;
 
     // memRulesItems locals
-    #rulesItemsDirty = false;
-    #rulesItemsSaveBtn = null;
-    #rulesItemsUndoBtn = null;
-    #rulesItemsRedoBtn = null;
-    #rulesItemsAddRowBtn = null;
     #ruleSteps = null;
     #memTypes = null;
     #memCategories = null;
     #memAges = null;
     #memList = null;
+    #ruleStepsDirty = null;
+    #ruleStepsSaveBtn = null;
+    #ruleStepsUndoBtn = null;
+    #ruleStepsRedoBtn = null;
+    #ruleStepsAddRowBtn = null;
 
     // editing a rule
     #editRuleModal = null;
@@ -51,21 +51,21 @@ class rulesSetup {
     #editRuleStepBlock = null
     #editRuleStepSel = null
     #editRuleStepSaveBtn = null;
-    #editRuleStepName = null;
+    #editRuleStepItem = null;
     #editRuleStepSelLabel = null;
     #editRuleStepNameDiv = null;
-    #iName = null;
-    #iStep = null;
-    #iRuleType = null;
-    #iApplyTo = null;
-    #iTypeList = null;
-    #iCatList = null;
-    #iAgeList = null;
-    #iMemList = null;
+    #sName = null;
+    #sStep = null;
+    #sRuleType = null;
+    #sApplyTo = null;
+    #sTypeList = null;
+    #sCatList = null;
+    #sAgeList = null;
+    #sMemList = null;
     #ruleItems = null;
 
     #editRuleSelTable = null;
-    #selIndexName = null;
+    #selIndex = null;
     #selField = null;
     #selValues = null;
     #filterTypes = [];
@@ -143,14 +143,19 @@ class rulesSetup {
             this.#editRuleStepSaveBtn = document.getElementById('editRuleStepSaveBtn');
             this.#editRuleStepNameDiv = document.getElementById('editRuleStepName');
             this.#ruleDescription = document.getElementById('ruleDescription');
-            this.#iName = document.getElementById('iName');
-            this.#iRuleType = document.getElementById('iRuleType');
-            this.#iApplyTo = document.getElementById('iApplyTo');
-            this.#iTypeList = document.getElementById('iTypeList');
-            this.#iCatList = document.getElementById('iCatList');
-            this.#iAgeList = document.getElementById('iAgeList');
-            this.#iMemList = document.getElementById('iMemList');
+            this.#sName = document.getElementById('sName');
+            this.#sStep = document.getElementById('sStep');
+            this.#sRuleType = document.getElementById('sRuleType');
+            this.#sApplyTo = document.getElementById('sApplyTo');
+            this.#sTypeList = document.getElementById('sTypeList');
+            this.#sCatList = document.getElementById('sCatList');
+            this.#sAgeList = document.getElementById('sAgeList');
+            this.#sMemList = document.getElementById('sMemList');
             this.#ruleStepDiv = document.getElementById('ruleStepDiv');
+            this.#ruleStepsSaveBtn = document.getElementById('editRuleSaveBtn');
+            this.#ruleStepsUndoBtn = document.getElementById('steps-undo');
+            this.#ruleStepsRedoBtn = document.getElementById('steps-redo');
+            this.#ruleStepsAddRowBtn = document.getElementById('steps-addrow');
         }
 
         id = document.getElementById('selectionModal');
@@ -324,15 +329,82 @@ class rulesSetup {
     // edit step - display a modal to edit a step
     editStep(type, item) {
         // populate the modal
+        console.log("type = '" + type + "', item = '" + item + "'");
+        var row = this.#ruleStepsTable.getRow(item);
+        this.#editRuleStepItem = item;
+        this.#sName.value = row.getCell('name').getValue();
+        this.#sStep.value = row.getCell('step').getValue();
+        this.#sRuleType.value = row.getCell('ruleType').getValue();
+        this.#sApplyTo.value = row.getCell('applyTo').getValue();
+        this.#sTypeList.innerHTML = row.getCell('typeList').getValue();
+        this.#sCatList.innerHTML = row.getCell('catList').getValue();
+        this.#sAgeList.innerHTML = row.getCell('ageList').getValue();
+        this.#sMemList.innerHTML = row.getCell('memList').getValue();
         this.#editRuleModal.hide();
         this.#editRuleStepModal.show();
+        $('#editRuleStepSelButtons').hide();
+        this.#editRuleStepSelLabel.innerHTML = '';
+        this.#selIndex = null;
     }
 
-    editRuleStepSave() {
+    editRuleStepSave(dosave) {
         // save the results back to the underlying table
+        if (dosave) {
+            // store all the fields back into the table row
+            var row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
+
+            var newValue = this.#sName.value;
+            if (row.getCell("name").getValue() != newValue) {
+                row.getCell("name").setValue(newValue);
+            }
+            newValue = this.#sStep.value;
+            if (row.getCell("step").getValue() != newValue) {
+                row.getCell("step").setValue(newValue);
+            }
+            newValue = this.#sRuleType.value;
+            if (newValue == '') {
+                show_message('You must select a rule type', 'error', 'result_message_editRuleStep');
+                return;
+            }
+            if (row.getCell("ruleType").getValue() != newValue) {
+                row.getCell("ruleType").setValue(newValue);
+            }
+            newValue = this.#sApplyTo.value;
+            if (newValue == '') {
+                show_message('You must select an Apply To', 'error', 'result_message_editRuleStep');
+                return;
+            }
+            if (row.getCell("applyTo").getValue() != newValue) {
+                row.getCell("applyTo").setValue(newValue);
+            }
+            newValue = this.#sAgeList.innerHTML;
+            if (newValue == '')
+                newValue = null;
+            if (row.getCell("ageList").getValue() != newValue) {
+                row.getCell("ageList").setValue(newValue);
+            }
+            newValue = this.#sTypeList.innerHTML;
+            if (newValue == '')
+                newValue = null;
+            if (row.getCell("typeList").getValue() != newValue) {
+                row.getCell("typeList").setValue(newValue);
+            }
+            newValue = this.#sCatList.innerHTML;
+            if (newValue == '')
+                newValue = null;
+            if (row.getCell("catList").getValue() != newValue) {
+                row.getCell("catList").setValue(newValue);
+            }
+            newValue = this.#sMemList.innerHTML;
+            if (newValue == '')
+                newValue = null;
+            if (row.getCell("memList").getValue() != newValue) {
+                row.getCell("memList").setValue(newValue);
+            }
+
+        }
         this.#editRuleStepModal.hide();
         this.#editRuleModal.show();
-
     }
 
     closeSelTable(level) {
@@ -340,134 +412,173 @@ class rulesSetup {
             this.#editRuleSelTable.destroy();
             this.#editRuleSelTable = null;
         }
-        $('#editRuleSelButtons').hide();
-        this.#editRuleSelLabel.innerHTML = '';
-        this.#selIndexName = null;
+        switch (level) {
+            case 'r':
+                $('#editRuleSelButtons').hide();
+                this.#editRuleSelLabel.innerHTML = '';
+                break;
+            case 's':
+                $('#editRuleStepSelButtons').hide();
+                this.#editRuleStepSelLabel.innerHTML = '';
+                break;
+        }
+        this.#selIndex = null;
     }
 
     // editTypes - select the types list for this rule
-    editTypes(table) {
-        this.closeSelTable();
-        switch (table) {
+    editTypes(level) {
+        this.closeSelTable(level);
+        var tableField = null;
+        switch (level) {
             case 'r':
                 this.#selValues = ',' + this.#rTypeList.innerHTML + ',';
-                this.#editRuleSelLabel.innerHTML = "<b>Select which Mem Types apply to this rule:</b>"
-                this.#editRuleSelTable = new Tabulator('#editRuleSelTable', {
-                    data: this.#memTypes,
-                    layout: "fitDataTable",
-                    index: "memType",
-                    columns: [
-                        {title: "Type", field: "memType", width: 200, },
-                        {title: "Notes", field: "notes", width: 750, headerFilter: true, },
-                    ],
-                });
-                this.#editRuleSelTable.on("cellClick", rules.clickedSelection)
-                this.#selIndexName = 'memType';
+                this.#editRuleSelLabel.innerHTML = "<b>Select which Types apply to this rule:</b>"
+                tableField = '#editRuleSelTable';
                 this.#selField = this.#rTypeList;
                 $('#editRuleSelButtons').show();
-                setTimeout(rulesSetInitialSel, 100);
                 break;
-            case 'i':
+            case 's':
+                this.#selValues = ',' + this.#sTypeList.innerHTML + ',';
+                this.#editRuleStepSelLabel.innerHTML = "<b>Select which Types apply to this step:</b>"
+                tableField = '#editRuleStepSelTable';
+                this.#selField = this.#sTypeList;
+                $('#editRuleStepSelButtons').show();
                 break;
         }
+
+        this.#editRuleSelTable = new Tabulator(tableField, {
+            data: this.#memTypes,
+            layout: "fitDataTable",
+            index: "memType",
+            columns: [
+                {title: "Type", field: "memType", width: 200, },
+                {title: "Notes", field: "notes", width: 750, headerFilter: true, },
+            ],
+        });
+        this.#editRuleSelTable.on("cellClick", rules.clickedSelection)
+        this.#selIndex = 'memType';
+        setTimeout(rulesSetInitialSel, 100);
     }
 
     // editCategories - select the category list for this rule
-    editCategories(table) {
-        this.closeSelTable();
-        switch (table) {
+    editCategories(level) {
+        this.closeSelTable(level);
+        var tableField = null;
+        switch (level) {
             case 'r':
                 this.#selValues = ',' + this.#rCatList.innerHTML + ',';
-                this.#editRuleSelLabel.innerHTML = "<b>Select which Mem Catrgories apply to this rule:</b>"
-                this.#editRuleSelTable = new Tabulator('#editRuleSelTable', {
-                    data: this.#memCategories,
-                    layout: "fitDataTable",
-                    index: "memCategory",
-                    columns: [
-                        {title: "Category", field: "memCategory", width: 200, },
-                        {title: "Notes", field: "notes", width: 750, headerFilter: true, },
-                    ],
-                });
-                this.#editRuleSelTable.on("cellClick", rules.clickedSelection)
-                this.#selIndexName = 'memCategory';
+                this.#editRuleSelLabel.innerHTML = "<b>Select which Categories apply to this rule:</b>"
+                tableField = '#editRuleSelTable';
                 this.#selField = this.#rCatList;
                 $('#editRuleSelButtons').show();
-                setTimeout(rulesSetInitialSel, 100);
                 break;
-            case 'i':
+            case 's':
+                this.#selValues = ',' + this.#sCatList.innerHTML + ',';
+                this.#editRuleStepSelLabel.innerHTML = "<b>Select which Categories apply to this step:</b>"
+                tableField = '#editRuleStepSelTable';
+                this.#selField = this.#sCatList;
+                $('#editRuleStepSelButtons').show();
                 break;
         }
+
+        this.#editRuleSelTable = new Tabulator(tableField, {
+            data: this.#memCategories,
+            layout: "fitDataTable",
+            index: "memCategory",
+            columns: [
+                {title: "Category", field: "memCategory", width: 200, },
+                {title: "Notes", field: "notes", width: 750, headerFilter: true, },
+            ],
+        });
+        this.#editRuleSelTable.on("cellClick", rules.clickedSelection)
+        this.#selIndex = 'memCategory';
+        setTimeout(rulesSetInitialSel, 100);
     }
 
     // editAges - select the age list for this rule
-    editAges(table) {
-        this.closeSelTable();
-        switch (table) {
+    editAges(level) {
+        this.closeSelTable(level);
+        var tableField = null;
+        switch (level) {
             case 'r':
                 this.#selValues = ',' + this.#rAgeList.innerHTML + ',';
                 this.#editRuleSelLabel.innerHTML = "<b>Select which Ages apply to this rule:</b>"
-                this.#editRuleSelTable = new Tabulator('#editRuleSelTable', {
-                    data: this.#memAges,
-                    layout: "fitDataTable",
-                    index: "ageType",
-                    columns: [
-                        {title: "Age", field: "ageType", width: 200, },
-                        {title: "Short Name", field: "shortname", width: 200, },
-                        {title: "Label", field: "label", width: 450, headerFilter: true, },
-                    ],
-                });
-                this.#editRuleSelTable.on("cellClick", rules.clickedSelection)
-                this.#selIndexName = 'ageType';
+                tableField = '#editRuleSelTable';
                 this.#selField = this.#rAgeList;
                 $('#editRuleSelButtons').show();
-                setTimeout(rulesSetInitialSel, 100);
                 break;
-            case 'i':
+            case 's':
+                this.#selValues = ',' + this.#sAgeList.innerHTML + ',';
+                this.#editRuleStepSelLabel.innerHTML = "<b>Select which Ages apply to this step:</b>"
+                tableField = '#editRuleStepSelTable';
+                this.#selField = this.#sAgeList;
+                $('#editRuleStepSelButtons').show();
                 break;
         }
+
+        this.#editRuleSelTable = new Tabulator(tableField, {
+            data: this.#memAges,
+            layout: "fitDataTable",
+            index: "ageType",
+            columns: [
+                {title: "Age", field: "ageType", width: 200, },
+                {title: "Short Name", field: "shortname", width: 200, },
+                {title: "Label", field: "label", width: 450, headerFilter: true, },
+            ],
+        });
+        this.#editRuleSelTable.on("cellClick", rules.clickedSelection)
+        this.#selIndex = 'ageType';
+        setTimeout(rulesSetInitialSel, 100);
     }
 
     // editMemList - select the mem id list for this rule
-    editMemList(table) {
-        this.closeSelTable();
-        switch (table) {
+    editMemList(level) {
+        this.closeSelTable(level);
+        var tableField = null;
+        switch (level) {
             case 'r':
                 this.#selValues = ',' + this.#rMemList.innerHTML + ',';
                 this.#editRuleSelLabel.innerHTML = "<b>Select which memId's apply to this rule:</b>"
-                this.#editRuleSelTable = new Tabulator('#editRuleSelTable', {
-                    data: this.#memList,
-                    layout: "fitDataTable",
-                    index: "id",
-                    pagination: true,
-                    paginationAddRow:"table",
-                    paginationSize: 25,
-                    paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
-                    columns: [
-                        {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", },
-                        {title: "ConId", field: "conid", width: 80, headerWordWrap: true, headerHozAlign:"right", hozAlign: "right",  headerFilter: true, },
-                        {title: "Cat", field: "memCategory", width: 90, headerFilter: 'list', headerFilterParams: { values: this.#filterCats }, },
-                        {title: "Type", field: "memType", width: 90, headerFilter: 'list', headerFilterParams: { values: this.#filterTypes },  },
-                        {title: "Age", field: "memAge", width: 90, headerFilter: 'list', headerFilterParams: { values: this.#filterAges },  },
-                        {title: "Label", field: "label", width: 250, headerFilter: true, },
-                        {title: "Price", field: "price", width: 80, headerFilter: true, headerHozAlign:"right", hozAlign: "right", },
-                        {title: "Notes", field: "notes", width: 200, headerFilter: true, },
-                        {title: "Start Date", field: "startDate", width: 200, visible:false, },
-                        {title: "End Date", field: "endDate", width: 200, visible:false, },
-                    ],
-                });
-                this.#editRuleSelTable.on("cellClick", rules.clickedSelection)
-                this.#selIndexName = 'id';
+                tableField = '#editRuleSelTable';
                 this.#selField = this.#rMemList;
                 $('#editRuleSelButtons').show();
-                setTimeout(rulesSetInitialSel, 100);
                 break;
-            case 'i':
+            case 's':
+                this.#selValues = ',' + this.#sMemList.innerHTML + ',';
+                this.#editRuleStepSelLabel.innerHTML = "<b>Select which memId's apply to this step:</b>"
+                tableField = '#editRuleStepSelTable';
+                this.#selField = this.#sMemList;
+                $('#editRuleStepSelButtons').show();
                 break;
         }
+        this.#editRuleSelTable = new Tabulator(tableField, {
+            data: this.#memList,
+            layout: "fitDataTable",
+            index: "id",
+            pagination: true,
+            paginationAddRow:"table",
+            paginationSize: 25,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            columns: [
+                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", },
+                {title: "ConId", field: "conid", width: 80, headerWordWrap: true, headerHozAlign:"right", hozAlign: "right",  headerFilter: true, },
+                {title: "Cat", field: "memCategory", width: 90, headerFilter: 'list', headerFilterParams: { values: this.#filterCats }, },
+                {title: "Type", field: "memType", width: 90, headerFilter: 'list', headerFilterParams: { values: this.#filterTypes },  },
+                {title: "Age", field: "memAge", width: 90, headerFilter: 'list', headerFilterParams: { values: this.#filterAges },  },
+                {title: "Label", field: "label", width: 250, headerFilter: true, },
+                {title: "Price", field: "price", width: 80, headerFilter: true, headerHozAlign:"right", hozAlign: "right", },
+                {title: "Notes", field: "notes", width: 200, headerFilter: true, },
+                {title: "Start Date", field: "startDate", width: 200, visible:false, },
+                {title: "End Date", field: "endDate", width: 200, visible:false, },
+            ],
+        });
+        this.#editRuleSelTable.on("cellClick", rules.clickedSelection)
+        this.#selIndex = 'id';
+        setTimeout(rulesSetInitialSel, 100);
     }
 
-    getSelIndexName() {
-        return this.#selIndexName;
+    getselIndex() {
+        return this.#selIndex;
     }
 
     // table functions
@@ -475,16 +586,16 @@ class rulesSetup {
     setInitialSel() {
         var rows = this.#editRuleSelTable.getRows();
         for (var row of rows) {
-            var name = row.getCell(rules.getSelIndexName()).getValue();
+            var name = row.getCell(rules.getselIndex()).getValue();
             if (this.#selValues.includes(name)) {
-                row.getCell(rules.getSelIndexName()).getElement().style.backgroundColor = "#C0FFC0";
+                row.getCell(rules.getselIndex()).getElement().style.backgroundColor = "#C0FFC0";
             }
         }
     }
 
     // toggle the selection color of the clicked cell
     clickedSelection(e, cell) {
-        var filtercell = cell.getRow().getCell(rules.getSelIndexName());
+        var filtercell = cell.getRow().getCell(rules.getselIndex());
         var value = filtercell.getValue();
         if (filtercell.getElement().style.backgroundColor) {
             filtercell.getElement().style.backgroundColor = "";
@@ -497,24 +608,25 @@ class rulesSetup {
     setRuleSel(level, direction) {
         var rows = this.#editRuleSelTable.getRows();
         for (var row of rows) {
-            row.getCell(rules.getSelIndexName()).getElement().style.backgroundColor = direction ? "#C0FFC0" : "";
+            row.getCell(rules.getselIndex()).getElement().style.backgroundColor = direction ? "#C0FFC0" : "";
         }
     }
 
     // retrieve the selected rows and set the field values
     applyRuleSel(level) {
         var filter = '';
-        var rows = this.#editRuleSelTable.getRows();
+        var rows = null;
+        rows = this.#editRuleSelTable.getRows();
         for (var row of rows) {
-            if (row.getCell(rules.getSelIndexName()).getElement().style.backgroundColor != '') {
-                filter += ',' + row.getCell(rules.getSelIndexName()).getValue();
+            if (row.getCell(rules.getselIndex()).getElement().style.backgroundColor != '') {
+                filter += ',' + row.getCell(rules.getselIndex()).getValue();
             }
         }
         if (filter != '')
             filter = filter.substring(1);
         //console.log(filter);
         this.#selField.innerHTML = filter;
-        this.closeSelTable();
+        this.closeSelTable(level);
     }
 
     // add row to  table and scroll to that new row
@@ -595,10 +707,10 @@ class rulesSetup {
         this.#ruleDescription.innerHTML = ruleDescription;
         this.#rName.value = ruleRow.name
         this.#rOptionName.value = ruleRow.optionName;
-        this.#rTypeList.innerHTML = ruleRow.typeList = '' ? "<i>None</i>" : ruleRow.typeList;
-        this.#rCatList.innerHTML = ruleRow.catList = '' ? "<i>None</i>" : ruleRow.catList;
-        this.#rAgeList.innerHTML = ruleRow.ageList = '' ? "<i>None</i>" : ruleRow.ageList;
-        this.#rMemList.innerHTML = ruleRow.memList = '' ? "<i>None</i>" : ruleRow.memList;
+        this.#rTypeList.innerHTML = ruleRow.typeList == '' ? "<i>None</i>" : ruleRow.typeList;
+        this.#rCatList.innerHTML = ruleRow.catList =='' ? "<i>None</i>" : ruleRow.catList;
+        this.#rAgeList.innerHTML = ruleRow.ageList == '' ? "<i>None</i>" : ruleRow.ageList;
+        this.#rMemList.innerHTML = ruleRow.memList == '' ? "<i>None</i>" : ruleRow.memList;
 
         tinyMCE.activeEditor.setContent(ruleDescription);
         this.#ruleStepsTable = new Tabulator('#ruleStepDiv', {
@@ -628,10 +740,10 @@ class rulesSetup {
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible,}
             ],
         });
-        this.#rulesTable.on("dataChanged", function (data) {
-            rulesDataChanged();
+        this.#ruleStepsTable.on("dataChanged", function (data) {
+            rulesStepsDataChanged();
         });
-        this.#rulesTable.on("cellEdited", cellChanged);
+        this.#ruleStepsTable.on("cellEdited", cellChanged);
 
         this.#rulesUndoBtn = document.getElementById('rules-undo');
         this.#rulesRedoBtn = document.getElementById('rules-redo');
@@ -639,6 +751,17 @@ class rulesSetup {
         this.#rulesSaveBtn = document.getElementById('rules-save');
         this.#editRuleModal.show();
     }
+
+    stepsDataChanged() {
+        //data - the updated table data
+        if (!this.#ruleStepsDirty) {
+            this.#ruleStepsSaveBtn.innerHTML = "Save Changes*";
+            this.#ruleStepsSaveBtn.disabled = false;
+            this.#ruleStepsDirty = true;
+        }
+        this.checkUndoRedo();
+        this.drawPreviewPane();
+    };
 
     // process the save button on the edit modal
     editRuleSave() {
@@ -707,6 +830,12 @@ class rulesSetup {
             this.#rulesTable.destroy();
             this.#rulesTable = null;
         }
+        if (this.#ruleStepsTable != null) {
+            this.#ruleStepsTable.off("dataChanged");
+            this.#ruleStepsTable.off("cellEdited");
+            this.#ruleStepsTable.destroy();
+            this.#ruleStepsTable = null;
+        }
 
         this.#rulesPane.innerHTML = '';
     };
@@ -720,6 +849,6 @@ function rulesSetInitialSel() {
     rules.setInitialSel();
 }
 
-function rulesDataChanged() {
-    rules.dataChanged();
+function rulesStepsDataChanged() {
+    rules.stepsDataChanged();
 }

@@ -361,27 +361,27 @@ else
                             <div class='container-fluid' id='editRuleStepFieldDiv'>
                                 <div class='row'>
                                     <div class='col-sm-2'>
-                                        <label for='iName'>Step Name:</label>
+                                        <label for='sName'>Step Name:</label>
                                     </div>
                                     <div class='col-sm-10'>
-                                        <input type='text' id='iName' name='rName' size='20' maxlength='16' placeholder='step name'/>
+                                        <input type='text' id='sName' name='sName' size='20' maxlength='16' placeholder='step name'/>
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
-                                        <label for='iStepNum'>Step #:</label>
+                                        <label for='sStep'>Step #:</label>
                                     </div>
                                     <div class='col-sm-10'>
-                                        <input type='number' class='no-spinners' inputmode='numeric' id='iStepNum' name='iStemNum'
+                                        <input type='number' class='no-spinners' inputmode='numeric' id='sStep' name='sStem'
                                                size='10' min="1" max="999" placeholder='Step #'/>
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
-                                        <label for='iRuleType'>Rule Type:</label>
+                                        <label for='sRuleType'>Rule Type:</label>
                                     </div>
                                     <div class='col-sm-10'>
-                                        <select id='iRuleType' name='iRuleType'>
+                                        <select id='sRuleType' name='sRuleType'>
                                             <option value="">--Select Rule Type--</option>
                                             <option value="needAny">Need Any</option>
                                             <option value="needAll">Need All</option>
@@ -394,10 +394,10 @@ else
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
-                                        <label for='iApplyTo'>Apply To:</label>
+                                        <label for='sApplyTo'>Apply To:</label>
                                     </div>
                                     <div class='col-sm-10'>
-                                        <select id='iApplyTo' name='iApplyTo'>
+                                        <select id='sApplyTo' name='sApplyTo'>
                                             <option value=''>--Select Apply To--</option>
                                             <option value='person'>Person</option>
                                             <option value='all'>All in Account</option>
@@ -406,27 +406,27 @@ else
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-3'>
-                                        <button class='btn btn-sm btn-primary' type='button' onclick="rules.editTypes('i');">Edit Mem Types</button>
+                                        <button class='btn btn-sm btn-primary' type='button' onclick="rules.editTypes('s');">Edit Mem Types</button>
                                     </div>
-                                    <div class='col-sm-9' id='iTypeList'><i>None</i></div>
+                                    <div class='col-sm-9' id='sTypeList'><i>None</i></div>
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-3'>
-                                        <button class='btn btn-sm btn-primary' type='button' onclick="rules.editCategories('i');">Edit Mem Cats</button>
+                                        <button class='btn btn-sm btn-primary' type='button' onclick="rules.editCategories('s');">Edit Mem Cats</button>
                                     </div>
-                                    <div class='col-sm-9' id='iCatList'><i>None</i></div>
+                                    <div class='col-sm-9' id='sCatList'><i>None</i></div>
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-3'>
-                                        <button class='btn btn-sm btn-primary' type='button' onclick="rules.editAges('i');">Edit Mem Ages</button>
+                                        <button class='btn btn-sm btn-primary' type='button' onclick="rules.editAges('s');">Edit Mem Ages</button>
                                     </div>
-                                    <div class='col-sm-9' id='iAgeList'><i>None</i></div>
+                                    <div class='col-sm-9' id='sAgeList'><i>None</i></div>
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-3'>
-                                        <button class='btn btn-sm btn-primary' type='button' onclick="rules.editMemList('i');">Edit Mem Ids</button>
+                                        <button class='btn btn-sm btn-primary' type='button' onclick="rules.editMemList('s');">Edit Mem Ids</button>
                                     </div>
-                                    <div class='col-sm-9' id='iMemList'><i>None</i></div>
+                                    <div class='col-sm-9' id='sMemList'><i>None</i></div>
                                 </div>
                             </div>
                         </div>
@@ -438,33 +438,33 @@ else
                                 <div class='row'>
                                     <div class='col-sm-12 m-0 p-0' id='editRuleStepSelTable'></div>
                                 </div>
-                                <div class='row mt-1' id='editRuleSelStepButtons' name='editRuleStepSelButtons'>
+                                <div class='row mt-1' id='editRuleStepSelButtons' name='editRuleStepSelButtons'>
                                     <div class='col-sm-auto'>
-                                        <button class='btn btn-secondary btn-sm' type='button' onclick="rules.closeSelTable('i');">Cancel Changes</button>
+                                        <button class='btn btn-secondary btn-sm' type='button' onclick="rules.closeSelTable('s');">Cancel Changes</button>
                                     </div>
                                     <div class='col-sm-auto'>
-                                        <button class='btn btn-secondary btn-sm' type='button' onclick="rules.setRuleSel('i', false);">
+                                        <button class='btn btn-secondary btn-sm' type='button' onclick="rules.setRuleSel('s', false);">
                                             Clear All Items
                                         </button>
                                     </div>
                                     <div class='col-sm-auto'>
-                                        <button class='btn btn-secondary btn-sm' type='button' onclick="rules.setRuleSel('i', true);">
+                                        <button class='btn btn-secondary btn-sm' type='button' onclick="rules.setRuleSel('s', true);">
                                             Select All Items
                                         </button>
                                     </div>
                                     <div class='col-sm-auto'>
-                                        <button class='btn btn-primary btn-sm' type='button' onclick="rules.applyRuleSel('i');">Apply Selections</button>
+                                        <button class='btn btn-primary btn-sm' type='button' onclick="rules.applyRuleSel('s');">Apply Selections</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div id='result_message_editRule' class='mt-4 p-2'></div>
+                <div id='result_message_editRuleStep' class='mt-4 p-2'></div>
             </div>
             <div class='modal-footer'>
-                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='editRuleSaveBtn' onClick='rules.editRuleStepSave()'>Save Changes</button>
+                <button class='btn btn-sm btn-secondary' onClick='rules.editRuleStepSave(false);'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='editRuleSaveBtn' onClick='rules.editRuleStepSave(true);'>Save Changes</button>
             </div>
         </div>
     </div>
