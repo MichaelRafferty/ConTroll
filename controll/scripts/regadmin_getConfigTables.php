@@ -96,9 +96,9 @@ EOS;
         $response['memRules'] = $data['memRules'];
         // now the memList items for filling in that field
         $memSQL = <<<EOS
-SELECT *
+SELECT *, id as memId
 FROM memList
-WHERE conid IN (?, ?)
+WHERE ((conid = ? AND memCategory != 'yearahead') OR (conid = ? AND memCategory = 'yearahead')) AND online = 'Y'
 ORDER BY sort_order;
 EOS;
         $result = dbSafeQuery($memSQL, 'ii', array($conid, $nextconid));

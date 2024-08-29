@@ -161,13 +161,15 @@ class MembershipRules {
 
             // memCategory rule on duplicate- if onlyOne and it is in the cart, don't allow it again
             var memCat = memCategories[mem.memCategory];
-            if (memCat.onlyOne == 'Y') {
-                var item = this.findCatInCart(mem.memCategory, this.#memberships);
-                if (item != null && item != mem) { // for delete/remove, are we searching for ourselves, if so, it's allowed
-                    if (this.#debug & 8) {
-                        console.log("testMembership Implicit: return false-only one allowed and one of this memId is in the list already");
+            if (memCat != null) {
+                if (memCat.onlyOne == 'Y') {
+                    var item = this.findCatInCart(mem.memCategory, this.#memberships);
+                    if (item != null && item != mem) { // for delete/remove, are we searching for ourselves, if so, it's allowed
+                        if (this.#debug & 8) {
+                            console.log("testMembership Implicit: return false-only one allowed and one of this memId is in the list already");
+                        }
+                        return false; // only one allowed and one of this memId is in the list already
                     }
-                    return false; // only one allowed and one of this memId is in the list already
                 }
             }
         }

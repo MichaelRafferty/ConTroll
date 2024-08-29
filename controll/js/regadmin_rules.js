@@ -6,9 +6,11 @@ var ageListIdx = null;
 var memTypes = null;
 var memCategories = null;
 var memList = null;
+var memListFull = null;
 var memListIdx = null;
 var memRules = null;
 var memRulesIdx = null;
+var config = [];
 
 class rulesSetup {
     #messageDiv = null;
@@ -87,16 +89,23 @@ class rulesSetup {
     #selectionTitle = null;
     #selectionBlock = null;
 
+    // preview items
+    #currentAge = null;
+    #memberships = null
+
     #debug = 0;
+    #conid = 0;
     #debugVisible = false;
 
     // globals before open
     constructor() {
-        var debug = document.getElementById('debug').innerHTML;
-        this.#debug = debug;
+        this.#debug =  Number(document.getElementById('debug').innerHTML);
+        this.#conid =  Number(document.getElementById('conid').innerHTML);
         if (this.#debug & 2) {
             this.#debugVisible = true;
         }
+        config['debug'] = this.#debug;
+        config['conid'] = this.#conid;
 
         this.#messageDiv = document.getElementById('test');
         this.#rulesPane = document.getElementById('rules-pane');
@@ -197,7 +206,13 @@ class rulesSetup {
             </div>
         </div>
         <div class="row mt-4">
-            <div class="col-sm-12"><h4><strong>Rules Sumulator:</strong></h4></div>
+            <div class="col-sm-12">
+                <h4>
+                    <strong>Rules Simulator:</strong>&nbsp;&nbsp;&nbsp;
+                    Similated Current Date:
+                    <input type="text" maxlength="20" size="20" name="simDate" id="simDate" value="" onchange="rules.updateDate();"/>
+                </h4>
+            </div>
         </div>
     </div>
     <div class="container-fluid" id="ruleSimulatorDiv"></div>
@@ -254,6 +269,7 @@ class rulesSetup {
         ageList = data['ageList'];
         ageListIdx = data['ageListIdx'];
         memList = data['memListFull'];
+        memListFull = data['memListFull'];
         memListIdx = data['memListFullIdx'];
 
         // create index of rules
@@ -317,9 +333,168 @@ class rulesSetup {
         setTimeout(rulesDrawPreviewPane, 100);
     }
 
+    buildAgeButtons() {
+        var html = '';
+        for (var row in ageList) {
+            var age = ageList[row];
+            if (age.ageType == 'all')
+                continue;
+            html += '<div class="col-sm-auto"><button id="ageBtn-' + age.ageType + '" class="btn btn-sm btn-secondary" ' +
+              'onclick="rules.ageSelect(' + "'" + age.ageType + "'" + ')">' + age.label + ' (' + age.shortname + ')' +
+                '</button></div>\n';
+        }
+        return html;
+    }
+
+    buildMembershipButtons() {
+        // now loop over age list and build each button
+        var html = '';
+        var rules = new MembershipRules(this.#conid, this.#currentAge, this.#memberships, this.#memberships);
+
+        for (var row in memList) {
+            var mem = memList[row];
+            // apply implitict rules and membershipRules against memList entry
+            if (!rules.testMembership(mem))
+                continue;
+
+            // apply age filter from age select
+            if (mem.memAge == 'all' || mem.memAge == this.#currentAge) {
+                var memLabel = mem.label;
+                if (memCategories[mem.memCategory].variablePrice != 'Y') {
+                    memLabel += ' (' + mem.price + ')';
+                }
+                html += '<div class="col-sm-auto mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary"' +
+                    ' onclick="rules.membershipAdd(' + "'" + mem.id + "'" + ')">' +
+                    (mem.conid != this.#conid ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
+            }
+        }
+        document.getElementById('membershipButtonsDiv').innerHTML = html;
+    }
+
+    ageSelect(ageType) {
+        this.#currentAge = ageType;
+        for (var age of ageList) {
+            var id = document.getElementById('ageBtn-' + age.ageType);
+            if (id) {
+                if (ageType == age.ageType) {
+                    var current = id.classList.contains('btn-success');
+                    if (current) {
+                        this.#currentAge = null;  // turn it back off
+                    }
+                }
+                id.classList.remove('btn-secondary');
+                id.classList.remove('btn-success');
+                id.classList.add(age.ageType == this.#currentAge ? 'btn-success' : 'btn-secondary');
+            }
+        }
+
+        this.updatePreviewPane();
+    }
+
+    updateDate() {
+        clear_message();
+        var dateStr = document.getElementById('simDate').value.trim();
+        if (dateStr == '') {
+            memList = memListFull;
+            this.updatePreviewPane();
+            return;
+        }
+        var simDate = Date.parse(dateStr);
+        if (isNaN(simDate)) {
+            show_message("Unable to parse " + dateStr + " as a date.", 'warn');
+            return;
+        }
+
+        memList = [];
+        for (var i = 0; i < memListFull.length; i++) {
+            var row = memListFull[i];
+            //console.log(dateStr + ', ' + row.startdate + ', ' + row.enddate);
+            var startDate = Date.parse(row.startdate);
+            var endDate = Date.parse(row.enddate);
+            //console.log(simDate + ' ' + startDate + ' ' + endDate);
+            if (simDate >= startDate && simDate < endDate)
+                memList.push(row);
+        }
+        this.updatePreviewPane();
+    }
+
+    membershipAdd(memId) {
+        var memrow = this.findMembership(memId);
+        if (memrow == null)
+            return;
+
+        var now = new Date();
+        var newMembership = {};
+        newMembership.id = -1;
+        newMembership.create_date = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2) + ' ' +
+            ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
+        newMembership.memId = id;
+        newMembership.conid = memrow.conid;
+        newMembership.status = 'in-cart';
+        newMembership.price = memrow.price;
+        newMembership.paid = 0;
+        newMembership.couponDiscount = 0;
+        newMembership.label = memrow.label;
+        newMembership.memCategory = memrow.memCategory;
+        newMembership.memType = memrow.memType;
+        newMembership.memAge = memrow.memAge;
+        if (!this.#memberships)
+            this.#memberships = [];
+        this.#memberships.push(newMembership);
+        this.updatePreviewPane();
+    }
+
+    // findMembership - find matching memRow in memList
+    findMembership(id) {
+        if (!memList)
+            return null; // no list to search
+
+        for (var row in memList) {
+            var memrow = memList[row];
+            if (id != memrow.id)
+                continue;
+            return memrow;  // return matching entry
+        }
+        return null; // not found
+    }
+
+    drawMembershipList() {
+        var html = '';
+        if (this.#memberships != null) {
+            for (var i = 0; i < this.#memberships.length; i++) {
+                html += '<div class="col-auto mt-1 mb-1"><button class="btn btn-sm btn-info text-white" type="button">' +
+                    this.#memberships[i].conid + ' ' + this.#memberships[i].label +
+                    '</button></div>\n';
+            }
+        }
+        document.getElementById('membershipListDiv').innerHTML = html;
+    }
+
+    resetMembership() {
+        this.#memberships = [];
+        this.updatePreviewPane();
+    }
+
     drawPreviewPane() {
         this.#ruleSimulator = document.getElementById('ruleSimulatorDiv');
-        this.#ruleSimulator.innerHTML = '';
+        var html = '<div class="container-fluid"><div class="row mt-2 mb-2">\n';
+
+        // first the age buttons
+        html += this.buildAgeButtons();
+
+        html += '</div>\n' +
+            '<div class="row mt-2" id="membershipButtonsDiv"></div>\n</div>\n' +
+            '<div class="row mt-4"><div class="col-sm-auto"><h4>Membership in Simulation: ' +
+                '<button class="btn btn-sm btn-warning" onclick="rules.resetMembership();">Reset Memberships</button>' +
+            '</h4></div></div>\n' +
+            '<div class="row mt-2" id="membershipListDiv"></div>\n';
+        this.#ruleSimulator.innerHTML = html;
+        setTimeout(rulesUpdatePreviewPane, 100);
+    }
+
+    updatePreviewPane() {
+        this.buildMembershipButtons();
+        this.drawMembershipList();
     }
 
     // table related functions
@@ -793,7 +968,7 @@ class rulesSetup {
                 {title: "memList", field: "memList", width: 300, },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'ruleSteps', label: 'Edit Step' }, hozAlign:"left", headerSort: false },
                 {title: "Orig Name", field: "origName", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
-                {title: "Orig Step", field: "origStep", headerWordWrap: true, visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 70,},
+                {title: "Orig Step", field: "origStep", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 70,},
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
                     cellClick: function (e, cell) {
@@ -987,6 +1162,10 @@ class rulesSetup {
 
 function rulesDrawPreviewPane() {
     rules.drawPreviewPane();
+}
+
+function rulesUpdatePreviewPane() {
+    rules.updatePreviewPane();
 }
 
 function rulesSetInitialSel() {

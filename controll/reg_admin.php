@@ -539,7 +539,7 @@ else
             <div class='container-fluid' id='editReg-div' hidden>
                 <div class='row p-1'>
                     <div class='col-sm-2 p-0'>
-                        <label for='name'>Edit Membershop:</label>
+                        <label for='name'>Edit Membership:</label>
                     </div>
                     <div class='col-sm-10 p-0' id='edit_registration_label'></div>
                 </div>
