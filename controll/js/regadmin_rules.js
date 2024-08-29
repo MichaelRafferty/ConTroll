@@ -36,6 +36,7 @@ class rulesSetup {
     #editRuleNameDiv = null;
     #ruleDescription = null;
     #rules = null;
+    #rulesIdx = null;
     #rName = null;
     #rOptionName = null;
     #rTypeList = null;
@@ -63,6 +64,7 @@ class rulesSetup {
     #sAgeList = null;
     #sMemList = null;
     #ruleItems = null;
+    #ruleItemsIdx = null;
 
     #editRuleSelTable = null;
     #selIndex = null;
@@ -200,7 +202,8 @@ class rulesSetup {
 `;
         this.#rulesPane.innerHTML = html;
         this.#rules = null;
-        this.closeSelTable();
+        this.closeSelTable('r');
+        this.closeSelTable('s');
         var _this = this;
         var script = "scripts/regadmin_getConfigTables.php";
         var postdata = {
@@ -245,6 +248,19 @@ class rulesSetup {
         this.#memAges = data['ageList'];
         this.#memList = data['memList'];
 
+        // create index of rules
+        this.#rulesIdx = {};
+        for (var i = 0; i < this.#rules.length; i++) {
+            var row = this.#rules[i];
+            this.#rulesIdx[row.name] = i;
+        }
+        // create index of ruleItems
+        this.#ruleItemsIdx = {};
+        for (var i = 0; i < this.#ruleItems.length; i++) {
+            var row = this.#ruleItems[i];
+            this.#ruleItemsIdx[row.rownum] = i;
+        }
+
         this.#filterAges = [];
         this.#filterCats = [];
         this.#filterTypes = [];
@@ -265,7 +281,7 @@ class rulesSetup {
             history: true,
             data: this.#rules,
             layout: "fitDataTable",
-            index: "name",
+            index: "origName",
             pagination: true,
             paginationAddRow:"table",
             paginationSize: 10,
@@ -298,7 +314,7 @@ class rulesSetup {
         this.#rulesRedoBtn = document.getElementById('rules-redo');
         this.#rulesAddRowBtn = document.getElementById('rules-addrow');
         this.#rulesSaveBtn = document.getElementById('rules-save');
-
+        this.closeSelTable('r');
 
         setTimeout(rulesDrawPreviewPane, 100);
     }
@@ -695,7 +711,7 @@ class rulesSetup {
 
         this.#ruleSteps = [];
         for (var i = 0; i < this.#ruleItems.length; i++) {
-            if (ruleName == this.#ruleItems[i].name) {
+            if (ruleName == this.#ruleItems[i].origName) {
                 this.#ruleSteps.push(this.#ruleItems[i]);
             }
         }
@@ -814,14 +830,63 @@ class rulesSetup {
             row.getCell("memList").setValue(newValue);
         }
 
-
         if (this.#ruleStepsTable != null) {
+            // save the rule steps table stuff back to the ruleItmes array
+            var data = this.#ruleStepsTable.getData();
+            if (data.length > 0) {
+                var keys = Object.keys(data[0]);
+                for (var i = 0; i < data.length; i++) {
+                    var row = data[i];
+                    var idx = this.#ruleItemsIdx[row.rownum];
+                    for (var j = 0; j < keys.length; j++) {
+                        var key = keys[j];
+                        this.#ruleItems[idx][key] = row[key];
+                    }
+                }
+            }
             this.#ruleStepsTable.off("dataChanged");
             this.#ruleStepsTable.off("cellEdited");
             this.#ruleStepsTable.destroy();
             this.#ruleStepsTable = null;
         }
         this.#editRuleModal.hide();
+    }
+
+    // save the rules and rule items back to the database
+    save() {
+        var data = {
+            rules: this.#rulesTable.getData(),
+            items: this.#ruleItems,
+            action: 'save',
+        }
+        var script = 'scripts/regadmin_rulesUpdate.php';
+        clear_message();
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: data,
+            success: function (data, textStatus, jhXHR) {
+                _this.saveSuccess(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                return false;
+            }
+        });
+    }
+
+    // save complete - reset buttons, refresh data
+    saveSuccess(data) {
+        if (data['error']) {
+            show_message(data['error'], 'error');
+            return;
+        }
+        if (data['warn']) {
+            show_message(data['warn'], 'warn');
+            return;
+        }
+        this.open();
+        show_message(data['success'], 'success');
     }
     
     // on close of the pane, clean up the items
@@ -847,6 +912,10 @@ function rulesDrawPreviewPane() {
 
 function rulesSetInitialSel() {
     rules.setInitialSel();
+}
+
+function rulesDataChanged() {
+    rules.dataChanged();
 }
 
 function rulesStepsDataChanged() {
