@@ -93,8 +93,7 @@ EOS;
         $response['memCategories'] = $data['memCategories'];
         $response['memList'] = $data['memList'];
         $response['memListIdx'] = $data['memListIdx'];
-        $response['memRules'] = data['memRules']
-        ;
+        $response['memRules'] = $data['memRules'];
         // now the memList items for filling in that field
         $memSQL = <<<EOS
 SELECT *
@@ -104,11 +103,14 @@ ORDER BY sort_order;
 EOS;
         $result = dbSafeQuery($memSQL, 'ii', array($conid, $nextconid));
         $memListItems = array();
+        $memListIdx = [];
         while ($row = $result->fetch_assoc()) {
             array_push($memListItems, $row);
+            $memListIdx[$row['id']] = $row;
         }
         $result->free();
         $response['memListFull'] = $memListItems;
+        $response['memListFullIdx'] = $memListIdx;
         break;
 
     default:

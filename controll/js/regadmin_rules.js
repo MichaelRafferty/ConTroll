@@ -2,10 +2,13 @@
 // rules class - all edit membership rules functions
 
 var ageList = null;
+var ageListIdx = null;
 var memTypes = null;
 var memCategories = null;
 var memList = null;
+var memListIdx = null;
 var memRules = null;
+var memRulesIdx = null;
 
 class rulesSetup {
     #messageDiv = null;
@@ -42,7 +45,7 @@ class rulesSetup {
     #editRuleSelLabel = null;
     #editRuleNameDiv = null;
     #ruleDescription = null;
-    #rules = null;
+    #memRules = null;
     #rulesIdx = null;
     #rName = null;
     #rOptionName = null;
@@ -70,8 +73,7 @@ class rulesSetup {
     #sCatList = null;
     #sAgeList = null;
     #sMemList = null;
-    #ruleItems = null;
-    #ruleItemsIdx = null;
+    #ruleStepsIdx = null;
 
     #editRuleSelTable = null;
     #selIndex = null;
@@ -81,12 +83,10 @@ class rulesSetup {
     #filterAges = []
     #filterCats = [];
 
-
     // selection items
     #selectionModal = null;
     #selectionTitle = null;
     #selectionBlock = null;
-
 
     #debug = 0;
     #debugVisible = false;
@@ -208,7 +208,7 @@ class rulesSetup {
     </div>
 `;
         this.#rulesPane.innerHTML = html;
-        this.#rules = null;
+        memRules = null;
         this.closeSelTable('r');
         this.closeSelTable('s');
         var _this = this;
@@ -244,27 +244,25 @@ class rulesSetup {
             this.#rulesTable.destroy();
             this.#rulesTable = null;
         }
-        if (!data['rules']) {
+        if (!data['memRules']) {
             show_message("Error loading rules", 'error');
             return;
         }
-        this.#rules = data['rules'];
+        memRules = data['memRules'];
         memTypes = data['memTypes'];
         memCategories = data['memCategories'];
         ageList = data['ageList'];
-        memList = data['memList'];
+        ageListIdx = data['ageListIdx'];
+        memList = data['memListFull'];
+        memListIdx = data['memListFullIdx'];
 
         // create index of rules
         this.#rulesIdx = {};
-        for (var i = 0; i < this.#rules.length; i++) {
-            var row = this.#rules[i];
-            this.#rulesIdx[row.name] = i;
-        }
-        // create index of ruleItems
-        this.#ruleItemsIdx = {};
-        for (var i = 0; i < this.#ruleItems.length; i++) {
-            var row = this.#ruleItems[i];
-            this.#ruleItemsIdx[row.rownum] = i;
+        this.#memRules = [];
+        var keys = Object.keys(memRules);
+        for (var i = 0; i < keys.length; i++) {
+            this.#memRules.push(memRules[keys[i]]);
+            this.#rulesIdx[memRules[keys[i]].name] = i;
         }
 
         this.#filterAges = [];
@@ -272,20 +270,14 @@ class rulesSetup {
         this.#filterTypes = [];
 
         // load the filter arrays
-        for (var row of memTypes) {
-            this.#filterTypes.push(row['memType']);
-        }
-        for (var row of ageList) {
-            this.#filterAges.push(row['ageType']);
-        }
-        for (var row of memCategories) {
-            this.#filterCats.push(row['memCategory']);
-        }
+        this.#filterTypes = Object.keys(memTypes);
+        this.#filterAges = Object.keys(ageList);
+        this.#filterCats = Object.keys(memCategories);
 
         this.#rulesDirty = false;
         this.#rulesTable = new Tabulator('#rulesTableDiv', {
             history: true,
-            data: this.#rules,
+            data: this.#memRules,
             layout: "fitDataTable",
             index: "origName",
             pagination: true,
@@ -715,11 +707,11 @@ class rulesSetup {
         var ruleName = ruleRow.name;
         var ruleDescription = ruleRow.description;
 
-        this.#ruleSteps = [];
-        for (var i = 0; i < this.#ruleItems.length; i++) {
-            if (ruleName == this.#ruleItems[i].origName) {
-                this.#ruleSteps.push(this.#ruleItems[i]);
-            }
+        this.#ruleSteps = ruleRow.ruleSet;
+        this.#ruleStepsIdx = {};
+        for (var i = 0; i < this.#ruleSteps.length; i++) {
+            var row = this.#ruleSteps[i];
+            this.#ruleStepsIdx[row.rownum] = i;
         }
 
         // build the modal contents
@@ -750,7 +742,7 @@ class rulesSetup {
                 {title: "catList", field: "catList", width: 300, },
                 {title: "ageList", field: "ageList", width: 300, },
                 {title: "memList", field: "memList", width: 300, },
-                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'ruleItems', label: 'Edit Step' }, hozAlign:"left", headerSort: false },
+                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'ruleSteps', label: 'Edit Step' }, hozAlign:"left", headerSort: false },
                 {title: "Orig Name", field: "origName", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {title: "Orig Step", field: "origStep", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
@@ -840,16 +832,16 @@ class rulesSetup {
         }
 
         if (this.#ruleStepsTable != null) {
-            // save the rule steps table stuff back to the ruleItmes array
+            // save the rule steps table stuff back to the rule array
             var data = this.#ruleStepsTable.getData();
             if (data.length > 0) {
                 var keys = Object.keys(data[0]);
                 for (var i = 0; i < data.length; i++) {
                     var row = data[i];
-                    var idx = this.#ruleItemsIdx[row.rownum];
+                    var idx = this.#ruleStepsIdx[row.rownum];
                     for (var j = 0; j < keys.length; j++) {
                         var key = keys[j];
-                        this.#ruleItems[idx][key] = row[key];
+                        this.#ruleSteps[idx][key] = row[key];
                     }
                 }
             }
@@ -870,7 +862,6 @@ class rulesSetup {
         var _this = this;
         var data = {
             rules: JSON.stringify(this.#rulesTable.getData()),
-            items: JSON.stringify(this.#ruleItems),
             action: 'save',
         }
         var script = 'scripts/regadmin_updateRules.php';
