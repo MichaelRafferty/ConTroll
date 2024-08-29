@@ -193,9 +193,17 @@ echo <<<EOF
     <script type='text/javascript' src='js/base.js?v=$controllJSversion'></script>
 EOF;
     if(isset($js) && $js != null) {
-        foreach ($js as $script) { ?>
-    <script src='<?php echo $script . "?v=$controllJSversion"; ?>' type='text/javascript'></script>
-<?php    }
+        foreach ($js as $script) {
+            if (str_starts_with($script, 'jslib/'))
+                $callout = "$script?v=$libJSversion";
+            else if (str_starts_with($script, 'js/'))
+                $callout = "$script?v=$controllJSversion";
+            else
+                $callout = $script;
+    ?>
+    <script src='<?php echo $callout;?>' type='text/javascript'></script>
+<?php
+        }
     }
 ?>
 </head>

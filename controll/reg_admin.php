@@ -27,7 +27,9 @@ page_init($page,
                     'js/regadmin_policy.js',
                     'js/regadmin_interests.js',
                     'js/regadmin_rules.js',
-                    'jslib/emailBulkSend.js'),
+                    'jslib/emailBulkSend.js',
+                    'jslib/membershipRules.js',
+              ),
                     $need_login);
 
 $con_conf = get_conf('con');

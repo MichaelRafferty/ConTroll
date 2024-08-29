@@ -3,12 +3,10 @@
 var membershipRules = null;
 
 // globals that must be loaded by the PHP code or by an ajax call outside of this routine
-//     ageList
-//     ageListIdx
+//     var ageList
 //     var memTypes
 //     var memCategories
 //     var memList
-//     var memListIdx
 //     var memRules
 
 //      note memRuleItems table (steps) step 999 is special, it's applied on add, but not on remove or delete.  It's to prevent more than one of this item.

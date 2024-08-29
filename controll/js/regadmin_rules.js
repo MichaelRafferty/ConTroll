@@ -1,5 +1,12 @@
 //import { TabulatorFull as Tabulator } from 'tabulator-tables';
 // rules class - all edit membership rules functions
+
+var ageList = null;
+var memTypes = null;
+var memCategories = null;
+var memList = null;
+var memRules = null;
+
 class rulesSetup {
     #messageDiv = null;
     #rulesPane = null;
@@ -243,10 +250,10 @@ class rulesSetup {
         }
         this.#rules = data['rules'];
         this.#ruleItems = data['ruleItems'];
-        this.#memTypes = data['memTypes'];
-        this.#memCategories = data['memCategories'];
-        this.#memAges = data['ageList'];
-        this.#memList = data['memList'];
+        memTypes = data['memTypes'];
+        memCategories = data['memCategories'];
+        ageList = data['ageList'];
+        memList = data['memList'];
 
         // create index of rules
         this.#rulesIdx = {};
@@ -266,13 +273,13 @@ class rulesSetup {
         this.#filterTypes = [];
 
         // load the filter arrays
-        for (var row of this.#memTypes) {
+        for (var row of memTypes) {
             this.#filterTypes.push(row['memType']);
         }
-        for (var row of this.#memAges) {
+        for (var row of ageList) {
             this.#filterAges.push(row['ageType']);
         }
-        for (var row of this.#memCategories) {
+        for (var row of memCategories) {
             this.#filterCats.push(row['memCategory']);
         }
 
@@ -463,7 +470,7 @@ class rulesSetup {
         }
 
         this.#editRuleSelTable = new Tabulator(tableField, {
-            data: this.#memTypes,
+            data: memTypes,
             layout: "fitDataTable",
             index: "memType",
             columns: [
@@ -498,7 +505,7 @@ class rulesSetup {
         }
 
         this.#editRuleSelTable = new Tabulator(tableField, {
-            data: this.#memCategories,
+            data: memCategories,
             layout: "fitDataTable",
             index: "memCategory",
             columns: [
@@ -533,7 +540,7 @@ class rulesSetup {
         }
 
         this.#editRuleSelTable = new Tabulator(tableField, {
-            data: this.#memAges,
+            data: ageList,
             layout: "fitDataTable",
             index: "ageType",
             columns: [
@@ -568,7 +575,7 @@ class rulesSetup {
                 break;
         }
         this.#editRuleSelTable = new Tabulator(tableField, {
-            data: this.#memList,
+            data: memList,
             layout: "fitDataTable",
             index: "id",
             pagination: true,
