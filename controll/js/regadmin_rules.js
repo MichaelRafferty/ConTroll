@@ -22,18 +22,17 @@ class rulesSetup {
     #rulesUndoBtn = null;
     #rulesRedoBtn = null;
     #rulesAddRowBtn = null;
+    #ruleAddRowNum = -1;
 
     // memRulesItems locals
     #ruleSteps = null;
-    #memTypes = null;
-    #memCategories = null;
-    #memAges = null;
-    #memList = null;
     #ruleStepsDirty = null;
     #ruleStepsSaveBtn = null;
     #ruleStepsUndoBtn = null;
     #ruleStepsRedoBtn = null;
     #ruleStepsAddRowBtn = null;
+    #ruleStepAddStepNum = -1;
+    #ruleStepMaxStep = 0;
 
     // editing a rule
     #editRuleModal = null;
@@ -93,6 +92,7 @@ class rulesSetup {
 
     // globals before open
     constructor() {
+        var debug = document.getElementById('debug').innerHTML;
         this.#debug = debug;
         if (this.#debug & 2) {
             this.#debugVisible = true;
@@ -332,7 +332,7 @@ class rulesSetup {
                 case 'rules':
                 return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
                     ' onclick="rules.editRule(\'rules\',\'' + ruleName + '\');">Edit Rule</button>';
-                case 'ruleItems':
+                case 'ruleSteps':
                     return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
                     ' onclick="rules.editStep(\'ruleItems\',\'' + ruleName + '\');">Edit Step</button>';
             }
@@ -359,6 +359,19 @@ class rulesSetup {
         $('#editRuleStepSelButtons').hide();
         this.#editRuleStepSelLabel.innerHTML = '';
         this.#selIndex = null;
+    }
+
+    addrowSteps() {
+        var _this = this;
+        this.#ruleStepAddStepNum--;
+        this.#ruleStepsTable.addRow({
+            name: this.#editRuleName, uses: 0, origStep: this.#ruleStepAddStepNum, step: this.#ruleStepMaxStep, origName: this.#editRuleName
+            }, false).then(function (row) {
+            _this.#rulesTable.setPage("last"); // adding new to last page always
+            row.getTable().scrollToRow(row);
+            _this.checkStepsUndoRedo();
+        });
+        this.#ruleStepMaxStep++;
     }
 
     editRuleStepSave(dosave) {
@@ -419,6 +432,38 @@ class rulesSetup {
         }
         this.#editRuleStepModal.hide();
         this.#editRuleModal.show();
+    }
+
+    undoSteps() {
+        if (this.#ruleStepsTable != null) {
+            this.#ruleStepsTable.undo();
+
+            if (this.checkStepsUndoRedo() <= 0) {
+                this.#ruleStepsDirty = false;
+                this.#editRuleSaveBtn.innerHTML = "Save Changes";
+                this.#editRuleSaveBtn.disabled = true;
+            }
+        }
+    };
+
+    redoSteps() {
+        if (this.#ruleStepsTable != null) {
+            this.#ruleStepsTable.redo();
+
+            if (this.checkStepsUndoRedo() > 0) {
+                this.#ruleStepsDirty = true;
+                this.#editRuleSaveBtn.innerHTML = "Save Changes*";
+                this.#editRuleSaveBtn.disabled = false;
+            }
+        }
+    };
+
+    // set undo / redo status for buttons
+    checkStepsUndoRedo() {
+        var undosize = this.#ruleStepsTable.getHistoryUndoSize();
+        this.#ruleStepsUndoBtn.disabled = undosize <= 0;
+        this.#ruleStepsRedoBtn.disabled = this.#ruleStepsTable.getHistoryRedoSize() <= 0;
+        return undosize;
     }
 
     closeSelTable(level) {
@@ -582,8 +627,8 @@ class rulesSetup {
                 {title: "Label", field: "label", width: 250, headerFilter: true, },
                 {title: "Price", field: "price", width: 80, headerFilter: true, headerHozAlign:"right", hozAlign: "right", },
                 {title: "Notes", field: "notes", width: 200, headerFilter: true, },
-                {title: "Start Date", field: "startDate", width: 200, visible:false, },
-                {title: "End Date", field: "endDate", width: 200, visible:false, },
+                {title: "Start Date", field: "startDate", width: 200, visible: this.#debugVisible, },
+                {title: "End Date", field: "endDate", width: 200, visible: this.#debugVisible, },
             ],
         });
         this.#editRuleSelTable.on("cellClick", rules.clickedSelection)
@@ -646,8 +691,8 @@ class rulesSetup {
     // add row to  table and scroll to that new row
     addrow() {
         var _this = this;
-        this.#rulesTable.addRow({rules: 'new-row', notifyList: '', desccription: '', csv: 'N',
-            active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
+        this.#ruleAddRowNum--;
+        this.#rulesTable.addRow({name: 'new-row', uses: 0, origName: this.#ruleAddRowNum}, false).then(function (row) {
             _this.#rulesTable.setPage("last"); // adding new to last page always
             row.getTable().scrollToRow(row);
             _this.checkUndoRedo();
@@ -707,11 +752,16 @@ class rulesSetup {
         var ruleName = ruleRow.name;
         var ruleDescription = ruleRow.description;
 
-        this.#ruleSteps = ruleRow.ruleSet;
+        var ruleSteps = memRules[ruleName].ruleset;
+        var keys = Object.keys(ruleSteps);
+        this.#ruleSteps = [];
         this.#ruleStepsIdx = {};
-        for (var i = 0; i < this.#ruleSteps.length; i++) {
-            var row = this.#ruleSteps[i];
-            this.#ruleStepsIdx[row.rownum] = i;
+        this.#ruleStepMaxStep = 0;
+        for (var i = 0; i < keys.length; i++) {
+            this.#ruleSteps.push(ruleSteps[keys[i]]);
+            if (ruleSteps[keys[i]].step >= this.#ruleStepMaxStep && ruleSteps[keys[i]].step < 990)
+                this.#ruleStepMaxStep = Number(ruleSteps[keys[i]].step) + 1;
+            this.#ruleStepsIdx[ruleSteps[keys[i]].rownum] = i;
         }
 
         // build the modal contents
@@ -731,9 +781,8 @@ class rulesSetup {
             history: true,
             data: this.#ruleSteps,
             layout: "fitDataTable",
-            index: "rownum",
+            index: "step",
             columns: [
-                {title: "rownum", field: "rownum", visible: this.#debugVisible,},
                 {title: "Name", field: "name", width: 200, validator: "required", },
                 {title: "Step", field: "step", width: 70, headerHozAlign:"right", hozAlign: "right", headerSort: false, validator: "required", },
                 {title: "Rule Type", field: "ruleType", headerWordWrap: true, width: 100, headerSort: false, validator: "required", },
@@ -744,7 +793,7 @@ class rulesSetup {
                 {title: "memList", field: "memList", width: 300, },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'ruleSteps', label: 'Edit Step' }, hozAlign:"left", headerSort: false },
                 {title: "Orig Name", field: "origName", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
-                {title: "Orig Step", field: "origStep", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
+                {title: "Orig Step", field: "origStep", headerWordWrap: true, visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 70,},
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
                     cellClick: function (e, cell) {
@@ -776,8 +825,7 @@ class rulesSetup {
             this.#ruleStepsSaveBtn.disabled = false;
             this.#ruleStepsDirty = true;
         }
-        this.checkUndoRedo();
-        this.drawPreviewPane();
+        this.checkStepsUndoRedo();
     };
 
     // process the save button on the edit modal
@@ -792,56 +840,69 @@ class rulesSetup {
             description = description.substring(0, description.length - 4);
         }
 
-        // store all the fields back into the table row
+        // store all the fields back into the table row, and into the main table
         var row = this.#rulesTable.getRow(this.#editRuleName);
         if (row.getCell("description").getValue() != description) {
             row.getCell("description").setValue(description);
+            memRules[this.#editRuleName].description = description;
         }
 
         var newValue = this.#rName.value;
         if (row.getCell("name").getValue() != newValue) {
             row.getCell("name").setValue(newValue);
+            memRules[this.#editRuleName].name = newValue;
         }
         newValue = this.#rOptionName.value;
         if (row.getCell("optionName").getValue() != newValue) {
             row.getCell("optionName").setValue(newValue);
+            memRules[this.#editRuleName].optionName = newValue;
         }
         newValue = this.#rAgeList.innerHTML;
         if (newValue == '')
             newValue = null;
         if (row.getCell("ageList").getValue() != newValue) {
             row.getCell("ageList").setValue(newValue);
+            memRules[this.#editRuleName].ageList = newValue;
+            memRules[this.#editRuleName].ageListArray = explode(',', newValue);
         }
         newValue = this.#rTypeList.innerHTML;
         if (newValue == '')
             newValue = null;
         if (row.getCell("typeList").getValue() != newValue) {
             row.getCell("typeList").setValue(newValue);
+            memRules[this.#editRuleName].typeList = newValue;
+            memRules[this.#editRuleName].typeListArray = explode(',', newValue);
         }
         newValue = this.#rCatList.innerHTML;
         if (newValue == '')
             newValue = null;
         if (row.getCell("catList").getValue() != newValue) {
             row.getCell("catList").setValue(newValue);
+            memRules[this.#editRuleName].catList = newValue;
+            memRules[this.#editRuleName].catListArray = explode(',', newValue);
         }
         newValue = this.#rMemList.innerHTML;
         if (newValue == '')
             newValue = null;
         if (row.getCell("memList").getValue() != newValue) {
             row.getCell("memList").setValue(newValue);
+            memRules[this.#editRuleName].memList = newValue;
+            memRules[this.#editRuleName].memListArray = explode(',', newValue);
         }
 
         if (this.#ruleStepsTable != null) {
-            // save the rule steps table stuff back to the rule array
+            // save the rule steps table stuff back to the main rule array
             var data = this.#ruleStepsTable.getData();
+
             if (data.length > 0) {
                 var keys = Object.keys(data[0]);
+                // figure out which step it belongs to by the name
+                var stepRow = memRules[data[0].origName].ruleset;
                 for (var i = 0; i < data.length; i++) {
                     var row = data[i];
-                    var idx = this.#ruleStepsIdx[row.rownum];
                     for (var j = 0; j < keys.length; j++) {
                         var key = keys[j];
-                        this.#ruleSteps[idx][key] = row[key];
+                        stepRow[row.origStep][key] = row[key];
                     }
                 }
             }
@@ -851,7 +912,7 @@ class rulesSetup {
             this.#ruleStepsTable = null;
         }
         this.#rulesDirty = true;
-        this.#rulesSaveBtn.innerHTML = "Save Changes";
+        this.#rulesSaveBtn.innerHTML = "Save Changes*";
         this.#rulesSaveBtn.disabled = false;
         this.checkUndoRedo();
         this.#editRuleModal.hide();
@@ -860,8 +921,21 @@ class rulesSetup {
     // save the rules and rule items back to the database
     save() {
         var _this = this;
-        var data = {
-            rules: JSON.stringify(this.#rulesTable.getData()),
+        // save the rules table data back to the master rule set
+        var data = this.#rulesTable.getData();
+        var keys = Object.keys(data[0]);
+        for (var i = 0; i < data.length; i++) {
+            var row = data[i];
+            var origName = row.origName;
+            for (var j = 0; j < keys.length; j++) {
+                var key = keys[j];
+                if (key != 'ruleset')
+                    memRules[origName][key] = row[key];
+            }
+        }
+
+        data = {
+            rules: JSON.stringify(memRules),
             action: 'save',
         }
         var script = 'scripts/regadmin_updateRules.php';

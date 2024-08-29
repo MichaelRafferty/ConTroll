@@ -77,8 +77,7 @@ EOS;
     $QR->free();
 // now the more difficult task, get the membership rule items
     $QQ = <<<EOS
-SELECT ROW_NUMBER() OVER (ORDER BY name, step) AS rownum,
-    name, step, ruleType, applyTo, typeList, catList, ageList, memList, 0 AS uses, name AS origName, step AS origStep
+SELECT name, step, ruleType, applyTo, typeList, catList, ageList, memList, 0 AS uses, name AS origName, step AS origStep
 FROM memRuleItems
 ORDER BY name, step;
 EOS;

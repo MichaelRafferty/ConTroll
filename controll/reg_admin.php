@@ -45,7 +45,7 @@ $conid = $con_conf['id'];
 $debug = get_conf('debug');
 
 if (array_key_exists('controll_regadmin', $debug))
-    $debug_admin=$debug['controll_regadmin'];
+    $debug_regadmin=$debug['controll_regadmin'];
 else
     $debug_regadmin = 0;
 

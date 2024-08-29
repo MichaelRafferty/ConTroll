@@ -20,7 +20,7 @@ $nextconid=$conid + 1;
 
 //var_error_log($_POST);
 
-if (!(array_key_exists('action', $_POST) && array_key_exists('rules', $_POST) && array_key_exists('items', $_POST))) {
+if (!(array_key_exists('action', $_POST) && array_key_exists('rules', $_POST))) {
     $response['error'] = 'Argument Error';
     ajaxSuccess($response);
     exit();
@@ -28,7 +28,6 @@ if (!(array_key_exists('action', $_POST) && array_key_exists('rules', $_POST) &&
 $action=$_POST['action'];
 try {
     $rules = json_decode($_POST['rules'], true, 512, JSON_THROW_ON_ERROR);
-    $items = json_decode($_POST['items'], true, 512, JSON_THROW_ON_ERROR);
 } catch (Exception $e) {
     $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
     $response['error'] = $msg;
