@@ -861,12 +861,13 @@ class rulesSetup {
 
     // save the rules and rule items back to the database
     save() {
+        var _this = this;
         var data = {
-            rules: this.#rulesTable.getData(),
-            items: this.#ruleItems,
+            rules: JSON.stringify(this.#rulesTable.getData()),
+            items: JSON.stringify(this.#ruleItems),
             action: 'save',
         }
-        var script = 'scripts/regadmin_rulesUpdate.php';
+        var script = 'scripts/regadmin_updateRules.php';
         clear_message();
         $.ajax({
             url: script,
