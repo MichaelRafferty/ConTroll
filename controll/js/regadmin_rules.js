@@ -249,7 +249,6 @@ class rulesSetup {
             return;
         }
         this.#rules = data['rules'];
-        this.#ruleItems = data['ruleItems'];
         memTypes = data['memTypes'];
         memCategories = data['memCategories'];
         ageList = data['ageList'];

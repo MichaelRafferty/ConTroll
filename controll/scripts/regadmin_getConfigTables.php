@@ -2,6 +2,7 @@
 global $db_ini;
 
 require_once "../lib/base.php";
+require_once "../../lib/memRules.php";
 $check_auth = google_init("ajax");
 $perm = "reg_admin";
 
@@ -85,79 +86,15 @@ EOS;
         break;
 
     case 'rules':
-        // first the rules stuff itself (rules, ruleItems)
-        $rulesSQL = <<<EOS
-SELECT r.name, r.optionName, r.description, r.typeList, r.catList, r.ageList, r.memList, COUNT(*) AS uses, r.name AS origName
-FROM memRules r
-LEFT OUTER JOIN memRuleItems i on (i.name = r.name)
-GROUP BY r.name, r.optionName, r.description, r.typeList, r.catList, r.ageList, r.memList
-ORDER BY r.name
-EOS;
-        $result = dbQuery($rulesSQL);
-        $rules = array();
-        while ($row = $result->fetch_assoc()) {
-            array_push($rules, $row);
-        }
-        $result->free();
-        $response['rules'] = $rules;
-
-        $ruleItemsSQL = <<<EOS
-SELECT ROW_NUMBER() OVER (ORDER BY name, step) AS rownum,
-    name, step, ruleType, applyTo, typeList, catList, ageList, memList, 0 AS uses, name AS origName, step AS origStep
-FROM memRuleItems
-ORDER BY name, step
-EOS;
-        $result = dbQuery($ruleItemsSQL);
-        $ruleItems = array();
-        while ($row = $result->fetch_assoc()) {
-            array_push($ruleItems, $row);
-        }
-        $result->free();
-        $response['ruleItems'] = $ruleItems;
-
-        // now the memconfig items for helping to fill in typelist, catlist, agelist, memlist
-        $typeSQL = <<<EOS
-SELECT memType, notes
-FROM memTypes
-WHERE active = 'Y'
-ORDER BY sortorder;
-EOS;
-        $result = dbQuery($typeSQL);
-        $typeItems = array();
-        while ($row = $result->fetch_assoc()) {
-            array_push($typeItems, $row);
-        }
-        $result->free();
-        $response['memTypes'] = $typeItems;
-
-        $catSQL = <<<EOS
-SELECT memCategory, notes
-FROM memCategories
-WHERE active = 'Y'
-ORDER BY sortorder;
-EOS;
-        $result = dbQuery($catSQL);
-        $catItems = array();
-        while ($row = $result->fetch_assoc()) {
-            array_push($catItems, $row);
-        }
-        $result->free();
-        $response['memCategories'] = $catItems;
-
-        $ageSQL = <<<EOS
-SELECT ageType, label, shortname
-FROM ageList
-WHERE conid = ?
-ORDER BY sortorder;
-EOS;
-        $result = dbSafeQuery($ageSQL, 'i', array($conid));
-        $ageItems = array();
-        while ($row = $result->fetch_assoc()) {
-            array_push($ageItems, $row);
-        }
-        $result->free();
-        $response['ageList'] = $ageItems;
-
+        $data = getRulesData($conid);
+        $response['ageList'] = $data['ageList'];
+        $response['ageListIdx'] = $data['ageListIdx'];
+        $response['memTypes'] = $data['memTypes'];
+        $response['memCategories'] = $data['memCategories'];
+        $response['memList'] = $data['memList'];
+        $response['memListIdx'] = $data['memListIdx'];
+        $response['memRules'] = data['memRules']
+        ;
         // now the memList items for filling in that field
         $memSQL = <<<EOS
 SELECT *
@@ -171,8 +108,7 @@ EOS;
             array_push($memListItems, $row);
         }
         $result->free();
-        $response['memList'] = $memListItems;
-
+        $response['memListFull'] = $memListItems;
         break;
 
     default:
