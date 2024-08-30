@@ -70,10 +70,10 @@ if (array_key_exists('couponDiscount', $_POST)) {
 } else {
     $webCouponDiscount = 0;
 }
-if (array_key_exists('preCoupomAmountDue', $_POST)) {
-    $preCoupomAmountDue = $_POST['preCoupomAmountDue'];
+if (array_key_exists('preCouponAmountDue', $_POST)) {
+    $preCouponAmountDue = $_POST['preCouponAmountDue'];
 } else {
-    $preCoupomAmountDue = $amount;
+    $preCouponAmountDue = $amount;
 }
 
 // and the coupon values
