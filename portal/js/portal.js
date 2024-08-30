@@ -1029,7 +1029,12 @@ class Portal {
             token = document.getElementById(token).value;
         }
 
+        // our form
         var id = document.getElementById("purchase");
+        if (id)
+            id.disabled = true;
+        // squares form
+        id = document.getElementById("card-button");
         if (id)
             id.disabled = true;
 
@@ -1074,7 +1079,12 @@ class Portal {
     makePurchaseSuccess(data) {
         console.log(data);
         if (data['status'] == 'error') {
+            // our form
             var id = document.getElementById("purchase");
+            if (id)
+                id.disabled = false;
+            // squares form
+            id = document.getElementById("card-button");
             if (id)
                 id.disabled = false;
             if (data['error']) {
