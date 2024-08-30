@@ -4,7 +4,9 @@
 var ageList = null;
 var ageListIdx = null;
 var memTypes = null;
+var memTypesArr = null;
 var memCategories = null;
+var memCatArr = null;
 var memList = null;
 var memListFull = null;
 var memListIdx = null;
@@ -34,7 +36,7 @@ class rulesSetup {
     #ruleStepsRedoBtn = null;
     #ruleStepsAddRowBtn = null;
     #ruleStepAddStepNum = -1;
-    #ruleStepMaxStep = 0;
+    #ruleStepMaxStep = 1;
 
     // editing a rule
     #editRuleModal = null;
@@ -271,6 +273,16 @@ class rulesSetup {
         memList = data['memListFull'];
         memListFull = data['memListFull'];
         memListIdx = data['memListFullIdx'];
+
+        // make arrays from objects
+        memTypesArr = [];
+        for (var memType in  memTypes) {
+            memTypesArr.push(memTypes[memType]);
+        }
+        memCatArr = [];
+        for (var memCat in  memCategories) {
+            memCatArr.push(memCategories[memCat]);
+        }
 
         // create index of rules
         this.#rulesIdx = {};
@@ -516,19 +528,36 @@ class rulesSetup {
     }
 
     // edit step - display a modal to edit a step
-    editStep(type, item) {
+    editStep(type, itemId) {
         // populate the modal
-        console.log("type = '" + type + "', item = '" + item + "'");
-        var row = this.#ruleStepsTable.getRow(item);
-        this.#editRuleStepItem = item;
+        console.log("type = '" + type + "', item = '" + itemId + "'");
+        var row = this.#ruleStepsTable.getRow(itemId);
+        var item = '';
+        this.#editRuleStepItem = itemId;
         this.#sName.value = row.getCell('name').getValue();
         this.#sStep.value = row.getCell('step').getValue();
         this.#sRuleType.value = row.getCell('ruleType').getValue();
         this.#sApplyTo.value = row.getCell('applyTo').getValue();
-        this.#sTypeList.innerHTML = row.getCell('typeList').getValue();
-        this.#sCatList.innerHTML = row.getCell('catList').getValue();
-        this.#sAgeList.innerHTML = row.getCell('ageList').getValue();
-        this.#sMemList.innerHTML = row.getCell('memList').getValue();
+        item = row.getCell('typeList').getValue();
+        if (item == '' || item == undefined || item == null)
+            item = "<i>None</i>";
+        this.#sTypeList.innerHTML = item;
+
+        item = row.getCell('catList').getValue();
+        if (item == '' || item == undefined || item == null)
+            item = "<i>None</i>";
+        this.#sCatList.innerHTML = item;
+
+        item = row.getCell('ageList').getValue();
+        if (item == '' || item == undefined || item == null)
+            item = "<i>None</i>";
+        this.#sAgeList.innerHTML = item;
+
+        item = row.getCell('memList').getValue();
+        if (item == '' || item == undefined || item == null)
+            item = "<i>None</i>";
+        this.#sMemList.innerHTML = item;
+
         this.#editRuleModal.hide();
         this.#editRuleStepModal.show();
         $('#editRuleStepSelButtons').hide();
@@ -540,7 +569,7 @@ class rulesSetup {
         var _this = this;
         this.#ruleStepAddStepNum--;
         this.#ruleStepsTable.addRow({
-            name: this.#editRuleName, uses: 0, origStep: this.#ruleStepAddStepNum, step: this.#ruleStepMaxStep, origName: this.#editRuleName
+            name: this.#rName.value, uses: 0, origStep: this.#ruleStepAddStepNum, step: this.#ruleStepMaxStep, origName: this.#editRuleName
             }, false).then(function (row) {
             _this.#rulesTable.setPage("last"); // adding new to last page always
             row.getTable().scrollToRow(row);
@@ -580,25 +609,25 @@ class rulesSetup {
                 row.getCell("applyTo").setValue(newValue);
             }
             newValue = this.#sAgeList.innerHTML;
-            if (newValue == '')
+            if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
                 newValue = null;
             if (row.getCell("ageList").getValue() != newValue) {
                 row.getCell("ageList").setValue(newValue);
             }
             newValue = this.#sTypeList.innerHTML;
-            if (newValue == '')
+            if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
                 newValue = null;
             if (row.getCell("typeList").getValue() != newValue) {
                 row.getCell("typeList").setValue(newValue);
             }
             newValue = this.#sCatList.innerHTML;
-            if (newValue == '')
+            if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
                 newValue = null;
             if (row.getCell("catList").getValue() != newValue) {
                 row.getCell("catList").setValue(newValue);
             }
             newValue = this.#sMemList.innerHTML;
-            if (newValue == '')
+            if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
                 newValue = null;
             if (row.getCell("memList").getValue() != newValue) {
                 row.getCell("memList").setValue(newValue);
@@ -681,7 +710,7 @@ class rulesSetup {
         }
 
         this.#editRuleSelTable = new Tabulator(tableField, {
-            data: memTypes,
+            data: memTypesArr,
             layout: "fitDataTable",
             index: "memType",
             columns: [
@@ -716,7 +745,7 @@ class rulesSetup {
         }
 
         this.#editRuleSelTable = new Tabulator(tableField, {
-            data: memCategories,
+            data: memCatArr,
             layout: "fitDataTable",
             index: "memCategory",
             columns: [
@@ -925,13 +954,19 @@ class rulesSetup {
         var ruleRow = this.#rulesTable.getRow(ruleName).getData();
         editPreviewClass = 'rules';
         var ruleName = ruleRow.name;
-        var ruleDescription = ruleRow.description;
+        var ruleDescription = ruleRow.description == null ? '' : ruleRow.description;
 
-        var ruleSteps = memRules[ruleName].ruleset;
+        var ruleSteps = {};
+        if (memRules[ruleName]) {
+            if (memRules[ruleName].ruleset) {
+                ruleSteps = memRules[ruleName].ruleset;
+            }
+        }
+
         var keys = Object.keys(ruleSteps);
         this.#ruleSteps = [];
         this.#ruleStepsIdx = {};
-        this.#ruleStepMaxStep = 0;
+        this.#ruleStepMaxStep = 1;
         for (var i = 0; i < keys.length; i++) {
             this.#ruleSteps.push(ruleSteps[keys[i]]);
             if (ruleSteps[keys[i]].step >= this.#ruleStepMaxStep && ruleSteps[keys[i]].step < 990)
@@ -942,21 +977,20 @@ class rulesSetup {
         // build the modal contents
         this.#editRuleTitle.innerHTML = "Edit the " + ruleName + " rule";
         this.#editRuleNameDiv.innerHTML = ruleName;
-        this.#editRuleNameDiv.innerHTML = ruleName;
         this.#ruleDescription.innerHTML = ruleDescription;
         this.#rName.value = ruleRow.name
         this.#rOptionName.value = ruleRow.optionName;
-        this.#rTypeList.innerHTML = ruleRow.typeList == '' ? "<i>None</i>" : ruleRow.typeList;
-        this.#rCatList.innerHTML = ruleRow.catList =='' ? "<i>None</i>" : ruleRow.catList;
-        this.#rAgeList.innerHTML = ruleRow.ageList == '' ? "<i>None</i>" : ruleRow.ageList;
-        this.#rMemList.innerHTML = ruleRow.memList == '' ? "<i>None</i>" : ruleRow.memList;
+        this.#rTypeList.innerHTML = (ruleRow.typeList == '' || ruleRow.typeList == undefined || ruleRow.typeList == null) ? "<i>None</i>" : ruleRow.typeList;
+        this.#rCatList.innerHTML = (ruleRow.catList == '' || ruleRow.catList == undefined || ruleRow.catList == null) ? "<i>None</i>" : ruleRow.catList;
+        this.#rAgeList.innerHTML = (ruleRow.ageList == '' || ruleRow.ageList == undefined || ruleRow.ageList == null) ? "<i>None</i>" : ruleRow.ageList;
+        this.#rMemList.innerHTML = (ruleRow.memList == '' || ruleRow.memList == undefined || ruleRow.memList == null) ? "<i>None</i>" : ruleRow.memList;
 
         tinyMCE.activeEditor.setContent(ruleDescription);
         this.#ruleStepsTable = new Tabulator('#ruleStepDiv', {
             history: true,
             data: this.#ruleSteps,
             layout: "fitDataTable",
-            index: "step",
+            index: "origStep",
             columns: [
                 {title: "Name", field: "name", width: 200, validator: "required", },
                 {title: "Step", field: "step", width: 70, headerHozAlign:"right", hozAlign: "right", headerSort: false, validator: "required", },
@@ -1005,6 +1039,8 @@ class rulesSetup {
 
     // process the save button on the edit modal
     editRuleSave() {
+        if (!memRules[this.#editRuleName]) // if new, add it.
+            memRules[this.#editRuleName] = {};
         var description = tinyMCE.activeEditor.getContent();
 
         // these will be encoded in <p> tags already, so strip the leading and trailing ones.
@@ -1028,41 +1064,43 @@ class rulesSetup {
             memRules[this.#editRuleName].name = newValue;
         }
         newValue = this.#rOptionName.value;
+        if (newValue == undefined || newValue == null || newValue == "undefined" || newValue == "null")
+            newValue = null;
         if (row.getCell("optionName").getValue() != newValue) {
             row.getCell("optionName").setValue(newValue);
             memRules[this.#editRuleName].optionName = newValue;
         }
         newValue = this.#rAgeList.innerHTML;
-        if (newValue == '')
+        if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
             newValue = null;
         if (row.getCell("ageList").getValue() != newValue) {
             row.getCell("ageList").setValue(newValue);
             memRules[this.#editRuleName].ageList = newValue;
-            memRules[this.#editRuleName].ageListArray = explode(',', newValue);
+            memRules[this.#editRuleName].ageListArray = newValue.split(',');
         }
         newValue = this.#rTypeList.innerHTML;
-        if (newValue == '')
+        if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
             newValue = null;
         if (row.getCell("typeList").getValue() != newValue) {
             row.getCell("typeList").setValue(newValue);
             memRules[this.#editRuleName].typeList = newValue;
-            memRules[this.#editRuleName].typeListArray = explode(',', newValue);
+            memRules[this.#editRuleName].typeListArray = newValue.split(',');
         }
         newValue = this.#rCatList.innerHTML;
-        if (newValue == '')
+        if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
             newValue = null;
         if (row.getCell("catList").getValue() != newValue) {
             row.getCell("catList").setValue(newValue);
             memRules[this.#editRuleName].catList = newValue;
-            memRules[this.#editRuleName].catListArray = explode(',', newValue);
+            memRules[this.#editRuleName].catListArray = newValue.split(',');
         }
         newValue = this.#rMemList.innerHTML;
-        if (newValue == '')
+        if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
             newValue = null;
         if (row.getCell("memList").getValue() != newValue) {
             row.getCell("memList").setValue(newValue);
             memRules[this.#editRuleName].memList = newValue;
-            memRules[this.#editRuleName].memListArray = explode(',', newValue);
+            memRules[this.#editRuleName].memListArray = newValue.split(',');
         }
 
         if (this.#ruleStepsTable != null) {
@@ -1072,12 +1110,14 @@ class rulesSetup {
             if (data.length > 0) {
                 var keys = Object.keys(data[0]);
                 // figure out which step it belongs to by the name
-                var stepRow = memRules[data[0].origName].ruleset;
+                if (!memRules[data[0].origName].ruleset)
+                    memRules[data[0].origName].ruleset = {};
+
                 for (var i = 0; i < data.length; i++) {
                     var row = data[i];
                     for (var j = 0; j < keys.length; j++) {
                         var key = keys[j];
-                        stepRow[row.origStep][key] = row[key];
+                        memRules[row.origStep].ruleset[key] = row[key];
                     }
                 }
             }
