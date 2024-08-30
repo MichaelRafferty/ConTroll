@@ -196,7 +196,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                 $item = new OrderLineItem ('1');
                 $item->setUid('badge' . ($lineid + 1));
                 $item->setName($badge['age'] . ' Membership for ' . $fullname);
-                $note = $badge['memId'] . ',' . $id . ': memId, p/n id' . $badge['inPlan'] ? (', Plan:' . $planName) : '';
+                $note = $badge['memId'] . ',' . $id . ': memId, p/n id' . ($badge['inPlan'] ? (', Plan:' . $planName) : '');
                 $item->setNote($note);
                 $item->setBasePriceMoney(new Money);
                 $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
