@@ -534,7 +534,9 @@ class rulesSetup {
         var row = this.#ruleStepsTable.getRow(itemId);
         var item = '';
         this.#editRuleStepItem = itemId;
-        this.#sName.value = row.getCell('name').getValue();
+        item = row.getCell('name').getValue();
+        this.#sName.value = item;
+        this.editRuleStepNameDiv.innerHTML = item;
         this.#sStep.value = row.getCell('step').getValue();
         this.#sRuleType.value = row.getCell('ruleType').getValue();
         this.#sApplyTo.value = row.getCell('applyTo').getValue();
@@ -953,13 +955,14 @@ class rulesSetup {
         this.#editRuleName = ruleName;
         var ruleRow = this.#rulesTable.getRow(ruleName).getData();
         editPreviewClass = 'rules';
-        var ruleName = ruleRow.name;
+        var ruleOrigName = ruleRow.origName;
+        var ruleDisplayName = ruleRow.name;
         var ruleDescription = ruleRow.description == null ? '' : ruleRow.description;
 
         var ruleSteps = {};
-        if (memRules[ruleName]) {
-            if (memRules[ruleName].ruleset) {
-                ruleSteps = memRules[ruleName].ruleset;
+        if (memRules[ruleOrigName]) {
+            if (memRules[ruleOrigName].ruleset) {
+                ruleSteps = memRules[ruleOrigName].ruleset;
             }
         }
 
@@ -975,11 +978,11 @@ class rulesSetup {
         }
 
         // build the modal contents
-        this.#editRuleTitle.innerHTML = "Edit the " + ruleName + " rule";
-        this.#editRuleNameDiv.innerHTML = ruleName;
+        this.#editRuleTitle.innerHTML = "Edit the " + ruleDisplayName + " rule";
+        this.#editRuleNameDiv.innerHTML = ruleDisplayName;
         this.#ruleDescription.innerHTML = ruleDescription;
         this.#rName.value = ruleRow.name
-        this.#rOptionName.value = ruleRow.optionName;
+        this.#rOptionName.value = (ruleRow.optionName == undefined || ruleRow.optionName == null)  ? '' : ruleRow.optionName;
         this.#rTypeList.innerHTML = (ruleRow.typeList == '' || ruleRow.typeList == undefined || ruleRow.typeList == null) ? "<i>None</i>" : ruleRow.typeList;
         this.#rCatList.innerHTML = (ruleRow.catList == '' || ruleRow.catList == undefined || ruleRow.catList == null) ? "<i>None</i>" : ruleRow.catList;
         this.#rAgeList.innerHTML = (ruleRow.ageList == '' || ruleRow.ageList == undefined || ruleRow.ageList == null) ? "<i>None</i>" : ruleRow.ageList;
@@ -1110,14 +1113,16 @@ class rulesSetup {
             if (data.length > 0) {
                 var keys = Object.keys(data[0]);
                 // figure out which step it belongs to by the name
-                if (!memRules[data[0].origName].ruleset)
-                    memRules[data[0].origName].ruleset = {};
+                if (!memRules[this.#editRuleName].ruleset)
+                    memRules[this.#editRuleName].ruleset = {};
 
                 for (var i = 0; i < data.length; i++) {
                     var row = data[i];
+                    if (!memRules[this.#editRuleName].ruleset[row.origStep])
+                        memRules[this.#editRuleName].ruleset[row.origStep] = {};
                     for (var j = 0; j < keys.length; j++) {
                         var key = keys[j];
-                        memRules[row.origStep].ruleset[key] = row[key];
+                        memRules[this.#editRuleName].ruleset[row.origStep][key] = row[key];
                     }
                 }
             }
