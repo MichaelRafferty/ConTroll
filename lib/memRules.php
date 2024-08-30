@@ -52,10 +52,8 @@ EOS;
 // now get the Membership Rules
     $memRules = array();
     $QQ = <<<EOS
-SELECT r.name, r.optionName, r.description, r.typeList, r.catList, r.ageList, r.memList, COUNT(*) AS uses, r.name AS origName
+SELECT r.name, r.optionName, r.description, r.typeList, r.catList, r.ageList, r.memList, 0 AS uses, r.name AS origName
 FROM memRules r
-LEFT OUTER JOIN memRuleItems i on (i.name = r.name)
-GROUP BY r.name, r.optionName, r.description, r.typeList, r.catList, r.ageList, r.memList
 ORDER BY name;
 EOS;
     $QR = dbQuery($QQ);

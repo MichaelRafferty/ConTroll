@@ -536,7 +536,7 @@ class rulesSetup {
         this.#editRuleStepItem = itemId;
         item = row.getCell('name').getValue();
         this.#sName.value = item;
-        this.editRuleStepNameDiv.innerHTML = item;
+        this.#editRuleStepNameDiv.innerHTML = item;
         this.#sStep.value = row.getCell('step').getValue();
         this.#sRuleType.value = row.getCell('ruleType').getValue();
         this.#sApplyTo.value = row.getCell('applyTo').getValue();
@@ -1136,6 +1136,7 @@ class rulesSetup {
         this.#rulesSaveBtn.disabled = false;
         this.checkUndoRedo();
         this.#editRuleModal.hide();
+        this.updatePreviewPane();
     }
 
     // save the rules and rule items back to the database
