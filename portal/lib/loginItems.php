@@ -111,6 +111,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $cipherInfo,
 
     $portal_conf = get_conf('portal');
     $con_conf = get_conf('con');
+    $origEmail = $email;
 
     $loginData = getLoginMatch($email, $id, $validationType);
     if (!is_array($loginData)) {
@@ -174,7 +175,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $cipherInfo,
         }
 
         if ($idType == 'p')
-            updateIdentityUsage($id, $validationType, $email);
+            updateIdentityUsage($id, $validationType, $origEmail);
         web_error_log("$type @ " . time() . "$ts for $email/$id via $validationType");
         header('location:' . $portal_conf['portalsite'] . '/portal.php');
         exit();
