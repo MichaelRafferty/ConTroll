@@ -22,7 +22,9 @@ foreach ($dir as $entry) {
     if ($localname == 'reg_routines') {
         strip_creator($localname, $lines);
     } else if (str_starts_with($fname, 'data_')) {
-        clean_data($localname, $lines);
+        if ($fname != 'data_zzTxt.sal') {
+            clean_data($localname, $lines);
+        }
     } else {
         strip_fk($localname, $lines);
     }
