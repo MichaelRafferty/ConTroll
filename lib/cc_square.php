@@ -268,8 +268,8 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
         // this is a plan payment make the order just the plan payment
         $item = new OrderLineItem ('1');
         $item->setUid('planPayment');
-        $note = "$planId: Plan Id , Name: $planName, Perid: $loginPerid";
-        $item->setName('Plan Payment' . $note);
+        $note = "Plan Id: $planId, Name: $planName, Perid: $loginPerid";
+        $item->setName('Plan Payment: ' . $note);
         $item->setBasePriceMoney(new Money);
         $item->getBasePriceMoney()->setAmount($results['total'] * 100);
         $item->getBasePriceMoney()->setCurrency(Currency::USD);
