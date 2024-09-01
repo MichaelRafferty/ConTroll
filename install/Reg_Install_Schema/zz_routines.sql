@@ -50,7 +50,7 @@ VIEW `vw_ExhibitorSpace` AS select `ert`.`portalType` AS `portalType`,`ert`.`req
 --
 DROP FUNCTION IF EXISTS `uuid_v4s` ;
 DELIMITER ;;
-CREATE FUNCTION "uuid_v4s"() RETURNS char(36) CHARSET utf8mb4 COLLATE utf8mb4_general_ci
+CREATE FUNCTION uuid_v4s() RETURNS char(36) CHARSET utf8mb4 COLLATE utf8mb4_general_ci
 SQL SECURITY INVOKER
     NO SQL
     SQL SECURITY INVOKER
@@ -77,7 +77,7 @@ END ;;
 DELIMITER ;
 DROP PROCEDURE IF EXISTS `mergePerid` ;
 DELIMITER ;;
-CREATE PROCEDURE "mergePerid"(IN userid INT, IN to_mergePID INT, IN to_survivePID INT, OUT statusmsg TEXT, OUT rollback_log TEXT)
+CREATE PROCEDURE mergePerid(IN userid INT, IN to_mergePID INT, IN to_survivePID INT, OUT statusmsg TEXT, OUT rollback_log TEXT)
 SQL SECURITY INVOKER
     SQL SECURITY INVOKER
 BEGIN
@@ -383,7 +383,7 @@ BEGIN
 DELIMITER ;
 DROP PROCEDURE IF EXISTS `syncServerPrinters` ;
 DELIMITER ;;
-CREATE PROCEDURE "syncServerPrinters"()
+CREATE PROCEDURE syncServerPrinters()
 SQL SECURITY INVOKER
     SQL SECURITY INVOKER
 BEGIN
