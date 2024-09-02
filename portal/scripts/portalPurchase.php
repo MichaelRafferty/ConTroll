@@ -379,6 +379,7 @@ function allocateBalance(&$balance, $badges, $conid, $newPlanId, $transId, $plan
     $totalOwed = 0;
     $count = 0;
     $rows_upd = 0;
+    $upgradedCnt = 0;
 
     $mrQ = <<<EOS
 SELECT mRI.*
@@ -457,8 +458,7 @@ EOS;
                                     }
                                     if ($argPerid != null) {
                                         $upgradedCnt += dbSafeCmd($upgradedUP, 'iii', array ($conid, $argPerid, $memId));
-                                    }
-                                    else if ($argNewPerid != null) {
+                                    } else if ($argNewPerid != null) {
                                         $upgradedCnt += dbSafeCmd($upgradedUN, 'iii', array ($conid, $argNewPerid, $memId));
                                     }
                                 }
