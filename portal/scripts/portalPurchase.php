@@ -374,7 +374,7 @@ EOS;
 
 // now all the in plan ones
 // figure out the percentage to apply to each
-function allocateBalance(&$balance, $badges, $conid, $newPlanId, $transId, $planOnly) {
+function allocateBalance(&$balance, &$badges, $conid, $newPlanId, $transId, $planOnly) {
     // now all the in plan ones
     // figure out the percentage to apply to each
     $totalOwed = 0;
