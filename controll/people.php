@@ -56,6 +56,43 @@ else
 <?php 
     bs_tinymceModal();
 ?>
+<!-- Match Candidates Modal -->
+<div id='match-candidates' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Display Candidates for Match'
+     aria-hidden='true' style='--bs-modal-width: 80%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='candidatesTitle'>Potential matches for <span id="candidatesTitleName">Name</span></strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <div class='row mt-2'>
+                        <div class='col-sm-12' id='candidatedH1Div'><H1 class='h3'>
+                                <b>Potential Matches for: <span id='candidatesName'>Name</span></b>
+                            </H1></div>
+                        </div>
+                    <div class='row mt-3'>
+                        <div class='col-sm-12 text-bg-secondary'>
+                            Edit Match Form Goes Here
+                        </div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-12' id='candidateTable'></div>
+                    </div>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='updateExisting' onClick='unmatchedPeople.matchExisting()'>Update Existing Person</button>
+                <button class='btn btn-sm btn-primary' id='createNew' onClick='unmatchedPeople.createNew()'>Update Existing Person</button>
+            </div>
+            <div id='result_message_candidate' class='mt-4 p-2'></div>
+        </div>
+    </div>
+</div>
 <!-- Merge modals are an example and a placeholder for what me might need  -->
 <div id='merge-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Look up Merge Person' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
