@@ -1,9 +1,16 @@
 <?php
-function getEmailBody($transid, $owner, $memberships, $planRec, $rid, $url, $amount): string {
+    function getEmailBody($transid, $owner, $memberships, $planRec, $rid, $url, $amount, $planPayment = 0): string {
     $condata = get_con();
     $ini = get_conf('reg');
     $con = get_conf('con');
 
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
+
+    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
     $body = 'Dear ' . trim($owner['first_name'] . ' ' . $owner['last_name']) . ",\n\n";
     $body .= 'Thank you for paying via the registration portal for ' . $condata['label'] . "!\n\n";
 
@@ -12,9 +19,21 @@ function getEmailBody($transid, $owner, $memberships, $planRec, $rid, $url, $amo
     }
 
     $body .= "Your Transaction number is $transid and Receipt number is $rid.\n";
-    if ($planRec != null) {
-        $planData = $planRec['plan'];
-        $body .= "and is part of the " . $planData['name'] . " payment plan\n";
+
+    $num = $planRec['numPayments'];
+    $days = $planRec['daysBetween'];
+    if ($planRec != null && $planPayment == 0) {
+        if (array_key_exists('name', $planRec)) {
+            $name = $planRec['name'];
+        } else {
+            $planData = $planRec['plan'];
+            $name = $planData['name'];
+        }
+        if (array_key_exists('paymentAmt', $planRec)) {
+            $pmtAmt = $planRec['paymentAmt'];
+        }
+        $body .= "This payment is part of the $name payment plan, and you have agreed to make $num payments, one every $days days for " .
+            $dolfmt->formatCurrency((float) $pmtAmt, $currency) . " each.\n";
     }
 
     if (array_key_exists('code', $owner) && $owner['code'] != null) {
@@ -24,20 +43,25 @@ function getEmailBody($transid, $owner, $memberships, $planRec, $rid, $url, $amo
         $body .= "\n";
     }
 
-    $body .= "Your card was charged $amount for this transaction" .
-        "\n\nThe following memberships were involved in this payment:\n\n";
+    if ($planPayment != 1) {
+        $body .= "Your card was charged " . $dolfmt->formatCurrency((float)$amount, $currency) . " for this transaction" .
+            "\n\nThe following memberships were involved in this payment:\n\n";
 
 
-    $fullnames = [];
-    foreach ($memberships as $membership) {
-        // portalPurchase sets the modified flag to true on all regs changed by this payment, and false to all the others.
-        if (array_key_exists('modified', $membership) && $membership['modified'] == true) {
-            if (array_key_exists($membership['fullname'], $fullnames))
-                continue;
-            $body .= '     * ' . $membership['fullname'] . ' (' . $membership['label'] . ")\n\n";
+        $fullnames = [];
+        foreach ($memberships as $membership) {
+            // portalPurchase sets the modified flag to true on all regs changed by this payment, and false to all the others.
+            if (array_key_exists('modified', $membership) && $membership['modified'] == true) {
+                if (array_key_exists($membership['fullname'], $fullnames))
+                    continue;
+                $body .= '     * ' . $membership['fullname'] . ' (' . $membership['label'] . ")\n\n";
 
-            $fullnames[$membership['fullname']] = 1;
+                $fullnames[$membership['fullname']] = 1;
+            }
         }
+    } else {
+        $body .= "Your card was charged " . $dolfmt->formatCurrency((float)$amount, $currency) . " for this plan payment" .
+            " and your remaining balance due is " . $dolfmt->formatCurrency((float) $planRec['balanceDue'], $currency) . "\n\n";
     }
 
     if ($url != '') {

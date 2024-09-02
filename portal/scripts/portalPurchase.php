@@ -241,6 +241,7 @@ if ($newplan == 1) {
     $planRec['payorPlanId'] = $newPlanId;
 } else if ($planPayment == 1) {
     // update the plan for the payment
+    $allocateAmt = $amount;
     $uQ = <<<EOS
 UPDATE payorPlans SET balanceDue = balanceDue - ?, updateBy = ?
 WHERE id = ? AND $pfield = ?;
@@ -290,7 +291,7 @@ EOS;
         $bR->free();
 
         if ($balance > 0) {
-            $rows_upd += allocateBalance($amount, $regs, $conid, $existingPlan['id'], $transId, true );
+            $rows_upd += allocateBalance($allocateAmt, $regs, $conid, $existingPlan['id'], $transId, true );
         }
     }
 }
@@ -314,7 +315,7 @@ if ($amount > 0 && $planPayment != 1) {
     $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, true);
 }
 if ($totalAmountDue > 0) {
-    $body = getEmailBody($transId, $info, $badges, $planRec, $rtn['rid'], $rtn['url'], $amount);
+    $body = getEmailBody($transId, $info, $badges, $planPayment == 1 ? $existingPlan : $planRec, $rtn['rid'], $rtn['url'], $amount, $planPayment);
 } else {
     $body = getNoChargeEmailBody($results, $info, $badges);
 }

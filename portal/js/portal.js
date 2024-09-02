@@ -1036,9 +1036,9 @@ class Portal {
         if (id)
             id.disabled = true;
         // squares form
-        id = document.getElementById("card-button");
-        if (id)
-            id.disabled = true;
+        var ids = document.getElementById("card-button");
+        if (ids)
+            ids.disabled = true;
 
         var newplan = false;
         if (this.#paymentPlan != null)
@@ -1071,7 +1071,11 @@ class Portal {
                 return true;
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                id.disabled = false;
+                if (id)
+                    id.disabled = false;
+                // squares form
+                if (ids)
+                    ids.disabled = false;
                 showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
                 return false;
             },
