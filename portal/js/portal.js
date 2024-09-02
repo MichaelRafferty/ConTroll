@@ -16,6 +16,8 @@ window.onload = function () {
 }
 
 class Portal {
+    // this page name for window.location to avoid refresh errors
+    #portalPage = 'portal.php';
     // edit person modal
     #editPersonModal = null;
     #editPersonModalElement = null;
@@ -792,7 +794,7 @@ class Portal {
             show_message(data['message']);
             this.#editPersonModal.hide();
             if (data['rows_upd'] > 0) {
-                window.location = '?messageFwd=' + encodeURI(data['message']);
+                window.location = this.#portalPage + '?messageFwd=' + encodeURI(data['message']);
             }
         }
     }
@@ -926,7 +928,7 @@ class Portal {
                 if (confirm("Add memberships to your account now?"))
                     this.addMembership(config['id'], config['idType']);
             } else if (data['rows_upd'] > 0) {
-                window.location = '?messageFwd=' + encodeURI(data['message']);
+                window.location = this.#portalPage + '?messageFwd=' + encodeURI(data['message']);
             }
         }
     }
@@ -1101,10 +1103,10 @@ class Portal {
             }
         }
         if (data['message'])
-            window.location = '?messageFwd=' + encodeURI(data['message']);
+            window.location = this.#portalPage + '?messageFwd=' + encodeURI(data['message']);
         else {
             var message = 'Payment succeeded, ' + data['rows_upd'] + ' memberships and other items updated';
-            window.location = '?messageFwd=' + encodeURI(message);
+            window.location = this.#portalPage + '?messageFwd=' + encodeURI(message);
         }
     }
 
