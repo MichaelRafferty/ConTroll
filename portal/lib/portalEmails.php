@@ -20,20 +20,23 @@
 
     $body .= "Your Transaction number is $transid and Receipt number is $rid.\n";
 
-    $num = $planRec['numPayments'];
-    $days = $planRec['daysBetween'];
-    if ($planRec != null && $planPayment == 0) {
-        if (array_key_exists('name', $planRec)) {
-            $name = $planRec['name'];
-        } else {
-            $planData = $planRec['plan'];
-            $name = $planData['name'];
+    if ($planRec != '') {
+        $num = $planRec['numPayments'];
+        $days = $planRec['daysBetween'];
+        if ($planRec != null && $planPayment == 0) {
+            if (array_key_exists('name', $planRec)) {
+                $name = $planRec['name'];
+            }
+            else {
+                $planData = $planRec['plan'];
+                $name = $planData['name'];
+            }
+            if (array_key_exists('paymentAmt', $planRec)) {
+                $pmtAmt = $planRec['paymentAmt'];
+            }
+            $body .= "This payment is part of the $name payment plan, and you have agreed to make $num payments, one every $days days for " .
+                $dolfmt->formatCurrency((float)$pmtAmt, $currency) . " each.\n";
         }
-        if (array_key_exists('paymentAmt', $planRec)) {
-            $pmtAmt = $planRec['paymentAmt'];
-        }
-        $body .= "This payment is part of the $name payment plan, and you have agreed to make $num payments, one every $days days for " .
-            $dolfmt->formatCurrency((float) $pmtAmt, $currency) . " each.\n";
     }
 
     if (array_key_exists('code', $owner) && $owner['code'] != null) {
@@ -44,19 +47,21 @@
     }
 
     if ($planPayment != 1) {
-        $body .= "Your card was charged " . $dolfmt->formatCurrency((float)$amount, $currency) . " for this transaction" .
-            "\n\nThe following memberships were involved in this payment:\n\n";
+        $body .= "Your card was charged " . $dolfmt->formatCurrency((float)$amount, $currency) . " for this transaction\n\n";
 
+        if ($memberships && count($memberships) > 0) {
+            $body .= "The following memberships were involved in this payment:\n\n";
 
-        $fullnames = [];
-        foreach ($memberships as $membership) {
-            // portalPurchase sets the modified flag to true on all regs changed by this payment, and false to all the others.
-            if (array_key_exists('modified', $membership) && $membership['modified'] == true) {
-                if (array_key_exists($membership['fullname'], $fullnames))
-                    continue;
-                $body .= '     * ' . $membership['fullname'] . ' (' . $membership['label'] . ")\n\n";
+            $fullnames = [];
+            foreach ($memberships as $membership) {
+                // portalPurchase sets the modified flag to true on all regs changed by this payment, and false to all the others.
+                if (array_key_exists('modified', $membership) && $membership['modified'] == true) {
+                    if (array_key_exists($membership['fullname'], $fullnames))
+                        continue;
+                    $body .= '     * ' . $membership['fullname'] . ' (' . $membership['label'] . ")\n\n";
 
-                $fullnames[$membership['fullname']] = 1;
+                    $fullnames[$membership['fullname']] = 1;
+                }
             }
         }
     } else {
