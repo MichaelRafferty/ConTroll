@@ -97,10 +97,10 @@ while ($cL= $cR->fetch_assoc()) {
         if ($loginType == 'p' && $cL['managedBy'] == $loginId) {
             $managedByMe++;
         } else {
-            $mangedByOther++;
+            $managedByOther++;
         }
     } else if ($cL['managedByNew'] != null) {
-        if ($loginType == 'n' && $cL['mangedBy'] == $loginId) {
+        if ($loginType == 'n' && $cL['managedBy'] == $loginId) {
             $managedByMe++;
         } else {
             $managedByOther++;
