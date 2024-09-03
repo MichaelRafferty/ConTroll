@@ -1462,6 +1462,7 @@ function draw_registrations(data) {
         paginationSize: 25,
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         columns: [
+            { title: "Action", formatter: actionbuttons, hozAlign:"left", headerSort: false },
             { title: "TID", field: "display_trans", hozAlign: "right",  headerSort: true, headerFilter: true },
             { title: "PID", field: "perid", width: 110, hozAlign: "right", headerSort: true, headerFilter: true, },
             { title: "Person", field: "p_name", headerSort: true, headerFilter: true },
@@ -1484,7 +1485,6 @@ function draw_registrations(data) {
             { field: "create_trans", visible: false },
             { field: "complete_trans", visible: false },
             { field: "ncount", visible: false,},
-            { title: "Action", formatter: actionbuttons, hozAlign:"left", headerSort: false },
         ],
         initialSort: [
             {column: "display_trans", dir: "desc" },
