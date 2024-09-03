@@ -1463,11 +1463,11 @@ function draw_registrations(data) {
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         columns: [
             { title: "TID", field: "display_trans", hozAlign: "right",  headerSort: true, headerFilter: true },
-            { title: "PID", field: "perid", hozAlign: "right", headerSort: true, headerFilter: true, },
+            { title: "PID", field: "perid", width: 110, hozAlign: "right", headerSort: true, headerFilter: true, },
             { title: "Person", field: "p_name", headerSort: true, headerFilter: true },
             { title: "Badge Name", field: "p_badge", headerSort: true, headerFilter: true },
             { title: "Email", field: "p_email", headerSort: true, headerFilter: true },
-            { title: "Membership Type", field: "label", headerSort: true, headerFilter: true, },
+            { title: "Membership Type", field: "label", width: 300, headerSort: true, headerFilter: true, },
             { title: "memId", field: "memId", hozAlign: "right", headerSort: true, headerFilter: true, },
             { title: "Price", field: "price", hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
             { title: "Disc", field: "couponDiscount", hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
