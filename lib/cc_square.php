@@ -243,7 +243,6 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
             $item->setAmountMoney($money);
             $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
             $orderDiscounts[] = $item;
-            //$order->setDiscounts(array ($item));
             $order_value -= $results['discount'];
         }
 
@@ -264,7 +263,6 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                 $item->setAmountMoney($money);
                 $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
                 $orderDiscounts[] = $item;
-                //$order->setDiscounts(array ($item));
             }
         }
         if (count($orderDiscounts) > 0) {
