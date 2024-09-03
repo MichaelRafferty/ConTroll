@@ -242,8 +242,9 @@ function tabBar($page, $portal_conf, $info, $refresh = false) {
         if (isSessionVar('multiple')) {
             $page_list[] = ['name' => 'index', 'args' => 'switch=account', 'display' => 'Switch Account'];
         }
-        if (false) { // TODO: create help page later
-        $page_list[] = ['name' => 'portalHelp', 'target' =>  '_blank', 'display' => 'Help'];
+        if (array_key_exists('helppage', $portal_conf)) {
+            $helppage = $portal_conf['helppage'];
+            $page_list[] = ['name' => $helppage, 'target' =>  '_blank', 'display' => 'Help'];
         }
     }
 
@@ -268,7 +269,11 @@ function tabBar($page, $portal_conf, $info, $refresh = false) {
             $d = $pageInfo['display'];
             $active = $page == $p ? 'active' : '';
             $ariainfo = $page == $p ? 'aria-current="page"' : '';
-            $url = $pageInfo['name'] . '.php';
+            if (str_ends_with($pageInfo['name'], '.pdf')) {
+                $url = $pageInfo['name'];
+            } else {
+                $url = $pageInfo['name'] . '.php';
+            }
             if (array_key_exists('args', $pageInfo)) {
                 $url .= '?' . $pageInfo['args'];
             }

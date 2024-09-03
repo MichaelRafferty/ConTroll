@@ -439,7 +439,7 @@ if ($totalDue > 0) {
         <h1 class="size-h3">
 <?php
     if ($info['managedByName'] == null) {
-        echo "People manged by " . $info['first_name'] . ' (' . $info['email_addr'] . '):';
+        echo "People managed by " . $info['first_name'] . ' (' . $info['email_addr'] . '):';
 ?>
                 <button class='btn btn-primary ms-2' type='button'
                         onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/addUpgrade.php';">

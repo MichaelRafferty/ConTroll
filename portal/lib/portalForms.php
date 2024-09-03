@@ -551,7 +551,7 @@ function draw_makePaymentModal() {
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
                     <div class='modal-title' id='makePaymentTitle'>
-                        <strong>Pay Via Credit Cart</strong>
+                        <strong>Pay Via Credit Card</strong>
                     </div>
                     <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                 </div>
