@@ -312,7 +312,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 //            if ($useLogWrite) {
 //                logWrite(array('ordersApi' => 'Order returned non-success'));
 //            } else {
-//                web_error_log('Order returned non-success');
+                web_error_log('Order returned non-success');
 //            }
             
             $errorreturn = null;
@@ -320,7 +320,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 //                if ($useLogWrite) {
 //                    logWrite(array('Category' => $error->getCategory(), 'Code' => $error->getCode(), 'Detail' => $error->getDetail(), 'Field' => $error->getField()));
 //                } else {
-//                    var_error_log("Cat: " . $error->getCategory() . ": Code " . $error->getCode() . ". Detail: " . $error->getDetail() . ", [" . $error->getField() . "]");
+                    var_error_log("Cat: " . $error->getCategory() . ": Code " . $error->getCode() . ". Detail: " . $error->getDetail() . ", [" . $error->getField() . "]");
 //                }
                 if ($errorreturn == null)
                     $errorreturn = array('status'=>'error','data'=>"Order Error: " . $error->getCategory() . "/" . $error->getCode() . ": " . $error->getDetail() . "[" . $error->getField() . "]");
@@ -334,7 +334,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 //        if ($useLogWrite) {
 //            logWrite('Order received error while calling Square: ' . $e->getMessage());
 //        } else {
-//            web_error_log("Order received error while calling Square: " . $e->getMessage());
+            web_error_log("Order received error while calling Square: " . $e->getMessage());
 //        }
         ajaxSuccess(array('status'=>'error','data'=>"Error: Error connecting to Square"));
         exit();
@@ -389,7 +389,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 //            if ($useLogWrite) {
 //                logWrite('Payment returned non-success');
 //            } else {
-//                web_error_log("Payment returned non-success");
+                web_error_log("Payment returned non-success");
 //            }
             foreach ($errors as $error) {
                 $cat = $error->getCategory();
@@ -399,7 +399,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 //                if ($useLogWrite) {
 //                    logWrite('Transid: ' . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail [$field]");
 //                } else {
-//                    web_error_log("Transid: " . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail [$field]");
+                    web_error_log("Transid: " . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail [$field]");
 //                }
                 switch ($code) {
                     case "GENERIC_DECLINE":
@@ -420,7 +420,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 //                if ($useLogWrite) {
 //                    logWrite("Square card payment error for " . $results['transid'] . " of $msg");
 //                } else {
-//                    web_error_log("Square card payment error for " . $results['transid'] . " of $msg");
+                    web_error_log("Square card payment error for " . $results['transid'] . " of $msg");
 //                }
                 ajaxSuccess(array('status'=>'error','data'=>"Payment Error: $msg"));
                 exit();
@@ -437,7 +437,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 //        if ($useLogWrite) {
 //            logWrite('Payment received error while calling Square: ' . $e->getMessage());
 //        } else {
-//            web_error_log('Payment received error while calling Square: ' . $e->getMessage());
+            web_error_log('Payment received error while calling Square: ' . $e->getMessage());
 //        }
         ajaxSuccess(array('status'=>'error','data'=>"Error: Error connecting to Square"));
         exit();
