@@ -15,6 +15,9 @@ class Unmatched {
     // candidate modal
     #matchCandidatesModal = null;
     #candidatesTitleName = null;
+    #candidates = null;
+    #newperson = null;
+    #newpersonTable = null;
     #candidatesName = null;
     #candidateTable = null;
 
@@ -100,7 +103,7 @@ class Unmatched {
     }
 
     // table related functions
-    // display edit button for a long field
+    // display match button unmatched new people
     matchButton(cell, formatterParams, onRendered) {
         var row = cell.getRow();
         var index = row.getIndex()
@@ -110,6 +113,15 @@ class Unmatched {
                 ' onclick="unmatchedPeople.matchPerson(' + index + ');">Match</button>';
         }
         return "";
+    }
+    // display select button for candidate people
+    selectButton(cell, formatterParams, onRendered) {
+        var row = cell.getRow();
+        var index = row.getIndex()
+        var personType = formatterParams.table;
+
+        return '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+                ' onclick="unmatchedPeople.selectPerson(\'' + personType + '\', ' + index + ');">Select</button>';
     }
 
     // ok to match a person we need to do the following
@@ -149,6 +161,57 @@ class Unmatched {
     // showCandidates - open the modal to display the candidates for this match
     showCandidates(data) {
         console.log(data);
+        if (data['error']) {
+            show_message(data['error'], 'error');
+            return;
+        }
+        this.#candidates = data['matches'];
+        this.#newperson = data['newperson']
+        var newpeople = [];
+        newpeople.push(this.#newperson);
+        this.#candidatesTitleName.innerHTML = this.#newperson.fullName;
+        this.#candidatesName.innerHTML = this.#newperson.fullName;
+        this.#newpersonTable = new Tabulator('#newpersonTable', {
+            data: newpeople,
+            layout: "fitDataTable",
+            index: "id",
+            columns: [
+                {title: "Select", width: 100, formatter: this.selectButton, formatterParams: {table: 'n'}, headerSort: false },
+                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
+                {title: "Full Name", field: "fullName", width: 300, headerSort: true, headerFilter: true, },
+                {title: "Address", field: "fullAddr", width: 300, headerSort: true, headerFilter: true, },
+                {title: "Badge Name", field: "badge_name", width: 150, headerFilter:true, headerSort: false},
+                {title: "Manager", field: "manager", width: 150, headerSort: true, headerFilter: true, },
+                {title: "Email", field: "email_addr", width: 200, headerSort: true, headerFilter: true, },
+                {title: "Phone", field: "phone", width: 100, headerSort: true, headerFilter: true, },
+                {title: "Date Created", field: "createtime", width: 180, headerSort: true, headerFilter: true, },
+                {title: "Registrations", field: "regs", width: 300, },
+            ],
+        });
+        this.#candidateTable = new Tabulator('#candidateTable', {
+            data: this.#candidates,
+            layout: "fitDataTable",
+            index: "id",
+            pagination: true,
+            paginationAddRow:"table",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            columns: [
+                {title: "Select", width: 100, formatter: this.selectButton, formatterParams: {table: 'p'}, headerSort: false },
+                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
+                {title: "Full Name", field: "fullName", width: 300, headerSort: true, headerFilter: true, },
+                {title: "Address", field: "fullAddr", width: 300, headerSort: true, headerFilter: true, },
+                {title: "Badge Name", field: "badge_name", width: 150, headerFilter:true, headerSort: false},
+                {title: "Manager", field: "manager", width: 150, headerSort: true, headerFilter: true, },
+                {title: "Email", field: "email_addr", width: 200, headerSort: true, headerFilter: true, },
+                {title: "Phone", field: "phone", width: 100, headerSort: true, headerFilter: true, },
+                {title: "Date Created", field: "creation_date", width: 180, headerSort: true, headerFilter: true, },
+                {title: "Registrations", field: "regs", width: 300, },
+            ],
+        });
+
+        this.#matchCandidatesModal.show();
+        show_message(data['success'], 'success', 'result_message_candidate');
     }
 
     // on close of the pane, clean up the items

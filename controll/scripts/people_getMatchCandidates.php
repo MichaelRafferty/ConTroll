@@ -25,20 +25,31 @@ $newperid = $_POST['newperid'];
 $con_conf = get_conf('con');
 $conid = $con_conf['id'];
 $nQ = <<<EOS
-SELECT n.*,
-TRIM(REGEXP_REPLACE(
-    CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.last_name, ''), ' ',  IFNULL(n.suffix, '')),
-    '  *', ' ')) AS fullName,
-TRIM(REGEXP_REPLACE(
-        CONCAT(IFNULL(mp.first_name, ''),' ', IFNULL(mp.middle_name, ''), ' ', IFNULL(mp.last_name, ''), ' ',  IFNULL(mp.suffix, '')),
+WITH regs AS (
+	SELECT ? AS id, GROUP_CONCAT(DISTINCT m.label ORDER BY m.id SEPARATOR ',') AS regs
+    FROM reg r
+	LEFT OUTER JOIN memLabel m ON (r.memId = m.id)
+	WHERE r.newperid = ? AND r.conid = ?
+)
+SELECT n.*, r.regs, 
+    TRIM(REGEXP_REPLACE(
+        CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.last_name, ''), ' ',  IFNULL(n.suffix, '')),
+        '  *', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(
+    CONCAT(IFNULL(n.address, ''),' ', IFNULL(n.addr_2, ''), ' ', IFNULL(n.city, ''), ' ',  IFNULL(n.state, ''), ' ', IFNULL(n.zip, ''),
+            ' ', IFNULL(n.country, '')),
+        '  *', ' ')) AS fullAddr,
+    TRIM(REGEXP_REPLACE(
+        CONCAT(IFNULL(m.first_name, ''),' ', IFNULL(m.middle_name, ''), ' ', IFNULL(m.last_name, ''), ' ',  IFNULL(m.suffix, '')),
         '  *', ' ')) AS manager
 FROM newperson n
 LEFT OUTER JOIN newperson mn ON n.managedByNew = mn.id
-LEFT OUTER JOIN perinfo mp ON n.managedBy = mp.id
+LEFT OUTER JOIN perinfo m ON n.managedBy = m.id
+LEFT OUTER JOIN regs r ON r.id = n.id
 WHERE n.id = ?
 EOS;
 
-$nR = dbSafeQuery($nQ, 'i', array($newperid));
+$nR = dbSafeQuery($nQ, 'iiii', array($newperid, $newperid, $conid, $newperid));
 if ($nR === false || $nR->num_rows != 1) {
     $response['error'] = 'Select newperson failed';
     ajaxSuccess($response);
@@ -129,10 +140,21 @@ WITH lNew AS (
 	LEFT OUTER JOIN memLabel m ON (r.memId = m.id)
     GROUP BY p.id
 )
-SELECT DISTINCT p.*, r.regs
+SELECT DISTINCT p.*, r.regs, 
+    TRIM(REGEXP_REPLACE(
+        CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  IFNULL(p.suffix, '')),
+        '  *', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(
+    CONCAT(IFNULL(p.address, ''),' ', IFNULL(p.addr_2, ''), ' ', IFNULL(p.city, ''), ' ',  IFNULL(p.state, ''), ' ', IFNULL(p.zip, ''),
+            ' ', IFNULL(p.country, '')),
+        '  *', ' ')) AS fullAddr,
+    TRIM(REGEXP_REPLACE(
+        CONCAT(IFNULL(m.first_name, ''),' ', IFNULL(m.middle_name, ''), ' ', IFNULL(m.last_name, ''), ' ',  IFNULL(m.suffix, '')),
+        '  *', ' ')) AS manager
 FROM perinfo p
 JOIN pids ON p.id = pids.id
-LEFT OUTER JOIN regs r ON r.id = p.id;
+LEFT OUTER JOIN regs r ON r.id = p.id
+LEFT OUTER JOIN perinfo m ON p.managedBy = m.id
 EOS;
 
 $mR = dbSafeQuery($mQ, 'ii', array($newperid, $conid));

@@ -58,7 +58,7 @@ else
 ?>
 <!-- Match Candidates Modal -->
 <div id='match-candidates' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Display Candidates for Match'
-     aria-hidden='true' style='--bs-modal-width: 80%;'>
+     aria-hidden='true' style='--bs-modal-width: 96%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
             <div class='modal-header bg-primary text-bg-primary'>
@@ -72,22 +72,32 @@ else
                     <div class='row mt-2'>
                         <div class='col-sm-12' id='candidatedH1Div'><H1 class='h3'>
                                 <b>Potential Matches for: <span id='candidatesName'>Name</span></b>
-                            </H1></div>
+                            </H1>
                         </div>
+                    </div>
                     <div class='row mt-3'>
                         <div class='col-sm-12 text-bg-secondary'>
-                            Edit Match Form Goes Here
+                            Person being matched
                         </div>
                     </div>
                     <div class='row'>
+                        <div class='col-sm-12' id='newpersonTable'></div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-12 text-bg-secondary'>
+                            Potential Matches
+                        </div>
+                    </div>
+                    <div class='row mb-2'>
                         <div class='col-sm-12' id='candidateTable'></div>
                     </div>
                 </div>
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='updateExisting' onClick='unmatchedPeople.matchExisting()'>Update Existing Person</button>
-                <button class='btn btn-sm btn-primary' id='createNew' onClick='unmatchedPeople.createNew()'>Update Existing Person</button>
+                <button class='btn btn-sm btn-primary' id='updateExisting' onClick='unmatchedPeople.matchExisting()' disabled>Update Existing
+                    Person</button>
+                <button class='btn btn-sm btn-primary' id='createNew' onClick='unmatchedPeople.createNew()' disabled>Create New Person</button>
             </div>
             <div id='result_message_candidate' class='mt-4 p-2'></div>
         </div>
