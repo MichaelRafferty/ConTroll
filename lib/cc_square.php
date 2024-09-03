@@ -223,6 +223,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 
         $order->setLineItems($order_lineitems);
 
+        $orderDiscounts = [];
         // now apply the coupon
         if (array_key_exists('discount', $results) && $results['discount'] > 0) {
             $item = new OrderLineItemDiscount ();
@@ -241,7 +242,8 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
             $money->setCurrency(Currency::USD);
             $item->setAmountMoney($money);
             $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
-            $order->setDiscounts(array ($item));
+            $orderDiscounts[] = $item;
+            //$order->setDiscounts(array ($item));
             $order_value -= $results['discount'];
         }
 
@@ -261,8 +263,12 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                 $money->setCurrency(Currency::USD);
                 $item->setAmountMoney($money);
                 $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
-                $order->setDiscounts(array ($item));
+                $orderDiscounts[] = $item;
+                //$order->setDiscounts(array ($item));
             }
+        }
+        if (count($orderDiscounts) > 0) {
+            $order->setDiscounts($orderDiscounts);
         }
     } else {
         // this is a plan payment make the order just the plan payment
