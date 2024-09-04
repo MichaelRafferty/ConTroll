@@ -167,11 +167,17 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 
     $planName = '';
     $planId = '';
+    $downPmt = '';
+    $nonPlanAmt = '';
+    $balaanceDue = '';
     if ($results['newplan'] == 1) {
         if (array_key_exists('planRec', $results) && array_key_exists('plan', $results['planRec']) &&
             array_key_exists('name', $results['planRec']['plan'])) {
             $planName = $results['planRec']['plan']['name'];
             $planId = 'TBA';
+            $downPmt = $results['planRec']['[downPayment]'];
+            $nonPlanAmt = $results['planRec']['nonPlanAmt'];
+            $balaanceDue = $results['planRec']['balanceDue'];
         }
     }
     if ($planPayment == 1) {
@@ -251,7 +257,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
             if ($results['newplan'] == 1) {
                 // deferment is total of the items - total of the payment
                 $deferment = $order_value - $results['total'];
-                $note = "Name: $planName, ID: TBA, Perid: $loginPerid";
+                $note = "Name: $planName, ID: TBA, Non Plan Amt: $nonPlanAmt, Down Payment: $downPmt, Balance Due: $balaanceDue, Perid: $loginPerid";
                 // this is the down payment on a payment plan
                 $item = new OrderLineItemDiscount ();
                 $item->setUid('planDeferment');
