@@ -545,6 +545,7 @@ function draw_PaymentDueModal() {
 function draw_makePaymentModal() {
     $ini = get_conf('reg');
     $cc = get_conf('cc');
+    $con = get_conf('con');
     ?>
     <div id='makePaymentModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='makePayments' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
@@ -580,6 +581,16 @@ function draw_makePaymentModal() {
                         </div>
                         <div class='row'>
                             <div class='col-sm-12'><?php echo draw_cc_html($cc); ?></div>
+                        </div>
+                        <div class='row mt-2'>
+                            <div class='col-sm-auto'>
+                                <p>Is the purchase button not working? Try clicking in the last field of the payment form, then press tab.
+                                    If that doesn't fix it, please try a different browser or device or contact
+                                    <?php echo $con['regadminemail']; ?> for other payment options.
+                                    We are aware that our payment processor (Square) does not play well with certain browser configurations,
+                                    but cannot fix it. We apologize for the inconvenience.
+                                </p>
+                            </div>
                         </div>
                         <div class='row mt-2'>
                             <div class='col-sm-12' id='makePayMessageDiv'></div>

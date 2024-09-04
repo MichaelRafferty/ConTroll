@@ -861,7 +861,7 @@ class Membership {
             var label = (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label +
                 (membershipRec.memAge != 'all' ? ' [' + ageListIdx[membershipRec.memAge].label + ']' : '');
             var expired = false;
-            if (membershipRec.status == 'unpaid' && !membershipRec.toDelete)
+            if ((membershipRec.status == 'unpaid' || membershipRec.status == 'in-cart') && !membershipRec.toDelete)
                 this.#totalDue += amount_due;
             if (membershipRec.status == 'unpaid') {
                 var sd = new Date(membershipRec.startdate);
