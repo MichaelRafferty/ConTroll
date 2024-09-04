@@ -175,7 +175,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
             array_key_exists('name', $results['planRec']['plan'])) {
             $planName = $results['planRec']['plan']['name'];
             $planId = 'TBA';
-            $downPmt = $results['planRec']['[downPayment]'];
+            $downPmt = $results['planRec']['downPayment'];
             $nonPlanAmt = $results['planRec']['nonPlanAmt'];
             $balaanceDue = $results['planRec']['balanceDue'];
         }
