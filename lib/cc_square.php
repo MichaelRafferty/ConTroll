@@ -204,7 +204,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                 $item->setName($badge['age'] . ' Membership for ' . $fullname);
                 $note = $badge['memId'] . ',' . $id . ': memId, p/n id';
                 if ($planName != '') {
-                    $note .= ($badge['inPlan'] ? (', Plan: ' . $planName) : 'NotInPlan');
+                    $note .= ($badge['inPlan'] ? (', Plan: ' . $planName) : ', NotInPlan');
                 }
                 $item->setNote($note);
                 $item->setBasePriceMoney(new Money);
