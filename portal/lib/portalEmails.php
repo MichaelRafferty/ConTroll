@@ -1,5 +1,5 @@
 <?php
-    function getEmailBody($transid, $owner, $memberships, $planRec, $rid, $url, $amount, $planPayment = 0): string {
+    function getEmailBody($transid, $owner, $memberships, $coupon, $planRec, $rid, $url, $amount, $planPayment = 0): string {
     $condata = get_con();
     $ini = get_conf('reg');
     $con = get_conf('con');
@@ -39,10 +39,10 @@
         }
     }
 
-    if (array_key_exists('code', $owner) && $owner['code'] != null) {
-        $body .= 'A coupon of type ' . $owner['code'] . ' (' . $owner['name'] . ') was applied to this transaction';
-        if ($owner['couponDiscount'] > 0)
-            $body .= ' for a savings of ' . $owner['couponDiscount'];
+    if ($coupon != null && $planPayment == 0) {
+        $body .= 'A coupon of type ' . $coupon['code'] . ' (' . $coupon['name'] . ') was applied to this transaction';
+        if ($coupon['discount'] > 0)
+            $body .= ' for a savings of ' . $dolfmt->formatCurrency((float) $coupon['discount'], $currency);
         $body .= "\n";
     }
 
@@ -52,16 +52,17 @@
         if ($memberships && count($memberships) > 0) {
             $body .= "The following memberships were involved in this payment:\n\n";
 
-            $fullnames = [];
             foreach ($memberships as $membership) {
                 // portalPurchase sets the modified flag to true on all regs changed by this payment, and false to all the others.
-                if (array_key_exists('modified', $membership) && $membership['modified'] == true) {
-                    if (array_key_exists($membership['fullname'], $fullnames))
-                        continue;
-                    $body .= '     * ' . $membership['fullname'] . ' (' . $membership['label'] . ")\n\n";
+                $body .= '     * ' . $membership['fullname'] . ' (' . $membership['label'] . ") for " .
+                    $dolfmt->formatCurrency((float) $membership['price'], $currency);
 
-                    $fullnames[$membership['fullname']] = 1;
+                $due = $membership['price'] - ($membership['paid'] + $membership['couponDiscount']);
+                if ($due > 0.01) {
+                    $body .= ' with a balance due of ' . $dolfmt->formatCurrency($due, $currency);
                 }
+
+                $body .= "\n\n";
             }
         }
     } else {

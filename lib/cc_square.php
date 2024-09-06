@@ -236,7 +236,8 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
             $item->setUid('couponDiscount');
             if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
                 $coupon = $results['coupon'];
-                $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . ')';
+                $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . '), Coupon Discount: ' .
+                    $coupon['discount'];
             }
             else {
                 $couponName = 'Coupon Applied';
