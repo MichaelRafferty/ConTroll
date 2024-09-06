@@ -20,6 +20,48 @@ class Unmatched {
     #newpersonTable = null;
     #candidatesName = null;
     #candidateTable = null;
+    
+    // edit matches
+    // matched person display fields
+    #matchId = null;
+    #matchName = null;
+    #matchLegal = null;
+    #matchPronouns = null;
+    #matchBadge = null;
+    #matchAddress = null;
+    #matchEmail = null;
+    #matchPhone = null;
+    #matchPolicies = null;
+    #matchFlags = null;
+    // candidate (new) person display fields
+    #newId = null;
+    #newName = null;
+    #newLegal = null;
+    #newPronouns = null;
+    #newBadge = null;
+    #newAddress = null;
+    #newEmail = null;
+    #newPhone = null;
+    #newPolicies = null;
+    #newFlags = null;
+    // editing fields
+    #firstName = null;
+    #middleName = null;
+    #lastName = null;
+    #suffix = null;
+    #legalName = null;
+    #pronouns = null;
+    #badgeName = null;
+    #address = null;
+    #addr2 = null;
+    #city = null;
+    #state = null;
+    #zip = null;
+    #emailAddr = null;
+    #phone = null;
+    #policiesDiv = null;
+    #active = null;
+    #banned = null;
 
     // globals before open
     constructor(debug) {
@@ -37,6 +79,47 @@ class Unmatched {
             this.#matchCandidatesModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#candidatesTitleName = document.getElementById('candidatesTitleName');
             this.#candidatesName = document.getElementById('candidatesName');
+            // matched person display fields
+            this.#matchId = document.getElementById('matchID');
+            this.#matchName = document.getElementById('matchName');
+            this.#matchLegal = document.getElementById('matchLegal');
+            this.#matchPronouns = document.getElementById('matchPronouns');
+            this.#matchBadge = document.getElementById('matchBadge');
+            this.#matchAddress = document.getElementById('matchAddress');
+            this.#matchEmail = document.getElementById('matchEmail');
+            this.#matchPhone = document.getElementById('matchPhone');
+            this.#matchPolicies = document.getElementById('matchPolicies');
+            this.#matchFlags = document.getElementById('matchFlags');
+            // candidate (new) person display fields
+            this.#newId = document.getElementById('newID');
+            this.#newName = document.getElementById('newName');
+            this.#newLegal = document.getElementById('newLegal');
+            this.#newPronouns = document.getElementById('newPronouns');
+            this.#newBadge = document.getElementById('newBadge');
+            this.#newAddress = document.getElementById('newAddress');
+            this.#newEmail = document.getElementById('newEmail');
+            this.#newPhone = document.getElementById('newPhone');
+            this.#newPolicies = document.getElementById('newPolicies');
+            this.#newFlags = document.getElementById('newFlags');
+            // editing fields
+            this.#firstName = document.getElementById('firstName');
+            this.#middleName = document.getElementById('middleName');
+            this.#lastName = document.getElementById('lastName');
+            this.#suffix = document.getElementById('suffix');
+            this.#legalName = document.getElementById('legalName');
+            this.#pronouns = document.getElementById('pronouns');
+            this.#badgeName = document.getElementById('badgeName');
+            this.#address = document.getElementById('address');
+            this.#addr2 = document.getElementById('addr2');
+            this.#city = document.getElementById('city');
+            this.#state = document.getElementById('state');
+            this.#zip = document.getElementById('zip');
+            this.#emailAddr = document.getElementById('emailAddr');
+            this.#phone = document.getElementById('phone');
+            this.#policiesDiv = document.getElementById('policiesDiv');
+            this.#active = document.getElementById('active');
+            this.#banned = document.getElementById('banned');
+
         }
     };
 
@@ -186,6 +269,14 @@ class Unmatched {
                 {title: "Phone", field: "phone", width: 100, headerSort: true, headerFilter: true, },
                 {title: "Date Created", field: "createtime", width: 180, headerSort: true, headerFilter: true, },
                 {title: "Registrations", field: "regs", width: 300, },
+                {field: 'first_name', visible: false,},
+                {field: 'middle_name', visible: false,},
+                {field: 'last_name', visible: false,},
+                {field: 'suffix', visible: false,},
+                {field: 'legalName', visible: false,},
+                {field: 'pronouns', visible: false,},
+                {field: 'active', visible: false,},
+                {field: 'banned', visible: false,},
             ],
         });
         this.#candidateTable = new Tabulator('#candidateTable', {
@@ -207,11 +298,64 @@ class Unmatched {
                 {title: "Phone", field: "phone", width: 100, headerSort: true, headerFilter: true, },
                 {title: "Date Created", field: "creation_date", width: 180, headerSort: true, headerFilter: true, },
                 {title: "Registrations", field: "regs", width: 300, },
+                {field: 'first_name', visible: false,},
+                {field: 'middle_name', visible: false,},
+                {field: 'last_name', visible: false,},
+                {field: 'suffix', visible: false,},
+                {field: 'legalName', visible: false,},
+                {field: 'pronouns', visible: false,},
+                {field: 'active', visible: false,},
+                {field: 'banned', visible: false,},
             ],
         });
 
         this.#matchCandidatesModal.show();
         show_message(data['success'], 'success', 'result_message_candidate');
+    }
+
+    // selectPerson - move a person to the edit area and prepare to edit/save it
+    selectPerson(type, id) {
+        // they clicked select, if it's a new person, clear the matched person side of the page
+        if (type == 'n') {
+            this.clearEditBlock('c');
+        } else {
+            // set the candidate section of the edit block to the values from the table
+            var cData = this.#candidateTable.getRow(id).getData();
+            this.#matchId.innerHTML = id;
+            this.#matchName.innerHTML = cData.fullName;
+            this.#matchLegal.innerHTML = cData.legalName;
+            this.#matchPronouns.innerHTML = cData.pronouns;
+            this.#matchBadge.innerHTML = cData.badge_name;
+            this.#matchAddress.innerHTML = cData.fullAddr;
+            this.#matchEmail.innerHTML = cData.email_addr;
+            this.#matchPhone.innerHTML = cData.phone;
+        }
+
+        // now populate the match candidate fields
+        this.#newId.innerHTML = this.#newperson.id;
+        this.#newName.innerHTML = this.#newperson.fullName;
+        this.#newLegal.innerHTML = this.#newperson.legalName;
+        this.#newPronouns.innerHTML = this.#newperson.pronouns;
+        this.#newBadge.innerHTML = this.#newperson.badge_name;
+        this.#newAddress.innerHTML = this.#newperson.fullAddr;
+        this.#newEmail.innerHTML = this.#newperson.email_addr;
+        this.#newPhone.innerHTML = this.#newperson.phone;
+        
+    }
+
+    clearEditBlock(sections) {
+        if (sections == 'c' || sections == 'a') {
+            this.#matchId.innerHTML = '';
+            this.#matchName.innerHTML = '';
+            this.#matchLegal.innerHTML = '';
+            this.#matchPronouns.innerHTML = '';
+            this.#matchBadge.innerHTML = '';
+            this.#matchAddress.innerHTML = '';
+            this.#matchEmail.innerHTML = '';
+            this.#matchPhone.innerHTML = '';
+            this.#matchPolicies.innerHTML = '';
+            this.#matchFlags.innerHTML = '';
+        }
     }
 
     // on close of the pane, clean up the items
