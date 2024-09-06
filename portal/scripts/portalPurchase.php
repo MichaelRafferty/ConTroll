@@ -315,7 +315,7 @@ if ($amount > 0 && $planPayment != 1) {
     $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, true);
 }
 if ($totalAmountDue > 0) {
-    $body = getEmailBody($transId, $info, $badges, $planPayment == 1 ? $existingPlan : $planRec, $rtn['rid'], $rtn['url'], $amount, $planPayment);
+    $body = getEmailBody($transId, $info, $badges, $coupon, $planPayment == 1 ? $existingPlan : $planRec, $rtn['rid'], $rtn['url'], $amount, $planPayment);
 } else {
     $body = getNoChargeEmailBody($results, $info, $badges);
 }
@@ -471,14 +471,18 @@ EOS;
             }
             $balance -= $paid_amt;
             $left = $due - $paid_amt;
+            $regStatus = ($left < 0.01) ? 'paid' : ($planOnly ? 'plan' : 'unpaid');
             $rows_upd += dbSafeCmd($regU, 'ddisii', array (
                 $paid_amt,
                 $badge['couponDiscount'],
                 ($left < 0.01) ? $transId : null,
-                ($left < 0.01) ? 'paid' : 'plan',
+                $regStatus,
                 $planId,
                 $badge['regId']
             ));
+            $badges[$idx]['paid'] += $paid_amt;
+            $badges[$idx]['status'] = $regStatus;
+            $badges[$idx]['balance_due'] = $left < 0.01 ? 0 : $left;
             $badges[$idx]['modified'] = true;
         }
     }
