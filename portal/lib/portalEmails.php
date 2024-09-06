@@ -39,7 +39,7 @@
         }
     }
 
-    if ($coupon != null) {
+    if ($coupon != null && $planPayment == 0) {
         $body .= 'A coupon of type ' . $coupon['code'] . ' (' . $coupon['name'] . ') was applied to this transaction';
         if ($coupon['discount'] > 0)
             $body .= ' for a savings of ' . $dolfmt->formatCurrency((float) $coupon['discount'], $currency);
