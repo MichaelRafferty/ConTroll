@@ -115,14 +115,37 @@ else
                     </div>
                     <div class='row'>
                         <div class='col-sm-1 border border-dark ps-1 pe-1'>Full Name</div>
-                        <div class='col-sm-3 border border-dark' id='matchName'></div>
+                        <div class='col-sm-3 border border-dark'>
+                            <div class="container-fluid">
+                                <div class="row justify-content-between">
+                                    <div class="col-sm-auto ms-0 me-0 ps-0 pe-0" id="matchName"></div>
+                                    <div class="col-sm-auto ms-0 me-0 ps-0 pe-0">
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('matchName')">
+                                            >>
+                                        </button></div>
+                                </div>
+                            </div>
+                        </div>
                         <div class='col-sm-5 border border-dark ps-1 pe-1'>
                             <input type='text' id='firstName' name='firstName' maxlength='32' size='23' placeholder='First Name'/>
                             <input type='text' id='middleName' name='middleName' maxlength='32' size='11' placeholder='Middle'/>
                             <input type='text' id='lastName' name='lastName' maxlength='32' size='23' placeholder='Last Name'/>
                             <input type='text' id='suffix' name='suffix' maxlength='4' size='5' placeholder='Sfx'/>
                         </div>
-                        <div class='col-sm-3 border border-dark' id='newName'></div>
+                        <div class='col-sm-3 border border-dark'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('newName')">
+                                            <<
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='newName'></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class='row'>
                         <div class='col-sm-1 border border-dark ps-1 pe-1'>Legal Name</div>

@@ -22,6 +22,7 @@ class Unmatched {
     #candidateTable = null;
     
     // edit matches
+    #matchPerson = null;
     // matched person display fields
     #matchId = null;
     #matchName = null;
@@ -336,17 +337,17 @@ class Unmatched {
             this.clearEditBlock('c');
         } else {
             // set the candidate section of the edit block to the values from the table
-            var cData = this.#candidateTable.getRow(id).getData();
+            this.#matchPerson = this.#candidateTable.getRow(id).getData();
             this.#matchId.innerHTML = id;
-            this.#matchName.innerHTML = 'm: ' + cData.fullName;
-            this.#matchLegal.innerHTML = 'm: ' + cData.legalName;
-            this.#matchPronouns.innerHTML = 'm ' + cData.pronouns;
-            this.#matchBadge.innerHTML = 'm: ' + cData.badge_name;
-            this.#matchAddress.innerHTML = 'm: ' + cData.fullAddr;
-            this.#matchEmail.innerHTML = 'm: ' + cData.email_addr;
-            this.#matchPhone.innerHTML = 'm: ' + cData.phone;
-            this.#matchPhone.innerHTML = 'm: ' + cData.phone;
-            this.#matchManager.innerHTML = 'm: ' + cData.manager;
+            this.#matchName.innerHTML = 'm: ' + this.#matchPerson.fullName;
+            this.#matchLegal.innerHTML = 'm: ' + this.#matchPerson.legalName;
+            this.#matchPronouns.innerHTML = 'm ' + this.#matchPerson.pronouns;
+            this.#matchBadge.innerHTML = 'm: ' + this.#matchPerson.badge_name;
+            this.#matchAddress.innerHTML = 'm: ' + this.#matchPerson.fullAddr;
+            this.#matchEmail.innerHTML = 'm: ' + this.#matchPerson.email_addr;
+            this.#matchPhone.innerHTML = 'm: ' + this.#matchPerson.phone;
+            this.#matchPhone.innerHTML = 'm: ' + this.#matchPerson.phone;
+            this.#matchManager.innerHTML = 'm: ' + this.#matchPerson.manager;
         }
 
         // now populate the match candidate fields
@@ -385,15 +386,30 @@ class Unmatched {
         if (type == 'n') {
             html += "<option value='ACC' selected>New Person - No Change</option>\n" +
                 "<option value='REM'>New Person - Remove Manager</option>\n";
-        } else if (this.#newperson.managerId == undefined && (cData.managerId == undefined || cData.managerId == null)) {
+        } else if (this.#newperson.managerId == undefined && (this.#matchPerson.managerId == undefined || this.#matchPerson.managerId == null)) {
             html += "<option value='ACC' selected>No Manger Assigned</option>\n";
         } else {
-            html += "<option value='ACC'" + (this.#newperson.managerId == cData.managerId ? ' selected' : '') + ">Accept Manager Shown</option>\n" +
-                "<option value='REM'" + (this.#newperson.managerId != cData.managerId ? ' selected' : '') + ">Remove Manager</option>\n" +
+            html += "<option value='ACC'" + (this.#newperson.managerId == this.#matchPerson.managerId ? ' selected' : '') + ">Accept Manager Shown</option>\n" +
+                "<option value='REM'" + (this.#newperson.managerId != this.#matchPerson.managerId ? ' selected' : '') + ">Remove Manager</option>\n" +
                 "<option value='EMAIL'>Send Email Manage Request</option>\n";
         }
         html += "</select>\n";
         this.#managerDiv.innerHTML = html;
+
+        // now set the colors of what's different
+        var diffcolor = 'yellow';
+        if (type != 'n') {
+            this.#matchName.style.backgroundColor = this.#newperson.fullName != this.#matchPerson.fullName ? diffcolor : '';
+            this.#matchLegal.style.backgroundColor = this.#newperson.legalName != this.#matchPerson.legalName ? diffcolor : '';
+            this.#matchPronouns.style.backgroundColor = this.#newperson.pronouns != this.#matchPerson.pronouns ? diffcolor : '';
+            this.#matchBadge.style.backgroundColor = this.#newperson.badge_name != this.#matchPerson.badge_name ? diffcolor : '';
+            this.#matchAddress.style.backgroundColor = this.#newperson.fullAddr != this.#matchPerson.fullAddr ? diffcolor : '';
+            this.#matchEmail.style.backgroundColor = this.#newperson.email_addr != this.#matchPerson.email_addr ? diffcolor : '';
+            this.#matchPhone.style.backgroundColor = this.#newperson.phone != this.#matchPerson.phone ? diffcolor : '';
+            this.#matchPolicies.style.backgroundColor = this.#newperson.policies != this.#matchPerson.policies ? diffcolor : '';
+            this.#matchFlags.style.backgroundColor = this.#newperson.flags != this.#matchPerson.flgs ? diffcolor : '';
+            this.#matchManager.style.backgroundColor = this.#newperson.manager != this.#matchPerson.manager ? diffcolor : '';
+        }
 
 
     }
@@ -411,9 +427,63 @@ class Unmatched {
             this.#matchPolicies.innerHTML = '';
             this.#matchFlags.innerHTML = '';
             this.#matchManager.innerHTML = '';
+            // clear the colors as well
+            this.#matchName.style.backgroundColor = '';
+            this.#matchLegal.style.backgroundColor = '';
+            this.#matchPronouns.style.backgroundColor = '';
+            this.#matchBadge.style.backgroundColor = '';
+            this.#matchAddress.style.backgroundColor = '';
+            this.#matchEmail.style.backgroundColor = '';
+            this.#matchPhone.style.backgroundColor = '';
+            this.#matchPolicies.style.backgroundColor = '';
+            this.#matchFlags.style.backgroundColor = '';
+            this.#matchManager.style.backgroundColor = '';
+        }
+        if (sections == 'n' || sections == 'a') {
+            this.#newId.innerHTML = '';
+            this.#newName.innerHTML = '';
+            this.#newLegal.innerHTML = '';
+            this.#newPronouns.innerHTML = '';
+            this.#newBadge.innerHTML = '';
+            this.#newAddress.innerHTML = '';
+            this.#newEmail.innerHTML = '';
+            this.#newPhone.innerHTML = '';
+            this.#newPolicies.innerHTML = '';
+            this.#newFlags.innerHTML = '';
+            this.#newManager.innerHTML = '';
+            // clear the colors as well
+            this.#newName.style.backgroundColor = '';
+            this.#newLegal.style.backgroundColor = '';
+            this.#newPronouns.style.backgroundColor = '';
+            this.#newBadge.style.backgroundColor = '';
+            this.#newAddress.style.backgroundColor = '';
+            this.#newEmail.style.backgroundColor = '';
+            this.#newPhone.style.backgroundColor = '';
+            this.#newPolicies.style.backgroundColor = '';
+            this.#newFlags.style.backgroundColor = '';
+            this.#newManager.style.backgroundColor = '';
         }
     }
 
+    // copy a value from the match or new to the edit section
+    copy(source) {
+        switch (source) {
+            case 'matchName':
+                this.#firstName.value = this.#matchPerson.first_name;
+                this.#middleName.value = this.#matchPerson.middle_name;
+                this.#lastName.value = this.#matchPerson.last_name;
+                this.#suffix.value = this.#matchPerson.suffix;
+                break;
+
+            case 'newName':
+                this.#firstName.value = this.#newperson.first_name;
+                this.#middleName.value = this.#newperson.middle_name;
+                this.#lastName.value = this.#newperson.last_name;
+                this.#suffix.value = this.#newperson.suffix;
+                break;
+                
+        }
+    }
     // on close of the pane, clean up the items
     close() {
          if (this.#unmatchedTable != null) {
