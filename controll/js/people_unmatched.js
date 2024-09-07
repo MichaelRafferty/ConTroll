@@ -506,7 +506,7 @@ class Unmatched {
                 this.#pronouns.value = this.#newperson.badge_name;
                 break;
 
-            case 'matchAddr':
+            case 'matchAddress':
                 this.#address.value = this.#matchPerson.address;
                 this.#addr2.value = this.#matchPerson.addr2;
                 this.#city.value = this.#matchPerson.city;
@@ -514,7 +514,7 @@ class Unmatched {
                 this.#zip.value = this.#matchPerson.zip;
                 break;
 
-            case 'newAddr':
+            case 'newAddress':
                 this.#address.value = this.#newperson.address;
                 this.#addr2.value = this.#newperson.addr2;
                 this.#city.value = this.#newperson.city;
@@ -530,7 +530,7 @@ class Unmatched {
                 this.#emailAddr.value = this.#newperson.email_addr;
                 break;
 
-            case 'matchPhome':
+            case 'matchPhone':
                 this.#phone.value = this.#matchPerson.phone;
                 break;
 
@@ -545,6 +545,10 @@ class Unmatched {
             case 'newManager':
             case 'matchManager':
                 show_message("Cannot copy " + source + " yet", 'warn', 'result_message_candidate');
+                break;
+
+            default:
+                show_message("Invalid source " + source, 'warn', 'result_message_candidate');
 
         }
     }

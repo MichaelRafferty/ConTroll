@@ -149,31 +149,115 @@ else
                     </div>
                     <div class='row'>
                         <div class='col-sm-1 border border-dark ps-1 pe-1'>Legal Name</div>
-                        <div class='col-sm-3 border border-dark' id='matchLegal'></div>
+                        <div class='col-sm-3 border border-dark pe-0'>
+                            <div class='container-fluid'>
+                                <div class='row justify-content-between'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchLegal'></div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('matchLegal')">
+                                            >>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class='col-sm-5 border border-dark ps-1 pe-1'>
                             <input type="text" id="legalName" name="legalName" maxlength="128" size="68" placeholder="Legal Name"/>
                         </div>
-                        <div class='col-sm-3 border border-dark' id='newLegal'></div>
+                        <div class='col-sm-3 border border-dark ps-0'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('newLegal')">
+                                            <<
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='newLegal'></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class='row'>
                         <div class='col-sm-1 border border-dark ps-1 pe-1'>Pronouns</div>
-                        <div class='col-sm-3 border border-dark' id='matchPronouns'></div>
+                        <div class='col-sm-3 border border-dark pe-0'>
+                            <div class='container-fluid'>
+                                <div class='row justify-content-between'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchPronouns'></div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('matchPronouns')">
+                                            >>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class='col-sm-5 border border-dark ps-1 pe-1'>
                             <input type='text' id='pronouns' name='pronouns' maxlength='64' size='64' placeholder='Pronouns'/>
                         </div>
-                        <div class='col-sm-3 border border-dark' id='newPronouns'></div>
+                        <div class='col-sm-3 border border-dark ps-0'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('newPronouns')">
+                                            <<
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='newPronouns'></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class='row'>
                         <div class='col-sm-1 border border-dark ps-1 pe-1'>Badge Name</div>
-                        <div class='col-sm-3 border border-dark' id='matchBadge'></div>
+                        <div class='col-sm-3 border border-dark pe-0'>
+                            <div class='container-fluid'>
+                                <div class='row justify-content-between'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchBadge'></div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('matchBadge')">
+                                            >>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class='col-sm-5 border border-dark ps-1 pe-1'>
                             <input type='text' id='badgeName' name='badgeName' maxlength='32' size='32' placeholder='Defaults to First Last'/>
                         </div>
-                        <div class='col-sm-3 border border-dark' id='newBadge'></div>
+                        <div class='col-sm-3 border border-dark ps-0'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('newBadge')">
+                                            <<
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='newBadge'></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class='row'>
                         <div class='col-sm-1 border border-dark ps-1 pe-1'>Address</div>
-                        <div class='col-sm-3 border border-dark' id='matchAddress'></div>
+                        <div class='col-sm-3 border border-dark pe-0'>
+                            <div class='container-fluid'>
+                                <div class='row justify-content-between'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchAddress'></div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('matchAddress')">
+                                            >>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class='col-sm-5 border border-dark ps-1 pe-1'>
                             <input type='text' id='address' name='address' maxlength='64' size='64' placeholder='Address'/>
                             <input type='text' id='addr2' name='addr2' maxlength='64' size='64' placeholder='Address Line 2 or Company'/>
@@ -181,33 +265,129 @@ else
                             <input type='text' id='state' name='state' maxlength='16' size='16' placeholder='State'/>
                             <input type='text' id='zip' name='zip' maxlength='10' size='10' placeholder='Postal Code'/>
                         </div>
-                        <div class='col-sm-3 border border-dark' id='newAddress'></div>
+                        <div class='col-sm-3 border border-dark ps-0'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('newAddress')">
+                                            <<
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='newAddress'></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class='row'>
                         <div class='col-sm-1 border border-dark ps-1 pe-1'>Email Addr</div>
-                        <div class='col-sm-3 border border-dark' id='matchEmail'></div>
+                        <div class='col-sm-3 border border-dark pe-0'>
+                            <div class='container-fluid'>
+                                <div class='row justify-content-between'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchEmail'></div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('matchEmail')">
+                                            >>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class='col-sm-5 border border-dark ps-1 pe-1'>
                             <input type='text' id='emailAddr' name='emailAddr' maxlength='254' size='68' placeholder='Email Address'/>
                         </div>
-                        <div class='col-sm-3 border border-dark' id='newEmail'></div>
+                        <div class='col-sm-3 border border-dark ps-0'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('newEmail')">
+                                            <<
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='newEmail'></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class='row'>
                         <div class='col-sm-1 border border-dark ps-1 pe-1'>Phone</div>
-                        <div class='col-sm-3 border border-dark' id='matchPhone'></div>
+                        <div class='col-sm-3 border border-dark pe-0'>
+                            <div class='container-fluid'>
+                                <div class='row justify-content-between'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchPhone'></div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('matchPhone')">
+                                            >>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class='col-sm-5 border border-dark ps-1 pe-1'>
                             <input type='text' id='phone' name='phone' maxlength='15' size='15' placeholder='Phone'/>
                         </div>
-                        <div class='col-sm-3 border border-dark' id='newPhone'></div>
+                        <div class='col-sm-3 border border-dark ps-0'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('newPhone')">
+                                            <<
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='newPhone'></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class='row'>
                         <div class='col-sm-1 border border-dark ps-1 pe-1'>Policies</div>
-                        <div class='col-sm-3 border border-dark' id='matchPolicies'></div>
+                        <div class='col-sm-3 border border-dark pe-0'>
+                            <div class='container-fluid'>
+                                <div class='row justify-content-between'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchPolicies'></div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('matchPolicies')">
+                                            >>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class='col-sm-5 border border-dark ps-1 pe-1' id="policiesDiv"></div>
-                        <div class='col-sm-3 border border-dark' id='newPhone'></div>
+                        <div class='col-sm-3 border border-dark ps-0'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('newPolicies')">
+                                            <<
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='newPolicies'></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class='row'>
                         <div class='col-sm-1 border border-dark ps-1 pe-1'>Flags</div>
-                        <div class='col-sm-3 border border-dark' id='matchFlags'></div>
+                        <div class='col-sm-3 border border-dark pe-0'>
+                            <div class='container-fluid'>
+                                <div class='row justify-content-between'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchFlags'></div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('matchFlags')">
+                                            >>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class='col-sm-5 border border-dark ps-1 pe-1'>
                             <label for="active">Active: </label>
                             <select name="active" id="active">
@@ -220,13 +400,49 @@ else
                                 <option value='N'>N</option>
                             </select>
                         </div>
-                        <div class='col-sm-3 border border-dark' id='newFlags'></div>
+                        <div class='col-sm-3 border border-dark ps-0'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('newFlags')">
+                                            <<
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='newFlags'></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class='row'>
                         <div class='col-sm-1 border border-dark ps-1 pe-1'>Manager</div>
-                        <div class='col-sm-3 border border-dark' id='matchManager'></div>
+                        <div class='col-sm-3 border border-dark pe-0'>
+                            <div class='container-fluid'>
+                                <div class='row justify-content-between'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchManager'></div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('matchManager')">
+                                            >>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class='col-sm-5 border border-dark ps-1 pe-1' id='managerDiv'></div>
-                        <div class='col-sm-3 border border-dark' id='newManager'></div>
+                        <div class='col-sm-3 border border-dark ps-0'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                onclick="unmatchedPeople.copy('newManager')">
+                                            <<
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='newManager'></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
