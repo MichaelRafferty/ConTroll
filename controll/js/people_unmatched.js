@@ -33,6 +33,7 @@ class Unmatched {
     #matchPhone = null;
     #matchPolicies = null;
     #matchFlags = null;
+    #matchManager = null;
     // candidate (new) person display fields
     #newId = null;
     #newName = null;
@@ -44,6 +45,7 @@ class Unmatched {
     #newPhone = null;
     #newPolicies = null;
     #newFlags = null;
+    #newManager = null;
     // editing fields
     #firstName = null;
     #middleName = null;
@@ -60,6 +62,7 @@ class Unmatched {
     #emailAddr = null;
     #phone = null;
     #policiesDiv = null;
+    #managerDiv = null;
     #active = null;
     #banned = null;
 
@@ -90,6 +93,7 @@ class Unmatched {
             this.#matchPhone = document.getElementById('matchPhone');
             this.#matchPolicies = document.getElementById('matchPolicies');
             this.#matchFlags = document.getElementById('matchFlags');
+            this.#matchManager = document.getElementById('matchManager');
             // candidate (new) person display fields
             this.#newId = document.getElementById('newID');
             this.#newName = document.getElementById('newName');
@@ -101,6 +105,7 @@ class Unmatched {
             this.#newPhone = document.getElementById('newPhone');
             this.#newPolicies = document.getElementById('newPolicies');
             this.#newFlags = document.getElementById('newFlags');
+            this.#newManager = document.getElementById('newManager');
             // editing fields
             this.#firstName = document.getElementById('firstName');
             this.#middleName = document.getElementById('middleName');
@@ -117,6 +122,7 @@ class Unmatched {
             this.#emailAddr = document.getElementById('emailAddr');
             this.#phone = document.getElementById('phone');
             this.#policiesDiv = document.getElementById('policiesDiv');
+            this.#managerDiv = document.getElementById('managerDiv');
             this.#active = document.getElementById('active');
             this.#banned = document.getElementById('banned');
 
@@ -180,7 +186,15 @@ class Unmatched {
                 {title: "Num Regs", field: "numRegs", width: 50, headerWordWrap: true, headerHozAlign:"right", hozAlign: "right", headerSort: false},
                 {title: "Price", field: "price", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: false},
                 {title: "Paid", field: "paid", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: false},
-
+                {field: 'first_name', visible: false,},
+                {field: 'middle_name', visible: false,},
+                {field: 'last_name', visible: false,},
+                {field: 'suffix', visible: false,},
+                {field: 'legalName', visible: false,},
+                {field: 'pronouns', visible: false,},
+                {field: 'active', visible: false,},
+                {field: 'banned', visible: false,},
+                {field: 'managerId', visible: false,},
             ],
         });
     }
@@ -277,6 +291,7 @@ class Unmatched {
                 {field: 'pronouns', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
+                {field: 'managerId', visible: false,},
             ],
         });
         this.#candidateTable = new Tabulator('#candidateTable', {
@@ -306,6 +321,7 @@ class Unmatched {
                 {field: 'pronouns', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
+                {field: 'managerId', visible: false,},
             ],
         });
 
@@ -322,13 +338,15 @@ class Unmatched {
             // set the candidate section of the edit block to the values from the table
             var cData = this.#candidateTable.getRow(id).getData();
             this.#matchId.innerHTML = id;
-            this.#matchName.innerHTML = cData.fullName;
-            this.#matchLegal.innerHTML = cData.legalName;
-            this.#matchPronouns.innerHTML = cData.pronouns;
-            this.#matchBadge.innerHTML = cData.badge_name;
-            this.#matchAddress.innerHTML = cData.fullAddr;
-            this.#matchEmail.innerHTML = cData.email_addr;
-            this.#matchPhone.innerHTML = cData.phone;
+            this.#matchName.innerHTML = 'm: ' + cData.fullName;
+            this.#matchLegal.innerHTML = 'm: ' + cData.legalName;
+            this.#matchPronouns.innerHTML = 'm ' + cData.pronouns;
+            this.#matchBadge.innerHTML = 'm: ' + cData.badge_name;
+            this.#matchAddress.innerHTML = 'm: ' + cData.fullAddr;
+            this.#matchEmail.innerHTML = 'm: ' + cData.email_addr;
+            this.#matchPhone.innerHTML = 'm: ' + cData.phone;
+            this.#matchPhone.innerHTML = 'm: ' + cData.phone;
+            this.#matchManager.innerHTML = 'm: ' + cData.manager;
         }
 
         // now populate the match candidate fields
@@ -340,7 +358,44 @@ class Unmatched {
         this.#newAddress.innerHTML = this.#newperson.fullAddr;
         this.#newEmail.innerHTML = this.#newperson.email_addr;
         this.#newPhone.innerHTML = this.#newperson.phone;
-        
+        this.#newManager.innerHTML = this.#newperson.manager;
+
+        // now populate the New/Edited Values fields
+        this.#firstName.value = this.#newperson.first_name;
+        this.#middleName.value = this.#newperson.middle_name;
+        this.#lastName.value = this.#newperson.last_name;
+        this.#suffix.value = this.#newperson.suffix;
+        this.#legalName.value = this.#newperson.legalName;
+        this.#pronouns.value = this.#newperson.pronouns;
+        this.#badgeName.value = this.#newperson.badge_name;
+        this.#address.value = this.#newperson.address;
+        this.#addr2.value = this.#newperson.addr_2;
+        this.#city.value = this.#newperson.city;
+        this.#state.value = this.#newperson.state;
+        this.#zip.value = this.#newperson.zip;
+        this.#emailAddr.value = this.#newperson.email_addr;
+        this.#phone.value = this.#newperson.phone;
+        this.#active.value = this.#newperson.active == 'N' ? 'N' : 'Y';  // default to Y
+        this.#banned.value = this.#newperson.banned == 'Y' ? 'Y' : 'N';  // default to N
+        var manager = this.#newperson.manager == undefined ? '<i>Unmanged</i>' : this.#newperson.manager;
+
+        // now build the manager div
+        var html = "Manager: <span id='manager' name='manager'>" + manager + "<br/>\n" +
+            "<select name='managerSelect' id='managerSelect'>\n";
+        if (type == 'n') {
+            html += "<option value='ACC' selected>New Person - No Change</option>\n" +
+                "<option value='REM'>New Person - Remove Manager</option>\n";
+        } else if (this.#newperson.managerId == undefined && (cData.managerId == undefined || cData.managerId == null)) {
+            html += "<option value='ACC' selected>No Manger Assigned</option>\n";
+        } else {
+            html += "<option value='ACC'" + (this.#newperson.managerId == cData.managerId ? ' selected' : '') + ">Accept Manager Shown</option>\n" +
+                "<option value='REM'" + (this.#newperson.managerId != cData.managerId ? ' selected' : '') + ">Remove Manager</option>\n" +
+                "<option value='EMAIL'>Send Email Manage Request</option>\n";
+        }
+        html += "</select>\n";
+        this.#managerDiv.innerHTML = html;
+
+
     }
 
     clearEditBlock(sections) {
@@ -355,6 +410,7 @@ class Unmatched {
             this.#matchPhone.innerHTML = '';
             this.#matchPolicies.innerHTML = '';
             this.#matchFlags.innerHTML = '';
+            this.#matchManager.innerHTML = '';
         }
     }
 

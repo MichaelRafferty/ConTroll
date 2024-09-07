@@ -47,7 +47,7 @@ CASE
 	WHEN mgrP.id IS NOT NULL THEN 'p'
     WHEN mgrN.id IS NOT NULL THEN 'n'
     ELSE null
-END AS managerType
+END AS managerType, IFNULL(n.managedBy, n.managedByNew) AS managerId
 FROM newperson n
 LEFT OUTER JOIN mby ON mby.id = n.id
 LEFT OUTER JOIN newperson mgrN ON n.managedByNew = mgrN.id

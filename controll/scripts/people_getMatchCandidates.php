@@ -41,7 +41,7 @@ SELECT n.*, r.regs,
         '  *', ' ')) AS fullAddr,
     TRIM(REGEXP_REPLACE(
         CONCAT(IFNULL(m.first_name, ''),' ', IFNULL(m.middle_name, ''), ' ', IFNULL(m.last_name, ''), ' ',  IFNULL(m.suffix, '')),
-        '  *', ' ')) AS manager
+        '  *', ' ')) AS manager, IFNULL(n.managedBy, n.managedByNew) AS managerId
 FROM newperson n
 LEFT OUTER JOIN newperson mn ON n.managedByNew = mn.id
 LEFT OUTER JOIN perinfo m ON n.managedBy = m.id
@@ -140,7 +140,7 @@ WITH lNew AS (
 	LEFT OUTER JOIN memLabel m ON (r.memId = m.id)
     GROUP BY p.id
 )
-SELECT DISTINCT p.*, r.regs, 
+SELECT DISTINCT p.*, r.regs,
     TRIM(REGEXP_REPLACE(
         CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  IFNULL(p.suffix, '')),
         '  *', ' ')) AS fullName,
@@ -150,7 +150,7 @@ SELECT DISTINCT p.*, r.regs,
         '  *', ' ')) AS fullAddr,
     TRIM(REGEXP_REPLACE(
         CONCAT(IFNULL(m.first_name, ''),' ', IFNULL(m.middle_name, ''), ' ', IFNULL(m.last_name, ''), ' ',  IFNULL(m.suffix, '')),
-        '  *', ' ')) AS manager
+        '  *', ' ')) AS manager, m.id AS managerId
 FROM perinfo p
 JOIN pids ON p.id = pids.id
 LEFT OUTER JOIN regs r ON r.id = p.id

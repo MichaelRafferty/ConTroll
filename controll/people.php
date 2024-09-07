@@ -192,12 +192,18 @@ else
                                 <option value="N">N</option>
                             </select>
                             <label for='banned'>Banned: </label>
-                            <select name='banned' id='active'>
+                            <select name='banned' id='banned'>
                                 <option value='Y'>Y</option>
                                 <option value='N'>N</option>
                             </select>
                         </div>
                         <div class='col-sm-3 border border-dark' id='newFlags'></div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-1 border border-dark ps-1 pe-1'>Manager</div>
+                        <div class='col-sm-3 border border-dark' id='matchManager'></div>
+                        <div class='col-sm-5 border border-dark ps-1 pe-1' id='managerDiv'></div>
+                        <div class='col-sm-3 border border-dark' id='newManager'></div>
                     </div>
                 </div>
             </div>
