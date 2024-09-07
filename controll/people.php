@@ -115,7 +115,7 @@ else
                     </div>
                     <div class='row'>
                         <div class='col-sm-1 border border-dark ps-1 pe-1'>Full Name</div>
-                        <div class='col-sm-3 border border-dark'>
+                        <div class='col-sm-3 border border-dark pe-0'>
                             <div class="container-fluid">
                                 <div class="row justify-content-between">
                                     <div class="col-sm-auto ms-0 me-0 ps-0 pe-0" id="matchName"></div>
@@ -133,7 +133,7 @@ else
                             <input type='text' id='lastName' name='lastName' maxlength='32' size='23' placeholder='Last Name'/>
                             <input type='text' id='suffix' name='suffix' maxlength='4' size='5' placeholder='Sfx'/>
                         </div>
-                        <div class='col-sm-3 border border-dark'>
+                        <div class='col-sm-3 border border-dark ps-0'>
                             <div class='container-fluid'>
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>

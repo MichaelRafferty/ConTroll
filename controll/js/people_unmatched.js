@@ -339,15 +339,15 @@ class Unmatched {
             // set the candidate section of the edit block to the values from the table
             this.#matchPerson = this.#candidateTable.getRow(id).getData();
             this.#matchId.innerHTML = id;
-            this.#matchName.innerHTML = 'm: ' + this.#matchPerson.fullName;
-            this.#matchLegal.innerHTML = 'm: ' + this.#matchPerson.legalName;
-            this.#matchPronouns.innerHTML = 'm ' + this.#matchPerson.pronouns;
-            this.#matchBadge.innerHTML = 'm: ' + this.#matchPerson.badge_name;
-            this.#matchAddress.innerHTML = 'm: ' + this.#matchPerson.fullAddr;
-            this.#matchEmail.innerHTML = 'm: ' + this.#matchPerson.email_addr;
-            this.#matchPhone.innerHTML = 'm: ' + this.#matchPerson.phone;
-            this.#matchPhone.innerHTML = 'm: ' + this.#matchPerson.phone;
-            this.#matchManager.innerHTML = 'm: ' + this.#matchPerson.manager;
+            this.#matchName.innerHTML = this.#matchPerson.fullName;
+            this.#matchLegal.innerHTML = this.#matchPerson.legalName;
+            this.#matchPronouns.innerHTML = this.#matchPerson.pronouns;
+            this.#matchBadge.innerHTML = this.#matchPerson.badge_name;
+            this.#matchAddress.innerHTML = this.#matchPerson.fullAddr;
+            this.#matchEmail.innerHTML = this.#matchPerson.email_addr;
+            this.#matchPhone.innerHTML = this.#matchPerson.phone;
+            this.#matchPhone.innerHTML = this.#matchPerson.phone;
+            this.#matchManager.innerHTML = this.#matchPerson.manager;
         }
 
         // now populate the match candidate fields
@@ -481,7 +481,71 @@ class Unmatched {
                 this.#lastName.value = this.#newperson.last_name;
                 this.#suffix.value = this.#newperson.suffix;
                 break;
-                
+
+            case 'matchLegal':
+                this.#legalName.value = this.#matchPerson.legalName;
+                break;
+
+            case 'newLegal':
+                this.#legalName.value = this.#newperson.legalName;
+                break;
+
+            case 'matchPronouns':
+                this.#pronouns.value = this.#matchPerson.pronouns;
+                break;
+
+            case 'newPronouns':
+                this.#pronouns.value = this.#newperson.pronouns;
+                break;
+
+            case 'matchBadge':
+                this.#badgeName.value = this.#matchPerson.badge_name;
+                break;
+
+            case 'newBadge':
+                this.#pronouns.value = this.#newperson.badge_name;
+                break;
+
+            case 'matchAddr':
+                this.#address.value = this.#matchPerson.address;
+                this.#addr2.value = this.#matchPerson.addr2;
+                this.#city.value = this.#matchPerson.city;
+                this.#state.value = this.#matchPerson.state;
+                this.#zip.value = this.#matchPerson.zip;
+                break;
+
+            case 'newAddr':
+                this.#address.value = this.#newperson.address;
+                this.#addr2.value = this.#newperson.addr2;
+                this.#city.value = this.#newperson.city;
+                this.#state.value = this.#newperson.state;
+                this.#zip.value = this.#newperson.zip;
+                break;
+
+            case 'matchEmail':
+                this.#emailAddr.value = this.#matchPerson.email_addr;
+                break;
+
+            case 'newEmail':
+                this.#emailAddr.value = this.#newperson.email_addr;
+                break;
+
+            case 'matchPhome':
+                this.#phone.value = this.#matchPerson.phone;
+                break;
+
+            case 'newPhone':
+                this.#phone.value = this.#newperson.phone;
+                break;
+
+            case 'newPolicies':
+            case 'matchPolicies':
+            case 'newFlags':
+            case 'matchFlags':
+            case 'newManager':
+            case 'matchManager':
+                show_message("Cannot copy " + source + " yet", 'warn', 'result_message_candidate');
+
         }
     }
     // on close of the pane, clean up the items
