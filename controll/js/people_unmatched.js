@@ -442,7 +442,7 @@ class Unmatched {
     }
 
     drawManager(type, manager, managerId, nmanagerId, pmanagerId) {
-        var manager = (managerId == undefined || managerId == null) ? '<i>Unmanged</i>' : (manager + ' (' + managerId + ')');
+        var manager = (managerId == undefined || managerId == null) ? '<i>Not Manged</i>' : (manager + ' (' + managerId + ')');
 
         // now build the manager div
         var html = "Manager: <span id='manager' name='manager'>" + manager + "<br/>\n" +
