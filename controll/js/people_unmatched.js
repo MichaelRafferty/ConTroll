@@ -347,12 +347,15 @@ class Unmatched {
     selectPerson(type, id) {
         var html = '';
         var policy = '';
+        var disableUpdateExisting = true;
         // they clicked select, if it's a new person, clear the matched person side of the page
         if (type == 'n') {
             this.clearEditBlock('c');
             this.#editMatchTitle.innerHTML = this.#newperson.fullName;
+            this.#matchPerson = null;
         } else {
             // set the candidate section of the edit block to the values from the table
+            disableUpdateExisting = false;
             this.#matchPerson = this.#candidateTable.getRow(id).getData();
             this.#editMatchTitle.innerHTML = this.#newperson.fullName + ' and ' + this.#matchPerson.fullName;
             this.#matchId.innerHTML = id;
@@ -419,8 +422,7 @@ class Unmatched {
             document.getElementById('p_' + policy).checked = this.#newpersonPolicies[policy] == 'Y';
         }
                // now build the manager div
-        this.#managerDiv.innerHTML = this.drawManager(type, this.#newperson.manager, this.#newperson.managerId,
-            this.#newperson.managerId, this.#matchPerson.managerId )
+        this.#managerDiv.innerHTML = this.drawManager(type, this.#newperson.manager, this.#newperson.managerId);
 
         // now set the colors of what's different
         var diffcolor = 'yellow';
@@ -437,14 +439,29 @@ class Unmatched {
             this.#matchManager.style.backgroundColor = this.#newperson.manager != this.#matchPerson.manager ? diffcolor : '';
         }
 
-        this.#updateExisting.disabled = false;
+        this.#updateExisting.disabled = disableUpdateExisting;
         this.#createNew.disabled = false;
         $('#editMatch').show();
     }
 
-    drawManager(type, manager, managerId, nmanagerId, pmanagerId) {
+    drawManager(type, manager, managerId) {
         var manager = (managerId == undefined || managerId == null) ? '<i>Not Manged</i>' : (manager + ' (' + managerId + ')');
 
+        var nManagerId = null;
+        var pManagerId = null;
+        if (this.#newperson) {
+            if (this.#newperson.managerId) {
+                if (this.#newperson.managerId != undefined && this.#newperson.managerId != null && this.#newperson.managerId != '')
+                    nManagerId = this.#newperson.managerId;
+            }
+        }
+
+        if (this.#matchPerson) {
+            if (this.#matchPerson.managerId) {
+                if (this.#matchPerson.managerId != undefined && this.#matchPerson.managerId != null && this.#matchPerson.managerId != '')
+                    pManagerId = this.#matchPerson.managerId;
+            }
+        }
         // now build the manager div
         var html = "Manager: <span id='manager' name='manager'>" + manager + "<br/>\n" +
             "<select name='managerSelect' id='managerSelect'>\n";
@@ -452,11 +469,11 @@ class Unmatched {
         if (type == 'n') {
             html += "<option value='ACC' selected>New Person - No Change</option>\n" +
                 "<option value='REM'>New Person - Remove Manager</option>\n";
-        } else if ((nmanagerId == undefined || nmanagerId == null) && (pmanagerId == undefined || pmanagerId == null)) {
+        } else if (nManagerId == null && pManagerId == null) {
             html += "<option value='ACC' selected>No Manger Assigned</option>\n";
         } else {
-            html += "<option value='ACC'" + (nmanagerId == pmanagerId ? ' selected' : '') + ">Accept Manager Shown</option>\n" +
-                "<option value='REM'" + (nmanagerId != pmanagerId ? ' selected' : '') + ">Remove Manager</option>\n" +
+            html += "<option value='ACC'" + (nManagerId == pManagerId ? ' selected' : '') + ">Accept Manager Shown</option>\n" +
+                "<option value='REM'" + (nManagerId != pManagerId ? ' selected' : '') + ">Remove Manager</option>\n" +
                 "<option value='EMAIL'>Send Email Manage Request</option>\n";
         }
         html += "</select>\n";
@@ -603,13 +620,11 @@ class Unmatched {
                 break;
 
             case 'newManager':
-                this.#managerDiv.innerHTML = this.drawManager('n', this.#newperson.manager, this.#newperson.managerId,
-                    this.#newperson.managerId, this.#matchPerson.managerId);
+                this.#managerDiv.innerHTML = this.drawManager('n', this.#newperson.manager, this.#newperson.managerId);
                 break;
 
             case 'matchManager':
-                this.#managerDiv.innerHTML = this.drawManager('p', this.#matchPerson.manager, this.#matchPerson.managerId,
-                    this.#newperson.managerId, this.#matchPerson.managerId);
+                this.#managerDiv.innerHTML = this.drawManager('p', this.#matchPerson.manager, this.#matchPerson.managerId);
                 break;
 
             case 'newFlags':
