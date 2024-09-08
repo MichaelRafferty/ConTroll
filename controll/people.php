@@ -268,6 +268,19 @@ $config_vars['conid'] = $conid;
                             <input type='text' id='city' name='city' maxlength='32' size='32' placeholder='City'/>
                             <input type='text' id='state' name='state' maxlength='16' size='16' placeholder='State'/>
                             <input type='text' id='zip' name='zip' maxlength='10' size='10' placeholder='Postal Code'/>
+
+                            <label for='country' class='form-label-sm'>
+                                <span class='text-dark' style='font-size: 10pt;'>Country</span>
+                            </label><br/>
+                            <select name='country' id='country'>
+                                <?php
+                                    $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
+                                    while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {
+                                        echo '<option value="' . escape_quotes($data[1]) . '">' . $data[0] . '</option>';
+                                    }
+                                    fclose($fh);
+                                ?>
+                            </select>
                         </div>
                         <div class='col-sm-3 border border-dark ps-0'>
                             <div class='container-fluid'>

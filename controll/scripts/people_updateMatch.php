@@ -79,15 +79,15 @@ switch ($_POST['managerAction']) {
     case 'ACC':
         $managedBy = $_POST['managerId'];
         $values[] = $managedBy;
-        $values[] = 'Assigned by People Match';
+        $values[] = 'Assigned PM';
         break;
     case 'REM':
         $values[] = null;
-        $values[] = 'Cleared by People Match';
+        $values[] = 'Cleared PM';
         break;
     case 'EMAIL':
         $values[] = null;
-        $values[] = 'Associate Request by People Match';
+        $values[] = 'Assoc Req PM';
 }
 // change notes
     $values[] = "People Match by $updatedBy";

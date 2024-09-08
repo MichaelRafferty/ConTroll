@@ -65,6 +65,7 @@ class Unmatched {
     #city = null;
     #state = null;
     #zip = null;
+    #country = null;
     #emailAddr = null;
     #phone = null;
     #policiesDiv = null;
@@ -128,6 +129,7 @@ class Unmatched {
             this.#city = document.getElementById('city');
             this.#state = document.getElementById('state');
             this.#zip = document.getElementById('zip');
+            this.#country = document.getElementById('country');
             this.#emailAddr = document.getElementById('emailAddr');
             this.#phone = document.getElementById('phone');
             this.#policiesDiv = document.getElementById('policiesDiv');
@@ -151,7 +153,7 @@ class Unmatched {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
-                _this.draw(data);
+                _this.draw(data, msg);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -161,7 +163,7 @@ class Unmatched {
     }
 
     // draw the policy edit screen
-    draw(data) {
+    draw(data, msg= null) {
         var _this = this;
 
         if (this.#unmatchedTable != null) {
@@ -418,6 +420,7 @@ class Unmatched {
         this.#city.value = this.#newperson.city;
         this.#state.value = this.#newperson.state;
         this.#zip.value = this.#newperson.zip;
+        this.#country.value = this.#newperson.country;
         this.#emailAddr.value = this.#newperson.email_addr;
         this.#phone.value = this.#newperson.phone;
         this.#active.value = this.#newperson.active == 'N' ? 'N' : 'Y';  // default to Y
@@ -467,7 +470,7 @@ class Unmatched {
             city: this.#city.value,
             state: this.#state.value,
             zip: this.#zip.value,
-            country: this.#newperson.country,
+            country: this.#country.value,
             emailAddr: this.#emailAddr.value,
             phone: this.#phone.value,
             active: this.#active.value,
@@ -511,7 +514,7 @@ class Unmatched {
         }
 
         this.#matchCandidatesModal.hide();
-        clearEditBlock('a');
+        this.clearEditBlock('a');
         open(data['success']);
     }
 
@@ -653,6 +656,7 @@ class Unmatched {
                 this.#city.value = this.#matchPerson.city;
                 this.#state.value = this.#matchPerson.state;
                 this.#zip.value = this.#matchPerson.zip;
+                this.#country.value = this.#matchPerson.country;
                 break;
 
             case 'newAddress':
@@ -661,6 +665,7 @@ class Unmatched {
                 this.#city.value = this.#newperson.city;
                 this.#state.value = this.#newperson.state;
                 this.#zip.value = this.#newperson.zip;
+                this.#country.value = this.#newperson.country;
                 break;
 
             case 'matchEmail':
