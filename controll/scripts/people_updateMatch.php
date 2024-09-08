@@ -55,24 +55,23 @@ $typestr = 'sssssssssssssssssissi';
 
 // built insert/update array
 $values = [
-    $_POST['last_name'],
-    $_POST['first_name'],
-    $_POST['middle_name'],
-    $_POST['suffix'],
-    $_POST['email_addr'],
-    $_POST['phone'],
-    $_POST['badge_name'],
-    $_POST['legalName'],
-    $_POST['pronouns'],
-    $_POST['address'],
-    $_POST['addr_2'],
-    $_POST['city'],
-    $_POST['state'],
-    $_POST['zip'],
-    $_POST['country'],
-    $_POST['banned'],
-    $_POST['active']
-
+    $_POST['lastName'] == null ? '' : $_POST['lastName'],
+    $_POST['firstName'] == null ? '' : $_POST['firstName'],
+    $_POST['middleName'] == null ? '' : $_POST['middleName'],
+    $_POST['suffix'] == null ? '' : $_POST['suffix'],
+    $_POST['emailAddr'] == null ? '' : $_POST['emailAddr'],
+    $_POST['phone'] == null ? '' : $_POST['phone'],
+    $_POST['badgeName'] == null ? '' : $_POST['badgeame'],
+    $_POST['legalName'] == null ? '' : $_POST['legalName'],
+    $_POST['pronouns'] == null ? '' : $_POST['pronouns'],
+    $_POST['address'] == null ? '' : $_POST['address'],
+    $_POST['addr2'] == null ? '' : $_POST['addr2'],
+    $_POST['city'] == null ? '' : $_POST['city'],
+    $_POST['state'] == null ? '' : $_POST['state'],
+    $_POST['zip'] == null ? '' : $_POST['zip'],
+    $_POST['country'] == null ? '' : $_POST['country'],
+    $_POST['banned'] == null ? '' : $_POST['banned'],
+    $_POST['active'] == null ? '' : $_POST['active']
 ];
 $managedBy = null;
 // add mnager and reason
