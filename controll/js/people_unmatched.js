@@ -139,7 +139,7 @@ class Unmatched {
     };
 
     // called on open of the policy window
-    open() {
+    open(msg = null) {
         var _this = this;
         var script = "scripts/people_getUnmatched.php";
         var postdata = {
@@ -206,6 +206,9 @@ class Unmatched {
                 {field: 'managerId', visible: false,},
             ],
         });
+
+        if (msg)
+            show_message(msg, 'success');
     }
 
     // table related functions
@@ -259,6 +262,7 @@ class Unmatched {
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error', 'result_message_candidate');
                 return false;
             }
         });
@@ -444,6 +448,73 @@ class Unmatched {
         $('#editMatch').show();
     }
 
+    // update the database with the new match
+    saveMatch(type) {
+        // get all of the edited values, the existing id and the new id
+        var postdata = {
+            type: type,
+            newperid: this.#newperson.id,
+            perid: (type == 'e' && this.#matchPerson) ? this.#matchPerson.id : null,
+            firstName: this.#firstName.value,
+            middleName: this.#middleName.value,
+            lastName: this.#lastName.value,
+            suffix: this.#suffix.value,
+            legalName: this.#legalName.value,
+            pronouns: this.#pronouns.value,
+            badgeName: this.#badgeName.value,
+            address: this.#address.value,
+            addr2: this.#addr2.value,
+            city: this.#city.value,
+            state: this.#state.value,
+            zip: this.#zip.value,
+            emaiLAddr: this.#emailAddr.value,
+            phone: this.#phone.value,
+            active: this.#active.value,
+            banned: this.#banned.value,
+            managerAction: document.getElementById('managerSelect').value,
+            managerId: document.getElementById('managerId').value,
+        };
+        // now add the policies to the list
+        for (var policy in this.#newpersonPolicies) {
+            postdata['p_' + policy] = document.getElementById('p_' + policy).checked ? 'Y' : 'N';
+        }
+
+        var script = 'scripts/people_updateMatch.php'
+        clear_message('result_message_candidate');
+        clear_message();
+        var _this = this;
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postdata,
+            success: function (data, textStatus, jhXHR) {
+                _this.updateSuccess(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error', 'result_message_candidate');
+                return false;
+            }
+        });
+    }
+
+    // successful update
+    updateSuccess(data) {
+        if (data['error']) {
+            show_message(data['error'], 'error', 'result_message_candidate');
+            return;
+        }
+        if (data['warn']) {
+            show_message(data['warn'], 'warn', 'result_message_candidate');
+            return;
+        }
+
+        this.#matchCandidatesModal.hide();
+        clearEditBlock('a');
+        open(data['success']);
+    }
+
+    // draw the manager central editblock from the match and new person
     drawManager(type, manager, managerId) {
         var manager = (managerId == undefined || managerId == null) ? '<i>Not Manged</i>' : (manager + ' (' + managerId + ')');
 
@@ -477,6 +548,7 @@ class Unmatched {
                 "<option value='EMAIL'>Send Email Manage Request</option>\n";
         }
         html += "</select>\n";
+        html += "<input type='hidden' name='managerId' id='managerId' value='" + managerId + "'/>\n";
         return html;
     }
 

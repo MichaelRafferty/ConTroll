@@ -456,9 +456,9 @@ $config_vars['conid'] = $conid;
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='updateExisting' onClick='unmatchedPeople.matchExisting()' disabled>Update Existing
+                <button class='btn btn-sm btn-primary' id='updateExisting' onClick='unmatchedPeople.saveMatch("e")' disabled>Update Existing
                     Person</button>
-                <button class='btn btn-sm btn-primary' id='createNew' onClick='unmatchedPeople.createNew()' disabled>Create New Person</button>
+                <button class='btn btn-sm btn-primary' id='createNew' onClick='unmatchedPeople.saveMatch("n")' disabled>Create New Person</button>
             </div>
             <div id='result_message_candidate' class='mt-4 p-2'></div>
         </div>
