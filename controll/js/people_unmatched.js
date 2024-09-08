@@ -363,7 +363,7 @@ class Unmatched {
             this.#matchAddress.innerHTML = this.#matchPerson.fullAddr;
             this.#matchEmail.innerHTML = this.#matchPerson.email_addr;
             this.#matchPhone.innerHTML = this.#matchPerson.phone;
-            this.#matchPhone.innerHTML = this.#matchPerson.phone;
+            this.#matchFlags.innerHTML = 'Active: ' + this.#matchPerson.active + ', Banned: ' + this.#matchPerson.banned;
             if (this.#matchPerson.managerId) {
                 this.#matchManager.innerHTML = this.#matchPerson.manager + ' (' + this.#matchPerson.managerId + ')';
             } else {
@@ -386,6 +386,7 @@ class Unmatched {
         this.#newAddress.innerHTML = this.#newperson.fullAddr;
         this.#newEmail.innerHTML = this.#newperson.email_addr;
         this.#newPhone.innerHTML = this.#newperson.phone;
+        this.#newFlags.innerHTML = 'Active: ' + this.#newperson.active + ', Banned: ' + this.#newperson.banned;
         if (this.#newperson.managerId) {
             this.#newManager.innerHTML = this.#newperson.manager + ' (' + this.#newperson.managerId + ')';
         } else {
@@ -432,7 +433,7 @@ class Unmatched {
             this.#matchEmail.style.backgroundColor = this.#newperson.email_addr != this.#matchPerson.email_addr ? diffcolor : '';
             this.#matchPhone.style.backgroundColor = this.#newperson.phone != this.#matchPerson.phone ? diffcolor : '';
             this.#matchPolicies.style.backgroundColor = this.#newperson.policies != this.#matchPerson.policies ? diffcolor : '';
-            this.#matchFlags.style.backgroundColor = this.#newperson.flags != this.#matchPerson.flgs ? diffcolor : '';
+            this.#matchFlags.style.backgroundColor = this.#newperson.flags != this.#matchPerson.flags ? diffcolor : '';
             this.#matchManager.style.backgroundColor = this.#newperson.manager != this.#matchPerson.manager ? diffcolor : '';
         }
 
@@ -612,8 +613,13 @@ class Unmatched {
                 break;
 
             case 'newFlags':
+                this.#active.value = this.#newperson.active;
+                this.#banned.value = this.#newperson.banned;
+                break;
+
             case 'matchFlags':
-                show_message("Cannot copy " + source + " yet", 'warn', 'result_message_candidate');
+                this.#active.value = this.#matchPerson.active;
+                this.#banned.value = this.#matchPerson.banned;
                 break;
 
             default:

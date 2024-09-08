@@ -33,7 +33,7 @@ WITH regs AS (
 	LEFT OUTER JOIN memLabel m ON (r.memId = m.id)
 	WHERE r.newperid = ? AND r.conid = ?
 )
-SELECT n.*, r.regs, 
+SELECT n.*, 'Y' as active, 'N' AS banned, r.regs, 
     TRIM(REGEXP_REPLACE(
         CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.last_name, ''), ' ',  IFNULL(n.suffix, '')),
         '  *', ' ')) AS fullName,
