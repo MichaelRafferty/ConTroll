@@ -367,7 +367,7 @@ class Unmatched {
             if (this.#matchPerson.managerId) {
                 this.#matchManager.innerHTML = this.#matchPerson.manager + ' (' + this.#matchPerson.managerId + ')';
             } else {
-                this.#matchManager.innerHTML = '';
+                this.#matchManager.innerHTML = '<i>Not Managed</i>';
             }
             html = '';
             var mpol = this.#matchpeoplePolicies[id];
@@ -389,7 +389,7 @@ class Unmatched {
         if (this.#newperson.managerId) {
             this.#newManager.innerHTML = this.#newperson.manager + ' (' + this.#newperson.managerId + ')';
         } else {
-            this.#newManager.innerHTML = '';
+            this.#newManager.innerHTML = '<i>Not Managed</i>';
         }
         html = '';
         for (policy in this.#newpersonPolicies) {
