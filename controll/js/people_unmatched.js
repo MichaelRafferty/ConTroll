@@ -364,7 +364,12 @@ class Unmatched {
             this.#matchEmail.innerHTML = this.#matchPerson.email_addr;
             this.#matchPhone.innerHTML = this.#matchPerson.phone;
             this.#matchPhone.innerHTML = this.#matchPerson.phone;
-            this.#matchManager.innerHTML = this.#matchPerson.manager;html = '';
+            if (this.#matchPerson.managerId) {
+                this.#matchManager.innerHTML = this.#matchPerson.manager + ' (' + this.#matchPerson.managerId + ')';
+            } else {
+                this.#matchManager.innerHTML = '';
+            }
+            html = '';
             var mpol = this.#matchpeoplePolicies[id];
             for (policy in mpol) {
                 html += policy + ': ' + mpol[policy] + "<br/>";
@@ -381,7 +386,11 @@ class Unmatched {
         this.#newAddress.innerHTML = this.#newperson.fullAddr;
         this.#newEmail.innerHTML = this.#newperson.email_addr;
         this.#newPhone.innerHTML = this.#newperson.phone;
-        this.#newManager.innerHTML = this.#newperson.manager;
+        if (this.#newperson.managerId) {
+            this.#newManager.innerHTML = this.#newperson.manager + ' (' + this.#newperson.managerId + ')';
+        } else {
+            this.#newManager.innerHTML = '';
+        }
         html = '';
         for (policy in this.#newpersonPolicies) {
             html += policy + ': ' + this.#newpersonPolicies[policy] + "<br/>";
@@ -408,23 +417,9 @@ class Unmatched {
         for (policy in this.#newpersonPolicies) {
             document.getElementById('p_' + policy).checked = this.#newpersonPolicies[policy] == 'Y';
         }
-        var manager = this.#newperson.manager == undefined ? '<i>Unmanged</i>' : this.#newperson.manager;
-
-        // now build the manager div
-        var html = "Manager: <span id='manager' name='manager'>" + manager + "<br/>\n" +
-            "<select name='managerSelect' id='managerSelect'>\n";
-        if (type == 'n') {
-            html += "<option value='ACC' selected>New Person - No Change</option>\n" +
-                "<option value='REM'>New Person - Remove Manager</option>\n";
-        } else if (this.#newperson.managerId == undefined && (this.#matchPerson.managerId == undefined || this.#matchPerson.managerId == null)) {
-            html += "<option value='ACC' selected>No Manger Assigned</option>\n";
-        } else {
-            html += "<option value='ACC'" + (this.#newperson.managerId == this.#matchPerson.managerId ? ' selected' : '') + ">Accept Manager Shown</option>\n" +
-                "<option value='REM'" + (this.#newperson.managerId != this.#matchPerson.managerId ? ' selected' : '') + ">Remove Manager</option>\n" +
-                "<option value='EMAIL'>Send Email Manage Request</option>\n";
-        }
-        html += "</select>\n";
-        this.#managerDiv.innerHTML = html;
+               // now build the manager div
+        this.#managerDiv.innerHTML = this.drawManager(type, this.#newperson.manager, this.#newperson.managerId,
+            this.#newperson.managerId, this.#matchPerson.managerId )
 
         // now set the colors of what's different
         var diffcolor = 'yellow';
@@ -444,6 +439,27 @@ class Unmatched {
         this.#updateExisting.disabled = false;
         this.#createNew.disabled = false;
         $('#editMatch').show();
+    }
+
+    drawManager(type, manager, managerId, nmanagerId, pmanagerId) {
+        var manager = (managerId == undefined || managerId == null) ? '<i>Unmanged</i>' : (manager + ' (' + managerId + ')');
+
+        // now build the manager div
+        var html = "Manager: <span id='manager' name='manager'>" + manager + "<br/>\n" +
+            "<select name='managerSelect' id='managerSelect'>\n";
+
+        if (type == 'n') {
+            html += "<option value='ACC' selected>New Person - No Change</option>\n" +
+                "<option value='REM'>New Person - Remove Manager</option>\n";
+        } else if ((nmanagerId == undefined || nmanagerId == null) && (pmanagerId == undefined || pmanagerId == null)) {
+            html += "<option value='ACC' selected>No Manger Assigned</option>\n";
+        } else {
+            html += "<option value='ACC'" + (nmanagerId == pmanagerId ? ' selected' : '') + ">Accept Manager Shown</option>\n" +
+                "<option value='REM'" + (nmanagerId != pmanagerId ? ' selected' : '') + ">Remove Manager</option>\n" +
+                "<option value='EMAIL'>Send Email Manage Request</option>\n";
+        }
+        html += "</select>\n";
+        return html;
     }
 
     clearEditBlock(sections) {
@@ -585,10 +601,18 @@ class Unmatched {
                 }
                 break;
 
+            case 'newManager':
+                this.#managerDiv.innerHTML = this.drawManager('n', this.#newperson.manager, this.#newperson.managerId,
+                    this.#newperson.managerId, this.#matchPerson.managerId);
+                break;
+
+            case 'matchManager':
+                this.#managerDiv.innerHTML = this.drawManager('p', this.#matchPerson.manager, this.#matchPerson.managerId,
+                    this.#newperson.managerId, this.#matchPerson.managerId);
+                break;
+
             case 'newFlags':
             case 'matchFlags':
-            case 'newManager':
-            case 'matchManager':
                 show_message("Cannot copy " + source + " yet", 'warn', 'result_message_candidate');
                 break;
 
