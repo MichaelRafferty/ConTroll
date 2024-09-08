@@ -20,6 +20,11 @@ class Unmatched {
     #newpersonTable = null;
     #candidatesName = null;
     #candidateTable = null;
+    #editMatchTitle = null;
+    #updateExisting = null;
+    #createNew = null;
+    #newpersonPolicies = null;
+    #matchpeoplePolicies = null;
     
     // edit matches
     #matchPerson = null;
@@ -83,6 +88,9 @@ class Unmatched {
             this.#matchCandidatesModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#candidatesTitleName = document.getElementById('candidatesTitleName');
             this.#candidatesName = document.getElementById('candidatesName');
+            this.#editMatchTitle = document.getElementById('editMatchTitle');
+            this.#updateExisting = document.getElementById('updateExisting');
+            this.#createNew = document.getElementById('createNew');
             // matched person display fields
             this.#matchId = document.getElementById('matchID');
             this.#matchName = document.getElementById('matchName');
@@ -264,7 +272,9 @@ class Unmatched {
             return;
         }
         this.#candidates = data['matches'];
+        this.#matchpeoplePolicies = data['matchPolicies'];
         this.#newperson = data['newperson']
+        this.#newpersonPolicies = data['npolicies'];
         var newpeople = [];
         newpeople.push(this.#newperson);
         this.#candidatesTitleName.innerHTML = this.#newperson.fullName;
@@ -326,18 +336,25 @@ class Unmatched {
             ],
         });
 
+        $('#editMatch').hide();
+        this.#updateExisting.disabled = true;
+        this.#createNew.disabled = true;
         this.#matchCandidatesModal.show();
         show_message(data['success'], 'success', 'result_message_candidate');
     }
 
     // selectPerson - move a person to the edit area and prepare to edit/save it
     selectPerson(type, id) {
+        var html = '';
+        var policy = '';
         // they clicked select, if it's a new person, clear the matched person side of the page
         if (type == 'n') {
             this.clearEditBlock('c');
+            this.#editMatchTitle.innerHTML = this.#newperson.fullName;
         } else {
             // set the candidate section of the edit block to the values from the table
             this.#matchPerson = this.#candidateTable.getRow(id).getData();
+            this.#editMatchTitle.innerHTML = this.#newperson.fullName + ' and ' + this.#matchPerson.fullName;
             this.#matchId.innerHTML = id;
             this.#matchName.innerHTML = this.#matchPerson.fullName;
             this.#matchLegal.innerHTML = this.#matchPerson.legalName;
@@ -347,7 +364,12 @@ class Unmatched {
             this.#matchEmail.innerHTML = this.#matchPerson.email_addr;
             this.#matchPhone.innerHTML = this.#matchPerson.phone;
             this.#matchPhone.innerHTML = this.#matchPerson.phone;
-            this.#matchManager.innerHTML = this.#matchPerson.manager;
+            this.#matchManager.innerHTML = this.#matchPerson.manager;html = '';
+            var mpol = this.#matchpeoplePolicies[id];
+            for (policy in mpol) {
+                html += policy + ': ' + mpol[policy] + "<br/>";
+            }
+            this.#matchPolicies.innerHTML = html;
         }
 
         // now populate the match candidate fields
@@ -360,6 +382,11 @@ class Unmatched {
         this.#newEmail.innerHTML = this.#newperson.email_addr;
         this.#newPhone.innerHTML = this.#newperson.phone;
         this.#newManager.innerHTML = this.#newperson.manager;
+        html = '';
+        for (policy in this.#newpersonPolicies) {
+            html += policy + ': ' + this.#newpersonPolicies[policy] + "<br/>";
+        }
+        this.#newPolicies.innerHTML = html;
 
         // now populate the New/Edited Values fields
         this.#firstName.value = this.#newperson.first_name;
@@ -378,6 +405,9 @@ class Unmatched {
         this.#phone.value = this.#newperson.phone;
         this.#active.value = this.#newperson.active == 'N' ? 'N' : 'Y';  // default to Y
         this.#banned.value = this.#newperson.banned == 'Y' ? 'Y' : 'N';  // default to N
+        for (policy in this.#newpersonPolicies) {
+            document.getElementById('p_' + policy).checked = this.#newpersonPolicies[policy] == 'Y';
+        }
         var manager = this.#newperson.manager == undefined ? '<i>Unmanged</i>' : this.#newperson.manager;
 
         // now build the manager div
@@ -411,7 +441,9 @@ class Unmatched {
             this.#matchManager.style.backgroundColor = this.#newperson.manager != this.#matchPerson.manager ? diffcolor : '';
         }
 
-
+        this.#updateExisting.disabled = false;
+        this.#createNew.disabled = false;
+        $('#editMatch').show();
     }
 
     clearEditBlock(sections) {
@@ -467,6 +499,8 @@ class Unmatched {
 
     // copy a value from the match or new to the edit section
     copy(source) {
+        var policy = ''
+
         switch (source) {
             case 'matchName':
                 this.#firstName.value = this.#matchPerson.first_name;
@@ -539,7 +573,18 @@ class Unmatched {
                 break;
 
             case 'newPolicies':
+                for (policy in this.#newpersonPolicies) {
+                    document.getElementById('p_' + policy).checked = this.#newpersonPolicies[policy] == 'Y';
+                }
+                break;
+
             case 'matchPolicies':
+                var mpol = this.#matchpeoplePolicies[this.#matchPerson.id];
+                for (policy in mpol) {
+                    document.getElementById('p_' + policy).checked = mpol[policy] == 'Y';
+                }
+                break;
+
             case 'newFlags':
             case 'matchFlags':
             case 'newManager':

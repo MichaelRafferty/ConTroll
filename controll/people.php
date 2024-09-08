@@ -15,6 +15,7 @@ global $db_ini;
 //      Add New Person
 
 require_once 'lib/base.php';
+require_once '../lib/policies.php';
 //initialize google session
 $need_login = google_init('page');
 
@@ -41,6 +42,7 @@ $con_conf = get_conf('con');
 $controll = get_conf('controll');
 $conid = $con_conf['id'];
 $debug = get_conf('debug');
+$policies = getPolicies();
 
 if (array_key_exists('controll_people', $debug))
     $debug_people=$debug['controll_people'];
@@ -48,11 +50,13 @@ else
     $debug_people = 0;
 
 // first the passed in parameters and the the modals
+$config_vars['debug'] = $debug_people;
+$config_vars['conid'] = $conid;
 ?>
-<div id='parameters' <?php if (!($debug_people & 4)) echo 'hidden'; ?>>
-    <div id="debug"><?php echo $debug_people; ?></div>
-    <div id="conid"><?php echo $conid; ?></div>
-</div>
+<script type='text/javascript'>
+    var config = <?php echo json_encode($config_vars); ?>;
+    var policies = <?php echo json_encode($policies, JSON_FORCE_OBJECT | JSON_HEX_QUOT); ?>
+</script>
 <?php 
     bs_tinymceModal();
 ?>
@@ -358,7 +362,11 @@ else
                                 </div>
                             </div>
                         </div>
-                        <div class='col-sm-5 border border-dark ps-1 pe-1' id="policiesDiv"></div>
+                        <div class='col-sm-5 border border-dark ps-1 pe-1' id="policiesDiv">
+                            <?php
+                                drawPoliciesCell($policies);
+                            ?>
+                        </div>
                         <div class='col-sm-3 border border-dark ps-0'>
                             <div class='container-fluid'>
                                 <div class='row'>

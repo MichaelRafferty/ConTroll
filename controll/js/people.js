@@ -8,20 +8,11 @@ addPerson = null;
 //  1 = console.logs
 //  2 = show hidden table fields
 //  4 = show hidden div
-debug = 0;
-conid = null;
 
 // initialization at DOM complete
 window.onload = function initpage() {
-    var id = document.getElementById("debug");
-    if (id)
-        debug = id.innerHTML;
-    id = document.getElementById("conid");
-    if (id)
-        conid = id.innerHTML;
     settab('unmatched-pane');
 }
-
 
 function settab(tabname) {
     // close all of them
@@ -36,17 +27,17 @@ function settab(tabname) {
     switch (tabname) {
         case 'unmatched-pane':
             if (unmatchedPeople == null)
-                unmatchedPeople = new Unmatched(debug);
+                unmatchedPeople = new Unmatched(config['debug']);
             unmatchedPeople.open();
             break;
         case 'findedit-pane':
             if (findPerson == null)
-                findPerson = new Find(debug);
+                findPerson = new Find(config['debug']);
             findPerson.open();
             break;
         case 'add-pane':
             if (addPerson == null)
-                addPerson = new Add(debug);
+                addPerson = new Add(config['debug']);
             addPerson.open();
             break;
     }
