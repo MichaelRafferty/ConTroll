@@ -16,6 +16,7 @@ global $db_ini;
 
 require_once 'lib/base.php';
 require_once '../lib/policies.php';
+require_once '../lib/profile.php';
 //initialize google session
 $need_login = google_init('page');
 
@@ -517,6 +518,9 @@ $config_vars['conid'] = $conid;
             <div class='row mt-2'>
                 <div class='col-sm-12' id='addH1Div'><H1 class='h3'><b>Add Person</b></H1></div>
             </div>
+<?php
+    drawEditPersonBlock($con_conf, true, null, 'people_add', false, true, '', null, 100, true);
+?>
         </div>
     </div>
     <div id='result_message' class='mt-4 p-2'></div>
