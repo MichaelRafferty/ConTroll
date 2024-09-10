@@ -24,7 +24,7 @@ EOS;
     return $policies;
 }
 
-//drawInterestList - draw the inner block for interest editing
+//drawPoliciesBlock - draw the inner block for policy editing
 function drawPoliciesBlock($policies, $tabIndexStart) {
     $tabindex = $tabIndexStart;
     foreach ($policies as $policy) {
@@ -72,6 +72,32 @@ function drawPoliciesBlock($policies, $tabIndexStart) {
         </p>
     </div>
 </div>
+<?php
+    }
+}
+
+//drawPoliciesCell - draw the simpler cell for comparing policies
+function drawPoliciesCell($policies) {
+    foreach ($policies as $policy) {
+        $name = $policy['policy'];
+        $prompt = replaceVariables($policy['prompt']);
+        $description = replaceVariables($policy['description']);
+        /* fix prompt for an optional <a tag tab index */
+        if ($policy['required'] == 'Y') {
+            $prompt = "<span class='text-danger'>&bigstar;</span>" . $prompt;
+        }
+        if ($policy['defaultValue'] == 'Y') {
+            $checked = 'checked';
+        }
+        else {
+            $checked = '';
+        }
+        ?>
+                <label>
+                    <input type='checkbox' <?php echo $checked; ?> name='p_<?php echo $name; ?>' id='p_<?php echo $name; ?>' value='Y'/>
+                    <span id="l_<?php echo $name; ?>" name="l_<?php echo $name; ?>"><?php echo $prompt; ?></span>
+                </label>
+                <br/>
 <?php
     }
 }

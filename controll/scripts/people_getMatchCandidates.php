@@ -24,6 +24,8 @@ if ((!array_key_exists('ajax_request_action', $_POST)) || $_POST['ajax_request_a
 $newperid = $_POST['newperid'];
 $con_conf = get_conf('con');
 $conid = $con_conf['id'];
+
+// first fetch the details on the new people we are matching against this person
 $nQ = <<<EOS
 WITH regs AS (
 	SELECT ? AS id, GROUP_CONCAT(DISTINCT m.label ORDER BY m.id SEPARATOR ',') AS regs
@@ -31,7 +33,7 @@ WITH regs AS (
 	LEFT OUTER JOIN memLabel m ON (r.memId = m.id)
 	WHERE r.newperid = ? AND r.conid = ?
 )
-SELECT n.*, r.regs, 
+SELECT n.*, 'Y' as active, 'N' AS banned, r.regs, 
     TRIM(REGEXP_REPLACE(
         CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.last_name, ''), ' ',  IFNULL(n.suffix, '')),
         '  *', ' ')) AS fullName,
@@ -41,12 +43,12 @@ SELECT n.*, r.regs,
         '  *', ' ')) AS fullAddr,
     TRIM(REGEXP_REPLACE(
         CONCAT(IFNULL(m.first_name, ''),' ', IFNULL(m.middle_name, ''), ' ', IFNULL(m.last_name, ''), ' ',  IFNULL(m.suffix, '')),
-        '  *', ' ')) AS manager
+        '  *', ' ')) AS manager, IFNULL(n.managedBy, n.managedByNew) AS managerId
 FROM newperson n
 LEFT OUTER JOIN newperson mn ON n.managedByNew = mn.id
 LEFT OUTER JOIN perinfo m ON n.managedBy = m.id
 LEFT OUTER JOIN regs r ON r.id = n.id
-WHERE n.id = ?
+WHERE n.id = ?;
 EOS;
 
 $nR = dbSafeQuery($nQ, 'iiii', array($newperid, $newperid, $conid, $newperid));
@@ -61,6 +63,27 @@ $nR->free();
 
 $response['newperson'] = $newperson;
 
+// now get the policies and responses from that new person
+$nQ = <<<EOS
+SELECT policy, response
+FROM memberPolicies
+WHERE conid = ? and newperid = ?;
+EOS;
+
+$nR = dbSafeQuery($nQ, 'ii', array($conid, $newperid));
+if ($nR === false) {
+    $response['error'] = 'Select newperson policies failed';
+    ajaxSuccess($response);
+}
+
+$npolicies = [];
+while ($policy = $nR->fetch_assoc()) {
+        $npolicies[$policy['policy']] = $policy['response'];
+}
+$nR->free();
+$response['npolicies'] = $npolicies;
+
+// next is the candidate matches to that newperson
 $mQ = <<<EOS
 WITH lNew AS (
     SELECT 
@@ -140,7 +163,7 @@ WITH lNew AS (
 	LEFT OUTER JOIN memLabel m ON (r.memId = m.id)
     GROUP BY p.id
 )
-SELECT DISTINCT p.*, r.regs, 
+SELECT DISTINCT p.*, r.regs,
     TRIM(REGEXP_REPLACE(
         CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  IFNULL(p.suffix, '')),
         '  *', ' ')) AS fullName,
@@ -150,11 +173,11 @@ SELECT DISTINCT p.*, r.regs,
         '  *', ' ')) AS fullAddr,
     TRIM(REGEXP_REPLACE(
         CONCAT(IFNULL(m.first_name, ''),' ', IFNULL(m.middle_name, ''), ' ', IFNULL(m.last_name, ''), ' ',  IFNULL(m.suffix, '')),
-        '  *', ' ')) AS manager
+        '  *', ' ')) AS manager, m.id AS managerId
 FROM perinfo p
 JOIN pids ON p.id = pids.id
 LEFT OUTER JOIN regs r ON r.id = p.id
-LEFT OUTER JOIN perinfo m ON p.managedBy = m.id
+LEFT OUTER JOIN perinfo m ON p.managedBy = m.id;
 EOS;
 
 $mR = dbSafeQuery($mQ, 'ii', array($newperid, $conid));
@@ -163,13 +186,37 @@ if ($mR === false) {
     ajaxSuccess($response);
 }
 
+$pids = [];
 $matches= [];
 while ($match = $mR->fetch_assoc()) {
     $matches[] = $match;
+    $pids[] = $match['id'];
 }
 $mR->free();
 
 $response['matches'] = $matches;
+
+// and their policies
+$pidInStr = implode(',', $pids);
+$mQ = <<<EOS
+SELECT perid, policy, response
+FROM memberPolicies
+WHERE conid = ? AND perid in ($pidInStr);
+EOS;
+
+$mR = dbSafeQuery($mQ, 'i', array($conid));
+if ($mR === false) {
+    $response['error'] = 'Select potential match policies failed';
+    ajaxSuccess($response);
+}
+
+$matchPolicies = [];
+while ($row = $mR->fetch_assoc()) {
+    $matchPolicies[$row['perid']][$row['policy']] = $row['response'];
+}
+$mR->free();
+$response['matchPolicies'] = $matchPolicies;
+
 $response['success'] = count($matches) . ' potential matches found';
 
 ajaxSuccess($response);

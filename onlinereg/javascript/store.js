@@ -186,7 +186,7 @@ function process(formRef) {
     }
 
     // Check USPS for standardized address
-    if (this.#uspsDiv != null && formData['country'] == 'USA' && formData['city'] != '') {
+    if (uspsDiv != null && formData['country'] == 'USA' && formData['city'] != '') {
         formDataSave = formData;
         uspsAddress = null;
         $.ajax({

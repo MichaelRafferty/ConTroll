@@ -211,7 +211,7 @@ function validateLink($match, $action, $expiration) {
     $linkid = $match['lid'];
     // check if the link has been used
     $linkQ = <<<EOS
-SELECT id, email, useCnt
+SELECT id, email, useCnt, TIMESTAMPDIFF(SECOND, useTS, NOW()) AS diff
 FROM portalTokenLinks
 WHERE id = ? AND action = ?
 ORDER BY createdTS DESC;
@@ -233,7 +233,8 @@ EOS;
         exit();
     }
 
-    if ($linkL['useCnt'] > 0) {
+    $useMax = $linkL['diff'] > 30 ? 0 : 2; // use 2 to allow for double click
+    if ($linkL['useCnt'] > $useMax) {
         echo "<div class='col-sm-auto bg-danger text-white'>The link has already been used, please request a new link</div>";
         return false;
     }

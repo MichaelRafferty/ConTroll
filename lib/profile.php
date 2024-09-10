@@ -3,7 +3,7 @@
 
 // drawEditPersonBlock - just output the block to edit the person
 function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $editEmail=false, $ageByDate = '',
-                             $membershipTypes = [], $tabIndexStart = 100) {
+                             $membershipTypes = [], $tabIndexStart = 100, $admin = false) {
     $reg = get_conf('reg');
     if ($editEmail)
         $polConf = $reg;
@@ -35,6 +35,8 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
     </h<?php echo $modal ? '1' : '3'?>>
 <?php
     }
+
+    if ($admin == false) {
 ?>
     <div class='row' style='width:100%;'>
         <div class='col-sm-12'>
@@ -43,7 +45,11 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
             <p class="text-body">Items marked with <span class="text-danger">&bigstar;</span> are required fields.</p>
         </div>
     </div>
-    <?php if ($useUSPS) echo '<div class="row"><div class="col-sm-8 p-0 m-0"><div class="container-fluid">' . PHP_EOL; ?>
+<?php
+    }
+
+    if ($useUSPS) echo '<div class="row"><div class="col-sm-8 p-0 m-0"><div class="container-fluid">' . PHP_EOL;
+?>
     <div class="row">
         <div class="col-sm-auto">
             <label for="fname" class="form-label-sm">
@@ -152,6 +158,9 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
     </div>
     <?php if ($useUSPS) echo '</div></div><div class="col-sm-4" id="uspsblock"></div></div>' . PHP_EOL; ?>
+<?php
+    if ($admin == false) {
+?>
     <div class='row'>
         <div class='col-sm-12'>
             <hr/>
@@ -166,6 +175,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
     </div>
 <?php
+    }
     if ($editEmail) {
 ?>
     <div class='row'>
@@ -182,12 +192,27 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
     </div>
     <div class='row'>
-        <div class='col-sm-6'>
+        <div class='col-sm-auto'>
             <label for='phone' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Phone</span></label><br/>
             <input class='form-control-sm' type='text' name='phone' id='phone' size='20' maxlength='15'
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
+<?php
+        if ($membershipTypes == null) {
+?>
+            <div class='col-sm-auto me-2'>
+                <label for='badgename' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Badge Name (optional)</span></label><br/>
+                <input class='form-control-sm' type='text' name='badgename' id='badgename' size='35' maxlength='32'
+                       placeholder='defaults to first and last name' tabindex="<?php echo $tabindex;
+                    $tabindex += 10; ?>"/>
+            </div>
+<?php
+        }
+?>
     </div>
+<?php
+        if ($membershipTypes != null) {
+?>
     <div class='row'>
         <div class='col-sm-12'>
             <hr/>
@@ -217,6 +242,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
     </div>
         <?php
+        }
     } else {
 ?>
     <div class="row">
@@ -251,7 +277,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
     </div>
     <?php
-    if ((!array_key_exists('showConPolicy',$polConf)) || $polConf['showConPolicy'] == 1) {
+    if ($admin == false && ((!array_key_exists('showConPolicy',$polConf)) || $polConf['showConPolicy'] == 1)) {
         ?>
         <div class='row'>
             <div class='col-sm-12'>
@@ -264,7 +290,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
         <?php
     }
-    if ((!array_key_exists('showVolunteerPolicy',$polConf)) || $polConf['showVolunteerPolicy'] == 1) {
+    if ($admin == false && ((!array_key_exists('showVolunteerPolicy',$polConf)) || $polConf['showVolunteerPolicy'] == 1)) {
         ?>
         <div class="row">
             <div class="col-sm-12">
@@ -277,9 +303,11 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
         <?php
     }
+    if ($policies != null) {
     ?>
     </form>
     <form id='editPolicies' class='form-floating' action='javascript:void(0);'>
     <?php
-    drawPoliciesBlock($policies, $tabIndexStart + 500);
+        drawPoliciesBlock($policies, $tabIndexStart + 500);
+    }
 }

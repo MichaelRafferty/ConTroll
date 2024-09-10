@@ -227,7 +227,7 @@ $htmlbody = "<p>Dear $greeting,</p>" . PHP_EOL .
     "<p>$label - Registration<br/>" . PHP_EOL .
     "<a href='mailto:$regadminemail'>$regadminemail</a></p>" . PHP_EOL . PHP_EOL;
 
-$return_arr = send_email($regadminemail, trim($email), /* cc */ null, $label . ' Membership Portal Account Managment Request', $body, $htmlbody);
+$return_arr = send_email($regadminemail, trim($email), /* cc */ null, $label . ' Membership Portal Account Management Request', $body, $htmlbody);
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];
 } else {

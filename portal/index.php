@@ -246,7 +246,7 @@ if (isset($_GET['vid'])) {
     }
     $timediff = time() - $match['ts'];
     web_error_log('login @ ' . time() . ' with ts ' . $match['ts'] . " for $email/$id via $validationType");
-    if ($timediff > (1 * 3600)) {
+    if ($timediff > (4 * 3600)) {
         draw_login($config_vars, "<div class='bg-danger text-white'>The link has expired, please request a new link</div>");
         exit();
     }
@@ -270,11 +270,10 @@ if (isset($_GET['vid'])) {
             exit();
         }
 
-        if (($linkL['useCnt'] > 0 && $id == null) || ($linkL['useCnt'] > 1 && $id != null)) {
+        if ($linkL['useCnt'] > 100) {
             draw_login($config_vars, "<div class='bg-danger text-white'>The link has already been used, please request a new link</div>");
             exit();
         }
-
 
         // mark link as used
         $updQ = <<<EOS
