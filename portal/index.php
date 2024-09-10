@@ -246,7 +246,7 @@ if (isset($_GET['vid'])) {
     }
     $timediff = time() - $match['ts'];
     web_error_log('login @ ' . time() . ' with ts ' . $match['ts'] . " for $email/$id via $validationType");
-    if ($timediff > (1 * 3600)) {
+    if ($timediff > (4 * 3600)) {
         draw_login($config_vars, "<div class='bg-danger text-white'>The link has expired, please request a new link</div>");
         exit();
     }
@@ -254,7 +254,7 @@ if (isset($_GET['vid'])) {
     if ($validationType == 'token') {
         // check if the link has been used
         $linkQ = <<<EOS
-        SELECT id, email, useCnt, TIMESTAMPDIFF(SECOND, useTS, NOW()) AS diff
+        SELECT id, email, useCnt
         FROM portalTokenLinks
         WHERE id = ? AND action = 'login'
         ORDER BY createdTS DESC;
@@ -270,18 +270,10 @@ if (isset($_GET['vid'])) {
             exit();
         }
 
-        if ($linkL['diff'] <= 30) {
-            $useNull = 3; // allow for double click in the first 30 seconds since last use
-            $useNonNull = 4;
-        } else {
-            $useNull = 0;
-            $useNonNull = 1;
-        }
-        if (($linkL['useCnt'] > $useNull && $id == null) || ($linkL['useCnt'] > $useNotNull && $id != null)) {
+        if ($linkL['useCnt'] > 100) {
             draw_login($config_vars, "<div class='bg-danger text-white'>The link has already been used, please request a new link</div>");
             exit();
         }
-
 
         // mark link as used
         $updQ = <<<EOS
