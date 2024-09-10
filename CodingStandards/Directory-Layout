@@ -1,0 +1,31 @@
+ConTroll uses the following general layout within each application (Historical differences may apply)
+
+Top Level:
+    Application directory
+        atcon:      on site registration, art show, and volunteer desk Point of Sale
+        controll:   administration and configuration of the ConTroll Registration System
+        onlinereg:  one-shot purchase of memberships
+        portal:     registration portal
+        vendor:     exhibitors portal, can support multiple web endpoints (at least artist and vendor), name is historical, considering swithing it to exhibitor
+
+    or
+
+    Global Directory
+        config:     text files for configuration of ConTroll, these are the non database table configurations
+        lib:        Global ConTroll specific PHP libraries
+        jslib:      Global Javascript libraries, mostly classes
+        csslib:     Global CSS files
+        Composer:   PHP Add-ons managed by composer.  Only the composer.json and the composer.lock files are in the git repo, vendor is in .gitignore
+
+Each application top level has:
+    css: local css files for the application
+    csslib: a symlink to the top level csslib common library
+    images: a gitignored local directory for clients to hold their images
+    js: local javascript files for the application
+    jslib: a symlink to the top level jslib common library
+    lib: local php scripts used by the application main programs and also ConTroll distributed images for the application
+    script: AJAX php scripts used by the application javascript files
+    *.php: pages for the application
+        note: these also reference the top level lib and Composer directories with require stype directives.
+
+    there may be additional directories on an application by application basis
