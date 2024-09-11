@@ -197,24 +197,26 @@ $mR->free();
 $response['matches'] = $matches;
 
 // and their policies
-$pidInStr = implode(',', $pids);
-$mQ = <<<EOS
+$matchPolicies = [];
+if (count($matches ) > 0) {
+    $pidInStr = implode(',', $pids);
+    $mQ = <<<EOS
 SELECT perid, policy, response
 FROM memberPolicies
 WHERE conid = ? AND perid in ($pidInStr);
 EOS;
 
-$mR = dbSafeQuery($mQ, 'i', array($conid));
-if ($mR === false) {
-    $response['error'] = 'Select potential match policies failed';
-    ajaxSuccess($response);
-}
+    $mR = dbSafeQuery($mQ, 'i', array ($conid));
+    if ($mR === false) {
+        $response['error'] = 'Select potential match policies failed';
+        ajaxSuccess($response);
+    }
 
-$matchPolicies = [];
-while ($row = $mR->fetch_assoc()) {
-    $matchPolicies[$row['perid']][$row['policy']] = $row['response'];
+    while ($row = $mR->fetch_assoc()) {
+        $matchPolicies[$row['perid']][$row['policy']] = $row['response'];
+    }
+    $mR->free();
 }
-$mR->free();
 $response['matchPolicies'] = $matchPolicies;
 
 $response['success'] = count($matches) . ' potential matches found';
