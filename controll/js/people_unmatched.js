@@ -140,7 +140,7 @@ class Unmatched {
         }
     };
 
-    // called on open of the policy window
+    // called on open of the unmatched window
     open(msg = null) {
         var _this = this;
         var script = "scripts/people_getUnmatched.php";
