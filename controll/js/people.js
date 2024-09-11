@@ -4,6 +4,8 @@
 unmatchedPeople = null;
 findPerson = null;
 addPerson = null;
+add_tab = null;
+find_tab = null;
 // debug meaning
 //  1 = console.logs
 //  2 = show hidden table fields
@@ -11,6 +13,8 @@ addPerson = null;
 
 // initialization at DOM complete
 window.onload = function initpage() {
+    add_tab = document.getElementById("add-tab");
+    find_tab = document.getElementById("findedit-tab");
     settab('unmatched-pane');
 }
 
@@ -41,4 +45,15 @@ function settab(tabname) {
             addPerson.open();
             break;
     }
+}
+
+// switch from add to edit with a person
+function peopleEditPerson(index, row) {
+    console.log("Switch to " + index);
+    console.log(row);
+    bootstrap.Tab.getOrCreateInstance(find_tab).show();
+    return;
+    if (findPerson == null)
+        findPerson = new Find(config['debug']);
+    findPerson.open(id, row);
 }
