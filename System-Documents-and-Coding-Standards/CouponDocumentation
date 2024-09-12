@@ -1,0 +1,10 @@
+Coupon Documentation
+
+Coupons are used as a discount and payment item in ConTroll
+
+This document is a work in progress and it will change as we make forward facing decisions
+
+Coupons:
+    Coupons are a marketing tool to allow for discounts to encourage people to register now (soon).
+
+Coupon Types:
