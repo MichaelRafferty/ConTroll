@@ -99,7 +99,7 @@ ORDER BY create_date;
 EOS;
     $holderRegR = dbSafeQuery($holderRegSQL, 'iii', array ($conid, $loginType == 'p' ? $loginId : -1, $loginType == 'n' ? $loginId : -1));
     $holderMembership = [];
-    if ($holderRegR != false && $holderRegR->num_rows > 0) {
+    if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
             if ($m['memType'] == 'donation') {
                 $label = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['label'];
@@ -271,7 +271,7 @@ EOS;
     }
 
     $managed = [];
-    if ($managedByR != false) {
+    if ($managedByR !== false) {
         while ($p = $managedByR->fetch_assoc()) {
             $managed[] = $p;
         }
@@ -545,12 +545,12 @@ if ($totalDue > 0 || count($payorPlan) > 0) {
 
 if (count($memberships) > 0) {
     if ($totalUnpaid > 0) {
-        $showAll = '';
+        $showAll = 'disabled';
         $showUnpaid = 'disabled';
-        $hideAll = '';
+        $hideAll = 'disabled';
     }
     else {
-        $showAll = '';
+        $showAll = 'disabled';
         $showUnpaid = 'hidden';
         $hideAll = 'disabled';
     }

@@ -443,7 +443,7 @@ EOS;
                 // upgrades require a role to allow them to be bought based on the prior membership being in the cart, get the rule for this membership
 
                 $mrR = dbSafeQuery($mrQ, 's', array ('%,' . $badge['memId'] . ',%'));
-                if ($mrR != false) {
+                if ($mrR !== false) {
                     if ($mrR->num_rows > 0) {
                         while ($rule = $mrR->fetch_assoc()) {
                             if ($rule['memList'] != null && $rule['memList'] != '') {

@@ -36,6 +36,8 @@ page_init($page,
 //                    'js/tinymce/tinymce.min.js',
                     'js/people.js',
                     'js/people_unmatched.js',
+                    'js/people_add.js',
+                    'js/people_find.js',
               ),
                     $need_login);
 
@@ -521,6 +523,15 @@ $config_vars['conid'] = $conid;
 <?php
     drawEditPersonBlock($con_conf, true, null, 'people_add', false, true, '', null, 100, true);
 ?>
+        <div class="row mt-2">
+            <div class="col-sm-auto">
+                <button class="btn btn-sm btn-primary" onclick="addPerson.checkExists();">Check If Already Exists</button>
+                <button class="btn btn-sm btn-secondary" onclick="addPerson.clearForm();">Clear Add Person Form</button>
+                <button class="btn btn-sm btn-secondary" id="addPersonBTN" onclick="addPerson.addPerson();" disabled>Add New Person</button>
+            </div>
+        </div>
+        <div class='row mt-2'>
+            <div class='col-sm-12' id='findTable'></div>
         </div>
     </div>
     <div id='result_message' class='mt-4 p-2'></div>

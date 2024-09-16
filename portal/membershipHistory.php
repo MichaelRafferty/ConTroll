@@ -83,7 +83,7 @@ EOS;
     $managedByR = dbSafeQuery($managedSQL, 'iiii', array($loginId, $loginId, $loginId, $loginId));
 
     $managed = [];
-    if ($managedByR != false) {
+    if ($managedByR !== false) {
         while ($p = $managedByR->fetch_assoc()) {
             $key = $p['personType'] . $p['id'];
             $managed[$key] = $p;

@@ -46,7 +46,7 @@ WHERE locations IS NOT NULL AND locations != '' AND exhibitsRegionYearId = ?;
 EOS;
 $locationR = dbSafeQuery($locationQ, 'i', array($exhibitsRegionYearId));
 $locationsUsed = '';
-if ($locationR != false) {
+if ($locationR !== false) {
     while ($locationL = $locationR->fetch_assoc()) {
         $locationsUsed .= ',' . $locationL['locations'];
     }

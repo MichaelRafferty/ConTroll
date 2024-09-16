@@ -140,7 +140,7 @@ class Unmatched {
         }
     };
 
-    // called on open of the policy window
+    // called on open of the unmatched window
     open(msg = null) {
         var _this = this;
         var script = "scripts/people_getUnmatched.php";
@@ -148,6 +148,7 @@ class Unmatched {
             ajax_request_action: 'unmatched',
         };
         clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',
@@ -255,6 +256,7 @@ class Unmatched {
             newperid: id,
         };
         clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',
@@ -486,6 +488,7 @@ class Unmatched {
         var script = 'scripts/people_updateMatch.php'
         clear_message('result_message_candidate');
         clear_message();
+        clearError();
         var _this = this;
         $.ajax({
             url: script,
