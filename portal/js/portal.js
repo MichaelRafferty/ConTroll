@@ -205,12 +205,24 @@ class Portal {
         this.#purchasedShowUnpaid = document.getElementById('btn-showUnpaid');
         this.#purchasedHideAll = document.getElementById('btn-hideAll');
 
+        /*  // Default to unpaid
         if (this.#purchasedShowUnpaid) {
             if (this.#purchasedShowUnpaid.disabled == true)
                 this.showUnpaid();
         } else if (this.#purchasedShowAll) {
             if (this.#purchasedShowAll.disabled == true)
                 this.showAll();
+            else
+                this.hideAll();
+        } */
+
+        // default to All
+        if (this.#purchasedShowAll) {
+            if (this.#purchasedShowAll.disabled == true)
+                this.showAll();
+        } else if (this.#purchasedshowUnpaid) {
+            if (this.#purchasedshowUnpaid.disabled == true)
+                this.showUnpaid();
             else
                 this.hideAll();
         }
