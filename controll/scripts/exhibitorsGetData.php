@@ -231,7 +231,7 @@ WHERE locations IS NOT NULL AND locations != '' AND exhibitsRegion = ? AND conid
 EOS;
 $locationR = dbSafeQuery($locationQ, 'ii', array($regionId, $conid));
 $locationsUsed = '';
-if ($locationR != false) {
+if ($locationR !== false) {
     while ($locationL = $locationR->fetch_assoc()) {
         $locationsUsed .= ',' . $locationL['locations'];
     }

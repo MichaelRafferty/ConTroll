@@ -84,7 +84,7 @@ EOS;
 }
 
 $managed = [];
-if ($managedByR != false) {
+if ($managedByR !== false) {
     while ($p = $managedByR->fetch_assoc()) {
         $key = $p['personType'] . $p['id'];
         $managed[$key] = $p;
@@ -101,7 +101,7 @@ ORDER BY email_addr, provider;
 EOS;
 $identitiesR = dbSafeQuery($identitiesSQL, 'i', array($personId));
 $identities = [];
-if ($identitiesR != false) {
+if ($identitiesR !== false) {
     while ($p = $identitiesR->fetch_assoc()) {
         $identities[] = $p;
     }
