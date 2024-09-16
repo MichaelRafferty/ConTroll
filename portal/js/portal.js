@@ -220,8 +220,8 @@ class Portal {
         if (this.#purchasedShowAll) {
             if (this.#purchasedShowAll.disabled == true)
                 this.showAll();
-        } else if (this.#purchasedshowUnpaid) {
-            if (this.#purchasedshowUnpaid.disabled == true)
+        } else if (this.purchasedShowUnpaid) {
+            if (this.#purchasedShowUnpaid.disabled == true)
                 this.showUnpaid();
             else
                 this.hideAll();

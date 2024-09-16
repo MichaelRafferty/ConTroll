@@ -545,12 +545,12 @@ if ($totalDue > 0 || count($payorPlan) > 0) {
 
 if (count($memberships) > 0) {
     if ($totalUnpaid > 0) {
-        $showAll = '';
+        $showAll = 'disabled';
         $showUnpaid = 'disabled';
-        $hideAll = '';
+        $hideAll = 'disabled';
     }
     else {
-        $showAll = '';
+        $showAll = 'disabled';
         $showUnpaid = 'hidden';
         $hideAll = 'disabled';
     }
