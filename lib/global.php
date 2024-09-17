@@ -108,7 +108,7 @@ FROM controllTxtItems
 WHERE appName = ? AND appPage = ?;
 EOS;
         $txtR = dbSafeQuery($txtQ, 'ss',array($app, $page));
-        if ($txtR == false)
+        if ($txtR === false)
             return;
         while ($txtL = $txtR->fetch_assoc()) {
             $key = $txtL['appName'] . '/' . $txtL['appPage'] . '/' . $txtL['appSection'] . '/' . $txtL['txtItem'];

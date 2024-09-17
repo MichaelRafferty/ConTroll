@@ -71,7 +71,7 @@ LEFT OUTER JOIN newperson n ON n.id = exRY.agentNewperson
 WHERE exRY.id = ?
 EOS;
     $appR = dbSafeQuery($appQ, 'i', array($approvalId));
-    if ($appR == false || $appR->num_rows != 1) {
+    if ($appR === false || $appR->num_rows != 1) {
         $response['error'] = 'Unable to send request approval email: cannot fetch details';
     } else {
         $appdata = $appR->fetch_assoc();

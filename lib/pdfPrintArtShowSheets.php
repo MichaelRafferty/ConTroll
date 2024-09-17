@@ -33,7 +33,7 @@ ORDER BY aI.item_key;
 EOS;
 
     $itemR = dbSafeQuery($itemSQL, 'ii', array($regionYearId, $region));
-    if ($itemR == false) {
+    if ($itemR === false) {
         $response['error'] = "Error retrieving art items for print show, please seek assistance";
         echo "Error retrieving art items for print show, please seek assistance\n";
         return $response;
@@ -286,7 +286,7 @@ ORDER BY aI.item_key;
 EOS;
 
     $itemR = dbSafeQuery($itemSQL, 'ii', array($regionYearId, $region));
-    if ($itemR == false) {
+    if ($itemR === false) {
         $response['error'] = 'Error retrieving art items for bid sheets, please seek assistance';
         echo "Error retrieving art items for bid sheets, please seek assistance\n";
         return $response;
@@ -524,7 +524,7 @@ WHERE exRY.exhibitorYearId=? AND exRY.exhibitsRegionYearId = ?;
 EOS;
 
     $artistR = dbSafeQuery($artistQ, 'ii', array($regionYearId, $region));
-    if ($artistR == false || $artistR->num_rows == 0) {
+    if ($artistR === false || $artistR->num_rows == 0) {
         $response['error'] = 'Error retrieving Artist information for control sheet, please seek assistance';
         echo "Error retrieving Artist information for control sheet, please seek assistance\n";
         return $response;
@@ -778,7 +778,7 @@ ORDER BY aI.item_key
 EOS;
 
     $itemR = dbSafeQuery($itemSQL, 'ii', array($regionYearId, $region));
-    if ($itemR == false) {
+    if ($itemR === false) {
         $response['error'] = 'Error retrieving art items for control sheet, please seek assistance';
         echo "Error retrieving art items for control sheet, please seek assistance\n";
         return $response;

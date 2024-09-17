@@ -56,7 +56,7 @@ JOIN exhibitorRegionYears exRY ON ey.id = exRY.exhibitorYearId AND exRY.exhibits
 WHERE ey.conid = ? AND e.id = ? AND eRY.id = ?
 EOS;
 $exhibitorR = dbSafeQuery($exhibitorQ, 'iii', array($conid, $vendor, $regionYearId));
-if ($exhibitorR == false || $exhibitorR->num_rows != 1) {
+if ($exhibitorR === false || $exhibitorR->num_rows != 1) {
     ajaxError('Invalid Session');
     return;
 }
@@ -73,7 +73,7 @@ JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id
 WHERE ery.id = ?;
 EOS;
 $regionR = dbSafeQuery($regionQ, 'i', array($regionYearId));
-if ($regionR == false || $regionR->num_rows != 1) {
+if ($regionR === false || $regionR->num_rows != 1) {
     error_log("regionQ: $regionQ with $regionYearId failed");
     ajaxError('Invalid arguments');
     return;
@@ -124,7 +124,7 @@ JOIN exhibitorSpaces es ON exRY.id = es.exhibitorRegionYear
 WHERE spaceId = ? and exRY.exhibitorYearId = ?;
 EOS;
     $vendorR = dbSafeQuery($vendorQ, 'ii', array($spaceId, $eyId));
-    if ($vendorR == false || $vendorR->num_rows == 1)
+    if ($vendorR === false || $vendorR->num_rows == 1)
         $exhibitorSpace = $vendorR->fetch_assoc();
     else {
         $exhibitorSpace = array();

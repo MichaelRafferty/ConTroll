@@ -120,7 +120,7 @@ EOS;
                 $paramarray = array($spaceId, $regionYearId, $exhibitorId);
                 $typestr = 'iii';
                 $existingR = dbSafeQuery($existingQ, $typestr, $paramarray);
-                if ($existingR == false || $existingR->num_rows != 1) {
+                if ($existingR === false || $existingR->num_rows != 1) {
                     web_error_log("Could not retrieve existing space request for $spaceId, $regionYearId, $exhibitorId");
                 }
                 $existing = $existingR->fetch_assoc();
@@ -194,7 +194,7 @@ EOS;
             $paramarray = array($spaceId, $regionYearId, $exhibitorId);
             $typestr = 'iii';
             $existingR = dbSafeQuery($existingQ, $typestr, $paramarray);
-            if ($existingR == false|| $existingR->num_rows != 1) {
+            if ($existingR === false|| $existingR->num_rows != 1) {
                 web_error_log("Could not retrieve existing space request for $spaceId, $regionYearId, $exhibitorId");
                 continue;
             }

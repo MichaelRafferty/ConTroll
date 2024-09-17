@@ -21,7 +21,7 @@ JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
 WHERE ery.id = ? and e.exhibitorId = ?;
 EOS;
         $spaceR = dbSafeQuery($spaceQ, 'ii', array($regionYearId, $exhId));
-        if ($spaceR == false || $spaceR->num_rows == 0) {
+        if ($spaceR === false || $spaceR->num_rows == 0) {
             $response['error'] = 'Unable to find any space for the receipt';
             ajaxSuccess($response);
             return;
@@ -47,7 +47,7 @@ LEFT OUTER JOIN memList ma ON ery.additionalMemId = ma.id
 WHERE ery.id = ?;
 EOS;
         $regionYearR = dbSafeQuery($regionYearQ, 'i', array($regionYearId));
-        if ($regionYearR == false || $regionYearR->num_rows != 1) {
+        if ($regionYearR === false || $regionYearR->num_rows != 1) {
             $response['error'] = 'Unable to find region record, get help';
             ajaxSuccess($response);
             return;
@@ -86,7 +86,7 @@ LEFT OUTER JOIN memList ma ON ery.additionalMemId = ma.id
 WHERE ery.id = ?;
 EOS;
             $regionYearR = dbSafeQuery($regionYearQ, 'i', array($regionYearId));
-            if ($regionYearR == false || $regionYearR->num_rows != 1) {
+            if ($regionYearR === false || $regionYearR->num_rows != 1) {
                 $response['error'] = 'Unable to find region record, get help';
                 ajaxSuccess($response);
                 return;
@@ -110,7 +110,7 @@ JOIN exhibitsRegionYears ery ON exRY.exhibitsRegionYearId = ery.id
 WHERE e.id=? AND ery.id = ?;
 EOS;
         $exhibitorR = dbSafeQuery($exhibitorQ, 'ii', array($exhId, $regionYearId));
-        if ($exhibitorR == false || $exhibitorR->num_rows != 1) {
+        if ($exhibitorR === false || $exhibitorR->num_rows != 1) {
             $response['error'] = 'Unable to find your exhibitor record';
             ajaxSuccess($response);
             return;

@@ -114,7 +114,7 @@ if ($itemQ == NULL) {
 } else {
 
     $itemR = dbSafeQuery($itemQ, $paramTypes, $paramArray);
-    if ($itemR == false) {
+    if ($itemR === false) {
         $response['error'] = 'Query Error, seek assistance';
         ajaxSuccess($response);
         return;
