@@ -1,0 +1,43 @@
+Email Address Assignment Rules
+
+To prevent stalking or spamming others, ConTroll needs to implement a set of rules for users changing their email addresses or adding new managed users with
+email addresses. The goal is to verify they actually control that email address, yet not get in the way of creating new accounts/people.
+
+The rules differ slightly for managers and those that do not manage any other accounts.
+
+Initial set up of an account:
+    A new account requires that the email address be validated.  When the user accesses the login page, they select to login with one of the email validators
+    (Oauth2 or Email Token type validators).  When the validation succeeds if the email address is unknown the user is asked if they want to create an account
+    with that address.
+
+Creating a new Managed Person on your account;
+    Adding a new account as a managed person on your account requires the user to enter the email address of the new account.  This email will fall into one of
+    three categories:
+
+    1. Matches the main accounts email address:  ConTroll asks if this is the desired email address, and if so, creates the new account using the same email
+        address.  No validation is needed as this is already a validated email address.
+
+    2. Matches an account already in the system, but not one of the owners accounts/identities or one of the ones they manage.  This is not allowed to be used
+        as it belongs to someone else, and this would be a back door way to manage them without their permission.  This could enable a stalker because a manager
+        can see/adjust a managed accounts profile (name/address)
+
+    3. The email address is unknown to the system. To facilitate adding family members to your account ConTroll allows creating the account with that email
+        address.  Note: since none of the information is known to ConTroll, the only information is that which the user enters, and this does not reveal any
+        stalking information.  If the person who owns that email address later logs in, they will see that it is managed by someone else and can break that
+        management before they change their contact information.
+
+Changing an Email Address
+    Validation rules are enforced on changing an email address in a simular fashion to creating one.
+
+    If the user is the manager of accounts:
+        The new email address can be one the manage, or one of their identities.  To add an address that is not one of the ones the user has already validated
+        they need to validate the address. This is done by adding it as an alternate identity for their own account.  This way they prove they have access to
+        the address.  // TODO: do we also send the add to identity email autoamtically if they try to addit, or force them to go to the account settings page?
+        //TODO: Current thinging is no, because that would cause an extra round trip to the database to return and ask the question.
+
+    If the user is not a manager of accounts (free standing or managed)
+        The new email address can be one of their identities.  To add an address that is not one of the ones the user has already validated
+        they need to validate the address. This is done by adding it as an alternate identity for their own account.  This way they prove they have access to
+        the address.  //TODO: do we also send the add to identity email autoamtically if they try to addit, or force them to go to the account settings page?
+        //TODO: Current thinging is no, because that would cause an extra round trip to the database to return and ask the question.
+        //TODO: managed users need access to account settins for the identity portion only.
