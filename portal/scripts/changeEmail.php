@@ -107,19 +107,20 @@ $vR->free();
 if ($personId == $currentPersonId && $personType == $currentPersonType) {
     // we are the logged in account holder, only ourselves
     if ($currentPersonType == 'n') {
-        ajaxSuccess(array('status'=>'warn', 'message'=>'You can not change your email address until you are assigned a permanent ID. ' .
-            "Please contact registration at $regadmineamil for assistance."));
+        ajaxSuccess(array('status'=>'warn', 'message'=>'You can not change your email address until you are assigned a permanent ID.' .
+            "<br/>Please contact registration at $regadmineamil for assistance."));
         exit();
     }
 
     if (count($validEmails) == 0) {
-        ajaxSuccess(array('status'=>'error', 'message'=>'You have no other validated email addresses,' .
-            'use the Add New section of Identities in Account Settings to add additional validated email addresses for you account.'));
+        ajaxSuccess(array('status'=>'error', 'message'=>'You have no other validated email addresses.' .
+            '<br/>Use the Add New section of Identities in Account Settings to add additional validated email addresses for you account.'));
         exit();
     }
 
     if (!in_array($lcemail, $validEmails)) {
-        ajaxSuccess(array('status'=>'error', 'message'=>"The email, $email, is not one of your validated email addresses."));
+        ajaxSuccess(array('status'=>'error', 'message'=>"The email, $email, is not one of your validated email addresses." .
+            '<br/>Use the Add New section of Identities in Account Settings to add additional validated email addresses for you account.'));
         exit();
     }
 
