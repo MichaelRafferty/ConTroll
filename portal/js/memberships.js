@@ -1149,7 +1149,7 @@ class Membership {
             newEmail: this.#newEmail,
             oldInterests: JSON.stringify(this.#oldInterests),
             newInterests: JSON.stringify(URLparamsToArray($('#editInterests').serialize())),
-            oldPolcies: JSON.stringify(this.#oldPolicies),
+            oldPolicies: JSON.stringify(this.#oldPolicies),
             newPolicies: JSON.stringify(URLparamsToArray($('#editPolicies').serialize())),
         }
 
