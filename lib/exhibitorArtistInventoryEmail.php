@@ -56,7 +56,7 @@ WHERE exRY.id = ?
 EOS;
 
     $artR = dbSafeQuery($artQuery, 'i', array($regionYearId));
-    if ($artR == false || $artR->num_rows < 1) {
+    if ($artR === false || $artR->num_rows < 1) {
         error_log("Exhibitor Region Year ID $regionYearId not found");
         return false; // no artist to send to, this is really an error
     }

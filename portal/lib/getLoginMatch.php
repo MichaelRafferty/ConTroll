@@ -171,11 +171,11 @@ SELECT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badg
     'p' AS tablename
 FROM perinfoIdentities pi
 JOIN perinfo p ON (p.id = pi.perid)
-WHERE pi.email_addr = ? AND pi.provider = ? AND pi.email_addr != p.email_addr
+WHERE pi.email_addr = ? AND pi.provider IN ('token', 'email', 'allow') AND pi.email_addr != p.email_addr
   AND IFNULL(first_name,'') != 'Merged' AND IFNULL(middle_name,'') != 'into';
 EOS;
-        $regcountR = dbSafeQuery($regcountQ, 'ss', array($email, 'email'));
-        if ($regcountR == false) {
+        $regcountR = dbSafeQuery($regcountQ, 's', array($email));
+        if ($regcountR === false) {
             return('Query Error - seek assistance');
         }
 

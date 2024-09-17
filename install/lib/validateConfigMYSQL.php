@@ -103,7 +103,7 @@ EOS;
                     logEcho("Creating Database $dbName");
                     logEcho($create_sql, true);
                     $num_rows = dbCmd($create_sql);
-                    if ($num_rows == false) {
+                    if ($num_rows === false) {
                         $msg = <<<EOS
 
 Unable to create the database $dbName

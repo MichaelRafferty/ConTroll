@@ -88,7 +88,7 @@ LEFT OUTER JOIN memList ma ON ery.additionalMemId = ma.id
 WHERE ery.id = ?;
 EOS;
 $regionYearR = dbSafeQuery($regionYearQ, 'i', array($regionYearId));
-if ($regionYearR == false || $regionYearR->num_rows != 1) {
+if ($regionYearR === false || $regionYearR->num_rows != 1) {
     $response['error'] = 'Unable to find region record, get help';
     ajaxSuccess($response);
     return;
@@ -107,7 +107,7 @@ JOIN exhibitorYears ey ON e.id = ey.exhibitorId
 WHERE e.id=? AND ey.conid = ?;
 EOS;
 $exhibitorR = dbSafeQuery($exhibitorQ, 'ii', array($exhId, $conid));
-if ($exhibitorR == false || $exhibitorR->num_rows != 1) {
+if ($exhibitorR === false || $exhibitorR->num_rows != 1) {
     $response['error'] = 'Unable to find your exhibitor record';
     ajaxSuccess($response);
     return;
@@ -137,7 +137,7 @@ JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
 WHERE e.exhibitorRegionYear = ?;
 EOS;
 $spaceR = dbSafeQuery($spaceQ, 'i', array($eryID));
-if ($spaceR == false || $spaceR->num_rows == 0) {
+if ($spaceR === false || $spaceR->num_rows == 0) {
     $response['error'] = 'Unable to find any space to invoice';
     ajaxSuccess($response);
     return;
@@ -503,7 +503,7 @@ JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
 WHERE conid = ? and exhibitorId = ? and exRY.exhibitsRegionYearId = ?
 EOS;
 $exNumR = dbSafeQuery($exNumQ, 'iii', array($conid, $exhibitor['exhibitorId'], $regionYearId));
-if ($exNumR == false || $exNumR->num_rows == 0) {
+if ($exNumR === false || $exNumR->num_rows == 0) {
     $error_msg .= "Unable to retrieve existing exhibitor number<br/>\n";
 }
 $exNumL = $exNumR->fetch_assoc();
@@ -576,7 +576,7 @@ JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 WHERE exhibitorNumber is NOT NULL AND exhibitorNumber >= ? AND exhibitorNumber < ? AND conid = ? and exRY.exhibitsRegionYearId = ?;
 EOS;
             $nextIDR = dbSafeQuery($nextIdQ, 'iiii', array($region['atconIdBase'], $region['mailinIdBase'], $conid, $regionYearId));
-            if ($nextIDR == false || $nextIDR->num_rows == 0) {
+            if ($nextIDR === false || $nextIDR->num_rows == 0) {
                 $nextID = $region['atconIdBase'] + 1;
             } else {
                 $nextL = $nextIDR->fetch_row();
@@ -590,7 +590,7 @@ JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 WHERE exhibitorNumber is NOT NULL AND exhibitorNumber >= ? AND conid = ? and exRY.exhibitsRegionYearId = ?;
 EOS;
             $nextIDR = dbSafeQuery($nextIdQ, 'iii', array($region['atconIdBase'], $conid, $regionYearId));
-            if ($nextIDR == false || $nextIDR->num_rows == 0) {
+            if ($nextIDR === false || $nextIDR->num_rows == 0) {
                 $nextID = $region['atconIdBase'] + 1;
             } else {
                 $nextL = $nextIDR->fetch_row();
@@ -606,7 +606,7 @@ JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 WHERE exhibitorNumber is NOT NULL AND exhibitorNumber >= ? AND conid = ? and exRY.exhibitsRegionYearId = ?;
 EOS;
         $nextIDR = dbSafeQuery($nextIdQ, 'iii', array($region['mailinIdBase'], $conid, $regionYearId));
-        if ($nextIDR == false || $nextIDR->num_rows == 0) {
+        if ($nextIDR === false || $nextIDR->num_rows == 0) {
             $nextID = $region['mailinIdBase'] + 1;
         } else {
             $nextL = $nextIDR->fetch_row();

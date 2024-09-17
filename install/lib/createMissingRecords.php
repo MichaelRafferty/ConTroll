@@ -87,7 +87,7 @@ FROM conlist
 WHERE id = ?;
 EOS;
     $conidR = dbSafeQuery($checkCQ, 'i', array($conid));
-    if ($conidR == false) {
+    if ($conidR === false) {
         logEcho('check if $conid exists in conlist, cannot continue');
         return(1);
     }
@@ -107,7 +107,7 @@ EOS;
             '2099-12-31'
         );
         $newid = dbSafeInsert($insertConlistQ, 'isssss', $params);
-        if ($newid == false) {
+        if ($newid === false) {
             logecho("Error inserting initial conlist entry for $conid, cannot continue");
             return(1);
         }

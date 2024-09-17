@@ -45,8 +45,10 @@ if ($info === false) {
 
 // get people managed by this account
 // get people managed by this account holder
-if ($personType == 'p') {
-    $managedSQL = <<<EOS
+$managed = [];
+if ($info['managedByName'] == null) {
+    if ($personType == 'p') {
+        $managedSQL = <<<EOS
 WITH ppl AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,
@@ -68,9 +70,10 @@ SELECT *
 FROM ppl
 ORDER BY personType DESC, id ASC;
 EOS;
-    $managedByR = dbSafeQuery($managedSQL, 'iii', array($personId, $personId, $personId));
-} else {
-    $managedSQL = <<<EOS
+        $managedByR = dbSafeQuery($managedSQL, 'iii', array ($personId, $personId, $personId));
+    }
+    else {
+        $managedSQL = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
        p.address, p.addr_2, p.city, p.state, p.zip, p.country,
        'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.managedBy, NULL AS managedByNew,
@@ -80,16 +83,16 @@ FROM newperson p
 WHERE p.managedByNew = ? AND p.id != p.managedByNew
 ORDER BY id ASC;
 EOS;
-    $managedByR = dbSafeQuery($managedSQL, 'i', array($personId));
-}
-
-$managed = [];
-if ($managedByR !== false) {
-    while ($p = $managedByR->fetch_assoc()) {
-        $key = $p['personType'] . $p['id'];
-        $managed[$key] = $p;
+        $managedByR = dbSafeQuery($managedSQL, 'i', array ($personId));
     }
-    $managedByR->free();
+
+    if ($managedByR !== false) {
+        while ($p = $managedByR->fetch_assoc()) {
+            $key = $p['personType'] . $p['id'];
+            $managed[$key] = $p;
+        }
+        $managedByR->free();
+    }
 }
 
 // get the identities
@@ -136,6 +139,7 @@ $memberships = null;
         </div>
     </div>
 <?php
+if ($info['managedByName'] == null) {
 // Members Managed
 ?>
     <div id="managed">
@@ -184,9 +188,15 @@ $memberships = null;
         <hr/>
     </div>
 <?php
+}
 // identities
-if ($personType == 'p') {
-
+if ($personType == 'n') {
+?>
+    <div class='row'>
+        <div class='row mt-3'><h2 class='size-h4'>Identities will become available once your account is assigned a permanant id.</h2></div>
+    </div>
+<?php
+} else {
 ?>
     <div id="identitiesDiv">
         <div class="row mt-3"><h2 class="size-h4">Identities:</h2></div>

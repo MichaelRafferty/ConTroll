@@ -518,7 +518,7 @@ class Unmatched {
 
         this.#matchCandidatesModal.hide();
         this.clearEditBlock('a');
-        open(data['success']);
+        this.open(data['success']);
     }
 
     // draw the manager central editblock from the match and new person
