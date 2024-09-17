@@ -592,9 +592,7 @@ class Membership {
         clear_message();
         var valid = true;
         var required = config['required'];
-        var message = "Please correct the items highlighted in red and validate again.<br/>" +
-            "Note: If any of the address fields are used and the country is United States, " +
-            "then the Address, City, State, and Zip fields must all be entered.";
+        var message = "Please correct the items highlighted in red and validate again.<br/>";
         var person = URLparamsToArray($('#addUpgradeForm').serialize());
         var keys = Object.keys(person);
         for (var i = 0; i < keys.length; i++) {
@@ -701,7 +699,7 @@ class Membership {
 
         this.#cartChanges++;
         // Check USPS for standardized address
-        if (this.#uspsDiv != null && person['country'] == 'USA' && person['city'] != '' && validateUSPS == 0 && person['country'] == 'USA') {
+        if (this.#uspsDiv != null && person['country'] == 'USA' && person['city'] != '' && validateUSPS == 0) {
             var script = "scripts/uspsCheck.php";
             $.ajax({
                 url: script,
