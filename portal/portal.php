@@ -296,9 +296,9 @@ EOS;
         $iQ = <<<EOS
 SELECT COUNT(*)
 FROM memberInterests
-WHERE $pfi
-        $iR = dbSafeQuery($iQ, 'ii', array($logeld = ? AND conid = ?;
-EOS;inId, $conid));
+WHERE $pfield = ? AND conid = ?;
+EOS;
+        $iR = dbSafeQuery($iQ, 'ii', array($loginId, $conid));
         if ($iR !== false) {
             $intCount = $iR->fetch_row()[0];
             $iR->free();

@@ -151,7 +151,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
         <div class="col-sm-auto">
             <label for="zip" class="form-label-sm">
-                <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>Zip</span>
+                <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>Zip/Postal Code</span>
             </label><br/>
             <input class="form-control-sm" type="text" name="zip" id='zip' size="10" maxlength="10"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
