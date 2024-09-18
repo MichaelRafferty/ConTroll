@@ -72,11 +72,19 @@ WHERE id = ?;
 EOS;
 }
 
-$fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badgename', 'legalname', 'pronouns', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
+$fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badgename', 'legalname', 'pronouns', 'addr', 'addr2', 'city', 'state', 'zip'];
 foreach ($fields as $field) {
     if ($person[$field] == null)
         $person[$field] = '';
 }
+
+// temporary diagnotic, why are the other fields found and country is not found sometimes. (Rarely)
+if ($person['country'] == NULL || $person['country'] == '') {
+    error_log("Country missing on this post:");
+    var_error_log($_POST);
+    //$person['country'] = 'USA'; // and force it to use as the default.
+}
+
 $value_arr = array(
     trim($person['lname']),
     trim($person['mname']),
