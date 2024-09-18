@@ -3,7 +3,7 @@
 
 // drawEditPersonBlock - just output the block to edit the person
 function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $editEmail=false, $ageByDate = '',
-                             $membershipTypes = [], $tabIndexStart = 100, $admin = false) {
+                             $membershipTypes = [], $tabIndexStart = 100, $admin = false, $idPrefix = '') {
     $reg = get_conf('reg');
     if ($editEmail)
         $polConf = $reg;
@@ -52,77 +52,77 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
 ?>
     <div class="row">
         <div class="col-sm-auto">
-            <label for="fname" class="form-label-sm">
+            <label for="<?php echo $idPrefix . "fname"; ?>" class="form-label-sm">
                 <span class="text-dark" style="font-size: 10pt;"><?php echo $firstStar; ?>First Name</span>
             </label><br/>
-            <input class="form-control-sm" type="text" name="fname" id='fname' size="22" maxlength="32"
+            <input class="form-control-sm" type="text" name="fname" id=<?php echo $idPrefix . 'fname';?>' size="22" maxlength="32"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
         <div class="col-sm-auto">
-            <label for="mname" class="form-label-sm">
+            <label for="<?php echo $idPrefix . 'mname'; ?>" class="form-label-sm">
                 <span class="text-dark" style="font-size: 10pt;">Middle Name</span>
             </label><br/>
-            <input class="form-control-sm" type="text" name="mname" id='mname' size="8" maxlength="32"
+            <input class="form-control-sm" type="text" name="mname" id='<?php echo $idPrefix . 'mname'; ?>' size="8" maxlength="32"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
         <div class="col-sm-auto">
-            <label for="lname" class="form-label-sm">
+            <label for="<?php echo $idPrefix . 'lname'; ?>" class="form-label-sm">
                 <span class="text-dark" style="font-size: 10pt;"><?php echo $allStar; ?>Last Name</span>
             </label><br/>
-            <input class="form-control-sm" type="text" name="lname" id='lname' size="22" maxlength="32"
+            <input class="form-control-sm" type="text" name="lname" id='<?php echo $idPrefix . 'lname'; ?>' size="22" maxlength="32"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
         <div class="col-sm-auto">
-            <label for="suffix" class="form-label-sm">
+            <label for="<?php echo $idPrefix . 'suffix'; ?>" class="form-label-sm">
                 <span class="text-dark" style="font-size: 10pt;">Suffix</span>
             </label><br/>
-            <input class="form-control-sm" type="text" name="suffix" id='suffix' size="4" maxlength="4"
+            <input class="form-control-sm" type="text" name="suffix" id='<?php echo $idPrefix . 'suffix'; ?>' size="4" maxlength="4"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
     </div>
     <div class='row'>
         <div class='col-sm-12'>
-            <label for='legalname' class='form-label-sm'>
+            <label for='<?php echo $idPrefix . 'legalname'; ?>' class='form-label-sm'>
                 <span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to registration staff.
             </label><br/>
-            <input class='form-control-sm' type='text' name='legalname' id='legalname' size=64 maxlength='64'
+            <input class='form-control-sm' type='text' name='legalname' id='<?php echo $idPrefix . 'legalname'; ?>' size=64 maxlength='64'
                    placeholder='Defaults to First Name Middle Name Last Name, Suffix'
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
     </div>
     <div class='row'>
         <div class='col-sm-12'>
-            <label for='pronouns' class='form-label-sm'>
+            <label for='<?php echo $idPrefix . 'pronouns'; ?>' class='form-label-sm'>
                     <span class='text-dark' style='font-size: 10pt;'>Pronouns
             </label><br/>
-            <input class='form-control-sm' type='text' name='pronouns' id='pronouns' size=64 maxlength='64'
+            <input class='form-control-sm' type='text' name='pronouns' id='<?php echo $idPrefix . 'pronouns'; ?>' size=64 maxlength='64'
                    placeholder='Optional pronouns' tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-12">
-            <label for="addr" class="form-label-sm">
+            <label for="<?php echo $idPrefix . 'addr'; ?>" class="form-label-sm">
                 <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>Address</span>
             </label><br/>
-            <input class="form-control-sm" type="text" name='addr' id='addr' size=64 maxlength="64"
+            <input class="form-control-sm" type="text" name='addr' id='<?php echo $idPrefix . 'addr'; ?>' size=64 maxlength="64"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-12">
-            <label for="addr2" class="form-label-sm">
+            <label for="<?php echo $idPrefix . 'addr2'; ?>" class="form-label-sm">
                 <span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span>
             </label><br/>
-            <input class="form-control-sm" type="text" name='addr2' id='addr2' size=64 maxlength="64"
+            <input class="form-control-sm" type="text" name='addr2' id='<?php echo $idPrefix . 'addr2'; ?>' size=64 maxlength="64"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
     </div>
     <div class='row'>
         <div class='col-sm-auto'>
-            <label for='country' class='form-label-sm'>
+            <label for='<?php echo $idPrefix . 'country'; ?>' class='form-label-sm'>
                 <span class='text-dark' style='font-size: 10pt;'>Country</span>
             </label><br/>
-            <select name='country' id='country' onchange="<?php echo $class; ?>.countryChange();"
+            <select name='country' id='<?php echo $idPrefix . 'country'; ?>' onchange="<?php echo $class; ?>.countryChange();"
                     tabindex="<?php echo $tabindex; $tabindex += 10;?>">
                 <?php
                     $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
@@ -136,24 +136,24 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
     </div>
     <div class="row">
         <div class="col-sm-auto">
-            <label for="city" class="form-label-sm">
+            <label for="<?php echo $idPrefix . 'city'; ?>" class="form-label-sm">
                 <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>City</span>
             </label><br/>
-            <input class="form-control-sm" type="text" name="city" id='city' size="22" maxlength="32"
+            <input class="form-control-sm" type="text" name="city" id='<?php echo $idPrefix . 'city'; ?>' size="22" maxlength="32"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
         <div class="col-sm-auto">
-            <label for="state" class="form-label-sm">
+            <label for="<?php echo $idPrefix . 'state'; ?>" class="form-label-sm">
                 <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>State: U.S./CAN 2-letter abv.</span>
             </label><br/>
-            <input class="form-control-sm" type="text" name="state" id='state' size="16" maxlength="16"
+            <input class="form-control-sm" type="text" name="state" id='<?php echo $idPrefix . 'state'; ?>' size="16" maxlength="16"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
         <div class="col-sm-auto">
-            <label for="zip" class="form-label-sm">
+            <label for="<?php echo $idPrefix . 'zip'; ?>" class="form-label-sm">
                 <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>Zip/Postal Code</span>
             </label><br/>
-            <input class="form-control-sm" type="text" name="zip" id='zip' size="10" maxlength="10"
+            <input class="form-control-sm" type="text" name="zip" id='<?php echo $idPrefix . 'zip'; ?>' size="10" maxlength="10"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
     </div>
@@ -180,29 +180,31 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
 ?>
     <div class='row'>
         <div class='col-sm-auto me-2'>
-            <label for='email1' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'><span
+            <label for='<?php echo $idPrefix . 'email1'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'><span
                             class='text-danger'>&bigstar;</span>Email</span></label><br/>
-            <input class='form-control-sm' type='email' name='email1' id='email1' size='35' maxlength='254'
+            <input class='form-control-sm' type='email' name='email1' id='<?php echo $idPrefix . 'email1'; ?>' size='35' maxlength='254'
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
         <div class='col-sm-auto'>
-            <label for='email2' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'><span class='text-danger'>&bigstar;</span>Confirm Email</span></label><br/>
-            <input class='form-control-sm' type='email' name='email2' id='email2' size='35' maxlength='254'
+            <label for='<?php echo $idPrefix . 'email2'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'><span
+                            class='text-danger'>&bigstar;</span>Confirm Email</span></label><br/>
+            <input class='form-control-sm' type='email' name='email2' id='<?php echo $idPrefix . 'email2'; ?>' size='35' maxlength='254'
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
     </div>
     <div class='row'>
         <div class='col-sm-auto'>
-            <label for='phone' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Phone</span></label><br/>
-            <input class='form-control-sm' type='text' name='phone' id='phone' size='20' maxlength='15'
+            <label for='<?php echo $idPrefix . 'phone'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Phone</span></label><br/>
+            <input class='form-control-sm' type='text' name='phone' id='<?php echo $idPrefix . 'phone'; ?>' size='20' maxlength='15'
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
 <?php
         if ($membershipTypes == null) {
 ?>
             <div class='col-sm-auto me-2'>
-                <label for='badgename' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Badge Name (optional)</span></label><br/>
-                <input class='form-control-sm' type='text' name='badgename' id='badgename' size='35' maxlength='32'
+                <label for='<?php echo $idPrefix . 'badgename'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Badge Name (optional)
+                    </span></label><br/>
+                <input class='form-control-sm' type='text' name='badgename' id='<?php echo $idPrefix . 'badgename'; ?>' size='35' maxlength='32'
                        placeholder='defaults to first and last name' tabindex="<?php echo $tabindex;
                     $tabindex += 10; ?>"/>
             </div>
@@ -228,13 +230,15 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
     </div>
     <div class="row">
         <div class="col-sm-auto me-2">
-            <label for="badgename" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
-            <input class="form-control-sm" type="text" name="badgename" id='badgename' size="35" maxlength="32"
+            <label for="<?php echo $idPrefix . 'badgename'; ?>" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)
+                </span></label><br/>
+            <input class="form-control-sm" type="text" name="badgename" id='<?php echo $idPrefix . 'badgename'; ?>' size="35" maxlength="32"
                    placeholder='defaults to first and last name' tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
         <div class="col-sm-auto">
-            <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Membership Type</span></label><br/>
-            <select id='memId' name='memId' style="width:500px;" tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
+            <label for="<?php echo $idPrefix . 'memId'; ?>" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
+                            class='text-danger'>&bigstar;</span>Membership Type</span></label><br/>
+            <select id='<?php echo $idPrefix . 'memId'; ?>' name='memId' style="width:500px;" tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
                 <?php foreach ($membershipTypes as $memType) { ?>
                     <option value='<?php echo $memType['id']; ?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price']; ?>)</option>
                 <?php } ?>
@@ -257,13 +261,14 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
     </div>
     <div class="row">
         <div class="col-sm-auto">
-            <label for="phone" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
-            <input class="form-control-sm" type="text" name="phone" id='phone' size="20" maxlength="15"
+            <label for="<?php echo $idPrefix . 'phonr'; ?>" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
+            <input class="form-control-sm" type="text" name="phone" id='<?php echo $idPrefix . 'phone'; ?>' size="20" maxlength="15"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
         <div class="col-sm-auto">
-            <label for="badgename" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
-            <input class="form-control-sm" type="text" name="badgename" id='badgename' size="35" maxlength="32"
+            <label for="<?php echo $idPrefix . 'badgename'; ?>" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)
+                </span></label><br/>
+            <input class="form-control-sm" type="text" name="badgename" id='<?php echo $idPrefix . 'badgename'; ?>' size="35" maxlength="32"
                    placeholder='Defaults to first and last name'
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
