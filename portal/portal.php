@@ -60,6 +60,8 @@ $config_vars['initCouponSerial'] = $initCouponSerial;
 $config_vars['id'] = $loginId;
 $config_vars['idType'] = $loginType;
 $cdn = getTabulatorIncludes();
+// default memberships to empty to handle the refresh case which never loads them.
+$memberships = [];
 
 // this section is for 'in-session' management
 // build info array about the account holder
@@ -294,9 +296,9 @@ EOS;
         $iQ = <<<EOS
 SELECT COUNT(*)
 FROM memberInterests
-WHERE $pfield = ? AND conid = ?;
-EOS;
-        $iR = dbSafeQuery($iQ, 'ii', array($loginId, $conid));
+WHERE $pfi
+        $iR = dbSafeQuery($iQ, 'ii', array($logeld = ? AND conid = ?;
+EOS;inId, $conid));
         if ($iR !== false) {
             $intCount = $iR->fetch_row()[0];
             $iR->free();
