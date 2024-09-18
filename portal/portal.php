@@ -298,7 +298,7 @@ SELECT COUNT(*)
 FROM memberInterests
 WHERE $pfield = ? AND conid = ?;
 EOS;
-        $iR = dbSafeQuery($iQ, 'ii', array($logeld = ? AND conid = ?;
+        $iR = dbSafeQuery($iQ, 'ii', array($logeld = ? AND conid = ?);
         if ($iR !== false) {
             $intCount = $iR->fetch_row()[0];
             $iR->free();
