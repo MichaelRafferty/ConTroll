@@ -55,7 +55,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
             <label for="<?php echo $idPrefix . "fname"; ?>" class="form-label-sm">
                 <span class="text-dark" style="font-size: 10pt;"><?php echo $firstStar; ?>First Name</span>
             </label><br/>
-            <input class="form-control-sm" type="text" name="fname" id=<?php echo $idPrefix . 'fname';?>' size="22" maxlength="32"
+            <input class="form-control-sm" type="text" name="fname" id='<?php echo $idPrefix . 'fname';?>' size="22" maxlength="32"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
         <div class="col-sm-auto">

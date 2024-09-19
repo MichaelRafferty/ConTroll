@@ -2,14 +2,17 @@
 // policy class - all edit membership policy functions
 class Find {
     #messageDiv = null;
-    #findTitle = null;
     #findTable = null;
+    #editTitle = null;
     #addPersonBtn = null;
 
     #debug = 0;
     #debugVisible = false;
 
-    // find fields matches
+    // find fields
+    #editModal = null;
+
+    // edit person fields
     #firstName = null;
     #middleName = null;
     #lastName = null;
@@ -39,37 +42,43 @@ class Find {
         if (this.#debug & 2) {
             this.#debugVisible = true;
         }
-        this.#messageDiv = document.getElementById('result_message_add');
-        this.#findTitle = document.getElementById('findTitle');
-        this.#addPersonBtn = document.getElementById('addPersonBTN');
+        this.#messageDiv = document.getElementById('find_edit_message');
 
-        this.#firstName = document.getElementById('fname');
-        this.#middleName = document.getElementById('mname');
-        this.#lastName = document.getElementById('lname');
-        this.#suffix = document.getElementById('suffix');
-        this.#legalName = document.getElementById('legalname');
-        this.#pronouns = document.getElementById('pronouns');
-        this.#badgeName = document.getElementById('badgename');
-        this.#address = document.getElementById('addr');
-        this.#addr2 = document.getElementById('addr2');
-        this.#city = document.getElementById('city');
-        this.#state = document.getElementById('state');
-        this.#zip = document.getElementById('zip');
-        this.#country = document.getElementById('country');
-        this.#emailAddr = document.getElementById('email1');
-        this.#emailAddr2 = document.getElementById('email2');
-        this.#phone = document.getElementById('phone');
+        this.#addPersonBtn = document.getElementById('findAddPersonBTN');
+        var id  = document.getElementById('edit-person');
+        if (id) {
+            this.#editModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#editTitle = document.getElementById('editTitle');
+            this.#firstName = document.getElementById('f_fname');
+            this.#middleName = document.getElementById('f_mname');
+            this.#lastName = document.getElementById('f_lname');
+            this.#suffix = document.getElementById('f_suffix');
+            this.#legalName = document.getElementById('f_legalname');
+            this.#pronouns = document.getElementById('f_pronouns');
+            this.#badgeName = document.getElementById('f_badgename');
+            this.#address = document.getElementById('f_addr');
+            this.#addr2 = document.getElementById('f_addr2');
+            this.#city = document.getElementById('f_city');
+            this.#state = document.getElementById('f_state');
+            this.#zip = document.getElementById('f_zip');
+            this.#country = document.getElementById('f_country');
+            this.#emailAddr = document.getElementById('f_email1');
+            this.#emailAddr2 = document.getElementById('f_email2');
+            this.#phone = document.getElementById('f_phone');
+        }
+
     }
 
     // called on open of the add window
     open(msg = null) {
-        this.clearForm();
+        this.close();
+
     }
 
-    // check if a close match for this person exists and display a table of matches.
-    checkExists() {
+    // find matching records
+    find() {
         var postdata = {
-            type: 'check',
+            type: 'find',
             firstName: this.#firstName.value,
             middleName: this.#middleName.value,
             lastName: this.#lastName.value,
@@ -180,7 +189,7 @@ class Find {
         this.#suffix.value = '';
         this.#legalName.value = '';
         this.#pronouns.value = '';
-        this.#badgeName = document.getElementById('badgename');
+        this.#badgeName.value = '';
         this.#address.value = '';
         this.#addr2.value = '';
         this.#city.value = '';
@@ -195,6 +204,7 @@ class Find {
 
     // on close of the pane, clean up the items
     close() {
+        this.clearForm();
          if (this.#findTable != null) {
             this.#findTable.destroy();
             this.#findTable = null;

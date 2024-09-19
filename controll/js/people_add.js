@@ -1,7 +1,6 @@
 //import { TabulatorFull as Tabulator } from 'tabulator-tables';
 // policy class - all edit membership policy functions
 class Add {
-    #messageDiv = null;
     #findTable = null;
     #addPersonBtn = null;
 
@@ -38,7 +37,6 @@ class Add {
         if (this.#debug & 2) {
             this.#debugVisible = true;
         }
-        this.#messageDiv = document.getElementById('result_message_add');
         this.#addPersonBtn = document.getElementById('addPersonBTN');
 
         this.#firstName = document.getElementById('fname');
@@ -265,7 +263,7 @@ class Add {
         this.#suffix.value = '';
         this.#legalName.value = '';
         this.#pronouns.value = '';
-        this.#badgeName = document.getElementById('badgename');
+        this.#badgeName.value = '';
         this.#address.value = '';
         this.#addr2.value = '';
         this.#city.value = '';
