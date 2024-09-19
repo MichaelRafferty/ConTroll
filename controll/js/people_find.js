@@ -37,6 +37,7 @@ class Find {
     #banned = null;
 
     #matched = null;
+    #editRow = null;
 
     // globals before open
     constructor(debug) {
@@ -46,7 +47,7 @@ class Find {
         }
         this.#editPersonName = document.getElementById('editPersonName');
         this.#findPattern = document.getElementById('find_pattern');
-        this.#findPattern.addEventListener('keyup', (e)=> { if (e.code === 'Enter') this.find(); });
+        this.#findPattern.addEventListener('keyup', findKeyUpListener);
         this.#messageDiv = document.getElementById('find_edit_message');
 
         this.#addPersonBtn = document.getElementById('findAddPersonBTN');
@@ -76,8 +77,11 @@ class Find {
 
     // called on open of the add window
     open(msg = null) {
-        this.close();
-
+        this.clearForm();
+        if (this.#findTable != null) {
+            this.#findTable.destroy();
+            this.#findTable = null;
+        }
         this.#findPattern.focus();
     }
 
@@ -131,7 +135,7 @@ class Find {
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
-                {title: "Match", formatter: this.selectButton, headerSort: false },
+                {title: "Edit", formatter: this.editButton, headerSort: false },
                 {title: "ID", field: "id", width: 120, headerHozAlign:"right", hozAlign: "right", headerSort: true},
                 {title: "Mgr Id", field: "managerId", headerHozAlign:"right", hozAlign: "right", headerWordWrap: true, width: 120,headerSort: false },
                 {title: "Manager", field: "manager", width: 150, headerSort: true, headerFilter: true, },
@@ -161,19 +165,36 @@ class Find {
         });
     }
 
-    // select button: chose this person instead
-    selectButton(cell, formatterParams, onRendered) {
+    // select edit: edit this person
+    editButton(cell, formatterParams, onRendered) {
         var row = cell.getRow();
         var index = row.getIndex()
 
         return '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
-            ' onclick="addPerson.selectPerson(' + index + ');">Select</button>';
+            ' onclick="findPerson.editPerson(' + index + ');">Edit</button>';
     }
 
-    // selectPerson - take this person and switch to the Find/Edit tab with this person
-    selectPerson(index) {
-        console.log(index);
-        peopleEditPerson(index, this.#findTable.getRow(index).getData());
+    // editPerson - call up this person to edit
+    editPerson(index) {
+        // populate the form
+        this.#editRow = this.#findTable.getRow(index).getData();
+        this.#firstName.value = this.#editRow.first_name;
+        this.#middleName.value = this.#editRow.middle_name;
+        this.#lastName.value = this.#editRow.last_name;
+        this.#suffix.value = this.#editRow.suffix;
+        this.#legalName.value = this.#editRow.legalname;
+        this.#pronouns.value = this.#editRow.pronouns;
+        this.#badgeName.value = this.#editRow.badge_name;
+        this.#address.value = this.#editRow.address;
+        this.#addr2.value = this.#editRow.addr_2;
+        this.#city.value = this.#editRow.city;
+        this.#state.value = this.#editRow.state;
+        this.#zip.value = this.#editRow.zip;
+        this.#country.value = this.#editRow.country;
+        this.#emailAddr.value = this.#editRow.email_addr;
+        this.#emailAddr2.value = this.#editRow.email_addr;
+        this.#phone.value = this.#editRow.phone;
+        this.#editModal.show();
     }
 
     // empty the form, and other parts for starting over
@@ -200,9 +221,15 @@ class Find {
     // on close of the pane, clean up the items
     close() {
         this.clearForm();
-         if (this.#findTable != null) {
+        if (this.#findTable != null) {
             this.#findTable.destroy();
             this.#findTable = null;
         }
+        this.#findPattern.removeEventListener('keyup', findKeyUpListener);
     };
+}
+
+function findKeyUpListener(e) {
+    if (e.code === 'Enter')
+        findPerson.find();
 }
