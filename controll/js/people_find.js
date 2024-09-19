@@ -31,10 +31,20 @@ class Find {
     #emailAddr = null;
     #emailAddr2 = null;
     #phone = null;
+    #managerName = null;
+    #managerId = null;
     #policiesDiv = null;
-    #managerDiv = null;
     #active = null;
     #banned = null;
+    #openNotes = null;
+    #adminNotes = null
+    #memberPolicies = null;
+    #memberInterests = null;
+    #managed = null;
+    #managesHdr = null;
+    #managesRow = null;
+    #managerHdr = null;
+    #managerRow = null;
 
     #matched = null;
     #editRow = null;
@@ -71,8 +81,17 @@ class Find {
             this.#emailAddr = document.getElementById('f_email1');
             this.#emailAddr2 = document.getElementById('f_email2');
             this.#phone = document.getElementById('f_phone');
+            this.#managerId = document.getElementById('f_managerId');
+            this.#managerName = document.getElementById('f_managerName');
+            this.#active = document.getElementById('f_active');
+            this.#banned = document.getElementById('f_banned');
+            this.#openNotes = document.getElementById('f_open_notes');
+            this.#adminNotes = document.getElementById('f_admin_notes');
+            this.#managesHdr = document.getElementById('managesHdr');
+            this.#managesRow = document.getElementById('managesRow');
+            this.#managerHdr = document.getElementById('managerHdr');
+            this.#managerRow = document.getElementById('managerRow');
         }
-
     }
 
     // called on open of the add window
@@ -161,6 +180,8 @@ class Find {
                 {field: 'country', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
+                {field: 'admin_notes', visible: false,},
+                {field: 'open_notes', visible: false,},
             ],
         });
     }
@@ -176,8 +197,37 @@ class Find {
 
     // editPerson - call up this person to edit
     editPerson(index) {
-        // populate the form
         this.#editRow = this.#findTable.getRow(index).getData();
+
+        var postdata = {
+            type: 'details',
+            perid: index,
+        };
+        var script = 'scripts/people_findGetDetails.php';
+        var _this = this;
+        clear_message();
+        clearError();
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postdata,
+            success: function (data, textStatus, jhXHR) {
+                _this.findDetailsSuccess(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error');
+                return false;
+            }
+        });
+    }
+
+    findDetailsSuccess(data) {
+        this.#memberPolicies = data['policies'];
+        this.#memberInterests = data['interests'];
+        this.#managed = data['managed'];
+        // populate the form
+        this.#editPersonName.innerHTML = this.#editRow.fullName;
         this.#firstName.value = this.#editRow.first_name;
         this.#middleName.value = this.#editRow.middle_name;
         this.#lastName.value = this.#editRow.last_name;
@@ -194,7 +244,51 @@ class Find {
         this.#emailAddr.value = this.#editRow.email_addr;
         this.#emailAddr2.value = this.#editRow.email_addr;
         this.#phone.value = this.#editRow.phone;
+        this.#managerId.value = this.#editRow.managerId;
+        this.#managerName.innerHTML = this.#editRow.manager;
+        this.#active.value = this.#editRow.active;
+        this.#banned.value = this.#editRow.banned;
+        this.#openNotes.innerHTML = this.#editRow.open_notes;
+        this.#adminNotes.innerHTML = this.#editRow.admin_notes;
+
+        if (this.#managed.length > 0) {
+            this.#managerHdr.hidden = true;
+            this.#managerRow.hidden = true;
+            this.#managesHdr.hidden = false;
+            this.#managesRow.hidden = false;
+            this.#managerId.value = '';
+            this.#managerName.innerHTML = '';
+            // now the manages section
+            var html = '';
+            for (var i = 0; i < this.#managed.length; i++) {
+                var mper = this.#managed[i];
+                html += '<div class="col-sm-1">' +
+                    '<button class="btn btn-sm btn-warning" onclick="findPerson.unmanage(' + "'" + mper.type + mper.id + "'" + ')">Unmanage</button>' +
+                    '</div>\n' +
+                    '<div class="col-sm-1">' + mper.type + mper.id + '</div>\n' +
+                    '<div class="col-sm-10">' + mper.fullName + '</div>\n';
+            }
+            this.#managesRow.innerHTML = html;
+        } else {
+            this.#managerHdr.hidden = false;
+            this.#managerRow.hidden = false;
+            this.#managesHdr.hidden = true;
+            this.#managesRow.hidden = true;
+            this.#managerId.value = this.#editRow.managerId;
+            this.#managerName.innerHTML = this.#editRow.manager;
+        }
         this.#editModal.show();
+    }
+
+    // clear the manager
+    disassociate() {
+        this.#managerId.value = null;
+        this.#managerName.innerHTML = '';
+    }
+
+    // change the manager
+    changeManager() {
+        console.log("change manager called");
     }
 
     // empty the form, and other parts for starting over
