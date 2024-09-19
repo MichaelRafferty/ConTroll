@@ -25,7 +25,7 @@ function settab(tabname) {
     if (findPerson != null)
         findPerson.close();
     if (addPerson != null)
-        ongamepaddisconnected.close();
+        addPerson.close();
 
     // now open the relevant one, and create the class if needed
     switch (tabname) {

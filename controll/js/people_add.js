@@ -1,7 +1,7 @@
 //import { TabulatorFull as Tabulator } from 'tabulator-tables';
 // policy class - all edit membership policy functions
 class Add {
-    #findTable = null;
+    #matchTable = null;
     #addPersonBtn = null;
 
     #debug = 0;
@@ -127,7 +127,7 @@ class Add {
 
         this.#matched = data['matches'];
         if (this.#matched.length > 0) {
-            this.#findTable = new Tabulator('#findTable', {
+            this.#matchTable = new Tabulator('#matchTable', {
                 data: this.#matched,
                 layout: "fitDataTable",
                 index: "id",
@@ -138,7 +138,7 @@ class Add {
                 columns: [
                     {title: "Match", formatter: this.selectButton, headerSort: false},
                     {title: "ID", field: "id", width: 120, headerHozAlign: "right", hozAlign: "right", headerSort: true},
-                    {title: "Mgr Id", field: "managerId", headerWordWrap: true, width: 120, headerSort: false},
+                    {title: "Mgr Id", field: "managerId", width: 120, headerHozAlign: "right", hozAlign: "right", headerWordWrap: true, headerSort: false},
                     {title: "Manager", field: "manager", width: 200, headerSort: true, headerFilter: true,},
                     {title: "Full Name", field: "fullName", width: 300, headerSort: true, headerFilter: true,},
                     {title: "Badge Name", field: "fullName", width: 200, headerSort: true, headerFilter: true,},
@@ -164,9 +164,9 @@ class Add {
                 ],
             });
         } else {
-            if (this.#findTable != null) {
-                this.#findTable.destroy();
-                this.#findTable = null;
+            if (this.#matchTable != null) {
+                this.#matchTable.destroy();
+                this.#matchTable = null;
             }
         }
         this.#addPersonBtn.disabled = false;
@@ -184,7 +184,7 @@ class Add {
     // selectPerson - take this person and switch to the Find/Edit tab with this person
     selectPerson(index) {
         console.log(index);
-        peopleEditPerson(index, this.#findTable.getRow(index).getData());
+        peopleEditPerson(index, this.#matchTable.getRow(index).getData());
     }
 
     // addPerson - they decided it's a new person, add them
@@ -248,9 +248,9 @@ class Add {
         this.#firstName.value = '';
         this.#emailAddr.value = '';
         this.#emailAddr2.value = '';
-        if (this.#findTable != null) {
-            this.#findTable.destroy();
-            this.#findTable = null;
+        if (this.#matchTable != null) {
+            this.#matchTable.destroy();
+            this.#matchTable = null;
         }
         this.#addPersonBtn.disabled = true;
     }
@@ -274,9 +274,9 @@ class Add {
         this.#emailAddr2.value = '';
         this.#phone.value = '';
         this.#addPersonBtn.disabled = true;
-        if (this.#findTable != null) {
-            this.#findTable.destroy();
-            this.#findTable = null;
+        if (this.#matchTable != null) {
+            this.#matchTable.destroy();
+            this.#matchTable = null;
         }
         clear_message();
         clearError();
@@ -284,6 +284,6 @@ class Add {
 
     // on close of the pane, clean up the items
     close() {
-        clearForm();
+        this.clearForm();
     };
 }

@@ -4,6 +4,8 @@ class Find {
     #messageDiv = null;
     #findTable = null;
     #editTitle = null;
+    #editPersonName = null;
+    #findPattern = null;
     #addPersonBtn = null;
 
     #debug = 0;
@@ -42,6 +44,9 @@ class Find {
         if (this.#debug & 2) {
             this.#debugVisible = true;
         }
+        this.#editPersonName = document.getElementById('editPersonName');
+        this.#findPattern = document.getElementById('find_pattern');
+        this.#findPattern.addEventListener('keyup', (e)=> { if (e.code === 'Enter') this.find(); });
         this.#messageDiv = document.getElementById('find_edit_message');
 
         this.#addPersonBtn = document.getElementById('findAddPersonBTN');
@@ -73,36 +78,25 @@ class Find {
     open(msg = null) {
         this.close();
 
+        this.#findPattern.focus();
     }
 
     // find matching records
     find() {
         var postdata = {
             type: 'find',
-            firstName: this.#firstName.value,
-            middleName: this.#middleName.value,
-            lastName: this.#lastName.value,
-            suffix: this.#suffix.value,
-            legalName: this.#legalName.value,
-            pronouns: this.#pronouns.value,
-            badgeName: this.#badgeName.value,
-            address: this.#address.value,
-            addr2: this.#addr2.value,
-            city: this.#city.value,
-            state: this.#state.value,
-            zip: this.#zip.value,
-            country: this.#country.value,
-            emailAddr: this.#emailAddr.value,
-            phone: this.#phone.value,
+            pattern: this.#findPattern.value,
         };
-        var script = 'scripts/people_checkExists.php';
+        var script = 'scripts/people_findPerson.php';
         var _this = this;
+        clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
-                _this.checkSuccess(data);
+                _this.findSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -113,7 +107,7 @@ class Find {
     }
 
     // see if there are any matches, if so draw the table, else just enable add new person, if country is USA, add validate USPS to this step
-    checkSuccess(data) {
+    findSuccess(data) {
         if (data['error']) {
             show_message(data['error'], 'error');
             return;
@@ -139,15 +133,16 @@ class Find {
             columns: [
                 {title: "Match", formatter: this.selectButton, headerSort: false },
                 {title: "ID", field: "id", width: 120, headerHozAlign:"right", hozAlign: "right", headerSort: true},
-                {title: "Mgr Id", field: "managerId", headerWordWrap: true, width: 120,headerSort: false },
-                {title: "Manager", field: "manager", width: 200, headerSort: true, headerFilter: true, },
-                {title: "Full Name", field: "fullName", width: 300, headerSort: true, headerFilter: true, },
+                {title: "Mgr Id", field: "managerId", headerHozAlign:"right", hozAlign: "right", headerWordWrap: true, width: 120,headerSort: false },
+                {title: "Manager", field: "manager", width: 150, headerSort: true, headerFilter: true, },
+                {title: "Full Name", field: "fullName", width: 200, headerSort: true, headerFilter: true, },
                 {title: "Badge Name", field: "fullName", width: 200, headerSort: true, headerFilter: true, },
                 {title: "Full Address", field: "fullAddr", width: 400, headerSort: true, headerFilter: true, },
                 {title: "Ctry", field: "country", width: 60, headerSort: false, headerFilter: false, },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true, },
-                {title: "Date Created", field: "creation_date", width: 180, headerSort: true, headerFilter: true, },
+                {title: "Memberships", field: "memberships", width: 300, headerSort: true, headerFilter: true, },
+                {field: "creation_date", visible: false },
                 {field: 'first_name', visible: false,},
                 {field: 'middle_name', visible: false,},
                 {field: 'last_name', visible: false,},

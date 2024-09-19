@@ -505,7 +505,7 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'find', true, true, '', array()
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='updateExisting' onClick='find.saveEdit()'
+                <button class='btn btn-sm btn-primary' id='updateExisting' onClick='findPerson.saveEdit()'
                         disabled>Update Existing Person</button>
             </div>
             <div id='find_edit_message' class='mt-4 p-2'></div>
@@ -548,12 +548,12 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'find', true, true, '', array()
             <div class='row mt-2'>
                 <div class="col-sm-1">Search for:</div>
                 <div class="col-sm">
-                    <input type='text' id='find_pattern' name='find_name' maxlength='80' size='80'
+                    <input type='text' id='find_pattern' name='find_pattern' maxlength='80' size='80'
                            placeholder='Name/Portion of (Name, Address, Email, Badgename, Legal Name) or Person ID'/>
                 </div>
             </div>
             <div class="row mt-2">
-                <div class="col-sm-12" id="findTable"></div>
+                <div class="col-sm-12 p-0 m-0" id="findTable"></div>
             </div>
             <div class='row mt-2'>
                 <div class='col-sm-1'></div>
@@ -580,11 +580,11 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'find', true, true, '', array()
             </div>
         </div>
         <div class='row mt-2'>
-            <div class='col-sm-12' id='findTable'></div>
+            <div class='col-sm-12' id='matchTable'></div>
         </div>
     </div>
-    <div id='result_message' class='mt-4 p-2'></div>
 </div>
+<div id='result_message' class='mt-4 p-2'></div>
 
 <pre id='test'>
 </pre>
