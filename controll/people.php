@@ -45,6 +45,7 @@ $con_conf = get_conf('con');
 $controll = get_conf('controll');
 $conid = $con_conf['id'];
 $debug = get_conf('debug');
+$usps = get_conf('usps');
 $policies = getPolicies();
 
 if (array_key_exists('controll_people', $debug))
@@ -52,9 +53,14 @@ if (array_key_exists('controll_people', $debug))
 else
     $debug_people = 0;
 
+$useUSPS = false;
+if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
+    $useUSPS = true;
+
 // first the passed in parameters and the the modals
 $config_vars['debug'] = $debug_people;
 $config_vars['conid'] = $conid;
+$config_vars['useUSPS'] = $useUSPS;
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
@@ -480,6 +486,32 @@ $config_vars['conid'] = $conid;
         </div>
     </div>
 </div>
+<div id='edit-person' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Person'
+     aria-hidden='true' style='--bs-modal-width: 98%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='editTitle'>Editing <span id='editPersonName'>Name</span></strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+<?php
+drawEditPersonBlock($conid, $useUSPS, $policies, 'find', true, true, '', array(), 200, true, 'f_');
+?>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='updateExisting' onClick='find.saveEdit()'
+                        disabled>Update Existing Person</button>
+            </div>
+            <div id='find_edit_message' class='mt-4 p-2'></div>
+        </div>
+    </div>
+</div>
 <ul class='nav nav-tabs mb-3' id='people-tab' role='tablist'>
     <li class='nav-item' role='presentation'>
         <button class='nav-link active' id='unmatched-tab' data-bs-toggle='pill' data-bs-target='#unmatched-pane' type='button'
@@ -513,6 +545,23 @@ $config_vars['conid'] = $conid;
             <div class='row mt-2'>
                 <div class='col-sm-12' id='findeditH1Div'><H1 class='h3'><b>Find / Edit People</b></H1></div>
             </div>
+            <div class='row mt-2'>
+                <div class="col-sm-1">Search for:</div>
+                <div class="col-sm">
+                    <input type='text' id='find_pattern' name='find_name' maxlength='80' size='80'
+                           placeholder='Name/Portion of (Name, Address, Email, Badgename, Legal Name) or Person ID'/>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-sm-12" id="findTable"></div>
+            </div>
+            <div class='row mt-2'>
+                <div class='col-sm-1'></div>
+                <div class="col-sm-11">
+                    <button class='btn btn-sm btn-primary' onclick='findPerson.find();'>Find Person to Edit</button>
+                    <button class='btn btn-sm btn-secondary' id='findAddPersonBTN' onclick='findPerson.addPerson();' disabled>Not found, Add New Person</button>
+                </div>
+            </div>
         </div>
     </div>
     <div class='tab-pane fade' id='add-pane' role='tabpanel' aria-labelledby='add-tab' tabindex='0'>
@@ -521,7 +570,7 @@ $config_vars['conid'] = $conid;
                 <div class='col-sm-12' id='addH1Div'><H1 class='h3'><b>Add Person</b></H1></div>
             </div>
 <?php
-    drawEditPersonBlock($con_conf, true, null, 'people_add', false, true, '', null, 100, true);
+    drawEditPersonBlock($con_conf, true, $policies, 'people_add', false, true, '', null, 100, true);
 ?>
         <div class="row mt-2">
             <div class="col-sm-auto">
