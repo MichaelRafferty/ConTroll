@@ -155,8 +155,8 @@ class Find {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {title: "Edit", formatter: this.editButton, headerSort: false },
-                {title: "ID", field: "id", width: 120, headerHozAlign:"right", hozAlign: "right", headerSort: true},
-                {title: "Mgr Id", field: "managerId", headerHozAlign:"right", hozAlign: "right", headerWordWrap: true, width: 120,headerSort: false },
+                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
+                {title: "Mgr Id", field: "managerId", headerHozAlign:"right", hozAlign: "right", headerWordWrap: true, width: 80,headerSort: false },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
                 {title: "Full Name", field: "fullName", width: 200, headerSort: true, headerFilter: true, },
                 {title: "Badge Name", field: "fullName", width: 200, headerSort: true, headerFilter: true, },
@@ -164,7 +164,7 @@ class Find {
                 {title: "Ctry", field: "country", width: 60, headerSort: false, headerFilter: false, },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true, },
-                {title: "Memberships", field: "memberships", width: 300, headerSort: true, headerFilter: true, },
+                {title: "Memberships", field: "memberships", minWidth: 300, headerSort: true, headerFilter: true, },
                 {field: "creation_date", visible: false },
                 {field: 'first_name', visible: false,},
                 {field: 'middle_name', visible: false,},
