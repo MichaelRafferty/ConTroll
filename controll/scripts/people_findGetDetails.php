@@ -44,31 +44,38 @@ if ($mR === false) {
 }
 
 $interests= [];
-while ($row = $mR->fetch_assoc()) {
-    $interests[$row['interest']] = $row;
+$iQ = <<<EOS
+SELECT i.interest, i.description, i.sortOrder, m.interested, m.id
+FROM interests i
+LEFT OUTER JOIN memberInterests m ON m.perid = ? AND m.interest = i.interest AND conid = ?
+WHERE i.active = 'Y'
+ORDER BY i.sortOrder
+EOS;
+$iR = dbSafeQuery($iQ, 'ii', array($perid, $conid));
+if ($iR !== false) {
+    while ($row = $iR->fetch_assoc()) {
+        $interests[$row['interest']] = $row;
+    }
+    $iR->free();
 }
-$mR->free();
 $response['interests'] = $interests;
 
 // get the policies
-$mQ = <<<EOS
-SELECT id, perid, conid, policy, response, createDate, updateDate, updateBy
-FROM memberPolicies
-WHERE perid = ? and conid = ?;
+$policies = [];
+$pQ = <<<EOS
+SELECT p.policy, p.prompt, p.description, p.required, p.defaultValue, p.sortOrder, m.id, m.perid, m.conid, m.newperid, m.response
+FROM policies p
+LEFT OUTER JOIN memberPolicies m ON p.policy = m.policy AND m.perid = ? AND m.conid = ?
+WHERE p.active = 'Y'
+ORDER BY p.sortOrder;
 EOS;
-
-$mR = dbSafeQuery($mQ, 'ii', array($perid, $conid));
-if ($mR === false) {
-    $response['error'] = 'Select policies failed';
-    ajaxSuccess($response);
-    return;
+$pR = dbSafeQuery($pQ, 'ii', array($perid, $conid));
+if ($pR !== false) {
+    while ($row = $pR->fetch_assoc()) {
+        $policies[] = $row;
+    }
+    $pR->free();
 }
-
-$policies= [];
-while ($row = $mR->fetch_assoc()) {
-    $policies[$row['policy']] = $row;
-}
-$mR->free();
 $response['policies'] = $policies;
 
 // get the people managed

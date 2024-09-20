@@ -205,6 +205,7 @@ class Find {
         };
         var script = 'scripts/people_findGetDetails.php';
         var _this = this;
+        clear_message('find_edit_message');
         clear_message();
         clearError();
         $.ajax({
@@ -307,6 +308,112 @@ class Find {
         console.log("change manager called");
     }
 
+    // saveEdit - save the edited data back to the database
+    saveEdit() {
+        // validate the data, simple checks
+        var email1 = this.#emailAddr.value;
+        var email2 = this.#emailAddr2.value;
+        if (email1 != email2) {
+            show_message("Email addresses do not match", 'error', 'find_edit_message');
+            return
+        }
+        if (validateAddress(email1) == false) {
+            show_message("Invalid Email Address", 'error', 'find_edit_message');
+            return;
+        }
+        // first we need the perid we are editing, this.#editRow has the row
+        var script = 'scripts/people_updateEdit.php';
+
+        // we need to pass each section, the profile, the policies, the interests, the manager, the manages, the active/banned, and the notes
+        // first the edit fields on the form directly
+        var postdata = {
+            action: 'savedit',
+            perid: this.#editRow.id,
+            firstName: this.#firstName.value,
+            middleName: this.#middleName.value,
+            lastName: this.#lastName.value,
+            suffix: this.#suffix.value,
+            legalName: this.#legalName.value,
+            pronouns: this.#pronouns.value,
+            badgeName: this.#badgeName.value,
+            address: this.#address.value,
+            addr2: this.#addr2.value,
+            city: this.#city.value,
+            state: this.#state.value,
+            zip: this.#zip.value,
+            country: this.#country.value,
+            emailAddr: this.#emailAddr.value,
+            emailAddr2: this.#emailAddr2.value,
+            phone: this.#phone.value,
+            managerId: this.#managerId.value,
+            managerName: this.#managerName.innerHTML,
+            active: this.#active.value,
+            banned: this.#banned.value,
+            openNotes: this.#openNotes.innerHTML,
+            adminNotes: this.#adminNotes.innerHTML,
+            oldPolicies: JSON.stringify(this.#memberPolicies),
+            existingInterests: JSON.stringify(this.#memberInterests),
+        };
+        // now the policies
+        var keys = Object.keys(this.#memberPolicies);
+        var i;
+        var newPolicies = {};
+        for (i = 0; i < keys.length; i++) {
+            var policy = this.#memberPolicies[keys[i]];
+            if (document.getElementById('p_f_' + policy.policy).checked) {
+                newPolicies['p_' + policy.policy] = 'Y';
+            }
+        }
+        postdata['newPolicies'] = JSON.stringify(newPolicies);
+
+        // now the interests
+        var newInterests = [];
+        keys = Object.keys(this.#memberInterests);
+        for (i = 0; i < keys.length; i++) {
+            var interest = this.#memberInterests[keys[i]];
+            if (document.getElementById('i_' + interest.interest).checked) {
+                newInterests['i_' + interest.interest] = 'Y';
+            }
+        }
+        postdata['newInterests'] = JSON.stringify(newInterests);
+
+        // manager
+        postdata['managerId'] = document.getElementById('f_managerId').value;
+        // manages
+        postdata['managed'] = this.#managed;
+
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postdata,
+            success: function (data, textStatus, jhXHR) {
+                _this.saveEditSuccess(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error', 'find_edit_message');
+                return false;
+            }
+        });
+    }
+
+    saveEditSuccess(data) {
+        if (data['error']) {
+            show_message(data['error'], 'error', 'find_edit_message');
+            return;
+        }
+        if (data['warn']) {
+            show_message(data['warn'], 'warn', 'find_edit_message');
+            return;
+        }
+
+        this.clearForm();
+        this.#editModal.hide();
+        if (data['success']) {
+            show_message(data['success'], 'success');
+        }
+    }
+
     // empty the form, and other parts for starting over
     clearForm() {
         this.#firstName.value = '';
@@ -326,6 +433,9 @@ class Find {
         this.#emailAddr2.value = '';
         this.#phone.value = '';
         this.#addPersonBtn.disabled = true;
+        clear_message('find_edit_message');
+        clear_message();
+        clearError();
     }
 
     // on close of the pane, clean up the items
