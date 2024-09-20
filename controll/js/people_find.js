@@ -159,7 +159,7 @@ class Find {
                 {title: "Mgr Id", field: "managerId", headerHozAlign:"right", hozAlign: "right", headerWordWrap: true, width: 80,headerSort: false },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
                 {title: "Full Name", field: "fullName", width: 200, headerSort: true, headerFilter: true, },
-                {title: "Badge Name", field: "fullName", width: 200, headerSort: true, headerFilter: true, },
+                {title: "Badge Name", field: "badge_name", width: 200, headerSort: true, headerFilter: true, },
                 {title: "Full Address", field: "fullAddr", width: 400, headerSort: true, headerFilter: true, },
                 {title: "Ctry", field: "country", width: 60, headerSort: false, headerFilter: false, },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
@@ -414,6 +414,38 @@ class Find {
             show_message(data['warn'], 'warn', 'find_edit_message');
             return;
         }
+
+        // update the underlying row in the table
+        this.#editRow.first_name =  this.#firstName.value.trim();
+        this.#editRow.middle_name = this.#middleName.value.trim();
+        this.#editRow.last_name = this.#lastName.value.trim();
+        this.#editRow.suffix = this.#suffix.value.trim();
+        this.#editRow.legalName = this.#legalName.value.trim();
+        this.#editRow.pronouns = this.#pronouns.value.trim();
+        this.#editRow.badge_name = this.#badgeName.value.trim();
+        this.#editRow.address = this.#address.value.trim();
+        this.#editRow.addr2 = this.#addr2.value.trim();
+        this.#editRow.city = this.#city.value.trim();
+        this.#editRow.state = this.#state.value.trim();
+        this.#editRow.zip = this.#zip.value.trim();
+        this.#editRow.country = this.#country.value.trim();
+        this.#editRow.emailAddr = this.#emailAddr.value.trim();
+        this.#editRow.email_Addr = this.#emailAddr2.value.trim();
+        this.#editRow.phone = this.#phone.value.trim();
+        this.#editRow.managerId = this.#managerId.value.trim();
+        this.#editRow.manager = this.#managerName.innerHTML.trim();
+        this.#editRow.active = this.#active.value.trim();
+        this.#editRow.banned = this.#banned.value.trim();
+        this.#editRow.open_notes = this.#openNotes.value.trim();
+        this.#editRow.admin_notes = this.#adminNotes.value.trim();
+        var full = (this.#editRow.firstName + ' ' + this.#editRow.middleName + ' ' + this.#editRow.lastName + ' ' + this.#editRow.suffix).trim();
+        this.#editRow.fullName = full.replace(/  */, ' ');
+        full = (this.#editRow.address + ' ' + this.#editRow.addr2 + ' ' + this.#editRow.city + ' ' +
+            this.#editRow.state + ' ' + this.#editRow.zip + ' ' + this.#editRow.country).trim();
+        this.#editRow.fullAddr = full.replace(/  */, ' ');
+
+        var index = this.#editRow.id;
+        this.#findTable.getRow(index).update(this.#editRow);
 
         this.clearForm();
         this.#editModal.hide();
