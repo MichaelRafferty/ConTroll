@@ -34,9 +34,9 @@ $conid = $con_conf['id'];
 $mQ = <<<EOS
 SELECT id, perid, conid, interest, interested, notifyDate, csvDate, createDate, updateDate, updateBy
 FROM memberInterests
-WHERE perid = ?;
+WHERE perid = ? and conid = ?;
 EOS;
-$mR = dbSafeQuery($mQ, 'i', array($perid));
+$mR = dbSafeQuery($mQ, 'ii', array($perid, $conid));
 if ($mR === false) {
     $response['error'] = 'Select interests failed';
     ajaxSuccess($response);
@@ -45,7 +45,7 @@ if ($mR === false) {
 
 $interests= [];
 while ($row = $mR->fetch_assoc()) {
-    $interest[$row['interest']] = $row;
+    $interests[$row['interest']] = $row;
 }
 $mR->free();
 $response['interests'] = $interests;
@@ -54,10 +54,10 @@ $response['interests'] = $interests;
 $mQ = <<<EOS
 SELECT id, perid, conid, policy, response, createDate, updateDate, updateBy
 FROM memberPolicies
-WHERE perid = ?;
+WHERE perid = ? and conid = ?;
 EOS;
 
-$mR = dbSafeQuery($mQ, 'i', array($perid));
+$mR = dbSafeQuery($mQ, 'ii', array($perid, $conid));
 if ($mR === false) {
     $response['error'] = 'Select policies failed';
     ajaxSuccess($response);
@@ -66,7 +66,7 @@ if ($mR === false) {
 
 $policies= [];
 while ($row = $mR->fetch_assoc()) {
-    $poplicies[$row['policy']] = $row;
+    $policies[$row['policy']] = $row;
 }
 $mR->free();
 $response['policies'] = $policies;

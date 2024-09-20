@@ -223,6 +223,8 @@ class Find {
     }
 
     findDetailsSuccess(data) {
+        var i;  // index
+
         this.#memberPolicies = data['policies'];
         this.#memberInterests = data['interests'];
         this.#managed = data['managed'];
@@ -251,6 +253,20 @@ class Find {
         this.#openNotes.innerHTML = this.#editRow.open_notes;
         this.#adminNotes.innerHTML = this.#editRow.admin_notes;
 
+        // loop over the policies
+        var keys = Object.keys(this.#memberPolicies);
+        for (i = 0; i < keys.length; i++) {
+            var policy = this.#memberPolicies[keys[i]];
+            document.getElementById('p_f_' + policy.policy).checked = policy.response == 'Y';
+        }
+
+        // now the interests
+        keys = Object.keys(this.#memberInterests);
+        for (i = 0; i < keys.length; i++) {
+            var interest = this.#memberInterests[keys[i]];
+            document.getElementById('i_' + interest.interest).checked = interest.interested == 'Y';
+        }
+
         if (this.#managed.length > 0) {
             this.#managerHdr.hidden = true;
             this.#managerRow.hidden = true;
@@ -260,7 +276,7 @@ class Find {
             this.#managerName.innerHTML = '';
             // now the manages section
             var html = '';
-            for (var i = 0; i < this.#managed.length; i++) {
+            for (i = 0; i < this.#managed.length; i++) {
                 var mper = this.#managed[i];
                 html += '<div class="col-sm-1">' +
                     '<button class="btn btn-sm btn-warning" onclick="findPerson.unmanage(' + "'" + mper.type + mper.id + "'" + ')">Unmanage</button>' +
