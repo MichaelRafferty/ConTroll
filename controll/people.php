@@ -510,7 +510,8 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'find', true, true, '', array()
 drawInterestList($interests, true);
 ?>
                     <div class='row mt-3' id="managerHdr">
-                        <div class='col-sm-auto'><h2 class='size=h3'>Manager</h2></div>
+                        <div class='col-sm-auto'><h2 class='size=h3'>Manager (Disassociate manager and save before adding people managed by this person)
+                            </h2></div>
                     </div>
                     <div class="row" id="managerRow">
                         <div class="col-sm-1"><button class="btn btn-sm btn-warning" onclick="findPerson.disassociate();">Disassociate</button></div>
@@ -519,7 +520,8 @@ drawInterestList($interests, true);
                         <div class="col-sm-auto" id="f_managerName"></div>
                     </div>
                     <div class='row mt-3' id="managesHdr">
-                        <div class='col-sm-auto'><h2 class='size=h3'>Manages</h2></div>
+                        <div class='col-sm-auto'><h2 class='size=h3'>Manages (Unmange all and save before making this person managed by another person)
+                            </h2></div>
                     </div>
                     <div class="row mt-1" id="managesRow"></div>
                     <div class='row mt-3'>

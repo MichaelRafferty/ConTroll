@@ -157,7 +157,7 @@ class Find {
                 {title: "Edit", formatter: this.editButton, headerSort: false },
                 {title: "ID", field: "id", width: 120, headerHozAlign:"right", hozAlign: "right", headerSort: true},
                 {title: "Mgr Id", field: "managerId", headerHozAlign:"right", hozAlign: "right", headerWordWrap: true, width: 120,headerSort: false },
-                {title: "Manager", field: "manager", width: 150, headerSort: true, headerFilter: true, },
+                {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
                 {title: "Full Name", field: "fullName", width: 200, headerSort: true, headerFilter: true, },
                 {title: "Badge Name", field: "fullName", width: 200, headerSort: true, headerFilter: true, },
                 {title: "Full Address", field: "fullAddr", width: 400, headerSort: true, headerFilter: true, },

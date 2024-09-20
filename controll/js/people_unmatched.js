@@ -188,16 +188,16 @@ class Unmatched {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {title: "Match", formatter: this.matchButton, headerSort: false },
-                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
+                {title: "New ID", field: "id", headerWordWrap: true, width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
                 {title: "Manages", field: "manages", width: 90, headerHozAlign:"right", hozAlign: "right", headerSort: false},
                 {title: "Mgr Type", field: "managerType", headerWordWrap: true, width: 50,headerSort: false },
-                {title: "Manager", field: "manager", width: 150, headerSort: true, headerFilter: true, },
+                {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
                 {title: "Full Name", field: "fullName", width: 300, headerSort: true, headerFilter: true, },
                 {title: "Email", field: "email_addr", width: 200, headerSort: true, headerFilter: true, },
                 {title: "Date Created", field: "createtime", width: 180, headerSort: true, headerFilter: true, },
                 {title: "Num Regs", field: "numRegs", width: 50, headerWordWrap: true, headerHozAlign:"right", hozAlign: "right", headerSort: false},
-                {title: "Price", field: "price", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: false},
-                {title: "Paid", field: "paid", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: false},
+                {field: "price",visible: false},
+                {field: "paid", visible: false},
                 {field: 'first_name', visible: false,},
                 {field: 'middle_name', visible: false,},
                 {field: 'last_name', visible: false,},
@@ -224,7 +224,7 @@ class Unmatched {
             return '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
                 ' onclick="unmatchedPeople.matchPerson(' + index + ');">Match</button>';
         }
-        return "";
+        return "Need xxxx";
     }
     // display select button for candidate people
     selectButton(cell, formatterParams, onRendered) {
@@ -297,7 +297,7 @@ class Unmatched {
                 {title: "Full Name", field: "fullName", width: 300, headerSort: true, headerFilter: true, },
                 {title: "Address", field: "fullAddr", width: 300, headerSort: true, headerFilter: true, },
                 {title: "Badge Name", field: "badge_name", width: 150, headerFilter:true, headerSort: false},
-                {title: "Manager", field: "manager", width: 150, headerSort: true, headerFilter: true, },
+                {title: "Manager By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
                 {title: "Email", field: "email_addr", width: 200, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 100, headerSort: true, headerFilter: true, },
                 {title: "Date Created", field: "createtime", width: 180, headerSort: true, headerFilter: true, },
@@ -327,7 +327,7 @@ class Unmatched {
                 {title: "Full Name", field: "fullName", width: 300, headerSort: true, headerFilter: true, },
                 {title: "Address", field: "fullAddr", width: 300, headerSort: true, headerFilter: true, },
                 {title: "Badge Name", field: "badge_name", width: 150, headerFilter:true, headerSort: false},
-                {title: "Manager", field: "manager", width: 150, headerSort: true, headerFilter: true, },
+                {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
                 {title: "Email", field: "email_addr", width: 200, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 100, headerSort: true, headerFilter: true, },
                 {title: "Date Created", field: "creation_date", width: 180, headerSort: true, headerFilter: true, },
