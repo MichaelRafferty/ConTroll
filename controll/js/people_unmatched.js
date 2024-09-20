@@ -191,6 +191,7 @@ class Unmatched {
                 {title: "New ID", field: "id", headerWordWrap: true, width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
                 {title: "Manages", field: "manages", width: 90, headerHozAlign:"right", hozAlign: "right", headerSort: false},
                 {title: "Mgr Type", field: "managerType", headerWordWrap: true, width: 50,headerSort: false },
+                {title: "Mgr Id", field: 'managerId', headerWordWrap: true, width: 120, headerHozAlign:"right", hozAlign: "right", },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
                 {title: "Full Name", field: "fullName", width: 300, headerSort: true, headerFilter: true, },
                 {title: "Email", field: "email_addr", width: 200, headerSort: true, headerFilter: true, },
@@ -206,7 +207,6 @@ class Unmatched {
                 {field: 'pronouns', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
-                {field: 'managerId', visible: false,},
             ],
         });
 
@@ -224,7 +224,8 @@ class Unmatched {
             return '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
                 ' onclick="unmatchedPeople.matchPerson(' + index + ');">Match</button>';
         }
-        return "Need xxxx";
+        var mgrId = row.getData().managerId
+        return "Need " + mgrId;
     }
     // display select button for candidate people
     selectButton(cell, formatterParams, onRendered) {
