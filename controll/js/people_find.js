@@ -230,7 +230,7 @@ class Find {
         this.#memberInterests = data['interests'];
         this.#managed = data['managed'];
         // populate the form
-        this.#editPersonName.innerHTML = this.#editRow.fullName;
+        this.#editPersonName.innerHTML = this.#editRow.fullName + ' (' + this.#editRow.id + ')';
         this.#firstName.value = this.#editRow.first_name;
         this.#middleName.value = this.#editRow.middle_name;
         this.#lastName.value = this.#editRow.last_name;
@@ -321,13 +321,20 @@ class Find {
             show_message("Invalid Email Address", 'error', 'find_edit_message');
             return;
         }
+
+        if (this.#managerId.value == this.#editRow.id) {
+            show_message("The person is set to manage themselves, this is not allowed, if they are not managed, clear the field",
+                'error', 'find_edit_message');
+            return;
+        }
+
         // first we need the perid we are editing, this.#editRow has the row
         var script = 'scripts/people_updateEdit.php';
 
         // we need to pass each section, the profile, the policies, the interests, the manager, the manages, the active/banned, and the notes
         // first the edit fields on the form directly
         var postdata = {
-            action: 'savedit',
+            action: 'saveedit',
             perid: this.#editRow.id,
             firstName: this.#firstName.value,
             middleName: this.#middleName.value,
@@ -367,12 +374,12 @@ class Find {
         postdata['newPolicies'] = JSON.stringify(newPolicies);
 
         // now the interests
-        var newInterests = [];
+        var newInterests = {};
         keys = Object.keys(this.#memberInterests);
         for (i = 0; i < keys.length; i++) {
             var interest = this.#memberInterests[keys[i]];
             if (document.getElementById('i_' + interest.interest).checked) {
-                newInterests['i_' + interest.interest] = 'Y';
+                newInterests[interest.interest] = 'Y';
             }
         }
         postdata['newInterests'] = JSON.stringify(newInterests);
@@ -382,6 +389,7 @@ class Find {
         // manages
         postdata['managed'] = this.#managed;
 
+        var _this = this;
         $.ajax({
             url: script,
             method: 'POST',
