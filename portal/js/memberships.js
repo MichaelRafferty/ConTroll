@@ -513,7 +513,7 @@ class Membership {
             this.#step0Listener = false;
         }
 
-        if (!ignoreSkip && step == 2 && (now - this.#lastVerified) < (7 * 24 * 60 * 60 * 1000)) {
+        if (!ignoreSkip && step == 2 && (now - this.#lastVerified) < (90 * 24 * 60 * 60 * 1000)) {
             step = 4;
         }
         if (this.#oldInterests && this.#oldInterests.length == 0 && step == 3)

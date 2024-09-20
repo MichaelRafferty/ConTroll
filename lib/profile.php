@@ -313,6 +313,6 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
     </form>
     <form id='editPolicies' class='form-floating' action='javascript:void(0);'>
     <?php
-        drawPoliciesBlock($policies, $tabIndexStart + 500);
+        drawPoliciesBlock($policies, $tabIndexStart + 500, $idPrefix);
     }
 }

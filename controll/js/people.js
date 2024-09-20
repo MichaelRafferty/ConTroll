@@ -6,6 +6,7 @@ findPerson = null;
 addPerson = null;
 add_tab = null;
 find_tab = null;
+unmatched_tab = null;
 // debug meaning
 //  1 = console.logs
 //  2 = show hidden table fields
@@ -15,6 +16,7 @@ find_tab = null;
 window.onload = function initpage() {
     add_tab = document.getElementById("add-tab");
     find_tab = document.getElementById("findedit-tab");
+    unmatched_tab = document.getElementById("unmatched-tab");
     settab('unmatched-pane');
 }
 
@@ -25,7 +27,7 @@ function settab(tabname) {
     if (findPerson != null)
         findPerson.close();
     if (addPerson != null)
-        ongamepaddisconnected.close();
+        addPerson.close();
 
     // now open the relevant one, and create the class if needed
     switch (tabname) {

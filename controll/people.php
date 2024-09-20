@@ -17,6 +17,7 @@ global $db_ini;
 require_once 'lib/base.php';
 require_once '../lib/policies.php';
 require_once '../lib/profile.php';
+require_once '../lib/interests.php';
 //initialize google session
 $need_login = google_init('page');
 
@@ -47,6 +48,7 @@ $conid = $con_conf['id'];
 $debug = get_conf('debug');
 $usps = get_conf('usps');
 $policies = getPolicies();
+$interests = getInterests();
 
 if (array_key_exists('controll_people', $debug))
     $debug_people=$debug['controll_people'];
@@ -61,13 +63,15 @@ if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != 
 $config_vars['debug'] = $debug_people;
 $config_vars['conid'] = $conid;
 $config_vars['useUSPS'] = $useUSPS;
+$config_vars['policies'] = $policies;
+$config_vars['inrerests'] = $interests;
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
     var policies = <?php echo json_encode($policies, JSON_FORCE_OBJECT | JSON_HEX_QUOT); ?>
 </script>
 <?php 
-    bs_tinymceModal();
+    //bs_tinymceModal();
 ?>
 <!-- Match Candidates Modal -->
 <div id='match-candidates' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Display Candidates for Match'
@@ -106,12 +110,12 @@ $config_vars['useUSPS'] = $useUSPS;
                         <div class='col-sm-12' id='candidateTable'></div>
                     </div>
                 </div>
-                <div class='container-fluid' id="editMatch" hidden1>
+                <div class='container-fluid' id="editMatch">
                     <div class="row mt-4">
                         <div class="col-sm-12">
-                            <H1 class='h3'>
+                            <h1 class='h3'>
                                 <b>Editing: <span id='editMatchTitle'>A and B</span></b>
-                            </H1>
+                            </h1>
                         </div>
                     </div>
                     <div class="row">
@@ -498,15 +502,65 @@ $config_vars['useUSPS'] = $useUSPS;
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid'>
+                    <div class="row mt-2">
+                        <div class="col-sm-12"><h2 class="size=h3">Profile/Policies</h2></div>
+                    </div>
 <?php
 drawEditPersonBlock($conid, $useUSPS, $policies, 'find', true, true, '', array(), 200, true, 'f_');
+drawInterestList($interests, true);
 ?>
+                    <div class='row mt-3' id="managerHdr">
+                        <div class='col-sm-auto'><h2 class='size=h3'>Manager (Disassociate manager and save before adding people managed by this person)
+                            </h2></div>
+                    </div>
+                    <div class="row" id="managerRow">
+                        <div class="col-sm-1"><button class="btn btn-sm btn-warning" onclick="findPerson.disassociate();">Disassociate</button></div>
+                        <div class="col-sm-1"><button class="btn btn-sm btn-secondary" onclick="findPerson.changeManager();">Change</button></div>
+                        <div class="col-sm-auto"><input type="number" class='no-spinners' inputmode='numeric' id="f_managerId" name="f_managerId"></div>
+                        <div class="col-sm-auto" id="f_managerName"></div>
+                    </div>
+                    <div class='row mt-3' id="managesHdr">
+                        <div class='col-sm-auto'><h2 class='size=h3'>Manages (Unmange all and save before making this person managed by another person)
+                            </h2></div>
+                    </div>
+                    <div class="row mt-1" id="managesRow"></div>
+                    <div class='row mt-3'>
+                        <div class='col-sm-auto'><h2 class='size=h3'>Status and Notes</h2></div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-1'>Status:</div>
+                        <div class='col-sm-auto'>Active: <select id="f_active" name="active">
+                                <option value="Y">Y</option>
+                                <option value="N">N</option>
+                            </select>
+                        </div>
+                        <div class='col-sm-auto'>Banned: <select id='f_banned' name='banned'>
+                                <option value='N'>N</option>
+                                <option value='Y'>Y</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mt-1">
+                        <div class="col-sm-1">Open Notes:</div>
+                        <div class="col-sm-10">
+                            <textarea id="f_open_notes" name="open_notes" cols="120" rows='10' wrap='soft'
+                                placeholder='notes visible to registration clerks only'>
+                            </textarea>
+                        </div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>Admin Notes:</div>
+                        <div class='col-sm-10'>
+                            <textarea id='f_admin_notes' name='admon_notes' cols="120" rows="10" wrap="soft"
+                                      placeholder='notes visible to registration admins only'>
+                            </textarea>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='updateExisting' onClick='find.saveEdit()'
-                        disabled>Update Existing Person</button>
+                <button class='btn btn-sm btn-primary' id='updateExisting' onClick='findPerson.saveEdit()'>Update Existing Person</button>
             </div>
             <div id='find_edit_message' class='mt-4 p-2'></div>
         </div>
@@ -548,12 +602,12 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'find', true, true, '', array()
             <div class='row mt-2'>
                 <div class="col-sm-1">Search for:</div>
                 <div class="col-sm">
-                    <input type='text' id='find_pattern' name='find_name' maxlength='80' size='80'
+                    <input type='text' id='find_pattern' name='find_pattern' maxlength='80' size='80'
                            placeholder='Name/Portion of (Name, Address, Email, Badgename, Legal Name) or Person ID'/>
                 </div>
             </div>
             <div class="row mt-2">
-                <div class="col-sm-12" id="findTable"></div>
+                <div class="col-sm-12 p-0 m-0" id="findTable"></div>
             </div>
             <div class='row mt-2'>
                 <div class='col-sm-1'></div>
@@ -580,11 +634,11 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'find', true, true, '', array()
             </div>
         </div>
         <div class='row mt-2'>
-            <div class='col-sm-12' id='findTable'></div>
+            <div class='col-sm-12' id='matchTable'></div>
         </div>
     </div>
-    <div id='result_message' class='mt-4 p-2'></div>
 </div>
+<div id='result_message' class='mt-4 p-2'></div>
 
 <pre id='test'>
 </pre>
