@@ -197,6 +197,7 @@ class Unmatched {
                 {title: "Email", field: "email_addr", width: 200, headerSort: true, headerFilter: true, },
                 {title: "Date Created", field: "createtime", width: 180, headerSort: true, headerFilter: true, },
                 {title: "Num Regs", field: "numRegs", width: 50, headerWordWrap: true, headerHozAlign:"right", hozAlign: "right", headerSort: false},
+                {title: "Registrations", field: "regs", minWidth: 400, headerWordWrap: true, headerSort: false},
                 {field: "price",visible: false},
                 {field: "paid", visible: false},
                 {field: 'first_name', visible: false,},
