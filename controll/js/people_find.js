@@ -356,8 +356,8 @@ class Find {
             managerName: this.#managerName.innerHTML,
             active: this.#active.value,
             banned: this.#banned.value,
-            openNotes: this.#openNotes.innerHTML,
-            adminNotes: this.#adminNotes.innerHTML,
+            openNotes: this.#openNotes.value,
+            adminNotes: this.#adminNotes.value,
             oldPolicies: JSON.stringify(this.#memberPolicies),
             existingInterests: JSON.stringify(this.#memberInterests),
         };
