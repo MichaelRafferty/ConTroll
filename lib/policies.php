@@ -53,7 +53,7 @@ function drawPoliciesBlock($policies, $tabIndexStart, $idPrefix = '') {
             <label>
                 <input type='checkbox' <?php echo $checked; ?> name='p_<?php echo $idPrefix . $name;?>' id='p_<?php echo $idPrefix . $name;?>' value='Y'
                        tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
-                <span id="l_<?php echo $id_prefix . $name;?>" name="l_<?php echo $idPrefix . $name;?>"><?php echo $prompt; ?></span>
+                <span id="l_<?php echo $idPrefix . $name;?>" name="l_<?php echo $idPrefix . $name;?>"><?php echo $prompt; ?></span>
             </label>
             <?php if ($description != '') { ?>
             <span class="small"><a href='javascript:void(0)' onClick='$("#<?php echo $idPrefix . $name;?>Tip").toggle()'>
