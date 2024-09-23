@@ -76,6 +76,10 @@ EOS;
 } else {
     // this is a pattern match
     $findPattern = '%' . strtolower(str_replace(' ', '%', $findPattern)) . '%';
+    $notMerge = '';
+    if ($searchType != 'find') {
+        $notMerge = " AND (NOT (p.first_name = 'Merged' AND p.middle_name = 'into')) AND p.banned = 'N'";
+    }
     // does anyone match this pattern?
     $mQ = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalname, p.pronouns, 
@@ -103,14 +107,15 @@ LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)
 LEFT OUTER JOIN reg r ON (r.perid = p.id)
 LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
 WHERE
-    LOWER(p.legalname) LIKE ?
+    (LOWER(p.legalname) LIKE ?
     OR LOWER(p.badge_name) LIKE ?
     OR LOWER(p.address) LIKE ?
     OR LOWER(p.addr_2) LIKE ?
     OR LOWER(p.email_addr) LIKE ?
     OR LOWER(CONCAT(p.first_name, ' ', p.last_name)) LIKE ?
     OR LOWER(CONCAT(p.last_name, ' ', p.first_name)) LIKE ?
-    OR LOWER(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix)) LIKE ?
+    OR LOWER(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix)) LIKE ?)
+$notMerge
 GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalname, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.banned, 
     p.creation_date, p.update_date, p.active, p.open_notes,
