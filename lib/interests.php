@@ -25,6 +25,8 @@ EOS;
 
 //drawInterestList - draw the inner block for interest editing
 function drawInterestList($interests, $modal = false) {
+    if ($interests == null) // null? no interests, nothing to draw
+        return;
 ?>
     <div class='row'>
         <div class='col-sm-auto'>
