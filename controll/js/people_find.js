@@ -125,6 +125,12 @@ class Find {
         var _this = this;
         clear_message();
         clearError();
+        this.close();
+        this.#managerHdr.hidden = true;
+        this.#managerRow.hidden = true;
+        this.#managesHdr.hidden = true;
+        this.#managesRow.hidden = true;
+        this.#managerLookupFind.hidden = true;
         $.ajax({
             url: script,
             method: 'POST',
@@ -202,7 +208,8 @@ class Find {
         var row = cell.getRow();
         var index = row.getIndex()
 
-        return '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+        return '<button class="btn btn-primary" type="button" ' +
+            'style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="findPerson.editPerson(' + index + ');">Edit</button>';
     }
 
@@ -214,7 +221,8 @@ class Find {
         if (managerId != null && managerId != '') {
             return '(managed)';
         }
-        return '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+        return '<button class="btn btn-primary" type="button" ' +
+            'style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="findPerson.selectManager(' + index + ');">Select</button>';
     }
 
@@ -311,7 +319,8 @@ class Find {
             for (i = 0; i < this.#managed.length; i++) {
                 var mper = this.#managed[i];
                 html += '<div class="col-sm-1">' +
-                    '<button class="btn btn-sm btn-warning" onclick="findPerson.unmanage(' + "'" + mper.type + mper.id + "'" + ')">Unmanage</button>' +
+                    '<button class="btn btn-sm btn-warning" type="button" ' +
+                    'onclick="findPerson.unmanage(' + "'" + mper.type + mper.id + "'" + ')">Unmanage</button>' +
                     '</div>\n' +
                     '<div class="col-sm-1">' + mper.type + mper.id + '</div>\n' +
                     '<div class="col-sm-10">' + mper.fullName + '</div>\n';
@@ -336,6 +345,35 @@ class Find {
     disassociate() {
         this.#managerId.value = null;
         this.#managerName.innerHTML = '';
+    }
+
+    // clear the managee
+    unmanage(link) {
+        console.log(link);
+        var script = 'scripts/people_unmanage.php';
+        var postdata = {
+            action: 'unmanage',
+            who: link,
+        }
+        var _this = this;
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postdata,
+            success: function (data, textStatus, jhXHR) {
+                _this.unmanageSuccess(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error', 'find_edit_message');
+                return false;
+            }
+        });
+    }
+
+    // unmanageSuccess - after delete of managed person fix up screen
+    unmanageSuccess(data) {
+
     }
 
     // findManager - show the search block to look for a new manager, you don't know the id directly
