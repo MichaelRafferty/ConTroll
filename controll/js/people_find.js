@@ -45,6 +45,10 @@ class Find {
     #managesRow = null;
     #managerHdr = null;
     #managerRow = null;
+    #managerLookupRows = null
+    #managerLookupFind = null;
+    #newManagerLookup = null;
+    #managerLookupTable = null;
 
     #matched = null;
     #editRow = null;
@@ -91,6 +95,9 @@ class Find {
             this.#managesRow = document.getElementById('managesRow');
             this.#managerHdr = document.getElementById('managerHdr');
             this.#managerRow = document.getElementById('managerRow');
+            this.#managerLookupFind = document.getElementById('managerLookupFind');
+            this.#newManagerLookup = document.getElementById('newManagerLookup');
+            this.#newManagerLookup.addEventListener('keyup', managerLookupListener);
         }
     }
 
@@ -100,6 +107,10 @@ class Find {
         if (this.#findTable != null) {
             this.#findTable.destroy();
             this.#findTable = null;
+        }
+        if (this.#managerLookupTable != null) {
+            this.#managerLookupTable.destroy();
+            this.#managerLookupTable = null;
         }
         this.#findPattern.focus();
     }
@@ -195,6 +206,18 @@ class Find {
             ' onclick="findPerson.editPerson(' + index + ');">Edit</button>';
     }
 
+    // select manager: select this row as manager
+    selectButton(cell, formatterParams, onRendered) {
+        var row = cell.getRow();
+        var index = row.getIndex()
+        var managerId = row.getData().managerId;
+        if (managerId != null && managerId != '') {
+            return '(managed)';
+        }
+        return '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="findPerson.selectManager(' + index + ');">Select</button>';
+    }
+
     // editPerson - call up this person to edit
     editPerson(index) {
         this.#editRow = this.#findTable.getRow(index).getData();
@@ -225,6 +248,14 @@ class Find {
 
     findDetailsSuccess(data) {
         var i;  // index
+        if (data['error']) {
+            show_message(data['error'], 'error');
+            return;
+        }
+        if (data['warn']) {
+            show_message(data['warn'], 'warn');
+            return;
+        }
 
         this.#memberPolicies = data['policies'];
         this.#memberInterests = data['interests'];
@@ -294,6 +325,10 @@ class Find {
             this.#managerId.value = this.#editRow.managerId;
             this.#managerName.innerHTML = this.#editRow.manager;
         }
+
+        if (data['success']) {
+            show_message(data['success'], 'success', 'find_edit_message');
+        }
         this.#editModal.show();
     }
 
@@ -303,9 +338,110 @@ class Find {
         this.#managerName.innerHTML = '';
     }
 
+    // findManager - show the search block to look for a new manager, you don't know the id directly
+    findManager() {
+        clear_message('find_edit_message');
+        this.#newManagerLookup.value = '';
+        this.#managerLookupFind.hidden = false;
+        this.#newManagerLookup.focus();
+    }
+
+    // lookup manager - preform the search and show the table
+    lookupManager() {
+        var searchStr = this.#newManagerLookup.value;
+        if (searchStr == '') {
+            show_message("Enter a search string in the Lookup New Manager text box", 'error', 'find_edit_message')
+        }
+        var postdata = {
+            type: 'manager',
+            pattern: searchStr,
+        }
+        var script = 'scripts/people_findPerson.php';
+        clear_message('find_edit_message');
+        clear_message();
+        clearError();
+        var _this = this;
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postdata,
+            success: function (data, textStatus, jhXHR) {
+                _this.lookupManagerSuccess(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error', 'find_edit_message');
+                return false;
+            }
+        });
+    }
+
+    // lookup manager Success - draw the table
+    lookupManagerSuccess(data) {
+        if (data['error']) {
+            show_message(data['error'], 'error', 'find_edit_message');
+            return;
+        }
+        if (data['warn']) {
+            show_message(data['warn'], 'warn', 'find_edit_message');
+            return;
+        }
+
+        this.#managerLookupRows = data['matches'];
+        this.#managerLookupTable = new Tabulator('#managerTableDiv', {
+            data: this.#managerLookupRows,
+            layout: "fitDataTable",
+            index: "id",
+            pagination: true,
+            paginationAddRow:"table",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            columns: [
+                {title: "Select", formatter: this.selectButton, headerSort: false },
+                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
+                {title: "Mgr Id", field: "managerId", headerHozAlign:"right", hozAlign: "right", headerWordWrap: true, width: 80,headerSort: false },
+                {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
+                {title: "Full Name", field: "fullName", width: 200, headerSort: true, headerFilter: true, },
+                {title: "Badge Name", field: "badge_name", width: 200, headerSort: true, headerFilter: true, },
+                {title: "Full Address", field: "fullAddr", width: 400, headerSort: true, headerFilter: true, },
+                {title: "Ctry", field: "country", width: 60, headerSort: false, headerFilter: false, },
+                {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
+                {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true, },
+                {title: "Memberships", field: "memberships", minWidth: 300, headerSort: true, headerFilter: true, },
+                {field: "creation_date", visible: false },
+                {field: 'first_name', visible: false,},
+                {field: 'middle_name', visible: false,},
+                {field: 'last_name', visible: false,},
+                {field: 'suffix', visible: false,},
+                {field: 'legalName', visible: false,},
+                {field: 'pronouns', visible: false,},
+                {field: 'address', visible: false,},
+                {field: 'addr_2', visible: false,},
+                {field: 'city', visible: false,},
+                {field: 'state', visible: false,},
+                {field: 'zip', visible: false,},
+                {field: 'country', visible: false,},
+                {field: 'active', visible: false,},
+                {field: 'banned', visible: false,},
+                {field: 'admin_notes', visible: false,},
+                {field: 'open_notes', visible: false,},
+            ],
+        });
+        if (data['success']) {
+            show_message(data['success'], 'success', 'find_edit_message');
+        }
+    }
     // change the manager
-    changeManager() {
-        console.log("change manager called");
+    selectManager(index) {
+        this.#managerId.value = index;
+        this.#managerName.innerHTML = this.#managerLookupTable.getRow(index).getData().fullName;
+        clear_message('find_edit_message');
+        this.#newManagerLookup.value = '';
+        this.#managerLookupFind.hidden = true;
+        if (this.#managerLookupTable != null) {
+            this.#managerLookupTable.destroy();
+            this.#managerLookupTable = null;
+        }
     }
 
     // saveEdit - save the edited data back to the database
@@ -485,11 +621,22 @@ class Find {
             this.#findTable.destroy();
             this.#findTable = null;
         }
+        if (this.#managerLookupTable != null) {
+            this.#managerLookupTable.destroy();
+            this.#managerLookupTable = null;
+        }
         this.#findPattern.removeEventListener('keyup', findKeyUpListener);
+        if (this.#newManagerLookup != null)
+            this.#newManagerLookup.removeEventListener('keyup', managerLookupListener);
     };
 }
 
 function findKeyUpListener(e) {
     if (e.code === 'Enter')
         findPerson.find();
+}
+
+function managerLookupListener(e) {
+    if (e.code === 'Enter')
+        findPerson.lookupManager();
 }

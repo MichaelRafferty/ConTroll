@@ -14,7 +14,15 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     exit();
 }
 
-if ((!array_key_exists('type', $_POST)) || $_POST['type'] != 'find') {
+if (!array_key_exists('type', $_POST)) {
+    $response['error'] = 'Parameter Error';
+    ajaxSuccess($response);
+    exit();
+}
+
+if ($_POST['type'] == 'find' || $_POST['type'] == 'manager' ||$_POST['type'] == 'managed')
+    $searchType = $_POST['type'];
+else {
     $response['error'] = 'Parameter Error';
     ajaxSuccess($response);
     exit();
