@@ -557,7 +557,11 @@ class Unmatched {
                 "<option value='EMAIL'>Send Email Manage Request</option>\n";
         }
         html += "</select>\n";
-        html += "<input type='hidden' name='managerId' id='managerId' value='" + managerId + "'/>\n";
+        if (managerId != null) {
+            html += "<input type='hidden' name='managerId' id='managerId' value='" + managerId + "'/>\n";
+        } else {
+            html += "<input type='hidden' name='managerId' id='managerId' value=null />\n";
+        }
         return html;
     }
 
