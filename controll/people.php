@@ -541,6 +541,29 @@ drawInterestList($interests, true);
                             </h2></div>
                     </div>
                     <div class="row mt-1" id="managesRow"></div>
+                    <div class='row mt-2' id='addManages'>
+                        <div class='col-sm-auto'>
+                            <button class='btn btn-sm btn-secondary' type='button' onclick='findPerson.addManages();'>Add to Managed List</button>
+                        </div>
+                        <div class='col-sm-auto'><input type='number' class='no-spinners' inputmode='numeric' id='f_managesId' name='f_managesId'></div>
+                        <div class='col-sm-auto' id="managesName"></div>
+                        <div class='col-sm-auto'>
+                            <button class='btn btn-sm btn-secondary' type='button' onclick='findPerson.findManages();'>Find Person to Manage</button>
+                        </div>
+                    </div>
+                    <div class='row mt-2' id='managesLookupFind' hidden>
+                        <div class='col-sm-auto'><label for='newManagesLookup'>Lookup New Person to Manage:</label></div>
+                        <div class='col-sm-auto'>
+                            <input type='text' name='newManagesLookup' id='newManagesLookup' size='80'
+                                   placeholder='Name/Portion of (Name, Address, Email, Badgename, Legal Name)'>
+                        </div>
+                        <div class='col-sm-auto'>
+                            <button class='btn btn-sm btn-primary' type='button' onclick='findPerson.lookupManages();'>Lookup</button>
+                        </div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-12' id='managesTableDiv'></div>
+                    </div>
                     <div class='row mt-3'>
                         <div class='col-sm-auto'><h2 class='size=h3'>Status and Notes</h2></div>
                     </div>

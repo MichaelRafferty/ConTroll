@@ -45,10 +45,17 @@ class Find {
     #managesRow = null;
     #managerHdr = null;
     #managerRow = null;
+    #addManages = null;
+    #managesId = null;
     #managerLookupRows = null
     #managerLookupFind = null;
     #newManagerLookup = null;
     #managerLookupTable = null;
+    #managesLookupFind = null;
+    #newManagesLookup = null;
+    #managesLookupTable = null;
+    #managesLookupRows = null
+    #managesName = null;
 
     #matched = null;
     #editRow = null;
@@ -98,6 +105,12 @@ class Find {
             this.#managerLookupFind = document.getElementById('managerLookupFind');
             this.#newManagerLookup = document.getElementById('newManagerLookup');
             this.#newManagerLookup.addEventListener('keyup', managerLookupListener);
+            this.#managesLookupFind = document.getElementById('managesLookupFind');
+            this.#newManagesLookup = document.getElementById('newManagesLookup');
+            this.#newManagesLookup.addEventListener('keyup', managesLookupListener);
+            this.#addManages = document.getElementById('addManages');
+            this.#managesId = document.getElementById('f_managesId');
+            this.#managesName = document.getElementById('managesName');
         }
     }
 
@@ -111,6 +124,10 @@ class Find {
         if (this.#managerLookupTable != null) {
             this.#managerLookupTable.destroy();
             this.#managerLookupTable = null;
+        }
+        if (this.#managesLookupTable != null) {
+            this.#managesLookupTable.destroy();
+            this.#managesLookupTable = null;
         }
         this.#findPattern.focus();
     }
@@ -131,6 +148,8 @@ class Find {
         this.#managesHdr.hidden = true;
         this.#managesRow.hidden = true;
         this.#managerLookupFind.hidden = true;
+        this.#managesLookupFind.hidden = true;
+        this.#addManages.hidden = true;
         $.ajax({
             url: script,
             method: 'POST',
@@ -226,6 +245,28 @@ class Find {
             ' onclick="findPerson.selectManager(' + index + ');">Select</button>';
     }
 
+    // select manager: select this row as manager
+    managerButton(cell, formatterParams, onRendered) {
+       return findPerson.managerBTN(cell);
+    }
+
+    managerBTN(cell){
+        var row = cell.getRow();
+        var index = row.getIndex()
+        var managerId = row.getData().managerId;
+        if (managerId == null || managerId == '') {
+            return '<button class="btn btn-primary" type="button" ' +
+                'style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+                ' onclick="findPerson.assignManager(' + index + ');">Manage</button>';
+        }
+
+        if (managerId == this.#editRow.id) {
+            return '(Managed)';
+        }
+        return "(Mby " + managerId + ")";
+    }
+
+
     // editPerson - call up this person to edit
     editPerson(index) {
         this.#editRow = this.#findTable.getRow(index).getData();
@@ -312,6 +353,8 @@ class Find {
             this.#managerRow.hidden = true;
             this.#managesHdr.hidden = false;
             this.#managesRow.hidden = false;
+            this.#managesLookupFind.hidden = true;
+            this.#addManages.hidden = false;
             this.#managerId.value = '';
             this.#managerName.innerHTML = '';
             // now the manages section
@@ -331,6 +374,8 @@ class Find {
             this.#managerRow.hidden = false;
             this.#managesHdr.hidden = true;
             this.#managesRow.hidden = true;
+            this.#managesLookupFind.hidden = true;
+            this.#addManages.hidden = true;
             this.#managerId.value = this.#editRow.managerId;
             this.#managerName.innerHTML = this.#editRow.manager;
         }
@@ -502,6 +547,164 @@ class Find {
         }
     }
 
+    // findManages - show the search block to look for a new managee, you don't know the id directly
+    findManages() {
+        clear_message('find_edit_message');
+        this.#newManagesLookup.value = '';
+        this.#managesLookupFind.hidden = false;
+        this.#newManagesLookup.focus();
+    }
+
+    // lookup managea - preform the search and show the table
+    lookupManages() {
+        var searchStr = this.#newManagesLookup.value;
+        if (searchStr == '') {
+            show_message("Enter a search string in the Find Person to Manage text box", 'error', 'find_edit_message')
+        }
+        var postdata = {
+            type: 'managed',
+            pattern: searchStr,
+        }
+        var script = 'scripts/people_findPerson.php';
+        clear_message('find_edit_message');
+        clear_message();
+        clearError();
+        var _this = this;
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postdata,
+            success: function (data, textStatus, jhXHR) {
+                _this.lookupManagesSuccess(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error', 'find_edit_message');
+                return false;
+            }
+        });
+    }
+
+    // lookup manages Success - draw the table
+    lookupManagesSuccess(data) {
+        if (data['error']) {
+            show_message(data['error'], 'error', 'find_edit_message');
+            return;
+        }
+        if (data['warn']) {
+            show_message(data['warn'], 'warn', 'find_edit_message');
+            return;
+        }
+
+        this.#managesLookupRows = data['matches'];
+        this.#managesLookupTable = new Tabulator('#managesTableDiv', {
+            data: this.#managesLookupRows,
+            layout: "fitDataTable",
+            index: "id",
+            pagination: true,
+            paginationAddRow:"table",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            columns: [
+                {title: "Manage", formatter: findPerson.managerButton, headerSort: false },
+                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
+                {title: "Mgr Id", field: "managerId", headerHozAlign:"right", hozAlign: "right", headerWordWrap: true, width: 80,headerSort: false },
+                {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
+                {title: "Full Name", field: "fullName", width: 200, headerSort: true, headerFilter: true, },
+                {title: "Badge Name", field: "badge_name", width: 200, headerSort: true, headerFilter: true, },
+                {title: "Full Address", field: "fullAddr", width: 400, headerSort: true, headerFilter: true, },
+                {title: "Ctry", field: "country", width: 60, headerSort: false, headerFilter: false, },
+                {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
+                {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true, },
+                {title: "Memberships", field: "memberships", minWidth: 300, headerSort: true, headerFilter: true, },
+                {field: "creation_date", visible: false },
+                {field: 'first_name', visible: false,},
+                {field: 'middle_name', visible: false,},
+                {field: 'last_name', visible: false,},
+                {field: 'suffix', visible: false,},
+                {field: 'legalName', visible: false,},
+                {field: 'pronouns', visible: false,},
+                {field: 'address', visible: false,},
+                {field: 'addr_2', visible: false,},
+                {field: 'city', visible: false,},
+                {field: 'state', visible: false,},
+                {field: 'zip', visible: false,},
+                {field: 'country', visible: false,},
+                {field: 'active', visible: false,},
+                {field: 'banned', visible: false,},
+                {field: 'admin_notes', visible: false,},
+                {field: 'open_notes', visible: false,},
+            ],
+        });
+        if (data['success']) {
+            show_message(data['success'], 'success', 'find_edit_message');
+        }
+    }
+    // add the managee
+    assignManager(index) {
+        this.#managesId.value = index;
+        this.#managesName.innerHTML = this.#managesLookupTable.getRow(index).getData().fullName;
+        clear_message('find_edit_message');
+        this.#newManagesLookup.value = '';
+        this.#managesLookupFind.hidden = true;
+        if (this.#managesLookupTable != null) {
+            this.#managesLookupTable.destroy();
+            this.#managesLookupTable = null;
+        }
+
+        // now add the row to the database
+        addManages(index);
+    }
+
+    // addManages - update the database and redraw the screen with a new manages entry
+    addManages(index = null) {
+        if (index == null) {
+            index = this.#managesId.value;
+        }
+
+        if (index == null || index == '') {
+            show_message("Enter the perid to manage, or use the Find Person to Manage button", 'error', 'find_edit_message')
+            return;
+        }
+
+        var script = 'scripts/people_manage.php';
+        var postdata = {
+            action: 'manage',
+            who: index,
+            manager: this.#editRow.id,
+        }
+        var _this = this;
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postdata,
+            success: function (data, textStatus, jhXHR) {
+                _this.addManageeSuccess(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error', 'find_edit_message');
+                return false;
+            }
+        });
+    }
+
+    // unmanageSuccess - after delete of managed person fix up screen
+    addManageeSuccess(data) {
+        if (data['error']) {
+            show_message(data['error'], 'error', 'find_edit_message');
+            return;
+        }
+        if (data['warn']) {
+            show_message(data['warn'], 'warn', 'find_edit_message');
+            return;
+        }
+
+        // reload the page with the new person on the list, it's too hard to add it in JS right now
+        this.close(false);
+        this.editPerson(this.#editRow.id);
+    }
+
     // saveEdit - save the edited data back to the database
     saveEdit() {
         // validate the data, simple checks
@@ -666,6 +869,8 @@ class Find {
         this.#emailAddr.value = '';
         this.#emailAddr2.value = '';
         this.#phone.value = '';
+        this.#managesName.innerHTML = '';
+        this.#managesId.value = '';
         this.#addPersonBtn.disabled = true;
         clear_message('find_edit_message');
         clear_message();
@@ -673,9 +878,9 @@ class Find {
     }
 
     // on close of the pane, clean up the items
-    close() {
+    close(clearFind = true) {
         this.clearForm();
-        if (this.#findTable != null) {
+        if (this.#findTable != null && clearFind) {
             this.#findTable.destroy();
             this.#findTable = null;
         }
@@ -683,9 +888,15 @@ class Find {
             this.#managerLookupTable.destroy();
             this.#managerLookupTable = null;
         }
+        if (this.#managesLookupTable != null) {
+            this.#managesLookupTable.destroy();
+            this.#managesLookupTable = null;
+        }
         this.#findPattern.removeEventListener('keyup', findKeyUpListener);
         if (this.#newManagerLookup != null)
             this.#newManagerLookup.removeEventListener('keyup', managerLookupListener);
+        if (this.#newManagesLookup != null)
+            this.#newManagesLookup.removeEventListener('keyup', managesLookupListener);
     };
 }
 
@@ -697,4 +908,9 @@ function findKeyUpListener(e) {
 function managerLookupListener(e) {
     if (e.code === 'Enter')
         findPerson.lookupManager();
+}
+
+function managesLookupListener(e) {
+    if (e.code === 'Enter')
+        findPerson.lookupManages();
 }
