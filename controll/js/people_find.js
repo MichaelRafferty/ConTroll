@@ -319,7 +319,7 @@ class Find {
             for (i = 0; i < this.#managed.length; i++) {
                 var mper = this.#managed[i];
                 html += '<div class="col-sm-1">' +
-                    '<button class="btn btn-sm btn-warning" type="button" ' +
+                    '<button class="btn btn-sm btn-warning" type="button" id="u_' + mper.type + mper.id + '" ' +
                     'onclick="findPerson.unmanage(' + "'" + mper.type + mper.id + "'" + ')">Unmanage</button>' +
                     '</div>\n' +
                     '<div class="col-sm-1">' + mper.type + mper.id + '</div>\n' +
@@ -373,7 +373,27 @@ class Find {
 
     // unmanageSuccess - after delete of managed person fix up screen
     unmanageSuccess(data) {
+        if (data['error']) {
+            show_message(data['error'], 'error', 'find_edit_message');
+            return;
+        }
+        if (data['warn']) {
+            show_message(data['warn'], 'warn', 'find_edit_message');
+            return;
+        }
 
+        // change the button to be inactive and it's name to be unmanaged
+        var button = document.getElementById('u_' + data['who']);
+        if (button) {
+            button.innerHTML = 'cleared';
+            button.disabled = true;
+            button.classList.remove("btn-warning");
+        }
+
+        if (data['success']) {
+            show_message(data['success'], 'success', 'find_edit_message');
+            return;
+        }
     }
 
     // findManager - show the search block to look for a new manager, you don't know the id directly
