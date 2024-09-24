@@ -7,6 +7,7 @@ class Find {
     #editPersonName = null;
     #findPattern = null;
     #addPersonBtn = null;
+    #directEdit = null;
 
     #debug = 0;
     #debugVisible = false;
@@ -115,7 +116,7 @@ class Find {
     }
 
     // called on open of the add window
-    open(msg = null) {
+    open(msg = null, id = null, row = null) {
         this.clearForm();
         if (this.#findTable != null) {
             this.#findTable.destroy();
@@ -129,7 +130,32 @@ class Find {
             this.#managesLookupTable.destroy();
             this.#managesLookupTable = null;
         }
+        if (id != null) {
+            clear_message();
+            clearError();
+            this.close();
+            this.#managerHdr.hidden = true;
+            this.#managerRow.hidden = true;
+            this.#managesHdr.hidden = true;
+            this.#managesRow.hidden = true;
+            this.#managerLookupFind.hidden = true;
+            this.#managesLookupFind.hidden = true;
+            this.#addManages.hidden = true;
+            var rows = [];
+            rows.push(row);
+            var data = {};
+            data['matches'] = rows;
+            this.#directEdit = id;
+            this.findSuccess(data);
+            setTimeout(add_editPerson, 100);
+            return;
+        }
         this.#findPattern.focus();
+    }
+
+    // delayed edit
+    directEdit() {
+        this.editPerson(this.#directEdit);
     }
 
     // find matching records
@@ -913,4 +939,8 @@ function managerLookupListener(e) {
 function managesLookupListener(e) {
     if (e.code === 'Enter')
         findPerson.lookupManages();
+}
+
+function add_editPerson() {
+    findPerson.directEdit();
 }
