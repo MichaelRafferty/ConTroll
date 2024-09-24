@@ -246,6 +246,14 @@ class Find {
                 {field: 'open_notes', visible: false,},
             ],
         });
+
+        this.#addPersonBtn.disabled = false;
+    }
+
+    // addperson button - go to add person
+    addPerson() {
+        this.close();
+        peopleAddPerson();
     }
 
     // select edit: edit this person

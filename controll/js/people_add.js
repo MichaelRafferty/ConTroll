@@ -184,7 +184,14 @@ class Add {
     // selectPerson - take this person and switch to the Find/Edit tab with this person
     selectPerson(index) {
         console.log(index);
-        peopleEditPerson(index, this.#matchTable.getRow(index).getData());
+        var row = this.#matchTable.getRow(index).getData();
+        if (this.#matchTable != null) {
+            this.#matchTable.destroy();
+            this.#matchTable = null;
+        }
+        this.#addPersonBtn.disabled = true;
+        this.close();
+        peopleEditPerson(index, row);
     }
 
     // addPerson - they decided it's a new person, add them
