@@ -39,6 +39,7 @@ hoteladdr="Hotel Address"
 survey_url="https://link-to-post-convention-survey"
 id="2022"
 taxRate=6
+currency="USD"
 minComp="2021"
 compLen="150"
 conLen="3"
@@ -73,6 +74,7 @@ cancelled=0
 cancel_date="Day, Month Day"
 server="https://reg.conname.org/"
 logoimage="conname2022.png"
+logoalt="logo image alternate text"
 logotext="Tagline not alt=text"
 onsiteopen="3:00 PM"
 ; required person field sets
@@ -89,6 +91,7 @@ required="all"
 discount=active
 ; badgeps = fill path to the Postscript header for printing badges
 badgeps="/home/homedir/config/conname.ps"
+;;; customtext
 ; appears in each program section based on program name
 ; values:
 ; all = show all customtext, even the default messages
@@ -98,6 +101,7 @@ customtext='production'
 [vendor]
 test=0
 open=1
+;;; customtext
 ; appears in each program section based on program name
 ; values:
 ; all = show all customtext, even the default messages
@@ -112,7 +116,6 @@ vendorsite="http://vendor"
 vendorSignupAddltext=""
 artistsite="http://artist"
 artist="artists@???"
-renderer='http://localhost:3000' ; remote renderer for bidsheets
 # pathto file in config any additional text you wish to add to explain the signup form for artist portal
 ;; artist Item Registration Headers, if omitted, the defaults are used
 ;artistItemAuctionTitle="Art Auction Items"
@@ -146,7 +149,7 @@ artistBidSheet="Demo 2024 Art Show Bid Sheet"
 artistPriceTag=""
 taxidlabel="NJ Sales Tax ID"
 taxidextra=
-// disclaimers are path to file in config directory contain the request and payment disclaimers
+;; disclaimers are path to file in config directory contain the request and payment disclaimers
 req_disclaimer=""
 pay_disclaimer=""
 artsheets=false ; true/false show sheet print buttons
@@ -208,6 +211,7 @@ open=1
 suspended=1
 close=0
 max_failures=10
+;;; customtext
 ; appears in each program section based on program name
 ; values:
 ; all = show all customtext, even the default messages
@@ -220,6 +224,7 @@ url="https://reg.conname.org/artshow"
 test=0
 open=1
 https=1
+;;; customtext
 ; appears in each program section based on program name
 ; values:
 ; all = show all customtext, even the default messages
@@ -239,9 +244,11 @@ logoalt=""
 emailhrs=24
 oauthhrs=8
 history=1
+; helppage = path to the help page relative to the web root of the portal page
+; helppage=
 ; showConPolicy - shows the "CLick here for the #conname# Policies",
 ;     set to 0 if agree to policy is one of your policies or 1 otherwise
-showVolunteerPolicy=1
+showConPolicy=1
 ; showVolunteerPolicy - shows the "#Conname# is entirely run by volunteers" line in the policy block,
 ;      set to 0 if volunteers is in your interest section, 1 otherwise
 showVolunteerPolicy=1
@@ -257,4 +264,3 @@ secret=
 clubname='Club Name'
 ; badgelistfilter - where to put the filter elements on the badgelist page ("top", "bottom")
 badgelistfilter="top"
-

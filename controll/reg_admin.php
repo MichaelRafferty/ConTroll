@@ -145,7 +145,7 @@ else
                                 </label>
                                 <span class='small' id='previewDescIcon'>
                                     <a href='javascript:void(0)' onClick='$("#previewTip").toggle()'>
-                                        <img src='/images/infoicon.png'
+                                        <img src='/lib/infoicon.png'
                                             alt='click this info icon for more information' style='max-height: 25px;'>
                                     </a>
                                 </span>
@@ -153,7 +153,7 @@ else
                                     <p class='text-body'><span id="previewDescriptionText">Preview Text</span>
                                         <span class='small'>
                                             <a href='javascript:void(0)' onClick='$("#previewTip").toggle()'>
-                                                <img src='/images/closeicon.png'
+                                                <img src='/lib/closeicon.png'
                                                      alt='click this close icon to close the more information window' style='max-height: 25px;'>
                                             </a>
                                         </span>

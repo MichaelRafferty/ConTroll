@@ -138,7 +138,7 @@ $config_vars['inrerests'] = $interests;
                                     <div class="col-sm-auto ms-0 me-0 ps-0 pe-0" id="matchName"></div>
                                     <div class="col-sm-auto ms-0 me-0 ps-0 pe-0">
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('matchName')">
+                                                type='button' onclick="unmatchedPeople.copy('matchName')">
                                             >>
                                         </button></div>
                                 </div>
@@ -155,7 +155,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('newName')">
+                                                type='button' onclick="unmatchedPeople.copy('newName')">
                                             <<
                                         </button>
                                     </div>
@@ -172,7 +172,7 @@ $config_vars['inrerests'] = $interests;
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchLegal'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('matchLegal')">
+                                                type='button' onclick="unmatchedPeople.copy('matchLegal')">
                                             >>
                                         </button>
                                     </div>
@@ -187,7 +187,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('newLegal')">
+                                                type='button' onclick="unmatchedPeople.copy('newLegal')">
                                             <<
                                         </button>
                                     </div>
@@ -204,7 +204,7 @@ $config_vars['inrerests'] = $interests;
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchPronouns'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('matchPronouns')">
+                                                type='button' onclick="unmatchedPeople.copy('matchPronouns')">
                                             >>
                                         </button>
                                     </div>
@@ -219,7 +219,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('newPronouns')">
+                                                type='button' onclick="unmatchedPeople.copy('newPronouns')">
                                             <<
                                         </button>
                                     </div>
@@ -236,7 +236,7 @@ $config_vars['inrerests'] = $interests;
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchBadge'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('matchBadge')">
+                                                type='button' onclick="unmatchedPeople.copy('matchBadge')">
                                             >>
                                         </button>
                                     </div>
@@ -251,7 +251,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('newBadge')">
+                                                type='button' onclick="unmatchedPeople.copy('newBadge')">
                                             <<
                                         </button>
                                     </div>
@@ -268,7 +268,7 @@ $config_vars['inrerests'] = $interests;
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchAddress'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('matchAddress')">
+                                                type='button' onclick="unmatchedPeople.copy('matchAddress')">
                                             >>
                                         </button>
                                     </div>
@@ -300,7 +300,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('newAddress')">
+                                                type='button' onclick="unmatchedPeople.copy('newAddress')">
                                             <<
                                         </button>
                                     </div>
@@ -317,7 +317,7 @@ $config_vars['inrerests'] = $interests;
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchEmail'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('matchEmail')">
+                                                type='button' onclick="unmatchedPeople.copy('matchEmail')">
                                             >>
                                         </button>
                                     </div>
@@ -332,7 +332,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('newEmail')">
+                                                type='button' onclick="unmatchedPeople.copy('newEmail')">
                                             <<
                                         </button>
                                     </div>
@@ -349,7 +349,7 @@ $config_vars['inrerests'] = $interests;
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchPhone'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('matchPhone')">
+                                                type='button' onclick="unmatchedPeople.copy('matchPhone')">
                                             >>
                                         </button>
                                     </div>
@@ -364,7 +364,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('newPhone')">
+                                                type='button' onclick="unmatchedPeople.copy('newPhone')">
                                             <<
                                         </button>
                                     </div>
@@ -381,7 +381,7 @@ $config_vars['inrerests'] = $interests;
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchPolicies'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('matchPolicies')">
+                                                type='button' onclick="unmatchedPeople.copy('matchPolicies')">
                                             >>
                                         </button>
                                     </div>
@@ -398,7 +398,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('newPolicies')">
+                                                type='button' onclick="unmatchedPeople.copy('newPolicies')">
                                             <<
                                         </button>
                                     </div>
@@ -415,7 +415,7 @@ $config_vars['inrerests'] = $interests;
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchFlags'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('matchFlags')">
+                                                type='button' onclick="unmatchedPeople.copy('matchFlags')">
                                             >>
                                         </button>
                                     </div>
@@ -439,7 +439,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('newFlags')">
+                                                type='button' onclick="unmatchedPeople.copy('newFlags')">
                                             <<
                                         </button>
                                     </div>
@@ -456,7 +456,7 @@ $config_vars['inrerests'] = $interests;
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchManager'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('matchManager')">
+                                                type='button' onclick="unmatchedPeople.copy('matchManager')">
                                             >>
                                         </button>
                                     </div>
@@ -469,7 +469,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
                                         <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
-                                                onclick="unmatchedPeople.copy('newManager')">
+                                                type='button' onclick="unmatchedPeople.copy('newManager')">
                                             <<
                                         </button>
                                     </div>
@@ -481,10 +481,11 @@ $config_vars['inrerests'] = $interests;
                 </div>
             </div>
             <div class='modal-footer'>
-                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='updateExisting' onClick='unmatchedPeople.saveMatch("e")' disabled>Update Existing
+                <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onClick='unmatchedPeople.saveMatch("e")' disabled>Update Existing
                     Person</button>
-                <button class='btn btn-sm btn-primary' id='createNew' onClick='unmatchedPeople.saveMatch("n")' disabled>Create New Person</button>
+                <button class='btn btn-sm btn-primary' type='button' id='createNew' onClick='unmatchedPeople.saveMatch("n")' disabled>Create New
+                    Person</button>
             </div>
             <div id='result_message_candidate' class='mt-4 p-2'></div>
         </div>
@@ -513,17 +514,56 @@ drawInterestList($interests, true);
                         <div class='col-sm-auto'><h2 class='size=h3'>Manager (Disassociate manager and save before adding people managed by this person)
                             </h2></div>
                     </div>
-                    <div class="row" id="managerRow">
-                        <div class="col-sm-1"><button class="btn btn-sm btn-warning" onclick="findPerson.disassociate();">Disassociate</button></div>
-                        <div class="col-sm-1"><button class="btn btn-sm btn-secondary" onclick="findPerson.changeManager();">Change</button></div>
+                    <div class="row mt-2" id="managerRow">
+                        <div class="col-sm-auto"><button class="btn btn-sm btn-warning" type="button" onclick="findPerson.disassociate();
+">Disassociate</button></div>
                         <div class="col-sm-auto"><input type="number" class='no-spinners' inputmode='numeric' id="f_managerId" name="f_managerId"></div>
+                        <div class='col-sm-auto'>
+                            <button class='btn btn-sm btn-secondary' type='button' onclick='findPerson.findManager();'>Find New Manager</button>
+                        </div>
                         <div class="col-sm-auto" id="f_managerName"></div>
+                    </div>
+                    <div class="row mt-2" id="managerLookupFind" hidden>
+                        <div class="col-sm-auto"><label for="newManagerLookup">Lookup New Manager:</label></div>
+                        <div class="col-sm-auto">
+                            <input type="text" name='newManagerLookup' id='newManagerLookup' size="80"
+                                  placeholder="Name/Portion of (Name, Address, Email, Badgename, Legal Name)">
+                        </div>
+                        <div class='col-sm-auto'>
+                            <button class='btn btn-sm btn-primary' type='button' onclick='findPerson.lookupManager();'>Lookup</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12" id="managerTableDiv"></div>
                     </div>
                     <div class='row mt-3' id="managesHdr">
                         <div class='col-sm-auto'><h2 class='size=h3'>Manages (Unmange all and save before making this person managed by another person)
                             </h2></div>
                     </div>
                     <div class="row mt-1" id="managesRow"></div>
+                    <div class='row mt-2' id='addManages'>
+                        <div class='col-sm-auto'>
+                            <button class='btn btn-sm btn-secondary' type='button' onclick='findPerson.addManages();'>Add to Managed List</button>
+                        </div>
+                        <div class='col-sm-auto'><input type='number' class='no-spinners' inputmode='numeric' id='f_managesId' name='f_managesId'></div>
+                        <div class='col-sm-auto' id="managesName"></div>
+                        <div class='col-sm-auto'>
+                            <button class='btn btn-sm btn-secondary' type='button' onclick='findPerson.findManages();'>Find Person to Manage</button>
+                        </div>
+                    </div>
+                    <div class='row mt-2' id='managesLookupFind' hidden>
+                        <div class='col-sm-auto'><label for='newManagesLookup'>Lookup New Person to Manage:</label></div>
+                        <div class='col-sm-auto'>
+                            <input type='text' name='newManagesLookup' id='newManagesLookup' size='80'
+                                   placeholder='Name/Portion of (Name, Address, Email, Badgename, Legal Name)'>
+                        </div>
+                        <div class='col-sm-auto'>
+                            <button class='btn btn-sm btn-primary' type='button' onclick='findPerson.lookupManages();'>Lookup</button>
+                        </div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-12' id='managesTableDiv'></div>
+                    </div>
                     <div class='row mt-3'>
                         <div class='col-sm-auto'><h2 class='size=h3'>Status and Notes</h2></div>
                     </div>
@@ -559,8 +599,8 @@ drawInterestList($interests, true);
                 </div>
             </div>
             <div class='modal-footer'>
-                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='updateExisting' onClick='findPerson.saveEdit()'>Update Existing Person</button>
+                <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onClick='findPerson.saveEdit()'>Update Existing Person</button>
             </div>
             <div id='find_edit_message' class='mt-4 p-2'></div>
         </div>
@@ -612,8 +652,9 @@ drawInterestList($interests, true);
             <div class='row mt-2'>
                 <div class='col-sm-1'></div>
                 <div class="col-sm-11">
-                    <button class='btn btn-sm btn-primary' onclick='findPerson.find();'>Find Person to Edit</button>
-                    <button class='btn btn-sm btn-secondary' id='findAddPersonBTN' onclick='findPerson.addPerson();' disabled>Not found, Add New Person</button>
+                    <button class='btn btn-sm btn-primary' type='button' onclick='findPerson.find();'>Find Person to Edit</button>
+                    <button class='btn btn-sm btn-secondary' type='button' id='findAddPersonBTN' onclick='findPerson.addPerson();' disabled>Not found, Add New
+                        Person</button>
                 </div>
             </div>
         </div>
@@ -628,9 +669,9 @@ drawInterestList($interests, true);
 ?>
         <div class="row mt-2">
             <div class="col-sm-auto">
-                <button class="btn btn-sm btn-primary" onclick="addPerson.checkExists();">Check If Already Exists</button>
-                <button class="btn btn-sm btn-secondary" onclick="addPerson.clearForm();">Clear Add Person Form</button>
-                <button class="btn btn-sm btn-secondary" id="addPersonBTN" onclick="addPerson.addPerson();" disabled>Add New Person</button>
+                <button class="btn btn-sm btn-primary" type='button' onclick="addPerson.checkExists();">Check If Already Exists</button>
+                <button class="btn btn-sm btn-secondary" type='button' onclick="addPerson.clearForm();">Clear Add Person Form</button>
+                <button class="btn btn-sm btn-secondary" type='button' id="addPersonBTN" onclick="addPerson.addPerson();" disabled>Add New Person</button>
             </div>
         </div>
         <div class='row mt-2'>

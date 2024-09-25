@@ -28,13 +28,14 @@ JOIN newperson nm ON nm.managedByNew = n.id
 WHERE n.perid IS NULL
 GROUP BY n.id
 ), regs AS (
-SELECT n.id, count(*) as numRegs, sum(price) AS price, sum(paid) AS paid
+SELECT n.id, count(*) as numRegs, sum(r.price) AS price, sum(r.paid) AS paid, GROUP_CONCAT(m.label SEPARATOR ', ') AS regs
 FROM newperson n
 JOIN reg r ON r.newperid = n.id
+JOIN memList m ON r.memId = m.id
 WHERE r.perid IS NULL AND n.perid IS NULL AND r.status IN ('paid', 'unpaid', 'plan', 'upgraded')
 GROUP BY n.id
 )
-SELECT n.*, mby.manages, r.numRegs, r.price, r.paid,
+SELECT n.*, mby.manages, r.numRegs, r.price, r.paid, r.regs,
 TRIM(REGEXP_REPLACE(
     CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.last_name, ''), ' ',  IFNULL(n.suffix, '')),
     '  *', ' ')) AS fullName,

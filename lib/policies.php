@@ -78,6 +78,9 @@ function drawPoliciesBlock($policies, $tabIndexStart, $idPrefix = '') {
 
 //drawPoliciesCell - draw the simpler cell for comparing policies
 function drawPoliciesCell($policies) {
+    if ($policies == null) // if there are no policies, nothing to draw
+        return;
+
     foreach ($policies as $policy) {
         $name = $policy['policy'];
         $prompt = replaceVariables($policy['prompt']);

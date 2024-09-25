@@ -51,11 +51,18 @@ function settab(tabname) {
 
 // switch from add to edit with a person
 function peopleEditPerson(index, row) {
-    console.log("Switch to " + index);
-    console.log(row);
+    //console.log("Switch to " + index);
+    //console.log(row);
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
-    return;
     if (findPerson == null)
         findPerson = new Find(config['debug']);
-    findPerson.open(id, row);
+    findPerson.open(null, index, row);
+}
+
+// switch from find/edit to add because the person wasn't foiund
+function peopleAddPerson() {
+    bootstrap.Tab.getOrCreateInstance(add_tab).show();
+    if (addPerson == null)
+        addPerson = new Add(config['debug']);
+    addPerson.open();
 }

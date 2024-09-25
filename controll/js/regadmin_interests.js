@@ -51,7 +51,6 @@ class interestsSetup {
             tinyMCE.init({
                 selector: 'textarea#interestDescription',
                 id: "prompt",
-                mode: "exact",
                 height: 400,
                 min_height: 300,
                 menubar: false,

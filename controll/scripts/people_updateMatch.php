@@ -78,6 +78,8 @@ $managedBy = null;
 switch ($_POST['managerAction']) {
     case 'ACC':
         $managedBy = $_POST['managerId'];
+        if ($managedBy == 'null')
+            $managedBy = null;
         $values[] = $managedBy;
         $values[] = 'Assigned PM';
         break;
