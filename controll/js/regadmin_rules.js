@@ -439,7 +439,7 @@ class rulesSetup {
         newMembership.id = -1;
         newMembership.create_date = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2) + ' ' +
             ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
-        newMembership.memId = id;
+        newMembership.memId = memId;
         newMembership.conid = memrow.conid;
         newMembership.status = 'in-cart';
         newMembership.price = memrow.price;
