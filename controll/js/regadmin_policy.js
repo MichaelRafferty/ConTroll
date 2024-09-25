@@ -60,7 +60,6 @@ class policySetup {
             tinyMCE.init({
                 selector: 'textarea#policyPrompt',
                 id: "prompt",
-                mode: "exact",
                 height: 400,
                 min_height: 300,
                 menubar: false,
@@ -80,7 +79,6 @@ class policySetup {
             tinyMCE.init({
                 selector: 'textarea#policyDescription',
                 id: "desc",
-                mode: "exact",
                 height: 400,
                 min_height: 300,
                 menubar: false,

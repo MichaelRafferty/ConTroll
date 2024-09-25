@@ -134,7 +134,6 @@ class rulesSetup {
             tinyMCE.init({
                 selector: 'textarea#ruleDescription',
                 id: "prompt",
-                mode: "exact",
                 height: 250,
                 min_height: 250,
                 menubar: false,
