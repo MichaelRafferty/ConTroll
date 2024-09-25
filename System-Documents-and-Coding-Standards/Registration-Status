@@ -1,0 +1,59 @@
+Registration Status (membership status)
+
+Registration (reg) records are assigned a status, this is the meanings and flows of those status entries
+
+statis enum('unpaid','plan','paid','cancelled','refunded','transfered','upgraded','rolled-over') DEFAULT 'unpaid'
+
+NULL is not considered valid, but is currently not locked out.
+
+unpaid: The registration has been saved to the member's account, but has not yet had any payments applied to it.
+    "Free" badges (price == 0) are immediately marked paid and are never in the unpaid status.
+    (When a membership is only in memory (used by portal) this status is in-cart, and only those in the database are considered 'unpaid')
+
+plan: This registration is not fully paid and is part of a payment plan.  Registration items not allowed to be deferred in a plan are never
+    assigned this status, and are either unpaid or paid.
+
+paid: This registration is current, and is fully paid.
+
+cancelled: This registation can be in any stage of payment, but is now 'revoked' or 'cancelled' and is kept as an audit record only in the
+    database, it is shown to registration administrations, but not to registration staff or portal users.  Only a registration admin can
+    revoke a membership.
+
+refunded: This registration entry has been refunded by the convention to the end user.  It is no longer valid.  It is can be shown to any
+    one with access to this person's records
+
+transferred: Thiw regitration entry is no longer valid.  It is an audit marker for who paid for it, and a new membership has been created
+    for the receiving user for that membership.
+
+upgraded: this membership was used as part of a membership chain and is now upgraded to a higher membership type. It is visible as an audit
+    record to anyone with access to this person's records.  It receives this state when the upgrade membership is fully paid for.
+
+rolled-over: this membership is cancelled for this year, and a new membership for the next convention year has been created.
+
+Time flow of statuses:
+Normal Flow:
+1. When added first by either the registration staff (atcon, mail in reg) or the end user (portal, online reg) it is marked unpaid
+2. Online Reg users paying for the registration successfully change the status to paid.
+3. Portal users can make a registration a part of a payment plan. Upon successfully setting up the plan and making the initial payment
+    the registraion is marked either paid (for those not in plan that become fully paid) or plan for those in the plan which are not
+    yet fully paid.
+4. Portal users can pay the outstanding balance (of not in plan items) and this will mark those items paid.
+5. Portal users making a payment on a plan update the amount paid on each reg record.  When the reg record is fully paid,
+    the status is changed to paid.
+6. Registration Staff using the mail in "Registration" screen in ConTroll or the Atcon POS interface can pay against the outstanding balance
+    on any registration and that change the amount paid, and mark it paid when fully paid off.
+7. A portal user or registration staff user using (atcon, mail in reg), adds an 'upgrade' category registration to a the account and then
+    pays for that upgrade, the system will mark the prior registration as upgraded. (NOTE: This is still a work in progress, and it will be
+    affected by the future addition of upgrade by paying the difference in price).
+
+Admin Flows:
+1. Using the Registration List tab to access a registration entry and then the edit button.
+    a. They can manually set any status from the edit screen bypassing any checking logic.
+    b. They can use the revoke button to mark the registration 'cancelled' (forfeitted)
+    c. They can use the 'restore' button to change the status from 'cancelled' to paid/unpaid based on it's payment status.
+            (NOTE: items revoked from a plan are not handled properly currently)
+    d. They can use the 'transfer' button to mark this entry transferred and create new entries in the receiving user. Only 'paid'
+        registrtions can be transferred, so the receiving user has them marked 'paid'.
+    e. They can use the 'rollover' button to change the status to rolled-over and a new membership is created for the following convention
+        (conid + 1) in this users account and marked paid. Only 'paid' registrtions can be rolled over.
+    f. They can use the 'refund' button to change the status to 'refunded'.  The refund process is currently outside of ConTroll.
