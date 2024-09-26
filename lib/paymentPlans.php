@@ -234,6 +234,7 @@ function computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency) {
         $minAmt = '';
         $dayPastDue = '';
         $numPmtsPastDue = '';
+        $nextPayTimestamp = '';
     } else {
         $numPmtsPastDue = 0;
         $nextPayTimestamp = $nextPayDueDate->getTimestamp();
