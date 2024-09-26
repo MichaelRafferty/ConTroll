@@ -7,6 +7,8 @@
 require_once '../lib/base.php';
 require_once('../../lib/cc__load_methods.php');
 require_once('../../lib/coupon.php');
+require_once '../../lib/memRules.php';
+require_once '../../lib/policies.php';
 
 $check_auth = google_init('ajax');
 $perm = 'registration';
@@ -25,7 +27,17 @@ $return500errors = true;
 
 $con = get_conf('con');
 $atcon = get_conf('atcon');
+$reg_conf = get_conf('reg');
+$controll = get_conf('controll');
+$debug = get_conf('debug');
+$usps = get_conf('usps');
 $conid = $con['id'];
+
+
+$useUSPS = false;
+if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
+    $useUSPS = true;
+
 $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
     $ajax_request_action = $_POST['ajax_request_action'];
@@ -159,5 +171,17 @@ $response['ageList'] = $agearray;
 $ret = load_coupon_list();
 $response['num_coupons'] = $ret[0];
 $response['couponList'] = $ret[1];
+
+// membership rules, policies, configuration items
+$response['memRules'] = getRulesData($conid);
+$response['policies'] = getPolicies();
+$response['label'] = $con['label'];
+$cdebug = 0;
+if (array_key_exists('controll_registration', $debug))
+    $cdebug = $debug['controll_registration'];
+$response['debug'] = $cdebug;
+$response['required'] = $reg_conf['required'];
+$response['useUSPS'] = $useUSPS;
+$response['userId'] = $_SESSION['user_perid'];
 
 ajaxSuccess($response);
