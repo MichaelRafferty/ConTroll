@@ -183,7 +183,7 @@ if (array_key_exists('error_code', $return_arr)) {
 }
 if (array_key_exists('email_error', $return_arr)) {
     $response['status'] = 'error';
-    $response['message'] = 'Unable to send request email, error: ' . $return_arr['email_error'] . ', Code: $error-code';
+    $response['message'] = 'Unable to send request email, error: ' . $return_arr['email_error'] . ', Code: $error_code';
 } else {
     $response['status'] = 'success';
     $response['message'] = "Identity request set to $email";

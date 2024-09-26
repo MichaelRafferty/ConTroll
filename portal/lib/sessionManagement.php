@@ -112,7 +112,7 @@ EOS;
         $error_code = null;
     }
     if (array_key_exists('email_error', $return_arr)) {
-        return('Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error-code');
+        return('Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error_code');
     }
     return null;
 }
