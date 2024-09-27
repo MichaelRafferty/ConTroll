@@ -220,7 +220,8 @@ function computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency) {
         // numPmts + 1 because we are looking for when the next payment (not the one that just got paid) is due.
         $nextPayDueDate = date_add(date_create($payorPlan['createDate']), date_interval_create_from_date_string((($numPmts + 1) * $payorPlan['daysBetween']) - 1 . ' days'));
         $nextPayDue = date_format($nextPayDueDate, 'Y-m-d');
-        $minAmt = $dolfmt->formatCurrency((float) $payorPlan['minPayment'] <= $payorPlan['balanceDue'] ? $payorPlan['minPayment'] : $payorPlan['balanceDue'], $currency);
+        $minAmtNum = (float) $payorPlan['minPayment'] <= (float) $payorPlan['balanceDue'] ? (float) $payorPlan['minPayment'] : (float) $payorPlan['balanceDue'];
+        $minAmt = $dolfmt->formatCurrency($minAmtNum, $currency);
     } else {
         $numPmts = '0';
         $lastPayment = 'None';
