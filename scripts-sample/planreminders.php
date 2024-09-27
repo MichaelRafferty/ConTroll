@@ -258,8 +258,8 @@ foreach ($payorPlans AS $payorPlan) {
     }
     else if ($daysPastDue <= 0) {
         $day = $daysPastDue == -1 ? 'day' : 'days';
-        $due = "Your next payment plan payment is due in " . (-$daysPastDue) . " $day, on $nextPayDue.";
-        $duehtml = "Your next payment plan payment is due in " . (-$daysPastDue) . " $day, on $nextPayDue.";
+        $due = "Your next payment plan payment is due in " . (-$daysPastDue) . " $day on $nextPayDue.";
+        $duehtml = "Your next payment plan payment is due in " . (-$daysPastDue) . " $day on $nextPayDue.";
     }
     else {
         $day = $daysPastDue == 1 ? 'day' : 'days';
@@ -280,11 +280,9 @@ foreach ($payorPlans AS $payorPlan) {
     $payByDate = $data['payByDate'];
     $nextPayDueDate = $data['nextPayDueDate'];
     $emailText = <<<EOS
-Dear $fullName,
+$fullName has an active payment plan with $label. $due
 
-You have an active payment plan with $label. $due
-
-You may pay any amount up to the remaining balance of the plan of $balanceDue.  But the minimum amount due at this time is $minAmt.  
+You may pay any amount up to the remaining balance of the plan of $balanceDue,  however the minimum amount due at this time is $minAmt.  
 Please note that this plan must be paid in full by $payByDate.
 
 To make your payment please visit the $label Membership Portal at $portalSite and click the "Make Pmt" button in the "Payment Plans for this account" section.
@@ -295,9 +293,8 @@ $label Registration
 EOS;
 
     $emailHTML = <<<EOS
-<p>Dear $fullName,</p>
-<p>You have an active payment plan with $label. $duehtml</p>
-<p>You may pay any amount up to the remaining balance of the plan of $balanceDue.  But the minimum amount due at this time is $minAmt.  
+<p>$fullname has an active payment plan with $label. $duehtml</p>
+<p>You may pay any amount up to the remaining balance of the plan of $balanceDue, however the minimum amount due at this time is $minAmt.  
 Please note that this plan must be paid in full by $payByDate.</p>
 <p>To make your payment please visit the $label Membership Portal at <a href="$portalSite">$portalSite</a>
 and click the "Make Pmt" button in the "Payment Plans for this account" section.</p>
