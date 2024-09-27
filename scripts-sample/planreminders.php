@@ -191,6 +191,11 @@ if ($verbose) echo "$index people loaded\n";
 // data is now loaded, loop over the plans, and check if a payment is due
 load_email_procs();
 
+$mailTrackInsQ = <<<EOS
+INSERT INTO payorPlanReminders(perid, payorPlanId, conid, emailAddr, dueDate, minAmt)
+VALUES (?, ?, ?, ?, ?, ?);
+EOS;
+
 foreach ($payorPlans AS $payorPlan) {
     $person = $people[$payorPlan['perid']];
     $sendTo = $to ? $to : $person['email_addr'];
@@ -215,16 +220,19 @@ foreach ($payorPlans AS $payorPlan) {
     if ($ignorePastDue) {
         $due = "Your payment plan payment is now due.";
         $duehtml = "Your payment plan payment is now due.";
-    } else if ($daysPastDue <= 0) {
+    }
+    else if ($daysPastDue <= 0) {
         $day = $daysPastDue == -1 ? 'day' : 'days';
         $due = "Your next payment plan payment is due in " . (-$daysPastDue) . " $day, on $nextPayDue.";
         $duehtml = "Your next payment plan payment is due in " . (-$daysPastDue) . " $day, on $nextPayDue.";
-    } else {
+    }
+    else {
         $day = $daysPastDue == 1 ? 'day' : 'days';
         $due = "Your payment plan payment is past due by $daysPastDue $day.";
         $duehtml = "<strong>Your payment plan payment is past due by $daysPastDue $day.</strong>";
     }
     $minAmt = $data['minAmt'];
+    $minAmtNum = $data['minAmtNum'];
 
     if ($verbose) {
         echo "Message will be:\n$due\nYour minimum amount due is $minAmt\n";
@@ -235,6 +243,7 @@ foreach ($payorPlans AS $payorPlan) {
     $fullName = $person['fullName'];
     $balanceDue = $data['balanceDue'];
     $payByDate = $data['payByDate'];
+    $nextPayDueDate = $data['nextPayDueDate'];
     $emailText = <<<EOS
 Dear $fullName,
 
@@ -266,14 +275,23 @@ EOS;
 
     if (array_key_exists('error_code', $return_arr)) {
         $error_code = $return_arr['error_code'];
-    } else {
+    }
+    else {
         $error_code = null;
     }
     if (array_key_exists('email_error', $return_arr))
         echo "Unable to send receipt email to $sendTo, error: " . $return_arr['email_error'] . ", Code: $error_code\n";
-    else if ($verbose)
-        echo "Reminder email sent to $sendTo\n";
+    else {
+        if ($verbose)
+            echo "Reminder email sent to $sendTo\n";
+
+        // (perid, payorPlanId, conid, emailAddr, dueDate, minAmt)
+        $trackId = dbSafeInsert($mailTrackInsQ, 'iiissd', array ($person, $payorPlan, $conid, $sendTo, $nextPayDueDate, $minAmtNum));
+        if ($trackId === false) {
+            echo "unable to create tracking record for $person:$payorPlan:$conid:$sendTo:$nextPayDueDate:$minAmtNum\n";
+        }
     }
+}
 
 if ($verbose)
     echo "Reminders task completed\n";

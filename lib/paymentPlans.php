@@ -232,6 +232,7 @@ function computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency) {
     if ($payorPlan['status'] != 'active') {
         $nextPayDue = '';
         $minAmt = '';
+        $minAmtNum = 0;
         $dayPastDue = '';
         $numPmtsPastDue = '';
         $nextPayTimestamp = '';
@@ -240,10 +241,10 @@ function computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency) {
         $nextPayTimestamp = $nextPayDueDate->getTimestamp();
         if ($nextPayTimestamp < $now) { // past due
             $numPmtsPastDue = 1 + ceil(($now - $nextPayTimestamp) / (24 * 3600 * $payorPlan['daysBetween']));
-            $minAmt = $numPmtsPastDue * $payorPlan['minPayment'];
-            if ($minAmt > $payorPlan['balanceDue'])
-                $minAmt = $payorPlan['balanceDue'];
-            $minAmt = $dolfmt->formatCurrency((float)$minAmt, $currency);
+            $minAmtNum = $numPmtsPastDue * $payorPlan['minPayment'];
+            if ($minAmtNum > $payorPlan['balanceDue'])
+                $minAmtNum = $payorPlan['balanceDue'];
+            $minAmt = $dolfmt->formatCurrency((float)$minAmtNum, $currency);
         }
         $dayPastDue =  ($now - $nextPayTimestamp) / (24 * 60 * 60);
     }
@@ -258,6 +259,7 @@ function computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency) {
     $data['nextPayDueDate'] = $nextPayDueDate;
     $data['nextPayDue'] = $nextPayDue;
     $data['minAmt'] = $minAmt;
+    $data['minAmtNum'] = $minAmtNum;
     $data['nextPayTimestamp'] = $nextPayTimestamp;
     $data['daysPastDue'] = $dayPastDue;
     $data['numPmtsPastDue'] = $numPmtsPastDue;
