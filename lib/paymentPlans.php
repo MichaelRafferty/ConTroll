@@ -204,3 +204,70 @@ function draw_payPlanModal($from) {
     </div>
     <?php
 }
+
+// computeNextPaymentDue - compute all the things you need to display the next payment due
+function computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency) {
+    $now = time();
+
+    $planid = $payorPlan['planId'];
+    $plan = $plans[$planid];
+    $numPmts = 0;
+    if (array_key_exists('payments', $payorPlan) && count($payorPlan['payments']) > 0) {
+        $payments = $payorPlan['payments'];
+        $numPmts = count($payments);
+        $lastPayment = $payments[$numPmts];
+        $lastPaidDate = date_format(date_create($lastPayment['payDate']), 'Y-m-d');
+        // numPmts + 1 because we are looking for when the next payment (not the one that just got paid) is due.
+        $nextPayDueDate = date_add(date_create($payorPlan['createDate']), date_interval_create_from_date_string((($numPmts + 1) * $payorPlan['daysBetween']) - 1 . ' days'));
+        $nextPayDue = date_format($nextPayDueDate, 'Y-m-d');
+        $minAmtNum = (float) $payorPlan['minPayment'] <= (float) $payorPlan['balanceDue'] ? (float) $payorPlan['minPayment'] : (float) $payorPlan['balanceDue'];
+        $minAmt = $dolfmt->formatCurrency($minAmtNum, $currency);
+    } else {
+        $numPmts = '0';
+        $lastPayment = 'None';
+        $lastPaidDate = 'None';
+        $nextPayDueDate = date_add(date_create($payorPlan['createDate']), date_interval_create_from_date_string($payorPlan['daysBetween'] - 1 . ' days'));
+        $nextPayDue = date_format($nextPayDueDate, 'Y-m-d');
+        $minAmtNum = $payorPlan['minPayment'];
+        $minAmt = $dolfmt->formatCurrency((float) $payorPlan['minPayment'], $currency);
+    }
+    if ($payorPlan['status'] != 'active') {
+        $nextPayDue = '';
+        $minAmt = '';
+        $minAmtNum = 0;
+        $dayPastDue = '';
+        $numPmtsPastDue = '';
+        $nextPayTimestamp = '';
+    } else {
+        $numPmtsPastDue = 0;
+        $nextPayTimestamp = $nextPayDueDate->getTimestamp();
+        if ($nextPayTimestamp < $now) { // past due
+            $numPmtsPastDue = 1 + ceil(($now - $nextPayTimestamp) / (24 * 3600 * $payorPlan['daysBetween']));
+            $minAmtNum = $numPmtsPastDue * $payorPlan['minPayment'];
+            if ($minAmtNum > $payorPlan['balanceDue'])
+                $minAmtNum = $payorPlan['balanceDue'];
+            $minAmt = $dolfmt->formatCurrency((float)$minAmtNum, $currency);
+        }
+        $dayPastDue =  ($now - $nextPayTimestamp) / (24 * 60 * 60);
+    }
+    $dateCreated = date_format(date_create($payorPlan['createDate']), 'Y-m-d');
+    $payByDate = date_format(date_create($plan['payByDate']), 'Y-m-d');
+    $balanceDue = $dolfmt->formatCurrency((float) $payorPlan['balanceDue'], $currency);
+    $initialAmt = $dolfmt->formatCurrency((float) $payorPlan['initialAmt'], $currency);
+
+    $data['numPmts'] = $numPmts;
+    $data['lastPayment'] = $lastPayment;
+    $data['lastPaidDate'] = $lastPaidDate;
+    $data['nextPayDueDate'] = $nextPayDueDate;
+    $data['nextPayDue'] = $nextPayDue;
+    $data['minAmt'] = $minAmt;
+    $data['minAmtNum'] = $minAmtNum;
+    $data['nextPayTimestamp'] = $nextPayTimestamp;
+    $data['daysPastDue'] = $dayPastDue;
+    $data['numPmtsPastDue'] = $numPmtsPastDue;
+    $data['dateCreated'] = $dateCreated;
+    $data['payByDate'] = $payByDate;
+    $data['balanceDue'] = $balanceDue;
+    $data['initialAmt'] = $initialAmt;
+    return $data;
+}

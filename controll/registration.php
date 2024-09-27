@@ -1,5 +1,7 @@
 <?php
 require_once 'lib/base.php';
+require_once '../lib/profile.php';
+require_once '../lib/policies.php';
 require_once('../lib/cc__load_methods.php');
 //initialize google session
 $need_login = google_init('page');
@@ -10,6 +12,9 @@ if (!$need_login or !checkAuth($need_login['sub'], $page)) {
 }
 load_cc_procs();
 
+$con_conf = get_conf('con');
+$conid = $con_conf['id'];
+
 $cdn = getTabulatorIncludes();
 page_init($page,
     /* css */ array('css/base.css', $cdn['tabcss'], $cdn['tabbs5'], 'css/registration.css'
@@ -19,6 +24,7 @@ page_init($page,
         'js/registration.js',
         'js/registration_cart.js',
         'js/registration_coupon.js',
+        'jslib/membershipRules.js',
     ),
     $need_login);
 

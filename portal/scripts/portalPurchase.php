@@ -220,15 +220,15 @@ if ($loginType == 'p') {
 if ($newplan == 1) {
     // record the new plan
     $iQ = <<<EOS
-    INSERT INTO payorPlans (planId, $pfield, initialAmt, nonPlanAmt, downPayment, minPayment, finalPayment,
+    INSERT INTO payorPlans (planId, conid, $pfield, initialAmt, nonPlanAmt, downPayment, minPayment, finalPayment,
                             openingBalance, numPayments, daysBetween, payByDate, payType, reminders, 
                             createTransaction, balanceDue, updateBy)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     
     EOS;
-    $typestr = 'iiddddddiisssidi';
+    $typestr = 'iiiddddddiisssidi';
     $planData = $planRec['plan'];
-    $valArray = array($planData['id'], $loginId, $planRec['totalAmountDue'], $planRec['nonPlanAmt'], $planRec['downPayment'], $planRec['paymentAmt'],
+    $valArray = array($planData['id'], $conid, $loginId, $planRec['totalAmountDue'], $planRec['nonPlanAmt'], $planRec['downPayment'], $planRec['paymentAmt'],
         $planRec['finalPaymentAmt'],
         $planRec['planAmt'], $planRec['numPayments'], $planRec['daysBetween'], $planData['payByDate'], $planData['payType'], $planData['reminders'],
         $transId, $planRec['balanceDue'], $loginId);
