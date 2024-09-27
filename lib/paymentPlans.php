@@ -227,6 +227,7 @@ function computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency) {
         $lastPaidDate = 'None';
         $nextPayDueDate = date_add(date_create($payorPlan['createDate']), date_interval_create_from_date_string($payorPlan['daysBetween'] - 1 . ' days'));
         $nextPayDue = date_format($nextPayDueDate, 'Y-m-d');
+        $minAmtNum = $payorPlan['minPayment'];
         $minAmt = $dolfmt->formatCurrency((float) $payorPlan['minPayment'], $currency);
     }
     if ($payorPlan['status'] != 'active') {
