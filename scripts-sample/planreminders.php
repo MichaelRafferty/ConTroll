@@ -24,6 +24,7 @@ if (array_key_exists('currency', $con)) {
 // parameters -
 // -c ccAddress - CC all emails to this address
 // -d days before payment is due to send notice, default = 7
+// -i days between reminders (interval), default 7.  Note: will send on exact due date anyway.
 // -l log emails sent to database table
 // -q just show errors, be quiet about everything else
 // -s suppress the past due portion of the note (used during the catch up phase)
@@ -32,7 +33,7 @@ if (array_key_exists('currency', $con)) {
 // -h show help instructions
 
 // get command line options
-$options = getopt('c:d:hlqst:v:');
+$options = getopt('c:d:hi:lqst:v:');
 
 if ($options === false)
     calling_seq("options did not parse correctly");
@@ -56,6 +57,13 @@ if (array_key_exists('d', $options))
 
 if (!is_numeric($days) || $days < 1 | $days > 90)
     calling_seq("Invalid number of days passed in -d $days, valid is 1-90");
+
+$interval = 7;
+if (array_key_exists('i', $options))
+    $interval = $options['i'];
+
+if (!is_numeric($interval) || $interval < 1 | $interval > 90)
+    calling_seq("Invalid number of interval days passed in -i $interval, valid is 1-90");
 
 $cc = null;
 $to = null;
@@ -84,7 +92,7 @@ EOS;
 }
 
 $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
-
+$emailsSent = 0;
 // get all the plans
 if ($verbose) echo "Getting Payment Plans\n";
 $data = getPaymentPlans();
@@ -195,6 +203,12 @@ $mailTrackInsQ = <<<EOS
 INSERT INTO payorPlanReminders(perid, payorPlanId, conid, emailAddr, dueDate, minAmt)
 VALUES (?, ?, ?, ?, ?, ?);
 EOS;
+$mailTrackLastQ = <<<EOS
+SELECT DATEDIFF(NOW(), MAX(sentDate)) AS days
+FROM payorPlanReminders
+WHERE payorPlanId = ? AND conid = ? AND perid = ?;
+EOS;
+
 
 foreach ($payorPlans AS $payorPlan) {
     $person = $people[$payorPlan['perid']];
@@ -213,8 +227,29 @@ foreach ($payorPlans AS $payorPlan) {
 
     if ((-$daysPastDue) > $days) {
         if ($verbose)
-            echo "Skiping becauase of being more than $days from due date of $nextPayDue\n\n";
+            echo "Skipping because of being more than $days from due date of $nextPayDue\n\n";
         continue;
+    }
+
+    //TODO check days since last send, to determine if we need to send it again.
+    // now check if we have sent them a reminder within the past i days.  If so, don't send another right now, but always send on due date.
+    if ($daysPastDue != 0) {
+        $mailTrackLastR = dbSafeQuery($mailTrackLastQ, 'iii', array($payorPlan['id'], $payorPlan['conid'], $payorPlan['perid']));
+        if ($mailTrackLastR === false) {
+            echo "Unable to check last sent date for " . $payorPlan['id'] . ':' . $payorPlan['conid'] . ":" . $payorPlan['perid'] . "\n";
+        }
+        echo "num rows = " . $mailTrackLastR->num_rows . "\n";
+        if ($mailTrackLastR->num_rows == 1) {
+            $lastDays = $mailTrackLastR->fetch_row()[0];
+            echo "lastDays = $lastDay, interval = $interval\n";
+            if ($lastDays != null && $lastDays < $interval) {
+                if ($verbose)
+                    echo "Skipping because $lastDays < $interval\n";
+                $mailTrackLastR->free();
+                continue;
+            }
+        }
+        $mailTrackLastR->free();
     }
 
     if ($ignorePastDue) {
@@ -286,7 +321,7 @@ EOS;
             echo "Reminder email sent to $sendTo\n";
 
         // (perid, payorPlanId, conid, emailAddr, dueDate, minAmt)
-        $trackId = dbSafeInsert($mailTrackInsQ, 'iiissd', array ($person, $payorPlan, $conid, $sendTo, $nextPayDue, $minAmtNum));
+        $trackId = dbSafeInsert($mailTrackInsQ, 'iiissd', array ($payorPlan['perid'], $payorPlan['id'], $conid, $sendTo, $nextPayDue, $minAmtNum));
         if ($trackId === false) {
             echo "unable to create tracking record for $person:$payorPlan:$conid:$sendTo:$nextPayDue:$minAmtNum\n";
         }
@@ -296,6 +331,7 @@ EOS;
 if ($verbose)
     echo "Reminders task completed\n";
 
+echo "Send $emailsSent reminder emails out of " . count($payorPlans) . " payorPlans in " . count($plans) . " plans\n";
 exit(0);
 
 function calling_seq($msg) {
@@ -305,6 +341,7 @@ $msg
 planreminders options:
     -c ccAddress - CC all emails to this address
     -d days before payment is due to send notice, default = 7
+    -i days between reminders (interval), default 7.  Note: will send on exact due date anyway.
     -l log emails sent to database table
     -q just show errors, be quiet about everything else
     -s suppress the past due portion of the note (used during the catch up phase)
