@@ -286,9 +286,9 @@ EOS;
             echo "Reminder email sent to $sendTo\n";
 
         // (perid, payorPlanId, conid, emailAddr, dueDate, minAmt)
-        $trackId = dbSafeInsert($mailTrackInsQ, 'iiissd', array ($person, $payorPlan, $conid, $sendTo, $nextPayDueDate, $minAmtNum));
+        $trackId = dbSafeInsert($mailTrackInsQ, 'iiissd', array ($person, $payorPlan, $conid, $sendTo, $nextPayDue, $minAmtNum));
         if ($trackId === false) {
-            echo "unable to create tracking record for $person:$payorPlan:$conid:$sendTo:$nextPayDueDate:$minAmtNum\n";
+            echo "unable to create tracking record for $person:$payorPlan:$conid:$sendTo:$nextPayDue:$minAmtNum\n";
         }
     }
 }
