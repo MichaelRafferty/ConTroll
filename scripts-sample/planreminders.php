@@ -25,7 +25,7 @@ if (array_key_exists('currency', $con)) {
 // -c ccAddress - CC all emails to this address
 // -d days before payment is due to send notice, default = 7
 // -i days between reminders (interval), default 7.  Note: will send on exact due date anyway.
-// -l log emails sent to database table
+// -l do not log emails sent to database table
 // -q just show errors, be quiet about everything else
 // -s suppress the past due portion of the note (used during the catch up phase)
 // -t emailAddress - force all emails to go to this 'test' address
@@ -50,6 +50,7 @@ if (array_key_exists('v', $options)) {
 }
 
 $ignorePastDue = array_key_exists('s', $options);
+$doNotLog = array_key_exists('l', $options);
 
 $days = 7;
 if (array_key_exists('d', $options))
@@ -310,10 +311,11 @@ EOS;
     else {
         if ($verbose) echo "Reminder email sent to $sendTo\n";
 
-        // (perid, payorPlanId, conid, emailAddr, dueDate, minAmt)
-        $trackId = dbSafeInsert($mailTrackInsQ, 'iiissd', array ($payorPlan['perid'], $payorPlan['id'], $conid, $sendTo, $nextPayDue, $minAmtNum));
-        if ($trackId === false) {
-            echo "unable to create tracking record for $person:$payorPlan:$conid:$sendTo:$nextPayDue:$minAmtNum\n";
+        if (!$doNotLog) {
+            $trackId = dbSafeInsert($mailTrackInsQ, 'iiissd', array ($payorPlan['perid'], $payorPlan['id'], $conid, $sendTo, $nextPayDue, $minAmtNum));
+            if ($trackId === false) {
+                echo "unable to create tracking record for $person:$payorPlan:$conid:$sendTo:$nextPayDue:$minAmtNum\n";
+            }
         }
     }
 }
@@ -331,7 +333,7 @@ planreminders options:
     -c ccAddress - CC all emails to this address
     -d days before payment is due to send notice, default = 7
     -i days between reminders (interval), default 7.  Note: will send on exact due date anyway.
-    -l log emails sent to database table
+    -l do not log emails sent to database table
     -q just show errors, be quiet about everything else
     -s suppress the past due portion of the note (used during the catch up phase)
     -t emailAddress - force all emails to go to this 'test' address
