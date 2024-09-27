@@ -226,8 +226,7 @@ foreach ($payorPlans AS $payorPlan) {
     $nextPayDue = $data['nextPayDue'];
 
     if ((-$daysPastDue) > $days) {
-        if ($verbose)
-            echo "Skipping because of being more than $days from due date of $nextPayDue\n\n";
+        if ($verbose) echo "Skipping because of being more than $days from due date of $nextPayDue\n\n";
         continue;
     }
 
@@ -238,13 +237,10 @@ foreach ($payorPlans AS $payorPlan) {
         if ($mailTrackLastR === false) {
             echo "Unable to check last sent date for " . $payorPlan['id'] . ':' . $payorPlan['conid'] . ":" . $payorPlan['perid'] . "\n";
         }
-        echo "num rows = " . $mailTrackLastR->num_rows . "\n";
         if ($mailTrackLastR->num_rows == 1) {
             $lastDays = $mailTrackLastR->fetch_row()[0];
-            echo "lastDays = $lastDay, interval = $interval\n";
             if ($lastDays != null && $lastDays < $interval) {
-                if ($verbose)
-                    echo "Skipping because $lastDays < $interval\n";
+                if ($verbose) echo "Skipping because $lastDays < $interval\n";
                 $mailTrackLastR->free();
                 continue;
             }
@@ -269,9 +265,7 @@ foreach ($payorPlans AS $payorPlan) {
     $minAmt = $data['minAmt'];
     $minAmtNum = $data['minAmtNum'];
 
-    if ($verbose) {
-        echo "Message will be:\n$due\nYour minimum amount due is $minAmt\n";
-    }
+    if ($verbose) echo "Message will be:\n$due\nYour minimum amount due is $minAmt\n";
 
     // build the reminder email
     $emailSubject = "Reminder about your Plan Payment For $label - $due";
@@ -293,7 +287,7 @@ $label Registration
 EOS;
 
     $emailHTML = <<<EOS
-<p>$fullname has an active payment plan with $label. $duehtml</p>
+<p>$fullName has an active payment plan with $label. $duehtml</p>
 <p>You may pay any amount up to the remaining balance of the plan of $balanceDue, however the minimum amount due at this time is $minAmt.  
 Please note that this plan must be paid in full by $payByDate.</p>
 <p>To make your payment please visit the $label Membership Portal at <a href="$portalSite">$portalSite</a>
@@ -314,8 +308,7 @@ EOS;
     if (array_key_exists('email_error', $return_arr))
         echo "Unable to send receipt email to $sendTo, error: " . $return_arr['email_error'] . ", Code: $error_code\n";
     else {
-        if ($verbose)
-            echo "Reminder email sent to $sendTo\n";
+        if ($verbose) echo "Reminder email sent to $sendTo\n";
 
         // (perid, payorPlanId, conid, emailAddr, dueDate, minAmt)
         $trackId = dbSafeInsert($mailTrackInsQ, 'iiissd', array ($payorPlan['perid'], $payorPlan['id'], $conid, $sendTo, $nextPayDue, $minAmtNum));
@@ -325,8 +318,7 @@ EOS;
     }
 }
 
-if ($verbose)
-    echo "Reminders task completed\n";
+if ($verbose) echo "Reminders task completed\n";
 
 echo "Send $emailsSent reminder emails out of " . count($payorPlans) . " payorPlans in " . count($plans) . " plans\n";
 exit(0);
