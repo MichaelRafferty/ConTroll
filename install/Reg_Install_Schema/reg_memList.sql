@@ -25,7 +25,6 @@ CREATE TABLE `memList` (
   `atcon` enum('Y','N') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `online` enum('Y','N') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `memList_dups` (`conid`,`label`,`startdate`,`enddate`),
   KEY `FK_memList_ageType` (`conid`,`memAge`),
   KEY `memList_memCategory_fk` (`memCategory`),
   KEY `memList_memType_fk` (`memType`)
