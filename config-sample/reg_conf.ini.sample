@@ -244,6 +244,12 @@ logoalt=""
 emailhrs=24
 oauthhrs=8
 history=1
+;; memberbadgencolor: hex string of the color of the membership "badges" on the portal home screen, to override the standard color scheme
+;;       note; standard color scheme has the buttons having a color that describe the membership type, the legend supports this color scheme
+;;           the override is a single color for all of the badges.  Presence of this line will auto suppress the legend.
+;; suppresslegend: if memberbasgecolor is not used, missing or 0 will show the legend, 1 will suppress the legend
+;memberbadgecolors="#000000"
+;suppresslegend=0
 ; helppage = path to the help page relative to the web root of the portal page
 ; helppage=
 ; showConPolicy - shows the "CLick here for the #conname# Policies",
