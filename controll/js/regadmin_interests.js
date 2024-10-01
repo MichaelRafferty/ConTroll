@@ -166,6 +166,7 @@ class interestsSetup {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
                     cellClick: function (e, cell) {
                         deleterow(e, cell.getRow());
+                        _this.checkUndoRedo();
                     }
                 },
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible,}

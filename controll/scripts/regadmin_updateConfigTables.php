@@ -62,12 +62,14 @@ $sortorder = 10;
 if ($tablename != 'customText') {
 // build list of keys to delete
     $delete_keys = '';
+    $deleteArray = [];
     $first = true;
 // compute delete keys in the array and redo the sort order
     $sort_order = 10;
     foreach ($tabledata as $index => $row) {
         if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists($keyfield, $row)) {
             $delete_keys .= ($first ? "'" : ",'") . sql_safe($row[$keyfield]) . "'";
+            $deleteArray[] = $row[$keyfield];
             $first = false;
         }
         else {
@@ -87,10 +89,12 @@ if ($tablename != 'customText') {
 switch ($tablename) {
     case 'policy':
         if ($delete_keys != '') {
-            $delsql = "DELETE FROM policies WHERE policy in (?);";
+            $delsql = 'DELETE FROM policies WHERE policy = ?;';
             web_error_log("Delete sql = /$delsql/");
-            web_error_log("Delete sql keys = /$delete_keys/");
-            $deleted += dbSafeCmd($delsql, 's', array($delete_keys));
+            foreach ($deleteArray as $key) {
+                web_error_log("Delete key = /$key/");
+                $deleted += dbSafeCmd($delsql, 's', array($key));
+            }
         }
         $inssql = <<<EOS
 INSERT INTO policies (policy, prompt, description, sortOrder, required, defaultValue, createDate, updateDate, updateBy, active)
@@ -135,10 +139,12 @@ EOS;
 
     case 'interests':
         if ($delete_keys != '') {
-            $delsql = 'DELETE FROM interests WHERE interest in (?);';
+            $delsql = 'DELETE FROM interests WHERE interest = ?;';
             web_error_log("Delete sql = /$delsql/");
-            web_error_log("Delete sql keys = /$delete_keys/");
-            $deleted += dbSafeCmd($delsql, 's', array ($delete_keys));
+            foreach ($deleteArray as $key) {
+                web_error_log("Delete key = /$key/");
+                $deleted += dbSafeCmd($delsql, 's', array($key));
+            }
         }
         $inssql = <<<EOS
 INSERT INTO interests (interest, description, notifyList, sortOrder, createDate, updateDate, updateBy, active, csv)
