@@ -71,8 +71,8 @@ if ($tablename != 'customText') {
             $first = false;
         }
         else {
-            if (array_key_exists('sortorder', $row))
-                $roworder = $row['sortorder'];
+            if (array_key_exists('sortOrder', $row))
+                $roworder = $row['sortOrder'];
             else
                 $roworder = 500;
 

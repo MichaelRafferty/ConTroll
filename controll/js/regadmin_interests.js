@@ -160,7 +160,7 @@ class interestsSetup {
                     editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
                 },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'interests' }, hozAlign:"left", headerSort: false },
-                {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
+                {title: "Sort Order", field: "sortOrder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "interestsKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
@@ -202,7 +202,7 @@ class interestsSetup {
     addrow() {
         var _this = this;
         this.#interestsTable.addRow({interest: 'new-row', notifyList: '', description: '', csv: 'N',
-            active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
+            active: 'Y', sortOrder: 99, uses: 0}, false).then(function (row) {
             _this.#interestsTable.setPage("last"); // adding new to last page always
             row.getTable().scrollToRow(row);
             _this.checkUndoRedo();
