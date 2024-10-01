@@ -201,7 +201,7 @@ class interestsSetup {
     // add row to  table and scroll to that new row
     addrow() {
         var _this = this;
-        this.#interestsTable.addRow({interests: 'new-row', notifyList: '', desccription: '', csv: 'N',
+        this.#interestsTable.addRow({interest: 'new-row', notifyList: '', desccription: '', csv: 'N',
             active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#interestsTable.setPage("last"); // adding new to last page always
             row.getTable().scrollToRow(row);
