@@ -227,7 +227,7 @@ class policySetup {
     // add row to  table and scroll to that new row
     addrow() {
         var _this = this;
-        this.#policyTable.addRow({policy: 'new-row', prompt: '', desccription: '', required: 'N', active: 'Y',
+        this.#policyTable.addRow({policy: 'new-row', prompt: '', description: '', required: 'N', active: 'Y',
             defaultValue: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#policyTable.setPage("last"); // adding new to last page always
             row.getTable().scrollToRow(row);
