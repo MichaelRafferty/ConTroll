@@ -133,11 +133,11 @@ if ($interestReq == 'Y') {
     $iQ = <<<EOS
 SELECT i.interest, i.description, i.sortOrder, m.interested, m.id
 FROM interests i
-LEFT OUTER JOIN memberInterests m ON m.$rfield = ? AND m.interest = i.interest AND conid = ?
+LEFT OUTER JOIN memberInterests m ON m.$rfield = ? AND m.interest = i.interest AND conid = ? AND ? = 0
 WHERE i.active = 'Y'
 ORDER BY i.sortOrder
 EOS;
-    $iR = dbSafeQuery($iQ, 'ii', array($person['id'], $conid));
+    $iR = dbSafeQuery($iQ, 'iii', array($person['id'], $conid, $newFlag));
     if ($iR !== false) {
         while ($row = $iR->fetch_assoc()) {
             $interests[$row['interest']] = $row;
