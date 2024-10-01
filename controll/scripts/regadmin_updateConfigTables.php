@@ -89,7 +89,8 @@ switch ($tablename) {
         if ($delete_keys != '') {
             $delsql = "DELETE FROM policies WHERE policy in (?);";
             web_error_log("Delete sql = /$delsql/");
-            $deleted += dbSafeCmd($delsql, 'i', array($delete_keys));
+            web_error_log("Delete sql keys = /$delete_keys/");
+            $deleted += dbSafeCmd($delsql, 's', array($delete_keys));
         }
         $inssql = <<<EOS
 INSERT INTO policies (policy, prompt, description, sortOrder, required, defaultValue, createDate, updateDate, updateBy, active)
@@ -136,7 +137,8 @@ EOS;
         if ($delete_keys != '') {
             $delsql = 'DELETE FROM interests WHERE interest in (?);';
             web_error_log("Delete sql = /$delsql/");
-            $deleted += dbSafeCmd($delsql, 'i', array ($delete_keys));
+            web_error_log("Delete sql keys = /$delete_keys/");
+            $deleted += dbSafeCmd($delsql, 's', array ($delete_keys));
         }
         $inssql = <<<EOS
 INSERT INTO interests (interest, description, notifyList, sortOrder, createDate, updateDate, updateBy, active, csv)
