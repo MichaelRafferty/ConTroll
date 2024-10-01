@@ -47,10 +47,10 @@ $limit = 99999999;
 $fieldListP = <<<EOS
 SELECT DISTINCT p.id AS perid, TRIM(IFNULL(p.first_name, '')) AS first_name, TRIM(IFNULL(p.middle_name, '')) AS middle_name, 
     TRIM(IFNULL(p.last_name, '')) AS last_name, TRIM(IFNULL(p.suffix, '')) AS suffix, 
-    TRIM(IFNULL(p.legalName, '')) AS legalName, TRIM(IFNULL(p.pronouns, '') AS pronouns
-    p.badge_name, TRIM(IFNULL(p.address, '')) AS address_1, TRIM(IFNULL(p.addr_2, '') AS address_2, 
-    TRIM(IFNULL(p.city, '')) AS city, TRIM(IFNULL(p.state, '')) AS state, TRIM(IFNULL(p.zip, ''))AS postal_code, 
-    IFNULL(p.country, '') as country, TRIM(IFNULL(p.email_addr, '')) as email_addr,
+    TRIM(IFNULL(p.legalName, '')) AS legalName, TRIM(IFNULL(p.pronouns, '')) AS pronouns,
+    p.badge_name, TRIM(IFNULL(p.address, '')) AS address_1, TRIM(IFNULL(p.addr_2, '')) AS address_2, 
+    TRIM(IFNULL(p.city, '')) AS city, TRIM(IFNULL(p.state, '')) AS state, TRIM(IFNULL(p.zip, '')) AS postal_code, 
+    IFNULL(p.country, '') as country, TRIM(IFNULL(p.email_addr, '')) AS email_addr,
     TRIM(IFNULL(p.phone, '')) as phone, p.active, p.banned,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
         IFNULL(p.suffix, '')), '  *', ' ')) AS fullName,
@@ -86,17 +86,17 @@ SELECT DISTINCT p.id AS perid, mp.policy, mp.response
 EOS;
 
 $managerWith = <<<EOS
-WITH manageer AS
+WITH manager AS (
     SELECT managedBy AS manager
     FROM perinfo
-    WHERE id = ?;
+    WHERE id = ?
 ), pids AS (
 SELECT DISTINCT id
 FROM perinfo
 WHERE id = ? OR managedBy = ?
 UNION SELECT DISTINCT p.id
 FROM manager p1
-JOIN perinfio p ON p1.manager = p.managedBy OR p1.manager = p.id
+JOIN perinfo p ON p1.manager = p.managedBy OR p1.manager = p.id
 )
 EOS;
 
@@ -113,6 +113,10 @@ FROM transaction t
 WHERE t.id = ? AND t.conid in (?, ?);
 EOS;
     $overlapR = dbSafeQuery($overlapQ, 'iiii', array($name_search, $name_search, $conid, $conid + 1));
+    if ($overlapR === false) {
+        ajaxsuccess(array('error' => 'SQL Error in overlap query'));
+        return;
+    }
     $found_perid = false;
     $found_tid = false;
     while ($overlapL = $overlapR->fetch_assoc()) {
@@ -174,7 +178,7 @@ LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
 WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
-ORDER BY r1.perid. r1.create_date;
+ORDER BY r1.perid, r1.create_date;
 EOS;
         // now get the policies for all of these perids
         $searchSQLL = <<<EOS
@@ -190,34 +194,34 @@ EOS;
 
         //web_error_log($searchSQLM);
         $rp = dbSafeQuery($searchSQLP, 'iiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1));
-        $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid, $conid + 1));
-        $rl = dbSafeQuery($searchSQLL, 'iiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid + 1));
+        $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid + 1, $conid));
+        $rl = dbSafeQuery($searchSQLL, 'iiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid + 1, $conid));
     } else if ($found_perid) {
         // pull all the matching regs for this perid for this period, plus anyone managed by this perid, UNION by this perid's manager
         $searchSQLP = <<<EOS
 $managerWith
 $fieldListP
 FROM pids p1
-JOIN perinfo ON p.id = p1.id
+JOIN perinfo p ON p.id = p1.id
 ORDER BY last_name, first_name;
 EOS;
         // noe the registration entries for these perids
         $searchSQLM = <<<EOS
 $managerWith, regids AS (
-    SELECT r.id AS regid
+    SELECT r.id AS regid, create_trans as tid
     FROM reg r
-    JOIN pids p ON (p.id = reg.perid)
+    JOIN pids p ON (p.id = r.perid)
     JOIN memList m ON (r.memId = m.id)
     WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r.perid = p.id
-), $fieldListM
+) $fieldListM
 FROM regids rs
-JOIN reg r ON (rs.regid = r.id)
-JOIN perinfo p ON (p.id = r.perid)
-JOIN memLabel m ON (r.memId = m.id)
-LEFT OUTER JOIN printcount pc ON (r.id = pc.regid)
-LEFT OUTER JOIN attachcount ac ON (r.id = ac.regid)
-LEFT OUTER JOIN notes n ON (r.id = n.regid)
-ORDER BY r1.perid. r1.create_date;
+JOIN reg r1 ON (rs.regid = r1.id)
+JOIN perinfo p ON (p.id = r1.perid)
+JOIN memLabel m ON (r1.memId = m.id)
+LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
+LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
+LEFT OUTER JOIN notes n ON (r1.id = n.regid)
+ORDER BY r1.perid, r1.create_date;
 EOS;
         //  now the policies for these perids
         $searchSQLL = <<<EOS
@@ -225,14 +229,26 @@ $managerWith
 $fieldListL
 FROM pids p1
 JOIN perinfo p ON (p.id = p1.id)
-JOIN memberPolicies mp ON (p.id = mp.perid AND r1.conid = mp.conid)
-WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
+JOIN memberPolicies mp ON (p.id = mp.perid)
+WHERE mp.conid = ?
 ORDER BY perid, policy;
 EOS;
 
         $rp = dbSafeQuery($searchSQLP, 'iii', array($name_search, $name_search, $name_search));
-        $rm = dbSafeQuery($searchSQLM, 'iiiii', array($name_search, $name_search, $name_search, $conid, $conid + 1));
-        $rl = dbSafeQuery($searchSQLL, 'iiiii', array($name_search, $name_search, $name_search, $conid, $conid + 1));
+        if ($rp === false) {
+            ajaxSuccess(array('error' => "Error in numeric person query for $name_search"));
+            return;
+        }
+        $rm = dbSafeQuery($searchSQLM, 'iiiiii', array($name_search, $name_search, $name_search, $conid, $conid + 1, $conid));
+        if ($rm === false) {
+            ajaxSuccess(array('error' => "Error in numeric membership query for $name_search ($conid)"));
+            return;
+        }
+        $rl = dbSafeQuery($searchSQLL, 'iiii', array($name_search, $name_search, $name_search, $conid));
+        if ($rl === false) {
+            ajaxSuccess(array('error' => "Error in numeric policy query for $name_search ($conid)"));
+            return;
+        }
     }
 } else {
 //
@@ -257,7 +273,7 @@ WITh p1 AS (
             OR LOWER(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix)) LIKE ?
         )
         AND (NOT (p.first_name = 'Merged' AND p.middle_name = 'into'))
-), manageer AS
+), manager AS
     SELECT managedBy AS manager
     FROM p1
     JOIN perinfo p ON (p1.id = p.id)
@@ -268,7 +284,7 @@ FROM perinfo
 WHERE id = ? OR managedBy = ?
 UNION SELECT DISTINCT p.id
 FROM manager p1
-JOIN perinfio p ON p1.manager = p.managedBy OR p1.manager = p.id
+JOIN perinfo p ON p1.manager = p.managedBy OR p1.manager = p.id
 ), pids AS (
     SELECT DISTINCT id
     FROM p1
@@ -284,7 +300,7 @@ JOIN perinfo p ON p1.id = p.id
 ORDER BY last_name, first_name LIMIT $limit;
 EOS;
     $searchSQLM = <<<EOS
-$nameMatchWith,  $fieldListM     
+$nameMatchWith $fieldListM     
 FROM regids rs
 JOIN reg r ON (rs.regid = r.id)
 JOIN perinfo p ON (p.id = r.perid)
@@ -292,7 +308,7 @@ JOIN memLabel m ON (r.memId = m.id)
 LEFT OUTER JOIN printcount pc ON (r.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r.id = n.regid)
-ORDER BY r1.perid. r1.create_date;
+ORDER BY r1.perid, r1.create_date;
 EOS;
     //  now the policies for these perids
     $searchSQLL = <<<EOS
@@ -308,13 +324,26 @@ EOS;
     $rp = dbSafeQuery($searchSQLP, 'ssssssss',
           array ($findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern));
 
+    if ($rp === false) {
+        ajaxSuccess(array('error' => "Error in string person query for $findPattern"));
+        return;
+    }
+
     $rm = dbSafeQuery($searchSQLM, 'ssssssssiii',
           array ($findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern,
                  $conid, $conid + 1, $conid));
+    if ($rm === false) {
+        ajaxSuccess(array('error' => "Error in string membership query for $findPattern ($conid)"));
+        return;
+    }
 
     $rl = dbSafeQuery($searchSQLL, 'ssssssssii',
           array ($findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern,
                  $conid, $conid + 1));
+    if ($rl === false) {
+        ajaxSuccess(array('error' => "Error in string policy query for $findPattern ($conid)"));
+        return;
+    }
 }
 
 // Tabulator needs the data as a plain array, cart wants it as an indexed array, so build the array of all the perid records in order
