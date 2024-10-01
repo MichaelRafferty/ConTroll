@@ -184,7 +184,7 @@ class Unmatched {
             index: "id",
             pagination: true,
             paginationAddRow:"table",
-            paginationSize: 10,
+            paginationSize: 100,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {title: "Match", formatter: this.matchButton, headerSort: false },
