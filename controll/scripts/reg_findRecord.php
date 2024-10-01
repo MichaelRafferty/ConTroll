@@ -94,8 +94,8 @@ WITH manager AS (
 SELECT DISTINCT id
 FROM perinfo
 WHERE id = ? OR managedBy = ?
-UNION SELECT DISTINCT p.id
-FROM manager p1
+UNION SELECT DISTINCT manager AS id
+FROM manager
 JOIN perinfo p ON p1.manager = p.managedBy OR p1.manager = p.id
 )
 EOS;
@@ -273,21 +273,18 @@ WITh p1 AS (
             OR LOWER(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix)) LIKE ?
         )
         AND (NOT (p.first_name = 'Merged' AND p.middle_name = 'into'))
-), manager AS
+), manager AS (
     SELECT managedBy AS manager
     FROM p1
     JOIN perinfo p ON (p1.id = p.id)
-    WHERE id = ?;
-), p1 AS (
+), pc AS (
 SELECT DISTINCT id
-FROM perinfo
-WHERE id = ? OR managedBy = ?
-UNION SELECT DISTINCT p.id
-FROM manager p1
-JOIN perinfo p ON p1.manager = p.managedBy OR p1.manager = p.id
+FROM p1
+UNION SELECT DISTINCT manager AS id
+FROM manager
 ), pids AS (
     SELECT DISTINCT id
-    FROM p1
+    FROM pc
     LIMIT $limit
 )
 EOS;
@@ -300,24 +297,30 @@ JOIN perinfo p ON p1.id = p.id
 ORDER BY last_name, first_name LIMIT $limit;
 EOS;
     $searchSQLM = <<<EOS
-$nameMatchWith $fieldListM     
+$nameMatchWith, regids AS (
+    SELECT r.id AS regid, create_trans as tid
+    FROM reg r
+    JOIN pids p ON (p.id = r.perid)
+    JOIN memList m ON (r.memId = m.id)
+    WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r.perid = p.id
+) $fieldListM     
 FROM regids rs
-JOIN reg r ON (rs.regid = r.id)
-JOIN perinfo p ON (p.id = r.perid)
-JOIN memLabel m ON (r.memId = m.id)
-LEFT OUTER JOIN printcount pc ON (r.id = pc.regid)
-LEFT OUTER JOIN attachcount ac ON (r.id = ac.regid)
-LEFT OUTER JOIN notes n ON (r.id = n.regid)
+JOIN reg r1 ON (rs.regid = r1.id)
+JOIN perinfo p ON (p.id = r1.perid)
+JOIN memLabel m ON (r1.memId = m.id)
+LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
+LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
+LEFT OUTER JOIN notes n ON (r1.id = n.regid)
 ORDER BY r1.perid, r1.create_date;
 EOS;
     //  now the policies for these perids
     $searchSQLL = <<<EOS
-$nameMatchWith,
+$nameMatchWith
 $fieldListL
 FROM pids p1
 JOIN perinfo p ON (p.id = p1.id)
-JOIN memberPolicies mp ON (p.id = mp.perid AND r1.conid = mp.conid)
-WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
+JOIN memberPolicies mp ON (p.id = mp.perid)
+WHERE mp.conid = ?
 ORDER BY perid, policy;
 EOS;
 
@@ -337,9 +340,9 @@ EOS;
         return;
     }
 
-    $rl = dbSafeQuery($searchSQLL, 'ssssssssii',
+    $rl = dbSafeQuery($searchSQLL, 'ssssssssi',
           array ($findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern,
-                 $conid, $conid + 1));
+                 $conid));
     if ($rl === false) {
         ajaxSuccess(array('error' => "Error in string policy query for $findPattern ($conid)"));
         return;
