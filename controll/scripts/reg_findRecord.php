@@ -95,7 +95,7 @@ SELECT DISTINCT id
 FROM perinfo
 WHERE id = ? OR managedBy = ?
 UNION SELECT DISTINCT manager AS id
-FROM manager
+FROM manager p1
 JOIN perinfo p ON p1.manager = p.managedBy OR p1.manager = p.id
 )
 EOS;
