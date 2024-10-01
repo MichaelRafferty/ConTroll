@@ -366,7 +366,7 @@ class interestsSetup {
                 ajax_request_action: 'interests',
                 tabledata: JSON.stringify(this.#interestsTable.getData()),
                 tablename: "interests",
-                indexcol: "interests"
+                indexcol: "interest"
             };
             clear_message();
             this.#dirty = false;
