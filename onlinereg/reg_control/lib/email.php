@@ -308,7 +308,7 @@ Hello!
 
 $conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to attend last year’s convention, but we don't have you registered for this year's convention. You can always register on-site, but you can save money by purchasing your membership in advance at $regsite. To check the status of your, or the rest of your family's, memberships, you can always visit: $url/checkReg.php
 
-This year, we are at the same hotel which is now the $hotelname, at $hoteladdr.  Please rsgister for rooms as soon as possible as the block will be closing soon.
+This year, we are at the same hotel which is now the $hotelname, at $hoteladdr.  Please register for rooms as soon as possible as the block will be closing soon.
 
 Our programming team is putting together a great schedule for us this year, and you will be able to soon take a look at it at $schedulepage. Information about other activities, as well as our Guests of Honor, can be found on our website at $homepage.
 

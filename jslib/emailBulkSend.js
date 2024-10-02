@@ -143,7 +143,7 @@ class EmailBulkSend {
             emailType: this.#emailType,
             macroSubstitution: this.#macroSubstitution
         };
-        var dataJSON = JSON.stringify(data);
+        var dataJSON = btoa(encodeURI(JSON.stringify(data)));
         var _this = this;
         $.ajax({
             url: this.#sendURL,

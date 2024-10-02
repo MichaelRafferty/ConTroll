@@ -176,7 +176,7 @@ if ($apply_discount) {
 
 $total = round($total, 2);
 
-if($webtotal != $total) {
+if($webtotal != $preDiscount) {
     error_log("bad total: post=" . $webtotal . ", calc=" . $total);
     ajaxSuccess(array('status'=>'error', 'error'=>'Unable to process, bad total sent to Server'));
     exit();
@@ -266,7 +266,9 @@ EOF;
             trim($badge['zip']),
             $badge['country']
         );
-$value_arr = mb_convert_encoding($value_arr, 'Windows-1252', 'UTF-8');
+
+        // this line is causing problems in full utf8 systems, need to better understand why it was added, for now its removed.
+        //$value_arr = mb_convert_encoding($value_arr, 'Windows-1252', 'UTF-8');
 
         $res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
         if ($res !== false) {
