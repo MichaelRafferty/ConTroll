@@ -41,6 +41,10 @@ $response['personType'] = $loginType;
 $response['personId'] = $loginId;
 $getId = $_POST['getId'];
 $getType = $_POST['getType'];
+if (array_key_exists('newFlag', $_POST))
+    $newFlag = $_POST['newFlag'];
+else
+    $newFlag = 0;
 
 if (array_key_exists('interests', $_POST)) {
     $interestReq = $_POST['interests'];
@@ -109,11 +113,11 @@ $policies = [];
 $pQ = <<<EOS
 SELECT p.policy, p.prompt, p.description, p.required, p.defaultValue, p.sortOrder, m.id, m.perid, m.conid, m.newperid, m.response
 FROM policies p
-LEFT OUTER JOIN memberPolicies m ON p.policy = m.policy AND m.$rfield = ? AND m.conid = ?
+LEFT OUTER JOIN memberPolicies m ON p.policy = m.policy AND m.$rfield = ? AND m.conid = ? AND ? = 0
 WHERE p.active = 'Y'
 ORDER BY p.sortOrder;
 EOS;
-$pR = dbSafeQuery($pQ, 'ii', array($person['id'], $conid));
+$pR = dbSafeQuery($pQ, 'iii', array($person['id'], $conid, $newFlag));
 if ($pR !== false) {
     while ($row = $pR->fetch_assoc()) {
         $policies[] = $row;
@@ -129,11 +133,11 @@ if ($interestReq == 'Y') {
     $iQ = <<<EOS
 SELECT i.interest, i.description, i.sortOrder, m.interested, m.id
 FROM interests i
-LEFT OUTER JOIN memberInterests m ON m.$rfield = ? AND m.interest = i.interest AND conid = ?
+LEFT OUTER JOIN memberInterests m ON m.$rfield = ? AND m.interest = i.interest AND conid = ? AND ? = 0
 WHERE i.active = 'Y'
 ORDER BY i.sortOrder
 EOS;
-    $iR = dbSafeQuery($iQ, 'ii', array($person['id'], $conid));
+    $iR = dbSafeQuery($iQ, 'iii', array($person['id'], $conid, $newFlag));
     if ($iR !== false) {
         while ($row = $iR->fetch_assoc()) {
             $interests[$row['interest']] = $row;

@@ -309,6 +309,7 @@ class Membership {
         var data = {
             getId: id,
             getType: type,
+            newFlag: newFlag ? 1 : 0,
             memberships: newFlag ? 'A' : 'B',
             ageButtons: ageButtons,
             interests: 'Y',

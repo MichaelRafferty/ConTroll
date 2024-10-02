@@ -33,11 +33,11 @@ switch ($tablename) {
     case 'policy':
         $policySQL = <<<EOS
         SELECT p.policy, p.prompt, p.description, p.sortOrder, p.required, p.defaultValue, p.createDate, p.updateDate, p.updateBy, p.active,
-               p.policy AS policyKey, COUNT(*) AS uses
+               p.policy AS policyKey, COUNT(mP.policy) AS uses
         FROM policies p
         LEFT OUTER JOIN memberPolicies mP ON p.policy = mP.policy
         GROUP BY p.policy, p.prompt, p.description, p.sortOrder, p.required, p.defaultValue, p.createDate, p.updateDate, p.updateBy, p.active
-        ORDER BY sortorder, policy;
+        ORDER BY sortOrder, policy;
         EOS;
 
         $result = dbQuery($policySQL);
@@ -52,11 +52,11 @@ switch ($tablename) {
     case 'interests':
         $interestsSQL = <<<EOS
 SELECT i.interest, i.description, i.notifyList, i.sortOrder, i.createDate, i.updateDate, i.updateBy, i.active, i.csv,
-       i.interest AS interestKey, COUNT(*) AS uses
+       i.interest AS interestKey, COUNT(mI.interest) AS uses
 FROM interests i
 LEFT OUTER JOIN memberInterests mI ON i.interest = mI.interest
 GROUP BY  i.interest, i.description, i.notifyList, i.sortOrder, i.createDate, i.updateDate, i.updateBy, i.active, i.csv
-ORDER BY i.sortorder, i.interest;
+ORDER BY i.sortOrder, i.interest;
 EOS;
 
         $result = dbQuery($interestsSQL);

@@ -160,12 +160,13 @@ class interestsSetup {
                     editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
                 },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'interests' }, hozAlign:"left", headerSort: false },
-                {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
+                {title: "Sort Order", field: "sortOrder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "interestsKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
                     cellClick: function (e, cell) {
                         deleterow(e, cell.getRow());
+                        _this.checkUndoRedo();
                     }
                 },
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible,}
@@ -201,8 +202,8 @@ class interestsSetup {
     // add row to  table and scroll to that new row
     addrow() {
         var _this = this;
-        this.#interestsTable.addRow({interests: 'new-row', notifyList: '', desccription: '', csv: 'N',
-            active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
+        this.#interestsTable.addRow({interest: 'new-row', notifyList: '', description: '', csv: 'N',
+            active: 'Y', sortOrder: 99, uses: 0}, false).then(function (row) {
             _this.#interestsTable.setPage("last"); // adding new to last page always
             row.getTable().scrollToRow(row);
             _this.checkUndoRedo();
@@ -366,7 +367,7 @@ class interestsSetup {
                 ajax_request_action: 'interests',
                 tabledata: JSON.stringify(this.#interestsTable.getData()),
                 tablename: "interests",
-                indexcol: "interests"
+                indexcol: "interest"
             };
             clear_message();
             this.#dirty = false;

@@ -205,7 +205,7 @@ function drawChangeEmailModal() {
 //// membership items on portal screen
 // drawLegend - draw a legend row for the membership block of the portal home page
 
-$memershipButtonColors = array(
+$membershipButtonColors = array(
         'full' => array('color' => 'border-success', 'style' => ''),
         'wsfs' => array('color' => 'border-dark', 'style' => ''),
         'minor' => array('color' => '', 'style' => 'border-color: #ff9000 !important;'),
@@ -214,11 +214,26 @@ $memershipButtonColors = array(
         'yearahead' => array('color' => '', 'style' => 'border-color: #00fdff !important'),
         'addon' => array('color' => '', 'style' => 'border-color: #adb5bd !important'),
         'other' => array('color' => '', 'style' => ''),
+        'black' => array('color' => '', 'style' => 'border-color: #000000 !important'),
 );
+
+$portal_conf = get_conf('portal');
+$memberColor = null;
+if (array_key_exists('memberbadgecolors', $portal_conf)) {
+    $memberColor = $portal_conf['memberbadgecolors'];
+
+    if ($memberColor != '')
+        $membershipButtonColors['black']['style'] = 'border-color: ' . $memberColor . '!important';
+}
+
 function drawPortalLegend() {
-    global $memershipButtonColors;
+    global $membershipButtonColors;
     $conf = get_conf('con');
     $conid = $conf['id'];
+    $portal_conf = get_conf('portal');
+
+    if (array_key_exists('memberbadgecolors', $portal_conf) || (array_key_exists('suppresslegend', $portal_conf) && $portal_conf['suppresslegend'] == 1))
+        return;
 
     // figure which legend item exist - we need categories and types from memList
     $mlQ = <<<EOS
@@ -276,61 +291,61 @@ EOS;
         <div class="col-sm-auto"><b>Legend:</b></div>
         <?php if ($wsfs) { ?>
         <div class='col-sm-auto'>
-            <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['wsfs']['color']; ?>"
-                    style="pointer-events:none; <?php echo $memershipButtonColors['wsfs']['style']; ?>" tabindex='-1'>
+            <button class="btn btn-light border border-5 <?php echo $membershipButtonColors['wsfs']['color']; ?>"
+                    style="pointer-events:none; <?php echo $membershipButtonColors['wsfs']['style']; ?>" tabindex='-1'>
                 WSFS
             </button>
         </div>
         <?php } ?>
         <div class="col-sm-auto">
-            <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['full']['color']; ?>"
-                    style="pointer-events:none; <?php echo $memershipButtonColors['full']['style']; ?>" tabindex="-1">
+            <button class="btn btn-light border border-5 <?php echo $membershipButtonColors['full']['color']; ?>"
+                    style="pointer-events:none; <?php echo $membershipButtonColors['full']['style']; ?>" tabindex="-1">
                 Full Attending
             </button>
         </div>
         <?php if ($minor) { ?>
         <div class='col-sm-auto'>
-            <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['minor']['color']; ?>"
-                    style="pointer-events:none; <?php echo $memershipButtonColors['minor']['style']; ?>" tabindex='-1'>
+            <button class="btn btn-light border border-5 <?php echo $membershipButtonColors['minor']['color']; ?>"
+                    style="pointer-events:none; <?php echo $membershipButtonColors['minor']['style']; ?>" tabindex='-1'>
                 Requires Adult
             </button>
         </div>
         <?php }
         if ($oneday) { ?>
         <div class='col-sm-auto'>
-            <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['oneday']['color']; ?>"
-                    style="pointer-events:none; <?php echo $memershipButtonColors['oneday']['style']; ?>" tabindex='-1'>
+            <button class="btn btn-light border border-5 <?php echo $membershipButtonColors['oneday']['color']; ?>"
+                    style="pointer-events:none; <?php echo $membershipButtonColors['oneday']['style']; ?>" tabindex='-1'>
                 One Day Attending
             </button>
         </div>
         <?php }
         if ($virtual) { ?>
         <div class='col-sm-auto'>
-            <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['virtual']['color']; ?>"
-                    style="pointer-events:none; <?php echo $memershipButtonColors['virtual']['style']; ?>" tabindex='-1'>
+            <button class="btn btn-light border border-5 <?php echo $membershipButtonColors['virtual']['color']; ?>"
+                    style="pointer-events:none; <?php echo $membershipButtonColors['virtual']['style']; ?>" tabindex='-1'>
                 Virtual
             </>
         </div>
         <?php }
         if ($yearahead) { ?>
         <div class='col-sm-auto'>
-        <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['yearahead']['color']; ?>"
-                    style="pointer-events:none; <?php echo $memershipButtonColors['yearahead']['style']; ?>" tabindex='-1'>
+        <button class="btn btn-light border border-5 <?php echo $membershipButtonColors['yearahead']['color']; ?>"
+                    style="pointer-events:none; <?php echo $membershipButtonColors['yearahead']['style']; ?>" tabindex='-1'>
                 Year Ahead
             </button>
         </div>
         <?php }
         if ($addon) { ?>
         <div class='col-sm-auto'>
-            <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['addon']['color']; ?>"
-                    style="pointer-events:none; <?php echo $memershipButtonColors['addon']['style']; ?>" tabindex='-1'>
+            <button class="btn btn-light border border-5 <?php echo $membershipButtonColors['addon']['color']; ?>"
+                    style="pointer-events:none; <?php echo $membershipButtonColors['addon']['style']; ?>" tabindex='-1'>
                 Extras
             </button>
         </div>
         <?php } ?>
         <div class='col-sm-auto'>
-            <button class="btn btn-light border border-5 <?php echo $memershipButtonColors['other']['color']; ?>"
-                    style="pointer-events:none; <?php echo $memershipButtonColors['other']['style']; ?>" tabindex='-1'>
+            <button class="btn btn-light border border-5 <?php echo $membershipButtonColors['other']['color']; ?>"
+                    style="pointer-events:none; <?php echo $membershipButtonColors['other']['style']; ?>" tabindex='-1'>
                 All Others
             </button>
         </div>
@@ -339,7 +354,9 @@ EOS;
 }
 // drawManagedRow: draw the memberships and buttons for a managed person or yourself
 function drawPersonRow($personId, $personType, $person, $memberships, $showInterests, $showHR, $now) {
-        global $memershipButtonColors;
+    global $membershipButtonColors;
+
+    $portal_conf = get_conf('portal');
 
     $badge_name = $person['badge_name'];
     if ($badge_name == '') {
@@ -402,25 +419,29 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
         echo "<div class='row'>\n";
         foreach ($memberships as $membership) {
             $disabled = '';
-            $type = 'other';
+            if (array_key_exists('memberbadgecolors', $portal_conf)) {
+                $type = 'black';
+            } else {
+                $type = 'other';
 
-            if ($membership['type'] == 'wsfs')
-                $type = 'wsfs';
-            else if ($membership['category'] == 'yearahead')
-                $type = 'yearahead';
-            else if ($membership['memAge'] == 'child' || $membership['memAge'] == 'kit')
-                $type = 'minor';
-            else if ($membership['type'] == 'oneday')
-                $type = 'oneday';
-            else if ($membership['type'] == 'virtual')
-                $type = 'virtual';
-            else if ($membership['type'] == 'full')
-                $type = 'full';
-            else if ($membership['category'] == 'addon' || $membership['category'] == 'add-on'|| $membership['category'] == 'donation')
-                $type = 'addon';
+                if ($membership['type'] == 'wsfs')
+                    $type = 'wsfs';
+                else if ($membership['category'] == 'yearahead')
+                    $type = 'yearahead';
+                else if ($membership['memAge'] == 'child' || $membership['memAge'] == 'kit')
+                    $type = 'minor';
+                else if ($membership['type'] == 'oneday')
+                    $type = 'oneday';
+                else if ($membership['type'] == 'virtual')
+                    $type = 'virtual';
+                else if ($membership['type'] == 'full')
+                    $type = 'full';
+                else if ($membership['category'] == 'addon' || $membership['category'] == 'add-on'|| $membership['category'] == 'donation')
+                    $type = 'addon';
+            }
 
-            $borderColor = $memershipButtonColors[$type]['color'];
-            $borderStyle = $memershipButtonColors[$type]['style'];
+            $borderColor = $membershipButtonColors[$type]['color'];
+            $borderStyle = $membershipButtonColors[$type]['style'];
 
            if ($membership['status'] == 'upgraded')
                 $disabled = ' disabled';
