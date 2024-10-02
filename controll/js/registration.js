@@ -1602,7 +1602,7 @@ function found_record(data) {
             columns: [
                 {title: "Per ID", field: "perid", headerWordWrap: true, width: 80, visible: false, hozAlign: 'right',},
                 {field: "index", visible: false, },
-                {title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
+                {title: "Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                 {field: "last_name", visible: false,},
                 {field: "first_name", visible: false,},
                 {field: "middle_name", visible: false,},

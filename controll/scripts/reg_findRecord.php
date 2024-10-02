@@ -387,7 +387,9 @@ while ($l = $rm->fetch_assoc()) {
     $l['pindex'] = $perids[$l['perid']];
     $memberships[] = $l;
 }
-$membership[$lastPID] = $memberships;
+if ($lastPID >= 0) {
+    $membership[$lastPID] = $memberships;
+}
 $response['membership'] = $membership;
 $rm->free();
 
