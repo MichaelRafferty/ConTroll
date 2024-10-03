@@ -212,6 +212,10 @@ EOS;
 
 
 foreach ($payorPlans AS $payorPlan) {
+    if ((!array_key_exists('perid', $payorPlan)) || $payorPlan['perid'] == null) {
+        if ($verbose) echo "no perid for " . $payorPlan['id'] . ", skipping reminder until matched\n";
+        continue;
+    }
     $person = $people[$payorPlan['perid']];
     $sendTo = $to ? $to : $person['email_addr'];
     if ($verbose)
@@ -297,7 +301,6 @@ and click the "Make Pmt" button in the "Payment Plans for this account" section.
 <p>&nbsp;</p>
 <p>$label Registration</p>
 EOS;
-
     $return_arr = send_email($regadminemail, $sendTo, $cc, $emailSubject, $emailText, $emailHTML);
 
     if (array_key_exists('error_code', $return_arr)) {
@@ -310,9 +313,11 @@ EOS;
         echo "Unable to send receipt email to $sendTo, error: " . $return_arr['email_error'] . ", Code: $error_code\n";
     else {
         if ($verbose) echo "Reminder email sent to $sendTo\n";
+        $emailsSent++;
 
         if (!$doNotLog) {
             $trackId = dbSafeInsert($mailTrackInsQ, 'iiissd', array ($payorPlan['perid'], $payorPlan['id'], $conid, $sendTo, $nextPayDue, $minAmtNum));
+            if ($verbose) echo "Log key = $trackId\n";
             if ($trackId === false) {
                 echo "unable to create tracking record for $person:$payorPlan:$conid:$sendTo:$nextPayDue:$minAmtNum\n";
             }
