@@ -1017,7 +1017,7 @@ class reg_cart {
             this.#review_button.hidden = true;
             this.hideStartOver();
         }
-        find_unpaid_button.hidden = num_rows > 0;
+        // todo: find_unpaid_button.hidden = num_rows > 0;
     }
 
     // create the HTML of the cart into the review data block

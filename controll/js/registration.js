@@ -438,7 +438,7 @@ function start_over(reset_all) {
 
     // empty cart
     cart.startOver();
-    find_unpaid_button.hidden = false;
+    //TODO: find_unpaid_button.hidden = false;
     // empty search strings and results
     pattern_field.value = "";
     if (find_result_table != null) {

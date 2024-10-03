@@ -71,10 +71,15 @@ $conname = $con['conname'];
                             </div>
                             <div class="row mt-3">
                                 <div class="col-sm-4">
-                                    <button type="button" class="btn btn-sm btn-primary" id="find_unpaid_btn" name="find_btn" onclick="find_record('unpaid');" hidden>Find Unpaid Transactions</button>
+                                    <button type="button" class="btn btn-sm btn-primary" id="find_unpaid_btn" name="find_btn" onclick="find_record('unpaid')
+                                    ;" hidden>
+                                        Find Unpaid Transactions
+                                    </button>
                                 </div>
                                 <div class="col-sm-8">
-                                    <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" name="find_btn" onclick="find_record('search');">Find Record</button>
+                                    <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" name="find_btn" onclick="find_record('search');">
+                                        Find Record
+                                    </button>
                                 </div>
                             </div>
                             <div class="row mt-3">
