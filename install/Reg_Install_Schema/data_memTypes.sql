@@ -4,7 +4,6 @@
 -- ------------------------------------------------------
 -- Server version	8.0.32
 
-
 --
 -- Dumping data for table `memTypes`
 --
@@ -15,9 +14,6 @@ INSERT INTO `memTypes` VALUES
 ('donation','Req: Donation both variable price and fixed',40,'Y'),
 ('full','Req: full run of convention badgable membership',10,'Y'),
 ('oneday','Req: single day badgerable membership',30,'Y'),
-('virtual','Req: vurtail non badgeable membership',20,'Y');
+('virtual','Req: virtail non badgeable membership',20,'Y');
 ALTER TABLE `memTypes` ENABLE KEYS ;
 UNLOCK TABLES;
-
-
--- Dump completed on 2024-08-21 11:56:53

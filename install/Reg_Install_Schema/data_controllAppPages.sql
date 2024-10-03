@@ -18,6 +18,3 @@ INSERT INTO `controllAppPages` VALUES ('portal','accountSettings','Sets up manag
 ('portal','portal','Home page for the Registration Portal');
 ALTER TABLE `controllAppPages` ENABLE KEYS ;
 UNLOCK TABLES;
-
-
--- Dump completed on 2024-08-21 11:56:54

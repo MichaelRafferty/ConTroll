@@ -4,14 +4,14 @@
 -- ------------------------------------------------------
 -- Server version	8.0.32
 
-
 --
 -- Dumping data for table `patchLog`
 --
 
 LOCK TABLES `patchLog` WRITE;
 ALTER TABLE `patchLog` DISABLE KEYS ;
-INSERT INTO `patchLog` VALUES (1,'ATCON Auth Changes','2023-09-21 19:55:19'),
+INSERT INTO `patchLog` VALUES
+(1,'ATCON Auth Changes','2023-09-21 19:55:19'),
 (2,'Local Print Servers','2023-09-21 19:58:10'),
 (3,'Atcon History','2023-09-21 19:59:54'),
 (4,'Rename BSFS to Club','2023-09-21 20:03:04'),
@@ -38,9 +38,7 @@ INSERT INTO `patchLog` VALUES (1,'ATCON Auth Changes','2023-09-21 19:55:19'),
 (27,'logging triggers','2024-04-26 18:38:03'),
 (28,'artist name','2024-05-31 12:59:33'),
 (30,'Portal Changes','2024-08-03 01:05:13'),
-(32,'regHistory','2024-08-12 15:49:17');
+(32,'regHistory','2024-08-12 15:49:17'),
+(33,'paymentplans','2024-09-27 15:24:42');
 ALTER TABLE `patchLog` ENABLE KEYS ;
 UNLOCK TABLES;
-
-
--- Dump completed on 2024-08-21 11:56:52
