@@ -36,6 +36,3 @@ INSERT INTO `controllAppItems` VALUES ('portal','accountSettings','main','bottom
 ('portal','portal','main','top','Custom Text for the top of the page/section');
 ALTER TABLE `controllAppItems` ENABLE KEYS ;
 UNLOCK TABLES;
-
-
--- Dump completed on 2024-08-21 11:56:51

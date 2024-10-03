@@ -1,2 +1,2 @@
-Current=32
-Text=This schema is current as of Patch 32 (p32_regHistory.sql)
+Current=33
+Text=This schema is current as of Patch 33 (p33_paymentplans.sql)

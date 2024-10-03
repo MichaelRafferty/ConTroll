@@ -2,6 +2,9 @@ ALTER TABLE memberPolicies ADD CONSTRAINT `memberPolicies_ibfk_1` FOREIGN KEY (`
 ALTER TABLE memberPolicies ADD CONSTRAINT `memberPolicies_ibfk_2` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE memberPolicies ADD CONSTRAINT `memberPolicies_ibfk_3` FOREIGN KEY (`newperid`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
 ALTER TABLE memberPolicies ADD CONSTRAINT `memberPolicies_ibfk_4` FOREIGN KEY (`policy`) REFERENCES `policies` (`policy`) ON UPDATE CASCADE;
+ALTER TABLE payorPlanReminders ADD CONSTRAINT `payorPlanReminders_ibfk_1` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
+ALTER TABLE payorPlanReminders ADD CONSTRAINT `payorPlanReminders_ibfk_2` FOREIGN KEY (`payorPlanId`) REFERENCES `payorPlans` (`id`) ON UPDATE CASCADE;
+ALTER TABLE payorPlanReminders ADD CONSTRAINT `payorPlanReminders_ibfk_3` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE perinfoHistory ADD CONSTRAINT `perinfoHistory_id_fk` FOREIGN KEY (`id`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artItemsHistory ADD CONSTRAINT `aIH_exhibitorRegionYear_fk` FOREIGN KEY (`exhibitorRegionYearId`) REFERENCES `exhibitorRegionYears` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artItemsHistory ADD CONSTRAINT `artItemsHistory_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;

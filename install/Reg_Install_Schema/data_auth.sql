@@ -4,14 +4,14 @@
 -- ------------------------------------------------------
 -- Server version	8.0.32
 
-
 --
 -- Dumping data for table `auth`
 --
 
 LOCK TABLES `auth` WRITE;
 ALTER TABLE `auth` DISABLE KEYS ;
-INSERT INTO `auth` VALUES (1,'overview','Y','Membership'),
+INSERT INTO `auth` VALUES
+(1,'overview','Y','Membership'),
 (2,'admin','Y','Admin'),
 (3,'people','Y','People'),
 (5,'registration','Y','Registration'),
@@ -32,6 +32,3 @@ INSERT INTO `auth` VALUES (1,'overview','Y','Membership'),
 (32,'exhibitor','Y','Exhibitors');
 ALTER TABLE `auth` ENABLE KEYS ;
 UNLOCK TABLES;
-
-
--- Dump completed on 2024-08-21 11:56:51

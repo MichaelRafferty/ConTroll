@@ -115,7 +115,9 @@ var conid = null;
 var conlabel = null;
 var user_id = 0;
 var Manager = false;
-var non_primary_categories = ['add-on', 'addon', 'cancel'];
+// initialize non primary categories to only those in addition to the memConfig table, including grandfathered spellings,
+// it will be set in the initial data setup section
+var non_primary_categories = ['add-on'];
 var upgradable_types = ['one-day', 'oneday', 'virtual'];
 
 // filter criteria
@@ -249,12 +251,18 @@ function loadInitialData(data) {
 
     // build memListMap from memList
     memListMap = new map();
+    var row = null;
     var index = 0;
     while (index < memList.length) {
         memListMap.set(memList[index]['id'], index);
         index++;
     }
 
+    // build non primary categories from catList
+    for (row in catList) {
+        if (catList[row].badgeLabel.substring(0, 1) == 'X')
+            non_primary_categories.push(catList[row].memCategory);
+    }
     // build membership_select options
 
     filt_excat = non_primary_categories.slice(0);
@@ -267,7 +275,7 @@ function loadInitialData(data) {
     var match = memList.filter(mem_filter);
     membership_select = '';
     var membership_selectlist = [];
-    for (var row in match) {
+    for (row in match) {
         if (match[row]['canSell'] == 1 || Manager) {
             var option = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] +
                 ' (' + match[row]['enddate'] + '; ' + match[row]['id'] + ')' + "</option>\n";
@@ -356,25 +364,19 @@ function rm_perid_filter(cur, idx, arr) {
     return cur['perid'] == find_perid;
 }
 
-// map perid to result_membership row
-function find_memberships_by_perid(tbl, perid) {
-    find_perid = perid;
-    return tbl.filter(rm_perid_filter);
-}
-
-// given a perid, find it''s primary membership in the result_membership array
-function find_primary_membership_by_perid(tbl, perid) {
-    var regitems = find_memberships_by_perid(tbl, perid);
+// find the primary membership for a perid given it's array of memberships
+// primary is ? first or last ? of the list of memberships (trying first to match old way)
+function find_primary_membership(regitems) {
     var mem_index = null;
     for (var item in regitems) {
-        var mi_row = find_memLabel(regitems[item]['memId']);
-        if (mi_row['conid'] != conid)
+        var mi_row = regitems[item];
+        if (mi_row.conid != conid)
             continue;
 
-        if (non_primary_categories.includes(mi_row['memCategory']))
+        if (non_primary_categories.includes(mi_row.memCategory))
             continue;
 
-        mem_index = regitems[item]['index'];
+        mem_index = item;
         break;
     }
     return mem_index;
@@ -436,7 +438,7 @@ function start_over(reset_all) {
 
     // empty cart
     cart.startOver();
-    find_unpaid_button.hidden = false;
+    //TODO: find_unpaid_button.hidden = false;
     // empty search strings and results
     pattern_field.value = "";
     if (find_result_table != null) {
@@ -476,7 +478,8 @@ function build_record_hover(e, cell, onRendered) {
     var data = cell.getData();
     //console.log(data);
     var hover_text = 'Person id: ' + data['perid'] + '<br/>' +
-        (data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name']).trim() + '<br/>' +
+        data['fullName'] + '<br/>' +
+        data['pronouns'] + '<br/>' +
         data['legalName'] + '<br/>' +
         data['address_1'] + '<br/>';
     if (data['address_2'] != '') {
@@ -488,7 +491,17 @@ function build_record_hover(e, cell, onRendered) {
     }
     hover_text += 'Badge Name: ' + badge_name_default(data['badge_name'], data['first_name'], data['last_name']) + '<br/>' +
         'Email: ' + data['email_addr'] + '<br/>' + 'Phone: ' + data['phone'] + '<br/>' +
-        'Active:' + data['active'] + ' Contact?:' + data['contact_ok'] + ' Share?:' + data['share_reg_ok'] + '<br/>' +
+        'Active:' + data['active'];
+
+
+    var policies = data['policies'];
+    for (var row in policies) {
+        var policyName = policies[row].policy;
+        var policyResp = policies[row].response;
+        hover_text += ', ' + policyName + ': ' + policyResp;
+    }
+
+    hover_text += '<br/>' +
         'Membership: ' + data['reg_label'] + '<br/>';
 
     return hover_text;
@@ -518,8 +531,7 @@ function add_to_cart(index, table) {
         }
         perid = rt[index]['perid'];
         if (cart.notinCart(perid)) {
-            mrows = find_memberships_by_perid(rm, perid);
-            cart.add(rt[index], mrows)
+            cart.add(rt[index], rm.perid);
         }
     } else {
         var row;
@@ -871,7 +883,7 @@ function add_found(data) {
         // find primary membership for each add_perinfo record
         for (rowindex in add_perinfo) {
             var row = add_perinfo[rowindex];
-            var primmem = find_primary_membership_by_perid(add_membership, row['perid']);
+            var primmem = find_primary_membership(add_membership[row.perid]);
             if (primmem != null) {
                 row['reg_label'] = add_membership[primmem]['label'];
                 var tid = add_membership[primmem]['tid'];
@@ -1072,10 +1084,11 @@ function add_new_to_cart() {
 // draw_record: find_record found rows from search.  Display them in the non table format used by transaction and perid search, or a single row match for string.
 function draw_record(row, first) {
     var data = result_perinfo[row];
-    var prim = find_primary_membership_by_perid(result_membership, data['perid']);
+    var mem = result_membership[data.perid];
+    var prim = find_primary_membership(mem);
     var label = "No Membership";
     if (prim != null) {
-        label = result_membership[prim]['label'];
+        label = mem[prim].label;
     }
     var html = `
 <div class="container-fluid">
@@ -1122,9 +1135,11 @@ function draw_record(row, first) {
         </div>
         <div class="row">
             <div class="col-sm-3">Name:</div>
-            <div class="col-sm-9">` +
-            data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name'] + `
-            </div>
+            <div class="col-sm-9">` + data['fullName'] + `</div>
+        </div>  
+         <div class="row">
+            <div class="col-sm-3">Pronouns:</div>
+            <div class="col-sm-9">` + data['pronouns'] + `</div>
         </div>  
          <div class="row">
             <div class="col-sm-3">Legal Name:</div>
@@ -1163,14 +1178,20 @@ function draw_record(row, first) {
        <div class="col-sm-9">` + data['email_addr'] + `</div>
     </div>
     <div class="row">
-       <div class="col-sm-3">Phone::</div>
+       <div class="col-sm-3">Phone:</div>
        <div class="col-sm-9">` + data['phone'] + `</div>
     </div>
     <div class="row">
-       <div class="col-sm-3"></div>
-       <div class="col-sm-auto">Active: ` + data['active'] + `</div>
-       <div class="col-sm-auto">Contact OK: ` + data['contact_ok'] + `</div>
-       <div class="col-sm-auto">Share Reg: ` + data['share_reg_ok'] + `</div>
+       <div class="col-sm-3">Policies:</div>
+       <div class="col-sm-auto">Active: ` + data['active'] + "</div>\n";
+    var policies = data['policies'];
+    for (var row in policies) {
+        var policyName = policies[row].policy;
+        var policyResp = policies[row].response;
+        html += '<div class="col-sm-auto">' + policyName + ': ' + policyResp + "</div>\n";
+    }
+
+    html += `
     </div>
     <div class="row">
        <div class="col-sm-3">Membership Type:</div>
@@ -1566,13 +1587,14 @@ function found_record(data) {
     // find primary membership for each result_perinfo record
     for (rowindex in result_perinfo) {
         row = result_perinfo[rowindex];
-        var primmem = find_primary_membership_by_perid(result_membership, row['perid']);
+        mem = result_membership[row.perid];
+        var primmem = find_primary_membership(mem);
         if (primmem != null) {
-            row['reg_label'] = result_membership[primmem]['label'];
-            tid = result_membership[primmem]['tid'];
+            row['reg_label'] = mem[primmem].label;
+            tid = mem[primmem].tid;
             if (tid != '') {
                 var other = false;
-                mperid = row['perid'];
+                mperid = row.perid;
                 for (var mem in result_membership) {
                     if (result_membership[mem]['perid'] != mperid && result_membership[mem]['tid'] == tid) {
                         other = true;
@@ -1602,7 +1624,7 @@ function found_record(data) {
             columns: [
                 {title: "Per ID", field: "perid", headerWordWrap: true, width: 80, visible: false, hozAlign: 'right',},
                 {field: "index", visible: false, },
-                {title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
+                {title: "Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                 {field: "last_name", visible: false,},
                 {field: "first_name", visible: false,},
                 {field: "middle_name", visible: false,},

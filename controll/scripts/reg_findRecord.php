@@ -361,8 +361,6 @@ while ($l = $rp->fetch_assoc()) {
     $perids[$l['perid']] = $index;
     $index++;
 }
-$response['perinfo'] = $perinfo;
-$response['perids'] = $perids;
 if ($num_rows >= $limit) {
     $response['warn'] = "$num_rows memberships found, limited to $limit, use different search criteria to refine your search.";
 } else {
@@ -375,20 +373,23 @@ $membership = [];
 $lastPID = -1;
 $memberships = [];
 
+$rows = $rm->num_rows;
+
 while ($l = $rm->fetch_assoc()) {
     if ($l['perid'] != $lastPID) {
         if ($lastPID >= 0) {
             $membership[$lastPID] = $memberships;
-            $lastPID = $l['perid'];
         }
         $memberships = [];
+        $lastPID = $l['perid'];
     }
 
     $l['pindex'] = $perids[$l['perid']];
     $memberships[] = $l;
 }
-$membership[$lastPID] = $memberships;
-$response['membership'] = $membership;
+if ($lastPID >= 0) {
+    $membership[$lastPID] = $memberships;
+}
 $rm->free();
 
 // now get the policies the same way
@@ -399,15 +400,24 @@ while ($l = $rl->fetch_assoc()) {
     if ($l['perid'] != $lastPID) {
         if ($lastPID >= 0) {
             $policies[$lastPID] = $policy;
-            $lastPID = $l['perid'];
+            $index = $perids[$lastPID];
+            $perinfo[$index]['policies'] = $policy;
         }
         $policy = [];
+        $lastPID = $l['perid'];
     }
 
     $l['pindex'] = $perids[$l['perid']];
     $policy[$l['policy']] = $l;
 }
-$policies[$lastPID] = $policy;
+if ($lastPID >= 0) {
+    $policies[$lastPID] = $policy;
+    $index = $perids[$lastPID];
+    $perinfo[$index]['policies'] = $policy;
+}
+$response['perinfo'] = $perinfo;
+$response['perids'] = $perids;
+$response['membership'] = $membership;
 $response['policies'] = $policies;
 $rl->free();
 

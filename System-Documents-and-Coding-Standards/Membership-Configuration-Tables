@@ -39,7 +39,8 @@ Membership Category Options:
     Stand Alone:    Used by onlinereg module to indicate that the cart now has a membership that makes the cart purchasable
     Variable Price: Used by portal module to indicate that this item has a minumum price, but the user can specify the actual amount.
                         Usually used by donations
-    Badge Label:    A string printed on the badge for memberships of this category.
+    Badge Label:    A string printed on the badge for memberships of this category.  If this string starts with 'X' this is a non badgable
+                        membership also known as a Non Primary Membership. NOTE: yearahead is only primary for its con year.
     Active:         Currently available for use this year,  If 'N' it's an archive element for prior years.
 
 Membership Ages (ageList)

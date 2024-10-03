@@ -13,6 +13,7 @@ DROP TABLE IF EXISTS `payorPlans`;
 CREATE TABLE `payorPlans` (
   `id` int NOT NULL AUTO_INCREMENT,
   `planId` int NOT NULL,
+  `conid` int DEFAULT NULL,
   `perid` int DEFAULT NULL,
   `newperid` int DEFAULT NULL,
   `initialAmt` decimal(8,2) NOT NULL,

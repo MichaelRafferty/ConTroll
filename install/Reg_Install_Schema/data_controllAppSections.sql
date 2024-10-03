@@ -25,6 +25,3 @@ INSERT INTO `controllAppSections` VALUES ('portal','accountSettings','main','mai
 ('portal','portal','portalForm','data entry forms used by the portal page');
 ALTER TABLE `controllAppSections` ENABLE KEYS ;
 UNLOCK TABLES;
-
-
--- Dump completed on 2024-08-21 11:56:53
