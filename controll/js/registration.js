@@ -364,25 +364,19 @@ function rm_perid_filter(cur, idx, arr) {
     return cur['perid'] == find_perid;
 }
 
-// map perid to result_membership row
-function find_memberships_by_perid(tbl, perid) {
-    find_perid = perid;
-    return tbl.filter(rm_perid_filter);
-}
-
 // find the primary membership for a perid given it's array of memberships
 // primary is ? first or last ? of the list of memberships (trying first to match old way)
 function find_primary_membership(regitems) {
     var mem_index = null;
     for (var item in regitems) {
-        var mi_row = find_memLabel(regitems[item]['memId']);
-        if (mi_row['conid'] != conid)
+        var mi_row = regitems[item];
+        if (mi_row.conid != conid)
             continue;
 
-        if (non_primary_categories.includes(mi_row['memCategory']))
+        if (non_primary_categories.includes(mi_row.memCategory))
             continue;
 
-        mem_index = regitems[item]['index'];
+        mem_index = item;
         break;
     }
     return mem_index;
@@ -537,8 +531,7 @@ function add_to_cart(index, table) {
         }
         perid = rt[index]['perid'];
         if (cart.notinCart(perid)) {
-            mrows = find_memberships_by_perid(rm, perid);
-            cart.add(rt[index], mrows)
+            cart.add(rt[index], rm.perid);
         }
     } else {
         var row;
@@ -1091,10 +1084,11 @@ function add_new_to_cart() {
 // draw_record: find_record found rows from search.  Display them in the non table format used by transaction and perid search, or a single row match for string.
 function draw_record(row, first) {
     var data = result_perinfo[row];
-    var prim = find_primary_membership(result_membership[data.perid]);
+    var mem = result_membership[data.perid];
+    var prim = find_primary_membership(mem);
     var label = "No Membership";
     if (prim != null) {
-        label = result_membership[prim]['label'];
+        label = mem[prim].label;
     }
     var html = `
 <div class="container-fluid">
@@ -1593,13 +1587,14 @@ function found_record(data) {
     // find primary membership for each result_perinfo record
     for (rowindex in result_perinfo) {
         row = result_perinfo[rowindex];
-        var primmem = find_primary_membership(result_membership[row.perid]);
+        mem = result_membership[row.perid];
+        var primmem = find_primary_membership(mem);
         if (primmem != null) {
-            row['reg_label'] = result_membership[primmem]['label'];
-            tid = result_membership[primmem]['tid'];
+            row['reg_label'] = mem[primmem].label;
+            tid = mem[primmem].tid;
             if (tid != '') {
                 var other = false;
-                mperid = row['perid'];
+                mperid = row.perid;
                 for (var mem in result_membership) {
                     if (result_membership[mem]['perid'] != mperid && result_membership[mem]['tid'] == tid) {
                         other = true;
