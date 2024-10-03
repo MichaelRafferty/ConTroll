@@ -385,12 +385,24 @@ else
                                     <div class='col-sm-10'>
                                         <select id='sRuleType' name='sRuleType'>
                                             <option value="">--Select Rule Type--</option>
-                                            <option value="needAny">Need Any</option>
-                                            <option value="needAll">Need All</option>
-                                            <option value='notAny'>Not Any</option>
-                                            <option value='notAll'>Not All</option>
-                                            <option value='limitAge'>Limit Age</option>
-                                            <option value='currentAge'>Current Age</option>
+                                            <option value="needAny">
+                                                Need Any (One reg must match any [or within group, and between groups])
+                                            </option>
+                                            <option value="needAll">
+                                                Need All (One reg must match all [and within group, and between groups])
+                                            </option>
+                                            <option value='notAny'>
+                                                Not Any (No reg can match any [or within group, and between groups])
+                                            </option>
+                                            <option value='notAll'>
+                                                Not All (No reg can match all [and within group, and between groups])
+                                            </option>
+                                            <option value='limitAge'>
+                                                Limit Age (One reg must match any (like needany) but the age check is manadatory)
+                                            </option>
+                                            <option value='currentAge'>
+                                                Current Age (Future, currently not used)
+                                            </option>
                                         </select>
                                     </div>
                                 </div>
