@@ -3,6 +3,8 @@ require_once 'lib/base.php';
 require_once '../lib/profile.php';
 require_once '../lib/policies.php';
 require_once('../lib/cc__load_methods.php');
+require_once('../lib/profile.php');
+require_once('../lib/policies.php');
 //initialize google session
 $need_login = google_init('page');
 
@@ -29,8 +31,15 @@ page_init($page,
     $need_login);
 
 $con = get_conf('con');
+$debug = get_conf('debug');
+$usps = get_conf('usps');
 $conid = $con['id'];
 $conname = $con['conname'];
+$policies = getPolicies();
+$useUSPS = false;
+// form as laid out has no room for usps block, if we want it we need to reconsider how to do it here.
+//if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
+//    $useUSPS = true;
 
 ?>
 <div id="pos" class="container-fluid">
@@ -106,106 +115,9 @@ $conname = $con['conname'];
                              <input type="hidden" name="perinfo-index" id="perinfo-index" />
                              <input type="hidden" name="perinfo-perid" id="perinfo-perid" />
                              <input type="hidden" name="membership-index" id="membership-index" />
-                             <div class="row">
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="fname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>First Name</span></label><br/>
-                                    <input type="text" name="fname" id='fname' size="22" maxlength="32" tabindex="2"/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="mname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
-                                    <input type="text" name="mname" id='mname' size="6" maxlength="32" tabindex="4"/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="lname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Last Name</span></label><br/>
-                                    <input type="text" name="lname" id='lname' size="22" maxlength="32" tabindex="6"/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-0 p-0">
-                                    <label for="suffix" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
-                                    <input type="text" name="suffix" id='suffix' size="4" maxlength="4" tabindex="8"/>
-                                </div>
-                            </div>
-                             <div class='row'>
-                                 <div class='col-sm-12 ms-0 me-0 p-0'>
-                                     <label for='legalName' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name (Defaults to First Middle Last Suffix)</span></label><br/>
-                                     <input type='text' name='legalName' id='legalName' size=80 maxlength='128' tabindex='10'/>
-                                 </div>
-                             </div>
-                            <div class="row">
-                                <div class="col-sm-12 ms-0 me-0 p-0">
-                                    <label for="addr" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Address</span></label><br/>
-                                    <input type="text" name='addr' id='addr' size=64 maxlength="64" tabindex='12'/>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-12 ms-0 me-0 p-0">
-                                    <label for="addr2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
-                                    <input type="text" name='addr2' id='addr2' size=64 maxlength="64" tabindex='14'/>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="city" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>City</span></label><br/>
-                                    <input type="text" name="city" id='city' size="22" maxlength="32" tabindex="16"/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>State</span></label><br/>
-                                    <input type="text" name="state" id='state' size="10" maxlength="16" tabindex="18"/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Zip</span></label><br/>
-                                    <input type="text" name="zip" id='zip' size="10" maxlength="10" tabindex="20"/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-0 p-0">
-                                    <label for="country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
-                                    <select name='country' id="country" tabindex='22'>
-                                    <?php
-                                    $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-                                    while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-                                        echo "<option value='".$data[1]."'>".$data[0]."</option>";
-                                    }
-                                    fclose($fh);
-                                    ?>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="email" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Email</span></label><br/>
-                                    <input type="email" name="email" id='email' size="50" maxlength="254" tabindex="24"/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-0 p-0">
-                                    <label for="phone" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
-                                    <input type="text" name="phone" id='phone' size="15" maxlength="15" tabindex="26"/>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-auto ms-0 me-2 p-0">
-                                    <label for="badgename" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
-                                    <input type="text" name="badgename" id='badgename' size="38" maxlength="32"  placeholder='Badgename: defaults to first and last name' tabindex="28"/>
-                                </div>
-                                <div class="col-sm-auto ms-0 me-0 p-0">
-                                    <label for="memType" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-danger'>&bigstar;</span>Membership Type</span></label><br/>
-                                    <div id="ae_mem_select"></div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-auto mt-2 ms-0 me-0 p-0">
-                                    <label for="contact_ok">Include in annual reminder postcards, future <?php echo $conname; ?> emails and surveys?</label>
-                                    <select id="contact_ok" name="contact_ok" tabindex='32'>
-                                        <option value="Y" selected>Yes</option>
-                                        <option value="N">No</option>
-                                    </select>
-                                </div>
-                            </div>
-                              <div class="row">
-                                <div class="col-sm-auto mt-2 ms-0 me-0 p-0">
-                                    <label for="share_reg_ok">Allow search by member to find you on website?</label>
-                                    <select id="share_reg_ok" name="share_reg_ok" tabindex='34'>
-                                        <option value="Y" selected>Yes</option>
-                                        <option value="N">No</option>
-                                    </select>
-                                </div>
-                            </div>
+<?php
+drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, '', array(), 200, true, '');
+?>
                             <div class="row">
                                 <div class="col-sm-12 ms-0 me-0" id="add_results">
                             </div>

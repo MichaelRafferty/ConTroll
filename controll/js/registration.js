@@ -36,8 +36,6 @@ var add_country_field = null;
 var add_email_field = null;
 var add_phone_field = null;
 var add_badgename_field = null;
-var add_contact_field = null;
-var add_share_field = null;
 var add_header = null;
 var addnew_button = null;
 var clearadd_button = null;
@@ -162,7 +160,7 @@ window.onload = function initpage() {
     add_first_field = document.getElementById("fname");
     add_middle_field = document.getElementById("mname");
     add_last_field = document.getElementById("lname");
-    add_legalName_field = document.getElementById("legalName");
+    add_legalName_field = document.getElementById("legalname");
     add_suffix_field = document.getElementById("suffix");
     add_addr1_field = document.getElementById("addr");
     add_addr2_field = document.getElementById("addr2");
@@ -170,11 +168,9 @@ window.onload = function initpage() {
     add_state_field = document.getElementById("state");
     add_postal_code_field = document.getElementById("zip");
     add_country_field = document.getElementById("country");
-    add_email_field = document.getElementById("email");
+    add_email_field = document.getElementById("email1");
     add_phone_field = document.getElementById("phone");
     add_badgename_field = document.getElementById("badgename");
-    add_contact_field = document.getElementById("contact_ok");
-    add_share_field = document.getElementById("share_reg_ok");
     add_header = document.getElementById("add_header");
     addnew_button = document.getElementById("addnew-btn");
     clearadd_button = document.getElementById("clearadd-btn");
@@ -668,8 +664,6 @@ function clear_add(reset_all) {
     add_email_field.value = "";
     add_phone_field.value = "";
     add_badgename_field.value = "";
-    add_contact_field.value = 'Y';
-    add_share_field.value = 'Y';
     add_country_field.value = 'USA';
     add_header.innerHTML = `
 <div class="col-sm-12 text-bg-primary mb-2">
@@ -684,9 +678,6 @@ function clear_add(reset_all) {
     add_state_field.style.backgroundColor = '';
     add_postal_code_field.style.backgroundColor = '';
     add_email_field.style.backgroundColor = '';
-    add_mem_select.innerHTML = add_mt_dataentry;
-    add_mem_select.style.backgroundColor = '';
-    document.getElementById("ae_mem_sel").innerHTML = membership_select;
     if (add_results_table != null) {
         add_results_table.destroy();
         add_results_table = null;
@@ -726,13 +717,6 @@ function add_new() {
     var new_email = add_email_field.value.trim();
     var new_phone = add_phone_field.value.trim();
     var new_badgename = add_badgename_field.value.trim();
-    var bt_field = document.getElementById("ae_mem_sel");
-    var new_badgememId = null;
-    if (bt_field) {
-        new_badgememId = bt_field.value.trim();
-    }
-    var new_contact = add_contact_field.value.trim();
-    var new_share = add_share_field.value.trim();
 
     if (new_legalName == '') {
         new_legalName = ((new_first + ' ' + new_middle).trim() + ' ' + new_last + ' ' + new_suffix).trim();
@@ -754,9 +738,6 @@ function add_new() {
         row['country'] = new_country;
         row['email_addr'] = new_email;
         row['phone'] = new_phone;
-        row['share_reg_ok'] = new_share;
-        row['contact_ok'] = new_contact;
-        row['share_reg_ok'] = new_share;
         row['active'] = 'Y';
         row['dirty'] = true;
 
@@ -960,17 +941,10 @@ function add_new_to_cart() {
     var new_email = add_email_field.value.trim();
     var new_phone = add_phone_field.value.trim();
     var new_badgename = add_badgename_field.value.trim();
-    var bt_field = document.getElementById("ae_mem_sel");
-    var new_badgememId = null;
-    if (bt_field) {
-        new_badgememId = bt_field.value.trim();
-    }
 
     if (new_legalName == '') {
         new_legalName = ((new_first + ' ' + new_middle).trim() + ' ' + new_last + ' ' + new_suffix).trim();
     }
-    //var new_contact = add_contact_field.value.trim();
-    //var new_share = add_share_field.value.trim();
 
     clear_message();
     // look for missing data
@@ -1046,7 +1020,7 @@ function add_new_to_cart() {
         badge_name: new_badgename,
         address_1: new_addr1, address_2: new_addr2, city: new_city, state: new_state, postal_code: new_postal_code,
         country: new_country, email_addr: new_email, phone: new_phone,
-        share_reg_ok: 'Y', contact_ok:'Y', new_contact:'Y', active: 'Y', banned: 'N',
+        share_reg_ok: 'Y', active: 'Y', banned: 'N',
     };
     var mi_row = find_memLabel(new_badgememId);
     var mrow = {
