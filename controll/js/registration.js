@@ -478,9 +478,9 @@ function build_record_hover(e, cell, onRendered) {
     var data = cell.getData();
     //console.log(data);
     var hover_text = 'Person id: ' + data['perid'] + '<br/>' +
-        data['fullName'] + '<br/>' +
-        data['pronouns'] + '<br/>' +
-        data['legalName'] + '<br/>' +
+        'Full Name: ' + data['fullName'] + '<br/>' +
+        'Pronouns: ' + data['pronouns'] + '<br/>' +
+        'Legal Name: ' + data['legalName'] + '<br/>' +
         data['address_1'] + '<br/>';
     if (data['address_2'] != '') {
         hover_text += data['address_2'] + '<br/>';
@@ -493,7 +493,7 @@ function build_record_hover(e, cell, onRendered) {
         'Email: ' + data['email_addr'] + '<br/>' + 'Phone: ' + data['phone'] + '<br/>' +
         'Active:' + data['active'];
 
-
+    // append the policies to the active flag line
     var policies = data['policies'];
     for (var row in policies) {
         var policyName = policies[row].policy;
@@ -1622,9 +1622,10 @@ function found_record(data) {
                 {column: "fullname", dir: "asc"},
             ],
             columns: [
+                {title: "Cart", width: 90, headerFilter: false, headerSort: false, formatter: addCartIcon, formatterParams: {t:"result"},},
                 {title: "Per ID", field: "perid", headerWordWrap: true, width: 80, visible: false, hozAlign: 'right',},
                 {field: "index", visible: false, },
-                {title: "Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
+                {title: "Full Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                 {field: "last_name", visible: false,},
                 {field: "first_name", visible: false,},
                 {field: "middle_name", visible: false,},
@@ -1635,7 +1636,7 @@ function found_record(data) {
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120,},
                 {title: "Nt",width: 45, headerSort: false, headerFilter: false, formatter: perNotesIcons, formatterParams: {t:"result"}, },
-                {title: "Cart", width: 90, headerFilter: false, headerSort: false, formatter: addCartIcon, formatterParams: {t:"result"},},
+
                 {field: "index", visible: false,},
             ],
         });
