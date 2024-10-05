@@ -331,7 +331,11 @@ class Login {
             }
         }
 
-        if (required == 'addr' || required == 'all' || person['addr'] != '' || person['city'] != '' || person['state'] != '' || person['zip'] != '') {
+        if (required == 'addr' || required == 'all' ||
+            (person['country'] == 'USA' && this.#uspsDiv != null &&
+                (person['addr'] != '' || person['city'] != '' || person['state'] != '' || person['zip'] != '')
+            )
+        ) {
             // address 1 is required, address 2 is optional
             if (person['addr'] == '') {
                 valid = false;
