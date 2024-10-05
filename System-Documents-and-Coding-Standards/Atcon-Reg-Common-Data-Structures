@@ -1,0 +1,49 @@
+Atcon and Registration Common Data Structures
+
+Atcon and ConTroll's mail in registration (Registration) use a common data layout and are very similar.
+
+They both can search for people and their memberships either by name, perid, or transaction id (tid).  They store the returned values in a single array that
+holds:
+    perinfo
+    reg
+    policies
+    ?payments?
+    ??
+
+This is returned in two arrays
+    perinfo: data for the perinfo table fields plus embedded arrays
+        memberships: memberships (reg entries) assigned to this perid
+        policies: responses to policies by this perid
+
+In addition they use a set of common setup data:
+    label: Convention Name
+    conid: Current convention number (id) [usually year or ordinal as in Philcon's 2024 or Balticon's' 57)
+    discount: Confuration options for the discount payment type
+        manager - requires manager logged in
+        active - manager override enabled
+        any - any POS user can handle discount
+        none - disable the discount payment type
+    badgePrinter: is a badge printer available (true/false)
+    receiptPrinter: is a receipt printer available (true/false)
+    user_id: userid (user table) of logged in user for registration (depreciated)
+    userId: perid of the logged in user for atcon or registration
+    cc_html: html to display to accept a credit card number from the clearing house
+    Manager: Is this user a registration admin or an atcon manager (true/false)
+    startdate: Convention start date
+    enddate:  Convention end date
+    memLabels: array of memList labels by sort order
+    memTypes: array of memTypes by sortorder
+    memCategories: array of memCategories by sortorder
+    ageList: array of ages in current conid by sortorder
+    num_coupons: number of currently active coupons (used for true/false check of are there coupons)
+    couponList: array of currently active coupons
+    memRules: array of membership Rules with embedded step arrays
+    policies: array of policies
+    debug: current debug level for this tool from the configuration file
+    required: which address fields are required from the configuration file
+        required person field sets
+            all = require all fields: first, last, addr, city, st, zip, country, email
+            first = require only first name: first, country, email
+            addr = first, addr, city, st, zip, country, email
+    useUSPS: is usps validation for USA enabled
+

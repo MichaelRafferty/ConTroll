@@ -88,7 +88,7 @@ var $purchase_label = 'purchase';
 
 // Data Items
 var unpaid_table = [];
-var result_membership = [];
+// var result_membership = [];
 var result_perinfo = [];
 var membership_select = null;
 var add_perinfo = [];
@@ -299,7 +299,7 @@ function loadInitialData(data) {
 
     // set up initial values
     result_perinfo = [];
-    result_membership = [];
+    // result_membership = [];
 
     // set starting stages of left and right windows
     clear_add(1);
@@ -858,7 +858,7 @@ function add_found(data) {
     var rowindex;
 // see if they already exist (if add to cart)
     add_perinfo = data['perinfo'];
-    add_membership = data['membership'];
+    // add_membership = data['membership'];
     
     if (add_perinfo.length > 0) {
         // find primary membership for each add_perinfo record
@@ -1460,7 +1460,7 @@ function found_record(data) {
     var mperid;
     var find_type = data['find_type'];
     result_perinfo = data['perinfo'];
-    result_membership = data['membership'];
+   // result_membership = data['membership'];
     name_search = data['name_search'];
 
     // unpaid search: Only used by Cashier
@@ -1550,18 +1550,23 @@ function found_record(data) {
     var attach_count = 0;
     var regtids = [];
     var rowindex;
-    for (rowindex in result_membership) {
-        print_count += Number(result_membership[rowindex]['printcount']);
-        attach_count += Number(result_membership[rowindex]['attachcount']);
-        if (!regtids.includes(result_membership[rowindex]['rstid'])) {
-            regtids.push(result_membership[rowindex]['rstid']);
+    var pmrowindex;
+    var memberships;
+    for (pmrowindex in result_perinfo) {
+        memberships = result_perinfo[pmrowindex].memberships;
+        for (rowindex in memberships) {
+            print_count += Number(memberships[rowindex].printcount);
+            attach_count += Number(memberships[rowindex].attachcount);
+            if (!regtids.includes(memberships[rowindex].rstid)) {
+                regtids.push(memberships[rowindex].rstid);
+            }
         }
     }
     // not unpaid search... mark the type of the primary membership in the person row for the table
     // find primary membership for each result_perinfo record
     for (rowindex in result_perinfo) {
         row = result_perinfo[rowindex];
-        mem = result_membership[row.perid];
+        mem = row.memberships;
         var primmem = find_primary_membership(mem);
         if (primmem != null) {
             row['reg_label'] = mem[primmem].label;

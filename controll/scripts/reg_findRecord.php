@@ -40,8 +40,8 @@ $name_search = $_POST['name_search'];
 $response['find_type'] = $find_type;
 $response['name_search'] = $name_search;
 $perinfo = [];
-$membership = [];
-$policies = [];
+//$membership = [];
+//$policies = [];
 
 $limit = 99999999;
 $fieldListP = <<<EOS
@@ -131,8 +131,8 @@ EOS;
         // nothing to search for, return zero records found (early exit)
         $response['message'] = '0 memberships found';
         $response['perinfo'] = $perinfo;
-        $response['membership'] = $membership;
-        $response['policies'] = $policies;
+        //$response['membership'] = $membership;
+        //$response['policies'] = $policies;
         ajaxSuccess($response);
         exit();
     }
@@ -369,56 +369,56 @@ if ($num_rows >= $limit) {
 $rp->free();
 
 // Now get memberships stored as an array of arrays by perid
-$membership = [];
+//$membership = [];
 $lastPID = -1;
+$pindex = null;
 $memberships = [];
-
-$rows = $rm->num_rows;
 
 while ($l = $rm->fetch_assoc()) {
     if ($l['perid'] != $lastPID) {
         if ($lastPID >= 0) {
-            $membership[$lastPID] = $memberships;
+            //membership[$lastPID] = $memberships;
+            $perinfo[$pindex]['memberships'] = $memberships;
         }
         $memberships = [];
         $lastPID = $l['perid'];
+        $pindex = $perids[$lastPID];
     }
-
-    $l['pindex'] = $perids[$l['perid']];
+    $l['pindex'] = $pindex;
     $memberships[] = $l;
 }
 if ($lastPID >= 0) {
-    $membership[$lastPID] = $memberships;
+    //$membership[$lastPID] = $memberships;
+    $perinfo[$pindex]['memberships'] = $memberships;
 }
 $rm->free();
 
 // now get the policies the same way
-$policies = [];
+//$policies = [];
 $lastPID = -1;
 $policy = [];
 while ($l = $rl->fetch_assoc()) {
     if ($l['perid'] != $lastPID) {
         if ($lastPID >= 0) {
-            $policies[$lastPID] = $policy;
-            $index = $perids[$lastPID];
-            $perinfo[$index]['policies'] = $policy;
+            //$policies[$lastPID] = $policy;
+            $perinfo[$pindex]['policies'] = $policy;
         }
         $policy = [];
         $lastPID = $l['perid'];
+        $pindex = $perids[$lastPID];
     }
 
     $l['pindex'] = $perids[$l['perid']];
     $policy[$l['policy']] = $l;
 }
 if ($lastPID >= 0) {
-    $policies[$lastPID] = $policy;
-    $index = $perids[$lastPID];
-    $perinfo[$index]['policies'] = $policy;
+    //$policies[$lastPID] = $policy;
+    $perinfo[$pindex]['policies'] = $policy;
 }
 $response['perinfo'] = $perinfo;
 $response['perids'] = $perids;
-$response['membership'] = $membership;
-$response['policies'] = $policies;
+//$response['membership'] = $membership;
+//$response['policies'] = $policies;
 $rl->free();
 
 ajaxSuccess($response);
