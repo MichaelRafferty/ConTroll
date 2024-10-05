@@ -175,7 +175,6 @@ $response['couponList'] = $ret[1];
 // membership rules, policies, configuration items
 $response['memRules'] = getRulesData($conid);
 $response['policies'] = getPolicies();
-$response['label'] = $con['label'];
 $cdebug = 0;
 if (array_key_exists('controll_registration', $debug))
     $cdebug = $debug['controll_registration'];
