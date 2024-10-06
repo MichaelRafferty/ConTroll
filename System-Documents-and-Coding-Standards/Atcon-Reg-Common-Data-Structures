@@ -14,6 +14,7 @@ This is returned in two arrays
     perinfo: data for the perinfo table fields plus embedded arrays
         memberships: memberships (reg entries) assigned to this perid
         policies: responses to policies by this perid
+    perids: index of the array of perinfo by perid perids[perid] = index into perinfo array
 
 In addition they use a set of common setup data:
     label: Convention Name

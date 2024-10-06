@@ -24,8 +24,9 @@ page_init($page,
     /* js  */ array(//$cdn['luxon'],
         $cdn['tabjs'],
         'js/registration.js',
-        'js/registration_cart.js',
-        'js/registration_coupon.js',
+        'jslib/posCart.js',
+        'jslib/posCoupon.js',
+        'jslib/pos.js',
         'jslib/membershipRules.js',
     ),
     $need_login);
@@ -145,10 +146,10 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
             <div class="row">
                 <div class="col-sm-12 mt-3">
                     <button type="button" class="btn btn-primary btn-sm" id="cart_no_changes_btn" onclick="review_nochanges();" hidden>No Changes</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="review_btn" onclick="start_review();" hidden>Review Data</button>
-                    <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="start_over(1);" hidden>Start Over</button>
-                    <button type="button" class="btn btn-warning btn-sm" id="void_btn" onclick="void_trans();" hidden>Void</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="start_over(1);" hidden>Next Customer</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="review_btn" onclick="pos.start_review();" hidden>Review Data</button>
+                    <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="pos.start_over(1);" hidden>Start Over</button>
+                    <button type="button" class="btn btn-warning btn-sm" id="void_btn" onclick="pos.void_trans();" hidden>Void</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="pos.start_over(1);" hidden>Next Customer</button>
                 </div>
             </div>
         </div>       

@@ -1,258 +1,199 @@
-// Cart Class - all functions and data related to the cart portion of the right side of the screen
-// Cart includes: People, Memberships and Payments.
-class reg_cart {
+// Point of Sale Cart Class - all functions and data related to the cart portion of the right side of the screen
+// The cart manages: People, Memberships and Payment
+class PosCart {
 // cart dom items
-    #void_button = null;
-    #startover_button = null;
-    #review_button = null;
-    #next_button = null;
-    #nochanges_button = null;
-    #cart_div = null;
+    #voidButton = null;
+    #startoverButton = null;
+    #reviewButton = null;
+    #nextButton = null;
+    #nochangesButton = null;
+    #cartDiv = null;
 
 // cart states
-    #in_review = false;
-    #freeze_cart = false;
+    #inReview = false;
+    #freezeCart = false;
     #changeRow = null;
 
 // cart internals
-    #total_price = 0;
-    #total_paid = 0;
-    #total_pmt = 0;
-    #unpaid_rows = 0;
-    #membership_rows = 0;
-    #needmembership_rows = 0;
-    #cart_membership = [];
-    #cart_perinfo = [];
-    #cart_perinfo_map = new map();
-    #cart_pmt = [];
-    #days = ['sun','mon','tue','wed','thu','fri','sat'];
-
-// cart html items
-    #membership_select = null;
-    #membership_selectlist = null;
-    #upgrade_select = null;
-    #yearahead_select = null;
-    #yearahead_selectlist = [];
-    #addon_select = null;
+    #totalPrice = 0;
+    #totalPaid = 0;
+    #totalPmt = 0;
+    #unpaidRows = 0;
+    #membershipRows = 0;
+    #needMembershipRows = 0;
+    #cartPerinfo = [];
+    #cartPerinfoMap = new map();
+    #cartPmt = [];
 
 // initialization
     constructor() {
 // lookup all DOM elements
 // ask to load mapping tables
-        this.#cart_div = document.getElementById("cart");
-        this.#void_button = document.getElementById("void_btn");
-        this.#startover_button = document.getElementById("startover_btn");
-        this.#review_button = document.getElementById("review_btn");
-        this.#next_button = document.getElementById("next_btn");
-        this.#nochanges_button = document.getElementById("cart_no_changes_btn");
-    }
-
-// load mapping tables from database to javascript array
-// also retrieve session data about printers
-
-// the cart maintains its own copy of membership_select, as well as upgrade, year ahead and add-on.
-// This is intended to only be built once on first page load.  It also draws the empty cart.
-    set_initialData(membership_select, membership_selectlist) {
-        // membership select is used by multiple classes, so calculate it once in the parent and pass it in.
-        this.#membership_select = membership_select;
-        this.#membership_selectlist = membership_selectlist;
-        // cart is only place to use upgrade_select, so build it.
-        this.#upgrade_select = {};
-
-        var row = null;
-        // upgrade_select
-        filt_excat = null;
-        filt_cat = new Array('upgrade')
-        filt_shortname_regexp = null;
-        filt_conid = [Number(conid)];
-        var match = memList.filter(mem_filter);
-        var nonday = 0;
-        for (row in match) {
-            var label = match[row]['label'];
-            var day = label.replace(/.*upgrade +(...).*/i, '$1').toLowerCase();
-            if (day.length > 3)
-                day = (match[row]['label']).toLowerCase().substring(0, 3);
-            if (!this.#days.includes(day)) {
-                day = 'a' + String(nonday).padStart(2, '0');
-                nonday++;
-            }
-            if (!this.#upgrade_select[day])
-                this.#upgrade_select[day] = ''
-            this.#upgrade_select[day] += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] + ' (' + match[row]['enddate'] + ')' + "</option>\n";
-        }
-
-        // cart is only place to use yearahead_select, so build it.
-        filt_cat = new Array('yearahead')
-        filt_shortname_regexp = null;
-        filt_conid = [Number(conid) + 1];
-        match = memList.filter(mem_filter);
-        this.#yearahead_select = '';
-        this.#yearahead_selectlist = [];
-        for (row in match) {
-            var option = '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] +
-                ' (' + match[row]['enddate'] + '; ' + match[row]['id'] + ')' + "</option>\n";
-            this.#yearahead_select += option;
-            this.#yearahead_selectlist.push({price: match[row]['price'], option: option});
-        }
-
-        // cart is only place to use addon_select, so build it
-        filt_cat = ['addon', 'add-on'];
-        filt_conid = [Number(conid)];
-        filt_shortname_regexp = null;
-        match = memList.filter(mem_filter);
-        this.#addon_select = '';
-        for (row in match) {
-            this.#addon_select += '<option value="' + match[row]['id'] + '">' + match[row]['label'] + ", $" + match[row]['price'] +
-                ' (' + match[row]['enddate'] + '; ' + match[row]['id'] + ')' + "</option>\n";
-        }
-
-        this.drawCart();
+        this.#cartDiv = document.getElementById("cart");
+        this.#voidButton = document.getElementById("void_btn");
+        this.#startoverButton = document.getElementById("startover_btn");
+        this.#reviewButton = document.getElementById("review_btn");
+        this.#nextButton = document.getElementById("next_btn");
+        this.#nochangesButton = document.getElementById("cart_no_changes_btn");
     }
 
     // simple get/set/hide/show methods
     setInReview() {
-        this.#in_review = true;
+        this.#inReview = true;
     }
 
     clearInReview() {
-        this.#in_review = false;
+        this.#inReview = false;
     }
 
     freeze() {
-        this.#freeze_cart = true;
+        this.#freezeCart = true;
     }
 
     unfreeze() {
-        this.#freeze_cart = false;
+        this.#freezeCart = false;
     }
 
     isFrozen() {
-        return this.#freeze_cart == true;
+        return this.#freezeCart == true;
     }
 
     hideNoChanges() {
-        this.#nochanges_button.hidden = true;
+        this.#nochangesButton.hidden = true;
     }
 
     showNoChanges() {
-        this.#nochanges_button.hidden = false;
+        this.#nochangesButton.hidden = false;
     }
 
     hideVoid() {
-        this.#void_button.hidden = true;
+        this.#voidButton.hidden = true;
     }
 
     showVoid() {
-        this.#void_button.hidden = false;
+        this.#voidButton.hidden = false;
     }
 
     hideNext() {
-        this.#next_button.hidden = true;
+        this.#nextButton.hidden = true;
     }
 
     showNext() {
-        this.#next_button.hidden = false;
+        this.#nextButton.hidden = false;
     }
 
     hideStartOver() {
-        this.#startover_button.hidden = true;
+        this.#startoverButton.hidden = true;
     }
 
     showStartOver() {
-        this.#startover_button.hidden = false;
+        this.#startoverButton.hidden = false;
     }
 
     // get overall cart values
     // number of people in the cart
     getCartLength() {
-        return this.#cart_perinfo.length;
+        return this.#cartPerinfo.length;
     }
 
     // number of payment records in the cart
     getPmtLength() {
-        return this.#cart_pmt.length;
+        return this.#cartPmt.length;
     }
 
     // get total price
     getTotalPrice() {
-        return Number(this.#total_price);
+        return Number(this.#totalPrice);
     }
 
     // get total amount paid
     getTotalPaid() {
-        return Number(this.#total_paid);
+        return Number(this.#totalPaid);
     }
 
     // get total pmts in cart
     getTotalPmt() {
-        return Number(this.#total_pmt);
+        return Number(this.#totalPmt);
     }
 
     // check if a person is in cart already
     notinCart(perid) {
-        return this.#cart_perinfo_map.isSet(perid) === false;
+        return this.#cartPerinfoMap.isSet(perid) === false;
     }
 
     // notes fields in the cart, get current values and set new values, marking dirty for saving records
 
     getFullName(index) {
-        return this.#cart_perinfo[index]['fullname'];
+        return this.#cartPerinfo[index]['fullname'];
     }
 
     getRegFullName(index) {
-        return this.#cart_perinfo[this.#cart_membership[index]['pindex']]['fullname'];
+        console.log("getRegFullName: TODO");
+        // return this.#cartPerinfo[this.#cart_membership[index]['pindex']]['fullname'];
     }
 
     getRegLabel(index) {
-        return this.#cart_membership[index]['label'];
+        consol.log("getRegLabel: TODO");
+        // return this.#cart_membership[index]['label'];
     }
     getRegNote(index) {
-        return this.#cart_membership[index]['reg_notes'];
+        console.log("getRegNote: TODO");
+        //return this.#cart_membership[index]['reg_notes'];
     }
 
     getNewRegNote(index) {
-        return this.#cart_membership[index]['new_reg_note'];
+        console.log("getNewRegNote: TODO");
+        // return this.#cart_membership[index]['new_reg_note'];
     }
+
     setRegNote(index, note) {
-        this.#cart_membership[index]['new_reg_note'] = note;
-        var pindex = this.#cart_membership[index]['pindex'];
-        this.#cart_perinfo[pindex]['dirty'] = true;
+        console.log("setRegNote: TODO");
+        //this.#cart_membership[index]['new_reg_note'] = note;
+        //var pindex = this.#cart_membership[index]['pindex'];
+        //this.#cartPerinfo[pindex]['dirty'] = true;
         this.drawCart();
     }
 
     getPerinfoNote(index) {
-        return this.#cart_perinfo[index]['open_notes'];
+        return this.#cartPerinfo[index]['open_notes'];
     }
 
     setPersonNote(index, note) {
-        this.#cart_perinfo[index]['open_notes'] = note;
-        this.#cart_perinfo[index]['dirty'] = true;
-        this.#cart_perinfo[index]['open_notes_pending'] = 1;
+        this.#cartPerinfo[index]['open_notes'] = note;
+        this.#cartPerinfo[index]['dirty'] = true;
+        this.#cartPerinfo[index]['open_notes_pending'] = 1;
         this.drawCart();
     }
 
     // make a copy of private structures for use in ajax calls back to the PHP.   The master copies are only accessible within the class.
     getCartPerinfo() {
-        return make_copy(this.#cart_perinfo);
+        return make_copy(this.#cartPerinfo);
     }
 
     getCartMembership() {
-        return make_copy(this.#cart_membership);
+        console.log("getCartMembership: TODO");
+        return null;
+        //return make_copy(this.#cart_membership);
     }
 
     getCartMembershipRef() {
-        return this.#cart_membership;
+        console.log("getCartMembershipReg: TODO");
+        return null;
+        //return this.#cart_membership;
     }
 
     getCartMap() {
-        return this.#cart_perinfo_map.getMap();
+        return this.#cartPerinfoMap.getMap();
     }
 
     getCartPmt() {
-        return make_copy(this.#cart_pmt);
+        return make_copy(this.#cartPmt);
     }
 
     allowAddCouponToCart() {
+        console.log("allowAddCouponToCart: TODO");
+        return false;
+        /*
         var anyUnpaid = false;
         for (var rownum in this.#cart_membership) {
             var mbrrow = this.#cart_membership[rownum];
@@ -265,16 +206,20 @@ class reg_cart {
             return false;
 
         return true;
+         */
     }
 
     getPriorDiscount() {
         var priordiscount = 0;
+        console.log("getPriorDiscount: TODO");
+        /*
         for (var rownum in this.#cart_membership) {
             var mrow = this.#cart_membership[rownum];
             if (mrow['couponDiscount']) {
                 priordiscount += Number(mrow['couponDiscount']);
             }
         }
+         */
 
         return priordiscount;
     }
@@ -283,22 +228,25 @@ class reg_cart {
 // TODO: verify how to tell if it's allowed to be shown as enabled
     startOver() {
         // empty cart
-        this.#cart_membership = [];
-        this.#cart_perinfo = [];
-        this.#cart_pmt = [];
-        this.#freeze_cart = false;
+        // TODO: this.#cart_membership = [];
+        this.#cartPerinfo = [];
+        this.#cartPmt = [];
+        this.#freezeCart = false;
 
         this.hideNext();
         this.hideVoid();
-        this.#in_review = false;
+        this.#inReview = false;
         this.drawCart();
     }
 
     // add search result_perinfo/membership record to the cart
     add(p, mrows) {
-        var pindex = this.#cart_perinfo.length;
-        this.#cart_perinfo.push(make_copy(p));
-        this.#cart_perinfo[pindex]['index'] = pindex;
+        console.log('Add: TODO');
+        return;
+        /*
+        var pindex = this.#cartPerinfo.length;
+        this.#cartPerinfo.push(make_copy(p));
+        this.#cartPerinfo[pindex]['index'] = pindex;
         for (var mrownum in mrows) {
             var mindex = this.#cart_membership.length;
             this.#cart_membership.push(make_copy(mrows[mrownum]));
@@ -309,6 +257,8 @@ class reg_cart {
                 this.#cart_membership[mindex]['coupon'] = null;
         }
         this.drawCart();
+
+         */
     }
 
 // remove person and all of their memberships from the cart
@@ -316,11 +266,13 @@ class reg_cart {
         if (!confirm_discard_add_edit(false))
             return;
 
-        var index = this.#cart_perinfo_map.get(perid);
+        var index = this.#cartPerinfoMap.get(perid);
 
         if (!this.confirmDiscardCartEntry(index, false))
             return;
 
+        console.log("remove: TODO");
+        /*
         var mrows = find_memberships_by_perid(this.#cart_membership, perid);
         // need to splice backwards so the indices don't change
         var delrows = [];
@@ -333,14 +285,16 @@ class reg_cart {
         for (splicerow in delrows)
             this.#cart_membership.splice(delrows[splicerow], 1);
 
-        this.#cart_perinfo.splice(index, 1);
+        this.#cartPerinfo.splice(index, 1);
         // splices loses me the index number for the cross-reference, so the cart needs renumbering
         this.drawCart();
+
+         */
     }
 
     // get into the add/edit fields the requested cart entry
     getAddEditFields(perid) {
-        var cartrow = this.#cart_perinfo[this.#cart_perinfo_map.get(perid)];
+        var cartrow = this.#cartPerinfo[this.#cartPerinfoMap.get(perid)];
 
         // set perinfo values
         add_index_field.value = cartrow['index'];
@@ -364,15 +318,19 @@ class reg_cart {
         add_share_field.value = cartrow['share_reg_ok'];
 
         // membership items - see if there is a membership item in the member list for this row
-        var mem_index = find_primary_membership_by_perid(this.#cart_membership, cartrow['perid']);
+        var mem_index = find_primary_membership(cartrow[perid].memberships);
 
         if (mem_index == null) {
             // none found put in select
-            add_mem_select.innerHTML = add_mt_dataentry;
-            document.getElementById("ae_mem_sel").innerHTML = this.#membership_select;
+            console.log("mt_dataentry/membership_select: todo");
+            //add_mem_select.innerHTML = add_mt_dataentry;
+            //document.getElementById("ae_mem_sel").innerHTML = this.#membership_select;
         } else {
+            console.log("getAddEditFields: TODO");
+            return;
+            /*
             add_memIndex_field.value = mem_index;
-            if (Number(this.#cart_membership[mem_index]['price']) == Number(this.#cart_membership[mem_index]['paid'])) {
+            if (Number(this.#cartrow[perid].memberships[mem_index].price) == Number(this.#cart_membership[mem_index]['paid'])) {
                 // already paid, just display the label
                 add_mem_select.innerHTML = this.#cart_membership[mem_index]['label'];
             } else {
@@ -381,12 +339,13 @@ class reg_cart {
                 mtel.innerHTML = this.#membership_select;
                 mtel.value = this.#cart_membership[mem_index]['memId'];
             }
+             */
         }
     }
 
     // update the cart entry from the add/edit field row
     updateEntry(edit_index, new_memindex, row, mrow) {
-        var cart_row = this.#cart_perinfo[edit_index];
+        var cart_row = this.#cartPerinfo[edit_index];
 
         cart_row['first_name'] = row['first_name'];
         cart_row['middle_name'] = row['middle_name'];
@@ -409,6 +368,9 @@ class reg_cart {
         cart_row['dirty'] = true;
 
         if (mrow != null) {
+            console.log("updateentry: TODO");
+            return;
+            /*
             var cart_mrow = [];
             if (new_memindex != '') {
                 cart_mrow = this.#cart_membership[new_memindex];
@@ -431,6 +393,8 @@ class reg_cart {
             if (!('tid' in cart_mrow)) {
                 cart_mrow['tid'] = '';
             }
+
+             */
         }
     }
 
@@ -442,10 +406,10 @@ class reg_cart {
 
         var dirty = false;
         if (index >= 0) {
-            dirty = this.#cart_perinfo[index]['dirty'] === true;
+            dirty = this.#cartPerinfo[index]['dirty'] === true;
         } else {
-            for (var row in this.#cart_perinfo) {
-                dirty ||= this.#cart_perinfo[row]['dirty'] === true;
+            for (var row in this.#cartPerinfo) {
+                dirty ||= this.#cartPerinfo[row]['dirty'] === true;
             }
         }
 
@@ -457,7 +421,7 @@ class reg_cart {
 
         var msg = "Discard updated cart items?";
         if (index >= 0)
-            msg = "Discard updated cart items for " + (this.#cart_perinfo[index]['first_name'] + ' ' + this.#cart_perinfo[index]['last_name']).trim();
+            msg = "Discard updated cart items for " + (this.#cartPerinfo[index]['first_name'] + ' ' + this.#cartPerinfo[index]['last_name']).trim();
 
         if (!confirm(msg)) {
             return false; // confirm answered no, return not safe to discard
@@ -468,20 +432,28 @@ class reg_cart {
 
 // remove single membership item from the cart (leaving other memberships and person information
     deleteMembership(index) {
+        console.log("deleteMembership: TODO");
+        return;
+        /*
         if (this.#cart_membership[index]['tid'] != '') {
             if (confirm("Confirm delete for " + this.#cart_membership[index]['label'])) {
                 this.#cart_membership[index]['todelete'] = 1;
-                this.#cart_perinfo[this.#cart_membership[index]['pindex']]['dirty'] = true;
+                this.#cartPerinfo[this.#cart_membership[index]['pindex']]['dirty'] = true;
             }
         } else {
             this.#cart_membership.splice(index, 1);
         }
         this.drawCart();
+
+         */
     }
 
     // add selected membership as a new item in the card under this perid.
     addMembership(rownum, membership) {
-        var row = this.#cart_perinfo[rownum];
+        console.log("addMembership: TODO");
+        return;
+        /*
+        var row = this.#cartPerinfo[rownum];
 
         this.#cart_membership.push({
             perid: row['perid'],
@@ -504,13 +476,18 @@ class reg_cart {
         });
 
         cart.drawCart();
+
+         */
     }
 
 // change single membership item from the cart - only allow items of the same class with higher prices
     changeMembership(index) {
+        console.log("changeMembership: TODO");
+        return;
+        /*
         this.#changeRow = index;
         var mrow = this.#cart_membership[index];
-        var prow = this.#cart_perinfo[mrow['pindex']];
+        var prow = this.#cartPerinfo[mrow['pindex']];
 
         var html = '<div id="ChangePrior">Current Membership ' + mrow['label'] + "</div>\n";
         html += '<div id="ChangeTo">Change to:<br/><select name="change_membership_id" id="change_membership_id">' + "\n";
@@ -528,6 +505,8 @@ class reg_cart {
         changeModal.show();
         document.getElementById("ChangeTitle").innerHTML = "Change Membership Type for " + (prow['first_name'] + ' ' + prow['last_name']).trim();
         document.getElementById("ChangeBody").innerHTML = html;
+
+         */
     }
 
 // save_membership_change
@@ -535,6 +514,10 @@ class reg_cart {
     saveMembershipChange() {
         if (this.#changeRow == null)
             return;
+
+        console.log("saveMembershipChange: TODO");
+        return;
+        /*
 
         var mrow = this.#cart_membership[this.#changeRow];
         var newMemid = document.getElementById("change_membership_id").value;
@@ -547,24 +530,30 @@ class reg_cart {
         mrow['shortname'] = mi_row['shortname'];
         mrow['label'] = mi_row['label'];
         mrow['price'] = mi_row['price'];
-        this.#cart_perinfo[mrow['pindex']]['dirty'] = true;
+        this.#cartPerinfo[mrow['pindex']]['dirty'] = true;
 
         this.#changeRow = null;
         changeModal.hide();
         this.drawCart();
+
+         */
     }
 
 // update payment data in  cart
     updatePmt(data) {
         if (data['prow']) {
-            this.#cart_pmt.push(data['prow']);
+            this.#cartPmt.push(data['prow']);
         }
         if (data['crow']) {
-            this.#cart_pmt.push(data['crow']);
+            this.#cartPmt.push(data['crow']);
         }
+        console.log("updatePmt: TODO");
+        /*
         if (data['cart_membership']) {
             this.#cart_membership = make_copy(data['cart_membership']);
         }
+
+         */
     }
 
 // cart_renumber:
@@ -572,24 +561,29 @@ class reg_cart {
 // for shortcut reasons indices are used to allow usage of the filter functions built into javascript
 // this rebuilds the index and perinfo cross-reference maps.  It needs to be called whenever the number of items in cart is changed.
     #cart_renumber() {
+        console.log("cart_renumber: todo");
+        return;
+        /*
         var index;
-        this.#cart_perinfo_map = new map();
-        for (index = 0; index < this.#cart_perinfo.length; index++) {
-            this.#cart_perinfo[index]['index'] = index;
-            this.#cart_perinfo_map.set(this.#cart_perinfo[index]['perid'], index);
+        this.#cartPerinfoMap = new map();
+        for (index = 0; index < this.#cartPerinfo.length; index++) {
+            this.#cartPerinfo[index]['index'] = index;
+            this.#cartPerinfoMap.set(this.#cartPerinfo[index]['perid'], index);
         }
 
         for (index = 0; index < this.#cart_membership.length; index++) {
             this.#cart_membership[index]['index'] = index;
-            this.#cart_membership[index]['pindex'] = this.#cart_perinfo_map.get(this.#cart_membership[index]['perid']);
+            this.#cart_membership[index]['pindex'] = this.#cartPerinfoMap.get(this.#cart_membership[index]['perid']);
         }
+
+         */
     }
 
     // Clear the coupon matching couponId from all rows in the cart
     clearCoupon(couponId) {
         // clear the discount from the membership rows
-        for (var rownum in this.#membership_rows ) {
-            var mrow = this.#membership_rows[rownum];
+        for (var rownum in this.#membershipRows ) {
+            var mrow = this.#membershipRows[rownum];
             if (mrow['coupon'] == couponId) {
                 mrow['coupon'] = null;
                 mrow['couponDiscount'] = 0;
@@ -597,8 +591,8 @@ class reg_cart {
         }
         // remove the discount coupon from the payment
         var delrows = [];
-        for (rownum in this.#cart_pmt) {
-            var prow = this.#cart_pmt[rownum];
+        for (rownum in this.#cartPmt) {
+            var prow = this.#cartPmt[rownum];
             if (prow['type'] == 'discount' && prow['desc'].substring(0, 7) == 'Coupon:') {
                 delrows.push(rownum);
             }
@@ -606,12 +600,12 @@ class reg_cart {
         // now delete the matching rows (in reverse order)
         delrows = delrows.reverse();
         for (rownum in delrows)
-            this.#cart_pmt.splice(delrows[rownum], 1);
+            this.#cartPmt.splice(delrows[rownum], 1);
     }
 
 // format all of the memberships for one record in the cart
     #drawCartRow(rownum) {
-        var row = this.#cart_perinfo[rownum];
+        var row = this.#cartPerinfo[rownum];
         var membername = ((row['first_name'] + ' ' + row['middle_name']).trim() + ' ' + row['last_name'] + ' ' + row['suffix']).trim();
         var mrow;
         var rowlabel;
@@ -629,7 +623,7 @@ class reg_cart {
         var perid = row['perid'];
         var btncolor = null;
         // now loop over the memberships, sorting them by groups
-        var mrows = find_memberships_by_perid(this.#cart_membership, perid);
+        var mrows = this.#cartPerinfo[this.#cartPerinfoMap[perid]].memberships;
         for (var mrownum in mrows) {
             mrow = mrows[mrownum];
             if (mrow['todelete'] !== undefined)
@@ -648,18 +642,18 @@ class reg_cart {
             var allow_change_priv = mrow['regid'] > 0 && mrow['paid'] >= 0 && mrow['printcount'] == 0 &&
                 (category == 'standard' || category == 'yearahead') && memType == 'full';
             col1 = '';
-            if ((allow_delete || allow_delete_priv) && !this.#freeze_cart) {
+            if ((allow_delete || allow_delete_priv) && !this.#freezeCart) {
                 col1 += '<button type = "button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
                     mrow['index'] + ')" >X</button >';
             }
             // C = change membership type
-            if (allow_change_priv && !this.#freeze_cart) {
+            if (allow_change_priv && !this.#freezeCart) {
                 col1 += '<button type = "button" class="btn btn-sm btn-warning pt-0 pb-0 ps-1 pe-1 m-0" onclick = "change_membership(' +
                     mrow['index'] + ')" >C</button >';
             }
 
             var label = mrow['label'];
-            if (!this.#freeze_cart) {
+            if (!this.#freezeCart) {
                 var notes_count = 0;
                 if (mrow['reg_notes_count'] !== undefined && mrow['reg_notes_count'] !== null) {
                     notes_count = Number(mrow['reg_notes_count']);
@@ -759,14 +753,14 @@ class reg_cart {
             }
 
             if (row_shown) {
-                this.#total_price += Number(mrow['price']);
-                this.#total_paid += Number(mrow['paid']);
+                this.#totalPrice += Number(mrow['price']);
+                this.#totalPaid += Number(mrow['paid']);
                 if (mrow['couponDiscount'])
-                    this.#total_paid += Number(mrow['couponDiscount']);
+                    this.#totalPaid += Number(mrow['couponDiscount']);
                 if (mem_is_membership)
                     membership_found = true;
                 if ((Number(mrow['paid']) + Number(mrow['couponDiscount'])) != Number(mrow['price'])) {
-                    this.#unpaid_rows++;
+                    this.#unpaidRows++;
                 }
             }
         }
@@ -778,7 +772,7 @@ class reg_cart {
             rowhtml += '<div class="col-sm-8 text-bg-info">Non Member: '
         }
         rowhtml += membername + '</div>';
-        if (!this.#freeze_cart) {
+        if (!this.#freezeCart) {
             rowhtml += `
         <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="edit_from_cart(` + perid + `)">Edit</button></div>
         <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="remove_from_cart(` + perid + `)">Remove</button></div>
@@ -792,12 +786,12 @@ class reg_cart {
         <div class="col-sm-3 p-0">Badge Name:</div>
         <div class="col-sm-5 p-0">` + badge_name_default(row['badge_name'], row['first_name'], row['last_name']) + `</div>
         <div class="col-sm-2 p-0 text-center">`;
-        if (!this.#freeze_cart && row['open_notes'] != null && row['open_notes'].length > 0) {
+        if (!this.#freezeCart && row['open_notes'] != null && row['open_notes'].length > 0) {
             rowhtml += '<button type="button" class="btn btn-sm btn-info p-0" onclick="show_perinfo_notes(' + row['index'] + ', \'cart\')">View Notes</button>';
         }
         rowhtml += `</div>
         <div class="col-sm-2 p-0 text-center">`;
-        if (Manager && !this.#freeze_cart) {
+        if (Manager && !this.#freezeCart) {
             btncolor = 'btn-secondary';
             if (row['open_notes_pending'] !== undefined && row['open_notes_pending'] === 1)
                 btncolor = 'btn-warning';
@@ -830,11 +824,10 @@ class reg_cart {
 
         // if no base membership, create a pulldown row for it.
         // header row already output above before membership html was output
-        if (!membership_found && !this.#freeze_cart) {
+        if (!membership_found && !this.#freezeCart) {
             rowhtml += `<div class="row">
         <div class="col-sm-1 p-0">&nbsp;</div>
-        <div class="col-sm-9 p-0"><select id="cart-madd-` + rownum + `" name="cart-addid">
-` + this.#membership_select + `
+        <div class="col-sm-9 p-0"><select id="cart-madd-` + rownum + `" name="cart-addid"> + "TODO: this.#memberselect"
             </select>
         </div>
         <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-madd-" + rownum + `')">Add</button>
@@ -848,7 +841,7 @@ class reg_cart {
             <div class="col-sm-auto p-0">Upgrade:</div>
 </div>
 ` + upgrade_html;
-        } else if (upgrade_eligible && !this.#freeze_cart) {
+        } else if (upgrade_eligible && !this.#freezeCart) {
             rowhtml += `<div class="row">
             <div class="col-sm-auto p-0">Upgrade:</div>
 </div>
@@ -857,6 +850,8 @@ class reg_cart {
         <div class="col-sm-9 p-0"><select id="cart-mupg-` + rownum + `" name="cart-addid">
 `;
             // allow for mismatches to show the entire select, if matched, just use that one
+            console.log("DrawCartRow: upgrade select: TODO");
+            /*
             if (day !== null && this.#upgrade_select[day] !== undefined) {
                 rowhtml += this.#upgrade_select[day];
             } else {
@@ -864,6 +859,8 @@ class reg_cart {
                     rowhtml += this.#upgrade_select[upgrow];
                 }
             }
+
+             */
             rowhtml += `
             </select>
         </div>
@@ -871,14 +868,15 @@ class reg_cart {
 </div>
 `;
         }
-
+        console.log("yearahead select: TODO");
+        /*
         if (this.#yearahead_select != '') {
             if (yearahead_html != '') {
                 rowhtml += `<div class="row">
             <div class="col-sm-auto p-0">Next Year:</div>
 </div>
 ` + yearahead_html;
-            } else if (yearahead_eligible && !this.#freeze_cart) {
+            } else if (yearahead_eligible && !this.#freezeCart) {
                 rowhtml += `<div class="row">
             <div class="col-sm-auto p-0">Next Year:</div>
 </div>
@@ -892,16 +890,20 @@ class reg_cart {
 </div>
 `;
             }
-        }
 
+        }
+         */
+
+        console.log("addon_select: TODO:");
+/*
         if (this.#addon_select != '') {
-            if (addon_html != '' || !this.#freeze_cart) {
+            if (addon_html != '' || !this.#freezeCart) {
                 rowhtml += `<div class="row">
             <div class="col-sm-auto p-0">Add Ons:</div>
 </div>
 ` + addon_html;
             }
-            if (!this.#freeze_cart) {
+            if (!this.#freezeCart) {
                 rowhtml += `
 <div class="row">
         <div class="col-sm-1 p-0">&nbsp;</div>
@@ -912,13 +914,15 @@ class reg_cart {
         <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-maddon-" + rownum + `')">Add</button></div >
 </div>
 `;
-            }
+            // }
         }
 
+ */
+
         if (membership_found)
-            this.#membership_rows++
+            this.#membershipRows++
         else
-            this.#needmembership_rows++;
+            this.#needMembershipRows++;
 
         return rowhtml;
     }
@@ -927,7 +931,7 @@ class reg_cart {
     #drawCartPmtRow(prow) {
         //   index: cart_pmt.length, amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
 
-        var pmt = this.#cart_pmt[prow];
+        var pmt = this.#cartPmt[prow];
         var code = '';
         if (pmt['type'] == 'check') {
             code = pmt['checkno'];
@@ -946,11 +950,11 @@ class reg_cart {
 // draw/update by redrawing the entire cart
     drawCart() {
         this.#cart_renumber(); // to keep indexing intact, renumber the index and pindex each time
-        this.#total_price = 0;
-        this.#total_paid = 0;
+        this.#totalPrice = 0;
+        this.#totalPaid = 0;
         var num_rows = 0;
-        this.#membership_rows = 0;
-        this.#needmembership_rows = 0;
+        this.#membershipRows = 0;
+        this.#needMembershipRows = 0;
         var html = `
 <div class="container-fluid">
 <div class="row">
@@ -959,21 +963,21 @@ class reg_cart {
     <div class="col-sm-2 text-bg-primary text-end">Paid</div>
 </div>
 `;
-        this.#unpaid_rows = 0;
-        for (var rownum in this.#cart_perinfo) {
+        this.#unpaidRows = 0;
+        for (var rownum in this.#cartPerinfo) {
             num_rows++;
             html += this.#drawCartRow(rownum);
         }
-        this.#total_price = Number(this.#total_price.toFixed(2));
-        this.#total_paid = Number(this.#total_paid.toFixed(2));
+        this.#totalPrice = Number(this.#totalPrice.toFixed(2));
+        this.#totalPaid = Number(this.#totalPaid.toFixed(2));
         html += `<div class="row">
     <div class="col-sm-8 p-0 text-end">Total:</div>
-    <div class="col-sm-2 text-end">$` + Number(this.#total_price).toFixed(2) + `</div>
-    <div class="col-sm-2 text-end">$` + Number(this.#total_paid).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">$` + Number(this.#totalPrice).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">$` + Number(this.#totalPaid).toFixed(2) + `</div>
 </div>
 `;
 
-        if (this.#cart_pmt.length > 0) {
+        if (this.#cartPmt.length > 0) {
             html += `
 <div class="row mt-3">
     <div class="col-sm-8 text-bg-primary">Payment</div>
@@ -981,40 +985,40 @@ class reg_cart {
     <div class="col-sm-2 text-bg-primary text-end">Amount</div>
 </div>
 `;
-            this.#total_pmt = 0;
-            for (var prow in this.#cart_pmt) {
+            this.#totalPmt = 0;
+            for (var prow in this.#cartPmt) {
                 html += this.#drawCartPmtRow(prow);
-                this.#total_pmt += Number(this.#cart_pmt[prow]['amt']);
+                this.#totalPmt += Number(this.#cartPmt[prow]['amt']);
             }
             html += `<div class="row">
     <div class="col-sm-8 p-0 text-end">Payment Total:</div>`;
-            this.#total_pmt = Number(this.#total_pmt.toFixed(2));
+            this.#totalPmt = Number(this.#totalPmt.toFixed(2));
             html += `
-    <div class="col-sm-4 text-end">$` + Number(this.#total_pmt).toFixed(2) + `</div>
+    <div class="col-sm-4 text-end">$` + Number(this.#totalPmt).toFixed(2) + `</div>
 </div>
 `;
         }
-        if (this.#needmembership_rows > 0) {
-            var person = this.#needmembership_rows > 1 ? " people" : " person";
-            var need = this.#needmembership_rows > 1 ? "need memberships" : "needs a membership";
+        if (this.#needMembershipRows > 0) {
+            var person = this.#needMembershipRows > 1 ? " people" : " person";
+            var need = this.#needMembershipRows > 1 ? "need memberships" : "needs a membership";
             html += `<div class="row mt-3">
-    <div class="col-sm-12">Cannot proceed to "Review" because ` + this.#needmembership_rows + person + " still " + need + `.  Use "Edit" button to add memberships for them or "Remove" button to take them out of the cart.
+    <div class="col-sm-12">Cannot proceed to "Review" because ` + this.#needMembershipRows + person + " still " + need + `.  Use "Edit" button to add memberships for them or "Remove" button to take them out of the cart.
     </div>
 `;
         } else if (num_rows > 0) {
-            this.#review_button.hidden = this.#in_review;
+            this.#reviewButton.hidden = this.#inReview;
         }
         html += '</div>'; // ending the container fluid
         //console.log(html);
-        this.#cart_div.innerHTML = html;
-        this.#startover_button.hidden = num_rows == 0;
-        if (this.#needmembership_rows > 0 || (this.#membership_rows == 0 && this.#unpaid_rows == 0)) {
-            review_tab.disabled = true;
-            this.#review_button.hidden = true;
+        this.#cartDiv.innerHTML = html;
+        this.#startoverButton.hidden = num_rows == 0;
+        if (this.#needMembershipRows > 0 || (this.#membershipRows == 0 && this.#unpaidRows == 0)) {
+            pos.setReviewTabDisable(true);
+            this.#reviewButton.hidden = true;
         }
-        if (this.#freeze_cart) {
-            review_tab.disabled = true;
-            this.#review_button.hidden = true;
+        if (this.#freezeCart) {
+            pos.setReviewTabDisable(true);
+            this.#reviewButton.hidden = true;
             this.hideStartOver();
         }
         // todo: find_unpaid_button.hidden = num_rows > 0;
@@ -1034,10 +1038,10 @@ class reg_cart {
         var mrow;
         var field;
         var tabindex = 0;
-        for (rownum in this.#cart_perinfo) {
+        for (rownum in this.#cartPerinfo) {
             tabindex += 100;
-            row = this.#cart_perinfo[rownum];
-            mrow = find_primary_membership_by_perid(this.#cart_membership, row['perid']);
+            row =
+            mrow = find_primary_membership(this.#cartPerinfo[rownum].memberships);
             // look up missing fields
             colors = new map();
             for (fieldno in review_required_fields) {
@@ -1052,7 +1056,7 @@ class reg_cart {
             for (fieldno in review_prompt_fields) {
                 field = review_prompt_fields[fieldno];
                 if (row[field] == null || row[field] == '') {
-                    if (this.#cart_membership[mrow]['memAge'] == 'child' || this.#cart_membership[mrow]['memAge'] == 'kit') {
+                    if (mrow.memAge == 'child' || mrow.memAge == 'kit') {
                         review_missing_items++;
                         colors.set(field, 'var(--bs-warning)');
                     } else {
@@ -1066,7 +1070,7 @@ class reg_cart {
             if (mrow == null) {
                 html += '<div class="col-sm-12 text-bg-info">No Membership</div>';
             } else {
-                html += '<div class="col-sm-12 text-bg-success">Membership: ' + this.#cart_membership[mrow]['label'] + '</div>';
+                html += '<div class="col-sm-12 text-bg-success">Membership: ' + mrow.label + '</div>';
             }
 
             html += `
@@ -1186,16 +1190,16 @@ class reg_cart {
         var el;
         var field;
         var fieldno
-        for (rownum in this.#cart_perinfo) {
+        for (rownum in this.#cartPerinfo) {
             // update all the fields on the review page
             for (fieldno in review_editable_fields) {
                 field = review_editable_fields[fieldno];
                 el = document.getElementById('c' + rownum + '-' + field);
                 if (el) {
-                    if (this.#cart_perinfo[rownum][field] != el.value) {
-                        // alert("updating  row " + rownum + ":" + rownum + ":" + field + " from '" + this.#cart_perinfo[rownum][field] + "' to '" + el.value + "'");
-                        this.#cart_perinfo[rownum][field] = el.value;
-                        this.#cart_perinfo[rownum]['dirty'] = false;
+                    if (this.#cartPerinfo[rownum][field] != el.value) {
+                        // alert("updating  row " + rownum + ":" + rownum + ":" + field + " from '" + this.#cartPerinfo[rownum][field] + "' to '" + el.value + "'");
+                        this.#cartPerinfo[rownum][field] = el.value;
+                        this.#cartPerinfo[rownum]['dirty'] = false;
                     }
                 }
             }
@@ -1207,11 +1211,13 @@ class reg_cart {
         var newrow;
         var cartrow;
 
+        console.log("updateFromDB: TODO");
+        /*
         // update the fields created by the database transactions
         var updated_perinfo = data['updated_perinfo'];
         for (rownum in updated_perinfo) {
             newrow = updated_perinfo[rownum];
-            cartrow = this.#cart_perinfo[newrow['rowpos']]
+            cartrow = this.#cartPerinfo[newrow['rowpos']]
             cartrow['perid'] = newrow['perid'];
             cartrow['dirty'] = false;
         }
@@ -1240,7 +1246,9 @@ class reg_cart {
 
 // redraw the cart with the new id's and maps, which will compute the unpaid_rows.
         cart.drawCart();
-        return this.#unpaid_rows;
+        return this.#unpaidRows;
+
+         */
     }
 
     // update selected element in the country pulldown from the review data screen to the cart
@@ -1249,8 +1257,8 @@ class reg_cart {
         var row;
         var selid;
 
-        for (rownum in this.#cart_perinfo) {
-            row = this.#cart_perinfo[rownum];
+        for (rownum in this.#cartPerinfo) {
+            row = this.#cartPerinfo[rownum];
             selid = document.getElementById('c' + rownum + '-country');
             selid.value = row['country'];
         }
@@ -1260,7 +1268,7 @@ class reg_cart {
 // receiptHeader - retrieve receipt header info from cart[0]
     receiptHeader(user_id, pay_tid) {
         var d = new Date();
-        var payee = (this.#cart_perinfo[0]['first_name'] + ' ' + this.#cart_perinfo[0]['last_name']).trim();
+        var payee = (this.#cartPerinfo[0]['first_name'] + ' ' + this.#cartPerinfo[0]['last_name']).trim();
         return "\nReceipt for payment to " + conlabel + "\nat " + d.toLocaleString() + "\nBy: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid;
     }
 
@@ -1271,20 +1279,20 @@ class reg_cart {
         var mrow;
         var print_html = '';
 
-        for (rownum in this.#cart_perinfo) {
-            crow = this.#cart_perinfo[rownum];
-            mrow = find_primary_membership_by_perid(this.#cart_membership, crow['perid']);
+        for (rownum in this.#cartPerinfo) {
+            crow = this.#cartPerinfo[rownum];
+            mrow = find_primary_membership(crow.memberships);
             if (new_print) {
                 printed_obj.set(crow['index'], 0);
             }
             print_html += `
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-print-` + this.#cart_perinfo[rownum]['index'] + `" name="print_btn" onclick="print_badge(` + crow['index'] + `);">Print</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-print-` + this.#cartPerinfo[rownum]['index'] + `" name="print_btn" onclick="print_badge(` + crow['index'] + `);">Print</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">            
-            <span class="text-bg-success"> Membership: ` + this.#cart_membership[mrow]['label'] + `</span> (Times Printed: ` +
-                this.#cart_membership[mrow]['printcount'] + `)<br/>
+            <span class="text-bg-success"> Membership: ` + mrow.label + `</span> (Times Printed: ` +
+                mrow.printcount + `)<br/>
               ` + crow['badge_name'] + '/' + (crow['first_name'] + ' ' + crow['last_name']).trim() + `
         </div>
      </div>`;
@@ -1295,9 +1303,8 @@ class reg_cart {
 // getBadge = return the cart portions of the parameters for a badge print, that will be added to by the calling routine
     getBadge(index) {
 
-        var row = this.#cart_perinfo[index];
-        var mrow = find_primary_membership_by_perid(this.#cart_membership, row['perid']);
-        var printrow = this.#cart_membership[mrow];
+        var row = this.#cartPerinfo[index];
+        var printrow = find_primary_membership(row.memberships);
 
         var params = {};
         params['type'] = printrow['memType'];
@@ -1312,17 +1319,17 @@ class reg_cart {
 
     // addToPrintCount: increment the print count for a badge
     addToPrintCount(index) {
-        var row = this.#cart_perinfo[index];
-        var mrow = find_primary_membership_by_perid(this.#cart_membership, row['perid']);
-        this.#cart_membership[mrow]['printcount']++;
+        var row = this.#cartPerinfo[index];
+        var mrow = find_primary_membership(row.membrerships);
+        this.#cartPerinfo[index].memberships[mrow].printcout++;
         var retval = [];
-        retval[0] = this.#cart_membership[mrow]['regid'];
-        retval[1] = this.#cart_membership[mrow]['printcount'];
+        retval[0] = mrow.regid;
+        retval[1] = mrow.printcount;
         return (retval);
     }
 
     // getEmail: return the email address of an entry
     getEmail(index) {
-        return this.#cart_perinfo[index]['email_addr'];
+        return this.#cartPerinfo[index]['email_addr'];
     }
 }
