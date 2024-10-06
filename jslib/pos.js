@@ -237,6 +237,22 @@ class Pos {
         this.#review_tab.disabled = state;
     }
 
+    getConid() {
+        return this.#conid;
+    }
+
+    getManager() {
+        return this.#Manager;
+    }
+
+    nonPrimaryCategoriesIncludes(category) {
+        return this.#non_primary_categories.includes(category);
+    }
+
+    upgradableTypesIncludes(type) {
+        return this.#upgradable_types.includes(type);
+    }
+
     // load mapping tables from database to javascript array
     loadInitialData(data) {
         // map the memIds and labels for the pre-coded memberships.  Doing it now because it depends on what the database sends.
@@ -490,7 +506,6 @@ class Pos {
     // add search person/transaction from result_perinfo record to the cart
     add_to_cart(index, table) {
         var rt = null;
-        var rm = null;
         var perid;
         var mrows;
 
@@ -510,7 +525,7 @@ class Pos {
             }
             perid = rt[index]['perid'];
             if (cart.notinCart(perid)) {
-                cart.add(rt[index], rm.perid);
+                cart.add(rt[index]);
             }
         } else {
             var row;

@@ -199,7 +199,9 @@ class PosCart {
             var mbrrow = this.#cart_membership[rownum];
             if (mbrrow['coupon'])
                 return false;
-            if ((!non_primary_categories.includes(mbrrow['memCategory'])) && mbrrow['conid'] == conid && mbrrow['price'] > 0 && mbrrow['paid'] != mbrrow['price'])
+            if ((!pos.nonPrimaryCategoriesIncludes(mbrrow['memCategory'])) && mbrrow['conid'] == pos.getConid &&
+             mbrrow['price'] > 0 && mbrrow['paid'] !=
+             mbrrow['price'])
                 anyUnpaid = true;
         }
         if (anyUnpaid == false)
@@ -240,25 +242,21 @@ class PosCart {
     }
 
     // add search result_perinfo/membership record to the cart
-    add(p, mrows) {
+    add(p) {
         console.log('Add: TODO');
-        return;
-        /*
+
         var pindex = this.#cartPerinfo.length;
         this.#cartPerinfo.push(make_copy(p));
         this.#cartPerinfo[pindex]['index'] = pindex;
+        this.#cartPerinfoMap.set(this.#cartPerinfo[pindex]['perid'], pindex);
+        var mrows = p.memberships;
         for (var mrownum in mrows) {
-            var mindex = this.#cart_membership.length;
-            this.#cart_membership.push(make_copy(mrows[mrownum]));
-            this.#cart_membership[mindex]['pindex'] = pindex;
-            if (this.#cart_membership[mindex]['couponDiscount'] === undefined)
-                this.#cart_membership[mindex]['couponDiscount'] = 0.00;
-            if (this.#cart_membership[mindex]['couponDiscount'] === undefined)
-                this.#cart_membership[mindex]['coupon'] = null;
+            if (mrows[mrownum].couponDiscount === undefined) {
+                this.#cartPerinfo[pindex].memberships[mrownum].couponDiscount = 0.00;
+                this.#cartPerinfo[pindex].memberships[mrownum].coupon = null;
+            }
         }
         this.drawCart();
-
-         */
     }
 
 // remove person and all of their memberships from the cart
@@ -493,11 +491,11 @@ class PosCart {
         html += '<div id="ChangeTo">Change to:<br/><select name="change_membership_id" id="change_membership_id">' + "\n";
         // build select list here
         var optionrows = this.#membership_selectlist;
-        if (mrow['memCategory'] == 'yearahead' && mrow['conid'] != conid)
+        if (mrow['memCategory'] == 'yearahead' && mrow['conid'] != pos.getConid)
             optionrows = this.#yearahead_selectlist;
         var price = mrow['price'];
         for (var row in optionrows) {
-            if (optionrows[row]['price'] >= price || Manager)
+            if (optionrows[row]['price'] >= price || pos.getManager())
                 html += optionrows[row]['option'];
         }
 
@@ -623,7 +621,8 @@ class PosCart {
         var perid = row['perid'];
         var btncolor = null;
         // now loop over the memberships, sorting them by groups
-        var mrows = this.#cartPerinfo[this.#cartPerinfoMap[perid]].memberships;
+        var pindex = this.#cartPerinfoMap.get(perid);
+        var mrows = this.#cartPerinfo[[pindex]].memberships;
         for (var mrownum in mrows) {
             mrow = mrows[mrownum];
             if (mrow['todelete'] !== undefined)
@@ -631,7 +630,7 @@ class PosCart {
 
             var row_shown = true;
             var category = mrow['memCategory'];
-            if (category == 'yearahead' && mrow['conid'] == conid)
+            if (category == 'yearahead' && mrow.conid == pos.getConid())
                 category = 'standard'; // last years yearahead is this year's standard
             var memType = mrow['memType'];
             mem_is_membership = false;
@@ -669,8 +668,8 @@ class PosCart {
                     mrow['index'] + ', ' + notes_count + ')" style=" --bs-btn-font-size:75%;">' + btntext + '</button >';
             }
 
-            if ((!non_primary_categories.includes(category)) && mrow['conid'] == conid) { // this is the current year membership
-                if (upgradable_types.includes(mrow['memType'])) {
+            if ((!pos.nonPrimaryCategoriesIncludes(category)) && mrow.conid == pos.getConid()) { // this is the current year membership
+                if (pos.upgradableTypesIncludes(mrow['memType'])) {
                     upgrade_eligible = true;
                     if (mrow['memType'] == 'oneday' || mrow['memType'] == 'one-day') {
                         day = (mrow['label']).toLowerCase().substring(0, 3);
@@ -784,14 +783,14 @@ class PosCart {
         rowhtml += `
     <div class="row">
         <div class="col-sm-3 p-0">Badge Name:</div>
-        <div class="col-sm-5 p-0">` + badge_name_default(row['badge_name'], row['first_name'], row['last_name']) + `</div>
+        <div class="col-sm-5 p-0">` + pos.badge_name_default(row['badge_name'], row['first_name'], row['last_name']) + `</div>
         <div class="col-sm-2 p-0 text-center">`;
         if (!this.#freezeCart && row['open_notes'] != null && row['open_notes'].length > 0) {
             rowhtml += '<button type="button" class="btn btn-sm btn-info p-0" onclick="show_perinfo_notes(' + row['index'] + ', \'cart\')">View Notes</button>';
         }
         rowhtml += `</div>
         <div class="col-sm-2 p-0 text-center">`;
-        if (Manager && !this.#freezeCart) {
+        if (pos.getManager() && !this.#freezeCart) {
             btncolor = 'btn-secondary';
             if (row['open_notes_pending'] !== undefined && row['open_notes_pending'] === 1)
                 btncolor = 'btn-warning';
