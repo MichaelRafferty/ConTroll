@@ -312,6 +312,7 @@ class rulesSetup {
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
+                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'rules', label: 'Edit Rule' }, hozAlign:"left", headerSort: false },
                 {title: "Name", field: "name", width: 200, headerSort: true, headerFilter: true, validator: "required", },
                 {title: "Option Name", field: "optionName", headerWordWrap: true, width: 200, headerSort: true, headerFilter: true, validator: "required", },
                 {title: "Description", field: "description", headerSort: false, width: 600, headerFilter: true, validator: "required", },
@@ -319,7 +320,6 @@ class rulesSetup {
                 {title: "catList", field: "catList", headerSort: false, headerFilter: true, width: 200, },
                 {title: "ageList", field: "ageList", headerSort: false, headerFilter: true, width: 200, },
                 {title: "memList", field: "memList", headerSort: false, headerFilter: true, width: 200, },
-                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'rules', label: 'Edit Rule' }, hozAlign:"left", headerSort: false },
                 {title: "Orig Key", field: "origName", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
@@ -953,7 +953,7 @@ class rulesSetup {
         //console.log(ruleName);
         this.#editRuleName = ruleName;
         var ruleRow = this.#rulesTable.getRow(ruleName).getData();
-        editPreviewClass = 'rules';
+        var editPreviewClass = 'rules';
         var ruleOrigName = ruleRow.origName;
         var ruleDisplayName = ruleRow.name;
         var ruleDescription = ruleRow.description == null ? '' : ruleRow.description;
@@ -994,6 +994,7 @@ class rulesSetup {
             layout: "fitDataTable",
             index: "origStep",
             columns: [
+                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'ruleSteps', label: 'Edit Step' }, hozAlign:"left", headerSort: false },
                 {title: "Name", field: "name", width: 200, validator: "required", },
                 {title: "Step", field: "step", width: 70, headerHozAlign:"right", hozAlign: "right", headerSort: false, validator: "required", },
                 {title: "Rule Type", field: "ruleType", headerWordWrap: true, width: 100, headerSort: false, validator: "required", },
@@ -1002,7 +1003,6 @@ class rulesSetup {
                 {title: "catList", field: "catList", width: 300, },
                 {title: "ageList", field: "ageList", width: 300, },
                 {title: "memList", field: "memList", width: 300, },
-                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'ruleSteps', label: 'Edit Step' }, hozAlign:"left", headerSort: false },
                 {title: "Orig Name", field: "origName", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {title: "Orig Step", field: "origStep", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 70,},
                 {
@@ -1144,18 +1144,20 @@ class rulesSetup {
         // save the rules table data back to the master rule set
         var data = this.#rulesTable.getData();
         var keys = Object.keys(data[0]);
+        var saveMemRules = {};
         for (var i = 0; i < data.length; i++) {
             var row = data[i];
             var origName = row.origName;
+            saveMemRules[origName] = {};
             for (var j = 0; j < keys.length; j++) {
                 var key = keys[j];
                 if (key != 'ruleset')
-                    memRules[origName][key] = row[key];
+                    saveMemRules[origName][key] = row[key];
             }
         }
 
         var postdata = {
-            rules: JSON.stringify(memRules),
+            rules: JSON.stringify(saveMemRules),
             action: 'save',
         }
         var script = 'scripts/regadmin_updateRules.php';
