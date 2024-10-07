@@ -1154,7 +1154,7 @@ class rulesSetup {
             }
         }
 
-        data = {
+        var postdata = {
             rules: JSON.stringify(memRules),
             action: 'save',
         }
@@ -1163,7 +1163,7 @@ class rulesSetup {
         $.ajax({
             url: script,
             method: 'POST',
-            data: data,
+            data: postdata,
             success: function (data, textStatus, jhXHR) {
                 _this.saveSuccess(data);
             },
