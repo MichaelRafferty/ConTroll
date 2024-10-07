@@ -363,7 +363,7 @@ else
                             <div class='container-fluid' id='editRuleStepFieldDiv'>
                                 <div class='row'>
                                     <div class='col-sm-2'>
-                                        <label for='sName'>Step Name:</label>
+                                        <label for='sName'>Rule Name:</label>
                                     </div>
                                     <div class='col-sm-10'>
                                         <input type='text' id='sName' name='sName' size='20' maxlength='16' placeholder='step name'/>
