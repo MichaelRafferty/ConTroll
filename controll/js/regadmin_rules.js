@@ -1111,9 +1111,16 @@ class rulesSetup {
 
             if (data.length > 0) {
                 var keys = Object.keys(data[0]);
+                if (memRules.length == 0) {
+                    memRules = {};
+                }
                 // figure out which step it belongs to by the name
-                if (!memRules[this.#editRuleName].ruleset)
+                if (!memRules.hasOwnProperty(this.#editRuleName)) {
+                    memRules[this.#editRuleName] = {};
+                }
+                if (!memRules[this.#editRuleName].hasOwnProperty('ruleset')) {
                     memRules[this.#editRuleName].ruleset = {};
+                }
 
                 for (var i = 0; i < data.length; i++) {
                     var row = data[i];
@@ -1144,9 +1151,15 @@ class rulesSetup {
         // save the rules table data back to the master rule set
         var data = this.#rulesTable.getData();
         var keys = Object.keys(data[0]);
+        if (memRules.length == 0) {
+            memRules = {};
+        }
         for (var i = 0; i < data.length; i++) {
             var row = data[i];
             var origName = row.origName;
+            if (!memRules.hasOwnProperty(origName)) {
+                memRules[origName] = row;
+            }
             for (var j = 0; j < keys.length; j++) {
                 var key = keys[j];
                 if (key != 'ruleset')
