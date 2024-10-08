@@ -148,6 +148,7 @@ class interestsSetup {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false, },
+                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'interests' }, hozAlign:"left", headerSort: false },
                 {title: "Interest", field: "interest", width: 200, headerSort: true},
                 {title: "Description", field: "description", headerSort: false, width: 600, headerFilter: true, validator: "required", },
                 {title: "Notify List", field: "notifyList", headerSort: false, headerFilter: true, width: 600, validator: "required", },
@@ -159,7 +160,6 @@ class interestsSetup {
                     title: "Active", field: "active", headerWordWrap: true, headerSort: true,
                     editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
                 },
-                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'interests' }, hozAlign:"left", headerSort: false },
                 {title: "Sort Order", field: "sortOrder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "interestsKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
