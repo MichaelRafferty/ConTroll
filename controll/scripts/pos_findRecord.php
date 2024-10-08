@@ -223,7 +223,7 @@ EOS;
 
     if ($found_perid == false && $found_tid == false) {
         // nothing to search for, return zero records found (early exit)
-        $response['message'] = '0 memberships found';
+        $response['message'] = '0 members found';
         $response['perinfo'] = $perinfo;
         //$response['membership'] = $membership;
         //$response['policies'] = $policies;
@@ -468,9 +468,9 @@ while ($l = $rp->fetch_assoc()) {
     $index++;
 }
 if ($num_rows >= $limit) {
-    $response['warn'] = "$num_rows memberships found, limited to $limit, use different search criteria to refine your search.";
+    $response['warn'] = "$num_rows members found, limited to $limit, use different search criteria to refine your search.";
 } else {
-    $response['message'] = "$num_rows memberships found";
+    $response['message'] = "$num_rows members found";
 }
 $rp->free();
 

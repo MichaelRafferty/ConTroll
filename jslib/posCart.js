@@ -261,33 +261,16 @@ class PosCart {
 
 // remove person and all of their memberships from the cart
     remove(perid) {
-        if (!confirm_discard_add_edit(false))
+        if (!pos.confirm_discard_add_edit(false))
             return;
 
         var index = this.#cartPerinfoMap.get(perid);
-
         if (!this.confirmDiscardCartEntry(index, false))
             return;
-
-        console.log("remove: TODO");
-        /*
-        var mrows = find_memberships_by_perid(this.#cart_membership, perid);
-        // need to splice backwards so the indices don't change
-        var delrows = [];
-        var splicerow = null;
-        for (var mrownum in mrows) {
-            splicerow = mrows[mrownum]['index'];
-            delrows.push(Number(splicerow));
-        }
-        delrows = delrows.reverse();
-        for (splicerow in delrows)
-            this.#cart_membership.splice(delrows[splicerow], 1);
 
         this.#cartPerinfo.splice(index, 1);
         // splices loses me the index number for the cross-reference, so the cart needs renumbering
         this.drawCart();
-
-         */
     }
 
     // get into the add/edit fields the requested cart entry
@@ -559,22 +542,12 @@ class PosCart {
 // for shortcut reasons indices are used to allow usage of the filter functions built into javascript
 // this rebuilds the index and perinfo cross-reference maps.  It needs to be called whenever the number of items in cart is changed.
     #cart_renumber() {
-        console.log("cart_renumber: todo");
-        return;
-        /*
         var index;
         this.#cartPerinfoMap = new map();
         for (index = 0; index < this.#cartPerinfo.length; index++) {
             this.#cartPerinfo[index]['index'] = index;
             this.#cartPerinfoMap.set(this.#cartPerinfo[index]['perid'], index);
         }
-
-        for (index = 0; index < this.#cart_membership.length; index++) {
-            this.#cart_membership[index]['index'] = index;
-            this.#cart_membership[index]['pindex'] = this.#cartPerinfoMap.get(this.#cart_membership[index]['perid']);
-        }
-
-         */
     }
 
     // Clear the coupon matching couponId from all rows in the cart
@@ -642,13 +615,13 @@ class PosCart {
                 (category == 'standard' || category == 'yearahead') && memType == 'full';
             col1 = '';
             if ((allow_delete || allow_delete_priv) && !this.#freezeCart) {
-                col1 += '<button type = "button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" onclick = "delete_membership(' +
-                    mrow['index'] + ')" >X</button >';
+                col1 += '<button type = "button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" ' +
+                    'onclick = "pos.delete_membership(' + mrow['index'] + ')" >X</button >';
             }
             // C = change membership type
             if (allow_change_priv && !this.#freezeCart) {
-                col1 += '<button type = "button" class="btn btn-sm btn-warning pt-0 pb-0 ps-1 pe-1 m-0" onclick = "change_membership(' +
-                    mrow['index'] + ')" >C</button >';
+                col1 += '<button type = "button" class="btn btn-sm btn-warning pt-0 pb-0 ps-1 pe-1 m-0" ' +
+                    'onclick = "pos.change_membership(' + mrow['index'] + ')" >C</button >';
             }
 
             var label = mrow['label'];
@@ -664,8 +637,9 @@ class PosCart {
                 if (notes_count > 0) {
                     btntext = 'Notes:' + notes_count.toString();
                 }
-                label += ' <button type = "button" class="btn btn-sm ' + btncolor + ' pt-0 pb-0 ps-1 pe-1 m-0" onclick = " +show_reg_note(' +
-                    mrow['index'] + ', ' + notes_count + ')" style=" --bs-btn-font-size:75%;">' + btntext + '</button >';
+                label += ' <button type = "button" class="btn btn-sm ' + btncolor + ' pt-0 pb-0 ps-1 pe-1 m-0" ' +
+                    'onclick = "pos.show_reg_note(' + mrow['index'] + ', ' + notes_count + ')" ' +
+                    'style=" --bs-btn-font-size:75%;">' + btntext + '</button >';
             }
 
             if ((!pos.nonPrimaryCategoriesIncludes(category)) && mrow.conid == pos.getConid()) { // this is the current year membership
@@ -773,8 +747,8 @@ class PosCart {
         rowhtml += membername + '</div>';
         if (!this.#freezeCart) {
             rowhtml += `
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="edit_from_cart(` + perid + `)">Edit</button></div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="remove_from_cart(` + perid + `)">Remove</button></div>
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.edit_from_cart(` + perid + `)">Edit</button></div>
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.remove_from_cart(` + perid + `)">Remove</button></div>
 `;
         }
         rowhtml += '</div>'; // end of member name row
@@ -786,7 +760,8 @@ class PosCart {
         <div class="col-sm-5 p-0">` + pos.badge_name_default(row['badge_name'], row['first_name'], row['last_name']) + `</div>
         <div class="col-sm-2 p-0 text-center">`;
         if (!this.#freezeCart && row['open_notes'] != null && row['open_notes'].length > 0) {
-            rowhtml += '<button type="button" class="btn btn-sm btn-info p-0" onclick="show_perinfo_notes(' + row['index'] + ', \'cart\')">View Notes</button>';
+            rowhtml += '<button type="button" class="btn btn-sm btn-info p-0" onclick="pos.show_perinfo_notes(' + row['index'] + ', \'cart\')">View' +
+                ' Notes</button>';
         }
         rowhtml += `</div>
         <div class="col-sm-2 p-0 text-center">`;
@@ -794,7 +769,8 @@ class PosCart {
             btncolor = 'btn-secondary';
             if (row['open_notes_pending'] !== undefined && row['open_notes_pending'] === 1)
                 btncolor = 'btn-warning';
-            rowhtml += '<button type="button" class="btn btn-sm ' + btncolor + ' p-0" onclick="edit_perinfo_notes(' + row['index'] + ', \'cart\')">Edit Notes</button>';
+            rowhtml += '<button type="button" class="btn btn-sm ' + btncolor + ' p-0" onclick="pos.edit_perinfo_notes(' + row['index'] + ', \'cart\')">Edit' +
+                ' Notes</button>';
         }
         rowhtml += `</div>
     </div>
@@ -829,7 +805,7 @@ class PosCart {
         <div class="col-sm-9 p-0"><select id="cart-madd-` + rownum + `" name="cart-addid"> + "TODO: this.#memberselect"
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-info pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-madd-" + rownum + `')">Add</button>
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-info pt-0 pb-0 ps-1 pe-1" onclick="pos.add_membership_cart(` + rownum + ", 'cart-madd-" + rownum + `')">Add</button>
         </div>
     </div>`;
         }
@@ -863,7 +839,7 @@ class PosCart {
             rowhtml += `
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mupg-" + rownum + `')">Add</button></div >
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.add_membership_cart(` + rownum + ", 'cart-mupg-" + rownum + `')">Add</button></div >
 </div>
 `;
         }
@@ -885,7 +861,8 @@ class PosCart {
 ` + this.#yearahead_select + `
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-mya-" + rownum + `')">Add</button></div >
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.add_membership_cart(` +
+         rownum + ", 'cart-mya-" + rownum + `')">Add</button></div >
 </div>
 `;
             }
@@ -910,7 +887,8 @@ class PosCart {
 ` + this.#addon_select + `
             </select>
         </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="add_membership_cart(` + rownum + ", 'cart-maddon-" + rownum + `')">Add</button></div >
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.add_membership_cart(` +
+         rownum + ", 'cart-maddon-" + rownum + `')">Add</button></div >
 </div>
 `;
             // }
@@ -1169,8 +1147,8 @@ class PosCart {
     <div class="row mt-2">
         <div class="col-sm-1 m-0 p-0">&nbsp;</div>
         <div class="col-sm-auto m-0 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="review-btn-update" onclick="review_update();">Update All</button>
-            <button class="btn btn-primary btn-sm" type="button" id="review-btn-nochanges" onclick="review_nochanges();">No Changes</button>
+            <button class="btn btn-primary btn-sm" type="button" id="review-btn-update" onclick="pos.review_update();">Update All</button>
+            <button class="btn btn-primary btn-sm" type="button" id="review-btn-nochanges" onclick="pos.review_nochanges();">No Changes</button>
         </div>
     </div>
     <div class="row">
@@ -1287,7 +1265,7 @@ class PosCart {
             print_html += `
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-print-` + this.#cartPerinfo[rownum]['index'] + `" name="print_btn" onclick="print_badge(` + crow['index'] + `);">Print</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-print-` + this.#cartPerinfo[rownum]['index'] + `" name="print_btn" onclick="pos.print_badge(` + crow['index'] + `);">Print</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">            
             <span class="text-bg-success"> Membership: ` + mrow.label + `</span> (Times Printed: ` +

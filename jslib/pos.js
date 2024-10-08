@@ -253,6 +253,20 @@ class Pos {
         return this.#upgradable_types.includes(type);
     }
 
+    // loop over people/memberships calling a function on each membership:
+    //      function is called with (memrow) which as an associative array of the row
+    //      returns the sum of whatever fcn returns
+    everyMembership(fcn) {
+        var rtn = 0;
+        for (var pmrowindex in this.#result_perinfo) {
+            var memberships = this.#result_perinfo[pmrowindex].memberships;
+            for (var rowindex in memberships) {
+               rtn += fcn(this, memberships[rowindex]);
+            }
+        }
+        return rtn;
+    }
+
     // load mapping tables from database to javascript array
     loadInitialData(data) {
         // map the memIds and labels for the pre-coded memberships.  Doing it now because it depends on what the database sends.
@@ -468,7 +482,7 @@ class Pos {
 
         // empty cart
         cart.startOver();
-        //TODO: find_unpaid_button.hidden = false;
+        this.#find_unpaid_button.hidden = false;
         // empty search strings and results
         this.#pattern_field.value = "";
         if (this.#find_result_table != null) {
@@ -511,9 +525,7 @@ class Pos {
 
         if (table == 'result') {
             rt = this.#result_perinfo;
-        }
-
-        if (table == 'add') {
+        } else if (table == 'add') {
             rt = this.#add_perinfo;
         }
 
@@ -530,20 +542,20 @@ class Pos {
         } else {
             var row;
             index = -index;
-            for (row in result_membership) {
-                if (result_membership[row]['tid'] == index) {
-                    var prow = result_membership[row]['pindex'];
-                    perid = this.#result_perinfo[prow]['perid'];
-                    if (this.#result_perinfo[prow]['banned'] == 'Y') {
-                        alert("Please ask " + (this.#result_perinfo[prow]['first_name'] + ' ' + this.#result_perinfo[prow]['last_name']).trim() +
+            this.everyMembership(function(_this, mem) {
+                if (mem.tid == index) {
+                    var prow = mem.pindex;
+                    if (_this.#result_perinfo[prow].banned == 'Y') {
+                        alert("Please ask " + (_this.#result_perinfo[prow].first_name + ' ' + _this.#result_perinfo[prow].last_name).trim() +
                             " to talk to the Registration Administrator, you cannot add them at this time.")
-                        return;
-                    } else if (cart.notinCart(perid)) {
-                        mrows = find_memberships_by_perid(result_membership, perid);
-                        cart.add(this.#result_perinfo[prow], mrows);
+                        return 0;
+                    }
+                    perid = _this.#result_perinfo[prow].perid;
+                    if (cart.notinCart(perid)) {
+                        cart.add(_this.#result_perinfo[prow]);
                     }
                 }
-            }
+            });
         }
 
         if (table == 'result') {
@@ -560,8 +572,8 @@ class Pos {
     remove_from_cart(perid) {
         cart.remove(perid);
 
-        if (find_result_table !== null) {
-            find_result_table.replaceData(this.#result_perinfo);
+        if (this.#find_result_table !== null) {
+            this.#find_result_table.replaceData(this.#result_perinfo);
         } else {
             this.draw_as_records();
         }
@@ -586,11 +598,11 @@ class Pos {
 
     // common confirm add/edit screen dirty, if the tab isn't shown switch to it if dirty
     confirm_discard_add_edit(silent) {
-        if (!add_edit_dirty_check || cart.isFrozen()) // don't check if dirty, or if the cart is frozen, return ok to discard
+        if (!this.#add_edit_dirty_check || cart.isFrozen()) // don't check if dirty, or if the cart is frozen, return ok to discard
             return true;
 
-        add_edit_current_state = $("#add-edit-form").serialize();
-        if (add_edit_initial_state == add_edit_current_state)
+        this.#add_edit_current_state = $("#add-edit-form").serialize();
+        if (this.#add_edit_initial_state == this.#add_edit_current_state)
             return true; // no changes found
 
         if (silent)
@@ -638,10 +650,10 @@ class Pos {
         addnew_button.innerHTML = "Update to Cart";
         clearadd_button.innerHTML = "Discard Update";
         add_mode = false;
-        add_edit_dirty_check = true;
-        add_edit_initial_state = $("#add-edit-form").serialize();
-        add_edit_current_state = "";
-        add_edit_prior_tab = current_tab;
+        this.#add_edit_dirty_check = true;
+        this.#add_edit_initial_state = $("#add-edit-form").serialize();
+        this.#add_edit_current_state = "";
+        this.#add_edit_prior_tab = current_tab;
         bootstrap.Tab.getOrCreateInstance(add_tab).show();
     }
 
@@ -792,12 +804,12 @@ class Pos {
             }
             addnew_button.innerHTML = "Add to Cart";
             clearadd_button.innerHTML = 'Clear Add Person Form';
-            add_edit_dirty_check = true;
-            add_edit_initial_state = $("#add-edit-form").serialize();
-            add_edit_current_state = "";
+            this.#add_edit_dirty_check = true;
+            this.#add_edit_initial_state = $("#add-edit-form").serialize();
+            this.#add_edit_current_state = "";
             cart.drawCart();
-            bootstrap.Tab.getOrCreateInstance(add_edit_prior_tab).show();
-            add_edit_prior_tab = add_tab;
+            bootstrap.Tab.getOrCreateInstance(this.#add_edit_prior_tab).show();
+            this.#add_edit_prior_tab = add_tab;
             return;
         }
 
@@ -907,7 +919,7 @@ class Pos {
                 ],
             });
             addnew_button.innerHTML = "Add New";
-            add_edit_initial_state = $("#add-edit-form").serialize();
+            this.#add_edit_initial_state = $("#add-edit-form").serialize();
             $("button[name='find_btn']").attr("disabled", false);
             return;
         }
@@ -1051,9 +1063,9 @@ class Pos {
             Add New Person and Membership
         </div>
     </div>`;
-        add_edit_dirty_check = true;
-        add_edit_initial_state = $("#add-edit-form").serialize();
-        add_edit_current_state = "";
+        this.#add_edit_dirty_check = true;
+        this.#add_edit_initial_state = $("#add-edit-form").serialize();
+        this.#add_edit_current_state = "";
     }
 
     // draw_record: find_record found rows from search.  Display them in the non table format used by transaction and perid search, or a single row match for string.
@@ -1187,7 +1199,8 @@ class Pos {
         var banned = cell.getRow().getData().banned;
         if (banned == undefined) {
             tid = Number(cell.getRow().getData().tid);
-            html = '<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" onclick="add_unpaid(' + tid + ')">Pay</button > ';
+            html = '<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" ' +
+                'onclick="pos.add_unpaid(' + tid + ')">Pay</button > ';
             return html;
         }
         if (banned == 'Y') {
@@ -1198,7 +1211,8 @@ class Pos {
                 cell.getRow().getData().index + ', \'' + formatterParams['t'] + '\')">Add</button>';
             tid = cell.getRow().getData().tid;
             if (tid != '' && tid != undefined && tid != null) {
-                html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" onclick="pos.add_to_cart(' + (-tid) + ', \'' + formatterParams['t'] + '\')">Tran</button>';
+                html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" ' +
+                    'onclick="pos.add_to_cart(' + (-tid) + ', \'' + formatterParams['t'] + '\')">Tran</button>';
             }
             return html;
         }
@@ -1387,9 +1401,9 @@ class Pos {
     // select the row (tid) from the unpaid list and add it to the cart, switch to the payment tab (used by find unpaid)
     // marks it as a tid (not perid) add by inverting it.  (add_to_cart will deal with the inversion)
     add_unpaid(tid) {
-        add_to_cart(-Number(tid), 'result');
+        pos.add_to_cart(-Number(tid), 'result');
         // force a new transaction for the payment as the cashier is not the same as the check-in in this case.
-        added_payable_trans_to_cart();
+        pos.added_payable_trans_to_cart();
     }
 
     // add selected membership as a new item in the card under this perid.
@@ -1467,7 +1481,6 @@ class Pos {
         var mem;
         var find_type = data['find_type'];
         this.#result_perinfo = data['perinfo'];
-        // result_membership = data['membership'];
         this.#name_search = data['name_search'];
 
         // unpaid search: Only used by Cashier
@@ -1481,26 +1494,29 @@ class Pos {
             }
             var trantbl = [];
             // loop over unpaid memberships and finding distinct transactions (should this move to a second SQL query?)
-            for (mrow in result_membership) {
-                tid = result_membership[mrow]['tid'];
+            this.everyMembership(function(_this, mem) {
+                tid = mem.tid;
                 if (!trantbl.includes(tid)) {
                     trantbl.push(tid);
+                    return 1;
                 }
-            }
+                return 0;
+            });
+            console.log("found " + trantbl.length + " unpaid transactions");
             if (trantbl.length == 1) { // only 1 row, add it to the cart and go to pay tab
                 tid = trantbl[0];
-                for (row in result_membership) {
+                for (row in this.#result_perinfo) {
                     if (result_membership[row]['tid'] == tid) {
                         index = result_membership[row]['pindex'];
-                        add_to_cart(index, 'result');
+                        pos.add_to_cart(index, 'result');
                     }
                 }
-                added_payable_trans_to_cart(); // build the master transaction and attach records
+                pos.added_payable_trans_to_cart(); // build the master transaction and attach records
                 return;
             }
 
             // build the data table for tabulator
-            unpaid_table = [];
+            this.#unpaid_table  = [];
             // multiple entries unpaid, display table to choose which one
             for (var trow in trantbl) {
                 tid = trantbl[trow];
@@ -1511,43 +1527,43 @@ class Pos {
                 var prowindex = 0;
                 var prow = null;
                 mperid = -1;
-                for (mrow in result_membership) {
-                    if (result_membership[mrow]['tid'] == tid) {
-                        prowindex = result_membership[mrow]['pindex'];
-                        prow = this.#result_perinfo[prowindex];
+                this.everyMembership(function(_this, mem) {
+                    if (mem.tid == tid) {
+                        prowindex = mem.pindex;
+                        prow = _this.#result_perinfo[prowindex];
                         num_mem++;
-                        price += Number(result_membership[mrow]['price']);
-                        paid += Number(result_membership[mrow]['paid']);
+                        price += Number(mem.price);
+                        paid += Number(mem.paid);
                         // show each name only once
-                        if (mperid != result_membership[mrow]['perid']) {
+                        if (mperid != mem.perid) {
                             if (names != '') {
                                 names += '; ';
                             }
-                            names += (prow['last_name'] + ', ' + prow['first_name'] + ' ' + prow['middle_name'] + ' ' + prow['suffix']).replace(/\s+/g, ' ').trim();
-                            mperid = result_membership[mrow]['perid'];
+                            names += prow.fullName+ '(' + prow.perid + ')';
+                            mperid = mem.perid;
                         }
                     }
-                }
+                });
 
                 row = {tid: tid, names: names, num_mem: num_mem, price: price, paid: paid, index: trow};
-                unpaid_table.push(row);
+                this.#unpaid_table.push(row);
             }
             // and instantiate the table into the find_results DOM object (div)
             var _this = this;
             this.#find_result_table = new Tabulator('#find_results', {
                 maxHeight: "600px",
-                data: unpaid_table,
+                data: this.#unpaid_table,
                 layout: "fitColumns",
                 initialSort: [
                     {column: "names", dir: "asc"},
                 ],
                 columns: [
+                    {title: "Cart", width: 60, formatter: _this.addCartIcon, formatterParams: {t: "unpaid"}, headerSort: false,},
                     {title: "TID", field: "tid", headerFilter: true, headerWordWrap: true, width: 70, maxWidth: 70, hozAlign: 'right',},
                     {title: "Names", field: "names", headerFilter: true, headerSort: true, headerWordWrap: true, tooltip: true,},
                     {title: "#M", field: "num_mem", minWidth: 50, maxWidth: 50, headerSort: false, hozAlign: 'right',},
                     {title: "Price", field: "price", maxWidth: 80, minWidth: 80, headerSort: false, hozAlign: 'right',},
                     {title: "Paid", field: "paid", maxWidth: 80, minWidth: 80, headerSort: false, hozAlign: 'right',},
-                    {title: "Cart", width: 50, formatter: _this.addCartIcon, formatterParams: {t: "unpaid"}, headerSort: false,},
                     {field: "index", visible: false,},
                 ],
             });
@@ -1556,20 +1572,19 @@ class Pos {
         // sum print and attach counts
         var print_count = 0;
         var attach_count = 0;
+        var memCount = 0;
         var regtids = [];
         var rowindex;
         var pmrowindex;
         var memberships;
-        for (pmrowindex in this.#result_perinfo) {
-            memberships = this.#result_perinfo[pmrowindex].memberships;
-            for (rowindex in memberships) {
-                print_count += Number(memberships[rowindex].printcount);
-                attach_count += Number(memberships[rowindex].attachcount);
-                if (!regtids.includes(memberships[rowindex].rstid)) {
-                    regtids.push(memberships[rowindex].rstid);
-                }
-            }
-        }
+
+        memCount = this.everyMembership(function(_this, mem) {
+            print_count += Number(mem.printcount);
+            attach_count += Number(mem.attachcount);
+            return 1;
+        });
+        console.log("memCount: " + memCount + ", print_count: " + print_count + ", attach_count: " + attach_count);
+
         // not unpaid search... mark the type of the primary membership in the person row for the table
         // find primary membership for each result_perinfo record
         for (rowindex in this.#result_perinfo) {
@@ -1606,7 +1621,7 @@ class Pos {
                     {column: "fullname", dir: "asc"},
                 ],
                 columns: [
-                    {title: "Cart", width: 90, headerFilter: false, headerSort: false, formatter: _this.addCartIcon, formatterParams: {t: "result"},},
+                    {title: "Cart", width: 100, headerFilter: false, headerSort: false, formatter: _this.addCartIcon, formatterParams: {t: "result"},},
                     {title: "Per ID", field: "perid", headerWordWrap: true, width: 80, visible: false, hozAlign: 'right',},
                     {field: "index", visible: false,},
                     {title: "Full Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: posBuild_record_hover,},
@@ -1631,10 +1646,10 @@ class Pos {
                 for (row in result_membership) {
                     if ((result_membership[row]['tid'] == tid) || (result_membership[row]['rstid'] == this.#name_search)) {
                         index = result_membership[row]['pindex'];
-                        add_to_cart(index, 'result');
+                        pos.add_to_cart(index, 'result');
                     }
                 }
-                added_payable_trans_to_cart();
+                pos.added_payable_trans_to_cart();
                 return;
             }
             this.#number_search = Number(this.#name_search);
