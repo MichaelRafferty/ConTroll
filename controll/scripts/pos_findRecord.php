@@ -99,8 +99,102 @@ FROM manager p1
 JOIN perinfo p ON p1.manager = p.managedBy OR p1.manager = p.id
 )
 EOS;
+if ($find_type == 'unpaid') {
+//
+// Find Unpaid on latest transaction ID for those records
+//
+    $withClauseUnpaid = <<<EOS
+WITH unpaids AS (
+/* first the unpaid transactions from regs with their create_trans */
+SELECT r.id, create_trans as tid
+FROM reg r
+JOIN memList m ON (m.id = r.memId)
+WHERE r.price != (r.paid + r.couponDiscount) AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
+), tids AS (
+/* add in unpaids from transactions in attach records in regActions */
+SELECT u.id AS regid, CASE WHEN u.tid > IFNULL(h.tid, -999) THEN u.tid ELSE h.tid END AS tid
+FROM unpaids u
+LEFT OUTER JOIN regActions h ON (h.regid = u.id AND h.action = 'attach')
+), maxtids AS (
+/* find the most recent transaction (highest number) across each reg and the selected list of transactions */
+SELECT regid, MAX(tid) AS tid
+FROM tids
+GROUP BY regid
+), tidlist AS (
+/* and get each tid only once */
+SELECT DISTINCT tid 
+FROM maxtids
+), perids AS (
+/* now get all the perinfo ids that are mentioned in each of those tid records, from both reg, and from regActions */
+SELECT perid 
+FROM reg r
+JOIN tidlist t ON (t.tid = r.create_trans)
+UNION SELECT perid 
+FROM reg r
+JOIN regActions h on (h.regid = r.id)
+JOIN tidlist t ON (t.tid = h.tid)
+), uniqueperids AS (
+SELECT DISTINCT perid
+FROM perids
+)
+EOS;
+    $searchSQLP = <<<EOS
+$withClauseUnpaid
+$fieldListP
+FROM perids p1
+JOIN perinfo p ON (p.id = p1.perid)
+ORDER BY last_name, first_name;
+EOS;
 
-if (is_numeric($name_search)) {
+    $searchSQLM = <<<EOS
+$withClauseUnpaid
+, regids AS (
+    /* first reg ids for this create transaction as specified as a number */
+    SELECT r.id AS regid, create_trans as tid
+    FROM perids p1
+    JOIN reg r ON r.perid = p1.perid
+    JOIN memLabel m ON (r.memId = m.id)
+    WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
+)
+$fieldListM
+FROM perids p1
+JOIN perinfo p ON (p.id = p1.perid)
+JOIN reg r1 ON (r1.perid = p.id)
+JOIN regids rs ON (r1.id = rs.regid)
+JOIN memLabel m ON (r1.memId = m.id)
+LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
+LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
+LEFT OUTER JOIN notes n ON (r1.id = n.regid)
+WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
+ORDER BY r1.perid, r1.create_date;
+EOS;
+    // now get the policies for all of these perids
+    $searchSQLL = <<<EOS
+$withClauseUnpaid
+$fieldListL
+FROM perids p1
+JOIN perinfo p ON (p.id = p1.perid)
+JOIN memberPolicies mp ON (p.id = mp.perid)
+WHERE mp.conid = ?
+ORDER BY perid, policy;
+EOS;
+
+    $rp = dbSafeQuery($searchSQLP, 'ii', array($conid, $conid + 1));
+    if ($rp === false) {
+        ajaxSuccess(array('error' => "Error in person query for unpaid"));
+        return;
+    }
+    $rm = dbSafeQuery($searchSQLM, 'iiiiiii', array($conid, $conid + 1, $conid, $conid + 1, $conid, $conid, $conid + 1));
+    if ($rm === false) {
+        ajaxSuccess(array('error' => "Error in membership query for unpaid"));
+        return;
+    }
+    $rl = dbSafeQuery($searchSQLL, 'iii', array($conid, $conid = 1, $conid));
+    if ($rl === false) {
+        ajaxSuccess(array('error' => "Error in policy query for unpaid"));
+        return;
+    }
+} else if (is_numeric($name_search)) {
     //
     // this is perid, or transid
     // first can we tell if it's a perid or a tid?
@@ -194,8 +288,20 @@ EOS;
 
         //web_error_log($searchSQLM);
         $rp = dbSafeQuery($searchSQLP, 'iiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1));
+        if ($rp === false) {
+            ajaxSuccess(array('error' => "Error in string person query $name_search"));
+            return;
+        }
         $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid + 1, $conid));
+        if ($rm === false) {
+            ajaxSuccess(array('error' => "Error in numeric membership query for $name_search"));
+            return;
+        }
         $rl = dbSafeQuery($searchSQLL, 'iiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid + 1, $conid));
+        if ($rl === false) {
+            ajaxSuccess(array('error' => "Error in numeric policy query for $name_search"));
+            return;
+        }
     } else if ($found_perid) {
         // pull all the matching regs for this perid for this period, plus anyone managed by this perid, UNION by this perid's manager
         $searchSQLP = <<<EOS
