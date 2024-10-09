@@ -45,15 +45,14 @@ class Pos {
     // Data Items
     #unpaid_table = [];
     #result_perinfo = [];
-    #membership_select = null;
     #add_perinfo = [];
-    #add_membership = [];
     #new_perid = -1;
     #memList = null;
     #memListMap = null;
     #catList = null;
     #ageList = null;
     #typeList = null;
+    #policies = null;
     #changeModal = null;
     #cashChangeModal = null;
 
@@ -314,6 +313,7 @@ class Pos {
         this.#ageList = data['ageList'];
         this.#typeList = data['memTypes'];
         this.#cc_html = data['cc_html'];
+        this.#policies = data['policies'];
         this.#discount_mode = data['discount'];
         if (this.#discount_mode === undefined || this.#discount_mode === null || this.#discount_mode == '')
             this.#discount_mode = 'none';
@@ -553,7 +553,6 @@ class Pos {
     add_to_cart(index, table) {
         var rt = null;
         var perid;
-        var mrows;
 
         if (table == 'result') {
             rt = this.#result_perinfo;
@@ -768,26 +767,35 @@ class Pos {
 
         if (this.#add_mode == false && edit_index != '') { // update perinfo/meminfo and cart_perinfo and cart_memberships
             var row = {};
-            row['first_name'] = new_first;
-            row['middle_name'] = new_middle;
-            row['last_name'] = new_last;
-            row['suffix'] = new_suffix;
-            row['legalName'] = new_legalName;
-            row['pronouns'] = new_pronouns;
-            row['badge_name'] = new_badgename;
-            row['address_1'] = new_addr1;
-            row['address_2'] = new_addr2;
-            row['city'] = new_city;
-            row['state'] = new_state;
-            row['postal_code'] = new_postal_code;
-            row['country'] = new_country;
-            row['email_addr'] = new_email;
-            row['phone'] = new_phone;
-            row['active'] = 'Y';
-            row['dirty'] = true;
+            row.policies = {};
+            row.first_name = new_first;
+            row.middle_name = new_middle;
+            row.last_name = new_last;
+            row.suffix = new_suffix;
+            row.legalName = new_legalName;
+            row.pronouns = new_pronouns;
+            row.badge_name = new_badgename;
+            row.address_1 = new_addr1;
+            row.address_2 = new_addr2;
+            row.city = new_city;
+            row.state = new_state;
+            row.postal_code = new_postal_code;
+            row.country = new_country;
+            row.email_addr = new_email;
+            row.phone = new_phone;
+            row.active = 'Y';
+            row.dirty = true;
 
-            var mrow = null;
-            cart.updateEntry(edit_index, row);
+            for (var pol in this.#policies) {
+                var policyName = this.#policies[pol].policy;
+
+                var response = document.getElementById('p_' + policyName).checked;
+                row.policies[policyName] = {};
+                row.policies[policyName].response = response ? 'Y' : 'N';
+                row.policies[policyName].policy= policyName;
+            }
+            
+            cart.updateEntry(edit_index, row, this.#policies);
 
             // clear the fields that should not be preserved between adds.  Allowing a second person to be added using most of the same data as default.
             this.#add_first_field.value = "";
@@ -1041,12 +1049,12 @@ class Pos {
         }
 
         var row = {
-            perid: new_perid, first_name: new_first, middle_name: new_middle, last_name: new_last, suffix: new_suffix,
+            perid: this.#new_perid, first_name: new_first, middle_name: new_middle, last_name: new_last, suffix: new_suffix,
             legalName: new_legalName, pronouns: new_pronouns, badge_name: new_badgename,
             address_1: new_addr1, address_2: new_addr2, city: new_city, state: new_state, postal_code: new_postal_code,
             country: new_country, email_addr: new_email, phone: new_phone, active: 'Y', banned: 'N',
         };
-        new_perid--;
+        this.#new_perid--;
 
         this.#add_first_field.value = "";
         this.#add_middle_field.value = "";
@@ -1479,7 +1487,6 @@ class Pos {
     //      multiple rows: display table of records with add/trans buttons
     found_record(data) {
         var row;
-        var mrow;
         var index;
         var tid;
         var mperid;
@@ -1579,7 +1586,6 @@ class Pos {
         var memCount = 0;
         var regtids = [];
         var rowindex;
-        var pmrowindex;
         var memberships;
 
         memCount = this.everyMembership(function(_this, mem) {

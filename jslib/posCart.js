@@ -282,26 +282,39 @@ class PosCart {
     }
 
     // update the cart entry from the add/edit field row
-    updateEntry(edit_index, row) {
+    updateEntry(edit_index, row, policies) {
         var cart_row = this.#cartPerinfo[edit_index];
 
-        cart_row['first_name'] = row['first_name'];
-        cart_row['middle_name'] = row['middle_name'];
-        cart_row['last_name'] = row['last_name'];
-        cart_row['suffix'] = row['suffix'];
-        cart_row['legalName'] = row['legalName'];
-        cart_row['pronouns'] = row['pronouns'];
-        cart_row['badge_name'] = row['badge_name'];
-        cart_row['address_1'] = row['address_1'];
-        cart_row['address_2'] = row['address_2'];
-        cart_row['city'] = row['city'];
-        cart_row['state'] = row['state'];
-        cart_row['postal_code'] = row['postal_code'];
-        cart_row['country'] = row['country'];
-        cart_row['email_addr'] = row['email_addr'];
-        cart_row['phone'] = row['phone'];
-        cart_row['active'] = 'Y';
-        cart_row['dirty'] = true;
+        cart_row.first_name = row.first_name;
+        cart_row.middle_name = row.middle_name;
+        cart_row.last_name = row.last_name;
+        cart_row.suffix = row.suffix;
+        cart_row.legalName = row.legalName;
+        cart_row.pronouns = row.pronouns;
+        cart_row.badge_name = row.badge_name;
+        cart_row.address_1 = row.address_1;
+        cart_row.address_2 = row.address_2;
+        cart_row.city = row.city;
+        cart_row.state = row.state;
+        cart_row.postal_code = row.postal_code;
+        cart_row.country = row.country;
+        cart_row.email_addr = row.email_addr;
+        cart_row.phone = row.phone;
+        cart_row.active = 'Y';
+
+        for (var pol in policies) {
+            var policyName = policies[pol].policy;
+
+            if (!cart_row.policies.hasOwnProperty(policyName)) {
+                cart_row.policies[policyName] = {};
+                cart_row.policies[policyName].perid = cart_row.perid;
+                cart_row.policies[policyName].pindex = cart_row.pindex;
+                cart_row.policies[policyName].policy = policyName;
+            }
+            cart_row.policies[policyName].response = row.policies[policyName].response;
+        }
+
+        cart_row.dirty = true;
 
         // policies
         console.log("TODO: Policies");

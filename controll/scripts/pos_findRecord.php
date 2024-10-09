@@ -40,8 +40,6 @@ $name_search = $_POST['name_search'];
 $response['find_type'] = $find_type;
 $response['name_search'] = $name_search;
 $perinfo = [];
-//$membership = [];
-//$policies = [];
 
 $limit = 99999999;
 $fieldListP = <<<EOS
@@ -500,7 +498,6 @@ if ($lastPID >= 0) {
 $rm->free();
 
 // now get the policies the same way
-//$policies = [];
 $lastPID = -1;
 $policy = [];
 while ($l = $rl->fetch_assoc()) {
