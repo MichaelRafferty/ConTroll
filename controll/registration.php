@@ -141,7 +141,7 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
                                     <button type="button" class="btn btn-primary btn-sm" id="addnew-btn" name="find_btn" onclick="pos.add_new();">Add to
                                         Cart
                                     </button>
-                                    <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="pos.clear_add();">
+                                    <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="pos.clearAdd();">
                                         Clear Add Person Form
                                     </button>
                                 </div>

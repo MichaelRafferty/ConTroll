@@ -355,7 +355,7 @@ class Pos {
         this.#result_perinfo = [];
 
         // set starting stages of left and right windows
-        this.clear_add(1);
+        this.clearAdd(1);
     }
     
     // search memLabel functions
@@ -542,7 +542,7 @@ class Pos {
         this.#pay_tid = null;
         this.#pay_prior_discount = null;
 
-        this.clear_add(reset_all);
+        this.clearAdd(reset_all);
         // set tab to find-tab
         bootstrap.Tab.getOrCreateInstance(this.#find_tab).show();
         this.#pattern_field.focus();
@@ -668,7 +668,7 @@ class Pos {
         if (!this.confirm_discard_add_edit(false))
             return;
 
-        this.clear_add(1);
+        this.clearAdd(1);
         cart.getAddEditFields(perid);
 
         // set page values
@@ -689,7 +689,7 @@ class Pos {
     }
 
     // Clear the add/edit screen back to completely empty (startup)
-    clear_add(reset_all) {
+    clearAdd(reset_all) {
         // reset to empty all of the add/edit fields
         this.#add_index_field.value = "";
         this.#add_perid_field.value = "";
@@ -710,6 +710,13 @@ class Pos {
         this.#add_phone_field.value = "";
         this.#add_badgename_field.value = "";
         this.#add_country_field.value = 'USA';
+        // clear the policies
+        for (var pol in this.#policies) {
+            var policyName = this.#policies[pol].policy;
+
+            document.getElementById('p_' + policyName).checked =  this.#policies[pol][policyName].defaultValue == 'Y';
+        }
+
         this.#add_header.innerHTML = `
 <div class="col-sm-12 text-bg-primary mb-2">
         <div class="text-bg-primary m-2">
@@ -810,6 +817,12 @@ class Pos {
             this.#add_index_field.value = "";
             this.#add_perid_field.value = "";
             this.#add_memIndex_field.value = "";
+            // clear the policies
+            for (var pol in this.#policies) {
+                var policyName = this.#policies[pol].policy;
+
+                document.getElementById('p_' + policyName).checked =  this.#policies[pol].policy.defaultValue == 'Y';
+            }
             this.#add_header.innerHTML = `
 <div class="col-sm-12 text-bg-primary mb-2">
         <div class="text-bg-primary m-2">
