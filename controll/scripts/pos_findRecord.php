@@ -107,7 +107,7 @@ WITH unpaids AS (
 SELECT r.id, create_trans as tid
 FROM reg r
 JOIN memList m ON (m.id = r.memId)
-WHERE r.price != (r.paid + r.couponDiscount) AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
+WHERE r.status IN ('plan', 'unpaid') AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
 ), tids AS (
 /* add in unpaids from transactions in attach records in regActions */
 SELECT u.id AS regid, CASE WHEN u.tid > IFNULL(h.tid, -999) THEN u.tid ELSE h.tid END AS tid
@@ -127,10 +127,12 @@ FROM maxtids
 SELECT perid 
 FROM reg r
 JOIN tidlist t ON (t.tid = r.create_trans)
+WHERE r.status IN ('unpaid', 'paid', 'plan')
 UNION SELECT perid 
 FROM reg r
 JOIN regActions h on (h.regid = r.id)
 JOIN tidlist t ON (t.tid = h.tid)
+WHERE r.status IN ('unpaid', 'paid', 'plan')
 ), uniqueperids AS (
 SELECT DISTINCT perid
 FROM perids
@@ -152,7 +154,7 @@ $withClauseUnpaid
     FROM perids p1
     JOIN reg r ON r.perid = p1.perid
     JOIN memLabel m ON (r.memId = m.id)
-    WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
+    WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r.status IN ('unpaid', 'paid', 'plan')
 )
 $fieldListM
 FROM perids p1
@@ -163,7 +165,7 @@ JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
-WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
+WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r.status IN ('unpaid', 'paid', 'plan')
 ORDER BY r1.perid, r1.create_date;
 EOS;
     // now get the policies for all of these perids
@@ -238,13 +240,14 @@ WITH regids AS (
     SELECT r.id AS regid, create_trans as tid
     FROM reg r
     JOIN memLabel m ON (r.memId = m.id)
-    WHERE create_trans = ? AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
+    WHERE create_trans = ? AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r.status IN ('unpaid', 'paid', 'plan')
     /* then add in reg ids for this attach transaction */
     UNION SELECT regid, tid
     FROM regActions h
     JOIN reg r ON (r.id = h.regid)
     JOIN memLabel m ON (r.memId = m.id)
-    WHERE tid = ? AND h.action = 'attach' AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
+    WHERE tid = ? AND h.action = 'attach' AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) 
+        AND r.status IN ('unpaid', 'paid', 'plan')
 )
 EOS;
         // now the with clause has the regid's and the transactions we want
@@ -269,7 +272,8 @@ JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
-WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
+WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r.status IN ('unpaid', 'paid', 'plan') AND
+AND r1.status IN ('unpaid', 'paid', 'plan')
 ORDER BY r1.perid, r1.create_date;
 EOS;
         // now get the policies for all of these perids
@@ -280,7 +284,7 @@ FROM regids r
 JOIN reg r1 ON (r1.id = r.regid)
 JOIN perinfo p ON (p.id = r1.perid)
 JOIN memberPolicies mp ON (p.id = mp.perid AND r1.conid = mp.conid)
-WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover')))
+WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r1.status IN ('unpaid', 'paid', 'plan')
 ORDER BY perid, policy;
 EOS;
 
@@ -316,7 +320,8 @@ $managerWith, regids AS (
     FROM reg r
     JOIN pids p ON (p.id = r.perid)
     JOIN memList m ON (r.memId = m.id)
-    WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r.perid = p.id
+    WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r.perid = p.id 
+        AND r.status IN ('unpaid', 'paid', 'plan')
 ) $fieldListM
 FROM regids rs
 JOIN reg r1 ON (rs.regid = r1.id)
@@ -406,7 +411,8 @@ $nameMatchWith, regids AS (
     FROM reg r
     JOIN pids p ON (p.id = r.perid)
     JOIN memList m ON (r.memId = m.id)
-    WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r.perid = p.id
+    WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r.perid = p.id 
+        AND r.status IN ('unpaid', 'paid', 'plan')
 ) $fieldListM     
 FROM regids rs
 JOIN reg r1 ON (rs.regid = r1.id)

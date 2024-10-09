@@ -100,7 +100,7 @@ $useUSPS = false;
                                 </div>
                                 <div class="col-sm-8">
                                     <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" name="find_btn"
-                                            onclick="pos.ind_record('search');">
+                                            onclick="pos.find_record('search');">
                                         Find Record
                                     </button>
                                 </div>
