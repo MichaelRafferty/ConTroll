@@ -25,6 +25,9 @@ class PosCart {
     #cartPerinfoMap = new map();
     #cartPmt = [];
 
+// Constants
+    #isMembershipTypes = [ 'full', 'virtual', 'oneday' ];
+
 // initialization
     constructor() {
 // lookup all DOM elements
@@ -524,23 +527,15 @@ class PosCart {
 // format all of the memberships for one record in the cart
     #drawCartRow(rownum) {
         var row = this.#cartPerinfo[rownum];
-        var membername = ((row['first_name'] + ' ' + row['middle_name']).trim() + ' ' + row['last_name'] + ' ' + row['suffix']).trim();
+        var membername = row.fullName;
         var mrow;
         var rowlabel;
         var membership_found = false;
-        var mem_is_membership = false;
         var membership_html = '';
-        var rollover_html = '';
-        var upgrade_html = '';
-        var yearahead_html = '';
-        var addon_html = '';
-        var yearahead_eligible = false;
-        var upgrade_eligible = false;
-        var day = null;
         var col1 = '';
         var perid = row['perid'];
         var btncolor = null;
-        // now loop over the memberships, sorting them by groups
+        // now loop over the memberships in the order retrieved
         var pindex = this.#cartPerinfoMap.get(perid);
         var mrows = this.#cartPerinfo[[pindex]].memberships;
         for (var mrownum in mrows) {
@@ -553,7 +548,7 @@ class PosCart {
             if (category == 'yearahead' && mrow.conid == pos.getConid())
                 category = 'standard'; // last years yearahead is this year's standard
             var memType = mrow['memType'];
-            mem_is_membership = false;
+
             // col1 choices
             //  X = delete element from cart
             var allow_delete = mrow['regid'] <= 0;
@@ -589,17 +584,7 @@ class PosCart {
                     'style=" --bs-btn-font-size:75%;">' + btntext + '</button >';
             }
 
-            if ((!pos.nonPrimaryCategoriesIncludes(category)) && mrow.conid == pos.getConid()) { // this is the current year membership
-                if (pos.upgradableTypesIncludes(mrow['memType'])) {
-                    upgrade_eligible = true;
-                    if (mrow['memType'] == 'oneday' || mrow['memType'] == 'one-day') {
-                        day = (mrow['label']).toLowerCase().substring(0, 3);
-                    }
-                }
-                mem_is_membership = mrow['memCategory'] != 'cancel';
-                yearahead_eligible = true;
-                if (mrow['memCategory'] == 'upgrade') {
-                    upgrade_html += `
+            membership_html += `
     <div class="row">
         <div class="col-sm-1 p-0">` + col1 + `</div>
         <div class="col-sm-7 p-0">` + label + `</div>
@@ -607,81 +592,14 @@ class PosCart {
         <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
 `;
-                } else {
-                    membership_html += `
-    <div class="row">
-        <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + label + `</div>
-        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
-        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
-    </div>
-`;
-                }
-            } else {
-                switch (category) {
-                    case 'upgrade':
-                        mem_is_membership = true;
-                        yearahead_eligible = true;
-                        upgrade_eligible = false;
-                        day = null;
-                        upgrade_html += `
-    <div class="row">
-        <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + label + `</div>
-        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
-        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
-    </div>
-    `;
-                        break;
-                    case 'yearahead':
-                        yearahead_html += `
-    <div class="row">
-        <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + label + `</div>
-        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
-        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
-    </div>
-    `;
-                        break;
-                    case 'rollover': // can't get here if current con id
-                        yearahead_eligible = false;
-                        yearahead_html += `
-    <div class="row">
-        <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + label + `</div>
-        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
-        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
-    </div>
-    `;
-                        break;
-                    case 'addon':
-                    case 'add-on':
-                        rowlabel = 'Addon:';
-                        addon_html += `
-    <div class="row">
-        <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + label + `</div>
-        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
-        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
-    </div>
-    `;
-                        break;
-
-                    default:
-                        row_shown = false;
-                }
-            }
-
-            if (row_shown) {
-                this.#totalPrice += Number(mrow['price']);
-                this.#totalPaid += Number(mrow['paid']);
-                if (mrow['couponDiscount'])
-                    this.#totalPaid += Number(mrow['couponDiscount']);
-                if (mem_is_membership)
-                    membership_found = true;
-                if ((Number(mrow['paid']) + Number(mrow['couponDiscount'])) != Number(mrow['price'])) {
-                    this.#unpaidRows++;
-                }
+            this.#totalPrice += Number(mrow['price']);
+            this.#totalPaid += Number(mrow['paid']);
+            if (mrow['couponDiscount'])
+                this.#totalPaid += Number(mrow['couponDiscount']);
+            if (this.#isMembershipTypes.includes(memType))
+                membership_found = true;
+            if (mrow.status != 'paid') {
+                this.#unpaidRows++;
             }
         }
         // first row - member name, remove button
@@ -723,113 +641,10 @@ class PosCart {
     </div>
 `;  // end of second row - badge name
 
-        if (rollover_html != '') {
-            rowhtml += `<div class="row">
-            <div class="col-sm-auto p-0">Rollover:</div>
-</div>
-` + rollover_html;
-        }
-        // reg items:
-        //
-        // membership rows
-
-        if (rollover_html == '' || membership_html != '') {
-            rowhtml += `<div class="row">
-        <div class="col-sm-auto p-0">Memberships:</div>
-</div>
-`;
-        }
 
         if (membership_html != '') {
             rowhtml += membership_html;
         }
-
-        // if no base membership, create a pulldown row for it.
-        // header row already output above before membership html was output
-        if (!membership_found && !this.#freezeCart) {
-            rowhtml += `<div class="row">
-        <div class="col-sm-1 p-0">&nbsp;</div>
-        <div class="col-sm-9 p-0"><select id="cart-madd-` + rownum + `" name="cart-addid"> + "TODO: this.#memberselect"
-            </select>
-        </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-info pt-0 pb-0 ps-1 pe-1" onclick="pos.add_membership_cart(` + rownum + ", 'cart-madd-" + rownum + `')">Add</button>
-        </div>
-    </div>`;
-        }
-
-        // add in remainder of cart:
-        if (upgrade_html != '') {
-            rowhtml += `<div class="row">
-            <div class="col-sm-auto p-0">Upgrade:</div>
-</div>
-` + upgrade_html;
-        } else if (upgrade_eligible && !this.#freezeCart) {
-            rowhtml += `<div class="row">
-            <div class="col-sm-auto p-0">Upgrade:</div>
-</div>
-<div class="row">
-        <div class="col-sm-1 p-0">&nbsp;</div>
-        <div class="col-sm-9 p-0"><select id="cart-mupg-` + rownum + `" name="cart-addid">
-`;
-            rowhtml += `
-            </select>
-        </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.add_membership_cart(` + rownum + ", 'cart-mupg-" + rownum + `')">Add</button></div >
-</div>
-`;
-        }
-        console.log("yearahead select: TODO");
-        /*
-        if (this.#yearahead_select != '') {
-            if (yearahead_html != '') {
-                rowhtml += `<div class="row">
-            <div class="col-sm-auto p-0">Next Year:</div>
-</div>
-` + yearahead_html;
-            } else if (yearahead_eligible && !this.#freezeCart) {
-                rowhtml += `<div class="row">
-            <div class="col-sm-auto p-0">Next Year:</div>
-</div>
-<div class="row">
-        <div class="col-sm-1 p-0">&nbsp;</div>
-        <div class="col-sm-9 p-0"><select id="cart-mya-` + rownum + `" name="cart-addid">
-` + this.#yearahead_select + `
-            </select>
-        </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.add_membership_cart(` +
-         rownum + ", 'cart-mya-" + rownum + `')">Add</button></div >
-</div>
-`;
-            }
-
-        }
-         */
-
-        console.log("addon_select: TODO:");
-/*
-        if (this.#addon_select != '') {
-            if (addon_html != '' || !this.#freezeCart) {
-                rowhtml += `<div class="row">
-            <div class="col-sm-auto p-0">Add Ons:</div>
-</div>
-` + addon_html;
-            }
-            if (!this.#freezeCart) {
-                rowhtml += `
-<div class="row">
-        <div class="col-sm-1 p-0">&nbsp;</div>
-        <div class="col-sm-9 p-0"><select id="cart-maddon-` + rownum + `" name="cart-addid">
-` + this.#addon_select + `
-            </select>
-        </div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.add_membership_cart(` +
-         rownum + ", 'cart-maddon-" + rownum + `')">Add</button></div >
-</div>
-`;
-            // }
-        }
-
- */
 
         if (membership_found)
             this.#membershipRows++
