@@ -278,54 +278,11 @@ class PosCart {
         var cartrow = this.#cartPerinfo[this.#cartPerinfoMap.get(perid)];
 
         // set perinfo values
-        add_index_field.value = cartrow['index'];
-        add_perid_field.value = cartrow['perid'];
-        add_memIndex_field.value = '';
-        add_first_field.value = cartrow['first_name'];
-        add_middle_field.value = cartrow['middle_name'];
-        add_last_field.value = cartrow['last_name'];
-        add_suffix_field.value = cartrow['suffix'];
-        add_legalName_field.value = cartrow['legalName'];
-        add_addr1_field.value = cartrow['address_1'];
-        add_addr2_field.value = cartrow['address_2'];
-        add_city_field.value = cartrow['city'];
-        add_state_field.value = cartrow['state'];
-        add_postal_code_field.value = cartrow['postal_code'];
-        add_country_field.value = cartrow['country'];
-        add_email_field.value = cartrow['email_addr'];
-        add_phone_field.value = cartrow['phone'];
-        add_badgename_field.value = cartrow['badge_name'];
-        add_contact_field.value = cartrow['contact_ok'];
-        add_share_field.value = cartrow['share_reg_ok'];
-
-        // membership items - see if there is a membership item in the member list for this row
-        var mem_index = find_primary_membership(cartrow[perid].memberships);
-
-        if (mem_index == null) {
-            // none found put in select
-            console.log("mt_dataentry/membership_select: todo");
-            //add_mem_select.innerHTML = add_mt_dataentry;
-            //document.getElementById("ae_mem_sel").innerHTML = this.#membership_select;
-        } else {
-            console.log("getAddEditFields: TODO");
-            return;
-            /*
-            add_memIndex_field.value = mem_index;
-            if (Number(this.#cartrow[perid].memberships[mem_index].price) == Number(this.#cart_membership[mem_index]['paid'])) {
-                // already paid, just display the label
-                add_mem_select.innerHTML = this.#cart_membership[mem_index]['label'];
-            } else {
-                add_mem_select.innerHTML = add_mt_dataentry;
-                var mtel = document.getElementById("ae_mem_sel");
-                mtel.innerHTML = this.#membership_select;
-                mtel.value = this.#cart_membership[mem_index]['memId'];
-            }
-             */
-        }
+        pos.editFromCart(cartrow);
     }
 
     // update the cart entry from the add/edit field row
-    updateEntry(edit_index, new_memindex, row, mrow) {
+    updateEntry(edit_index, row) {
         var cart_row = this.#cartPerinfo[edit_index];
 
         cart_row['first_name'] = row['first_name'];
@@ -333,6 +290,7 @@ class PosCart {
         cart_row['last_name'] = row['last_name'];
         cart_row['suffix'] = row['suffix'];
         cart_row['legalName'] = row['legalName'];
+        cart_row['pronouns'] = row['pronouns'];
         cart_row['badge_name'] = row['badge_name'];
         cart_row['address_1'] = row['address_1'];
         cart_row['address_2'] = row['address_2'];
@@ -342,41 +300,11 @@ class PosCart {
         cart_row['country'] = row['country'];
         cart_row['email_addr'] = row['email_addr'];
         cart_row['phone'] = row['phone'];
-        cart_row['share_reg_ok'] = row['share_reg_ok'];
-        cart_row['contact_ok'] = row['contact_ok'];
-        cart_row['share_reg_ok'] = row['share_reg_ok'];
         cart_row['active'] = 'Y';
         cart_row['dirty'] = true;
 
-        if (mrow != null) {
-            console.log("updateentry: TODO");
-            return;
-            /*
-            var cart_mrow = [];
-            if (new_memindex != '') {
-                cart_mrow = this.#cart_membership[new_memindex];
-            } else {
-                var ind = this.#cart_membership.length;
-                this.#cart_membership.push({index: ind, printcount: 0, tid: 0});
-                cart_mrow = this.#cart_membership[ind];
-            }
-            for (var field in mrow) {
-                cart_mrow[field] = mrow[field];
-            }
-            if (!('paid' in cart_mrow)) {
-                cart_mrow['paid'] = 0;
-                cart_mrow['priorPaid'] = 0;
-            }
-            if (!('couponDiscount' in cart_mrow)) {
-                cart_mrow['couponDiscount'] = 0;
-                cart_mrow['coupon'] = null;
-            }
-            if (!('tid' in cart_mrow)) {
-                cart_mrow['tid'] = '';
-            }
-
-             */
-        }
+        // policies
+        console.log("TODO: Policies");
     }
 
     // check to see if the cart is not saved, and confirm leaving without saving it
@@ -824,18 +752,6 @@ class PosCart {
         <div class="col-sm-1 p-0">&nbsp;</div>
         <div class="col-sm-9 p-0"><select id="cart-mupg-` + rownum + `" name="cart-addid">
 `;
-            // allow for mismatches to show the entire select, if matched, just use that one
-            console.log("DrawCartRow: upgrade select: TODO");
-            /*
-            if (day !== null && this.#upgrade_select[day] !== undefined) {
-                rowhtml += this.#upgrade_select[day];
-            } else {
-                for (var upgrow in this.#upgrade_select) {
-                    rowhtml += this.#upgrade_select[upgrow];
-                }
-            }
-
-             */
             rowhtml += `
             </select>
         </div>

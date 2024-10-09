@@ -49,16 +49,28 @@ $useUSPS = false;
             <div id="pos-tabs">
                  <ul class="nav nav-pills mb-2" id="tab-ul" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="find-tab" data-bs-toggle="pill" data-bs-target="#find-pane" type="button" role="tab" aria-controls="nav-find" aria-selected="true">Find</button>
+                        <button class="nav-link active" id="find-tab" data-bs-toggle="pill" data-bs-target="#find-pane" type="button"
+                                role="tab" aria-controls="nav-find" aria-selected="true">
+                            Find
+                        </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="add-tab" data-bs-toggle="pill" data-bs-target="#add-pane" type="button" role="tab" aria-controls="nav-add" aria-selected="false">Add/Edit</button>
+                        <button class="nav-link" id="add-tab" data-bs-toggle="pill" data-bs-target="#add-pane" type="button"
+                                role="tab" aria-controls="nav-add" aria-selected="false">
+                            Add/Edit
+                        </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="review-tab" data-bs-toggle="pill" data-bs-target="#review-pane" type="button" role="tab" aria-controls="nav-review" aria-selected="false" disabled>Review Data</button>
+                        <button class="nav-link" id="review-tab" data-bs-toggle="pill" data-bs-target="#review-pane" type="button"
+                                role="tab" aria-controls="nav-review" aria-selected="false" disabled>
+                            Review Data
+                        </button>
                     </li>
                      <li class="nav-item" role="presentation"\>
-                        <button class="nav-link" id="pay-tab" data-bs-toggle="pill" data-bs-target="#pay-pane" type="button" role="tab" aria-controls="nav-pay" aria-selected="false" disabled>Payment</button>
+                        <button class="nav-link" id="pay-tab" data-bs-toggle="pill" data-bs-target="#pay-pane" type="button"
+                                role="tab" aria-controls="nav-pay" aria-selected="false" disabled>
+                            Payment
+                        </button>
                     </li>
                 </ul>
                 <div class="tab-content" id="find-content">          
@@ -126,8 +138,12 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
                             </div>
                             <div class="row">
                                 <div class="col-sm-12 mt-3">
-                                    <button type="button" class="btn btn-primary btn-sm" id="addnew-btn" name="find_btn" onclick="add_new();">Add to Cart</button>
-                                    <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="clear_add();">Clear Add Person Form</button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="addnew-btn" name="find_btn" onclick="pos.add_new();">Add to
+                                        Cart
+                                    </button>
+                                    <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="pos.clear_add();">
+                                        Clear Add Person Form
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -146,11 +162,22 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
             <div id="cart"></div>
             <div class="row">
                 <div class="col-sm-12 mt-3">
-                    <button type="button" class="btn btn-primary btn-sm" id="cart_no_changes_btn" onclick="review_nochanges();" hidden>No Changes</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="review_btn" onclick="pos.start_review();" hidden>Review Data</button>
-                    <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="pos.start_over(1);" hidden>Start Over</button>
-                    <button type="button" class="btn btn-warning btn-sm" id="void_btn" onclick="pos.void_trans();" hidden>Void</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="pos.start_over(1);" hidden>Next Customer</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="cart_no_changes_btn"
+                            onclick="pos.review_nochanges();" hidden>No Changes
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm" id="review_btn"
+                            onclick="pos.start_review();" hidden>
+                        Review Data
+                    </button>
+                    <button type="button" class="btn btn-warning btn-sm" id="startover_btn"
+                            onclick="pos.start_over(1);" hidden>Start Over
+                    </button>
+                    <button type="button" class="btn btn-warning btn-sm" id="void_btn"
+                            onclick="pos.void_trans();" hidden>Void
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm" id="next_btn"
+                            onclick="pos.start_over(1);" hidden>Next Customer
+                    </button>
                 </div>
             </div>
         </div>       
@@ -167,7 +194,10 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
                 <div class='modal-body' id="NotesBody">
                 </div>
                 <div class='modal-footer'>
-                    <button type='button' id="close_note_button" class='btn btn-primary' onclick="save_note();">Close</button>
+                    <button type='button' id="close_note_button" class='btn btn-primary'
+                            onclick="pos.save_note();">
+                        Close
+                    </button>
                 </div>
             </div>
         </div>
@@ -184,8 +214,14 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
                 <div class='modal-body' id='ChangeBody'>
                 </div>
                 <div class='modal-footer'>
-                    <button type='button' id='discard_change_button' class='btn btn-secondary' onclick='changeModal.hide();'>Keep Current Membership</button>
-                    <button type='button' id='close_change_button' class='btn btn-primary' onclick='save_membership_change();'>Change Membership</button>
+                    <button type='button' id='discard_change_button' class='btn btn-secondary'
+                            onclick='pos.changeModal.hide();'>
+                        Keep Current Membership
+                    </button>
+                    <button type='button' id='close_change_button' class='btn btn-primary'
+                            onclick='save_membership_change();'>
+                        Change Membership
+                    </button>
                 </div>
             </div>
         </div>
@@ -202,8 +238,12 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
                 <div class='modal-body' id='CashChangeBody'>
                 </div>
                 <div class='modal-footer'>
-                    <button type='button' id='discard_cash_button' class='btn btn-secondary' onclick='cashChangeModal.hide();'>Cancel Cash Payment</button>
-                    <button type='button' id='close_cash_button' class='btn btn-primary' onclick='pay("nomodal");'>Change given to Customer</button>
+                    <button type='button' id='discard_cash_button' class='btn btn-secondary' onclick='pos.cashChangeModal.hide();'>
+                        Cancel Cash Payment
+                    </button>
+                    <button type='button' id='close_cash_button' class='btn btn-primary' onclick='pos.pay("nomodal");'>
+                        Change given to Customer
+                    </button>
                 </div>
             </div>
         </div>

@@ -18,12 +18,12 @@ class Pos {
     #review_editable_fields = [
         'first_name', 'middle_name', 'last_name', 'suffix',
         'legalName',
+        'pronouns',
         'badge_name',
-        'email_addr', 'pone',
+        'email_addr',
         'address_1',
         'address_2',
         'city', 'state', 'postal_code',
-        'share_reg_ok', 'contact_ok'
     ];
 
     // pay items
@@ -113,13 +113,15 @@ class Pos {
     #add_last_field = null;
     #add_suffix_field = null;
     #add_legalName_field = null;
+    #add_pronouns_field = null;
     #add_addr1_field = null;
     #add_addr2_field = null;
     #add_city_field = null;
     #add_state_field = null;
     #add_postal_code_field = null;
     #add_country_field = null;
-    #add_email_field = null;
+    #add_email1_field = null;
+    #add_email2_field = null;
     #add_phone_field = null;
     #add_badgename_field = null;
     #add_header = null;
@@ -162,6 +164,7 @@ class Pos {
         this.#add_middle_field = document.getElementById("mname");
         this.#add_last_field = document.getElementById("lname");
         this.#add_legalName_field = document.getElementById("legalname");
+        this.#add_pronouns_field = document.getElementById("pronouns");
         this.#add_suffix_field = document.getElementById("suffix");
         this.#add_addr1_field = document.getElementById("addr");
         this.#add_addr2_field = document.getElementById("addr2");
@@ -169,7 +172,8 @@ class Pos {
         this.#add_state_field = document.getElementById("state");
         this.#add_postal_code_field = document.getElementById("zip");
         this.#add_country_field = document.getElementById("country");
-        this.#add_email_field = document.getElementById("email1");
+        this.#add_email1_field = document.getElementById("email1");
+        this.#add_email2_field = document.getElementById("email2");
         this.#add_phone_field = document.getElementById("phone");
         this.#add_badgename_field = document.getElementById("badgename");
         this.#add_header = document.getElementById("add_header");
@@ -188,11 +192,10 @@ class Pos {
         this.#pay_div = document.getElementById('pay-div');
 
         // add events
-        var _this = this;
-        this.#find_tab.addEventListener('shown.bs.tab', _this.find_shown)
-        this.#add_tab.addEventListener('shown.bs.tab', _this.add_shown)
-        this.#review_tab.addEventListener('shown.bs.tab', _this.review_shown)
-        this.#pay_tab.addEventListener('shown.bs.tab', _this.pay_shown)
+        this.#find_tab.addEventListener('shown.bs.tab', find_shown)
+        this.#add_tab.addEventListener('shown.bs.tab', add_shown)
+        this.#review_tab.addEventListener('shown.bs.tab', review_shown)
+        this.#pay_tab.addEventListener('shown.bs.tab', pay_shown)
 
         // notes items
         this.#notes = new bootstrap.Modal(document.getElementById('Notes'), {focus: true, backdrop: 'static'});
@@ -251,6 +254,35 @@ class Pos {
 
     upgradableTypesIncludes(type) {
         return this.#upgradable_types.includes(type);
+    }
+
+    editFromCart(cartrow) {
+        this.#add_index_field.value = cartrow.index;
+        this.#add_perid_field.value = cartrow.perid;
+        this.#add_memIndex_field.value = '';
+        this.#add_first_field.value = cartrow.first_name;
+        this.#add_middle_field.value = cartrow.middle_name;
+        this.#add_last_field.value = cartrow.last_name;
+        this.#add_suffix_field.value = cartrow.suffix;
+        this.#add_legalName_field.value = cartrow.legalName;
+        this.#add_pronouns_field.value = cartrow.pronouns;
+        this.#add_addr1_field.value = cartrow.address_1;
+        this.#add_addr2_field.value = cartrow.address_2;
+        this.#add_city_field.value = cartrow.city;
+        this.#add_state_field.value = cartrow.state;
+        this.#add_postal_code_field.value = cartrow.postal_code;
+        this.#add_country_field.value = cartrow.country;
+        this.#add_email1_field.value = cartrow.email_addr;
+        this.#add_email2_field.value = cartrow.email_addr;
+        this.#add_phone_field.value = cartrow.phone;
+        this.#add_badgename_field.value = cartrow.badge_name;
+        // policies
+        var policies = cartrow.policies;
+        for (var row in policies) {
+            var policyName = policies[row].policy;
+            var policyResp = policies[row].response;
+            document.getElementById('p_' + policyName).checked = policyResp == 'Y';
+        }
     }
 
     // loop over people/memberships calling a function on each membership:
@@ -609,7 +641,7 @@ class Pos {
             return false;
 
         // show the add/edit screen if it's hidden
-        bootstrap.Tab.getOrCreateInstance(add_tab).show();
+        bootstrap.Tab.getOrCreateInstance(this.#add_tab).show();
 
         return confirm("Discard current data in add/edit screen?");
     }
@@ -647,14 +679,14 @@ class Pos {
             Edit Person and Membership
         </div>
     </div>`;
-        addnew_button.innerHTML = "Update to Cart";
-        clearadd_button.innerHTML = "Discard Update";
-        add_mode = false;
+        this.#addnew_button.innerHTML = "Update to Cart";
+        this.#clearadd_button.innerHTML = "Discard Update";
+        this.#add_mode = false;
         this.#add_edit_dirty_check = true;
         this.#add_edit_initial_state = $("#add-edit-form").serialize();
         this.#add_edit_current_state = "";
-        this.#add_edit_prior_tab = current_tab;
-        bootstrap.Tab.getOrCreateInstance(add_tab).show();
+        this.#add_edit_prior_tab = this.#current_tab;
+        bootstrap.Tab.getOrCreateInstance(this.#add_tab).show();
     }
 
     // Clear the add/edit screen back to completely empty (startup)
@@ -666,6 +698,7 @@ class Pos {
         this.#add_middle_field.value = "";
         this.#add_last_field.value = "";
         this.#add_legalName_field.value = "";
+        this.#add_pronouns_field.value = "";
         this.#add_suffix_field.value = "";
         this.#add_addr1_field.value = "";
         this.#add_addr2_field.value = "";
@@ -673,7 +706,8 @@ class Pos {
         this.#add_state_field.value = "";
         this.#add_postal_code_field.value = "";
         this.#add_country_field.value = "";
-        this.#add_email_field.value = "";
+        this.#add_email1_field.value = "";
+        this.#add_email2_field.value = "";
         this.#add_phone_field.value = "";
         this.#add_badgename_field.value = "";
         this.#add_country_field.value = 'USA';
@@ -689,7 +723,8 @@ class Pos {
         this.#add_city_field.style.backgroundColor = '';
         this.#add_state_field.style.backgroundColor = '';
         this.#add_postal_code_field.style.backgroundColor = '';
-        this.#add_email_field.style.backgroundColor = '';
+        this.#add_email1_field.style.backgroundColor = '';
+        this.#add_email2_field.style.backgroundColor = '';
         if (this.#add_results_table != null) {
             this.#add_results_table.destroy();
             this.#add_results_table = null;
@@ -701,7 +736,7 @@ class Pos {
         this.#add_edit_current_state = "";
         if (reset_all > 0)
             clear_message();
-        if (this.#clearadd_button.innerHTML != 'Clear Add Person Form') {
+        if (this.#clearadd_button.innerHTML.trim() != 'Clear Add Person Form') {
             this.#addnew_button.innerHTML = "Add to Cart";
             this.#clearadd_button.innerHTML = 'Clear Add Person Form';
             // change back to the prior tab
@@ -720,13 +755,14 @@ class Pos {
         var new_last = this.#add_last_field.value.trim();
         var new_suffix = this.#add_suffix_field.value.trim();
         var new_legalName = this.#add_legalName_field.value.trim();
+        var new_pronouns = this.#add_legalName_field.value.trim();
         var new_addr1 = this.#add_addr1_field.value.trim();
         var new_addr2 = this.#add_addr2_field.value.trim();
         var new_city = this.#add_city_field.value.trim();
         var new_state = this.#add_state_field.value.trim();
         var new_postal_code = this.#add_postal_code_field.value.trim();
         var new_country = this.#add_country_field.value.trim();
-        var new_email = this.#add_email_field.value.trim();
+        var new_email = this.#add_email1_field.value.trim();
         var new_phone = this.#add_phone_field.value.trim();
         var new_badgename = this.#add_badgename_field.value.trim();
 
@@ -737,6 +773,7 @@ class Pos {
             row['last_name'] = new_last;
             row['suffix'] = new_suffix;
             row['legalName'] = new_legalName;
+            row['pronouns'] = new_pronouns;
             row['badge_name'] = new_badgename;
             row['address_1'] = new_addr1;
             row['address_2'] = new_addr2;
@@ -750,74 +787,56 @@ class Pos {
             row['dirty'] = true;
 
             var mrow = null;
-            if (new_badgememId != null) {
-                var mrow = {};
-                if (new_memindex == '') {
-                    mrow['printcount'] = 0;
-                    mrow['perid'] = edit_perid;
-                    mrow['pindex'] = edit_index;
-                }
-                var mi_row = find_memLabel(new_badgememId);
-                mrow['price'] = mi_row['price'];
-                mrow['memId'] = mi_row['id'];
-                mrow['memCategory'] = mi_row['memCategory'];
-                mrow['memType'] = mi_row['memType'];
-                mrow['memAge'] = mi_row['memAge'];
-                mrow['shortname'] = mi_row['shortname'];
-                mrow['label'] = mi_row['label'];
-            }
-            cart.updateEntry(edit_index, new_memindex, row, mrow);
+            cart.updateEntry(edit_index, row);
 
             // clear the fields that should not be preserved between adds.  Allowing a second person to be added using most of the same data as default.
-            add_first_field.value = "";
-            add_middle_field.value = "";
-            add_suffix_field.value = "";
-            add_legalName_field.value = "";
-            add_email_field.value = "";
-            add_phone_field.value = "";
-            add_badgename_field.value = "";
-            add_index_field.value = "";
-            add_perid_field.value = "";
-            add_memIndex_field.value = "";
-            add_header.innerHTML = `
+            this.#add_first_field.value = "";
+            this.#add_middle_field.value = "";
+            this.#add_suffix_field.value = "";
+            this.#add_legalName_field.value = "";
+            this.#add_pronouns_field.value = "";
+            this.#add_email1_field.value = "";
+            this.#add_email2_field.value = "";
+            this.#add_phone_field.value = "";
+            this.#add_badgename_field.value = "";
+            this.#add_index_field.value = "";
+            this.#add_perid_field.value = "";
+            this.#add_memIndex_field.value = "";
+            this.#add_header.innerHTML = `
 <div class="col-sm-12 text-bg-primary mb-2">
         <div class="text-bg-primary m-2">
             Add New Person and Membership
         </div>
     </div>`;
-            add_first_field.style.backgroundColor = '';
-            add_last_field.style.backgroundColor = '';
-            add_addr1_field.style.backgroundColor = '';
-            add_city_field.style.backgroundColor = '';
-            add_state_field.style.backgroundColor = '';
-            add_postal_code_field.style.backgroundColor = '';
-            add_email_field.style.backgroundColor = '';
-            // TODO: add_mem_select.innerHTML = add_mt_dataentry;
-            // TODO: add_mem_select.style.backgroundColor = '';
-            //TODO add_mem_sel = document.getElementById("ae_mem_sel");
-            add_mem_sel.innerHTML = membership_select;
-            add_mem_sel.value = new_badgememId;
-            if (add_results_table != null) {
-                add_results_table.destroy();
-                add_results_table = null;
-                add_results_div.innerHTML = "";
+            this.#add_first_field.style.backgroundColor = '';
+            this.#add_last_field.style.backgroundColor = '';
+            this.#add_addr1_field.style.backgroundColor = '';
+            this.#add_city_field.style.backgroundColor = '';
+            this.#add_state_field.style.backgroundColor = '';
+            this.#add_postal_code_field.style.backgroundColor = '';
+            this.#add_email1_field.style.backgroundColor = '';
+            this.#add_email2_field.style.backgroundColor = '';
+            if (this.#add_results_table != null) {
+                this.#add_results_table.destroy();
+                this.#add_results_table = null;
+                this.#add_results_div.innerHTML = "";
             }
-            addnew_button.innerHTML = "Add to Cart";
-            clearadd_button.innerHTML = 'Clear Add Person Form';
+            this.#addnew_button.innerHTML = "Add to Cart";
+            this.#clearadd_button.innerHTML = 'Clear Add Person Form';
             this.#add_edit_dirty_check = true;
             this.#add_edit_initial_state = $("#add-edit-form").serialize();
             this.#add_edit_current_state = "";
             cart.drawCart();
             bootstrap.Tab.getOrCreateInstance(this.#add_edit_prior_tab).show();
-            this.#add_edit_prior_tab = add_tab;
+            this.#add_edit_prior_tab = this.#add_tab;
             return;
         }
 
         // we've searched this first/last name already and are displaying the table, so just go add the manually entered person
-        if (add_results_table != null) {
-            add_results_table.destroy();
-            add_results_table = null;
-            add_new_to_cart();
+        if (this.#add_results_table != null) {
+            this.#add_results_table.destroy();
+            this.#add_results_table = null;
+            pos.add_new_to_cart();
             return;
         }
 
@@ -866,13 +885,13 @@ class Pos {
     add_found(data) {
         var rowindex;
 // see if they already exist (if add to cart)
-        add_perinfo = data['perinfo'];
+        this.#add_perinfo = data['perinfo'];
         // add_membership = data['membership'];
 
-        if (add_perinfo.length > 0) {
+        if (this.#add_perinfo.length > 0) {
             // find primary membership for each add_perinfo record
-            for (rowindex in add_perinfo) {
-                var row = add_perinfo[rowindex];
+            for (rowindex in this.#add_perinfo) {
+                var row = this.#add_perinfo[rowindex];
                 var primmem = this.find_primary_membership(add_membership[row.perid]);
                 if (primmem != null) {
                     row['reg_label'] = add_membership[primmem]['label'];
@@ -894,7 +913,7 @@ class Pos {
             var _this = this;
             this.#add_results_table = new Tabulator('#add_results', {
                 maxHeight: "600px",
-                data: add_perinfo,
+                data: this.#add_perinfo,
                 layout: "fitColumns",
                 initialSort: [
                     {column: "fullname", dir: "asc"},
@@ -918,7 +937,7 @@ class Pos {
                     {field: "open_notes", visible: false,},
                 ],
             });
-            addnew_button.innerHTML = "Add New";
+            this.#addnew_button.innerHTML = "Add New";
             this.#add_edit_initial_state = $("#add-edit-form").serialize();
             $("button[name='find_btn']").attr("disabled", false);
             return;
@@ -936,13 +955,14 @@ class Pos {
         var new_last = add_last_field.value.trim();
         var new_suffix = add_suffix_field.value.trim();
         var new_legalName = add_legalName_field.value.trim();
+        var new_pronouns = add_pronouns_field.value.trim();
         var new_addr1 = add_addr1_field.value.trim();
         var new_addr2 = add_addr2_field.value.trim();
         var new_city = add_city_field.value.trim();
         var new_state = add_state_field.value.trim();
         var new_postal_code = add_postal_code_field.value.trim();
         var new_country = add_country_field.value.trim();
-        var new_email = add_email_field.value.trim();
+        var new_email = add_email1_field.value.trim();
         var new_phone = add_phone_field.value.trim();
         var new_badgename = add_badgename_field.value.trim();
 
@@ -997,9 +1017,11 @@ class Pos {
 
         if (new_email == '') {
             missing_fields++;
-            this.#add_email_field.style.backgroundColor = 'var(--bs-warning)';
+            this.#add_email1_field.style.backgroundColor = 'var(--bs-warning)';
+            this.#add_email2_field.style.backgroundColor = 'var(--bs-warning)';
         } else {
-            this.#add_email_field.style.backgroundColor = '';
+            this.#add_email1_field.style.backgroundColor = '';
+            this.#add_email2_field.style.backgroundColor = '';
         }
 
         if (missing_fields > 0) {
@@ -1020,36 +1042,19 @@ class Pos {
 
         var row = {
             perid: new_perid, first_name: new_first, middle_name: new_middle, last_name: new_last, suffix: new_suffix,
-            legalName: new_legalName,
-            badge_name: new_badgename,
+            legalName: new_legalName, pronouns: new_pronouns, badge_name: new_badgename,
             address_1: new_addr1, address_2: new_addr2, city: new_city, state: new_state, postal_code: new_postal_code,
-            country: new_country, email_addr: new_email, phone: new_phone,
-            share_reg_ok: 'Y', active: 'Y', banned: 'N',
+            country: new_country, email_addr: new_email, phone: new_phone, active: 'Y', banned: 'N',
         };
-        var mi_row = find_memLabel(new_badgememId);
-        var mrow = {
-            perid: new_perid,
-            conid: mi_row.conid,
-            price: mi_row['price'],
-            paid: 0,
-            tid: '',
-            index: cart.getCartLength(),
-            printcount: 0,
-            memCategory: mi_row['memCategory'],
-            memType: mi_row['memType'],
-            memAge: mi_row['memAge'],
-            shortname: mi_row['shortname'],
-            memId: new_badgememId,
-            label: mi_row['label'],
-        }
         new_perid--;
 
         this.#add_first_field.value = "";
         this.#add_middle_field.value = "";
-        this.#add_email_field.value = "";
+        this.#add_email1_field.value = "";
+        this.#add_email2_field.value = "";
         this.#add_phone_field.value = "";
         this.#add_badgename_field.value = "";
-        cart.add(row, [mrow]);
+        cart.add(row);
 
         if (this.#add_results_table != null) {
             this.#add_results_table.destroy();
@@ -1294,8 +1299,8 @@ class Pos {
             this.#notesType = 'PR';
         }
         if (where == 'add') {
-            note = add_perinfo[index]['open_notes']
-            fullname = add_perinfo[index]['fullname'];
+            note = this.#add_perinfo[index]['open_notes']
+            fullname = this.#add_perinfo[index]['fullname'];
             this.#notesType = 'add';
         }
         if (this.#notesType == null)
@@ -1348,7 +1353,7 @@ class Pos {
     // save_note
     //  save and update the note based on type
     save_note() {
-        if (document.getElementById('close_note_button').innerHTML == "Save and Close") {
+        if (document.getElementById('close_note_button').innerHTML.trim() == "Save and Close") {
             if (notesType == 'RC') {
                 cart.setRegNote(notesIndex, document.getElementById("new_reg_note").value);
             }
@@ -1502,7 +1507,6 @@ class Pos {
                 }
                 return 0;
             });
-            console.log("found " + trantbl.length + " unpaid transactions");
             if (trantbl.length == 1) { // only 1 row, add it to the cart and go to pay tab
                 tid = trantbl[0];
                 for (row in this.#result_perinfo) {
@@ -1583,7 +1587,6 @@ class Pos {
             attach_count += Number(mem.attachcount);
             return 1;
         });
-        console.log("memCount: " + memCount + ", print_count: " + print_count + ", attach_count: " + attach_count);
 
         // not unpaid search... mark the type of the primary membership in the person row for the table
         // find primary membership for each result_perinfo record
@@ -1630,6 +1633,7 @@ class Pos {
                     {field: "middle_name", visible: false,},
                     {field: "suffix", visible: false,},
                     {field: "legalName", visible: false,},
+                    {field: "pronouns", visible: false,},
                     {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
                     {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                     {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
@@ -1689,7 +1693,7 @@ class Pos {
         this.#id_div.innerHTML = '';
         this.#pattern_field.value = '';
 
-        bootstrap.Tab.getOrCreateInstance(add_tab).show();
+        bootstrap.Tab.getOrCreateInstance(this.#add_tab).show();
     }
 
     // switch to the review tab when the review button is clicked
@@ -1699,14 +1703,14 @@ class Pos {
         cart.hideNoChanges();
 
         // set tab to review-tab
-        bootstrap.Tab.getOrCreateInstance(review_tab).show();
-        review_tab.disabled = false;
+        bootstrap.Tab.getOrCreateInstance(this.#review_tab).show();
+       this.#review_tab.disabled = false;
     }
 
     // create the review data screen from the cart
     review_update() {
         cart.updateReviewData();
-        review_shown();
+        reviewShown();
         if (review_missing_items > 0) {
             setTimeout(review_nochanges, 100);
         } else {
@@ -1775,7 +1779,7 @@ class Pos {
         pay_tid = data['master_tid'];
         // update cart elements
         var unpaid_rows = cart.updateFromDB(data);
-        bootstrap.Tab.getOrCreateInstance(pay_tab).show();
+        bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
     }
 
     // setPayType: shows/hides the appropriate fields for that payment type
@@ -1984,7 +1988,7 @@ class Pos {
     //  payment entered into the database correctly, update the payment cart and the memberships with the updated paid amounts
     updatedPayment(data) {
         cart.updatePmt(data);
-        pay_shown();
+        payShown();
     }
 
     // Create a receipt and email it
@@ -2030,14 +2034,14 @@ class Pos {
     }
 
     // tab shown events - state mapping for which tab is shown
-    find_shown() {
+    findShown() {
         cart.clearInReview();
         cart.unfreeze();
         this.#current_tab = this.#find_tab;
         cart.drawCart();
     }
 
-    add_shown() {
+    addShown() {
         cart.clearInReview();
         cart.unfreeze();
         this.#current_tab = this.#add_tab;
@@ -2045,10 +2049,10 @@ class Pos {
         cart.drawCart();
     }
 
-    review_shown() {
+    reviewShown() {
         // draw review section
         this.#current_tab = this.#review_tab;
-        thid.#review_div.innerHTML = cart.buildReviewData();
+        this.#review_div.innerHTML = cart.buildReviewData();
         cart.setInReview();
         cart.unfreeze();
         cart.setCountrySelect();
@@ -2090,7 +2094,7 @@ class Pos {
             coupon = null;
             coupon = new Coupon();
             coupon_discount = Number(0).toFixed(2);
-            pay_shown();
+            payShown();
             return;
         }
         if (cmd == 'a') {
@@ -2106,10 +2110,10 @@ class Pos {
         return;
     }
 
-    pay_shown() {
+    payShown() {
         cart.clearInReview();
         cart.freeze();
-        current_tab = pay_tab;
+        this.#current_tab = this.#pay_tab;
         cart.drawCart();
 
         if (pay_prior_discount === null) {

@@ -17,3 +17,17 @@ window.onload = function initpage() {
 function rm_perid_filter(cur, idx, arr) {
     return cur['perid'] == find_perid;
 }
+
+// bootstrap listeners
+function find_shown() {
+    pos.findShown();
+}
+function add_shown() {
+    pos.addShown();
+}
+function review_shown() {
+    pos.reviewShown();
+}
+function pay_shown() {
+    pos.payShown();
+}
