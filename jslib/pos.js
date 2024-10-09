@@ -180,7 +180,6 @@ class Pos {
         this.#addnew_button = document.getElementById("addnew-btn");
         this.#clearadd_button = document.getElementById("clearadd-btn");
         this.#add_results_div = document.getElementById("add_results");
-        // TODO this.#add_mem_select = document.getElementById("ae_mem_select");
         this.#add_edit_initial_state = $("#add-edit-form").serialize();
         window.addEventListener("beforeunload", this.check_all_unsaved);
 
@@ -238,6 +237,10 @@ class Pos {
     // set/get private field functions
     setReviewTabDisable(state) {
         this.#review_tab.disabled = state;
+    }
+
+    setFindUnpaidHidden(state) {
+        this.#find_unpaid_button.hidden = state;
     }
 
     getConid() {

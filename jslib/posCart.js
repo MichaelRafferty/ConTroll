@@ -239,7 +239,6 @@ class PosCart {
 // TODO: verify how to tell if it's allowed to be shown as enabled
     startOver() {
         // empty cart
-        // TODO: this.#cart_membership = [];
         this.#cartPerinfo = [];
         this.#cartPmt = [];
         this.#freezeCart = false;
@@ -252,9 +251,7 @@ class PosCart {
 
     // add search result_perinfo record to the cart
     add(p) {
-        console.log('Add: TODO');
-
-        var pindex = this.#cartPerinfo.length;
+           var pindex = this.#cartPerinfo.length;
         this.#cartPerinfo.push(make_copy(p));
         this.#cartPerinfo[pindex]['index'] = pindex;
         this.#cartPerinfoMap.set(this.#cartPerinfo[pindex]['perid'], pindex);
@@ -748,7 +745,7 @@ class PosCart {
             this.#reviewButton.hidden = true;
             this.hideStartOver();
         }
-        // todo: find_unpaid_button.hidden = num_rows > 0;
+        pos.setFindUnpaidHidden(num_rows > 0);
     }
 
     // create the HTML of the cart into the review data block
