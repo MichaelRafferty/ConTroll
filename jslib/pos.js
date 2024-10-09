@@ -58,6 +58,7 @@ class Pos {
 
     // notes items
     #notes = null;
+    #notesPerid = null;
     #notesIndex = null;
     #notesType = null;
     #notesPriorValue = null;
@@ -713,8 +714,7 @@ class Pos {
         // clear the policies
         for (var pol in this.#policies) {
             var policyName = this.#policies[pol].policy;
-
-            document.getElementById('p_' + policyName).checked =  this.#policies[pol][policyName].defaultValue == 'Y';
+                        document.getElementById('p_' + policyName).checked =  this.#policies[pol].defaultValue == 'Y';
         }
 
         this.#add_header.innerHTML = `
@@ -1127,7 +1127,7 @@ class Pos {
         html += `</div>
         <div class="col-sm-2">`;
         if (data['open_notes'] != null && data['open_notes'].length > 0) {
-            html += '<button type="button" class="btn btn-sm btn-info p-0" onclick="pos.show_perinfo_notes(' + data['index'] + ', \'result\')">View' +
+            html += '<button type="button" class="btn btn-sm btn-info p-0" onclick="pos.showPerinfoNotes(' + data['index'] + ', \'result\')">View' +
                 ' Notes</button>';
         }
         html += `</div>
@@ -1251,7 +1251,7 @@ class Pos {
         var open_notes = cell.getRow().getData().open_notes;
         var html = "";
         if (open_notes != null && open_notes.length > 0 && !this.#Manager) {
-            html += '<button type="button" class="btn btn-sm btn-info p-0" style="--bs-btn-font-size: 75%;"  onclick="pos.show_perinfo_notes(' + index + ', \'' + formatterParams['t'] + '\')">O</button>';
+            html += '<button type="button" class="btn btn-sm btn-info p-0" style="--bs-btn-font-size: 75%;"  onclick="pos.showPerinfoNotes(' + index + ', \'' + formatterParams['t'] + '\')">O</button>';
         }
         if (this.#Manager) {
             var btnclass = "btn-secondary";
@@ -1265,7 +1265,7 @@ class Pos {
     }
 
     // display the note popup with the requested notes
-    show_perinfo_notes(index, where) {
+    showPerinfoNotes(index, where) {
         var note = null;
         var fullname = null;
         this.#notesType = null;
@@ -1337,7 +1337,7 @@ class Pos {
         document.getElementById('NotesTitle').innerHTML = "Editing Notes for " + fullname;
         document.getElementById('NotesBody').innerHTML =
             '<textarea name="perinfoNote" class="form-control" id="perinfoNote" cols=60 wrap="soft" style="height:400px;">' +
-            notesPriorValue +
+            this.#notesPriorValue +
             "</textarea>";
         var notes_btn = document.getElementById('close_note_button');
         notes_btn.innerHTML = "Save and Close";
@@ -1345,22 +1345,23 @@ class Pos {
     }
 
     // show the registration element note, anyone can add a new note, so it needs a save and close button
-    show_reg_note(index, count) {
+    showRegNote(perid, index, count) {
         var bodyHTML = '';
-        var note = cart.getRegNote(index);
-        var fullname = cart.getRegFullName(index);
-        var label = cart.getRegLabel(index);
-        var newregnote = cart.getNewRegNote(index);
+        var note = cart.getRegNote(perid, index);
+        var fullname = cart.getRegFullName(perid);
+        var label = cart.getRegLabel(perid, index);
+        var newregnote = cart.getNewRegNote(perid, index);
 
-        notesType = 'RC';
-        notesIndex = index;
+        this.#notesType = 'RC';
+        this.#notesIndex = index;
+        this.#notesPerid = perid;
 
         if (count > 0) {
             bodyHTML = note.replace(/\n/g, '<br/>');
         }
         bodyHTML += '<br/>&nbsp;<br/>Enter/Update new note:<br/><input type="text" name="new_reg_note" id="new_reg_note" maxLength=64 size=60>'
 
-        notes.show();
+        this.#notes.show();
         document.getElementById('NotesTitle').innerHTML = "Registration Notes for " + fullname + '<br/>Membership: ' + label;
         document.getElementById('NotesBody').innerHTML = bodyHTML;
         if (newregnote !== undefined) {
@@ -1371,25 +1372,25 @@ class Pos {
         notes_btn.disabled = false;
     }
 
-    // save_note
+    // saveNote
     //  save and update the note based on type
-    save_note() {
+    saveNote() {
         if (document.getElementById('close_note_button').innerHTML.trim() == "Save and Close") {
-            if (notesType == 'RC') {
-                cart.setRegNote(notesIndex, document.getElementById("new_reg_note").value);
+            if (this.#notesType == 'RC') {
+                cart.setRegNote(this.#notesPerid, this.#notesIndex, document.getElementById("new_reg_note").value);
             }
-            if (notesType == 'PC' && this.#Manager) {
-                cart.setPersonNote(notesIndex, document.getElementById("perinfoNote").value);
+            if (this.#notesType == 'PC' && this.#Manager) {
+                cart.setPersonNote(this.#notesIndex, document.getElementById("perinfoNote").value);
             }
-            if (notesType == 'PR' && this.#Manager) {
+            if (this.#notesType == 'PR' && this.#Manager) {
                 var new_note = document.getElementById("perinfoNote").value;
-                if (new_note != notesPriorValue) {
-                    this.#result_perinfo[notesIndex]['open_notes'] = new_note;
+                if (new_note != this.#notesPriorValue) {
+                    this.#result_perinfo[this.#notesIndex]['open_notes'] = new_note;
                     // search for matching names
                     var postData = {
                         ajax_request_action: 'updatePerinfoNote',
-                        perid: this.#result_perinfo[notesIndex]['perid'],
-                        notes: this.#result_perinfo[notesIndex]['open_notes'],
+                        perid: this.#result_perinfo[this.#notesIndex]['perid'],
+                        notes: this.#result_perinfo[this.#notesIndex]['open_notes'],
                         user_id: this.#user_id,
                     };
                     document.getElementById('close_note_button').disabled = true;
@@ -1418,10 +1419,11 @@ class Pos {
                 }
             }
         }
-        notesType = null;
-        notesIndex = null;
-        notesPriorValue = null;
-        notes.hide();
+        this.#notesType = null;
+        this.#notesPerid = null;
+        this.#notesIndex = null;
+        this.#notesPriorValue = null;
+        this.#notes.hide();
     }
 
     // select the row (tid) from the unpaid list and add it to the cart, switch to the payment tab (used by find unpaid)

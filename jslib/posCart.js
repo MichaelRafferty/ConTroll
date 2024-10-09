@@ -124,33 +124,39 @@ class PosCart {
     // notes fields in the cart, get current values and set new values, marking dirty for saving records
 
     getFullName(index) {
-        return this.#cartPerinfo[index]['fullname'];
+        return this.#cartPerinfo[index]['fullName'];
     }
 
-    getRegFullName(index) {
-        console.log("getRegFullName: TODO");
-        // return this.#cartPerinfo[this.#cart_membership[index]['pindex']]['fullname'];
+    getRegFullName(perid) {
+        var index = this.#cartPerinfoMap.get(perid);
+        return this.#cartPerinfo[index]['fullName'];
     }
 
-    getRegLabel(index) {
-        consol.log("getRegLabel: TODO");
-        // return this.#cart_membership[index]['label'];
-    }
-    getRegNote(index) {
-        console.log("getRegNote: TODO");
-        //return this.#cart_membership[index]['reg_notes'];
+    getRegLabel(perid, index) {
+        var pindex = this.#cartPerinfoMap.get(perid);
+        var perinfo = this.#cartPerinfo[pindex];
+        var mem = perinfo.memberships[index];
+        return mem.label;
     }
 
-    getNewRegNote(index) {
-        console.log("getNewRegNote: TODO");
-        // return this.#cart_membership[index]['new_reg_note'];
+    getRegNote(perid, index) {
+        var pindex = this.#cartPerinfoMap.get(perid);
+        var perinfo = this.#cartPerinfo[pindex];
+        var mem = perinfo.memberships[index];
+        return mem.notes;
     }
 
-    setRegNote(index, note) {
-        console.log("setRegNote: TODO");
-        //this.#cart_membership[index]['new_reg_note'] = note;
-        //var pindex = this.#cart_membership[index]['pindex'];
-        //this.#cartPerinfo[pindex]['dirty'] = true;
+    getNewRegNote(perid, index) {
+        var pindex = this.#cartPerinfoMap.get(perid);
+        var perinfo = this.#cartPerinfo[pindex];
+        var mem = perinfo.memberships[index];
+        return mem.new_reg_note;
+    }
+
+    setRegNote(perid, index, note) {
+        var pindex = this.#cartPerinfoMap.get(perid);
+        this.#cartPerinfo[pindex].memberships[index].new_reg_note = note;
+        this.#cartPerinfo[pindex].dirty = true;
         this.drawCart();
     }
 
@@ -241,7 +247,7 @@ class PosCart {
         this.drawCart();
     }
 
-    // add search result_perinfo/membership record to the cart
+    // add search result_perinfo record to the cart
     add(p) {
         console.log('Add: TODO');
 
@@ -579,7 +585,7 @@ class PosCart {
                     btntext = 'Notes:' + notes_count.toString();
                 }
                 label += ' <button type = "button" class="btn btn-sm ' + btncolor + ' pt-0 pb-0 ps-1 pe-1 m-0" ' +
-                    'onclick = "pos.show_reg_note(' + mrow['index'] + ', ' + notes_count + ')" ' +
+                    'onclick = "pos.showRegNote(' + perid +', ' + mrownum + ', ' + notes_count + ')" ' +
                     'style=" --bs-btn-font-size:75%;">' + btntext + '</button >';
             }
 
@@ -701,7 +707,7 @@ class PosCart {
         <div class="col-sm-5 p-0">` + pos.badge_name_default(row['badge_name'], row['first_name'], row['last_name']) + `</div>
         <div class="col-sm-2 p-0 text-center">`;
         if (!this.#freezeCart && row['open_notes'] != null && row['open_notes'].length > 0) {
-            rowhtml += '<button type="button" class="btn btn-sm btn-info p-0" onclick="pos.show_perinfo_notes(' + row['index'] + ', \'cart\')">View' +
+            rowhtml += '<button type="button" class="btn btn-sm btn-info p-0" onclick="pos.showPerinfoNotes(' + row['index'] + ', \'cart\')">View' +
                 ' Notes</button>';
         }
         rowhtml += `</div>
