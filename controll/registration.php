@@ -1,6 +1,7 @@
 <?php
 require_once 'lib/base.php';
 require_once '../lib/profile.php';
+require_once '../lib/portalForms.php';
 require_once '../lib/policies.php';
 require_once('../lib/cc__load_methods.php');
 require_once('../lib/profile.php');
@@ -16,6 +17,7 @@ load_cc_procs();
 
 $con_conf = get_conf('con');
 $conid = $con_conf['id'];
+$condata = get_con();
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -66,7 +68,7 @@ $useUSPS = false;
                             Review Data
                         </button>
                     </li>
-                     <li class="nav-item" role="presentation"\>
+                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="pay-tab" data-bs-toggle="pill" data-bs-target="#pay-pane" type="button"
                                 role="tab" aria-controls="nav-pay" aria-selected="false" disabled>
                             Payment
@@ -202,30 +204,45 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
             </div>
         </div>
     </div>
-    <!--- change membership modal popup -->
-    <div class='modal modal-lg' id='Change' tabindex='-3' aria-labelledby='Change' data-bs-backdrop='static' data-bs-keyboard='false' aria-hidden='true'>
+    <!--- add/Edit membership modal popup -->
+    <div class='modal modal-x1 fade' id='addEdit' tabindex='-3' aria-labelledby='addEdit' data-bs-backdrop='static'
+        data-bs-keyboard='false' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
-                <div class='modal-header'>
-                    <div class='modal-title' id='ChangeTitle'>
-                        Change Membership Type
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='AddEditTitle'>
+                        Add/Edit Memberships
                     </div>
+                    <button type='button' class='btn-close' onclick='cart.checkAddEditClose();' aria-label='Close'></button>
                 </div>
-                <div class='modal-body' id='ChangeBody'>
+                <div class='modal-body' id='AddEditBody' style='padding: 4px; background-color: lightcyan;'>
+<?php
+    drawGetAgeBracket('<span id="addEditFullName">Fullname</span>', $condata);
+    drawGetNewMemberships()
+?>
+                    <div class='row'>
+                        <div class='col-sm-12'>
+                            <h2 class='size-h3'>Cart:</h2>
+                        </div>
+                    </div>
+                    <div id='cartContentsDiv'>Cart Placeholder</div>
                 </div>
                 <div class='modal-footer'>
                     <button type='button' id='discard_change_button' class='btn btn-secondary'
-                            onclick='pos.changeModal.hide();'>
-                        Keep Current Membership
+                            onclick='cart.checkAddEditClose();'>
+                        Keep Current Memberships
                     </button>
                     <button type='button' id='close_change_button' class='btn btn-primary'
-                            onclick='save_membership_change();'>
-                        Change Membership
+                            onclick='cart.saveMembershipChange();'>
+                        Change Memberships
                     </button>
                 </div>
             </div>
         </div>
     </div>
+<?php
+    drawVariablePriceModal()
+?>
     <!--- pay cash change modal popup -->
     <div class='modal modal-lg' id='CashChange' tabindex='-4' aria-labelledby='CashChange' data-bs-backdrop='static' data-bs-keyboard='false' aria-hidden='true'>
         <div class='modal-dialog'>

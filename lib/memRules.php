@@ -1,7 +1,7 @@
 <?php
 // items related to using memRules
 
-function getRulesData($conid) {
+function getRulesData($conid, $regadmin = false) {
     $data = [];
 // get ageList, memTypes, memCategories, memList
     $ageList = array();
@@ -33,11 +33,12 @@ function getRulesData($conid) {
 
     $memList = array();
     $memListIdx = array();
+    $where = $regadmin ? '' : "AND startdate <= NOW() AND enddate > NOW()  AND online = 'Y'";
     $QQ = <<<EOS
 SELECT *, id as memId
 FROM memList 
 WHERE ((conid = ? AND memCategory != 'yearahead') OR (conid = ? AND memCategory = 'yearahead'))
-  AND startdate <= NOW() AND enddate > NOW() AND online = 'Y'
+$where
 ORDER BY sort_order;
 EOS;
     $QR = dbSafeQuery($QQ, 'ii', array($conid, $conid + 1));

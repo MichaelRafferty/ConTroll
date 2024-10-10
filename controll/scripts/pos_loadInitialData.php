@@ -173,7 +173,14 @@ $response['num_coupons'] = $ret[0];
 $response['couponList'] = $ret[1];
 
 // membership rules, policies, configuration items
-$response['memRules'] = getRulesData($conid);
+$ruleData = getRulesData($conid, true);
+
+$response['gageList'] = $ruleData['ageList'];
+$response['gageListIdx'] = $ruleData['ageListIdx'];
+$response['gmemTypes'] = $ruleData['memTypes'];
+$response['gmemCategories'] = $ruleData['memCategories'];
+$response['gmemList'] = $ruleData['memList'];
+$response['gmemRules'] = $ruleData['memRules'];
 $response['policies'] = getPolicies();
 $cdebug = 0;
 if (array_key_exists('controll_registration', $debug))

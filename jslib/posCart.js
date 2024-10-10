@@ -25,6 +25,20 @@ class PosCart {
     #cartPerinfoMap = new map();
     #cartPmt = [];
 
+// Add Edit Memberships
+    #addEditModal = null;
+    #addEditBody = null;
+    #addEditTitle = null;
+    #addEditFullName = null;
+    #ageButtonsDiv = null;
+    #membershipButtonsDiv = null;
+    #memberAge = null;
+    #memberAgeLabel = null;
+    #currentAge = null;
+    #currentPerid = null;
+    #memberships = [];
+    #allMemberships = [];
+
 // Constants
     #isMembershipTypes = [ 'full', 'virtual', 'oneday' ];
 
@@ -38,6 +52,17 @@ class PosCart {
         this.#reviewButton = document.getElementById("review_btn");
         this.#nextButton = document.getElementById("next_btn");
         this.#nochangesButton = document.getElementById("cart_no_changes_btn");
+
+        // addEdit membership
+        var id = document.getElementById('addEdit');
+        if (id) {
+            this.#addEditModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#addEditBody = document.getElementById('addEditBody');
+            this.#addEditTitle = document.getElementById('addEditTitle');
+            this.#addEditFullName = document.getElementById('addEditFullName');
+            this.#ageButtonsDiv = document.getElementById('ageButtons');
+            this.#membershipButtonsDiv = document.getElementById('membershipButtons');
+        }
     }
 
     // simple get/set/hide/show methods
@@ -382,66 +407,97 @@ class PosCart {
 
         var cart_row = this.#cartPerinfo[index];
         console.log("editing " + cart_row.fullName + ' (' + cart_row.perid + '): ' + cart_row.memberships.length);
+        if (this.#addEditModal) {
+            this.#addEditFullName.innerHTML = cart_row.fullName;
+            this.buildAgeButtons(cart_row);
+            this.buildMembershipButtons(cart_row.perid);
+            this.#addEditModal.show();
+        }
         return;
     }
 
-// change single membership item from the cart - only allow items of the same class with higher prices
-    changeMembership(index) {
-        console.log("changeMembership: TODO");
-        return;
-        /*
-        this.#changeRow = index;
-        var mrow = this.#cart_membership[index];
-        var prow = this.#cartPerinfo[mrow['pindex']];
-
-        var html = '<div id="ChangePrior">Current Membership ' + mrow['label'] + "</div>\n";
-        html += '<div id="ChangeTo">Change to:<br/><select name="change_membership_id" id="change_membership_id">' + "\n";
-        // build select list here
-        var optionrows = this.#membership_selectlist;
-        if (mrow['memCategory'] == 'yearahead' && mrow['conid'] != pos.getConid)
-            optionrows = this.#yearahead_selectlist;
-        var price = mrow['price'];
-        for (var row in optionrows) {
-            if (optionrows[row]['price'] >= price || pos.getManager())
-                html += optionrows[row]['option'];
+// age buttons
+    buildAgeButtons(cart_row) {
+        // first check if there is a current age;
+        for (var row in cart_row.memberships) {
+            var mbr = cart_row.memberships[row];
+            if (mbr.memAge != 'all') {
+                this.#memberAge = mbr.memAge;
+                this.#memberAgeLabel = ageListIdx[this.#memberAge].label;
+                break;
+            }
         }
 
-        html += "</select></div>\n";
-        changeModal.show();
-        document.getElementById("ChangeTitle").innerHTML = "Change Membership Type for " + (prow['first_name'] + ' ' + prow['last_name']).trim();
-        document.getElementById("ChangeBody").innerHTML = html;
-
-         */
+        var color = this.#memberAge != null ? 'btn-warning' : (this.#currentAge != null ? 'btn-secondary' : 'btn-primary');
+        // now loop over age list and build each button
+        var html = '';
+        for (row in ageList) {
+            var age = ageList[row];
+            if (age.ageType == 'all')
+                continue;
+            html += '<div class="col-sm-auto"><button id="ageBtn-' + age.ageType + '" class="btn btn-sm ' +
+                ((this.#currentAge == age.ageType || this.#memberAge == age.ageType) ? 'btn-primary' : color) + '" onclick="cart.ageSelect(' + "'" + age.ageType + "'" + ')">' +
+                age.label + ' (' + age.shortname + ')' +
+                '</button></div>' + "\n";
+        }
+        this.#ageButtonsDiv.innerHTML = html;
     }
 
-// save_membership_change
-// update saved cart row with new memId
-    saveMembershipChange() {
-        if (this.#changeRow == null)
-            return;
+    // membership buttonws
+    buildMembershipButtons(perid) {
+        this.#memberships = [];
+        this.#allMemberships = [];
+        var pid = perid;
 
-        console.log("saveMembershipChange: TODO");
-        return;
-        /*
+        // build the current values of the array
+        this.everyMembership(function(_this, mem) {
+            if (pid == mem.perid ) {
+                _this.#memberships.push(mem);
+            }
+            _this.#allMemberships.push(mem);
+        });
+        // now loop over memList and build each button
+        var html = '';
+        config['debug'] = 0;
+        var rules = new MembershipRules(pos.getConid(), this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
 
-        var mrow = this.#cart_membership[this.#changeRow];
-        var newMemid = document.getElementById("change_membership_id").value;
-        mrow['memId'] = newMemid;
+        for (var row in memList) {
+            var mem = memList[row];
+            // apply implitict rules and membershipRules against memList entry
+            if (!rules.testMembership(mem))
+                continue;
 
-        var mi_row = find_memLabel(newMemid);
-        mrow['memCategory'] = mi_row['memCategory'];
-        mrow['memType'] = mi_row['memType'];
-        mrow['memAge'] = mi_row['memAge'];
-        mrow['shortname'] = mi_row['shortname'];
-        mrow['label'] = mi_row['label'];
-        mrow['price'] = mi_row['price'];
-        this.#cartPerinfo[mrow['pindex']]['dirty'] = true;
+            // apply age filter from age select
+            if (mem.memAge == 'all' || mem.memAge == this.#currentAge) {
+                var memLabel = mem.label;
+                if (memCategories[mem.memCategory].variablePrice != 'Y') {
+                    memLabel += ' (' + mem.price + ')';
+                }
+                html += '<div class="col-sm-auto mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary"' +
+                    ' onclick="membership.membershipAdd(' + "'" + mem.id + "'" + ')">' +
+                    (mem.conid != pos.getConid() ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
+            }
+        }
+        this.#membershipButtonsDiv.innerHTML = html;
+    }
 
-        this.#changeRow = null;
-        changeModal.hide();
-        this.drawCart();
-
-         */
+// addEdit Assist functions
+    // loop over people/memberships calling a function on each membership:
+    //      function is called with (memrow) which as an associative array of the row
+    //      returns the sum of whatever fcn returns
+    everyMembership(fcn) {
+        var rtn = 0;
+        for (var pmrowindex in this.#cartPerinfo) {
+            var memberships = this.#cartPerinfo[pmrowindex].memberships;
+            for (var rowindex in memberships) {
+                rtn += fcn(this, memberships[rowindex]);
+            }
+        }
+        return rtn;
+    }
+    checkAddEditClose() {
+        // TODO: warn about unsaved changes
+        this.#addEditModal.hide();
     }
 
 // update payment data in  cart
@@ -462,7 +518,7 @@ class PosCart {
     }
 
 // cart_renumber:
-// rebuild the indices in the cart_perinfo and cart_membership tables
+// rebuild the indices in the cartPerinfo and cart_membership tables
 // for shortcut reasons indices are used to allow usage of the filter functions built into javascript
 // this rebuilds the index and perinfo cross-reference maps.  It needs to be called whenever the number of items in cart is changed.
     #cart_renumber() {

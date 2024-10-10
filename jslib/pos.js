@@ -200,9 +200,6 @@ class Pos {
         // notes items
         this.#notes = new bootstrap.Modal(document.getElementById('Notes'), {focus: true, backdrop: 'static'});
 
-        // change membership
-        this.#changeModal = new bootstrap.Modal(document.getElementById('Change'), {focus: true, backdrop: 'static'});
-
         // cash payment requires change
         this.#cashChangeModal = new bootstrap.Modal(document.getElementById('CashChange'), {focus: true, backdrop: 'static'});
 
@@ -323,11 +320,13 @@ class Pos {
         this.#discount_mode = data['discount'];
 
         // create the globals (vars) for membershipRules.js
-        memTypes= this.#typeList;
-        ageList = this.#ageList;
-        memCategories = this.#catList;
-        memList = this.#memList;
-        memRules = this.#memRules;
+        memTypes= data['gnenTypes'];
+        ageList = data['gageList'];
+        ageListIdx = data['gageListIdx'];
+        memCategories = data['gmemCategories'];
+        memList = data['gmemList']
+        memListIdx = data['gmemListIdx']
+        memRules = data['gmemRules'];
 
         if (this.#discount_mode === undefined || this.#discount_mode === null || this.#discount_mode == '')
             this.#discount_mode = 'none';
@@ -623,22 +622,6 @@ class Pos {
             this.draw_as_records();
         }
         clear_message();
-    }
-
-    // remove single membership item from the cart (leaving other memberships and person information
-    delete_membership(index) {
-        cart.deleteMembership(index);
-    }
-
-    // change single membership item from the cart - only allow items of the same class with higher prices
-    change_membership(index) {
-        cart.changeMembership(index);
-    }
-
-    // save_membership_change
-    // update saved cart row with new memId
-    save_membership_change() {
-        cart.saveMembershipChange();
     }
 
     // common confirm add/edit screen dirty, if the tab isn't shown switch to it if dirty

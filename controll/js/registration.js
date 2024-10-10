@@ -2,11 +2,14 @@
 var pos = null;
 var cart = null;
 var coupon = null;
-var ageList
-var memTypes
-var memCategories
-var memList
-var memRules
+var ageList = null;
+var ageListIdx = null;
+var memTypes = null;
+var memCategories = null;
+var memList = null;
+var memListIdx = null;
+var memRules = null;
+var config = [];
 
 // initialization
 // lookup all DOM elements
