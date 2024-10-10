@@ -53,6 +53,7 @@ class Pos {
     #ageList = null;
     #typeList = null;
     #policies = null;
+    #memRules = null;
     #changeModal = null;
     #cashChangeModal = null;
 
@@ -318,7 +319,16 @@ class Pos {
         this.#typeList = data['memTypes'];
         this.#cc_html = data['cc_html'];
         this.#policies = data['policies'];
+        this.#memRules = data['memRules'];
         this.#discount_mode = data['discount'];
+
+        // create the globals (vars) for membershipRules.js
+        memTypes= this.#typeList;
+        ageList = this.#ageList;
+        memCategories = this.#catList;
+        memList = this.#memList;
+        memRules = this.#memRules;
+
         if (this.#discount_mode === undefined || this.#discount_mode === null || this.#discount_mode == '')
             this.#discount_mode = 'none';
 
@@ -1435,13 +1445,6 @@ class Pos {
         pos.add_to_cart(-Number(tid), 'result');
         // force a new transaction for the payment as the cashier is not the same as the check-in in this case.
         pos.added_payable_trans_to_cart();
-    }
-
-    // add selected membership as a new item in the card under this perid.
-    add_membership_cart(rownum, selectname) {
-        var select = document.getElementById(selectname);
-        var membership = find_memLabel(select.value.trim());
-        cart.addMembership(rownum, membership);
     }
 
     // search the online database for a set of records matching the criteria

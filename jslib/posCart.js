@@ -376,36 +376,13 @@ class PosCart {
          */
     }
 
-    // add selected membership as a new item in the card under this perid.
-    addMembership(rownum, membership) {
-        console.log("addMembership: TODO");
+// use the memRules engine to add/edit the memberships for this person
+    addEditMemberships(index) {
+        console.log("addEditMembership(" + index + ")");
+
+        var cart_row = this.#cartPerinfo[index];
+        console.log("editing " + cart_row.fullName + ' (' + cart_row.perid + '): ' + cart_row.memberships.length);
         return;
-        /*
-        var row = this.#cartPerinfo[rownum];
-
-        this.#cart_membership.push({
-            perid: row['perid'],
-            price: membership['price'],
-            couponDiscount: 0,
-            paid: 0,
-            tid: 0,
-            index: this.#cart_membership.length,
-            printcount: 0,
-            conid: membership['conid'],
-            memCategory: membership['memCategory'],
-            memType: membership['memType'],
-            memAge: membership['memAge'],
-            shortname: membership['shortname'],
-            pindex: row['index'],
-            memId: membership['id'],
-            label: membership['label'],
-            regid: -1,
-            coupon: null,
-        });
-
-        cart.drawCart();
-
-         */
     }
 
 // change single membership item from the cart - only allow items of the same class with higher prices
@@ -524,7 +501,6 @@ class PosCart {
 // format all of the memberships for one record in the cart
     #drawCartRow(rownum) {
         var row = this.#cartPerinfo[rownum];
-        var membername = row.fullName;
         var mrow;
         var rowlabel;
         var membership_found = false;
@@ -546,21 +522,19 @@ class PosCart {
                 category = 'standard'; // last years yearahead is this year's standard
             var memType = mrow['memType'];
 
-            // col1 choices
-            //  X = delete element from cart
-            var allow_delete = mrow['regid'] <= 0;
-            var allow_delete_priv = mrow['paid'] == 0 && mrow['printcount'] == 0;
-            var allow_change_priv = mrow['regid'] > 0 && mrow['paid'] >= 0 && mrow['printcount'] == 0 &&
-                (category == 'standard' || category == 'yearahead') && memType == 'full';
-            col1 = '';
-            if ((allow_delete || allow_delete_priv) && !this.#freezeCart) {
-                col1 += '<button type = "button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1 m-0" ' +
-                    'onclick = "pos.delete_membership(' + mrow['index'] + ')" >X</button >';
-            }
-            // C = change membership type
-            if (allow_change_priv && !this.#freezeCart) {
-                col1 += '<button type = "button" class="btn btn-sm btn-warning pt-0 pb-0 ps-1 pe-1 m-0" ' +
-                    'onclick = "pos.change_membership(' + mrow['index'] + ')" >C</button >';
+            // col1 - status
+            switch (mrow['status']) {
+                case 'paid':
+                    col1 = "Pd";
+                    break;
+                case 'unpaid':
+                    col1 = "Upd";
+                    break;
+                case 'plan':
+                    col1 = "Pln";
+                    break;
+                default:
+                    col1 = mrow['status'].substring(0, 3);
             }
 
             var label = mrow['label'];
@@ -583,8 +557,8 @@ class PosCart {
 
             membership_html += `
     <div class="row">
-        <div class="col-sm-1 p-0">` + col1 + `</div>
-        <div class="col-sm-7 p-0">` + label + `</div>
+        <div class="col-sm-1 pe-0">` + col1 + `</div>
+        <div class="col-sm-7 ps-1">` + label + `</div>
         <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
         <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
     </div>
@@ -600,17 +574,17 @@ class PosCart {
             }
         }
         // first row - member name, remove button
-        var rowhtml = '<div class="row">';
+        var rowhtml = '<div class="row mt-1">';
         if (membership_found) {
             rowhtml += '<div class="col-sm-8 text-bg-success">Member: '
         } else {
             rowhtml += '<div class="col-sm-8 text-bg-info">Non Member: '
         }
-        rowhtml += membername + '</div>';
+        rowhtml += row.fullName + '</div>';
         if (!this.#freezeCart) {
             rowhtml += `
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.edit_from_cart(` + perid + `)">Edit</button></div>
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.remove_from_cart(` + perid + `)">Remove</button></div>
+        <div class="col-sm-2 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.edit_from_cart(` + perid + `)">Edit</button></div>
+        <div class="col-sm-2 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.remove_from_cart(` + perid + `)">Remove</button></div>
 `;
         }
         rowhtml += '</div>'; // end of member name row
@@ -618,15 +592,15 @@ class PosCart {
         // second row - badge name
         rowhtml += `
     <div class="row">
-        <div class="col-sm-3 p-0">Badge Name:</div>
-        <div class="col-sm-5 p-0">` + pos.badge_name_default(row['badge_name'], row['first_name'], row['last_name']) + `</div>
-        <div class="col-sm-2 p-0 text-center">`;
+        <div class="col-sm-3">Badge Name:</div>
+        <div class="col-sm-5">` + pos.badge_name_default(row['badge_name'], row['first_name'], row['last_name']) + `</div>
+        <div class="col-sm-2 text-center">`;
         if (!this.#freezeCart && row['open_notes'] != null && row['open_notes'].length > 0) {
             rowhtml += '<button type="button" class="btn btn-sm btn-info p-0" onclick="pos.showPerinfoNotes(' + row['index'] + ', \'cart\')">View' +
                 ' Notes</button>';
         }
         rowhtml += `</div>
-        <div class="col-sm-2 p-0 text-center">`;
+        <div class="col-sm-2 text-center">`;
         if (pos.getManager() && !this.#freezeCart) {
             btncolor = 'btn-secondary';
             if (row['open_notes_pending'] !== undefined && row['open_notes_pending'] === 1)
@@ -635,10 +609,17 @@ class PosCart {
                 ' Notes</button>';
         }
         rowhtml += `</div>
-    </div>
 `;  // end of second row - badge name
+        // third row add/edit memberships
+        rowhtml += `</div>
+    <div class="row">
+        <div class="col-sm-auto"><button type="button" class="btn btn-sm btn-primary" onclick="cart.addEditMemberships(` +
+            row['index'] + `);">Add/Edit Memberships</button>
+        </div>
+    </div>
+    `;
 
-
+        // now the membership rows
         if (membership_html != '') {
             rowhtml += membership_html;
         }
@@ -695,7 +676,7 @@ class PosCart {
         this.#totalPrice = Number(this.#totalPrice.toFixed(2));
         this.#totalPaid = Number(this.#totalPaid.toFixed(2));
         html += `<div class="row">
-    <div class="col-sm-8 p-0 text-end">Total:</div>
+    <div class="col-sm-8 text-end">Total:</div>
     <div class="col-sm-2 text-end">$` + Number(this.#totalPrice).toFixed(2) + `</div>
     <div class="col-sm-2 text-end">$` + Number(this.#totalPaid).toFixed(2) + `</div>
 </div>
@@ -726,13 +707,14 @@ class PosCart {
             var person = this.#needMembershipRows > 1 ? " people" : " person";
             var need = this.#needMembershipRows > 1 ? "need memberships" : "needs a membership";
             html += `<div class="row mt-3">
-    <div class="col-sm-12">Cannot proceed to "Review" because ` + this.#needMembershipRows + person + " still " + need + `.  Use "Edit" button to add memberships for them or "Remove" button to take them out of the cart.
+    <div class="col-sm-12">Cannot proceed to "Review" because ` + this.#needMembershipRows + person + " still " + need +
+                `.  Use "Edit" button to add memberships for them or "Remove" button to take them out of the cart.
     </div>
 `;
         } else if (num_rows > 0) {
             this.#reviewButton.hidden = this.#inReview;
         }
-        html += '</div>'; // ending the container fluid
+        html += '</div> <!-- end container fluid -->'; // ending the container fluid
         //console.log(html);
         this.#cartDiv.innerHTML = html;
         this.#startoverButton.hidden = num_rows == 0;

@@ -2,6 +2,11 @@
 var pos = null;
 var cart = null;
 var coupon = null;
+var ageList
+var memTypes
+var memCategories
+var memList
+var memRules
 
 // initialization
 // lookup all DOM elements
