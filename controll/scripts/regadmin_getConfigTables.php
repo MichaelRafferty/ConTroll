@@ -98,7 +98,7 @@ EOS;
         $memSQL = <<<EOS
 SELECT *, id as memId
 FROM memList
-WHERE ((conid = ? AND memCategory != 'yearahead') OR (conid = ? AND memCategory = 'yearahead')) AND online = 'Y'
+WHERE ((conid = ? AND memCategory != 'yearahead') OR (conid = ? AND memCategory = 'yearahead'))
 ORDER BY sort_order;
 EOS;
         $result = dbSafeQuery($memSQL, 'ii', array($conid, $nextconid));
