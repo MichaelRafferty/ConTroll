@@ -180,6 +180,7 @@ $response['gageListIdx'] = $ruleData['ageListIdx'];
 $response['gmemTypes'] = $ruleData['memTypes'];
 $response['gmemCategories'] = $ruleData['memCategories'];
 $response['gmemList'] = $ruleData['memList'];
+$response['gmemListIdx'] = $ruleData['memListIdx'];
 $response['gmemRules'] = $ruleData['memRules'];
 $response['policies'] = getPolicies();
 $cdebug = 0;

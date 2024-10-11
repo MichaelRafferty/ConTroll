@@ -131,11 +131,11 @@ class Membership {
         this.#uspsDiv = document.getElementById("uspsblock");
 
         this.#saveCartBtn = document.getElementById("saveCartBtn");
-        this.#vpBody = document.getElementById("variablePriceBody");
         var id = document.getElementById("variablePriceModal");
         if (id) {
             this.#vpModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             id.addEventListener('hidden.bs.modal', amountModalHiddenHelper);
+            this.#vpBody = document.getElementById("variablePriceBody");
         }
 
         if (config['action'] != 'new') {
@@ -1040,7 +1040,6 @@ class Membership {
                 return;
             }
         }
-
 
         this.#memberships.splice(row, 1);
         this.#cartChanges--;

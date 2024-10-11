@@ -244,7 +244,7 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
         </div>
     </div>
 <?php
-    drawVariablePriceModal()
+    drawVariablePriceModal('cart');
 ?>
     <!--- pay cash change modal popup -->
     <div class='modal modal-lg' id='CashChange' tabindex='-4' aria-labelledby='CashChange' data-bs-backdrop='static' data-bs-keyboard='false' aria-hidden='true'>

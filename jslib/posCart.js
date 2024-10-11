@@ -41,6 +41,11 @@ class PosCart {
     #allMemberships = [];
     #cartContentsDiv = null;
     #cartChanges = 0;
+    #newIDKey = -1;
+    #newMembershipSave = null;
+    #amountField = null;
+    #vpModal = null;
+    #vpBody = null;
 
 // Constants
     #isMembershipTypes = [ 'full', 'virtual', 'oneday' ];
@@ -67,6 +72,12 @@ class PosCart {
             this.#ageButtonsDiv = document.getElementById('ageButtons');
             this.#membershipButtonsDiv = document.getElementById('membershipButtons');
             this.#cartContentsDiv = document.getElementById('cartContentsDiv');
+        }
+        var id = document.getElementById("variablePriceModal");
+        if (id) {
+            this.#vpModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            id.addEventListener('hidden.bs.modal', amountModalHiddenHelper);
+            this.#vpBody = document.getElementById("variablePriceBody");
         }
     }
 
@@ -467,7 +478,7 @@ class PosCart {
                 col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="cart.regItemRestore(' +
                     row + ')">Restore</button>';
             } else if (membershipRec.status == 'in-cart') {
-                col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="cart.membershipRemove(' + row + ')">Remove</button>';
+                col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="cart.regItemRemove(' + row + ')">Remove</button>';
             } else if (membershipRec.status != 'plan' && (membershipRec.paid == 0 || pos.getManager())) {
                 col1 = '<button class="btn btn-sm ' + btncolor + ' pt-0 pb-0" onclick="cart.regItemDelete(' + row + ')">Delete</button>';
             }
@@ -551,7 +562,7 @@ class PosCart {
                     memLabel += ' (' + mem.price + ')';
                 }
                 html += '<div class="col-sm-auto mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary"' +
-                    ' onclick="cart.membershipAdd(' + "'" + mem.id + "'" + ')">' +
+                    ' onclick="cart.regItemAdd(' + "'" + mem.id + "'" + ')">' +
                     (mem.conid != pos.getConid() ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
             }
         }
@@ -562,23 +573,23 @@ class PosCart {
     regItemDelete(row) {
         clear_message();
         if (this.#memberships == null || this.#memberships.length == 0) {
-            show_message("No memberships found", "warn", 'aeMessageDiv');
+            show_message("No registration items found", "warn", 'aeMessageDiv');
             return;
         }
 
         var mbr = this.#memberships[row];
         if (mbr.status != 'unpaid' && !pos.getManager()) {
-            show_message("Cannot remove that membership, only unpaid membershipd can be deleted.", "warn", 'aeMessageDiv');
+            show_message("Cannot remove that registration item, only unpaid items can be deleted.", "warn", 'aeMessageDiv');
             return
         }
 
         if (mbr.price == 0 && !pos.getManager()) {
-            show_message("Please contact registration at " + config['regadminemail'] + "  to delete free memberships.", "warn", 'aeMessageDiv');
+            show_message("Please contact registration at " + config['regadminemail'] + "  to delete free items.", "warn", 'aeMessageDiv');
             return;
         }
 
         if (mbr.paid > 0 && !pos.getManager()) {
-            show_message("Please contact registration at " + config['regadminemail'] + " to resolve this partially paid membership.", "warn", 'aeMessageDiv');
+            show_message("Please contact registration at " + config['regadminemail'] + " to resolve this partially paid item.", "warn", 'aeMessageDiv');
             return;
         }
 
@@ -629,6 +640,127 @@ class PosCart {
         } else {
             mbr.toDelete = undefined;
         }
+        this.#cartChanges--;
+        this.redrawRegItems();
+        this.buildRegItemButtons();
+    }
+
+    // add to cart
+    regItemAdd(id) {
+        clear_message();
+        var memrow = findMembership(id);
+        if (memrow == null)
+            return;
+
+        var now = new Date();
+        var newMembership = {};
+        newMembership.id = this.#newIDKey;
+        newMembership.create_date = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2) + ' ' +
+            ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
+        newMembership.memId = id;
+        newMembership.conid = memrow.conid;
+        newMembership.status = 'in-cart';
+        newMembership.price = memrow.price;
+        newMembership.paid = 0;
+        newMembership.couponDiscount = 0;
+        newMembership.label = memrow.label;
+        newMembership.memCategory = memrow.memCategory;
+        newMembership.memType = memrow.memType;
+        newMembership.memAge = memrow.memAge;
+        var memCat = memCategories[memrow.memCategory];
+        if (memCat.variablePrice == 'Y') {
+            var mem = memListIdx[newMembership.memId];
+            // update the modal with the item
+            this.#vpBody.innerHTML = `
+    <div class="row">
+        <div class="col-sm-auto">
+            <label for="vpPrice">How much for ` + mem.label + `?</label>
+        </div>
+        <div class="col-sm-auto">
+            <input type="number" class='no-spinners' inputmode="numeric" id="vpPrice" name="vpPrice" size="20" placeholder="How Much?" min="` + mem.price + `"/>
+        </div>
+    </div>
+`;
+            this.#vpModal.show();
+            this.#amountField = document.getElementById("vpPrice");
+            this.#amountField.addEventListener('keyup', cart.amountEventListener);
+            newMembership.minPrice = mem.price;
+            this.#newMembershipSave = newMembership;
+            var amountField = this.#amountField;
+            setTimeout(() => { amountField.focus({focusVisible: true}); }, 600);
+            return;
+        }
+        this.membershipAddFinal(newMembership);
+    }
+
+    aountEventListener(e) {
+        if (e.code === 'Enter')
+            cart.vpSubmit();
+    }
+
+    amountModalHidden(e) {
+        clear_message('vpMessageDiv');
+        this.#amountField.removeEventListener('keyup', cart.amountEventListener);
+    }
+
+    // vpsubmit - handle return from modal popup
+    vpSubmit() {
+        var priceField = document.getElementById('vpPrice');
+        var price = Number(priceField.value).toFixed(2);
+        var newMembership = this.#newMembershipSave;
+        if (Number(price) < Number(newMembership.minPrice)) {
+            show_message("Your " + newMembership.label + " cannot be less than " + newMembership.minPrice, 'warn', 'vpMessageDiv');
+            return;
+        }
+        this.#newMembershipSave = null;
+        newMembership.price = price;
+        this.membershipAddFinal(newMembership);
+        this,this.#vpModal.hide();
+    }
+
+    // finish membership add
+    membershipAddFinal(newMembership) {
+        if (!this.#memberships)
+            this.#memberships = [];
+        this.#memberships.push(newMembership);
+        this.newIDKey--;
+        this.#cartChanges++;
+        this.redrawRegItems();
+        this.buildRegItemButtons();
+    }
+
+    // remove an unsaved reg item row from the cart
+    regItemRemove(row) {
+        clear_message();
+        if (this.#memberships == null) {
+            show_message("No registration items found", "warn", 'aeMessageDiv');
+            return;
+        }
+
+        var mbr = this.#memberships[row];
+        if (mbr.status != 'in-cart') {
+            show_message("Cannot remove that item, only in-cart items can be removed.", "warn", 'aeMessageDiv');
+            return
+        }
+
+        // check if anything else in the cart depends on this membership
+        // trial the delete
+        mbr.toDelete = true;
+        var rules = new MembershipRules(config['conid'], this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        for (var nrow in this.#memberships) {
+            if (row == nrow)    // skip checking ourselves
+                continue;
+            var nmbr = this.#memberships[nrow];
+            if (nmbr.toDelete)
+                continue;
+            if (rules.testMembership(nmbr, true) == false) {
+                mbr.toDelete = undefined;
+                show_message("You cannot remove " + mbr.label + " because " + nmbr.label + " requires it.  You must delete/remove " + nmbr.label + " first.", 'warn', 'aeMessageDiv');
+                return;
+            }
+        }
+
+        this.#memberships.splice(row, 1);
         this.#cartChanges--;
         this.redrawRegItems();
         this.buildRegItemButtons();

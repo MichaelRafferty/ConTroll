@@ -39,3 +39,22 @@ function review_shown() {
 function pay_shown() {
     pos.payShown();
 }
+
+function amountModalHiddenHelper(event) {
+    cart.amountModalHidden(event);
+}
+
+// items for registration not in base
+// findMembership - find matching memRow in memList
+function findMembership(id) {
+    if (!memList)
+        return null; // no list to search
+
+    for (var row in memList) {
+        var memrow = memList[row];
+        if (id != memrow.id)
+            continue;
+        return memrow;  // return matching entry
+    }
+    return null; // not found
+}

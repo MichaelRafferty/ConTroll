@@ -168,7 +168,7 @@ portalPageInit('addUpgrade', $info,
 $person = null;
 $memberships = null;
 // draw the skeleton
-drawVariablePriceModal();
+drawVariablePriceModal('membership');
 ?>
     <div class="row mt-3">
         <div class="col-sm-12">

@@ -126,7 +126,7 @@ function drawGetNewMemberships() {
 }
 
 // draw variable price membership set modal
-function drawVariablePriceModal() {
+function drawVariablePriceModal($class) {
 ?>
     <div id='variablePriceModal' class='modal modal-lg fade' tabindex='-1' aria-labelledby='Variable Price' aria-hidden='true'>
         <div class='modal-dialog'>
@@ -146,7 +146,7 @@ function drawVariablePriceModal() {
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='vpSubmitButton' onClick='membership.vpSubmit()' tabindex='10102'>Set Amount</button>
+                    <button class='btn btn-sm btn-primary' id='vpSubmitButton' onClick='<?php echo $class;?>.vpSubmit()' tabindex='10102'>Set Amount</button>
                 </div>
             </div>
         </div>
