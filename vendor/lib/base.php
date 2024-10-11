@@ -20,8 +20,6 @@ require_once(__DIR__ . '/../../lib/global.php');
 db_connect();
 session_start();
 
-date_default_timezone_set('America/New_York');
-
 function vendor_page_init($title) {
 $cdn = getTabulatorIncludes();
 $tabbs5=$cdn['tabbs5'];

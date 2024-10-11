@@ -19,6 +19,15 @@ $debug_set = get_conf('debug');
 $log = get_conf("log");
 $logdest = $log['web'];
 
+// always set the default timezone for PHP
+$db_conf = get_conf('mysql');
+if (array_key_exists('php_timezone', $db_conf)) {
+    date_default_timezone_set($db_conf['php_timezone']);
+}
+else {
+    date_default_timezone_set('America/New_York'); // default if not configured
+}
+
 // Function web_error_log($string)
 // $string = string to write to file $logdest with added newline at end
 function web_error_log($string, $debug = ''): void
@@ -104,6 +113,9 @@ function db_connect($nodb = false):bool
             return false;
         }
 
+        // set our character set of choice
+        $dbObject->set_charset('utf8mb4');
+
         // for mysql with nonstandard sql_mode (from zambia point of view) temporarily force ours
         $sql = "SET sql_mode='" .  $db_ini['mysql']['sql_mode'] . "';";
         try {
@@ -116,10 +128,6 @@ function db_connect($nodb = false):bool
             log_mysqli_error($sql, $e->getMessage());
             web_error_log('failed setting sql mode on db connection');
             return false;
-        }
-
-        if (array_key_exists('php_timezone', $db_ini['mysql'])) {
-            date_default_timezone_set($db_ini['mysql']['php_timezone']);
         }
 
         if (array_key_exists('db_timezone', $db_ini['mysql'])) {

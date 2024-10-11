@@ -97,11 +97,14 @@ EOS;
 
 // get this exhibitor
 $vendorQ = <<<EOS
-SELECT e.id as exhibitorId, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm,
+SELECT e.id as exhibitorId, artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm,
 ey.id AS exhibitorYearId, ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview, ey.mailin,
-addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
+e.addr, e.addr2, e.city, e.state, e.zip, e.country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity,
+p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newid, n.first_name AS n_first_name, n.last_name AS n_last_name
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
+LEFT OUTER JOIN perinfo p ON p.id = e.perid
+LEFT OUTER JOIN newperson n ON n.id = e.newperid
 WHERE e.id=? AND ey.conid = ?;
 EOS;
 
@@ -119,21 +122,23 @@ fclose($fh);
 
 
 $vendorPQ = <<<EOS
-SELECT exRY.*
+SELECT exRY.*, ery.id AS exhibitsRegionYearId
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 JOIN exhibitsRegionYears ery ON exRY.exhibitsRegionYearId = ery.id
 JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id
 JOIN exhibitsRegionTypes ert ON er.regionType = ert.regionType
-WHERE exY.exhibitorId = ? AND er.id = ?;
+WHERE exY.exhibitorId = ? AND er.id = ? AND ery.conid = ?;
 EOS;
 
-$vendorPR = dbSafeQuery($vendorPQ, 'is', array($exhibitorId, $regionId));
-$vendor_permlist = array();
-while ($perm = $vendorPR->fetch_assoc()) {
-    $vendor_permlist[$perm['exhibitsRegionYearId']] = $perm;
+$vendor_perm = null;
+$vendorPR = dbSafeQuery($vendorPQ, 'iii', array($exhibitorId, $regionId, $conid));
+if ($vendorPR !== false) {
+    if ($vendorPR->num_rows > 0) {
+        $vendor_perm = $vendorPR->fetch_assoc();
+    }
+    $vendorPR->free();
 }
-$vendorPR->free();
 
 $exhibitorSQ = <<<EOS
 SELECT *
@@ -152,6 +157,7 @@ $response['region_list'] = $region_list;
 $response['exhibits_spaces'] = $space_list;
 $response['exhibitor_info'] = $info;
 $response['exhibitor_spacelist'] = $exhibitorSpaceList;
+$response['exhibitor_perm'] = $vendor_perm;
 $response['regions'] = $regions;
 $response['spaces'] = $spaces;
 $response['country_options'] = $countryOptions;

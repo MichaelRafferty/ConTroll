@@ -133,6 +133,7 @@ foreach ($badges as $badge) {
     }
 }
 
+
 // now figure out if coupon applies
 $apply_discount = coupon_met($coupon, $total, $num_primary, $map, $counts);
 
@@ -175,7 +176,7 @@ if ($apply_discount) {
 
 $total = round($total, 2);
 
-if($webtotal != $total) {
+if($webtotal != $preDiscount) {
     error_log("bad total: post=" . $webtotal . ", calc=" . $total);
     ajaxSuccess(array('status'=>'error', 'error'=>'Unable to process, bad total sent to Server'));
     exit();
@@ -265,6 +266,10 @@ EOF;
             trim($badge['zip']),
             $badge['country']
         );
+
+        // this line is causing problems in full utf8 systems, need to better understand why it was added, for now its removed.
+        //$value_arr = mb_convert_encoding($value_arr, 'Windows-1252', 'UTF-8');
+
         $res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
         if ($res !== false) {
             if ($res->num_rows > 0) {
@@ -295,6 +300,7 @@ EOF;
             array_key_exists('share', $badge) ? $badge['share'] :'Y',
             $id
         );
+$value_arr = mb_convert_encoding($value_arr, 'Windows-1252', 'UTF-8');
 
         $insertQ = <<<EOS
 INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone,
@@ -376,6 +382,8 @@ $results = array(
     'transid' => $transid,
     'counts' => $counts,
     'price' => $total,
+    'tax' => 0,
+    'pretax' => $total,
     'badges' => $badgeResults,
     'total' => $total,
     'nonce' => $nonce,

@@ -19,8 +19,6 @@ require_once(__DIR__ . '/../../lib/global.php');
 db_connect();
 session_start();
 
-date_default_timezone_set("America/New_York");
-
 function isWebRequest()
 {
     return isset($_SERVER) && isset($_SERVER['HTTP_USER_AGENT']);
@@ -29,7 +27,29 @@ function isWebRequest()
 function page_init($title, $tab, $css, $js)
 {
     $con = get_conf('con');
+    $vendor = get_conf('vendor');
     $label = $con['label'];
+    $debug = get_conf('debug');
+    if (array_key_exists('atcon', $debug))
+        $atconDebug = $debug['atcon'];
+    else
+        $atconDebug = 0;
+
+    if (array_key_exists('taxRate', $con))
+        $taxRate = $con['taxRate'];
+    else
+        $taxRate = 0;
+
+    if (array_key_exists('taxidlabel', $vendor))
+        $taxLabel = $vendor['taxidlabel'];
+    else
+        $taxLabel = '';
+
+    $config_vars = array();
+    $config_vars['debug'] = $atconDebug;
+    $config_vars['taxRate'] = $taxRate;
+    $config_vars['taxLabel'] = $taxLabel;
+
     global $perms;
     if (isWebRequest()) {
         $includes = getTabulatorIncludes();
@@ -62,6 +82,9 @@ function page_init($title, $tab, $css, $js)
             }
         }
         ?>
+    <script type='text/javascript'>
+        var config = <?php echo json_encode($config_vars); ?>;
+    </script>
 </head>
 <body>
     <div class="container-fluid bg-primary text-white" id="page_banner">
@@ -545,7 +568,7 @@ EOS;
         if (mb_substr($printer['printerType'], 0, 7) == 'generic') $genericFound = true;
         if (mb_substr($printer['printerType'], 0, 7) == 'receipt') $receiptFound = true;
     }
-    mysqli_free_result($printerR);
+    $printerR->free();
 
     $html = <<<EOS
     <div class='row'>
@@ -606,7 +629,7 @@ EOS;
 EOS;
         foreach ($printers as $key => $printer) {
             if (mb_substr($printer['printerType'], 0, 7) == 'generic') {
-                '<option value="' . escape_quotes($key) . ':::' . escape_quotes($printer['address']) .
+                $html .= '<option value="' . escape_quotes($key) . ':::' . escape_quotes($printer['address']) .
                 ':-:' . escape_quotes($printer['printerName']) . ':-:' . escape_quotes($printer['printerType']) .
                 ':-:' . escape_quotes($printer['codePage']) . '">' . $key . "</option>\n";
             }

@@ -1,7 +1,7 @@
 <?php
 // Vendor - index.php - Main page for vendor registration
 require_once("lib/base.php");
-require_once("lib/exhibitorInvoice.php");
+require_once("../lib/exhibitorInvoice.php");
 require_once("lib/changePassword.php");
 require_once("lib/auctionItemRegistrationForms.php");
 require_once('../lib/exhibitorYears.php');
@@ -16,13 +16,14 @@ $con = get_conf('con');
 $conid = $con['id'];
 $vendor_conf = get_conf('vendor');
 $debug = get_conf('debug');
-$ini = get_conf('reg');
+$reg_conf = get_conf('reg');
+$usps = get_conf('usps');
 load_cc_procs();
 
 $condata = get_con();
 
 $in_session = false;
-$regserver = $ini['server'];
+$regserver = $reg_conf['server'];
 $exhibitor = '';
 
 // encrypt/decrypt stuff
@@ -46,6 +47,10 @@ if (str_starts_with($_SERVER['HTTP_HOST'], 'artist')){
     $portalType = 'vendor';
 }
 
+$useUSPS = false;
+if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
+    $useUSPS = true;
+
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['vemail'] = $vendor_conf[$portalType];
@@ -54,6 +59,8 @@ $config_vars['portalName'] = $portalName;
 $config_vars['artistsite'] = $vendor_conf['artistsite'];
 $config_vars['vendorsite'] = $vendor_conf['vendorsite'];
 $config_vars['debug'] = $debug['vendors'];
+$config_vars['required'] = $reg_conf['required'];
+$config_vars['useUSPS'] = $useUSPS;
 
 vendor_page_init($condata['label'] . " $portalName Registration");
 
@@ -71,17 +78,17 @@ fclose($fh);
     <div class="row">
         <div class="col-sm-12 p-0">
             <?php
-if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') {
-    if (array_key_exists('logoalt', $ini)) {
-        $altstring = $ini['logoalt'];
+if (array_key_exists('logoimage', $reg_conf) && $reg_conf['logoimage'] != '') {
+    if (array_key_exists('logoalt', $reg_conf)) {
+        $altstring = $reg_conf['logoalt'];
     } else {
         $altstring = 'Logo';
     } ?>
-                <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring; ?>"/>
+                <img class="img-fluid" src="images/<?php echo $reg_conf['logoimage']; ?>" alt="<?php echo $altstring; ?>"/>
 <?php
 }
-if (array_key_exists('logotext', $ini) && $ini['logotext'] != '') {
-    echo $ini['logotext'];
+if (array_key_exists('logotext', $reg_conf) && $reg_conf['logotext'] != '') {
+    echo $reg_conf['logotext'];
 }
 ?>
         </div>
@@ -171,7 +178,7 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
     header('location:' . $_SERVER['PHP_SELF']);
 } else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
     // handle login submit
-    $login = strtolower(sql_safe($_POST['si_email']));
+    $login = trim(strtolower(sql_safe($_POST['si_email'])));
     $loginQ = <<<EOS
 SELECT e.id, e.artistName, e.exhibitorName, LOWER(e.exhibitorEmail) as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
        LOWER(ey.contactEmail) AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview
@@ -420,7 +427,7 @@ $exhibitorSR->free();
 draw_registrationModal($portalType, $portalName, $con, $countryOptions);
 draw_passwordModal();
 draw_exhibitorRequestModal();
-draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $cc, $portalName, $portalType);
+draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $reg_conf, $cc, $portalName, $portalType);
 draw_exhibitorReceiptModal($portalType);
 draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf['artcontrol']);
 ?>

@@ -157,7 +157,7 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         if ($new_perid === false) {
             $error_message .= "Insert of person $row failed<BR/>";
         } else {
-            $updated_perinfo[] = array('rownum' => $row, 'perid' => $new_perid);
+            $updated_perinfo[] = array('rowpos' => $row, 'perid' => $new_perid);
             $cart_perinfo_map[$new_perid] = $row;
             $update_permap[$cartrow['perid']] = $new_perid;
             $cart_perinfo[$row]['perid'] = $new_perid;
@@ -214,12 +214,12 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
 $master_perid = $cart_perinfo[0]['perid'];
 $notes = 'Pickup by: ' . trim($cart_perinfo[0]['first_name'] . ' ' . $cart_perinfo[0]['last_name']);
 $insTransactionSQL = <<<EOS
-INSERT INTO transaction(conid,perid,userid,price,paid,type,create_date)
-VALUES (?,?,?,?,?,'atcon',now());
+INSERT INTO transaction(conid,perid,userid,price,withtax,tax,paid,type,create_date)
+VALUES (?,?,?,0,0,0,0,'atcon',now());
 EOS;
 // now insert the master transaction
-$paramarray = array($conid, $master_perid, $user_id, 0, 0);
-$typestr = 'iiidd';
+$paramarray = array($conid, $master_perid, $user_id);
+$typestr = 'iii';
 $master_transid = dbSafeInsert($insTransactionSQL, $typestr, $paramarray);
 if ($master_transid === false) {
     ajaxError('Unable to create master transaction');
@@ -248,7 +248,7 @@ for ($row = 0; $row < sizeof($cart_membership); $row++) {
         if ($new_regid === false) {
             $error_message .= "Insert of membership $row failed<BR/>";
         }
-        $updated_membership[] = array('rownum' => $row, 'perid' => $cartrow['perid'], 'create_trans' => $master_perid, 'id' => $new_regid);
+        $updated_membership[] = array('rowpos' => $row, 'perid' => $cartrow['perid'], 'create_trans' => $master_perid, 'id' => $new_regid);
         $cartrow['regid'] = $new_regid;
         $cart_membership[$row]['regid'] = $new_regid;
         $reg_ins++;
