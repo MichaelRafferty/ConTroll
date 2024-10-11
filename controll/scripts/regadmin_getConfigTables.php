@@ -86,7 +86,7 @@ EOS;
         break;
 
     case 'rules':
-        $data = getRulesData($conid);
+        $data = getRulesData($conid, true);
         $response['ageList'] = $data['ageList'];
         $response['ageListIdx'] = $data['ageListIdx'];
         $response['memTypes'] = $data['memTypes'];
