@@ -36,9 +36,11 @@ class PosCart {
     #memberAgeLabel = null;
     #currentAge = null;
     #currentPerid = null;
+    #currentPerIdx = null;
     #memberships = [];
     #allMemberships = [];
     #cartContentsDiv = null;
+    #cartChanges = 0;
 
 // Constants
     #isMembershipTypes = [ 'full', 'virtual', 'oneday' ];
@@ -412,9 +414,22 @@ class PosCart {
         console.log("editing " + cart_row.fullName + ' (' + cart_row.perid + '): ' + cart_row.memberships.length);
         if (this.#addEditModal) {
             this.#addEditFullName.innerHTML = cart_row.fullName;
-            this.buildAgeButtons(cart_row);
-            this.buildMembershipButtons(cart_row.perid);
+            this.#memberships = [];
+            this.#allMemberships = [];
+
+            // build the current values of the memberships
+            this.everyMembership(function(_this, mem) {
+                if (cart_row.perid == mem.perid ) {
+                    _this.#memberships.push(mem);
+                }
+                _this.#allMemberships.push(mem);
+            });
+            this.buildAgeButtons();
+            this.buildRegItemButtons();
             this.redrawRegItems(index);
+            this.#currentPerid = cart_row.perid;
+            this.#currentPerIdx = index;
+            this.#cartChanges = 0;
             this.#addEditModal.show();
         }
         return;
@@ -422,8 +437,6 @@ class PosCart {
 
 // Redraw Reg Items - redraw the items for this person
     redrawRegItems(index) {
-        var memberships = this.#cartPerinfo[index].memberships;
-
         var totalDue = 0;
         var countMemberships = 0;
         var unpaidMemberships = 0;
@@ -437,7 +450,7 @@ class PosCart {
             </div>
 `;
         var col1 = '';
-        for (var row in memberships) {
+        for (var row in this.#memberships) {
             var membershipRec = this.#memberships[row];
             countMemberships++;
             var amount_due = Number(membershipRec.price) - (Number(membershipRec.paid) + Number(membershipRec.couponDiscount));
@@ -451,12 +464,12 @@ class PosCart {
             col1 = membershipRec.create_date;
             if (membershipRec.toDelete) {
                 strike = true;
-                col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="cart.membershipRestore(' +
+                col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="cart.regItemRestore(' +
                     row + ')">Restore</button>';
             } else if (membershipRec.status == 'in-cart') {
                 col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="cart.membershipRemove(' + row + ')">Remove</button>';
             } else if (membershipRec.status != 'plan' && (membershipRec.paid == 0 || pos.getManager())) {
-                col1 = '<button class="btn btn-sm ' + btncolor + ' pt-0 pb-0" onclick="cart.membershipDelete(' + row + ')">Delete</button>';
+                col1 = '<button class="btn btn-sm ' + btncolor + ' pt-0 pb-0" onclick="cart.regItemDelete(' + row + ')">Delete</button>';
             }
             html += `
     <div class="row">
@@ -492,10 +505,10 @@ class PosCart {
     }
 
 // age buttons
-    buildAgeButtons(cart_row) {
+    buildAgeButtons() {
         // first check if there is a current age;
-        for (var row in cart_row.memberships) {
-            var mbr = cart_row.memberships[row];
+        for (var row in this.#memberships) {
+            var mbr = this.#memberships[row];
             if (mbr.memAge != 'all') {
                 this.#memberAge = mbr.memAge;
                 this.#memberAgeLabel = ageListIdx[this.#memberAge].label;
@@ -519,19 +532,8 @@ class PosCart {
     }
 
     // membership buttonws
-    buildMembershipButtons(perid) {
-        this.#memberships = [];
-        this.#allMemberships = [];
-        var pid = perid;
-
-        // build the current values of the array
-        this.everyMembership(function(_this, mem) {
-            if (pid == mem.perid ) {
-                _this.#memberships.push(mem);
-            }
-            _this.#allMemberships.push(mem);
-        });
-        // now loop over memList and build each button
+    buildRegItemButtons() {
+        // loop over memList and build each button
         var html = '';
         config['debug'] = 0;
         var rules = new MembershipRules(pos.getConid(), this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
@@ -554,6 +556,82 @@ class PosCart {
             }
         }
         this.#membershipButtonsDiv.innerHTML = html;
+    }
+
+    // mark an unpaid membership row to be deleted on save
+    regItemDelete(row) {
+        clear_message();
+        if (this.#memberships == null || this.#memberships.length == 0) {
+            show_message("No memberships found", "warn", 'aeMessageDiv');
+            return;
+        }
+
+        var mbr = this.#memberships[row];
+        if (mbr.status != 'unpaid' && !pos.getManager()) {
+            show_message("Cannot remove that membership, only unpaid membershipd can be deleted.", "warn", 'aeMessageDiv');
+            return
+        }
+
+        if (mbr.price == 0 && !pos.getManager()) {
+            show_message("Please contact registration at " + config['regadminemail'] + "  to delete free memberships.", "warn", 'aeMessageDiv');
+            return;
+        }
+
+        if (mbr.paid > 0 && !pos.getManager()) {
+            show_message("Please contact registration at " + config['regadminemail'] + " to resolve this partially paid membership.", "warn", 'aeMessageDiv');
+            return;
+        }
+
+        // check if anything else in the cart depends on this membership
+        // trial the delete
+        mbr.toDelete = true;
+        var rules = new MembershipRules(config['conid'], this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        for (var nrow in this.#memberships) {
+            if (row == nrow)    // skip checking ourselves
+                continue;
+            var nmbr = this.#memberships[nrow];
+            if (nmbr.toDelete)
+                continue;
+            nmbr.toDelete = true;
+            if (rules.testMembership(nmbr, true) == false) {
+                mbr.toDelete = undefined;
+                nmbr.toDelete = undefined;
+                show_message("You cannot delete " + mbr.label + " because " + nmbr.label + " requires it.  You must delete/remove " + nmbr.label + " first.",
+                    'warn', 'aeMessageDiv');
+            }
+            nmbr.toDelete = undefined;
+        }
+
+
+        this.#cartChanges++;
+        this.redrawRegItems(this.#currentPerIdx);
+        this.buildRegItemButtons();
+    }
+
+    // restore a 'deleted' membership item
+    regItemRestore(row) {
+        clear_message();
+        if (this.#memberships == null) {
+            show_message("No memberships found", "warn", 'aeMessageDiv');
+            return;
+        }
+
+        var mbr = this.#memberships[row];
+        if (!mbr.toDelete) {
+            show_message("Cannot restore this membership, it is not marked deleted.", "warn", 'aeMessageDiv');
+            return
+        }
+
+        var rules = new MembershipRules(config['conid'], this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        if (rules.testMembership(mbr, false) == false) {
+            show_message("You cannot restore " + mbr.label + " because it requires some other deleted membership. Look at your memberships marked 'Restore'" +
+                " and restore its prerequesite", "warn", 'aeMessageDiv');
+        } else {
+            mbr.toDelete = undefined;
+        }
+        this.#cartChanges--;
+        this.redrawRegItems();
+        this.buildRegItemButtons();
     }
 
 // addEdit Assist functions

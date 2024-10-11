@@ -226,6 +226,9 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
                         </div>
                     </div>
                     <div id='cartContentsDiv'>Cart Placeholder</div>
+                    <div class='row'>
+                        <div class='col-sm-12' id='aeMessageDiv'></div>
+                    </div>
                 </div>
                 <div class='modal-footer'>
                     <button type='button' id='discard_change_button' class='btn btn-secondary'
