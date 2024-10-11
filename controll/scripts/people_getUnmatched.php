@@ -20,6 +20,13 @@ if ((!array_key_exists('ajax_request_action', $_POST)) || $_POST['ajax_request_a
     exit();
 }
 
+$limit = 50;
+$ctQ = <<<EOS
+SELECT count(*) new
+FROM newperson n
+WHERE perid IS NULL;
+EOS;
+
 $unQ = <<<EOS
 WITH mby AS (
 SELECT n.id, count(*) manages
@@ -56,22 +63,40 @@ LEFT OUTER JOIN perinfo mgrP ON n.managedBy = mgrP.id
 LEFT OUTER JOIN regs r ON n.id = r.id
 WHERE n.perid IS NULL
 ORDER BY mby.manages, manager, n.createtime
+LIMIT $limit;
 EOS;
 
-$unR = dbQuery($unQ);
-if ($unR === false) {
-    $response['error'] = 'Select unmatched failed';
+$ctR = dbQuery($ctQ);
+if ($ctQ === false) {
+    $response['error'] = 'Count unmatched failed';
     ajaxSuccess($response);
 }
 
+$unmatchedCnt = $ctR->fetch_row()[0];
+$ctR->free();
 $unmatched = [];
-while ($unL = $unR->fetch_assoc()) {
-    $unmatched[] = $unL;
+
+if ($unmatchedCnt > 0) {
+
+    $unR = dbQuery($unQ);
+    if ($unR === false) {
+        $response['error'] = 'Select unmatched failed';
+        ajaxSuccess($response);
+    }
+
+    while ($unL = $unR->fetch_assoc()) {
+        $unmatched[] = $unL;
+    }
+    $unR->free();
 }
-$unR->free();
 
 $response['unmatched'] = $unmatched;
-$response['numUnmatched'] = count($unmatched);
+if (count($unmatched) < $limit)
+    $response['success'] = "$unmatchedCnt unmatched new people found";
+else
+    $response['success'] = "Too many records were matched, only the first $limit unmatched new people returned";
+
+$response['numUnmatched'] = $unmatchedCnt;
 
 ajaxSuccess($response);
 ?>
