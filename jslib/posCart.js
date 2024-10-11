@@ -451,12 +451,12 @@ class PosCart {
             col1 = membershipRec.create_date;
             if (membershipRec.toDelete) {
                 strike = true;
-                col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="membership.membershipRestore(' +
+                col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="cart.membershipRestore(' +
                     row + ')">Restore</button>';
             } else if (membershipRec.status == 'in-cart') {
-                col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="membership.membershipRemove(' + row + ')">Remove</button>';
+                col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="cart.membershipRemove(' + row + ')">Remove</button>';
             } else if (membershipRec.status != 'plan' && (membershipRec.paid == 0 || pos.getManager())) {
-                col1 = '<button class="btn btn-sm ' + btncolor + ' pt-0 pb-0" onclick="membership.membershipDelete(' + row + ')">Delete</button>';
+                col1 = '<button class="btn btn-sm ' + btncolor + ' pt-0 pb-0" onclick="cart.membershipDelete(' + row + ')">Delete</button>';
             }
             html += `
     <div class="row">
@@ -549,7 +549,7 @@ class PosCart {
                     memLabel += ' (' + mem.price + ')';
                 }
                 html += '<div class="col-sm-auto mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary"' +
-                    ' onclick="membership.membershipAdd(' + "'" + mem.id + "'" + ')">' +
+                    ' onclick="cart.membershipAdd(' + "'" + mem.id + "'" + ')">' +
                     (mem.conid != pos.getConid() ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
             }
         }

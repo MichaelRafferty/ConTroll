@@ -513,8 +513,8 @@ class exhibitssetup {
                     title: "Name", field: "name", width: 350, headerSort: true, headerFilter: true,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "128"}}, validator: "required"
                 },
-                {title: "Description", field: "description", headerFilter: true, width: 500, headerSort: false,},
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'Regions', fieldName: 'description', name: 'name' }, hozAlign:"left", headerSort: false },
+                {title: "Description", field: "description", headerFilter: true, width: 500, headerSort: false,},
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 90,},
                 {title: "Orig Key", field: "regionKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
@@ -681,8 +681,8 @@ class exhibitssetup {
                     title: "Name", field: "name", width: 400, headerSort: true, headerFilter: true,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "128"}}, validator: "required"
                 },
-                {title: "Description", field: "description", headerFilter: true, width: 550, headerSort: false,},
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'exhibitsSpaces', fieldName: 'description', name: 'name' }, hozAlign:"left", headerSort: false },
+                {title: "Description", field: "description", headerFilter: true, width: 550, headerSort: false,},
                 {title: 'Units', field: "unitsAvailable", width: 100, hozAlign: "right", headerSort: false, editor: "number", editorParams: {min:0, max:9999999}},
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "spaceKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
