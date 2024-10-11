@@ -419,10 +419,7 @@ class PosCart {
 
 // use the memRules engine to add/edit the memberships for this person
     addEditMemberships(index) {
-        console.log("addEditMembership(" + index + ")");
-
         var cart_row = this.#cartPerinfo[index];
-        console.log("editing " + cart_row.fullName + ' (' + cart_row.perid + '): ' + cart_row.memberships.length);
         if (this.#addEditModal) {
             this.#addEditFullName.innerHTML = cart_row.fullName;
             this.#memberships = [];
@@ -594,7 +591,7 @@ class PosCart {
 
     // mark an unpaid membership row to be deleted on save
     regItemDelete(row) {
-        clear_message();
+        clear_message('aeMessageDiv');
         if (this.#memberships == null || this.#memberships.length == 0) {
             show_message("No registration items found", "warn", 'aeMessageDiv');
             return;
@@ -644,7 +641,7 @@ class PosCart {
 
     // restore a 'deleted' membership item
     regItemRestore(row) {
-        clear_message();
+        clear_message('aeMessageDiv');
         if (this.#memberships == null) {
             show_message("No memberships found", "warn", 'aeMessageDiv');
             return;
@@ -670,7 +667,7 @@ class PosCart {
 
     // add to cart
     regItemAdd(id) {
-        clear_message();
+        clear_message('aeMessageDiv');
         var memrow = findMembership(id);
         if (memrow == null)
             return;
@@ -754,7 +751,7 @@ class PosCart {
 
     // remove an unsaved reg item row from the cart
     regItemRemove(row) {
-        clear_message();
+        clear_message('aeMessageDiv');
         if (this.#memberships == null) {
             show_message("No registration items found", "warn", 'aeMessageDiv');
             return;
