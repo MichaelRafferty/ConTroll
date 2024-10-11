@@ -38,9 +38,11 @@ class PosCart {
     #currentPerid = null;
     #memberships = [];
     #allMemberships = [];
+    #cartContentsDiv = null;
 
 // Constants
     #isMembershipTypes = [ 'full', 'virtual', 'oneday' ];
+    #isDueStatuses = [ 'unpaid', 'plan', 'in-cart' ];
 
 // initialization
     constructor() {
@@ -62,6 +64,7 @@ class PosCart {
             this.#addEditFullName = document.getElementById('addEditFullName');
             this.#ageButtonsDiv = document.getElementById('ageButtons');
             this.#membershipButtonsDiv = document.getElementById('membershipButtons');
+            this.#cartContentsDiv = document.getElementById('cartContentsDiv');
         }
     }
 
@@ -411,9 +414,81 @@ class PosCart {
             this.#addEditFullName.innerHTML = cart_row.fullName;
             this.buildAgeButtons(cart_row);
             this.buildMembershipButtons(cart_row.perid);
+            this.redrawRegItems(index);
             this.#addEditModal.show();
         }
         return;
+    }
+
+// Redraw Reg Items - redraw the items for this person
+    redrawRegItems(index) {
+        var memberships = this.#cartPerinfo[index].memberships;
+
+        var totalDue = 0;
+        var countMemberships = 0;
+        var unpaidMemberships = 0;
+        var html = `
+            <div class="row">
+                <div class="col-sm-2"><b>Actions</b></div>
+                <div class="col-sm-1" style='text-align: right;'><b>Status</b></div>
+                <div class="col-sm-1" style='text-align: right;'><b>Price</b></div>
+                <div class="col-sm-1" style='text-align: right;'><b>Paid</b></div>
+                <div class="col-sm-4"><b>Membership</b></div>
+            </div>
+`;
+        var col1 = '';
+        for (var row in memberships) {
+            var membershipRec = this.#memberships[row];
+            countMemberships++;
+            var amount_due = Number(membershipRec.price) - (Number(membershipRec.paid) + Number(membershipRec.couponDiscount));
+            var label = (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label +
+                (membershipRec.memAge != 'all' ? ' [' + ageListIdx[membershipRec.memAge].label + ']' : '');
+            if ((!membershipRec.toDelete) && membershipRec.status.includes(this.#isDueStatuses))
+                totalDue += amount_due;
+
+            var strike = false
+            var btncolor = 'btn-secondary';
+            col1 = membershipRec.create_date;
+            if (membershipRec.toDelete) {
+                strike = true;
+                col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="membership.membershipRestore(' +
+                    row + ')">Restore</button>';
+            } else if (membershipRec.status == 'in-cart') {
+                col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="membership.membershipRemove(' + row + ')">Remove</button>';
+            } else if (membershipRec.status != 'plan' && (membershipRec.paid == 0 || pos.getManager())) {
+                col1 = '<button class="btn btn-sm ' + btncolor + ' pt-0 pb-0" onclick="membership.membershipDelete(' + row + ')">Delete</button>';
+            }
+            html += `
+    <div class="row">
+        <div class="col-sm-2">` + col1 + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + (strike ? '<s>' : '') + membershipRec.status + (strike ? '</s>' : '') + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + (strike ? '<s>' : '') + membershipRec.price + (strike ? '</s>' : '') + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + (strike ? '<s>' : '') + membershipRec.paid + (strike ? '</s>' : '') + `</div>
+        <div class="col-sm-7">` + (strike ? '<s>' : '') + label + (strike ? '</s>' : '') + `
+        </div>
+    </div>
+`;
+        }
+        if (totalDue > 0) {
+            html += `
+    <div class='row'>
+        <div class='col-sm-12 ms-0 me-0 align-center'>
+            <hr color="black" style='height:3px;width:95%;margin:auto;margin-top:10px;margin-bottom:2px;'/>
+        </div>
+        <div class='col-sm-12 ms-0 me-0 align-center'>
+            <hr color="black" style='height:3px;width:95%;margin:auto;margin-top:2px;margin-bottom:20px;'/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-1" style='text-align: right;'><b>Total Due:</b></div>
+        <div class="col-sm-1" style='text-align: right;'><b>$` + Number(totalDue).toFixed(2)+ `</b></div>
+    </div>`
+        }
+        if (countMemberships == 0) {
+            html = "Nothing in the Cart";
+        }
+        this.#cartContentsDiv.innerHTML = html;
     }
 
 // age buttons

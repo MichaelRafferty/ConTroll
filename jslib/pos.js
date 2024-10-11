@@ -246,7 +246,7 @@ class Pos {
     }
 
     getManager() {
-        return this.#Manager;
+        return this.#Manager == 1;
     }
 
     nonPrimaryCategoriesIncludes(category) {

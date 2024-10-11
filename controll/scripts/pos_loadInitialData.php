@@ -62,9 +62,9 @@ $response['cc_html'] = draw_cc_html($cc);
 // do as if statement such that it can check for both database error and no rows returned
 $Manager = checkAuth($check_auth['sub'], 'reg_admin');
 if ($Manager !== false && sizeof($Manager) > 0)
-    $Manger = true;
+    $Manager = 1;
 else
-    $Manager= false;
+    $Manager= 0;
 $response['Manager'] = $Manager;
 // get the start and end dates, and adjust for the memLabels based on the real dates versus today.
 $condatesSQL = <<<EOS

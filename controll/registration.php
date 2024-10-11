@@ -222,7 +222,7 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
 ?>
                     <div class='row'>
                         <div class='col-sm-12'>
-                            <h2 class='size-h3'>Cart:</h2>
+                            <h2 class='size-h3'>Registration Items:</h2>
                         </div>
                     </div>
                     <div id='cartContentsDiv'>Cart Placeholder</div>
@@ -234,7 +234,7 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
                     </button>
                     <button type='button' id='close_change_button' class='btn btn-primary'
                             onclick='cart.saveMembershipChange();'>
-                        Change Memberships
+                        Save Changes to Memberships
                     </button>
                 </div>
             </div>
