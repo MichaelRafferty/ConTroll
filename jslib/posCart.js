@@ -523,6 +523,8 @@ class PosCart {
             if (mbr.memAge != 'all') {
                 this.#memberAge = mbr.memAge;
                 this.#memberAgeLabel = ageListIdx[this.#memberAge].label;
+                if (this.#currentAge == null)
+                    this.#currentAge = this.#memberAge
                 break;
             }
         }
@@ -534,6 +536,7 @@ class PosCart {
             var age = ageList[row];
             if (age.ageType == 'all')
                 continue;
+
             html += '<div class="col-sm-auto"><button id="ageBtn-' + age.ageType + '" class="btn btn-sm ' +
                 ((this.#currentAge == age.ageType || this.#memberAge == age.ageType) ? 'btn-primary' : color) + '" onclick="cart.ageSelect(' + "'" + age.ageType + "'" + ')">' +
                 age.label + ' (' + age.shortname + ')' +
@@ -542,11 +545,31 @@ class PosCart {
         this.#ageButtonsDiv.innerHTML = html;
     }
 
-    // membership buttonws
+    // ageSelect - redo all the age buttons on selecting one of them, then move on to the next page
+    ageSelect(ageType) {
+        if (this.#memberAge != null && ageType != this.#memberAge) {
+            show_message("You already have a membership of the age '" + this.#memberAgeLabel, "warn", 'aeMessageDiv');
+            return;
+        }
+
+        this.#currentAge = ageType;
+        var color = this.#memberAge != null ? 'btn-warning' : (this.#currentAge != null ? 'btn-secondary' : 'btn-primary');
+        for (var row in ageList) {
+            var age = ageList[row];
+            if (age.ageType == 'all')
+                continue;
+            var btn = document.getElementById('ageBtn-' + age.ageType);
+            btn.classList.remove('btn-primary');
+            btn.classList.remove('btn-secondary');
+            btn.classList.remove('btn-warning');
+            btn.classList.add((this.#currentAge == age.ageType || this.#memberAge == age.ageType) ? 'btn-primary' : color);
+        }
+    }
+
+    // membership buttons
     buildRegItemButtons() {
         // loop over memList and build each button
         var html = '';
-        config['debug'] = 0;
         var rules = new MembershipRules(pos.getConid(), this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
 
         for (var row in memList) {

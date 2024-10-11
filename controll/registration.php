@@ -39,12 +39,24 @@ $usps = get_conf('usps');
 $conid = $con['id'];
 $conname = $con['conname'];
 $policies = getPolicies();
+$ini = get_conf('reg');
 $useUSPS = false;
+
+$config_vars = array();
+$config_vars['label'] = $con['label'];
+$config_vars['debug'] = $debug['controll_registration'];
+$config_vars['conid'] = $conid;
+$config_vars['regadminemail'] = $con['regadminemail'];
+$config_vars['required'] = $ini['required'];
+
 // form as laid out has no room for usps block, if we want it we need to reconsider how to do it here.
 //if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
 //    $useUSPS = true;
 
 ?>
+<script type='text/javascript'>
+    var config = <?php echo json_encode($config_vars); ?>;
+</script>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
         <div class="col-sm-7">

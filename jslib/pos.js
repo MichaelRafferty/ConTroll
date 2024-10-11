@@ -324,8 +324,8 @@ class Pos {
         ageList = data['gageList'];
         ageListIdx = data['gageListIdx'];
         memCategories = data['gmemCategories'];
-        memList = data['gmemList']
-        memListIdx = data['gmemListIdx']
+        memList = data['gmemList'];
+        memListIdx = data['gmemListIdx'];
         memRules = data['gmemRules'];
 
         if (this.#discount_mode === undefined || this.#discount_mode === null || this.#discount_mode == '')

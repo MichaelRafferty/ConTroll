@@ -9,7 +9,6 @@ var memCategories = null;
 var memList = null;
 var memListIdx = null;
 var memRules = null;
-var config = [];
 
 // initialization
 // lookup all DOM elements
