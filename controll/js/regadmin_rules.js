@@ -695,14 +695,14 @@ class rulesSetup {
         var tableField = null;
         switch (level) {
             case 'r':
-                this.#selValues = ',' + this.#rTypeList.innerHTML + ',';
+                this.#selValues = this.#rTypeList.innerHTML.split(',');
                 this.#editRuleSelLabel.innerHTML = "<b>Select which Types apply to this rule:</b>"
                 tableField = '#editRuleSelTable';
                 this.#selField = this.#rTypeList;
                 $('#editRuleSelButtons').show();
                 break;
             case 's':
-                this.#selValues = ',' + this.#sTypeList.innerHTML + ',';
+                this.#selValues = this.#sTypeList.innerHTML.split(',');
                 this.#editRuleStepSelLabel.innerHTML = "<b>Select which Types apply to this step:</b>"
                 tableField = '#editRuleStepSelTable';
                 this.#selField = this.#sTypeList;
@@ -730,14 +730,14 @@ class rulesSetup {
         var tableField = null;
         switch (level) {
             case 'r':
-                this.#selValues = ',' + this.#rCatList.innerHTML + ',';
+                this.#selValues = this.#rCatList.innerHTML.split(',');
                 this.#editRuleSelLabel.innerHTML = "<b>Select which Categories apply to this rule:</b>"
                 tableField = '#editRuleSelTable';
                 this.#selField = this.#rCatList;
                 $('#editRuleSelButtons').show();
                 break;
             case 's':
-                this.#selValues = ',' + this.#sCatList.innerHTML + ',';
+                this.#selValues = this.#sCatList.innerHTML.split(',');
                 this.#editRuleStepSelLabel.innerHTML = "<b>Select which Categories apply to this step:</b>"
                 tableField = '#editRuleStepSelTable';
                 this.#selField = this.#sCatList;
@@ -765,14 +765,14 @@ class rulesSetup {
         var tableField = null;
         switch (level) {
             case 'r':
-                this.#selValues = ',' + this.#rAgeList.innerHTML + ',';
+                this.#selValues = this.#rAgeList.innerHTML.split(',');
                 this.#editRuleSelLabel.innerHTML = "<b>Select which Ages apply to this rule:</b>"
                 tableField = '#editRuleSelTable';
                 this.#selField = this.#rAgeList;
                 $('#editRuleSelButtons').show();
                 break;
             case 's':
-                this.#selValues = ',' + this.#sAgeList.innerHTML + ',';
+                this.#selValues = this.#sAgeList.innerHTML.split(',');
                 this.#editRuleStepSelLabel.innerHTML = "<b>Select which Ages apply to this step:</b>"
                 tableField = '#editRuleStepSelTable';
                 this.#selField = this.#sAgeList;
@@ -801,14 +801,14 @@ class rulesSetup {
         var tableField = null;
         switch (level) {
             case 'r':
-                this.#selValues = ',' + this.#rMemList.innerHTML + ',';
+                this.#selValues = this.#rMemList.innerHTML.split(',');
                 this.#editRuleSelLabel.innerHTML = "<b>Select which memId's apply to this rule:</b>"
                 tableField = '#editRuleSelTable';
                 this.#selField = this.#rMemList;
                 $('#editRuleSelButtons').show();
                 break;
             case 's':
-                this.#selValues = ',' + this.#sMemList.innerHTML + ',';
+                this.#selValues = this.#sMemList.innerHTML.split(',');
                 this.#editRuleStepSelLabel.innerHTML = "<b>Select which memId's apply to this step:</b>"
                 tableField = '#editRuleStepSelTable';
                 this.#selField = this.#sMemList;
