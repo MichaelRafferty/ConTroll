@@ -11,10 +11,7 @@ class Pos {
 
     // review items
     #review_div = null;
-    #country_select = null;
     #review_missing_items = 0;
-    #review_required_fields = ['first_name', 'last_name', 'email_addr', 'address_1', 'city', 'state', 'postal_code'];
-    #review_prompt_fields = ['phone'];
     #review_editable_fields = [
         'first_name', 'middle_name', 'last_name', 'suffix',
         'legalName',
@@ -186,7 +183,6 @@ class Pos {
 
         // review items
         this.#review_div = document.getElementById('review-div');
-        this.#country_select = document.getElementById('country').innerHTML;
 
         // pay items
         this.#pay_div = document.getElementById('pay-div');
@@ -239,6 +235,10 @@ class Pos {
 
     setFindUnpaidHidden(state) {
         this.#find_unpaid_button.hidden = state;
+    }
+
+    setMissingItems(num) {
+        this.#review_tab.disabled = num;
     }
 
     getConid() {
@@ -626,7 +626,7 @@ class Pos {
 
     // common confirm add/edit screen dirty, if the tab isn't shown switch to it if dirty
     confirm_discard_add_edit(silent) {
-        if (!this.#add_edit_dirty_check || cart.isFrozen()) // don't check if dirty, or if the cart is frozen, return ok to discard
+        if (!this.#add_edit_dirty_check || cart.isFrozen()) // don't check if not dirty, or if the cart is frozen, return ok to discard
             return true;
 
         this.#add_edit_current_state = $("#add-edit-form").serialize();
@@ -1721,7 +1721,7 @@ class Pos {
     review_update() {
         cart.updateReviewData();
         reviewShown();
-        if (review_missing_items > 0) {
+        if (this.#review_missing_items > 0) {
             setTimeout(review_nochanges, 100);
         } else {
             review_nochanges();
@@ -1747,8 +1747,8 @@ class Pos {
     // if everything is put up next customer
     review_nochanges() {
         // first check to see if any required fields still exist
-        if (review_missing_items > 0) {
-            if (!confirm("Proceed ignoring check for " + review_missing_items.toString() + " missing data items (shown in yellow)?")) {
+        if (this.#review_missing_items > 0) {
+            if (!confirm("Proceed ignoring check for " + this.#review_missing_items.toString() + " missing data items (shown in yellow)?")) {
                 return false; // confirm answered no, return not safe to discard
             }
         }

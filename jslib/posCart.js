@@ -47,6 +47,14 @@ class PosCart {
     #vpModal = null;
     #vpBody = null;
 
+// Review items
+    #review_required_all = ['first_name', 'last_name', 'email_addr', 'address_1', 'city', 'state', 'postal_code'];
+    #review_required_addr = ['first_name', 'email_addr'];
+    #review_required_first = ['first_name', 'email_addr', 'address_1', 'city', 'state', 'postal_code'];
+    #review_required_fields = this.#review_required_all;
+    #review_prompt_fields = ['phone'];
+    #country_select = document.getElementById('country').innerHTML;
+
 // Constants
     #isMembershipTypes = [ 'full', 'virtual', 'oneday' ];
     #isDueStatuses = [ 'unpaid', 'plan', 'in-cart' ];
@@ -78,6 +86,18 @@ class PosCart {
             this.#vpModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             id.addEventListener('hidden.bs.modal', amountModalHiddenHelper);
             this.#vpBody = document.getElementById("variablePriceBody");
+        }
+
+        switch (config['required']) {
+            case 'first':
+                this.#review_required_fields = this.#review_required_first;
+                break;
+            case 'addr':
+                this.#review_required_fields = this.#review_required_addr;
+                break;
+            default:
+                this.#review_required_fields = this.#review_required_all;
+                break;
         }
     }
 
@@ -937,9 +957,9 @@ class PosCart {
         // first row - member name, remove button
         var rowhtml = '<div class="row mt-1">';
         if (membership_found) {
-            rowhtml += '<div class="col-sm-8 text-bg-success">Member: '
+            rowhtml += '<div class="col-sm-8 text-bg-success">Member: (' + perid + ') ';
         } else {
-            rowhtml += '<div class="col-sm-8 text-bg-info">Non Member: '
+            rowhtml += '<div class="col-sm-8 text-bg-info">Non Member: (' + perid + ') ';
         }
         rowhtml += row.fullName + '</div>';
         if (!this.#freezeCart) {
@@ -1093,7 +1113,7 @@ class PosCart {
 
     // create the HTML of the cart into the review data block
     buildReviewData() {
-        review_missing_items = 0;
+        pos.setMissingItems(0);
         var html = `
 <div id='reviewBody' class="container-fluid form-floating">
   <form id='reviewForm' action='javascript: return false; ' class="form-floating">
@@ -1105,14 +1125,15 @@ class PosCart {
         var mrow;
         var field;
         var tabindex = 0;
+        var review_missing_items = 0;
         for (rownum in this.#cartPerinfo) {
             tabindex += 100;
-            row =
-            mrow = find_primary_membership(this.#cartPerinfo[rownum].memberships);
+            row = this.#cartPerinfo[rownum];
+            mrow = pos.find_primary_membership(row.memberships);
             // look up missing fields
             colors = new map();
-            for (fieldno in review_required_fields) {
-                field = review_required_fields[fieldno];
+            for (fieldno in this.#review_required_fields) {
+                field = this.#review_required_fields[fieldno];
                 if (row[field] == null || row[field] == '') {
                     review_missing_items++;
                     colors.set(field, 'var(--bs-warning)');
@@ -1120,24 +1141,20 @@ class PosCart {
                     colors.set(field, '');
                 }
             }
-            for (fieldno in review_prompt_fields) {
-                field = review_prompt_fields[fieldno];
+            for (fieldno in this.review_prompt_fields) {
+                field = this.#review_prompt_fields[fieldno];
                 if (row[field] == null || row[field] == '') {
-                    if (mrow.memAge == 'child' || mrow.memAge == 'kit') {
-                        review_missing_items++;
-                        colors.set(field, 'var(--bs-warning)');
-                    } else {
-                        colors.set(field, 'var(--bs-info)');
-                    }
+                    colors.set(field, 'var(--bs-info)');
                 } else {
                     colors.set(field, '');
                 }
             }
+            pos.setMissingItems(review_missing_items);
             html += '<div class="row">';
             if (mrow == null) {
                 html += '<div class="col-sm-12 text-bg-info">No Membership</div>';
             } else {
-                html += '<div class="col-sm-12 text-bg-success">Membership: ' + mrow.label + '</div>';
+                html += '<div class="col-sm-12 text-bg-success">Membership: ' + row.memberships[mrow].label + '</div>';
             }
 
             html += `
@@ -1172,6 +1189,12 @@ class PosCart {
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-badge_name' id='c` + rownum + `-badge_name' size=64 maxlength="64" placeholder="Badgename: defaults to first and last name" tabindex="` +
                 String(tabindex + 12) +'" value="' + row['badge_name'] + `"/>
+        </div>
+    </div>
+     <div class="row">
+        <div class="col-sm-auto ms-0 me-0 p-0">
+            <input type="text" name='c` + rownum + `-pronouns' id='c` + rownum + `-pronouns' size=80 maxlength="128" placeholder="Pronouns" tabindex="` +
+                String(tabindex + 10) +  '" value="' + row['pronouns'] + `"/>
         </div>
     </div>
     <div class="row">
@@ -1211,30 +1234,27 @@ class PosCart {
         </div>
         <div class="col-sm-auto ms-0 me-0 p-0">
             <select name='c` + rownum + `-country' id='c` + rownum + `-country' tabindex="` + String(tabindex + 28) + `">
-                ` + country_select + `
+                ` + this.#country_select + `
             </select>
         </div>
     </div>
     <div class="row mb-4">
-        <div class="col-sm-auto ms-0 me-2 p-0">Share Reg?</div>
-        <div class="col-sm-auto ms-0 me-2 p-0">
-            <select name='c` + rownum + `-share_reg_ok' id='c` + rownum + `-share_reg_ok' tabindex="` + String(tabindex + 30) + `">
-               <option value="Y" ` + (row['share_reg_ok'] == 'Y' ? 'selected' : '') + `>Y</option>
-               <option value="N" ` + (row['share_reg_ok'] == 'N' ? 'selected' : '') + `>N</option>
-            </select>
-        </div>
-        <div class="col-sm-auto ms-0 me-2 p-0">Contact OK?</div>
-        <div class="col-sm-auto ms-0 me-2 p-0">
-            <select name='c` + rownum + `-contact_ok' id='c` + rownum + `-contact_ok' tabindex="` + String(tabindex + 32) + `">
-                <option value="Y" ` + (row['contact_ok'] == 'Y' ? 'selected' : '') + `>Y</option>
-                <option value="N" ` + (row['contact_ok'] == 'N' ? 'selected' : '') + `>N</option>
-            </select>
-        </div>
-    </div>
 `;
+
+            // policies
+            var policies = row.policies;
+            for (var polrow in policies) {
+                var policyName = policies[polrow].policy;
+                var policyResp = policies[polrow].response;
+                html += '<div class="col-sm-auto">' + policyName + ': ' +
+                    '<input type="checkbox" name="c' + rownum + '-p_' + policyName + '" id="c' + rownum + '-p_' + policyName +
+                    '" tabindex="' + String(tabindex + 26) +
+                    '" value="Y"' + (policyResp == 'Y' ? ' checked' : ' ') + '/>\n</div>\n';
+            }
+
+        html += '\n</div>\n';
         }
-        html += `
-    <div class="row mt-2">
+    html += `<div class="row mt-2">
         <div class="col-sm-1 m-0 p-0">&nbsp;</div>
         <div class="col-sm-auto m-0 p-0">
             <button class="btn btn-primary btn-sm" type="button" id="review-btn-update" onclick="pos.review_update();">Update All</button>
@@ -1246,7 +1266,7 @@ class PosCart {
     </div>
   </form>
 </div>
-`
+`;
         return html;
     }
 
@@ -1348,7 +1368,10 @@ class PosCart {
 
         for (rownum in this.#cartPerinfo) {
             crow = this.#cartPerinfo[rownum];
-            mrow = find_primary_membership(crow.memberships);
+            mrow = pos.find_primary_membership(crow.memberships);
+            if (mrow == null)
+                continue;   // skip anyone without a primary
+            mrow = crow.memberships[mrow];
             if (new_print) {
                 printed_obj.set(crow['index'], 0);
             }
@@ -1371,7 +1394,11 @@ class PosCart {
     getBadge(index) {
 
         var row = this.#cartPerinfo[index];
-        var printrow = find_primary_membership(row.memberships);
+        var printrow = pos.find_primary_membership(row.memberships);
+        if (printrow == null)
+            return null;
+
+        printrow = row.memberships[printrow];
 
         var params = {};
         params['type'] = printrow['memType'];
@@ -1387,7 +1414,11 @@ class PosCart {
     // addToPrintCount: increment the print count for a badge
     addToPrintCount(index) {
         var row = this.#cartPerinfo[index];
-        var mrow = find_primary_membership(row.membrerships);
+        var mrow = pos.find_primary_membership(row.membrerships);
+        if (mrow == null) {
+            return array(null, 0);
+        }
+
         this.#cartPerinfo[index].memberships[mrow].printcout++;
         var retval = [];
         retval[0] = mrow.regid;
