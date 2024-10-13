@@ -52,7 +52,7 @@ class PosCart {
     #review_required_addr = ['first_name', 'email_addr'];
     #review_required_first = ['first_name', 'email_addr', 'address_1', 'city', 'state', 'postal_code'];
     #review_required_fields = this.#review_required_all;
-    #review_prompt_fields = .phone;
+    #review_prompt_fields = [ 'phone' ];
     #country_select = document.getElementById('country').innerHTML;
 
 // Constants
@@ -974,7 +974,7 @@ class PosCart {
         rowhtml += `
     <div class="row">
         <div class="col-sm-3">Badge Name:</div>
-        <div class="col-sm-5">` + pos.badge_name_default(row.badge_name, row.first_name, row.last_name) + `</div>
+        <div class="col-sm-5">` + pos.badgeNameDefault(row.badge_name, row.first_name, row.last_name) + `</div>
         <div class="col-sm-2 text-center">`;
         if (!this.#freezeCart && row.open_notes != null && row.open_notes.length > 0) {
             rowhtml += '<button type="button" class="btn btn-sm btn-info p-0" onclick="pos.showPerinfoNotes(' + row.index + ', \'cart\')">View' +
