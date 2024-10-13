@@ -108,13 +108,13 @@ $config_vars['required'] = $ini['required'];
                             <div class="row mt-3">
                                 <div class="col-sm-4">
                                     <button type="button" class="btn btn-sm btn-primary" id="find_unpaid_btn" name="find_btn"
-                                            onclick="pos.find_record('unpaid') ;">
+                                            onclick="pos.findRecord('unpaid') ;">
                                         Find Unpaid Transactions
                                     </button>
                                 </div>
                                 <div class="col-sm-8">
                                     <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" name="find_btn"
-                                            onclick="pos.find_record('search');">
+                                            onclick="pos.findRecord('search');">
                                         Find Record
                                     </button>
                                 </div>
@@ -180,17 +180,17 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
                             onclick="pos.review_nochanges();" hidden>No Changes
                     </button>
                     <button type="button" class="btn btn-primary btn-sm" id="review_btn"
-                            onclick="pos.start_review();" hidden>
+                            onclick="pos.startReview();" hidden>
                         Review Data
                     </button>
                     <button type="button" class="btn btn-warning btn-sm" id="startover_btn"
-                            onclick="pos.start_over(1);" hidden>Start Over
+                            onclick="pos.startOver(1);" hidden>Start Over
                     </button>
                     <button type="button" class="btn btn-warning btn-sm" id="void_btn"
-                            onclick="pos.void_trans();" hidden>Void
+                            onclick="pos.voidTrans();" hidden>Void
                     </button>
                     <button type="button" class="btn btn-primary btn-sm" id="next_btn"
-                            onclick="pos.start_over(1);" hidden>Next Customer
+                            onclick="pos.startOver(1);" hidden>Next Customer
                     </button>
                 </div>
             </div>

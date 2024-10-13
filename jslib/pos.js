@@ -148,7 +148,7 @@ class Pos {
         // find people
         this.#pattern_field = document.getElementById("find_pattern");
         this.#pattern_field.addEventListener('keyup', (e) => {
-            if (e.code === 'Enter') this.find_record('search');
+            if (e.code === 'Enter') this.findRecord('search');
         });
         this.#pattern_field.focus();
         this.#id_div = document.getElementById("find_results");
@@ -179,7 +179,7 @@ class Pos {
         this.#clearadd_button = document.getElementById("clearadd-btn");
         this.#add_results_div = document.getElementById("add_results");
         this.#add_edit_initial_state = $("#add-edit-form").serialize();
-        window.addEventListener("beforeunload", this.check_all_unsaved);
+        window.addEventListener("beforeunload", this.checkAllUnsaved);
 
         // review items
         this.#review_div = document.getElementById('review-div');
@@ -214,12 +214,12 @@ class Pos {
             url: "scripts/pos_loadInitialData.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
-                if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
                     return;
                 }
-                if (data['message'] !== undefined) {
-                    show_message(data['message'], 'success');
+                if (data.message !== undefined) {
+                    show_message(data.message, 'success');
                 }
                 _this.loadInitialData(data);
             },
@@ -304,29 +304,29 @@ class Pos {
     loadInitialData(data) {
         // map the memIds and labels for the pre-coded memberships.  Doing it now because it depends on what the database sends.
         // tables
-        this.#conlabel =  data['label'];
-        this.#conid = data['conid'];
-        this.#user_id = data['user_id']
-        this.#Manager = data['Manager'];
-        this.#startdate = data['startdate'];
-        this.#enddate = data['enddate'];
-        this.#memList = data['memLabels'];
-        this.#catList = data['memCategories'];
-        this.#ageList = data['ageList'];
-        this.#typeList = data['memTypes'];
-        this.#cc_html = data['cc_html'];
-        this.#policies = data['policies'];
-        this.#memRules = data['memRules'];
-        this.#discount_mode = data['discount'];
+        this.#conlabel =  data.label;
+        this.#conid = data.conid;
+        this.#user_id = data.user_id
+        this.#Manager = data.Manager;
+        this.#startdate = data.startdate;
+        this.#enddate = data.enddate;
+        this.#memList = data.memLabels;
+        this.#catList = data.memCategories;
+        this.#ageList = data.ageList;
+        this.#typeList = data.memTypes;
+        this.#cc_html = data.cc_html;
+        this.#policies = data.policies;
+        this.#memRules = data.memRules;
+        this.#discount_mode = data.discount;
 
         // create the globals (vars) for membershipRules.js
-        memTypes= data['gnenTypes'];
-        ageList = data['gageList'];
-        ageListIdx = data['gageListIdx'];
-        memCategories = data['gmemCategories'];
-        memList = data['gmemList'];
-        memListIdx = data['gmemListIdx'];
-        memRules = data['gmemRules'];
+        memTypes= data.gmemTypes;
+        ageList = data.gageList;
+        ageListIdx = data.gageListIdx;
+        memCategories = data.gmemCategories;
+        memList = data.gmemList;
+        memListIdx = data.gmemListIdx;
+        memRules = data.gmemRules;
 
         if (this.#discount_mode === undefined || this.#discount_mode === null || this.#discount_mode == '')
             this.#discount_mode = 'none';
@@ -336,7 +336,7 @@ class Pos {
         var row = null;
         var index = 0;
         while (index < this.#memList.length) {
-            this.#memListMap.set(this.#memList[index]['id'], index);
+            this.#memListMap.set(this.#memList[index].id, index);
             index++;
         }
 
@@ -347,8 +347,8 @@ class Pos {
         }
 
         // set up coupon items
-        this.#num_coupons = data['num_coupons'];
-        this.#couponList = data['couponList'];
+        this.#num_coupons = data.num_coupons;
+        this.#couponList = data.couponList;
         // build coupon select
         if (this.#num_coupons <= 0) {
             this.#couponSelect = '';
@@ -356,7 +356,7 @@ class Pos {
             this.#couponSelect = '<select name="couponSelect" id="pay_couponSelect">' + "\n<option value=''>No Coupon</option>\n";
             for (var row in this.#couponList) {
                 var item = this.#couponList[row];
-                this.#couponSelect += "<option value='" + item['id'] + "'>" + item['code'] + ' (' + item['name'] + ")</option>\n";
+                this.#couponSelect += "<option value='" + item.id + "'>" + item.code + ' (' + item.name + ")</option>\n";
             }
             this.#couponSelect += "</select>\n";
         }
@@ -369,54 +369,6 @@ class Pos {
 
         // set starting stages of left and right windows
         this.clearAdd(1);
-    }
-    
-    // search memLabel functions
-    // mem_filter - select specific rows from memList based on
-    //  filt_cat: memCategories to include
-    //  filt_type: memTypes to include
-    //  filt_age: ageList to include
-    //  filt_shortname_regexp: filter on shortname field
-    //  lastly, if it passes everything else filt_excat: anything except this list of memCategories
-    mem_filter(cur, idx, arr) {
-        //if (cur['canSell'] == 0)
-        // return false;
-
-        if (this.#filt_cat != null) {
-            if (!this.#filt_cat.includes(cur['memCategory'].toLowerCase()))
-                return false;
-        }
-        if (this.#filt_type != null) {
-            if (!this.#filt_type.includes(cur['memType'].toLowerCase()))
-                return false;
-        }
-        if (this.#filt_age != null) {
-            if (!this.#filt_age.includes(cur['memAge'].toLowerCase()))
-                return false;
-        }
-        if (this.#filt_shortname_regexp != null) {
-            if (!this.#filt_shortname_regexp.test(cur['shortname']))
-                return false;
-        }
-        if (this.#filt_excat != null) {
-            if (this.#filt_excat.includes(cur['memCategory'].toLowerCase()))
-                return false;
-        }
-        if (this.#filt_conid != null) {
-            if (!this.#filt_conid.includes(Number(cur.conid)))
-                return false;
-        }
-
-        return true;
-    }
-
-    // map id to MemLabel entry
-    find_memLabel(id) {
-        var rownum = memListMap.get(id);
-        if (rownum === undefined) {
-            return null;
-        }
-        return this.#memList[rownum];
     }
 
     // find the primary membership for a perid given it's array of memberships
@@ -437,8 +389,8 @@ class Pos {
         return mem_index;
     }
 
-    // badge_name_default: build a default badge name if its empty
-    badge_name_default(badge_name, first_name, last_name) {
+    // badgeNameDefault: build a default badge name if its empty
+    badgeNameDefault(badge_name, first_name, last_name) {
         if (badge_name === undefined | badge_name === null || badge_name === '') {
             var default_name = (first_name + ' ' + last_name).trim();
             return '<i>' + default_name.replace(/ +/, ' ') + '</i>';
@@ -447,27 +399,27 @@ class Pos {
     }
 
     // show the full perinfo record as a hover in the table
-    build_record_hover(e, cell, onRendered) {
+    bulldRecordHover(e, cell, onRendered) {
         var data = cell.getData();
         //console.log(data);
-        var hover_text = 'Person id: ' + data['perid'] + '<br/>' +
-            'Full Name: ' + data['fullName'] + '<br/>' +
-            'Pronouns: ' + data['pronouns'] + '<br/>' +
-            'Legal Name: ' + data['legalName'] + '<br/>' +
-            data['address_1'] + '<br/>';
-        if (data['address_2'] != '') {
-            hover_text += data['address_2'] + '<br/>';
+        var hover_text = 'Person id: ' + data.perid + '<br/>' +
+            'Full Name: ' + data.fullName + '<br/>' +
+            'Pronouns: ' + data.pronouns + '<br/>' +
+            'Legal Name: ' + data.legalName + '<br/>' +
+            data.address_1 + '<br/>';
+        if (data.address_2 != '') {
+            hover_text += data.address_2 + '<br/>';
         }
-        hover_text += data['city'] + ', ' + data['state'] + ' ' + data['postal_code'] + '<br/>';
-        if (data['country'] != '' && data['country'] != 'USA') {
-            hover_text += data['country'] + '<br/>';
+        hover_text += data.city + ', ' + data.state + ' ' + data.postal_code + '<br/>';
+        if (data.country != '' && data.country != 'USA') {
+            hover_text += data.country + '<br/>';
         }
-        hover_text += 'Badge Name: ' + this.badge_name_default(data['badge_name'], data['first_name'], data['last_name']) + '<br/>' +
-            'Email: ' + data['email_addr'] + '<br/>' + 'Phone: ' + data['phone'] + '<br/>' +
-            'Active:' + data['active'];
+        hover_text += 'Badge Name: ' + this.badgeNameDefault(data.badge_name, data.first_name, data.last_name) + '<br/>' +
+            'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>' +
+            'Active:' + data.active;
 
         // append the policies to the active flag line
-        var policies = data['policies'];
+        var policies = data.policies;
         for (var row in policies) {
             var policyName = policies[row].policy;
             var policyResp = policies[row].response;
@@ -475,17 +427,17 @@ class Pos {
         }
 
         hover_text += '<br/>' +
-            'Membership: ' + data['reg_label'] + '<br/>';
+            'Membership: ' + data.reg_label + '<br/>';
 
         return hover_text;
     }
 
     // void transaction - TODO: needs to be written to actually void out a transaction in progress
-    void_trans() {
+    voidTrans() {
         var postData = {
             ajax_request_action: 'voidPayment',
-            user_id: user_id,
-            pay_tid: pay_tid,
+            user_id: this.#user_id,
+            pay_tid: this.#pay_tid,
             cart_membership: cart.getCartMembership(),
         };
         $("button[name='void_btn']").attr("disabled", true);
@@ -494,18 +446,18 @@ class Pos {
             url: "scripts/reg_voidPayment.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
-                if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
                     $("button[name='find_btn']").attr("disabled", false);
                     return;
                 }
-                if (data['message'] !== undefined) {
-                    show_message(data['message'], 'success');
+                if (data.message !== undefined) {
+                    show_message(data.message, 'success');
                 }
-                if (data['warn'] !== undefined) {
-                    show_message(data['warn'], 'warn');
+                if (data.warn !== undefined) {
+                    show_message(data.warn, 'warn');
                 }
-                start_over(0);
+                startOver(0);
             },
             error: function (jqXHR, textstatus, errorThrown) {
                 $("button[name='void_btn']").attr("disabled", false);
@@ -515,8 +467,8 @@ class Pos {
     }
 
     // if no memberships or payments have been added to the database, this will reset for the next customer
-    start_over(reset_all) {
-        if (!this.confirm_discard_add_edit(false))
+    startOver(reset_all) {
+        if (!this.confirmDiscardAddEdit(false))
             return;
 
         if (!cart.confirmDiscardCartEntry(-1, false))
@@ -563,7 +515,7 @@ class Pos {
 
 
     // add search person/transaction from result_perinfo record to the cart
-    add_to_cart(index, table) {
+    addToCart(index, table) {
         var rt = null;
         var perid;
 
@@ -574,12 +526,12 @@ class Pos {
         }
 
         if (index >= 0) {
-            if (rt[index]['banned'] == 'Y') {
-                alert("Please ask " + (rt['first_name'] + ' ' + rt[index]['last_name']).trim() + " to talk to the Registration Administrator, " +
+            if (rt[index].banned == 'Y') {
+                alert("Please ask " + (rt.first_name + ' ' + rt[index].last_name).trim() + " to talk to the Registration Administrator, " +
                     "you cannot add them at this time.")
                 return;
             }
-            perid = rt[index]['perid'];
+            perid = rt[index].perid;
             if (cart.notinCart(perid)) {
                 cart.add(rt[index]);
             }
@@ -606,26 +558,26 @@ class Pos {
             if (this.#find_result_table !== null) {
                 this.#find_result_table.replaceData(this.#result_perinfo);
             } else {
-                this.draw_as_records();
+                this.drawAsRecords();
             }
         }
         clear_message();
     }
 
     // remove person and all of their memberships from the cart
-    remove_from_cart(perid) {
+    removeFromCart(perid) {
         cart.remove(perid);
 
         if (this.#find_result_table !== null) {
             this.#find_result_table.replaceData(this.#result_perinfo);
         } else {
-            this.draw_as_records();
+            this.drawAsRecords();
         }
         clear_message();
     }
 
     // common confirm add/edit screen dirty, if the tab isn't shown switch to it if dirty
-    confirm_discard_add_edit(silent) {
+    confirmDiscardAddEdit(silent) {
         if (!this.#add_edit_dirty_check || cart.isFrozen()) // don't check if not dirty, or if the cart is frozen, return ok to discard
             return true;
 
@@ -642,10 +594,10 @@ class Pos {
         return confirm("Discard current data in add/edit screen?");
     }
 
-    // event handler for beforeunload event, prevents leaving with unsaved data
-    check_all_unsaved(e) {
+// event handler for beforeunload event, prevents leaving with unsaved data
+    checkAllUnsaved(e) {
         // data editing checks
-        if (!this.confirm_discard_add_edit(true)) {
+        if (!this.confirmDiscardAddEdit(true)) {
             e.preventDefault();
             e.returnValue = "You have unsaved member changes, leave anyway";
             return;
@@ -657,12 +609,12 @@ class Pos {
             return;
         }
 
-        delete e['returnValue'];
+        delete e.returnValue;
     }
 
     // populate the add/edit screen from a cart item, and switch to add/edit
-    edit_from_cart(perid) {
-        if (!this.confirm_discard_add_edit(false))
+    editFromCart(perid) {
+        if (!this.confirmDiscardAddEdit(false))
             return;
 
         this.clearAdd(1);
@@ -853,7 +805,7 @@ class Pos {
         if (this.#add_results_table != null) {
             this.#add_results_table.destroy();
             this.#add_results_table = null;
-            pos.add_new_to_cart();
+            pos.addNewToCart();
             return;
         }
 
@@ -877,18 +829,18 @@ class Pos {
             url: "scripts/pos_findRecord.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
-                if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
                     $("button[name='find_btn']").attr("disabled", false);
                     return;
                 }
-                if (data['message'] !== undefined) {
-                    show_message(data['message'], 'success');
+                if (data.message !== undefined) {
+                    show_message(data.message, 'success');
                 }
-                if (data['warn'] !== undefined) {
-                    show_message(data['warn'], 'warn');
+                if (data.warn !== undefined) {
+                    show_message(data.warn, 'warn');
                 }
-                _this.add_found(data);
+                _this.addFound(data);
                 $("button[name='find_btn']").attr("disabled", false);
             },
             error: function (jqXHR, textstatus, errorThrown) {
@@ -898,12 +850,12 @@ class Pos {
         });
     }
 
-    // add_found: all the tasks post search for matching records for adding a record to the cart
-    add_found(data) {
+// addFound: all the tasks post search for matching records for adding a record to the cart
+    addFound(data) {
         var rowindex;
-// see if they already exist (if add to cart)
-        this.#add_perinfo = data['perinfo'];
-        // add_membership = data['membership'];
+        // see if they already exist (if add to cart)
+        this.#add_perinfo = data.perinfo;
+        // add_membership = data.membership;
 
         if (this.#add_perinfo.length > 0) {
             // find primary membership for each add_perinfo record
@@ -911,19 +863,19 @@ class Pos {
                 var row = this.#add_perinfo[rowindex];
                 var primmem = this.find_primary_membership(add_membership[row.perid]);
                 if (primmem != null) {
-                    row['reg_label'] = add_membership[primmem]['label'];
-                    var tid = add_membership[primmem]['tid'];
+                    row.reg_label = add_membership[primmem].label;
+                    var tid = add_membership[primmem].tid;
                     if (tid != '') {
-                        this.#checkPerid = row['perid'];
+                        this.#checkPerid = row.perid;
                         var other = !add_membership.every(this.notPerid, this);
 
                         if (other) {
-                            row['tid'] = tid;
+                            row.tid = tid;
                         }
                     }
                 } else {
-                    row['reg_label'] = 'No Membership';
-                    row['reg_tid'] = '';
+                    row.reg_label = 'No Membership';
+                    row.reg_tid = '';
                 }
             }
             // table
@@ -938,7 +890,7 @@ class Pos {
                 ],
                 columns: [
                     {field: "perid", visible: false,},
-                    {title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: posBuild_record_hover,},
+                    {title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: posbulldRecordHover,},
                     {field: "last_name", visible: false,},
                     {field: "first_name", visible: false,},
                     {field: "middle_name", visible: false,},
@@ -959,11 +911,11 @@ class Pos {
             $("button[name='find_btn']").attr("disabled", false);
             return;
         }
-        add_new_to_cart();
+        addNewToCart();
     }
 
-    // add_new_to_cart - not in system or operator said they are really new, add them to the cart
-    add_new_to_cart() {
+// addNewToCart - not in system or operator said they are really new, add them to the cart
+    addNewToCart() {
         //var edit_index = add_index_field.value.trim();
         //var edit_perid = add_perid_field.value.trim();
         //var new_memindex = add_memIndex_field.value.trim();
@@ -1090,8 +1042,8 @@ class Pos {
         this.#add_edit_current_state = "";
     }
 
-    // draw_record: find_record found rows from search.  Display them in the non table format used by transaction and perid search, or a single row match for string.
-    draw_record(row, first) {
+// drawRecord: findRecord found rows from search.  Display them in the non table format used by transaction and perid search, or a single row match for string.
+    drawRecord(row, first) {
         var data = this.#result_perinfo[row];
         var mem = data.memberships;
         var prim = this.find_primary_membership(mem);
@@ -1104,17 +1056,17 @@ class Pos {
     <div class="row mt-2">
         <div class="col-sm-3 pt-1 pb-1">`;
         if (first) {
-            html += `<button class="btn btn-primary btn-sm" id="add_btn_all" onclick="pos.add_to_cart(-` + this.#number_search + `, 'result');">Add All Cart</button>`;
+            html += `<button class="btn btn-primary btn-sm" id="add_btn_all" onclick="pos.addToCart(-` + this.#number_search + `, 'result');">Add All Cart</button>`;
         }
         html += `</div>
         <div class="col-sm-5 pt-1 pb-1">`;
-        if (cart.notinCart(data['perid'])) {
-            if (data['banned'] == 'Y') {
+        if (cart.notinCart(data.perid)) {
+            if (data.banned == 'Y') {
                 html += `
-            <button class="btn btn-danger btn-sm" id="add_btn_1" onclick="pos.add_to_cart(` + row + `, 'result');">B</button>`;
+            <button class="btn btn-danger btn-sm" id="add_btn_1" onclick="pos.addToCart(` + row + `, 'result');">B</button>`;
             } else {
                 html += `
-            <button class="btn btn-success btn-sm" id="add_btn_1" onclick="pos.add_to_cart(` + row + `, 'result');">Add to Cart</button>`;
+            <button class="btn btn-success btn-sm" id="add_btn_1" onclick="pos.addToCart(` + row + `, 'result');">Add to Cart</button>`;
             }
         } else {
             html += `
@@ -1122,14 +1074,14 @@ class Pos {
         }
         html += `</div>
         <div class="col-sm-2">`;
-        if (data['open_notes'] != null && data['open_notes'].length > 0) {
-            html += '<button type="button" class="btn btn-sm btn-info p-0" onclick="pos.showPerinfoNotes(' + data['index'] + ', \'result\')">View' +
+        if (data.open_notes != null && data.open_notes.length > 0) {
+            html += '<button type="button" class="btn btn-sm btn-info p-0" onclick="pos.showPerinfoNotes(' + data.index + ', \'result\')">View' +
                 ' Notes</button>';
         }
         html += `</div>
         <div class="col-sm-2">`;
         if (this.#Manager) {
-            html += '<button type="button" class="btn btn-sm btn-secondary p-0" onClick="pos.edit_perinfo_notes(0, \'result\')">Edit Notes</button>';
+            html += '<button type="button" class="btn btn-sm btn-secondary p-0" onClick="pos.editPerinfoNotes(0, \'result\')">Edit Notes</button>';
         }
 
         html += `
@@ -1137,64 +1089,64 @@ class Pos {
         </div>
         <div class="row">
             <div class="col-sm-3">Person ID:</div>
-            <div class="col-sm-9">` + data['perid'] + `</div>
+            <div class="col-sm-9">` + data.perid + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">Badge Name:</div>
-            <div class="col-sm-9">` + this.badge_name_default(data['badge_name'], data['first_name'], data['last_name']) + `</div>
+            <div class="col-sm-9">` + this.badgeNameDefault(data.badge_name, data.first_name, data.last_name) + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">Name:</div>
-            <div class="col-sm-9">` + data['fullName'] + `</div>
+            <div class="col-sm-9">` + data.fullName + `</div>
         </div>  
          <div class="row">
             <div class="col-sm-3">Pronouns:</div>
-            <div class="col-sm-9">` + data['pronouns'] + `</div>
+            <div class="col-sm-9">` + data.pronouns + `</div>
         </div>  
          <div class="row">
             <div class="col-sm-3">Legal Name:</div>
-            <div class="col-sm-9">` + data['legalName'] + `</div>
+            <div class="col-sm-9">` + data.legalName + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">Address:</div>
-            <div class="col-sm-9">` + data['address_1'] + `</div>
+            <div class="col-sm-9">` + data.address_1 + `</div>
         </div>
 `;
-        if (data['address_2'] != '') {
+        if (data.address_2 != '') {
             html += `
     <div class="row">
         <div class="col-sm-3"></div>
-        <div class="col-sm-9">` + data['address_2'] + `</div>
+        <div class="col-sm-9">` + data.address_2 + `</div>
     </div>
 `;
         }
         html += `
     <div class="row">
        <div class="col-sm-3"></div>
-       <div class="col-sm-9">` + data['city'] + ', ' + data['state'] + ' ' + data['postal_code'] + `</div>
+       <div class="col-sm-9">` + data.city + ', ' + data.state + ' ' + data.postal_code + `</div>
     </div>
 `;
-        if (data['country'] != '' && data['country'] != 'USA') {
+        if (data.country != '' && data.country != 'USA') {
             html += `
     <div class="row">
        <div class="col-sm-3"></div>
-       <div class="col-sm-9">` + data['country'] + `</div>
+       <div class="col-sm-9">` + data.country + `</div>
     </div>
 `;
         }
         html += `
     <div class="row">
        <div class="col-sm-3">Email Address:</div>
-       <div class="col-sm-9">` + data['email_addr'] + `</div>
+       <div class="col-sm-9">` + data.email_addr + `</div>
     </div>
     <div class="row">
        <div class="col-sm-3">Phone:</div>
-       <div class="col-sm-9">` + data['phone'] + `</div>
+       <div class="col-sm-9">` + data.phone + `</div>
     </div>
     <div class="row">
        <div class="col-sm-3">Policies:</div>
-       <div class="col-sm-auto">Active: ` + data['active'] + "</div>\n";
-        var policies = data['policies'];
+       <div class="col-sm-auto">Active: ` + data.active + "</div>\n";
+        var policies = data.policies;
         for (var row in policies) {
             var policyName = policies[row].policy;
             var policyResp = policies[row].response;
@@ -1222,19 +1174,19 @@ class Pos {
         if (banned == undefined) {
             tid = Number(cell.getRow().getData().tid);
             html = '<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" ' +
-                'onclick="pos.add_unpaid(' + tid + ')">Pay</button > ';
+                'onclick="pos.addUnpaid(' + tid + ')">Pay</button > ';
             return html;
         }
         if (banned == 'Y') {
-            return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="pos.add_to_cart(' +
-                cell.getRow().getData().index + ', \'' + formatterParams['t'] + '\')">B</button>';
+            return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="pos.addToCart(' +
+                cell.getRow().getData().index + ', \'' + formatterParams.t + '\')">B</button>';
         } else if (cart.notinCart(cell.getRow().getData().perid)) {
-            html = '<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" onclick="pos.add_to_cart(' +
-                cell.getRow().getData().index + ', \'' + formatterParams['t'] + '\')">Add</button>';
+            html = '<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" onclick="pos.addToCart(' +
+                cell.getRow().getData().index + ', \'' + formatterParams.t + '\')">Add</button>';
             tid = cell.getRow().getData().tid;
             if (tid != '' && tid != undefined && tid != null) {
                 html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" ' +
-                    'onclick="pos.add_to_cart(' + (-tid) + ', \'' + formatterParams['t'] + '\')">Tran</button>';
+                    'onclick="pos.addToCart(' + (-tid) + ', \'' + formatterParams.t + '\')">Tran</button>';
             }
             return html;
         }
@@ -1247,20 +1199,20 @@ class Pos {
         var open_notes = cell.getRow().getData().open_notes;
         var html = "";
         if (open_notes != null && open_notes.length > 0 && !this.#Manager) {
-            html += '<button type="button" class="btn btn-sm btn-info p-0" style="--bs-btn-font-size: 75%;"  onclick="pos.showPerinfoNotes(' + index + ', \'' + formatterParams['t'] + '\')">O</button>';
+            html += '<button type="button" class="btn btn-sm btn-info p-0" style="--bs-btn-font-size: 75%;"  onclick="pos.showPerinfoNotes(' + index + ', \'' + formatterParams.t + '\')">O</button>';
         }
         if (this.#Manager) {
             var btnclass = "btn-secondary";
             if (open_notes != null && open_notes.length > 0)
                 btnclass = "btn-info";
-            html += ' <button type="button" class="btn btn-sm ' + btnclass + ' p-0" style="--bs-btn-font-size: 75%;" onclick="pos.edit_perinfo_notes(' + index + ', \'' + formatterParams['t'] + '\')">E</button>';
+            html += ' <button type="button" class="btn btn-sm ' + btnclass + ' p-0" style="--bs-btn-font-size: 75%;" onclick="pos.editPerinfoNotes(' + index + ', \'' + formatterParams.t + '\')">E</button>';
         }
         if (html == "")
             html = "&nbsp;"; // blank draws nothing
         return html;
     }
 
-    // display the note popup with the requested notes
+// display the note popup with the requested notes
     showPerinfoNotes(index, where) {
         var note = null;
         var fullname = null;
@@ -1295,9 +1247,9 @@ class Pos {
         notes_btn.disabled = false;
     }
 
-    // edit_perinfo_notes: display in an editor the perinfo notes field
-    // only managers can edit the notes
-    edit_perinfo_notes(index, where) {
+// editPerinfoNotes: display in an editor the perinfo notes field
+// only managers can edit the notes
+    editPerinfoNotes(index, where) {
         var note = null;
         var fullname = null;
 
@@ -1311,13 +1263,13 @@ class Pos {
             this.#notesType = 'PC';
         }
         if (where == 'result') {
-            note = this.#result_perinfo[index]['open_notes'];
-            fullname = this.#result_perinfo[index]['fullname'];
+            note = this.#result_perinfo[index].open_notes;
+            fullname = this.#result_perinfo[index].fullname;
             this.#notesType = 'PR';
         }
         if (where == 'add') {
-            note = this.#add_perinfo[index]['open_notes']
-            fullname = this.#add_perinfo[index]['fullname'];
+            note = this.#add_perinfo[index].open_notes
+            fullname = this.#add_perinfo[index].fullname;
             this.#notesType = 'add';
         }
         if (this.#notesType == null)
@@ -1340,7 +1292,7 @@ class Pos {
         notes_btn.disabled = false;
     }
 
-    // show the registration element note, anyone can add a new note, so it needs a save and close button
+// show the registration element note, anyone can add a new note, so it needs a save and close button
     showRegNote(perid, index, count) {
         var bodyHTML = '';
         var note = cart.getRegNote(perid, index);
@@ -1368,8 +1320,8 @@ class Pos {
         notes_btn.disabled = false;
     }
 
-    // saveNote
-    //  save and update the note based on type
+// saveNote
+//  save and update the note based on type
     saveNote() {
         if (document.getElementById('close_note_button').innerHTML.trim() == "Save and Close") {
             if (this.#notesType == 'RC') {
@@ -1381,12 +1333,12 @@ class Pos {
             if (this.#notesType == 'PR' && this.#Manager) {
                 var new_note = document.getElementById("perinfoNote").value;
                 if (new_note != this.#notesPriorValue) {
-                    this.#result_perinfo[this.#notesIndex]['open_notes'] = new_note;
+                    this.#result_perinfo[this.#notesIndex].open_notes = new_note;
                     // search for matching names
                     var postData = {
                         ajax_request_action: 'updatePerinfoNote',
-                        perid: this.#result_perinfo[this.#notesIndex]['perid'],
-                        notes: this.#result_perinfo[this.#notesIndex]['open_notes'],
+                        perid: this.#result_perinfo[this.#notesIndex].perid,
+                        notes: this.#result_perinfo[this.#notesIndex].open_notes,
                         user_id: this.#user_id,
                     };
                     document.getElementById('close_note_button').disabled = true;
@@ -1395,16 +1347,16 @@ class Pos {
                         url: "scripts/reg_updatePerinfoNote.php",
                         data: postData,
                         success: function (data, textstatus, jqxhr) {
-                            if (data['error'] !== undefined) {
-                                show_message(data['error'], 'error');
+                            if (data.error !== undefined) {
+                                show_message(data.error, 'error');
                                 document.getElementById('close_note_button').disabled = falser;
                                 return;
                             }
-                            if (data['message'] !== undefined) {
-                                show_message(data['message'], 'success');
+                            if (data.message !== undefined) {
+                                show_message(data.message, 'success');
                             }
-                            if (data['warn'] !== undefined) {
-                                show_message(data['warn'], 'warn');
+                            if (data.warn !== undefined) {
+                                show_message(data.warn, 'warn');
                             }
                         },
                         error: function (jqXHR, textstatus, errorThrown) {
@@ -1423,21 +1375,21 @@ class Pos {
     }
 
     // select the row (tid) from the unpaid list and add it to the cart, switch to the payment tab (used by find unpaid)
-    // marks it as a tid (not perid) add by inverting it.  (add_to_cart will deal with the inversion)
-    add_unpaid(tid) {
-        pos.add_to_cart(-Number(tid), 'result');
+    // marks it as a tid (not perid) add by inverting it.  (addToCart will deal with the inversion)
+addUnpaid(tid) {
+        pos.addToCart(-Number(tid), 'result');
         // force a new transaction for the payment as the cashier is not the same as the check-in in this case.
-        pos.added_payable_trans_to_cart();
+        pos.addedPayableTransToCart();
     }
 
-    // search the online database for a set of records matching the criteria
-    // find_type: empty: search for memberships
-    //              unpaid: return all unpaid
-    //  possible meanings of find_pattern
-    //      numeric: search for tid or perid matches
-    //      alphanumeric: search for names in name, badge_name, email_address fields
-    //
-    find_record(find_type) {
+// search the online database for a set of records matching the criteria
+// find_type: empty: search for memberships
+//              unpaid: return all unpaid
+//  possible meanings of find_pattern
+//      numeric: search for tid or perid matches
+//      alphanumeric: search for names in name, badge_name, email_address fields
+//
+    findRecord(find_type) {
         if (this.#find_result_table != null) {
             this.#find_result_table.destroy();
             this.#find_result_table = null;
@@ -1463,17 +1415,17 @@ class Pos {
             url: "scripts/pos_findRecord.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
-                if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
                     return;
                 }
-                if (data['message'] !== undefined) {
-                    show_message(data['message'], 'success');
+                if (data.message !== undefined) {
+                    show_message(data.message, 'success');
                 }
-                if (data['warn'] !== undefined) {
-                    show_message(data['warn'], 'warn');
+                if (data.warn !== undefined) {
+                    show_message(data.warn, 'warn');
                 }
-                _this.found_record(data);
+                _this.foundRecord(data);
                 $("button[name='find_btn']").attr("disabled", false);
             },
             error: function (jqXHR, textstatus, errorThrown) {
@@ -1483,21 +1435,21 @@ class Pos {
         });
     }
 
-    // successful return from 2 AJAX call - processes found records
-    // unpaid: one record: put it in the cart and go to pay screen
-    //      multiple records: show table of records with pay icons
-    // normal:
-    //      single row: display record
-    //      multiple rows: display table of records with add/trans buttons
-    found_record(data) {
+// successful return from 2 AJAX call - processes found records
+// unpaid: one record: put it in the cart and go to pay screen
+//      multiple records: show table of records with pay icons
+// normal:
+//      single row: display record
+//      multiple rows: display table of records with add/trans buttons
+    foundRecord(data) {
         var row;
         var index;
         var tid;
         var mperid;
         var mem;
-        var find_type = data['find_type'];
-        this.#result_perinfo = data['perinfo'];
-        this.#name_search = data['name_search'];
+        var find_type = data.find_type;
+        this.#result_perinfo = data.perinfo;
+        this.#name_search = data.name_search;
 
         // unpaid search: Only used by Cashier
         // zero found: status message
@@ -1521,12 +1473,12 @@ class Pos {
             if (trantbl.length == 1) { // only 1 row, add it to the cart and go to pay tab
                 tid = trantbl[0];
                 for (row in this.#result_perinfo) {
-                    if (result_membership[row]['tid'] == tid) {
-                        index = result_membership[row]['pindex'];
-                        pos.add_to_cart(index, 'result');
+                    if (result_membership[row].tid == tid) {
+                        index = result_membership[row].pindex;
+                        pos.addToCart(index, 'result');
                     }
                 }
-                pos.added_payable_trans_to_cart(); // build the master transaction and attach records
+                pos.addedPayableTransToCart(); // build the master transaction and attach records
                 return;
             }
 
@@ -1605,7 +1557,7 @@ class Pos {
             mem = row.memberships;
             var primmem = this.find_primary_membership(mem);
             if (primmem != null) {
-                row['reg_label'] = mem[primmem].label;
+                row.reg_label = mem[primmem].label;
                 tid = mem[primmem].tid;
                 if (tid != '') {
                     var other = false;
@@ -1613,12 +1565,12 @@ class Pos {
 
                     other = !this.#result_perinfo.every(this.notPerid, this);
                     if (other) {
-                        row['tid'] = tid;
+                        row.tid = tid;
                     }
                 }
             } else {
-                row['reg_label'] = 'No Membership';
-                row['reg_tid'] = '';
+                row.reg_label = 'No Membership';
+                row.reg_tid = '';
             }
         }
 
@@ -1637,7 +1589,7 @@ class Pos {
                     {title: "Cart", width: 100, headerFilter: false, headerSort: false, formatter: _this.addCartIcon, formatterParams: {t: "result"},},
                     {title: "Per ID", field: "perid", headerWordWrap: true, width: 80, visible: false, hozAlign: 'right',},
                     {field: "index", visible: false,},
-                    {title: "Full Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: posBuild_record_hover,},
+                    {title: "Full Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: posbulldRecordHover,},
                     {field: "last_name", visible: false,},
                     {field: "first_name", visible: false,},
                     {field: "middle_name", visible: false,},
@@ -1658,23 +1610,23 @@ class Pos {
                 // only 1 transaction returned and it was search by number, and it's been attached for payment before
                 // add it to the cart and go to payment
                 for (row in result_membership) {
-                    if ((result_membership[row]['tid'] == tid) || (result_membership[row]['rstid'] == this.#name_search)) {
-                        index = result_membership[row]['pindex'];
-                        pos.add_to_cart(index, 'result');
+                    if ((result_membership[row].tid == tid) || (result_membership[row].rstid == this.#name_search)) {
+                        index = result_membership[row].pindex;
+                        pos.addToCart(index, 'result');
                     }
                 }
-                pos.added_payable_trans_to_cart();
+                pos.addedPayableTransToCart();
                 return;
             }
             this.#number_search = Number(this.#name_search);
-            this.draw_as_records();
+            this.drawAsRecords();
             return;
         }
         // no rows show the diagnostic
         this.#id_div.innerHTML = `"container-fluid">
     <div class="row mt-3">
         <div class="col-sm-4">No matching records found</div>
-        <div class="col-sm-auto"><button class="btn btn-primary btn-sm" type="button" id="not_found_add_new" onclick="pos.not_found_add_new();">Add New Person</button>
+        <div class="col-sm-auto"><button class="btn btn-primary btn-sm" type="button" id="notFoundAddNew" onclick="pos.notFoundAddNew();">Add New Person</button>
         </div>
     </div>
 </div>
@@ -1682,8 +1634,8 @@ class Pos {
         this.#id_div.innerHTML = 'No matching records found'
     }
 
-    // draw perinfo as full record, not tabular data
-    draw_as_records() {
+// draw perinfo as full record, not tabular data
+    drawAsRecords() {
         var html = '';
         var first = false;
         var row;
@@ -1691,24 +1643,24 @@ class Pos {
             first = true;
         }
         for (row in this.#result_perinfo) {
-            html += this.draw_record(row, first);
+            html += this.drawRecord(row, first);
             first = false;
         }
         html += '</div>';
         this.#id_div.innerHTML = html;
     }
 
-    // when searching, if clicking on the add new button, switch to the add/edit tab
-    not_found_add_new() {
+// when searching, if clicking on the add new button, switch to the add/edit tab
+    notFoundAddNew() {
         this.#id_div.innerHTML = '';
         this.#pattern_field.value = '';
 
         bootstrap.Tab.getOrCreateInstance(this.#add_tab).show();
     }
 
-    // switch to the review tab when the review button is clicked
-    start_review() {
-        if (!this.confirm_discard_add_edit(false))
+// switch to the review tab when the review button is clicked
+    startReview() {
+        if (!this.confirmDiscardAddEdit(false))
             return;
         cart.hideNoChanges();
 
@@ -1717,18 +1669,18 @@ class Pos {
        this.#review_tab.disabled = false;
     }
 
-    // create the review data screen from the cart
-    review_update() {
+// create the review data screen from the cart
+    reviewUpdate() {
         cart.updateReviewData();
         reviewShown();
         if (this.#review_missing_items > 0) {
-            setTimeout(review_nochanges, 100);
+            setTimeout(pos.reviewNoChanges, 100);
         } else {
-            review_nochanges();
+            this.reviewNoChanges();
         }
     }
 
-    added_payable_trans_to_cart() {
+    addedPayableTransToCart() {
         // clear any search remains
         if (this.#add_results_table != null) {
             this.#add_results_table.destroy();
@@ -1743,9 +1695,9 @@ class Pos {
     }
 
 
-    // no changes button pressed:
-    // if everything is put up next customer
-    review_nochanges() {
+// no changes button pressed:
+// if everything is put up next customer
+    reviewNohanges() {
         // first check to see if any required fields still exist
         if (this.#review_missing_items > 0) {
             if (!confirm("Proceed ignoring check for " + this.#review_missing_items.toString() + " missing data items (shown in yellow)?")) {
@@ -1760,39 +1712,39 @@ class Pos {
             cart_perinfo: cart.getCartPerinfo(),
             cart_perinfo_map: cart.getCartMap(),
             cart_membership: cart.getCartMembership(),
-            user_id: user_id,
+            user_id: this.#user_id,
         };
         $.ajax({
             method: "POST",
             url: "scripts/reg_updateCartElements.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
-                if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
                     return;
                 }
-                if (data['message'] !== undefined) {
-                    show_message(data['message'], 'success');
+                if (data.message !== undefined) {
+                    show_message(data.message, 'success');
                 }
-                if (data['warn'] !== undefined) {
-                    show_message(data['warn'], 'success');
+                if (data.warn !== undefined) {
+                    show_message(data.warn, 'success');
                 }
-                reviewed_update_cart(data);
+                this.reviewedUpdateCart(data);
             },
             error: showAjaxError,
         });
     }
 
-    // reviewed_update_cart:
-    //  all the data from the cart has been updated in the database, now apply the id's and proceed to the next step
-    reviewed_update_cart(data) {
-        pay_tid = data['master_tid'];
+// reviewedUpdateCart:
+//  all the data from the cart has been updated in the database, now apply the id's and proceed to the next step
+    reviewedUpdateCart(data) {
+        this.#pay_tid = data.master_tid;
         // update cart elements
         var unpaid_rows = cart.updateFromDB(data);
         bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
     }
 
-    // setPayType: shows/hides the appropriate fields for that payment type
+// setPayType: shows/hides the appropriate fields for that payment type
     setPayType(ptype) {
         var elcheckno = document.getElementById('pay-check-div');
         var elccauth = document.getElementById('pay-ccauth-div');
@@ -1812,7 +1764,7 @@ class Pos {
         }
     }
 
-    // Process a payment against the transaction
+// Process a payment against the transaction
     pay(nomodal, prow = null, nonce = null) {
         var checked = false;
         var ccauth = null;
@@ -1951,11 +1903,11 @@ class Pos {
             ajax_request_action: 'processPayment',
             cart_membership: cart.getCartMembership(),
             new_payment: prow,
-            coupon: prow['coupon'],
+            coupon: prow.coupon,
             change: crow,
             nonce: nonce,
-            user_id: user_id,
-            pay_tid: pay_tid,
+            user_id: this.#user_id,
+            pay_tid: this.#pay_tid,
         };
         pay_button_pay.disabled = true;
         $.ajax({
@@ -1967,16 +1919,16 @@ class Pos {
                 clear_message();
                 if (typeof data == 'string') {
                     show_message(data, 'error');
-                } else if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
-                } else if (data['message'] !== undefined) {
-                    show_message(data['message'], 'success');
+                } else if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                } else if (data.message !== undefined) {
+                    show_message(data.message, 'success');
                     stop = false;
-                } else if (data['warn'] !== undefined) {
-                    show_message(data['warn'], 'success');
+                } else if (data.warn !== undefined) {
+                    show_message(data.warn, 'success');
                     stop = false;
-                } else if (data['status'] == 'error') {
-                    show_message(data['data'], 'error');
+                } else if (data.status == 'error') {
+                    show_message(data.data, 'error');
                 }
                 if (!stop)
                     updatedPayment(data);
@@ -1994,17 +1946,17 @@ class Pos {
     }
 
 
-    // updatedPayment:
-    //  payment entered into the database correctly, update the payment cart and the memberships with the updated paid amounts
+// updatedPayment:
+//  payment entered into the database correctly, update the payment cart and the memberships with the updated paid amounts
     updatedPayment(data) {
         cart.updatePmt(data);
         payShown();
     }
 
-    // Create a receipt and email it
-    email_receipt(receipt_type) {
+// Create a receipt and email it
+    emailReceipt(receipt_type) {
         // header text
-        var header_text = cart.receiptHeader(user_id, pay_tid);
+        var header_text = cart.receiptHeader(this.#user_id, this.#pay_tid);
         // optional footer text
         var footer_text = '';
         // server side will print the receipt
@@ -2027,12 +1979,12 @@ class Pos {
                 clear_message();
                 if (typeof data == "string") {
                     show_message(data, 'error');
-                } else if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
-                } else if (data['message'] !== undefined) {
-                    show_message(data['message'], 'success');
-                } else if (data['warn'] !== undefined) {
-                    show_message(data['warn'], 'success');
+                } else if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                } else if (data.message !== undefined) {
+                    show_message(data.message, 'success');
+                } else if (data.warn !== undefined) {
+                    show_message(data.warn, 'success');
                 }
                 pay_button_ercpt.disabled = false;
             },
@@ -2043,7 +1995,7 @@ class Pos {
         });
     }
 
-    // tab shown events - state mapping for which tab is shown
+// tab shown events - state mapping for which tab is shown
     findShown() {
         cart.clearInReview();
         cart.unfreeze();
@@ -2086,18 +2038,18 @@ class Pos {
         pay_button_ercpt.disabled = emailAddreesRecipients.length == 0;
     }
 
-    checkbox_check() {
+    checkboxCheck() {
         var emailCheckbox = document.getElementById('emailAddr_' + last_email_row.toString());
         emailCheckbox.checked = true;
         pay_button_ercpt.hidden = false;
         pay_button_ercpt.disabled = false;
     }
 
-    // apply_coupon - apply and compute the discount for a coupon, also show the rules for the coupon if applied
-    //  a = apply coupon from select
-    //  r = remove coupon
-    //  in any case need to re-show the pay tab with the details
-    apply_coupon(cmd) {
+// applyCoupon - apply and compute the discount for a coupon, also show the rules for the coupon if applied
+//  a = apply coupon from select
+//  r = remove coupon
+//  in any case need to re-show the pay tab with the details
+    applyCoupon(cmd) {
         if (cmd == 'r') {
             var curCoupon = coupon.getCouponId();
             cart.clearCoupon(curCoupon);
@@ -2161,7 +2113,7 @@ class Pos {
                         email_html;
                     if (email_count == 1) {
                         emailAddreesRecipients.push(cart.getEmail(last_email_row));
-                        setTimeout(checkbox_check, 100);
+                        setTimeout(pos.checkboxCheck, 100);
                     }
                 }
                 document.getElementById('pay-amt').value = '';
@@ -2184,7 +2136,7 @@ class Pos {
 <div id='payBody' class="container-fluid form-floating">
   <form id='payForm' action='javascript: return false; ' class="form-floating">
     <div class="row pb-2">
-        <div class="col-sm-auto ms-0 me-2 p-0">New Payment Transaction ID: ` + pay_tid + `</div>
+        <div class="col-sm-auto ms-0 me-2 p-0">New Payment Transaction ID: ` + this.#pay_tid + `</div>
     </div>
     `;
             if (num_coupons > 0 && cart.allowAddCouponToCart()) { // cannot apply a coupon if one was already in the cart (and of course, there need to be valid coupons right now)
@@ -2196,7 +2148,7 @@ class Pos {
 ` + couponSelect + `
         </div>
         <div class="col-sm-auto ms-0 me-0 p-0">
-            <button class="btn btn-secondary btn-sm" type="button" id="pay-btn-coupon" onclick="pos.apply_coupon('a');">Apply Coupon</button>
+            <button class="btn btn-secondary btn-sm" type="button" id="pay-btn-coupon" onclick="pos.applyCoupon('a');">Apply Coupon</button>
         </div>  
     </div>
 `;
@@ -2207,7 +2159,7 @@ class Pos {
         <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
         <div class="col-sm-auto ms-0 me-2 p-0">` + coupon.getNameString() + `</div>
          <div class="col-sm-auto ms-0 me-0 p-0">
-            <button class="btn btn-secondary btn-sm" type="button" id="pay-btn-coupon" onclick="pos.apply_coupon('r');">Remove Coupon</button>
+            <button class="btn btn-secondary btn-sm" type="button" id="pay-btn-coupon" onclick="pos.applyCoupon('r');">Remove Coupon</button>
         </div>  
     </div>
     <div class="row mt-1">
@@ -2238,19 +2190,19 @@ class Pos {
     <div class="row">
         <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
         <div class="col-sm-auto m-0 mt-2 p-0 ms-0 me-2 mb-2 p-0" id="pt-div">
-            <input type="radio" id="pt-credit" name="payment_type" value="credit" onchange='setPayType("credit");'/>
+            <input type="radio" id="pt-credit" name="payment_type" value="credit" onchange='pos.setPayType("credit");'/>
             <label for="pt-credit">Offline Credit Card</label>
-            <input type="radio" id="pt-online" name="payment_type" value="credit" onchange='setPayType("online");'/>
+            <input type="radio" id="pt-online" name="payment_type" value="credit" onchange='pos.setPayType("online");'/>
             <label for="pt-online">Online Credit Card</label>
-            <input type="radio" id="pt-check" name="payment_type" value="check" onchange='setPayType("check");'/>
+            <input type="radio" id="pt-check" name="payment_type" value="check" onchange='pos.setPayType("check");'/>
             <label for="pt-check">Check</label>
-            <input type="radio" id="pt-cash" name="payment_type" value="cash" onchange='setPayType("cash");'/>
+            <input type="radio" id="pt-cash" name="payment_type" value="cash" onchange='pos.setPayType("cash");'/>
             <label for="pt-cash">Cash</label>
 `;
             if (discount_mode != "none") {
                 if (discount_mode == 'any' || ((discount_mode == 'manager' || discount_mode == 'active') && this.#Manager)) {
                     pay_html += `
-            <input type="radio" id="pt-discount" name="payment_type" value="discount" onchange='setPayType("discount");'/>
+            <input type="radio" id="pt-discount" name="payment_type" value="discount" onchange='pos.setPayType("discount");'/>
             <label for="pt-discount">Discount</label>
 `;
                 }
@@ -2279,7 +2231,7 @@ class Pos {
             <button class="btn btn-primary btn-sm" type="button" id="pay-btn-pay" onclick="pos.pay('');">Confirm Pay</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-ercpt" onclick="pos.email_receipt('email');" hidden disabled>Email Receipt</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-ercpt" onclick="pos.emailReceipt('email');" hidden disabled>Email Receipt</button>
         </div>
     </div>
     <div id="receeiptEmailAddresses" class="container-fluid"></div>
@@ -2306,7 +2258,7 @@ class Pos {
         }
     }
 
-    // process online credit card payment
+// process online credit card payment
     makePurchase(token, label) {
         if (label != '') {
             $purchase_label = label;
@@ -2316,11 +2268,11 @@ class Pos {
         }
 
         $('#' + $purchase_label).attr("disabled", "disabled");
-        pay('', null, token);
+        this.pay('', null, token);
     }
 
-    // dayFromLabel(label)
-    // return the full day name from a memList/memLabel label.
+// dayFromLabel(label)
+// return the full day name from a memList/memLabel label.
     dayFromLabel(label) {
         var pattern_fa = /^mon\s.*$/i;
         var pattern_ff = /^monday.*$/i;
@@ -2378,7 +2330,7 @@ class Pos {
         return "";
     }
 
-    // every functions
+// every functions
     notPerid(current, index, perinfo) {
         var memberships = current.memberships;
 
@@ -2396,6 +2348,6 @@ function posPerNotesIcons(cell, formatterParams, onRendered) {
     return pos.perNotesIcons(cell, formatterParams, onRendered);
 }
 
-function posBuild_record_hover(e, cell, onRendered) {
-    return pos.build_record_hover(e, cell, onRendered);
+function posbulldRecordHover(e, cell, onRendered) {
+    return pos.bulldRecordHover(e, cell, onRendered);
 }

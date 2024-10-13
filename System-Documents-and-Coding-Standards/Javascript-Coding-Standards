@@ -6,6 +6,12 @@ ConTroll uses Bootstrap 5 and Tabulator 6 for Javascript Display
 Variable Naming Rules
     While ConTroll has lots of legacy code, going forward variables should be in lowerCamelCase.
 
+Associated array coding rules (objects)
+    Associative arrays are declared as {}
+    Referencing elements of such an array uses .notation for fixed names: reg.memId
+    Do not use /convert old usage of 'name' notation to . notation: reg['memId'] ==> reg.memId
+    referencing elements of such an array uses array notation for variable elements: perinfoIdx[perid]
+
 When appropriate classes should be used to isolate javascript sections.
     Look at reg_control/registration.js, reg_control/registration_cart.js and reg_control/registration_coupon.js for examples.
 

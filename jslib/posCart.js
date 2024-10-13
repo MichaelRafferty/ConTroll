@@ -52,7 +52,7 @@ class PosCart {
     #review_required_addr = ['first_name', 'email_addr'];
     #review_required_first = ['first_name', 'email_addr', 'address_1', 'city', 'state', 'postal_code'];
     #review_required_fields = this.#review_required_all;
-    #review_prompt_fields = ['phone'];
+    #review_prompt_fields = .phone;
     #country_select = document.getElementById('country').innerHTML;
 
 // Constants
@@ -88,7 +88,7 @@ class PosCart {
             this.#vpBody = document.getElementById("variablePriceBody");
         }
 
-        switch (config['required']) {
+        switch (config.required) {
             case 'first':
                 this.#review_required_fields = this.#review_required_first;
                 break;
@@ -188,12 +188,12 @@ class PosCart {
     // notes fields in the cart, get current values and set new values, marking dirty for saving records
 
     getFullName(index) {
-        return this.#cartPerinfo[index]['fullName'];
+        return this.#cartPerinfo[index].fullName;
     }
 
     getRegFullName(perid) {
         var index = this.#cartPerinfoMap.get(perid);
-        return this.#cartPerinfo[index]['fullName'];
+        return this.#cartPerinfo[index].fullName;
     }
 
     getRegLabel(perid, index) {
@@ -225,13 +225,13 @@ class PosCart {
     }
 
     getPerinfoNote(index) {
-        return this.#cartPerinfo[index]['open_notes'];
+        return this.#cartPerinfo[index].open_notes;
     }
 
     setPersonNote(index, note) {
-        this.#cartPerinfo[index]['open_notes'] = note;
-        this.#cartPerinfo[index]['dirty'] = true;
-        this.#cartPerinfo[index]['open_notes_pending'] = 1;
+        this.#cartPerinfo[index].open_notes = note;
+        this.#cartPerinfo[index].dirty = true;
+        this.#cartPerinfo[index].open_notes_pending = 1;
         this.drawCart();
     }
 
@@ -267,11 +267,11 @@ class PosCart {
         var anyUnpaid = false;
         for (var rownum in this.#cart_membership) {
             var mbrrow = this.#cart_membership[rownum];
-            if (mbrrow['coupon'])
+            if (mbrrow.coupon)
                 return false;
-            if ((!pos.nonPrimaryCategoriesIncludes(mbrrow['memCategory'])) && mbrrow['conid'] == pos.getConid &&
-             mbrrow['price'] > 0 && mbrrow['paid'] !=
-             mbrrow['price'])
+            if ((!pos.nonPrimaryCategoriesIncludes(mbrrow.memCategory)) && mbrrow.conid == pos.getConid &&
+             mbrrow.price > 0 && mbrrow.paid !=
+             mbrrow.price)
                 anyUnpaid = true;
         }
         if (anyUnpaid == false)
@@ -287,8 +287,8 @@ class PosCart {
         /*
         for (var rownum in this.#cart_membership) {
             var mrow = this.#cart_membership[rownum];
-            if (mrow['couponDiscount']) {
-                priordiscount += Number(mrow['couponDiscount']);
+            if (mrow.couponDiscount) {
+                priordiscount += Number(mrow.couponDiscount);
             }
         }
          */
@@ -314,8 +314,8 @@ class PosCart {
     add(p) {
            var pindex = this.#cartPerinfo.length;
         this.#cartPerinfo.push(make_copy(p));
-        this.#cartPerinfo[pindex]['index'] = pindex;
-        this.#cartPerinfoMap.set(this.#cartPerinfo[pindex]['perid'], pindex);
+        this.#cartPerinfo[pindex].index = pindex;
+        this.#cartPerinfoMap.set(this.#cartPerinfo[pindex].perid, pindex);
         var mrows = p.memberships;
         for (var mrownum in mrows) {
             if (mrows[mrownum].couponDiscount === undefined) {
@@ -328,7 +328,7 @@ class PosCart {
 
 // remove person and all of their memberships from the cart
     remove(perid) {
-        if (!pos.confirm_discard_add_edit(false))
+        if (!pos.confirmDiscardAddEdit(false))
             return;
 
         var index = this.#cartPerinfoMap.get(perid);
@@ -395,10 +395,10 @@ class PosCart {
 
         var dirty = false;
         if (index >= 0) {
-            dirty = this.#cartPerinfo[index]['dirty'] === true;
+            dirty = this.#cartPerinfo[index].dirty === true;
         } else {
             for (var row in this.#cartPerinfo) {
-                dirty ||= this.#cartPerinfo[row]['dirty'] === true;
+                dirty ||= this.#cartPerinfo[row].dirty === true;
             }
         }
 
@@ -410,7 +410,7 @@ class PosCart {
 
         var msg = "Discard updated cart items?";
         if (index >= 0)
-            msg = "Discard updated cart items for " + (this.#cartPerinfo[index]['first_name'] + ' ' + this.#cartPerinfo[index]['last_name']).trim();
+            msg = "Discard updated cart items for " + (this.#cartPerinfo[index].first_name + ' ' + this.#cartPerinfo[index].last_name).trim();
 
         if (!confirm(msg)) {
             return false; // confirm answered no, return not safe to discard
@@ -424,10 +424,10 @@ class PosCart {
         console.log("deleteMembership: TODO");
         return;
         /*
-        if (this.#cart_membership[index]['tid'] != '') {
-            if (confirm("Confirm delete for " + this.#cart_membership[index]['label'])) {
-                this.#cart_membership[index]['todelete'] = 1;
-                this.#cartPerinfo[this.#cart_membership[index]['pindex']]['dirty'] = true;
+        if (this.#cart_membership[index].tid != '') {
+            if (confirm("Confirm delete for " + this.#cart_membership[index].label)) {
+                this.#cart_membership[index].todelete = 1;
+                this.#cartPerinfo[this.#cart_membership[index].pindex].dirty = true;
             }
         } else {
             this.#cart_membership.splice(index, 1);
@@ -483,7 +483,7 @@ class PosCart {
             countMemberships++;
             var amount_due = Number(membershipRec.price) - (Number(membershipRec.paid) + Number(membershipRec.couponDiscount));
             var label = (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label +
-                (membershipRec.memAge != 'all' ? ' [' + ageListIdx[membershipRec.memAge].label + ']' : '');
+                (membershipRec.memAge != 'all' ? ' . + ageListIdx[membershipRec.memAge].label + ' : '');
             if ((!membershipRec.toDelete) && membershipRec.status.includes(this.#isDueStatuses))
                 totalDue += amount_due;
 
@@ -624,19 +624,19 @@ class PosCart {
         }
 
         if (mbr.price == 0 && !pos.getManager()) {
-            show_message("Please contact registration at " + config['regadminemail'] + "  to delete free items.", "warn", 'aeMessageDiv');
+            show_message("Please contact registration at " + config.regadminemail + "  to delete free items.", "warn", 'aeMessageDiv');
             return;
         }
 
         if (mbr.paid > 0 && !pos.getManager()) {
-            show_message("Please contact registration at " + config['regadminemail'] + " to resolve this partially paid item.", "warn", 'aeMessageDiv');
+            show_message("Please contact registration at " + config.regadminemail + " to resolve this partially paid item.", "warn", 'aeMessageDiv');
             return;
         }
 
         // check if anything else in the cart depends on this membership
         // trial the delete
         mbr.toDelete = true;
-        var rules = new MembershipRules(config['conid'], this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        var rules = new MembershipRules(config.conid, this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
         for (var nrow in this.#memberships) {
             if (row == nrow)    // skip checking ourselves
                 continue;
@@ -673,7 +673,7 @@ class PosCart {
             return
         }
 
-        var rules = new MembershipRules(config['conid'], this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        var rules = new MembershipRules(config.conid, this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
         if (rules.testMembership(mbr, false) == false) {
             show_message("You cannot restore " + mbr.label + " because it requires some other deleted membership. Look at your memberships marked 'Restore'" +
                 " and restore its prerequesite", "warn", 'aeMessageDiv');
@@ -786,7 +786,7 @@ class PosCart {
         // check if anything else in the cart depends on this membership
         // trial the delete
         mbr.toDelete = true;
-        var rules = new MembershipRules(config['conid'], this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        var rules = new MembershipRules(config.conid, this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
         for (var nrow in this.#memberships) {
             if (row == nrow)    // skip checking ourselves
                 continue;
@@ -827,16 +827,16 @@ class PosCart {
 
 // update payment data in  cart
     updatePmt(data) {
-        if (data['prow']) {
-            this.#cartPmt.push(data['prow']);
+        if (data.prow) {
+            this.#cartPmt.push(data.prow);
         }
-        if (data['crow']) {
-            this.#cartPmt.push(data['crow']);
+        if (data.crow) {
+            this.#cartPmt.push(data.crow);
         }
         console.log("updatePmt: TODO");
         /*
-        if (data['cart_membership']) {
-            this.#cart_membership = make_copy(data['cart_membership']);
+        if (data.cart_membership) {
+            this.#cart_membership = make_copy(data.cart_membership);
         }
 
          */
@@ -850,8 +850,8 @@ class PosCart {
         var index;
         this.#cartPerinfoMap = new map();
         for (index = 0; index < this.#cartPerinfo.length; index++) {
-            this.#cartPerinfo[index]['index'] = index;
-            this.#cartPerinfoMap.set(this.#cartPerinfo[index]['perid'], index);
+            this.#cartPerinfo[index].index = index;
+            this.#cartPerinfoMap.set(this.#cartPerinfo[index].perid, index);
         }
     }
 
@@ -860,16 +860,16 @@ class PosCart {
         // clear the discount from the membership rows
         for (var rownum in this.#membershipRows ) {
             var mrow = this.#membershipRows[rownum];
-            if (mrow['coupon'] == couponId) {
-                mrow['coupon'] = null;
-                mrow['couponDiscount'] = 0;
+            if (mrow.coupon == couponId) {
+                mrow.coupon = null;
+                mrow.couponDiscount = 0;
             }
         }
         // remove the discount coupon from the payment
         var delrows = [];
         for (rownum in this.#cartPmt) {
             var prow = this.#cartPmt[rownum];
-            if (prow['type'] == 'discount' && prow['desc'].substring(0, 7) == 'Coupon:') {
+            if (prow.type == 'discount' && prow.desc.substring(0, 7) == 'Coupon:') {
                 delrows.push(rownum);
             }
         }
@@ -887,24 +887,24 @@ class PosCart {
         var membership_found = false;
         var membership_html = '';
         var col1 = '';
-        var perid = row['perid'];
+        var perid = row.perid;
         var btncolor = null;
         // now loop over the memberships in the order retrieved
         var pindex = this.#cartPerinfoMap.get(perid);
         var mrows = this.#cartPerinfo[[pindex]].memberships;
         for (var mrownum in mrows) {
             mrow = mrows[mrownum];
-            if (mrow['todelete'] !== undefined)
+            if (mrow.todelete !== undefined)
                 continue;
 
             var row_shown = true;
-            var category = mrow['memCategory'];
+            var category = mrow.memCategory;
             if (category == 'yearahead' && mrow.conid == pos.getConid())
                 category = 'standard'; // last years yearahead is this year's standard
-            var memType = mrow['memType'];
+            var memType = mrow.memType;
 
             // col1 - status
-            switch (mrow['status']) {
+            switch (mrow.status) {
                 case 'paid':
                     col1 = "Pd";
                     break;
@@ -915,17 +915,17 @@ class PosCart {
                     col1 = "Pln";
                     break;
                 default:
-                    col1 = mrow['status'].substring(0, 3);
+                    col1 = mrow.status.substring(0, 3);
             }
 
-            var label = mrow['label'];
+            var label = mrow.label;
             if (!this.#freezeCart) {
                 var notes_count = 0;
-                if (mrow['reg_notes_count'] !== undefined && mrow['reg_notes_count'] !== null) {
-                    notes_count = Number(mrow['reg_notes_count']);
+                if (mrow.reg_notes_count !== undefined && mrow.reg_notes_count !== null) {
+                    notes_count = Number(mrow.reg_notes_count);
                 }
                 btncolor = 'btn-info';
-                if (mrow['new_reg_note'] !== undefined && mrow['new_reg_note'] !== '')
+                if (mrow.new_reg_note !== undefined && mrow.new_reg_note !== '')
                     btncolor = 'btn-warning';
                 var btntext = 'Add Note';
                 if (notes_count > 0) {
@@ -940,14 +940,14 @@ class PosCart {
     <div class="row">
         <div class="col-sm-1 pe-0">` + col1 + `</div>
         <div class="col-sm-7 ps-1">` + label + `</div>
-        <div class="col-sm-2 text-end">` + Number(mrow['price']).toFixed(2) + `</div>
-        <div class="col-sm-2 text-end">` + Number(mrow['paid']).toFixed(2) + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow.price).toFixed(2) + `</div>
+        <div class="col-sm-2 text-end">` + Number(mrow.paid).toFixed(2) + `</div>
     </div>
 `;
-            this.#totalPrice += Number(mrow['price']);
-            this.#totalPaid += Number(mrow['paid']);
-            if (mrow['couponDiscount'])
-                this.#totalPaid += Number(mrow['couponDiscount']);
+            this.#totalPrice += Number(mrow.price);
+            this.#totalPaid += Number(mrow.paid);
+            if (mrow.couponDiscount)
+                this.#totalPaid += Number(mrow.couponDiscount);
             if (this.#isMembershipTypes.includes(memType))
                 membership_found = true;
             if (mrow.status != 'paid') {
@@ -964,8 +964,8 @@ class PosCart {
         rowhtml += row.fullName + '</div>';
         if (!this.#freezeCart) {
             rowhtml += `
-        <div class="col-sm-2 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.edit_from_cart(` + perid + `)">Edit</button></div>
-        <div class="col-sm-2 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.remove_from_cart(` + perid + `)">Remove</button></div>
+        <div class="col-sm-2 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.editFromCart(` + perid + `)">Edit</button></div>
+        <div class="col-sm-2 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.removeFromCart(` + perid + `)">Remove</button></div>
 `;
         }
         rowhtml += '</div>'; // end of member name row
@@ -974,19 +974,19 @@ class PosCart {
         rowhtml += `
     <div class="row">
         <div class="col-sm-3">Badge Name:</div>
-        <div class="col-sm-5">` + pos.badge_name_default(row['badge_name'], row['first_name'], row['last_name']) + `</div>
+        <div class="col-sm-5">` + pos.badge_name_default(row.badge_name, row.first_name, row.last_name) + `</div>
         <div class="col-sm-2 text-center">`;
-        if (!this.#freezeCart && row['open_notes'] != null && row['open_notes'].length > 0) {
-            rowhtml += '<button type="button" class="btn btn-sm btn-info p-0" onclick="pos.showPerinfoNotes(' + row['index'] + ', \'cart\')">View' +
+        if (!this.#freezeCart && row.open_notes != null && row.open_notes.length > 0) {
+            rowhtml += '<button type="button" class="btn btn-sm btn-info p-0" onclick="pos.showPerinfoNotes(' + row.index + ', \'cart\')">View' +
                 ' Notes</button>';
         }
         rowhtml += `</div>
         <div class="col-sm-2 text-center">`;
         if (pos.getManager() && !this.#freezeCart) {
             btncolor = 'btn-secondary';
-            if (row['open_notes_pending'] !== undefined && row['open_notes_pending'] === 1)
+            if (row.open_notes_pending !== undefined && row.open_notes_pending === 1)
                 btncolor = 'btn-warning';
-            rowhtml += '<button type="button" class="btn btn-sm ' + btncolor + ' p-0" onclick="pos.edit_perinfo_notes(' + row['index'] + ', \'cart\')">Edit' +
+            rowhtml += '<button type="button" class="btn btn-sm ' + btncolor + ' p-0" onclick="pos.editPerinfoNotes(' + row.index + ', \'cart\')">Edit' +
                 ' Notes</button>';
         }
         rowhtml += `</div>
@@ -995,7 +995,7 @@ class PosCart {
         rowhtml += `</div>
     <div class="row">
         <div class="col-sm-auto"><button type="button" class="btn btn-sm btn-primary" onclick="cart.addEditMemberships(` +
-            row['index'] + `);">Add/Edit Memberships</button>
+            row.index + `);">Add/Edit Memberships</button>
         </div>
     </div>
     `;
@@ -1019,16 +1019,16 @@ class PosCart {
 
         var pmt = this.#cartPmt[prow];
         var code = '';
-        if (pmt['type'] == 'check') {
-            code = pmt['checkno'];
-        } else if (pmt['type'] == 'credit') {
-            code = pmt['ccauth'];
+        if (pmt.type == 'check') {
+            code = pmt.checkno;
+        } else if (pmt.type == 'credit') {
+            code = pmt.ccauth;
         }
         return `<div class="row">
-    <div class="col-sm-2 p-0">` + pmt['type'] + `</div>
-    <div class="col-sm-6 p-0">` + pmt['desc'] + `</div>
+    <div class="col-sm-2 p-0">` + pmt.type + `</div>
+    <div class="col-sm-6 p-0">` + pmt.desc + `</div>
     <div class="col-sm-2 p-0">` + code + `</div>
-    <div class="col-sm-2 text-end">` + Number(pmt['amt']).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + Number(pmt.amt).toFixed(2) + `</div>
 </div>
 `;
     }
@@ -1074,7 +1074,7 @@ class PosCart {
             this.#totalPmt = 0;
             for (var prow in this.#cartPmt) {
                 html += this.#drawCartPmtRow(prow);
-                this.#totalPmt += Number(this.#cartPmt[prow]['amt']);
+                this.#totalPmt += Number(this.#cartPmt[prow].amt);
             }
             html += `<div class="row">
     <div class="col-sm-8 p-0 text-end">Payment Total:</div>`;
@@ -1159,78 +1159,78 @@ class PosCart {
 
             html += `
     </div>
-    <input type="hidden" id='c` + rownum + `-index' value="` + row['index'] + `"/>
+    <input type="hidden" id='c` + rownum + `-index' value="` + row.index + `"/>
     <div class="row mt-1">
         <div class="col-sm-auto ms-0 me-2 p-0">
             <input type="text" name="c` + rownum + `-first_name" id='c` + rownum + `-first_name' size="25" maxlength="32" placeholder="First Name" tabindex="` + String(tabindex + 2) +
-                '" value="' + row['first_name'] + '" style="background-color:' + colors.get('first_name') + ';' +
+                '" value="' + row.first_name + '" style="background-color:' + colors.get('first_name') + ';' +
                 `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <input type="text" name="c` + rownum + `-middle_name" id='c` + rownum + `-middle_name' size="6" maxlength="32" placeholder="Middle" tabindex="` + String(tabindex + 4) +
-                '" value="' + row['middle_name'] + `"/>
+                '" value="' + row.middle_name + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <input type="text" name="c` + rownum + `-last_name" id='c` + rownum + `-last_name' size="25" maxlength="32" placeholder="Last Name" tabindex="` + String(tabindex + 6) +
-                '" value="' + row['last_name'] + '" style="background-color:' + colors.get('last_name') + ';' + `"/>
+                '" value="' + row.last_name + '" style="background-color:' + colors.get('last_name') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name="c` + rownum + `-suffix" id='c` + rownum + `-suffix' size="6" maxlength="4" placeholder="Suffix" tabindex="` + String(tabindex + 8) +
-                '" value="' + row['suffix'] + `"/>
+                '" value="' + row.suffix + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-legalName' id='c` + rownum + `-legalName' size=80 maxlength="128" placeholder="Legal Name: defaults to first middle last suffix" tabindex="` +
-                String(tabindex + 10) +  '" value="' + row['legalName'] + `"/>
+                String(tabindex + 10) +  '" value="' + row.legalName + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-badge_name' id='c` + rownum + `-badge_name' size=64 maxlength="64" placeholder="Badgename: defaults to first and last name" tabindex="` +
-                String(tabindex + 12) +'" value="' + row['badge_name'] + `"/>
+                String(tabindex + 12) +'" value="' + row.badge_name + `"/>
         </div>
     </div>
      <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-pronouns' id='c` + rownum + `-pronouns' size=80 maxlength="128" placeholder="Pronouns" tabindex="` +
-                String(tabindex + 10) +  '" value="' + row['pronouns'] + `"/>
+                String(tabindex + 10) +  '" value="' + row.pronouns + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-2 p-0">
             <input type="text" name='c` + rownum + `-email_addr' id='c` + rownum + `-email_addr' size=64 maxlength="254" placeholder="Email Address" tabindex="` +
-                String(tabindex + 14) + '"  value="' + row['email_addr'] + '" style="background-color:' + colors.get('email_addr') + ';' + `"/>
+                String(tabindex + 14) + '"  value="' + row.email_addr + '" style="background-color:' + colors.get('email_addr') + ';' + `"/>
         </div>
          <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-phone' id='c` + rownum + `-phone' size=15 maxlength="15" placeholder="Phone Number" tabindex="` +
-            String(tabindex + 16) + '" value="' + row['phone'] + '" style="background-color:' + colors.get('phone') + ';' + `"/>
+            String(tabindex + 16) + '" value="' + row.phone + '" style="background-color:' + colors.get('phone') + ';' + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-address_1' id='c` + rownum + `-address_1' size=64 maxlength="64" placeholder="Street Address" tabindex="` +
-                String(tabindex + 18) + '"  value="' + row['address_1'] + '" style="background-color:' + colors.get('address_1') + ';' + `"/>
+                String(tabindex + 18) + '"  value="' + row.address_1 + '" style="background-color:' + colors.get('address_1') + ';' + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-address_2' id='c` + rownum + `-address_2' size=64 maxlength="64" placeholder="2nd line of Address (if needed, such as company)" tabindex="` +
-                String(tabindex + 20) + '" value="' + row['address_2'] + `"/>
+                String(tabindex + 20) + '" value="' + row.address_2 + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-2 p-0">
             <input type="text" name="c` + rownum + `-city" id='c` + rownum + `-city' size="22" maxlength="32" placeholder="City" tabindex="` + String(tabindex + 22) +
-                '" value="' + row['city'] + '" style="background-color:' + colors.get('city') + ';' + `"/>
+                '" value="' + row.city + '" style="background-color:' + colors.get('city') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <input type="text" name="c` + rownum + `-state" id='c` + rownum + `-state' size="10" maxlength="16" placeholder="State" tabindex="` + String(tabindex + 24) +
-                '" value="' + row['state'] + '" style="background-color:' + colors.get('state') + ';' + `"/>
+                '" value="' + row.state + '" style="background-color:' + colors.get('state') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <input type="text" name="c` + rownum + `-postal_code" id='c` + rownum + `-postal_code' size="10" maxlength="10" placeholder="Postal Code" tabindex="` + String(tabindex + 26) +
-            '" value="' + row['postal_code'] + '" style="background-color:' + colors.get('postal_code') + ';' + `"/>
+            '" value="' + row.postal_code + '" style="background-color:' + colors.get('postal_code') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-0 p-0">
             <select name='c` + rownum + `-country' id='c` + rownum + `-country' tabindex="` + String(tabindex + 28) + `">
@@ -1257,8 +1257,8 @@ class PosCart {
     html += `<div class="row mt-2">
         <div class="col-sm-1 m-0 p-0">&nbsp;</div>
         <div class="col-sm-auto m-0 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="review-btn-update" onclick="pos.review_update();">Update All</button>
-            <button class="btn btn-primary btn-sm" type="button" id="review-btn-nochanges" onclick="pos.review_nochanges();">No Changes</button>
+            <button class="btn btn-primary btn-sm" type="button" id="review-btn-update" onclick="pos.reviewUpdate();">Update All</button>
+            <button class="btn btn-primary btn-sm" type="button" id="review-btn-nochanges" onclick="pos.reviewNoChanges();">No Changes</button>
         </div>
     </div>
     <div class="row">
@@ -1286,7 +1286,7 @@ class PosCart {
                     if (this.#cartPerinfo[rownum][field] != el.value) {
                         // alert("updating  row " + rownum + ":" + rownum + ":" + field + " from '" + this.#cartPerinfo[rownum][field] + "' to '" + el.value + "'");
                         this.#cartPerinfo[rownum][field] = el.value;
-                        this.#cartPerinfo[rownum]['dirty'] = false;
+                        this.#cartPerinfo[rownum].dirty = false;
                     }
                 }
             }
@@ -1301,29 +1301,29 @@ class PosCart {
         console.log("updateFromDB: TODO");
         /*
         // update the fields created by the database transactions
-        var updated_perinfo = data['updated_perinfo'];
+        var updated_perinfo = data.updated_perinfo;
         for (rownum in updated_perinfo) {
             newrow = updated_perinfo[rownum];
-            cartrow = this.#cartPerinfo[newrow['rowpos']]
-            cartrow['perid'] = newrow['perid'];
-            cartrow['dirty'] = false;
+            cartrow = this.#cartPerinfo[newrow.rowpos]
+            cartrow.perid = newrow.perid;
+            cartrow.dirty = false;
         }
-        var updated_membership = data['updated_membership'];
+        var updated_membership = data.updated_membership;
         for (rownum in updated_membership) {
             newrow = updated_membership[rownum];
-            cartrow = this.#cart_membership[newrow['rowpos']];
-            //array('rowpos' => $row, 'perid' => $cartrow['perid'], 'create_trans' => $master_perid, 'id' => $new_regid);
-            cartrow['create_trans'] = newrow['create_trans'];
-            cartrow['regid'] = newrow['id'];
-            cartrow['perid'] = newrow['perid'];
-            cartrow['dirty'] = false;
+            cartrow = this.#cart_membership[newrow.rowpos];
+            //array('rowpos' => $row, 'perid' => $cartrow.perid, 'create_trans' => $master_perid, 'id' => $new_regid);
+            cartrow.create_trans = newrow.create_trans;
+            cartrow.regid = newrow.id;
+            cartrow.perid = newrow.perid;
+            cartrow.dirty = false;
         }
 
 // delete all rows from cart marked for delete
         var delrows = [];
         var splicerow = null;
         for (var rownum in this.#cart_membership) {
-            if (this.#cart_membership[rownum]['todelete'] == 1) {
+            if (this.#cart_membership[rownum].todelete == 1) {
                 delrows.push(rownum);
             }
         }
@@ -1347,7 +1347,7 @@ class PosCart {
         for (rownum in this.#cartPerinfo) {
             row = this.#cartPerinfo[rownum];
             selid = document.getElementById('c' + rownum + '-country');
-            selid.value = row['country'];
+            selid.value = row.country;
         }
         cart.drawCart();
     }
@@ -1355,7 +1355,7 @@ class PosCart {
 // receiptHeader - retrieve receipt header info from cart[0]
     receiptHeader(user_id, pay_tid) {
         var d = new Date();
-        var payee = (this.#cartPerinfo[0]['first_name'] + ' ' + this.#cartPerinfo[0]['last_name']).trim();
+        var payee = (this.#cartPerinfo[0].first_name + ' ' + this.#cartPerinfo[0].last_name).trim();
         return "\nReceipt for payment to " + conlabel + "\nat " + d.toLocaleString() + "\nBy: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid;
     }
 
@@ -1373,17 +1373,17 @@ class PosCart {
                 continue;   // skip anyone without a primary
             mrow = crow.memberships[mrow];
             if (new_print) {
-                printed_obj.set(crow['index'], 0);
+                printed_obj.set(crow.index, 0);
             }
             print_html += `
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-print-` + this.#cartPerinfo[rownum]['index'] + `" name="print_btn" onclick="pos.print_badge(` + crow['index'] + `);">Print</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-print-` + this.#cartPerinfo[rownum].index + `" name="print_btn" onclick="pos.print_badge(` + crow.index + `);">Print</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">            
             <span class="text-bg-success"> Membership: ` + mrow.label + `</span> (Times Printed: ` +
                 mrow.printcount + `)<br/>
-              ` + crow['badge_name'] + '/' + (crow['first_name'] + ' ' + crow['last_name']).trim() + `
+              ` + crow.badge_name + '/' + (crow.first_name + ' ' + crow.last_name).trim() + `
         </div>
      </div>`;
         }
@@ -1401,13 +1401,13 @@ class PosCart {
         printrow = row.memberships[printrow];
 
         var params = {};
-        params['type'] = printrow['memType'];
-        params['badge_name'] = row['badge_name'];
-        params['full_name'] = (row['first_name'] + ' ' + row['last_name']).trim();
-        params['category'] = printrow['memCategory'];
-        params['badge_id'] = row['perid'];
-        params['day'] = dayFromLabel(printrow['label']);
-        params['age'] = printrow['memAge'];
+        params.type = printrow.memType;
+        params.badge_name = row.badge_name;
+        params.full_name = (row.first_name + ' ' + row.last_name).trim();
+        params.category = printrow.memCategory;
+        params.badge_id = row.perid;
+        params.day = dayFromLabel(printrow.label);
+        params.age = printrow.memAge;
         return params;
     }
 
@@ -1428,6 +1428,6 @@ class PosCart {
 
     // getEmail: return the email address of an entry
     getEmail(index) {
-        return this.#cartPerinfo[index]['email_addr'];
+        return this.#cartPerinfo[index].email_addr;
     }
 }
