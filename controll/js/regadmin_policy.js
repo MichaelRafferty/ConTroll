@@ -172,8 +172,8 @@ class policySetup {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false, },
+                {title: "Policy", field: "policy", editor: "input", width: 200, headerSort: true, validator: "required", },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'policies' }, hozAlign:"left", headerSort: false },
-                {title: "Policy", field: "policy", width: 200, headerSort: true},
                 {title: "Prompt", field: "prompt", headerSort: false, width: 600, headerFilter: true, validator: "required", },
                 {title: "Description", field: "description", headerSort: false, headerFilter: true, width: 600, validator: "required", },
                 {
