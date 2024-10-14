@@ -444,7 +444,7 @@ class Pos {
         $("button[name='void_btn']").attr("disabled", true);
         $.ajax({
             method: "POST",
-            url: "scripts/reg_voidPayment.php",
+            url: "scripts/pos_voidPayment.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
                 if (data.error !== undefined) {
@@ -1342,7 +1342,7 @@ class Pos {
                     document.getElementById('close_note_button').disabled = true;
                     $.ajax({
                         method: "POST",
-                        url: "scripts/reg_updatePerinfoNote.php",
+                        url: "scripts/pos_updatePerinfoNote.php",
                         data: postData,
                         success: function (data, textstatus, jqxhr) {
                             if (data.error !== undefined) {
@@ -1715,7 +1715,7 @@ addUnpaid(tid) {
         var _this = this;
         $.ajax({
             method: "POST",
-            url: "scripts/reg_updateCartElements.php",
+            url: "scripts/pos_updateCartElements.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
                 if (data.error !== undefined) {
@@ -1909,9 +1909,10 @@ addUnpaid(tid) {
             pay_tid: this.#pay_tid,
         };
         this.#pay_button_pay.disabled = true;
+        var _this = this;
         $.ajax({
             method: "POST",
-            url: "scripts/reg_processPayment.php",
+            url: "scripts/pos_processPayment.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
                 var stop = true;
@@ -1930,13 +1931,13 @@ addUnpaid(tid) {
                     show_message(data.data, 'error');
                 }
                 if (!stop)
-                    updatedPayment(data);
-                this.#pay_button_pay.disabled = false;
+                    _this.updatedPayment(data);
+                _this.#pay_button_pay.disabled = false;
                 if (pt_online)
                     $('#' + this.#purchase_label).removeAttr("disabled");
             },
             error: function (jqXHR, textstatus, errorThrown) {
-                this.#pay_button_pay.disabled = false;
+                _this.#pay_button_pay.disabled = false;
                 if (pt_online)
                     $('#' + this.#purchase_label).removeAttr("disabled");
                 showAjaxError(jqXHR, textstatus, errorThrown);
@@ -1972,7 +1973,7 @@ addUnpaid(tid) {
         this.#pay_button_ercpt.disabled = true;
         $.ajax({
             method: "POST",
-            url: "scripts/reg_emailReceipt.php",
+            url: "scripts/pos_emailReceipt.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
                 clear_message();
