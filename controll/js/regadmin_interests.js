@@ -301,7 +301,11 @@ class interestsSetup {
         var interestRow = this.#interestsTable.getRow(interestName).getData();
         editPreviewClass = 'interests';
         var interestName = interestRow.interest;
-        var interestDescription = interestRow.description;
+        var interestDescription = '';
+        if (interestRow.hasOwnProperty('description')) {
+            if (interestRow.description != null && interestRow.description != undefined)
+                interestDescription = interestRow.description;
+        }
 
         // build the modal contents
         this.#editInterestTitle.innerHTML = "Edit the " + interestName + " interest";
