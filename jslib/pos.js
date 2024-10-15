@@ -439,7 +439,7 @@ class Pos {
             ajax_request_action: 'voidPayment',
             user_id: this.#user_id,
             pay_tid: this.#pay_tid,
-            cart_membership: cart.getCartMembership(),
+            cart_perinfo: cart.getPerinfo(),
         };
         $("button[name='void_btn']").attr("disabled", true);
         $.ajax({
@@ -1708,8 +1708,6 @@ addUnpaid(tid) {
         var postData = {
             ajax_request_action: 'updateCartElements',
             cart_perinfo: cart.getCartPerinfo(),
-            cart_perinfo_map: cart.getCartMap(),
-            cart_membership: cart.getCartMembership(),
             user_id: this.#user_id,
         };
         var _this = this;
@@ -1740,6 +1738,8 @@ addUnpaid(tid) {
         this.#pay_tid = data.master_tid;
         // update cart elements
         var unpaid_rows = cart.updateFromDB(data);
+        // rebuild perinfo map
+        console.log("rebuild perinfo map");
         bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
     }
 
@@ -1900,7 +1900,7 @@ addUnpaid(tid) {
         // process payment
         var postData = {
             ajax_request_action: 'processPayment',
-            cart_membership: cart.getCartMembership(),
+            cart_perinfo: cart.getPerinfo(),
             new_payment: prow,
             coupon: prow.coupon,
             change: crow,
@@ -1964,7 +1964,6 @@ addUnpaid(tid) {
             ajax_request_action: 'printReceipt',
             header: header_text,
             prows: cart.getCartPerinfo(),
-            mrows: cart.getCartMembership(),
             pmtrows: cart.getCartPmt(),
             footer: footer_text,
             receipt_type: receipt_type,

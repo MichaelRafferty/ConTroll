@@ -240,18 +240,6 @@ class PosCart {
         return make_copy(this.#cartPerinfo);
     }
 
-    getCartMembership() {
-        console.log("getCartMembership: TODO");
-        return null;
-        //return make_copy(this.#cart_membership);
-    }
-
-    getCartMembershipRef() {
-        console.log("getCartMembershipReg: TODO");
-        return null;
-        //return this.#cart_membership;
-    }
-
     getCartMap() {
         return this.#cartPerinfoMap.getMap();
     }

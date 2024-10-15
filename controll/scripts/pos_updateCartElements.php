@@ -44,13 +44,6 @@ if (sizeof($cart_perinfo) <= 0) {
     return;
 }
 
-$cart_perinfo_map = $_POST['cart_perinfo_map'];
-$cart_membership = $_POST['cart_membership'];
-if (sizeof($cart_membership) <= 0) {
-    ajaxError('No memberships are in the cart');
-    return;
-}
-
 $updated_perinfo = [];
 $updated_membership = [];
 $update_permap = [];
@@ -64,27 +57,31 @@ $reg_del = 0;
 $total_price = 0;
 $total_paid = 0;
 
+// loop over the perinfo array and add/update/delete the perinfo entries, and then the memberships under those perinfo entries
+
 $insPerinfoSQL = <<<EOS
-INSERT INTO perinfo(last_name,first_name,middle_name,suffix,legalName,email_addr,phone,badge_name,address,addr_2,city,state,zip,country,contact_ok,share_reg_ok,open_notes,banned,active,creation_date,updatedBy)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N','Y',now(),?);
+INSERT INTO perinfo(last_name,first_name,middle_name,suffix,legalName,pronouns,email_addr,phone,badge_name,address,addr_2,city,state,zip,country,
+                    open_notes,banned,active,contact_ok,creation_date,updatedBy)
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N','Y','Y',now(),?);
 EOS;
 $existingQ = <<<EOS
-SELECT last_name, first_name, middle_name, suffix, legalName, email_addr, phone, badge_name, address, addr_2, city, state, zip, country, open_notes, contact_ok, share_reg_ok, change_notes
+SELECT last_name, first_name, middle_name, suffix, legalName, pronouns, email_addr, phone, badge_name, address, addr_2, city, state, zip, country,
+       open_notes, change_notes
 FROM perinfo
 WHERE id = ?;
 EOS;
 $updPerinfoSQL = <<<EOS
 UPDATE perinfo SET
-    last_name=?,first_name=?,middle_name=?,suffix=?,legalName=?,email_addr=?,phone=?,badge_name=?,address=?,addr_2=?,city=?,state=?,zip=?,country=?,
-    open_notes=?,banned='N',update_date=NOW(),active='Y',contact_ok=?,share_reg_ok=?,change_notes=?,updatedBy=?
+    last_name=?,first_name=?,middle_name=?,suffix=?,legalName=?,pronouns=>,email_addr=?,phone=?,badge_name=?,address=?,addr_2=?,city=?,state=?,zip=?,country=?,
+    open_notes=?,banned='N',update_date=NOW(),active='Y',change_notes=?,updatedBy=?
 WHERE id = ?;
 EOS;
 $insRegSQL = <<<EOS
-INSERT INTO reg(conid,perid,price,paid,status,create_user,create_trans,memId,create_date)
-VALUES (?,?,?,?,?,?,?,?,now());
+INSERT INTO reg(conid,perid,price,couponDiscount,paid,create_user,create_trans,memId,coupon,create_date,status)
+VALUES (?,?,?,?,?,?,?,?,?,now(),?);
 EOS;
 $updRegSQL = <<<EOS
-UPDATE reg SET price=?,paid=?,status = ?, memId=?,change_date=now()
+UPDATE reg SET price=?,couponDiscount=?,paid=?,status = ?, memId=?,coupon=?,updatedBy=?,change_date=now()
 WHERE id = ?;
 EOS;
 $delRegSQL = <<<EOS
@@ -95,7 +92,7 @@ $insHistory = <<<EOS
 INSERT INTO regActions(userid, tid, regid, action, notes)
 VALUES (?, ?, ?, ?, ?);
 EOS;
-// insert/update all perinfo records,
+// loop over all perinfo records
 for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
     $cartrow = $cart_perinfo[$row];
     if (array_key_exists('open_notes', $cartrow)) {
@@ -104,36 +101,34 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             $open_notes = null;
     } else
         $open_notes = null;
-    $legalName = $cartrow['legalName'];
 
+    $legalName = $cartrow['legalName'];
     if ($legalName == '') {
         $legalName = trim($cartrow['first_name']  . ($cartrow['middle_name'] == '' ? ' ' : ' ' . $cartrow['middle_name'] . ' ' ) .
             $cartrow['last_name'] . ' ' . $cartrow['suffix']);
     }
 
     // remove l-r from phone
-    $phone = trim($cartrow['phone']);
-    if ($phone != null && $phone != '') {
-        $phone = preg_replace('/' . mb_chr(0x202d) . '/', '',  $phone);
-        $cartrow['phone'] = $phone;
-    }
+    $cartrow['phone'] = trim(removeLROveride($cartrow['phone']));
 
     if ($cartrow['perid'] <= 0) {
         // insert this row
         $paramarray = array(
-            $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$legalName,$cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
+            $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$legalName,$cartrow['pronouns'],
+            $cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
             $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],
-            $cartrow['contact_ok'],$cartrow['share_reg_ok'],$open_notes,$_SESSION['user_id']
+            $open_notes,$_SESSION['user_id']
         );
-        $typestr = 'sssssssssssssssssi';
+
+        $typestr = 'ssssssssssssssssi';
         $new_perid = dbSafeInsert($insPerinfoSQL, $typestr, $paramarray);
         if ($new_perid === false) {
             $error_message .= "Insert of person $row failed<BR/>";
         } else {
             $updated_perinfo[] = array('rowpos' => $row, 'perid' => $new_perid);
-            $cart_perinfo_map[$new_perid] = $row;
             $update_permap[$cartrow['perid']] = $new_perid;
             $cart_perinfo[$row]['perid'] = $new_perid;
+            $cartrow['perid'] = $new_perid;
             $per_ins++;
         }
     } else {
