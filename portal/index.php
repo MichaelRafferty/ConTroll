@@ -258,7 +258,7 @@ if (isset($_GET['vid'])) {
     if ($validationType == 'token') {
         // check if the link has been used
         $linkQ = <<<EOS
-SELECT id, LOWER(email), useCnt
+SELECT id, LOWER(email) AS email, useCnt
 FROM portalTokenLinks
 WHERE id = ? AND action = 'login'
 ORDER BY createdTS DESC;
