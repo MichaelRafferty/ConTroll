@@ -71,5 +71,16 @@ if ($numRows == 1)
 else
     $response['status']='nothing changed';
 
+if ($_POST['pwType'] == 'e') {
+    // if the exhibitor password got changed and the email address is the same for the contact email, make that password match
+    $updateQ = <<<EOS
+UPDATE exhibitorYears
+JOIN exhibitors e ON e.id = ?
+SET exhibitorYears.contactPassword = e.password, exhibitorYears.need_new = 0
+WHERE e.id = ? AND e.exhibitorEmail = exhibitorYears.contactEmail AND exhibitorYears.exhibitorId = ? AND conid = ?;
+EOS;
+    $numRows = dbSafeCmd($updateQ, 'iiii', array($vendor, $vendor, $vendor, $conid));
+}
+
 ajaxSuccess($response);
 ?>

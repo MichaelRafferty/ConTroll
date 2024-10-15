@@ -42,7 +42,8 @@ $conid=$con['id'];
 $conname = $con['conname'];
 $code='';
 
-$data = json_decode($_POST['data'], true);
+$json = urldecode(base64_decode($_POST['data']));
+$data = json_decode($json, true);
 
 if ($data['emailTest'] || $reg['test'] == 1) {
     $email = $data['emailTest'][0]['email'];
