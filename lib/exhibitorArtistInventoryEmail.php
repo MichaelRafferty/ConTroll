@@ -45,7 +45,7 @@ function emailArtistInventoryReq($regionYearId, $type): bool|array {
     // get information about this space/artist
     $artQuery = <<<EOS
 SELECT e.artistName, e.exhibitorName, e.exhibitorEmail, exY.contactName, exY.contactEmail,
-       exY.mailin, exRY.exhibitorNumber, eR.name, eRY.ownerName, eRY.ownerEmail
+       exY.mailin, exRY.exhibitorNumber, eR.name, eRY.ownerName, eRY.ownerEmail, eT.portalType, eT.usesInventory
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 JOIN exhibitors e ON exY.exhibitorid = e.id
@@ -62,6 +62,9 @@ EOS;
     }
     $artL = $artR->fetch_assoc();
     $artR->free();
+
+    if ($artL['usesInventory'] != 'Y')
+        return false; // this space doesn't use inventory don't send the artist inventory form, this is not an error.
 
     // load the files
     $txtmsg = NULL;
