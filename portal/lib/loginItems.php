@@ -111,7 +111,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $cipherInfo,
 
     $portal_conf = get_conf('portal');
     $con_conf = get_conf('con');
-    $origEmail = $email;
+    $origEmail = strtolower($email);
 
     $loginData = getLoginMatch($email, $id, $validationType);
     if (!is_array($loginData)) {
@@ -124,20 +124,20 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $cipherInfo,
         if (array_key_exists('banned', $match)) {
             if ($match['banned'] != 'N') {
                 return('There is an issue with your account, please contact registration at ' .
-                    $conf['regadminemail'] . ' for assistance.');
+                    $con_conf['regadminemail'] . ' for assistance.');
                 }
             }
         if (array_key_exists('issue', $match)) {
             if ($match['issue'] != 'N') {
                 return('There is an issue with your account, please contact registration at ' .
-                    $conf['regadminemail'] . ' for assistance.');
+                    $con_conf['regadminemail'] . ' for assistance.');
             }
         }
         if (array_key_exists('email', $match)) {
-            $email = $match['email'];
+            $email = strtolower($match['email']);
         }
         if (array_key_exists('email_addr', $match)) {
-            $email = $match['email_addr'];
+            $email = strtolower($match['email_addr']);
         }
         $id = $match['id'];
         $idType = $match['tablename'];
@@ -223,7 +223,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $cipherInfo,
             $match['ts'] = time();
             $match['lid'] = $linkid;
             $match['validationType'] = $validationType;
-            $match['multiple'] = $email;
+            $match['multiple'] = strtolower($email);
             $match['issue'] = $match['banned'];
             $string = json_encode($match);
             $string = urlencode(openssl_encrypt($string, $cipherInfo['cipher'], $cipherInfo['key'], 0, $cipherInfo['iv']));

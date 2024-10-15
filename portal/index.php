@@ -106,9 +106,9 @@ $loginType = null;
                 exit();
             }
 
-            $email = $oauthParams['email'];
+            $email = strtolower($oauthParams['email']);
             // if this is a refresh, check that it returned the same email address
-            $oldemail = getSessionVar('sessionEmail');
+            $oldemail = strtolower(getSessionVar('sessionEmail'));
             if ($oldemail != null && $oldemail != $email) {
                 // this is a change in email address, treat this as a new login.
                 // first save off the oauth session variables
@@ -171,11 +171,11 @@ if (isSessionVar('id')) {
         $match = openssl_decrypt($_GET['vid'], $cipherInfo['cipher'], $cipherInfo['key'], 0, $cipherInfo['iv']);
         $match = json_decode($match, true);
         if ($match != null) { // vid decodes, log us out
-            $oldEmail = getSessionVar('email');
+            $oldEmail = strtolower(getSessionVar('email'));
             if (array_key_exists('id', $match)) {
-                $email = $match['email_addr'];
+                $email = strtolower($match['email_addr']);
             } else {
-                $email = $match['email'];
+                $email = strtolower($match['email']);
             }
             if ($email != $oldEmail) { // treat this as a logout and try it again
                 clearSession();
@@ -229,11 +229,11 @@ if (isset($_GET['vid'])) {
     }
     $linkid = $match['lid'];
     if (array_key_exists('id', $match)) {
-        $email = $match['email_addr'];
+        $email = strtolower($match['email_addr']);
         $id = $match['id'];
     }
     else {
-        $email = $match['email'];
+        $email = strtolower($match['email']);
         $id = null;
     }
     if (array_key_exists('validationType', $match)) {
@@ -258,11 +258,11 @@ if (isset($_GET['vid'])) {
     if ($validationType == 'token') {
         // check if the link has been used
         $linkQ = <<<EOS
-        SELECT id, email, useCnt
-        FROM portalTokenLinks
-        WHERE id = ? AND action = 'login'
-        ORDER BY createdTS DESC;
-        EOS;
+SELECT id, LOWER(email), useCnt
+FROM portalTokenLinks
+WHERE id = ? AND action = 'login'
+ORDER BY createdTS DESC;
+EOS;
         $linkR = dbSafeQuery($linkQ, 's', array ($linkid));
         if ($linkR == false || $linkR->num_rows != 1) {
             draw_login($config_vars, "<div class='bg-danger text-white'>The link is invalid, please request a new link</div>");
