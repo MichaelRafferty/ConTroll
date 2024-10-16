@@ -290,10 +290,10 @@ class Pos {
     // loop over people/memberships calling a function on each membership:
     //      function is called with (memrow) which as an associative array of the row
     //      returns the sum of whatever fcn returns
-    everyMembership(fcn) {
+    everyMembership(perinfo, fcn) {
         var rtn = 0;
-        for (var pmrowindex in this.#result_perinfo) {
-            var memberships = this.#result_perinfo[pmrowindex].memberships;
+        for (var pmrowindex in perinfo) {
+            var memberships = perinfo[pmrowindex].memberships;
             for (var rowindex in memberships) {
                rtn += fcn(this, memberships[rowindex]);
             }
@@ -539,7 +539,7 @@ class Pos {
         } else {
             var row;
             index = -index;
-            this.everyMembership(function(_this, mem) {
+            this.everyMembership(this.#result_perinfo, function(_this, mem) {
                 if (mem.tid == index) {
                     var prow = mem.pindex;
                     if (_this.#result_perinfo[prow].banned == 'Y') {
@@ -1460,7 +1460,7 @@ addUnpaid(tid) {
             }
             var trantbl = [];
             // loop over unpaid memberships and finding distinct transactions (should this move to a second SQL query?)
-            this.everyMembership(function(_this, mem) {
+            this.everyMembership(this.#result_perinfo, function(_this, mem) {
                 tid = mem.tid;
                 if (!trantbl.includes(tid)) {
                     trantbl.push(tid);
@@ -1492,7 +1492,7 @@ addUnpaid(tid) {
                 var prowindex = 0;
                 var prow = null;
                 mperid = -1;
-                this.everyMembership(function(_this, mem) {
+                this.everyMembership(this.#result_perinfo, function(_this, mem) {
                     if (mem.tid == tid) {
                         prowindex = mem.pindex;
                         prow = _this.#result_perinfo[prowindex];
@@ -1542,7 +1542,7 @@ addUnpaid(tid) {
         var rowindex;
         var memberships;
 
-        memCount = this.everyMembership(function(_this, mem) {
+        memCount = this.everyMembership(this.#result_perinfo, function(_this, mem) {
             print_count += Number(mem.printcount);
             attach_count += Number(mem.attachcount);
             return 1;
@@ -1950,7 +1950,7 @@ addUnpaid(tid) {
 //  payment entered into the database correctly, update the payment cart and the memberships with the updated paid amounts
     updatedPayment(data) {
         cart.updatePmt(data);
-        payShown();
+        this.payShown();
     }
 
 // Create a receipt and email it
@@ -2055,7 +2055,7 @@ addUnpaid(tid) {
             this.#coupon = null;
             this.#coupon = new Coupon();
             this.#coupon_discount = Number(0).toFixed(2);
-            payShown();
+            this.payShown();
             return;
         }
         if (cmd == 'a') {

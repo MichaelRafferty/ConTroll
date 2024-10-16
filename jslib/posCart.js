@@ -55,6 +55,9 @@ class PosCart {
     #review_prompt_fields = [ 'phone' ];
     #country_select = document.getElementById('country').innerHTML;
 
+// Pay items
+    #anyUnpaid = false;
+
 // Constants
     #isMembershipTypes = [ 'full', 'virtual', 'oneday' ];
     #isDueStatuses = [ 'unpaid', 'plan', 'in-cart' ];
@@ -108,6 +111,14 @@ class PosCart {
 
     clearInReview() {
         this.#inReview = false;
+    }
+
+    getAnyUnpaid() {
+        return this.#anyUnpaid;
+    }
+
+    setAnyUnpaid() {
+        this.#anyUnpaid = true;
     }
 
     freeze() {
@@ -249,24 +260,18 @@ class PosCart {
     }
 
     allowAddCouponToCart() {
-        console.log("allowAddCouponToCart: TODO");
-        return false;
-        /*
-        var anyUnpaid = false;
-        for (var rownum in this.#cart_membership) {
-            var mbrrow = this.#cart_membership[rownum];
-            if (mbrrow.coupon)
-                return false;
-            if ((!pos.nonPrimaryCategoriesIncludes(mbrrow.memCategory)) && mbrrow.conid == pos.getConid &&
-             mbrrow.price > 0 && mbrrow.paid !=
-             mbrrow.price)
-                anyUnpaid = true;
-        }
-        if (anyUnpaid == false)
+        this.#anyUnpaid = false;
+        var numCoupons = pos.everyMembership(this.#cartPerinfo, function(_this, mem) {
+            if (mem.coupon)
+                return 1;
+            if ((!pos.nonPrimaryCategoriesIncludes(mem.memCategory)) && mem.conid == pos.getConid() && mem.status != 'paid')
+                cart.setAnyUnpaid();
+        });
+
+        if (this.#anyUnpaid == false || numCoupons > 0)
             return false;
 
         return true;
-         */
     }
 
     getPriorDiscount() {
@@ -434,7 +439,7 @@ class PosCart {
             this.#allMemberships = [];
 
             // build the current values of the memberships
-            this.everyMembership(function(_this, mem) {
+            this.everyMembership(this.#cartPerinfo, function(_this, mem) {
                 if (cart_row.perid == mem.perid ) {
                     _this.#memberships.push(mem);
                 }
@@ -795,21 +800,9 @@ class PosCart {
     }
 
 // addEdit Assist functions
-    // loop over people/memberships calling a function on each membership:
-    //      function is called with (memrow) which as an associative array of the row
-    //      returns the sum of whatever fcn returns
-    everyMembership(fcn) {
-        var rtn = 0;
-        for (var pmrowindex in this.#cartPerinfo) {
-            var memberships = this.#cartPerinfo[pmrowindex].memberships;
-            for (var rowindex in memberships) {
-                rtn += fcn(this, memberships[rowindex]);
-            }
-        }
-        return rtn;
-    }
     checkAddEditClose() {
         // TODO: warn about unsaved changes
+        console.log("checkAddEditClose: TODO");
         this.#addEditModal.hide();
     }
 
