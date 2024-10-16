@@ -1,6 +1,5 @@
 <?php
 require_once "../lib/base.php";
-//require_once "../../lib/coupon.php";
 
 $check_auth = google_init("ajax");
 $perm = "reg_admin";
@@ -24,11 +23,10 @@ if (!array_key_exists('id', $_POST)) {
 $id = $_POST['id'];
 
 $couponQ = <<<EOS
-SELECT C.*, T.price, T.couponDiscount, T.paid, T.type, T.complete_date, P.last_name, P.first_name, P.badge_name
+SELECT C.*, P.last_name, P.first_name, P.badge_name
 FROM couponUsage C
-JOIN transaction T ON (T.id = C.transId)
 LEFT OUTER JOIN perinfo P ON (P.id = C.perid)
-WHERE couponId = ? AND T.paid IS NOT NULL;
+WHERE C.couponId = ? AND C.paid IS NOT NULL;
 EOS;
 
 $couponR = dbSafeQuery($couponQ, 'i', array($id));

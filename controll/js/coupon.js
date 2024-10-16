@@ -28,7 +28,7 @@ window.onload = function initpage() {
 
     coupons = new Coupon();
 
-    var script = "scripts/getCouponData.php";
+    var script = "scripts/coupon_getData.php";
     $.ajax({
         url: script,
         method: 'POST',
@@ -336,7 +336,7 @@ class Coupon {
         if (this.#curCoupon == null)
             return;
 
-        var script = "scripts/getCouponUsage.php";
+        var script = "scripts/coupon_getUsage.php";
         var data = { id: this.#curCoupon, };
         $.ajax({
             url: script,
@@ -366,7 +366,7 @@ class Coupon {
         if (this.#curCoupon == null)
             return;
 
-        var script = "scripts/getCouponKeys.php";
+        var script = "scripts/coupon_getKeys.php";
         var data = { id: this.#curCoupon, };
         $.ajax({
             url: script,
