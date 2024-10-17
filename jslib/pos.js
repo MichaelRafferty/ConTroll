@@ -439,7 +439,7 @@ class Pos {
             ajax_request_action: 'voidPayment',
             user_id: this.#user_id,
             pay_tid: this.#pay_tid,
-            cart_perinfo: cart.getPerinfo(),
+            cart_perinfo: cart.getCartPerinfo(),
         };
         $("button[name='void_btn']").attr("disabled", true);
         $.ajax({
@@ -1900,7 +1900,7 @@ addUnpaid(tid) {
         // process payment
         var postData = {
             ajax_request_action: 'processPayment',
-            cart_perinfo: cart.getPerinfo(),
+            cart_perinfo: cart.getCartPerinfo(),
             new_payment: prow,
             coupon: prow.coupon,
             change: crow,

@@ -37,7 +37,7 @@ if ($ajax_request_action != 'processPayment') {
 }
 
 // processPayment
-//  cart_membership: memberships to have payment applied
+//  cart_perinfo: perinfo records with memberships embedded
 //  new_payment: payment being added
 //  pay_tid: current master transaction
 
@@ -52,9 +52,9 @@ if ($master_tid <= 0) {
     ajaxError('No current transaction in process');
 }
 
-$cart_membership = $_POST['cart_membership'];
-if (sizeof($cart_membership) <= 0) {
-    ajaxError('No memberships are in the cart');
+$cart_perinfo = $_POST['cart_perinfo'];
+if (sizeof($cart_perinfo) <= 0) {
+    ajaxError('The cart is empty');
     return;
 }
 
@@ -78,19 +78,22 @@ if (array_key_exists('change', $_POST)) {
 $amt = (float) $new_payment['amt'];
 // validate that the payment amount is not too large
 $total_due = 0;
-foreach ($cart_membership as $cart_row) {
-    if ($cart_row['price'] == '')
-        $cart_row['price'] = 0;
+foreach ($cart_perinfo as $perinfo) {
+    foreach ($perinfo['memberships'] as $cart_row) {
+        if ($cart_row['price'] == '')
+            $cart_row['price'] = 0;
 
-    if (array_key_exists('couponDiscount', $cart_row)) {
-        if ($cart_row['couponDiscount'] == '')
+        if (array_key_exists('couponDiscount', $cart_row)) {
+            if ($cart_row['couponDiscount'] == '')
+                $cart_row['couponDiscount'] = 0;
+        }
+        else
             $cart_row['couponDiscount'] = 0;
-    } else
-        $cart_row['couponDiscount'] = 0;
 
-    if ($cart_row['paid'] == '')
-        $cart_row['paid'] = 0;
-    $total_due += $cart_row['price'] - ($cart_row['couponDiscount'] + $cart_row['paid']);
+        if ($cart_row['paid'] == '')
+            $cart_row['paid'] = 0;
+        $total_due += $cart_row['price'] - ($cart_row['couponDiscount'] + $cart_row['paid']);
+    }
 }
 
 if (round($amt,2) > round($total_due,2)) {
@@ -181,23 +184,26 @@ SET couponDiscount = ?, coupon = ?
 WHERE id = ? AND coupon IS NULL;
 EOS;
 $ctypestr = 'sii';
-foreach ($cart_membership as $cart_row) {
-    if ($cart_row['price'] == '')
-        $cart_row['price'] = 0;
-    if ($cart_row['couponDiscount'] == '')
-        $cart_row['couponDiscount'] = 0;
-    if ($cart_row['paid'] == '')
-        $cart_row['paid'] = 0;
-    $unpaid = $cart_row['price'] - ($cart_row['couponDiscount'] + $cart_row['paid']);
-    if ($unpaid > 0) {
-        if ($coupon == null) {
-            $amt_paid = min($amt, $unpaid);
-            $cart_row['paid'] += $amt_paid;
-            $cart_membership[$cart_row['index']] = $cart_row;
-            $amt -= $amt_paid;
-            $upd_rows += dbSafeCmd($updPaymentSQL, $ptypestr, array($cart_row['paid'], $master_tid, $cart_row['regid']));
-        } else {
-            $cupd_rows += dbSafeCmd($updCouponSQL, $ctypestr, array($cart_row['couponDiscount'], $coupon, $cart_row['regid']));
+foreach ($cart_perinfo as $perinfo) {
+    foreach ($perinfo['memberships'] as $cart_row) {
+        if ($cart_row['price'] == '')
+            $cart_row['price'] = 0;
+        if ($cart_row['couponDiscount'] == '')
+            $cart_row['couponDiscount'] = 0;
+        if ($cart_row['paid'] == '')
+            $cart_row['paid'] = 0;
+        $unpaid = $cart_row['price'] - ($cart_row['couponDiscount'] + $cart_row['paid']);
+        if ($unpaid > 0) {
+            if ($coupon == null) {
+                $amt_paid = min($amt, $unpaid);
+                $cart_row['paid'] += $amt_paid;
+                $cart_perinfo[$perinfo]['memberships'][$cart_row['index']] = $cart_row;
+                $amt -= $amt_paid;
+                $upd_rows += dbSafeCmd($updPaymentSQL, $ptypestr, array ($cart_row['paid'], $master_tid, $cart_row['regid']));
+            }
+            else {
+                $cupd_rows += dbSafeCmd($updCouponSQL, $ctypestr, array ($cart_row['couponDiscount'], $coupon, $cart_row['regid']));
+            }
         }
     }
 }
@@ -206,10 +212,10 @@ foreach ($cart_membership as $cart_row) {
 if ($coupon) {
     $updCompleteSQL = <<<EOS
 UPDATE transaction
-SET coupon = ?, couponDiscount = ?
+SET coupon = ?, couponDiscountCart = ?, couponDiscountReg = ?
 WHERE id = ?;
 EOS;
-    $completed = dbSafeCmd($updCompleteSQL, 'isi', array($coupon, $amt, $master_tid));
+    $completed = dbSafeCmd($updCompleteSQL, 'iddi', array($coupon, $new_payment['cartDiscount'], $new_payment['memDiscount'], $master_tid));
 } else { // normal payment
     $updCompleteSQL = <<<EOS
 UPDATE transaction
@@ -230,5 +236,5 @@ EOS;
 }
 
 $response['message'] .= ", $upd_rows memberships updated" . $completed == 1 ? ", transaction completed." : ".";
-$response['cart_membership'] = $cart_membership;
+$response['cart_perinfo'] = $cart_perinfo;
 ajaxSuccess($response);

@@ -251,6 +251,10 @@ class PosCart {
         return make_copy(this.#cartPerinfo);
     }
 
+    updatePerinfo(pindex, rindex, mem) {
+        this.#cartPerinfo[pindex].memberships[rindex] = make_copy(mem);
+    }
+
     getCartMap() {
         return this.#cartPerinfoMap.getMap();
     }
@@ -311,6 +315,8 @@ class PosCart {
         this.#cartPerinfoMap.set(this.#cartPerinfo[pindex].perid, pindex);
         var mrows = p.memberships;
         for (var mrownum in mrows) {
+            this.#cartPerinfo[pindex].memberships[mrownum].index = mrownum;
+            this.#cartPerinfo[pindex].memberships[mrownum].pindex = pindex;
             if (mrows[mrownum].couponDiscount === undefined) {
                 this.#cartPerinfo[pindex].memberships[mrownum].couponDiscount = 0.00;
                 this.#cartPerinfo[pindex].memberships[mrownum].coupon = null;
@@ -824,7 +830,7 @@ class PosCart {
     }
 
 // cart_renumber:
-// rebuild the indices in the cartPerinfo and cart_membership tables
+// rebuild the indices in the cartPerinfo and its membership tables
 // for shortcut reasons indices are used to allow usage of the filter functions built into javascript
 // this rebuilds the index and perinfo cross-reference maps.  It needs to be called whenever the number of items in cart is changed.
     #cart_renumber() {
@@ -833,6 +839,10 @@ class PosCart {
         for (index = 0; index < this.#cartPerinfo.length; index++) {
             this.#cartPerinfo[index].index = index;
             this.#cartPerinfoMap.set(this.#cartPerinfo[index].perid, index);
+            for (var rownum in this.#cartPerinfo[index].memberships) {
+                this.#cartPerinfo[index].memberships[rownum].index = rownum;
+                this.#cartPerinfo[index].memberships[rownum].pindex = index;
+            }
         }
     }
 

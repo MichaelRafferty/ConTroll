@@ -5,6 +5,9 @@
 ALTER TABLE transaction RENAME COLUMN couponDiscount TO couponDiscountCart;
 ALTER TABLE transaction ADD COLUMN couponDiscountReg decimal(8,2) DEFAULT 0 AFTER couponDiscountCart;
 
+ALTER TABLE payments MODIFY COLUMN type enum('credit','cash','check','discount','refund','other','coupon')
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL;
+
 DROP VIEW IF EXISTS couponUsage;
 
 CREATE VIEW couponUsage AS
