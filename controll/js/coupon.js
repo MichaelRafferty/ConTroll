@@ -292,7 +292,7 @@ class Coupon {
 
         // ok build values
         var data = URLparamsToArray($('#coupon_form').serialize());
-        var script = "scripts/updateCoupon.php";
+        var script = "scripts/coupon_update.php";
         $.ajax({
             url: script,
             method: 'POST',
@@ -530,7 +530,7 @@ class Coupon {
             return; // no coupon to delete
         }
 
-        var script = "scripts/deleteCoupon.php";
+        var script = "scripts/coupon_delete.php";
         $.ajax({
             url: script,
             method: 'POST',
