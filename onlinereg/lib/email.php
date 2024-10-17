@@ -8,7 +8,7 @@ function getEmailBody($transid) : string
     $con = get_conf('con');
 
     $ownerQ = <<<EOS
-SELECT NP.first_name, NP.last_name, P.receipt_id as payid, T.complete_date, T.couponDiscount, T.paid, P.receipt_url AS url, C.code, C.name
+SELECT NP.first_name, NP.last_name, P.receipt_id as payid, T.complete_date, T.couponDiscountCart, T.paid, P.receipt_url AS url, C.code, C.name
 FROM transaction T
 JOIN newperson NP ON (NP.id=T.newperid)
 JOIN payments P ON (P.transid=T.id)
@@ -29,8 +29,8 @@ EOS;
 
     if ($owner['code'] != null) {
         $body .= "A coupon of type " . $owner['code'] . " (" . $owner['name'] . ") was applied to this transaction";
-        if ($owner['couponDiscount'] > 0)
-            $body .= " for a savings of " . $owner['couponDiscount'];
+        if ($owner['couponDiscountCart'] > 0)
+            $body .= " for a savings of " . $owner['couponDiscountCart'];
         $body .= "\n";
     }
 
@@ -89,7 +89,7 @@ function getNoChargeEmailBody($results) : string
 
     $transid = $results['transid'];
     $ownerQ = <<<EOS
-SELECT NP.first_name, NP.last_name, T.complete_date, T.couponDiscount, C.code, C.name
+SELECT NP.first_name, NP.last_name, T.complete_date, T.couponDiscountCart, C.code, C.name
 FROM transaction T
 JOIN newperson NP ON (NP.id=T.newperid)
 LEFT OUTER JOIN coupon C ON (T.coupon = C.id)
@@ -108,8 +108,8 @@ EOS;
     $body .= "Your Transaction number is $transid\n";
     if ($owner['code'] != null) {
         $body .= "A coupon of type " . $owner['code'] . " (" . $owner['name'] . ") was applied to this transaction";
-        if ($owner['couponDiscount'] > 0)
-            $body .= " for a savings of " . $owner['couponDiscount'];
+        if ($owner['couponDiscountCart'] > 0)
+            $body .= " for a savings of " . $owner['couponDiscountCart'];
         $body .= "\n";
     }
 

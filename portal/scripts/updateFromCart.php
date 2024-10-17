@@ -377,7 +377,7 @@ EOS;
             );
             $new_cartid = dbSafeInsert($iQ, $typeStr, $valArray);
             if ($new_cartid === false || $new_cartid < 0) {
-                $response['message'] .= "<br/>Error adding membership " . $cartRow['id'] . " contining with the remaining transactions.";
+                $response['message'] .= "<br/>Error adding membership " . $cartRow['id'] . " continuing with the remaining transactions.";
             } else {
                 $num_ins++;
                 $updateTransPrice = true;
@@ -515,8 +515,8 @@ ajaxSuccess($response);
 
 function getNewTransaction($conid, $perid, $newperid) {
     $iQ = <<<EOS
-INSERT INTO transaction (conid, perid, newperid, userid, price, couponDiscount, paid, type)
-VALUES (?, ?, ?, ?, 0, 0, 0, 'regportal');
+INSERT INTO transaction (conid, perid, newperid, userid, price, couponDiscountCart, couponDiscountReg, paid, type)
+VALUES (?, ?, ?, ?, 0, 0, 0, 0, 'regportal');
 EOS;
     $transId = dbSafeInsert($iQ, 'iiii', array($conid, $perid, $newperid, $perid));
     setSessionVar('transId', $transId);

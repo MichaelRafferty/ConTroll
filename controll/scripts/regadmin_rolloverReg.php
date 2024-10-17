@@ -101,8 +101,8 @@ foreach ($rolloverList as $badgeId => $rollover) {
 $tType = 'regctl-adm-roll/' . $user_perid;
 $notes = "Rollover from $conid to $nextcon by $user_perid";
 $insertT = <<<EOS
-INSERT INTO transaction(conid, perid, userid, create_date, complete_date, price, couponDiscount, paid, type, notes) 
-VALUES (?, ?, ?, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 0, 0, 0, ?, ?);
+INSERT INTO transaction(conid, perid, userid, create_date, complete_date, price, couponDiscountCart, CouponDiscountReg, paid, type, notes) 
+VALUES (?, ?, ?, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 0, 0, 0, 0, ?, ?);
 EOS;
 $newtid = dbSafeInsert($insertT, 'iiiss', array($conid, $perid, $user_perid, $tType, $notes));
 if ($newtid === false) {
