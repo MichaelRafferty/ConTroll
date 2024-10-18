@@ -245,7 +245,7 @@ if ($personType == 'n') {
         </div>
         <div class="row mt-1">
             <div class="col-sm-1"></div>
-            <div class="col-sm-auto">Leave the provder name blank for Authentication Link via Email.</div>
+            <div class="col-sm-auto">Leave the provider name blank for Authentication Link via Email.</div>
         </div>
         <div class='row mt-1'>
             <div class='col-sm-1'></div>
