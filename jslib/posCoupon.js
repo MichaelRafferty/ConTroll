@@ -141,7 +141,7 @@ class Coupon {
         return this.#mtypes[id];
     }
 
-    LoadCoupon(couponId) {
+    loadCoupon(couponId) {
         "use strict";
 
         clear_message();
@@ -209,6 +209,7 @@ class Coupon {
                         ccauth: null, checkno: null, desc: coupon.getCouponName(), type: 'coupon',
                 coupon: coupon.getCouponId(),
             };
+            pos.incNumCoupons(1);
             pos.pay('', prow);
         } else {
             show_message("Coupon did not produce a discount", 'warn');
@@ -322,14 +323,16 @@ class Coupon {
         this.#mbrId = this.#curCoupon.memId;
         this.#mbrPrice = 0;
         var numMemberships = pos.everyMembership(perinfo, function(_this, mem) {
-            if (mem.memId == coupon.getMbrId() && (mem.coupon == null || mem.coupon == '')) {
+            // check for discount for specific memId at a set price
+            if (mem.memId == coupon.getMbrId() && ((!mem.hasOwnProperty('coupon')) || mem.coupon == null || mem.coupon == '')) {
                 coupon.incNumMbrId(1);
                 coupon.incNumMbrId(mem.price);
                 return 1;
             }
+            // check to see if this coupon applies because this is a primary membership.
             var mtype = coupon.getMtypes(mem.memId);
             if (mtype) {
-                if (mtype.primary && (mem.coupon == null || mem.coupon == '')) {
+                if (mtype.primary && ((!mem.hasOwnProperty('coupon')) || mem.coupon == null || mem.coupon == '')) {
                     coupon.incNumMbrId(mem.price);
                     return 1;
                 }
@@ -373,7 +376,7 @@ class Coupon {
         } else {
             discount = pos.everyMembership(perinfo, function (_this, mem) {
                 var mtype = coupon.getMtypes(mem.memId);
-                if (mtype.primary && (mem.coupon == null || mem.coupon == '') && mem.couponDiscount == 0) {
+                if (mtype.primary && ((!mem.hasOwnProperty('coupon')) || mem.coupon == null || mem.coupon == '') && mem.couponDiscount == 0) {
                     var rowdiscount = Number(mtype.discount);
                     mem.couponDiscount = rowdiscount;
                     mem.coupon = coupon.getCouponId();

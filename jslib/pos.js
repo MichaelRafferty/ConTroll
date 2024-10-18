@@ -258,6 +258,18 @@ class Pos {
         return this.#upgradable_types.includes(type);
     }
 
+    getNumCoupons() {
+        return this.#num_coupons;
+    }
+
+    incNumCoupons(amt = 1) {
+        this.#num_coupons += amt;
+    }
+
+    decNumCoupons(amt = 1) {
+        this.#num_coupons -= amt;
+    }
+
     editFromCart(cartrow) {
         this.#add_index_field.value = cartrow.index;
         this.#add_perid_field.value = cartrow.perid;
@@ -2066,7 +2078,7 @@ addUnpaid(tid) {
                 show_message("Coupon cleared, no coupon applied", 'success');
                 return;
             }
-            coupon.LoadCoupon(couponId);
+            coupon.loadCoupon(couponId);
         }
         return;
     }

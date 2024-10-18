@@ -293,6 +293,10 @@ class PosCart {
         return priordiscount;
     }
 
+    pushMembership(mem) {
+        this.#memberships.push(mem);
+    }
+
 // if no memberships or payments have been added to the database, this will reset for the next customer
 // TODO: verify how to tell if it's allowed to be shown as enabled
     startOver() {
@@ -445,11 +449,11 @@ class PosCart {
             this.#allMemberships = [];
 
             // build the current values of the memberships
-            this.everyMembership(this.#cartPerinfo, function(_this, mem) {
+            pos.everyMembership(this.#cartPerinfo, function(_this, mem) {
                 if (cart_row.perid == mem.perid ) {
-                    _this.#memberships.push(mem);
+                    cart.pushMembership(mem);
                 }
-                _this.#allMemberships.push(mem);
+                cart.pushMembership(mem);
             });
             this.buildAgeButtons();
             this.buildRegItemButtons();
@@ -860,7 +864,7 @@ class PosCart {
         var delrows = [];
         for (rownum in this.#cartPmt) {
             var prow = this.#cartPmt[rownum];
-            if (prow.type == 'discount' && prow.desc.substring(0, 7) == 'Coupon:') {
+            if (prow.type == 'coupon') {
                 delrows.push(rownum);
             }
         }
