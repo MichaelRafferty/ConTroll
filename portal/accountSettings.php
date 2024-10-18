@@ -248,11 +248,11 @@ if ($personType == 'n') {
             <div class="col-sm-auto">Leave the provider name blank for Authentication Link via Email.</div>
         </div>
         <div class='row mt-1'>
-            <div class='col-sm-1'></div>
+            <div class='col-sm-2'></div>
             <div class="col-sm-auto">Currently supported providers are: email and google.</div>
         </div>
         <div class='row mt-1'>
-            <div class='col-sm-1'></div>
+            <div class='col-sm-2'></div>
             <div class='col-sm-auto'>An email will be sent to the email address with a link to verify that you own that email address.<br/>The identity will not be added until you click on the link in that email.</div>
         </div>
         <hr/>
