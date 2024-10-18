@@ -120,7 +120,7 @@ class ExhibitorInvoice {
             }
         }
         if (regionList['mailinFee'] > 0 && this.#mailin == 'Y') {
-            html += "Mail in free of $" + Number(regionList['mailinFee']).toFixed(2) + "<br/>\n";
+            html += "Mail in fre of $" + Number(regionList['mailinFee']).toFixed(2) + "<br/>\n";
             this.#totalSpacePrice += Number(regionList['mailinFee']);
         }
         html += "____________________________<br/>\nTotal price for spaces $" + Number(this.#totalSpacePrice).toFixed(2) + "<br/>\n";
