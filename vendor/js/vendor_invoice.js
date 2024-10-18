@@ -76,7 +76,7 @@ function openInvoice(id) {
         }
     }
     if (regionList['mailinFee'] > 0 && exhibitor_info['mailin'] == 'Y') {
-        html += "Mail in fre of $" + Number(regionList['mailinFee']).toFixed(2) + "<br/>\n";
+        html += "Mail in fee of $" + Number(regionList['mailinFee']).toFixed(2) + "<br/>\n";
             totalSpacePrice += Number(regionList['mailinFee']);
     }
     html += "____________________________<br/>\nTotal price for spaces $" + Number(totalSpacePrice).toFixed(2)+ "<br/>\n";
