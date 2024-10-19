@@ -262,6 +262,10 @@ class Pos {
         return this.#num_coupons;
     }
 
+    hideCashChangeModal() {
+        this.#cashChangeModal.hide();
+    }
+
     /* obsolete? */
     editFromCartRow(cartrow) {
         this.#add_index_field.value = cartrow.index;
@@ -1297,9 +1301,9 @@ class Pos {
 
 // show the registration element note, anyone can add a new note, so it needs a save and close button
     showRegNote(perid, index, count) {
-        var bodyHTML = '';
+        var bodyHTML = '<div class="row mb-2">\n<div class="col-sm-12">\n';
         var note = cart.getRegNote(perid, index);
-        var fullname = cart.getRegFullName(perid);
+        var fullname = cart.getRegFullName(perid);``
         var label = cart.getRegLabel(perid, index);
         var newregnote = cart.getNewRegNote(perid, index);
 
@@ -1310,7 +1314,8 @@ class Pos {
         if (count > 0) {
             bodyHTML = note.replace(/\n/g, '<br/>');
         }
-        bodyHTML += '<br/>&nbsp;<br/>Enter/Update new note:<br/><input type="text" name="new_reg_note" id="new_reg_note" maxLength=64 size=60>'
+        bodyHTML += '<br/>&nbsp;<br/>Enter/Update new note:<br/><input type="text" name="new_reg_note" id="new_reg_note" maxLength=64 size=60>' +
+            "</div>\n</div\n";
 
         this.#notes.show();
         document.getElementById('NotesTitle').innerHTML = "Registration Notes for " + fullname + '<br/>Membership: ' + label;
@@ -1801,8 +1806,11 @@ addUnpaid(tid) {
                 if (pt_cash) {
                     if (nomodal == '') {
                         this.#cashChangeModal.show();
-                        document.getElementById("CashChangeBody").innerHTML = "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + pay_amt.toFixed(2) +
-                            "<br/>Confirm change give to customer of $" + (pay_amt - total_amount_due).toFixed(2);
+                        document.getElementById("CashChangeBody").innerHTML = "<div class='row mt-2'>\n<div class='col-sm-12'>" +
+                            "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + pay_amt.toFixed(2) +
+                            "</div>\n</div>\n<div class='row mt-2 mb-2'>\n<div class='col-sm-12'>" +
+                            "Confirm change give to customer of $" + (pay_amt - total_amount_due).toFixed(2) +
+                            "</div>\n</div>\n";
                         return;
                     }
                 } else {

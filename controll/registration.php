@@ -200,12 +200,14 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
     <div class='modal modal-lg' id='Notes' tabindex='-2' aria-labelledby='Notes' data-bs-backdrop='static' aria-hidden='true'>
         <div class='modal-dialog'>
             <div class='modal-content'>
-                <div class='modal-header'>
+                <div class='modal-header bg-primary text-bg-primary'>
                     <div class='modal-title' id="NotesTitle">
                         Member Notes
                     </div>
                 </div>
-                <div class='modal-body' id="NotesBody">
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <div class="container-fluid" id="NotesBody">
+                    </div>
                 </div>
                 <div class='modal-footer'>
                     <button type='button' id="close_note_button" class='btn btn-primary'
@@ -262,15 +264,17 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
     <div class='modal modal-lg' id='CashChange' tabindex='-4' aria-labelledby='CashChange' data-bs-backdrop='static' data-bs-keyboard='false' aria-hidden='true'>
         <div class='modal-dialog'>
             <div class='modal-content'>
-                <div class='modal-header'>
+                <div class='modal-header bg-primary text-bg-primary'>
                     <div class='modal-title' id='CashChangeTitle'>
                         Change due to Customer
                     </div>
                 </div>
-                <div class='modal-body' id='CashChangeBody'>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <div class="container-fluid" id='CashChangeBody'>
+                    </div>
                 </div>
                 <div class='modal-footer'>
-                    <button type='button' id='discard_cash_button' class='btn btn-secondary' onclick='pos.cashChangeModal.hide();'>
+                    <button type='button' id='discard_cash_button' class='btn btn-secondary' onclick='pos.hideCashChangeModal();'>
                         Cancel Cash Payment
                     </button>
                     <button type='button' id='close_cash_button' class='btn btn-primary' onclick='pos.pay("nomodal");'>
