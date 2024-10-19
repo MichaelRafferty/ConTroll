@@ -364,6 +364,7 @@ class PosCart {
         cart_row.phone = row.phone;
         cart_row.active = 'Y';
 
+        // policies
         for (var pol in policies) {
             var policyName = policies[pol].policy;
 
@@ -377,9 +378,6 @@ class PosCart {
         }
 
         cart_row.dirty = true;
-
-        // policies
-        console.log("TODO: Policies");
     }
 
     // check to see if the cart is not saved, and confirm leaving without saving it
@@ -412,24 +410,6 @@ class PosCart {
         }
 
         return true;
-    }
-
-// remove single membership item from the cart (leaving other memberships and person information
-    deleteMembership(index) {
-        console.log("deleteMembership: TODO");
-        return;
-        /*
-        if (this.#cart_membership[index].tid != '') {
-            if (confirm("Confirm delete for " + this.#cart_membership[index].label)) {
-                this.#cart_membership[index].todelete = 1;
-                this.#cartPerinfo[this.#cart_membership[index].pindex].dirty = true;
-            }
-        } else {
-            this.#cart_membership.splice(index, 1);
-        }
-        this.drawCart();
-
-         */
     }
 
 // use the memRules engine to add/edit the memberships for this person
