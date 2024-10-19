@@ -340,7 +340,7 @@ class PosCart {
         var cartrow = this.#cartPerinfo[this.#cartPerinfoMap.get(perid)];
 
         // set perinfo values
-        pos.editFromCart(cartrow);
+        pos.editFromCartRow(cartrow);
     }
 
     // update the cart entry from the add/edit field row

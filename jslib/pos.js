@@ -262,7 +262,8 @@ class Pos {
         return this.#num_coupons;
     }
 
-    editFromCart(cartrow) {
+    /* obsolete? */
+    editFromCartRow(cartrow) {
         this.#add_index_field.value = cartrow.index;
         this.#add_perid_field.value = cartrow.perid;
         this.#add_memIndex_field.value = '';
@@ -1039,7 +1040,7 @@ class Pos {
             Add New Person and Membership
         </div>
     </div>`;
-        this.#add_edit_dirty_check = true;
+        this.#add_edit_dirty_check = false;
         this.#add_edit_initial_state = $("#add-edit-form").serialize();
         this.#add_edit_current_state = "";
     }
