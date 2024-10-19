@@ -184,7 +184,10 @@ SET couponDiscount = ?, coupon = ?
 WHERE id = ? AND coupon IS NULL;
 EOS;
 $ctypestr = 'sii';
+$index = 0;
 foreach ($cart_perinfo as $perinfo) {
+    $cart_perinfo[$index]['rowpos'] = $index;
+    $index++;
     foreach ($perinfo['memberships'] as $cart_row) {
         if ($cart_row['price'] == '')
             $cart_row['price'] = 0;
@@ -197,7 +200,7 @@ foreach ($cart_perinfo as $perinfo) {
             if ($coupon == null) {
                 $amt_paid = min($amt, $unpaid);
                 $cart_row['paid'] += $amt_paid;
-                $cart_perinfo[$perinfo]['memberships'][$cart_row['index']] = $cart_row;
+                $cart_perinfo[$perinfo['index']]['memberships'][$cart_row['index']] = $cart_row;
                 $amt -= $amt_paid;
                 $upd_rows += dbSafeCmd($updPaymentSQL, $ptypestr, array ($cart_row['paid'], $master_tid, $cart_row['regid']));
             }
@@ -236,5 +239,5 @@ EOS;
 }
 
 $response['message'] .= ", $upd_rows memberships updated" . $completed == 1 ? ", transaction completed." : ".";
-$response['cart_perinfo'] = $cart_perinfo;
+$response['updated_perinfo'] = $cart_perinfo;
 ajaxSuccess($response);

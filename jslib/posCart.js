@@ -816,13 +816,7 @@ class PosCart {
         if (data.crow) {
             this.#cartPmt.push(data.crow);
         }
-        console.log("updatePmt: TODO");
-        /*
-        if (data.cart_membership) {
-            this.#cart_membership = make_copy(data.cart_membership);
-        }
-
-         */
+        this.updateFromDB(data);
     }
 
 // cartRenumber:
@@ -1289,7 +1283,7 @@ class PosCart {
         for (var rownum in updated_perinfo) {
             newrow = updated_perinfo[rownum];
             cartrow = this.#cartPerinfo[newrow.rowpos]
-            cartrow.perid = newrow.perid;
+            cartrow = newrow
             cartrow.dirty = false;
         }
     }
