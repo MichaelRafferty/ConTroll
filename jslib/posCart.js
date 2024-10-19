@@ -266,10 +266,11 @@ class PosCart {
     allowAddCouponToCart() {
         this.#anyUnpaid = false;
         var numCoupons = pos.everyMembership(this.#cartPerinfo, function(_this, mem) {
-            if (mem.coupon)
-                return 1;
             if ((!pos.nonPrimaryCategoriesIncludes(mem.memCategory)) && mem.conid == pos.getConid() && mem.status != 'paid')
                 cart.setAnyUnpaid();
+            if (mem.coupon)
+                return 1;
+            return 0;
         });
 
         if (this.#anyUnpaid == false || numCoupons > 0)
@@ -279,18 +280,9 @@ class PosCart {
     }
 
     getPriorDiscount() {
-        var priordiscount = 0;
-        console.log("getPriorDiscount: TODO");
-        /*
-        for (var rownum in this.#cart_membership) {
-            var mrow = this.#cart_membership[rownum];
-            if (mrow.couponDiscount) {
-                priordiscount += Number(mrow.couponDiscount);
-            }
-        }
-         */
-
-        return priordiscount;
+        console.log("getPriorDiscount: TODO: Get transactional discount");
+        // TODO get transactional discounts
+        return 0;
     }
 
     pushMembership(mem) {
@@ -833,11 +825,11 @@ class PosCart {
          */
     }
 
-// cart_renumber:
+// cartRenumber:
 // rebuild the indices in the cartPerinfo and its membership tables
 // for shortcut reasons indices are used to allow usage of the filter functions built into javascript
 // this rebuilds the index and perinfo cross-reference maps.  It needs to be called whenever the number of items in cart is changed.
-    #cart_renumber() {
+    cartRenumber() {
         var index;
         this.#cartPerinfoMap = new map();
         for (index = 0; index < this.#cartPerinfo.length; index++) {
@@ -936,7 +928,7 @@ class PosCart {
         <div class="col-sm-1 pe-0">` + col1 + `</div>
         <div class="col-sm-7 ps-1">` + label + `</div>
         <div class="col-sm-2 text-end">` + Number(mrow.price).toFixed(2) + `</div>
-        <div class="col-sm-2 text-end">` + Number(mrow.paid).toFixed(2) + `</div>
+        <div class="col-sm-2 text-end">` + (Number(mrow.paid) + Number(mrow.couponDiscount)).toFixed(2) + `</div>
     </div>
 `;
             this.#totalPrice += Number(mrow.price);
@@ -1030,7 +1022,7 @@ class PosCart {
 
 // draw/update by redrawing the entire cart
     drawCart() {
-        this.#cart_renumber(); // to keep indexing intact, renumber the index and pindex each time
+        this.cartRenumber(); // to keep indexing intact, renumber the index and pindex each time
         this.#totalPrice = 0;
         this.#totalPaid = 0;
         var num_rows = 0;
@@ -1293,44 +1285,13 @@ class PosCart {
         var newrow;
         var cartrow;
 
-        console.log("updateFromDB: TODO");
-        /*
-        // update the fields created by the database transactions
         var updated_perinfo = data.updated_perinfo;
-        for (rownum in updated_perinfo) {
+        for (var rownum in updated_perinfo) {
             newrow = updated_perinfo[rownum];
             cartrow = this.#cartPerinfo[newrow.rowpos]
             cartrow.perid = newrow.perid;
             cartrow.dirty = false;
         }
-        var updated_membership = data.updated_membership;
-        for (rownum in updated_membership) {
-            newrow = updated_membership[rownum];
-            cartrow = this.#cart_membership[newrow.rowpos];
-            //array('rowpos' => $row, 'perid' => $cartrow.perid, 'create_trans' => $master_perid, 'id' => $new_regid);
-            cartrow.create_trans = newrow.create_trans;
-            cartrow.regid = newrow.id;
-            cartrow.perid = newrow.perid;
-            cartrow.dirty = false;
-        }
-
-// delete all rows from cart marked for delete
-        var delrows = [];
-        var splicerow = null;
-        for (var rownum in this.#cart_membership) {
-            if (this.#cart_membership[rownum].todelete == 1) {
-                delrows.push(rownum);
-            }
-        }
-        delrows = delrows.reverse();
-        for (splicerow in delrows)
-            this.#cart_membership.splice(delrows[splicerow], 1);
-
-// redraw the cart with the new id's and maps, which will compute the unpaid_rows.
-        cart.drawCart();
-        return this.#unpaidRows;
-
-         */
     }
 
     // update selected element in the country pulldown from the review data screen to the cart

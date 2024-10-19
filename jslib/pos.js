@@ -262,14 +262,6 @@ class Pos {
         return this.#num_coupons;
     }
 
-    incNumCoupons(amt = 1) {
-        this.#num_coupons += amt;
-    }
-
-    decNumCoupons(amt = 1) {
-        this.#num_coupons -= amt;
-    }
-
     editFromCart(cartrow) {
         this.#add_index_field.value = cartrow.index;
         this.#add_perid_field.value = cartrow.perid;
@@ -1749,10 +1741,9 @@ addUnpaid(tid) {
     reviewedUpdateCart(data) {
         this.#pay_tid = data.master_tid;
         // update cart elements
-        var unpaid_rows = cart.updateFromDB(data);
-        // rebuild perinfo map
-        console.log("rebuild perinfo map");
+        cart.updateFromDB(data);
         bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
+        cart.drawCart();
     }
 
 // setPayType: shows/hides the appropriate fields for that payment type
@@ -2150,10 +2141,11 @@ addUnpaid(tid) {
         <div class="col-sm-auto ms-0 me-2 p-0">New Payment Transaction ID: ` + this.#pay_tid + `</div>
     </div>
     `;
-            if (this.#num_coupons > 0 && cart.allowAddCouponToCart()) { // cannot apply a coupon if one was already in the cart (and of course, there need to be
-                // valid coupons right now)
-                if (!coupon.isCouponActive()) { // no coupon applied yet
-                    pay_html += `
+            if (this.#num_coupons > 0) {
+                if (cart.allowAddCouponToCart()) {
+                    // cannot apply a coupon if one was already in the cart (and of course, there need to be valid coupons right now)
+                    if (!coupon.isCouponActive()) { // no coupon applied yet
+                        pay_html += `
     <div class="row mt-3">
         <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
@@ -2164,9 +2156,9 @@ addUnpaid(tid) {
         </div>  
     </div>
 `;
-                } else {
-                    // now display the amount due
-                    pay_html += `
+                    } else {
+                        // now display the amount due
+                        pay_html += `
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
         <div class="col-sm-auto ms-0 me-2 p-0">` + coupon.getNameString() + `</div>
@@ -2179,6 +2171,7 @@ addUnpaid(tid) {
         <div class="col-sm-11 ms-0 me-0 p-0">` + coupon.couponDetails() + `</div>
     </div>
 `;
+                    }
                 }
             }
             // add prior discounts to screen if any

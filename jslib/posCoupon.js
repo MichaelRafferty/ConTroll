@@ -209,7 +209,6 @@ class Coupon {
                         ccauth: null, checkno: null, desc: coupon.getCouponName(), type: 'coupon',
                 coupon: coupon.getCouponId(),
             };
-            pos.incNumCoupons(1);
             pos.pay('', prow);
         } else {
             show_message("Coupon did not produce a discount", 'warn');
@@ -360,10 +359,11 @@ class Coupon {
         var perinfo = cart.getCartPerinfo();
 
         if (this.#curCoupon.couponType == '$off') {
+            // $off is of type cart discount
             discount = this.#curCoupon.discount < cart_total_price ? this.#curCoupon.discount : cart_total_price;
             this.#cartDiscount = discount;
-            // mark reg as coupon as coupon applied
         } else if (this.#curCoupon.couponType == '%off') {
+            // %off is of type cart discount
             // compute the total of the primary memberships in the cart
             var totalPrimaryMemberships = pos.everyMembership(perinfo, function(_this, mem) {
                 if ((!pos.nonPrimaryCategoriesIncludes(mem.memCategory)) && mem.conid == pos.getConid() && mem.status == 'unpaid')
@@ -374,6 +374,7 @@ class Coupon {
             discount = Number(Number(this.#curCoupon.discount) * amountDiscountable / 100).toFixed(2);
             this.#cartDiscount = discount;
         } else {
+            // all the rest are type individual membership discounts
             discount = pos.everyMembership(perinfo, function (_this, mem) {
                 var mtype = coupon.getMtypes(mem.memId);
                 if (mtype.primary && ((!mem.hasOwnProperty('coupon')) || mem.coupon == null || mem.coupon == '') && mem.couponDiscount == 0) {

@@ -114,6 +114,8 @@ if ($master_transid === false) {
 // loop over all perinfo records
 for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
     $cartrow = $cart_perinfo[$row];
+    $cartrow['rowpos'] = $row;
+    $cart_perinfo[$row]['rowpos'] = $row;
     if (array_key_exists('open_notes', $cartrow)) {
         $open_notes = $cartrow['open_notes'];
         if ($open_notes == '')
@@ -162,7 +164,7 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
 
     for ($mrow = 0; $mrow < sizeof($memberships); $mrow++) {
         $mbr = $memberships[$mrow];
-        if (!array_key_exists('coupon', $mbr))
+        if (!array_key_exists('coupon', $mbr) || $mbr['coupon'] == '')
             $mbr['coupon'] = null;
         if (!array_key_exists('couponDiscount', $mbr))
             $mbr['couponDiscount'] = 0;
