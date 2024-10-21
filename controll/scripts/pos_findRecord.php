@@ -467,6 +467,7 @@ $perids = [];
 $num_rows = $rp->num_rows;
 while ($l = $rp->fetch_assoc()) {
     $l['index'] = $index;
+    $l['memberships'] = [];
     $perinfo[] = $l;
     $perids[$l['perid']] = $index;
     $index++;
