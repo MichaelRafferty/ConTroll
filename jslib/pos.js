@@ -865,19 +865,18 @@ class Pos {
         var rowindex;
         // see if they already exist (if add to cart)
         this.#add_perinfo = data.perinfo;
-        // add_membership = data.membership;
 
         if (this.#add_perinfo.length > 0) {
             // find primary membership for each add_perinfo record
             for (rowindex in this.#add_perinfo) {
                 var row = this.#add_perinfo[rowindex];
-                var primmem = this.find_primary_membership(add_membership[row.perid]);
+                var primmem = this.find_primary_membership(row.memberships);
                 if (primmem != null) {
-                    row.reg_label = add_membership[primmem].label;
-                    var tid = add_membership[primmem].tid;
+                    row.reg_label = row.memberships[primmem].label;
+                    var tid = row.memberships[primmem].tid;
                     if (tid != '') {
                         this.#checkPerid = row.perid;
-                        var other = !add_membership.every(this.notPerid, this);
+                        var other = !row.memberships.every(this.notPerid, this);
 
                         if (other) {
                             row.tid = tid;
