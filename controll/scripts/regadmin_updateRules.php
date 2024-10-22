@@ -71,7 +71,7 @@ WHERE name = ?;
 EOS;
 $uRI = <<<EOS
 UPDATE memRuleItems 
-SET step = ?, ruleType = ?, applyTo = ?, typeList = ?, catList = ?, ageList = ?, memList = ?
+SET name = ?, step = ?, ruleType = ?, applyTo = ?, typeList = ?, catList = ?, ageList = ?, memList = ?
 WHERE name = ? AND step = ?;
 EOS;
 
@@ -110,6 +110,7 @@ foreach ($rules as $name => $rule) {
     $numupd += dbSafeCmd($uR, 'ssssssss', array($rule['name'], $optionName, $description, $typeList, $catList, $ageList, $memList, $rule['origName']));
 
     $ruleItems = $rule['ruleset'];
+    $ruleName = $rule['name']
     foreach ($ruleItems as $ruleItem) {
         if (array_key_exists('to_delete', $ruleItem) && $ruleItem['to_delete'] == 1)
             continue; // don't update delete lines
@@ -132,7 +133,7 @@ foreach ($rules as $name => $rule) {
         if (array_key_exists('memList', $ruleItem) && $ruleItem['memList'] != '')
             $memList = $ruleItem['memList'];
         
-        $numupd += dbSafeCmd($uRI, 'isssssssi', array($ruleItem['step'], $ruleItem['ruleType'], $ruleItem['applyTo'],
+        $numupd += dbSafeCmd($uRI, 'sisssssssi', array($ruleName, $ruleItem['step'], $ruleItem['ruleType'], $ruleItem['applyTo'],
             $typeList, $catList, $ageList, $memList, $rule['name'], $ruleItem['origStep']));
     }
 }
@@ -183,6 +184,7 @@ foreach ($rules as $name => $rule) {
         }
 
     $ruleItems = $rule['ruleset'];
+    $ruleName = $rule['name'];
     foreach ($ruleItems as $ruleItem) {
         if (array_key_exists('to_delete', $ruleItem) && $ruleItem['to_delete'] == 1)
             continue; // don't update delete lines
@@ -204,7 +206,7 @@ foreach ($rules as $name => $rule) {
             if (array_key_exists('memList', $ruleItem) && $ruleItem['memList'] != '')
                 $memList = $ruleItem['memList'];
             
-            $inskey = dbSafeInsert($iRI, 'sissssss', array ($rule['name'], $ruleItem['step'], $ruleItem['ruleType'], $ruleItem['applyTo'],
+            $inskey = dbSafeInsert($iRI, 'sissssss', array ($ruleName, $ruleItem['step'], $ruleItem['ruleType'], $ruleItem['applyTo'],
                 $typeList, $catList, $ageList, $memList));
             if ($inskey)
                 $numins++;
