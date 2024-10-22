@@ -110,7 +110,7 @@ foreach ($rules as $name => $rule) {
     $numupd += dbSafeCmd($uR, 'ssssssss', array($rule['name'], $optionName, $description, $typeList, $catList, $ageList, $memList, $rule['origName']));
 
     $ruleItems = $rule['ruleset'];
-    $ruleName = $rule['name']
+    $ruleName = $rule['name'];
     foreach ($ruleItems as $ruleItem) {
         if (array_key_exists('to_delete', $ruleItem) && $ruleItem['to_delete'] == 1)
             continue; // don't update delete lines
