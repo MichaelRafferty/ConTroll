@@ -163,7 +163,7 @@ class Unmatched {
         });
     }
 
-    // draw the policy edit screen
+    // draw the unmatched people screen
     draw(data, msg= null) {
         var _this = this;
 
@@ -187,7 +187,7 @@ class Unmatched {
             paginationSize: 100,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
-                {title: "Match", formatter: this.matchButton, headerSort: false },
+                {title: "Action", formatter: this.actionButtons, headerSort: false },
                 {title: "New ID", field: "id", headerWordWrap: true, width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
                 {title: "Manages", field: "manages", width: 90, headerHozAlign:"right", hozAlign: "right", headerSort: false},
                 {title: "Mgr Type", field: "managerType", headerWordWrap: true, width: 50,headerSort: false },
@@ -216,17 +216,30 @@ class Unmatched {
     }
 
     // table related functions
-    // display match button unmatched new people
-    matchButton(cell, formatterParams, onRendered) {
+    // display match button and delete button for unmatched new people
+    actionButtons(cell, formatterParams, onRendered) {
         var row = cell.getRow();
-        var index = row.getIndex()
-        var managerType = row.getData().managerType;
+        var index = row.getIndex();
+        var rowData = row.getData();
+        var managerType = rowData.managerType;
+        var paid = rowData.paid;
+        var manages = rowData.manages;
+        var html = '';
         if (managerType != 'n') {
-            return '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            html =  '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
                 ' onclick="unmatchedPeople.matchPerson(' + index + ');">Match</button>';
+        } else {
+            var mgrId = row.getData().managerId
+            html = "Need " + mgrId + ' ';
+
         }
-        var mgrId = row.getData().managerId
-        return "Need " + mgrId;
+
+        if ((manages == '' || manages == null || manages == 0) && (paid == null || Number(paid) == 0)) {
+            html +=  '&nbsp;<button class="btn btn-primary ps-2" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+                ' onclick="unmatchedPeople.deletePerson(' + index + ');">Delete</button>';
+        }
+
+        return html;
     }
     // display select button for candidate people
     selectButton(cell, formatterParams, onRendered) {
@@ -273,6 +286,45 @@ class Unmatched {
             }
         });
     }
+
+    // ok to delete a potential new person: they cannot have any paid memberships and cannot manage others.
+    // this check is done by the get unmatched as the delete button only appears if they are eligible.
+    // deletePerson - this unpaid new person (not a manager) should not be created, just deleted from the system
+    deletePerson(id) {
+        var _this = this;
+        var script = "scripts/people_deleteUnmatched.php";
+        var postdata = {
+            ajax_request_action: 'delete',
+            newperid: id,
+        };
+        clear_message();
+        clearError();
+        if (!confirm("Are you sure you want to delete new person " + id))
+            return;
+
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postdata,
+            success: function (data, textStatus, jhXHR) {
+                if (data['error']) {
+                    show_message(data['error'], 'error');
+                    return;
+                }
+                if (data['error']) {
+                    show_message(data['warn'], 'warn');
+                    return;
+                }
+                _this.open(data['success'])    ;
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error', 'result_message_candidate');
+                return false;
+            }
+        });
+    }
+
 
     // showCandidates - open the modal to display the candidates for this match
     showCandidates(data) {
