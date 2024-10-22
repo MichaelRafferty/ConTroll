@@ -3,7 +3,6 @@ global $db_ini;
 
 require_once "../lib/base.php";
 require_once('../../lib/log.php');
-require_once('../../lib/cipher.php');
 require_once('../../lib/email__load_methods.php');
 
 $check_auth = google_init("ajax");
@@ -202,9 +201,6 @@ EOS;
      $managerEmail = $mL['email_addr'];
      $managerFullName = $mL['fullName'];
 
-     // encrypt/decrypt stuff
-     $cipherParams = getAttachCipher();
-
      $insQ = <<<EOS
 INSERT INTO portalTokenLinks(email, action, source_ip)
 VALUES(?, 'attach', ?);
@@ -225,7 +221,7 @@ EOS;
      $parms['loginType'] = 'p';            // id in portalTokenLinks table
      $parms['managerEmail'] = $managerEmail;
      $string = json_encode($parms);  // convert object to json for making a string out of it, which is encrypted in the next line
-     $string = urlencode(openssl_encrypt($string, $cipherParams['cipher'], $cipherParams['key'], 0, $cipherParams['iv']));
+     $string = encryptAttach($string, true);
      $token = $portal_conf['portalsite'] . "/respond.php?action=attach&vid=$string";     // convert to link for emailing
 
      load_email_procs();

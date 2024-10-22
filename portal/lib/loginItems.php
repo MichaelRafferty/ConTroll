@@ -106,7 +106,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '') {
 
 // chooseAccountFromEmail - map an email address to a list of accounts
 // email is a validated email by the validationType.
-function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $cipherInfo, $validationType) {
+function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationType) {
     global $config_vars;
 
     $portal_conf = get_conf('portal');
@@ -226,7 +226,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $cipherInfo,
             $match['multiple'] = strtolower($email);
             $match['issue'] = $match['banned'];
             $string = json_encode($match);
-            $string = urlencode(openssl_encrypt($string, $cipherInfo['cipher'], $cipherInfo['key'], 0, $cipherInfo['iv']));
+            $string = encryptCipher($string, true);
             echo "<li><a href='?vid=$string'>" .  $match['fullname'] . "</a></li>\n";
         }
         ?>

@@ -5,7 +5,6 @@ require_once("lib/getLoginMatch.php");
 require_once("lib/loginItems.php");
 require_once("lib/sessionManagement.php");
 require_once('../lib/portalForms.php');
-require_once("../lib/cipher.php");
 require_once("../lib/profile.php");
 require_once("../lib/policies.php");
 require_once("../lib/googleOauth2.php");
@@ -18,9 +17,6 @@ $portal_conf = get_conf('portal');
 $debug = get_conf('debug');
 $ini = get_conf('reg');
 $condata = get_con();
-
-// encrypt/decrypt stuff (maybe needed?)
-$cipherInfo = getLoginCipher();
 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
@@ -168,8 +164,7 @@ if (isSessionVar('id')) {
     $loginId = getSessionVar('id');
     if (isset($_GET['vid'])) {
         // we are logged in and took a vid link, if it decodes, log out and reload the page to reprocess the link
-        $match = openssl_decrypt($_GET['vid'], $cipherInfo['cipher'], $cipherInfo['key'], 0, $cipherInfo['iv']);
-        $match = json_decode($match, true);
+        $match = decryptCipher($_GET['vid'], true);
         if ($match != null) { // vid decodes, log us out
             $oldEmail = strtolower(getSessionVar('email'));
             if (array_key_exists('id', $match)) {
@@ -221,8 +216,7 @@ draw_indexPageTop($condata);
 
 if (isset($_GET['vid'])) {
     // handle link login
-    $match = openssl_decrypt($_GET['vid'], $cipherInfo['cipher'], $cipherInfo['key'], 0, $cipherInfo['iv']);
-    $match = json_decode($match, true);
+    $match = decryptCipher($_GET['vid'], true);
     if ($match == null) {   // invalid vid link
         draw_login($config_vars, "<div class='bg-danger text-white'>The link is invalid, please request a new link</div>");
         exit();
@@ -313,7 +307,7 @@ EOS;
     setSessionVar('tokenType', $tokenType);
 
     // now choose the account from the email
-    $account = chooseAccountFromEmail($email, $id, $linkid, $match, $cipherInfo, 'token');
+    $account = chooseAccountFromEmail($email, $id, $linkid, $match, 'token');
     if ($account == null || !is_numeric($account)) {
         if ($account == null) {
             $account = "Error looking up data for $email";
@@ -323,7 +317,7 @@ EOS;
     }
     exit();
 } else if ($loginId != null && isSessionVar('multiple') && isset($_REQUEST['switch']) && $_REQUEST['switch'] == 'account') {
-    $account = chooseAccountFromEmail(getSessionVar('multiple'), null,null, null, $cipherInfo, 'token');
+    $account = chooseAccountFromEmail(getSessionVar('multiple'), null,null, null, 'token');
     if ($account == null || !is_numeric($account)) {
         if ($account == null) {
             $account = "Error looking up data for $email";

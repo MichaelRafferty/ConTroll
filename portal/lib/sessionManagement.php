@@ -1,5 +1,4 @@
 <?php
-
 // refreshSession:  using the session variables, get the session to refresh via index.php
 
 function refreshSession() {
@@ -63,8 +62,6 @@ function sendEmailToken($email, $refresh = false) {
             "Please check your spam folder for the request.<br/>You will have to wait $mins minutes before trying again.");
     }
 
-    // encrypt/decrypt stuff
-    $cipherParams = getLoginCipher();
     $insQ = <<<EOS
 INSERT INTO portalTokenLinks(email, action, source_ip)
 VALUES(?, 'login', ?);
@@ -89,7 +86,7 @@ EOS;
         $parms['refresh'] = 1;
     }
     $string = json_encode($parms);  // convert object to json for making a string out of it, which is encrypted in the next line
-    $string = urlencode(openssl_encrypt($string, $cipherParams['cipher'], $cipherParams['key'], 0, $cipherParams['iv']));
+    $string = encryptCipher($string, true);
     $token = $portal_conf['portalsite'] . "/index.php?vid=$string";     // convert to link for emailing
     load_email_procs();
     if ($refresh) {

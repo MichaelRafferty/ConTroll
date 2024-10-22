@@ -5,7 +5,6 @@ require_once('lib/getAccountData.php');
 require_once('lib/sessionManagement.php');
 require_once('../lib/portalForms.php');
 require_once('../lib/email__load_methods.php');
-require_once('../lib/cipher.php');
 require_once("../lib/interests.php");
 require_once("../lib/profile.php");
 require_once("../lib/policies.php");

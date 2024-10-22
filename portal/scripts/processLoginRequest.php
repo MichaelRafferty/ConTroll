@@ -2,7 +2,6 @@
 require_once('../lib/base.php');
 require_once('../lib/getLoginMatch.php');
 require_once('../../lib/email__load_methods.php');
-require_once('../../lib/cipher.php');
 require_once('../lib/sessionManagement.php');
 
 // use common global Ajax return functions
