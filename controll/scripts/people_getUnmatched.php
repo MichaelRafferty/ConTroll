@@ -35,7 +35,7 @@ JOIN newperson nm ON nm.managedByNew = n.id
 WHERE n.perid IS NULL
 GROUP BY n.id
 ), regs AS (
-SELECT n.id, count(*) as numRegs, sum(r.price) AS price, sum(r.paid) AS paid, GROUP_CONCAT(m.label SEPARATOR ', ') AS regs
+SELECT n.id, count(*) as numRegs, IFNULL(sum(r.price), 0.00) AS price, IFNULL(sum(r.paid), 0.00) AS paid, GROUP_CONCAT(m.label SEPARATOR ', ') AS regs
 FROM newperson n
 JOIN reg r ON r.newperid = n.id
 JOIN memList m ON r.memId = m.id
