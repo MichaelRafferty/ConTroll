@@ -968,11 +968,14 @@ class rulesSetup {
         var keys = Object.keys(ruleSteps);
         this.#ruleSteps = [];
         this.#ruleStepsIdx = {};
+        // renumber the rules
         this.#ruleStepMaxStep = 1;
         for (var i = 0; i < keys.length; i++) {
             this.#ruleSteps.push(ruleSteps[keys[i]]);
-            if (ruleSteps[keys[i]].step >= this.#ruleStepMaxStep && ruleSteps[keys[i]].step < 990)
-                this.#ruleStepMaxStep = Number(ruleSteps[keys[i]].step) + 1;
+            if (ruleSteps[keys[i]].step < 990) {
+                ruleSteps[keys[i]].step = this.#ruleStepMaxStep;
+                this.#ruleStepMaxStep++;
+            }
             this.#ruleStepsIdx[ruleSteps[keys[i]].rownum] = i;
         }
 
