@@ -870,7 +870,7 @@ class PosCart {
         var mrows = this.#cartPerinfo[[pindex]].memberships;
         for (var mrownum in mrows) {
             mrow = mrows[mrownum];
-            if (mrow.todelete !== undefined)
+            if (mrow.toDelete !== undefined)
                 continue;
 
             var row_shown = true;

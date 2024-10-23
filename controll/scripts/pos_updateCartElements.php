@@ -170,7 +170,7 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             $mbr['couponDiscount'] = 0;
 
         // if this row persists
-        if (!array_key_exists('todelete', $mbr)) {
+        if (!array_key_exists('toDelete', $mbr)) {
             if ($mbr['price'] == '')
                 $mbr['price'] = 0;
             $total_price += $mbr['price'];
@@ -197,7 +197,7 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             $reg_ins++;
         }
         else {
-            if (array_key_exists('todelete', $mbr)) {
+            if (array_key_exists('toDelete', $mbr)) {
                 // delete membership
                 $paramarray = array ($mbr['regid']);
                 $reg_del += dbSafeCmd($delRegSQL, $delRDt, $paramarray);
@@ -209,7 +209,7 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
                 $reg_upd += dbSafeCmd($updRegSQL, $updRDt, $paramarray);
             }
         }
-        if (!array_key_exists('todelete', $mbr)) {
+        if (!array_key_exists('toDelete', $mbr)) {
             // now if there is a new note for this row, add it now
             if (array_key_exists('new_reg_note', $mbr)) {
                 $paramarray = array ($user_perid, $master_transid, $mbr['regid'], 'notes', $mbr['new_reg_note']);
