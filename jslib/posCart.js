@@ -289,6 +289,10 @@ class PosCart {
         this.#memberships.push(mem);
     }
 
+    pushAllMembership(mem) {
+        this.#allMemberships.push(mem);
+    }
+
 // if no memberships or payments have been added to the database, this will reset for the next customer
 // TODO: verify how to tell if it's allowed to be shown as enabled
     startOver() {
@@ -425,7 +429,7 @@ class PosCart {
                 if (cart_row.perid == mem.perid ) {
                     cart.pushMembership(mem);
                 }
-                cart.pushMembership(mem);
+                cart.pushAllMembership(mem);
             });
             this.buildAgeButtons();
             this.buildRegItemButtons();
@@ -436,6 +440,17 @@ class PosCart {
             this.#addEditModal.show();
         }
         return;
+    }
+
+// saveMembershipChange: save the changes to the perid's memberships back to the cart perinfo record
+    saveMembershipChange() {
+        this.#cartPerinfo[this.#currentPerIdx].memberships = make_copy(this.#memberships);
+        this.#memberships = [];
+        this.#allMemberships = [];
+        this.#currentPerIdx = null;
+        this.#currentPerid = null;
+        this.#addEditModal.hide();
+        this.drawCart();
     }
 
 // Redraw Reg Items - redraw the items for this person

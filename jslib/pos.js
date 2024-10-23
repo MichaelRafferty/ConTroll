@@ -549,17 +549,15 @@ class Pos {
             var row;
             index = -index;
             this.everyMembership(this.#result_perinfo, function(_this, mem) {
-                if (mem.tid == index) {
-                    var prow = mem.pindex;
-                    if (_this.#result_perinfo[prow].banned == 'Y') {
-                        alert("Please ask " + (_this.#result_perinfo[prow].first_name + ' ' + _this.#result_perinfo[prow].last_name).trim() +
-                            " to talk to the Registration Administrator, you cannot add them at this time.")
-                        return 0;
-                    }
-                    perid = _this.#result_perinfo[prow].perid;
-                    if (cart.notinCart(perid)) {
-                        cart.add(_this.#result_perinfo[prow]);
-                    }
+                var prow = mem.pindex;
+                if (_this.#result_perinfo[prow].banned == 'Y') {
+                    alert("Please ask " + (_this.#result_perinfo[prow].first_name + ' ' + _this.#result_perinfo[prow].last_name).trim() +
+                        " to talk to the Registration Administrator, you cannot add them at this time.")
+                    return 0;
+                }
+                perid = _this.#result_perinfo[prow].perid;
+                if (cart.notinCart(perid)) {
+                    cart.add(_this.#result_perinfo[prow]);
                 }
             });
         }
