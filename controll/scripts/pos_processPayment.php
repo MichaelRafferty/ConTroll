@@ -187,6 +187,7 @@ $ctypestr = 'sii';
 $index = 0;
 foreach ($cart_perinfo as $perinfo) {
     $cart_perinfo[$index]['rowpos'] = $index;
+    unset($cart_perinfo[$index]['dirty']);
     $index++;
     foreach ($perinfo['memberships'] as $cart_row) {
         if ($cart_row['price'] == '')

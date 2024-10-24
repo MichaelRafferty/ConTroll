@@ -57,6 +57,7 @@ class PosCart {
 
 // Pay items
     #anyUnpaid = false;
+    #priorPayments = null;
 
 // Constants
     #isMembershipTypes = [ 'full', 'virtual', 'oneday' ];
@@ -300,6 +301,7 @@ class PosCart {
         this.#cartPerinfo = [];
         this.#cartPmt = [];
         this.#freezeCart = false;
+        this.#priorPayments = null;
 
         this.hideNext();
         this.hideVoid();
@@ -1047,6 +1049,16 @@ class PosCart {
 </div>
 `;
 
+        if (this.#priorPayments == null && this.#cartPmt.length == 0 && this.#totalPaid > 0) {
+            // add in the pre paid amount as a prior payment
+            var prow = {
+                amt: this.#totalPaid,
+                type: 'prior',
+                desc: 'payments not in this session',
+                code: ''
+            };
+            this.#cartPmt.push(prow);
+        }
         if (this.#cartPmt.length > 0) {
             html += `
 <div class="row mt-3">
@@ -1279,16 +1291,7 @@ class PosCart {
 
 // update the card with fields provided by the update of the database.  And since the DB is now updated, clear the dirty flags.
     updateFromDB(data) {
-        var newrow;
-        var cartrow;
-
-        var updated_perinfo = data.updated_perinfo;
-        for (var rownum in updated_perinfo) {
-            newrow = updated_perinfo[rownum];
-            cartrow = this.#cartPerinfo[newrow.rowpos]
-            cartrow = newrow
-            cartrow.dirty = false;
-        }
+        this.#cartPerinfo = data.updated_perinfo;
     }
 
     // update selected element in the country pulldown from the review data screen to the cart
