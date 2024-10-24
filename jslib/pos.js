@@ -1976,7 +1976,7 @@ addUnpaid(tid) {
             pmtrows: cart.getCartPmt(),
             footer: footer_text,
             receipt_type: receipt_type,
-            email_addrs: emailAddreesRecipients,
+            email_addrs: this.#emailAddreesRecipients,
         };
         this.#pay_button_ercpt.disabled = true;
         $.ajax({
@@ -2032,18 +2032,18 @@ addUnpaid(tid) {
         var emailCheckbox = document.getElementById('emailAddr_' + row.toString());
         var email_address = cart.getEmail(row);
         if (emailCheckbox.checked) {
-            if (!emailAddreesRecipients.includes(email_address)) {
-                emailAddreesRecipients.push(email_address);
+            if (!this.#emailAddreesRecipients.includes(email_address)) {
+                this.#emailAddreesRecipients.push(email_address);
             }
         } else {
-            if (emailAddreesRecipients.includes(email_address)) {
-                for (var index = 0; index < emailAddreesRecipients.length; index++) {
-                    if (emailAddreesRecipients[index] == email_address)
-                        emailAddreesRecipients.splice(index, 1);
+            if (this.#emailAddreesRecipients.includes(email_address)) {
+                for (var index = 0; index < this.#emailAddreesRecipients.length; index++) {
+                    if (this.#emailAddreesRecipients[index] == email_address)
+                        this.#emailAddreesRecipients.splice(index, 1);
                 }
             }
         }
-        this.#pay_button_ercpt.disabled = emailAddreesRecipients.length == 0;
+        this.#pay_button_ercpt.disabled = this.#emailAddreesRecipients.length == 0;
     }
 
     checkboxCheck() {
@@ -2120,7 +2120,7 @@ addUnpaid(tid) {
                     this.#receeiptEmailAddresses_div.innerHTML = '<div class="row mt-2"><div class="col-sm-9 p-0">Email receipt to:</div></div>' +
                         email_html;
                     if (email_count == 1) {
-                        emailAddreesRecipients.push(cart.getEmail(this.#last_email_row));
+                        this.#emailAddreesRecipients.push(cart.getEmail(this.#last_email_row));
                         setTimeout(pos.checkboxCheck, 100);
                     }
                 }
