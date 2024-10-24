@@ -286,11 +286,11 @@ class PosCart {
     }
 
     pushMembership(mem) {
-        this.#memberships.push(mem);
+        this.#memberships.push(make_copy(mem));
     }
 
     pushAllMembership(mem) {
-        this.#allMemberships.push(mem);
+        this.#allMemberships.push(make_copy(mem));
     }
 
 // if no memberships or payments have been added to the database, this will reset for the next customer
@@ -752,7 +752,7 @@ class PosCart {
     membershipAddFinal(newMembership) {
         if (!this.#memberships)
             this.#memberships = [];
-        this.#memberships.push(newMembership);
+        this.#memberships.push(make_copy(newMembership));
         this.newIDKey--;
         this.#cartChanges++;
         this.redrawRegItems();
@@ -798,8 +798,14 @@ class PosCart {
 
 // addEdit Assist functions
     checkAddEditClose() {
-        // TODO: warn about unsaved changes
-        console.log("checkAddEditClose: TODO");
+        if (this.#cartChanges != 0) {
+            if (!confirm("You have made unsaved changes to the memberships.  Do you wish to discard them?"))
+                return;
+        }
+        this.#memberships = [];
+        this.#allMemberships = [];
+        this.#currentPerIdx = null;
+        this.#currentPerid = null;
         this.#addEditModal.hide();
     }
 
@@ -968,13 +974,15 @@ class PosCart {
         rowhtml += `</div>
 `;  // end of second row - badge name
         // third row add/edit memberships
-        rowhtml += `</div>
+        if (!this.#freezeCart) {
+            rowhtml += `</div>
     <div class="row">
         <div class="col-sm-auto"><button type="button" class="btn btn-sm btn-primary" onclick="cart.addEditMemberships(` +
-            row.index + `);">Add/Edit Memberships</button>
+                row.index + `);">Add/Edit Memberships</button>
         </div>
     </div>
     `;
+        }
 
         // now the membership rows
         if (membership_html != '') {
