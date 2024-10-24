@@ -1,6 +1,6 @@
 <?php
-// library AJAX Processor: reg_printReceipt.php
-// Balticon Registration System
+// library AJAX Processor: pos_printReceipt.php
+// ConTroll Registration System
 // Author: Syd Weinstein
 // Print a receipt from the regcontrol registration screen
 
@@ -46,7 +46,6 @@ if (array_key_exists('currency', $con)) {
 // printReceipt: print the text receipt "text", if printer name starts with 0, then just log the receipt
 $header = $_POST['header'];
 $prows = $_POST['prows'];
-$mrows = $_POST['mrows'];
 $pmtrows = $_POST['pmtrows'];
 $footer = $_POST['footer'];
 
@@ -59,15 +58,15 @@ $already_paid = 0;
 $total_due = 0;
 
 foreach ($prows as $prow) {
-    $receipt .= "\nMember: " . trim($prow['first_name'] . ' ' . $prow['last_name']) . "\n";
+    //$receipt .= "\nMember: " . trim($prow['first_name'] . ' ' . $prow['last_name']) . "\n";
+    $receipt .= "\nMember: " . trim($prow['fullName']) . "\n";
     $member_due = 0;
-    foreach ($mrows as $mrow) {
-        if ($mrow['perid'] == $prow['perid']) {
-            $receipt .= "   " . $mrow['label'] . ", " . $dolfmt->formatCurrency((float) $mrow['price'], $currency) . "\n";
-            if (array_key_exists('prior_paid', $mrow))
-                $already_paid += $mrow['prior_paid'];
-            $member_due += $mrow['price'];
-        }
+    foreach ($prow['memberships'] as $mrow) {
+        $receipt .= "   " . $mrow['label'] . ", " . $dolfmt->formatCurrency((float) $mrow['price'], $currency) .
+            " (" . $mrow['status'] . ")\n";
+        if (array_key_exists('prior_paid', $mrow))
+            $already_paid += $mrow['prior_paid'];
+        $member_due += $mrow['price'];
     }
     $member_due = round($member_due, 2);
     $receipt .= "   Subtotal: " . $dolfmt->formatCurrency($member_due, $currency) . "\n";

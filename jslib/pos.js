@@ -246,6 +246,10 @@ class Pos {
         return this.#conid;
     }
 
+    getConlabel() {
+        return this.#conlabel;
+    }
+
     getManager() {
         return this.#Manager == 1;
     }
@@ -1979,6 +1983,7 @@ addUnpaid(tid) {
             email_addrs: this.#emailAddreesRecipients,
         };
         this.#pay_button_ercpt.disabled = true;
+        var _this = this;
         $.ajax({
             method: "POST",
             url: "scripts/pos_emailReceipt.php",
@@ -1994,10 +1999,10 @@ addUnpaid(tid) {
                 } else if (data.warn !== undefined) {
                     show_message(data.warn, 'success');
                 }
-                this.#pay_button_ercpt.disabled = false;
+                _this.#pay_button_ercpt.disabled = false;
             },
             error: function (jqXHR, textstatus, errorThrown) {
-                this.#pay_button_ercpt.disabled = false;
+                _this.#pay_button_ercpt.disabled = false;
                 showAjaxError(jqXHR, textstatus, errorThrown);
             }
         });
@@ -2121,7 +2126,7 @@ addUnpaid(tid) {
                         email_html;
                     if (email_count == 1) {
                         this.#emailAddreesRecipients.push(cart.getEmail(this.#last_email_row));
-                        setTimeout(pos.checkboxCheck, 100);
+                        setTimeout(checkboxCheck, 100);
                     }
                 }
                 document.getElementById('pay-amt').value = '';
@@ -2361,4 +2366,8 @@ function posPerNotesIcons(cell, formatterParams, onRendered) {
 
 function posbulldRecordHover(e, cell, onRendered) {
     return pos.bulldRecordHover(e, cell, onRendered);
+}
+
+function checkboxCheck() {
+    return pos.checkboxCheck();
 }

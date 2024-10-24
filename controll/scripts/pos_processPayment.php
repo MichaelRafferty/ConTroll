@@ -173,17 +173,17 @@ $response['prow'] = $new_payment;
 $response['message'] = "1 payment added";
 $updPaymentSQL = <<<EOS
 UPDATE reg
-SET paid = ?, complete_trans = ?
+SET paid = ?, complete_trans = ?, status = ?
 WHERE id = ?;
 EOS;
-$ptypestr = 'sii';
+$ptypestr = 'disi';
 
 $updCouponSQL = <<<EOS
 UPDATE reg
 SET couponDiscount = ?, coupon = ?
 WHERE id = ? AND coupon IS NULL;
 EOS;
-$ctypestr = 'sii';
+$ctypestr = 'dii';
 $index = 0;
 foreach ($cart_perinfo as $perinfo) {
     $cart_perinfo[$index]['rowpos'] = $index;
@@ -201,9 +201,17 @@ foreach ($cart_perinfo as $perinfo) {
             if ($coupon == null) {
                 $amt_paid = min($amt, $unpaid);
                 $cart_row['paid'] += $amt_paid;
+                if ($amt_paid == $unpaid) {
+                    // row is now completely paid
+                    $args = array($cart_row['paid'], $master_tid, 'paid', $cart_row['regid']);
+                    $cart_row['status'] = 'paid';
+                } else {
+                    $args = array($cart_row['paid'], null, $cart_row['status'], $cart_row['regid'] );
+                }
                 $cart_perinfo[$perinfo['index']]['memberships'][$cart_row['index']] = $cart_row;
                 $amt -= $amt_paid;
-                $upd_rows += dbSafeCmd($updPaymentSQL, $ptypestr, array ($cart_row['paid'], $master_tid, $cart_row['regid']));
+
+                $upd_rows += dbSafeCmd($updPaymentSQL, $ptypestr, $args);
             }
             else {
                 $cupd_rows += dbSafeCmd($updCouponSQL, $ctypestr, array ($cart_row['couponDiscount'], $coupon, $cart_row['regid']));

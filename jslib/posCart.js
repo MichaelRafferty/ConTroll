@@ -1312,7 +1312,7 @@ class PosCart {
     receiptHeader(user_id, pay_tid) {
         var d = new Date();
         var payee = (this.#cartPerinfo[0].first_name + ' ' + this.#cartPerinfo[0].last_name).trim();
-        return "\nReceipt for payment to " + conlabel + "\nat " + d.toLocaleString() + "\nBy: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid;
+        return "\nReceipt for payment to " + pos.getConlabel() + "\nat " + d.toLocaleString() + "\nBy: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid;
     }
 
 // printList - html to display cart elements to print
