@@ -7,8 +7,6 @@ Start of an Oauth2 Validation request to ConTroll:
         e.g. https://reg.seattlein2025.org/index.php?oauth=enceypted json representation of php a associative array
 
         Contents of array:
-QUESTION:   email: requested email for the account (who)  [Do I even need this, I never ask them for it myself, except to email a verification if login in with
-email. I depend on the OAUTH2 Server to send a validated email back to me.)
             retdata: what data are you asking for: Nom, Vote (case insensitive) (single value)
             returl: url call back with answer includes the variable name  (.../oauth/ret.php?oauth)  (controll appends = and encrypted string)
             apikey: defined by ConTroll and communicated to Chris)
@@ -23,8 +21,7 @@ NEW:        app: which app is asking for authentication (NomNom, ???)  [I would 
 
     Oauth validation request specific response packet
         common elements:
-            requested email address     email
-            validated email address     valEmail
+            validated email address     email
             person id (integer)         perid
             newperson id (integer)      newperid        Note: if perid is missing, this is their id, if newperid is missing they only have a perid, if both
                                                         exist, they are the same person, but we now have assigned them their permanent id.

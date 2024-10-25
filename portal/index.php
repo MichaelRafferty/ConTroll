@@ -1,3 +1,4 @@
+
 <?php
 // Registration  Portal - index.php - Login/re-login page for the membership portal
 require_once("lib/base.php");
@@ -26,14 +27,41 @@ $config_vars['required'] = $ini['required'];
 $loginId = null;
 $loginType = null;
 
-// first lets check the Oauth2 stuff. but only if not loging out
+// first lets check the authentication stuff. but only if not loging out
     // in session or not, is it a logout? (force clear session method, as well as logout)
     if (isset($_REQUEST['logout'])) {
         clearSession();
         header('location:' . $portal_conf['portalsite']);
         exit();
     }
+    // oauth= indicates an authentication request from the ConTroll Oauth2 server via redirect
+    if (isset($_REQUEST['oauth'])) {
+        // decrypt the request
+        $request = decryptCipher($_GET['oauth'], true);
+        if ($request == null) {
+            web_error_log("Invalid oauth server request received");
+            if (isSessionVar('id')) {
+                // there is a valid portal session, send them to the portal with an error message to display
+                header('location:portal.php?type=e&messageFwd=' .
+                       urlencode('Invalid authentication request received from the Oauth2 Server, please seek assistance.'));
+                exit();
+            } else {
+                // no valid session found, draw the login page
+                draw_indexPageTop($condata);
+                draw_login($config_vars, 'Invalid authentication request received from the Oauth2 Server, please seek assistance.', 'bg-danger text-white');
+                exit();
+            }
+        }
+
+        // we have a decrypted valid request, put it in the session, so when we come back from the oauth2 server or email validation we can deal with it
+        setSessionVar('oauth', $request);
+        if (isSessionVar('id')) {
+            validationComplete();
+        }
+    }
+
     $refresh = isset($_REQUEST['refresh']) && isSessionVar('id');
+
     // oauth2= indicates a new account login via oAUTH2 or the selected account is re-verifying, clear the old information,
     //  unless the GET variable of 'refresh' is found
     if (isset($_REQUEST['oauth2'])) {
@@ -52,7 +80,7 @@ $loginType = null;
         }
     }
 
-    // are we in an oAUTH2 session, and if so, is it yet complete or needs the next exchange?
+    // are we in an OAUTH2 session, and if so, is it yet complete or needs the next exchange?
     $oauth2pass = getSessionVar('oauth2pass');
     if ($oauth2pass != null && $oauth2pass != 'token') {
         // is this session validation taking too long?
@@ -140,8 +168,9 @@ $loginType = null;
             setSessionVar('tokenExpiration', time() + ($hrs * 3600));
 
             if ($oldemail != null) {
-                // this is a refresh, don't choose the account again, just return to the home page of the portal, don't disturb any other session variables
-                header('location:' . $portal_conf['portalsite'] . '/portal.php');
+                // this is a refresh, don't choose the account again, just return to the home page of the portal or return the authentication response,
+                // don't disturb any other session variables
+
             }
 
             draw_indexPageTop($condata);
@@ -205,7 +234,7 @@ if (isSessionVar('id')) {
                 }
                 if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 24;
                 setSessionVar('tokenExpiration', time() + ($hrs * 3600));
-                header('location:' . $portal_conf['portalsite'] . '/portal.php');
+                validationComplete();
                 exit();
             }
         }
