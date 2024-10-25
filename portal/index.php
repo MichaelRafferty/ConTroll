@@ -146,7 +146,7 @@ $loginType = null;
 
             draw_indexPageTop($condata);
             // not a refresh, choose the account from the email
-            $account = chooseAccountFromEmail($email, null, null, null, $cipherInfo, getSessionVar('oauth2'));
+            $account = chooseAccountFromEmail($email, null, null, null, getSessionVar('oauth2'));
             if ($account == null || !is_numeric($account)) {
                 if ($account == null) {
                     $account = "Error looking up data for $email";
