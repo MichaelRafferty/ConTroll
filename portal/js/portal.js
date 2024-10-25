@@ -292,7 +292,7 @@ class Portal {
 
         clear_message('epMessageDiv');
         // clear the old validation colors, first the policies
-        if (olicies) {
+        if (policies) {
             for (var row in policies) {
                 var policy = policies[row];
                 if (policy.required == 'Y') {
