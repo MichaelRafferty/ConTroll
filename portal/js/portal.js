@@ -292,9 +292,9 @@ class Portal {
 
         clear_message('epMessageDiv');
         // clear the old validation colors, first the policies
-        if (this.#policies) {
-            for (var row in this.#policies) {
-                var policy = this.#policies[row];
+        if (olicies) {
+            for (var row in policies) {
+                var policy = policies[row];
                 if (policy.required == 'Y') {
                     var field = '#l_' + policy.policy;
                     $(field).removeClass('need');
@@ -618,12 +618,12 @@ class Portal {
         }
 
         // now verify required policies
-        if (this.#policies) {
+        if (policies) {
             this.#newPolicies = URLparamsToArray($('#editPolicies').serialize());
             //console.log("New Policies:");
             //console.log(this.#newPolicies);
-            for (var row in this.#policies) {
-                var policy = this.#policies[row];
+            for (var row in policies) {
+                var policy = policies[row];
                 if (policy.required == 'Y') {
                     var field = '#l_' + policy.policy;
                     if (typeof this.#newPolicies['p_' + policy.policy] === 'undefined') {
