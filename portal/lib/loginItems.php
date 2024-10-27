@@ -283,7 +283,7 @@ function validationComplete() {
     // get the information for this response
     $reg_conf = get_conf('reg');
     $con_conf = get_conf('con');
-    $conid = $reg_conf['id'];
+    $conid = $con_conf['id'];
     $id = getSessionVar('id');
     $idType = getSessionVar('idType');
     $nomDate = $portal_conf['nomdate'];
