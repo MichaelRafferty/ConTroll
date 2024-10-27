@@ -385,3 +385,15 @@ EOS;
         return $seconds;
     }
 
+// validate ID - used by scripts to make sure the current session matches the value in the javascript
+    function validateLoginId() {
+        $jsId = $_POST['loginId'];
+        $jsIdType = $_POST['loginType'];
+
+        $loginId = getSessionVar('id');
+        $loginType = getSessionVar('idType');
+        if ($loginId != $jsId || $loginType != $jsIdType) {
+            ajaxSuccess(array('status'=>'error', 'message'=>'Login information out of date, please refresh the page.'));
+            exit();
+        }
+    }

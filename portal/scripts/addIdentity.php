@@ -36,6 +36,8 @@ $response['resolveUpdates'] = $resolveUpdates;
     return;
 }
 
+validateLoginId();
+
 $loginId = getSessionVar('id');
 $loginType = getSessionVar('idType');
 $provider = $_POST['provider'];
