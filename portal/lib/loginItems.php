@@ -1,6 +1,6 @@
 <?php
 // draw_login - draw the login options form
-function draw_login($config_vars, $result_message = '', $result_color = '') {
+function draw_login($config_vars, $result_message = '', $result_color = '', $why = 'continue to the portal') {
     $con = get_conf('con');
     $policies = getPolicies();
     ?>
@@ -9,7 +9,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '') {
         <div class='container-fluid form-floating'>
             <div class='row mb-2'>
                 <div class='col-sm-auto'>
-                    <h4>Please log in to continue to the Portal.</h4>
+                    <h4>Please log in to <?php echo $why; ?>.</h4>
                 </div>
             </div>
             <div class="row mb-2">

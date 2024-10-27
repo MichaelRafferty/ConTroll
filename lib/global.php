@@ -141,7 +141,7 @@ EOS;
                         return;
                 }
 
-                echo '<div class="container-fluid p-0 m-0">' . PHP_EOL .
+                echo '<div class="container-fluid">' . PHP_EOL .
                     $contents . PHP_EOL .
                     '</div>' . PHP_EOL;
             }
