@@ -273,8 +273,8 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
 //      oauth authentication request: redirect back to oauth with the appropriate values
 function validationComplete() {
     // if not oauth session variable to go portal
+    $portal_conf = get_conf('portal');
     if (!isSessionVar('oauth')) {
-        $portal_conf = get_conf('portal');
          header('location:' . $portal_conf['portalsite'] . '/portal.php');
     exit();
     }
