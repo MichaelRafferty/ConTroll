@@ -62,7 +62,7 @@ $why = "continue to the Portal.";
             " has requested that you validate yourself.  Please log into the Portal to perform that validation.</strong>";
         $why = "perform the authentication for " . $request['app'];
         if (isSessionVar('id')) {
-            validationComplete();
+            chooseAccountFromEmail(getSessionVar('email'), null, null, null, 'logged-in');
         }
     }
 
@@ -187,7 +187,7 @@ $why = "continue to the Portal.";
             if ($oldemail != null) {
                 // this is a refresh, don't choose the account again, just return to the home page of the portal or return the authentication response,
                 // don't disturb any other session variables
-                validationComplete();
+                validationComplete(getSessionVar('id'), getSessionVar('idType'), getSessionVar('email'), getSessionVar('idSource'), getSessionVar('multiple'));
             }
 
             draw_indexPageTop($condata, $purpose);
@@ -218,10 +218,10 @@ if (isSessionVar('id')) {
             } else {
                 $email = strtolower($match['email']);
             }
-            if ($email != $oldEmail) { // treat this as a logout and try it again
+            if ($email != $oldEmail && isSessionVar('oauth') == false) { // treat this as a logout and try it again
                 $oauth = getSessionVar('oauth');
                 clearSession();
-                if ($oauth != null) setSessionVar('oauth', $oauth);
+                setSessionVar('oauth', $oauth);
             } else {
                 if (array_key_exists('id', $match) && $loginId != $match['id']) {
                     // this is a switch account request
@@ -237,23 +237,22 @@ if (isSessionVar('id')) {
                                          $con['regadminemail'] . ' for assistance.'));
                         exit();
                     }
-                    unsetSessionVar('transId');    // just in case it is hanging around, clear this
-                    unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
-                    setSessionVar('id', $match['id']);
-                    setSessionVar('idType', $match['tablename']);
                 }
-                $refresh = true;
-                if (array_key_exists('emailhrs', $portal_conf)) {
-                    $hrs = $portal_conf['emailhrs'];
-                } else {
-                    $hrs = 24;
+                if (isSessionVar('oauth') == false) {
+                    $refresh = true;
+                    if (array_key_exists('emailhrs', $portal_conf)) {
+                        $hrs = $portal_conf['emailhrs'];
+                    }
+                    else {
+                        $hrs = 24;
+                    }
+                    if (array_key_exists('multiple', $match)) {
+                        setSessionVar('multiple', $match['multiple']);
+                    }
+                    if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 24;
+                    setSessionVar('tokenExpiration', time() + ($hrs * 3600));
                 }
-                if (array_key_exists('multiple', $match)) {
-                    setSessionVar('multiple', $match['multiple']);
-                }
-                if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 24;
-                setSessionVar('tokenExpiration', time() + ($hrs * 3600));
-                validationComplete();
+                validationComplete($match['id'], $match['tablename'], $email, getSessionVar('idSource'), getSessionVar('multiple'));
                 exit();
             }
         }

@@ -147,7 +147,9 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
         }
         if (isSessionVar('id')) {
             // we had a prior session
-            if (getSessionVar('id') != $id) {
+            if (isSessionVar('oauth')) {
+                $type = 'validation';
+            } else if (getSessionVar('id') != $id) {
                 // not same id, treat it as a new login
                 unsetSessionVar('transId');    // just in case it is hanging around, clear this
                 unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
@@ -156,11 +158,12 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
                 $type = 'refresh';
             }
         } else {
-            $type = 'new login';
+            if (isSessionVar('oauth')) {
+                $type = 'validation';
+            } else {
+                $type = 'new login';
+            }
         }
-        setSessionVar('id', $id);
-        setSessionVar('idType', $idType);
-        setSessionVar('idSource', $validationType);
         $multiple = null;
         if ($passedMatch != null) {
             if (array_key_exists('multiple', $passedMatch)) {
@@ -170,14 +173,11 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
         if (array_key_exists('multiple', $match)) {
             $multiple = $match['multiple'];
         }
-        if ($multiple != null) {
-            setSessionVar('multiple', $multiple);
-        }
 
         if ($idType == 'p')
             updateIdentityUsage($id, $validationType, $origEmail);
         web_error_log("$type @ " . time() . "$ts for $email/$id via $validationType");
-        validationComplete();
+        validationComplete($id, $idType, $email, $validationType, $multiple);
         exit();
     }
 
@@ -271,12 +271,23 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
 //  possible responses:
 //      direct login: redirect to portal
 //      oauth authentication request: redirect back to oauth with the appropriate values
-function validationComplete() {
+function validationComplete($id, $idType, $email, $validationType, $multiple) {
     // if not oauth session variable to go portal
     $portal_conf = get_conf('portal');
     if (!isSessionVar('oauth')) {
-         header('location:' . $portal_conf['portalsite'] . '/portal.php');
-    exit();
+        if ($id != getSessionVar('id')) {
+            unsetSessionVar('transId');    // just in case it is hanging around, clear this
+            unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
+            setSessionVar('id', $id);
+            setSessionVar('idType', $idType);
+            setSessionVar('idSource', $validationType);
+            setSessionVar('email', $email);
+            if ($multiple != null) {
+                setSessionVar('multiple', $multiple);
+            }
+        }
+        header('location:' . $portal_conf['portalsite'] . '/portal.php');
+        exit();
     }
 
     // oauth session variable found, delete that variable and go to the server to respond back to the app
@@ -284,8 +295,6 @@ function validationComplete() {
     $reg_conf = get_conf('reg');
     $con_conf = get_conf('con');
     $conid = $con_conf['id'];
-    $id = getSessionVar('id');
-    $idType = getSessionVar('idType');
     $nomDate = $portal_conf['nomdate'];
     $oauth = getSessionVar('oauth');
     unsetSessionVar('oauth'); // prevent endless loops
