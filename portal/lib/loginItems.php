@@ -286,7 +286,7 @@ function validationComplete() {
     $conid = $reg_conf['id'];
     $id = getSessionVar('id');
     $idType = getSessionVar('idType');
-    $nomDate = get_conf('nomdate');
+    $nomDate = $con_conf['nomdate'];
     $oauth = getSessionVar('oauth');
     unsetSessionVar('oauth'); // prevent endless loops
 
