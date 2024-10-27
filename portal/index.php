@@ -76,8 +76,10 @@ $why = "continue to the Portal.";
             setSessionVar('sessionEmail', getSessionVar('email'));
             clearSession('oauth2');
         } else {
-            // no update of token, force it to be a logout
+            // no update of token, force it to be a logout, but keep oauth variable if set
+            $oauth = getSessionVar('oauth');
             clearSession();
+            if ($oauth != null) setSessionVar('oauth', $oauth);
         }
 
         if (!isSessionVar('oauth2pass')) {
@@ -217,7 +219,9 @@ if (isSessionVar('id')) {
                 $email = strtolower($match['email']);
             }
             if ($email != $oldEmail) { // treat this as a logout and try it again
+                $oauth = getSessionVar('oauth');
                 clearSession();
+                if ($oauth != null) setSessionVar('oauth', $oauth);
             } else {
                 if (array_key_exists('id', $match) && $loginId != $match['id']) {
                     // this is a switch account request
@@ -367,7 +371,9 @@ EOS;
         if ($account == null) {
             $account = "Error looking up data for $email";
         }
+        $oauth = getSessionVar('oauth');
         clearSession(); // force a logout
+        if ($oauth != null) setSessionVar('oauth', $oauth);
         draw_login($config_vars, $account, 'bg-danger text-white', $why);
     }
     exit();
@@ -377,7 +383,9 @@ EOS;
         if ($account == null) {
             $account = "Error looking up data for $email";
         }
+        $oauth = getSessionVar('oauth');
         clearSession(); // force a logout
+        if ($oauth != null) setSessionVar('oauth', $oauth);
         outputCustomText('main/notloggedin');
         draw_login($config_vars, $account, 'bg-danger text-white', $why);
     }
