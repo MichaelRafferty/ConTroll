@@ -287,6 +287,8 @@ function validationComplete() {
     $id = getSessionVar('id');
     $idType = getSessionVar('idType');
     $nomDate = get_conf('nomdate');
+    $oauth = getSessionVar('oauth');
+    unsetSessionVar('oauth'); // prevent endless loops
 
     if ($idType == 'p') {
         $rSQL = <<<EOS
@@ -327,9 +329,6 @@ EOS;
     $rR->free();
 
     // ok we now have the authentication information, build the response array
-
-    $oauth = getSessionVar('oauth');
-    unsetSessionVar('oauth'); // prevent endless loops
     // build response string
     $resp = [];
     $resp['email'] = $regs[0]['email'];

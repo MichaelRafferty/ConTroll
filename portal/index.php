@@ -147,14 +147,17 @@ $why = "continue to the Portal.";
             $oldemail = strtolower(getSessionVar('sessionEmail'));
             if ($oldemail != null && $oldemail != $email) {
                 // this is a change in email address, treat this as a new login.
-                // first save off the oauth session variables
+                // first save off the oauth2 session variables
                 $oauth2 = getSessionVar('oauth2');
                 $oauth2pass = getSessionVar('oauth2pass');
                 $oauth2state = getSessionVar('oauth2state');
                 // now clear the session to log the old session out
+                // save the old oauth authentication requestparameter to restore it here
+                $oauth = getSessionVar('oauth');
                 clearSession();
                 $oldemail = null;
                 // now restore those
+                if ($oauth != null) setSessionVar('oauth', $oauth);
                 if ($oauth2 != null) setSessionVar('oauth2', $oauth2);
                 if ($oauth2pass != null) setSessionVar('oauth2pass', $oauth2pass);
                 if ($oauth2state != null) setSessionVar('oauth2state', $oauth2state);
@@ -182,7 +185,7 @@ $why = "continue to the Portal.";
             if ($oldemail != null) {
                 // this is a refresh, don't choose the account again, just return to the home page of the portal or return the authentication response,
                 // don't disturb any other session variables
-
+                validationComplete();
             }
 
             draw_indexPageTop($condata, $purpose);
