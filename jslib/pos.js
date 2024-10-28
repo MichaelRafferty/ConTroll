@@ -398,7 +398,6 @@ class Pos {
                 continue;
 
             mem_index = item;
-            break;
         }
         return mem_index;
     }
@@ -429,8 +428,13 @@ class Pos {
             hover_text += data.country + '<br/>';
         }
         hover_text += 'Badge Name: ' + this.badgeNameDefault(data.badge_name, data.first_name, data.last_name) + '<br/>' +
-            'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>' +
-            'Active:' + data.active;
+            'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>';
+        if (data.managedBy) {
+            hover_text += 'Managed by: (' + data.managedBy + ') ' + data.mgrFullName + '</br>';
+        } else if (data.cntManages > 0) {
+            hover_text += 'Manages: ' + data.cntManages + '<br/>';
+        }
+        hover_text += 'Active:' + data.active;
 
         // append the policies to the active flag line
         var policies = data.policies;
@@ -554,14 +558,16 @@ class Pos {
             index = -index;
             this.everyMembership(this.#result_perinfo, function(_this, mem) {
                 var prow = mem.pindex;
-                if (_this.#result_perinfo[prow].banned == 'Y') {
-                    alert("Please ask " + (_this.#result_perinfo[prow].first_name + ' ' + _this.#result_perinfo[prow].last_name).trim() +
-                        " to talk to the Registration Administrator, you cannot add them at this time.")
-                    return 0;
-                }
-                perid = _this.#result_perinfo[prow].perid;
-                if (cart.notinCart(perid)) {
-                    cart.add(_this.#result_perinfo[prow]);
+                if (index == _this.#result_perinfo[prow].perid || index == _this.#result_perinfo[prow].managedBy || index ==  mem.tid || index == mem.tid2) {
+                    if (_this.#result_perinfo[prow].banned == 'Y') {
+                        alert("Please ask " + (_this.#result_perinfo[prow].first_name + ' ' + _this.#result_perinfo[prow].last_name).trim() +
+                            " to talk to the Registration Administrator, you cannot add them at this time.")
+                        return 0;
+                    }
+                    perid = _this.#result_perinfo[prow].perid;
+                    if (cart.notinCart(perid)) {
+                        cart.add(_this.#result_perinfo[prow]);
+                    }
                 }
             });
         }
@@ -896,12 +902,12 @@ class Pos {
                 data: this.#add_perinfo,
                 layout: "fitColumns",
                 initialSort: [
-                    {column: "fullname", dir: "asc"},
+                    {column: "fullName", dir: "asc"},
                     {column: "badge_name", dir: "asc"},
                 ],
                 columns: [
                     {field: "perid", visible: false,},
-                    {title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: posbulldRecordHover,},
+                    {title: "Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: posbulldRecordHover,},
                     {field: "last_name", visible: false,},
                     {field: "first_name", visible: false,},
                     {field: "middle_name", visible: false,},
@@ -1178,23 +1184,31 @@ class Pos {
     addCartIcon(cell, formatterParams, onRendered) { //plain text value
         var tid;
         var html = '';
-        var banned = cell.getRow().getData().banned;
-        if (banned == undefined) {
-            tid = Number(cell.getRow().getData().tid);
+        var data = cell.getRow().getData();
+        if (data.banned == undefined) {
+            tid = Number(data.tid);
             html = '<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" ' +
                 'onclick="pos.addUnpaid(' + tid + ')">Pay</button > ';
             return html;
         }
-        if (banned == 'Y') {
+        if (data.banned == 'Y') {
             return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="pos.addToCart(' +
-                cell.getRow().getData().index + ', \'' + formatterParams.t + '\')">B</button>';
-        } else if (cart.notinCart(cell.getRow().getData().perid)) {
+                data.index + ', \'' + formatterParams.t + '\')">B</button>';
+        } else if (cart.notinCart(data.perid)) {
             html = '<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" onclick="pos.addToCart(' +
-                cell.getRow().getData().index + ', \'' + formatterParams.t + '\')">Add</button>';
-            tid = cell.getRow().getData().tid;
-            if (tid != '' && tid != undefined && tid != null) {
-                html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" ' +
-                    'onclick="pos.addToCart(' + (-tid) + ', \'' + formatterParams.t + '\')">Tran</button>';
+                data.index + ', \'' + formatterParams.t + '\')">Add</button>';
+            if (config['useportal'] == 1) {
+                var mgr = data.cntManages;
+                if (mgr > 0) {
+                    html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" ' +
+                        'onclick="pos.addToCart(' + (-data.perid) + ', \'' + formatterParams.t + '\')">Mgr</button>';
+                }
+            } else {
+                tid = data.tid;
+                if (tid != '' && tid != undefined && tid != null) {
+                    html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" ' +
+                        'onclick="pos.addToCart(' + (-tid) + ', \'' + formatterParams.t + '\')">Tran</button>';
+                }
             }
             return html;
         }
@@ -1223,22 +1237,22 @@ class Pos {
 // display the note popup with the requested notes
     showPerinfoNotes(index, where) {
         var note = null;
-        var fullname = null;
+        var fullName = null;
         this.#notesType = null;
 
         if (where == 'cart') {
             note = cart.getPerinfoNote(index);
-            fullname = cart.getFullName(index);
+            fullName = cart.getFullName(index);
             this.#notesType = 'PC';
         }
         if (where == 'result') {
             note = this.#result_perinfo[index].open_notes;
-            fullname = this.#result_perinfo[index].fullname;
+            fullName = this.#result_perinfo[index].fullName;
             this.#notesType = 'PR';
         }
         if (where == 'add') {
             note = this.#add_perinfo[index].open_notes
-            fullname = this.#add_perinfo[index].fullname;
+            fullName = this.#add_perinfo[index].fullName;
             this.#notesType = 'add';
         }
 
@@ -1248,7 +1262,7 @@ class Pos {
         this.#notesIndex = index;
 
         this.#notes.show();
-        document.getElementById('NotesTitle').innerHTML = "Notes for " + fullname;
+        document.getElementById('NotesTitle').innerHTML = "Notes for " + fullName;
         document.getElementById('NotesBody').innerHTML = note.replace(/\n/g, '<br/>');
         var notes_btn = document.getElementById('close_note_button');
         notes_btn.innerHTML = "Close";
@@ -1259,7 +1273,7 @@ class Pos {
 // only managers can edit the notes
     editPerinfoNotes(index, where) {
         var note = null;
-        var fullname = null;
+        var fullName = null;
 
         if (!this.#Manager)
             return;
@@ -1267,17 +1281,17 @@ class Pos {
         this.#notesType = null;
         if (where == 'cart') {
             note = cart.getPerinfoNote(index);
-            fullname = cart.getFullName(index);
+            fullName = cart.getFullName(index);
             this.#notesType = 'PC';
         }
         if (where == 'result') {
             note = this.#result_perinfo[index].open_notes;
-            fullname = this.#result_perinfo[index].fullname;
+            fullName = this.#result_perinfo[index].fullName;
             this.#notesType = 'PR';
         }
         if (where == 'add') {
             note = this.#add_perinfo[index].open_notes
-            fullname = this.#add_perinfo[index].fullname;
+            fullName = this.#add_perinfo[index].fullName;
             this.#notesType = 'add';
         }
         if (this.#notesType == null)
@@ -1290,7 +1304,7 @@ class Pos {
         }
 
         this.#notes.show();
-        document.getElementById('NotesTitle').innerHTML = "Editing Notes for " + fullname;
+        document.getElementById('NotesTitle').innerHTML = "Editing Notes for " + fullName;
         document.getElementById('NotesBody').innerHTML =
             '<textarea name="perinfoNote" class="form-control" id="perinfoNote" cols=60 wrap="soft" style="height:400px;">' +
             this.#notesPriorValue +
@@ -1304,7 +1318,7 @@ class Pos {
     showRegNote(perid, index, count) {
         var bodyHTML = '<div class="row mb-2">\n<div class="col-sm-12">\n';
         var note = cart.getRegNote(perid, index);
-        var fullname = cart.getRegFullName(perid);``
+        var fullName = cart.getRegFullName(perid);``
         var label = cart.getRegLabel(perid, index);
         var newregnote = cart.getNewRegNote(perid, index);
 
@@ -1319,7 +1333,7 @@ class Pos {
             "</div>\n</div\n";
 
         this.#notes.show();
-        document.getElementById('NotesTitle').innerHTML = "Registration Notes for " + fullname + '<br/>Membership: ' + label;
+        document.getElementById('NotesTitle').innerHTML = "Registration Notes for " + fullName + '<br/>Membership: ' + label;
         document.getElementById('NotesBody').innerHTML = bodyHTML;
         if (newregnote !== undefined) {
             document.getElementById('new_reg_note').value = newregnote;
@@ -1592,7 +1606,7 @@ addUnpaid(tid) {
                 data: this.#result_perinfo,
                 layout: "fitColumns",
                 initialSort: [
-                    {column: "fullname", dir: "asc"},
+                    {column: "fullName", dir: "asc"},
                 ],
                 columns: [
                     {title: "Cart", width: 100, headerFilter: false, headerSort: false, formatter: _this.addCartIcon, formatterParams: {t: "result"},},

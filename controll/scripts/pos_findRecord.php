@@ -22,6 +22,8 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 $con = get_conf('con');
+$controll = get_conf('controll');
+$usePortal = $controll['useportal'];
 $conid = $con['id'];
 $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
@@ -52,8 +54,19 @@ SELECT DISTINCT p.id AS perid, TRIM(IFNULL(p.first_name, '')) AS first_name, TRI
     TRIM(IFNULL(p.phone, '')) as phone, p.active, p.banned,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
         IFNULL(p.suffix, '')), '  *', ' ')) AS fullName,
-    p.open_notes
+    p.open_notes, p.managedBy, cnt.cntManages,
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(mgr.first_name, ''),' ', IFNULL(mgr.middle_name, ''), ' ', IFNULL(mgr.last_name, ''), ' ',  
+        IFNULL(mgr.suffix, '')), '  *', ' ')) AS mgrFullName
 EOS;
+$withClauseMgr = <<<EOS
+, manages AS (
+SELECT p.id, COUNT(m.id) AS cntManages
+FROM perinfo p
+LEFT OUTER JOIN perinfo m ON m.managedBy = p.id
+GROUP BY p.id
+)
+EOS;
+
 $fieldListM = <<<EOS
 , notes AS (
 SELECT h.regid, GROUP_CONCAT(CONCAT(h.userid, '@', h.logdate, ': ', h.notes) SEPARATOR '\n') AS reg_notes, COUNT(*) AS reg_notes_count
@@ -75,7 +88,8 @@ WHERE h.action = 'attach'
 GROUP BY h.regid
 )
 SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r1.paid AS priorPaid, r1.couponDiscount, r1.coupon,
-    r1.create_date, IFNULL(r1.create_trans, -1) as tid, r1.memId, r1.planId, r1.status, IFNULL(pc.printcount, 0) AS printcount,
+    r1.create_date, IFNULL(r1.create_trans, -1) as tid,IFNULL(r1.complete_trans, -1) as tid2,r1.memId, r1.planId, r1.status, IFNULL(pc.printcount, 0) AS 
+    printcount,
     IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, rs.tid as rstid,
     CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label
 EOS;
@@ -140,9 +154,12 @@ FROM perids
 EOS;
     $searchSQLP = <<<EOS
 $withClauseUnpaid
+$withClauseMgr
 $fieldListP
 FROM perids p1
 JOIN perinfo p ON (p.id = p1.perid)
+JOIN manages cnt ON (cnt.id = p.id)
+LEFT OUTER JOIN perinfo mgr ON (mgr.id = p.managedBy)
 ORDER BY last_name, first_name;
 EOS;
 
@@ -198,15 +215,32 @@ EOS;
     //
     // this is perid, or transid
     // first can we tell if it's a perid or a tid?
-    $overlapQ = <<<EOS
+    // if [controll].useportal is 1, then its a perid
+    // if [controll].useprotal is 0, then it could be a perid or a tid
+    if ($usePortal == 1) {
+        $overlapQ = <<<EOS
+SELECT 'p' AS which, id
+FROM perinfo p
+WHERE p.id = ?
+UNION SELECT 'p' AS which, id
+FROM perinfo t 
+WHERE t.managedBy = ?;
+EOS;
+        $typestr = 'ii';
+        $values = array($name_search, $name_search);
+    } else {
+        $overlapQ = <<<EOS
 SELECT 'p' AS which, id
 FROM perinfo p
 WHERE p.id = ?
 UNION SELECT 't' AS which, id
 FROM transaction t 
-WHERE t.id = ? AND t.conid in (?, ?);
+WHERE t.id = ? AND t.conid IN (?, ?);
 EOS;
-    $overlapR = dbSafeQuery($overlapQ, 'iiii', array($name_search, $name_search, $conid, $conid + 1));
+        $typestr = 'iiii';
+        $values = array($name_search, $name_search, $conid, $conid + 1);
+    }
+    $overlapR = dbSafeQuery($overlapQ, $typestr, $values);
     if ($overlapR === false) {
         ajaxsuccess(array('error' => 'SQL Error in overlap query'));
         return;
@@ -253,10 +287,13 @@ EOS;
         // now the with clause has the regid's and the transactions we want
         $searchSQLP = <<<EOS
 $withClause
+$withClauseMgr
 $fieldListP
 FROM regids r
 JOIN reg r1 ON (r1.id = r.regid)
 JOIN perinfo p ON (p.id = r1.perid)
+JOIN manages cnt ON (cnt.id = p.id)
+LEFT OUTER JOIN perinfo mgr ON (mgr.id = p.managedBy)
 ORDER BY last_name, first_name;
 EOS;
         //web_error_log($searchSQLP);
@@ -308,9 +345,12 @@ EOS;
         // pull all the matching regs for this perid for this period, plus anyone managed by this perid, UNION by this perid's manager
         $searchSQLP = <<<EOS
 $managerWith
+$withClauseMgr
 $fieldListP
 FROM pids p1
 JOIN perinfo p ON p.id = p1.id
+JOIN manages cnt ON (cnt.id = p.id)
+LEFT OUTER JOIN perinfo mgr ON (mgr.id = p.managedBy)
 ORDER BY last_name, first_name;
 EOS;
         // noe the registration entries for these perids
@@ -392,17 +432,21 @@ FROM p1
 UNION SELECT DISTINCT manager AS id
 FROM manager
 ), pids AS (
-    SELECT DISTINCT id
+    SELECT DISTINCT p.id
     FROM pc
+    JOIN perinfo p ON (p.id = pc.id OR p.managedBy = pc.id)
     LIMIT $limit
 )
 EOS;
     //web_error_log("match string: $name_search");
     $searchSQLP = <<<EOS
 $nameMatchWith
+$withClauseMgr
 $fieldListP
 FROM pids p1
 JOIN perinfo p ON p1.id = p.id
+JOIN manages cnt ON (cnt.id = p.id)
+LEFT OUTER JOIN perinfo mgr ON (mgr.id = p.managedBy)
 ORDER BY last_name, first_name LIMIT $limit;
 EOS;
     $searchSQLM = <<<EOS
@@ -527,8 +571,6 @@ if ($lastPID >= 0) {
 }
 $response['perinfo'] = $perinfo;
 $response['perids'] = $perids;
-//$response['membership'] = $membership;
-//$response['policies'] = $policies;
 $rl->free();
 
 ajaxSuccess($response);
