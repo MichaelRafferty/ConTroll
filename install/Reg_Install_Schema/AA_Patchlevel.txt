@@ -1,2 +1,2 @@
-Current=33
-Text=This schema is current as of Patch 33 (p33_paymentplans.sql)
+Current=34
+Text=This schema is current as of Patch 34 (p34_couponTransactions.sql)

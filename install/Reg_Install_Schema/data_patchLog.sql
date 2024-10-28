@@ -39,6 +39,7 @@ INSERT INTO `patchLog` VALUES
 (28,'artist name','2024-05-31 12:59:33'),
 (30,'Portal Changes','2024-08-03 01:05:13'),
 (32,'regHistory','2024-08-12 15:49:17'),
-(33,'paymentplans','2024-09-27 15:24:42');
+(33,'paymentplans','2024-09-27 15:24:42'),
+(34, 'couponTransactions','2024-10-28 18:30:12');
 ALTER TABLE `patchLog` ENABLE KEYS ;
 UNLOCK TABLES;
