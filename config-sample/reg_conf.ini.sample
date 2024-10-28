@@ -258,6 +258,8 @@ showConPolicy=1
 ; showVolunteerPolicy - shows the "#Conname# is entirely run by volunteers" line in the policy block,
 ;      set to 0 if volunteers is in your interest section, 1 otherwise
 showVolunteerPolicy=1
+; nomdate = cutoff for WSFS nominations memberships, older than this can nominate
+; nomdate="YYYY/MM/DD"
 [api]
 path = "" ; full path to the api directory
 oauthEncryptionKey= "" ; set your oauth2Server encryption key
@@ -270,3 +272,5 @@ secret=
 clubname='Club Name'
 ; badgelistfilter - where to put the filter elements on the badgelist page ("top", "bottom")
 badgelistfilter="top"
+; useportal - does this installation use the portal, 1 = yes, 0 = no
+useportal=1
