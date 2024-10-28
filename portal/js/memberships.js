@@ -185,6 +185,8 @@ class Membership {
             return;
         }
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             email: newEmail,
             action: 'exist',
         }
@@ -270,6 +272,8 @@ class Membership {
         document.getElementById('sendManageRequestBTN').disabled = true;
         var script = 'scripts/requestAssociate.php';
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             acctId: acctId,
             email: email,
             action: 'request',
@@ -307,6 +311,8 @@ class Membership {
         }
 
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             getId: id,
             getType: type,
             newFlag: newFlag ? 1 : 0,
@@ -1148,6 +1154,8 @@ class Membership {
         var script = 'scripts/updateFromCart.php';
         var data = {
             action: 'updateCart',
+            loginId: config['id'],
+            loginType: config['idType'],
             cart: JSON.stringify(this.#memberships),
             person: JSON.stringify(this.#personInfo),
             newEmail: this.#newEmail,

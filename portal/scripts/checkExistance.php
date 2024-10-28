@@ -18,6 +18,8 @@ if (!(isSessionVar('id') && isSessionVar('idType'))) {
     exit();
 }
 
+validateLoginId();
+
 // check for being resolved/baned
 $resolveUpdates = isResolvedBanned();
 $response['resolveUpdates'] = $resolveUpdates;

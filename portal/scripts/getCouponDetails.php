@@ -33,6 +33,7 @@ if (!array_key_exists('code', $_POST)) {
 }
 
 // DO NOT CHECK FOR isResolveBanned - this is a variant of a call from a global library, let another JS handle it.
+validateLoginId();
 
 $loginId = getSessionVar('id');
 $loginType = getSessionVar('idType');
