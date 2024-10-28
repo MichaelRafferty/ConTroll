@@ -1686,6 +1686,8 @@ addUnpaid(tid) {
         if (!this.confirmDiscardAddEdit(false))
             return;
         cart.hideNoChanges();
+        cart.freeze();
+        cart.drawCart();
 
         // set tab to review-tab
         bootstrap.Tab.getOrCreateInstance(this.#review_tab).show();
