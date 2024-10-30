@@ -21,7 +21,7 @@ $condata = get_con();
 
 $cdn = getTabulatorIncludes();
 page_init($page,
-    /* css */ array('css/base.css', $cdn['tabcss'], $cdn['tabbs5'], 'css/registration.css'
+    /* css */ array('css/base.css', $cdn['tabcss'], $cdn['tabbs5']
     ),
     /* js  */ array(//$cdn['luxon'],
         $cdn['tabjs'],

@@ -86,6 +86,19 @@ EOS;
                         ?> </pre>
                 </div>
             </div>
+<?php
+    if (array_key_exists('msg', $_REQUEST)) {
+        $msg = $_REQUEST['msg'];
+?>
+        <div class="row">
+            <div class="col-sm-12 mt-4">
+                <strong style="background-color:red;">
+                    <?php echo $msg; ?>
+                </strong>
+
+<?PHP
+    }
+?>
         </div>
     </div>
     <?php

@@ -1,230 +1,151 @@
-$(document).ready(function() {
-  showBlock('#badgeList');
-  getList();
-  $('#newPersonForm').bind("reset", function (e) {
-    $('#newID').val('');
-    $('#oldID').val('');
-    $('#updatePerson').attr('disabled', 'disabled');
-    $('#checkConflict').removeAttr('disabled');
-    $('#oname').empty();
-    $('#oemail').empty();
-    $('#oaddr').empty();
-    $('#ophone').empty();
-    $('#obadge').empty();
-    $('#newPersonForm :required').map(function (e) { $(this).removeClass('need');});
-    return true;
-  });
-});
+// badge Javascript - Free Badges (comps)
+addPerson = null;
+findPerson = null;
+matchList = null;
 
-function findPerson(form) {
-    var getData = $(form).serialize();
-    $.ajax({
-        url: 'scripts/findPerson.php',
-        method: "GET",
-        data: getData,
-        success: function (data, textStatus, jqXhr) {
-            if(data['error'] != undefined) { console.log(data['error']); }
-            displaySearchResults(data, addPerson)
-        }
-    });
+// edit
+editPerson = null;
+editTitle = null;
+editPersonName = null;
+updateExisting = null;
+
+// watchlist
+watchList = null;
+watchMembers = [];
+watchTable = null;
+
+// initialization at DOM complete
+window.onload = function initpage() {
+    // set up the pre-defined fields
+    var id = document.getElementById('edit-person');
+    if (id) {
+        editPerson = new bootstrap.Modal(id);
+        editTitle = document.getElementById('editTitle');
+        editPersonName = document.getElementById('editPersonName');
+        updateExisting = document.getElementById('updateExisting');
+    }
+    watchList = document.getElementById('watch-list');
+    getWatchList();
+
 }
 
-function searchConflictPerson(data, textStatus, jsXHR) {
-    var getData = 'id=' + data['id'];
-    var formurl = "scripts/getNewPerson.php";
-   $.ajax({
-     method: "GET",
-     data: getData,
-     url: formurl,
-     success:  function (data, textStatus, jqXhr) {
-            if(data['error'] != undefined) { console.log(data['error']); }
-            $('#newID').val(data['new']['id']);
-            displaySearchResults(data, loadOldPerson)
-
-            var resDiv = $("#searchResultHolder");
-
-            var newPersonButton = $(document.createElement("button"));
-            newPersonButton.append("New Person");
-            newPersonButton.attr("type", "button");
-            resDiv.append(newPersonButton);
-        
-            newPersonButton.click(function () {
-                var formData = "newID=" + data['new']['id'];
-                var script = "scripts/addPersonFromConflict.php";
-                if(confirm("Please only use this if the person you are looking for isn't in the list above this.  If only minor changes are needed then click on their name in the list above this and you will be able to update their record.  Click 'Cancel' if the name is in the list above the \"New Person\" button.  otherwise click 'OK'")) {
-                  $.ajax({
-                    data: formData,
-                    method: "POST",
-                    url: script,
-                    success: updatePersonCatch,
-                    error: function (jqXHR, textStatus, errorThrown) {
-                        showError("ERROR in " + script + ": " + textStatus, jqXHR);
-                        return false;
-                    }
-                  });
-                  return false;
-                } else { return false; } 
-            });
+// load/reload the watch list
+function getWatchList() {
+    // load the initial data and the proceed to set up the rest of the system
+    var postData = {
+        ajax_request_action: 'loadWatchList',
+    };
+    $.ajax({
+        method: "POST",
+        url: "scripts/badge_getWatchList.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
+                return;
+            }
+            if (data.message !== undefined) {
+                show_message(data.message, 'success');
+            }
+            loadWatchList(data);
         },
-     error: function (jqXHR, textStatus, errorThrown) {
-      showError("ERROR in " + formurl + ": " + textStatus, jqXHR);
-      return false;
-     }
-   });
-}
-
-function loadOldPerson(obj) {
-  var oldAddr = obj['address'] + "<br/>";
-  if(obj['addr_2'] != '') { oldAddr+= obj['addr_2'] + "<br/>"; }
-  oldAddr += obj['locale'];
-  $('#oname').empty().append(obj['full_name']);
-  $('#ophone').empty().append(obj['phone']);
-  $('#oemail').empty().append(obj['email_addr']);
-  $('#oaddr').empty().append(oldAddr);
-  $('#obadge').empty().append(obj['badge_name']);
-  $('#oldID').val(obj['id']);
-
-  $('#checkConflict').attr('disabled', 'disabled');
-  $('#updatePerson').removeAttr('disabled');
-}
-
-
-function addPerson(userid) {
-  var formUrl = 'scripts/listBadge.php';
-  var formData = 'perid='+userid.id;
-
-  $.ajax({
-    url: formUrl,
-    data: formData,
-    method: "GET",
-    success: function (data, textStatus, jqXHR) {
-        //$('#test').empty().append(JSON.stringify(data, null, 2));
-      getList();
-    }
-  });
-}
-
-
-function getList() {
-  var formUrl = 'scripts/getBadgeList.php';
-  $.ajax({
-    url: formUrl,
-    method: "GET",
-    success: function (data, textStatus, jqXHR) {
-        //$('#test').empty().append(JSON.stringify(data, null, 2));
-      showBadgeList(data['badges']);
-    }
-  });
-}
-
-function showBadgeList(data) {
-  $('#badges').empty();
-  var badgeList = d3.select("#badges").selectAll("tr").data(data)
-    .enter().insert("tr", ":first-child").html(function(d) { return showPerson(d); });
-}
-
-function showPerson(data) {
-  var formid = "badge"+data['id'];
-  var ret = "<form id='"+formid+"' action='javascript:void(0)' perid='"
-            + data['perid'] + "'>";
-    var cont = false;
-
-    ret += "<input form='" + formid + "' type='hidden' name='regid' value='" + data['regid'] + "'/>";
-    ret += "<input form='" + formid + "' type='hidden' name='id' value='" + data['id'] + "'/>";
-
-    ret += "<td class='small'>";
-    ret += data['name'] + "<br/>";
-    //badgeType
-    if(data['regid']!=null && data['regid']!='') {
-      cont=true;
-      ret += data['label'] + " ("+data['regid']+")";
-    } else {
-      ret+= badgeSelect(formid);
-    }
-    ret += "</td>";
-
-    ret += "<td class='small'>";
-    if (data['badge_name']=='') { ret += "&lt;default&gt;<br/>"; }
-    else { ret += data['badge_name'] + "<br/>"; }
-
-    ret += "</td>";
-    ret += "<td class='small'>";
-    if (cont) { 
-        ret += "&nbsp;";
-    } else {
-        ret += "<input form='" + formid + "' type='submit' value='update badge' onClick='updateReg(\"#" + formid + "\"); return false;'/>";  
-    }
-    ret += '</td>';
-
-    ret += "<td class='small'>";
-    ret+= "<input form='"+formid+"' type='submit' value='Edit Person' onClick='editPerson(\""+data['perid']+"\",\""+formid+"\"); return false;'/>";
-    ret += '</td>';
-    ret += "</form>";
-
-    return ret;
-}
-
-function editPerson(perid,formid) {
-    $.ajax({
-        url: 'scripts/editPerson.php',
-        method: 'GET',
-        data: "id="+perid,
-        success: function (data, textStatus, jqXhr) {
-            if(data['error'] != undefined) { console.log(data['error']); }
-            showEditPerson(data,formid);
-        }
+        error: showAjaxError,
     });
 }
 
-function showEditPerson(perinfo,formid) {
-    $('#edit_fname').val(perinfo['first_name']);
-    $('#edit_lname').val(perinfo['last_name']);
-    $('#edit_mname').val(perinfo['middle_name']);
-    $('#edit_suffix').val(perinfo['suffix']);
-    $('#edit_badge').val(perinfo['badge_name'])
-    $('#edit_addr').val(perinfo['address']);
-    $('#edit_addr2').val(perinfo['addr_2']);
-    $('#edit_city').val(perinfo['city']);
-    $('#edit_state').val(perinfo['state']);
-    $('#edit_zip').val(perinfo['zip']);
-    $('#edit_country').val(perinfo['country']);
-    $('#edit_email').val(perinfo['email_addr']);
-    $('#edit_phone').val(perinfo['phone']);
-    $('#edit_id').val(perinfo['id']);
-    $('#editPersonFormIdNum').empty().append(perinfo['id']);
-    track("#editForm")
-    $('#editDialog').dialog('open');
-}
-
-function updateReg(form) {
-
-  var formData = $(form).serialize();
-  var formUrl = "scripts/freeBadge.php"
-
-  $.ajax({
-    url: formUrl,
-    data: formData,
-    method: "POST",
-    success: function (data, textStatus, jqXHR) {
-      getList();
-      return false;
-    },
-    error: function (jqXHR, textStatus, errorThrown) {
-      showError(JSON.stringify(jqXHR, null, 2));
-      return false;
+// load the watch list
+function loadWatchList(data) {
+    watchMembers = data['watchMembers'];
+    if (watchTable == null) {
+        watchTable = new Tabulator('#watch-list', {
+            maxHeight: "600px",
+            data: watchMembers,
+            layout: "fitColumns",
+            pagination: true,
+            paginationAddRow: "table",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            initialSort: [
+                {column: "last_name", dir: "asc"},
+                {column: "first_name", dir: "asc"},
+            ],
+            columns: [
+                {title: "Actions", headerFilter: false, headerSort: false, formatter: addWatchIcon },
+                {title: "Perid", field: "perid", headerFilter: true, width: 120, maxWidth: 120, },
+                {title: "Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: watchBuildRecordHover,},
+                {field: "last_name", visible: false,},
+                {field: "first_name", visible: false,},
+                {field: "middle_name", visible: false,},
+                {field: "suffix", visible: false,},
+                {field: "legalName", visible: false,},
+                {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120},
+                {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Memberships", field: "memberships", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 300, width: 300,},
+                {field: "index", visible: false,},
+            ],
+        });
     }
-  });
-
 }
 
-function updatePersonCatch (data, textStatus, jqXHR) {
-    $('#newPersonForm').trigger('reset');
-    alert('Person Created or Updated. If you do not see the person in your list below please search for them.');
-    $('#newPerson').hide();
-    addPerson(data);
-    //showError('trace:', data);
+// hover format
+// show the full perinfo record as a hover in the table
+function watchBuildRecordHover(e, cell, onRendered) {
+    var data = cell.getData();
+    //console.log(data);
+    var hover_text = 'Person id: ' + data.perid + '<br/>' +
+        'Full Name: ' + data.fullName + '<br/>' +
+        'Pronouns: ' + data.pronouns + '<br/>' +
+        'Legal Name: ' + data.legalName + '<br/>' +
+        data.address_1 + '<br/>';
+    if (data.address_2 != '') {
+        hover_text += data.address_2 + '<br/>';
+    }
+    hover_text += data.city + ', ' + data.state + ' ' + data.postal_code + '<br/>';
+    if (data.country != '' && data.country != 'USA') {
+        hover_text += data.country + '<br/>';
+    }
+    hover_text += 'Badge Name: ' + this.badgeNameDefault(data.badge_name, data.first_name, data.last_name) + '<br/>' +
+        'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>';
+    if (data.managedBy) {
+        hover_text += 'Managed by: (' + data.managedBy + ') ' + data.mgrFullName + '</br>';
+    } else if (data.cntManages > 0) {
+        hover_text += 'Manages: ' + data.cntManages + '<br/>';
+    }
+    hover_text += 'Active:' + data.active;
+
+    // append the policies to the active flag line
+    var policies = data.policies;
+    for (var row in policies) {
+        var policyName = policies[row].policy;
+        var policyResp = policies[row].response;
+        hover_text += ', ' + policyName + ': ' + policyResp;
+    }
+
+    hover_text += '<br/>' +
+        'Membership: ' + data.reg_label + '<br/>';
+
+    return hover_text;
 }
 
-function getEdited(data, textStatus, jqXHR) {
-   getList();
+// tabulator formatter for the actions column, displays the update badge, remove, and edit person buttons
+// filters for ones already in the cart, and statuses that should not be allowed to be added to the cart
+function addWatchIcon(cell, formatterParams, onRendered) { //plain text value
+    var html = '';
+    var data = cell.getRow().getData();
+
+    if (data.banned == 'Y') {
+        return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="removeFromList(' +
+            data.perid + '\')">Remove</button>';
+    } else {
+        html += '<button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="removeFromList(' +
+            data.perid + '\')">Remove</button>&nbsp;' +
+            '<button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="editPerson(' +
+            data.perid + '\')">Edit Person</button>';
+    }
+    if (data.memberships == '') {
+        '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="updateBadge(' +
+        data.perid + '\')">Update Badge</button>';
+    }
+    return html;
 }

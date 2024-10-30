@@ -412,7 +412,7 @@ class Pos {
     }
 
     // show the full perinfo record as a hover in the table
-    bulldRecordHover(e, cell, onRendered) {
+    buildRecordHover(e, cell, onRendered) {
         var data = cell.getData();
         //console.log(data);
         var hover_text = 'Person id: ' + data.perid + '<br/>' +
@@ -907,7 +907,7 @@ class Pos {
                 ],
                 columns: [
                     {field: "perid", visible: false,},
-                    {title: "Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: posbulldRecordHover,},
+                    {title: "Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: posbuildRecordHover,},
                     {field: "last_name", visible: false,},
                     {field: "first_name", visible: false,},
                     {field: "middle_name", visible: false,},
@@ -1612,7 +1612,7 @@ addUnpaid(tid) {
                     {title: "Cart", width: 100, headerFilter: false, headerSort: false, formatter: _this.addCartIcon, formatterParams: {t: "result"},},
                     {title: "Per ID", field: "perid", headerWordWrap: true, width: 80, visible: false, hozAlign: 'right',},
                     {field: "index", visible: false,},
-                    {title: "Full Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: posbulldRecordHover,},
+                    {title: "Full Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: posbuildRecordHover,},
                     {field: "last_name", visible: false,},
                     {field: "first_name", visible: false,},
                     {field: "middle_name", visible: false,},
@@ -2380,8 +2380,8 @@ function posPerNotesIcons(cell, formatterParams, onRendered) {
     return pos.perNotesIcons(cell, formatterParams, onRendered);
 }
 
-function posbulldRecordHover(e, cell, onRendered) {
-    return pos.bulldRecordHover(e, cell, onRendered);
+function posbuildRecordHover(e, cell, onRendered) {
+    return pos.buildRecordHover(e, cell, onRendered);
 }
 
 function checkboxCheck() {
