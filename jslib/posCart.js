@@ -930,7 +930,7 @@ class PosCart {
 `;
             this.#totalPrice += Number(mrow.price);
             this.#totalPaid += Number(mrow.paid);
-            if (mrow.couponDiscount)
+            if (mrow.couponDiscount > 0)
                 this.#totalPaid += Number(mrow.couponDiscount);
             if (this.#isMembershipTypes.includes(memType))
                 membership_found = true;
@@ -1058,6 +1058,19 @@ class PosCart {
                 code: ''
             };
             this.#cartPmt.push(prow);
+        }
+        // loop over the cartPmt row and if its less than the total paid, increment the prior paid by the difference because the new row
+        // added to the cart has a prior payment.
+        var totalPayments = 0;
+        var priorIndex = 0;
+        for (var i = 0; i < this.#cartPmt.length; i++) {
+            totalPayments += this.#cartPmt[i].amt;
+            if (this.#cartPmt[i].type == 'prior')
+                priorIndex = i;
+        }
+        if (this.#totalPaid != totalPayments) {
+            // adjust the prior prow
+            this.#cartPmt[priorIndex].amt += this.#totalPaid - totalPayments;
         }
         if (this.#cartPmt.length > 0) {
             html += `
