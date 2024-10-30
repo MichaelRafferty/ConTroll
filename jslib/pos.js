@@ -307,8 +307,10 @@ class Pos {
         var rtn = 0;
         for (var pmrowindex in perinfo) {
             var memberships = perinfo[pmrowindex].memberships;
-            for (var rowindex in memberships) {
-               rtn += fcn(this, memberships[rowindex]);
+            if (memberships) {
+                for (var rowindex in memberships) {
+                    rtn += fcn(this, memberships[rowindex]);
+                }
             }
         }
         return rtn;
@@ -928,7 +930,7 @@ class Pos {
             $("button[name='find_btn']").attr("disabled", false);
             return;
         }
-        addNewToCart();
+        this.addNewToCart();
     }
 
 // addNewToCart - not in system or operator said they are really new, add them to the cart
