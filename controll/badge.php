@@ -121,12 +121,15 @@ $config_vars['useUSPS'] = $useUSPS;
     </div>
     <div class='row mt-2'>
         <div class="col-sm-auto">
-            <button class="btn btn-primary btn-sm" type="button" onClick="addExisting();">Find Person</button>
+            <button class="btn btn-primary btn-sm" type="button" onClick="findExisting();">Find Person</button>
             <input type="text" id="findName" name="findName" size="80" placeholder="Name/Perid/Email/Address"/>
         </div>
         <div class='col-sm-auto'>
             <button class='btn btn-primary btn-sm' type='button' onClick='addNew();'>Add New Person</button>
         </div>
+    </div>
+    <div class="row mt-4">
+        <div class='col-sm-12' id='select-list'></div>
     </div>
 </div>
 <div class='container-fluid'>

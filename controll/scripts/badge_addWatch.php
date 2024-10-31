@@ -8,7 +8,6 @@ $perm = "badge";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
-
 if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     $response['error'] = "Authentication Failed";
     ajaxSuccess($response);
@@ -27,7 +26,7 @@ $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
     $ajax_request_action = $_POST['ajax_request_action'];
 }
-if ($ajax_request_action != 'loadWatchList') {
+if ($ajax_request_action != 'addWatch') {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
@@ -35,6 +34,41 @@ if ($ajax_request_action != 'loadWatchList') {
 $user_perid = $_SESSION['user_perid'];
 $response['id'] = $_SESSION['user_id'];
 $response['user_perid'] = $user_perid;
+
+$perid = $_POST['perid'];
+// check to see if already on list
+
+$cQ = <<<EOS
+SELECT count(*) as num 
+FROM badgeList
+WHERE user_perid = ? AND conid = ? AND perid = ?;
+EOS;
+$typeStr = 'iii';
+$values = array($user_perid, $conid, $perid);
+$cR = dbSafeQuery($cQ, $typeStr, $values);
+if ($cR === false) {
+    $response['error'] = "Check of $perid to watch failed, see log.";
+    ajaxSuccess($response);
+    exit();
+}
+$numRows = $cR->fetch_row()[0];
+$cR->free();
+
+if ($numRows > 0) {
+    $response['error'] = "$perid is already being watched;";
+    ajaxSuccess($response);
+    exit();
+}
+
+$iQ = <<<EOS
+INSERT INTO badgeList(user_perid, conid, perid) VALUES (?, ?, ?);
+EOS;
+$newid = dbSafeInsert($iQ, $typeStr, $values);
+if ($newid === false) {
+    $response['error'] = "Insert of $perid to watch failed, see log.";
+    ajaxSuccess($response);
+    exit();
+}
 
 $watchQ = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalname, p.pronouns, 
@@ -67,7 +101,7 @@ if ($watchR === false) {
     ajaxSuccess($response);
     exit();
 }
-$response['success'] = $watchR->num_rows . " members being watched";
+$response['success'] = $newid . " added, " . $watchR->num_rows . " members now being watched";
 while($badge = $watchR->fetch_assoc()) {
     $badges[] = $badge;
 }

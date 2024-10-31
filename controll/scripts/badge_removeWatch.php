@@ -8,7 +8,6 @@ $perm = "badge";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
-
 if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     $response['error'] = "Authentication Failed";
     ajaxSuccess($response);
@@ -27,7 +26,7 @@ $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
     $ajax_request_action = $_POST['ajax_request_action'];
 }
-if ($ajax_request_action != 'loadWatchList') {
+if ($ajax_request_action != 'removeWatch') {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
@@ -35,6 +34,28 @@ if ($ajax_request_action != 'loadWatchList') {
 $user_perid = $_SESSION['user_perid'];
 $response['id'] = $_SESSION['user_id'];
 $response['user_perid'] = $user_perid;
+
+$perid = $_POST['perid'];
+// check to see if already on list
+
+$iQ = <<<EOS
+DELETE FROM badgeList
+WHERE user_perid = ? AND conid = ? AND perid = ?;
+EOS;
+    $typeStr = 'iii';
+    $values = array($user_perid, $conid, $perid);
+$numRows = dbSafeCmd($iQ, $typeStr, $values);
+if ($numRows === false) {
+    $response['error'] = "Remove of $perid to watch failed, see log.";
+    ajaxSuccess($response);
+    exit();
+}
+
+if ($numRows == 0) {
+    $response['error'] = "$perid is not being watched.";
+    ajaxSuccess($response);
+    exit();
+}
 
 $watchQ = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalname, p.pronouns, 
@@ -67,7 +88,7 @@ if ($watchR === false) {
     ajaxSuccess($response);
     exit();
 }
-$response['success'] = $watchR->num_rows . " members being watched";
+$response['success'] = $numRows . " deleted, " . $watchR->num_rows . " members now being watched";
 while($badge = $watchR->fetch_assoc()) {
     $badges[] = $badge;
 }
