@@ -4,10 +4,11 @@ findPerson = null;
 matchList = null;
 
 // edit
-editPerson = null;
+editPersonModal = null;
 editTitle = null;
 editPersonName = null;
 updateExisting = null;
+editCurrentPerid = null;
 
 // watchlist
 watchList = null;
@@ -22,7 +23,7 @@ window.onload = function initpage() {
     // set up the pre-defined fields
     var id = document.getElementById('edit-person');
     if (id) {
-        editPerson = new bootstrap.Modal(id);
+        editPersonModal = new bootstrap.Modal(id);
         editTitle = document.getElementById('editTitle');
         editPersonName = document.getElementById('editPersonName');
         updateExisting = document.getElementById('updateExisting');
@@ -83,7 +84,14 @@ function loadWatchList(data) {
                 {field: "first_name", visible: false,},
                 {field: "middle_name", visible: false,},
                 {field: "suffix", visible: false,},
-                {field: "legalName", visible: false,},
+                {field: "legalname", visible: false,},
+                {field: "pronouns", visible: false,},
+                {field: "address", visible: false,},
+                {field: "addr_2", visible: false,},
+                {field: "phone", visible: false,},
+                {field: "country", visible: false,},
+                {field: "city", visible: false,},
+                {field: "state", visible: false,},
                 {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Zip", field: "zip", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
@@ -104,7 +112,7 @@ function watchBuildRecordHover(e, cell, onRendered) {
     var hover_text = 'Person id: ' + data.id + '<br/>' +
         'Full Name: ' + data.fullName + '<br/>' +
         'Pronouns: ' + data.pronouns + '<br/>' +
-        'Legal Name: ' + data.legalName + '<br/>' +
+        'Legal Name: ' + data.legalname + '<br/>' +
         data.address + '<br/>';
     if (data.addr_2 != '') {
         hover_text += data.addr_2 + '<br/>';
@@ -241,7 +249,14 @@ function loadSelectList(data) {
             {field: "first_name", visible: false,},
             {field: "middle_name", visible: false,},
             {field: "suffix", visible: false,},
-            {field: "legalName", visible: false,},
+            {field: "legalname", visible: false,},
+            {field: "pronouns", visible: false,},
+            {field: "address", visible: false,},
+            {field: "addr_2", visible: false,},
+            {field: "phone", visible: false,},
+            {field: "country", visible: false,},
+            {field: "city", visible: false,},
+            {field: "state", visible: false,},
             {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
             {title: "Zip", field: "zip", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120},
             {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
@@ -322,4 +337,69 @@ function removeFromList(perid) {
         },
         error: showAjaxError,
     });
+}
+
+// edit person stuff
+function editPerson(perid) {
+    // ok get the values if this person
+    editCurrentPerid = perid;
+    var data = watchTable.getRow(perid).getData();
+    document.getElementById('f_fname').value = data.first_name;
+    document.getElementById('f_mname').value = data.middle_name;
+    document.getElementById('f_lname').value = data.last_name;
+    document.getElementById('f_suffix').value = data.suffix;
+    document.getElementById('f_legalname').value = data.legalname;
+    document.getElementById('f_pronouns').value = data.pronouns;
+    document.getElementById('f_addr').value = data.address;
+    document.getElementById('f_addr2').value = data.addr_2;
+    document.getElementById('f_country').value = data.country;
+    document.getElementById('f_city').value = data.city;
+    document.getElementById('f_state').value = data.state;
+    document.getElementById('f_zip').value = data.zip;
+    document.getElementById('f_email1').value = data.email_addr;
+    document.getElementById('f_email2').value = data.email_addr;
+    document.getElementById('f_phone').value = data.phone;
+    document.getElementById('f_badgename').value = data.badge_name;
+
+    // need to deal with the policies
+    editPersonModal.show();
+}
+
+function saveEdit() {
+    console.log("saveEditcalled for " + editCurrentPerid);
+
+    var email1 = document.getElementById('f_email1').value;
+    var email2 = document.getElementById('f_email2').value;
+
+    if (email1 != email2) {
+        show_error("Email addresses do not match.", 'warn');
+        return false;
+    }
+
+    if (!validateAddress(email1)) {
+        show_error("Invalid Email address: " + email1, 'warn');
+        return false;
+    }
+
+
+    var postData = {
+        action: 'updatePerinfo',
+        perid: editCurrentPerid,
+        first_name: document.getElementById('f_fname').value,
+        middle_name: document.getElementById('f_mname').value,
+        last_name: document.getElementById('f_lname').value,
+        suffix: document.getElementById('f_suffix').value,
+        legalname: document.getElementById('f_legalname').value,
+        pronouns: document.getElementById('f_pronouns').value,
+        address: document.getElementById('f_addr').value,
+        addr_2: document.getElementById('f_addr2').value,
+        country: document.getElementById('f_country').value,
+        city: document.getElementById('f_city').value,
+        state: document.getElementById('f_state').value,
+        zip: document.getElementById('f_zip').value,
+        email_addr: email1,
+        phone: document.getElementById('f_phone').value,
+        badge_name: document.getElementById('f_badgename').value,
+    };
+    console.log(postData);
 }
