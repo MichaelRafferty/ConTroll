@@ -215,7 +215,7 @@ EOS;
         foreach ($matches as $match) {
             $match['ts'] = time();
             $string = json_encode($match);
-            $string = encryptCipher($string, true););
+            $string = encryptCipher($string, true);
             $name = $match['exhibitorName'];
             if ($match['artistName'] != null && $match['artistName'] != '' && $match['artistName'] != $match['exhibitorName']) {
                 $name .= "(" . $match['artistName'] . ")";
