@@ -235,7 +235,8 @@ class memsetup {
                         deleterow(e, cell.getRow());
                     }
                 },
-                { field: "to_delete", visible: false, }
+                { field: "required", visible: false, },
+                { field: "to_delete", visible: false, },
             ]
         });
 
@@ -304,7 +305,8 @@ class memsetup {
                         deleterow(e, cell.getRow());
                     }
                 },
-                { field: "to_delete", visible: false, }
+                { field: "required", visible: false, },
+                { field: "to_delete", visible: false, },
             ],
         });
 
@@ -497,7 +499,7 @@ class memsetup {
 
     addrowTypes() {
         var _this = this;
-        this.#memtypetable.addRow({memType: 'new-row', active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
+        this.#memtypetable.addRow({memType: 'new-row', active: 'Y', sortorder: 99, uses: 0, notes: '', required: 'N'}, false).then(function (row) {
             row.getTable().scrollToRow(row);
             _this.checkTypeUndoRedo();
         });
@@ -601,7 +603,8 @@ class memsetup {
     addrowCat() {
         var _this = this;
 
-        this.#categorytable.addRow({memCategory: 'new-row', onlyOne: 'Y', standAlone: 'N', variablePrice: 'N', badgeLabel: 'X', active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
+        this.#categorytable.addRow({memCategory: 'new-row', onlyOne: 'Y', standAlone: 'N', variablePrice: 'N', badgeLabel: 'X', active: 'Y', sortorder: 99, uses: 0, notes:'', required: 'N'},
+            false).then(function (row) {
             row.getTable().scrollToRow(row);
             _this.checkCatUndoRedo();
         });
