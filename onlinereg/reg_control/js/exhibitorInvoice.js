@@ -131,12 +131,14 @@ class ExhibitorInvoice {
         document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + regionName + ' Invoice for ' + exhibitorName + '</strong>';
 
         var spaces = this.#includedMemberships + this.#additionalMemberships;
-        html = "<p>This space comes with " +
-            (this.#includedMemberships > 0 ? this.#includedMemberships : "no") +
-            " memberships included and " +
-            (this.#additionalMemberships > 0 ? "the " : "no ") + "right to purchase " +
-            (this.#additionalMemberships > 0 ? "up to " + this.#additionalMemberships : "no") +
-            " additional memberships at a reduced rate of $" + Number(regionList.additionalMemPrice).toFixed(2) + ".</p>";
+        if (spaces > 0) {
+            html = "<p>This space comes with " +
+                (this.#includedMemberships > 0 ? this.#includedMemberships : "no") +
+                " memberships included and " +
+                (this.#additionalMemberships > 0 ? "the " : "no ") + "right to purchase " +
+                (this.#additionalMemberships > 0 ? "up to " + this.#additionalMemberships : "no") +
+                " additional memberships at a reduced rate of $" + Number(regionList.additionalMemPrice).toFixed(2) + ".</p>";
+        }
         if ((this.#includedMemberships == 0) && (this.#additionalMemberships == 0)) {
             html += "<input type='hidden' name='agreeNone' value='on'></input>\n"
         }

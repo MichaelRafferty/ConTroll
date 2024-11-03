@@ -87,12 +87,14 @@ function openInvoice(id) {
     document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + regionName + ' Invoice</strong>';
 
     var spaces = includedMemberships + additionalMemberships;
-    html = "<p>This space comes with " +
-        (includedMemberships > 0 ? includedMemberships : "no") +
-        " memberships included and " +
-        (additionalMemberships > 0 ? "the " : "no ") + "right to purchase " +
-        (additionalMemberships > 0 ? "up to " +  additionalMemberships  : "no") +
-        " additional memberships at a reduced rate of $" + Number(regionList.additionalMemPrice).toFixed(2) + ".</p>";
+    if (spaces > 0) {
+        html = "<p>This space comes with " +
+            (includedMemberships > 0 ? includedMemberships : "no") +
+            " memberships included and " +
+            (additionalMemberships > 0 ? "the " : "no ") + "right to purchase " +
+            (additionalMemberships > 0 ? "up to " + additionalMemberships : "no") +
+            " additional memberships at a reduced rate of $" + Number(regionList.additionalMemPrice).toFixed(2) + ".</p>";
+    }
     if((includedMemberships == 0) && (additionalMemberships ==0)) {
         html += "<input type='hidden' name='agreeNone' value='on'></input>"
     }
