@@ -108,10 +108,10 @@ function openInvoice(id) {
                 }
                 break;
             case 'vendor':
-                html += "<p>All vendors must have a membership. Included and additional discounted memberships can only be purchased while paying for your space.";
+                html += "<p>All vendors must have a membership. Included and additional discounted memberships can be purchased while paying for your space.";
                 break;
             default:
-                html += "<p>All exhibitors must have a membership. Included and additional discounted memberships can only be purchased while paying for your space.";
+                html += "<p>All exhibitors must have a membership. Included and additional discounted memberships can be purchased while paying for your space.";
         }
 
         html += " If you do not purchase them now while paying your space invoice, you will have to purchase them at the current membership rates.</p>" +
