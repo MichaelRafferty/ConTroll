@@ -2368,9 +2368,12 @@ addUnpaid(tid) {
     notPerid(current, index, perinfo) {
         var memberships = current.memberships;
 
-        for (var i = 0; i < memberships.length; i++) {
-            if (memberships[i].perid != this.#checkPerid)
-                return false;
+        if (memberships) {
+
+            for (var i = 0; i < memberships.length; i++) {
+                if (memberships[i].perid != this.#checkPerid)
+                    return false;
+            }
         }
 
         return true;
