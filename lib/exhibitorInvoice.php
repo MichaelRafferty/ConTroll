@@ -7,7 +7,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
         $exhibitorEmail = '';
         $addr = '';
         $addr2 = '';
-        $city = '';
+        $city = '';777
         $state = '';
         $zip = '';
         $contactEmail = '';

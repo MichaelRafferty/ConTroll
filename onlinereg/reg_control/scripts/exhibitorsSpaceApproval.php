@@ -2,6 +2,7 @@
 global $db_ini;
 
 require_once '../lib/base.php';
+require_once '../lib/addendum.php';
 require_once('../../../lib/email__load_methods.php');
 $check_auth = google_init('ajax');
 $perm = 'vendor';
@@ -246,7 +247,7 @@ if (array_key_exists('success', $response) && $approvalType != 'pay') {
 WITH exh AS (
 SELECT e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id AS exhibitorYearId, exRY.exhibitorNumber, exRY.agentRequest,
     TRIM(CONCAT(p.first_name, ' ', p.last_name)) as pName, TRIM(CONCAT(n.first_name, ' ', n.last_name)) AS nName,
-	SUM(IFNULL(espr.units, 0)) AS ru, SUM(IFNULL(espa.units, 0)) AS au, SUM(IFNULL(espp.units, 0)) AS pu
+	SUM(IFNULL(espr.units, 0)) AS ru, SUM(IFNULL(espa.units, 0)) AS au, SUM(IFNULL(espp.units, 0)) AS pu, eR.shortname
 FROM exhibitorSpaces eS
 LEFT OUTER JOIN exhibitsSpacePrices espr ON (eS.item_requested = espr.id)
 LEFT OUTER JOIN exhibitsSpacePrices espa ON (eS.item_approved = espa.id)
@@ -256,6 +257,7 @@ JOIN exhibitorYears eY ON (eY.id = exRY.exhibitorYearId)
 JOIN exhibitors e ON (e.id = eY.exhibitorId)
 JOIN exhibitsSpaces s ON (s.id = eS.spaceId)
 JOIN exhibitsRegionYears eRY ON s.exhibitsRegionYear = eRY.id
+JOIN exhibitsRegions eR ON eR.id = eRY.exhibitorRegion
 LEFT OUTER JOIN perinfo p ON p.id = exRY.agentPerid
 LEFT OUTER JOIN newperson n ON n.id = exRY.agentNewperson
 WHERE eY.conid = ? AND eRY.id = ? AND e.id = ?
@@ -309,6 +311,9 @@ EOS;
     $spaceDetail = '';
     $spaceHeader = '';
     $spaceSubject = '';
+    $spaceAddendum = '';
+    $shortName = '';
+    $longName = '';
     $ownerName = '';
     $ownerEmail = '';
     $approved = false;
@@ -318,6 +323,8 @@ EOS;
             if ($spaceHeader == '') {
                 $ownerName = $detail['ownerName'];
                 $ownerEmail = $detail['ownerEmail'];
+                $shortName = $detail['shortname'];
+                $longName = $detail['regionName'];
                 $spaceHeader = "Your approval for space in " . $con['label'] . "'s " . $detail['regionName'] . " has been updated.";
                 $spaceSubject = "Update to " . $con['label'] . "'s " . $detail['regionName'] . " space approval";
             }
@@ -337,6 +344,8 @@ EOS;
 
     if ($approved) {
         $spaceDetail .= "\nPlease sign into the portal to purchase your space and memberships.\n";
+
+        $spaceAddendum = getVendorAddendum($shortName, $longName, '_space_approval')[1];
     }
 
     $body = <<<EOS
@@ -345,6 +354,8 @@ Dear $exhibitorName
 $spaceHeader
 
 $spaceDetail
+
+$spaceAddendum
 
 Thank you.
 $ownerName
