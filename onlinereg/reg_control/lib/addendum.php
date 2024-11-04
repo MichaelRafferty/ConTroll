@@ -11,7 +11,7 @@ function getVendorAddendum($shortName, $longName, $fileSuffix): array {
         return array('', '');
 
     $fileName = $vendor[$fieldName] . '.txt';
-    $filePath = __DIR__ . '../../config/' . $fileName;
+    $filePath = __DIR__ . '/../../../config/' . $fileName;
     if (!is_readable($filePath))
         $addendumTxt = '';
     else {
