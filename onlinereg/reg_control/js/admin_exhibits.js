@@ -722,10 +722,10 @@ class exhibitssetup {
             movableRows: true,
             data: this.#spacePrices,
             layout: "fitDataTable",
-            pagination: true,
+            /*pagination: true,
             paginationAddRow:"table",
             paginationSize: 10,
-            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options */
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false},
