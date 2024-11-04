@@ -573,6 +573,8 @@ class PosCart {
             btn.classList.remove('btn-warning');
             btn.classList.add((this.#currentAge == age.ageType || this.#memberAge == age.ageType) ? 'btn-primary' : color);
         }
+        // new age selected, redraw membership buttons
+        this.buildRegItemButtons();
     }
 
     // membership buttons
