@@ -462,8 +462,6 @@ function saveEdit() {
         }
     }
     postData['newPolicies'] = JSON.stringify(newPolicies);
-
-    console.log(postData);
     $.ajax({
         method: "POST",
         url: "scripts/badge_updateEdit.php",
@@ -477,9 +475,8 @@ function saveEdit() {
                 show_message(data.success, 'success');
             }
             editPersonModal.hide();
-            loadWatchList(data);
+            getWatchList();
         },
         error: showAjaxError,
     });
-    console.log(postData);
 }
