@@ -810,8 +810,8 @@ class Find {
 
         // now the interests
         var newInterests = {};
-        keys = Object.keys(this.#memberInterests);
-        for (i = 0; i < keys.length; i++) {
+        var keys = Object.keys(this.#memberInterests);
+        for (var i = 0; i < keys.length; i++) {
             var interest = this.#memberInterests[keys[i]];
             if (document.getElementById('i_' + interest.interest).checked) {
                 newInterests[interest.interest] = 'Y';
@@ -873,7 +873,7 @@ class Find {
         this.#editRow.banned = this.#banned.value.trim();
         this.#editRow.open_notes = this.#openNotes.value.trim();
         this.#editRow.admin_notes = this.#adminNotes.value.trim();
-        var full = (this.#editRow.firstName + ' ' + this.#editRow.middleName + ' ' + this.#editRow.lastName + ' ' + this.#editRow.suffix).trim();
+        var full = (this.#editRow.first_name + ' ' + this.#editRow.middle_name + ' ' + this.#editRow.last_name + ' ' + this.#editRow.suffix).trim();
         this.#editRow.fullName = full.replace(/  */, ' ');
         full = (this.#editRow.address + ' ' + this.#editRow.addr2 + ' ' + this.#editRow.city + ' ' +
             this.#editRow.state + ' ' + this.#editRow.zip + ' ' + this.#editRow.country).trim();
