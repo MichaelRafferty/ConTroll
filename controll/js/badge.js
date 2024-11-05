@@ -9,6 +9,9 @@ editTitle = null;
 editPersonName = null;
 updateExisting = null;
 editCurrentPerid = null;
+memberPolicies = null;
+memberInterests = null;
+memberManaged = null;
 
 // watchlist
 watchList = null;
@@ -343,7 +346,45 @@ function removeFromList(perid) {
 function editPerson(perid) {
     // ok get the values if this person
     editCurrentPerid = perid;
-    var data = watchTable.getRow(perid).getData();
+    // get the rest of the data
+    var postdata = {
+        type: 'details',
+        perid: perid,
+    };
+    var script = 'scripts/people_findGetDetails.php';
+    clear_message();
+    clearError();
+    $.ajax({
+        url: script,
+        method: 'POST',
+        data: postdata,
+        success: function (data, textStatus, jhXHR) {
+            findDetailsSuccess(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in " + script + ": " + textStatus, jqXHR);
+            show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error');
+            return false;
+        }
+    });
+}
+
+function findDetailsSuccess(dataFound) {
+    var i;  // index
+    if (dataFound['error']) {
+        show_message(data['error'], 'error');
+        return;
+    }
+    if (dataFound['warn']) {
+        show_message(data['warn'], 'warn');
+        return;
+    }
+
+    memberPolicies = dataFound['policies'];
+    memberInterests = dataFound['interests'];
+    memberManaged = dataFound['managed'];
+
+    var data = watchTable.getRow(editCurrentPerid).getData();
     document.getElementById('f_fname').value = data.first_name;
     document.getElementById('f_mname').value = data.middle_name;
     document.getElementById('f_lname').value = data.last_name;
@@ -361,13 +402,21 @@ function editPerson(perid) {
     document.getElementById('f_phone').value = data.phone;
     document.getElementById('f_badgename').value = data.badge_name;
 
-    // need to deal with the policies
+    // loop over the policies
+    var keys = Object.keys(memberPolicies);
+    for (i = 0; i < keys.length; i++) {
+        var policy = memberPolicies[keys[i]];
+        var response = policy.response;
+        if (response === null || response === undefined) {
+            response = policy.defaultValue;
+        }
+        document.getElementById('p_f_' + policy.policy).checked = response == 'Y';
+    }
+    editPersonName.innerHTML = data.fullName + ' (' + data.id + ')';
     editPersonModal.show();
 }
 
 function saveEdit() {
-    console.log("saveEditcalled for " + editCurrentPerid);
-
     var email1 = document.getElementById('f_email1').value;
     var email2 = document.getElementById('f_email2').value;
 
@@ -381,25 +430,56 @@ function saveEdit() {
         return false;
     }
 
-
     var postData = {
         action: 'updatePerinfo',
         perid: editCurrentPerid,
-        first_name: document.getElementById('f_fname').value,
-        middle_name: document.getElementById('f_mname').value,
-        last_name: document.getElementById('f_lname').value,
+        firstName: document.getElementById('f_fname').value,
+        middleName: document.getElementById('f_mname').value,
+        lastName: document.getElementById('f_lname').value,
         suffix: document.getElementById('f_suffix').value,
-        legalname: document.getElementById('f_legalname').value,
+        legalName: document.getElementById('f_legalname').value,
         pronouns: document.getElementById('f_pronouns').value,
         address: document.getElementById('f_addr').value,
-        addr_2: document.getElementById('f_addr2').value,
+        addr2: document.getElementById('f_addr2').value,
         country: document.getElementById('f_country').value,
         city: document.getElementById('f_city').value,
         state: document.getElementById('f_state').value,
         zip: document.getElementById('f_zip').value,
-        email_addr: email1,
+        emailAddr: email1,
         phone: document.getElementById('f_phone').value,
-        badge_name: document.getElementById('f_badgename').value,
+        badgeName: document.getElementById('f_badgename').value,
+        oldPolicies: JSON.stringify(memberPolicies),
     };
+
+    // now the policies
+    var keys = Object.keys(memberPolicies);
+    var i;
+    var newPolicies = {};
+    for (i = 0; i < keys.length; i++) {
+        var policy = memberPolicies[keys[i]];
+        if (document.getElementById('p_f_' + policy.policy).checked) {
+            newPolicies['p_' + policy.policy] = 'Y';
+        }
+    }
+    postData['newPolicies'] = JSON.stringify(newPolicies);
+
+    console.log(postData);
+    $.ajax({
+        method: "POST",
+        url: "scripts/badge_updateEdit.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (data.error !== undefined) {
+                show_message(data.error, 'error', 'find_edit_message');
+                return;
+            }
+            if (data.success !== undefined) {
+                show_message(data.success, 'success');
+            }
+            editPersonModal.hide();
+            loadWatchList(data);
+        },
+        error: showAjaxError,
+    });
     console.log(postData);
 }
