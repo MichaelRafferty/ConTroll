@@ -29,7 +29,7 @@ $iP = <<<EOS
 INSERT INTO perinfo(last_name, first_name, middle_name, suffix, email_addr, phone, badge_name,
     legalName, pronouns, address, addr_2, city, state, zip, country,
     banned, active, updatedBy)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y', 'Y',?);
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N', 'Y',?);
 EOS;
 $typestr = 'sssssssssssssssi';
 
