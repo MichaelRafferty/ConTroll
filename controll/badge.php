@@ -101,12 +101,12 @@ $config_vars['useUSPS'] = $useUSPS;
                         drawEditPersonBlock($conid, $useUSPS, $policies, 'find', true, true, '', array (), 200, true, 'f_');
                     ?>
                 </div>
+                <div id='find_edit_message' class='mt-4 p-2'></div>
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
                 <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onClick='saveEdit()'>Update Existing Person</button>
             </div>
-            <div id='find_edit_message' class='mt-4 p-2'></div>
         </div>
     </div>
 </div>
