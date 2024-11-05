@@ -1767,6 +1767,11 @@ addUnpaid(tid) {
         this.#pay_tid = data.master_tid;
         // update cart elements
         cart.updateFromDB(data);
+        if (data['success'])
+            show_message(data['success'], 'success');
+        else
+            clear_message();
+
         bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
         cart.drawCart();
     }

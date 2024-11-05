@@ -97,6 +97,26 @@ $insHDt = 'iiiss';
 
 // create the controlling transaction, in case the master perinfo needed insertion
 $master_perid = $cart_perinfo[0]['perid'];
+// if master_perid < 0, then this is an insert and we need to update the perid to continue
+if ($master_perid < 0) {
+    $cartrow = $cart_perinfo[0];
+    $paramarray = array(
+        $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['legalName'],$cartrow['pronouns'],
+        $cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
+        $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],
+        $open_notes,$user_perid
+    );
+
+    $new_perid = dbSafeInsert($insPerinfoSQL, $insPDt, $paramarray);
+    if ($new_perid === false) {
+        $error_message .= "Insert of person $row failed<BR/>";
+    } else {
+        $cart_perinfo[0]['perid'] = $new_perid;
+        $cartrow['perid'] = $new_perid;
+        $per_ins++;
+        $master_perid = $new_perid;
+    }
+}
 $tran_type = 'regctl-reg/' . $user_perid;
 $insTransactionSQL = <<<EOS
 INSERT INTO transaction(conid,perid,userid,price,paid,type,create_date)
