@@ -95,6 +95,38 @@ VALUES (?, ?, ?, ?, ?);
 EOS;
 $insHDt = 'iiiss';
 
+$selReg = <<<EOS
+WITH notes AS (
+SELECT h.regid, GROUP_CONCAT(CONCAT(h.userid, '@', h.logdate, ': ', h.notes) SEPARATOR '\n') AS reg_notes, COUNT(*) AS reg_notes_count
+FROM regActions h
+WHERE h.action = 'notes'
+GROUP BY h.regid
+), printcount AS (
+SELECT h.regid, COUNT(*) printcount
+FROM regActions h
+WHERE h.action = 'print'
+GROUP BY h.regid
+), attachcount AS (
+SELECT h.regid, COUNT(*) attachcount
+FROM regActions h
+WHERE h.action = 'attach'
+GROUP BY h.regid
+)
+SELECT DISTINCT r1.perid, r1.id as regid, r1.conid, r1.price, r1.paid, r1.paid AS priorPaid, r1.couponDiscount, r1.coupon,
+    r1.create_date, IFNULL(r1.create_trans, -1) as tid, IFNULL(r1.complete_trans, -1) as tid2,r1.memId, r1.planId, r1.status, 
+    IFNULL(pc.printcount, 0) AS printcount,
+    IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, null as rstid,
+    CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label
+FROM reg r1
+JOIN memLabel m ON (r1.memId = m.id)
+LEFT OUTER JOIN notes n ON (r1.id = n.regid)
+LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
+LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
+WHERE r1.perid = ? AND r1.conid = ?
+ORDER BY r1.perid, r1.create_date;
+EOS;
+$selRdt = 'iii';
+
 // create the controlling transaction, in case the master perinfo needed insertion
 $master_perid = $cart_perinfo[0]['perid'];
 // if master_perid < 0, then this is an insert and we need to update the perid to continue
@@ -104,12 +136,12 @@ if ($master_perid < 0) {
         $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['legalName'],$cartrow['pronouns'],
         $cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
         $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],
-        $open_notes,$user_perid
+        $cartrow['open_notes'],$user_perid
     );
 
     $new_perid = dbSafeInsert($insPerinfoSQL, $insPDt, $paramarray);
     if ($new_perid === false) {
-        $error_message .= "Insert of person $row failed<BR/>";
+        $error_message .= "Insert of master person failed<BR/>";
     } else {
         $cart_perinfo[0]['perid'] = $new_perid;
         $cartrow['perid'] = $new_perid;
@@ -184,6 +216,9 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
 
     for ($mrow = 0; $mrow < sizeof($memberships); $mrow++) {
         $mbr = $memberships[$mrow];
+        if ((!array_key_exists('perid', $mbr)) || $mbr['perid'] <= 0) {
+            $mgr['perid'] = $cartrow['perid'];
+        }
         if (!array_key_exists('coupon', $mbr) || $mbr['coupon'] == '')
             $mbr['coupon'] = null;
         if (!array_key_exists('couponDiscount', $mbr))
@@ -202,12 +237,12 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
 
         if (!array_key_exists('regid', $mbr) || $mbr['regid'] <= 0) {
             // insert the membership, as it's new
-            if ($mbr['perid'] <= 0) {
+            if ((!array_key_exists('perid', $mbr)) || $mbr['perid'] <= 0) {
                 $mbr['perid'] = $cartrow['perid'];
             }
-            $paramarray = array ($mbr['conid'], $mbr['perid'], $mbr['price'],
-                                 $mbr['price'] > $mbr['paid'] ? 'unpaid' : 'paid',
-                                 $mbr['paid'], $user_perid, $master_transid, $mbr['memId']);
+            $paramarray = array ($mbr['conid'], $mbr['perid'], $mbr['price'], $mbr['couponDiscount'],
+                                 $mbr['paid'], $user_perid, $master_transid, $mbr['memId'], $mbr['coupon'],
+                                 $mbr['price'] > $mbr['paid'] ? 'unpaid' : 'paid');
             $new_regid = dbSafeInsert($insRegSQL, $insRDt, $paramarray);
             if ($new_regid === false) {
                 $error_message .= "Insert of membership $row failed<BR/>";
@@ -240,6 +275,17 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             }
         }
     }
+    // since we can add/delete memberships, re-select the memberships for this perid to get the current list
+    $selR = dbSafeQuery($selReg, $selRdt, array($conid, $cartrow['perid'], $conid));
+    if ($selR === false) {
+        $error_message .= "Select of memberships for person at $row (" . $cartrow['perid'] . ") failed<BR/>";
+        continue;
+    }
+    $newMem = [];
+    while ($selL = $selR->fetch_assoc()) {
+        $newMem[] = $selL;
+    }
+    $cart_perinfo[$row]['memberships'] = $newMem;
 }
 // update the transaction associated with this reg
 $updTransactionSQL = <<<EOS
