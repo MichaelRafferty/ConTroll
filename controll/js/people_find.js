@@ -372,7 +372,11 @@ class Find {
         var keys = Object.keys(this.#memberPolicies);
         for (i = 0; i < keys.length; i++) {
             var policy = this.#memberPolicies[keys[i]];
-            document.getElementById('p_f_' + policy.policy).checked = policy.response == 'Y';
+            var response = policy.response;
+            if (response === null || response === undefined) {
+                response = policy.defaultValue;
+            }
+            document.getElementById('p_f_' + policy.policy).checked = response == 'Y';
         }
 
         // now the interests
