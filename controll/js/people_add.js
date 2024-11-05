@@ -220,6 +220,7 @@ class Add {
             country: this.#country.value,
             emailAddr: this.#emailAddr.value,
             phone: this.#phone.value,
+            newPolicies: JSON.stringify(URLparamsToArray($('#editPolicies').serialize())),
         };
         var script = 'scripts/people_addNewPerson.php';
         var _this = this;
