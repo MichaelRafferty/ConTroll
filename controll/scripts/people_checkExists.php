@@ -40,6 +40,9 @@ $phoneCheck = str_replace('(', '',
         str_replace('-', '',
             str_replace(' ', '', $phone))));
 
+if ($emailAddr == '/r')
+    $emailAddr = '';
+
 if ($firstName . $middleName .  $lastName .  $suffix .  $legalName .  $pronouns .  $badgeName .  $address .  $addr2 .
     $city .  $state .  $zip . $emailAddr .  $phone == '') {
     $response['error'] = 'The form cannot be empty, you need something to match on beyond just country';

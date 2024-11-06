@@ -93,8 +93,6 @@ class Add {
         };
         var script = 'scripts/people_checkExists.php';
         var _this = this;
-        clear_message();
-        clearError();
         $.ajax({
             url: script,
             method: 'POST',
