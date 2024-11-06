@@ -110,6 +110,39 @@ $config_vars['useUSPS'] = $useUSPS;
         </div>
     </div>
 </div>
+<div id='add-person' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Add Person'
+     aria-hidden='true' style='--bs-modal-width: 98%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='addTitle'>Add New Person</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <div class='row mt-2'>
+                        <div class='col-sm-12'><h2 class='size=h3'>Profile/Policies</h2></div>
+                    </div>
+                    <?php
+                        drawEditPersonBlock($conid, $useUSPS, $policies, 'add', true, true, '', array (), 1000, true, 'a_');
+                    ?>
+                </div>
+                <div class='row mt-2'>
+                    <div class='col-sm-12' id='addMatchTable'></div>
+                </div>
+                <div id='add_message' class='mt-4 p-2'></div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' type='button' onclick='addCheckExists();'>Check If Already Exists</button>
+                <button class='btn btn-sm btn-secondary' type='button' onclick='addClearForm();'>Clear Add Person Form</button>
+                <button class='btn btn-sm btn-secondary' type='button' id='addPersonBTN' onclick='saveAdd();' disabled>Add New Person
+            </div>
+        </div>
+    </div>
+</div>
 <div class='container-fluid'>
     <div class='row mt-2'>
         <div class="col-sm-12">

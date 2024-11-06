@@ -13,6 +13,11 @@ memberPolicies = null;
 memberInterests = null;
 memberManaged = null;
 
+// add items
+addPersonModal = null;
+addMatchTable = null;
+addPersonBTN = null;
+
 // watchlist
 watchList = null;
 watchMembers = [];
@@ -30,6 +35,11 @@ window.onload = function initpage() {
         editTitle = document.getElementById('editTitle');
         editPersonName = document.getElementById('editPersonName');
         updateExisting = document.getElementById('updateExisting');
+    }
+    var id = document.getElementById('add-person');
+    if (id) {
+        addPersonModal = new bootstrap.Modal(id);
+        addPersonBtn = document.getElementById('addPersonBTN');
     }
     watchList = document.getElementById('watch-list');
     findNameField = document.getElementById('findName');
@@ -260,7 +270,7 @@ function loadSelectList(data) {
             {column: "first_name", dir: "asc"},
         ],
         columns: [
-            {title: "Actions", headerFilter: false, headerSort: false, width: 75, formatter: addSelectIcon },
+            {title: "Actions", headerFilter: false, headerSort: false, width: 80, formatter: addSelectIcon },
             {title: "Perid", field: "id", headerFilter: true, width: 120, maxWidth: 120, },
             {title: "Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: watchBuildRecordHover,},
             {field: "last_name", visible: false,},
@@ -284,7 +294,7 @@ function loadSelectList(data) {
     });
 }
 
-// formatter for add icon
+// formatter for watch icon
 function addSelectIcon(cell, formatterParams, onRendered) { //plain text value
     var html = '';
     var data = cell.getRow().getData();
@@ -293,7 +303,7 @@ function addSelectIcon(cell, formatterParams, onRendered) { //plain text value
         return '<strong class="ps-1 pe-1" style="background-color: red; color: white;">B</strong>';
     } else {
         html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="addToList(' +
-            data.id + ');">Add</button>';
+            data.id + ');">Watch</button>';
     }
 
     return html;
@@ -330,7 +340,6 @@ function addToList(perid) {
 }
 
 // remove button - remove from watch list
-// add button - write to list and refresh screen
 function removeFromList(perid) {
     if (!perid)
         return false;
@@ -387,11 +396,11 @@ function editPerson(perid) {
 function findDetailsSuccess(dataFound) {
     var i;  // index
     if (dataFound['error']) {
-        show_message(data['error'], 'error');
+        show_message(dataFound['error'], 'error');
         return;
     }
     if (dataFound['warn']) {
-        show_message(data['warn'], 'warn');
+        show_message(dataFound['warn'], 'warn');
         return;
     }
 
@@ -531,4 +540,170 @@ function updateBadge(perid) {
         },
         error: showAjaxError,
     });
+}
+
+// add new person items
+function addNew() {
+    addClearForm();
+    addPersonModal.show();
+}
+
+// clear the add form
+function addClearForm() {
+    document.getElementById('a_fname').value = '';
+    document.getElementById('a_mname').value = '';
+    document.getElementById('a_lname').value = '';
+    document.getElementById('a_suffix').value = '';
+    document.getElementById('a_legalname').value = '';
+    document.getElementById('a_pronouns').value = '';
+    document.getElementById('a_addr').value = '';
+    document.getElementById('a_addr2').value = '';
+    document.getElementById('a_country').value = 'USA';
+    document.getElementById('a_city').value = '';
+    document.getElementById('a_state').value = '';
+    document.getElementById('a_zip').value = '';
+    document.getElementById('a_email1').value = '';
+    document.getElementById('a_email2').value = '';
+    document.getElementById('a_phone').value = '';
+    document.getElementById('a_badgename').value = '';
+
+    // loop over the policies
+    var keys = Object.keys(policies);
+    for (i = 0; i < keys.length; i++) {
+        var policy = policies[keys[i]];
+        document.getElementById('p_a_' + policy.policy).checked = policy.defaultValue == 'Y';
+    }
+    addPersonBtn.disabled = true;
+}
+
+// check if the person on the form exists
+// check if a close match for this person exists and display a table of matches.
+function addCheckExists() {
+    var email1 = document.getElementById('a_email1').value;
+    var email2 = document.getElementById('a_email2').value;
+    if (email1 == '') {
+        show_message("Email addresses cannot be empty, use /r if refused", 'error', 'add_message');
+        return;
+    }
+    if (email1 != email2 && email1 != '/r') {
+        show_message("Email addresses do not match", 'error', 'add_message');
+        return;
+    }
+
+    clear_message('add_message');
+    clearError();
+    var postdata = {
+        type: 'check',
+        firstName: document.getElementById('a_fname').value,
+        middleName: document.getElementById('a_mname').value,
+        lastName: document.getElementById('a_lname').value,
+        suffix: document.getElementById('a_suffix').value,
+        legalName: document.getElementById('a_legalname').value,
+        pronouns: document.getElementById('a_pronouns').value,
+        badgeName: document.getElementById('a_badgename').value,
+        address: document.getElementById('a_addr').value,
+        addr2: document.getElementById('a_addr2').value,
+        city: document.getElementById('a_city').value,
+        state: document.getElementById('a_state').value,
+        zip: document.getElementById('a_zip').value,
+        country: document.getElementById('a_country').value,
+        emailAddr: email1,
+        phone: document.getElementById('a_phone').value,
+    };
+    var script = 'scripts/people_checkExists.php';
+    $.ajax({
+        url: script,
+        method: 'POST',
+        data: postdata,
+        success: function (data, textStatus, jhXHR) {
+            addCheckSuccess(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in " + script + ": " + textStatus, jqXHR);
+            show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error', 'add_message');
+            return false;
+        }
+    });
+}
+
+function addCheckSuccess(dataFound) {
+    if (dataFound['error']) {
+        show_message(dataFound['error'], 'error', 'add_message');
+        return;
+    }
+    if (dataFound['warn']) {
+        show_message(dataFound['warn'], 'warn', 'add_message');
+        return;
+    }
+    if (dataFound['success']) {
+        show_message(dataFound['success'], 'success', 'add_message');
+    }
+
+    var matched = dataFound['matches'];
+    if (matched.length > 0) {
+        addMatchTable = new Tabulator('#addMatchTable', {
+            data: matched,
+            layout: "fitDataTable",
+            index: "id",
+            pagination: true,
+            paginationAddRow: "table",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            columns: [
+                {title: "Match", formatter: addSelectButton, headerSort: false},
+                {title: "ID", field: "id", width: 120, headerHozAlign: "right", hozAlign: "right", headerSort: true},
+                {title: "Mgr Id", field: "managerId", width: 120, headerHozAlign: "right", hozAlign: "right", headerWordWrap: true, headerSort: false},
+                {title: "Manager", field: "manager", width: 200, headerSort: true, headerFilter: true,},
+                {title: "Full Name", field: "fullName", width: 300, headerSort: true, headerFilter: true,},
+                {title: "Badge Name", field: "fullName", width: 200, headerSort: true, headerFilter: true,},
+                {title: "Full Address", field: "fullAddr", width: 400, headerSort: true, headerFilter: true,},
+                {title: "Ctry", field: "country", width: 60, headerSort: false, headerFilter: false,},
+                {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true,},
+                {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true,},
+                {title: "Date Created", field: "creation_date", width: 180, headerSort: true, headerFilter: true,},
+                {field: 'first_name', visible: false,},
+                {field: 'middle_name', visible: false,},
+                {field: 'last_name', visible: false,},
+                {field: 'suffix', visible: false,},
+                {field: 'legalName', visible: false,},
+                {field: 'pronouns', visible: false,},
+                {field: 'address', visible: false,},
+                {field: 'addr_2', visible: false,},
+                {field: 'city', visible: false,},
+                {field: 'state', visible: false,},
+                {field: 'zip', visible: false,},
+                {field: 'country', visible: false,},
+                {field: 'active', visible: false,},
+                {field: 'banned', visible: false,},
+            ],
+        });
+    } else {
+        if (addMatchTable != null) {
+            addMatchTable.destroy();
+            addMatchTable = null;
+        }
+    }
+    addPersonBtn.disabled = false;
+}
+
+// select button: chose this person instead of adding a new one
+function addSelectButton(cell, formatterParams, onRendered) {
+    var row = cell.getRow();
+    var index = row.getIndex()
+
+    return '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+        ' onclick="addSelectPerson(' + index + ');">Watch</button>';
+}
+
+// add the selected person to the watch list
+function addSelectPerson(index) {
+    var row = addMatchTable.getRow(index).getData();
+    if (addMatchTable != null) {
+        addMatchTable.destroy();
+        addMatchTable = null;
+    }
+    addPersonBtn.disabled = true;
+    addPersonModal.hide();
+    clear_message('add_message')
+    addToList(row.id);
 }
