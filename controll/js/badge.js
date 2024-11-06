@@ -36,7 +36,7 @@ window.onload = function initpage() {
         editPersonName = document.getElementById('editPersonName');
         updateExisting = document.getElementById('updateExisting');
     }
-    var id = document.getElementById('add-person');
+    id = document.getElementById('add-person');
     if (id) {
         addPersonModal = new bootstrap.Modal(id);
         addPersonBtn = document.getElementById('addPersonBTN');
@@ -574,6 +574,10 @@ function addClearForm() {
         document.getElementById('p_a_' + policy.policy).checked = policy.defaultValue == 'Y';
     }
     addPersonBtn.disabled = true;
+    if (addMatchTable != null) {
+        addMatchTable.destroy();
+        addMatchTable = null;
+    }
 }
 
 // check if the person on the form exists
@@ -706,4 +710,80 @@ function addSelectPerson(index) {
     addPersonModal.hide();
     clear_message('add_message')
     addToList(row.id);
+}
+
+// saveAdd - we have checked if they exist, now actually add them and then add them to the watch list
+function saveAdd() {
+    var email1 = document.getElementById('a_email1').value;
+    var email2 = document.getElementById('a_email2').value;
+    if (email1 == '') {
+        show_message("Email addresses cannot be empty, use /r if refused", 'error', 'add_message');
+        return;
+    }
+    if (email1 != email2 && email1 != '/r') {
+        show_message("Email addresses do not match", 'error', 'add_message');
+        return;
+    }
+
+    var newPolicies = {};
+    // loop over the policies
+    var keys = Object.keys(policies);
+    for (i = 0; i < keys.length; i++) {
+        var policy = policies[keys[i]];
+        newPolicies['p_' + policy.policy] = document.getElementById('p_a_' + policy.policy).checked ? 'Y' : 'N';
+    }
+    var postdata = {
+        type: 'add',
+        firstName: document.getElementById('a_fname').value,
+        middleName: document.getElementById('a_mname').value,
+        lastName: document.getElementById('a_lname').value,
+        suffix: document.getElementById('a_suffix').value,
+        legalName: document.getElementById('a_legalname').value,
+        pronouns: document.getElementById('a_pronouns').value,
+        badgeName: document.getElementById('a_badgename').value,
+        address: document.getElementById('a_addr').value,
+        addr2: document.getElementById('a_addr2').value,
+        city: document.getElementById('a_city').value,
+        state: document.getElementById('a_state').value,
+        zip: document.getElementById('a_zip').value,
+        country: document.getElementById('a_country').value,
+        emailAddr: email1,
+        phone: document.getElementById('a_phone').value,
+        newPolicies: JSON.stringify(newPolicies),
+    };
+
+    var script = 'scripts/people_addNewPerson.php';
+    $.ajax({
+        url: script,
+        method: 'POST',
+        data: postdata,
+        success: function (data, textStatus, jhXHR) {
+            addSuccess(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in " + script + ": " + textStatus, jqXHR);
+            show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error', 'add_message');
+            return false;
+        }
+    });
+}
+
+function addSuccess(data) {
+    if (data['error']) {
+        show_message(data['error'], 'error', 'add_message');
+        return;
+    }
+    if (data['warn']) {
+        show_message(data['warn'], 'warn', 'add_message');
+        return;
+    }
+
+    if (data['success']) {
+        show_message(data['success'], 'success');
+    }
+
+    addPersonBtn.disabled = true;
+    addPersonModal.hide();
+    clear_message('add_message')
+    addToList(data.perid);
 }

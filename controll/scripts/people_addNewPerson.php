@@ -69,5 +69,6 @@ if ($policy_upd > 0) {
 }
 
 $response['success'] = $message;
+$response['perid'] = $perid;
 ajaxSuccess($response);
 ?>
