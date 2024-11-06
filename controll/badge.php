@@ -53,7 +53,7 @@ page_init($page,
               $need_login);
 
 
-    $freeSelect = "<option disabled='disabled' selected='true'> -- select an option --</option>\\n";
+    $freeSelect = "<option disabled='disabled' selected='true' value='-1'> -- select an option --</option>\\n";
     foreach ($freeMems as $free) {
         $freeSelect .= "<option value='" . $free['id'] . "'>" . $free['label'] . "</option>\\n";
     }
@@ -101,7 +101,7 @@ $config_vars['useUSPS'] = $useUSPS;
                         drawEditPersonBlock($conid, $useUSPS, $policies, 'find', true, true, '', array (), 200, true, 'f_');
                     ?>
                 </div>
-                <div id='find_edit_message' class='mt-4 p-2'></div>
+                <div id='find_edit_message' class='mt-4 p-2'></div>l
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>

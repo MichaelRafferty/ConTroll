@@ -36,15 +36,15 @@ $response['id'] = $_SESSION['user_id'];
 $response['user_perid'] = $user_perid;
 
 $perid = $_POST['perid'];
-// check to see if already on list
 
-$iQ = <<<EOS
+// Delete from the watchList
+$dQ = <<<EOS
 DELETE FROM badgeList
 WHERE user_perid = ? AND conid = ? AND perid = ?;
 EOS;
-    $typeStr = 'iii';
-    $values = array($user_perid, $conid, $perid);
-$numRows = dbSafeCmd($iQ, $typeStr, $values);
+$typeStr = 'iii';
+$values = array($user_perid, $conid, $perid);
+$numRows = dbSafeCmd($dQ, $typeStr, $values);
 if ($numRows === false) {
     $response['error'] = "Remove of $perid to watch failed, see log.";
     ajaxSuccess($response);

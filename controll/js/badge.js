@@ -98,7 +98,8 @@ function loadWatchList(data) {
                 {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Zip", field: "zip", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
-                {title: "Memberships", field: "memberships", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 300, width: 300,},
+                {title: "Memberships", field: "memberships", headerFilter: true, headerWordWrap: true, tooltip: true,
+                    maxWidth: 300, width: 300, formatter: membershipFormatter,},
                 {field: "index", visible: false,},
             ],
         });
@@ -169,12 +170,26 @@ function addWatchIcon(cell, formatterParams, onRendered) { //plain text value
         html += '<button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="removeFromList(' +
             data.id + ')">Remove</button>&nbsp;' +
             '<button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="editPerson(' +
-            data.id + ')">Edit Person</button>';
+            data.id + ')">Edit</button>';
     }
-    if (data.memberships == '') {
-        '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="updateBadge(' +
-        data.id + ')">Update Badge</button>';
+    if (data.memberships == undefined || data.memberships == null || data.memberships == '') {
+        html += '&nbsp;<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="updateBadge(' +
+        data.id + ')">Badge</button>';
     }
+    return html;
+}
+
+// build either select list or membership name
+function membershipFormatter(cell, formatterParams, onRendered) {
+    var html = '';
+    var data = cell.getRow().getData();
+
+    if (data.memberships) {
+        return data.memberships;
+    }
+
+    html = '<select name="m_' + data.id + '" id="m_' + data.id + '">' +
+        freeSelect + '</select>';
     return html;
 }
 
@@ -421,12 +436,12 @@ function saveEdit() {
     var email2 = document.getElementById('f_email2').value;
 
     if (email1 != email2) {
-        show_error("Email addresses do not match.", 'warn');
+        show_message("Email addresses do not match.", 'warn');
         return false;
     }
 
     if (!validateAddress(email1)) {
-        show_error("Invalid Email address: " + email1, 'warn');
+        show_message("Invalid Email address: " + email1, 'warn');
         return false;
     }
 
@@ -475,6 +490,43 @@ function saveEdit() {
                 show_message(data.success, 'success');
             }
             editPersonModal.hide();
+            getWatchList();
+        },
+        error: showAjaxError,
+    });
+}
+
+// update badge - pull select value and update the badge, then redraw the list
+function updateBadge(perid) {
+    var memId = document.getElementById('m_' + perid).value;
+
+    if (memId < 0) {
+        show_message("You must select a membership from the select list in the Memberships column.", 'warn');
+        return false;
+    }
+
+    var postData = {
+        action: 'updateMembership',
+        perid: perid,
+        memId: memId,
+    };
+
+    $.ajax({
+        method: "POST",
+        url: "scripts/badge_addMembership.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (data.error !== undefined) {
+                show_message(data.error, 'error', 'find_edit_message');
+                return;
+            }
+            if (data.warn !== undefined) {
+                show_message(data.error, 'warn', 'find_edit_message');
+                return;
+            }
+            if (data.success !== undefined) {
+                show_message(data.success, 'success');
+            }
             getWatchList();
         },
         error: showAjaxError,
