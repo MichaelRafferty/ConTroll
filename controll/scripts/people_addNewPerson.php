@@ -5,7 +5,7 @@ require_once "../lib/base.php";
 require_once "../../lib/policies.php";
 
 $check_auth = google_init("ajax");
-$perm = "people";
+$perm = "search";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
