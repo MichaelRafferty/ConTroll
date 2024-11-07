@@ -1101,7 +1101,7 @@ class PosCart {
             var need = this.#needMembershipRows > 1 ? "need memberships" : "needs a membership";
             html += `<div class="row mt-3">
     <div class="col-sm-12">Cannot proceed to "Review" because ` + this.#needMembershipRows + person + " still " + need +
-                `.  Use "Edit" button to add memberships for them or "Remove" button to take them out of the cart.
+                `.  Use "Add/Edit" button to add memberships for them or "Remove" button to take them out of the cart.
     </div>
 `;
         } else if (num_rows > 0) {
