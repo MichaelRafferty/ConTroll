@@ -90,7 +90,7 @@ function loadWatchList(data) {
                 {column: "first_name", dir: "asc"},
             ],
             columns: [
-                {title: "Actions", headerFilter: false, headerSort: false, formatter: addWatchIcon },
+                {title: "Actions", headerFilter: false, headerSort: false, width: 170, formatter: addWatchIcon },
                 {title: "Perid", field: "id", headerFilter: true, width: 120, maxWidth: 120, },
                 {title: "Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: watchBuildRecordHover,},
                 {field: "last_name", visible: false,},
@@ -182,10 +182,6 @@ function addWatchIcon(cell, formatterParams, onRendered) { //plain text value
             '<button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="editPerson(' +
             data.id + ')">Edit</button>';
     }
-    if (data.memberships == undefined || data.memberships == null || data.memberships == '') {
-        html += '&nbsp;<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="updateBadge(' +
-        data.id + ')">Badge</button>';
-    }
     return html;
 }
 
@@ -198,8 +194,10 @@ function membershipFormatter(cell, formatterParams, onRendered) {
         return data.memberships;
     }
 
-    html = '<select name="m_' + data.id + '" id="m_' + data.id + '">' +
-        freeSelect + '</select>';
+    html += '&nbsp;<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="updateBadge(' +
+            data.id + ')">Badge</button>&nbsp;' +
+            '<select name="m_' + data.id + '" id="m_' + data.id + '">' +
+            freeSelect + '</select>';
     return html;
 }
 
