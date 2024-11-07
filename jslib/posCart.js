@@ -439,6 +439,7 @@ class PosCart {
             this.#currentPerid = cart_row.perid;
             this.#currentPerIdx = index;
             this.#cartChanges = 0;
+            clear_message('aeMessageDiv');
             this.#addEditModal.show();
         }
         return;
