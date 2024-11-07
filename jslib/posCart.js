@@ -475,7 +475,7 @@ class PosCart {
             countMemberships++;
             var amount_due = Number(membershipRec.price) - (Number(membershipRec.paid) + Number(membershipRec.couponDiscount));
             var label = (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label +
-                (membershipRec.memAge != 'all' ? ' . + ageListIdx[membershipRec.memAge].label + ' : '');
+                (membershipRec.memAge != 'all' ? (' ' + ageListIdx[membershipRec.memAge].label) : '');
             if ((!membershipRec.toDelete) && membershipRec.status.includes(this.#isDueStatuses))
                 totalDue += amount_due;
 
