@@ -739,6 +739,7 @@ class Pos {
         var new_email = this.#add_email1_field.value.trim();
         var new_phone = this.#add_phone_field.value.trim();
         var new_badgename = this.#add_badgename_field.value.trim();
+        var new_fullname = (new_first + ' ' + new_middle + ' ' + new_last + ' ' + new_suffix).replace('  ', ' ').trim();
 
         if (this.#add_mode == false && edit_index != '') { // update perinfo/meminfo and cart_perinfo and cart_memberships
             var row = {};
@@ -758,6 +759,7 @@ class Pos {
             row.country = new_country;
             row.email_addr = new_email;
             row.phone = new_phone;
+            row.fullName = new_fullname;
             row.active = 'Y';
             row.dirty = true;
 
@@ -950,9 +952,10 @@ class Pos {
         var new_email = this.#add_email1_field.value.trim();
         var new_phone = this.#add_phone_field.value.trim();
         var new_badgename = this.#add_badgename_field.value.trim();
+        var new_fullname = (new_first + ' ' + new_middle + ' ' + new_last + ' ' + new_suffix).replace('  ', ' ').trim();
 
         if (new_legalName == '') {
-            new_legalName = ((new_first + ' ' + new_middle).trim() + ' ' + new_last + ' ' + new_suffix).trim();
+            new_legalName = ((new_first + ' ' + new_middle).trim() + ' ' + new_last + ' ' + new_suffix).replace('  ', ' ').trim();
         }
 
         clear_message();
@@ -1027,7 +1030,7 @@ class Pos {
 
         var row = {
             perid: this.#new_perid, first_name: new_first, middle_name: new_middle, last_name: new_last, suffix: new_suffix,
-            legalName: new_legalName, pronouns: new_pronouns, badge_name: new_badgename,
+            legalName: new_legalName, pronouns: new_pronouns, badge_name: new_badgename, fullName: new_fullname,
             address_1: new_addr1, address_2: new_addr2, city: new_city, state: new_state, postal_code: new_postal_code,
             country: new_country, email_addr: new_email, phone: new_phone, active: 'Y', banned: 'N',
         };
