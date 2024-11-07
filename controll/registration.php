@@ -109,10 +109,16 @@ $config_vars['useportal'] = $controll['useportal'];
                             </div>
                             <div class="row mt-3">
                                 <div class="col-sm-4">
+<?php
+if (!$controll['useportal']) {
+?>
                                     <button type="button" class="btn btn-sm btn-primary" id="find_unpaid_btn" name="find_btn"
                                             onclick="pos.findRecord('unpaid') ;">
                                         Find Unpaid Transactions
                                     </button>
+<?php
+}
+?>
                                 </div>
                                 <div class="col-sm-8">
                                     <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" name="find_btn"
