@@ -222,6 +222,9 @@ class Coupon {
         var html = '';
         var label = 'non zero dollar';
 
+        if (!this.#curCoupon)
+            return '';
+
         if (this.#curCoupon.couponType == '$mem' || this.#curCoupon.couponType == '%mem') {
             html += "<li>This coupon only applies to memberships, not add-ons</li>";
         }
