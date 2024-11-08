@@ -125,10 +125,12 @@ class Pos {
     #add_badgename_field = null;
     #add_header = null;
     #addnew_button = null;
+    #addoverride_button = null;
     #clearadd_button = null;
     #add_results_table = null;
     #add_results_div = null;
     #add_mode = true;
+    #addOverride = 0;
 
     // for matching/every functions
     #checkPerid = null;
@@ -177,6 +179,7 @@ class Pos {
         this.#add_badgename_field = document.getElementById("badgename");
         this.#add_header = document.getElementById("add_header");
         this.#addnew_button = document.getElementById("addnew-btn");
+        this.#addoverride_button = document.getElementById("addoverride-btn");
         this.#clearadd_button = document.getElementById("clearadd-btn");
         this.#add_results_div = document.getElementById("add_results");
         this.#add_edit_initial_state = $("#add-edit-form").serialize();
@@ -253,6 +256,10 @@ class Pos {
 
     getManager() {
         return this.#Manager == 1;
+    }
+
+    getReviewEditableFields() {
+        return this.#review_editable_fields;
     }
 
     nonPrimaryCategoriesIncludes(category) {
@@ -653,6 +660,7 @@ class Pos {
     </div>`;
         this.#addnew_button.innerHTML = "Update to Cart";
         this.#clearadd_button.innerHTML = "Discard Update";
+        this.#addoverride_button.hidden = true;
         this.#add_mode = false;
         this.#add_edit_dirty_check = true;
         this.#add_edit_initial_state = $("#add-edit-form").serialize();
@@ -712,10 +720,11 @@ class Pos {
         this.#add_edit_dirty_check = true;
         this.#add_edit_initial_state = $("#add-edit-form").serialize();
         this.#add_edit_current_state = "";
+        this.#addoverride_button.hidden = true;
+        this.#addnew_button.innerHTML = "Add to Cart";
         if (reset_all > 0)
             clear_message();
         if (this.#clearadd_button.innerHTML.trim() != 'Clear Add Person Form') {
-            this.#addnew_button.innerHTML = "Add to Cart";
             this.#clearadd_button.innerHTML = 'Clear Add Person Form';
             // change back to the prior tab
             bootstrap.Tab.getOrCreateInstance(this.#add_edit_prior_tab).show();
@@ -724,7 +733,7 @@ class Pos {
     }
 
     // add record from the add/edit screen to the cart.  If it's already in the cart, update the cart record.
-    add_new() {
+    add_new(override = 0) {
         var edit_index = this.#add_index_field.value.trim();
         var edit_perid = this.#add_perid_field.value.trim();
         var new_memindex = this.#add_memIndex_field.value.trim();
@@ -744,6 +753,8 @@ class Pos {
         var new_phone = this.#add_phone_field.value.trim();
         var new_badgename = this.#add_badgename_field.value.trim();
         var new_fullname = (new_first + ' ' + new_middle + ' ' + new_last + ' ' + new_suffix).replace('  ', ' ').trim();
+
+        this.#addOverride = override;
 
         if (this.#add_mode == false && edit_index != '') { // update perinfo/meminfo and cart_perinfo and cart_memberships
             var row = {};
@@ -831,7 +842,7 @@ class Pos {
         if (this.#add_results_table != null) {
             this.#add_results_table.destroy();
             this.#add_results_table = null;
-            pos.addNewToCart();
+            pos.addNewToCart(override);
             return;
         }
 
@@ -936,11 +947,11 @@ class Pos {
             $("button[name='find_btn']").attr("disabled", false);
             return;
         }
-        this.addNewToCart();
+        this.addNewToCart(this.#addOverride);
     }
 
 // addNewToCart - not in system or operator said they are really new, add them to the cart
-    addNewToCart() {
+    addNewToCart(override = 0) {
         var new_first = this.#add_first_field.value.trim();
         var new_middle = this.#add_middle_field.value.trim();
         var new_last = this.#add_last_field.value.trim();
@@ -958,6 +969,8 @@ class Pos {
         var new_badgename = this.#add_badgename_field.value.trim();
         var new_fullname = (new_first + ' ' + new_middle + ' ' + new_last + ' ' + new_suffix).replace('  ', ' ').trim();
 
+        this.#addOverride = override;
+
         if (new_legalName == '') {
             new_legalName = ((new_first + ' ' + new_middle).trim() + ' ' + new_last + ' ' + new_suffix).replace('  ', ' ').trim();
         }
@@ -966,54 +979,71 @@ class Pos {
         // look for missing data
         // look for missing fields
         var missing_fields = 0;
-        if (new_first == '') {
-            missing_fields++;
-            this.#add_first_field.style.backgroundColor = 'var(--bs-warning)';
+        if (override == 0) {
+            if (new_first == '') {
+                missing_fields++;
+                this.#add_first_field.style.backgroundColor = 'var(--bs-warning)';
+            } else {
+                this.#add_first_field.style.backgroundColor = '';
+            }
+            if (new_last == '') {
+                missing_fields++;
+                this.#add_last_field.style.backgroundColor = 'var(--bs-warning)';
+            } else {
+                this.#add_last_field.style.backgroundColor = '';
+            }
+
+            if (new_addr1 == '') {
+                missing_fields++;
+                this.#add_addr1_field.style.backgroundColor = 'var(--bs-warning)';
+            } else {
+                this.#add_addr1_field.style.backgroundColor = '';
+            }
+
+            if (new_city == '') {
+                missing_fields++;
+                this.#add_city_field.style.backgroundColor = 'var(--bs-warning)';
+            } else {
+                this.#add_city_field.style.backgroundColor = '';
+            }
+
+            if (new_state == '') {
+                missing_fields++;
+                this.#add_state_field.style.backgroundColor = 'var(--bs-warning)';
+            } else {
+                this.#add_state_field.style.backgroundColor = '';
+            }
+
+            if (new_postal_code == '') {
+                missing_fields++;
+                this.#add_postal_code_field.style.backgroundColor = 'var(--bs-warning)';
+            } else {
+                this.#add_postal_code_field.style.backgroundColor = '';
+            }
+
+            if (new_email == '') {
+                missing_fields++;
+                this.#add_email1_field.style.backgroundColor = 'var(--bs-warning)';
+                this.#add_email2_field.style.backgroundColor = 'var(--bs-warning)';
+            } else {
+                this.#add_email1_field.style.backgroundColor = '';
+                this.#add_email2_field.style.backgroundColor = '';
+            }
         } else {
             this.#add_first_field.style.backgroundColor = '';
-        }
-        if (new_last == '') {
-            missing_fields++;
-            this.#add_last_field.style.backgroundColor = 'var(--bs-warning)';
-        } else {
             this.#add_last_field.style.backgroundColor = '';
-        }
-
-        if (new_addr1 == '') {
-            missing_fields++;
-            this.#add_addr1_field.style.backgroundColor = 'var(--bs-warning)';
-        } else {
             this.#add_addr1_field.style.backgroundColor = '';
-        }
-
-        if (new_city == '') {
-            missing_fields++;
-            this.#add_city_field.style.backgroundColor = 'var(--bs-warning)';
-        } else {
             this.#add_city_field.style.backgroundColor = '';
-        }
-
-        if (new_state == '') {
-            missing_fields++;
-            this.#add_state_field.style.backgroundColor = 'var(--bs-warning)';
-        } else {
             this.#add_state_field.style.backgroundColor = '';
-        }
-
-        if (new_postal_code == '') {
-            missing_fields++;
-            this.#add_postal_code_field.style.backgroundColor = 'var(--bs-warning)';
-        } else {
             this.#add_postal_code_field.style.backgroundColor = '';
-        }
-
-        if (new_email == '') {
-            missing_fields++;
-            this.#add_email1_field.style.backgroundColor = 'var(--bs-warning)';
-            this.#add_email2_field.style.backgroundColor = 'var(--bs-warning)';
-        } else {
             this.#add_email1_field.style.backgroundColor = '';
             this.#add_email2_field.style.backgroundColor = '';
+            this.#add_header.innerHTML = `
+    <div class="col-sm-12 text-bg-primary mb-2">
+        <div class="text-bg-primary m-2">
+            Add New Person and Membership
+        </div>
+    </div>`;
         }
 
         if (missing_fields > 0) {
@@ -1029,9 +1059,11 @@ class Pos {
             Add New Person and Membership (* = Required Data)
         </div>
     </div>`;
+            this.#addoverride_button.hidden = false;
             return;
         }
 
+        this.#addoverride_button.hidden = true;
         var row = {
             perid: this.#new_perid, first_name: new_first, middle_name: new_middle, last_name: new_last, suffix: new_suffix,
             legalName: new_legalName, pronouns: new_pronouns, badge_name: new_badgename, fullName: new_fullname,
@@ -1707,7 +1739,7 @@ addUnpaid(tid) {
 // create the review data screen from the cart
     reviewUpdate() {
         cart.updateReviewData();
-        reviewShown();
+        this.reviewShown();
         if (this.#review_missing_items > 0) {
             setTimeout(pos.reviewNoChanges, 100);
         } else {
@@ -2060,7 +2092,7 @@ addUnpaid(tid) {
         this.#current_tab = this.#review_tab;
         this.#review_div.innerHTML = cart.buildReviewData();
         cart.setInReview();
-        cart.unfreeze();
+        cart.freeze();
         cart.setCountrySelect();
     }
 
@@ -2084,7 +2116,9 @@ addUnpaid(tid) {
 
     checkboxCheck() {
         var emailCheckbox = document.getElementById('emailAddr_' + this.#last_email_row.toString());
-        emailCheckbox.checked = true;
+        if (emailCheckbox) {
+            emailCheckbox.checked = true;
+        }
         this.#pay_button_ercpt.hidden = false;
         this.#pay_button_ercpt.disabled = false;
     }
@@ -2133,7 +2167,8 @@ addUnpaid(tid) {
             if (this.#pay_button_pay != null) {
                 var rownum;
                 this.#pay_button_pay.hidden = true;
-                this.#pay_button_ercpt.hidden = false;
+                document.getElementById('payFormDiv').innerHTML = '';
+                // hide the rest of the payment items
                 var email_html = '';
                 var email_count = 0;
                 this.#last_email_row = -1;
@@ -2160,12 +2195,6 @@ addUnpaid(tid) {
                         setTimeout(checkboxCheck, 100);
                     }
                 }
-                document.getElementById('pay-amt').value = '';
-                document.getElementById('pay-desc').value = '';
-                document.getElementById('pay-amt-due').innerHTML = '';
-                document.getElementById('pay-check-div').hidden = true;
-                document.getElementById('pay-ccauth-div').hidden = true;
-                document.getElementById('pay-online-div').hidden = true;
                 cart.hideVoid();
             }
         } else {
@@ -2177,7 +2206,8 @@ addUnpaid(tid) {
 
             // draw the pay screen
             var pay_html = `
-<div id='payBody' class="container-fluid form-floating">
+<div id='payBody' class="container-fluid">
+ <div id="payFormDiv" ' class="container-fluid form-floating">
   <form id='payForm' action='javascript: return false; ' class="form-floating">
     <div class="row pb-2">
         <div class="col-sm-auto ms-0 me-2 p-0">New Payment Transaction ID: ` + this.#pay_tid + `</div>
@@ -2283,6 +2313,7 @@ addUnpaid(tid) {
     </div>
     <div id="receeiptEmailAddresses" class="container-fluid"></div>
   </form>
+</div>
     <div class="row mt-4">
         <div class="col-sm-12 p-0" id="pay_status"></div>
     </div>

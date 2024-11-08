@@ -1291,6 +1291,7 @@ class PosCart {
         var fieldno
         for (rownum in this.#cartPerinfo) {
             // update all the fields on the review page
+            var review_editable_fields = pos.getReviewEditableFields();
             for (fieldno in review_editable_fields) {
                 field = review_editable_fields[fieldno];
                 el = document.getElementById('c' + rownum + '-' + field);
