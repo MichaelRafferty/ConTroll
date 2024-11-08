@@ -235,7 +235,8 @@ class Pos {
     }
 
     setFindUnpaidHidden(state) {
-        this.#find_unpaid_button.hidden = state;
+        if (this.#find_unpaid_button)
+            this.#find_unpaid_button.hidden = state;
     }
 
     setMissingItems(num) {
@@ -499,7 +500,8 @@ class Pos {
 
         // empty cart
         cart.startOver();
-        this.#find_unpaid_button.hidden = false;
+        if (this.#find_unpaid_button)
+            this.#find_unpaid_button.hidden = false;
         // empty search strings and results
         this.#pattern_field.value = "";
         if (this.#find_result_table != null) {
@@ -526,6 +528,8 @@ class Pos {
         this.#receeiptEmailAddresses_div = null;
         this.#pay_tid = null;
         this.#pay_prior_discount = null;
+        // clear the pay tab
+        this.#pay_div.innerHTML = "No Payment Required, Proceed to Next Customer";
 
         this.clearAdd(reset_all);
         // set tab to find-tab
@@ -1032,6 +1036,7 @@ class Pos {
             perid: this.#new_perid, first_name: new_first, middle_name: new_middle, last_name: new_last, suffix: new_suffix,
             legalName: new_legalName, pronouns: new_pronouns, badge_name: new_badgename, fullName: new_fullname,
             address_1: new_addr1, address_2: new_addr2, city: new_city, state: new_state, postal_code: new_postal_code,
+            open_notes: '',
             country: new_country, email_addr: new_email, phone: new_phone, active: 'Y', banned: 'N',
         };
         this.#new_perid--;
@@ -2128,7 +2133,7 @@ addUnpaid(tid) {
             if (this.#pay_button_pay != null) {
                 var rownum;
                 this.#pay_button_pay.hidden = true;
-                this.#pay_button_ercpt .hidden = false;
+                this.#pay_button_ercpt.hidden = false;
                 var email_html = '';
                 var email_count = 0;
                 this.#last_email_row = -1;
