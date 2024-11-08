@@ -2207,7 +2207,7 @@ addUnpaid(tid) {
             // draw the pay screen
             var pay_html = `
 <div id='payBody' class="container-fluid">
- <div id="payFormDiv" ' class="container-fluid form-floating">
+ <div id="payFormDiv" class="container-fluid form-floating">
   <form id='payForm' action='javascript: return false; ' class="form-floating">
     <div class="row pb-2">
         <div class="col-sm-auto ms-0 me-2 p-0">New Payment Transaction ID: ` + this.#pay_tid + `</div>
@@ -2307,13 +2307,15 @@ addUnpaid(tid) {
         <div class="col-sm-auto ms-0 me-2 p-0">
             <button class="btn btn-primary btn-sm" type="button" id="pay-btn-pay" onclick="pos.pay('');">Confirm Pay</button>
         </div>
+    </div>
+  </form>
+</div>
+    <div id="receeiptEmailAddresses" class="container-fluid"></div>
+    <div class="row mt-3">
         <div class="col-sm-auto ms-0 me-2 p-0">
             <button class="btn btn-primary btn-sm" type="button" id="pay-btn-ercpt" onclick="pos.emailReceipt('email');" hidden disabled>Email Receipt</button>
         </div>
     </div>
-    <div id="receeiptEmailAddresses" class="container-fluid"></div>
-  </form>
-</div>
     <div class="row mt-4">
         <div class="col-sm-12 p-0" id="pay_status"></div>
     </div>

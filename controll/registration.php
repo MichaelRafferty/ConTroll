@@ -163,7 +163,7 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
                                     <button type="button" class="btn btn-primary btn-sm" id="addnew-btn" name="add_btn"
                                             onclick="pos.add_new();">Add to Cart</button>
                                     <button type='button' class='btn btn-primary btn-sm' id='addoverride-btn' name='override_btn' hidden
-                                            onclick='pos.add_new(1);'>Add to Cart Overriding Missing Fields</button>
+                                            onclick='pos.addNewToCart(1);'>Add to Cart Overriding Missing Fields</button>
                                     <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="pos.clearAdd();">
                                         Clear Add Person Form
                                     </button>
