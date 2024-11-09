@@ -217,13 +217,28 @@ EOF;
 
 function page_head($title, $auth) {
     global $db_ini;
+
+    $displayQ = <<<EOS
+SELECT display
+FROM auth
+WHERE name = ?;
+EOS;
+    $dR = dbSafeQuery($displayQ, 's', array($title));
+    if ($dR === false) {
+        $display = $title;
+    } else if ($dR->num_rows != 1) {
+        $display = $title;
+        $dR->free();
+    } else {
+        $display = $dR->fetch_row()[0];
+    }
     ?>
 
     <div class="container-fluid mb-2">
         <div class="row titlebar" id='titlebar'>
             <div class="col-sm-9">
                 <h1 class='title'>
-                    <?php echo $db_ini['con']['conname']?> Reg Controller <?php echo $title; ?> page
+                    <?php echo $db_ini['con']['conname']?> ConTroll <?php echo $display; ?> page
                 </h1>
             </div>
             <div class="col-sm-3">
