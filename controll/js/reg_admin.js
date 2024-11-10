@@ -480,19 +480,25 @@ function actionbuttons(cell, formatterParams, onRendered) {
     var perid = data['perid'];
     var paid = data['paid'];
     var ncount = data['ncount'];
+    var hcount = data['hcount'];
     var complete_trans = data['complete_trans'];
     var index = cell.getRow().getIndex();
 
     var btns = "";
     if (perid > 0) {
-        btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
-            ' onclick="changeReg(' + index + ')">Changes</button>';
+        btns += '<button class="btn btn-secondary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="changeReg(' + index + ')">Chgs</button>';
     }
 
-    // receipt buttons
+    // receipt button
     if (paid > 0 && complete_trans > 0)
-        btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
-            ' onclick="receipt(' + index + ')">Receipt</button>';
+        btns += '<button class="btn btn-primary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="receipt(' + index + ')">Rcpt</button>';
+
+    // history button
+    if (hcount > 0)
+        btns += '<button class="btn btn-primary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="history(' + index + ')">Hist</button>';
 
     // notes button
     if (ncount != null && ncount > 0)
