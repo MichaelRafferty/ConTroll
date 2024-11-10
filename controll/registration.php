@@ -36,7 +36,6 @@ page_init($page,
 $con = get_conf('con');
 $debug = get_conf('debug');
 $usps = get_conf('usps');
-$conf_reg = get_conf('reg');
 $controll = get_conf('controll');
 $conid = $con['id'];
 $conname = $con['conname'];
@@ -51,7 +50,6 @@ $config_vars['conid'] = $conid;
 $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['required'] = $ini['required'];
 $config_vars['useportal'] = $controll['useportal'];
-$config_vars['required'] = $conf_reg['required'];
 
 // form as laid out has no room for usps block, if we want it we need to reconsider how to do it here.
 //if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))

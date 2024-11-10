@@ -1,6 +1,11 @@
 <?php
 
 require_once "lib/base.php";
+require_once '../lib/profile.php';
+require_once '../lib/portalForms.php';
+require_once '../lib/policies.php';
+require_once('../lib/profile.php');
+require_once('../lib/policies.php');
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
@@ -8,6 +13,10 @@ if (!isset($_SESSION['user'])) {
 }
 
 $con = get_conf('con');
+$debug = get_conf('debug');
+$usps = get_conf('usps');
+$ini = get_conf('reg');
+$controll = get_conf('controll');
 $conid = $con['id'];
 $conname = $con['conname'];
 $tab = 'checkin';
@@ -29,13 +38,26 @@ if (!check_atcon($method, $conid)) {
     exit(0);
 }
 
+$config_vars = array();
+$config_vars['label'] = $con['label'];
+$config_vars['debug'] = $debug['atcon'];
+$config_vars['conid'] = $conid;
+$config_vars['regadminemail'] = $con['regadminemail'];
+$config_vars['required'] = $ini['required'];
+$config_vars['useportal'] = $controll['useportal'];
+$config_vars['required'] = $ini['required'];
+$useUSPS = false;
+
 $cdn = getTabulatorIncludes();
 page_init($page, $tab,
     /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
     /* js  */ array( ///$cdn['luxon'],
-                    $cdn['tabjs'], 'js/regpos_cart.js', 'js/regpos_coupon.js', 'js/regpos.js')
+                    $cdn['tabjs'], 'jslib/posCart.js', 'jslib/posCoupon.js', 'jslib/pos.js')
     );
 ?>
+<script type='text/javascript'>
+    var config = <?php echo json_encode($config_vars); ?>;
+</script>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
         <div class="col-sm-7">
