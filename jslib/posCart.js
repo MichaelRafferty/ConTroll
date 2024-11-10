@@ -1067,7 +1067,7 @@ class PosCart {
         var totalPayments = 0;
         var priorIndex = 0;
         for (var i = 0; i < this.#cartPmt.length; i++) {
-            totalPayments += this.#cartPmt[i].amt;
+            totalPayments += Number(this.#cartPmt[i].amt);
             if (this.#cartPmt[i].type == 'prior')
                 priorIndex = i;
         }
