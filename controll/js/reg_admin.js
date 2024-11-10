@@ -76,6 +76,12 @@ var editStatusSelect = null;
 var editOrigStatus = null;
 var editSaveOverride = null;
 
+// history items
+var historyModal = null;
+var historyTitle = null;
+var historyDiv = null;
+var historyRow = null;
+
 
 // initialization at DOM complete
 window.onload = function initpage() {
@@ -119,6 +125,13 @@ window.onload = function initpage() {
     if (id != null) {
         notesModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
+    id = document.getElementById('history');
+    if (id != null) {
+        historyModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+        historyTitle = document.getElementById('historyTitle');
+        historyDiv = document.getElementById('history-div');
+    }
+
     testdiv = document.getElementById('test');
 
     $('#registration-table').html('<button class="btn btn-primary mb-4 ms-4" onclick="getData();">Load Registration List</button>');
@@ -508,6 +521,7 @@ function actionbuttons(cell, formatterParams, onRendered) {
 return btns;
 }
 
+//// Receipt Start
 // display receipt: use the modal to show the receipt
 function displayReceipt(data) {
     document.getElementById('receipt-div').innerHTML = data['receipt_html'];
@@ -594,6 +608,102 @@ function receipt(index) {
     });
 }
 
+/// History Start
+// display history: use the modal to show the history for this reg id
+function history(index) {
+    historyRow = registrationtable.getRow(index).getData();
+    var regid = historyRow.badgeId;
+    $.ajax({
+        method: "POST",
+        url: "scripts/regadmin_getRegHistory.php",
+        data: { regid: regid },
+        success: function (data, textstatus, jqxhr) {
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['success'] !== undefined) {
+                show_message(data['success'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+            }
+            displayHistory(data);
+            if (data['success'] !== undefined)
+                show_message(data.success, 'success');
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in getReceipt: " + textStatus, jqXHR);
+        }
+    });
+}
+
+function displayHistory(data) {
+    var  title = "Registration Change History for " + historyRow.create_trans + ':' + historyRow.badgeId;
+    historyTitle.innerHTML = title
+    title += "<br/>Person:  " + historyRow.p_name + ' (' + historyRow.perid + "), Email: " + historyRow.p_email +
+        "<br/>Membership: " + historyRow.label;
+    // build the history display
+    var html = '<div class="row"><div class="col-sm-12"><h1 class="h3">' + title + '</h1></div></div>';
+    // format the heading line
+    html += "<div class='row'>\n" +
+        "<div class='col-sm-2'>Change Date</div>\n" +
+        "<div class='col-sm-1'>memId</div>\n" +
+        "<div class='col-sm-1'>Price</div>\n" +
+        "<div class='col-sm-1'>CpnDsc</div>\n" +
+        "<div class='col-sm-1'>Paid</div>\n" +
+        "<div class='col-sm-1'>Complete</div>\n" +
+        "<div class='col-sm-1'>Update By</div>\n" +
+        "<div class='col-sm-1'>Coupon</div>\n" +
+        "<div class='col-sm-1'>Plan Id</div>\n" +
+        "<div class='col-sm-1'>Status</div>\n" +
+        "</div>\n";
+    // format the current line
+    var current = data['history'][0];
+    var color = '';
+    var prior = data['history'][0];
+    for (var i = 0; i < data['history'].length; i++) {
+        var current = data['history'][i];
+        html += "<div class='row'>\n";
+
+        // change date
+        html += "<div class='col-sm-2'>" + current.change_date + "</div>\n";
+        // memId
+        color = prior.memId != current.memId ? ' style="background-color: #ffcdcd;"' : '';
+        html += "<div class='col-sm-1'" + color + ">" + current.memId + "</div>\n";
+        // price
+        color = prior.price != current.price ? ' style="background-color: #ffcdcd;"' : '';
+        html += "<div class='col-sm-1'" + color + ">" + current.price + "</div>\n";
+        // couponDiscount
+        color = prior.couponDiscount != current.couponDiscount ? ' style="background-color: #ffcdcd;"' : '';
+        html += "<div class='col-sm-1'" + color + ">" + current.couponDiscount + "</div>\n";
+        // paid
+        color = prior.paid != current.paid ? ' style="background-color: #ffcdcd;"' : '';
+        html += "<div class='col-sm-1'" + color + ">" + current.paid + "</div>\n";
+        // complete_trans
+        color = prior.complete_trans != current.complete_trans ? ' style="background-color: #ffcdcd;"' : '';
+        html += "<div class='col-sm-1'" + color + ">" + current.complete_trans + "</div>\n";
+        // updatedBy
+        color = prior.updatedBy != current.updatedBy ? ' style="background-color: #ffcdcd;"' : '';
+        html += "<div class='col-sm-1'" + color + ">" + current.updatedBy + "</div>\n";
+        // coupon
+        color = prior.coupon != current.coupon ? ' style="background-color: #ffcdcd;"' : '';
+        html += "<div class='col-sm-1'" + color + ">" + current.coupon + "</div>\n";
+        // planId
+        color = prior.planId != current.planId ? ' style="background-color: #ffcdcd;"' : '';
+        html += "<div class='col-sm-1'" + color + ">" + current.planId + "</div>\n";
+        // status
+        color = prior.status != current.status ? ' style="background-color: #ffcdcd;"' : '';
+        html += "<div class='col-sm-1'" + color + ">" + current.status + "</div>\n";
+
+        html += "</div>\n";
+        prior = current;
+    }
+    historyDiv.innerHTML = html;
+    historyModal.show();
+}
+
+//// notes start
 // notes - display the notes for this registration - ajax call to fetch the notes
 function notes(index) {
     var row = registrationtable.getRow(index);
@@ -1491,6 +1601,7 @@ function draw_registrations(data) {
             { field: "create_trans", visible: false },
             { field: "complete_trans", visible: false },
             { field: "ncount", visible: false,},
+            { field: "hcount", visible: false,},
         ],
         initialSort: [
             {column: "display_trans", dir: "desc" },
