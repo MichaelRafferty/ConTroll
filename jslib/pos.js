@@ -131,6 +131,7 @@ class Pos {
     #add_results_div = null;
     #add_mode = true;
     #addOverride = 0;
+    #uspsDiv= null;
 
     // for matching/every functions
     #checkPerid = null;
@@ -184,6 +185,7 @@ class Pos {
         this.#add_results_div = document.getElementById("add_results");
         this.#add_edit_initial_state = $("#add-edit-form").serialize();
         window.addEventListener("beforeunload", this.checkAllUnsaved);
+        this.#uspsDiv = document.getElementById("uspsblock");
 
         // review items
         this.#review_div = document.getElementById('review-div');
@@ -980,45 +982,59 @@ class Pos {
         // look for missing fields
         var missing_fields = 0;
         if (override == 0) {
-            if (new_first == '') {
-                missing_fields++;
-                this.#add_first_field.style.backgroundColor = 'var(--bs-warning)';
-            } else {
-                this.#add_first_field.style.backgroundColor = '';
+            var required = config['required'];
+
+            if (required != '') {
+                if (new_first == '') {
+                    missing_fields++;
+                    this.#add_first_field.style.backgroundColor = 'var(--bs-warning)';
+                } else {
+                    this.#add_first_field.style.backgroundColor = '';
+                }
             }
-            if (new_last == '') {
-                missing_fields++;
-                this.#add_last_field.style.backgroundColor = 'var(--bs-warning)';
-            } else {
-                this.#add_last_field.style.backgroundColor = '';
+            if (required == 'all') {
+                if (new_last == '') {
+                    missing_fields++;
+                    this.#add_last_field.style.backgroundColor = 'var(--bs-warning)';
+                } else {
+                    this.#add_last_field.style.backgroundColor = '';
+                }
             }
 
-            if (new_addr1 == '') {
-                missing_fields++;
-                this.#add_addr1_field.style.backgroundColor = 'var(--bs-warning)';
-            } else {
-                this.#add_addr1_field.style.backgroundColor = '';
+            if (required == 'all') {
+                if (new_addr1 == '') {
+                    missing_fields++;
+                    this.#add_addr1_field.style.backgroundColor = 'var(--bs-warning)';
+                } else {
+                    this.#add_addr1_field.style.backgroundColor = '';
+                }
             }
 
-            if (new_city == '') {
-                missing_fields++;
-                this.#add_city_field.style.backgroundColor = 'var(--bs-warning)';
-            } else {
-                this.#add_city_field.style.backgroundColor = '';
-            }
+            if (required == 'addr' || required == 'all' ||
+                (new_country == 'USA' && this.#uspsDiv != null &&
+                    (new_addr1 != '' || new_city != '' || new_state != '' || new_postal_code != '')
+                )
+            ) {
+                if (new_city == '') {
+                    missing_fields++;
+                    this.#add_city_field.style.backgroundColor = 'var(--bs-warning)';
+                } else {
+                    this.#add_city_field.style.backgroundColor = '';
+                }
 
-            if (new_state == '') {
-                missing_fields++;
-                this.#add_state_field.style.backgroundColor = 'var(--bs-warning)';
-            } else {
-                this.#add_state_field.style.backgroundColor = '';
-            }
+                if (new_state == '') {
+                    missing_fields++;
+                    this.#add_state_field.style.backgroundColor = 'var(--bs-warning)';
+                } else {
+                    this.#add_state_field.style.backgroundColor = '';
+                }
 
-            if (new_postal_code == '') {
-                missing_fields++;
-                this.#add_postal_code_field.style.backgroundColor = 'var(--bs-warning)';
-            } else {
-                this.#add_postal_code_field.style.backgroundColor = '';
+                if (new_postal_code == '') {
+                    missing_fields++;
+                    this.#add_postal_code_field.style.backgroundColor = 'var(--bs-warning)';
+                } else {
+                    this.#add_postal_code_field.style.backgroundColor = '';
+                }
             }
 
             if (new_email == '') {
