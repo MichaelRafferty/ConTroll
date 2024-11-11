@@ -1080,12 +1080,23 @@ class Pos {
         }
 
         this.#addoverride_button.hidden = true;
+
+        //  build the policy array
+        var rowPolicies = {};
+        for (var pol in this.#policies) {
+            var policyName = this.#policies[pol].policy;
+            rowPolicies[policyName] = {};
+            rowPolicies[policyName].policy = policyName;
+            rowPolicies[policyName].perid = this.#new_perid;
+            rowPolicies[policyName].response = document.getElementById('p_' + policyName).checked ? 'Y' : 'N';
+        }
+
         var row = {
             perid: this.#new_perid, first_name: new_first, middle_name: new_middle, last_name: new_last, suffix: new_suffix,
             legalName: new_legalName, pronouns: new_pronouns, badge_name: new_badgename, fullName: new_fullname,
             address_1: new_addr1, address_2: new_addr2, city: new_city, state: new_state, postal_code: new_postal_code,
             open_notes: '',
-            country: new_country, email_addr: new_email, phone: new_phone, active: 'Y', banned: 'N',
+            country: new_country, email_addr: new_email, phone: new_phone, active: 'Y', banned: 'N', policies: rowPolicies
         };
         this.#new_perid--;
 
