@@ -98,9 +98,9 @@ EOS;
              <div class="col-sm-1 ms-0 me-0 p-0">
                  <strong>MI</strong>
              </div>
-             <div class="col-sm-1 ms-0 me-0 p-0">
+             <!-- JIRA C1-221 PT <div class="col-sm-1 ms-0 me-0 p-0">
                  <strong>Zip</strong>
-             </div>
+             </div> -->
         </div> 
             <?php
   foreach($results as $row) {
@@ -115,9 +115,9 @@ EOS;
                 <div class="col-sm-1 ms-0 me-0 p-0">
                     <?php echo $row['mi'];?>
                 </div>
-                <div class="col-sm-1 ms-0 me-0 p-0">
-                     <?php echo $row['zip'];?>
-                </div>
+                <!-- JIRA C1-221 PT <div class="col-sm-1 ms-0 me-0 p-0">
+                     <?php //echo $row['zip'];?>
+                </div> -->
             </div> 
             <?php
   }
