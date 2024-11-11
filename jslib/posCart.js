@@ -369,7 +369,10 @@ class PosCart {
         cart_row.phone = row.phone;
         cart_row.active = 'Y';
 
-        // policies
+        // policies - first check if the row has any, then update the row with the policies
+        if (!cart_row.hasOwnProperty('policies')) {
+            cart_row.policies = {};
+        }
         for (var pol in policies) {
             var policyName = policies[pol].policy;
 
