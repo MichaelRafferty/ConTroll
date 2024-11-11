@@ -2,6 +2,7 @@
 global $db_ini;
 
 require_once '../lib/base.php';
+require_once '../lib/addendum.php';
 require_once('../../../lib/email__load_methods.php');
 $check_auth = google_init('ajax');
 $perm = 'vendor';
@@ -266,7 +267,7 @@ SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.website, exh.exhibitorEmail
     xS.item_approved, xS.time_approved, xS.approved_units, xS.approved_code, xS.approved_description,
     xS.item_purchased, xS.time_purchased, xS.purchased_units, xS.purchased_code, xS.purchased_description, xS.transid,
     eRY.id AS exhibitsRegionYearId, eRY.exhibitsRegion AS regionId, eRY.ownerName, eRY.ownerEmail, eR.name AS regionName, exh.exhibitorNumber,
-    IFNULL(pName, nName) as agentName,
+    IFNULL(pName, nName) as agentName, eR.shortname,
     exh.pu * 10000 + exh.au * 100 + exh.ru AS sortOrder
 FROM vw_ExhibitorSpace xS
     JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
@@ -309,6 +310,9 @@ EOS;
     $spaceDetail = '';
     $spaceHeader = '';
     $spaceSubject = '';
+    $spaceAddendum = '';
+    $shortName = '';
+    $longName = '';
     $ownerName = '';
     $ownerEmail = '';
     $approved = false;
@@ -318,6 +322,8 @@ EOS;
             if ($spaceHeader == '') {
                 $ownerName = $detail['ownerName'];
                 $ownerEmail = $detail['ownerEmail'];
+                $shortName = $detail['shortname'];
+                $longName = $detail['regionName'];
                 $spaceHeader = "Your approval for space in " . $con['label'] . "'s " . $detail['regionName'] . " has been updated.";
                 $spaceSubject = "Update to " . $con['label'] . "'s " . $detail['regionName'] . " space approval";
             }
@@ -337,6 +343,8 @@ EOS;
 
     if ($approved) {
         $spaceDetail .= "\nPlease sign into the portal to purchase your space and memberships.\n";
+
+        $spaceAddendum = getVendorAddendum($shortName, $longName, '_space_approval')[1];
     }
 
     $body = <<<EOS
@@ -345,6 +353,8 @@ Dear $exhibitorName
 $spaceHeader
 
 $spaceDetail
+
+$spaceAddendum
 
 Thank you.
 $ownerName
