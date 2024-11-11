@@ -38,13 +38,20 @@ function getRulesData($conid, $regadmin = false, $atcon = false) {
     } else {
         $where = $regadmin ? '' : "AND startdate <= NOW() AND enddate > NOW()  AND online = 'Y'";
     }
+
+    // variable sort orders
+    if ($regadmin || $atcon) {
+        $orderBy = 'conid, mt.sortorder, m.label';
+    } else {
+        $orderBy = 'm.sort_order';
+    }
     $QQ = <<<EOS
 SELECT m.*, m.id as memId
 FROM memList m
 JOIN memTypes mt ON m.memType = mt.memType
 WHERE ((conid = ? AND memCategory != 'yearahead') OR (conid = ? AND memCategory = 'yearahead'))
 $where
-ORDER BY conid, mt.sortorder, m.label;
+ORDER BY $orderBy;
 EOS;
     $QR = dbSafeQuery($QQ, 'ii', array($conid, $conid + 1));
     while ($row = $QR->fetch_assoc()) {
