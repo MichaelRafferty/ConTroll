@@ -108,17 +108,15 @@ function openInvoice(id) {
                 }
                 break;
             case 'vendor':
-                html += "<p>All vendors must have a membership. Included and additional discounted memberships can be purchased while paying for your space.";
+                html += "<p>All vendors must have a membership. Additional discounted memberships can be purchased while paying for your space.";
                 break;
             default:
                 html += "<p>All exhibitors must have a membership. Included and additional discounted memberships can be purchased while paying for your space.";
         }
 
-        html += " If you do not purchase them now while paying your space invoice, you will have to purchase them at the current membership rates.</p>" +
-            "<p>If you are unsure who will be using the registrations please use the first name of ‘Provided’ and a last name of ‘At Con’. " +
-            "The on-site registration desk will update the membership to the name on their ID.</p>" +
-            "<p>Program participants do not need to buy memberships; however, we will confirm that they meet the requirements to waive the membership cost. " +
-            "If they do not, they will need to purchase a membership on-site at the on-site rates.</p>" +
+        html += " If you do not purchase them now while paying your space invoice, you can purchase them at https://reg.boskone.org.</p>" +
+            "<p>If you are unsure who will be using the registrations please wait and make the purchase using https://reg.boskone.org. The $50 rate will always be available. (Waiting until you know the name will make Boskone Atcon registration and badge pickup faster.) " +
+            "<p>Dealers that are also Program participants do not need to buy memberships; however, we will confirm that they meet Program requirements " +
             "<p><input type='checkbox' style='transform: scale(2);' name='agreeNone' id='agreeNone'> &nbsp;&nbsp;" +
             "If you do not wish to purchase any memberships at this time, check this box to acknowledge the requirement for memberships above.</p>";
 
