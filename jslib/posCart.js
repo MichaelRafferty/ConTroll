@@ -60,7 +60,6 @@ class PosCart {
     #priorPayments = null;
 
 // Constants
-    #isMembershipTypes = [ 'full', 'virtual', 'oneday' ];
     #isDueStatuses = [ 'unpaid', 'plan', 'in-cart' ];
 
 // initialization
@@ -935,8 +934,7 @@ class PosCart {
             this.#totalPaid += Number(mrow.paid);
             if (mrow.couponDiscount > 0)
                 this.#totalPaid += Number(mrow.couponDiscount);
-            if (this.#isMembershipTypes.includes(memType))
-                membership_found = true;
+            membership_found = true;
             if (mrow.status != 'paid') {
                 this.#unpaidRows++;
             }
