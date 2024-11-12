@@ -116,7 +116,7 @@ function openInvoice(id) {
 
         html += " If you do not purchase them now while paying your space invoice, you can purchase them at https://reg.boskone.org.</p>" +
             "<p>If you are unsure who will be using the registrations please wait and make the purchase using https://reg.boskone.org. The $50 rate will always be available. (Waiting until you know the name will make Boskone Atcon registration and badge pickup faster.) " +
-            "<p>Dealers that are also Program participants do not need to buy memberships; however, we will confirm that they meet Program requirements " +
+            "<p>Dealers and/or Artists that are also Program participants do not need to buy memberships; however, we will confirm that they meet Program requirements." +
             "<p><input type='checkbox' style='transform: scale(2);' name='agreeNone' id='agreeNone'> &nbsp;&nbsp;" +
             "If you do not wish to purchase any memberships at this time, check this box to acknowledge the requirement for memberships above.</p>";
 
