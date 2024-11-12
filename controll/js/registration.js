@@ -9,6 +9,8 @@ var memCategories = null;
 var memList = null;
 var memListIdx = null;
 var memRules = null;
+var baseManagerEnabled = true;
+var inControll = true;
 
 // initialization
 // lookup all DOM elements

@@ -60,7 +60,12 @@ $cdn = getTabulatorIncludes();
 page_init($page, $tab,
     /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
     /* js  */ array( ///$cdn['luxon'],
-                    $cdn['tabjs'], 'jslib/posCart.js', 'jslib/posCoupon.js', 'jslib/pos.js', 'js/regpos.js')
+                    $cdn['tabjs'],
+                    'js/base.js',
+                    'jslib/posCart.js',
+                    'jslib/posCoupon.js',
+                    'jslib/pos.js',
+                    'jslib/membershipRules.js', 'js/regpos.js')
     );
 ?>
 <script type='text/javascript'>
@@ -212,6 +217,48 @@ page_init($page, $tab,
             </div>
         </div>
     </div>
+    <!--- add/Edit membership modal popup -->
+    <div class='modal modal-x1 fade' id='addEdit' tabindex='-3' aria-labelledby='addEdit' data-bs-backdrop='static'
+         data-bs-keyboard='false' aria-hidden='true' style='--bs-modal-width: 96%;'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='AddEditTitle'>
+                        Add/Edit Memberships
+                    </div>
+                    <button type='button' class='btn-close' onclick='cart.checkAddEditClose();' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' id='AddEditBody' style='padding: 4px; background-color: lightcyan;'>
+                    <?php
+                        drawGetAgeBracket('<span id="addEditFullName">Fullname</span>', $condata);
+                        drawGetNewMemberships()
+                    ?>
+                    <div class='row'>
+                        <div class='col-sm-12'>
+                            <h2 class='size-h3'>Registration Items:</h2>
+                        </div>
+                    </div>
+                    <div id='cartContentsDiv'>Cart Placeholder</div>
+                    <div class='row'>
+                        <div class='col-sm-12' id='aeMessageDiv'></div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' id='discard_change_button' class='btn btn-secondary'
+                            onclick='cart.checkAddEditClose();'>
+                        Keep Current Memberships
+                    </button>
+                    <button type='button' id='close_change_button' class='btn btn-primary'
+                            onclick='cart.saveMembershipChange();'>
+                        Save Changes to Memberships
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
+        drawVariablePriceModal('cart');
+    ?>
     <!--- pay cash change modal popup -->
     <div class='modal modal-lg' id='CashChange' tabindex='-4' aria-labelledby='CashChange' data-bs-backdrop='static' data-bs-keyboard='false' aria-hidden='true'>
         <div class='modal-dialog'>

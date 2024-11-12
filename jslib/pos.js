@@ -65,7 +65,7 @@ class Pos {
     #conid = null;
     #conlabel = null;
     #user_id = 0;
-    #Manager = false;
+    #manager = false;
     // initialize non primary categories to only those in addition to the memConfig table, including grandfathered spellings,
     // it will be set in the initial data setup section
     #non_primary_categories = ['add-on'];
@@ -100,6 +100,7 @@ class Pos {
     #number_search = null;
     #memLabel = null;
     #find_unpaid_button = null;
+    #isCashier = false;
     #find_perid = null;
     #name_search = '';
 
@@ -157,6 +158,7 @@ class Pos {
         this.#pattern_field.focus();
         this.#id_div = document.getElementById("find_results");
         this.#find_unpaid_button = document.getElementById("find_unpaid_btn");
+        this.#isCashier = this.#find_unpaid_button !== undefined && this.#find_unpaid_button !== null;
 
         // add/edit people
         this.#add_index_field = document.getElementById("perinfo-index");
@@ -213,6 +215,7 @@ class Pos {
         // load the initial data and the proceed to set up the rest of the system
         var postData = {
             ajax_request_action: 'loadInitialData',
+            nopay: !this.#isCashier,
         };
         var _this = this;
         $.ajax({
@@ -257,7 +260,7 @@ class Pos {
     }
 
     getManager() {
-        return this.#Manager == 1;
+        return this.#manager == 1  && baseManagerEnabled;
     }
 
     getReviewEditableFields() {
@@ -333,7 +336,7 @@ class Pos {
         this.#conlabel =  data.label;
         this.#conid = data.conid;
         this.#user_id = data.user_id
-        this.#Manager = data.Manager;
+        this.#manager = data.Manager;
         this.#startdate = data.startdate;
         this.#enddate = data.enddate;
         this.#memList = data.memLabels;
@@ -344,6 +347,9 @@ class Pos {
         this.#policies = data.policies;
         this.#memRules = data.memRules;
         this.#discount_mode = data.discount;
+
+        if (this.#manager == false)
+            baseManagerEnabled = false;
 
         // create the globals (vars) for membershipRules.js
         memTypes= data.gmemTypes;
@@ -507,6 +513,10 @@ class Pos {
         if (reset_all > 0)
             clear_message();
 
+        // reset admin mode if enabled
+        if (inConTroll && baseManagerEnabled) {
+            base_toggleManager();
+        }
         // empty cart
         cart.startOver();
         if (this.#find_unpaid_button)
@@ -1163,7 +1173,7 @@ class Pos {
         }
         html += `</div>
         <div class="col-sm-2">`;
-        if (this.#Manager) {
+        if (baseManagerEnabled && this.#manager) {
             html += '<button type="button" class="btn btn-sm btn-secondary p-0" onClick="pos.editPerinfoNotes(0, \'result\')">Edit Notes</button>';
         }
 
@@ -1289,10 +1299,10 @@ class Pos {
         var index = cell.getRow().getData().index;
         var open_notes = cell.getRow().getData().open_notes;
         var html = "";
-        if (open_notes != null && open_notes.length > 0 && !this.#Manager) {
+        if (open_notes != null && open_notes.length > 0 && !(baseManagerEnabled && this.#manager)) {
             html += '<button type="button" class="btn btn-sm btn-info p-0" style="--bs-btn-font-size: 75%;"  onclick="pos.showPerinfoNotes(' + index + ', \'' + formatterParams.t + '\')">O</button>';
         }
-        if (this.#Manager) {
+        if (baseManagerEnabled && this.#manager) {
             var btnclass = "btn-secondary";
             if (open_notes != null && open_notes.length > 0)
                 btnclass = "btn-info";
@@ -1344,7 +1354,7 @@ class Pos {
         var note = null;
         var fullName = null;
 
-        if (!this.#Manager)
+        if (!this.#manager  || !baseManagerEnabled)
             return;
 
         this.#notesType = null;
@@ -1419,10 +1429,10 @@ class Pos {
             if (this.#notesType == 'RC') {
                 cart.setRegNote(this.#notesPerid, this.#notesIndex, document.getElementById("new_reg_note").value);
             }
-            if (this.#notesType == 'PC' && this.#Manager) {
+            if (this.#notesType == 'PC' && this.#manager && baseManagerEnabled) {
                 cart.setPersonNote(this.#notesIndex, document.getElementById("perinfoNote").value);
             }
-            if (this.#notesType == 'PR' && this.#Manager) {
+            if (this.#notesType == 'PR' && this.#manager && baseManagerEnabled) {
                 var new_note = document.getElementById("perinfoNote").value;
                 if (new_note != this.#notesPriorValue) {
                     this.#result_perinfo[this.#notesIndex].open_notes = new_note;
@@ -1839,8 +1849,23 @@ addUnpaid(tid) {
         else
             clear_message();
 
-        bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
-        cart.drawCart();
+        if (this.#isCashier) {
+            bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
+            cart.drawCart();
+        } else {
+            cart.showNext();
+            cart.hideStartOver();
+            cart.freeze();
+            var el = document.getElementById('review-btn-update');
+            if (el)
+                el.hidden = true;
+            el = document.getElementById('review-btn-nochanges');
+            if (el)
+                el.hidden = true;
+            el = document.getElementById('review_status');
+            if (el)
+                el.innerHTML = "Completed: Send customer to cashier with id of " + pay_tid;
+        }
     }
 
 // setPayType: shows/hides the appropriate fields for that payment type
@@ -2304,7 +2329,8 @@ addUnpaid(tid) {
             <label for="pt-cash">Cash</label>
 `;
             if (this.#discount_mode != "none") {
-                if (this.#discount_mode == 'any' || ((this.#discount_mode == 'manager' || this.#discount_mode == 'active') && this.#Manager)) {
+                if (this.#discount_mode == 'any' || ((this.#discount_mode == 'manager' || this.#discount_mode == 'active') &&
+                    this.#manager && baseManagerEnabled)) {
                     pay_html += `
             <input type="radio" id="pt-discount" name="payment_type" value="discount" onchange='pos.setPayType("discount");'/>
             <label for="pt-discount">Discount</label>
