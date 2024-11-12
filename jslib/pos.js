@@ -27,6 +27,7 @@ class Pos {
     #pay_div = null;
     #pay_button_pay = null;
     #pay_button_ercpt = null;
+    #pay_button_rcpt = null;
     #pay_tid = null;
     #discount_mode = 'none';
     #num_coupons = 0;
@@ -85,6 +86,7 @@ class Pos {
     #emailAddreesRecipients = [];
     #last_email_row = '';
     #receeiptEmailAddresses_div = null;
+    #lastReceiptType = '';
 
     // tab fields
     #find_tab = null;
@@ -544,6 +546,7 @@ class Pos {
         cart.hideVoid();
         this.#pay_button_pay = null;
         this.#pay_button_ercpt = null;
+        this.#pay_button_rcpt = null;
         this.#receeiptEmailAddresses_div = null;
         this.#pay_tid = null;
         this.#pay_prior_discount = null;
@@ -2083,6 +2086,7 @@ addUnpaid(tid) {
 
 // Create a receipt and email it
     emailReceipt(receipt_type) {
+        this.#last_receipt_type = receipt_type;
         // header text
         var header_text = cart.receiptHeader(this.#user_id, this.#pay_tid);
         // optional footer text
@@ -2097,7 +2101,13 @@ addUnpaid(tid) {
             receipt_type: receipt_type,
             email_addrs: this.#emailAddreesRecipients,
         };
-        this.#pay_button_ercpt.disabled = true;
+        if (receiptPrinterAvailable || receipt_type == 'email') {
+            if (receipt_type == 'email')
+                this.#pay_button_ercpt.disabled = true;
+            else
+                this.#pay_button_rcpt.disabled = true;
+        }
+
         var _this = this;
         $.ajax({
             method: "POST",
@@ -2114,10 +2124,16 @@ addUnpaid(tid) {
                 } else if (data.warn !== undefined) {
                     show_message(data.warn, 'success');
                 }
-                _this.#pay_button_ercpt.disabled = false;
+                if (this.#last_receipt_type == 'email')
+                    _this.#pay_button_ercpt.disabled = false;
+                else
+                    _this.#pay_button_rcpt.disabled = false;
             },
             error: function (jqXHR, textstatus, errorThrown) {
-                _this.#pay_button_ercpt.disabled = false;
+                if (this.#last_receipt_type == 'email')
+                    _this.#pay_button_ercpt.disabled = false;
+                else
+                    _this.#pay_button_rcpt.disabled = false;
                 showAjaxError(jqXHR, textstatus, errorThrown);
             }
         });
@@ -2219,6 +2235,7 @@ addUnpaid(tid) {
             if (this.#pay_button_pay != null) {
                 var rownum;
                 this.#pay_button_pay.hidden = true;
+                this.#pay_button_rcpt.hidden = false;
                 document.getElementById('payFormDiv').innerHTML = '';
                 // hide the rest of the payment items
                 var email_html = '';
@@ -2254,6 +2271,8 @@ addUnpaid(tid) {
                 this.#pay_button_pay.hidden = false;
                 this.#pay_button_ercpt.hidden = true;
                 this.#pay_button_ercpt.disabled = true;
+                pay_button_print.hidden = true;
+                pay_button_print.disabled = true;
             }
 
             // draw the pay screen
@@ -2368,6 +2387,9 @@ addUnpaid(tid) {
         <div class="col-sm-auto ms-0 me-2 p-0">
             <button class="btn btn-primary btn-sm" type="button" id="pay-btn-ercpt" onclick="pos.emailReceipt('email');" hidden disabled>Email Receipt</button>
         </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-rcpt" onclick="pos.emailReceipt('print');" hidden disabled>Print Receipt</button>
+        </div>
     </div>
     <div class="row mt-4">
         <div class="col-sm-12 p-0" id="pay_status"></div>
@@ -2378,6 +2400,7 @@ addUnpaid(tid) {
             this.#pay_div.innerHTML = pay_html;
             this.#pay_button_pay = document.getElementById('pay-btn-pay');
             this.#pay_button_ercpt = document.getElementById('pay-btn-ercpt');
+            this.#pay_button_rcpt = document.getElementById('pay-btn-rcpt');
             this.#receeiptEmailAddresses_div = document.getElementById('receeiptEmailAddresses');
             if (this.#receeiptEmailAddresses_div)
                 this.#receeiptEmailAddresses_div.innerHTML = '';
