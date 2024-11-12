@@ -6,21 +6,7 @@
 // Used both by mail in registration (controll/registration.php) and atcon (atcon/regpos.php)
 
 require_once '../lib/base.php';
-
-$check_auth = google_init('ajax');
-$perm = 'registration';
-
-$response = array('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
-
-if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    RenderErrorAjax('Authentication Failed');
-    exit();
-}
-
-// use common global Ajax return functions
-global $returnAjaxErrors, $return500errors;
-$returnAjaxErrors = true;
-$return500errors = true;
+require_once('../../lib/policies.php');
 
 $con = get_conf('con');
 $conid = $con['id'];
@@ -33,12 +19,20 @@ if ($ajax_request_action != 'updateCartElements') {
     exit();
 }
 
-$user_id = $_POST['user_id'];
-if ($user_id != $_SESSION['user_id']) {
-    ajaxError("Invalid credentials passed");
-    return;
+if (!(check_atcon('cashier', $conid) || check_atcon('data_entry', $conid))) {
+    $message_error = 'No permission.';
+    RenderErrorAjax($message_error);
+    exit();
 }
-$user_perid = $_SESSION['user_perid'];
+
+$user_id = $_POST['user_id'];
+if ($user_id != $_SESSION['user']) {
+    ajaxError('Invalid credentials passed');
+}
+
+$user_perid = $user_id;
+
+$response = array('post' => $_POST, 'get' => $_GET);
 try {
     $cart_perinfo = json_decode($_POST['cart_perinfo'], true, 512, JSON_THROW_ON_ERROR);
 }
@@ -173,6 +167,7 @@ if ($master_transid === false) {
     return;
 }
 
+$policy_upd = 0;
 // loop over all perinfo records
 for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
     $cartrow = $cart_perinfo[$row];
@@ -285,7 +280,6 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             }
         }
     }
-
     // Now process the policies for this person
     $policy_upd += updateExisingMemberPolicies($cartrow['policies'], $conid, $cartrow['perid'], $user_perid);
 

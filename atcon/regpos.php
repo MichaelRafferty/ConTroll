@@ -17,6 +17,7 @@ $debug = get_conf('debug');
 $usps = get_conf('usps');
 $ini = get_conf('reg');
 $controll = get_conf('controll');
+$condata = get_con();
 $conid = $con['id'];
 $conname = $con['conname'];
 $tab = 'checkin';

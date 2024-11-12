@@ -6,6 +6,7 @@
 // Store the cart into the system using add/update/delete and create appropriate transaction records
 
 require_once('../lib/base.php');
+require_once('../../lib/policies.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;

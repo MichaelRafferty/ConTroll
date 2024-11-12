@@ -174,3 +174,34 @@ EOS;
     }
     return  $policy_upd;
 }
+
+// update policies in memberPolicies using the direct array and return number updated
+function updateExisingMemberPolicies($policies, $conid, $perid, $loginId) {
+    // now update the policies
+    if ($policies == null)
+        return 0;
+
+    $iQ = <<<EOS
+INSERT INTO memberPolicies(perid, conid, policy, response, updateBy)
+VALUES (?,?,?,?,?);
+EOS;
+
+    $uQ = <<<EOS
+UPDATE memberPolicies
+SET response = ?, updateBy = ?
+WHERE id = ?;
+EOS;
+
+    $policy_upd = 0;
+    foreach ($policies as $policy) {
+        if (array_key_exists('policyId', $policy) && $policy['policyId'] > 0) {
+            $policy_upd += dbSafeCmd($uQ, 'sii', array($policy['response'], $loginId, $policy['policyId']));
+        } else {
+            $newId = dbSafeInsert($iQ, 'iissi', array($perid, $conid, $policy['policy'], $policy['response'], $loginId));
+            if ($newId !== false) {
+                $policy_upd++;
+            }
+        }
+    }
+    return  $policy_upd;
+}
