@@ -1,6 +1,6 @@
 <?php
-// library AJAX Processor: reg_processPayment.php
-// Balticon Registration System
+// library AJAX Processor: pos_processPayment.php
+// ConTroll Registration System
 // Author: Syd Weinstein
 // create payment record
 
@@ -8,20 +8,34 @@ require_once '../lib/base.php';
 require_once('../../lib/log.php');
 require_once('../../lib/cc__load_methods.php');
 
-$check_auth = google_init('ajax');
-$perm = 'registration';
-
-$response = array('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
-
-if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    RenderErrorAjax('Authentication Failed');
-    exit();
-}
-
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
+
+$con = get_conf('con');
+$conid = $con['id'];
+$ajax_request_action = '';
+if ($_POST && $_POST['ajax_request_action']) {
+    $ajax_request_action = $_POST['ajax_request_action'];
+}
+if ($ajax_request_action != 'updateCartElements') {
+    RenderErrorAjax('Invalid calling sequence.');
+    exit();
+}
+
+if (!(check_atcon('cashier', $conid) || check_atcon('data_entry', $conid))) {
+    $message_error = 'No permission.';
+    RenderErrorAjax($message_error);
+    exit();
+}
+
+$user_id = $_POST['user_id'];
+if ($user_id != $_SESSION['user_id']) {
+    ajaxError('Invalid credentials passed');
+}
+
+$user_perid = $user_id;
 
 $log = get_conf('log');
 $con = get_conf('con');
@@ -40,12 +54,6 @@ if ($ajax_request_action != 'processPayment') {
 //  cart_perinfo: perinfo records with memberships embedded
 //  new_payment: payment being added
 //  pay_tid: current master transaction
-
-$user_id = $_POST['user_id'];
-if ($user_id != $_SESSION['user_id']) {
-    ajaxError('Invalid credentials passed');
-}
-$user_perid = $_SESSION['user_perid'];
 
 $master_tid = $_POST['pay_tid'];
 if ($master_tid <= 0) {

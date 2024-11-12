@@ -8,6 +8,11 @@
 require_once '../lib/base.php';
 require_once('../../lib/policies.php');
 
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
+
 $con = get_conf('con');
 $conid = $con['id'];
 $ajax_request_action = '';
