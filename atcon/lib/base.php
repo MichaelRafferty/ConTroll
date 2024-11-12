@@ -243,11 +243,16 @@ function page_init($title, $tab, $css, $js)
     }
 }
 
-function page_foot()
-{
+function page_foot($title = '') {
     ?>
-</body>
-</html>
+    </div>
+    <div class="container-fluid">
+        <div class='row mt-2'>
+            <?php drawBug(12); ?>
+        </div>
+    </div>
+    </body>
+    </html>
     <?php
 }
 
