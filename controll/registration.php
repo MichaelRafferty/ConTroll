@@ -186,7 +186,7 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
             <div class="row">
                 <div class="col-sm-12 mt-3">
                     <button type="button" class="btn btn-primary btn-sm" id="cart_no_changes_btn"
-                            onclick="pos.review_nochanges();" hidden>No Changes
+                            onclick="pos.reviewNoChanges();" hidden>No Changes
                     </button>
                     <button type="button" class="btn btn-primary btn-sm" id="review_btn"
                             onclick="pos.startReview();" hidden>
