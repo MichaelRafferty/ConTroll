@@ -45,9 +45,27 @@ if (array_key_exists('currency', $con)) {
 
 // printReceipt: print the text receipt "text", if printer name starts with 0, then just log the receipt
 $header = $_POST['header'];
-$prows = $_POST['prows'];
-$pmtrows = $_POST['pmtrows'];
 $footer = $_POST['footer'];
+try {
+    $prows = json_decode($_POST['prows'], true, 512, JSON_THROW_ON_ERROR);
+}
+catch (Exception $e) {
+    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+    $response['error'] = $msg;
+    error_log($msg);
+    ajaxSuccess($response);
+    exit();
+}
+try {
+    $pmtrows = json_decode($_POST['pmtrows'], true, 512, JSON_THROW_ON_ERROR);
+}
+catch (Exception $e) {
+    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+    $response['error'] = $msg;
+    error_log($msg);
+    ajaxSuccess($response);
+    exit();
+}
 
 $dolfmt = new NumberFormatter("", NumberFormatter::CURRENCY);
 
