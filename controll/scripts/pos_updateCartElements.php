@@ -39,7 +39,17 @@ if ($user_id != $_SESSION['user_id']) {
     return;
 }
 $user_perid = $_SESSION['user_perid'];
-$cart_perinfo = $_POST['cart_perinfo'];
+try {
+    $cart_perinfo = json_decode($_POST['cart_perinfo'], true, 512, JSON_THROW_ON_ERROR);
+}
+catch (Exception $e) {
+    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+    $response['error'] = $msg;
+    error_log($msg);
+    ajaxSuccess($response);
+    exit();
+}
+
 if (sizeof($cart_perinfo) <= 0) {
     ajaxError('No members are in the cart');
     return;

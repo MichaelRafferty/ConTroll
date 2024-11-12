@@ -296,7 +296,7 @@ var base_user_div = null;
 var base_managerOverrideModal = null;
 var base_managerPassword = null;
 var base_password_modal_error_div = null;
-var inControll = false;
+var inConTroll = false;
 function base_toggleManager() {
     if (base_navitem === null) {
         page_banner = document.getElementById("page_banner");

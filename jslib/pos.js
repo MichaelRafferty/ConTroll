@@ -471,10 +471,10 @@ class Pos {
     // void transaction - TODO: needs to be written to actually void out a transaction in progress
     voidTrans() {
         var postData = {
-            ajax_request_action: 'voidPayment',
+            ajax_request_action: 'pos_voidPayment',
             user_id: this.#user_id,
             pay_tid: this.#pay_tid,
-            cart_perinfo: cart.getCartPerinfo(),
+            cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
         };
         $("button[name='void_btn']").attr("disabled", true);
         $.ajax({
@@ -834,7 +834,7 @@ class Pos {
             this.#add_postal_code_field.style.backgroundColor = '';
             this.#add_email1_field.style.backgroundColor = '';
             this.#add_email2_field.style.backgroundColor = '';
-            if (this.#add_results_table != null) {
+            if (this.void_table != null) {
                 this.#add_results_table.destroy();
                 this.#add_results_table = null;
                 this.#add_results_div.innerHTML = "";
@@ -1813,7 +1813,7 @@ addUnpaid(tid) {
         // submit the current card data to update the database, retrieve all TID's/PERID's/REGID's of inserted data
         var postData = {
             ajax_request_action: 'updateCartElements',
-            cart_perinfo: cart.getCartPerinfo(),
+            cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
             user_id: this.#user_id,
         };
         var _this = this;
@@ -2028,7 +2028,7 @@ addUnpaid(tid) {
         // process payment
         var postData = {
             ajax_request_action: 'processPayment',
-            cart_perinfo: cart.getCartPerinfo(),
+            cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
             new_payment: prow,
             coupon: prow.coupon,
             change: crow,
@@ -2091,8 +2091,8 @@ addUnpaid(tid) {
         var postData = {
             ajax_request_action: 'printReceipt',
             header: header_text,
-            prows: cart.getCartPerinfo(),
-            pmtrows: cart.getCartPmt(),
+            prows: JSON.stringify(cart.getCartPerinfo()),
+            pmtrows: JSON.stringify(cart.getCartPmt()),
             footer: footer_text,
             receipt_type: receipt_type,
             email_addrs: this.#emailAddreesRecipients,
