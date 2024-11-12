@@ -1,6 +1,6 @@
 <?php
 
-// library AJAX Processor: regpos_printBadge.php
+// library AJAX Processor: pos_printBadge.php
 // Balticon Registration System
 // Author: Syd Weinstein
 // print a badge from POS

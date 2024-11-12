@@ -1,6 +1,6 @@
 <?php
 
-// library AJAX Processor: regpos_updatePrintcount.php
+// library AJAX Processor: pos_updatePrintcount.php
 // Balticon Registration System
 // Author: Syd Weinstein
 // Retrieve perinfo and reg records for the Find and Add tabs

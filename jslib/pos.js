@@ -2139,6 +2139,91 @@ addUnpaid(tid) {
         });
     }
 
+// addBadgeToPrint
+//      create the parameters for a single badge
+//
+    #addBadgeToPrint(index) {
+        return cart.getBadge(index);
+    }
+
+// Send one or all of the badges to the printer
+    printBadge(index) {
+        var rownum = 0;
+        var cartlen = cart.getCartLength();
+
+        var params = [];
+        var badges = [];
+        if (index >= 0) {
+            params.push(this.#addBadgeToPrint(index));
+            badges.push(index);
+        } else {
+            while (rownum < cartlen) {
+                params.push(#addBadgeToPrint(rownum));
+                badges.push(rownum);
+                rownum++;
+            }
+        }
+        var postData = {
+            ajax_request_action: 'printBadge',
+            params: JSON.stringify(params),
+            badges: JSON.stringify(badges),
+        };
+        $("button[name='print_btn']").attr("disabled", true);
+        var _this = this;
+        $.ajax({
+            method: "POST",
+            url: "scripts/pos_printBadge.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (data['error'] !== undefined) {
+                    show_message(data['error'], 'error');
+                    return;
+                }
+                _this.printComplete(data);
+            },
+            error: function (jqXHR, textstatus, errorThrown) {
+                $("button[name='print_btn']").attr("disabled", false);
+                _this.pay_button_pay.disabled = false;
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            },
+        });
+    }
+
+    printComplete(data) {
+        var badges = data['badges'];
+        var regs = [];
+        var index;
+        for (index in badges) {
+            if (printed_obj.get(index) == 0) {
+                var rparams = cart.addToPrintCount(index);
+                printed_obj.set(index, 1);
+                regs.push({ regid: rparams[0], printcount: rparams[1]});
+            }
+        }
+        if (regs.length > 0) {
+            var postData = {
+                ajax_request_action: 'updatePrintcount',
+                regs: regs,
+                user_id: user_id,
+                tid: pay_tid,
+            };
+            $.ajax({
+                method: "POST",
+                url: "scripts/pos_updatePrintCount.php",
+                data: postData,
+                success: function (data, textstatus, jqxhr) {
+                    if (data['error'] !== undefined) {
+                        show_message(data['error'], 'error');
+                        return;
+                    }
+                },
+                error: showAjaxError,
+            });
+        }
+        $("button[name='print_btn']").attr("disabled", false);
+        print_shown();
+        show_message(data['message'], 'success');
+    }
 // tab shown events - state mapping for which tab is shown
     findShown() {
         cart.clearInReview();

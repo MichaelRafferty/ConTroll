@@ -1366,7 +1366,6 @@ class PosCart {
 
 // getBadge = return the cart portions of the parameters for a badge print, that will be added to by the calling routine
     getBadge(index) {
-
         var row = this.#cartPerinfo[index];
         var printrow = pos.find_primary_membership(row.memberships);
         if (printrow == null)
@@ -1377,7 +1376,7 @@ class PosCart {
         var params = {};
         params.type = printrow.memType;
         params.badge_name = row.badge_name;
-        params.full_name = (row.first_name + ' ' + row.last_name).trim();
+        params.full_name = row.fullName;
         params.category = printrow.memCategory;
         params.badge_id = row.perid;
         params.day = dayFromLabel(printrow.label);
