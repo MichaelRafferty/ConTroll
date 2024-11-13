@@ -51,6 +51,7 @@ $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['required'] = $ini['required'];
 $config_vars['useportal'] = $controll['useportal'];
 $config_vars['required'] = $ini['required'];
+$config_vars['cashier'] = $method == 'cashier' ? 1 : 0;
 $useUSPS = false;
 
 // form as laid out has no room for usps block, if we want it we need to reconsider how to do it here.

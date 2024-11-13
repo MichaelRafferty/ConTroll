@@ -102,7 +102,6 @@ class Pos {
     #number_search = null;
     #memLabel = null;
     #find_unpaid_button = null;
-    #isCashier = false;
     #find_perid = null;
     #name_search = '';
 
@@ -160,7 +159,6 @@ class Pos {
         this.#pattern_field.focus();
         this.#id_div = document.getElementById("find_results");
         this.#find_unpaid_button = document.getElementById("find_unpaid_btn");
-        this.#isCashier = this.#find_unpaid_button !== undefined && this.#find_unpaid_button !== null;
 
         // add/edit people
         this.#add_index_field = document.getElementById("perinfo-index");
@@ -217,7 +215,7 @@ class Pos {
         // load the initial data and the proceed to set up the rest of the system
         var postData = {
             ajax_request_action: 'loadInitialData',
-            nopay: !this.#isCashier,
+            nopay: config['cashier'] == 0,
         };
         var _this = this;
         $.ajax({
@@ -1852,7 +1850,7 @@ addUnpaid(tid) {
         else
             clear_message();
 
-        if (this.#isCashier) {
+        if (config['cashier'] == 1) {
             bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
             cart.drawCart();
         } else {
@@ -1867,7 +1865,7 @@ addUnpaid(tid) {
                 el.hidden = true;
             el = document.getElementById('review_status');
             if (el)
-                el.innerHTML = "Completed: Send customer to cashier with id of " + pay_tid;
+                el.innerHTML = "Completed: Send customer to cashier with id of " + this.#pay_tid;
         }
     }
 
@@ -2086,7 +2084,7 @@ addUnpaid(tid) {
 
 // Create a receipt and email it
     emailReceipt(receipt_type) {
-        this.#last_receipt_type = receipt_type;
+        this.#lastReceiptType = receipt_type;
         // header text
         var header_text = cart.receiptHeader(this.#user_id, this.#pay_tid);
         // optional footer text
@@ -2124,13 +2122,13 @@ addUnpaid(tid) {
                 } else if (data.warn !== undefined) {
                     show_message(data.warn, 'success');
                 }
-                if (this.#last_receipt_type == 'email')
+                if (this.#lastReceiptType == 'email')
                     _this.#pay_button_ercpt.disabled = false;
                 else
                     _this.#pay_button_rcpt.disabled = false;
             },
             error: function (jqXHR, textstatus, errorThrown) {
-                if (this.#last_receipt_type == 'email')
+                if (this.#lastReceiptType == 'email')
                     _this.#pay_button_ercpt.disabled = false;
                 else
                     _this.#pay_button_rcpt.disabled = false;
@@ -2158,7 +2156,7 @@ addUnpaid(tid) {
             badges.push(index);
         } else {
             while (rownum < cartlen) {
-                params.push(#addBadgeToPrint(rownum));
+                params.push(this.#addBadgeToPrint(rownum));
                 badges.push(rownum);
                 rownum++;
             }

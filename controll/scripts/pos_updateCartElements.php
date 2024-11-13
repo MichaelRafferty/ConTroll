@@ -6,6 +6,7 @@
 // Used both by mail in registration (controll/registration.php) and atcon (atcon/regpos.php)
 
 require_once '../lib/base.php';
+require_once '../../lib/policies.php';
 
 $check_auth = google_init('ajax');
 $perm = 'registration';
@@ -173,6 +174,7 @@ if ($master_transid === false) {
     return;
 }
 
+$policy_upd = 0;
 // loop over all perinfo records
 for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
     $cartrow = $cart_perinfo[$row];
