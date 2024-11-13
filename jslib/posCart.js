@@ -1334,7 +1334,7 @@ class PosCart {
     }
 
 // printList - html to display cart elements to print
-    printList(new_print) {
+    printList(new_print, printed_obj) {
         var rownum;
         var crow;
         var mrow;
@@ -1352,7 +1352,7 @@ class PosCart {
             print_html += `
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-print-` + this.#cartPerinfo[rownum].index + `" name="print_btn" onclick="pos.print_badge(` + crow.index + `);">Print</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-print-` + this.#cartPerinfo[rownum].index + `" name="print_btn" onclick="pos.printBadge(` + crow.index + `);">Print</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">            
             <span class="text-bg-success"> Membership: ` + mrow.label + `</span> (Times Printed: ` +

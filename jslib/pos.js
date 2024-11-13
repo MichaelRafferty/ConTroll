@@ -2567,7 +2567,7 @@ addUnpaid(tid) {
             this.#printDiv.innerHTML = print_html;
             return;
         }
-        print_html += cart.printList(newPrint);
+        print_html += cart.printList(this.#newPrint, this.#printedObj);
         print_html += `
     <div class="row mt-4">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
