@@ -88,11 +88,19 @@ class Pos {
     #receeiptEmailAddresses_div = null;
     #lastReceiptType = '';
 
+    // print items
+    #newPrint = false;
+    #printedObj = null;
+    #printDiv = null;
+    #badgePrinterAvailable = false;
+    #receiptPrinterAvailable = false;
+
     // tab fields
     #find_tab = null;
     #add_tab = null;
     #review_tab = null;
     #pay_tab = null;
+    #print_tab = null;
     #current_tab = null;
 
 // find people fields
@@ -150,6 +158,7 @@ class Pos {
         this.#add_edit_prior_tab = this.#add_tab;
         this.#review_tab = document.getElementById("review-tab");
         this.#pay_tab = document.getElementById("pay-tab");
+        this.#print_tab = document.getElementById("print-tab");
 
         // find people
         this.#pattern_field = document.getElementById("find_pattern");
@@ -194,12 +203,17 @@ class Pos {
 
         // pay items
         this.#pay_div = document.getElementById('pay-div');
+        this.#pay_div.innerHTML = "No Payment Required, Proceed to Next Customer";
+
+        // print items
+        this.#printDiv = document.getElementById("print-div");
 
         // add events
         this.#find_tab.addEventListener('shown.bs.tab', find_shown)
         this.#add_tab.addEventListener('shown.bs.tab', add_shown)
         this.#review_tab.addEventListener('shown.bs.tab', review_shown)
         this.#pay_tab.addEventListener('shown.bs.tab', pay_shown)
+        this.#print_tab.addEventListener('shown.bs.tab', print_shown)
 
         // notes items
         this.#notes = new bootstrap.Modal(document.getElementById('Notes'), {focus: true, backdrop: 'static'});
@@ -347,6 +361,12 @@ class Pos {
         this.#policies = data.policies;
         this.#memRules = data.memRules;
         this.#discount_mode = data.discount;
+        this.#badgePrinterAvailable = false;
+        if (data.hasOwnProperty('badgePrinter'))
+            this.#badgePrinterAvailable = data['badgePrinter'] === true;
+        this.#receiptPrinterAvailable = false;
+        if (data.hasOwnProperty('receiptPrinter'))
+            this.#receiptPrinterAvailable = data['receiptPrinter'] === true;
 
         if (this.#manager == false)
             baseManagerEnabled = false;
@@ -540,6 +560,7 @@ class Pos {
         this.#add_tab.disabled = false;
         this.#review_tab.disabled = true;
         this.#pay_tab.disabled = true;
+        this.#print_tab.disabled = true;
         cart.hideNext();
         cart.hideVoid();
         this.#pay_button_pay = null;
@@ -1869,6 +1890,13 @@ addUnpaid(tid) {
         }
     }
 
+// gotoPrint switch to the print tab
+    gotoPrint() {
+        this.#printedObj = null;
+        bootstrap.Tab.getOrCreateInstance(this.#print_tab).show();
+    }
+
+
 // setPayType: shows/hides the appropriate fields for that payment type
     setPayType(ptype) {
         var elcheckno = document.getElementById('pay-check-div');
@@ -2099,7 +2127,7 @@ addUnpaid(tid) {
             receipt_type: receipt_type,
             email_addrs: this.#emailAddreesRecipients,
         };
-        if (receiptPrinterAvailable || receipt_type == 'email') {
+        if (this.#receiptPrinterAvailable || receipt_type == 'email') {
             if (receipt_type == 'email')
                 this.#pay_button_ercpt.disabled = true;
             else
@@ -2219,7 +2247,7 @@ addUnpaid(tid) {
             });
         }
         $("button[name='print_btn']").attr("disabled", false);
-        print_shown();
+        this.printShown();
         show_message(data['message'], 'success');
     }
 // tab shown events - state mapping for which tab is shown
@@ -2314,6 +2342,7 @@ addUnpaid(tid) {
         var total_amount_due = cart.getTotalPrice() - (cart.getTotalPaid() + this.#pay_prior_discount + Number(this.#coupon_discount));
         if (total_amount_due < 0.01) { // allow for rounding error, no need to round here
             // nothing more to pay
+            this.#print_tab.disabled = false;
             cart.showNext();
             if (this.#pay_button_pay != null) {
                 var rownum;
@@ -2348,6 +2377,8 @@ addUnpaid(tid) {
                     }
                 }
                 cart.hideVoid();
+            } else {
+                this.gotoPrint();
             }
         } else {
             if (this.#pay_button_pay != null) {
@@ -2508,6 +2539,48 @@ addUnpaid(tid) {
 
         $('#' + this.#purchase_label).attr("disabled", "disabled");
         this.pay('', null, token);
+    }
+
+// printint
+    printShown() {
+        cart.clearInReview();
+        this.#find_tab.disabled = true;
+        this.#add_tab.disabled = true;
+        this.#review_tab.disabled = true;
+        cart.hideStartOver();
+        cart.showNext();
+        cart.hideVoid();
+        cart.freeze();
+        this.#current_tab = this.#print_tab;
+        this.newPrint = false;
+        if (this.#printedObj == null) {
+            this.#newPrint = true;
+            this.#printedObj = new map();
+        }
+        cart.drawCart();
+
+        // draw the print screen
+        var print_html = `<div id='printBody' class="container-fluid form-floating">
+`;
+        if (this.#badgePrinterAvailable === false) {
+            print_html += 'No printer selected, unable to print badges.  </div>';
+            this.#printDiv.innerHTML = print_html;
+            return;
+        }
+        print_html += cart.printList(newPrint);
+        print_html += `
+    <div class="row mt-4">
+        <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-sm" type="button" id="pay-print-all" name="print_btn" onclick="pos.printBadge(-1);">Print All</button>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-sm-12 m-0 mt-4 p-0" id="pt-status"></div>
+    </div>
+</div>`;
+
+        this.#printDiv.innerHTML = print_html;
     }
 
 // dayFromLabel(label)
