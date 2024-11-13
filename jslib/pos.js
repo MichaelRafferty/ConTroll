@@ -213,7 +213,8 @@ class Pos {
         this.#add_tab.addEventListener('shown.bs.tab', add_shown)
         this.#review_tab.addEventListener('shown.bs.tab', review_shown)
         this.#pay_tab.addEventListener('shown.bs.tab', pay_shown)
-        this.#print_tab.addEventListener('shown.bs.tab', print_shown)
+        if (this.#printDiv)
+            this.#print_tab.addEventListener('shown.bs.tab', print_shown)
 
         // notes items
         this.#notes = new bootstrap.Modal(document.getElementById('Notes'), {focus: true, backdrop: 'static'});
