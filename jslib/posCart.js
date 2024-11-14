@@ -1387,7 +1387,7 @@ class PosCart {
     // addToPrintCount: increment the print count for a badge
     addToPrintCount(index) {
         var row = this.#cartPerinfo[index];
-        var mrow = pos.find_primary_membership(row.membrerships);
+        var mrow = pos.find_primary_membership(row.memberships);
         if (mrow == null) {
             return array(null, 0);
         }

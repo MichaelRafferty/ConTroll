@@ -2222,9 +2222,9 @@ addUnpaid(tid) {
         var regs = [];
         var index;
         for (index in badges) {
-            if (printed_obj.get(index) == 0) {
+            if (this.#printedObj.get(index) == 0) {
                 var rparams = cart.addToPrintCount(index);
-                printed_obj.set(index, 1);
+                this.#printedObj.set(index, 1);
                 regs.push({ regid: rparams[0], printcount: rparams[1]});
             }
         }
@@ -2232,8 +2232,8 @@ addUnpaid(tid) {
             var postData = {
                 ajax_request_action: 'updatePrintcount',
                 regs: regs,
-                user_id: user_id,
-                tid: pay_tid,
+                user_id: this.#user_id,
+                tid: this.#pay_tid,
             };
             $.ajax({
                 method: "POST",
