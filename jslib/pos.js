@@ -535,7 +535,7 @@ class Pos {
             clear_message();
 
         // reset admin mode if enabled
-        if (inConTroll && baseManagerEnabled) {
+        if (!inConTroll && baseManagerEnabled) {
             base_toggleManager();
         }
         // empty cart
@@ -561,7 +561,8 @@ class Pos {
         this.#add_tab.disabled = false;
         this.#review_tab.disabled = true;
         this.#pay_tab.disabled = true;
-        this.#print_tab.disabled = true;
+        if (this.#print_tab)
+            this.#print_tab.disabled = true;
         cart.hideNext();
         cart.hideVoid();
         this.#pay_button_pay = null;
@@ -2343,7 +2344,8 @@ addUnpaid(tid) {
         var total_amount_due = cart.getTotalPrice() - (cart.getTotalPaid() + this.#pay_prior_discount + Number(this.#coupon_discount));
         if (total_amount_due < 0.01) { // allow for rounding error, no need to round here
             // nothing more to pay
-            this.#print_tab.disabled = false;
+            if (this.#print_tab)
+                this.#print_tab.disabled = false;
             cart.showNext();
             if (this.#pay_button_pay != null) {
                 var rownum;
@@ -2379,7 +2381,8 @@ addUnpaid(tid) {
                 }
                 cart.hideVoid();
             } else {
-                this.gotoPrint();
+                if (this.#print_tab)
+                    this.gotoPrint();
             }
         } else {
             if (this.#pay_button_pay != null) {

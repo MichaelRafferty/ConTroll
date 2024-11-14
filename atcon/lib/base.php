@@ -171,9 +171,10 @@ function page_init($title, $tab, $css, $js)
                 }
                 ?><br/>
                 <div id="page_head_printers">
-                    Badge: <?php echo $_SESSION['badgePrinter'][0]; ?>&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="base_changePrintersShow();">Chg</button><br/>
-                    Receipt: <?php echo $_SESSION['receiptPrinter'][0]; ?><br/>
-                    General: <?php echo $_SESSION['genericPrinter'][0]; ?>
+                    Badge: <?php echo $_SESSION['badgePrinter']['name']; ?>&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0"
+                                                                                       onclick="base_changePrintersShow();">Chg</button><br/>
+                    Receipt: <?php echo $_SESSION['receiptPrinter']['name']; ?><br/>
+                    General: <?php echo $_SESSION['genericPrinter']['name']; ?>
                 </div>
             </div>
         </div>
