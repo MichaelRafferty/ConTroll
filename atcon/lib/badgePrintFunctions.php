@@ -211,7 +211,7 @@ error_log($printer['name'] . ' ' . $printer['host'] . ' ' . $printer['queue'] . 
         web_error_log("executing command '$command' returned '$result', code: $result_code",'badgePrn');
     }
 
-    //($tempfile); // TODO make this a configuration option
+    unlink($tempfile); // TODO make this a configuration option
     return $result_code;
 }
 
@@ -271,7 +271,7 @@ function print_receipt($printer, $receipt)//:string | false {
     $result_code = 0;
     $result = exec($command,$output,$result_code);
     web_error_log("executing command '$command' returned '$result', code: $result_code");
-    //unlink($tempfile); // TODO make this a configuration option
+    unlink($tempfile); // TODO make this a configuration option
     //var_error_log($output);
     return $result_code;
 }
