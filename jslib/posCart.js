@@ -1047,6 +1047,10 @@ class PosCart {
         this.#totalPrice = Number(this.#totalPrice.toFixed(2));
         this.#totalPaid = Number(this.#totalPaid.toFixed(2));
         html += `<div class="row">
+    <div class="col-sm-10 text-end">————</div>
+    <div class="col-sm-2  text-end">————</div>
+</div>
+<div class="row">
     <div class="col-sm-8 text-end">Total:</div>
     <div class="col-sm-2 text-end">$` + Number(this.#totalPrice).toFixed(2) + `</div>
     <div class="col-sm-2 text-end">$` + Number(this.#totalPaid).toFixed(2) + `</div>
