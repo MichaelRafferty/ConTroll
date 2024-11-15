@@ -175,6 +175,9 @@ class Unmatched {
             show_message("Error loading unmatched people", 'error');
             return;
         }
+        if (data['success']) {
+            show_message(data['success'], 'success');
+        }
         this.#unmatched = data['unmatched'];
         this.#unmatchedCount = data['numUnmatched'];
         this.#unmatchedCountSpan.innerHTML = this.#unmatchedCount;

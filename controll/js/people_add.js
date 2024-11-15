@@ -93,8 +93,6 @@ class Add {
         };
         var script = 'scripts/people_checkExists.php';
         var _this = this;
-        clear_message();
-        clearError();
         $.ajax({
             url: script,
             method: 'POST',
@@ -220,6 +218,7 @@ class Add {
             country: this.#country.value,
             emailAddr: this.#emailAddr.value,
             phone: this.#phone.value,
+            newPolicies: JSON.stringify(URLparamsToArray($('#editPolicies').serialize())),
         };
         var script = 'scripts/people_addNewPerson.php';
         var _this = this;

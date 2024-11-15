@@ -1,7 +1,7 @@
 <?php
 // items related to using memRules
 
-function getRulesData($conid) {
+function getRulesData($conid, $regadmin = false, $atcon = false) {
     $data = [];
 // get ageList, memTypes, memCategories, memList
     $ageList = array();
@@ -33,12 +33,25 @@ function getRulesData($conid) {
 
     $memList = array();
     $memListIdx = array();
+    if ($atcon) {
+        $where = "AND startdate <= NOW() AND enddate > NOW()  AND atcon = 'Y'";
+    } else {
+        $where = $regadmin ? '' : "AND startdate <= NOW() AND enddate > NOW()  AND online = 'Y'";
+    }
+
+    // variable sort orders
+    if ($regadmin || $atcon) {
+        $orderBy = 'conid, mt.sortorder, m.label';
+    } else {
+        $orderBy = 'm.sort_order';
+    }
     $QQ = <<<EOS
-SELECT *, id as memId
-FROM memList 
+SELECT m.*, m.id as memId
+FROM memList m
+JOIN memTypes mt ON m.memType = mt.memType
 WHERE ((conid = ? AND memCategory != 'yearahead') OR (conid = ? AND memCategory = 'yearahead'))
-  AND startdate <= NOW() AND enddate > NOW() AND online = 'Y'
-ORDER BY sort_order;
+$where
+ORDER BY $orderBy;
 EOS;
     $QR = dbSafeQuery($QQ, 'ii', array($conid, $conid + 1));
     while ($row = $QR->fetch_assoc()) {

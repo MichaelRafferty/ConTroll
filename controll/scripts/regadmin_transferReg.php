@@ -69,8 +69,8 @@ if ($message != '') {
 $tType = 'regctl-adm-tfr/' . $user_perid;
 $notes = "Transfer regs from $from_person to $to_person by $user_perid";
 $insertT = <<<EOS
-INSERT INTO transaction(conid, perid, userid, create_date, complete_date, price, couponDiscount, paid, type, notes ) 
-VALUES (?, ?, ?, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 0, 0, 0, ?, ?);
+INSERT INTO transaction(conid, perid, userid, create_date, complete_date, price, couponDiscountCart, couponDiscountReg, paid, type, notes ) 
+VALUES (?, ?, ?, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 0, 0, 0, 0, ?, ?);
 EOS;
 $newtid = dbSafeInsert($insertT, 'iiiss', array($conid, $to_person, $user_perid, $tType, $notes));
 if ($newtid === false) {

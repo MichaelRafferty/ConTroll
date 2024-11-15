@@ -26,14 +26,6 @@ $in_session = false;
 $regserver = $reg_conf['server'];
 $exhibitor = '';
 
-// encrypt/decrypt stuff
-$ciphers = openssl_get_cipher_methods();
-$cipher = 'aes-128-cbc';
-$ivlen = openssl_cipher_iv_length($cipher);
-$ivdate = date_create("now");
-$iv = substr(date_format($ivdate, 'YmdzwLLwzdmY'), 0, $ivlen);
-$key = $conid . $con['label'] . $con['regadminemail'];
-
 $reg_link = "<a href='$regserver'>Convention Registration</a>";
 
 if (str_starts_with($_SERVER['HTTP_HOST'], 'artist')){
@@ -141,8 +133,7 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
         $in_session = true;
     }
 } else if (isset($_GET['vid'])) {
-    $match = openssl_decrypt($_GET['vid'], $cipher, $key, 0, $iv);
-    $match = json_decode($match, true);
+    $match = decryptCipher($_GET['vid'], true);
     $timediff = time() - $match['ts'];
     web_error_log("login @ " . time() . " with ts " . $match['ts']);
     if ($timediff > 120) {
@@ -224,7 +215,7 @@ EOS;
         foreach ($matches as $match) {
             $match['ts'] = time();
             $string = json_encode($match);
-            $string = urlencode(openssl_encrypt($string, $cipher, $key, 0, $iv));
+            $string = encryptCipher($string, true);
             $name = $match['exhibitorName'];
             if ($match['artistName'] != null && $match['artistName'] != '' && $match['artistName'] != $match['exhibitorName']) {
                 $name .= "(" . $match['artistName'] . ")";

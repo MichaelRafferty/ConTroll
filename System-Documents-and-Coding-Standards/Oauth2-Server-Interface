@@ -1,0 +1,71 @@
+Oauth2 Server Interface
+
+This document describes how the Oauth2 Server will call Portal to fulfill authorization and retrieve the return data
+
+Start of an Oauth2 Validation request to ConTroll:
+    Oauth2 does a redirect for the user to the portal site in the config file as:  conf['portal']['redirect_base']?index.php?oauth=enceypted json representation
+        e.g. https://reg.seattlein2025.org/index.php?oauth=enceypted json representation of php a associative array
+
+        Contents of array:
+            retdata: what data are you asking for: Nom, Vote (case insensitive) (single value)
+            returl: url call back with answer includes the variable name  (.../oauth/ret.php?oauth)  (controll appends = and encrypted string)
+            apikey: defined by ConTroll and communicated to Chris)
+NEW:        app: which app is asking for authentication (NomNom, ???)  [I would like this to tell them who is asking for authetication)
+
+
+    Controll does the appropriate redirect to oauth2 provider or sending of the email token
+
+    On return from oauth2 privoder or click on email token:
+        Controll looks up request data for returned validated email and forms reponse packet
+        Redirect user via returl with the encryptred response packet which is a url encoded json representation of a php associative array
+
+    Oauth validation request specific response packet
+        common elements:
+            validated email address     email
+            person id (integer)         perid
+            newperson id (integer)      newperid        Note: if perid is missing, this is their id, if newperid is missing they only have a perid, if both
+                                                        exist, they are the same person, but we now have assigned them their permanent id.
+            response type: (value of input parameter retdata:)   resType
+
+        Nom:
+            date paid: datePaid
+            legal name if allowed by privacy to send it: legalName
+            full name (all of these re the prefered name): fullName
+            first name; first_name
+            last name: last_name
+            rights: ['hugo_nominate', 'hugo_vote'] or empty array
+
+        Vote:
+            legal name if allowed by privacy to send it
+            full name (all of these re the prefered name)
+            first name
+            last name
+            rights: ['hugo_vote'] or empty array
+
+How long should Oauth Server keep request open:
+    24 hours
+
+questions for seattle: can pending id nom/vote
+
+Dance within portal:
+    oauth2 server does a redirect to config::[portal].redirect_base   e.g. "https://reg.seattlein2025.org/index.php?oauth=..."
+    index.php:
+        recognizes get parameter of oauth
+        decripts array and converts it back to PHP array
+        Tells the user that an authentication request has come in from "app"
+        If email is passed checks to see if that email is currently logged in to portal else checks if anyone is logged in to the portal
+        if not logged in, asks user how they want to login and does dance with remove authenticator
+            OAUTH2: mark in progress, mark for authentication response needed
+            EMAIL: encodes mark for authentication response
+            Reply from authentication method logs that user in
+        Checks to see if that login has more than one perid (account) associated with it
+            if so, asks the user which account do they wish to use for the oauth 2 request from app
+                on submit, marks which perid/newperid is to be used
+        else
+            assigns the perid/newperid of the current login account to the request
+        Accesses database to see which memberships that user has
+        Builds rights response from that access
+        Redirects user back to the oauth2 Server with the parameters encoded as required
+
+
+

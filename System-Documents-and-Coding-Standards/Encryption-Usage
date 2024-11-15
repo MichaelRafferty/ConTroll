@@ -1,0 +1,37 @@
+Encryption Usage
+
+Encryption should be used for:
+    Tokens - login, email, attach
+    Login Strings - Redirect, account switching, email match subaccount choice
+    Oauth requests/responses to the ConTroll Oauth2 Server
+    Secure API parameters
+
+Internal Encryption Standards
+    There is a common library /lib/cipher.php that provides all of the key management and the routines to encrypt and descript strings.
+
+    At present there are two different key sets in use:
+        Cipher: standard encryption
+        Attach: used for attaching accounts - these cross users and have a much longer lifetime
+
+Cipher.php module:
+    Internal functions:
+        getLoginCipher():   sets up the cipher parameters for the standard (login) cipher keys.
+        getAttachCipher():  sets up the cipher parameters for the attach cipher keys.
+
+        Note: both of these make use of the configuration variables from the con section of the reg_conf.ini file:
+            id
+            label
+            regadminemail
+
+    Externally referenced functions:
+        decryptCipher(string, doJson: bool) : string
+            decrypts the string using the standard cipher and if doJson is true, doeas a json_decode on it to build an associative array
+        decryptAttach(string, doJson: bool) : string
+            decrypts the string using the attach cipher and if doJson is true, doeas a json_decode on it to build an associative array
+        encryptCipher(string, doURLencode: bool) : string
+            encrypts the string using the standard cipher and if doURLencode is true, performs a urlencode on the encoded string
+        encryptAttach(string, doURLencode: bool) : string
+            encrypts the string using the attach cipher and if doURLencode is true, performs a urlencode on the encoded string
+
+
+

@@ -1,7 +1,6 @@
 <?php
 // Registration  Portal - respond.php - respond to as non login email token request
 require_once("lib/base.php");
-require_once("../lib/cipher.php");
 
 $con = get_conf('con');
 $conid = $con['id'];
@@ -53,9 +52,7 @@ $result_message = '';
 
 switch ($action) {
     case 'attach':
-        $cipherInfo = getAttachCipher();
-        $match = openssl_decrypt($_GET['vid'], $cipherInfo['cipher'], $cipherInfo['key'], 0, $cipherInfo['iv']);
-        $match = json_decode($match, true);
+        $match = decryptAttach($_GET['vid'], $true);
         if (!validateLink($match, $action, 7 * 24 * 3600)) {
             break; // link is no longer valid, disregard, validate link puts out its own diagnostic.
         }
@@ -118,9 +115,7 @@ EOS;
         break;
 
     case 'identity':
-        $cipherInfo = getAttachCipher();
-        $match = openssl_decrypt($_GET['vid'], $cipherInfo['cipher'], $cipherInfo['key'], 0, $cipherInfo['iv']);
-        $match = json_decode($match, true);
+        $match = decryptAttach($_GET['vid'], true);
         if (!validateLink($match, $action, 7 * 24 * 3600)) {
             break; // link is no longer valid, disregard, validate link puts out its own diagnostic.
         }

@@ -4,7 +4,7 @@ global $db_ini;
 require_once "../lib/base.php";
 
 $check_auth = google_init("ajax");
-$perm = "people";
+$perm = "search";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
@@ -39,6 +39,9 @@ $phoneCheck = str_replace('(', '',
     str_replace(')', '',
         str_replace('-', '',
             str_replace(' ', '', $phone))));
+
+if ($emailAddr == '/r')
+    $emailAddr = '';
 
 if ($firstName . $middleName .  $lastName .  $suffix .  $legalName .  $pronouns .  $badgeName .  $address .  $addr2 .
     $city .  $state .  $zip . $emailAddr .  $phone == '') {

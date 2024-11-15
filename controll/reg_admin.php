@@ -363,7 +363,7 @@ else
                             <div class='container-fluid' id='editRuleStepFieldDiv'>
                                 <div class='row'>
                                     <div class='col-sm-2'>
-                                        <label for='sName'>Step Name:</label>
+                                        <label for='sName'>Rule Name:</label>
                                     </div>
                                     <div class='col-sm-10'>
                                         <input type='text' id='sName' name='sName' size='20' maxlength='16' placeholder='step name'/>
@@ -649,6 +649,24 @@ else
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
                 <button class='btn btn-sm btn-primary' id='emailReceipt' onClick='receipt_email("payor")'>Email Receipt</button>
                 <button class='btn btn-sm btn-primary' id='emailReceiptReg' onClick='receipt_email("reg")'>Email Receipt to regadmin at <?php echo $con_conf['regadminemail'];?></button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id='history' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Registration History' aria-hidden='true' style='--bs-modal-width: 96%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='historyTitle'>Registration History</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class="container-fluid" id='history-div'></div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
             </div>
         </div>
     </div>

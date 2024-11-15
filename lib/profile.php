@@ -308,7 +308,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
         <?php
     }
-    if ($policies != null) {
+    if ($policies != null && count($policies) > 0) {
     ?>
     </form>
     <form id='editPolicies' class='form-floating' action='javascript:void(0);'>

@@ -461,7 +461,7 @@ function badge_name_default(badge_name, first_name, last_name) {
     return badge_name;
 }
 
-// tabulator formatter for the merge column for the find results, displays the "Select" to mark the membrership merge
+// tabulator formatter for the merge column for the find results, displays the "Select" to mark the membership merge
 function addMergeIcon(cell, formatterParams, onRendered) { //plain text value
     var tid;
     var html = '';

@@ -63,7 +63,7 @@ if (array_key_exists('codepage', $_POST)) {
     ajaxError('No codepage specified');
 }
 
-$p = ["Test", $server, $printer, $codepage];
+$p = ['name' => "Test", 'host' => $server, 'queue' =>  $printer, 'type' => $type, 'code' => $codepage];
 $curLocale = locale_get_default();
 $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 $dolamt = $dolfmt->formatCurrency(123456.78, $currency);

@@ -3,9 +3,8 @@
 require_once("lib/base.php");
 require_once("lib/getLoginMatch.php");
 require_once("lib/loginItems.php");
-require_once("lib/portalForms.php");
 require_once("lib/sessionManagement.php");
-require_once("../lib/cipher.php");
+require_once('../lib/portalForms.php');
 require_once("../lib/profile.php");
 require_once("../lib/policies.php");
 require_once("../lib/googleOauth2.php");
@@ -19,9 +18,6 @@ $debug = get_conf('debug');
 $ini = get_conf('reg');
 $condata = get_con();
 
-// encrypt/decrypt stuff (maybe needed?)
-$cipherInfo = getLoginCipher();
-
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['debug'] = $debug['portal'];
@@ -29,15 +25,49 @@ $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['required'] = $ini['required'];
 $loginId = null;
 $loginType = null;
+$purpose = "From here you can create and manage your membership account.";
+$why = "continue to the Portal.";
 
-// first lets check the Oauth2 stuff. but only if not loging out
+// first lets check the authentication stuff. but only if not loging out
     // in session or not, is it a logout? (force clear session method, as well as logout)
     if (isset($_REQUEST['logout'])) {
         clearSession();
         header('location:' . $portal_conf['portalsite']);
         exit();
     }
+    // oauth= indicates an authentication request from the ConTroll Oauth2 server via redirect
+    if (isset($_REQUEST['oauth'])) {
+        // decrypt the request
+        $request = decryptCipher($_GET['oauth'], true);
+        if ($request == null) {
+            web_error_log("Invalid oauth server request received");
+            if (isSessionVar('id')) {
+                // there is a valid portal session, send them to the portal with an error message to display
+                header('location:portal.php?type=e&messageFwd=' .
+                       urlencode('Invalid authentication request received from the Oauth2 Server, please seek assistance.'));
+                exit();
+            } else {
+                // no valid session found, draw the login page
+                draw_indexPageTop($condata, $purpose);
+                draw_login($config_vars,
+                           'Invalid authentication request received from the Oauth2 Server, please seek assistance.', 'bg-danger text-white',
+                           $why);
+                exit();
+            }
+        }
+
+        // we have a decrypted valid request, put it in the session, so when we come back from the oauth2 server or email validation we can deal with it
+        setSessionVar('oauth', $request);
+        $purpose = '<strong>' . $request['app'] .
+            " has requested that you validate yourself.  Please log into the Portal to perform that validation.</strong>";
+        $why = "perform the authentication for " . $request['app'];
+        if (isSessionVar('id')) {
+            chooseAccountFromEmail(getSessionVar('email'), null, null, null, 'logged-in');
+        }
+    }
+
     $refresh = isset($_REQUEST['refresh']) && isSessionVar('id');
+
     // oauth2= indicates a new account login via oAUTH2 or the selected account is re-verifying, clear the old information,
     //  unless the GET variable of 'refresh' is found
     if (isset($_REQUEST['oauth2'])) {
@@ -46,8 +76,10 @@ $loginType = null;
             setSessionVar('sessionEmail', getSessionVar('email'));
             clearSession('oauth2');
         } else {
-            // no update of token, force it to be a logout
+            // no update of token, force it to be a logout, but keep oauth variable if set
+            $oauth = getSessionVar('oauth');
             clearSession();
+            if ($oauth != null) setSessionVar('oauth', $oauth);
         }
 
         if (!isSessionVar('oauth2pass')) {
@@ -56,7 +88,7 @@ $loginType = null;
         }
     }
 
-    // are we in an oAUTH2 session, and if so, is it yet complete or needs the next exchange?
+    // are we in an OAUTH2 session, and if so, is it yet complete or needs the next exchange?
     $oauth2pass = getSessionVar('oauth2pass');
     if ($oauth2pass != null && $oauth2pass != 'token') {
         // is this session validation taking too long?
@@ -68,8 +100,10 @@ $loginType = null;
         if (time() > $oauth2timeout) {
             clearSession('oauth2'); // end the validation loop
             header('location:' . $portal_conf['portalsite']);
-            draw_indexPageTop($condata);
-            draw_login($config_vars, 'Login Authentication took too long, please try again.', 'bg-danger text-white');
+            draw_indexPageTop($condata, $purpose);
+            draw_login($config_vars,
+                       'Login Authentication took too long, please try again.', 'bg-danger text-white',
+                       $why);
             exit();
         }
         else {
@@ -84,8 +118,8 @@ $loginType = null;
                     if (isset($oauthParams['error'])) {
                         web_error_log($oauthParams['error']);
                         clearSession('oauth2');
-                        draw_indexPageTop($condata);
-                        draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white');
+                        draw_indexPageTop($condata, $purpose);
+                        draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white', $why);
                         exit();
                     }
 
@@ -93,15 +127,19 @@ $loginType = null;
 
             if ($oauthParams == null) {
                 // an error occured with login by google
-                draw_indexPageTop($condata);
-                draw_login($config_vars, 'An error occured with the login with ' . getSessionVar('oauth2'), 'bg-danger text-white');
+                draw_indexPageTop($condata, $purpose);
+                draw_login($config_vars,
+                           'An error occured with the login with ' . getSessionVar('oauth2'), 'bg-danger text-white',
+                           $why);
                 clearSession('oauth2');
                 exit();
             }
             if (!isset($oauthParams['email'])) {
                 web_error_log('no oauth2 email found');
-                draw_indexPageTop($condata);
-                draw_login($config_vars, getSessionVar('oauth2') . " did not return an email address.", 'bg-warning');
+                draw_indexPageTop($condata, $purpose);
+                draw_login($config_vars,
+                           getSessionVar('oauth2') . " did not return an email address.", 'bg-warning',
+                           $why);
                 clearSession('oauth2');
                 exit();
             }
@@ -111,14 +149,17 @@ $loginType = null;
             $oldemail = strtolower(getSessionVar('sessionEmail'));
             if ($oldemail != null && $oldemail != $email) {
                 // this is a change in email address, treat this as a new login.
-                // first save off the oauth session variables
+                // first save off the oauth2 session variables
                 $oauth2 = getSessionVar('oauth2');
                 $oauth2pass = getSessionVar('oauth2pass');
                 $oauth2state = getSessionVar('oauth2state');
                 // now clear the session to log the old session out
+                // save the old oauth authentication requestparameter to restore it here
+                $oauth = getSessionVar('oauth');
                 clearSession();
                 $oldemail = null;
                 // now restore those
+                if ($oauth != null) setSessionVar('oauth', $oauth);
                 if ($oauth2 != null) setSessionVar('oauth2', $oauth2);
                 if ($oauth2pass != null) setSessionVar('oauth2pass', $oauth2pass);
                 if ($oauth2state != null) setSessionVar('oauth2state', $oauth2state);
@@ -144,19 +185,20 @@ $loginType = null;
             setSessionVar('tokenExpiration', time() + ($hrs * 3600));
 
             if ($oldemail != null) {
-                // this is a refresh, don't choose the account again, just return to the home page of the portal, don't disturb any other session variables
-                header('location:' . $portal_conf['portalsite'] . '/portal.php');
+                // this is a refresh, don't choose the account again, just return to the home page of the portal or return the authentication response,
+                // don't disturb any other session variables
+                validationComplete(getSessionVar('id'), getSessionVar('idType'), getSessionVar('email'), getSessionVar('idSource'), getSessionVar('multiple'));
             }
 
-            draw_indexPageTop($condata);
+            draw_indexPageTop($condata, $purpose);
             // not a refresh, choose the account from the email
-            $account = chooseAccountFromEmail($email, null, null, null, $cipherInfo, getSessionVar('oauth2'));
+            $account = chooseAccountFromEmail($email, null, null, null, getSessionVar('oauth2'));
             if ($account == null || !is_numeric($account)) {
                 if ($account == null) {
                     $account = "Error looking up data for $email";
                 }
                 clearSession('oauth2');;
-                draw_login($config_vars, $account, 'bg-danger text-white');
+                draw_login($config_vars, $account, 'bg-danger text-white', $why);
             }
             exit();
         }
@@ -168,8 +210,7 @@ if (isSessionVar('id')) {
     $loginId = getSessionVar('id');
     if (isset($_GET['vid'])) {
         // we are logged in and took a vid link, if it decodes, log out and reload the page to reprocess the link
-        $match = openssl_decrypt($_GET['vid'], $cipherInfo['cipher'], $cipherInfo['key'], 0, $cipherInfo['iv']);
-        $match = json_decode($match, true);
+        $match = decryptCipher($_GET['vid'], true);
         if ($match != null) { // vid decodes, log us out
             $oldEmail = strtolower(getSessionVar('email'));
             if (array_key_exists('id', $match)) {
@@ -177,8 +218,10 @@ if (isSessionVar('id')) {
             } else {
                 $email = strtolower($match['email']);
             }
-            if ($email != $oldEmail) { // treat this as a logout and try it again
+            if ($email != $oldEmail && isSessionVar('oauth') == false) { // treat this as a logout and try it again
+                $oauth = getSessionVar('oauth');
                 clearSession();
+                setSessionVar('oauth', $oauth);
             } else {
                 if (array_key_exists('id', $match) && $loginId != $match['id']) {
                     // this is a switch account request
@@ -194,37 +237,37 @@ if (isSessionVar('id')) {
                                          $con['regadminemail'] . ' for assistance.'));
                         exit();
                     }
-                    unsetSessionVar('transId');    // just in case it is hanging around, clear this
-                    unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
-                    setSessionVar('id', $match['id']);
-                    setSessionVar('idType', $match['tablename']);
                 }
-                $refresh = true;
-                if (array_key_exists('emailhrs', $portal_conf)) {
-                    $hrs = $portal_conf['emailhrs'];
-                } else {
-                    $hrs = 24;
+                if (isSessionVar('oauth') == false) {
+                    $refresh = true;
+                    if (array_key_exists('emailhrs', $portal_conf)) {
+                        $hrs = $portal_conf['emailhrs'];
+                    }
+                    else {
+                        $hrs = 24;
+                    }
+                    if (array_key_exists('multiple', $match)) {
+                        setSessionVar('multiple', $match['multiple']);
+                    }
+                    if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 24;
+                    setSessionVar('tokenExpiration', time() + ($hrs * 3600));
                 }
-                if (array_key_exists('multiple', $match)) {
-                    setSessionVar('multiple', $match['multiple']);
-                }
-                if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 24;
-                setSessionVar('tokenExpiration', time() + ($hrs * 3600));
-                header('location:' . $portal_conf['portalsite'] . '/portal.php');
+                validationComplete($match['id'], $match['tablename'], $email, getSessionVar('idSource'), getSessionVar('multiple'));
                 exit();
             }
         }
     }
 }
 
-draw_indexPageTop($condata);
+draw_indexPageTop($condata, $purpose);
 
 if (isset($_GET['vid'])) {
     // handle link login
-    $match = openssl_decrypt($_GET['vid'], $cipherInfo['cipher'], $cipherInfo['key'], 0, $cipherInfo['iv']);
-    $match = json_decode($match, true);
+    $match = decryptCipher($_GET['vid'], true);
     if ($match == null) {   // invalid vid link
-        draw_login($config_vars, "<div class='bg-danger text-white'>The link is invalid, please request a new link</div>");
+        draw_login($config_vars,
+                   "The link is invalid, please request a new link", 'bg-danger text-white',
+                   $why);
         exit();
     }
     $linkid = $match['lid'];
@@ -240,7 +283,8 @@ if (isset($_GET['vid'])) {
         $validationType = $match['validationType'];
         if ($match['validationType'] != 'token') {
             if ($match['validationType'] != getSessionVar('oauth2') || $email != getSessionVar('email')) {
-                draw_login($config_vars, "<div class='bg-danger text-white'>The link is invalid</div>");
+                draw_login($config_vars, "The link is invalid", 'bg-danger text-white',
+                           $why);
                 exit();
             }
         }
@@ -251,7 +295,9 @@ if (isset($_GET['vid'])) {
     $timediff = time() - $match['ts'];
     web_error_log('login @ ' . time() . ' with ts ' . $match['ts'] . " for $email/$id via $validationType");
     if ($timediff > (4 * 3600)) {
-        draw_login($config_vars, "<div class='bg-danger text-white'>The link has expired, please request a new link</div>");
+        draw_login($config_vars,
+                   "The link has expired, please request a new link",  'bg-danger text-white',
+                   $why);
         exit();
     }
 
@@ -265,17 +311,23 @@ ORDER BY createdTS DESC;
 EOS;
         $linkR = dbSafeQuery($linkQ, 's', array ($linkid));
         if ($linkR == false || $linkR->num_rows != 1) {
-            draw_login($config_vars, "<div class='bg-danger text-white'>The link is invalid, please request a new link</div>");
+            draw_login($config_vars,
+                       "The link is invalid, please request a new link",  'bg-danger text-white',
+                       $why);
             exit();
         }
         $linkL = $linkR->fetch_assoc();
         if ($linkL['email'] != $email) {
-            draw_login($config_vars, "<div class='bg-danger text-white'>The link is invalid, please request a new link</div>");
+            draw_login($config_vars,
+                       "The link is invalid, please request a new link", 'bg-danger text-white',
+                   $why);
             exit();
         }
 
         if ($linkL['useCnt'] > 100) {
-            draw_login($config_vars, "<div class='bg-danger text-white'>The link has already been used, please request a new link</div>");
+            draw_login($config_vars,
+                       "The link has already been used, please request a new link", 'bg-danger text-white',
+                   $why);
             exit();
         }
 
@@ -313,29 +365,33 @@ EOS;
     setSessionVar('tokenType', $tokenType);
 
     // now choose the account from the email
-    $account = chooseAccountFromEmail($email, $id, $linkid, $match, $cipherInfo, 'token');
+    $account = chooseAccountFromEmail($email, $id, $linkid, $match, 'token');
     if ($account == null || !is_numeric($account)) {
         if ($account == null) {
             $account = "Error looking up data for $email";
         }
+        $oauth = getSessionVar('oauth');
         clearSession(); // force a logout
-        draw_login($config_vars, $account, 'bg-danger text-white');
+        if ($oauth != null) setSessionVar('oauth', $oauth);
+        draw_login($config_vars, $account, 'bg-danger text-white', $why);
     }
     exit();
 } else if ($loginId != null && isSessionVar('multiple') && isset($_REQUEST['switch']) && $_REQUEST['switch'] == 'account') {
-    $account = chooseAccountFromEmail(getSessionVar('multiple'), null,null, null, $cipherInfo, 'token');
+    $account = chooseAccountFromEmail(getSessionVar('multiple'), null,null, null, 'token');
     if ($account == null || !is_numeric($account)) {
         if ($account == null) {
             $account = "Error looking up data for $email";
         }
+        $oauth = getSessionVar('oauth');
         clearSession(); // force a logout
+        if ($oauth != null) setSessionVar('oauth', $oauth);
         outputCustomText('main/notloggedin');
-        draw_login($config_vars, $account, 'bg-danger text-white');
+        draw_login($config_vars, $account, 'bg-danger text-white', $why);
     }
     exit();
 } else if ($loginId == null) {
     outputCustomText('main/notloggedin');
-    draw_login($config_vars);
+    draw_login($config_vars, null, null, $why);
     exit();
 }
 ?>
@@ -343,7 +399,7 @@ EOS;
         window.location = "<?php echo $portal_conf['portalsite'] . '/portal.php' ?>";
     </script>
 <?php
-function draw_indexPageTop($condata) {
+function draw_indexPageTop($condata, $purpose) {
     $con = get_conf('con');
     $conid = $con['id'];
     $portal_conf = get_conf('portal');
@@ -392,7 +448,7 @@ EOS;
     </div>
     <div class="row p-1">
         <div class="col-sm-12">
-            From here you can create and manage your membership account.
+            $purpose
         </div>
     </div>
 EOS;

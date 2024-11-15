@@ -103,8 +103,8 @@ function getNoChargeEmailBody($transid, $owner, $memberships): string {
     $body .= "Your Transaction number is $transid\n";
     if (array_key_exists('code', $owner) && $owner['code'] != null) {
         $body .= 'A coupon of type ' . $owner['code'] . ' (' . $owner['name'] . ') was applied to this transaction';
-        if ($owner['couponDiscount'] > 0)
-            $body .= ' for a savings of ' . $owner['couponDiscount'];
+        if ($owner['couponDiscountCart'] > 0)
+            $body .= ' for a savings of ' . $owner['couponDiscountCart'];
         $body .= "\n";
     }
 

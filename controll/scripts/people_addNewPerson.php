@@ -2,9 +2,10 @@
 global $db_ini;
 
 require_once "../lib/base.php";
+require_once "../../lib/policies.php";
 
 $check_auth = google_init("ajax");
-$perm = "people";
+$perm = "search";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
@@ -24,6 +25,7 @@ $type = $_POST['type'];
 $updatedBy = $_SESSION['user_perid'];
 
 $con = get_conf('con');
+$conid = $con['id'];
 
 $iP = <<<EOS
 INSERT INTO perinfo(last_name, first_name, middle_name, suffix, email_addr, phone, badge_name,
@@ -59,6 +61,14 @@ if ($perid === false) {
     ajaxSuccess($response);
     return;
 }
-$response['success'] = "Person $perid created";
+$message = "Person $perid created";
+// add the policies
+$policy_upd =  updateMemberPolicies($conid, $perid, 'p', $updatedBy, 'p');
+if ($policy_upd > 0) {
+    $message .= "<br/>$policy_upd policy responses updated";
+}
+
+$response['success'] = $message;
+$response['perid'] = $perid;
 ajaxSuccess($response);
 ?>

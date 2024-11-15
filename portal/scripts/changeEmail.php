@@ -14,7 +14,7 @@ $conid=$con['id'];
 $conf = get_conf('con');
 $portal_conf = get_conf('portal');
 $log = get_conf('log');
-$regadmineamil = $conf['regadminemail'];
+$regadminemail = $conf['regadminemail'];
 
 $response['conid'] = $conid;
 
@@ -29,6 +29,8 @@ if (!(isSessionVar('id') && isSessionVar('idType'))) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Not logged in.'));
     exit();
 }
+
+validateLoginId();
 
 // check for being resolved/baned
 $resolveUpdates = isResolvedBanned();
@@ -108,7 +110,7 @@ if ($personId == $currentPersonId && $personType == $currentPersonType) {
     // we are the logged in account holder, only ourselves
     if ($currentPersonType == 'n') {
         ajaxSuccess(array('status'=>'warn', 'message'=>'You can not change your email address until you are assigned a permanent ID.' .
-            "<br/>Please contact registration at $regadmineamil for assistance."));
+            "<br/>Please contact registration at $regadminemail for assistance."));
         exit();
     }
 
@@ -160,7 +162,8 @@ EOS;
     $vR->free();
 
     if (!in_array($lcemail, $validEmails)) {
-        ajaxSuccess(array('status'=>'error', 'message'=>"The email, $email, is not one of your validated email addresses nor is it one of the people you manage."));
+        ajaxSuccess(array('status'=>'error', 'message'=>"The email, $email, is not one of your validated email addresses nor is it one of the people you manage.<br/>" .
+            "Please ask them to change it themselves, otherwise contact $regadminemail for assistance."));
         exit();
     }
 }

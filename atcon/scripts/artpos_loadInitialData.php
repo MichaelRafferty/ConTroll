@@ -35,8 +35,8 @@ if (!check_atcon('artsales', $conid)) {
 $response['label'] = $con['label'];
 $response['conid'] = $conid;
 $response['discount'] = $atcon['discount'];
-$response['badgePrinter'] = $_SESSION['badgePrinter'][0] != 'None';
-$response['receiptPrinter'] = $_SESSION['receiptPrinter'][0] != 'None';
+$response['badgePrinter'] = $_SESSION['badgePrinter']['name'] != 'None';
+$response['receiptPrinter'] = $_SESSION['receiptPrinter']['name'] != 'None';
 $response['user_id'] = $_SESSION['user'];
 $response['hasManager'] = check_atcon('manager', $conid);
 

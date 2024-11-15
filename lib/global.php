@@ -141,15 +141,15 @@ EOS;
                         return;
                 }
 
-                echo '<div class="container-fluid p-0 m-0">' . PHP_EOL .
+                echo '<div class="container-fluid">' . PHP_EOL .
                     $contents . PHP_EOL .
                     '</div>' . PHP_EOL;
             }
         }
     }
 
-    // replace in strings, items from the config file you can replace in strings
-    // used by interests and policies, available for emails as well
+// replace in strings, items from the config file you can replace in strings
+// used by interests and policies, available for emails as well
     function replaceVariables($string) {
         $con = get_conf('con');
         $replaceSource = ['#CONID#', '#CONNAME#', '#CONLABEL#', '#POLICYLINK#', '#POLICYTEXT#'];
@@ -157,3 +157,11 @@ EOS;
 
         return str_replace($replaceSource, $replaceValue, $string);
     }
+
+// rempve L-R override from strings like cut/pasted phone numbers from contact forms
+    function removeLROveride($string) {
+    if ($string == null || $string == '')
+        return $string;
+
+    return preg_replace('/'. mb_chr(0x202d). '/', '', $string);
+}

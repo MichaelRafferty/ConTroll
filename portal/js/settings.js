@@ -23,6 +23,8 @@ class Settings {
         var id = Number(idstr.substring(1));
         var script = 'scripts/processDisassociate.php';
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             managedBy: 'client',
             idType: type,
             idNum: id,
@@ -80,6 +82,8 @@ class Settings {
         document.getElementById('attachBtn').disabled = true;
         var script = 'scripts/requestAssociate.php';
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             acctId: acctId,
             email: email,
             action: 'request',
@@ -114,6 +118,8 @@ class Settings {
         var keys = idstr.split('~');
         var script = 'scripts/processIdentityDelete.php';
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             action: 'delete',
             provider: keys[0],
             email: keys[1],
@@ -166,6 +172,8 @@ class Settings {
         document.getElementById('newIdentity').disabled = true;
         var script = 'scripts/addIdentity.php';
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             provider: provider,
             email: email,
             action: 'addIdentity',

@@ -16,6 +16,9 @@ if ($db_ini['reg']['https'] <> 0) {
 require_once(__DIR__ . '/../../lib/db_functions.php');
 require_once(__DIR__ . '/../../lib/ajax_functions.php');
 require_once(__DIR__ . '/../../lib/global.php');
+require_once(__DIR__ . '/../../lib/cipher.php');
+require_once(__DIR__ . '/../../lib/jsVersions.php');
+
 db_connect();
 session_start();
 
@@ -168,9 +171,10 @@ function page_init($title, $tab, $css, $js)
                 }
                 ?><br/>
                 <div id="page_head_printers">
-                    Badge: <?php echo $_SESSION['badgePrinter'][0]; ?>&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="base_changePrintersShow();">Chg</button><br/>
-                    Receipt: <?php echo $_SESSION['receiptPrinter'][0]; ?><br/>
-                    General: <?php echo $_SESSION['genericPrinter'][0]; ?>
+                    Badge: <?php echo $_SESSION['badgePrinter']['name']; ?>&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0"
+                                                                                       onclick="base_changePrintersShow();">Chg</button><br/>
+                    Receipt: <?php echo $_SESSION['receiptPrinter']['name']; ?><br/>
+                    General: <?php echo $_SESSION['genericPrinter']['name']; ?>
                 </div>
             </div>
         </div>
@@ -240,11 +244,16 @@ function page_init($title, $tab, $css, $js)
     }
 }
 
-function page_foot()
-{
+function page_foot($title = '') {
     ?>
-</body>
-</html>
+    </div>
+    <div class="container-fluid">
+        <div class='row mt-2'>
+            <?php drawBug(12); ?>
+        </div>
+    </div>
+    </body>
+    </html>
     <?php
 }
 

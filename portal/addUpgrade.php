@@ -1,7 +1,7 @@
 <?php
 // Registration  Portal - addUpgrade.php - add new person and membership(s) or just upgrade the memberships for an existing person you manage
 require_once("lib/base.php");
-require_once("lib/portalForms.php");
+require_once("../lib/portalForms.php");
 require_once("../lib/interests.php");
 require_once("../lib/profile.php");
 require_once("../lib/policies.php");
@@ -168,7 +168,7 @@ portalPageInit('addUpgrade', $info,
 $person = null;
 $memberships = null;
 // draw the skeleton
-drawVariablePriceModal();
+drawVariablePriceModal('membership');
 ?>
     <div class="row mt-3">
         <div class="col-sm-12">

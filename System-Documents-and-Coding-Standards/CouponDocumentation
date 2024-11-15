@@ -36,15 +36,18 @@ Coupon Limitations: A coupon can be limited to when applicable by any combinatio
 
 Coupon Accounting: // TODO this is a plan for discussion, not the actual coupon method right now
     Coupons are remembered in the session until the cart is paid for
-    The total amount of the coupon is in CouponDiscount in the transaction record, such that price = paid + couponDiscount when paid in full
-    Per line item coupons are shown in the line item effected as the couponDiscount with the same formula
+    The total amount of the coupon is in the transaction record split between
+            couponDiscountCart for the coupons that effect the cart
+            couponDiscountReg for the coupons that effect the registration lines directly
+        such that price = paid + couponDiscountCart + couponDiscountReg when paid in full
+    The reg table has the effect of the per line item coupons as the couponDiscount with the same formula
     A payment record of type 'coupon' is recorded for the transaction for the total value of the coupon
         The description is the coupon code/name
         The nonce is 'cart', 'line' or 'membership' to indicate how the coupon was applied
     For Square:
         per line item coupons are per line item discounts
         per cart coupons are order wide discounts
-        Square will allocate coupons as it sees fit.
+        Square will allocate coupons as it sees fit. (we have not found a way to override this unless we do all per item discounts ourselves)
 
 Coupons are shown as payment lines on ConTroll receipts
 POS Display for coupon discount

@@ -91,6 +91,9 @@ WITH lNew AS (
         LOWER(TRIM(IFNULL(first_name, ''))) AS first_name, 
         LOWER(TRIM(IFNULL(last_name, ''))) AS last_name, 
         LOWER(TRIM(IFNULL(middle_name, ''))) AS middle_name,
+        LOWER(TRIM(REGEXP_REPLACE(
+            CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ',  IFNULL(suffix, '')),
+            '  *', ' '))) AS fullName,
         LOWER(TRIM(IFNULL(email_addr, ''))) AS email_addr,
         LOWER(TRIM(IFNULL(badge_name, ''))) AS badge_name,
         LOWER(TRIM(IFNULL(address, ''))) AS address,
@@ -106,7 +109,7 @@ WITH lNew AS (
 		id,
         first_name, SOUNDEX(first_name) AS sFirstName,
         last_name, SOUNDEX(last_name) AS sLastName,
-        middle_name, SOUNDEX(middle_name) AS sMiddleName,
+        middle_name, SOUNDEX(middle_name) AS sMiddleName, fullName,
         badge_name, SOUNDEX(middle_name) AS sBadgeName,
         email_addr, SOUNDEX(email_addr) AS sEmailAddr,
         address, SOUNDEX(address) AS sAddress,
@@ -121,6 +124,9 @@ WITH lNew AS (
         LOWER(TRIM(IFNULL(first_name, ''))) AS first_name, 
         LOWER(TRIM(IFNULL(last_name, ''))) AS last_name, 
         LOWER(TRIM(IFNULL(middle_name, ''))) AS middle_name,
+        LOWER(TRIM(REGEXP_REPLACE(
+            CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ',  IFNULL(suffix, '')),
+            '  *', ' '))) AS fullName,
         LOWER(TRIM(IFNULL(email_addr, ''))) AS email_addr,
         LOWER(TRIM(IFNULL(badge_name, ''))) AS badge_name,
         LOWER(TRIM(IFNULL(address, ''))) AS address,
@@ -135,7 +141,7 @@ WITH lNew AS (
 		id,
         first_name, SOUNDEX(first_name) AS sFirstName,
         last_name, SOUNDEX(last_name) AS sLastName,
-        middle_name, SOUNDEX(middle_name) AS sMiddleName,
+        middle_name, SOUNDEX(middle_name) AS sMiddleName, fullName,
         badge_name, SOUNDEX(middle_name) AS sBadgeName,
         email_addr, SOUNDEX(email_addr) AS sEmailAddr,
         address, SOUNDEX(address) AS sAddress,
@@ -147,12 +153,13 @@ WITH lNew AS (
 ), pids AS (
 	SELECT p.id
 	FROM lsNew n
-	JOIN psOld p ON (p.last_name = n.last_name OR p.sLastName = n.sLastName) AND 
-			(p.first_name like CONCAT(SUBSTRING(n.first_name, 1, 2), '%') OR p.sFirstName = n.sFirstName)
-	UNION SELECT p.id
+    JOIN psOld p ON ((p.last_name = n.last_name OR p.sLastName = n.sLastName) AND 
+        (p.first_name like CONCAT(SUBSTRING(n.first_name, 1, 2), '%') OR p.sFirstName = n.sFirstName) OR
+        p.fullName = n.fullName)
+	UNION DISTINCT SELECT p.id
 	FROM lsNew n
 	JOIN psOld p ON (p.email_addr = n.email_addr AND n.email_addr != '') OR (p.phone = n.phone && n.phone != '')
-	UNION SELECT p.id
+	UNION DISTINCT SELECT p.id
 	FROM lsNew n
 	JOIN psOld p ON (n.address != '' AND (p.address = n.address OR p.sAddress = n.sAddress)) OR 
 					(n.addr_2 != '' AND (p.addr_2 = n.addr_2 OR p.sAddr_2 = n.sAddr_2)) 

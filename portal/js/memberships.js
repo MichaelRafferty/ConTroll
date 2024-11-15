@@ -131,11 +131,11 @@ class Membership {
         this.#uspsDiv = document.getElementById("uspsblock");
 
         this.#saveCartBtn = document.getElementById("saveCartBtn");
-        this.#vpBody = document.getElementById("variablePriceBody");
         var id = document.getElementById("variablePriceModal");
         if (id) {
             this.#vpModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             id.addEventListener('hidden.bs.modal', amountModalHiddenHelper);
+            this.#vpBody = document.getElementById("variablePriceBody");
         }
 
         if (config['action'] != 'new') {
@@ -185,6 +185,8 @@ class Membership {
             return;
         }
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             email: newEmail,
             action: 'exist',
         }
@@ -270,6 +272,8 @@ class Membership {
         document.getElementById('sendManageRequestBTN').disabled = true;
         var script = 'scripts/requestAssociate.php';
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             acctId: acctId,
             email: email,
             action: 'request',
@@ -307,6 +311,8 @@ class Membership {
         }
 
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             getId: id,
             getType: type,
             newFlag: newFlag ? 1 : 0,
@@ -1041,7 +1047,6 @@ class Membership {
             }
         }
 
-
         this.#memberships.splice(row, 1);
         this.#cartChanges--;
         this.updateCart();
@@ -1149,6 +1154,8 @@ class Membership {
         var script = 'scripts/updateFromCart.php';
         var data = {
             action: 'updateCart',
+            loginId: config['id'],
+            loginType: config['idType'],
             cart: JSON.stringify(this.#memberships),
             person: JSON.stringify(this.#personInfo),
             newEmail: this.#newEmail,

@@ -2,7 +2,6 @@
 // addIdentity - request a confirm email to add an identity to your account.
 require_once('../lib/base.php');
 require_once('../../lib/log.php');
-require_once('../../lib/cipher.php');
 require_once('../../lib/email__load_methods.php');
 
 // use common global Ajax return functions
@@ -36,6 +35,8 @@ $response['resolveUpdates'] = $resolveUpdates;
     ajaxSuccess($response);
     return;
 }
+
+validateLoginId();
 
 $loginId = getSessionVar('id');
 $loginType = getSessionVar('idType');
@@ -138,9 +139,6 @@ if ($ts != null && $ts < $waittime * 60 * 60) {
     exit;
 }
 
-// encrypt/decrypt stuff
-$cipherParams = getAttachCipher();
-
 $insQ = <<<EOS
 INSERT INTO portalTokenLinks(email, action, source_ip)
 VALUES(?, 'identity', ?);
@@ -159,7 +157,7 @@ $parms['provider'] = $provider;         // provider to set up
 $parms['loginId'] = $loginId;       // who is requesting the identity
 $parms['email'] = $email;   // what email to set up
 $string = json_encode($parms);  // convert object to json for making a string out of it, which is encrypted in the next line
-$string = urlencode(openssl_encrypt($string, $cipherParams['cipher'], $cipherParams['key'], 0, $cipherParams['iv']));
+$string = encryptAttach($string, true);
 $token = $portal_conf['portalsite'] . "/respond.php?action=identity&vid=$string";     // convert to link for emailing
 
 load_email_procs();

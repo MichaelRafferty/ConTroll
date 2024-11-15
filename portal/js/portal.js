@@ -255,6 +255,8 @@ class Portal {
     disassociate() {
         var data = {
             'managedBy': 'disassociate',
+            loginId: config['id'],
+            loginType: config['idType'],
         }
         var script = 'scripts/processDisassociate.php';
         $.ajax({
@@ -313,6 +315,8 @@ class Portal {
         this.#currentPerson = id;
         this.#currentPersonType = type;
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             getId: id,
             getType: type,
             memberships: 'N'
@@ -478,6 +482,8 @@ class Portal {
 
         // ok valid email address, check if it's a legal one for us to use
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             email: email, // new email address
             currentPersonId:  this.#currentPerson,
             currentPersonType: this.#currentPersonType,
@@ -776,6 +782,8 @@ class Portal {
         }
         
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             person: person,
             currentPerson: this.#currentPerson,
             currentPersonType: this.#currentPersonType,
@@ -838,6 +846,8 @@ class Portal {
         this.#currentPerson = id;
         this.#currentPersonType = type;
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             getId: id,
             getType: type,
             memberships: 'N',
@@ -906,6 +916,8 @@ class Portal {
     editInterestSubmit() {
         clear_message();
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             existingInterests: JSON.stringify(this.#interests),
             newInterests: JSON.stringify(URLparamsToArray($('#editInterests').serialize())),
             currentPerson: this.#currentPerson,
@@ -1063,6 +1075,8 @@ class Portal {
 
         // transaction comes from session, person paying come from session, we will compute what was paid
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             action: 'portalPayment',
             plan:   (this.#paymentPlan != null || this.#existingPlan != null) ? 1 : 0,
             existingPlan: this.#existingPlan,
@@ -1136,6 +1150,8 @@ class Portal {
         clear_message();
         var script = 'scripts/getReceipt.php';
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             action: 'portalReceipt',
             transId: transId,
         }
@@ -1185,6 +1201,8 @@ class Portal {
             success = this.#receiptEmailBtn.innerHTML.replace("Email Receipt to", "Receipt sent to");
 
         var data = {
+            loginId: config['id'],
+            loginType: config['idType'],
             email: this.#receiptEmailAddress,
             okmsg: success,
             text: this.#receiptText.innerHTML,
