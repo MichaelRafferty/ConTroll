@@ -303,7 +303,7 @@ if ($approved_amt == $totalAmountDue) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 
-$txnUpdate .= 'paid=?, couponDiscount = ? WHERE id=?;';
+$txnUpdate .= 'paid=?, couponDiscountCart = ? WHERE id=?;';
 $txnU = dbSafeCmd($txnUpdate, 'ddi', array($approved_amt, $totalDiscount, $transId));
 
 $upgradedCnt = 0;
