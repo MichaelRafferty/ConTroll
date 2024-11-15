@@ -131,7 +131,7 @@ EOS;
     $transQ = <<<EOS
 SELECT id, conid, perid, newperid, userid, create_date, DATE_FORMAT(create_date, '%W %M %e, %Y %h:%i:%s %p') as create_date_str,
        complete_date, DATE_FORMAT(complete_date, '%W %M %e, %Y %h:%i:%s %p') as complete_date_str,
-       price, couponDiscount, paid, withtax, tax, type, notes, change_due, coupon, notes
+       price, couponDiscountCart, couponDiscountReg, paid, withtax, tax, type, notes, change_due, coupon, notes
 FROM transaction
 WHERE id = ?;
 EOS;

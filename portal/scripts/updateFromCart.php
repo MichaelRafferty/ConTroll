@@ -477,7 +477,7 @@ $response['logmessage'] .= ($int_upd == 0 ? 'No Interests changed' : "$int_upd  
 if ($voidTransId) {
     // check to see if the price in the transaction = the paid for the transaction
     $cQ = <<<EOS
-SELECT price, couponDiscount, paid
+SELECT price, couponDiscountCart, couponDiscountReg, paid
 FROM transaction 
 WHERE id = ?;
 EOS;
@@ -486,7 +486,7 @@ EOS;
         if ($cR->num_rows == 1) {
             $cTrans = $cR->fetch_assoc();
             $cR->free();
-            if ($cTrans['price'] == $cTrans['paid'] + $cTrans['couponDiscount']) {
+            if ($cTrans['price'] == $cTrans['paid'] + $cTrans['couponDiscountCart'] + $cTrans['couponDiscountReg']) {
                 // ok this transaction is 'complete', mark it so
                 $uT = <<<EOS
 UPDATE transaction
