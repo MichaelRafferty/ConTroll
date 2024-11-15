@@ -1,7 +1,7 @@
 <?php
 
-// library AJAX Processor: regpos_findRecord.php
-// Balticon Registration System
+// library AJAX Processor: artsales_findRecord.php
+// ConTroll Registration System
 // Author: Syd Weinstein
 // Retrieve perinfo and reg records for the Find and Add tabs
 

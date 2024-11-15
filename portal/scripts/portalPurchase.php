@@ -182,7 +182,7 @@ $results = array(
 logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
 $upT = <<<EOS
 UPDATE transaction
-SET price = ?, withTax = ?, couponDiscount = ?, tax = ?
+SET price = ?, withTax = ?, couponDiscountCart = ?, tax = ?
 WHERE id = ?;
 EOS;
 $rows_upd += dbSafeCmd($upT, 'ddddi', array($totalAmountDue, $totalAmountDue, $totalDiscount, 0, $transId));
@@ -303,7 +303,7 @@ if ($approved_amt == $totalAmountDue) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 
-$txnUpdate .= 'paid=?, couponDiscount = ? WHERE id=?;';
+$txnUpdate .= 'paid=?, couponDiscountCart = ? WHERE id=?;';
 $txnU = dbSafeCmd($txnUpdate, 'ddi', array($approved_amt, $totalDiscount, $transId));
 
 $upgradedCnt = 0;
@@ -366,8 +366,8 @@ return;
 
 function getNewTransaction($conid, $perid, $newperid) {
     $iQ = <<<EOS
-INSERT INTO transaction (conid, perid, newperid, userid, price, couponDiscount, paid, type)
-VALUES (?, ?, ?, ?, 0, 0, 0, 'regportal');
+INSERT INTO transaction (conid, perid, newperid, userid, price, couponDiscountCart, couponDiscountReg, paid, type)
+VALUES (?, ?, ?, ?, 0, 0, 0, 0, 'regportal');
 EOS;
     $transId = dbSafeInsert($iQ, 'iiii', array($conid, $perid, $newperid, $perid));
     setSessionVar('transId', $transId);

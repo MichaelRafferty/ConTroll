@@ -262,15 +262,15 @@ EOS;
 }
 
 $transQ = <<<EOS
-INSERT INTO transaction(newperid, perid, price, couponDiscount, type, conid, coupon)
-    VALUES(?, ?, ?, ?, ?, ?, ?);
+INSERT INTO transaction(newperid, perid, price, couponDiscountReg, couponDiscountCart, type, conid, coupon)
+    VALUES(?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 if ($coupon == null)
     $cid = null;
 else
     $cid = $coupon['id'];
 
-$transid= dbSafeInsert($transQ, "iiddsii", array($people[0]['newid'], $id, $preDiscount, $totalDiscount, 'website', $condata['id'], $cid));
+$transid= dbSafeInsert($transQ, "iidddsii", array($people[0]['newid'], $id, $preDiscount, $totalDiscount, 0, 'website', $condata['id'], $cid));
 
 $newid_list .= "transid='$transid'";
 
@@ -364,7 +364,7 @@ if($approved_amt == $total) {
     $txnUpdate .= "complete_date=current_timestamp(), ";
 }
 
-$txnUpdate .= "paid=?, couponDiscount = ? WHERE id=?;";
+$txnUpdate .= "paid=?, couponDiscountCart = ? WHERE id=?;";
 $txnU = dbSafeCmd($txnUpdate, "ddi", array($approved_amt, $totalDiscount, $transid) );
 
 $regQ = "UPDATE reg SET paid=price-couponDiscount, complete_trans = ?, status = 'paid' WHERE create_trans=?;";
