@@ -138,7 +138,8 @@ EOS;
         foreach ($policies as $policy) {
             $oldResponse = '';
             $oldId = null;
-            $new = 'N';
+            $new = '';
+            $defaultValue = $policy['defaultValue'];
             if (array_key_exists('p_' . $policy['policy'], $oldPolicies)) {
                 $old = $oldPolicies['p_' . $policy['policy']];
                 if (array_key_exists('response', $old)) {
@@ -160,7 +161,7 @@ EOS;
                     $conid,
                     $personType == 'n' ? $personId : null,
                     $policy['policy'],
-                    $new,
+                    $new == '' ? $defaultValue : $new,
                     $loginType == 'p' ? $loginId : null
                 );
                 $ins_key = dbSafeInsert($iQ, 'iiissi', $valueArray);
