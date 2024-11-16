@@ -140,7 +140,8 @@ FROM maxtids
 /* now get all the perinfo ids that are mentioned in each of those tid records, from both reg, and from regActions */
 SELECT perid 
 FROM reg r
-JOIN tidlist t ON (t.tid = r.create_trans)WHERE r.sttus IN ('unpaid', 'paid', 'plan')
+JOIN tidlist t ON (t.tid = r.create_trans)
+WHERE r.status IN ('unpaid', 'paid', 'plan')
 UNION SELECT perid 
 FROM reg r
 JOIN regActions h on (h.regid = r.id)
@@ -181,7 +182,7 @@ JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
-WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r.status IN ('unpaid', 'paid', 'plan')
+WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r1.status IN ('unpaid', 'paid', 'plan')
 ORDER BY r1.perid, r1.create_date;
 EOS;
     // now get the policies for all of these perids
@@ -308,7 +309,7 @@ JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
-WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r.status IN ('unpaid', 'paid', 'plan') AND
+WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r1.status IN ('unpaid', 'paid', 'plan') AND
 AND r1.status IN ('unpaid', 'paid', 'plan')
 ORDER BY r1.perid, r1.create_date;
 EOS;
