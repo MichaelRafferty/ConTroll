@@ -1,8 +1,8 @@
 <?php
-// library AJAX Processor: reg_findRecord.php
-// Balticon Registration System
+// library AJAX Processor: controll: pos_findRecord.php
+// ConTroll Registration System
 // Author: Syd Weinstein
-// Retrieve perinfo and reg records for the Find and Add tabs
+// Retrieve perinfo, reg, note records for the Find and Add tabs
 
 require_once '../lib/base.php';
 
@@ -140,8 +140,7 @@ FROM maxtids
 /* now get all the perinfo ids that are mentioned in each of those tid records, from both reg, and from regActions */
 SELECT perid 
 FROM reg r
-JOIN tidlist t ON (t.tid = r.create_trans)
-WHERE r.status IN ('unpaid', 'paid', 'plan')
+JOIN tidlist t ON (t.tid = r.create_trans)WHERE r.sttus IN ('unpaid', 'paid', 'plan')
 UNION SELECT perid 
 FROM reg r
 JOIN regActions h on (h.regid = r.id)
