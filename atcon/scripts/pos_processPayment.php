@@ -19,7 +19,7 @@ $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
     $ajax_request_action = $_POST['ajax_request_action'];
 }
-if ($ajax_request_action != 'updateCartElements') {
+if ($ajax_request_action != 'processPayment') {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
@@ -31,7 +31,7 @@ if (!(check_atcon('cashier', $conid) || check_atcon('data_entry', $conid))) {
 }
 
 $user_id = $_POST['user_id'];
-if ($user_id != $_SESSION['user_id']) {
+if ($user_id != $_SESSION['user']) {
     ajaxError('Invalid credentials passed');
 }
 
