@@ -195,7 +195,7 @@ class rulesSetup {
                 <h4><strong>Edit Membership Rules:</strong></h4>              
             </div>
             <div class="col-sm-6 text-end">
-                <strong><a href="md/Membership-Rules.md" target="_new">Display Rules Documentation (requires Markdown Viewer Extension)</a></strong>
+                <strong><a href="md/Membership-Rules.md" target="_new">Display Rules Documentation (requires Markdown Reader Extension)</a></strong>
             </div>
         </div>
         <div class="row">
