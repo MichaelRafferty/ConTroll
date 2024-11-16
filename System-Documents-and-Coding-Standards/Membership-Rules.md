@@ -12,7 +12,7 @@ memberships to purchase.  The configuration page includes a simulator that emula
 It currently allos for a simulated date, but only applies to online entries.  It need to be extended to support atcon and
 mail in registration(all entries)
 
-## How the rules system chooses memlist entries to display:
+## How the rules system chooses memList entries to display:
 
 Each process that uses membership rules loads the memList table into an associative array with process enforcing the date range limitation
 and the atcon or online flags.  Once the array is built, the rest is up to the rules javascript. NOTE: at present rules are only available
@@ -48,7 +48,7 @@ validating if a memList entry can be removed or deleted from the cart such that 
 First a rule is checked based on the criteria for matching in the memRules table. (a Boolean AND across all of the matching criteria)
 1. If rule memType list is not empty and the memList memType is not in the rule memType list, this rule is skipped.
 2. If rule memCatgory list is not empty and the memList memCategory is not in the rule memCategory list, this rule is skipped.
- 3. If rule memAge list is not empty and the memList memAge is not in the rule memAge list, this rule is skipped.
+3. If rule memAge list is not empty and the memList memAge is not in the rule memAge list, this rule is skipped.
 4. If rule memId list is not empty and the memList memId is not in the rule memId list, this rule is skipped.
 
  If the rule matches, the rule is processed
