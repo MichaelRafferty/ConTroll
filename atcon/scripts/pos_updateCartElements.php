@@ -286,7 +286,11 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         }
     }
     // Now process the policies for this person
-    $policy_upd += updateExisingMemberPolicies($cartrow['policies'], $conid, $cartrow['perid'], $user_perid);
+    if (array_key_exists('policies', $cartrow)) {
+        $policy_upd += updateExisingMemberPolicies($cartrow['policies'], $conid, $cartrow['perid'], $user_perid);
+    } else {
+        $policy_upd += updateMemberPolicies($conid, $cartrow['perid'], 'p', $user_perid, 'p');
+    }
 
     // since we can add/delete memberships, re-select the memberships for this perid to get the current list
     $selR = dbSafeQuery($selReg, $selRdt, array($conid, $cartrow['perid'], $conid));
