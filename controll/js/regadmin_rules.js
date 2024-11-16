@@ -191,8 +191,11 @@ class rulesSetup {
         var html = `
     <div class="container-fluid">
         <div class="row">
-            <div class="col-sm-12">
-                <h4><strong>Edit Membership Rules:</strong></h4>
+            <div class="col-sm-6">
+                <h4><strong>Edit Membership Rules:</strong></h4>              
+            </div>
+            <div class="col-sm-6 text-end">
+                <strong><a href="md/Membership-Rules.md" target="_new">Display Rules Documentation (requires Markdown Viewer Extension)</a></strong>
             </div>
         </div>
         <div class="row">
