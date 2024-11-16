@@ -131,7 +131,7 @@ JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
-WHERE r1.perid = ? AND r1.conid = ?
+WHERE r1.perid = ? AND r1.conid = ? AND r1.status IN ('unpaid', 'paid', 'plan')
 ORDER BY r1.perid, r1.create_date;
 EOS;
 $selRdt = 'iii';
