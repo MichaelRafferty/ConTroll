@@ -980,10 +980,11 @@ class PosCart {
                 ' Notes</button>';
         }
         rowhtml += `</div>
+</div>
 `;  // end of second row - badge name
         // third row add/edit memberships
         if (!this.#freezeCart) {
-            rowhtml += `</div>
+            rowhtml += `
     <div class="row">
         <div class="col-sm-auto"><button type="button" class="btn btn-sm btn-primary" onclick="cart.addEditMemberships(` +
                 row.index + `);">Add/Edit Memberships</button>
