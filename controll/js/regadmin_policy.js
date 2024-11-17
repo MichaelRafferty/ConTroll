@@ -344,6 +344,8 @@ class policySetup {
                         show_message(data['error'], 'error');
                         // reset save button
                         _this.dataChanged(data);
+                        _this.#policySaveBtn.innerHTML = "Save Changes*";
+                        _this.#policySaveBtn.disabled = false;
                         return false;
                     }
                     policy.close();

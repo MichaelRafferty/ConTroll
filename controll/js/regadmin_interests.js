@@ -385,6 +385,8 @@ class interestsSetup {
                         show_message(data['error'], 'error');
                         // reset save button
                         _this.dataChanged();
+                        _this.#interestsSaveBtn.disabled = false;
+                        _this.#interestsSaveBtn.innerHTML = "Save Changes*";
                         return false;
                     }
                     interests.close();

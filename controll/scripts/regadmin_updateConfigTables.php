@@ -73,7 +73,6 @@ if ($tablename != 'customText') {
             $first = false;
         }
         else {
-            // validate that the policy names do not have blanks....
             if (array_key_exists('sortOrder', $row))
                 $roworder = $row['sortOrder'];
             else
@@ -142,7 +141,7 @@ EOS;
         break;
 
     case 'interests':
-        // validate the policy names cannot have white space in them
+        // validate the interest names cannot have white space in them
         checkNoWhitespace($tabledata, $tablename, 'interest');
 
         if ($delete_keys != '') {
@@ -220,8 +219,8 @@ function checkNoWhitespace($rows, $table, $field) {
     foreach ($rows as $row) {
         if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists($field, $row))
             continue;
-        if (preg_match('/\s/', trim($row['policy']))) {
-            $errormsg .= '<br/>' . "The $table name key '" . $row['policy'] . "' cannot contain white space (blanks, tabs, etc.)";
+        if (preg_match('/\s/', trim($row[$field]))) {
+            $errormsg .= '<br/>' . "The $table name key '" . $row[$field] . "' cannot contain white space (blanks, tabs, etc.)";
         }
     }
     if ($errormsg != '') {
