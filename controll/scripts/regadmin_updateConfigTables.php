@@ -73,6 +73,7 @@ if ($tablename != 'customText') {
             $first = false;
         }
         else {
+            // validate that the policy names do not have blanks....
             if (array_key_exists('sortOrder', $row))
                 $roworder = $row['sortOrder'];
             else
@@ -88,6 +89,9 @@ if ($tablename != 'customText') {
 
 switch ($tablename) {
     case 'policy':
+        // validate the policy names cannot have white space in them
+        checkNoWhitespace($tabledata, $tablename, 'policy');
+
         if ($delete_keys != '') {
             $delsql = 'DELETE FROM policies WHERE policy = ?;';
             web_error_log("Delete sql = /$delsql/");
@@ -114,7 +118,7 @@ EOS;
             }
             if (array_key_exists('policyKey', $row)) { // if key is there, it's an update
                 // policy = ?, prompt = ?, description = ?, required = ?, defaultValue = ?, updateBy = ?, active = ?, sortorder = ?
-                $numrows = dbSafeCmd($updsql, 'sssssisis', array($row['policy'], $row['prompt'], $row['description'],
+                $numrows = dbSafeCmd($updsql, 'sssssisis', array(trim($row['policy']), $row['prompt'], $row['description'],
                     $row['required'], $row['defaultValue'], $user_perid, $row['active'],
                     $row['sortorder'], $row['policyKey']));
                 $updated += $numrows;
@@ -129,7 +133,7 @@ EOS;
             }
             if (!array_key_exists('policyKey', $row)) { // if key is not there, its an insert
                 // policy, prompt, description, sortOrder, required, defaultValue, updateBy, active)
-                $numrows = dbSafeInsert($inssql, 'sssissis', array($row['policy'], $row['prompt'], $row['description'],
+                $numrows = dbSafeInsert($inssql, 'sssissis', array(trim($row['policy']), $row['prompt'], $row['description'],
                     $row['sortOrder'], $row['required'], $row['defaultValue'], $user_perid, $row['active']));
                 if ($numrows !== false)
                     $inserted++;
@@ -138,6 +142,9 @@ EOS;
         break;
 
     case 'interests':
+        // validate the policy names cannot have white space in them
+        checkNoWhitespace($tabledata, $tablename, 'interest');
+
         if ($delete_keys != '') {
             $delsql = 'DELETE FROM interests WHERE interest = ?;';
             web_error_log("Delete sql = /$delsql/");
@@ -207,4 +214,20 @@ EOS;
 
 $response['success'] = "$tablename updated: $inserted added, $updated changed, $deleted removed.";
 ajaxSuccess($response);
+
+function checkNoWhitespace($rows, $table, $field) {
+    $errormsg = '';
+    foreach ($rows as $row) {
+        if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists($field, $row))
+            continue;
+        if (preg_match('/\s/', trim($row['policy']))) {
+            $errormsg .= '<br/>' . "The $table name key '" . $row['policy'] . "' cannot contain white space (blanks, tabs, etc.)";
+        }
+    }
+    if ($errormsg != '') {
+        $response['error'] = $errormsg;
+        ajaxSuccess($response);
+        exit(1);
+    }
+}
 ?>
