@@ -689,7 +689,7 @@ if (count($memberships) > 0) {
             $due = round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
             $status = '<b>Balance due: ' . $dolfmt->formatCurrency((float) $due, $currency) . '</b>';
         } else if ($membership['status'] == 'paid') {
-            $status = 'paid: ' . $dolfmt->formatCurrency((float) $membership['price'], $currency);
+            $status = 'paid: ' . $dolfmt->formatCurrency((float) $membership['paid'], $currency);
         } else if ($membership['status'] == 'plan') {
             $status = 'plan';
         }
