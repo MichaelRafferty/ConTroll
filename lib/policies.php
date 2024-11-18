@@ -26,6 +26,9 @@ EOS;
 
 //drawPoliciesBlock - draw the inner block for policy editing
 function drawPoliciesBlock($policies, $tabIndexStart, $idPrefix = '') {
+    if ($policies === null || count($policies) == 0) {
+        return;
+    }
     $tabindex = $tabIndexStart;
     foreach ($policies as $policy) {
         $name = $policy['policy'];
@@ -109,6 +112,9 @@ function drawPoliciesCell($policies) {
 function updateMemberPolicies($conid, $personId, $personType, $loginId, $loginType) {
     // now update the policies
     $policies = getPolicies();
+    if ($policies == null || count($policies) == 0) {
+        return 0;
+    }
     $iQ = <<<EOS
 INSERT INTO memberPolicies(perid, conid, newperid, policy, response, updateBy)
 VALUES (?,?,?,?,?,?);
