@@ -178,7 +178,7 @@ $onsitesale = $startdate->format("l, F j");
 <?php
     drawEditPersonBlock($con, $useUSPS, $policies, $class, /* modal */ true,
         /* editEmail */ true, $ageByDate, $membershiptypes, /* tabIndexStart  */ 100);
-    if (count($interests) > 0) {
+    if ($interests != null && count($interests) > 0) {
 ?>
         <div class='row'>
             <div class='col-sm-12'>

@@ -242,7 +242,7 @@ drawVerifyPersonInfo($policies);
             </div>
         </div>
         <?php
-        if ($interests != null) {
+        if ($interests != null && count($interests) > 0) {
             outputCustomText('main/step3');
             drawVerifyInterestsBlock($interests);
         }
@@ -250,7 +250,7 @@ drawVerifyPersonInfo($policies);
         <hr/>
     </div>
     <?php
-    if ($interests == null) {
+    if ($interests == null || count($interests) == 0) {
         $step3num = 2;
         $step4num = 3;
     } else {

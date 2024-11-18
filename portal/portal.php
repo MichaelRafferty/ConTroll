@@ -391,7 +391,9 @@ if ($refresh) {
 <?php
 // draw all the modals for this screen
 draw_editPersonModal('portal', $policies);
-draw_editInterestsModal($interests);
+if ($interests != null && count($interests) > 0) {
+    draw_editInterestsModal($interests);
+}
 draw_paymentDueModal();
 draw_makePaymentModal();
 draw_recieptModal();
@@ -467,7 +469,7 @@ if ($totalDue > 0) {
 </div>
 <?php
 $totalMemberships = count($holderMembership);
-drawPersonRow($loginId, $loginType, $info, $holderMembership, $interests != null, false, $now);
+drawPersonRow($loginId, $loginType, $info, $holderMembership, $interests != null && count($interests) > 0, false, $now);
 
 $managedMembershipList = '';
 $currentId = -1;
@@ -478,7 +480,7 @@ foreach ($managed as $m) {
     if ($currentId != $m['id']) {
         if ($currentId > 0) {
             $totalMemberships += count($curMB);
-            drawPersonRow($loginId, $loginType, $curPT, $curMB, $interests != null, true, $now);
+            drawPersonRow($loginId, $loginType, $curPT, $curMB, $interests != null && count($interests) > 0, true, $now);
         }
         $curPT = $m;
         $currentId = $m['id'];
@@ -504,7 +506,7 @@ foreach ($managed as $m) {
 }
 if ($currentId > 0) { // if there are any at all
     $totalMemberships += count($curMB);
-    drawPersonRow($loginId, $loginType, $curPT, $curMB, $interests != null, true, $now);
+    drawPersonRow($loginId, $loginType, $curPT, $curMB, $interests != null && count($interests) > 0, true, $now);
 }
 // only draw the legend if someone has membership
 if ($totalMemberships > 0)
