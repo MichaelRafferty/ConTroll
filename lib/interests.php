@@ -120,3 +120,111 @@ EOS;
     }
     return $rows_upd;
 }
+
+// merge interests - merge interests from a new person and an existing person or two existing people
+// Algorithm:
+//  If newperson ones exist:
+//      if perid ones exist:
+//          update perid from newperson if newperson newer, and delete newperson
+//      else if add perid to newperson ones
+//  else
+//  	do nothing
+//  If At end of merge/new person if there are no perid based ones, make defaults
+
+    function mergeInterests($conid, $remainingPerId, $sourceType, $sourceId, $loginId) {
+        $interests = getInterests();
+        if ($interests == null || count($interests) == 0) {
+            return '';
+        }
+
+        // ok, there are interests to merge
+        $sourceField = $sourceType == 'n' ? 'newperid' : 'perid';
+        $sQ = <<<EOS
+SELECT *
+FROM memberInterests
+WHERE $sourceField = ? AND conid = ?;
+EOS;
+        $rQ = <<<EOS
+SELECT *
+FROM memberInterests
+WHERE perid = ? AND conid = ?;
+EOS;
+        $chgU = <<<EOS
+UPDATE memberInterests
+SET interested = ?, updateBy = ?
+WHERE id = ?;
+EOS;
+        $idU = <<<EOS
+UPDATE memberInterests
+SET perid = ?, updateBy = ?
+WHERE id = ?;
+EOS;
+        $iP = <<<EOS
+INSERT INTO memberInterests(perid, conid, interest, interested, updateBy)
+VALUES (?, ?, ?, ?, ?);
+EOS;
+        $sD = <<<EOS
+DELETE FROM memberInterests
+WHERE id = ?;
+EOS;
+
+        $sourceInterests = [];
+        $remainInterests = [];
+
+        // source
+        $sR = dbSafeQuery($sQ, 'ii', array($sourceId, $conid));
+        if ($sR === false) {
+            $message = "mergeInterests: Error retrieving source interests of $sourceType:$sourceId";
+            error_log($message);
+            return $message;
+        }
+        while ($sL = $sR->fetch_assoc()) {
+            $sourceInterests[$sL['interest']] = $sL;
+        }
+        $sR->free();
+
+        // remain
+        $rR = dbSafeQuery($rQ, 'ii', array($remainingPerId, $conid));
+        if ($rR === false) {
+            $message = "mergeInterests: Error retrieving remaining interests of $remainingPerId";
+            error_log($message);
+            return $message;
+        }
+        while ($rL = $rR->fetch_assoc()) {
+            $remainInterests[$rL['interest']] = $rL;
+        }
+        $rR->free();
+
+        $numUpd = 0;
+        $numDel = 0;
+        $numIns = 0;
+
+        foreach ($interests as  $interest) {
+            $interestName = $interest['interest'];
+            if (array_key_exists($interestName, $sourceInterests)) {
+                $newRow = $sourceInterests[$interestName];
+                if (array_key_exists($interestName, $remainInterests)) {
+                    // the interest exists in both, check if it needs to be updated
+                    $oldRow = $remainInterests[$interestName];
+                    if ($oldRow['Interested' != $newRow['Interested']]) {
+                        // they are not the same Interested, update the remaining interests
+                        $numUpd += dbSafeCmd($chgU, 'sii', array($newRow['interested'], $loginId, $oldRow['id']));
+                    }
+                    // now delete the 'source' interest
+                    $numDel += dbSafeCmd($sD, 'i', array($newRow['id']));
+                } else {
+                    // the remaining place doesn't have the source interest, update the perid field of this id to the remaining id
+                    $numUpd += dbSafeCmd($idU, 'iii', array($remainingPerId, $newRow['id'], $loginId));
+                }
+            } else {
+                // not in the source, if not in the remain, insert the default value
+                if (!array_key_exists($interestName, $remainInterests)) {
+                    $newId = dbSafeInsert($iP, 'iissi', array($remainingPerId, $conid, $interestName, 'N', $loginId));
+                    if ($newId !== false) {
+                        $numIns++;
+                    }
+                }
+            }
+        }
+        return '';
+    }
