@@ -185,7 +185,7 @@ EOS;
 // update policies in memberPolicies using the direct array and return number updated
 function updateExisingMemberPolicies($policies, $conid, $perid, $loginId) {
     // now update the policies
-    if ($policies == null)
+    if ($policies == null || count($policies) == 0)
         return 0;
 
     $iQ = <<<EOS
@@ -211,4 +211,119 @@ EOS;
         }
     }
     return  $policy_upd;
+}
+
+// merge policies - merge polcies from a new person and an existing person or two existing people
+// Algorithm:
+//  If newperson ones exist:
+//      if perid ones exist:
+//          update perid from newperson if newperson newer, and delete newperson
+//      else if add perid to newperson ones
+//  else
+//  	do nothing
+//  If At end of merge/new person if there are no perid based ones, make defaults
+
+function mergePolicies($conid, $remainingPerId, $sourceType, $sourceId, $loginId, $sourceValues = null) {
+    $policies = getPolicies();
+    if ($policies == null || count($policies) == 0) {
+        return '';
+    }
+
+    // ok, there are policies to merge
+    $sourceField = $sourceType == 'n' ? 'newperid' : 'perid';
+    $sQ = <<<EOS
+SELECT *
+FROM memberPolicies
+WHERE $sourceField = ? AND conid = ?;
+EOS;
+    $rQ = <<<EOS
+SELECT *
+FROM memberPolicies
+WHERE perid = ? AND conid = ?;
+EOS;
+    $chgU = <<<EOS
+UPDATE memberPolicies
+SET response = ?, updateBy = ?
+WHERE id = ?;
+EOS;
+    $idU = <<<EOS
+UPDATE memberPolicies
+SET perid = ?, updateBy = ?
+WHERE id = ?;
+EOS;
+    $iP = <<<EOS
+INSERT INTO memberPolicies(perid, conid, policy, response, updateBy)
+VALUES (?, ?, ?, ?, ?);
+EOS;
+    $sD = <<<EOS
+DELETE FROM memberPolicies
+WHERE id = ?;
+EOS;
+
+    $sourcePolicies = [];
+    $remainPolicies = [];
+
+    // source
+    $sR = dbSafeQuery($sQ, 'ii', array($sourceId, $conid));
+    if ($sR === false) {
+        $message = "mergePolicies: Error retrieving source policies of $sourceType:$sourceId";
+        error_log($message);
+        return $message;
+    }
+    while ($sL = $sR->fetch_assoc()) {
+        $sourcePolicies[$sL['policy']] = $sL;
+        if (array_key_exists($sL['policy'], $sourceValues)) {
+            $sourcePolicies[$sL['policy']]['response'] = $sourceValues[$sL['policy']];
+        }
+    }
+    $sR->free();
+
+    // remain
+    $rR = dbSafeQuery($rQ, 'ii', array($remainingPerId, $conid));
+    if ($rR === false) {
+        $message = "mergePolicies: Error retrieving remaining policies of $remainingPerId";
+        error_log($message);
+        return $message;
+    }
+    while ($rL = $rR->fetch_assoc()) {
+        $remainPolicies[$rL['policy']] = $rL;
+    }
+    $rR->free();
+
+    $numUpd = 0;
+    $numDel = 0;
+    $numIns = 0;
+
+    foreach ($policies as $policy) {
+        $policyName = $policy['policy'];
+        if (array_key_exists($policyName, $sourcePolicies)) {
+            $newRow = $sourcePolicies[$policyName];
+            if (array_key_exists($policyName, $remainPolicies)) {
+                // the policy exists in both, check if it needs to be updated
+                $oldRow = $remainPolicies[$policyName];
+                if ($oldRow['response' != $newRow['response']]) {
+                    // they are not the same response, update the remaining policies
+                    $numUpd += dbSafeCmd($chgU, 'sii', array($newRow['response'], $loginId, $oldRow['id']));
+                }
+                // now delete the 'source' policy
+                $numDel += dbSafeCmd($sD, 'i', array($newRow['id']));
+            } else {
+                // the remaining place doesn't have the source policy, update the perid field of this id to the remaining id
+                $numUpd += dbSafeCmd($idU, 'iii', array($remainingPerId, $newRow['id'], $loginId));
+            }
+        } else {
+            // not in the source, if not in the remain, insert the default value
+            if (!array_key_exists($policyName, $remainPolicies)) {
+                $response = $policy['defaultValue'];
+                if (array_key_exists($policyName,  $sourceValues))
+                    $response = $sourceValues[$policyName];
+                if ($sourceValues[$policyName] != $policy['policy']) {}
+                $newId = dbSafeInsert($iP, 'iissi', array($remainingPerId, $conid, $policyName, $response, $loginId));
+                if ($newId !== false) {
+                    $numIns++;
+                }
+            }
+        }
+    }
+    return '';
 }

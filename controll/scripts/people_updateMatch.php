@@ -4,6 +4,8 @@ global $db_ini;
 require_once "../lib/base.php";
 require_once('../../lib/log.php');
 require_once('../../lib/email__load_methods.php');
+require_once('../../lib/policies.php');
+require_once('../../lib/interests.php');
 
 $check_auth = google_init("ajax");
 $perm = "people";
@@ -150,31 +152,25 @@ $rows = dbSafeCmd('UPDATE perinfo SET updatedBy = ?, managedBy = ?, managedByNew
 $rows = dbSafeCmd('UPDATE reg SET perid=? WHERE newperid=?;', 'ii', array ($perid, $newperid));
 $rows = dbSafeCmd('UPDATE transaction SET perid=? WHERE newperid=?;', 'ii', array ($perid, $newperid));
 $rows = dbSafeCmd('UPDATE exhibitors SET perid=? WHERE newperid=?;', 'ii', array ($perid, $newperid));
-$rows = dbSafeCmd('UPDATE memberInterests SET perid=? WHERE newperid=?;', 'ii', array ($perid, $newperid));
-$rows = dbSafeCmd('UPDATE memberPolicies SET perid=? WHERE newperid=?;', 'ii', array ($perid, $newperid));
 $rows = dbSafeCmd('UPDATE payorPlans SET perid=? WHERE newperid=?;', 'ii', array ($perid, $newperid));
 
 // now update / insert the policies
-$uP = <<<EOS
-UPDATE memberPolicies
-SET response = ?, updateBy = ?
-WHERE perid = ? AND conid = ? and policy = ?;
-EOS;
-$iP = <<<EOS
-INSERT INTO memberPolicies(perid, conid, policy, response, updateBy)
-VALUES (?,?,?,?,?);
-EOS;
-
+$resultValues = [];
 foreach ($_POST as $key => $value) {
     if (!str_starts_with($key, 'p_'))
         continue;
-
-    // ok, it's a post item
     $policy = mb_substr($key, 2); // take off the p_
-    $num_upd = dbSafeCmd($uP, 'siiis', array($value, $updatedBy, $perid, $conid, $policy));
-    if ($num_upd === 0) {
-        $new_key = dbSafeInsert($iP, 'iissi', array($perid, $conid, $policy, $value, $updatedBy));
-    }
+    $resultValues[$policy] = $value;
+}
+// now merge them
+$msg = mergePolicies($conid, $perid, 'n', $newperid, $updatedBy, $resultValues);
+if ($msg != '') {
+    $response['error'] = $msg;
+}
+
+$msg = mergeInterests($conid, $perid, 'n', $newperid, $updatedBy);
+if ($msg != '') {
+    $response['error'] = $msg;
 }
 
 // now if the managerAction == 'email', build the associate email request...
