@@ -300,7 +300,8 @@ EOF;
             array_key_exists('share', $badge) ? $badge['share'] :'Y',
             $id
         );
-$value_arr = mb_convert_encoding($value_arr, 'Windows-1252', 'UTF-8');
+        // this line is causing problems in full utf8 systems, need to better understand why it was added, for now its removed.
+        // $value_arr = mb_convert_encoding($value_arr, 'Windows-1252', 'UTF-8');
 
         $insertQ = <<<EOS
 INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone,
