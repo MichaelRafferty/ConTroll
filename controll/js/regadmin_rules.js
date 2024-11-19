@@ -416,7 +416,7 @@ class rulesSetup {
         clear_message();
         var dateStr = document.getElementById('simDate').value.trim();
         var memFilter = document.getElementById('simLimit').value;
-        console.log("dateStr = '" + dateStr + "', memFilter='" + memFilter + "'");
+        //console.log("dateStr = '" + dateStr + "', memFilter='" + memFilter + "'");
         if (dateStr == '' && memFilter == 'All') {
             memList = memListFull;
             this.updatePreviewPane();
@@ -575,7 +575,7 @@ class rulesSetup {
     // edit step - display a modal to edit a step
     editStep(type, itemId) {
         // populate the modal
-        console.log("type = '" + type + "', item = '" + itemId + "'");
+        //console.log("type = '" + type + "', item = '" + itemId + "'");
         var row = this.#ruleStepsTable.getRow(itemId);
         var item = '';
         this.#editRuleStepItem = itemId;
@@ -896,7 +896,7 @@ class rulesSetup {
     setInitialSel() {
         var rows = this.#editRuleSelTable.getRows();
         for (var row of rows) {
-            var name = row.getCell(rules.getselIndex()).getValue();
+            var name = row.getCell(rules.getselIndex()).getValue().toString();
             if (this.#selValues.includes(name)) {
                 row.getCell(rules.getselIndex()).getElement().style.backgroundColor = "#C0FFC0";
             }
