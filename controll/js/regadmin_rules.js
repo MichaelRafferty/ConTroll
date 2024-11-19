@@ -215,6 +215,13 @@ class rulesSetup {
                     <strong>Rules Simulator:</strong>&nbsp;&nbsp;&nbsp;
                     Similated Current Date:
                     <input type="text" maxlength="20" size="20" name="simDate" id="simDate" value="" onchange="rules.updateDate();"/>
+                    <select name="simLimit" id="simLimit" onchange="rules.updateDate();">
+                        <option value="All" style="background-color: #D0D0D0;" "selected>All Membership Items</option>
+                        <option value="Both" style="background-color: #D0FFD0;">Online=Y or Atcon=Y</option>
+                        <option value="Online"style="background-color: #FFD0FF;">Online=Y</option>
+                        <option value="Atcon"style="background-color: #D0D0FF;">Atcon=Y</option>
+                        <option value="None">Online=N and Atcon=N</option>
+                    </select>
                 </h4>
             </div>
         </div>
@@ -408,26 +415,61 @@ class rulesSetup {
     updateDate() {
         clear_message();
         var dateStr = document.getElementById('simDate').value.trim();
-        if (dateStr == '') {
+        var memFilter = document.getElementById('simLimit').value;
+        console.log("dateStr = '" + dateStr + "', memFilter='" + memFilter + "'");
+        if (dateStr == '' && memFilter == 'All') {
             memList = memListFull;
             this.updatePreviewPane();
             return;
         }
-        var simDate = Date.parse(dateStr);
-        if (isNaN(simDate)) {
-            show_message("Unable to parse " + dateStr + " as a date.", 'warn');
-            return;
+
+        var simDate = 0;
+        if (dateStr != '') {
+            simDate = Date.parse(dateStr);
+            if (isNaN(simDate)) {
+                show_message("Unable to parse " + dateStr + " as a date.", 'warn');
+                return;
+            }
         }
 
         memList = [];
         for (var i = 0; i < memListFull.length; i++) {
             var row = memListFull[i];
-            //console.log(dateStr + ', ' + row.startdate + ', ' + row.enddate);
-            var startDate = Date.parse(row.startdate);
-            var endDate = Date.parse(row.enddate);
-            //console.log(simDate + ' ' + startDate + ' ' + endDate);
-            if (simDate >= startDate && simDate < endDate)
-                memList.push(row);
+            // check for proper limit
+
+            if (memFilter != 'All') {
+                var skip = false;
+                switch (memFilter) {
+                    case 'Both':
+                        if (row.atcon == 'N' && row.online == 'N')
+                            skip = true;
+                        break;
+                    case 'Online':
+                        if (row.online == 'N')
+                            skip = true;
+                        break;
+                    case 'Atcon':
+                        if (row.atcon == 'N')
+                            skip = true;
+                        break;
+                    case 'None':
+                        if (row.atcon == 'Y' || row.online == 'Y')
+                            skip = true;
+                        break;
+                }
+                if (skip)
+                    continue;
+            }
+            if (simDate != 0) {
+                //console.log(dateStr + ', ' + row.startdate + ', ' + row.enddate);
+                var startDate = Date.parse(row.startdate);
+                var endDate = Date.parse(row.enddate);
+                //console.log(simDate + ' ' + startDate + ' ' + endDate);
+                if (simDate < startDate || simDate >= endDate)
+                    continue;
+            }
+
+            memList.push(row);
         }
         this.updatePreviewPane();
     }
