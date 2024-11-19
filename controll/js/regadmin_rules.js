@@ -378,7 +378,7 @@ class rulesSetup {
                     memLabel += ' (' + mem.price + ')';
                 }
                 html += '<div class="col-sm-auto mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary"' +
-                    ' onclick="rules.membershipAdd(' + "'" + mem.id + "'" + ')">' +
+                    ' onclick="rules.membershipAdd(' + "'" + mem.id + "'" + ')">' + '[' + mem.memId + '] ' +
                     (mem.conid != this.#conid ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
             }
         }
@@ -477,7 +477,8 @@ class rulesSetup {
         if (this.#memberships != null) {
             for (var i = 0; i < this.#memberships.length; i++) {
                 html += '<div class="col-auto mt-1 mb-1"><button class="btn btn-sm btn-info text-white" type="button">' +
-                    this.#memberships[i].conid + ' ' + this.#memberships[i].label +
+                    '[' + this.#memberships[i].memId + '] ' +
+                    this.#memberships[i].conid + ' ' + this.#memberships[i].label + ' (' + this.#memberships[i].price + ')' +
                     '</button></div>\n';
             }
         }
