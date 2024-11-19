@@ -53,6 +53,8 @@ if ($data['emailTest'] || $reg['test'] == 1) {
 if ($email == null || $email == '') {
     $email = $con['regadminemail'];
 }
+if ($data['action'] == 'full' && $reg['test'] == 0)
+    $test = false;
 
 $response['test'] = $test;
 
