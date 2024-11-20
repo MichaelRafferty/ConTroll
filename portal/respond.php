@@ -52,7 +52,7 @@ $result_message = '';
 
 switch ($action) {
     case 'attach':
-        $match = decryptAttach($_GET['vid'], $true);
+        $match = decryptAttach($_GET['vid'], true);
         if (!validateLink($match, $action, 7 * 24 * 3600)) {
             break; // link is no longer valid, disregard, validate link puts out its own diagnostic.
         }
