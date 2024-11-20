@@ -43,10 +43,13 @@ class rulesSetup {
     #editRuleTitle = null;
     #editRuleBlock = null
     #editRuleSel = null
+    #editRuleRow = null
     #editRuleSaveBtn = null;
     #editRuleName = null;
     #editRuleSelLabel = null;
-    #editRuleNameDiv = null;
+    #editRuleNameDiv1 = null;
+    #editRuleNameDiv2 = null;
+    #editRuleNameDiv3 = null;
     #ruleDescription = null;
     #memRules = null;
     #rulesIdx = null;
@@ -57,7 +60,12 @@ class rulesSetup {
     #rAgeList = null;
     #rMemList = null;
     #ruleStepDiv = null;
+    #editStepRow = null;
+
+    // simulator
     #ruleSimulator = null;
+    #simulatorMemAvailable = null;
+    #simulatorMemTable = null;
 
     // editing a ruleItem (step)
     #editRuleStepModal = null;
@@ -77,10 +85,14 @@ class rulesSetup {
     #sAgeList = null;
     #sMemList = null;
     #ruleStepsIdx = null;
+    #memControlledTable = null;
+    #memUsedTable = null;
+    #memStepUsedTable = null;
 
     #editRuleSelTable = null;
     #selIndex = null;
     #selField = null;
+    #selItem = null;
     #selValues = null;
     #filterTypes = [];
     #filterAges = []
@@ -120,7 +132,9 @@ class rulesSetup {
             this.#editRuleSel = document.getElementById('editRuleSelDiv');
             this.#editRuleSelLabel = document.getElementById('editRuleSelLabel');
             this.#editRuleSaveBtn = document.getElementById('editRuleSaveBtn');
-            this.#editRuleNameDiv = document.getElementById('editRuleName');
+            this.#editRuleNameDiv1 = document.getElementById('editRuleName1');
+            this.#editRuleNameDiv2 = document.getElementById('editRuleName2');
+            this.#editRuleNameDiv3 = document.getElementById('editRuleName3');
             this.#ruleDescription = document.getElementById('ruleDescription');
             this.#rName = document.getElementById('rName');
             this.#rOptionName = document.getElementById('rOptionName');
@@ -228,6 +242,16 @@ class rulesSetup {
     </div>
     <div class="container-fluid" id="ruleSimulatorDiv"></div>
     <div class="container-fluid">
+        <div class="row mt-4">
+            <div class="col-sm-auto">
+                <h4>Memberships Available for Simulation</h4>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-sm-12" id="simulatorMemAvailable"></div>
+        </div>
+    </div>
+    <div class="container-fluid">
         <div class="row">
             <div class="col-sm-12" id="rulesMessageDiv"></div>
         </div>
@@ -257,7 +281,7 @@ class rulesSetup {
                 return false;
             }
         });
-        this.#rulesPane.innerHTML = html;
+        this.#simulatorMemAvailable = document.getElementById('simulatorMemAvailable');
     }
 
     // draw the rules edit screen
@@ -412,66 +436,226 @@ class rulesSetup {
         this.updatePreviewPane();
     }
 
-    updateDate() {
+    updateDate(updatePane = true) {
         clear_message();
         var dateStr = document.getElementById('simDate').value.trim();
         var memFilter = document.getElementById('simLimit').value;
         //console.log("dateStr = '" + dateStr + "', memFilter='" + memFilter + "'");
         if (dateStr == '' && memFilter == 'All') {
             memList = memListFull;
-            this.updatePreviewPane();
-            return;
-        }
+        } else {
+            var simDate = 0;
+            if (dateStr != '') {
+                simDate = Date.parse(dateStr);
+                if (isNaN(simDate)) {
+                    show_message("Unable to parse " + dateStr + " as a date.", 'warn');
+                    return;
+                }
+            }
 
-        var simDate = 0;
-        if (dateStr != '') {
-            simDate = Date.parse(dateStr);
-            if (isNaN(simDate)) {
-                show_message("Unable to parse " + dateStr + " as a date.", 'warn');
-                return;
+            memList = [];
+            for (var i = 0; i < memListFull.length; i++) {
+                var row = memListFull[i];
+                // check for proper limit
+
+                if (memFilter != 'All') {
+                    var skip = false;
+                    switch (memFilter) {
+                        case 'Both':
+                            if (row.atcon == 'N' && row.online == 'N')
+                                skip = true;
+                            break;
+                        case 'Online':
+                            if (row.online == 'N')
+                                skip = true;
+                            break;
+                        case 'Atcon':
+                            if (row.atcon == 'N')
+                                skip = true;
+                            break;
+                        case 'None':
+                            if (row.atcon == 'Y' || row.online == 'Y')
+                                skip = true;
+                            break;
+                    }
+                    if (skip)
+                        continue;
+                }
+                if (simDate != 0) {
+                    //console.log(dateStr + ', ' + row.startdate + ', ' + row.enddate);
+                    var startDate = Date.parse(row.startdate);
+                    var endDate = Date.parse(row.enddate);
+                    //console.log(simDate + ' ' + startDate + ' ' + endDate);
+                    if (simDate < startDate || simDate >= endDate)
+                        continue;
+                }
+                memList.push(row);
             }
         }
+        
+        // figure out which rules control and use this memList entry
+        for (var i = 0; i < memList.length; i++) {
+            row = memList[i];
+            var controlled = '';
+            var usedby = '';
+            for (var r = 0; r < this.#memRules.length; r++) {
+                var rule = this.#memRules[r];
+                var ruleset = rule.ruleset;
+                // check each type to see if this rule fits it
+                if (this.#checkItem(row, rule)) {
+                    if (controlled != '')
+                        controlled += ',';
+                    controlled += rule.name;
+                }
 
-        memList = [];
+                var steps = Object.keys(ruleset);
+                for (var s = 0; s < steps.length; s++) {
+                    var step = ruleset[steps[s]];
+                    if (this.#checkItem(row, step)) {
+                        if (usedby != '')
+                            usedby += ',';
+                        usedby += step.name + '.' + step.step;
+                    }
+                }
+            }
+            row.controlled = controlled;
+            row.usedby = usedby;
+        }
+
+        // update or show the mems available in this simulation
+        if (this.#simulatorMemTable) {
+            this.#simulatorMemTable.replaceData(memList);
+        } else {
+            this.#simulatorMemTable = new Tabulator('#simulatorMemAvailable', {
+                data: memList,
+                layout: "fitDataTable",
+                index: "memId",
+                columns: [
+                    {title: "Id", field: "memId", headerSort: true, headerHozAlign: "right", hozAlign: "right",},
+                    {title: "Conid", field: "conid", headerSort: true, headerHozAlign: "right", hozAlign: "right",},
+                    {title: "Label", field: "label", headerFilter: true, width: 400},
+                    {title: "Price", field: "price", headerHozAlign: "right", hozAlign: "right",},
+                    {title: "Controlled By", field: "controlled", headerFilter: true, width: 400, },
+                    {title: "Used By", field: "usedby", headerFilter: true, width:700, },
+                ],
+            });
+        }
+
+        if (updatePane)
+            this.updatePreviewPane();
+    }
+
+    #checkItem(row, item) {
+        var match = true;
+        if (match && item.ageList != null && item.ageList != '' && !item.ageListArray.includes(row.memAge))
+            match = false;
+        if (match && item.catList != null && item.catList != '' && !item.catListArray.includes(row.memCategory))
+            match = false;
+        if (match && item.typeList != null && item.typeList != '' && !item.typeListArray.includes(row.memType))
+            match = false;
+        if (match && item.memList != null && item.memList != '' && !item.memListArray.includes(row.memId.toString()))
+            match = false;
+
+        return match;
+    }
+
+    // build the mem controlled table for the edit modals
+    #buildMemControlled(div, ruleRow = null) {
+        var rule;
+        if (ruleRow) {
+            rule = ruleRow;
+        } else {
+            rule = this.#rulesTable.getRow(this.#editRuleName).getData();
+        }
+        //console.log(rule);
+        var memControlled = [];
         for (var i = 0; i < memListFull.length; i++) {
             var row = memListFull[i];
-            // check for proper limit
-
-            if (memFilter != 'All') {
-                var skip = false;
-                switch (memFilter) {
-                    case 'Both':
-                        if (row.atcon == 'N' && row.online == 'N')
-                            skip = true;
-                        break;
-                    case 'Online':
-                        if (row.online == 'N')
-                            skip = true;
-                        break;
-                    case 'Atcon':
-                        if (row.atcon == 'N')
-                            skip = true;
-                        break;
-                    case 'None':
-                        if (row.atcon == 'Y' || row.online == 'Y')
-                            skip = true;
-                        break;
-                }
-                if (skip)
-                    continue;
+            // check each type to see if this rule fits it
+            if (this.#checkItem(row, rule)) {
+                memControlled.push(row);
             }
-            if (simDate != 0) {
-                //console.log(dateStr + ', ' + row.startdate + ', ' + row.enddate);
-                var startDate = Date.parse(row.startdate);
-                var endDate = Date.parse(row.enddate);
-                //console.log(simDate + ' ' + startDate + ' ' + endDate);
-                if (simDate < startDate || simDate >= endDate)
-                    continue;
-            }
-
-            memList.push(row);
         }
-        this.updatePreviewPane();
+        if (this.#memControlledTable) {
+            this.#memControlledTable.replaceData(memControlled);
+        } else {
+            this.memConTrolledTable = new Tabulator(div, {
+                data: memControlled,
+                layout: "fitDataTable",
+                columns: [
+                    { title: "ID", field: "id", headerSort: true, headerHozAlign: "right", hozAlign: "right", },
+                    { title: "Con ID", field: "conid", headerFilter: true, headerHozAlign:"right", hozAlign: "right", },
+                    { title: "Category", field: "memCategory", headerFilter: true, },
+                    { title: "Type", field: "memType", headerFilter: true, },
+                    { title: "Age", field: "memAge", headerFilter: true, },
+                    { title: "Label", field: "shortname", minWidth: 400, headerFilter: true, },
+                    { title: "Label", field: "label", visible: false },
+                    { title: "Price", field: "price", hozAlign: "right",  },
+                    { title: "Start Date", field: "startdate", width: 170, headerFilter: true },
+                    { title: "End Date", field: "enddate", width: 170, headerFilter: true},
+                    { title: "Atcon", field: "atcon", headerFilter: true, headerFilterParams: { values: ["Y", "N"], } },
+                    { title: "Online", field: "online", headerFilter: true, headerFilterParams: { values: ["Y", "N"], } },
+                    { title: "Notes", field: "notes", minWidth: 400, headerFilter: true },
+                ],
+            });
+        }
+    }
+
+    // build the mem used table for the edit modals
+    #buildMemUsed(div, where, step = null) {
+        var ruleset;
+        if (step == null) {
+            var rule = this.#rulesTable.getRow(this.#editRuleName).getData();
+            ruleset = rule.ruleset;
+        } else {
+            ruleset = {};
+            ruleset[step.step] = step;
+        }
+
+        var memUsed = [];
+        for (var i = 0; i < memListFull.length; i++) {
+            var row = memListFull[i];
+            var steps = Object.keys(ruleset);
+            var used = false;
+            for (var s = 0; s < steps.length; s++) {
+                if (this.#checkItem(row, ruleset[steps[s]]))
+                    used = true;
+            }
+            if (used) {
+                memUsed.push(row);
+            }
+        }
+        if (table) {
+            if (where == 'r') {
+                this.#memUsedTable.replaceData(memUsed);
+            } else if (where == 's')
+                this.#memStepUsedTable.replaceData(memUsed);
+
+        } else {
+           var table = new Tabulator(div, {
+                data: memUsed,
+                layout: "fitDataTable",
+                columns: [
+                    { title: "ID", field: "id", headerSort: true, headerHozAlign: "right", hozAlign: "right", },
+                    { title: "Con ID", field: "conid", headerFilter: true, headerHozAlign:"right", hozAlign: "right", },
+                    { title: "Category", field: "memCategory", headerFilter: true, },
+                    { title: "Type", field: "memType", headerFilter: true, },
+                    { title: "Age", field: "memAge", headerFilter: true, },
+                    { title: "Label", field: "shortname", minWidth: 400, headerFilter: true, },
+                    { title: "Label", field: "label", visible: false },
+                    { title: "Price", field: "price", hozAlign: "right",  },
+                    { title: "Start Date", field: "startdate", width: 170, headerFilter: true },
+                    { title: "End Date", field: "enddate", width: 170, headerFilter: true},
+                    { title: "Atcon", field: "atcon", headerFilter: true, headerFilterParams: { values: ["Y", "N"], } },
+                    { title: "Online", field: "online", headerFilter: true, headerFilterParams: { values: ["Y", "N"], } },
+                    { title: "Notes", field: "notes", minWidth: 400, headerFilter: true },
+                ],
+            });
+        }
+        if (where == 'r') {
+            this.#memUsedTable = table;
+        } else if (where == 's')
+            this.#memStepUsedTable = table;
     }
 
     membershipAdd(memId) {
@@ -552,6 +736,8 @@ class rulesSetup {
     updatePreviewPane() {
         this.buildMembershipButtons();
         this.drawMembershipList();
+        if (this.#simulatorMemTable == null)
+            this.updateDate(false);
     }
 
     // table related functions
@@ -576,31 +762,32 @@ class rulesSetup {
     editStep(type, itemId) {
         // populate the modal
         //console.log("type = '" + type + "', item = '" + itemId + "'");
-        var row = this.#ruleStepsTable.getRow(itemId);
+        var row = this.#ruleStepsTable.getRow(itemId).getData();
+        this.#editStepRow = row;
         var item = '';
         this.#editRuleStepItem = itemId;
-        item = row.getCell('name').getValue();
+        item = row.name;
         this.#sName.value = item;
         this.#editRuleStepNameDiv.innerHTML = item;
-        this.#sStep.value = row.getCell('step').getValue();
-        this.#sRuleType.value = row.getCell('ruleType').getValue();
-        this.#sApplyTo.value = row.getCell('applyTo').getValue();
-        item = row.getCell('typeList').getValue();
+        this.#sStep.value = row.step;
+        this.#sRuleType.value = row.ruleType;
+        this.#sApplyTo.value = row.applyTo;
+        item = row.typeList;
         if (item == '' || item == undefined || item == null)
             item = "<i>None</i>";
         this.#sTypeList.innerHTML = item;
 
-        item = row.getCell('catList').getValue();
+        item = row.catList;
         if (item == '' || item == undefined || item == null)
             item = "<i>None</i>";
         this.#sCatList.innerHTML = item;
 
-        item = row.getCell('ageList').getValue();
+        item = row.ageList;
         if (item == '' || item == undefined || item == null)
             item = "<i>None</i>";
         this.#sAgeList.innerHTML = item;
 
-        item = row.getCell('memList').getValue();
+        item = row.memList;
         if (item == '' || item == undefined || item == null)
             item = "<i>None</i>";
         this.#sMemList.innerHTML = item;
@@ -610,6 +797,7 @@ class rulesSetup {
         $('#editRuleStepSelButtons').hide();
         this.#editRuleStepSelLabel.innerHTML = '';
         this.#selIndex = null;
+        this.#buildMemUsed('#editStepUsedDiv', 's', this.#editStepRow);
     }
 
     addrowSteps() {
@@ -630,13 +818,14 @@ class rulesSetup {
         if (dosave) {
             // store all the fields back into the table row
             var row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
+            var rowdata = row.getData();
 
             var newValue = this.#sName.value;
-            if (row.getCell("name").getValue() != newValue) {
+            if (rowdata.name != newValue) {
                 row.getCell("name").setValue(newValue);
             }
             newValue = this.#sStep.value;
-            if (row.getCell("step").getValue() != newValue) {
+            if (rowdata.step != newValue) {
                 row.getCell("step").setValue(newValue);
             }
             newValue = this.#sRuleType.value;
@@ -644,7 +833,7 @@ class rulesSetup {
                 show_message('You must select a rule type', 'error', 'result_message_editRuleStep');
                 return;
             }
-            if (row.getCell("ruleType").getValue() != newValue) {
+            if (rowdata.ruleType != newValue) {
                 row.getCell("ruleType").setValue(newValue);
             }
             newValue = this.#sApplyTo.value;
@@ -652,37 +841,39 @@ class rulesSetup {
                 show_message('You must select an Apply To', 'error', 'result_message_editRuleStep');
                 return;
             }
-            if (row.getCell("applyTo").getValue() != newValue) {
+            if (rowdata.applyTo != newValue) {
                 row.getCell("applyTo").setValue(newValue);
             }
             newValue = this.#sAgeList.innerHTML;
             if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
                 newValue = null;
-            if (row.getCell("ageList").getValue() != newValue) {
+            if (rowdata.ageList != newValue) {
                 row.getCell("ageList").setValue(newValue);
             }
             newValue = this.#sTypeList.innerHTML;
             if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
                 newValue = null;
-            if (row.getCell("typeList").getValue() != newValue) {
+            if (rowdata.typeList != newValue) {
                 row.getCell("typeList").setValue(newValue);
             }
             newValue = this.#sCatList.innerHTML;
             if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
                 newValue = null;
-            if (row.getCell("catList").getValue() != newValue) {
+            if (rowdata.catList != newValue) {
                 row.getCell("catList").setValue(newValue);
             }
             newValue = this.#sMemList.innerHTML;
             if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
                 newValue = null;
-            if (row.getCell("memList").getValue() != newValue) {
+            if (rowdata.memList != newValue) {
                 row.getCell("memList").setValue(newValue);
             }
 
         }
         this.#editRuleStepModal.hide();
         this.#editRuleModal.show();
+        this.#buildMemControlled('#editRuleControlledDiv');
+        this.#buildMemUsed('#editRuleUsedDiv', 'r');
     }
 
     undoSteps() {
@@ -739,6 +930,7 @@ class rulesSetup {
     editTypes(level) {
         this.closeSelTable(level);
         var tableField = null;
+        this.#selItem = 'typeList';
         switch (level) {
             case 'r':
                 this.#selValues = this.#rTypeList.innerHTML.split(',');
@@ -774,6 +966,7 @@ class rulesSetup {
     editCategories(level) {
         this.closeSelTable(level);
         var tableField = null;
+        this.#selItem = 'catList';
         switch (level) {
             case 'r':
                 this.#selValues = this.#rCatList.innerHTML.split(',');
@@ -809,6 +1002,7 @@ class rulesSetup {
     editAges(level) {
         this.closeSelTable(level);
         var tableField = null;
+        this.#selItem = 'ageList';
         switch (level) {
             case 'r':
                 this.#selValues = this.#rAgeList.innerHTML.split(',');
@@ -845,6 +1039,7 @@ class rulesSetup {
     editMemList(level) {
         this.closeSelTable(level);
         var tableField = null;
+        this.#selItem = 'memList';
         switch (level) {
             case 'r':
                 this.#selValues = this.#rMemList.innerHTML.split(',');
@@ -937,6 +1132,16 @@ class rulesSetup {
         //console.log(filter);
         this.#selField.innerHTML = filter;
         this.closeSelTable(level);
+        if (level == 'r') {
+            this.#editRuleRow[this.#selItem] = filter;
+            this.#editRuleRow[this.#selItem + 'Array'] = filter.split(',');
+            this.#buildMemControlled('#editRuleControlledDiv', this.#editRuleRow);
+            this.#buildMemUsed('#editRuleUsedDiv', level);
+        } else {
+            this.#editStepRow[this.#selItem] = filter;
+            this.#editStepRow[this.#selItem + 'Array'] = filter.split(',');
+            this.#buildMemUsed('#editStepUsedDiv', level, this.#editStepRow);
+        }
     }
 
     // add row to  table and scroll to that new row
@@ -999,6 +1204,7 @@ class rulesSetup {
         //console.log(ruleName);
         this.#editRuleName = ruleName;
         var ruleRow = this.#rulesTable.getRow(ruleName).getData();
+        this.#editRuleRow = ruleRow;
         editPreviewClass = 'rules';
         var ruleOrigName = ruleRow.origName;
         var ruleDisplayName = ruleRow.name;
@@ -1027,7 +1233,9 @@ class rulesSetup {
 
         // build the modal contents
         this.#editRuleTitle.innerHTML = "Edit the " + ruleDisplayName + " rule";
-        this.#editRuleNameDiv.innerHTML = ruleDisplayName;
+        this.#editRuleNameDiv1.innerHTML = ruleDisplayName;
+        this.#editRuleNameDiv2.innerHTML = ruleDisplayName;
+        this.#editRuleNameDiv3.innerHTML = ruleDisplayName;
         this.#ruleDescription.innerHTML = ruleDescription;
         this.#rName.value = ruleRow.name
         this.#rOptionName.value = (ruleRow.optionName == undefined || ruleRow.optionName == null)  ? '' : ruleRow.optionName;
@@ -1068,6 +1276,10 @@ class rulesSetup {
         });
         this.#ruleStepsTable.on("cellEdited", cellChanged);
 
+        // now build the memids controlled and used by this row
+        this.#buildMemControlled('#editRuleControlledDiv');
+        this.#buildMemUsed('#editRuleUsedDiv', 'r');
+
         this.#rulesUndoBtn = document.getElementById('rules-undo');
         this.#rulesRedoBtn = document.getElementById('rules-redo');
         this.#rulesAddRowBtn = document.getElementById('rules-addrow');
@@ -1104,27 +1316,28 @@ class rulesSetup {
 
         // store all the fields back into the table row, and into the main table
         var row = this.#rulesTable.getRow(this.#editRuleName);
-        if (row.getCell("description").getValue() != description) {
+        var rowdata = row.getData();
+        if (rowdata.description != description) {
             row.getCell("description").setValue(description);
             memRules[this.#editRuleName].description = description;
         }
 
         var newValue = this.#rName.value;
-        if (row.getCell("name").getValue() != newValue) {
+        if (rowdata.name != newValue) {
             row.getCell("name").setValue(newValue);
             memRules[this.#editRuleName].name = newValue;
         }
         newValue = this.#rOptionName.value;
         if (newValue == undefined || newValue == null || newValue == "undefined" || newValue == "null")
             newValue = null;
-        if (row.getCell("optionName").getValue() != newValue) {
+        if (rowdata.optionName != newValue) {
             row.getCell("optionName").setValue(newValue);
             memRules[this.#editRuleName].optionName = newValue;
         }
         newValue = this.#rAgeList.innerHTML;
         if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
             newValue = null;
-        if (row.getCell("ageList").getValue() != newValue) {
+        if (rowdata.ageList != newValue) {
             row.getCell("ageList").setValue(newValue);
             memRules[this.#editRuleName].ageList = newValue;
             memRules[this.#editRuleName].ageListArray = newValue.split(',');
@@ -1132,7 +1345,7 @@ class rulesSetup {
         newValue = this.#rTypeList.innerHTML;
         if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
             newValue = null;
-        if (row.getCell("typeList").getValue() != newValue) {
+        if (rowdata.typeList != newValue) {
             row.getCell("typeList").setValue(newValue);
             memRules[this.#editRuleName].typeList = newValue;
             memRules[this.#editRuleName].typeListArray = newValue.split(',');
@@ -1140,7 +1353,7 @@ class rulesSetup {
         newValue = this.#rCatList.innerHTML;
         if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
             newValue = null;
-        if (row.getCell("catList").getValue() != newValue) {
+        if (rowdata.catList != newValue) {
             row.getCell("catList").setValue(newValue);
             memRules[this.#editRuleName].catList = newValue;
             memRules[this.#editRuleName].catListArray = newValue.split(',');
@@ -1148,7 +1361,7 @@ class rulesSetup {
         newValue = this.#rMemList.innerHTML;
         if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
             newValue = null;
-        if (row.getCell("memList").getValue() != newValue) {
+        if (rowdata.memList != newValue) {
             row.getCell("memList").setValue(newValue);
             memRules[this.#editRuleName].memList = newValue;
             memRules[this.#editRuleName].memListArray = newValue.split(',');
@@ -1192,6 +1405,7 @@ class rulesSetup {
         this.checkUndoRedo();
         this.#editRuleModal.hide();
         this.updatePreviewPane();
+        this.updateDate(false);
     }
 
     // save the rules and rule items back to the database
@@ -1261,6 +1475,10 @@ class rulesSetup {
             this.#ruleStepsTable.off("cellEdited");
             this.#ruleStepsTable.destroy();
             this.#ruleStepsTable = null;
+        }
+        if (this.#simulatorMemTable) {
+            this.#simulatorMemTable.destroy()
+            this.#simulatorMemTable = null;
         }
 
         this.#rulesPane.innerHTML = '';
