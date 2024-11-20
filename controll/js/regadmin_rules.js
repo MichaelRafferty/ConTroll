@@ -1062,7 +1062,7 @@ class rulesSetup {
             index: "id",
             pagination: true,
             paginationAddRow:"table",
-            paginationSize: 25,
+            paginationSize: 9999,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", },
@@ -1091,11 +1091,13 @@ class rulesSetup {
     setInitialSel() {
         var rows = this.#editRuleSelTable.getRows();
         for (var row of rows) {
-            var name = row.getCell(rules.getselIndex()).getValue().toString();
+            var name = row.getCell(this.#selIndex).getValue().toString();
             if (this.#selValues.includes(name)) {
-                row.getCell(rules.getselIndex()).getElement().style.backgroundColor = "#C0FFC0";
+                row.getCell(this.#selIndex).getElement().style.backgroundColor = "#C0FFC0";
             }
         }
+        if (this.#selIndex == 'id')
+            this.#editRuleSelTable.setPageSize(25);
     }
 
     // toggle the selection color of the clicked cell
