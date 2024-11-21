@@ -342,7 +342,7 @@ EOS;
     }
 
     if ($approved) {
-        $spaceDetail .= "\nPlease sign into the portal to purchase your space and memberships.\n";
+        $spaceDetail .= "\nPlease sign into the portal at https://vendor.boskone.org/ to purchase your space and memberships.\n";
 
         $spaceAddendum = getVendorAddendum($shortName, $longName, '_space_approval')[1];
     }
