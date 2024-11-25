@@ -18,7 +18,7 @@ Coupon Types:
             //TODO check that current applied coupon in Portal actually allows membership override, an that coupon is stored in the session until payment is
                 applied
 
-Primary Membership is defined as a membership item of memType 'full'.  //TODO Check that this is how it is currently applied
+Primary Membership is defined as a membership item of price > 0 AND category one of standard, supplement or virtual.
     // TODO Discuss if it's only one membership in the cart per perid/newperid (not per cart owner but the actual registration) or for any number of memberships
             of type full (Current thinking only one per person in the cart)
 
