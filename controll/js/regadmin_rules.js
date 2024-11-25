@@ -614,7 +614,9 @@ class rulesSetup {
         var memUsed = [];
         for (var i = 0; i < memListFull.length; i++) {
             var row = memListFull[i];
-            var steps = Object.keys(ruleset);
+            var steps = [];
+            if (ruleset)
+                steps = Object.keys(ruleset);
             var used = false;
             for (var s = 0; s < steps.length; s++) {
                 if (this.#checkItem(row, ruleset[steps[s]]))
