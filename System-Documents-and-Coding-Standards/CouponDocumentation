@@ -11,6 +11,8 @@ Coupon Types:
     Overall Discount (Cart type items)
         Fixed Dollars Off Cart - a set number of currency units (decimal 8.2) off the entire cart purchase
         Fixed Percentage Off Primary Memberships in Cart - a fixed percentage (decimal 8.2) off the sum of the price of all primary memberships
+
+    Item Discounts (per memberships)
         Fixed Dollars Off Primary Memberships - a set number of currentcy units (decimal 8.2) off each individual primary membership line item.
         Fixed Percentage Off Primary Memberships - a fixed percentage (decimal 8.2) off each individual primary membership line item.
         Set Specific Membership Type to a Fixed Price - for a specific memId (membership item), set the price ot a fixed current unit (decimal 8.2)
