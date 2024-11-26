@@ -478,7 +478,7 @@ if ($exMailin == 'N') {
     if ($agent == 'first') {
         if (count($badges) > 0) {
             $perid = $badges[0]['perid'];
-            $newperid = $badges[0]['newid'];
+            $newperid = $badges[0]['newperid'];
         } else {
             $perid = $exhibitor['perid'];
             $newperid = $exhibitor['newperid'];
@@ -674,7 +674,7 @@ EOS;
         $badge['error'] .= 'Add of person of badge for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";
     }
 
-    $badge['newid'] = $newid;
+    $badge['newperid'] = $newid;
     // if no tranasction yet, insert one
     if ($transid == null) {
         $transQ = <<<EOS
@@ -695,7 +695,7 @@ EOS;
         $numrows = dbSafeCmd($transQ, 'ddi', array($region['price'], $region['price'], $transid));
     }
     $badge['transid'] = $transid;
-    dbSafeCmd("UPDATE newperson SET transid=? WHERE id = ?;", 'ii', array($badge['transid'], $badge['newid']));
+    dbSafeCmd("UPDATE newperson SET transid=? WHERE id = ?;", 'ii', array($badge['transid'], $badge['newperid']));
 
     $badgeQ = <<<EOS
 INSERT INTO reg(conid, newperid, perid, create_trans, price, status, memID)
@@ -703,7 +703,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?);
 EOS;
     $badgeId = dbSafeInsert($badgeQ,  'iiiidi', array(
             $conid,
-            $badge['newid'],
+            $badge['newperid'],
             $badge['perid'],
             $transid,
             $badge['price'],

@@ -248,7 +248,7 @@ INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, pro
 EOS;
 
         $newid = dbSafeInsert($insertQ, 'sssssssssssssssssi', $value_arr);
-        $people[$count]['newid'] = $newid;
+        $people[$count]['newperid'] = $newid;
         $people[$count]['perid'] = $id;
 
         $newid_list .= "id='$newid' OR ";
@@ -269,7 +269,7 @@ if ($coupon == null)
 else
     $cid = $coupon['id'];
 
-$transid= dbSafeInsert($transQ, "iidddsii", array($people[0]['newid'], $id, $preDiscount, $totalDiscount, 0, 'website', $condata['id'], $cid));
+$transid= dbSafeInsert($transQ, "iidddsii", array($people[0]['newperid'], $id, $preDiscount, $totalDiscount, 0, 'website', $condata['id'], $cid));
 
 $newid_list .= "transid='$transid'";
 
@@ -286,7 +286,7 @@ $badge_types = "iiiisddii";
 foreach($people as $person) {
     $badge_data = array(
       $condata['id'],
-      $person['newid'],
+      $person['newperid'],
       $person['perid'],
       $transid,
       $person['price'] > 0 ? 'unpaid' : 'paid',
