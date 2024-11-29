@@ -120,9 +120,7 @@ if ($type == 'e') {
     if ($num_upd == 1) {
         $response['success'] = "Person $perid updated from match data edited from $newperid";
     } else {
-        $response['error'] = 'Perid $perid not found updating perinfo table';
-        ajaxSuccess($response);
-        return;
+        $response['success'] = "Person $perid matched, all the data matched, nothing was updated in the person info";
     }
 }
 
