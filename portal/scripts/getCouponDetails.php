@@ -33,7 +33,9 @@ if (!array_key_exists('code', $_POST)) {
 }
 
 // DO NOT CHECK FOR isResolveBanned - this is a variant of a call from a global library, let another JS handle it.
-validateLoginId();
+
+//TODO: need to determine that this 'coupon.js' call is from portal and pass in login info, the enable the check below
+//validateLoginId();
 
 $loginId = getSessionVar('id');
 $loginType = getSessionVar('idType');
