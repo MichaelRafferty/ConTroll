@@ -725,7 +725,7 @@ class Unmatched {
 
             case 'newAddress':
                 this.#address.value = this.#newperson.address;
-                this.#addr2.value = this.#newperson.addr2;
+                this.#addr2.value = this.#newperson.addr_2;
                 this.#city.value = this.#newperson.city;
                 this.#state.value = this.#newperson.state;
                 this.#zip.value = this.#newperson.zip;
