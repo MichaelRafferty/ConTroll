@@ -54,8 +54,8 @@ SELECT c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.mem
 FROM coupon c
 LEFT OUTER JOIN memLabel m ON (c.memId = m.id)
 LEFT OUTER JOIN transaction t ON (t.coupon = c.id and t.complete_date is not null)
-LEFT OUTER JOIN couponKeys k ON (k.couponId = c.id and (k.guid = ? || k.guid = ?))
-WHERE  c.conid = ? AND ((c.code = ?) || (IFNULL(k.guid,'') = ?))
+LEFT OUTER JOIN couponKeys k ON (k.couponId = c.id and (IFNULL(k.guid,'---') = ? || IFNULL(k.guid,'---') = ?))
+WHERE  c.conid = ? AND ((c.code = ?) || (IFNULL(k.guid,'---') = ?))
 GROUP BY c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.memId, c.minMemberships, c.maxMemberships,
          c.minTransaction, c.maxTransaction, c.maxRedemption, m.memAge, m.label,
          k.id, k.guid, k.usedBy, c.startDate, c.endDate
