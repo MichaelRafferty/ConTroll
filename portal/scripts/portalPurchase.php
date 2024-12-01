@@ -218,7 +218,7 @@ if ($totalDiscount > 0) {
 INSERT INTO payments(transid, type, category, description, source, pretax, tax, amount, time, status) 
 VALUES (?, 'coupon', 'reg', ?, 'online', ?, 0, ?, now(), 'APPLIED');
 EOS;
-    $couponDesc = $coupon['id'] . ':' . $coupon['code'] . ' - ' . $coupon['description'];
+    $couponDesc = $coupon['id'] . ':' . $coupon['code'] . ' - ' . $coupon['name'];
         $cpmtID = dbSafeInsert($ipQ, 'isdd', array($transId, $couponDesc, $totalDiscount, $totalDiscount));
 }
 
