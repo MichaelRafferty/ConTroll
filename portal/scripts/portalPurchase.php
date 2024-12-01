@@ -212,6 +212,15 @@ if ($amount > 0) {
     $approved_amt = 0;
     $rtn = array('url' => '', 'rid' => '');
 }
+if ($totalDiscount > 0) {
+    // Insert the payment record for the coupon
+    $ipQ = <<<EOS
+INSERT INTO payments(transid, type, category, description, source, pretax, tax, amount, time, status) 
+VALUES (?, 'coupon', 'reg', ?, 'online', ?, 0, ?, now(), 'APPLIED');
+EOS;
+    $couponDesc = $coupon['id'] . ':' . $coupon['code'] . ' - ' . $coupon['description'];
+        $cpmtID = dbSafeInsert($ipQ, 'isdd', array($transId, $couponDesc, $totalDiscount, $totalDiscount));
+}
 
 if ($loginType == 'p') {
     $pfield = 'perid';
@@ -308,7 +317,7 @@ $txnU = dbSafeCmd($txnUpdate, 'ddi', array($approved_amt, $totalDiscount, $trans
 
 $upgradedCnt = 0;
 if ($amount > 0 && $planPayment != 1) {
-    $balance = $approved_amt;
+    $balance = $approved_amt + $totalDiscount;
     // first all the out of plan ones
     $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, false );
 
