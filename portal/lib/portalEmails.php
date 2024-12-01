@@ -42,7 +42,7 @@
     if ($coupon != null && $planPayment == 0) {
         $body .= 'A coupon of type ' . $coupon['code'] . ' (' . $coupon['name'] . ') was applied to this transaction';
         if ($coupon['discount'] > 0)
-            $body .= ' for a savings of ' . $dolfmt->formatCurrency((float) $coupon['discount'], $currency);
+            $body .= ' for a savings of ' . $dolfmt->formatCurrency((float) $coupon['totalDiscount'], $currency);
         $body .= "\n";
     }
 
@@ -104,7 +104,7 @@ function getNoChargeEmailBody($transid, $owner, $memberships): string {
     if (array_key_exists('code', $owner) && $owner['code'] != null) {
         $body .= 'A coupon of type ' . $owner['code'] . ' (' . $owner['name'] . ') was applied to this transaction';
         if ($owner['couponDiscountCart'] > 0)
-            $body .= ' for a savings of ' . $owner['couponDiscountCart'];
+            $body .= ' for a savings of ' . $owner['totalDiscount'];
         $body .= "\n";
     }
 
