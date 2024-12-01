@@ -315,10 +315,10 @@ if ($approved_amt == $totalAmountDue) {
 
 $txnUpdate .= 'paid=?, couponDiscountCart = ?, coupon = ? WHERE id=?;';
 if ($totalDiscount > 0)
-    $couponId = $coupon['id']
+    $couponId = $coupon['id'];
 else
     $couponId = null;
-$txnU = dbSafeCmd($txnUpdate, 'ddii', array($approved_amt, $totalDiscount, $couponid, $transId));
+$txnU = dbSafeCmd($txnUpdate, 'ddii', array($approved_amt, $totalDiscount, $couponId, $transId));
 
 $upgradedCnt = 0;
 if ($amount > 0 && $planPayment != 1) {
