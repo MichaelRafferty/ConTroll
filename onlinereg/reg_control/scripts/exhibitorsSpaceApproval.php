@@ -342,7 +342,11 @@ EOS;
     }
 
     if ($approved) {
+      if ($detail['regionName'] == 'Art Show') { 
+        $spaceDetail .= "\nPlease sign into the portal at https://artist.boskone.org/ to purchase your space and memberships.\n";
+      } else {
         $spaceDetail .= "\nPlease sign into the portal at https://vendor.boskone.org/ to purchase your space and memberships.\n";
+      };
 
         $spaceAddendum = getVendorAddendum($shortName, $longName, '_space_approval')[1];
     }
