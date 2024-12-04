@@ -52,7 +52,7 @@ FROM exhibitsRegionYears eRY
 JOIN exhibitsRegions eR ON eRY.exhibitsRegion = eR.id
 JOIN exhibitsRegionTypes eRT ON eR.regionType = eRT.regionType
 WHERE conid = ?
-ORDER BY eRY.ownerName, eR.name;
+ORDER BY eRY.ownerName, eR.sortorder;
 EOS;
 $regionOwnerR = dbSafeQuery($regionOwnerQ, 'i',array($conid));
 if ($regionOwnerR == false || $regionOwnerR->num_rows == 0) {
@@ -221,12 +221,13 @@ $regionOwners = [];
 $regionOwnersTabNames = [];
 $regions = [];
 $regionTabNames = [];
+$regionOwnersOrder = [];
 while ($regionL = $regionOwnerR->fetch_assoc()) {
     $regionOwner = $regionL['ownerName'];
     $regionOwnerId = str_replace(' ', '-', $regionOwner);
     $regionOwnersTabNames[$regionOwnerId . '-pane'] = $regionOwner;
     $regionOwners[$regionOwner][$regionL['id']] = $regionL;
-    $regionOwners[$regionOwner][$regionL['id']] = $regionL;
+    $regionOwnersOrder[$regionOwner][] = $regionL['id'];
     $regions[$regionL['name']] = [ 'regionOwner' => $regionOwner, 'id' => $regionL['id'],
         'requestApprovalRequired' => $regionL['requestApprovalRequired'], 'purchaseApprovalRequired' => $regionL['purchaseApprovalRequired'] ];
     $regionTabName = str_replace(' ', '-', $regionL['name']) . '-pane';
@@ -289,12 +290,14 @@ while ($regionL = $regionOwnerR->fetch_assoc()) {
     <?php
 foreach ($regionOwners AS $regionOwner => $regionList) {
     $regionOwnerId = str_replace(' ', '-', $regionOwner);
+    $regionOrder = $regionOwnersOrder[$regionOwner];
     ?>
     <div class='tab-content ms-2' id='<?php echo $regionOwnerId; ?>-content' hidden>
         <ul class='nav nav-pills nav-fill  mb-3' id='<?php echo $regionOwnerId; ?>-content-tab' role='tablist'>
 <?php
     $first = true;
-    foreach ($regionList AS $regionId => $region) {
+    foreach ($regionOrder AS $regionId) {
+        $region = $regionList[$regionId];
         $regionName = $region['name'];
         $regionNameId = str_replace(' ', '-', $regionName);
 ?>
