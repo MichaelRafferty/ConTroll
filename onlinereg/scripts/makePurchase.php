@@ -358,13 +358,28 @@ if ($total > 0) {
     $rtn = array('url' => '');
 }
 
+if ($totalDiscount > 0) {
+    // Insert the payment record for the coupon
+    $ipQ = <<<EOS
+INSERT INTO payments(transid, type, category, description, source, pretax, tax, amount, time, status) 
+VALUES (?, 'coupon', 'reg', ?, 'online', ?, 0, ?, now(), 'APPLIED');
+EOS;
+    $couponDesc = $coupon['id'] . ':' . $coupon['code'] . ' - ' . $coupon['name'];
+    $cpmtID = dbSafeInsert($ipQ, 'isdd', array($transid, $couponDesc, $totalDiscount, $totalDiscount));
+    $coupon['totalDiscount'] = $totalDiscount;
+}
+
 $txnUpdate = "UPDATE transaction SET ";
 if($approved_amt == $total) {
     $txnUpdate .= "complete_date=current_timestamp(), ";
 }
 
-$txnUpdate .= "paid=?, couponDiscountCart = ? WHERE id=?;";
-$txnU = dbSafeCmd($txnUpdate, "ddi", array($approved_amt, $totalDiscount, $transid) );
+$txnUpdate .= "paid=?, couponDiscountCart = ?, coupon = ? WHERE id=?;";
+if ($totalDiscount > 0)
+    $couponId = $coupon['id'];
+else
+    $couponId = null;
+$txnU = dbSafeCmd($txnUpdate, "ddii", array($approved_amt, $totalDiscount, $couponId, $transid) );
 
 $regQ = "UPDATE reg SET paid=price-couponDiscount, complete_trans = ?, status = 'paid' WHERE create_trans=?;";
 dbSafeCmd($regQ, "ii", array($transid, $transid));
@@ -414,10 +429,10 @@ if ($interests != null) {
 }
 
 if ($total > 0) {
-    $body = getEmailBody($transid);
+    $body = getEmailBody($transid, $totalDiscount);
 }
 else {
-    $body = getNoChargeEmailBody($results);
+    $body = getNoChargeEmailBody($results, $totalDiscount);
 }
 
 $regconfirmcc = null;

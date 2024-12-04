@@ -1,7 +1,7 @@
 <?php
 require_once(__DIR__ . "/../../lib/db_functions.php");
 
-function getEmailBody($transid) : string
+function getEmailBody($transid, $totalDiscount) : string
 {
     $condata = get_con();
     $ini = get_conf('reg');
@@ -29,8 +29,8 @@ EOS;
 
     if ($owner['code'] != null) {
         $body .= "A coupon of type " . $owner['code'] . " (" . $owner['name'] . ") was applied to this transaction";
-        if ($owner['couponDiscountCart'] > 0)
-            $body .= " for a savings of " . $owner['couponDiscountCart'];
+        if ($totalDiscount > 0)
+            $body .= " for a savings of $totalDiscount";
         $body .= "\n";
     }
 
@@ -71,7 +71,7 @@ EOS;
     return $body;
 }
 
-function getNoChargeEmailBody($results) : string
+function getNoChargeEmailBody($results, $totalDiscount) : string
 {
     $condata = get_con();
     $ini = get_conf('reg');
@@ -108,8 +108,8 @@ EOS;
     $body .= "Your Transaction number is $transid\n";
     if ($owner['code'] != null) {
         $body .= "A coupon of type " . $owner['code'] . " (" . $owner['name'] . ") was applied to this transaction";
-        if ($owner['couponDiscountCart'] > 0)
-            $body .= " for a savings of " . $owner['couponDiscountCart'];
+        if ($totalDiscount > 0)
+            $body .= " for a savings of $totalDiscount";
         $body .= "\n";
     }
 
