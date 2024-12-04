@@ -7,6 +7,13 @@ function getEmailBody($transid, $totalDiscount) : string
     $ini = get_conf('reg');
     $con = get_conf('con');
 
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
+    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+
     $ownerQ = <<<EOS
 SELECT NP.first_name, NP.last_name, P.receipt_id as payid, T.complete_date, T.couponDiscountCart, T.paid, P.receipt_url AS url, C.code, C.name
 FROM transaction T
@@ -30,11 +37,11 @@ EOS;
     if ($owner['code'] != null) {
         $body .= "A coupon of type " . $owner['code'] . " (" . $owner['name'] . ") was applied to this transaction";
         if ($totalDiscount > 0)
-            $body .= " for a savings of $totalDiscount";
+            $body .= " for a savings of " . $dolfmt->formatCurrency((float) $totalDiscount, $currency);
         $body .= "\n";
     }
 
-    $body .= "Your card was charged " . $owner['paid'] . " for this transaction" .
+    $body .= "Your card was charged " . $dolfmt->formatCurrency((float) $owner['paid'], $currency) . " for this transaction" .
         "\n\nMemberships have been created for:\n\n";
 
     $badgeQ = <<<EOS
@@ -77,6 +84,13 @@ function getNoChargeEmailBody($results, $totalDiscount) : string
     $ini = get_conf('reg');
     $con = get_conf('con');
 
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
+    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+
     //  contents of results
     //  'transid' => $transid,
     //    'counts' => $counts,
@@ -109,7 +123,7 @@ EOS;
     if ($owner['code'] != null) {
         $body .= "A coupon of type " . $owner['code'] . " (" . $owner['name'] . ") was applied to this transaction";
         if ($totalDiscount > 0)
-            $body .= " for a savings of $totalDiscount";
+            $body .= " for a savings of " . $dolfmt->formatCurrency((float) $totalDiscount, $currency);
         $body .= "\n";
     }
 
