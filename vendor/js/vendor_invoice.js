@@ -87,6 +87,7 @@ function openInvoice(id) {
     document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + regionName + ' Invoice</strong>';
 
     var spaces = includedMemberships + additionalMemberships;
+    html = ''; // Clear it in case spaces = 0
     if (spaces > 0) {
         html = "<p>This space comes with " +
             (includedMemberships > 0 ? includedMemberships : "no") +
