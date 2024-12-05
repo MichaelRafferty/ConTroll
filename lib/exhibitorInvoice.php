@@ -52,8 +52,10 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
 ?>
                         <div class="row">
                             <div class="col-sm-12">
-                                <strong>Vendor Information</strong>
-                                <p>Please fill out this section with information on the vendor or store.  Changes made to the Vendor Information part of this form will update your profile.</p>
+                                <strong><?php echo $portalName;?> Information</strong>
+                                <p>Please fill out this section with information on the <?php echo $portalType;?> or store.
+                                    Changes made to the <?php echo $portalName;?> Information part of this form
+                                    will update your profile.</p>
                             </div>
                         </div>
                         <div class="row">
