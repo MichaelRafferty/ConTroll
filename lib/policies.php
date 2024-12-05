@@ -159,6 +159,8 @@ EOS;
             }
             if (array_key_exists('p_' . $policy['policy'], $newPolicies))
                 $new = $newPolicies['p_' . $policy['policy']];
+            else
+                $new = 'N'; // unchecked are 'N', and the array only returns checked ones.
 
             // ok the options if old is blank, there likely isn't an entry in the database, New if missing is a 'N';
             if ($oldResponse == '') {
