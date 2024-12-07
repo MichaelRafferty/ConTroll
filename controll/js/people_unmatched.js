@@ -547,16 +547,25 @@ class Unmatched {
         clear_message();
         clearError();
         var _this = this;
+        var priorUpdateExistingDisabled = this.#updateExisting.disabled;
+        var priorCreateNewDisabled = this.#createNew.disabled;
+        this.#updateExisting.disabled = true;
+        this.#createNew.disabled = true;
+
         $.ajax({
             url: script,
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                data.priorUpdateExistingDisabled = priorUpdateExistingDisabled;
+                data.priorCreateNewDisabled = priorCreateNewDisabled;
                 _this.updateSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
                 show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error', 'result_message_candidate');
+                this.#updateExisting.disabled = priorUpdateExistingDisabled;
+                this.#createNew.disabled = priorCreateNewDisabled;
                 return false;
             }
         });
@@ -566,10 +575,14 @@ class Unmatched {
     updateSuccess(data) {
         if (data['error']) {
             show_message(data['error'], 'error', 'result_message_candidate');
+            this.#updateExisting.disabled = data.priorUpdateExistingDisabled;
+            this.#createNew.disabled = data.priorCreateNewDisabled;
             return;
         }
         if (data['warn']) {
             show_message(data['warn'], 'warn', 'result_message_candidate');
+            this.#updateExisting.disabled = data.priorUpdateExistingDisabled;
+            this.#createNew.disabled = data.priorCreateNewDisabled;
             return;
         }
 
