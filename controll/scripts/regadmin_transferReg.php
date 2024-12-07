@@ -44,10 +44,25 @@ if ($checkR->num_rows < 1) {
 }
 $checkR->free();
 
-$transferIn = implode(',', $transferList);
+// build string of items to cancel, cannot use '?' prepared notation for an IN clause
+$inString = '';
+foreach ($transferList as $id) {
+    if (is_numeric($id)) {
+        $inString .= $id . ',';
+    }
+}
+
+if ($inString == '') {
+    $response['error'] = 'No items to transfer';
+    ajaxSuccess($response);
+    exit();
+}
+
+    $inString = substr($inString, 0, -1);
+
 $denyTransfer = ['rolled-over', 'cancelled','refunded', 'transfered'];
 
-$checkR = dbSafeQuery("SELECT id, status FROM reg WHERE id IN (?);", 'i', array($transferIn));
+$checkR = dbQuery("SELECT id, status FROM reg WHERE id IN ($inString);");
 if ($checkR->num_rows != count($transferList)) {
     $response['error'] = "From registration count does not matched passed value.";
     ajaxSuccess($response);
