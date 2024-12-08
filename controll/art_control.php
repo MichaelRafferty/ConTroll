@@ -1,5 +1,6 @@
 <?php
 require_once "lib/base.php";
+require_once "lib/artItem.php";
 //initialize google session
 $need_login = google_init("page");
 
@@ -17,6 +18,7 @@ page_init($page,
     /* js  */ array('js/d3.js',
         $cdn['tabjs'],
         'js/art_control.js',
+        'jslib/artItem.js'
     ),
     $need_login);
 
@@ -38,8 +40,19 @@ $regions = array();
 while($region = $regionsR->fetch_assoc()) {
     $regions[] = $region;
 }
+$debug = get_conf('debug');
+
+if (array_key_exists('controll_art_control', $debug))
+    $debug_art_control=$debug['controll_art_control'];
+else
+    $debug_art_control = 0;
 
 ?>
+<div id='parameters' <?php if (!($debug_art_control & 4)) echo 'hidden'; ?>>
+    <div id="debug"><?php echo $debug_art_control; ?></div>
+    <div id="conid"><?php echo $conid; ?></div>
+</div>
+<?php drawEditPane() ?>
 <div id="main">
     <ul class='nav nav-tabs mb-3' id='region-tabs' role='tablist'>
         <li class='nav-item active' role='presentation'>

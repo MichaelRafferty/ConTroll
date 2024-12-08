@@ -14,6 +14,7 @@ var testdiv = null;
 
 $(document).ready(function() {
     testdiv = document.getElementById('test');
+    artItemModalOnLoad();
     setRegion('overview', null);
 });
 
