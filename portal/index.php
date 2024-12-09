@@ -252,7 +252,15 @@ if (isSessionVar('id')) {
                     if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 24;
                     setSessionVar('tokenExpiration', time() + ($hrs * 3600));
                 }
-                validationComplete($match['id'], $match['tablename'], $email, getSessionVar('idSource'), getSessionVar('multiple'));
+                //  if no id in match, it's re-using a login token for the same account currently logged in, as the email match would have
+                //      handled logging them out)
+                $id = null;
+                $tablename = null;
+                if (array_key_exists('id', $match)) {
+                    $id = $match['id'];
+                    $tablename = $match['tablename'];
+                }
+                validationComplete($id, $tablename, $email, getSessionVar('idSource'), getSessionVar('multiple'));
                 exit();
             }
         }
