@@ -121,7 +121,27 @@ This workflow is used by the login with email address option in the 'index' page
       2. Get any perinfo entries that use that authenticated email address
    4. Add in any perinfo records where the email is listed in the alternate identities (perinfoIdentities) table again skipping merged ones.
    5. Return:
-      1. The an array of the matches even if empty
+      1. An array of the matches even if empty
+         1. id
+         2. idType (tableName)
+         3. last_name
+         4. first_name
+         5. middle_name
+         6. suffix
+         7. email_addr
+         8. phone
+         9. badge_name
+         10. legalName
+         11. pronouns
+         12. address
+         13. addr_2
+         14. city
+         15. state
+         16. zip
+         17. country
+         18. creation_date
+         19. active
+         20. banned
       2. An error message if the sizd of the array is zero
       3. If the count is 1
          1. Set up the id and idType to log the user in
@@ -139,6 +159,18 @@ This workflow is used by the login with email address option in the 'index' page
       set new multiple flag
    6. Update identity usage if the idType is perinfo ('p')
    7. Continue with "Validation Complete"
+4. If (count == 0)
+   1. show the message that if they think they have an account....
+   2. show the edit person modal allowing them to create a new account for this email
+5. if (count > 1)
+   1. for each match item, create an encrypted URI to log in as that account, adding to the match element returned the following:
+      1. ts: time()
+      2. lid: $linkid   // link in the portalTokenLinks table
+      3. validationType: $validationType   // authentication type
+      4. multiple: strtolower($email)     // the matching email
+      5. issue: banned flag (Y/N)
+   2. Display the match list with a clickable URI on fullName
+   3. When user clicks on one of those links, it passes control back to index.php?vid=<encrypted string> and the process starts at the top
 
 ## Validation Complete Workflow
 1. If not an oauth validation (it is a login)
