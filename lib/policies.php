@@ -39,7 +39,7 @@ function drawPoliciesBlock($policies, $tabIndexStart, $idPrefix = '') {
             $prompt = preg_replace("/<a href=[^>]*/", '$0 tabindex="' . ($tabindex + 1) . '"', $prompt, 1);
         }
         if (preg_match('/<a href/', $description)) {
-            $description = preg_replace('/<a href=[^>]*/', '$0 tabindex="' . ($tabindex + 11) . '"', $description, 1);
+            $description = preg_replace('/<a href=[^>]*/', '$0 tabindex="' . ($tabindex + 3) . '"', $description, 1);
         }
         if ($policy['required'] == 'Y') {
             $prompt = "<span class='text-danger'>&bigstar;</span>" . $prompt;
@@ -55,19 +55,19 @@ function drawPoliciesBlock($policies, $tabIndexStart, $idPrefix = '') {
         <p class='text-body'>
             <label>
                 <input type='checkbox' <?php echo $checked; ?> name='p_<?php echo $idPrefix . $name;?>' id='p_<?php echo $idPrefix . $name;?>' value='Y'
-                       tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
+                       tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                 <span id="l_<?php echo $idPrefix . $name;?>" name="l_<?php echo $idPrefix . $name;?>"><?php echo $prompt; ?></span>
             </label>
             <?php if ($description != '') { ?>
             <span class="small"><a href='javascript:void(0)' onClick='$("#<?php echo $idPrefix . $name;?>Tip").toggle()'>
                     <img src="/lib/infoicon.png"  alt="click this info icon for more information" style="max-height: 25px;"
-                         tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
+                         tabindex="<?php echo $tabindex; $tabindex += 1;?>"/>
                 </a></span>
         <div id='<?php echo $idPrefix . $name;?>Tip' class='padded highlight' style='display:none'>
             <p class='text-body'><?php echo $description; ?>
                 <span class='small'><a href='javascript:void(0)' onClick='$("#<?php echo $idPrefix . $name;?>Tip").toggle()'>
                       <img src='/lib/closeicon.png' alt='click this close icon to close the more information window' style='max-height: 25px;'
-                           tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
+                           tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                     </a></span>
             </p>
         </div>
