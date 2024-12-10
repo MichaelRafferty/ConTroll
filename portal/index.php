@@ -197,7 +197,7 @@ $why = "continue to the Portal.";
                 if ($account == null) {
                     $account = "Error looking up data for $email";
                 }
-                clearSession('oauth2');;
+                clearSession('oauth2');
                 draw_login($config_vars, $account, 'bg-danger text-white', $why);
             }
             exit();
@@ -447,6 +447,17 @@ EOS;
         <?php
         exit;
     }
+    if (array_key_exists('suspended', $portal_conf) && $portal_conf['suspended'] == 1) { ?>
+<p class="text-primary">
+    <?php echo $con['conname']; ?> has temporarily suspended the registration portal <?php
+        if (array_key_exists('suspendreason', $portal_conf))
+        echo $portal_conf['suspendreason'];
+    ?>
+</p>
+    <?php
+        exit;
+    }
+
     $label = $con['label'];
     echo <<<EOS
     <div class="row p-1">
