@@ -236,7 +236,7 @@ else
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid' id='editRuleBlockDiv'>
                     <div class='row mt-4'>
-                        <div class='col-sm-12'><h4>Edit the <span id='editRuleName'>Rule Name</span> Rule</h4></div>
+                        <div class='col-sm-12'><h4>Edit the <span id='editRuleName1'>Rule Name</span> Rule</h4></div>
                     </div>
                     <div class='row mt-1'>
                         <div class='col-sm-6'>
@@ -333,6 +333,18 @@ else
                             <button id='steps-addrow' type='button' class='btn btn-secondary btn-sm' onclick='rules.addrowSteps(); return false;'>Add New</button>
                         </div>
                     </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-12'><h4>Memberships controlled by the <span id='editRuleName2'>Rule Name</span> Rule</h4></div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-12' id='editRuleControlledDiv'>Controlled By this rule</div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-12'><h4>Memberships used by the <span id='editRuleName3'>Rule Name</span> Rule</h4></div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-12' id='editRuleUsedDiv'>Used By this rule</div>
+                    </div>
                 </div>
                 <div id='result_message_editRule' class='mt-4 p-2'></div>
             </div>
@@ -356,7 +368,7 @@ else
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid' id='editRuleStepBlockDiv'>
                     <div class='row mt-4'>
-                        <div class='col-sm-12'><h4>Edit the <span id='editRuleStepName'>Rule Step Name</span> Rule</h4></div>
+                        <div class='col-sm-12'><h4>Edit the <span id='editRuleStepName'>Rule Step Name</span> Rule Step</h4></div>
                     </div>
                     <div class='row mt-1'>
                         <div class='col-sm-6'>
@@ -472,6 +484,12 @@ else
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-12'><h4>Memberships used by the this step</h4></div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-12' id='editStepUsedDiv'>Used By this step</div>
                     </div>
                 </div>
                 <div id='result_message_editRuleStep' class='mt-4 p-2'></div>

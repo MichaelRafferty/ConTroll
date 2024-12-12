@@ -133,7 +133,7 @@ JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
-WHERE r1.perid = ? AND r1.conid = ?
+WHERE r1.perid = ? AND r1.conid = ? AND r1.status IN ('unpaid', 'paid', 'plan')
 ORDER BY r1.perid, r1.create_date;
 EOS;
 $selRdt = 'iii';
@@ -289,7 +289,12 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
     }
 
     // Now process the policies for this person
-    $policy_upd += updateExisingMemberPolicies($cartrow['policies'], $conid, $cartrow['perid'], $user_perid);
+    // check to see it they exist
+    if (array_key_exists('policies', $cartrow)) {
+        $policy_upd += updateExisingMemberPolicies($cartrow['policies'], $conid, $cartrow['perid'], $user_perid);
+    } else {
+        $policy_upd += updateMemberPolicies($conid, $cartrow['perid'], 'p', $user_perid, 'p');
+    }
 
     // since we can add/delete memberships, re-select the memberships for this perid to get the current list
     $selR = dbSafeQuery($selReg, $selRdt, array($conid, $cartrow['perid'], $conid));

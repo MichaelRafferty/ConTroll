@@ -24,9 +24,10 @@ EOS;
 }
 
 //drawInterestList - draw the inner block for interest editing
-function drawInterestList($interests, $modal = false) {
+function drawInterestList($interests, $modal = false, $tabIndexStart = 800) {
     if ($interests == null) // null? no interests, nothing to draw
         return;
+    $tabindex = $tabIndexStart;
 ?>
     <div class='row'>
         <div class='col-sm-auto'>
@@ -46,7 +47,8 @@ function drawInterestList($interests, $modal = false) {
 ?>
         <div class='row mt-1'>
             <div class='col-sm-auto'>
-                <input type='checkbox' id='i_<?php echo $interest['interest'];?>' name='<?php echo $interest['interest'];?>'>
+                <input type='checkbox' id='i_<?php echo $interest['interest'];?>' name='<?php echo $interest['interest'];?>'
+                    tabindex="<?php echo $tabindex; $tabindex += 1;?>">
             </div>
             <div class='col-sm-auto'>
                 <label for='i_<?php echo $interest['interest'];?>'><?php echo $desc; ?></label>
@@ -58,6 +60,11 @@ function drawInterestList($interests, $modal = false) {
 
 // updateMemberInterests - update/insert the interests
 function updateMemberInterests($conid, $personId, $personType, $loginId, $loginType) {
+    $interests = getInterests();
+    if ($interests == null) {
+        return 0; // none updated because there are no interests configured
+    }
+
     $newInterests = json_decode($_POST['newInterests'], true);
     $existingInterests = json_decode($_POST['existingInterests'], true);
     if ($existingInterests == null)
@@ -82,7 +89,6 @@ VALUES (?, ?, ?, ?, ?);
 EOS;
 
     $rows_upd = 0;
-    $interests = getInterests();
     foreach ($interests as $interest) {
         $interestName = $interest['interest'];
         $newVal = array_key_exists($interestName, $newInterests) ? 'Y' : 'N';

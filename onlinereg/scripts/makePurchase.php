@@ -208,7 +208,6 @@ EOF;
             trim($badge['zip']),
             $badge['country']
         );
-//$value_arr = mb_convert_encoding($value_arr, 'Windows-1252', 'UTF-8');
 
         $res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
         if ($res !== false) {
@@ -249,7 +248,7 @@ INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, pro
 EOS;
 
         $newid = dbSafeInsert($insertQ, 'sssssssssssssssssi', $value_arr);
-        $people[$count]['newid'] = $newid;
+        $people[$count]['newperid'] = $newid;
         $people[$count]['perid'] = $id;
 
         $newid_list .= "id='$newid' OR ";
@@ -270,7 +269,7 @@ if ($coupon == null)
 else
     $cid = $coupon['id'];
 
-$transid= dbSafeInsert($transQ, "iidddsii", array($people[0]['newid'], $id, $preDiscount, $totalDiscount, 0, 'website', $condata['id'], $cid));
+$transid= dbSafeInsert($transQ, "iidddsii", array($people[0]['newperid'], $id, $preDiscount, $totalDiscount, 0, 'website', $condata['id'], $cid));
 
 $newid_list .= "transid='$transid'";
 
@@ -287,7 +286,7 @@ $badge_types = "iiiisddii";
 foreach($people as $person) {
     $badge_data = array(
       $condata['id'],
-      $person['newid'],
+      $person['newperid'],
       $person['perid'],
       $transid,
       $person['price'] > 0 ? 'unpaid' : 'paid',
@@ -359,13 +358,28 @@ if ($total > 0) {
     $rtn = array('url' => '');
 }
 
+if ($totalDiscount > 0) {
+    // Insert the payment record for the coupon
+    $ipQ = <<<EOS
+INSERT INTO payments(transid, type, category, description, source, pretax, tax, amount, time, status) 
+VALUES (?, 'coupon', 'reg', ?, 'online', ?, 0, ?, now(), 'APPLIED');
+EOS;
+    $couponDesc = $coupon['id'] . ':' . $coupon['code'] . ' - ' . $coupon['name'];
+    $cpmtID = dbSafeInsert($ipQ, 'isdd', array($transid, $couponDesc, $totalDiscount, $totalDiscount));
+    $coupon['totalDiscount'] = $totalDiscount;
+}
+
 $txnUpdate = "UPDATE transaction SET ";
 if($approved_amt == $total) {
     $txnUpdate .= "complete_date=current_timestamp(), ";
 }
 
-$txnUpdate .= "paid=?, couponDiscountCart = ? WHERE id=?;";
-$txnU = dbSafeCmd($txnUpdate, "ddi", array($approved_amt, $totalDiscount, $transid) );
+$txnUpdate .= "paid=?, couponDiscountCart = ?, coupon = ? WHERE id=?;";
+if ($totalDiscount > 0)
+    $couponId = $coupon['id'];
+else
+    $couponId = null;
+$txnU = dbSafeCmd($txnUpdate, "ddii", array($approved_amt, $totalDiscount, $couponId, $transid) );
 
 $regQ = "UPDATE reg SET paid=price-couponDiscount, complete_trans = ?, status = 'paid' WHERE create_trans=?;";
 dbSafeCmd($regQ, "ii", array($transid, $transid));
@@ -415,10 +429,10 @@ if ($interests != null) {
 }
 
 if ($total > 0) {
-    $body = getEmailBody($transid);
+    $body = getEmailBody($transid, $totalDiscount);
 }
 else {
-    $body = getNoChargeEmailBody($results);
+    $body = getNoChargeEmailBody($results, $totalDiscount);
 }
 
 $regconfirmcc = null;

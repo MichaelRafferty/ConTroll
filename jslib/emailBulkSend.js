@@ -28,6 +28,7 @@ class EmailBulkSend {
     #startOrdinal = 0;
     #sendURL = null;
     #batchStartTime = null;
+    #testEmail = true;
 
     // Email sending parameters
     #batchSize = 100;
@@ -45,6 +46,7 @@ class EmailBulkSend {
     getEmailAndList(url, dataobj) {
         this.#emailStatusHTML += "Getting Email Contents and List\n";
         this.#emailStatusDiv.innerHTML = this.#emailStatusHTML;
+        this.#testEmail = dataobj.action;
         var _this = this;
         $.ajax({
             url: url,
@@ -133,6 +135,7 @@ class EmailBulkSend {
         this.#emailBatch = this.#emailTo.slice(this.#startOrdinal, this.#startOrdinal + this.#batchSize);
         this.#batchStartTime = Date.now();
         var data = {
+            action: this.#testEmail,
             emailText: this.#emailText,
             emailHTML: this.#emailHTML,
             emailFrom: this.#emailFrom,

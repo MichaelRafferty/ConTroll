@@ -324,7 +324,9 @@ class Pos {
         for (var row in policies) {
             var policyName = policies[row].policy;
             var policyResp = policies[row].response;
-            document.getElementById('p_' + policyName).checked = policyResp == 'Y';
+            var policybox = document.getElementById('p_' + policyName);
+            if (policybox)
+                document.getElementById('p_' + policyName).checked = policyResp == 'Y';
         }
     }
 
@@ -730,7 +732,9 @@ class Pos {
         // clear the policies
         for (var pol in this.#policies) {
             var policyName = this.#policies[pol].policy;
-                        document.getElementById('p_' + policyName).checked =  this.#policies[pol].defaultValue == 'Y';
+            var policybox = document.getElementById('p_' + policyName);
+            if (policybox)
+                policybox.checked =  this.#policies[pol].defaultValue == 'Y';
         }
 
         this.#add_header.innerHTML = `
@@ -817,10 +821,13 @@ class Pos {
             for (var pol in this.#policies) {
                 var policyName = this.#policies[pol].policy;
 
-                var response = document.getElementById('p_' + policyName).checked;
-                row.policies[policyName] = {};
-                row.policies[policyName].response = response ? 'Y' : 'N';
-                row.policies[policyName].policy= policyName;
+                var policybox = document.getElementById('p_' + policyName);
+                if (policybox) {
+                    var response = policybox.checked;
+                    row.policies[policyName] = {};
+                    row.policies[policyName].response = response ? 'Y' : 'N';
+                    row.policies[policyName].policy = policyName;
+                }
             }
             
             cart.updateEntry(edit_index, row, this.#policies);
@@ -841,8 +848,9 @@ class Pos {
             // clear the policies
             for (var pol in this.#policies) {
                 var policyName = this.#policies[pol].policy;
-
-                document.getElementById('p_' + policyName).checked =  this.#policies[pol].policy.defaultValue == 'Y';
+                var policybox = document.getElementById('p_' + policyName);
+                if (policybox)
+                    policybox.checked =  this.#policies[pol].policy.defaultValue == 'Y';
             }
             this.#add_header.innerHTML = `
 <div class="col-sm-12 text-bg-primary mb-2">
@@ -1118,11 +1126,14 @@ class Pos {
         //  build the policy array
         var rowPolicies = {};
         for (var pol in this.#policies) {
-            var policyName = this.#policies[pol].policy;
-            rowPolicies[policyName] = {};
-            rowPolicies[policyName].policy = policyName;
-            rowPolicies[policyName].perid = this.#new_perid;
-            rowPolicies[policyName].response = document.getElementById('p_' + policyName).checked ? 'Y' : 'N';
+            var policybox = document.getElementById('p_' + policyName);
+            if (policybox) {
+                var policyName = this.#policies[pol].policy;
+                rowPolicies[policyName] = {};
+                rowPolicies[policyName].policy = policyName;
+                rowPolicies[policyName].perid = this.#new_perid;
+                rowPolicies[policyName].response = policybox.checked ? 'Y' : 'N';
+            }
         }
 
         var row = {

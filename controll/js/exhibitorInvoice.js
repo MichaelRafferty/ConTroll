@@ -153,8 +153,9 @@ class ExhibitorInvoice {
                 if (exhibitor_info['perid']) {
                     html += "<input type='radio' name='agent' id='agent_perid' value='p" + exhibitor_info['perid'] + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
                         exhibitor_info['p_first_name'] + ' ' + exhibitor_info['p_last_name'] + ' as my agent.<br/>';
-                } else if (exhibitor_info['newid']) {
-                    html += "<input type='radio' name='agent' id='agent_newid' value='n" + exhibitor_info['newid'] + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
+                } else if (exhibitor_info['newperid']) {
+                    html += "<input type='radio' name='agent' id='agent_newid' value='n" + exhibitor_info['newperid'] + "' style='transform:" +
+                        " scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
                         exhibitor_info['n_first_name'] + ' ' + exhibitor_info['n_last_name'] + ' as my agent.<br/>';
                 }
                 html += "<input type='radio' name='agent' id='agent_request' value='request' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Please assign my agent as per my request below.<br/>" +

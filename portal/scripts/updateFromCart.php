@@ -435,36 +435,41 @@ EOS;
 
 $int_upd = 0;
 $interests = getInterests();
-foreach ($interests as $interest) {
-    $interestName = $interest['interest'];
-    $newVal = array_key_exists($interestName, $newInterests) ? 'Y' : 'N';
-    if (array_key_exists($interestName, $existingInterests)) {
-        // this is an update, there is a record already in the memberInterests table for this interest.
-        $existing = $existingInterests[$interestName];
-        if (array_key_exists('interested', $existing)) {
-            $oldVal = $existing['interested'];
-        } else {
-            $oldVal = '';
-        }
-        // only update if changed
-        if ($newVal != $oldVal) {
-            $upd = 0;
-            if ($existing['id'] != null) {
-                $upd = dbSafeCmd($updInterest, 'sii', array($newVal, $loginId, $existing['id']));
+if ($interests != null) {
+    foreach ($interests as $interest) {
+        $interestName = $interest['interest'];
+        $newVal = array_key_exists($interestName, $newInterests) ? 'Y' : 'N';
+        if (array_key_exists($interestName, $existingInterests)) {
+            // this is an update, there is a record already in the memberInterests table for this interest.
+            $existing = $existingInterests[$interestName];
+            if (array_key_exists('interested', $existing)) {
+                $oldVal = $existing['interested'];
             }
-            if ($upd === false || $upd === 0) {
-                $newkey = dbSafeInsert($insInterest, 'iissi', array($personId, $conid, $interestName, $newVal, $loginId));
-                if ($newkey !== false && $newkey > 0)
+            else {
+                $oldVal = '';
+            }
+            // only update if changed
+            if ($newVal != $oldVal) {
+                $upd = 0;
+                if ($existing['id'] != null) {
+                    $upd = dbSafeCmd($updInterest, 'sii', array ($newVal, $loginId, $existing['id']));
+                }
+                if ($upd === false || $upd === 0) {
+                    $newkey = dbSafeInsert($insInterest, 'iissi', array ($personId, $conid, $interestName, $newVal, $loginId));
+                    if ($newkey !== false && $newkey > 0)
+                        $int_upd++;
+                }
+                else {
                     $int_upd++;
-            } else {
-                $int_upd++;
+                }
             }
         }
-    } else {
-        // row doesn't exist in existing interests
-        $newkey = dbSafeInsert($insInterest, 'iissi', array($personId, $conid, $interestName, $newVal, $loginId));
-        if ($newkey !== false && $newkey > 0)
-            $int_upd++;
+        else {
+            // row doesn't exist in existing interests
+            $newkey = dbSafeInsert($insInterest, 'iissi', array ($personId, $conid, $interestName, $newVal, $loginId));
+            if ($newkey !== false && $newkey > 0)
+                $int_upd++;
+        }
     }
 }
 logWrite(array('con'=>$con['name'], 'trans'=>$transId, 'action' => 'Interests added/updated', 'interests' => $existingInterests,

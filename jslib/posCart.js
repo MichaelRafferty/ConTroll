@@ -1,5 +1,7 @@
 // Point of Sale Cart Class - all functions and data related to the cart portion of the right side of the screen
 // The cart manages: People, Memberships and Payment
+// ConTroll Registration System
+// Author: Syd Weinstein
 class PosCart {
 // cart dom items
     #voidButton = null;
@@ -218,7 +220,7 @@ class PosCart {
         var pindex = this.#cartPerinfoMap.get(perid);
         var perinfo = this.#cartPerinfo[pindex];
         var mem = perinfo.memberships[index];
-        return mem.notes;
+        return mem.reg_notes;
     }
 
     getNewRegNote(perid, index) {
@@ -978,10 +980,11 @@ class PosCart {
                 ' Notes</button>';
         }
         rowhtml += `</div>
+</div>
 `;  // end of second row - badge name
         // third row add/edit memberships
         if (!this.#freezeCart) {
-            rowhtml += `</div>
+            rowhtml += `
     <div class="row">
         <div class="col-sm-auto"><button type="button" class="btn btn-sm btn-primary" onclick="cart.addEditMemberships(` +
                 row.index + `);">Add/Edit Memberships</button>

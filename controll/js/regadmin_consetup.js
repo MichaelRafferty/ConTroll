@@ -248,7 +248,7 @@ class consetup {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
-                { title: "ID", field: "id", width: 80, headerSort: true,  },
+                { title: "ID", field: "id", width: 80, headerSort: true, headerHozAlign:"right", hozAlign: "right", },
                 { field: "memlistkey", visible: false, },
                 { title: "Con ID", field: "conid", width: 80, headerFilter: true, headerHozAlign:"right", hozAlign: "right", },
                 { title: "Sort", field: "sort_order", headerSort: false, visible: false },

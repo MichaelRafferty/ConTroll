@@ -54,6 +54,9 @@ if ($email == null || $email == '') {
     $email = $con['regadminemail'];
 }
 
+if ($data['action'] == 'full' && $reg['test'] == 0)
+    $test = false;
+
 $response['test'] = $test;
 
 if (array_key_exists('batchsize', $emailconf)) {

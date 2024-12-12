@@ -197,7 +197,7 @@ $why = "continue to the Portal.";
                 if ($account == null) {
                     $account = "Error looking up data for $email";
                 }
-                clearSession('oauth2');;
+                clearSession('oauth2');
                 draw_login($config_vars, $account, 'bg-danger text-white', $why);
             }
             exit();
@@ -252,7 +252,15 @@ if (isSessionVar('id')) {
                     if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 24;
                     setSessionVar('tokenExpiration', time() + ($hrs * 3600));
                 }
-                validationComplete($match['id'], $match['tablename'], $email, getSessionVar('idSource'), getSessionVar('multiple'));
+                //  if no id in match, it's re-using a login token for the same account currently logged in, as the email match would have
+                //      handled logging them out)
+                $id = null;
+                $tablename = null;
+                if (array_key_exists('id', $match)) {
+                    $id = $match['id'];
+                    $tablename = $match['tablename'];
+                }
+                validationComplete($id, $tablename, $email, getSessionVar('idSource'), getSessionVar('multiple'));
                 exit();
             }
         }
@@ -439,6 +447,17 @@ EOS;
         <?php
         exit;
     }
+    if (array_key_exists('suspended', $portal_conf) && $portal_conf['suspended'] == 1) { ?>
+<p class="text-primary">
+    <?php echo $con['conname']; ?> has temporarily suspended the registration portal <?php
+        if (array_key_exists('suspendreason', $portal_conf))
+        echo $portal_conf['suspendreason'];
+    ?>
+</p>
+    <?php
+        exit;
+    }
+
     $label = $con['label'];
     echo <<<EOS
     <div class="row p-1">

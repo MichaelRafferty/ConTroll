@@ -170,7 +170,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     $downPmt = '';
     $nonPlanAmt = '';
     $balaanceDue = '';
-    if ($results['newplan'] == 1) {
+    if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
         if (array_key_exists('planRec', $results) && array_key_exists('plan', $results['planRec']) &&
             array_key_exists('name', $results['planRec']['plan'])) {
             $planName = $results['planRec']['plan']['name'];
@@ -254,23 +254,21 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
         }
 
         // if a plan, set a discount called deferred payment for plan to the amount not in this payment
-        if (array_key_exists('newplan', $results)) {
-            if ($results['newplan'] == 1) {
-                // deferment is total of the items - total of the payment
-                $deferment = $order_value - $results['total'];
-                $note = "Name: $planName, ID: TBA, Non Plan Amt: $nonPlanAmt, Down Payment: $downPmt, Balance Due: $balaanceDue, Perid: $loginPerid";
-                // this is the down payment on a payment plan
-                $item = new OrderLineItemDiscount ();
-                $item->setUid('planDeferment');
-                $item->setName("Payment Deferral Amount: " . $note);
-                $item->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
-                $money = new Money;
-                $money->setAmount($deferment * 100);
-                $money->setCurrency(Currency::USD);
-                $item->setAmountMoney($money);
-                $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
-                $orderDiscounts[] = $item;
-            }
+        if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
+            // deferment is total of the items - total of the payment
+            $deferment = $order_value - $results['total'];
+            $note = "Name: $planName, ID: TBA, Non Plan Amt: $nonPlanAmt, Down Payment: $downPmt, Balance Due: $balaanceDue, Perid: $loginPerid";
+            // this is the down payment on a payment plan
+            $item = new OrderLineItemDiscount ();
+            $item->setUid('planDeferment');
+            $item->setName("Payment Deferral Amount: " . $note);
+            $item->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
+            $money = new Money;
+            $money->setAmount($deferment * 100);
+            $money->setCurrency(Currency::USD);
+            $item->setAmountMoney($money);
+            $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
+            $orderDiscounts[] = $item;
         }
         if (count($orderDiscounts) > 0) {
             $order->setDiscounts($orderDiscounts);

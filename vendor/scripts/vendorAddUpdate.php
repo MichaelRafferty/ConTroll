@@ -68,6 +68,13 @@ $shipCountry = null;
 if (array_key_exists('shipCountry', $_POST) && $_POST['shipCountry'] != null) {
     $shipCountry = trim($_POST['shipCountry']);
 }
+
+// artist name is only in the Artist version of the form, it should be NULL for dealers
+$artistName = null;
+if (array_key_exists('artistName', $_POST)) {
+    $artistName = trim($_POST['artistName']);
+}
+
 // if register check for existence of vendor
 switch ($profileMode) {
     case 'register':
@@ -86,37 +93,70 @@ EOS;
 
         // create the vendor
         // email address validated on the source side
-        $exhibitorInsertQ = <<<EOS
+        if ($artistName != null) {
+            $exhibitorInsertQ = <<<EOS
 INSERT INTO exhibitors (artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, need_new, confirm, 
                      addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity) 
 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
-        $typestr = 'sssssssiisssssssssssssi';
-        $paramarr = array(
-            trim($_POST['artistName']),
-            trim($_POST['exhibitorName']),
-            trim($_POST['exhibitorEmail']),
-            trim($_POST['exhibitorPhone']),
-            trim($_POST['website']),
-            trim($_POST['description']),
-            password_hash(trim($_POST['password']), PASSWORD_DEFAULT),
-            0, // need_new_passwd
-            0, // confirm
-            trim($_POST['addr']),
-            trim($_POST['addr2']),
-            trim($_POST['city']),
-            trim($_POST['state']),
-            trim($_POST['zip']),
-            trim($_POST['country']),
-            $shipCompany,
-            $shipAddr,
-            $shipAddr2,
-            $shipCity,
-            $shipState,
-            $shipZip,
-            $shipCountry,
-            $publicity
-        );
+            $typestr = 'sssssssiisssssssssssssi';
+            $paramarr = array (
+                trim($_POST['artistName']),
+                trim($_POST['exhibitorName']),
+                trim($_POST['exhibitorEmail']),
+                trim($_POST['exhibitorPhone']),
+                trim($_POST['website']),
+                trim($_POST['description']),
+                password_hash(trim($_POST['password']), PASSWORD_DEFAULT),
+                0, // need_new_passwd
+                0, // confirm
+                trim($_POST['addr']),
+                trim($_POST['addr2']),
+                trim($_POST['city']),
+                trim($_POST['state']),
+                trim($_POST['zip']),
+                trim($_POST['country']),
+                $shipCompany,
+                $shipAddr,
+                $shipAddr2,
+                $shipCity,
+                $shipState,
+                $shipZip,
+                $shipCountry,
+                $publicity
+            );
+        } else {
+            $exhibitorInsertQ = <<<EOS
+INSERT INTO exhibitors (exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, need_new, confirm, 
+                     addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity) 
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+EOS;
+            $typestr = 'ssssssiisssssssssssssi';
+            $paramarr = array (
+                trim($_POST['exhibitorName']),
+                trim($_POST['exhibitorEmail']),
+                trim($_POST['exhibitorPhone']),
+                trim($_POST['website']),
+                trim($_POST['description']),
+                password_hash(trim($_POST['password']), PASSWORD_DEFAULT),
+                0, // need_new_passwd
+                0, // confirm
+                trim($_POST['addr']),
+                trim($_POST['addr2']),
+                trim($_POST['city']),
+                trim($_POST['state']),
+                trim($_POST['zip']),
+                trim($_POST['country']),
+                $shipCompany,
+                $shipAddr,
+                $shipAddr2,
+                $shipCity,
+                $shipState,
+                $shipZip,
+                $shipCountry,
+                $publicity
+            );
+        }
         $newExhibitor = dbSafeInsert($exhibitorInsertQ, $typestr, $paramarr);
 
         // create the year related functions
@@ -166,36 +206,70 @@ EOS;
             }
         }
 
-        $updateQ = <<<EOS
+        if ($artistName != null) {
+            $updateQ = <<<EOS
 UPDATE exhibitors
 SET artistName = ?, exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, website=?, description=?,
     addr=?, addr2=?, city=?, state=?, zip=?, country=?, shipCompany=?, shipAddr=?, shipAddr2=?, shipCity=?, shipState=?, shipZip=?, shipCountry=?, publicity=?
 WHERE id=?
 EOS;
-        $updateArr = array(
-            trim($_POST['artistName']),
-            trim($_POST['exhibitorName']),
-            trim($_POST['exhibitorEmail']),
-            trim($_POST['exhibitorPhone']),
-            trim($_POST['website']),
-            trim($_POST['description']),
-            trim($_POST['addr']),
-            trim($_POST['addr2']),
-            trim($_POST['city']),
-            trim($_POST['state']),
-            trim($_POST['zip']),
-            trim($_POST['country']),
-            $shipCompany,
-            $shipAddr,
-            $shipAddr2,
-            $shipCity,
-            $shipState,
-            $shipZip,
-            $shipCountry,
-            $publicity,
-            $vendor
-        );
-        $numrows = dbSafeCmd($updateQ, 'sssssssssssssssssssii', $updateArr);
+            $updateArr = array (
+                $artistName,
+                trim($_POST['exhibitorName']),
+                trim($_POST['exhibitorEmail']),
+                trim($_POST['exhibitorPhone']),
+                trim($_POST['website']),
+                trim($_POST['description']),
+                trim($_POST['addr']),
+                trim($_POST['addr2']),
+                trim($_POST['city']),
+                trim($_POST['state']),
+                trim($_POST['zip']),
+                trim($_POST['country']),
+                $shipCompany,
+                $shipAddr,
+                $shipAddr2,
+                $shipCity,
+                $shipState,
+                $shipZip,
+                $shipCountry,
+                $publicity,
+                $vendor
+            );
+            $dt = 'sssssssssssssssssssii';
+        } else {
+            $updateQ = <<<EOS
+UPDATE exhibitors
+SET exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, website=?, description=?,
+    addr=?, addr2=?, city=?, state=?, zip=?, country=?, shipCompany=?, shipAddr=?, shipAddr2=?, shipCity=?, shipState=?, shipZip=?, shipCountry=?, publicity=?
+WHERE id=?
+EOS;
+            $updateArr = array (
+                trim($_POST['exhibitorName']),
+                trim($_POST['exhibitorEmail']),
+                trim($_POST['exhibitorPhone']),
+                trim($_POST['website']),
+                trim($_POST['description']),
+                trim($_POST['addr']),
+                trim($_POST['addr2']),
+                trim($_POST['city']),
+                trim($_POST['state']),
+                trim($_POST['zip']),
+                trim($_POST['country']),
+                $shipCompany,
+                $shipAddr,
+                $shipAddr2,
+                $shipCity,
+                $shipState,
+                $shipZip,
+                $shipCountry,
+                $publicity,
+                $vendor
+            );
+            $dt = 'ssssssssssssssssssii';
+        }
+        // now perform the update based on artist vs dealers form.
+        $numrows = dbSafeCmd($updateQ, $dt, $updateArr);
 
         $updateQ = <<<EOS
 UPDATE exhibitorYears

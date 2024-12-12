@@ -69,7 +69,6 @@ registrationpage="https://reg.conname.org/"
 close=0
 suspended=0
 suspendreason="while we examine the impact of COVID-19"
-suspendmessage="https://conname.org"
 cancelled=0
 cancel_date="Day, Month Day"
 server="https://reg.conname.org/"
@@ -223,6 +222,8 @@ url="https://reg.conname.org/artshow"
 ;; membership portal items
 test=0
 open=1
+suspended=0
+suspendreason="while we examine the impact of COVID-19"
 https=1
 ;;; customtext
 ; appears in each program section based on program name

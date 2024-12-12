@@ -275,7 +275,7 @@ function validationComplete($id, $idType, $email, $validationType, $multiple) {
     // if not oauth session variable to go portal
     $portal_conf = get_conf('portal');
     if (!isSessionVar('oauth')) {
-        if ($id != getSessionVar('id')) {
+        if ($id != null && $id != getSessionVar('id')) {
             unsetSessionVar('transId');    // just in case it is hanging around, clear this
             unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
             setSessionVar('id', $id);

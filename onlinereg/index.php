@@ -178,7 +178,7 @@ $onsitesale = $startdate->format("l, F j");
 <?php
     drawEditPersonBlock($con, $useUSPS, $policies, $class, /* modal */ true,
         /* editEmail */ true, $ageByDate, $membershiptypes, /* tabIndexStart  */ 100);
-    if (count($interests) > 0) {
+    if ($interests != null && count($interests) > 0) {
 ?>
         <div class='row'>
             <div class='col-sm-12'>
@@ -374,7 +374,7 @@ $onsitesale = $startdate->format("l, F j");
 <p class='text-primary'>
 <?php echo $condata['label']; ?> has been canceled.  If you had previously purchased a membership you should have received an email with instructions. Please go to our <a href='cancelation.php'>Membership Cancelation Page</a> to tell us how you'd like your membership handled.
 </p>
-<?php } else if($reg_conf['suspended']==1) { ?>
+<?php } else if ($reg_conf['suspended'] == 1) { ?>
 <p class="text-primary">
 <?php echo $con['conname']; ?> has temporarily suspended online registration <?php echo $reg_conf['suspendreason']; ?>
 </p>

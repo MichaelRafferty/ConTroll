@@ -91,6 +91,15 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
     </div>
     <div class='row'>
+        <div class='col-sm-auto me-2'>
+            <label for='<?php echo $idPrefix . 'badgename'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Badge Name (optional)
+                        </span></label><br/>
+            <input class='form-control-sm' type='text' name='badgename' id='<?php echo $idPrefix . 'badgename'; ?>' size='35' maxlength='32'
+                   placeholder='defaults to first and last name' tabindex="<?php echo $tabindex;
+            $tabindex += 10; ?>"/>
+        </div>
+    </div>
+    <div class='row'>
         <div class='col-sm-12'>
             <label for='<?php echo $idPrefix . 'pronouns'; ?>' class='form-label-sm'>
                     <span class='text-dark' style='font-size: 10pt;'>Pronouns
@@ -157,6 +166,14 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
     </div>
+    <div class='row'>
+        <div class='col-sm-auto'>
+            <label for="<?php echo $idPrefix . 'phone'; ?>" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Phone</span></label><br/>
+            <input class='form-control-sm' type='text' name='phone' id='<?php echo $idPrefix . 'phone'; ?>' size='20' maxlength='15'
+                   tabindex="<?php echo $tabindex;
+                       $tabindex += 10; ?>"/>
+        </div>
+    </div>
     <?php if ($useUSPS) echo '</div></div><div class="col-sm-4" id="uspsblock"></div></div>' . PHP_EOL; ?>
 <?php
     if ($admin == false) {
@@ -192,26 +209,6 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
     </div>
-    <div class='row'>
-        <div class='col-sm-auto'>
-            <label for='<?php echo $idPrefix . 'phone'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Phone</span></label><br/>
-            <input class='form-control-sm' type='text' name='phone' id='<?php echo $idPrefix . 'phone'; ?>' size='20' maxlength='15'
-                   tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
-        </div>
-<?php
-        if ($membershipTypes == null) {
-?>
-            <div class='col-sm-auto me-2'>
-                <label for='<?php echo $idPrefix . 'badgename'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Badge Name (optional)
-                    </span></label><br/>
-                <input class='form-control-sm' type='text' name='badgename' id='<?php echo $idPrefix . 'badgename'; ?>' size='35' maxlength='32'
-                       placeholder='defaults to first and last name' tabindex="<?php echo $tabindex;
-                    $tabindex += 10; ?>"/>
-            </div>
-<?php
-        }
-?>
-    </div>
 <?php
         if ($membershipTypes != null) {
 ?>
@@ -229,12 +226,6 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-auto me-2">
-            <label for="<?php echo $idPrefix . 'badgename'; ?>" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)
-                </span></label><br/>
-            <input class="form-control-sm" type="text" name="badgename" id='<?php echo $idPrefix . 'badgename'; ?>' size="35" maxlength="32"
-                   placeholder='defaults to first and last name' tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
-        </div>
         <div class="col-sm-auto">
             <label for="<?php echo $idPrefix . 'memId'; ?>" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
                             class='text-danger'>&bigstar;</span>Membership Type</span></label><br/>
@@ -257,20 +248,6 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
             <p><strong>Note:</strong> Email Address is entered at the start of creating the account or edited using the Change Email Address button on the home
                 page
                 .</p>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-auto">
-            <label for="<?php echo $idPrefix . 'phonr'; ?>" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
-            <input class="form-control-sm" type="text" name="phone" id='<?php echo $idPrefix . 'phone'; ?>' size="20" maxlength="15"
-                   tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
-        </div>
-        <div class="col-sm-auto">
-            <label for="<?php echo $idPrefix . 'badgename'; ?>" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)
-                </span></label><br/>
-            <input class="form-control-sm" type="text" name="badgename" id='<?php echo $idPrefix . 'badgename'; ?>' size="35" maxlength="32"
-                   placeholder='Defaults to first and last name'
-                   tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
     </div>
 <?php
