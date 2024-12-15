@@ -8,7 +8,7 @@ class artItemTypes {
     }
 
     getType(value) {
-        if(!this.isValid(type)) { return false; }
+        if(!this.isValid(value)) { return false; }
         switch (value) {
             case 'art': return this.ART;
             case 'nfs': return this.NFS;
@@ -16,7 +16,7 @@ class artItemTypes {
         }
     }
 }
-var TypeList = new artItemTypes();
+var typeList = new artItemTypes();
 
 class artItemStatuses {
     static ENTERED = 'Entered';
@@ -60,8 +60,12 @@ class artItemStatuses {
     setValidOptions(status  = '') {
         //TODO set valid options based on current status
         var options = "";
-        for(value of this.#statuses) {
-           options += "<option>" + value + "</option>";
+        for(const value of this.#statuses) {
+            if(value == status) {
+                options += "<option selected=selected>" + value + "</option>";
+            } else {
+                options += "<option>" + value + "</option>";
+            }
         }
         return options;
     }
@@ -147,26 +151,25 @@ resetEditPane() {
     this.#typeField.innerHTML = this.type;
 
     switch(this.type) {
-        case TypeList.ART:
+        case typeList.ART:
             document.getElementById('minPriceRow').display = 'block';
             this.#sale_priceNameField.innerHTML = "Quicksale Price";
             break;
-        case TypeList.NFS:
+        case typeList.NFS:
             document.getElementById('minPriceRow').display = 'none';
             this.#sale_priceNameField.innerHTML = "Insurance Amount";
             break;
-        case TypeList.PRINT:
+        case typeList.PRINT:
             document.getElementById('minPriceRow').display = 'none';
             this.#sale_priceNameField.innerHTML = "Sale Price";
             break;
     }
     //editable fields
-    this.#titleField.value(this.title);
-    this.#materialField.value(this.material);
-    this.#statusField.innerHTML = StatusList.setValidOptions('');
-    this.#statusField.value(this.status);
-    for(loc of this.#locationList) {
-        this.locationField.innerHTML += "<option>" + loc + "</option>";
+    this.#titleField.value = this.title;
+    this.#materialField.value = this.material;
+    this.#statusField.innerHTML = statusList.setValidOptions(this.status);
+    for(const loc of this.#locationList) {
+        this.#locationField.innerHTML += "<option>" + loc + "</option>";
     }
     this.#locationField.value = this.location;
     this.#quantityField.value = this.quantity;
@@ -179,24 +182,24 @@ resetEditPane() {
 }
 setValuesFromData(artItemData, artistInfo, bidderInfo = null) {
     this.id = artItemData['id'];
-    this.artistNumber = artistInfo['artistNumber'];
-    this.itemNumber = artistInfo['itemNumber'];
+    this.artistNumber = artistInfo['exhibitorNumber'];
+    this.itemNumber = artItemData['itemNumber'];
     this.title=artItemData['title'];
     this.material=artItemData['material'];
     this.type=typeList.getType(artItemData['type']);
     this.status=statusList.getStatus(artItemData['status']);
     this.location=artItemData['location'];
-    this.#locationList = artistInfo['locations'];
+    this.#locationList = artistInfo['locations'].split(',');
     this.quantity = artItemData['quantity'];
     this.original_qty = artItemData['orig_qty'];
     this.min_price = artItemData['min_price'];
     this.sale_price = artItemData['sale_price'];
     this.#bidder = artItemData['bidder'];
     if(bidderInfo != null) { this.bidderName = bidderInfo['name']; }
-    this.#exhibitorRegionYearId = artistInfo['exhibitorRegionYearId'];
+    this.#exhibitorRegionYearId = artItemData['exhibitorRegionYearId'];
     this.exhibitorName = artistInfo['exhibitorName'];
     this.#exhibitRegionYearId = artistInfo['exhibitRegionYearId']
-    this.regionYearName = artistInfo['exhibitRegionYearName']
+    this.regionYearName = artistInfo['exhibitRegionName']
 
     if(this.type === false) {
         show_message('invalid item type', 'warn', ai_message_div); //TODO append if possible
@@ -217,16 +220,17 @@ closeEditPane() {
 fetchArtItem(item_id) {
     var _this = this;
     $.ajax({
-        url: 'scripts/artItem_getItem',
+        url: 'scripts/artItem_getItem.php',
         method: 'GET',
         data: {itemId: item_id},
         success: function (data, textstatus, jqxhr) {
-            if((data['status'] == 'error') || isdefined(data['error'])) {
+            if((data['status'] == 'error') || data['error']) {
                 show_message(data['error'],'error', ai_message_div)
             } else {
                 _this.setValuesFromData(data['item'], data['artist'], data['bidder']);
                 _this.resetEditPane();
                 _this.openEditPane();
+                show_message('Item ' + item_id + ' Retrieved');
             }
         },
         error: showAjaxError

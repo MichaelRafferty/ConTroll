@@ -1,6 +1,6 @@
 <?php
 require_once "lib/base.php";
-require_once "lib/artItem.php";
+require_once "../lib/artItem.php";
 //initialize google session
 $need_login = google_init("page");
 

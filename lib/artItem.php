@@ -68,7 +68,7 @@ function drawEditPane()
                                     </select>
                                 </div>
                                 <div class="col-sm-2">
-                                    <label for="artItemLocation">Status:</label>
+                                    <label for="artItemLocation">Location:</label>
                                 </div>
                                 <div class="col-sm-4">
                                     <select id="artItemLocation" name="location">

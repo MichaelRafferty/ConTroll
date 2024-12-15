@@ -121,6 +121,7 @@ function draw(data, textStatus, jqXHR) {
             {title: 'Location', field: 'location', headerSort: true, headerFilter: true, },
             {title: 'Bidder', field: 'bidderText', headerSort: true, headerFilter:true, },
             {title: 'Sale Price', field: 'final_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", },
+            {title: 'Actions', width:150, hozAlign: "center", headerFilter: false, headerSort: false, formatter: addEditButton, responsive:0}
         ]
     });
 
@@ -129,6 +130,16 @@ function draw(data, textStatus, jqXHR) {
 
     itemTable_dirty = false;
 
+}
+function addEditButton(cell, formatterParams, onRendered) {
+    var html = '';
+    var item_status = cell.getRow().getData().status;
+    var btnClass = 'btn btn-sm p-0';
+    var btnStyle = 'style="--bs-btn-font-size: 75%;"';
+
+    html += '<button type="button" class="'+btnClass+' btn-primary" '+btnStyle+' onclick="artItemModal.fetchArtItem(' + cell.getRow().getData().id + ')">Edit item</button>'
+
+    return html;
 }
 
 function itemTable_dataChanged(data) {
