@@ -39,22 +39,22 @@ class Add {
         }
         this.#addPersonBtn = document.getElementById('addPersonBTN');
 
-        this.#firstName = document.getElementById('fname');
-        this.#middleName = document.getElementById('mname');
-        this.#lastName = document.getElementById('lname');
-        this.#suffix = document.getElementById('suffix');
-        this.#legalName = document.getElementById('legalname');
-        this.#pronouns = document.getElementById('pronouns');
-        this.#badgeName = document.getElementById('badgename');
-        this.#address = document.getElementById('addr');
-        this.#addr2 = document.getElementById('addr2');
-        this.#city = document.getElementById('city');
-        this.#state = document.getElementById('state');
-        this.#zip = document.getElementById('zip');
-        this.#country = document.getElementById('country');
-        this.#emailAddr = document.getElementById('email1');
-        this.#emailAddr2 = document.getElementById('email2');
-        this.#phone = document.getElementById('phone');
+        this.#firstName = document.getElementById('a_fname');
+        this.#middleName = document.getElementById('a_mname');
+        this.#lastName = document.getElementById('a_lname');
+        this.#suffix = document.getElementById('a_suffix');
+        this.#legalName = document.getElementById('a_legalname');
+        this.#pronouns = document.getElementById('a_pronouns');
+        this.#badgeName = document.getElementById('a_badgename');
+        this.#address = document.getElementById('a_addr');
+        this.#addr2 = document.getElementById('a_addr2');
+        this.#city = document.getElementById('a_city');
+        this.#state = document.getElementById('a_state');
+        this.#zip = document.getElementById('a_zip');
+        this.#country = document.getElementById('a_country');
+        this.#emailAddr = document.getElementById('a_email1');
+        this.#emailAddr2 = document.getElementById('a_email2');
+        this.#phone = document.getElementById('a_phone');
     }
 
     // called on open of the add window
@@ -292,4 +292,9 @@ class Add {
     close() {
         this.clearForm();
     };
+
+    // countryChange - normally used to enable / disable USPS,
+    countryChange() {
+        console.log("TODO: add country Change/USPS check");
+    }
 }

@@ -109,7 +109,7 @@ function drawPoliciesCell($policies) {
 }
 
 // update policies in memberPolicies and return number updated
-function updateMemberPolicies($conid, $personId, $personType, $loginId, $loginType) {
+function updateMemberPolicies($conid, $personId, $personType, $loginId, $loginType, $prefix='') {
     // now update the policies
     $policies = getPolicies();
     if ($policies == null || count($policies) == 0) {
@@ -157,8 +157,8 @@ EOS;
                     $oldId = $old['id'];
                 }
             }
-            if (array_key_exists('p_' . $policy['policy'], $newPolicies))
-                $new = $newPolicies['p_' . $policy['policy']];
+            if (array_key_exists('p_' . $prefix . $policy['policy'], $newPolicies))
+                $new = $newPolicies['p_' . $prefix . $policy['policy']];
             else
                 $new = 'N'; // unchecked are 'N', and the array only returns checked ones.
 

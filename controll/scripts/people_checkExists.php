@@ -139,11 +139,11 @@ if ($addr2 != '') {
     $valueArr[] = '%' . $addr2 . '%';
     $valueArr[] = $addr2;
     $valueArr[] = '%' . $addr2 . '%';
-    $$mQ .= $and . '(lower(p.address) = ? OR lower(p.address) like ? OR lower(p.addr_2) = ? OR lower(p.addr_2) like ?)';
+    $mQ .= $and . '(lower(p.address) = ? OR lower(p.address) like ? OR lower(p.addr_2) = ? OR lower(p.addr_2) like ?)';
 }
 
 if ($city != '') {
-    $mQ .= $and . "(lower(p.city) = ? OR lower(p.city) like ?\n";
+    $mQ .= $and . "(lower(p.city) = ? OR lower(p.city) like ?)\n";
     $and = 'AND ';
     $typestr .= 'ss';
     $valueArr[] = $city;
@@ -151,7 +151,7 @@ if ($city != '') {
 }
 
 if ($state != '') {
-    $mQ .= $and . "(lower(p.state) = ? OR lower(p.state) like ?\n";
+    $mQ .= $and . "(lower(p.state) = ? OR lower(p.state) like ?)\n";
     $and = 'AND ';
     $typestr .= 'ss';
     $valueArr[] = $state;
@@ -160,7 +160,7 @@ if ($state != '') {
 
 if ($zip != '') {
     $zipch = str_replace(' ', '', str_replace('-', '', $zip));
-    $mQ .= $and . "REPLACE(REPLACE(' ', '', lower(p.zip)), '-', '') = ? OR REPLACE(REPLACE(' ', '', lower([/zip)), '-', '') like ?\n";
+    $mQ .= $and . "REPLACE(REPLACE(' ', '', lower(p.zip)), '-', '') = ? OR REPLACE(REPLACE(' ', '', lower(p.zip)), '-', '') like ?\n";
     $and = 'AND ';
     $typestr .= 'ss';
     $valueArr[] = $zipch;
@@ -179,7 +179,8 @@ if ($phone != '') {
     $phonech = str_replace('(', '', str_replace(')', '', str_replace('-', '',
                  str_replace(' ', '', $phone))));
 
-    $mQ .= $and . "(phoneChk = ? OR phoneChk like ?)\n";
+    $mQ .= $and . "(REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') = ? OR
+                    REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') like ?)\n";
     $and = 'AND ';
     $typestr .= 'ss';
     $valueArr[] = $phonech;

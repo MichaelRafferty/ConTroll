@@ -63,7 +63,7 @@ if ($perid === false) {
 }
 $message = "Person $perid created";
 // add the policies
-$policy_upd =  updateMemberPolicies($conid, $perid, 'p', $updatedBy, 'p');
+$policy_upd =  updateMemberPolicies($conid, $perid, 'p', $updatedBy, 'p', 'a');
 if ($policy_upd > 0) {
     $message .= "<br/>$policy_upd policy responses updated";
 }

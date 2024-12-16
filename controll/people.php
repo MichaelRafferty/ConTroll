@@ -665,7 +665,7 @@ drawInterestList($interests, true);
                 <div class='col-sm-12' id='addH1Div'><H1 class='h3'><b>Add Person</b></H1></div>
             </div>
 <?php
-    drawEditPersonBlock($con_conf, true, $policies, 'people_add', false, true, '', null, 100, true);
+    drawEditPersonBlock($con_conf, true, $policies, 'addPerson', false, true, '', null, 100, true, 'a_');
 ?>
         <div class="row mt-2">
             <div class="col-sm-auto">
