@@ -43,7 +43,7 @@ $values = [
     $_POST['suffix'] == null ? '' : $_POST['suffix'],
     $_POST['emailAddr'] == null ? '' : $_POST['emailAddr'],
     $_POST['phone'] == null ? '' : $_POST['phone'],
-    $_POST['badgeName'] == null ? '' : $_POST['badgeame'],
+    $_POST['badgeName'] == null ? '' : $_POST['badgeName'],
     $_POST['legalName'] == null ? '' : $_POST['legalName'],
     $_POST['pronouns'] == null ? '' : $_POST['pronouns'],
     $_POST['address'] == null ? '' : $_POST['address'],
