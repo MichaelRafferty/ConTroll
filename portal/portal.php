@@ -23,6 +23,12 @@ $cc = get_conf('cc');
 $condata = get_con();
 load_cc_procs();
 
+if (array_key_exists('suspended', $portal_conf) && $portal_conf['suspended'] == 1) {
+    // the portal is now closed, redirect the user back as a logout and let them get the closed screen
+    header('location:' . $portal_conf['portalsite'] . '?logout');
+    exit();
+}
+
 if (isSessionVar('id') && isSessionVar('idType')) {
     // check for being resolved/baned
     $resolveUpdates = isResolvedBanned();
