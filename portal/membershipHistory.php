@@ -27,6 +27,8 @@ if (isSessionVar('id') && isSessionVar('idType')) {
 
 if (array_key_exists('start', $_GET))
     $start = $_GET['start'];
+else if (array_key_exists('minComp', $con))
+    $start = $con['minComp'];
 else
     $start = $conid;
 
