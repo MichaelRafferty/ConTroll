@@ -90,13 +90,13 @@ class customTextSetup {
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
+                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'customText' }, hozAlign:"left", headerSort: false },
                 {title: "#", field: "rownum", width: 50, visible: this.#debugVisible, },
                 {title: "Application", field: "appName", width: 150, headerSort: true, headerFilter: true, },
                 {title: "Page", field: "appPage", width: 150, headerSort: true, headerFilter: true, },
                 {title: "Section", field: "appSection", width:150, headerSort: true, headerFilter: true, },
                 {title: "Item", field: "txtItem", width: 150, headerSort: true, headerFilter: true, },
                 {title: "Custom Text", field: "contents", headerSort: false, width: 1300, headerFilter: true, validator: "required", },
-                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'customText' }, hozAlign:"left", headerSort: false },
             ],
         });
         this.#customTextTable.on("dataChanged", function (data) {
