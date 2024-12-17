@@ -101,7 +101,6 @@ ALTER TABLE exhibitsRegionYears ADD CONSTRAINT `ery_memList_i` FOREIGN KEY (`inc
 ALTER TABLE artItems ADD CONSTRAINT `artItems_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artItems ADD CONSTRAINT `artItems_exhibitorRegionYear_fk` FOREIGN KEY (`exhibitorRegionYearId`) REFERENCES `exhibitorRegionYears` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artItems ADD CONSTRAINT `artItems_updatedBy_fk` FOREIGN KEY (`updatedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
-ALTER TABLE memberInterests ADD CONSTRAINT `memberInterests_ibfk_1` FOREIGN KEY (`interest`) REFERENCES `interests` (`interest`) ON UPDATE CASCADE;
-ALTER TABLE memberInterests ADD CONSTRAINT `memberInterests_ibfk_2` FOREIGN KEY (`interest`) REFERENCES `interests` (`interest`) ON UPDATE CASCADE;
-ALTER TABLE memberInterests ADD CONSTRAINT `memberInterests_ibfk_3` FOREIGN KEY (`newperid`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
-ALTER TABLE memberInterests ADD CONSTRAINT `memberInterests_ibfk_4` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
+ALTER TABLE memberInterests ADD CONSTRAINT `memberInterestsInterest_fk` FOREIGN KEY (`interest`) REFERENCES `interests` (`interest`) ON UPDATE CASCADE;
+ALTER TABLE memberInterests ADD CONSTRAINT `memberInterestsNewperson_fk` FOREIGN KEY (`newperid`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
+ALTER TABLE memberInterests ADD CONSTRAINT `memberInterestsPerinfo_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
