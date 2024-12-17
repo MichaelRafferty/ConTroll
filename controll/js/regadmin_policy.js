@@ -48,7 +48,7 @@ class policySetup {
             this.#previewBlock = document.getElementById('previewBlockDiv');
             this.#editPreviewSaveBtn = document.getElementById('editPreviewSaveBtn');
             this.#previewPolicyName = document.getElementById('previewPolicyName');
-            this.#editPolicyNameDiv = document.getElementById('previewPolicyName');
+            this.#editPolicyNameDiv = document.getElementById('editPolicyName');
             this.#policyPrompt = document.getElementById('policyPrompt');
             this.#policyDescription = document.getElementById('policyDescription');
             this.#p_preview = document.getElementById('p_preview');
