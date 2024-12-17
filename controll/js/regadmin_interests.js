@@ -1,5 +1,6 @@
 //import { TabulatorFull as Tabulator } from 'tabulator-tables';
 // interests class - all edit interests functions
+interestsDescriptionMCEInit = false;
 class interestsSetup {
     #messageDiv = null;
     #interestsPane = null;
@@ -47,26 +48,32 @@ class interestsSetup {
             this.#interestDescription = document.getElementById('interestDescription');
             this.#iName = document.getElementById('iName');
             this.#iNotify = document.getElementById('iNotify');
-            // start the tinyMCE editors
-            tinyMCE.init({
-                selector: 'textarea#interestDescription',
-                id: "prompt",
-                height: 400,
-                min_height: 300,
-                menubar: false,
-                license_key: 'gpl',
-                plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
-                toolbar: [
-                    'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
-                    'bold italic underline strikethrough removeformat | ' +
-                    'visualchars nonbreaking charmap hr | ' +
-                    'preview fullscreen ',
-                    'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
-                ],
-                content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
-                placeholder: 'Edit the interests prompt...',
-                auto_focus: 'editFieldArea',
-            });
+            if (interestsDescriptionMCEInit) {
+                tinyMCE.get("interestDescription").focus();
+                tinyMCE.get("interestDescription").load();
+            } else {
+                // start the tinyMCE editors
+                tinyMCE.init({
+                    selector: 'textarea#interestDescription',
+                    id: "prompt",
+                    height: 400,
+                    min_height: 300,
+                    menubar: false,
+                    license_key: 'gpl',
+                    plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
+                    toolbar: [
+                        'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
+                        'bold italic underline strikethrough removeformat | ' +
+                        'visualchars nonbreaking charmap hr | ' +
+                        'preview fullscreen ',
+                        'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
+                    ],
+                    content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
+                    placeholder: 'Edit the interests prompt...',
+                    auto_focus: 'editFieldArea',
+                });
+                interestsDescriptionMCEInit = true;
+            }
         }
     };
 

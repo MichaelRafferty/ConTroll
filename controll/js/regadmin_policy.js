@@ -1,5 +1,6 @@
 //import { TabulatorFull as Tabulator } from 'tabulator-tables';
 // policy class - all edit membership policy functions
+policyMCEInit = false;
 class policySetup {
     #messageDiv = null;
     #policyPane = null;
@@ -56,45 +57,53 @@ class policySetup {
             this.#l_required = document.getElementById('l_required');
             this.#previewDescIcon = document.getElementById('previewDescIcon');
             this.#previewDescriptionText = document.getElementById('previewDescriptionText');
-            // start the tinyMCE editors
-            tinyMCE.init({
-                selector: 'textarea#policyPrompt',
-                id: "prompt",
-                height: 400,
-                min_height: 300,
-                menubar: false,
-                license_key: 'gpl',
-                plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
-                toolbar:  [
-                    'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
-                    'bold italic underline strikethrough removeformat | '+
-                    'visualchars nonbreaking charmap hr | ' +
-                    'preview fullscreen ',
-                    'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
-                ],
-                content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
-                placeholder: 'Edit the policy prompt...',
-                auto_focus: 'editFieldArea',
-            });
-            tinyMCE.init({
-                selector: 'textarea#policyDescription',
-                id: "desc",
-                height: 400,
-                min_height: 300,
-                menubar: false,
-                license_key: 'gpl',
-                plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
-                toolbar:  [
-                    'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
-                    'bold italic underline strikethrough removeformat | '+
-                    'visualchars nonbreaking charmap hr | ' +
-                    'preview fullscreen ',
-                    'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
-                ],
-                content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
-                placeholder: 'Edit the description here...',
-                auto_focus: 'editFieldArea',
-            });
+            if (policyMCEInit) {
+                tinyMCE.get("policyDescription").focus();
+                tinyMCE.get("policyDescription").load();
+                tinyMCE.get("policyPrompt").focus();
+                tinyMCE.get("policyPrompt").load();
+            } else {
+                // start the tinyMCE editors
+                tinyMCE.init({
+                    selector: 'textarea#policyPrompt',
+                    id: "prompt",
+                    height: 400,
+                    min_height: 300,
+                    menubar: false,
+                    license_key: 'gpl',
+                    plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
+                    toolbar: [
+                        'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
+                        'bold italic underline strikethrough removeformat | ' +
+                        'visualchars nonbreaking charmap hr | ' +
+                        'preview fullscreen ',
+                        'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
+                    ],
+                    content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
+                    placeholder: 'Edit the policy prompt...',
+                    auto_focus: 'editFieldArea',
+                });
+                tinyMCE.init({
+                    selector: 'textarea#policyDescription',
+                    id: "desc",
+                    height: 400,
+                    min_height: 300,
+                    menubar: false,
+                    license_key: 'gpl',
+                    plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
+                    toolbar: [
+                        'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
+                        'bold italic underline strikethrough removeformat | ' +
+                        'visualchars nonbreaking charmap hr | ' +
+                        'preview fullscreen ',
+                        'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
+                    ],
+                    content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
+                    placeholder: 'Edit the description here...',
+                    auto_focus: 'editFieldArea',
+                });
+                policyMCEInit = true;
+            }
         }
     };
 
@@ -287,8 +296,8 @@ class policySetup {
 
     // process the save button on the preview pane
     editPreviewSave() {
-        var policyPrompt = tinyMCE.get(0).getContent();
-        var policyDesc = tinyMCE.get(1).getContent();
+        var policyPrompt = tinyMCE.get('policyPrompt').getContent();
+        var policyDesc = tinyMCE.get('policyDescription').getContent();
 
         // these will be encoded in <p> tags already, so strip the leading and trailing ones.
         if (policyPrompt.startsWith('<p>')) {
@@ -308,6 +317,8 @@ class policySetup {
         policyRow.getCell("prompt").setValue(policyPrompt);
         policyRow.getCell("description").setValue(policyDesc);
         this.#editPreviewModal.hide();
+        this.#dirty = true;
+        this.checkUndoRedo();
     }
 
     // save - save the policy entries back to the database
@@ -385,15 +396,17 @@ class policySetup {
         this.#previewDescriptionText.innerHTML = policyDescription;
         $("#previewTip").hide();
 
-        tinyMCE.get(0).setContent(policyPrompt);
-        tinyMCE.get(1).setContent(policyDescription);
+        tinyMCE.get("policyDescription").focus();
+        tinyMCE.get("policyDescription").load();
+        tinyMCE.get("policyPrompt").focus();
+        tinyMCE.get("policyPrompt").load();
 
         this.#editPreviewModal.show();
     }
 
     updatePreview() {
-        var policyPrompt = tinyMCE.get(0).getContent();
-        var policyDesc = tinyMCE.get(1).getContent();
+        var policyPrompt = tinyMCE.get('policyPrompt').getContent();
+        var policyDesc = tinyMCE.get('policyDescription').getContent();
 
         var policyRow = this.#policyTable.getRow(this.#editPolicyName).getData();
         var polictRequired = policyRow.required;

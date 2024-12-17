@@ -13,6 +13,7 @@ var memListIdx = null;
 var memRules = null;
 var memRulesIdx = null;
 var config = [];
+var rulesMCEinit = false;
 
 class rulesSetup {
     #messageDiv = null;
@@ -144,26 +145,32 @@ class rulesSetup {
             this.#rMemList = document.getElementById('rMemList');
             this.#ruleStepDiv = document.getElementById('ruleStepDiv');
 
-            // start the tinyMCE editors
-            tinyMCE.init({
-                selector: 'textarea#ruleDescription',
-                id: "prompt",
-                height: 250,
-                min_height: 250,
-                menubar: false,
-                license_key: 'gpl',
-                plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
-                toolbar: [
-                    'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
-                    'bold italic underline strikethrough removeformat | ' +
-                    'visualchars nonbreaking charmap hr | ' +
-                    'preview fullscreen ',
-                    'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
-                ],
-                content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
-                placeholder: 'Edit the rules description...',
-                auto_focus: 'editFieldArea',
-            });
+            if (rulesMCEinit) {
+                tinyMCE.get("ruleDescription").focus();
+                tinyMCE.get("ruleDescription").load();
+            } else {
+                // start the tinyMCE editors
+                tinyMCE.init({
+                    selector: 'textarea#ruleDescription',
+                    id: "prompt",
+                    height: 250,
+                    min_height: 250,
+                    menubar: false,
+                    license_key: 'gpl',
+                    plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
+                    toolbar: [
+                        'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
+                        'bold italic underline strikethrough removeformat | ' +
+                        'visualchars nonbreaking charmap hr | ' +
+                        'preview fullscreen ',
+                        'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
+                    ],
+                    content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
+                    placeholder: 'Edit the rules description...',
+                    auto_focus: 'editFieldArea',
+                });
+                rulesMCEinit = true;
+            }
         }
 
         var id = document.getElementById('editRuleStepModal');
@@ -1246,7 +1253,8 @@ class rulesSetup {
         this.#rAgeList.innerHTML = (ruleRow.ageList == '' || ruleRow.ageList == undefined || ruleRow.ageList == null) ? "<i>None</i>" : ruleRow.ageList;
         this.#rMemList.innerHTML = (ruleRow.memList == '' || ruleRow.memList == undefined || ruleRow.memList == null) ? "<i>None</i>" : ruleRow.memList;
 
-        tinyMCE.activeEditor.setContent(ruleDescription);
+        tinyMCE.get("ruleDescription").focus();
+        tinyMCE.get("ruleDescription").load();
         this.#ruleStepsTable = new Tabulator('#ruleStepDiv', {
             history: true,
             data: this.#ruleSteps,
