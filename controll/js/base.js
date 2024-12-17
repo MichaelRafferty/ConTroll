@@ -1,4 +1,4 @@
-
+globalCustomTextEditorInit = false;
 // convert a form post string to an arrray
 // convert url parameters to associative array
 function URLparamsToArray(urlargs, doTrim = false) {
@@ -449,27 +449,34 @@ function showEdit(classname, table, index, field, titlename, textitem) {
     editTitleDiv.innerHTML = "Editing " + table + " " + titlename + " " + field;
 
     editor_modal.show();
-    tinyMCE.init({
-        selector: 'textarea#editFieldArea',
-        height: 500,
-        min_height: 400,
-        menubar: false,
-        license_key: 'gpl',
-        plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
-        toolbar:  [
-            'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
-            'bold italic underline strikethrough removeformat | '+
-            'visualchars nonbreaking charmap hr | ' +
-            'preview fullscreen ',
-            'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
-        ],
-        content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
-        placeholder: 'Edit the description here...',
-        auto_focus: 'editFieldArea',
-        init_instance_callback: function (editor) {
-            editor.setContent(textitem);
-        }
-    });
+    if (globalCustomTextEditorInit) {
+        // update the text block
+        tinyMCE.get("editFieldArea").focus();
+        tinyMCE.get("editFieldArea").load();
+    } else {
+        tinyMCE.init({
+            selector: 'textarea#editFieldArea',
+            height: 500,
+            min_height: 400,
+            menubar: false,
+            license_key: 'gpl',
+            plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
+            toolbar: [
+                'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
+                'bold italic underline strikethrough removeformat | ' +
+                'visualchars nonbreaking charmap hr | ' +
+                'preview fullscreen ',
+                'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
+            ],
+            content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
+            placeholder: 'Edit the description here...',
+            auto_focus: 'editFieldArea',
+            init_instance_callback: function (editor) {
+                editor.setContent(textitem);
+            }
+        });
+        globalCustomTextEditorInit = true;
+    }
 }
 
 // save the modal edit values back
