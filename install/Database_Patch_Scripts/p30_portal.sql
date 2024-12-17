@@ -163,9 +163,9 @@ CREATE TABLE memberInterests
     PRIMARY KEY (id)
 );
 
-ALTER TABLE memberInterests ADD CONSTRAINT FOREIGN KEY (interest) REFERENCES interests(interest) ON UPDATE CASCADE;
-ALTER TABLE memberInterests ADD CONSTRAINT FOREIGN KEY (newperid) REFERENCES newperson(id) ON UPDATE CASCADE;
-ALTER TABLE memberInterests ADD CONSTRAINT FOREIGN KEY (perid) REFERENCES perinfo(id) ON UPDATE CASCADE;
+ALTER TABLE memberInterests ADD CONSTRAINT `memberInterestsInterest_fk` FOREIGN KEY (`interest`) REFERENCES `interests` (`interest`) ON UPDATE CASCADE;
+ALTER TABLE memberInterests ADD CONSTRAINT `memberInterestsNewperson_fk` FOREIGN KEY (`newperid`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
+ALTER TABLE memberInterests ADD CONSTRAINT `memberInterestsPerinfo_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 
 CREATE TABLE paymentPlans (
     id int NOT NULL AUTO_INCREMENT,
