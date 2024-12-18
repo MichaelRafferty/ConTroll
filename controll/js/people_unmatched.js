@@ -29,7 +29,8 @@ class Unmatched {
     #createNew = null;
     #newpersonPolicies = null;
     #matchpeoplePolicies = null;
-    
+    #additionalPeoplePolicies = null;
+
     // edit matches
     #matchPerson = null;
     // matched person display fields
@@ -76,6 +77,7 @@ class Unmatched {
     #managerDiv = null;
     #active = null;
     #banned = null;
+    #matchType = null;
 
     // globals before open
     constructor(debug) {
@@ -455,6 +457,7 @@ class Unmatched {
         var html = '';
         var policy = '';
         var disableUpdateExisting = true;
+        this.#matchType = type;
         // they clicked select, if it's a new person, clear the matched person side of the page
         if (type == 'n') {
             this.clearEditBlock('c');
@@ -484,7 +487,11 @@ class Unmatched {
                 this.#matchManager.innerHTML = '<i>Not Managed</i>';
             }
             html = '';
-            var mpol = this.#matchpeoplePolicies[id];
+            var mpol = null;
+            if (this.#matchType == 'p')
+                mpol = this.#matchpeoplePolicies[id];
+            else
+                mpol = this.#additionalPeoplePolicies[id];
             for (policy in mpol) {
                 html += policy + ': ' + mpol[policy] + "<br/>";
             }
@@ -814,7 +821,11 @@ class Unmatched {
                 break;
 
             case 'matchPolicies':
-                var mpol = this.#matchpeoplePolicies[this.#matchPerson.id];
+                var mpol = null;
+                if (this.#matchType == 'p')
+                    mpol = this.#matchpeoplePolicies[this.#matchPerson.id];
+                else
+                    mpol = this.#additionalPeoplePolicies[this.#matchPerson.id];
                 for (policy in mpol) {
                     document.getElementById('p_' + policy).checked = mpol[policy] == 'Y';
                 }
@@ -887,6 +898,7 @@ class Unmatched {
             show_message(data['success'], 'success', 'result_message_candidate');
         }
 
+        this.#additionalPeoplePolicies = data['additionalPolicies'];
         this.#additionalTable.replaceData(data['additional']);
     }
 

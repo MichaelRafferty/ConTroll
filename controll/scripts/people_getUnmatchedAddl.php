@@ -140,6 +140,31 @@ while ($match = $mR->fetch_assoc()) {
 $mR->free();
 
 $response['additional'] = $matches;
+
+// and their policies
+$matchPolicies = [];
+if (count($matches ) > 0) {
+    $pidInStr = implode(',', $pids);
+    $mQ = <<<EOS
+SELECT perid, policy, response
+FROM memberPolicies
+WHERE conid = ? AND perid in ($pidInStr);
+EOS;
+
+    $mR = dbSafeQuery($mQ, 'i', array ($conid));
+    if ($mR === false) {
+        $response['error'] = 'Select potential match policies failed';
+        ajaxSuccess($response);
+    }
+
+    while ($row = $mR->fetch_assoc()) {
+        $matchPolicies[$row['perid']][$row['policy']] = $row['response'];
+    }
+    $mR->free();
+}
+
+$response['additionalPolicies'] = $matchPolicies;
+
 if (count($matches) < 50)
     $response['success'] = count($matches) . ' potential additional matches found';
 else
