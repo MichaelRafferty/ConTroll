@@ -504,7 +504,7 @@ function actionbuttons(cell, formatterParams, onRendered) {
     }
 
     // receipt button
-    if (paid > 0 && complete_trans > 0)
+    if (paid > 0)
         btns += '<button class="btn btn-primary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="receipt(' + index + ')">Rcpt</button>';
 
