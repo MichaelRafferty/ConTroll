@@ -136,6 +136,8 @@ EOS;
         $updtypes = 'issssssssssi';
 
         foreach ($data as $row) {
+            if (!array_key_exists('notes', $row))
+                $row['notes'] = null;
             if ($row['id'] < 0) {
                 $paramarray= array($row['conid'],$row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['price'],$row['startdate'],
