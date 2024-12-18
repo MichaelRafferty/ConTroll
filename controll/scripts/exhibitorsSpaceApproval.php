@@ -87,7 +87,7 @@ JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
 JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
 JOIN exhibitsSpaces es ON es.id = eS.spaceId
 JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
-SET item_approved = null, item_requested = null, time_requested = NOW(), time_approved = NOW()
+SET item_approved = null, time_approved = NOW()
 WHERE eS.spaceId = ? and ery.id = ? and eY.exhibitorId = ?;
 EOS;
         $existingQ = <<<EOS
@@ -165,8 +165,7 @@ JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
 JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
 JOIN exhibitsSpaces es ON es.id = eS.spaceId
 JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
-SET item_approved = null, item_requested = null, 
-    time_requested = NOW(), time_approved = NOW()
+SET item_approved = null, time_approved = NOW()
 WHERE eS.spaceId = ? and ery.id = ? and eY.exhibitorId = ?;
 EOS;
         $existingQ = <<<EOS
