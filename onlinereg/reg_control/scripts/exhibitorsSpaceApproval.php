@@ -88,7 +88,7 @@ JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
 JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
 JOIN exhibitsSpaces es ON es.id = eS.spaceId
 JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
-SET item_approved = null, item_requested = null, time_requested = NOW(), time_approved = NOW()
+SET item_approved = null, time_approved = NOW()
 WHERE eS.spaceId = ? and ery.id = ? and eY.exhibitorId = ?;
 EOS;
         $existingQ = <<<EOS
@@ -121,7 +121,7 @@ EOS;
                 $paramarray = array($spaceId, $regionYearId, $exhibitorId);
                 $typestr = 'iii';
                 $existingR = dbSafeQuery($existingQ, $typestr, $paramarray);
-                if ($existingR == false || $existingR->num_rows != 1) {
+                if ($existingR === false || $existingR->num_rows != 1) {
                     web_error_log("Could not retrieve existing space request for $spaceId, $regionYearId, $exhibitorId");
                 }
                 $existing = $existingR->fetch_assoc();
@@ -166,8 +166,7 @@ JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
 JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
 JOIN exhibitsSpaces es ON es.id = eS.spaceId
 JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
-SET item_approved = null, item_requested = null, 
-    time_requested = NOW(), time_approved = NOW()
+SET item_approved = null, time_approved = NOW()
 WHERE eS.spaceId = ? and ery.id = ? and eY.exhibitorId = ?;
 EOS;
         $existingQ = <<<EOS
@@ -195,7 +194,7 @@ EOS;
             $paramarray = array($spaceId, $regionYearId, $exhibitorId);
             $typestr = 'iii';
             $existingR = dbSafeQuery($existingQ, $typestr, $paramarray);
-            if ($existingR == false|| $existingR->num_rows != 1) {
+            if ($existingR === false|| $existingR->num_rows != 1) {
                 web_error_log("Could not retrieve existing space request for $spaceId, $regionYearId, $exhibitorId");
                 continue;
             }
@@ -372,7 +371,7 @@ EOS;
         $error_code = null;
     }
     if (array_key_exists('email_error', $return_arr)) {
-        $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error-code';
+        $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error_code';
     } else {
         $response['success'] .= ', Request sent';
     }
