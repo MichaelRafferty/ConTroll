@@ -109,6 +109,21 @@ $config_vars['inrerests'] = $interests;
                     <div class='row mb-2'>
                         <div class='col-sm-12' id='candidateTable'></div>
                     </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-auto text-bg-secondary'>
+                            Additional Query:
+                        </div>
+                        <div class='col-sm-auto text-bg-secondary'>
+                            <input type='text' size='80' id='matchAdditionalQuery' name='matchAdditionalQuery' , placeholder='Name/PID/email'/>
+                        </div>
+                        <div class='col-sm-auto text-bg-secondary'>
+                            <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0'
+                                    type='button' onclick="unmatchedPeople.additionalQuery()">Search</button>
+                        </div>
+                    </div>
+                    <div class='row mb-2'>
+                        <div class='col-sm-12' id='additionalTable'></div>
+                    </div>
                 </div>
                 <div class='container-fluid' id="editMatch">
                     <div class="row mt-4">

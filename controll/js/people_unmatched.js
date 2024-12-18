@@ -20,6 +20,10 @@ class Unmatched {
     #newpersonTable = null;
     #candidatesName = null;
     #candidateTable = null;
+    #aditional = null;
+    #additionalSearchStr = null;
+    #additionalTable = null;
+    #additional = null;
     #editMatchTitle = null;
     #updateExisting = null;
     #createNew = null;
@@ -89,6 +93,7 @@ class Unmatched {
             this.#matchCandidatesModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#candidatesTitleName = document.getElementById('candidatesTitleName');
             this.#candidatesName = document.getElementById('candidatesName');
+            this.#additionalSearchStr = document.getElementById('matchAdditionalQuery');
             this.#editMatchTitle = document.getElementById('editMatchTitle');
             this.#updateExisting = document.getElementById('updateExisting');
             this.#createNew = document.getElementById('createNew');
@@ -137,6 +142,10 @@ class Unmatched {
             this.#active = document.getElementById('active');
             this.#banned = document.getElementById('banned');
 
+            // set up to close the modal and delete the items
+            $('#match-candidates').on('hide.bs.modal', function () {
+                unmatchedPeople.mclose();
+            });
         }
     };
 
@@ -171,6 +180,7 @@ class Unmatched {
             this.#unmatchedTable.destroy();
             this.#unmatchedTable = null;
         }
+
         if (!data['unmatched']) {
             show_message("Error loading unmatched people", 'error');
             return;
@@ -178,6 +188,7 @@ class Unmatched {
         if (data['success']) {
             show_message(data['success'], 'success');
         }
+
         this.#unmatched = data['unmatched'];
         this.#unmatchedCount = data['numUnmatched'];
         this.#unmatchedCountSpan.innerHTML = this.#unmatchedCount;
@@ -401,6 +412,37 @@ class Unmatched {
             ],
         });
 
+        this.#additionalTable = new Tabulator('#additionalTable', {
+            data: this.#additional,
+            layout: "fitDataTable",
+            index: "id",
+            pagination: true,
+            paginationAddRow:"table",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            columns: [
+                {title: "Select", width: 100, formatter: this.selectButton, formatterParams: {table: 'a'}, headerSort: false },
+                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
+                {title: "Full Name", field: "fullName", width: 300, headerSort: true, headerFilter: true, },
+                {title: "Address", field: "fullAddr", width: 300, headerSort: true, headerFilter: true, },
+                {title: "Badge Name", field: "badge_name", width: 150, headerFilter:true, headerSort: false},
+                {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
+                {title: "Email", field: "email_addr", width: 200, headerSort: true, headerFilter: true, },
+                {title: "Phone", field: "phone", width: 100, headerSort: true, headerFilter: true, },
+                {title: "Date Created", field: "creation_date", width: 180, headerSort: true, headerFilter: true, },
+                {title: "Registrations", field: "regs", width: 300, },
+                {field: 'first_name', visible: false,},
+                {field: 'middle_name', visible: false,},
+                {field: 'last_name', visible: false,},
+                {field: 'suffix', visible: false,},
+                {field: 'legalName', visible: false,},
+                {field: 'pronouns', visible: false,},
+                {field: 'active', visible: false,},
+                {field: 'banned', visible: false,},
+                {field: 'managerId', visible: false,},
+            ],
+        });
+
         $('#editMatch').hide();
         this.#updateExisting.disabled = true;
         this.#createNew.disabled = true;
@@ -421,7 +463,11 @@ class Unmatched {
         } else {
             // set the candidate section of the edit block to the values from the table
             disableUpdateExisting = false;
-            this.#matchPerson = this.#candidateTable.getRow(id).getData();
+            if (type == 'p') {
+                this.#matchPerson = this.#candidateTable.getRow(id).getData();
+            } else {
+                this.#matchPerson = this.#additionalTable.getRow(id).getData();
+            }
             this.#editMatchTitle.innerHTML = this.#newperson.fullName + ' and ' + this.#matchPerson.fullName;
             this.#matchId.innerHTML = id;
             this.#matchName.innerHTML = this.#matchPerson.fullName;
@@ -795,6 +841,68 @@ class Unmatched {
             default:
                 show_message("Invalid source " + source, 'warn', 'result_message_candidate');
 
+        }
+    }
+
+    // search for additional people
+    additionalQuery() {
+        var qs = this.#additionalSearchStr.value;
+        if (qs == null || qs.length == 0) {
+            show_message("Additional Query string is empty", 'error', 'result_message_candidate');
+            return;
+        }
+        if (isNaN(qs) && qs.length < 3) {
+            show_message("Additional Query string must be 3 or more characters, or a numeric value", 'error', 'result_message_candidate');
+            return;
+        }
+
+        var _this = this;
+        var script = "scripts/people_getUnmatchedAddl.php";
+        var postdata = {
+            ajax_request_action: 'additional',
+            additionalStr: qs
+        };
+        clear_message();
+        clearError();
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postdata,
+            success: function (data, textStatus, jhXHR) {
+                _this.updateAdditional(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                return false;
+            }
+        });
+    }
+
+    updateAdditional(data) {
+        if (!data['additional']) {
+            show_message("Error loading additional people", 'error', 'result_message_candidate');
+            return;
+        }
+        if (data['success']) {
+            show_message(data['success'], 'success', 'result_message_candidate');
+        }
+
+        this.#additionalTable.replaceData(data['additional']);
+    }
+
+    // on close of the modal, delete it's tables
+    mclose() {
+        if (this.#newpersonTable) {
+            this.#newpersonTable.destroy();
+            this.#newpersonTable = null;
+        }
+        if (this.#candidateTable) {
+            this.#candidateTable.destroy();
+            this.#candidateTable = null;
+        }
+        if (this.#additionalTable) {
+            this.#additionalTable.destroy();
+            this.#additionalTable = null;
         }
     }
     // on close of the pane, clean up the items

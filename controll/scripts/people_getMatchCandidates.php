@@ -30,7 +30,7 @@ $nQ = <<<EOS
 WITH regs AS (
 	SELECT ? AS id, GROUP_CONCAT(DISTINCT m.label ORDER BY m.id SEPARATOR ',') AS regs
     FROM reg r
-	LEFT OUTER JOIN memLabel m ON (r.memId = m.id)
+	LEFT OUTER JOIN memList m ON (r.memId = m.id)
 	WHERE r.newperid = ? AND r.conid = ?
 )
 SELECT n.*, 'Y' as active, 'N' AS banned, r.regs, 
@@ -167,7 +167,7 @@ WITH lNew AS (
 	SELECT p.id, GROUP_CONCAT(DISTINCT m.label ORDER BY m.id SEPARATOR ',') AS regs
 	FROM pids p
 	LEFT OUTER JOIN reg r on (r.perid = p.id AND r.conid = ?)
-	LEFT OUTER JOIN memLabel m ON (r.memId = m.id)
+	LEFT OUTER JOIN memList m ON (r.memId = m.id)
     GROUP BY p.id
 )
 SELECT DISTINCT p.*, r.regs,
