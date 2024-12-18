@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "apimatic/core",
-            "version": "0.3.11",
+            "version": "0.3.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/apimatic/core-lib-php.git",
-                "reference": "2274f103f9f210664f546f504e4559d772a81fee"
+                "reference": "944678aa7017457daacd9750b96962fb693ea81a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/apimatic/core-lib-php/zipball/2274f103f9f210664f546f504e4559d772a81fee",
-                "reference": "2274f103f9f210664f546f504e4559d772a81fee",
+                "url": "https://api.github.com/repos/apimatic/core-lib-php/zipball/944678aa7017457daacd9750b96962fb693ea81a",
+                "reference": "944678aa7017457daacd9750b96962fb693ea81a",
                 "shasum": ""
             },
             "require": {
@@ -32,7 +32,7 @@
                 "psr/log": "^1.1.4 || ^2.0.0 || ^3.0.0"
             },
             "require-dev": {
-                "phan/phan": "5.4.2",
+                "phan/phan": "5.4.5",
                 "phpunit/phpunit": "^7.5 || ^8.5 || ^9.5",
                 "squizlabs/php_codesniffer": "^3.5"
             },
@@ -56,9 +56,9 @@
             ],
             "support": {
                 "issues": "https://github.com/apimatic/core-lib-php/issues",
-                "source": "https://github.com/apimatic/core-lib-php/tree/0.3.11"
+                "source": "https://github.com/apimatic/core-lib-php/tree/0.3.13"
             },
-            "time": "2024-07-08T11:50:08+00:00"
+            "time": "2024-12-18T08:29:12+00:00"
         },
         {
             "name": "apimatic/core-interfaces",
@@ -105,16 +105,16 @@
         },
         {
             "name": "apimatic/jsonmapper",
-            "version": "3.1.4",
+            "version": "3.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/apimatic/jsonmapper.git",
-                "reference": "407b455d2adda2efa51a44b99400389fbee0394e"
+                "reference": "c6cc21bd56bfe5d5822bbd08f514be465c0b24e7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/apimatic/jsonmapper/zipball/407b455d2adda2efa51a44b99400389fbee0394e",
-                "reference": "407b455d2adda2efa51a44b99400389fbee0394e",
+                "url": "https://api.github.com/repos/apimatic/jsonmapper/zipball/c6cc21bd56bfe5d5822bbd08f514be465c0b24e7",
+                "reference": "c6cc21bd56bfe5d5822bbd08f514be465c0b24e7",
                 "shasum": ""
             },
             "require": {
@@ -153,9 +153,9 @@
             "support": {
                 "email": "mehdi.jaffery@apimatic.io",
                 "issues": "https://github.com/apimatic/jsonmapper/issues",
-                "source": "https://github.com/apimatic/jsonmapper/tree/3.1.4"
+                "source": "https://github.com/apimatic/jsonmapper/tree/3.1.6"
             },
-            "time": "2024-06-11T11:48:30+00:00"
+            "time": "2024-11-28T09:15:32+00:00"
         },
         {
             "name": "apimatic/unirest-php",
@@ -224,16 +224,16 @@
         },
         {
             "name": "async-aws/core",
-            "version": "1.22.1",
+            "version": "1.23.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/async-aws/core.git",
-                "reference": "63295bdfa8ed7084964fa18f5e234ddddb609f78"
+                "reference": "f2f40b895f1b2834a793c78d6c1ff8e1a1c39a12"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/async-aws/core/zipball/63295bdfa8ed7084964fa18f5e234ddddb609f78",
-                "reference": "63295bdfa8ed7084964fa18f5e234ddddb609f78",
+                "url": "https://api.github.com/repos/async-aws/core/zipball/f2f40b895f1b2834a793c78d6c1ff8e1a1c39a12",
+                "reference": "f2f40b895f1b2834a793c78d6c1ff8e1a1c39a12",
                 "shasum": ""
             },
             "require": {
@@ -255,7 +255,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.22-dev"
+                    "dev-master": "1.23-dev"
                 }
             },
             "autoload": {
@@ -276,7 +276,7 @@
                 "sts"
             ],
             "support": {
-                "source": "https://github.com/async-aws/core/tree/1.22.1"
+                "source": "https://github.com/async-aws/core/tree/1.23.0"
             },
             "funding": [
                 {
@@ -288,20 +288,20 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-10-09T08:09:09+00:00"
+            "time": "2024-11-24T11:42:17+00:00"
         },
         {
             "name": "async-aws/ses",
-            "version": "1.8.2",
+            "version": "1.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/async-aws/ses.git",
-                "reference": "425303dca8590573f46be263731fdbb8317f44b4"
+                "reference": "55227c6d0c6485410c0e5bc9b6a42d44b2e10d80"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/async-aws/ses/zipball/425303dca8590573f46be263731fdbb8317f44b4",
-                "reference": "425303dca8590573f46be263731fdbb8317f44b4",
+                "url": "https://api.github.com/repos/async-aws/ses/zipball/55227c6d0c6485410c0e5bc9b6a42d44b2e10d80",
+                "reference": "55227c6d0c6485410c0e5bc9b6a42d44b2e10d80",
                 "shasum": ""
             },
             "require": {
@@ -312,7 +312,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.8-dev"
+                    "dev-master": "1.9-dev"
                 }
             },
             "autoload": {
@@ -333,7 +333,7 @@
                 "ses"
             ],
             "support": {
-                "source": "https://github.com/async-aws/ses/tree/1.8.2"
+                "source": "https://github.com/async-aws/ses/tree/1.9.0"
             },
             "funding": [
                 {
@@ -345,7 +345,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-10-09T08:09:09+00:00"
+            "time": "2024-11-24T11:42:17+00:00"
         },
         {
             "name": "aws/aws-crt-php",
@@ -403,16 +403,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.324.12",
+            "version": "3.336.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "c4aea23ee93e4567e353a0f3b907d154056bf4f6"
+                "reference": "5a62003bf183e32da038056a4b9077c27224e034"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c4aea23ee93e4567e353a0f3b907d154056bf4f6",
-                "reference": "c4aea23ee93e4567e353a0f3b907d154056bf4f6",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/5a62003bf183e32da038056a4b9077c27224e034",
+                "reference": "5a62003bf183e32da038056a4b9077c27224e034",
                 "shasum": ""
             },
             "require": {
@@ -441,8 +441,8 @@
                 "nette/neon": "^2.3",
                 "paragonie/random_compat": ">= 2",
                 "phpunit/phpunit": "^5.6.3 || ^8.5 || ^9.5",
-                "psr/cache": "^1.0",
-                "psr/simple-cache": "^1.0",
+                "psr/cache": "^1.0 || ^2.0 || ^3.0",
+                "psr/simple-cache": "^1.0 || ^2.0 || ^3.0",
                 "sebastian/comparator": "^1.2.3 || ^4.0",
                 "yoast/phpunit-polyfills": "^1.0"
             },
@@ -495,9 +495,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.324.12"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.336.0"
             },
-            "time": "2024-10-28T18:07:02+00:00"
+            "time": "2024-12-18T19:04:32+00:00"
         },
         {
             "name": "defuse/php-encryption",
@@ -761,16 +761,16 @@
         },
         {
             "name": "firebase/php-jwt",
-            "version": "v6.10.1",
+            "version": "v6.10.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/firebase/php-jwt.git",
-                "reference": "500501c2ce893c824c801da135d02661199f60c5"
+                "reference": "30c19ed0f3264cb660ea496895cfb6ef7ee3653b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/500501c2ce893c824c801da135d02661199f60c5",
-                "reference": "500501c2ce893c824c801da135d02661199f60c5",
+                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/30c19ed0f3264cb660ea496895cfb6ef7ee3653b",
+                "reference": "30c19ed0f3264cb660ea496895cfb6ef7ee3653b",
                 "shasum": ""
             },
             "require": {
@@ -818,9 +818,9 @@
             ],
             "support": {
                 "issues": "https://github.com/firebase/php-jwt/issues",
-                "source": "https://github.com/firebase/php-jwt/tree/v6.10.1"
+                "source": "https://github.com/firebase/php-jwt/tree/v6.10.2"
             },
-            "time": "2024-05-18T18:05:11+00:00"
+            "time": "2024-11-24T11:22:49+00:00"
         },
         {
             "name": "fpdf/fpdf",
@@ -877,16 +877,16 @@
         },
         {
             "name": "google/apiclient",
-            "version": "v2.18.0",
+            "version": "v2.18.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-api-php-client.git",
-                "reference": "846f149c9f879449145326dad99ef00bf1d879f3"
+                "reference": "d8d201ba8a189a3cd7fb34e4da569f2ed440eee7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-api-php-client/zipball/846f149c9f879449145326dad99ef00bf1d879f3",
-                "reference": "846f149c9f879449145326dad99ef00bf1d879f3",
+                "url": "https://api.github.com/repos/googleapis/google-api-php-client/zipball/d8d201ba8a189a3cd7fb34e4da569f2ed440eee7",
+                "reference": "d8d201ba8a189a3cd7fb34e4da569f2ed440eee7",
                 "shasum": ""
             },
             "require": {
@@ -940,22 +940,22 @@
             ],
             "support": {
                 "issues": "https://github.com/googleapis/google-api-php-client/issues",
-                "source": "https://github.com/googleapis/google-api-php-client/tree/v2.18.0"
+                "source": "https://github.com/googleapis/google-api-php-client/tree/v2.18.2"
             },
-            "time": "2024-10-16T21:58:58+00:00"
+            "time": "2024-12-16T22:52:40+00:00"
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.379.0",
+            "version": "v0.386.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-api-php-client-services.git",
-                "reference": "5a671ff040d55cec7b69b88d84c91bd8867d1c8e"
+                "reference": "cd08601dd729977f7198c72cd10d05901833bec0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/5a671ff040d55cec7b69b88d84c91bd8867d1c8e",
-                "reference": "5a671ff040d55cec7b69b88d84c91bd8867d1c8e",
+                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/cd08601dd729977f7198c72cd10d05901833bec0",
+                "reference": "cd08601dd729977f7198c72cd10d05901833bec0",
                 "shasum": ""
             },
             "require": {
@@ -984,22 +984,22 @@
             ],
             "support": {
                 "issues": "https://github.com/googleapis/google-api-php-client-services/issues",
-                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.379.0"
+                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.386.0"
             },
-            "time": "2024-10-28T01:10:22+00:00"
+            "time": "2024-12-16T01:04:20+00:00"
         },
         {
             "name": "google/auth",
-            "version": "v1.42.0",
+            "version": "v1.45.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-auth-library-php.git",
-                "reference": "0c25599a91530b5847f129b271c536f75a7563f5"
+                "reference": "cfcb93162341ed5022fa976e621f0fa2b05ba6ad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-auth-library-php/zipball/0c25599a91530b5847f129b271c536f75a7563f5",
-                "reference": "0c25599a91530b5847f129b271c536f75a7563f5",
+                "url": "https://api.github.com/repos/googleapis/google-auth-library-php/zipball/cfcb93162341ed5022fa976e621f0fa2b05ba6ad",
+                "reference": "cfcb93162341ed5022fa976e621f0fa2b05ba6ad",
                 "shasum": ""
             },
             "require": {
@@ -1008,7 +1008,8 @@
                 "guzzlehttp/psr7": "^2.4.5",
                 "php": "^8.0",
                 "psr/cache": "^2.0||^3.0",
-                "psr/http-message": "^1.1||^2.0"
+                "psr/http-message": "^1.1||^2.0",
+                "psr/log": "^3.0"
             },
             "require-dev": {
                 "guzzlehttp/promises": "^2.0",
@@ -1044,9 +1045,9 @@
             "support": {
                 "docs": "https://googleapis.github.io/google-auth-library-php/main/",
                 "issues": "https://github.com/googleapis/google-auth-library-php/issues",
-                "source": "https://github.com/googleapis/google-auth-library-php/tree/v1.42.0"
+                "source": "https://github.com/googleapis/google-auth-library-php/tree/v1.45.0"
             },
-            "time": "2024-08-26T18:33:48+00:00"
+            "time": "2024-12-11T02:10:48+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -1571,35 +1572,30 @@
         },
         {
             "name": "league/oauth2-client",
-            "version": "2.7.0",
+            "version": "2.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/oauth2-client.git",
-                "reference": "160d6274b03562ebeb55ed18399281d8118b76c8"
+                "reference": "3d5cf8d0543731dfb725ab30e4d7289891991e13"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/oauth2-client/zipball/160d6274b03562ebeb55ed18399281d8118b76c8",
-                "reference": "160d6274b03562ebeb55ed18399281d8118b76c8",
+                "url": "https://api.github.com/repos/thephpleague/oauth2-client/zipball/3d5cf8d0543731dfb725ab30e4d7289891991e13",
+                "reference": "3d5cf8d0543731dfb725ab30e4d7289891991e13",
                 "shasum": ""
             },
             "require": {
-                "guzzlehttp/guzzle": "^6.0 || ^7.0",
-                "paragonie/random_compat": "^1 || ^2 || ^9.99",
-                "php": "^5.6 || ^7.0 || ^8.0"
+                "ext-json": "*",
+                "guzzlehttp/guzzle": "^6.5.8 || ^7.4.5",
+                "php": "^7.1 || >=8.0.0 <8.5.0"
             },
             "require-dev": {
                 "mockery/mockery": "^1.3.5",
-                "php-parallel-lint/php-parallel-lint": "^1.3.1",
-                "phpunit/phpunit": "^5.7 || ^6.0 || ^9.5",
-                "squizlabs/php_codesniffer": "^2.3 || ^3.0"
+                "php-parallel-lint/php-parallel-lint": "^1.4",
+                "phpunit/phpunit": "^7 || ^8 || ^9 || ^10 || ^11",
+                "squizlabs/php_codesniffer": "^3.11"
             },
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-2.x": "2.0.x-dev"
-                }
-            },
             "autoload": {
                 "psr-4": {
                     "League\\OAuth2\\Client\\": "src/"
@@ -1635,9 +1631,9 @@
             ],
             "support": {
                 "issues": "https://github.com/thephpleague/oauth2-client/issues",
-                "source": "https://github.com/thephpleague/oauth2-client/tree/2.7.0"
+                "source": "https://github.com/thephpleague/oauth2-client/tree/2.8.0"
             },
-            "time": "2023-04-16T18:19:15+00:00"
+            "time": "2024-12-11T05:05:52+00:00"
         },
         {
             "name": "league/oauth2-facebook",
@@ -1752,16 +1748,16 @@
         },
         {
             "name": "league/oauth2-server",
-            "version": "9.0.1",
+            "version": "9.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/oauth2-server.git",
-                "reference": "1dc1ee861e8490a9e73d668b1ceccfa27436d861"
+                "reference": "d511107cb018ead0bd84f86402b086306738c686"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/oauth2-server/zipball/1dc1ee861e8490a9e73d668b1ceccfa27436d861",
-                "reference": "1dc1ee861e8490a9e73d668b1ceccfa27436d861",
+                "url": "https://api.github.com/repos/thephpleague/oauth2-server/zipball/d511107cb018ead0bd84f86402b086306738c686",
+                "reference": "d511107cb018ead0bd84f86402b086306738c686",
                 "shasum": ""
             },
             "require": {
@@ -1772,7 +1768,7 @@
                 "lcobucci/jwt": "^5.0",
                 "league/event": "^3.0",
                 "league/uri": "^7.0",
-                "php": "~8.1.0 || ~8.2.0 || ~8.3.0",
+                "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
                 "psr/http-message": "^2.0",
                 "psr/http-server-middleware": "^1.0"
             },
@@ -1781,14 +1777,14 @@
                 "lncd/oauth2": "*"
             },
             "require-dev": {
-                "laminas/laminas-diactoros": "^3.3.0",
+                "laminas/laminas-diactoros": "^3.5",
                 "php-parallel-lint/php-parallel-lint": "^1.3.2",
                 "phpstan/extension-installer": "^1.3.1",
-                "phpstan/phpstan": "^1.10.55",
+                "phpstan/phpstan": "^1.12",
                 "phpstan/phpstan-deprecation-rules": "^1.1.4",
                 "phpstan/phpstan-phpunit": "^1.3.15",
                 "phpstan/phpstan-strict-rules": "^1.5.2",
-                "phpunit/phpunit": "^9.6.15",
+                "phpunit/phpunit": "^9.6.21",
                 "roave/security-advisories": "dev-master",
                 "slevomat/coding-standard": "^8.14.1",
                 "squizlabs/php_codesniffer": "^3.8"
@@ -1836,7 +1832,7 @@
             ],
             "support": {
                 "issues": "https://github.com/thephpleague/oauth2-server/issues",
-                "source": "https://github.com/thephpleague/oauth2-server/tree/9.0.1"
+                "source": "https://github.com/thephpleague/oauth2-server/tree/9.1.0"
             },
             "funding": [
                 {
@@ -1844,24 +1840,24 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-10-14T22:17:04+00:00"
+            "time": "2024-11-21T22:47:09+00:00"
         },
         {
             "name": "league/uri",
-            "version": "7.4.1",
+            "version": "7.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/uri.git",
-                "reference": "bedb6e55eff0c933668addaa7efa1e1f2c417cc4"
+                "reference": "81fb5145d2644324614cc532b28efd0215bda430"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/uri/zipball/bedb6e55eff0c933668addaa7efa1e1f2c417cc4",
-                "reference": "bedb6e55eff0c933668addaa7efa1e1f2c417cc4",
+                "url": "https://api.github.com/repos/thephpleague/uri/zipball/81fb5145d2644324614cc532b28efd0215bda430",
+                "reference": "81fb5145d2644324614cc532b28efd0215bda430",
                 "shasum": ""
             },
             "require": {
-                "league/uri-interfaces": "^7.3",
+                "league/uri-interfaces": "^7.5",
                 "php": "^8.1"
             },
             "conflict": {
@@ -1926,7 +1922,7 @@
                 "docs": "https://uri.thephpleague.com",
                 "forum": "https://thephpleague.slack.com",
                 "issues": "https://github.com/thephpleague/uri-src/issues",
-                "source": "https://github.com/thephpleague/uri/tree/7.4.1"
+                "source": "https://github.com/thephpleague/uri/tree/7.5.1"
             },
             "funding": [
                 {
@@ -1934,20 +1930,20 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-03-23T07:42:40+00:00"
+            "time": "2024-12-08T08:40:02+00:00"
         },
         {
             "name": "league/uri-interfaces",
-            "version": "7.4.1",
+            "version": "7.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/uri-interfaces.git",
-                "reference": "8d43ef5c841032c87e2de015972c06f3865ef718"
+                "reference": "08cfc6c4f3d811584fb09c37e2849e6a7f9b0742"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/uri-interfaces/zipball/8d43ef5c841032c87e2de015972c06f3865ef718",
-                "reference": "8d43ef5c841032c87e2de015972c06f3865ef718",
+                "url": "https://api.github.com/repos/thephpleague/uri-interfaces/zipball/08cfc6c4f3d811584fb09c37e2849e6a7f9b0742",
+                "reference": "08cfc6c4f3d811584fb09c37e2849e6a7f9b0742",
                 "shasum": ""
             },
             "require": {
@@ -2010,7 +2006,7 @@
                 "docs": "https://uri.thephpleague.com",
                 "forum": "https://thephpleague.slack.com",
                 "issues": "https://github.com/thephpleague/uri-src/issues",
-                "source": "https://github.com/thephpleague/uri-interfaces/tree/7.4.1"
+                "source": "https://github.com/thephpleague/uri-interfaces/tree/7.5.0"
             },
             "funding": [
                 {
@@ -2018,20 +2014,20 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-03-23T07:42:40+00:00"
+            "time": "2024-12-08T08:18:47+00:00"
         },
         {
             "name": "monolog/monolog",
-            "version": "3.7.0",
+            "version": "3.8.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "f4393b648b78a5408747de94fca38beb5f7e9ef8"
+                "reference": "aef6ee73a77a66e404dd6540934a9ef1b3c855b4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/f4393b648b78a5408747de94fca38beb5f7e9ef8",
-                "reference": "f4393b648b78a5408747de94fca38beb5f7e9ef8",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/aef6ee73a77a66e404dd6540934a9ef1b3c855b4",
+                "reference": "aef6ee73a77a66e404dd6540934a9ef1b3c855b4",
                 "shasum": ""
             },
             "require": {
@@ -2051,12 +2047,14 @@
                 "guzzlehttp/psr7": "^2.2",
                 "mongodb/mongodb": "^1.8",
                 "php-amqplib/php-amqplib": "~2.4 || ^3",
-                "phpstan/phpstan": "^1.9",
-                "phpstan/phpstan-deprecation-rules": "^1.0",
-                "phpstan/phpstan-strict-rules": "^1.4",
-                "phpunit/phpunit": "^10.5.17",
+                "php-console/php-console": "^3.1.8",
+                "phpstan/phpstan": "^2",
+                "phpstan/phpstan-deprecation-rules": "^2",
+                "phpstan/phpstan-strict-rules": "^2",
+                "phpunit/phpunit": "^10.5.17 || ^11.0.7",
                 "predis/predis": "^1.1 || ^2",
-                "ruflin/elastica": "^7",
+                "rollbar/rollbar": "^4.0",
+                "ruflin/elastica": "^7 || ^8",
                 "symfony/mailer": "^5.4 || ^6",
                 "symfony/mime": "^5.4 || ^6"
             },
@@ -2107,7 +2105,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Seldaek/monolog/issues",
-                "source": "https://github.com/Seldaek/monolog/tree/3.7.0"
+                "source": "https://github.com/Seldaek/monolog/tree/3.8.1"
             },
             "funding": [
                 {
@@ -2119,7 +2117,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-06-28T09:40:51+00:00"
+            "time": "2024-12-05T17:15:07+00:00"
         },
         {
             "name": "mtdowling/jmespath.php",
@@ -2412,16 +2410,16 @@
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "3.0.42",
+            "version": "3.0.43",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "db92f1b1987b12b13f248fe76c3a52cadb67bb98"
+                "reference": "709ec107af3cb2f385b9617be72af8cf62441d02"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/db92f1b1987b12b13f248fe76c3a52cadb67bb98",
-                "reference": "db92f1b1987b12b13f248fe76c3a52cadb67bb98",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/709ec107af3cb2f385b9617be72af8cf62441d02",
+                "reference": "709ec107af3cb2f385b9617be72af8cf62441d02",
                 "shasum": ""
             },
             "require": {
@@ -2502,7 +2500,7 @@
             ],
             "support": {
                 "issues": "https://github.com/phpseclib/phpseclib/issues",
-                "source": "https://github.com/phpseclib/phpseclib/tree/3.0.42"
+                "source": "https://github.com/phpseclib/phpseclib/tree/3.0.43"
             },
             "funding": [
                 {
@@ -2518,7 +2516,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-09-16T03:06:04+00:00"
+            "time": "2024-12-14T21:12:59+00:00"
         },
         {
             "name": "picqer/php-barcode-generator",
@@ -3338,27 +3336,27 @@
         },
         {
             "name": "square/square",
-            "version": "38.2.0.20241017",
+            "version": "39.1.0.20241218",
             "source": {
                 "type": "git",
                 "url": "https://github.com/square/square-php-sdk.git",
-                "reference": "bb7bddd8caf829cd527ecae584eab09a6afaad8f"
+                "reference": "8b6755066cdaf69c7b0f669838b9ab01f3158c44"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/square/square-php-sdk/zipball/bb7bddd8caf829cd527ecae584eab09a6afaad8f",
-                "reference": "bb7bddd8caf829cd527ecae584eab09a6afaad8f",
+                "url": "https://api.github.com/repos/square/square-php-sdk/zipball/8b6755066cdaf69c7b0f669838b9ab01f3158c44",
+                "reference": "8b6755066cdaf69c7b0f669838b9ab01f3158c44",
                 "shasum": ""
             },
             "require": {
-                "apimatic/core": "~0.3.11",
+                "apimatic/core": "~0.3.12",
                 "apimatic/core-interfaces": "~0.1.5",
                 "apimatic/unirest-php": "^4.0.0",
                 "ext-json": "*",
                 "php": "^7.2 || ^8.0"
             },
             "require-dev": {
-                "phan/phan": "5.4.2",
+                "phan/phan": "5.4.5",
                 "phpunit/phpunit": "^7.5 || ^8.5 || ^9.5",
                 "squizlabs/php_codesniffer": "^3.5"
             },
@@ -3388,9 +3386,9 @@
             ],
             "support": {
                 "issues": "https://github.com/square/square-php-sdk/issues",
-                "source": "https://github.com/square/square-php-sdk/tree/38.2.0.20241017"
+                "source": "https://github.com/square/square-php-sdk/tree/39.1.0.20241218"
             },
-            "time": "2024-10-17T16:10:39+00:00"
+            "time": "2024-12-18T13:37:29+00:00"
         },
         {
             "name": "symfony/amazon-mailer",
@@ -3460,16 +3458,16 @@
         },
         {
             "name": "symfony/deprecation-contracts",
-            "version": "v3.5.0",
+            "version": "v3.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/deprecation-contracts.git",
-                "reference": "0e0d29ce1f20deffb4ab1b016a7257c4f1e789a1"
+                "reference": "74c71c939a79f7d5bf3c1ce9f5ea37ba0114c6f6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/0e0d29ce1f20deffb4ab1b016a7257c4f1e789a1",
-                "reference": "0e0d29ce1f20deffb4ab1b016a7257c4f1e789a1",
+                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/74c71c939a79f7d5bf3c1ce9f5ea37ba0114c6f6",
+                "reference": "74c71c939a79f7d5bf3c1ce9f5ea37ba0114c6f6",
                 "shasum": ""
             },
             "require": {
@@ -3507,7 +3505,7 @@
             "description": "A generic function and convention to trigger deprecation notices",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/deprecation-contracts/tree/v3.5.0"
+                "source": "https://github.com/symfony/deprecation-contracts/tree/v3.5.1"
             },
             "funding": [
                 {
@@ -3523,7 +3521,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-04-18T09:32:20+00:00"
+            "time": "2024-09-25T14:20:29+00:00"
         },
         {
             "name": "symfony/event-dispatcher",
@@ -3607,16 +3605,16 @@
         },
         {
             "name": "symfony/event-dispatcher-contracts",
-            "version": "v3.5.0",
+            "version": "v3.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher-contracts.git",
-                "reference": "8f93aec25d41b72493c6ddff14e916177c9efc50"
+                "reference": "7642f5e970b672283b7823222ae8ef8bbc160b9f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher-contracts/zipball/8f93aec25d41b72493c6ddff14e916177c9efc50",
-                "reference": "8f93aec25d41b72493c6ddff14e916177c9efc50",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher-contracts/zipball/7642f5e970b672283b7823222ae8ef8bbc160b9f",
+                "reference": "7642f5e970b672283b7823222ae8ef8bbc160b9f",
                 "shasum": ""
             },
             "require": {
@@ -3663,7 +3661,7 @@
                 "standards"
             ],
             "support": {
-                "source": "https://github.com/symfony/event-dispatcher-contracts/tree/v3.5.0"
+                "source": "https://github.com/symfony/event-dispatcher-contracts/tree/v3.5.1"
             },
             "funding": [
                 {
@@ -3679,27 +3677,27 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-04-18T09:32:20+00:00"
+            "time": "2024-09-25T14:20:29+00:00"
         },
         {
             "name": "symfony/http-client",
-            "version": "v6.4.13",
+            "version": "v6.4.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client.git",
-                "reference": "509d0e8a798bf5e41e0b6317e9bce1140af47376"
+                "reference": "60a113666fa67e598abace38e5f46a0954d8833d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client/zipball/509d0e8a798bf5e41e0b6317e9bce1140af47376",
-                "reference": "509d0e8a798bf5e41e0b6317e9bce1140af47376",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/60a113666fa67e598abace38e5f46a0954d8833d",
+                "reference": "60a113666fa67e598abace38e5f46a0954d8833d",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.1",
                 "psr/log": "^1|^2|^3",
                 "symfony/deprecation-contracts": "^2.5|^3",
-                "symfony/http-client-contracts": "^3.4.1",
+                "symfony/http-client-contracts": "~3.4.3|^3.5.1",
                 "symfony/service-contracts": "^2.5|^3"
             },
             "conflict": {
@@ -3756,7 +3754,7 @@
                 "http"
             ],
             "support": {
-                "source": "https://github.com/symfony/http-client/tree/v6.4.13"
+                "source": "https://github.com/symfony/http-client/tree/v6.4.16"
             },
             "funding": [
                 {
@@ -3772,20 +3770,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-10-14T18:15:01+00:00"
+            "time": "2024-11-27T11:52:33+00:00"
         },
         {
             "name": "symfony/http-client-contracts",
-            "version": "v3.5.0",
+            "version": "v3.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client-contracts.git",
-                "reference": "20414d96f391677bf80078aa55baece78b82647d"
+                "reference": "ee8d807ab20fcb51267fdace50fbe3494c31e645"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client-contracts/zipball/20414d96f391677bf80078aa55baece78b82647d",
-                "reference": "20414d96f391677bf80078aa55baece78b82647d",
+                "url": "https://api.github.com/repos/symfony/http-client-contracts/zipball/ee8d807ab20fcb51267fdace50fbe3494c31e645",
+                "reference": "ee8d807ab20fcb51267fdace50fbe3494c31e645",
                 "shasum": ""
             },
             "require": {
@@ -3793,12 +3791,12 @@
             },
             "type": "library",
             "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/contracts",
+                    "name": "symfony/contracts"
+                },
                 "branch-alias": {
                     "dev-main": "3.5-dev"
-                },
-                "thanks": {
-                    "name": "symfony/contracts",
-                    "url": "https://github.com/symfony/contracts"
                 }
             },
             "autoload": {
@@ -3834,7 +3832,7 @@
                 "standards"
             ],
             "support": {
-                "source": "https://github.com/symfony/http-client-contracts/tree/v3.5.0"
+                "source": "https://github.com/symfony/http-client-contracts/tree/v3.5.2"
             },
             "funding": [
                 {
@@ -3850,7 +3848,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-04-18T09:32:20+00:00"
+            "time": "2024-12-07T08:49:48+00:00"
         },
         {
             "name": "symfony/mailer",
@@ -4041,8 +4039,8 @@
             "type": "library",
             "extra": {
                 "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
                 }
             },
             "autoload": {
@@ -4123,8 +4121,8 @@
             "type": "library",
             "extra": {
                 "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
                 }
             },
             "autoload": {
@@ -4207,8 +4205,8 @@
             "type": "library",
             "extra": {
                 "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
                 }
             },
             "autoload": {
@@ -4263,16 +4261,16 @@
         },
         {
             "name": "symfony/service-contracts",
-            "version": "v3.5.0",
+            "version": "v3.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/service-contracts.git",
-                "reference": "bd1d9e59a81d8fa4acdcea3f617c581f7475a80f"
+                "reference": "e53260aabf78fb3d63f8d79d69ece59f80d5eda0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/bd1d9e59a81d8fa4acdcea3f617c581f7475a80f",
-                "reference": "bd1d9e59a81d8fa4acdcea3f617c581f7475a80f",
+                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/e53260aabf78fb3d63f8d79d69ece59f80d5eda0",
+                "reference": "e53260aabf78fb3d63f8d79d69ece59f80d5eda0",
                 "shasum": ""
             },
             "require": {
@@ -4326,7 +4324,7 @@
                 "standards"
             ],
             "support": {
-                "source": "https://github.com/symfony/service-contracts/tree/v3.5.0"
+                "source": "https://github.com/symfony/service-contracts/tree/v3.5.1"
             },
             "funding": [
                 {
@@ -4342,32 +4340,25 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-04-18T09:32:20+00:00"
+            "time": "2024-09-25T14:20:29+00:00"
         },
         {
             "name": "tinymce/tinymce",
-            "version": "7.4.1",
+            "version": "7.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tinymce/tinymce-dist.git",
-                "reference": "e4d46be06c8d0d99f542e7199d1283850fb9192c"
+                "reference": "0c4bc43d572ea9673468bf12cc30e8fb556550f4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tinymce/tinymce-dist/zipball/e4d46be06c8d0d99f542e7199d1283850fb9192c",
-                "reference": "e4d46be06c8d0d99f542e7199d1283850fb9192c",
+                "url": "https://api.github.com/repos/tinymce/tinymce-dist/zipball/0c4bc43d572ea9673468bf12cc30e8fb556550f4",
+                "reference": "0c4bc43d572ea9673468bf12cc30e8fb556550f4",
                 "shasum": ""
             },
             "type": "component",
             "extra": {
                 "component": {
-                    "scripts": [
-                        "tinymce.js",
-                        "plugins/*/plugin.js",
-                        "themes/*/theme.js",
-                        "models/*/model.js",
-                        "icons/*/icons.js"
-                    ],
                     "files": [
                         "tinymce.min.js",
                         "plugins/*/plugin.min.js",
@@ -4375,6 +4366,13 @@
                         "models/*/model.min.js",
                         "skins/**",
                         "icons/*/icons.min.js"
+                    ],
+                    "scripts": [
+                        "tinymce.js",
+                        "plugins/*/plugin.js",
+                        "themes/*/theme.js",
+                        "models/*/model.js",
+                        "icons/*/icons.js"
                     ]
                 }
             },
@@ -4399,9 +4397,9 @@
                 "wysiwyg"
             ],
             "support": {
-                "source": "https://github.com/tinymce/tinymce-dist/tree/7.4.1"
+                "source": "https://github.com/tinymce/tinymce-dist/tree/7.6.0"
             },
-            "time": "2024-10-10T05:50:45+00:00"
+            "time": "2024-12-11T04:56:37+00:00"
         }
     ],
     "packages-dev": [],
