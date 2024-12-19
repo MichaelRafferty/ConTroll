@@ -770,7 +770,7 @@ class rulesSetup {
         // populate the modal
         //console.log("type = '" + type + "', item = '" + itemId + "'");
         var row = this.#ruleStepsTable.getRow(itemId).getData();
-        this.#editStepRow = row;
+        this.#editStepRow = make_copy(row);
         var item = '';
         this.#editRuleStepItem = itemId;
         item = row.name;
@@ -823,9 +823,11 @@ class rulesSetup {
     editRuleStepSave(dosave) {
         // save the results back to the underlying table
         if (dosave) {
+            console.log('editRuleStepSave:' + this.#editRuleStepItem);
             // store all the fields back into the table row
             var row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
             var rowdata = row.getData();
+            console.log(row.getData());
 
             var newValue = this.#sName.value;
             if (rowdata.name != newValue) {
@@ -1128,6 +1130,12 @@ class rulesSetup {
 
     // retrieve the selected rows and set the field values
     applyRuleSel(level) {
+        console.log('enter applyRuleSel(' + level + ')');
+        // store all the fields back into the table row
+        var row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
+        var rowdata = row.getData();
+        console.log(row.getData());
+
         var filter = '';
         var rows = null;
         rows = this.#editRuleSelTable.getRows();
@@ -1151,6 +1159,12 @@ class rulesSetup {
             this.#editStepRow[this.#selItem + 'Array'] = filter.split(',');
             this.#buildMemUsed('#editStepUsedDiv', level, this.#editStepRow);
         }
+
+        console.log('exit applyRuleSel(' + level + ')');
+        // store all the fields back into the table row
+        var row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
+        var rowdata = row.getData();
+        console.log(row.getData());
     }
 
     // add row to  table and scroll to that new row
