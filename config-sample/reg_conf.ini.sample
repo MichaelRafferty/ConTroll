@@ -54,6 +54,7 @@ usps=0 ; to enable usps address validation debug (currently bitmast from 1-31)
 api:0 ; to enable api inteface debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
 portal=0 ; to enable regportal debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
 atcon=0 ; to enable atcon debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
+oauth=0 ; to enable oauth2 server debug (currently 0 = off, 1 = on)
 [reg]
 https=1
 test=0
@@ -275,3 +276,6 @@ clubname='Club Name'
 badgelistfilter="top"
 ; useportal - does this installation use the portal, 1 = yes, 0 = no
 useportal=1
+[oauth]
+;;; serverKey - a 32 character random alphanumeric string, generate using any pasword generator
+;serverKey=

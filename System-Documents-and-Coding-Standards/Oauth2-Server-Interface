@@ -68,4 +68,10 @@ Dance within portal:
         Redirects user back to the oauth2 Server with the parameters encoded as required
 
 
+Configuration of the server:
+    It resides at portal/auth/index.php and include a src subdirectory
+    It uses a private and public key file in the global config directory called oauthPublic.key and oauthPrivate.key
+    These get generated with the commands run in the config directory (and is local to each server)
+        openssl genrsa -out oauthPrivate.key 2048
+        openssl rsa -in oauthPrivate.key -out oauthPublic.key
 
