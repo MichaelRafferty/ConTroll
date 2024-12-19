@@ -27,6 +27,7 @@ class Unmatched {
     #editMatchTitle = null;
     #updateExisting = null;
     #createNew = null;
+    #deleteNew = null;
     #newpersonPolicies = null;
     #matchpeoplePolicies = null;
     #additionalPeoplePolicies = null;
@@ -78,6 +79,7 @@ class Unmatched {
     #active = null;
     #banned = null;
     #matchType = null;
+    #matchRowData = null;
 
     // globals before open
     constructor(debug) {
@@ -99,6 +101,7 @@ class Unmatched {
             this.#editMatchTitle = document.getElementById('editMatchTitle');
             this.#updateExisting = document.getElementById('updateExisting');
             this.#createNew = document.getElementById('createNew');
+            this.#deleteNew = document.getElementById('deleteNew');
             // matched person display fields
             this.#matchId = document.getElementById('matchID');
             this.#matchName = document.getElementById('matchName');
@@ -238,8 +241,7 @@ class Unmatched {
         var index = row.getIndex();
         var rowData = row.getData();
         var managerType = rowData.managerType;
-        var paid = rowData.paid;
-        var manages = rowData.manages;
+
         var html = '';
         if (managerType != 'n') {
             html =  '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
@@ -247,12 +249,6 @@ class Unmatched {
         } else {
             var mgrId = row.getData().managerId
             html = "Need " + mgrId + ' ';
-
-        }
-
-        if ((manages == '' || manages == null || manages == 0) && (paid == null || Number(paid) == 0)) {
-            html +=  '&nbsp;<button class="btn btn-primary ps-2" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
-                ' onclick="unmatchedPeople.deletePerson(' + index + ');">Delete</button>';
         }
 
         return html;
@@ -286,6 +282,8 @@ class Unmatched {
             ajax_request_action: 'match',
             newperid: id,
         };
+
+        this.#matchRowData = this.#unmatchedTable.getRow(id).getData();
         clear_message();
         clearError();
         $.ajax({
@@ -306,16 +304,16 @@ class Unmatched {
     // ok to delete a potential new person: they cannot have any paid memberships and cannot manage others.
     // this check is done by the get unmatched as the delete button only appears if they are eligible.
     // deletePerson - this unpaid new person (not a manager) should not be created, just deleted from the system
-    deletePerson(id) {
+    deletePerson() {
         var _this = this;
         var script = "scripts/people_deleteUnmatched.php";
         var postdata = {
             ajax_request_action: 'delete',
-            newperid: id,
+            newperid: this.#matchRowData.id,
         };
         clear_message();
         clearError();
-        if (!confirm("Are you sure you want to delete new person " + id))
+        if (!confirm("Are you sure you want to delete new person " + this.#matchRowData.id))
             return;
 
         $.ajax({
@@ -324,14 +322,16 @@ class Unmatched {
             data: postdata,
             success: function (data, textStatus, jhXHR) {
                 if (data['error']) {
-                    show_message(data['error'], 'error');
-                    return;
+                    show_message(data['error'], 'error', 'result_message_candidate');
+                    return false;
                 }
                 if (data['error']) {
-                    show_message(data['warn'], 'warn');
-                    return;
+                    show_message(data['warn'], 'warn', 'result_message_candidate');
+                    return false;
                 }
-                _this.open(data['success'])    ;
+                _this.#matchCandidatesModal.hide();
+                _this.clearEditBlock('a');
+                _this.open(data['success']);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -448,6 +448,11 @@ class Unmatched {
         $('#editMatch').hide();
         this.#updateExisting.disabled = true;
         this.#createNew.disabled = true;
+        // set the delete item disable flag based on paid mand manages from parent screen
+        console.log("this.#matchRowData");
+        console.log(this.#matchRowData);
+        this.#deleteNew.disabled = !((this.#matchRowData.manages == '' || this.#matchRowData.manages == null || this.#matchRowData.manages == 0)
+            && (this.#matchRowData.paid == null || Number(this.#matchRowData.paid) == 0));
         this.#matchCandidatesModal.show();
         show_message(data['success'], 'success', 'result_message_candidate');
     }

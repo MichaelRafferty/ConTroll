@@ -501,6 +501,8 @@ $config_vars['inrerests'] = $interests;
                     Person</button>
                 <button class='btn btn-sm btn-primary' type='button' id='createNew' onClick='unmatchedPeople.saveMatch("n")' disabled>Create New
                     Person</button>
+                <button class='btn btn-sm btn-warning' type='button' id='deleteNew' onClick='unmatchedPeople.deletePerson()' disabled>Delete New
+                    Person</button>
             </div>
             <div id='result_message_candidate' class='mt-4 p-2'></div>
         </div>
