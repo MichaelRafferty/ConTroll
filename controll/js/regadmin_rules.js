@@ -356,11 +356,11 @@ class rulesSetup {
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'rules', label: 'Edit Rule' }, hozAlign:"left", headerSort: false },
                 {title: "Name", field: "name", width: 200, headerSort: true, headerFilter: true, validator: "required", },
                 {title: "Option Name", field: "optionName", headerWordWrap: true, width: 200, headerSort: true, headerFilter: true, validator: "required", },
-                {title: "Description", field: "description", headerSort: false, width: 600, headerFilter: true, validator: "required", },
-                {title: "typeList", field: "typeList", headerSort: false, headerFilter: true, width: 200, },
-                {title: "catList", field: "catList", headerSort: false, headerFilter: true, width: 200, },
-                {title: "ageList", field: "ageList", headerSort: false, headerFilter: true, width: 200, },
-                {title: "memList", field: "memList", headerSort: false, headerFilter: true, width: 200, },
+                {title: "Description", field: "description", headerSort: false, width: 600, headerFilter: true, validator: "required", formatter: this.toHTML, },
+                {title: "typeList", field: "typeList", headerSort: false, headerFilter: true, width: 180, formatter: "textarea", },
+                {title: "catList", field: "catList", headerSort: false, headerFilter: true, width: 180, formatter: "textarea", },
+                {title: "ageList", field: "ageList", headerSort: false, headerFilter: true, width: 180, formatter: "textarea", },
+                {title: "memList", field: "memList", headerSort: false, headerFilter: true, width: 180, formatter: "textarea", },
                 {title: "Orig Key", field: "origName", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
@@ -542,8 +542,8 @@ class rulesSetup {
                     {title: "Conid", field: "conid", headerSort: true, headerHozAlign: "right", hozAlign: "right",},
                     {title: "Label", field: "label", headerFilter: true, width: 400},
                     {title: "Price", field: "price", headerHozAlign: "right", hozAlign: "right",},
-                    {title: "Controlled By", field: "controlled", headerFilter: true, width: 400, },
-                    {title: "Used By", field: "usedby", headerFilter: true, width:700, },
+                    {title: "Controlled By", field: "controlled", headerFilter: true, width: 400, formtter: "textarea", },
+                    {title: "Used By", field: "usedby", headerFilter: true, width:700, formtter: "textarea", },
                 ],
             });
         }
@@ -655,7 +655,7 @@ class rulesSetup {
                     { title: "End Date", field: "enddate", width: 170, headerFilter: true},
                     { title: "Atcon", field: "atcon", headerFilter: true, headerFilterParams: { values: ["Y", "N"], } },
                     { title: "Online", field: "online", headerFilter: true, headerFilterParams: { values: ["Y", "N"], } },
-                    { title: "Notes", field: "notes", minWidth: 400, headerFilter: true },
+                    { title: "Notes", field: "notes", minWidth: 400, headerFilter: true, formatter: "textarea", },
                 ],
             });
         }
@@ -1081,7 +1081,7 @@ class rulesSetup {
                 {title: "Age", field: "memAge", width: 90, headerFilter: 'list', headerFilterParams: { values: this.#filterAges },  },
                 {title: "Label", field: "label", width: 250, headerFilter: true, },
                 {title: "Price", field: "price", width: 80, headerFilter: true, headerHozAlign:"right", hozAlign: "right", },
-                {title: "Notes", field: "notes", width: 200, headerFilter: true, },
+                {title: "Notes", field: "notes", width: 200, headerFilter: true,  formatter: "textarea", },
                 {title: "Start Date", field: "startDate", width: 200, visible: this.#debugVisible, },
                 {title: "End Date", field: "endDate", width: 200, visible: this.#debugVisible, },
             ],
@@ -1278,12 +1278,12 @@ class rulesSetup {
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'ruleSteps', label: 'Edit Step' }, hozAlign:"left", headerSort: false },
                 {title: "Name", field: "name", width: 200, validator: "required", },
                 {title: "Step", field: "step", width: 70, headerHozAlign:"right", hozAlign: "right", headerSort: false, validator: "required", },
-                {title: "Rule Type", field: "ruleType", headerWordWrap: true, width: 100, headerSort: false, validator: "required", },
+                {title: "Rule Type", field: "ruleType", headerWordWrap: true, width: 150, headerSort: false, validator: "required", },
                 {title: "Apply To", field: "applyTo", width: 100, headerWordWrap: true, validator: "required", },
-                {title: "typeList", field: "typeList", width: 300, },
-                {title: "catList", field: "catList", width: 300, },
-                {title: "ageList", field: "ageList", width: 300, },
-                {title: "memList", field: "memList", width: 300, },
+                {title: "typeList", field: "typeList", width: 250, formatter: "textarea", },
+                {title: "catList", field: "catList", width: 250, formatter: "textarea", },
+                {title: "ageList", field: "ageList", width: 250, formatter: "textarea",},
+                {title: "memList", field: "memList", width: 250, formatter: "textarea", },
                 {title: "Orig Name", field: "origName", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {title: "Orig Step", field: "origStep", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 70,},
                 {
@@ -1423,12 +1423,15 @@ class rulesSetup {
             this.#ruleStepsTable.destroy();
             this.#ruleStepsTable = null;
         }
-        this.#rulesDirty = true;
-        this.#rulesSaveBtn.innerHTML = "Save Changes*";
-        this.#rulesSaveBtn.disabled = false;
+
+        if (!this.#rulesDirty) {
+            this.#rulesSaveBtn.innerHTML = "Save Changes*";
+            this.#rulesSaveBtn.disabled = false;
+            this.#rulesDirty = true;
+        }
+        this.dataChanged();
+
         this.checkUndoRedo();
-        this.#editRuleModal.hide();
-        this.updatePreviewPane();
         this.updateDate(false);
     }
 
