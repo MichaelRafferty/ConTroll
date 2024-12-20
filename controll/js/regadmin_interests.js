@@ -157,8 +157,8 @@ class interestsSetup {
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false, },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'interests' }, hozAlign:"left", headerSort: false },
                 {title: "Interest", field: "interest", width: 200, headerSort: true},
-                {title: "Description", field: "description", headerSort: false, width: 600, headerFilter: true, validator: "required", },
-                {title: "Notify List", field: "notifyList", headerSort: false, headerFilter: true, width: 600, validator: "required", },
+                {title: "Description", field: "description", headerSort: false, width: 600, headerFilter: true, validator: "required", formatter: this.toHTML, },
+                {title: "Notify List", field: "notifyList", headerSort: false, headerFilter: true, width: 600, validator: "required", formatter: "textarea", },
                 {
                     title: "CSV", field: "csv", headerWordWrap: true, headerSort: true,
                     editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
@@ -204,6 +204,11 @@ class interestsSetup {
                 ' onclick="interests.editInterest(\'interests\',\'' + interestName + '\');">Edit Interest</button>';
         }
         return "Save First";
+    }
+
+    toHTML(cell,  formatterParams, onRendered) {
+        var item = cell.getValue();
+        return item;
     }
 
     // add row to  table and scroll to that new row
@@ -355,6 +360,7 @@ class interestsSetup {
         row.getCell("interest").setValue(this.#iName.value);
         row.getCell("notifyList").setValue(this.#iNotify.value);
         this.#editInterestModal.hide();
+        this.dataChanged();
     }
 
     // save - save the interests entries back to the database

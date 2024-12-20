@@ -322,7 +322,6 @@ class policySetup {
         policyRow.getCell("prompt").setValue(policyPrompt);
         policyRow.getCell("description").setValue(policyDesc);
         this.#editPreviewModal.hide();
-        this.#dirty = true;
         this.dataChanged();
     }
 
