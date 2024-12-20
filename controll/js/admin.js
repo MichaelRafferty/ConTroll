@@ -1,13 +1,14 @@
-current = null;
-next = null;
-mem = null;
-merge = null;
-customText = null;
-policy = null;
-interests = null;
-rules = null;
 conid = null;
-editPreviewClass = null;
+// keys items
+keysTable = null;
+// menu items
+menuTable = null;
+menuData = null;
+menuSaveBtn = null;
+menuRedoBtn = null;
+menuUndoBtn = null;
+menuDirty = false;
+
 // debug meaning
 //  1 = console.logs
 //  2 = show hidden table fields
@@ -47,9 +48,14 @@ window.onload = function initpage() {
 
         if (debug & 4) id.hidden = false;
     }
+    menuSaveBtn = document.getElementById('menu-save');
+    menuUndoBtn = document.getElementById('menu-undo');
+    menuRedoBtn = document.getElementById('menu-redo');
 }
 
 function clearPermissions(userid) {
+    clearError();
+    clear_message();
     var formdata = $("#" + userid).serialize();
     $('#test').append(formdata);
     $.ajax({
@@ -64,6 +70,8 @@ function clearPermissions(userid) {
 }
 
 function updatePermissions(userid) {
+    clearError();
+    clear_message();
     var formdata = $("#" + userid).serialize();
     $('#test').append(formdata);
     $.ajax({
@@ -114,6 +122,7 @@ function add_find() {
     }
 
     clearError();
+    clear_message();
     $.ajax({
         method: "POST",
         url: "scripts/mergeFindRecord.php",
@@ -154,16 +163,16 @@ function add_found(data) {
             columns: [
                 {width: 100, headerFilter: false, headerSort: false, formatter: addNewUser, formatterParams: {t: "result"},},
                 {title: "perid", field: "perid", width: 100, },
-                {field: "index", visible: false,},
+                {field: "index", visible: debug > 2,},
                 {title: "Name", field: "fullname", width: 200, headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
-                {field: "last_name", visible: false,},
-                {field: "first_name", visible: false,},
-                {field: "middle_name", visible: false,},
-                {field: "suffix", visible: false,},
+                {field: "last_name", visible: debug > 2,},
+                {field: "first_name", visible: debug > 2,},
+                {field: "middle_name", visible: debug > 2,},
+                {field: "suffix", visible: debug > 2,},
                 {title: "Badge Name", field: "badge_name", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 100, width: 100},
                 {title: "Email Address", field: "email_addr", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true,},
-                {field: "index", visible: false,},
+                {field: "index", visible: debug > 2,},
             ],
         });
     }
@@ -203,6 +212,9 @@ function addNewUser(cell, formatterParams, onRendered) { //plain text value
     return '<button type="button" class="btn btn-sm ' + color + ' pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="selectUser(' + perid + ')">' + label + '</button>';
 }
 function selectUser(perid) {
+    clearError();
+    clear_message();
+
     if (addType == 'newuser') {
         $('#test').append('create=' + perid);
         var script = 'scripts/permCreate.php';
@@ -235,16 +247,20 @@ function selectUser(perid) {
 }
 
 function settab(tabname) {
-    // close all of them
-    if (mem != null)
-        mem.close();
+    // close all of the other tabs
+    clearMenuTable();
+    if (keysTable) {
+        keysTable.destroy();
+        keysTable = null;
+    }
 
     // now open the relevant one, and create the class if needed
     switch (tabname) {
-        case 'memconfig-pane':
-            if (mem == null)
-                mem = new memsetup();
-            mem.open();
+        case 'menu-pane':
+            getMenu();
+            break;
+        case 'keys-pane':
+            console.log('keys pane');
             break;
     }
 }
@@ -265,5 +281,140 @@ function deleterow(e, row) {
     if (count == 0) {
         row.getCell("to_delete").setValue(1);
         row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
+    }
+}
+
+// menu tab items
+function getMenu() {
+    script = 'scripts/admin_getMenu.php';
+    postData = {
+        action: 'getMenu'
+    }
+    clearError();
+    clear_message();
+    $.ajax({
+        url: script,
+        method: 'POST',
+        data: postData,
+        success: function (data, textStatus, jhXHR) {
+            openMenu(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in getMenu: " + textStatus, jqXHR);
+        },
+    });
+}
+
+function openMenu(data) {
+    if (data['error']) {
+        show_message(data['error'], 'error');
+        return;
+    }
+    if (data['warn']) {
+        show_message(data['warn'], 'warn');
+        return;
+    }
+
+    if (menuTable != null) {
+
+    }
+    if (data['menu']) {
+        menuTable = new Tabulator('#menuTableDiv', {
+            movableRows: true,
+            history: true,
+            data: data['menu'],
+            layout: "fitDataTable",
+            columns: [
+                { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
+                { field: "id", visible: debug > 0 },
+                { title: "Auth Name", field: "name" },
+                { title: "Page", field: "page" },
+                { title: "Menu Name", field: "display" },
+                { field: "sortOrder", visible: debug > 0 },
+            ],
+        });
+        menuTable.on("rowMoved", function (row) {
+            menuRowMoved(row)
+        });
+    }
+    if (data['success']) {
+        show_message(data['success'], 'success');
+    }
+}
+
+function menuRowMoved(row) {
+    menuSaveBtn.innerHTML = "Save Changes*";
+    menuSaveBtn.disabled = false;
+    menuDirty = true;
+    menuCheckUndoRedo();
+}
+
+function menuCheckUndoRedo() {
+    var undosize = menuTable.getHistoryUndoSize();
+    menuUndoBtn.disabled = undosize <= 0;
+    menuRedoBtn.disabled = menuTable.getHistoryRedoSize() <= 0;
+    return undosize;
+}
+
+function undoMenu() {
+    if (menuTable != null) {
+        menuTable.undo();
+
+        if (menuCheckUndoRedo() <= 0) {
+            menuDirty = false;
+            menuSaveBtn.innerHTML = "Save Changes";
+            menuSaveBtn.disabled = true;
+        }
+    }
+};
+
+function redoMenu() {
+    if (menuTable != null) {
+        menuTable.redo();
+
+        if (menuCheckUndoRedo() > 0) {
+            menuDirty = true;
+            menuSaveBtn.innerHTML = "Save Changes*";
+            menuSaveBtn.disabled = false;
+        }
+    }
+};
+
+function saveMenu() {
+    menuSaveBtn.innerHTML = "Saving...";
+    menuSaveBtn.disabled = true;
+
+    var script = "scripts/admin_saveMenu.php";
+
+    var postdata = {
+        ajax_request_action: 'saveMenu',
+        tabledata: JSON.stringify(menuTable.getData()),
+    };
+    clearError();
+    clear_message();
+    $.ajax({
+        url: script,
+        method: 'POST',
+        data: postdata,
+        success: function (data, textStatus, jhXHR) {
+           clearMenuTable(data);
+           openMenu(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in " + script + ": " + textStatus, jqXHR);
+            return false;
+        }
+    });
+};
+
+function clearMenuTable() {
+    if (menuTable) {
+        menuTable.destroy();
+        menuTable = null;
+        menuDirty = false;
+        menuSaveBtn.innerHTML = 'Save Changes';
+        menuSaveBtn.disabled = true;
+        menuUndoBtn.disabled = true;
+        menuRedoBtn.disabled = true;
     }
 }

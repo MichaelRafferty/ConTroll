@@ -84,7 +84,6 @@ else
     </div>
 </div>
 <div id='main'>
-
     <?php
     $userQ = "Select name, email, id, perid from user;";
     $userR = dbQuery($userQ);
@@ -230,10 +229,22 @@ else
             <button id='add_new_account' type='button' class='btn btn-primary btn-sm' onclick="addFindPerson(); return false;">New Account</button>
         </div>
         <div class='tab-pane fade' id='menu-pane' role='tabpanel' aria-labelledby='menu-tab' tabindex='0'>
-            <h1 class="h4">Drag and drop menu items to re-order main menu</h1>
-            <div class="row">
-                <div class="col-sm-12" id="menuTableDiv"></div>
-            </div>
+            <div class='container-fluid'>
+                <div class='row'>
+                    <div class='col-sm-auto'>
+                        <h1 class="h4">Drag and drop menu items to re-order main menu</h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-auto" id="menuTableDiv"></div>
+                </div>
+                <div class='row mt-2'>
+                    <div class='col-sm-auto'>
+                        <button id='menu-undo' type='button' class='btn btn-secondary btn-sm' onclick='undoMenu(); return false;' disabled>Undo</button>
+                        <button id='menu-redo' type='button' class='btn btn-secondary btn-sm' onclick='redoMenu(); return false;' disabled>Redo</button>
+                        <button id='menu-save' type='button' class='btn btn-primary btn-sm' onclick='saveMenu(); return false;' disabled>Save Changes</button>
+                    </div>
+                </div>
         </div>
         <div class='tab-pane fade' id='keys-pane' role='tabpanel' aria-labelledby='keys-tab' tabindex='0'>
             <h1 class='h4'>ConTroll Oauth2 Clients Configuration</h1>
@@ -242,6 +253,7 @@ else
             </div>
         </div>
     <div id='result_message' class='mt-4 p-2'></div>
+</div>
 </div>
 <script>
     $(function() {
