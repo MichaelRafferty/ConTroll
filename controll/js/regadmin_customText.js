@@ -133,6 +133,7 @@ class customTextSetup {
     editReturn(editTable, editfield, editIndex, editvalue) {
         var row = this.#customTextTable.getRow(editIndex);
         row.getCell('contents').setValue(editvalue);
+        this.dataChanged();
     }
 
     dataChanged() {

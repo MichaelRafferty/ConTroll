@@ -183,8 +183,8 @@ class policySetup {
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false, },
                 {title: "Policy", field: "policy", editor: "input", width: 200, headerSort: true, validator: "required", },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'policies' }, hozAlign:"left", headerSort: false },
-                {title: "Prompt", field: "prompt", headerSort: false, width: 600, headerFilter: true, validator: "required", },
-                {title: "Description", field: "description", headerSort: false, headerFilter: true, width: 600, validator: "required", },
+                {title: "Prompt", field: "prompt", headerSort: false, width: 600, headerFilter: true, validator: "required", formatter: this.toHTML, },
+                {title: "Description", field: "description", headerSort: false, headerFilter: true, width: 600, validator: "required", formatter: this.toHTML },
                 {
                     title: "Req", field: "required", headerSort: true,
                     editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
@@ -210,7 +210,7 @@ class policySetup {
             ],
         });
         this.#policyTable.on("dataChanged", function (data) {
-            _this.dataChanged(data);
+            _this.dataChanged();
         });
         this.#policyTable.on("rowMoved", function (row) {
             _this.rowMoved(row)
@@ -234,6 +234,11 @@ class policySetup {
         return "Save First";
     }
 
+    toHTML(cell,  formatterParams, onRendered) {
+        var item = cell.getValue();
+        return item;
+    }
+
     // add row to  table and scroll to that new row
     addrow() {
         var _this = this;
@@ -245,7 +250,7 @@ class policySetup {
         });
     }
 
-    dataChanged(data) {
+    dataChanged() {
         //data - the updated table data
         if (!this.#dirty) {
             this.#policySaveBtn.innerHTML = "Save Changes*";
@@ -318,7 +323,7 @@ class policySetup {
         policyRow.getCell("description").setValue(policyDesc);
         this.#editPreviewModal.hide();
         this.#dirty = true;
-        this.checkUndoRedo();
+        this.dataChanged();
     }
 
     // save - save the policy entries back to the database
@@ -354,7 +359,7 @@ class policySetup {
                     if (data['error']) {
                         show_message(data['error'], 'error');
                         // reset save button
-                        _this.dataChanged(data);
+                        _this.dataChanged();
                         _this.#policySaveBtn.innerHTML = "Save Changes*";
                         _this.#policySaveBtn.disabled = false;
                         return false;
