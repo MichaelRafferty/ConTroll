@@ -279,7 +279,7 @@ class consetup {
                 {
                     title: "Notes", field: "notes", minWidth: 400,
                     editor: "input", editorParams: { elementAttributes: { maxlength: "1024" } },
-                    headerFilter: true
+                    headerFilter: true, formatter: "textarea",
                 },
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
