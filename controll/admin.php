@@ -120,7 +120,7 @@ else
         </li>
         <li class='nav-item' role='presentation'>
             <button class='nav-link' id='keys-tab' data-bs-toggle='pill' data-bs-target='#keys-pane' type='button' role='tab' aria-controls='nav-menu'
-                    aria-selected='false' onclick="settab('keys-pane');">Client Keys
+                    aria-selected='false' onclick="settab('keys-pane');">Oauth2 Client Keys
             </button>
         </li>
     </ul>
