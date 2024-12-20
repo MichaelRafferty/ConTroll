@@ -92,11 +92,12 @@ class customTextSetup {
             columns: [
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'customText' }, hozAlign:"left", headerSort: false },
                 {title: "#", field: "rownum", width: 50, visible: this.#debugVisible, },
-                {title: "Application", field: "appName", width: 150, headerSort: true, headerFilter: true, },
+                {title: "App", field: "appName", width: 100, headerSort: true, headerFilter: true, },
                 {title: "Page", field: "appPage", width: 150, headerSort: true, headerFilter: true, },
                 {title: "Section", field: "appSection", width:150, headerSort: true, headerFilter: true, },
                 {title: "Item", field: "txtItem", width: 150, headerSort: true, headerFilter: true, },
-                {title: "Custom Text", field: "contents", headerSort: false, width: 1300, headerFilter: true, validator: "required", },
+                {title: "Description", field: "txtItemDescription", width: 300, headerSort: true, headerFilter: true, formatter: "textarea" },
+                {title: "Custom Text", field: "contents", headerSort: false, width: 950, headerFilter: true, validator: "required", formatter: this.toHTML },
             ],
         });
         this.#customTextTable.on("dataChanged", function (data) {
@@ -116,12 +117,17 @@ class customTextSetup {
                 ' onclick="customText.editCustomText(' + index + ');">Edit Custom Text</button>';
     }
 
+    toHTML(cell,  formatterParams, onRendered) {
+        var item = cell.getValue();
+        return item;
+    }
+
     editCustomText(index) {
         var row = this.#customTextTable.getRow(index).getData();
 
         var titleName = row.appName + '-' + row.appPage + '-' + row.appSection + '-' + row.txtItem;
         var textItem = row.contents;
-        showEdit('customText', 'customText', index, '', titleName, textItem);
+        showEdit('customText', 'customText', index, row.txtItemDescription, titleName, textItem);
     }
 
     editReturn(editTable, editfield, editIndex, editvalue) {

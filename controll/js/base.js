@@ -446,7 +446,7 @@ function showEdit(classname, table, index, field, titlename, textitem) {
     editIndexDiv.innerHTML = index;
     editClassDiv.innerHTML = classname;
     editFieldArea.innerHTML = textitem;
-    editTitleDiv.innerHTML = "Editing " + table + " " + titlename + " " + field;
+    editTitleDiv.innerHTML = "Editing " + table + " " + titlename + "<br/>" + field;
 
     editor_modal.show();
     if (globalCustomTextEditorInit) {

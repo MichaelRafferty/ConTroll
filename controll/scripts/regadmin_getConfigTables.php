@@ -85,9 +85,10 @@ EOS;
             error_log("Info: $numRows rows of new default customText inserted");
         }
         $customTextSQL = <<<EOS
-SELECT ROW_NUMBER() OVER (ORDER BY appName, appPage, appSection, txtItem) AS rownum,
-    appName, appPage, appSection, txtItem, contents
-FROM controllTxtItems
+SELECT ROW_NUMBER() OVER (ORDER BY t.appName, t.appPage, t.appSection, t.txtItem) AS rownum,
+    t.appName, t.appPage, t.appSection, t.txtItem, t.contents, i.txtItemDescription
+FROM controllTxtItems t
+JOIN controllAppItems i
 ORDER BY appName, appPage, appSection, txtItem
 EOS;
 
