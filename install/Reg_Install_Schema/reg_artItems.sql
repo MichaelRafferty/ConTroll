@@ -40,7 +40,7 @@ CREATE DEFINER=CURRENT_USER  TRIGGER `artItems_update` BEFORE UPDATE ON `artItem
     IF (OLD.id != NEW.id OR OLD.item_key != NEW.item_key OR OLD.title != NEW.title OR OLD.type != NEW.type OR OLD.status != NEW.status
         OR OLD.location != NEW.location OR OLD.quantity != NEW.quantity OR OLD.original_qty != NEW.original_qty
         OR OLD.min_price != NEW.min_price OR OLD.sale_price != NEW.sale_price OR OLD.final_price != NEW.final_price
-        OR OLD.bidder != NEW.bidder OR OLD.conid != NEW.conid OR OLD.artshow != NEW.artshow OR OLD.time_updated != NEW.time_updated
+        OR OLD.bidder != NEW.bidder OR OLD.conid != NEW.conid OR OLD.artshow != NEW.artshow
         OR OLD.updatedBy != NEW.updatedBy OR OLD.material != NEW.material OR OLD.exhibitorRegionYearId != NEW.exhibitorRegionYearId)
         THEN
             INSERT INTO artItemsHistory(id, item_key, title, type, status, location, quantity, original_qty, min_price, sale_price,

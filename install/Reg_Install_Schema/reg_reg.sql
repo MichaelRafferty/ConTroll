@@ -49,7 +49,7 @@ DELIMITER ;;
 CREATE DEFINER=CURRENT_USER  TRIGGER `reg_update` BEFORE UPDATE ON `reg` FOR EACH ROW BEGIN
     IF (OLD.id != NEW.id OR OLD.conid != NEW.conid OR OLD.perid != NEW.perid OR OLD.newperid != NEW.newperid
         OR OLD.oldperid != NEW.oldperid OR OLD.priorRegId != NEW.priorRegId OR OLD.create_date != NEW.create_date
-        OR OLD.change_date != NEW.change_date OR OLD.pickup_date != NEW.pickup_date OR OLD.price != NEW.price
+        OR OLD.pickup_date != NEW.pickup_date OR OLD.price != NEW.price
         OR OLD.couponDiscount != NEW.couponDiscount OR OLD.paid != NEW.paid OR OLD.create_trans != NEW.create_trans
         OR OLD.complete_trans != NEW.complete_trans OR OLD.locked != NEW.locked OR OLD.create_user != NEW.create_user
         OR OLD.updatedBy != NEW.updatedBy OR OLD.memId != NEW.memId OR OLD.coupon != NEW.coupon
