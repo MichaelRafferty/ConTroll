@@ -970,7 +970,7 @@ class Pos {
                 ],
                 columns: [
                     {field: "perid", visible: false,},
-                    {title: "Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: posbuildRecordHover,},
+                    {title: "Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: posbuildRecordHover, formatter: "textarea", },
                     {field: "last_name", visible: false,},
                     {field: "first_name", visible: false,},
                     {field: "middle_name", visible: false,},
@@ -1726,7 +1726,7 @@ addUnpaid(tid) {
                     {title: "Cart", width: 100, headerFilter: false, headerSort: false, formatter: _this.addCartIcon, formatterParams: {t: "result"},},
                     {title: "Per ID", field: "perid", headerWordWrap: true, width: 80, visible: false, hozAlign: 'right',},
                     {field: "index", visible: false,},
-                    {title: "Full Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: posbuildRecordHover,},
+                    {title: "Full Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: posbuildRecordHover, formatter: "textarea", },
                     {field: "last_name", visible: false,},
                     {field: "first_name", visible: false,},
                     {field: "middle_name", visible: false,},
