@@ -102,6 +102,12 @@ class policySetup {
                     placeholder: 'Edit the description here...',
                     auto_focus: 'editFieldArea',
                 });
+                // Prevent Bootstrap dialog from blocking focusin
+                document.addEventListener('focusin', (e) => {
+                    if (e.target.closest(".tox-tinymce, .tox-tinymce-aux, .moxman-window, .tam-assetmanager-root") !== null) {
+                        e.stopImmediatePropagation();
+                    }
+                });
                 policyMCEInit = true;
             }
         }

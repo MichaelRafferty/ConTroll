@@ -475,6 +475,12 @@ function showEdit(classname, table, index, field, titlename, textitem) {
                 editor.setContent(textitem);
             }
         });
+        // Prevent Bootstrap dialog from blocking focusin
+        document.addEventListener('focusin', (e) => {
+            if (e.target.closest(".tox-tinymce, .tox-tinymce-aux, .moxman-window, .tam-assetmanager-root") !== null) {
+                e.stopImmediatePropagation();
+            }
+        });
         globalCustomTextEditorInit = true;
     }
 }

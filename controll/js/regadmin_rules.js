@@ -169,6 +169,12 @@ class rulesSetup {
                     placeholder: 'Edit the rules description...',
                     auto_focus: 'editFieldArea',
                 });
+                // Prevent Bootstrap dialog from blocking focusin
+                document.addEventListener('focusin', (e) => {
+                    if (e.target.closest(".tox-tinymce, .tox-tinymce-aux, .moxman-window, .tam-assetmanager-root") !== null) {
+                        e.stopImmediatePropagation();
+                    }
+                });
                 rulesMCEinit = true;
             }
         }

@@ -372,6 +372,12 @@ class ExhibitorProfile {
                 placeholder: 'Edit the description here...',
                 auto_focus: 'reg-description'
             });
+            // Prevent Bootstrap dialog from blocking focusin
+            document.addEventListener('focusin', (e) => {
+                if (e.target.closest(".tox-tinymce, .tox-tinymce-aux, .moxman-window, .tam-assetmanager-root") !== null) {
+                    e.stopImmediatePropagation();
+                }
+            });
             exhibitorProfileMCEInit = true;
         }
     }
