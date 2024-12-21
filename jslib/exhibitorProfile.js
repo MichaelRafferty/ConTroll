@@ -162,12 +162,16 @@ class ExhibitorProfile {
                     break;
                 case 'description':
                     var value = tinyMCE.activeEditor.getContent();
+                    var lcvalue = value.toLowerCase();
                     if (value == null) {
                         value = false;
                         m2 += " and the description field which also is required;";
                     } else if (value.trim() == '') {
                         value = false;
                         m2 += " and the description field which also is required;";
+                    } else if (lcvalue.includes("<script")) {
+                        value = false
+                        m2 += " and the description field cannot contain a <script tag;";
                     }
                     break;
 
@@ -205,7 +209,6 @@ class ExhibitorProfile {
         clear_message('au_result_message');
         tinyMCE.triggerSave();
 
-        //
         $.ajax({
             url: 'scripts/vendorAddUpdate.php',
             data: $('#exhibitorProfileForm').serialize(),

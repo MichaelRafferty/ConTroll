@@ -75,6 +75,14 @@ if (array_key_exists('artistName', $_POST)) {
     $artistName = trim($_POST['artistName']);
 }
 
+$description = trim($_POST['description']);
+if (str_contains(strtolower($description), '<script')) {
+    $response['status'] = 'error';
+    $response['message'] = 'The Description may not include &lt;script&gt; tags';
+    ajaxSuccess($response);
+    exit();
+}
+
 // if register check for existence of vendor
 switch ($profileMode) {
     case 'register':
@@ -93,6 +101,8 @@ EOS;
 
         // create the vendor
         // email address validated on the source side
+        // check for script tag embedded in description
+
         if ($artistName != null) {
             $exhibitorInsertQ = <<<EOS
 INSERT INTO exhibitors (artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, need_new, confirm, 
@@ -106,7 +116,7 @@ EOS;
                 trim($_POST['exhibitorEmail']),
                 trim($_POST['exhibitorPhone']),
                 trim($_POST['website']),
-                trim($_POST['description']),
+                $description.
                 password_hash(trim($_POST['password']), PASSWORD_DEFAULT),
                 0, // need_new_passwd
                 0, // confirm
@@ -137,7 +147,7 @@ EOS;
                 trim($_POST['exhibitorEmail']),
                 trim($_POST['exhibitorPhone']),
                 trim($_POST['website']),
-                trim($_POST['description']),
+                $description,
                 password_hash(trim($_POST['password']), PASSWORD_DEFAULT),
                 0, // need_new_passwd
                 0, // confirm
@@ -219,7 +229,7 @@ EOS;
                 trim($_POST['exhibitorEmail']),
                 trim($_POST['exhibitorPhone']),
                 trim($_POST['website']),
-                trim($_POST['description']),
+                $description,
                 trim($_POST['addr']),
                 trim($_POST['addr2']),
                 trim($_POST['city']),
@@ -249,7 +259,7 @@ EOS;
                 trim($_POST['exhibitorEmail']),
                 trim($_POST['exhibitorPhone']),
                 trim($_POST['website']),
-                trim($_POST['description']),
+                $description,
                 trim($_POST['addr']),
                 trim($_POST['addr2']),
                 trim($_POST['city']),
