@@ -595,10 +595,28 @@ class consetup {
                 return false;
             }
 
+            var script = "scripts/regadmin_updateCondata.php";
+            var tabledata = this.#memtable.getData();
+            var keys = Object.keys(tabledata);
+            var yearaheadWarning = '';
+            for (var i = 0; i < keys.length; i++) {
+                var row = tabledata[keys[i]];
+                if (row.memCategory == 'yearahead') {
+                    if (row.conid == this.#conid) {
+                        yearaheadWarning += 'Fixing conid for ' + row.id + ' of ' + row.conid + ' for ' + row.memCategory +
+                            ', Setting it to ' + (this.#conid + 1) + '<br/>';
+                        this.#memtable.getRow(row.id).getCell('conid').setValue(this.#conid + 1);
+                    }
+                }
+            }
+            if (yearaheadWarning != '') {
+                show_message(yearaheadWarning + " if this is correct, presse Save Changes again, " +
+                    "otherwise delete the row and try adding it again not as a yearahead membership", 'warn');
+                return;
+            }
+
             this.#memlist_savebtn.innerHTML = "Saving...";
             this.#memlist_savebtn.disabled = true;
-
-            var script = "scripts/regadmin_updateCondata.php";
 
             var postdata = {
                 ajax_request_action: this.#setup_type,
