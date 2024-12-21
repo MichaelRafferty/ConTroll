@@ -745,6 +745,7 @@ class Unmatched {
     // copy a value from the match or new to the edit section
     copy(source) {
         var policy = ''
+        var mpol = null;
 
         switch (source) {
             case 'matchName':
@@ -826,7 +827,7 @@ class Unmatched {
                 break;
 
             case 'matchPolicies':
-                var mpol = null;
+                mpol = null;
                 if (this.#matchType == 'p')
                     mpol = this.#matchpeoplePolicies[this.#matchPerson.id];
                 else
@@ -853,6 +854,60 @@ class Unmatched {
                 this.#active.value = this.#matchPerson.active;
                 this.#banned.value = this.#matchPerson.banned;
                 break;
+
+            case 'matchAll':
+                this.#firstName.value = this.#matchPerson.first_name;
+                this.#middleName.value = this.#matchPerson.middle_name;
+                this.#lastName.value = this.#matchPerson.last_name;
+                this.#suffix.value = this.#matchPerson.suffix;
+                this.#legalName.value = this.#matchPerson.legalName;
+                this.#pronouns.value = this.#matchPerson.pronouns;
+                this.#badgeName.value = this.#matchPerson.badge_name;
+                this.#address.value = this.#matchPerson.address;
+                this.#addr2.value = this.#matchPerson.addr2;
+                this.#city.value = this.#matchPerson.city;
+                this.#state.value = this.#matchPerson.state;
+                this.#zip.value = this.#matchPerson.zip;
+                this.#country.value = this.#matchPerson.country;
+                this.#emailAddr.value = this.#matchPerson.email_addr;
+                this.#phone.value = this.#matchPerson.phone;
+                mpol = null;
+                if (this.#matchType == 'p')
+                    mpol = this.#matchpeoplePolicies[this.#matchPerson.id];
+                else
+                    mpol = this.#additionalPeoplePolicies[this.#matchPerson.id];
+                for (policy in mpol) {
+                    document.getElementById('p_' + policy).checked = mpol[policy] == 'Y';
+                }
+                this.#managerDiv.innerHTML = this.drawManager('p', this.#matchPerson.manager, this.#matchPerson.managerId);
+                this.#active.value = this.#matchPerson.active;
+                this.#banned.value = this.#matchPerson.banned;
+                break;
+
+            case 'newAll':
+                this.#firstName.value = this.#newperson.first_name;
+                this.#middleName.value = this.#newperson.middle_name;
+                this.#lastName.value = this.#newperson.last_name;
+                this.#suffix.value = this.#newperson.suffix;
+                this.#legalName.value = this.#newperson.legalName;
+                this.#pronouns.value = this.#newperson.pronouns;
+                this.#badgeName.value = this.#newperson.badge_name;
+                this.#address.value = this.#newperson.address;
+                this.#addr2.value = this.#newperson.addr_2;
+                this.#city.value = this.#newperson.city;
+                this.#state.value = this.#newperson.state;
+                this.#zip.value = this.#newperson.zip;
+                this.#country.value = this.#newperson.country;
+                this.#emailAddr.value = this.#newperson.email_addr;
+                this.#phone.value = this.#newperson.phone;
+                for (policy in this.#newpersonPolicies) {
+                    document.getElementById('p_' + policy).checked = this.#newpersonPolicies[policy] == 'Y';
+                }
+                this.#managerDiv.innerHTML = this.drawManager('n', this.#newperson.manager, this.#newperson.managerId);
+                this.#active.value = this.#newperson.active;
+                this.#banned.value = this.#newperson.banned;
+                break;
+
 
             default:
                 show_message("Invalid source " + source, 'warn', 'result_message_candidate');
