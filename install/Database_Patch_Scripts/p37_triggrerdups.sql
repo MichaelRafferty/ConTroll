@@ -149,7 +149,7 @@ CREATE TEMPORARY TABLE dupsToDelete AS (
         FROM artItemsHistory
         group by time_updated, id
         having count(*) > 1
-    ), odups AS (
+    ), odups AS (2024-12
         select ah.historyId, ah.id, ah.time_updated,
                ROW_NUMBER() OVER (PARTITION BY ah.id, ah.time_updated ORDER BY ah.historyId, ah.id, ah.time_updated) AS rownum
         FROM artItemsHistory ah
