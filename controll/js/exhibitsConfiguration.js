@@ -224,8 +224,8 @@ class exhibitssetup {
             method: 'POST',
             data: {gettype: 'all'},
             success: function (data, textStatus, jhXHR) {
-                if (data['error']) {
-                    showError(data['error']);
+                if (data.error) {
+                    showError(data.error);
                     return false;
                 }
                 _this.draw(data);
@@ -335,7 +335,8 @@ class exhibitssetup {
         var index = cell.getRow().getIndex();
         if (index > 0) {
             return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="exhibits.editDesc(\'' +
-                formatterParams['table'] + '\',' + index + ',\'' +  formatterParams['fieldName'] + '\', \'' + formatterParams['name'] + '\');">Edit Desc</button>';
+                formatterParams.table + '\',' + index + ',\'' +  formatterParams.fieldName + '\', \'' + formatterParams.name + '\');">Edit' +
+            ' Desc</button>';
         }
         return "Save First";
     }
@@ -347,11 +348,11 @@ class exhibitssetup {
         var drew_spaces = false;
         var drew_spacePrices = false;
 
-        if (data['memList']) {
-            this.#memList = data['memList'];
+        if (data.memList) {
+            this.#memList = data.memList;
             this.#memListArr = {};
             this.#memList.forEach(m => {
-                this.#memListArr[m.id] = m['label'] + ':' + m['price'].toString();
+                this.#memListArr[m.id] = m.label + ':' + m.price.toString() + ' (' + m.id + ')';
             });
 
             if (this.#debug & 1) {
@@ -360,19 +361,19 @@ class exhibitssetup {
             }
         }
 
-        if (data['exhibitsRegionTypes']) {
+        if (data.exhibitsRegionTypes) {
             this.drawRegionTypes(data);
             this.drawRegions(data);
             drew_regions = true;
         }
 
-        if ((!drew_regions) && data['exhibitsRegions']) {
+        if ((!drew_regions) && data.exhibitsRegions) {
             this.drawRegions(data);
             this.drawRegionYears(data);
             drew_regionYears = true;
         }
 
-        if ((!drew_regionYears) && data['exhibitsRegionYears']) {
+        if ((!drew_regionYears) && data.exhibitsRegionYears) {
             this.drawRegionYears(data);
             this.drawSpaces(data);
             this.drawSpacePrices(data);
@@ -380,13 +381,13 @@ class exhibitssetup {
             drew_spacePrices = true;
         }
 
-        if ((!drew_spaces) && data['exhibitsSpaces']) {
+        if ((!drew_spaces) && data.exhibitsSpaces) {
             this.drawSpaces(data);
             this.drawSpacePrices(data);
             drew_spacePrices = true;
         }
 
-        if ((!drew_spacePrices) && data['exhibitsSpacePrices']) {
+        if ((!drew_spacePrices) && data.exhibitsSpacePrices) {
             this.drawSpacePrices(data);
         }
     }
@@ -402,8 +403,8 @@ class exhibitssetup {
             this.#regionTypeTable.destroy();
         }
 
-        if (data['exhibitsRegionTypes']) {
-            this.#regionType = data['exhibitsRegionTypes'];
+        if (data.exhibitsRegionTypes) {
+            this.#regionType = data.exhibitsRegionTypes;
             this.#regionType_arr = [];
             this.#regionType.forEach(regionType => {
                 if (regionType.active == 'Y')
@@ -473,8 +474,8 @@ class exhibitssetup {
             this.#regionsTable.destroy();
         }
 
-        if (data['exhibitsRegions']) {
-            this.#regions = data['exhibitsRegions'];
+        if (data.exhibitsRegions) {
+            this.#regions = data.exhibitsRegions;
 
             this.#regionListArr = {};
             this.#regions.forEach(s => {
@@ -546,8 +547,8 @@ class exhibitssetup {
             this.#regionYearsTable.destroy();
         }
         
-        if (data['exhibitsRegionYears']) {
-            this.#regionYears = data['exhibitsRegionYears'];
+        if (data.exhibitsRegionYears) {
+            this.#regionYears = data.exhibitsRegionYears;
 
             this.#regionYearsListArr = {};
             this.#regionYears.forEach(s => {
@@ -581,23 +582,23 @@ class exhibitssetup {
                     formatter: "lookup", formatterParams: this.#regionListArr,
                 },
                 {
-                    title: "Owner Name", field: "ownerName", headerSort: true, headerFilter: true, width: 300,
+                    title: "Owner Name", field: "ownerName", headerSort: true, headerFilter: true, width: 200, formatter: "textarea",
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
                 },
                 {
                     title: "Owner Email", field: "ownerEmail", width: 300, headerSort: true, headerFilter: true,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
                 },
-                { title: 'Included', field: "includedMemId", width: 200, headerSort: false,
+                { title: 'Included', field: "includedMemId", width: 230, headerSort: false,
                     editor: "list", formatter:"lookup", formatterParams: this.#memListArr, editorParams: { values: this.#memListArr }
                 },
-                { title: 'Additional', field: "additionalMemId", width: 200, headerSort: false,
+                { title: 'Additional', field: "additionalMemId", width: 230, headerSort: false,
                     editor: "list", formatter:"lookup", formatterParams: this.#memListArr, editorParams: { values: this.#memListArr  }
                 },
-                {title: 'Total Units Avail', field: "totalUnitsAvailable", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "input", editorParams: {maxlength: "10"}},
+                {title: 'Total Units Avail', field: "totalUnitsAvailable", width: 70, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "input", editorParams: {maxlength: "10"}},
                 {title: 'At-Con Id Base', field: "atconIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "number",},
                 {
-                    title: 'Mail-In Fee', field: "mailinFee", width: 100, hozAlign: "right", headerWordWrap: true, headerSort: false,
+                    title: 'Mail-In Fee', field: "mailinFee", width: 90, hozAlign: "right", headerWordWrap: true, headerSort: false,
                     formatter: "money", formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
                     editor: "input", validator: ["required", this.#priceregexp],},
                 {title: 'Mail-In Id Base', field: "mailinIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "number",},
@@ -632,8 +633,8 @@ class exhibitssetup {
             this.#spacesTable.destroy();
         }
 
-        if (data['exhibitsSpaces']) {
-            this.#spaces = data['exhibitsSpaces'];
+        if (data.exhibitsSpaces) {
+            this.#spaces = data.exhibitsSpaces;
 
             this.#spacesListArr = {};
             this.#spaces.forEach(s => {
@@ -715,8 +716,8 @@ class exhibitssetup {
             this.#spacePricesTable.destroy();
         }
 
-        if (data['exhibitsSpacePrices'])
-            this.#spacePrices = data['exhibitsSpacePrices'];
+        if (data.exhibitsSpacePrices)
+            this.#spacePrices = data.exhibitsSpacePrices;
 
         this.#spacePricedirty = false;
         this.#spacePricesTable = new Tabulator('#spacePrices-div', {
@@ -854,20 +855,20 @@ class exhibitssetup {
         var _this = this;
 
         if ('error' in data) {
-            if (data['error'] != '' && this.#debug)
-                showError(data['error']);
-            if (data['message']) {
-                show_message(data['message'], 'error');
+            if (data.error != '' && this.#debug)
+                showError(data.error);
+            if (data.message) {
+                show_message(data.message, 'error');
             }
             this.#regionTypesavebtn.innerHTML = "Save Changes*";
             this.#regionTypesavebtn.disabled = false;
             return false;
         }
-        if (data['message'] !== undefined) {
-            show_message(data['message'], 'success');
+        if (data.message !== undefined) {
+            show_message(data.message, 'success');
         }
-        if (data['warn'] !== undefined) {
-            show_message(data['warn'], 'warn');
+        if (data.warn !== undefined) {
+            show_message(data.warn, 'warn');
         }
         this.#regionTypesavebtn.innerHTML = "Save Changes";
         this.#regionTypesavebtn.disabled = true;
@@ -980,19 +981,19 @@ class exhibitssetup {
 
         if ('error' in data) {
             if (this.#debug)
-                showError(data['error']);
-            if (data['message']) {
-                show_message(data['message'], 'error');
+                showError(data.error);
+            if (data.message) {
+                show_message(data.message, 'error');
             }
             this.#regionsavebtn.innerHTML = "Save Changes*";
             this.#regionsavebtn.disabled = false;
             return false;
         }
-        if (data['message'] !== undefined) {
-            show_message(data['message'], 'success');
+        if (data.message !== undefined) {
+            show_message(data.message, 'success');
         }
-        if (data['warn'] !== undefined) {
-            show_message(data['warn'], 'warn');
+        if (data.warn !== undefined) {
+            show_message(data.warn, 'warn');
         }
         this.#regionsavebtn.innerHTML = "Save Changes";
         this.#regionsavebtn.disabled = true;
@@ -1105,20 +1106,20 @@ class exhibitssetup {
         var _this = this;
 
         if ('error' in data) {
-            if (data['error'] != '' && this.#debug)
-                showError(data['error']);
-            if (data['message']) {
-                show_message(data['message'], 'error');
+            if (data.error != '' && this.#debug)
+                showError(data.error);
+            if (data.message) {
+                show_message(data.message, 'error');
             }
             this.#regionYearsavebtn.innerHTML = "Save Changes*";
             this.#regionYearsavebtn.disabled = false;
             return false;
         }
-        if (data['message'] !== undefined) {
-            show_message(data['message'], 'success');
+        if (data.message !== undefined) {
+            show_message(data.message, 'success');
         }
-        if (data['warn'] !== undefined) {
-            show_message(data['warn'], 'warn');
+        if (data.warn !== undefined) {
+            show_message(data.warn, 'warn');
         }
         this.#regionYearsavebtn.innerHTML = "Save Changes";
         this.#regionYearsavebtn.disabled = true;
@@ -1231,20 +1232,20 @@ class exhibitssetup {
         var _this = this;
 
         if ('error' in data) {
-            if (data['error'] != '' && this.#debug)
-                showError(data['error']);
-            if (data['message']) {
-                show_message(data['message'], 'error');
+            if (data.error != '' && this.#debug)
+                showError(data.error);
+            if (data.message) {
+                show_message(data.message, 'error');
             }
             this.#spacesavebtn.innerHTML = "Save Changes*";
             this.#spacesavebtn.disabled = false;
             return false;
         }
-        if (data['message'] !== undefined) {
-            show_message(data['message'], 'success');
+        if (data.message !== undefined) {
+            show_message(data.message, 'success');
         }
-        if (data['warn'] !== undefined) {
-            show_message(data['warn'], 'warn');
+        if (data.warn !== undefined) {
+            show_message(data.warn, 'warn');
         }
         this.#spacesavebtn.innerHTML = "Save Changes";
         this.#spacesavebtn.disabled = true;
@@ -1357,20 +1358,20 @@ class exhibitssetup {
         var _this = this;
 
         if ('error' in data) {
-            if (data['error'] != '' && this.#debug)
-                showError(data['error']);
-            if (data['message']) {
-                show_message(data['message'], 'error');
+            if (data.error != '' && this.#debug)
+                showError(data.error);
+            if (data.message) {
+                show_message(data.message, 'error');
             }
             this.#spacePricesavebtn.innerHTML = "Save Changes*";
             this.#spacePricesavebtn.disabled = false;
             return false;
         }
-        if (data['message'] !== undefined) {
-            show_message(data['message'], 'success');
+        if (data.message !== undefined) {
+            show_message(data.message, 'success');
         }
-        if (data['warn'] !== undefined) {
-            show_message(data['warn'], 'warn');
+        if (data.warn !== undefined) {
+            show_message(data.warn, 'warn');
         }
         this.#spacePricesavebtn.innerHTML = "Save Changes";
         this.#spacePricesavebtn.disabled = true;
