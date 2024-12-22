@@ -1,5 +1,6 @@
 <?php
 require_once "lib/base.php";
+require_once "lib/exhibitorsCheckOrBuild.php";
 require_once "../lib/exhibitorRegistrationForms.php";
 require_once "../lib/exhibitorRequestForms.php";
 require_once "../lib/exhibitorReceiptForms.php";
@@ -13,6 +14,20 @@ $page = "exhibitor";
 if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
+
+$con = get_con();
+$conid = $con['id'];
+$debug = get_conf('debug');
+$vendor_conf = get_conf('vendor');
+$reg_conf = get_conf('reg');
+$usps = get_conf('usps');
+if (array_key_exists('controll_exhibitors', $debug))
+    $debug_exhibitors = $debug['controll_exhibitors'];
+else
+    $debug_exhibitors = 0;
+
+$conf = get_conf('con');
+$regConf = get_conf('reg');
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -30,19 +45,13 @@ page_init($page,
                    ),
               $need_login);
 
-$con = get_con();
-$conid = $con['id'];
-$debug = get_conf('debug');
-$vendor_conf = get_conf('vendor');
-$reg_conf = get_conf('reg');
-$usps = get_conf('usps');
-if (array_key_exists('controll_exhibitors', $debug))
-    $debug_exhibitors = $debug['controll_exhibitors'];
-else
-    $debug_exhibitors = 0;
-
-$conf = get_conf('con');
-$regConf = get_conf('reg');
+// check if the current year exists and if not, try to build it from last year
+$msg = exhibitorCheckOrBuildYear($conid);
+if ($msg != '') {
+    echo "<div class='ms-2 me-2 p-2 bg-danger text-white'>$msg</div\n";
+    error_log("checkOrBuildYear returned $msg");
+    return;
+}
 
 // to build tabs get the list of vendor types
 $regionOwnerQ = <<<EOS
