@@ -346,7 +346,7 @@ planreminders options:
     -h show help instructions
    
 Example:
-    php makekeys -c 4 -n "Override Note" -i perid_file.txt -o links_file.csv
+    php planreminders -c reg@test.org -i 7 -v 2
 
 EOS;
     exit(0);
