@@ -498,7 +498,6 @@ function saveEdit() {
     var editIndex = editIndexDiv.innerHTML;
     var editClass = editClassDiv.innerHTML;
     var editValue = tinyMCE.activeEditor.getContent();
-    tinyMCE.remove();
     editor_modal.hide();
 
     // force a save and get the field from tinyMCE
