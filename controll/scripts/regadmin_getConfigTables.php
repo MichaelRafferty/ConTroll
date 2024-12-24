@@ -88,8 +88,8 @@ EOS;
 SELECT ROW_NUMBER() OVER (ORDER BY t.appName, t.appPage, t.appSection, t.txtItem) AS rownum,
     t.appName, t.appPage, t.appSection, t.txtItem, t.contents, i.txtItemDescription
 FROM controllTxtItems t
-JOIN controllAppItems i
-ORDER BY appName, appPage, appSection, txtItem
+JOIN controllAppItems i ON (t.appName = i.appName AND t.appPage = i.appPage AND t.appSection = i.appSection AND t.txtItem = i.txtItem)
+ORDER BY appName, appPage, appSection, txtItem;
 EOS;
 
         $result = dbQuery($customTextSQL);
