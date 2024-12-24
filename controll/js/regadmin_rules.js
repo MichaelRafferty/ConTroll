@@ -548,8 +548,8 @@ class rulesSetup {
                     {title: "Conid", field: "conid", headerSort: true, headerHozAlign: "right", hozAlign: "right",},
                     {title: "Label", field: "label", headerFilter: true, width: 400},
                     {title: "Price", field: "price", headerHozAlign: "right", hozAlign: "right",},
-                    {title: "Controlled By", field: "controlled", headerFilter: true, width: 400, formtter: "textarea", },
-                    {title: "Used By", field: "usedby", headerFilter: true, width:700, formtter: "textarea", },
+                    {title: "Controlled By", field: "controlled", headerFilter: true, width: 400, formatter: "textarea", },
+                    {title: "Used By", field: "usedby", headerFilter: true, width:700, formatter: "textarea", },
                 ],
             });
         }
