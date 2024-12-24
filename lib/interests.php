@@ -78,9 +78,10 @@ function updateMemberInterests($conid, $personId, $personType, $loginId, $loginT
     else if ($personType == 'n') {
         $pfield = 'newperid';
     }
+    // when you update the interests, force a re-notify of the change
     $updInterest = <<<EOS
 UPDATE memberInterests
-SET interested = ?, updateBy = ?
+SET interested = ?, updateBy = ?, notifyDate = null, csvDate = null
 WHERE id = ?;
 EOS;
     $insInterest = <<<EOS
@@ -157,7 +158,7 @@ WHERE perid = ? AND conid = ?;
 EOS;
         $chgU = <<<EOS
 UPDATE memberInterests
-SET interested = ?, updateBy = ?
+SET interested = ?, updateBy = ?, notifyDate = null, csvDate = null
 WHERE id = ?;
 EOS;
         $idU = <<<EOS
