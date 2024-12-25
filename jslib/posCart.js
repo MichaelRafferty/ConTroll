@@ -312,7 +312,7 @@ class PosCart {
 
     // add search result_perinfo record to the cart
     add(p) {
-           var pindex = this.#cartPerinfo.length;
+        var pindex = this.#cartPerinfo.length;
         this.#cartPerinfo.push(make_copy(p));
         this.#cartPerinfo[pindex].index = pindex;
         this.#cartPerinfoMap.set(this.#cartPerinfo[pindex].perid, pindex);
@@ -324,6 +324,20 @@ class PosCart {
                 this.#cartPerinfo[pindex].memberships[mrownum].couponDiscount = 0.00;
                 this.#cartPerinfo[pindex].memberships[mrownum].coupon = null;
             }
+        }
+        // default any missing policies
+        for (var policynum in allPolicies) {
+            var p = allPolicies[policynum];
+            if (this.#cartPerinfo[pindex].policies[p.policy]) {
+                continue;
+            }
+            // add the missing policy
+            this.#cartPerinfo[pindex].policies[p.policy] = {
+                perid: this.#cartPerinfo[pindex].perid,
+                pindex: pindex,
+                policy: p.policy,
+                response: p.defaultValue
+            };
         }
         this.drawCart();
     }
