@@ -1274,11 +1274,13 @@ class PosCart {
 
         html += '\n</div>\n';
         }
+    var disableNoChanges =
     html += `<div class="row mt-2">
         <div class="col-sm-1 m-0 p-0">&nbsp;</div>
         <div class="col-sm-auto m-0 p-0">
             <button class="btn btn-primary btn-sm" type="button" id="review-btn-update" onclick="pos.reviewUpdate();">Update All</button>
-            <button class="btn btn-primary btn-sm" type="button" id="review-btn-nochanges" onclick="pos.reviewNoChanges();">No Changes</button>
+            <button class="btn btn-primary btn-sm" type="button" id="review-btn-nochanges" onclick="pos.reviewNoChanges();" ` +
+                (pos.isReviewDirty() ? ' disabled ' : '') + `>No Changes</button>
         </div>
     </div>
     <div class="row">

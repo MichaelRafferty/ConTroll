@@ -12,6 +12,7 @@ class Pos {
     // review items
     #review_div = null;
     #review_missing_items = 0;
+    #review_dirty = false;
     #review_editable_fields = [
         'first_name', 'middle_name', 'last_name', 'suffix',
         'legalName',
@@ -251,7 +252,6 @@ class Pos {
         });
     }
 
-
     // set/get private field functions
     setReviewTabDisable(state) {
         this.#review_tab.disabled = state;
@@ -292,6 +292,10 @@ class Pos {
 
     getNumCoupons() {
         return this.#num_coupons;
+    }
+
+    isReviewDirty() {
+        return this.#review_dirty;
     }
 
     hideCashChangeModal() {
@@ -580,6 +584,7 @@ class Pos {
         // set tab to find-tab
         bootstrap.Tab.getOrCreateInstance(this.#find_tab).show();
         this.#pattern_field.focus();
+        this.#review_dirty = false;
     }
 
 
@@ -831,6 +836,7 @@ class Pos {
             }
             
             cart.updateEntry(edit_index, row, this.#policies);
+            this.#review_dirty = true;
 
             // clear the fields that should not be preserved between adds.  Allowing a second person to be added using most of the same data as default.
             this.#add_first_field.value = "";
@@ -1805,7 +1811,7 @@ addUnpaid(tid) {
 
         // set tab to review-tab
         bootstrap.Tab.getOrCreateInstance(this.#review_tab).show();
-       this.#review_tab.disabled = false;
+        this.#review_tab.disabled = false;
     }
 
 // create the review data screen from the cart
