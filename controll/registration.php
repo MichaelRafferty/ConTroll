@@ -59,6 +59,7 @@ $config_vars['cashier'] = 1;
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
+    var allPolicies = <?php echo json_encode($policies); ?>
 </script>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
