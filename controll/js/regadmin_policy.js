@@ -136,6 +136,7 @@ class policySetup {
         </div>`;
         this.#policyPane.innerHTML = html;
         this.#policies = null;
+        this.#dirty = false;
         var _this = this;
         var script = "scripts/regadmin_getConfigTables.php";
         var postdata = {
@@ -370,6 +371,7 @@ class policySetup {
                         return false;
                     }
                     policy.close();
+                    _this.#dirty = false;
                     policy.open();
                     show_message(data['success'], 'success');
                 },
