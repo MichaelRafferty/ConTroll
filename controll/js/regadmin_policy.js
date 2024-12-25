@@ -356,6 +356,7 @@ class policySetup {
                 indexcol: "policy"
             };
             clear_message();
+            this.#dirty = false;
             //console.log(postdata);
             $.ajax({
                 url: script,
@@ -371,7 +372,6 @@ class policySetup {
                         return false;
                     }
                     policy.close();
-                    _this.#dirty = false;
                     policy.open();
                     show_message(data['success'], 'success');
                 },
