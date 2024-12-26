@@ -86,6 +86,7 @@ foreach ($rolloverList as $badgeId => $rollover) {
     $memAge = $membership['memAge'];
     $memCategory = $membership['memCategory'];
     $price = $membership['price'];
+    $startdate = $membership['startdate'];
 
     // handle common case that membership cannot exist already for next con
     if ($membership['nextid'] != null) {
@@ -128,8 +129,9 @@ foreach ($rolloverList as $badgeId => $rollover) {
             $matchR->free();
             // none found, create one
             //conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online)
+            $nextYear = subtr(startEndDateToNextYear($startdate), 0, 4);
             $newId = dbSafeInsert($newMemI, 'iisssssdssss', array($nextcon, 999999, $memCategory, $memType, $memAge, $label,
-                "Auto created by rollover", $price, $conid . "/01/01 00:00", $conid . '/01/01 00:00', 'N', 'N'));
+                "Auto created by rollover", $price, $nextYear . "/01/01 00:00", $nextYear . '/01/01 00:00', 'N', 'N'));
             if ($newId === false) {
                 $response['error'] = "Cannot rollover $badgeId ($perid: $first_name $last_name) due to auto create insert failure";
                 ajaxSuccess($response);
