@@ -546,10 +546,11 @@ class rulesSetup {
                 columns: [
                     {title: "Id", field: "memId", headerSort: true, headerHozAlign: "right", hozAlign: "right",},
                     {title: "Conid", field: "conid", headerSort: true, headerHozAlign: "right", hozAlign: "right",},
-                    {title: "Label", field: "label", headerFilter: true, width: 400},
+                    {title: "Label", field: "label", headerFilter: true, width: 300, formatter: "textarea",},
                     {title: "Price", field: "price", headerHozAlign: "right", hozAlign: "right",},
+                    {title: "Notes", field: "notes", headerFilter: true, width: 300, formatter: "textarea",},
                     {title: "Controlled By", field: "controlled", headerFilter: true, width: 400, formatter: "textarea", },
-                    {title: "Used By", field: "usedby", headerFilter: true, width:700, formatter: "textarea", },
+                    {title: "Used By", field: "usedby", headerFilter: true, width:400, formatter: "textarea", },
                 ],
             });
         }
