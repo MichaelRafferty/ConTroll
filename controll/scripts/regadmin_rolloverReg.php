@@ -129,7 +129,7 @@ foreach ($rolloverList as $badgeId => $rollover) {
             $matchR->free();
             // none found, create one
             //conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online)
-            $nextYear = subtr(startEndDateToNextYear($startdate), 0, 4);
+            $nextYear = substr(startEndDateToNextYear($startdate), 0, 4);
             $newId = dbSafeInsert($newMemI, 'iisssssdssss', array($nextcon, 999999, $memCategory, $memType, $memAge, $label,
                 "Auto created by rollover", $price, $nextYear . "/01/01 00:00", $nextYear . '/01/01 00:00', 'N', 'N'));
             if ($newId === false) {
