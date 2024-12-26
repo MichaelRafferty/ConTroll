@@ -328,7 +328,10 @@ class PosCart {
         // default any missing policies
         for (var policynum in allPolicies) {
             var p = allPolicies[policynum];
-            if (this.#cartPerinfo[pindex].policies[p.policy]) {
+            if (!this.#cartPerinfo[pindex].hasOwnProperty('policies')) {
+                this.#cartPerinfo[pindex].policies = {};
+            }
+            if (this.#cartPerinfo[pindex].policies.hasOwnProperty(p.policy)) {
                 continue;
             }
             // add the missing policy
