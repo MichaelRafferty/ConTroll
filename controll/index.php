@@ -16,6 +16,12 @@ if($need_login == false) {
 } else {
     $con = get_conf('con');
     $conid = $con['id'];
+    if (array_key_exists('oneoff', $con))
+        $oneoff = $con['oneoff'];
+    else
+        $oneoff = 0;
+    if ($oneoff == null || oneoff == '')
+        $oneoff = 0;
     # create the user session variable
     $user_email = $need_login['email'];
     if (!(array_key_exists('user_email', $_SESSION) && $user_email == $_SESSION['user_email']
@@ -90,7 +96,7 @@ EOS;
                 </div>
             </div>
 <?php
-    if (checkAuth($need_login['sub'], "admin")) {
+    if ($oneoff == 0 && checkAuth($need_login['sub'], "admin")) {
         // check if next year exists, and if not, put up button to create it
         $nyR = dbSafeQuery("SELECT COUNT(*) FROM conlist WHERE id = ?;", 'i', array($conid + 1));
         $nyF = $nyR->fetch_row()[0];

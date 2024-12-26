@@ -51,6 +51,7 @@ showConPolicy=1
 ; showVolunteerPolicy - shows the "#Conname# is entirely run by volunteers" line in the policy block,
 ;      set to 0 if volunteers is in your interest section, 1 otherwise
 showVolunteerPolicy=1
+oneoff=0 ; 1 if this is a one year (one-off convention), 0=if this convention re-occurs every "year".
 [debug]
 google=0 ; to enable google debug statements (1=enable, 0=disable)
 controll_admin=0 ; to enable controll admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
@@ -63,7 +64,6 @@ api:0 ; to enable api inteface debug statements (currently bitmask from 1-31) (1
 portal=0 ; to enable regportal debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
 atcon=0 ; to enable atcon debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
 oauth=0 ; to enable oauth2 server debug (currently 0 = off, 1 = on)
-oneoff=0 ; 0 if this is a one year (one-off convention), 1=if this convention re-occurs every "year".  (Missing defaults to 1).
 [reg]
 https=1
 test=0
