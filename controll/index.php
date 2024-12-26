@@ -20,7 +20,7 @@ if($need_login == false) {
         $oneoff = $con['oneoff'];
     else
         $oneoff = 0;
-    if ($oneoff == null || oneoff == '')
+    if ($oneoff == null || $oneoff == '')
         $oneoff = 0;
     # create the user session variable
     $user_email = $need_login['email'];
