@@ -209,6 +209,13 @@ if ($numFound == 0) {
     $message .= "$numRows normal memList entries added for $conid<br/>\n";
 }
 
+$msg = updateRules($conid);
+if (str_starts_with($msg, 'Error: ') ) {
+    error_log("updateRules returned $msg");
+}
+$message .= "$msg <br/>\n";
+$message .= '<br/>&nbsp;<br/>NOTE: Check the current and next years configuration in registration, rules, and exhibits for any issues in performing the auto create.';
+
 // check if the current exhibits year exists and if not, try to build it from last year
 $msg = exhibitorCheckOrBuildYear($conid);
 if ($msg != '') {
@@ -218,4 +225,116 @@ if ($msg != '') {
 $message .= "<br/>&nbsp;<br/>NOTE: Check the current and next years configuration in registration, rules, and exhibits for any issues in performing the auto create.";
 $response['success'] = $message;
 ajaxSuccess($response);
+
+function updateRules($conid) {
+    $msg = '';
+
+    $getRQ = <<<EOS
+SELECT name, memList
+FROM memRules
+WHERE IFNULL(memList, '') != '';
+EOS;
+    $getRIQ = <<<EOS
+SELECT name, step, memList
+FROM memRuleItems
+WHERE IFNULL(memList, '') != '';
+EOS;
+    $updR = <<<EOS
+UPDATE memRules
+SET memList = ?
+WHERE name = ?;
+EOS;
+    $updRI = <<<EOS
+UPDATE memRuleItems
+SET memList = ?
+WHERE name = ? AND step = ?;
+EOS;
+    // get the rules to update
+    $ruleR = dbQuery($getRQ);
+    if ($ruleR === false) {
+        $msg = 'Error retrieving rules to update<br/>\n';
+        return $msg;
+    }
+
+    $rules = [];
+    while ($rule = $ruleR->fetch_assoc()) {
+        $rules[] = $rule;
+    }
+    $ruleR->free();
+
+    $stepR = dbQuery($getRIQ);
+    if ($stepR === false) {
+        $msg = 'Error retrieving rule items (steps) to update<br/>\n';
+        return $msg;
+    }
+
+    // get the steps to update
+    $steps = [];
+    while ($step = $stepR->fetch_assoc()) {
+        $steps[] = $step;
+    }
+    $stepR->free();
+
+    // loop over rules updating memList
+    $numRulesUpd = 0;
+    foreach ($rules as $rule) {
+        $newMemList = updateRuleMemlist($conid, $rule['memList']);
+        $numRulesUpd += dbSafeCmd($updR, 'ss', array($newMemList, $rule['name']));
+    }
+
+    // loop over the steps updating memList
+    $numStepsUpd = 0;
+    foreach ($steps as $step) {
+        $newMemList = updateRuleMemlist($conid, $step['memList']);
+        $numStepsUpd += dbSafeCmd($updRI, 'ssi', array($newMemList, $step['name'], $step['step']));
+    }
+
+    $msg = "$numRulesUpd membership rules updated<br/>\n$numStepsUpd membership rule items (steps) updated<br/>\n";
+    return $msg;
+}
+
+function updateRuleMemList($conid, $list) {
+    $listItems = explode(',', $list);
+    $newListItems = [];
+
+    $getQ = <<<EOS
+SELECT startdate, enddate
+FROM memList
+WHERE id = ?;
+EOS;
+    $getRQ = <<<EOS
+SELECT mn.id
+FROM memList mn
+JOIN memList mp ON (mp.sort_order = mn.sort_order AND mp.memCategory = mn.memCategory AND mp.memType = mn.memType AND mp.memAge = mn.memAge
+    AND mp.label = mn.label AND mp.price = mn.price AND mp.atcon = mn.atcon AND mp.online = mn.online)
+WHERE mn.startdate = ? AND mn.enddate = ? AND mp.id = ?;
+EOS;
+
+    // loop over list looking up new item to replace old one
+    foreach ($listItems as $item) {
+        $mR = dbSafeQuery($getQ,'i', array($item));
+        if ($mR === false || $mR->num_rows != 1) {
+            error_log("bad memList query in updateRuleMemList");
+            continue;
+        }
+        [$startdate, $enddate] = $mR->fetch_row();
+        $mR->free();
+        $startdate = startEndDateTimeToNextYear($startdate);
+        $enddate = startEndDateTimeToNextYear($enddate);
+
+        $mR = dbSafeQuery($getRQ, 'ssi', array($startdate, $enddate, $item));
+        if ($mR === false || $mR->num_rows != 1) {
+            error_log('bad memList replacement query in updateRuleMemList');
+            continue;
+        }
+        $newItem = $mR->fetch_row()[0];
+        $mR->free();
+        $newListItems[] = $newItem;
+    }
+
+    if (count($newListItems) == 0)
+        return null;
+
+    return join(',', $newListItems);
+    }
 ?>
