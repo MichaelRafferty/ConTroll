@@ -1,6 +1,10 @@
 <?php
 ## Pull INI for variables
-global $db_ini;
+global $db_ini, $monthLengths, $oneYearInterval;
+//              XXX, Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
+$monthLengths = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+$oneYearInterval = date_interval_create_from_date_string('1 year');
+
 if (!$db_ini) {    
     $db_ini = parse_ini_file(__DIR__ . "/../../config/reg_conf.ini", true);
     $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../Composer";
@@ -604,4 +608,62 @@ function bs_tinymceModal() {
 EOS;
     echo $html;
 }
+
+function startEndDateTimeToNextYear($datestr) {
+    global $monthLengths, $oneYearInterval;
+
+    $date = date_create($datestr);
+    [$day, $month, $year, $dow, $leapYear, $time] = explode(',', date_format($date, 'd,m,Y,w,L,H:i:s'));
+    $nextYear = date_add($date, $oneYearInterval);
+    [$nYear, $nyDow, $nyLeapYear] = explode(',', date_format($nextYear, 'Y,w,L'));
+
+    // rules;
+    //  add one year
+    //      if last day of month stop there
+    //      else make same day of week
+    //
+    $lastDay = $monthLengths[$month + 0];
+    if ($month == 2 && $leapYear == 1) {
+        $lastDay++;
+    }
+    if ($day != 1) {
+        if ($day == $lastDay && $month == 2) {
+            $day = $monthLengths[2] + $nyLeapYear;
+        }
+        else if ($day != $lastDay) {
+            $day += $dow - $nyDow;
+        }
+    }
+
+    return "$nYear-$month-$day $time";
+}
+
+    function startEndDateToNextYear($datestr) {
+        global $monthLengths, $oneYearInterval;
+
+        $date = date_create($datestr);
+        [$day, $month, $year, $dow, $leapYear] = explode(',', date_format($date, 'd,m,Y,w,L'));
+        $nextYear = date_add($date, $oneYearInterval);
+        [$nYear, $nyDow, $nyLeapYear] = explode(',', date_format($nextYear, 'Y,w,L'));
+
+        // rules;
+        //  add one year
+        //      if last day of month stop there
+        //      else make same day of week
+        //
+        $lastDay = $monthLengths[$month + 0];
+        if ($month == 2 && $leapYear == 1) {
+            $lastDay++;
+        }
+        if ($day != 1) {
+            if ($day == $lastDay && $month == 2) {
+                $day = $monthLengths[2] + $nyLeapYear;
+            }
+            else if ($day != $lastDay) {
+                $day += $dow - $nyDow;
+            }
+        }
+
+        return "$nYear-$month-$day";
+    }
 ?>

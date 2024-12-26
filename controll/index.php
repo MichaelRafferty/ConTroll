@@ -4,7 +4,6 @@ require_once "lib/base.php";
 $need_login = google_init("page");
 
 $page = "Home";
-
 page_init($page,
     /*css*/ array('css/base.css'),
     /*js*/  null,
@@ -15,6 +14,8 @@ if($need_login == false) {
     <div id='main'>You haven't Logged in</div>
     <?php
 } else {
+    $con = get_conf('con');
+    $conid = $con['id'];
     # create the user session variable
     $user_email = $need_login['email'];
     if (!(array_key_exists('user_email', $_SESSION) && $user_email == $_SESSION['user_email']
@@ -83,10 +84,26 @@ EOS;
                             echo "Next Check: " . date('c', $need_login['exp']) . "\n";
                             echo "$versionText";
                             echo "Database Patch Level: $patchLevel\n";
-                        ?> </pre>
+                            echo "Conid: $conid\n";
+                        ?>
+                    </pre>
                 </div>
             </div>
 <?php
+    if (checkAuth($need_login['sub'], "admin")) {
+        // check if next year exists, and if not, put up button to create it
+        $nyR = dbSafeQuery("SELECT COUNT(*) FROM conlist WHERE id = ?;", 'i', array($conid + 1));
+        $nyF = $nyR->fetch_row()[0];
+        $nyR->free();
+        if ($nyF == 0) { ?>
+            <div class='row'>
+                <div class='col-sm-auto m-4'>
+                    <button class="btn btn-sm btn-primary" onClick="window.location='/admin.php?buildNext=1';">Build <?PHP echo $conid;?> Setup</button>
+                </div>
+            </div>
+<?php
+        }
+    }
     if (array_key_exists('msg', $_REQUEST)) {
         $msg = $_REQUEST['msg'];
 ?>
@@ -96,7 +113,7 @@ EOS;
                     <?php echo $msg; ?>
                 </strong>
 
-<?PHP
+<?php
     }
 ?>
         </div>

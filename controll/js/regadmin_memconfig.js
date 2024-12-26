@@ -395,6 +395,7 @@ class memsetup {
                 { title: "Age Type", field: "ageType", width: 140, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } } },
                 { title: "Label", field: "label", headerSort: false, width: 200, editor: "input", editorParams: { elementAttributes: { maxlength: "64" } } },
                 { title: "shortname", field: "shortname", headerSort: false, width: 140, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } } },
+                { title: "Badge Flag", field: "badgeFlag", headerSort: true, width: 140, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, },
                 { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,

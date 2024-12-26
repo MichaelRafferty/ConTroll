@@ -31,17 +31,23 @@ page_init($page,
 $con = get_conf("con");
 $conid=$con['id'];
 $debug = get_conf('debug');
+$buildNext = array_key_exists('buildNext', $_REQUEST);
 
 if (array_key_exists('controll_admin', $debug))
     $debug_admin=$debug['controll_admin'];
 else
     $debug_admin = 0;
 
+$config_vars['debug'] = $debug_admin;
+$config_vars['conid'] = $conid;
+$config_vars['buildNext'] = $buildNext ? 1 : 0;
+if (array_key_exists('msg', $_REQUEST)) {
+    $config_vars['msg'] = $_REQUEST['msg'];
+}
 ?>
-<div id='parameters' <?php if (!($debug_admin & 4)) echo 'hidden'; ?>>
-    <div id="debug"><?php echo $debug_admin; ?></div>
-    <div id="conid"><?php echo $conid; ?></div>
-</div>
+<script type='text/javascript'>
+    var config = <?php echo json_encode($config_vars); ?>;
+</script>
 <div id='user-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Lookup Person to Add as User' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
@@ -252,8 +258,7 @@ else
                 <div class='col-sm-12' id='clientsTableDiv'></div>
             </div>
         </div>
-    <div id='result_message' class='mt-4 p-2'></div>
-</div>
+    </div>
 </div>
 <script>
     $(function() {
@@ -266,6 +271,7 @@ else
         });
     });
 </script>
+<div id='result_message' class='mt-4 p-2'></div>
 <pre id='test'></pre>
 <?php
 page_foot($page);

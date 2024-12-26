@@ -1,6 +1,5 @@
 <?php
 require_once "lib/base.php";
-require_once "lib/exhibitorsCheckOrBuild.php";
 require_once "../lib/exhibitorRegistrationForms.php";
 require_once "../lib/exhibitorRequestForms.php";
 require_once "../lib/exhibitorReceiptForms.php";
@@ -44,14 +43,6 @@ page_init($page,
                     'js/tinymce/tinymce.min.js'
                    ),
               $need_login);
-
-// check if the current year exists and if not, try to build it from last year
-$msg = exhibitorCheckOrBuildYear($conid);
-if ($msg != '') {
-    echo "<div class='ms-2 me-2 p-2 bg-danger text-white'>$msg</div\n";
-    error_log("checkOrBuildYear returned $msg");
-    return;
-}
 
 // to build tabs get the list of vendor types
 $regionOwnerQ = <<<EOS

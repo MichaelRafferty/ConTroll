@@ -23,6 +23,8 @@ var addType = null;
 var fixUserid = null;
 
 window.onload = function initpage() {
+    debug = config.debug;
+    conid = config.debug;
     var id = document.getElementById('user-lookup');
     if (id != null) {
         add_modal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
@@ -37,20 +39,16 @@ window.onload = function initpage() {
         addName = document.getElementById('addName');
     }
 
-    id = document.getElementById("parameters");
-    if (id != null) {
-        var dfield = document.getElementById("debug");
-        if (dfield) dfield = dfield.innerHTML;
-        if (dfield && dfield != '') debug = Number(dfield);
-        dfield = document.getElementById("conid");
-        if (dfield) dfield = dfield.innerHTML;
-        if (dfield && dfield != '') conid = Number(dfield);
-
-        if (debug & 4) id.hidden = false;
-    }
     menuSaveBtn = document.getElementById('menu-save');
     menuUndoBtn = document.getElementById('menu-undo');
     menuRedoBtn = document.getElementById('menu-redo');
+    if (config.hasOwnProperty('msg')) {
+        show_message(config.msg, 'success');
+    }
+    if (config.buildNext > 0) {
+        console.log("Requested to build " + (Number(conid) + 1) + " setup");
+        buildNewYear();
+    }
 }
 
 function clearPermissions(userid) {
@@ -129,15 +127,15 @@ function add_find() {
         data: { name_search: name_search, },
         success: function (data, textstatus, jqxhr) {
             $("button[name='mergeSearch']").attr("disabled", false);
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error', 'result_message_user');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error', 'result_message_user');
                 return;
             }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success', 'result_message_user');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success', 'result_message_user');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn', 'result_message_user');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn', 'result_message_user');
             }
             add_found(data);
         },
@@ -150,8 +148,8 @@ function add_find() {
 
 // add_found - display a list of potential users to add
 function add_found(data) {
-    var perinfo = data['perinfo'];
-    var name_search = data['name_search'];
+    var perinfo = data.perinfo;
+    var name_search = data.name_search;
     if (perinfo.length > 0) {
         add_result_table = new Tabulator('#add_search_results', {
             maxHeight: "600px",
@@ -182,19 +180,19 @@ function add_found(data) {
 function build_record_hover(e, cell, onRendered) {
     var data = cell.getData();
     //console.log(data);
-    var hover_text = 'Person id: ' + data['perid'] + '<br/>' +
-        (data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name']).trim() + '<br/>' +
-        data['address_1'] + '<br/>';
-    if (data['address_2'] != '') {
-        hover_text += data['address_2'] + '<br/>';
+    var hover_text = 'Person id: ' + data.perid + '<br/>' +
+        (data.first_name + ' ' + data.middle_name + ' ' + data.last_name).trim() + '<br/>' +
+        data.address_1 + '<br/>';
+    if (data.address_2 != '') {
+        hover_text += data.address_2 + '<br/>';
     }
-    hover_text += data['city'] + ', ' + data['state'] + ' ' + data['postal_code'] + '<br/>';
-    if (data['country'] != '' && data['country'] != 'USA') {
-        hover_text += data['country'] + '<br/>';
+    hover_text += data.city + ', ' + data.state + ' ' + data.postal_code + '<br/>';
+    if (data.country != '' && data.country != 'USA') {
+        hover_text += data.country + '<br/>';
     }
-    hover_text += 'Badge Name: ' + badge_name_default(data['badge_name'], data['first_name'], data['last_name']) + '<br/>' +
-        'Email: ' + data['email_addr'] + '<br/>' + 'Phone: ' + data['phone'] + '<br/>' +
-        'Active:' + data['active'] + ' Contact?:' + data['contact_ok'] + ' Share?:' + data['share_reg_ok'] + '<br/>';
+    hover_text += 'Badge Name: ' + badge_name_default(data.badge_name, data.first_name, data.last_name) + '<br/>' +
+        'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>' +
+        'Active:' + data.active + ' Contact?:' + data.contact_ok + ' Share?:' + data.share_reg_ok + '<br/>';
 
     return hover_text;
 }
@@ -232,8 +230,8 @@ function selectUser(perid) {
         data: data,
         success: function (data, textStatus, jhXHR) {
             $('#test').append(JSON.stringify(data, null, 2));
-            if (data['error']) {
-                showError(data['error']);
+            if (data.error) {
+                showError(data.error);
                 add_modal.hide();
                 return false;
             }
@@ -306,23 +304,23 @@ function getMenu() {
 }
 
 function openMenu(data) {
-    if (data['error']) {
-        show_message(data['error'], 'error');
+    if (data.error) {
+        show_message(data.error, 'error');
         return;
     }
-    if (data['warn']) {
-        show_message(data['warn'], 'warn');
+    if (data.warn) {
+        show_message(data.warn, 'warn');
         return;
     }
 
     if (menuTable != null) {
 
     }
-    if (data['menu']) {
+    if (data.menu) {
         menuTable = new Tabulator('#menuTableDiv', {
             movableRows: true,
             history: true,
-            data: data['menu'],
+            data: data.menu,
             layout: "fitDataTable",
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
@@ -337,8 +335,8 @@ function openMenu(data) {
             menuRowMoved(row)
         });
     }
-    if (data['success']) {
-        show_message(data['success'], 'success');
+    if (data.success) {
+        show_message(data.success, 'success');
     }
 }
 
@@ -417,4 +415,24 @@ function clearMenuTable() {
         menuUndoBtn.disabled = true;
         menuRedoBtn.disabled = true;
     }
+}
+
+function buildNewYear() {
+    var script = 'scripts/admin_buildNewYear.php'
+    var postdata = {
+        conid: conid,
+        action: 'build'
+    }
+    $.ajax({
+        url: script,
+        method: 'POST',
+        data: postdata,
+        success: function (data, textStatus, jhXHR) {
+            window.location="/admin.php?msg=" + encodeURI(data['success']);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in " + script + ": " + textStatus, jqXHR);
+            return false;
+        }
+    });
 }
