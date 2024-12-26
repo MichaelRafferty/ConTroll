@@ -105,23 +105,33 @@ EOS;
     $message .= "$numRows ageList entries inserted for $nextConid<br/>\n";
 }
 
-// build the memList entries for this year for volunteer rollover and yearahead
-// first volunteer rollover
+// build the memList entries for this year (non uearahead and non rollover) and year + 1 for volunteer rollover and yearahead
+
+// year + 1 volunteer rollover
 $checkMLQ1 = <<<EOS
 SELECT conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online
 FROM memList
 WHERE label = ? AND conid = ?;
 EOS;
+// year + 1 yearahead
 $checkMLQ2 = <<<EOS
 SELECT conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online
 FROM memList
 WHERE memCategory = ? AND conid = ?;
+EOS;
+// this year others (note startdate == enddate is for the pushed rollover types we don;t want to auto carry forward,
+// as they might conflict with ones pushed by rollovers automatically.
+$checkMLQ3 = <<<EOS
+SELECT conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online
+FROM memList
+WHERE conid = ? AND startdate != enddate AND NOT (memCategory = 'yearahead' OR label = 'Rollover-volunteer');
 EOS;
 $insML = <<<EOS
 INSERT INTO memList(conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online)
 VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 
+// next year rollover volunteer
 $checkMLR = dbSafeQuery($checkMLQ1, 'si', array ('Rollover-volunteer', $nextConid));
 $numFound = $checkMLR->num_rows;
 $checkMLR->free();
@@ -147,6 +157,7 @@ if ($numFound == 0) {
     $message .= "$numRows Rollover-volunteer memList entries added for $nextConid<br/>\n";
 }
 
+// next year yearahead
 $checkMLR = dbSafeQuery($checkMLQ2, 'si', array('yearahead', $nextConid));
 $numFound = $checkMLR->num_rows;
 $checkMLR->free();
@@ -172,6 +183,31 @@ if ($numFound == 0) {
     $message .= "$numRows yearahead memList entries added for $nextConid<br/>\n";
 }
 
+// this year other
+$checkMLR = dbSafeQuery($checkMLQ3, 'i', array($conid));
+$numFound = $checkMLR->num_rows;
+$checkMLR->free();
+if ($numFound == 0) {
+    // get the current roes
+    $rows = [];
+    $getMLR = dbSafeQuery($checkMLQ3, 'i', array ($conid - 1));
+    while ($row = $getMLR->fetch_assoc()) {
+        $rows[] = $row;
+    }
+    $getMLR->free();
+
+    // now insert the new ones
+    $numRows = 0;
+    foreach ($rows as $row) {
+        $valueArr = array(
+            $conid, $row['sort_order'], $row['memCategory'], $row['memType'], $row['memAge'], $row['label'], $row['notes'], $row['price'],
+            startEndDateTimeToNextYear($row['startdate']), startEndDateTimeToNextYear($row['enddate']),
+            $row['atcon'], $row['online']
+        );
+        $numRows += dbSafeCmd($insML, 'iisssssdssss', $valueArr);
+    }
+    $message .= "$numRows normal memList entries added for $conid<br/>\n";
+}
 
 // check if the current exhibits year exists and if not, try to build it from last year
 $msg = exhibitorCheckOrBuildYear($conid);
