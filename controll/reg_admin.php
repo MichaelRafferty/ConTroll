@@ -33,6 +33,12 @@ page_init($page,
                     $need_login);
 
 $con_conf = get_conf('con');
+if (array_key_exists('oneoff', $con_conf))
+    $oneoff = $con_conf['oneoff'];
+else
+    $oneoff = 0;
+if ($oneoff == null || $oneoff == '')
+    $oneoff = 0;
 $controll = get_conf('controll');
 if ($controll != null && array_key_exists('badgelistfilter', $controll)) {
     $badgeListFilter = $controll['badgelistfilter'];
@@ -718,11 +724,13 @@ else
                 aria-controls='nav-consetup' aria-selected='false' onclick="settab('consetup-pane');">Current Convention Setup
         </button>
     </li>
+    <?php if ($oneoff == 0) { ?>
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='nextconsetup-tab' data-bs-toggle='pill' data-bs-target='#nextconsetup-pane' type='button' role='tab'
                 aria-controls='nav-nextconsetup' aria-selected='false' onclick="settab('nextconsetup-pane');">Next Convention Setup
         </button>
     </li>
+    <?php } ?>
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='memconfig-tab' data-bs-toggle='pill' data-bs-target='#memconfig-pane' type='button' role='tab'
                 aria-controls='nav-memconfigsetup' aria-selected='false' onclick="settab('memconfig-pane');">Membership Configuration
