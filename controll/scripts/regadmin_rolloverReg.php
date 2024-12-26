@@ -8,7 +8,7 @@ $perm = 'reg_admin';
 
 $response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 
-if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
+if ( $check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
@@ -52,6 +52,18 @@ LEFT OUTER JOIN memList m1 ON (r1.memId = m1.id)
 WHERE r.conid = ? AND r.id = ?; 
 EOS;
 
+$matchMem = <<<EOS
+SELECT CASE WHEN m.price = ? THEN 1 ELSE 999 END AS priceMatch, m.price, m.id
+FROM memList m
+WHERE m.memCategory = ? AND m.memType = ? AND m.memAge = ? AND m.label = ? AND m.conid = ?
+ORDER BY 1,2,3;
+EOS;
+
+$newMemI = <<<EOS
+INSERT INTO memList(conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online)
+VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+EOS;
+
 foreach ($rolloverList as $badgeId => $rollover) {
     $result = dbSafeQuery($validateSQL, 'iiii', array($badgeId, $nextcon, $conid, $badgeId));
     if ($result->num_rows < 1) {
@@ -70,6 +82,10 @@ foreach ($rolloverList as $badgeId => $rollover) {
     $last_name = $membership['last_name'];
     $printCnt = $membership['printCnt'];
     $memType = $membership['memType'];
+    $memId = $membership['memId'];
+    $memAge = $membership['memAge'];
+    $memCategory = $membership['memCategory'];
+    $price = $membership['price'];
 
     // handle common case that membership cannot exist already for next con
     if ($membership['nextid'] != null) {
@@ -94,9 +110,36 @@ foreach ($rolloverList as $badgeId => $rollover) {
         ajaxSuccess($response);
         return false;
     }
+    // check if 'AUTO' and if so, see if it exists or it needs to be created
+    if ($rollover['newid'] == 'auto') {
+        // try and fetch a matching memId (first exact match)
+        $matchR = dbSafeQuery($matchMem, 'dssssi', array($price, $memCategory, $memType, $memAge, $label, $nextcon));
+        if ($matchR === false) {
+            $response['error'] = "Cannot rollover $badgeId ($perid: $first_name $last_name) due to auto create query failure";
+            ajaxSuccess($response);
+            return false;
+        }
+        if ($matchR->num_rows > 0) {
+            // a match is found, the matching price is the best choice, but if not, it will use the lowest price/memId
+            $matchL = $matchR->fetch_assoc();
+            $rolloverList[$badgeId]['newid'] = $matchL['id'];
+            $matchR->free();
+        } else {
+            $matchR->free();
+            // none found, create one
+            //conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online)
+            $newId = dbSafeInsert($newMemI, 'iisssssdssss', array($nextcon, 999999, $memCategory, $memType, $memAge, $label,
+                "Auto created by rollover", $price, $conid . "/01/01 00:00", $conid . '/01/01 00:00', 'N', 'N'));
+            if ($newId === false) {
+                $response['error'] = "Cannot rollover $badgeId ($perid: $first_name $last_name) due to auto create insert failure";
+                ajaxSuccess($response);
+                return false;
+            }
+            $rolloverList[$badgeId]['newid'] = $newId;
+        }
+    }
 }
 // ok the checks are all done, now do the work
-
 // insert a controlling transaction to cover this rollover
 $tType = 'regctl-adm-roll/' . $user_perid;
 $notes = "Rollover from $conid to $nextcon by $user_perid";

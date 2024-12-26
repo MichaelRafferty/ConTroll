@@ -1285,7 +1285,8 @@ function changeRollover() {
     }
 
     // build the select list
-    var optionList = "    <option value=''>Do Not Create New Registration for this row</option>\n";
+    var optionList = "    <option value=''>Do Not Create New Registration for this row</option>\n" +
+        "    <option value='auto'>Auto: Auto Select New Registration for this row</option>\n";
     for (var i = 0; i < memListSelect.length; i++) {
         optionList += '   <option value="' + memListSelect[i].id + '">' + memListSelect[i].id + ':' + memListSelect[i].memAge + '-' +
             memListSelect[i].memType + '-' + memListSelect[i].memCategory + ' $' + memListSelect[i].price + ' ' +
@@ -1298,8 +1299,8 @@ function changeRollover() {
         html += `
     <div class="row mt-2">
         <div class="col-sm-1" style="text-align:right">` + item + `</div>
-        <div class="col-sm-2" style="text-align:right"><input type="checkbox" value="Y" id="c-` + i + '"/>' +
-            '<label for="c-' + item + `">&nbsp;Override Print Check</label>
+        <div class="col-sm-3" style="text-align:right"><input type="checkbox" value="Y" id="c-` + i + '"/>' +
+            '<label for="c-' + item + `">&nbsp;Override Already Printed Check</label>
         </div>
         <div class="col-sm-8">
             <select id="rolloverMemId-` + i + '" name="rolloverMemId-"' + i + ">\n" +
