@@ -607,6 +607,9 @@ class PosCart {
 
         for (var row in memList) {
             var mem = memList[row];
+            // skip auto create mem items
+            if (mem.hasOwnProperty('notes') && mem.notes && mem.notes == 'Auto created by rollover')
+                continue;
             // apply implitict rules and membershipRules against memList entry
             if (!rules.testMembership(mem))
                 continue;
