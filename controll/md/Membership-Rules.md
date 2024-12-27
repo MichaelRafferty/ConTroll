@@ -5,7 +5,7 @@ online flags in the memList entry.  it is currently used in onlineReg, portal, a
 
 The rules are stored in two tables:
 * memRules - the rule, and to which memList entries it applies
-* memRuleItems - the steps a rule must pass to consider allowing the memberships it applies to to be purchased
+* memRuleSteps - the steps a rule must pass to consider allowing the memberships it applies to to be purchased
 
 Membership rules are configured in the Registration Admin section of ConTroll and executed any time the system needs to display a set of
 memberships to purchase.  The configuration page includes a simulator that emulates the rules for a cart containing only a single person.

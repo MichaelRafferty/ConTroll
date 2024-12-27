@@ -401,7 +401,7 @@ function allocateBalance(&$balance, &$badges, $conid, $newPlanId, $transId, $pla
     $mrQ = <<<EOS
 SELECT mRI.*
 FROM memRules mR
-JOIN memRuleItems mRI ON mR.name = mRI.name
+JOIN memRuleSteps mRI ON mR.name = mRI.name
 WHERE CONCAT(',', mR.memList, ',') like ?;
 EOS;
 

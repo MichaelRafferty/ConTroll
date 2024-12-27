@@ -89,7 +89,7 @@ EOS;
 // now the more difficult task, get the membership rule items
     $QQ = <<<EOS
 SELECT name, step, ruleType, applyTo, typeList, catList, ageList, memList, 0 AS uses, name AS origName, step AS origStep
-FROM memRuleItems
+FROM memRuleSteps
 ORDER BY name, step;
 EOS;
 

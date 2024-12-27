@@ -236,7 +236,7 @@ WHERE IFNULL(memList, '') != '';
 EOS;
     $getRIQ = <<<EOS
 SELECT name, step, memList
-FROM memRuleItems
+FROM memRuleSteps
 WHERE IFNULL(memList, '') != '';
 EOS;
     $updR = <<<EOS
@@ -245,7 +245,7 @@ SET memList = ?
 WHERE name = ?;
 EOS;
     $updRI = <<<EOS
-UPDATE memRuleItems
+UPDATE memRuleSteps
 SET memList = ?
 WHERE name = ? AND step = ?;
 EOS;

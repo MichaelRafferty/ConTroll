@@ -9,7 +9,7 @@ var membershipRules = null;
 //     var memList
 //     var memRules
 
-//      note memRuleItems table (steps) step 999 is special, it's applied on add, but not on remove or delete.  It's to prevent more than one of this item.
+//      note memRuleSteps table (steps) step 999 is special, it's applied on add, but not on remove or delete.  It's to prevent more than one of this item.
 
 class MembershipRules {
     // rule checking info

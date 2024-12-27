@@ -39,11 +39,11 @@ DELETE FROM memRules
 WHERE name = ?;
 EOS;
 $dRI = <<<EOS
-DELETE FROM memRuleItems
+DELETE FROM memRuleSteps
 WHERE name = ?;
 EOS;
 $dRIsingle = <<<EOS
-DELETE FROM memRuleItems
+DELETE FROM memRuleSteps
 WHERE name = ? and step = ?;
 EOS;
 
@@ -70,7 +70,7 @@ SET name = ?, optionName = ?, description = ?, typeList = ?, catList = ?, ageLis
 WHERE name = ?;
 EOS;
 $uRI = <<<EOS
-UPDATE memRuleItems 
+UPDATE memRuleSteps 
 SET name = ?, step = ?, ruleType = ?, applyTo = ?, typeList = ?, catList = ?, ageList = ?, memList = ?
 WHERE name = ? AND step = ?;
 EOS;
@@ -144,7 +144,7 @@ INSERT into memRules(name, optionName, description, typeList, catList, ageList, 
 VALUES (?, ? ,?, ?, ?, ?, ?);
 EOS;
 $iRI = <<<EOS
-INSERT into memRuleItems(name, step, ruleType, applyTo, typeList, catList, ageList, memList)   
+INSERT into memRuleSteps(name, step, ruleType, applyTo, typeList, catList, ageList, memList)   
 VALUES (?, ? ,?, ?, ?, ?, ?, ?);
 EOS;
 
