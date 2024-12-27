@@ -5,7 +5,7 @@
  */
 
 /*
- *  perinfo trigger
+ *  reg trigger
  */
 
 DROP TRIGGER IF EXISTS reg_update;
