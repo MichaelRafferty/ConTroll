@@ -2,14 +2,14 @@
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
--- Server version	8.0.32
+-- Server version	8.0.40
 
 --
 -- Dumping data for table `patchLog`
 --
 
 LOCK TABLES `patchLog` WRITE;
-ALTER TABLE `patchLog` DISABLE KEYS ;
+ALTER TABLE `patchLog` DISABLE KEYS;
 INSERT INTO `patchLog` VALUES
 (1,'ATCON Auth Changes','2023-09-21 19:55:19'),
 (2,'Local Print Servers','2023-09-21 19:58:10'),
@@ -40,6 +40,10 @@ INSERT INTO `patchLog` VALUES
 (30,'Portal Changes','2024-08-03 01:05:13'),
 (32,'regHistory','2024-08-12 15:49:17'),
 (33,'paymentplans','2024-09-27 15:24:42'),
-(34, 'couponTransactions','2024-10-28 18:30:12');
-ALTER TABLE `patchLog` ENABLE KEYS ;
+(34,'couponTransactions','2024-10-28 23:10:01'),
+(35,'auth order','2024-10-29 17:13:00'),
+(36,'oauth2_server','2024-12-27 16:17:41'),
+(37,'triggerdups','2024-12-27 16:20:46'),
+(38,'rules conid','2024-12-27 16:20:52');
+ALTER TABLE `patchLog` ENABLE KEYS;
 UNLOCK TABLES;

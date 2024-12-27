@@ -2,7 +2,7 @@
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
--- Server version	8.0.32
+-- Server version	8.0.40
 
 
 --
@@ -12,13 +12,14 @@
 DROP TABLE IF EXISTS `memRules`;
 CREATE TABLE `memRules` (
   `name` varchar(16) COLLATE utf8mb4_general_ci NOT NULL,
+  `conid` int NOT NULL,
   `optionName` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
   `description` text COLLATE utf8mb4_general_ci,
   `typeList` varchar(1024) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `catList` varchar(1024) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `ageList` varchar(1024) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `memList` varchar(1024) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  PRIMARY KEY (`name`)
+  PRIMARY KEY (`conid`,`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

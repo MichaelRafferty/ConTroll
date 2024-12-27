@@ -2,7 +2,7 @@
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
--- Server version	8.0.32
+-- Server version	8.0.40
 
 
 --
@@ -23,9 +23,9 @@ CREATE TABLE `memberInterests` (
   `updateDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `updateBy` int DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `interest` (`interest`),
-  KEY `newperid` (`newperid`),
-  KEY `perid` (`perid`)
+  KEY `memberInterestsInterest_fk` (`interest`),
+  KEY `memberInterestsNewperson_fk` (`newperid`),
+  KEY `memberInterestsPerinfo_fk` (`perid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

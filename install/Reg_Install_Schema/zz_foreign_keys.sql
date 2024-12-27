@@ -1,3 +1,5 @@
+ALTER TABLE oauthRefreshTokens ADD CONSTRAINT `fk_refresh_token_access` FOREIGN KEY (`accessTokenId`) REFERENCES `oauthAccessTokens` (`id`) ON UPDATE CASCADE;
+ALTER TABLE oauthAuthCodes ADD CONSTRAINT `fk_auth_codes_clients` FOREIGN KEY (`clientId`) REFERENCES `oauthClients` (`clientId`) ON UPDATE CASCADE;
 ALTER TABLE memberPolicies ADD CONSTRAINT `memberPolicies_ibfk_1` FOREIGN KEY (`updateBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE memberPolicies ADD CONSTRAINT `memberPolicies_ibfk_2` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE memberPolicies ADD CONSTRAINT `memberPolicies_ibfk_3` FOREIGN KEY (`newperid`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
@@ -5,10 +7,8 @@ ALTER TABLE memberPolicies ADD CONSTRAINT `memberPolicies_ibfk_4` FOREIGN KEY (`
 ALTER TABLE payorPlanReminders ADD CONSTRAINT `payorPlanReminders_ibfk_1` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE payorPlanReminders ADD CONSTRAINT `payorPlanReminders_ibfk_2` FOREIGN KEY (`payorPlanId`) REFERENCES `payorPlans` (`id`) ON UPDATE CASCADE;
 ALTER TABLE payorPlanReminders ADD CONSTRAINT `payorPlanReminders_ibfk_3` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
-ALTER TABLE perinfoHistory ADD CONSTRAINT `perinfoHistory_id_fk` FOREIGN KEY (`id`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artItemsHistory ADD CONSTRAINT `aIH_exhibitorRegionYear_fk` FOREIGN KEY (`exhibitorRegionYearId`) REFERENCES `exhibitorRegionYears` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artItemsHistory ADD CONSTRAINT `artItemsHistory_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
-ALTER TABLE artItemsHistory ADD CONSTRAINT `artItemsHistory_id_fk` FOREIGN KEY (`id`) REFERENCES `artItems` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artItemsHistory ADD CONSTRAINT `artItemsHistory_updatedBy_fk` FOREIGN KEY (`updatedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorRegionYears ADD CONSTRAINT `ecry_updateby_fk` FOREIGN KEY (`updateBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorRegionYears ADD CONSTRAINT `exry_agentNewperon` FOREIGN KEY (`agentNewperson`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
@@ -25,7 +25,6 @@ ALTER TABLE reg ADD CONSTRAINT `reg_complete_fk` FOREIGN KEY (`complete_trans`) 
 ALTER TABLE reg ADD CONSTRAINT `reg_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE reg ADD CONSTRAINT `reg_coupon_fk` FOREIGN KEY (`coupon`) REFERENCES `coupon` (`id`) ON UPDATE CASCADE;
 ALTER TABLE reg ADD CONSTRAINT `reg_create_trans_fk` FOREIGN KEY (`create_trans`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE;
-ALTER TABLE reg ADD CONSTRAINT `reg_ibfk_1` FOREIGN KEY (`priorRegId`) REFERENCES `reg` (`id`);
 ALTER TABLE reg ADD CONSTRAINT `reg_memId_fk` FOREIGN KEY (`memId`) REFERENCES `memList` (`id`) ON UPDATE CASCADE;
 ALTER TABLE reg ADD CONSTRAINT `reg_newperid_fk` FOREIGN KEY (`newperid`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
 ALTER TABLE reg ADD CONSTRAINT `reg_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
@@ -36,7 +35,7 @@ ALTER TABLE payments ADD CONSTRAINT `payments_transid_fk` FOREIGN KEY (`transid`
 ALTER TABLE payments ADD CONSTRAINT `payments_userid_fk` FOREIGN KEY (`userid`) REFERENCES `user` (`id`) ON UPDATE CASCADE;
 ALTER TABLE paymentPlans ADD CONSTRAINT `paymentPlans_ibfk_1` FOREIGN KEY (`updateBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE controllAppItems ADD CONSTRAINT `controllAppItems_ibfk_1` FOREIGN KEY (`appName`, `appPage`, `appsection`) REFERENCES `controllAppSections` (`appName`, `appPage`, `appSection`) ON UPDATE CASCADE;
-ALTER TABLE memRuleItems ADD CONSTRAINT `mri_rule_fk` FOREIGN KEY (`name`) REFERENCES `memRules` (`name`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE memRuleSteps ADD CONSTRAINT `mrs_mr_fk` FOREIGN KEY (`conid`, `name`) REFERENCES `memRules` (`conid`, `name`) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE perinfo ADD CONSTRAINT `perinfo_ibfk_1` FOREIGN KEY (`managedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE perinfo ADD CONSTRAINT `perinfo_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE perinfo ADD CONSTRAINT `perinfo_ibfk_3` FOREIGN KEY (`managedByNew`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
@@ -98,6 +97,7 @@ ALTER TABLE exhibitsRegionYears ADD CONSTRAINT `ery_conlist_fk` FOREIGN KEY (`co
 ALTER TABLE exhibitsRegionYears ADD CONSTRAINT `ery_exhibitsRegion_fk` FOREIGN KEY (`exhibitsRegion`) REFERENCES `exhibitsRegions` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitsRegionYears ADD CONSTRAINT `ery_memList_a` FOREIGN KEY (`additionalMemId`) REFERENCES `memList` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitsRegionYears ADD CONSTRAINT `ery_memList_i` FOREIGN KEY (`includedMemId`) REFERENCES `memList` (`id`) ON UPDATE CASCADE;
+ALTER TABLE oauthAccessTokens ADD CONSTRAINT `fk_access_tokens_clients` FOREIGN KEY (`clientId`) REFERENCES `oauthClients` (`clientId`) ON UPDATE CASCADE;
 ALTER TABLE artItems ADD CONSTRAINT `artItems_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artItems ADD CONSTRAINT `artItems_exhibitorRegionYear_fk` FOREIGN KEY (`exhibitorRegionYearId`) REFERENCES `exhibitorRegionYears` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artItems ADD CONSTRAINT `artItems_updatedBy_fk` FOREIGN KEY (`updatedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;

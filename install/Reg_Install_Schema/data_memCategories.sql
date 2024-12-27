@@ -2,14 +2,14 @@
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
--- Server version	8.0.32
+-- Server version	8.0.40
 
 --
 -- Dumping data for table `memCategories`
 --
 
 LOCK TABLES `memCategories` WRITE;
-ALTER TABLE `memCategories` DISABLE KEYS ;
+ALTER TABLE `memCategories` DISABLE KEYS;
 INSERT INTO `memCategories` VALUES
 ('addon','Req: Add-on\'s to memberips','N','N','N',80,'Y','X'),
 ('artist','Req: Artist Memberships','Y','Y','N',60,'Y','Artist'),
@@ -21,5 +21,5 @@ INSERT INTO `memCategories` VALUES
 ('upgrade','Req: Upgrades to standard','Y','Y','N',30,'Y','Upg'),
 ('virtual','Req: Paid virtual memberships','Y','Y','N',20,'Y','V'),
 ('yearahead','Req: Next Con Year Memberships','Y','Y','N',40,'Y','Y');
-ALTER TABLE `memCategories` ENABLE KEYS ;
+ALTER TABLE `memCategories` ENABLE KEYS;
 UNLOCK TABLES;

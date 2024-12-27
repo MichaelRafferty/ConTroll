@@ -2,16 +2,16 @@
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
--- Server version	8.0.32
-
+-- Server version	8.0.40
 
 --
 -- Dumping data for table `controllAppSections`
 --
 
 LOCK TABLES `controllAppSections` WRITE;
-ALTER TABLE `controllAppSections` DISABLE KEYS ;
-INSERT INTO `controllAppSections` VALUES ('portal','accountSettings','main','main body of the account settings page'),
+ALTER TABLE `controllAppSections` DISABLE KEYS;
+INSERT INTO `controllAppSections` VALUES
+('portal','accountSettings','main','main body of the account settings page'),
 ('portal','addUpgrade','interests','data entry forms related to interests'),
 ('portal','addUpgrade','main','main body of the addUpgrade page'),
 ('portal','addUpgrade','portalForms','data entry forms shared with the portal page'),
@@ -23,5 +23,5 @@ INSERT INTO `controllAppSections` VALUES ('portal','accountSettings','main','mai
 ('portal','portal','main','main body of the portal home page'),
 ('portal','portal','paymentPlamns','data entry forms related to payment plans'),
 ('portal','portal','portalForm','data entry forms used by the portal page');
-ALTER TABLE `controllAppSections` ENABLE KEYS ;
+ALTER TABLE `controllAppSections` ENABLE KEYS;
 UNLOCK TABLES;

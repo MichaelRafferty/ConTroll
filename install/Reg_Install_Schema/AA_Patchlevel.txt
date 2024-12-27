@@ -1,2 +1,2 @@
-Current=34
-Text=This schema is current as of Patch 34 (p34_couponTransactions.sql)
+Current=38
+Text=This schema is current as of Patch 38 (p38_rulebyconid.sql)

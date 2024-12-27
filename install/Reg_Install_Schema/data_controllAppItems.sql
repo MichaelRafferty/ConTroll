@@ -2,16 +2,16 @@
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
--- Server version	8.0.32
-
+-- Server version	8.0.40
 
 --
 -- Dumping data for table `controllAppItems`
 --
 
 LOCK TABLES `controllAppItems` WRITE;
-ALTER TABLE `controllAppItems` DISABLE KEYS ;
-INSERT INTO `controllAppItems` VALUES ('portal','accountSettings','main','bottom','Custom Text for the bottom of the page/section'),
+ALTER TABLE `controllAppItems` DISABLE KEYS
+INSERT INTO `controllAppItems` VALUES
+('portal','accountSettings','main','bottom','Custom Text for the bottom of the page/section'),
 ('portal','accountSettings','main','identities','Custom Text for just after the identities header'),
 ('portal','accountSettings','main','managed','Custom Text for just after the managed header'),
 ('portal','accountSettings','main','top','Custom Text for the top of the page/section'),
@@ -34,5 +34,5 @@ INSERT INTO `controllAppItems` VALUES ('portal','accountSettings','main','bottom
 ('portal','portal','main','plan','Custom Text for just after the plan header'),
 ('portal','portal','main','purchased','Custom Text for just aqfter the purchased header'),
 ('portal','portal','main','top','Custom Text for the top of the page/section');
-ALTER TABLE `controllAppItems` ENABLE KEYS ;
+ALTER TABLE `controllAppItems` ENABLE KEYS;
 UNLOCK TABLES;
