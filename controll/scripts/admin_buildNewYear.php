@@ -213,16 +213,13 @@ $msg = updateRules($conid);
 if (str_starts_with($msg, 'Error: ') ) {
     error_log("updateRules returned $msg");
 }
-$message .= "$msg <br/>\n";
-$message .= '<br/>&nbsp;<br/>NOTE: Check the current and next years configuration in registration, rules, and exhibits for any issues in performing the auto create.';
-
+$message .= "$msg";
 // check if the current exhibits year exists and if not, try to build it from last year
 $msg = exhibitorCheckOrBuildYear($conid);
-if ($msg != '') {
-    $message .= "Error: $msg <br/>\n";
-    error_log("checkOrBuildYear returned $msg");
+if (str_starts_with($msg, 'Error: ') ) {
+    error_log("exhibitorCheckOrBuildYear returned $msg");
 }
-$message .= "<br/>&nbsp;<br/>NOTE: Check the current and next years configuration in registration, rules, and exhibits for any issues in performing the auto create.";
+$message .= "$msg<br/>\n<br/>NOTE: Check the current and next year's configuration in registration, rules, and exhibits for any issues in performing the auto create.";
 $response['success'] = $message;
 ajaxSuccess($response);
 
@@ -230,31 +227,36 @@ function updateRules($conid) {
     $msg = '';
 
     $getRQ = <<<EOS
-SELECT name, memList
+SELECT name, conid, optionName, description, typeList, catList, ageList, memList
 FROM memRules
-WHERE IFNULL(memList, '') != '';
+WHERE conid = ?;
 EOS;
     $getRIQ = <<<EOS
-SELECT name, step, memList
+SELECT name, conid, step, ruleType, applyTo, typeList, catList, ageList, memList
 FROM memRuleSteps
-WHERE IFNULL(memList, '') != '';
+WHERE conid = ?;
 EOS;
-    $updR = <<<EOS
-UPDATE memRules
-SET memList = ?
-WHERE name = ?;
+    $insR = <<<EOS
+INSERT INTO memRules(name, conid, optionName, description, typeList, catList, ageList, memList)
+VALUES (?,?,?,?,?,?,?,?);
 EOS;
-    $updRI = <<<EOS
-UPDATE memRuleSteps
-SET memList = ?
-WHERE name = ? AND step = ?;
+    $insRS = <<<EOS
+INSERT INTO memRuleSteps(name, conid, step, ruleType, applyTo, typeList, catList, ageList, memList)
+VALUES (?,?,?,?,?,?,?,?,?);
 EOS;
-    // get the rules to update
-    $ruleR = dbQuery($getRQ);
+    // check if rules already created
+    $ruleR = dbSafeQuery($getRQ, 'i', array($conid));
     if ($ruleR === false) {
         $msg = 'Error retrieving rules to update<br/>\n';
         return $msg;
     }
+    if ($ruleR->num_rows > 0) {
+        $msg = "Update of membership rules skipped, $conid already has " . $ruleR->num_rows . " rules.";
+        $ruleR->free();
+        return $msg;
+    }
+    $ruleR->free();
+    $ruleR = dbSafeQuery($getRQ, 'i', array($conid - 1));
 
     $rules = [];
     while ($rule = $ruleR->fetch_assoc()) {
@@ -262,7 +264,7 @@ EOS;
     }
     $ruleR->free();
 
-    $stepR = dbQuery($getRIQ);
+    $stepR = dbSafeQuery($getRIQ, 'i', array($conid - 1));
     if ($stepR === false) {
         $msg = 'Error retrieving rule items (steps) to update<br/>\n';
         return $msg;
@@ -278,18 +280,34 @@ EOS;
     // loop over rules updating memList
     $numRulesUpd = 0;
     foreach ($rules as $rule) {
-        $newMemList = updateRuleMemlist($conid, $rule['memList']);
-        $numRulesUpd += dbSafeCmd($updR, 'ss', array($newMemList, $rule['name']));
+        if (array_key_exists('memList', $rule) && $rule['memList'] != null)
+            $rule['memList'] = updateRuleMemlist($conid, $rule['memList']);
+        else
+            $rule['memList'] = null;
+
+        $valArray = array($rule['name'], $conid, $rule['optionName'], $rule['description'], 
+                          $rule['typeList'], $rule['catList'], $rule['ageList'], $rule['memList']);
+        $newRuleId = dbSafeInsert($insR, 'sissssss', $valArray);
+        if ($newRuleId !== false)
+            $numRulesUpd ++;
     }
 
     // loop over the steps updating memList
     $numStepsUpd = 0;
     foreach ($steps as $step) {
-        $newMemList = updateRuleMemlist($conid, $step['memList']);
-        $numStepsUpd += dbSafeCmd($updRI, 'ssi', array($newMemList, $step['name'], $step['step']));
+        if (array_key_exists('memList', $step) && $step['memList'] != null)
+            $step['memList'] = updateRuleMemlist($conid, $step['memList']);
+        else
+            $step['memList'] = null;
+
+        $valArray = array($step['name'], $conid, $step['step'], $step['ruleType'], $step['applyTo'],
+                          $step['typeList'], $step['catList'], $step['ageList'], $step['memList']);
+        $newStepId = dbSafeInsert($insRS, 'siissssss', $valArray);
+        if ($newStepId !== false)
+            $numStepsUpd++;
     }
 
-    $msg = "$numRulesUpd membership rules updated<br/>\n$numStepsUpd membership rule items (steps) updated<br/>\n";
+    $msg = "$numRulesUpd membership rules created<br/>\n$numStepsUpd membership rule steps created<br/>\n";
     return $msg;
 }
 

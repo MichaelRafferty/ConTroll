@@ -14,19 +14,19 @@ EOS;
 
     $checkR = dbSafeQuery($checkQ, 'i', array($conid));
     if ($checkR === false || $checkR->num_rows == 0) {
-        return "Unable to run exhibits check query";
+        return "Error: Unable to run exhibits check query";
     }
 
     $numYearRows = $checkR->fetch_row()[0];
     $checkR->free();
 
     if ($numYearRows > 0)
-        return '';  // set up of this year at least started
+        return "Exhibits already exists for $conid, skipping build";  // set up of this year at least started
 
     // ok, lets see if last year exists, so we can build this year
     $checkR = dbSafeQuery($checkQ, 'i', array($conid - 1));
     if ($checkR === false || $checkR->num_rows == 0) {
-        return 'Unable to run exhibits check query for conid-1';
+        return 'Error: Unable to run exhibits check query for conid-1';
     }
 
     $numYearRows = $checkR->fetch_row()[0];
@@ -74,7 +74,7 @@ EOS;
     // start with exhibitsRegionYears, we need the memId's and will default the rest of it from last year
     $eRYR = dbSafeQuery($eRYQ, 'i', array($conid - 1));
     if ($eRYR === false) {
-        return "Unable to fetch exhibitsRegionYears for year " . $conid - 1 . ", seek assistance.";
+        return "Error: Unable to fetch exhibitsRegionYears for year " . $conid - 1 . ", seek assistance.";
     }
 
     while ($eryRow = $eRYR->fetch_assoc()) {
@@ -144,7 +144,7 @@ EOS;
     }
     $eRYR->free();
 
-    return '';
+    return "Built exhibits configuration for $conid";
 }
 
 function findOrBuild($memId, $conId) : int | null {
