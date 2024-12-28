@@ -36,8 +36,7 @@ EOS;
 }
 
 // retrieve the coupon data from the database
-function load_coupon_data($couponCode, $serial = null): array
-{
+function load_coupon_data($couponCode, $serial = null) : array {
     $con = get_conf('con');
 
     // coupon code is required, as this works for a single specific coupon code
@@ -47,16 +46,16 @@ function load_coupon_data($couponCode, $serial = null): array
 
     $couponQ = <<<EOS
 SELECT c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.memId, c.minMemberships, c.maxMemberships, c.limitMemberships,
-       c.minTransaction, c.maxTransaction, c.maxRedemption,
-       count(t.id) AS redeemedCount, m.memAge, m.shortname, m.memGroup, m.label,
+       c.minTransaction, c.maxTransaction, c.maxRedemption, c.startDate, c.endDate,
+       count(t.id) AS redeemedCount, m.memAge, m.shortname, m.label,
        CASE WHEN c.startDate > now() THEN 'early' ELSE null END as start, 
        CASE WHEN c.endDate <= now() THEN 'expired' ELSE null END as end,
        k.id as keyId, k.guid, k.usedBy
 FROM coupon c
 LEFT OUTER JOIN memLabel m ON (c.memId = m.id)
 LEFT OUTER JOIN transaction t ON (t.coupon = c.id and t.complete_date is not null)
-LEFT OUTER JOIN couponKeys k ON (k.couponId = c.id and (k.guid = ? || k.guid = ?))
-WHERE  c.conid = ? AND ((c.code = ?) || (IFNULL(k.guid,'') = ?))
+LEFT OUTER JOIN couponKeys k ON (k.couponId = c.id and (IFNULL(k.guid,'---') = ? || IFNULL(k.guid,'---') = ?))
+WHERE  c.conid = ? AND ((c.code = ?) || (IFNULL(k.guid,'---') = ?))
 GROUP BY c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.memId, c.minMemberships, c.maxMemberships,
          c.minTransaction, c.maxTransaction, c.maxRedemption, m.memAge, m.label,
          k.id, k.guid, k.usedBy, c.startDate, c.endDate
@@ -80,8 +79,11 @@ EOS;
             $ec = '';
             break;
         }
-        if ($l['start'] != null)
-            $ec = 'Coupon has not started yet, starts ' . $l['startDate'];
+        if ($l['start'] != null) {
+            $start = $l['startDate'];
+            $start = str_replace('00:00:00', '', $start);
+            $ec = "Coupon has not started yet, starts $start";
+        }
         if ($l['end'] != null)
             $ec = 'Coupon is expired';
         if ($l['usedBy'] != null)
@@ -100,7 +102,7 @@ EOS;
     $result = array('status' => 'success', 'coupon' => $coupon);
     if ($coupon['memId']) {
         $priceQ = <<<EOS
-SELECT id, memGroup, label, shortname, 
+SELECT id, label, shortname, 
        CASE WHEN id = ? THEN -1 ELSE sort_order END AS sort_order, 
        price, memAge, memCategory
 FROM memLabel
@@ -133,7 +135,7 @@ function load_coupon_details($id): array
     $couponQ = <<<EOS
 SELECT c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.memId, c.minMemberships, c.maxMemberships, c.limitMemberships,
        c.minTransaction, c.maxTransaction, c.maxRedemption,
-       count(t.id) AS redeemedCount, m.memAge, m.shortname, m.memGroup, m.label,
+       count(t.id) AS redeemedCount, m.memAge, m.shortname, m.label,
        CASE WHEN c.startDate > now() THEN 'early' ELSE null END as start, 
        CASE WHEN c.endDate <= now() THEN 'expired' ELSE null END as end
 FROM coupon c
@@ -162,7 +164,7 @@ EOS;
     $result = array('status' => 'success', 'coupon' => $coupon);
     if ($coupon['memId']) {
         $priceQ = <<<EOS
-SELECT id, memGroup, label, shortname, sort_order, price, memAge, memCategory
+SELECT id, label, shortname, price, memCategory, memType, memAge, conid
 FROM memLabel
 WHERE
     conid=? 
@@ -173,7 +175,7 @@ EOS;
         $priceR = dbSafeQuery($priceQ, 'ii', array($con['id'], $coupon['memId']));
     } else {
         $priceQ = <<<EOS
-SELECT id, memGroup, label, shortname, sort_order, price, memAge, memCategory
+SELECT id, label, shortname, sort_order, price, memAge, memCategory
 FROM memLabel
 WHERE
     conid=? 
@@ -191,6 +193,9 @@ EOS;
 }
 // apply coupon data to mytpe array
 function apply_coupon_data($mtypes, $coupon) {
+    $con_conf = get_conf('con');
+    $conid = $con_conf['id'];
+
     foreach ($mtypes as $id => $mbrtype) {
         $primary = true; // if coupon is active, does this 'num' count toward min / max memberships
         $discount = 0;
@@ -198,8 +203,8 @@ function apply_coupon_data($mtypes, $coupon) {
         // first compute primary membership types
         if ($coupon['memId'] && $coupon['memId'] == $mbrtype['id']) {  // ok this is a forced primary
             $primary = true; // need a statement here, as combining the if's gets difficult
-        } else if ($mbrtype['price'] == 0 || ($mbrtype['memCategory'] != 'standard' && $mbrtype['memCategory'] != 'virtual')) {
-            $primary = false;
+        } else {
+            $primary = isPrimary($mbrtype, $conid);
         }
 
         if ($coupon['couponType'] == '$off' || $coupon['couponType'] == '%off') {
@@ -279,3 +284,117 @@ function apply_overall_discount($coupon, $total) {
 
     return 0;
 }
+
+// process counpon against badge array
+    function applyCouponToBadges($badges, $prices, $couponCode, $couponSerial) {
+        // get the membership prices
+        $counts = array ();
+        $discounts = array ();
+        $primary = array ();
+        $map = array ();
+
+// get the coupon data, if any
+        $coupon = null;
+        $result = load_coupon_data($couponCode, $couponSerial);
+        if ($result['status'] == 'error') {
+            ajaxSuccess($result);
+            exit();
+        }
+        $coupon = $result['coupon'];
+        if (array_key_exists('mtypes', $result))
+            $mtypes = $result['mtypes'];
+        //web_error_log("coupon:");
+        //var_error_log($coupon);
+
+
+// now apply the price discount to the array
+        if ($coupon !== null) {
+            $mtypes = apply_coupon_data($mtypes, $coupon);
+        }
+
+        foreach ($mtypes as $id => $mbrtype) {
+            $map[$id] = $id;
+            $prices[$id] = $mbrtype['price'];
+            $counts[$id] = 0;
+            $isprimary = (!($mbrtype['price'] == 0 ||
+                ($mbrtype['memCategory'] != 'standard' && $mbrtype['memCategory'] != 'supplement' && $mbrtype['memCategory'] != 'virtual')
+            ));
+            if ($coupon !== null) {
+                $discounts[$id] = $mbrtype['discount'];
+                if ($coupon['memId'] == $id) {  // ok this is a forced primary
+                    $isprimary = true;                     // need a statement here, as combining the if's gets difficult
+                }
+            }
+            $primary[$id] = $isprimary;
+        }
+
+        $num_primary = 0;
+        $total = 0;
+// compute the pre-discount total to see if the ca
+        foreach ($badges as $badge) {
+            if (!isset($badge) || !isset($badge['memId'])) {
+                continue;
+            }
+            if (array_key_exists($badge['memId'], $counts)) {
+                if ($primary[$badge['memId']]) {
+                    $num_primary++;
+                }
+                $total += $prices[$badge['memId']];
+                $counts[$badge['memId']]++;
+            }
+        }
+
+
+// now figure out if coupon applies
+        $apply_discount = coupon_met($coupon, $total, $num_primary, $map, $counts);
+        $results = array();
+        $results['coupon'] = $coupon;
+        $results['apply_discount'] = $apply_discount;
+        $results['badges'] = $badges;
+        return $results;
+    }
+
+// portal coupon functions
+// draw variable price membership set modal
+    function draw_CouponModal() {
+        ?>
+        <div id='couponApplyModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Apply Coupon' aria-hidden='true' style='--bs-modal-width: 75%;'>
+            <div class='modal-dialog'>
+                <div class='modal-content'>
+                    <div class='modal-header bg-primary text-bg-primary'>
+                        <div class='modal-title' id='couponHeader'>
+                            <strong>Apply Coupon to Cart</strong>
+                        </div>
+                        <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                    </div>
+                    <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                        <div class="container-fluid">
+                            <div class="row mt-4">
+                                <div class="col-sm-3">Type Coupon Code Here:</div>
+                                <div class="col-sm-auto"><input typye="text" size=16 maxlength-16 id="couponCode" name="couponCode"
+                                    placeholder="type code here"/></div>
+                            </div>
+                            <div class='row mt-2 mb-2'>
+                                <div class='col-sm-3'></div>
+                                <div class='col-sm-auto'><b>OR</b></div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-sm-3'>Paste Coupon Link Here:</div>
+                                <div class='col-sm-auto'><input typye='text' size=64 maxlength="512" id='couponLink' name='couponLink'
+                                    placeholder='paste link here'/></div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-sm-12' id='couponMsgDiv'></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='modal-footer'>
+                        <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
+                        <button class='btn btn-sm btn-warning' type='button' onclick='coupon.RemoveCouponCode();' id='removeCouponBTN' hidden>Remove Coupon</button>
+                        <button class='btn btn-sm btn-primary' id='acSubmitButton' onClick='coupon.addCouponCode()' tabindex='10102'>Add Coupon</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+    }

@@ -145,9 +145,9 @@ $result_code=-5;
 $command = '';
 if (isset($_SESSION['receiptPrinter'])) {
     $printer = $_SESSION['receiptPrinter'];
-    $server = $printer[1];
-    $queue = $printer[2];
-    $codepage = $printer[4];
+    $server = $printer['host'];
+    $queue = $printer['queue'];
+    $codepage = $printer['code'];
     $serverArg = '';
     if ($server != '')
         $serverArg = "H$server";

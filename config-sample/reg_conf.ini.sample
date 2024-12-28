@@ -39,35 +39,60 @@ hoteladdr="Hotel Address"
 survey_url="https://link-to-post-convention-survey"
 id="2022"
 taxRate=6
+currency="USD"
 minComp="2021"
 compLen="150"
 conLen="3"
 server="https://reg.conname.org/"
 rollover_eligible="'upgrade', 'rollover', 'freebie', 'standard', 'yearahead', 'discount'"
+; showConPolicy - shows the "CLick here for the #conname# Policies",
+;     set to 0 if agree to policy is one of your policies or 1 otherwise
+showConPolicy=1
+; showVolunteerPolicy - shows the "#Conname# is entirely run by volunteers" line in the policy block,
+;      set to 0 if volunteers is in your interest section, 1 otherwise
+showVolunteerPolicy=1
+oneoff=0 ; 1 if this is a one year (one-off convention), 0=if this convention re-occurs every "year".
 [debug]
 google=0 ; to enable google debug statements (1=enable, 0=disable)
-reg_control_admin=0 ; to enable reg_contol admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
-reg_control_exhibitors=0 ; to enable reg_contol exhibitors tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+controll_admin=0 ; to enable controll admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+controll_regadmin=0 ; to enable controll reg_admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+controll_registration=0 ; to enable controll registration tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+controll_exhibitors=0 ; to enable controll exhibitors tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
 vendors=0 ; to enable vendor and artist admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
 usps=0 ; to enable usps address validation debug (currently bitmast from 1-31)
 api:0 ; to enable api inteface debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
 portal=0 ; to enable regportal debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
 atcon=0 ; to enable atcon debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
+oauth=0 ; to enable oauth2 server debug (currently 0 = off, 1 = on)
 [reg]
 https=1
 test=0
+; testemail: if set, and test=1, then all emails from the system will be forced to go to the testemail email address
+;testemail=
 open=1
+;;; customtext
+; appears in each program section based on program name
+; values:
+; all = show all customtext, even the default messages
+; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
+; none = supporess all custom text
+customtext='production'
 registrationpage="https://reg.conname.org/"
 close=0
 suspended=0
 suspendreason="while we examine the impact of COVID-19"
-suspendmessage="https://conname.org"
 cancelled=0
 cancel_date="Day, Month Day"
 server="https://reg.conname.org/"
 logoimage="conname2022.png"
+logoalt="logo image alternate text"
 logotext="Tagline not alt=text"
 onsiteopen="3:00 PM"
+; required person field sets
+;   all = require all fields: first, last, addr, city, st, zip, country, email
+;   first = require only first name: first, country, email
+;   addr = first, addr, city, st, zip, country, email
+required="all"
 [atcon]
 ; valid types are
 ; 	manager - requires manager logged in
@@ -77,9 +102,23 @@ onsiteopen="3:00 PM"
 discount=active
 ; badgeps = fill path to the Postscript header for printing badges
 badgeps="/home/homedir/config/conname.ps"
+;;; customtext
+; appears in each program section based on program name
+; values:
+; all = show all customtext, even the default messages
+; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
+; none = supporess all custom text
+customtext='production'
 [vendor]
 test=0
 open=1
+;;; customtext
+; appears in each program section based on program name
+; values:
+; all = show all customtext, even the default messages
+; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
+; none = supporess all custom text
+customtext='production'
 ;vendors: email address for generic vendor emails
 ;vendorsite: url to vendor website
 vendor="dealers@???"
@@ -88,7 +127,6 @@ vendorsite="http://vendor"
 vendorSignupAddltext=""
 artistsite="http://artist"
 artist="artists@???"
-renderer='http://localhost:3000' ; remote renderer for bidsheets
 # pathto file in config any additional text you wish to add to explain the signup form for artist portal
 ;; artist Item Registration Headers, if omitted, the defaults are used
 ;artistItemAuctionTitle="Art Auction Items"
@@ -122,16 +160,16 @@ artistBidSheet="Demo 2024 Art Show Bid Sheet"
 artistPriceTag=""
 taxidlabel="NJ Sales Tax ID"
 taxidextra=
-// disclaimers are path to file in config directory contain the request and payment disclaimers
+;; disclaimers are path to file in config directory contain the request and payment disclaimers
 req_disclaimer=""
 pay_disclaimer=""
 artsheets=false ; true/false show sheet print buttons
 artcontrol=false ; true/false show control sheet print button
 [client]
-path = "/home/homedir/reg.conname.org/reg_control"
+path = "/home/homedir/reg.conname.org/controll"
 [google]
 app_name="ConTroll Registration Controller"
-redirect_base="https://reg.conname.org/reg_control"
+redirect_base="https://controll.conname.org"
 json="/home/homedir/config/conname.json"
 client_id=""
 client_secret=""
@@ -178,15 +216,49 @@ webpaysdk="https://web.squarecdn.com/v1/square.js"
   batchsize=10
 ; delay = sleep in seconds between batches, 0 = no delay and unlimited batchsize
   delay=1
-[artshow]
-test=0
-open=1
-suspended=1
-close=0
-max_failures=10
-url="https://reg.conname.org/artshow"
 [portal]
 ;; membership portal items
+test=0
+open=1
+suspended=0
+suspendreason="while we examine the impact of COVID-19"
+https=1
+;;; customtext
+; appears in each program section based on program name
+; values:
+; all = show all customtext, even the default messages
+; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
+; none = supporess all custom text
+customtext='production'
+; portalsite = URL to login page (the default index.php location is all you need)
+; redirect_base = URI for OAUTH2 returns, it should also be the login page and must match what you configured in the OAUTH2 providers
+; emailHrs = number of hours a login by email session can last, not the link expiration time
+; oauthHrs = number of hours an oauth session can last
+; the portal also has it's own logo variables as logoimage and logoalt
+; history = 1 = show membership history menu item, 0 = suppress, missing/null = show
+portalsite=""
+redirect_base=""
+logoimage=""
+logoalt=""
+emailhrs=24
+oauthhrs=8
+history=1
+;; memberbadgencolor: hex string of the color of the membership "badges" on the portal home screen, to override the standard color scheme
+;;       note; standard color scheme has the buttons having a color that describe the membership type, the legend supports this color scheme
+;;           the override is a single color for all of the badges.  Presence of this line will auto suppress the legend.
+;; suppresslegend: if memberbasgecolor is not used, missing or 0 will show the legend, 1 will suppress the legend
+;memberbadgecolors="#000000"
+;suppresslegend=0
+; helppage = path to the help page relative to the web root of the portal page
+; helppage=
+; showConPolicy - shows the "CLick here for the #conname# Policies",
+;     set to 0 if agree to policy is one of your policies or 1 otherwise
+showConPolicy=1
+; showVolunteerPolicy - shows the "#Conname# is entirely run by volunteers" line in the policy block,
+;      set to 0 if volunteers is in your interest section, 1 otherwise
+showVolunteerPolicy=1
+; nomdate = cutoff for WSFS nominations memberships, older than this can nominate
+; nomdate="YYYY/MM/DD"
 [api]
 path = "" ; full path to the api directory
 oauthEncryptionKey= "" ; set your oauth2Server encryption key
@@ -195,5 +267,20 @@ oauthEncryptionKey= "" ; set your oauth2Server encryption key
 ;	if these are blank or missing, the usps validation is not enabled.
 clientId=
 secret=
-[control]
+[controll]
 clubname='Club Name'
+; badgelistfilter - where to put the filter elements on the badgelist page ("top", "bottom")
+badgelistfilter="top"
+; useportal - does this installation use the portal, 1 = yes, 0 = no
+useportal=1
+[oauth]
+;;; serverKey - a 32 character random alphanumeric string, generate using any pasword generator
+;serverKey=
+[local]
+;;; local parameters for the sendinterests.php send script
+;   cvsto = what email address to receive the overall VS file
+;   cvscc = what email address, if any gets CC on all emails sent my sendinterests.php
+;   csvsavedir = directory relative to the scripts directory, where the CVS files are saved so local copies are availalbe if the emails fail
+;csvto=
+;csvcc=
+;csvsavedir="sentCSV"

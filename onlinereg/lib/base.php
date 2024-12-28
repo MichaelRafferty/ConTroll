@@ -15,11 +15,22 @@ if ($db_ini['reg']['https'] <> 0) {
 require_once(__DIR__ . "/../../lib/db_functions.php");
 require_once(__DIR__ . '/../../lib/ajax_functions.php');
 require_once(__DIR__ . '/../../lib/global.php');
+require_once(__DIR__ . '/../../lib/jsVersions.php');
 db_connect();
 
 function ol_page_init($title, $js = '') {
-    $includes = getTabulatorIncludes();
-    ?>
+    global $libJSversion, $globalJSversion, $onlineregJSversion;
+
+    $cdn = getTabulatorIncludes();
+    $tabbs5=$cdn['tabbs5'];
+    $tabcss=$cdn['tabcss'];
+    $tabjs=$cdn['tabjs'];
+    $bs5js=$cdn['bs5js'];
+    $bs5css=$cdn['bs5css'];
+    $jqjs=$cdn['jqjs'];
+    $jquijs=$cdn['jquijs'];
+    $jquicss=$cdn['jquicss'];
+    echo <<<EOF
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,16 +38,17 @@ function ol_page_init($title, $js = '') {
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title><?php echo $title; ?></title>
-    <link rel='icon' type='image/x-icon' href='/lib/favicon.ico'>
+    <link rel='icon' type='image/x-icon' href='/images/favicon.ico'>
     <link href='css/style.css' rel='stylesheet' type='text/css' />
-    <link href='<?php echo $includes['jquicss'];?>' rel='stylesheet' type='text/css' />
-    <link href='<?php echo $includes['bs5css'];?>' rel='stylesheet'/>
-    <script src='<?php echo $includes['bs5js'];?>'></script>
-    <script type='text/javascript' src='<?php echo $includes['jqjs']; ?>'></script>
-    <script type='text/javascript' src='<?php echo $includes['jquijs']; ?>'></script>
-    <script type='text/javascript' src='javascript/coupon.js'></script>
-    <script type='text/javascript' src='javascript/store.js'></script>
-<?php
+    <link href="$jquicss" rel='stylesheet' type='text/css' />
+    <link href='$bs5css' rel='stylesheet'/>
+    <script src='$bs5js'></script>
+    <script type='text/javascript' src="$jqjs"></script>
+    <script type='text/javascript' src="$jquijs"></script>
+    <script type='text/javascript' src="jslib/global.js?v=$globalJSversion"></script>
+    <script type='text/javascript' src="jslib/coupon.js?v=$libJSversion"></script>
+    <script type='text/javascript' src="javascript/store.js?v=$onlineregJSversion"></script>
+EOF;
     if ($js != '') {
         echo <<<EOF
 <script type='text/javascript'>

@@ -1,0 +1,54 @@
+Membership Configurtion Tables
+
+Memberships are assigned a type and a category.  These types and categories provide certain special meanings to ConTroll to assist in its operations.
+
+When ConTroll is installed it creates and 'locks' certain pre-defined Types and Categories.  Types and Categories are 'locked' by setting
+    the first 5 characters of their notes field to 'Req: '.
+
+NOTE: This is a work in progress document, not all of the effects of types and categories are captured here yet.
+
+Predefined Required Membership Types: (memTypes)
+
+    full:       a badgable membership that runs the full length of the convention
+    virtual:    a non badgeable membership that will be provided virtual attendence rights, but not on-site attendence rights for the full
+                    length of the convention
+    oneday:     a badgable membership that is only printable and valid for the day specified.  It may be sold in advance but will only print
+                    on the proper day.
+    donation:   a usually variable amount, that is non badgable, and defined as a donation to the organization
+
+Membership Type Options:
+    Notes:          not printed anywhere, shown to the admin for understand the use of this membership type
+    Active:         Currently available for use this year,  If 'N' it's an archive element for prior years.
+
+Predefined Required Membership Categories: (memCategories)
+
+    standard:   a badgable attending membership
+    virtual:    a non badgable virtual membership
+    upgrade:    a membership with a special price to upgrade another membership type (usually used to upgrade virtual or one day)
+    yearahead:  a standard membership, but purchased for the following convention year (usually at a discounted price)
+    freebie:    any complimentary membership, badgable
+    artist:     a membership available at a special rate to artists who are in the art show.  This is a badgable membership and usually is
+                    only sold via the artist portal.
+    dealer:     a membership available at a special rate to vendors who are in the dealers room.  This is a badgable membership and usually
+                    is only sold via the vendor portal.
+    addon:      any add-on to a membership, that is not badgable.  Often used for lanyards, special events, etc.
+
+Membership Category Options:
+    Notes:          not printed anywhere, shown to the admin for understand the use of this membership type
+    Only One:       Used by the rules engine to indicate that only one membership of this category can belong to this perid/newperid
+    Stand Alone:    Used by onlinereg module to indicate that the cart now has a membership that makes the cart purchasable
+    Variable Price: Used by portal module to indicate that this item has a minumum price, but the user can specify the actual amount.
+                        Usually used by donations
+    Badge Label:    A string printed on the badge for memberships of this category.  If this string starts with 'X' this is a non badgable
+                        membership also known as a Non Primary Membership. NOTE: yearahead is only primary for its con year.
+    Active:         Currently available for use this year,  If 'N' it's an archive element for prior years.
+
+Membership Ages (ageList)
+    None of these are required, but they are a per convention year item.
+
+Fields:
+    Age Type:   Internal short name of the item.  With the convention id it makes up the primary key
+    Label:      What is added by the memLabel view to the age portion of the label
+    shortname:  What is displayed as the age by the system
+    Badge Flag: String that is printed "reverse video" on the badge for memberships of this age type
+

@@ -15,10 +15,12 @@
 
 # images directories not used by ConTroll
 /atcon/images/
-/atcon/ps
+/atcon/ps/
 /onlinereg/images/
 /vendor/images/
 /install/Reg_Install_Schema/old/
+/portal/images/
+/controll/images/
 
 # stuff for local overrides
 .htaccess

@@ -116,20 +116,11 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
         'environment' => $cc['env'],
     ]);
 
-    if (isset($_SESSION)) {
-        if (array_key_exists('user_perid', $_SESSION)) {
-            $user_perid = $_SESSION['user_perid'];
-        } else {
-            $user_perid = null;
-        }
-        if (array_key_exists('user_id', $_SESSION)) {
-            $user_id = $_SESSION['user_id'];
-        } else {
-            $user_id = null;
-        }
-    } else {
-        $user_perid = null;
-        $user_id = null;
+    $loginPerid = getSessionVar('user_perid');
+    if ($loginPerid == null) {
+        $userType = getSessionVar('idType');
+        if ($userType == 'p')
+            $loginPerid = getSessionVar('id');
     }
 
     // square api steps
@@ -153,12 +144,14 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     $order->setSource(new OrderSource);
     $order->getSource()->setName($con['conname'] . 'OnLineReg');
 
-    if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
+    if (array_key_exists('custid', $results)) {
+        $custid = $results['custid'];
+    } else if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
         $custid = 'r-' . $results['badges'][0]['badge'];
     } else if (array_key_exists('spaceName', $results) && array_key_exists('vendorId', $results)) {
         $custid = 'e-' . $results['vendorId'];
     } else {
-        $custid = 't-' + $results['transid'];
+        $custid = 't-' . $results['transid'];
     }
     $order->setCustomerId($con['id'] . '-' . $custid);
     $order_lineitems = [];
@@ -166,50 +159,132 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 
     // add order lines
 
-    if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
-        foreach ($results['badges'] as $badge) {
+    $order_value = 0;
+    if (array_key_exists('planPayment', $results))
+        $planPayment = $results['planPayment'];
+    else
+        $planPayment = 0;
+
+    $planName = '';
+    $planId = '';
+    $downPmt = '';
+    $nonPlanAmt = '';
+    $balaanceDue = '';
+    if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
+        if (array_key_exists('planRec', $results) && array_key_exists('plan', $results['planRec']) &&
+            array_key_exists('name', $results['planRec']['plan'])) {
+            $planName = $results['planRec']['plan']['name'];
+            $planId = 'TBA';
+            $downPmt = $results['planRec']['downPayment'];
+            $nonPlanAmt = $results['planRec']['nonPlanAmt'];
+            $balaanceDue = $results['planRec']['balanceDue'];
+        }
+    }
+    if ($planPayment == 1) {
+        if (array_key_exists('existingPlan', $results) && array_key_exists('name', $results['existingPlan'])) {
+            $planName = $results['existingPlan']['name'];
+            $planId = $results['existingPlan']['id'];
+        }
+    }
+
+    if ($planPayment == 0) {
+        if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
+            foreach ($results['badges'] as $badge) {
+                if (array_key_exists('fullname', $badge))
+                    $fullname = $badge['fullname'];
+                else
+                    $fullname = trim(trim($badge['fname'] . ' ' . $badge['mname']) . ' ' . $badge['lname']);
+                if (array_key_exists('perid', $badge) && $badge['perid'] != null) {
+                    $id = 'p' . $badge['perid'];
+                } else {
+                    $id = 'n' . $badge['newperid'];
+                }
+                $item = new OrderLineItem ('1');
+                $item->setUid('badge' . ($lineid + 1));
+                $item->setName($badge['age'] . ' Membership for ' . $fullname);
+                $note = $badge['memId'] . ',' . $id . ': memId, p/n id';
+                if ($planName != '') {
+                    $note .= ($badge['inPlan'] ? (', Plan: ' . $planName) : ', NotInPlan');
+                }
+                $item->setNote($note);
+                $item->setBasePriceMoney(new Money);
+                $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
+                $item->getBasePriceMoney()->setCurrency(Currency::USD);
+                $order_lineitems[$lineid] = $item;
+                $order_value += $badge['price'];
+                $lineid++;
+            }
+        }
+        if (array_key_exists('spaceName', $results)) {
             $item = new OrderLineItem ('1');
-            $item->setUid('badge' . ($lineid + 1));
-            $item->setName($badge['age'] . ' Membership for ' . trim(trim($badge['fname'] . ' ' . $badge['mname']) . ' ' . $badge['lname']));
-            $item->setNote($badge['memId'] . ': Membership Type Code');
+            $item->setUid('exhibits-space');
+            $item->setName($results['spaceName'] . ':' . mb_substr($results['spaceDescription'], 0, 128));
             $item->setBasePriceMoney(new Money);
-            $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
+            $item->getBasePriceMoney()->setAmount($results['spacePrice'] * 100);
             $item->getBasePriceMoney()->setCurrency(Currency::USD);
             $order_lineitems[$lineid] = $item;
+            $order_value += $results['spacePrice'];
             $lineid++;
         }
-    }
-    if (array_key_exists('spaceName', $results)) {
+
+        $order->setLineItems($order_lineitems);
+
+        $orderDiscounts = [];
+        // now apply the coupon
+        if (array_key_exists('discount', $results) && $results['discount'] > 0) {
+            $item = new OrderLineItemDiscount ();
+            $item->setUid('couponDiscount');
+            if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
+                $coupon = $results['coupon'];
+                $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . '), Coupon Discount: ' .
+                    $coupon['discount'];
+            }
+            else {
+                $couponName = 'Coupon Applied';
+            }
+            $item->setName($couponName);
+            $item->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
+            $money = new Money;
+            $money->setAmount($results['discount'] * 100);
+            $money->setCurrency(Currency::USD);
+            $item->setAmountMoney($money);
+            $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
+            $orderDiscounts[] = $item;
+            $order_value -= $results['discount'];
+        }
+
+        // if a plan, set a discount called deferred payment for plan to the amount not in this payment
+        if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
+            // deferment is total of the items - total of the payment
+            $deferment = $order_value - $results['total'];
+            $note = "Name: $planName, ID: TBA, Non Plan Amt: $nonPlanAmt, Down Payment: $downPmt, Balance Due: $balaanceDue, Perid: $loginPerid";
+            // this is the down payment on a payment plan
+            $item = new OrderLineItemDiscount ();
+            $item->setUid('planDeferment');
+            $item->setName("Payment Deferral Amount: " . $note);
+            $item->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
+            $money = new Money;
+            $money->setAmount($deferment * 100);
+            $money->setCurrency(Currency::USD);
+            $item->setAmountMoney($money);
+            $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
+            $orderDiscounts[] = $item;
+        }
+        if (count($orderDiscounts) > 0) {
+            $order->setDiscounts($orderDiscounts);
+        }
+    } else {
+        // this is a plan payment make the order just the plan payment
         $item = new OrderLineItem ('1');
-        $item->setUid('exhibits-space');
-        $item->setName($results['spaceName'] . ':' . mb_substr($results['spaceDescription'], 0, 128));
+        $item->setUid('planPayment');
+        $note = "Plan Id: $planId, Name: $planName, Perid: $loginPerid";
+        $item->setName('Plan Payment: ' . $note);
         $item->setBasePriceMoney(new Money);
-        $item->getBasePriceMoney()->setAmount($results['spacePrice'] * 100);
+        $item->getBasePriceMoney()->setAmount($results['total'] * 100);
         $item->getBasePriceMoney()->setCurrency(Currency::USD);
         $order_lineitems[$lineid] = $item;
-        $lineid++;
-    }
 
-    $order->setLineItems($order_lineitems);
-
-    // now apply the coupon
-    if (array_key_exists('discount', $results) && $results['discount'] > 0) {
-        $item = new OrderLineItemDiscount ();
-        $item->setUid('couponDiscount');
-        if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
-            $coupon = $results['coupon'];
-            $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . ')';
-        } else {
-            $couponName = 'Coupon Applied';
-        }
-        $item->setName($couponName);
-        $item->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
-        $money = new Money;
-        $money->setAmount($results['discount'] * 100);
-        $money->setCurrency(Currency::USD);
-        $item->setAmountMoney($money);
-        $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
-        $order->setDiscounts(array($item));
+        $order->setLineItems($order_lineitems);
     }
 
     // pass order to square and get order id
@@ -243,19 +318,19 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 //            }
         } else {
             $errors = $apiResponse->getErrors();
-            if ($useLogWrite) {
-                logWrite(array('ordersApi' => 'Order returned non-success'));
-            } else {
+//            if ($useLogWrite) {
+//                logWrite(array('ordersApi' => 'Order returned non-success'));
+//            } else {
                 web_error_log('Order returned non-success');
-            }
+//            }
             
             $errorreturn = null;
             foreach ($errors as $error) {
-                if ($useLogWrite) {
-                    logWrite(array('Category' => $error->getCategory(), 'Code' => $error->getCode(), 'Detail' => $error->getDetail(), 'Field' => $error->getField()));
-                } else {
+//                if ($useLogWrite) {
+//                    logWrite(array('Category' => $error->getCategory(), 'Code' => $error->getCode(), 'Detail' => $error->getDetail(), 'Field' => $error->getField()));
+//                } else {
                     var_error_log("Cat: " . $error->getCategory() . ": Code " . $error->getCode() . ". Detail: " . $error->getDetail() . ", [" . $error->getField() . "]");
-                }
+//                }
                 if ($errorreturn == null)
                     $errorreturn = array('status'=>'error','data'=>"Order Error: " . $error->getCategory() . "/" . $error->getCode() . ": " . $error->getDetail() . "[" . $error->getField() . "]");
             }
@@ -265,11 +340,11 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
             exit();
         }
     } catch (ApiException $e) {
-        if ($useLogWrite) {
-            logWrite('Order received error while calling Square: ' . $e->getMessage());
-        } else {
+//        if ($useLogWrite) {
+//            logWrite('Order received error while calling Square: ' . $e->getMessage());
+//        } else {
             web_error_log("Order received error while calling Square: " . $e->getMessage());
-        }
+//        }
         ajaxSuccess(array('status'=>'error','data'=>"Error: Error connecting to Square"));
         exit();
     }
@@ -298,6 +373,13 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     $pbody->setNote('On-Line Registration');
 
 //var_error_log($pbody);
+//    if ($useLogWrite) {
+//        logWrite(array('payment' => $pbody));
+//    }
+//    else {
+//        web_error_log('payment:');
+//        var_error_log($pbody);
+//    }
 
     try {
         $paymentsApi = $client->getPaymentsApi();
@@ -313,21 +395,21 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 //            }
         } else {
             $errors = $apiResponse->getErrors();
-            if ($useLogWrite) {
-                logWrite('Payment returned non-success');
-            } else {
+//            if ($useLogWrite) {
+//                logWrite('Payment returned non-success');
+//            } else {
                 web_error_log("Payment returned non-success");
-            }
+//            }
             foreach ($errors as $error) {
                 $cat = $error->getCategory();
                 $code = $error->getCode();
                 $detail = $error->getDetail();
                 $field = $error->getField();
-                if ($useLogWrite) {
-                    logWrite('Transid: ' . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail [$field]");
-                } else {
+//                if ($useLogWrite) {
+//                    logWrite('Transid: ' . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail [$field]");
+//                } else {
                     web_error_log("Transid: " . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail [$field]");
-                }
+//                }
                 switch ($code) {
                     case "GENERIC_DECLINE":
                         $msg = "Card Declined";
@@ -344,28 +426,28 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                     default:
                         $msg = $code;
                 }
-                if ($useLogWrite) {
-                    logWrite("Square card payment error for " . $results['transid'] . " of $msg");
-                } else {
+//                if ($useLogWrite) {
+//                    logWrite("Square card payment error for " . $results['transid'] . " of $msg");
+//                } else {
                     web_error_log("Square card payment error for " . $results['transid'] . " of $msg");
-                }
+//                }
                 ajaxSuccess(array('status'=>'error','data'=>"Payment Error: $msg"));
                 exit();
             }
-            if ($useLogWrite) {
-                logWrite('Square card payment error for ' . $results['transid'] . " of 'unknown'");
-            } else {
-                web_error_log("Square card payment error for " . $results['transid'] . " of 'unknown'");
-            }
+//            if ($useLogWrite) {
+//                logWrite('Square card payment error for ' . $results['transid'] . " of 'unknown'");
+//            } else {
+//                web_error_log("Square card payment error for " . $results['transid'] . " of 'unknown'");
+//            }
             ajaxSuccess(array('status'=>'error','data'=>"Unknown Payment Error"));
             exit();
         }
     } catch (ApiException $e) {
-        if ($useLogWrite) {
-            logWrite('Payment received error while calling Square: ' . $e->getMessage());
-        } else {
+//        if ($useLogWrite) {
+//            logWrite('Payment received error while calling Square: ' . $e->getMessage());
+//        } else {
             web_error_log('Payment received error while calling Square: ' . $e->getMessage());
-        }
+//        }
         ajaxSuccess(array('status'=>'error','data'=>"Error: Error connecting to Square"));
         exit();
     }
@@ -398,7 +480,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
             's', 's', 's', 's', 's', 's', 's', 's', 'i');
     $rtn['tnxdata'] = array($results['transid'],'credit',$category,$desc,'online',$results['pretax'], $results['tax'], $approved_amt,
-        $txtime,$last4,$results['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $user_perid);
+        $txtime,$last4,$results['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $loginPerid);
     $rtn['url'] = $receipt_url;
     $rtn['rid'] = $receipt_number;
     return $rtn;

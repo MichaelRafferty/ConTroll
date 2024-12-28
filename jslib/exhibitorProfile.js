@@ -1,5 +1,6 @@
 // Exhibitor Profile related functions
 //  instance of the class must be a javascript variable named exhibitorProfile
+exhibitorProfileMCEInit = false;
 class ExhibitorProfile {
 
     // Profile DOM related privates
@@ -161,12 +162,16 @@ class ExhibitorProfile {
                     break;
                 case 'description':
                     var value = tinyMCE.activeEditor.getContent();
+                    var lcvalue = value.toLowerCase();
                     if (value == null) {
                         value = false;
                         m2 += " and the description field which also is required;";
                     } else if (value.trim() == '') {
                         value = false;
                         m2 += " and the description field which also is required;";
+                    } else if (lcvalue.includes("<script")) {
+                        value = false
+                        m2 += " and the description field cannot contain a <script tag;";
                     }
                     break;
 
@@ -204,7 +209,6 @@ class ExhibitorProfile {
         clear_message('au_result_message');
         tinyMCE.triggerSave();
 
-        //
         $.ajax({
             url: 'scripts/vendorAddUpdate.php',
             data: $('#exhibitorProfileForm').serialize(),
@@ -348,24 +352,37 @@ class ExhibitorProfile {
         this.#cpasswordLine1.hidden = hide;
         this.#cpasswordLine2.hidden = hide;
         this.#profileModal.show();
-        tinyMCE.init({
-            selector: 'textarea#description',
-            height: 400,
-            min_height: 400,
-            menubar: false,
-            license_key: 'gpl',
-            plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
-            toolbar: [
-                'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
-                'bold italic underline strikethrough removeformat | ' +
-                'visualchars nonbreaking charmap hr | ' +
-                'preview fullscreen ',
-                'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
-            ],
-            content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
-            placeholder: 'Edit the description here...',
-            auto_focus: 'reg-description'
-        });
+        if (exhibitorProfileMCEInit) {
+            // update the text block
+            tinyMCE.get("description").focus();
+            tinyMCE.get("description").load();
+        } else {
+            tinyMCE.init({
+                selector: 'textarea#description',
+                height: 400,
+                min_height: 400,
+                menubar: false,
+                license_key: 'gpl',
+                plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
+                toolbar: [
+                    'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
+                    'bold italic underline strikethrough removeformat | ' +
+                    'visualchars nonbreaking charmap hr | ' +
+                    'preview fullscreen ',
+                    'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
+                ],
+                content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
+                placeholder: 'Edit the description here...',
+                auto_focus: 'reg-description'
+            });
+            // Prevent Bootstrap dialog from blocking focusin
+            document.addEventListener('focusin', (e) => {
+                if (e.target.closest(".tox-tinymce, .tox-tinymce-aux, .moxman-window, .tam-assetmanager-root") !== null) {
+                    e.stopImmediatePropagation();
+                }
+            });
+            exhibitorProfileMCEInit = true;
+        }
     }
 
     // profileModalClose - close the modal edit profile dialog

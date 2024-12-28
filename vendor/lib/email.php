@@ -130,6 +130,12 @@ EOS;
 
 // space payment confirmation
 function payment($results) {
+    $con = get_conf('con');
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
     $buyer = $results['buyer'];
     $vendor = $results['vendor'];
     $region = $results['region'];
@@ -140,6 +146,20 @@ function payment($results) {
             $exhibitorName .= "(" . $vendor['artistName'] . ")";
         }
     }
+    switch ($portalType) {
+        case 'artist':
+            $portalName = 'Artist';
+            break;
+        case 'exhibitor':
+            $portalName = 'Exhibitor';
+            break;
+        case 'fan':
+            $portalName = 'Fan';
+            break;
+        default:
+            $portalName = 'Vendor';
+            break;
+    }
 
 
     $conf = get_conf('con');
@@ -149,16 +169,16 @@ function payment($results) {
 
     // plain text version
     $body = "Dear " . trim($buyer['fname'] . ' ' . $buyer['lname']) . ":\n\n" .
-        "Here is your receipt for payment of " . $dolfmt->formatCurrency($results['approved_amt'], 'USD') . ' for ' . $conf['label'] . ' ' . $region['name'] . "\n\n" .
+        "Here is your receipt for payment of " . $dolfmt->formatCurrency($results['approved_amt'], $currency) . ' for ' . $conf['label'] . ' ' . $region['name'] . "\n\n" .
         "RECEIPT FOR PAYMENT TO: " . $conf['label'] . ' on ' . date('m/d/Y h:i:s A', time()) . "\n\n" .
-        "Vendor: $exhibitorName\n" .
+        "$portalName: $exhibitorName\n" .
         $vendor['addr'] . "\n";
         if ($vendor['addr2'] && $vendor['addr2'] != '')
             $body .= $vendor['addr2'] . "\n";
         $body .= $vendor['city'] . ', ' . $vendor['state'] . ' ' . $vendor['zip'] . "\n\n" .
             "Space: " . $region['name'] . ' (' . $region['description'] . ') with up to ' . $region['includedMemberships'] . ' included memberships and up to ' . $region['additionalMemberships'] . " additional memberships\n" .
             $vendor_conf['taxidlabel'] . ': ' . $results['taxid'] . "\n\n" .
-            "Price for Space: " . $dolfmt->formatCurrency($region['price'], 'USD') . "\n\n" .
+            "Price for Space: " . $dolfmt->formatCurrency($region['price'], $currency) . "\n\n" .
             "Special Requests:\n" . $results['specialrequests'] . "\n\n";
 
         $body .= "Memberships purchased at this time:\n\n";
@@ -167,7 +187,7 @@ function payment($results) {
                 if ($badge['type'] == 'i')
                     $body .= "Included membership " . $badge['index'] . ":\n     ";
                 else
-                    $body .= "Additional membership " . $badge['index'] . ": for " . $dolfmt->formatCurrency($badge['price'], 'USD') . "\n     ";
+                    $body .= "Additional membership " . $badge['index'] . ": for " . $dolfmt->formatCurrency($badge['price'], $currency) . "\n     ";
                 $body .= $badge['fname'] . ' ' . ltrim($badge['mname'] . ' ') . $badge['lname'] . ' ' . $badge['suffix'] . "\n     " .
                     $badge['addr'] . "\n     ";
                 if ($badge['addr2'] && $badge['addr2'] != '')
@@ -177,14 +197,14 @@ function payment($results) {
             }
         }
 
-        $body .= "Total amount: " . $dolfmt->formatCurrency($results['total'], 'USD') . "\n\n" .
+        $body .= "Total amount: " . $dolfmt->formatCurrency($results['total'], $currency) . "\n\n" .
             "If you have any questions please contact the " . $region['name'] . ' staff at ' . $region['ownerEmail']  . ".\n\nThank you\n";
 
         // html version
     $bodyHtml = '<p>Dear ' . trim($buyer['fname'] . ' ' . $buyer['lname']) . ":</p>\n" .
-        '<p>Here is your receipt for payment of ' . $dolfmt->formatCurrency($results['approved_amt'], 'USD') . ' for ' . $conf['label'] . ' ' . $region['name'] . "</p>\n" .
+        '<p>Here is your receipt for payment of ' . $dolfmt->formatCurrency($results['approved_amt'], $currency) . ' for ' . $conf['label'] . ' ' . $region['name'] . "</p>\n" .
         '<p>RECEIPT FOR PAYMENT TO: ' . $conf['label'] . ' on ' . date('m/d/Y h:i:s A', time()) . "</p>\n" .
-        "<p>Vendor: <br/>\n" .
+        "<p>$portalName: <br/>\n" .
         "$exhibitorName<br/>\n" .
         $vendor['addr'] . "<br/>\n";
     if ($vendor['addr2'] && $vendor['addr2'] != '')
@@ -192,7 +212,7 @@ function payment($results) {
     $bodyHtml .= $vendor['city'] . ', ' . $vendor['state'] . ' ' . $vendor['zip'] . "</p>\n" .
         '<p>Space: ' . $region['name'] . ' (' . $region['description'] . ') with up to ' . $region['includedMemberships'] . ' included memberships and up to ' . $region['additionalMemberships'] . " additional memberships</p>\n" .
         '<p>' . $vendor_conf['taxidlabel'] . ': ' . $results['taxid'] . "</p>\n" .
-        '<p>Price for Space: ' . $dolfmt->formatCurrency($region['price'], 'USD') . "</p>\n" .
+        '<p>Price for Space: ' . $dolfmt->formatCurrency($region['price'], $currency) . "</p>\n" .
         "<p>Special Requests:<br/>\n" . $results['specialrequests'] . "</p>\n";
 
     if (array_key_exists('formbadges', $results) && is_array($results['formbadges'])) {
@@ -201,7 +221,7 @@ function payment($results) {
             if ($badge['type'] == 'i')
                 $bodyHtml .= '<p style="margin-left: 40px;">Included membership ' . $badge['index'] . ":<br/>\n";
             else
-                $bodyHtml .= '<p style="margin-left: 40px;">Additional membership ' . $badge['index'] . ': for ' . $dolfmt->formatCurrency($badge['price'], 'USD') . "<br/>\n";
+                $bodyHtml .= '<p style="margin-left: 40px;">Additional membership ' . $badge['index'] . ': for ' . $dolfmt->formatCurrency($badge['price'], $currency) . "<br/>\n";
             $bodyHtml .= $badge['fname'] . ' ' . ltrim($badge['mname'] . ' ') . $badge['lname'] . ' ' . $badge['suffix'] . ",<br/>\n" .
                 $badge['addr'] . "<br/>\n";
             if ($badge['addr2'] && $badge['addr2'] != '')
@@ -211,7 +231,7 @@ function payment($results) {
         }
     }
 
-    $bodyHtml .= '<p>Total amount: ' . $dolfmt->formatCurrency($results['total'], 'USD') . "</p>\n" .
+    $bodyHtml .= '<p>Total amount: ' . $dolfmt->formatCurrency($results['total'], $currency) . "</p>\n" .
         '<p>If you have any questions please contact the ' . $region['name'] . ' staff at ' . $region['ownerEmail'] . ".</p>\n<p>Thank you</p>\n";
 
     return array($body, $bodyHtml);

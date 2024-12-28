@@ -26,14 +26,6 @@ $in_session = false;
 $regserver = $reg_conf['server'];
 $exhibitor = '';
 
-// encrypt/decrypt stuff
-$ciphers = openssl_get_cipher_methods();
-$cipher = 'aes-128-cbc';
-$ivlen = openssl_cipher_iv_length($cipher);
-$ivdate = date_create("now");
-$iv = substr(date_format($ivdate, 'YmdzwLLwzdmY'), 0, $ivlen);
-$key = $conid . $con['label'] . $con['regadminemail'];
-
 $reg_link = "<a href='$regserver'>Convention Registration</a>";
 
 if (str_starts_with($_SERVER['HTTP_HOST'], 'artist')){
@@ -141,8 +133,7 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
         $in_session = true;
     }
 } else if (isset($_GET['vid'])) {
-    $match = openssl_decrypt($_GET['vid'], $cipher, $key, 0, $iv);
-    $match = json_decode($match, true);
+    $match = decryptCipher($_GET['vid'], true);
     $timediff = time() - $match['ts'];
     web_error_log("login @ " . time() . " with ts " . $match['ts']);
     if ($timediff > 120) {
@@ -224,7 +215,7 @@ EOS;
         foreach ($matches as $match) {
             $match['ts'] = time();
             $string = json_encode($match);
-            $string = urlencode(openssl_encrypt($string, $cipher, $key, 0, $iv));
+            $string = encryptCipher($string, true);
             $name = $match['exhibitorName'];
             if ($match['artistName'] != null && $match['artistName'] != '' && $match['artistName'] != $match['exhibitorName']) {
                 $name .= "(" . $match['artistName'] . ")";
@@ -347,7 +338,7 @@ $vendorQ = <<<EOS
 SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, 
        ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview, ey.mailin,
        e.addr, e.addr2, e.city, e.state, e.zip, e.country, e.shipCompany, e.shipAddr, e.shipAddr2, e.shipCity, e.shipState, e.shipZip, e.shipCountry, e.publicity,
-       p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newid, n.first_name AS n_first_name, n.last_name AS n_last_name
+       p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newperid, n.first_name AS n_first_name, n.last_name AS n_last_name
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
 LEFT OUTER JOIN perinfo p ON p.id = e.perid
@@ -381,7 +372,7 @@ $config_vars['loginType'] = $_SESSION['login_type'];
 
 $vendorPQ = <<<EOS
 SELECT exRY.*, ey.exhibitorId,
-    p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newid, n.first_name AS n_first_name, n.last_name AS n_last_name
+    p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newperid, n.first_name AS n_first_name, n.last_name AS n_last_name
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears ey ON exRY.exhibitorYearId = ey.id
 JOIN exhibitsRegionYears ery ON exRY.exhibitsRegionYearId = ery.id

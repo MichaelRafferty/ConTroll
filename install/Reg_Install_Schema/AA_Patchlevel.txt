@@ -1,2 +1,2 @@
-Current=27
-Text=This schema is current as of Patch 27 (p27_triggers_and_state.sql)
+Current=38
+Text=This schema is current as of Patch 38 (p38_rulebyconid.sql)

@@ -110,7 +110,7 @@ if (array_key_exists('error_code', $return_arr)) {
 }
 if (array_key_exists('email_error', $return_arr)) {
     $response['status'] = 'error';
-    $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error-code';
+    $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error_code';
 } else {
     $respose['status'] = 'success';
     $response['email'] = 'Request sent';

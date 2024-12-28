@@ -4,6 +4,20 @@
 function draw_exhibitorRequestModal($portalType = '')
 {
     $exhibitor_conf = get_conf('vendor');
+    switch ($portalType) {
+        case 'artist':
+            $portalName = 'Artist';
+            break;
+        case 'exhibitor':
+            $portalName = 'Exhibitor';
+            break;
+        case 'fan':
+            $portalName = 'Fan';
+            break;
+        default:
+            $portalName = 'Vendor';
+            break;
+    }
     ?>
     <!-- request -->
     <div id='exhibitor_req' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Request Exhibitor Space' aria-hidden='true'
@@ -12,7 +26,7 @@ function draw_exhibitorRequestModal($portalType = '')
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
                     <div class='modal-title' id="exhibitor_req_title">
-                        <strong>Vendor Space Request</strong>
+                        <strong><?php echo $portalName;?> Space Request</strong>
                     </div>
                     <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                 </div>
@@ -62,7 +76,7 @@ function draw_exhibitorRequestModal($portalType = '')
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='exhibitor_req_btn' onClick="spaceReq(0, 0)">Request Vendor Space</button>
+                    <button class='btn btn-sm btn-primary' id='exhibitor_req_btn' onClick="spaceReq(0, 0)">Request <?php echo $portalName;?> Space</button>
                 </div>
             </div>
         </div>
@@ -75,6 +89,12 @@ function exhibitor_showRequest($regionId, $regionName, $regionSpaces, $exhibitor
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
+    $con = get_conf('con');
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
     echo "Request pending authorization for:<br/>\n";
     foreach ($exhibitorSpaceList as $key => $spaceItem) {
         // limit to spaces for this region
@@ -84,8 +104,8 @@ function exhibitor_showRequest($regionId, $regionName, $regionSpaces, $exhibitor
                 $date = $spaceItem['time_requested'];
                 $date = date_create($date);
                 $date = date_format($date, 'F j, Y') . ' at ' . date_format($date, 'g:i A');
-                echo $spaceItem['requested_description'] . " in " . $spaceItem['regionName'] . " for " . $dolfmt->formatCurrency($spaceItem['requested_price'], 'USD') .
-                    " at $date<br/>\n";
+                echo $spaceItem['requested_description'] . " in " . $spaceItem['regionName'] . " for " .
+                    $dolfmt->formatCurrency($spaceItem['requested_price'], $currency) . " at $date<br/>\n";
             }
         }
     }

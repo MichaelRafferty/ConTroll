@@ -20,6 +20,12 @@ $conf = get_conf('con');
 $vendor_conf = get_conf('vendor');
 
 $response['conid'] = $conid;
+$con = get_conf('con');
+if (array_key_exists('currency', $con)) {
+    $currency = $con['currency'];
+} else {
+    $currency = 'USD';
+}
 
 $ccauth = get_conf('cc');
 load_cc_procs();
@@ -82,7 +88,7 @@ LEFT OUTER JOIN memList ma ON ery.additionalMemId = ma.id
 WHERE ery.id = ?;
 EOS;
 $regionYearR = dbSafeQuery($regionYearQ, 'i', array($regionYearId));
-if ($regionYearR == false || $regionYearR->num_rows != 1) {
+if ($regionYearR === false || $regionYearR->num_rows != 1) {
     $response['error'] = 'Unable to find region record, get help';
     ajaxSuccess($response);
     return;
@@ -101,7 +107,7 @@ JOIN exhibitorYears ey ON e.id = ey.exhibitorId
 WHERE e.id=? AND ey.conid = ?;
 EOS;
 $exhibitorR = dbSafeQuery($exhibitorQ, 'ii', array($exhId, $conid));
-if ($exhibitorR == false || $exhibitorR->num_rows != 1) {
+if ($exhibitorR === false || $exhibitorR->num_rows != 1) {
     $response['error'] = 'Unable to find your exhibitor record';
     ajaxSuccess($response);
     return;
@@ -131,7 +137,7 @@ JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
 WHERE e.exhibitorRegionYear = ?;
 EOS;
 $spaceR = dbSafeQuery($spaceQ, 'i', array($eryID));
-if ($spaceR == false || $spaceR->num_rows == 0) {
+if ($spaceR === false || $spaceR->num_rows == 0) {
     $response['error'] = 'Unable to find any space to invoice';
     ajaxSuccess($response);
     return;
@@ -451,7 +457,7 @@ $txnid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
 if ($txnid == false) {
     $error_msg .= "Insert of payment failed\n";
 } else {
-    $status_msg .= "Payment for " . $dolfmt->formatCurrency($rtn['amount'], 'USD') . " processed<br/>\n";
+    $status_msg .= "Payment for " . $dolfmt->formatCurrency($rtn['amount'], $currency) . " processed<br/>\n";
 }
 $approved_amt = $rtn['amount'];
 $results['approved_amt'] = $approved_amt;
@@ -466,7 +472,7 @@ if ($approved_amt == $totprice) {
 $txnUpdate .= 'paid=? WHERE id=?;';
 $txnU = dbSafeCmd($txnUpdate, 'di', array($approved_amt, $transid));
 // reg (badge)
-$regQ = 'UPDATE reg SET paid=price, complete_trans=? WHERE create_trans=?;';
+$regQ = "UPDATE reg SET paid=price, complete_trans=?, status='paid' WHERE create_trans=?;";
 $numrows = dbSafeCmd($regQ, 'ii', array($transid, $transid));
 if ($numrows != 1) {
     $error_msg .= "Unable to mark transaction completed\n";
@@ -497,7 +503,7 @@ JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
 WHERE conid = ? and exhibitorId = ? and exRY.exhibitsRegionYearId = ?
 EOS;
 $exNumR = dbSafeQuery($exNumQ, 'iii', array($conid, $exhibitor['exhibitorId'], $regionYearId));
-if ($exNumR == false || $exNumR->num_rows == 0) {
+if ($exNumR === false || $exNumR->num_rows == 0) {
     $error_msg .= "Unable to retrieve existing exhibitor number<br/>\n";
 }
 $exNumL = $exNumR->fetch_assoc();
@@ -521,7 +527,7 @@ if ($exMailin == 'N') {
     if ($agent == 'first') {
         if (count($badges) > 0) {
             $perid = $badges[0]['perid'];
-            $newperid = $badges[0]['newid'];
+            $newperid = $badges[0]['newperid'];
         } else {
             $perid = $exhibitor['perid'];
             $newperid = $exhibitor['newperid'];
@@ -570,7 +576,7 @@ JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 WHERE exhibitorNumber is NOT NULL AND exhibitorNumber >= ? AND exhibitorNumber < ? AND conid = ? and exRY.exhibitsRegionYearId = ?;
 EOS;
             $nextIDR = dbSafeQuery($nextIdQ, 'iiii', array($region['atconIdBase'], $region['mailinIdBase'], $conid, $regionYearId));
-            if ($nextIDR == false || $nextIDR->num_rows == 0) {
+            if ($nextIDR === false || $nextIDR->num_rows == 0) {
                 $nextID = $region['atconIdBase'] + 1;
             } else {
                 $nextL = $nextIDR->fetch_row();
@@ -584,7 +590,7 @@ JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 WHERE exhibitorNumber is NOT NULL AND exhibitorNumber >= ? AND conid = ? and exRY.exhibitsRegionYearId = ?;
 EOS;
             $nextIDR = dbSafeQuery($nextIdQ, 'iii', array($region['atconIdBase'], $conid, $regionYearId));
-            if ($nextIDR == false || $nextIDR->num_rows == 0) {
+            if ($nextIDR === false || $nextIDR->num_rows == 0) {
                 $nextID = $region['atconIdBase'] + 1;
             } else {
                 $nextL = $nextIDR->fetch_row();
@@ -600,7 +606,7 @@ JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 WHERE exhibitorNumber is NOT NULL AND exhibitorNumber >= ? AND conid = ? and exRY.exhibitsRegionYearId = ?;
 EOS;
         $nextIDR = dbSafeQuery($nextIdQ, 'iii', array($region['mailinIdBase'], $conid, $regionYearId));
-        if ($nextIDR == false || $nextIDR->num_rows == 0) {
+        if ($nextIDR === false || $nextIDR->num_rows == 0) {
             $nextID = $region['mailinIdBase'] + 1;
         } else {
             $nextL = $nextIDR->fetch_row();
@@ -752,7 +758,7 @@ EOS;
         $badge['error'] .= 'Add of person of badge for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";
     }
 
-    $badge['newid'] = $newid;
+    $badge['newperid'] = $newid;
     // if no tranasction yet, insert one
     if ($transid == null) {
         $transQ = <<<EOS
@@ -766,18 +772,19 @@ EOS;
         }
     }
     $badge['transid'] = $transid;
-    dbSafeCmd("UPDATE newperson SET transid=? WHERE id = ?;", 'ii', array($badge['transid'], $badge['newid']));
+    dbSafeCmd("UPDATE newperson SET transid=? WHERE id = ?;", 'ii', array($badge['transid'], $badge['newperid']));
 
     $badgeQ = <<<EOS
-INSERT INTO reg(conid, newperid, perid, create_trans, price, memID)
-VALUES(?, ?, ?, ?, ?, ?);
+INSERT INTO reg(conid, newperid, perid, create_trans, price, status, memID)
+VALUES(?, ?, ?, ?, ?, ?, ?);
 EOS;
-    $badgeId = dbSafeInsert($badgeQ,  'iiiidi', array(
+    $badgeId = dbSafeInsert($badgeQ,  'iiiidsi', array(
             $conid,
-            $badge['newid'],
+            $badge['newperid'],
             $badge['perid'],
             $transid,
             $badge['price'],
+            $badge['price'] > 0 ? 'unpaid' : 'paid',
             $badge['memId'])
         );
 

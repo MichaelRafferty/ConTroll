@@ -1,0 +1,56 @@
+Coupon Documentation
+
+Coupons are used as a discount and payment item in ConTroll
+
+This document is a work in progress and it will change as we make forward facing decisions
+
+Coupons:
+    Coupons are a marketing tool to allow for discounts to encourage people to register now (soon).
+
+Coupon Types:
+    Overall Discount (Cart type items)
+        Fixed Dollars Off Cart - a set number of currency units (decimal 8.2) off the entire cart purchase
+        Fixed Percentage Off Primary Memberships in Cart - a fixed percentage (decimal 8.2) off the sum of the price of all primary memberships
+
+    Item Discounts (per memberships)
+        Fixed Dollars Off Primary Memberships - a set number of currentcy units (decimal 8.2) off each individual primary membership line item.
+        Fixed Percentage Off Primary Memberships - a fixed percentage (decimal 8.2) off each individual primary membership line item.
+        Set Specific Membership Type to a Fixed Price - for a specific memId (membership item), set the price ot a fixed current unit (decimal 8.2)
+            Note: this overrides the rules engine, and the online Y/N flag, for is a membership available for purchase by this coupon user
+            //TODO check that current applied coupon in Portal actually allows membership override, an that coupon is stored in the session until payment is
+                applied
+
+Primary Membership is defined as a membership item of price > 0 AND category one of standard, supplement or virtual.
+    // TODO Discuss if it's only one membership in the cart per perid/newperid (not per cart owner but the actual registration) or for any number of memberships
+            of type full (Current thinking only one per person in the cart)
+
+Coupon Limitations: A coupon can be limited to when applicable by any combination of the following (all are optional, if empty, the restriction is not applied):
+    Starting date: available from (>=) this DateTime value in the timezone of the convention
+    Ending date: available before (<) this DateTime value in the timezone of the convention
+    Minimum number of Primary Memberships in cart
+    Apply to at most (Max) times in a cart (for per primary membership type coupons only)
+    Minimum cart value before discount
+    Doscount maximum: Maximum coupon value
+    Maximum number of redemptions: Each use of the coupon is counted, this limits how many times convention wide the coupon can be redeemed
+    One Use Coupon: A set of serial numbers are assigned to a coupon.  The coupon code and an unused serial number is required (usually provided as a link) to
+        use the coupon. The coupon can be assigned to a perid (for reference, not restriction, like a life member volunteer gets a coupon to hand out) and the
+        the user of the coupon is recorded at redemption time.
+
+Coupon Accounting: // TODO this is a plan for discussion, not the actual coupon method right now
+    Coupons are remembered in the session until the cart is paid for
+    The total amount of the coupon is in the transaction record split between
+            couponDiscountCart for the coupons that effect the cart
+            couponDiscountReg for the coupons that effect the registration lines directly
+        such that price = paid + couponDiscountCart + couponDiscountReg when paid in full
+    The reg table has the effect of the per line item coupons as the couponDiscount with the same formula
+    A payment record of type 'coupon' is recorded for the transaction for the total value of the coupon
+        The description is the coupon code/name
+        The nonce is 'cart', 'line' or 'membership' to indicate how the coupon was applied
+    For Square:
+        per line item coupons are per line item discounts
+        per cart coupons are order wide discounts
+        Square will allocate coupons as it sees fit. (we have not found a way to override this unless we do all per item discounts ourselves)
+
+Coupons are shown as payment lines on ConTroll receipts
+POS Display for coupon discount
+    // TODO: need to think this one out, unsure at present best way

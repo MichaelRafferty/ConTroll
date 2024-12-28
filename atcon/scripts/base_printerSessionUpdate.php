@@ -32,22 +32,29 @@ if ($ajax_request_action != 'printerSessionUpdate') {
 
 $printers = ['badge', 'receipt', 'generic'];
 foreach ($printers as $prt) {
+    $printer = array(
+        'name' => 'None',
+        'host' => '',
+        'queue' => '',
+        'type' => '',
+        'code' => 'UTF-8',
+    );
     if (array_key_exists($prt, $_POST)) {
         $pr = $_POST[$prt];
         if ($pr != '') {
-            $printer = explode(':::', $pr);
-            $server = explode(':-:', $printer[1]);
-            $printer = array($printer[0], $server[0], $server[1], $server[2], $server[3]);
-            $_SESSION[$prt . 'Printer'] = $printer;
-        } else {
-            $printer = array('None', '', '', '', 'UTF-8');
-            $_SESSION[$prt . 'Printer'] = $printer;
+            $printerTop = explode(':::', $pr);
+            $server = explode(':-:', $printerTop[1]);
+            $printer = array (
+                'name' => $printerTop[0],
+                'host' => $server[0],
+                'queue' => $server[1],
+                'type' => $server[2],
+                'code' => $server[3],
+            );
         }
-        $response[$prt] = $printer[0];
-    } else {
-        $_SESSION[$prt . 'Printer'] = array('None', '', '', '', 'UTF-8');
-        $response[$prt] = 'None';
     }
+    $_SESSION[$prt . 'Printer'] = $printer;
+    $response[$prt] = $printer['name'];
 }
 
 ajaxSuccess($response);

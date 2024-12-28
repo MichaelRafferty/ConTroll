@@ -18,24 +18,28 @@ if(!isset($_SESSION['userhash'])) {
             // printers passed as display_name:::server:-:printer:-:printer type
             $printers = ['badge', 'receipt', 'generic'];
             foreach ($printers as $prt) {
+                $printer = array(
+                    'name' => 'None',
+                    'host' => '',
+                    'queue' => '',
+                    'type' => '',
+                    'code' => 'UTF-8',
+                );
                 if (array_key_exists($prt . '_printer', $_POST)) {
                     $pr = $_POST[$prt . '_printer'];
-                    if ($pr != '') {
-                        $printer = explode(':::', $pr);
-                        $server = explode(':-:', $printer[1]);
-                        $printer = array($printer[0], $server[0], $server[1], $server[2], $server[3]);
-                        $_SESSION[$prt . 'Printer'] = $printer;
-                    } else {
-                        $printer = array('None', '', '', '', 'UTF-8');
-                        $_SESSION[$prt . 'Printer'] = $printer;
-                    }
-                    $response[$prt] = $printer[0];
-                } else {
-                    $_SESSION[$prt . 'Printer'] = array('None', '', '', '', 'UTF-8');
-                    $response[$prt] = 'None';
+                    $printerTop = explode(':::', $pr);
+                    $server = explode(':-:', $printerTop[1]);
+                    $printer = array (
+                        'name' => $printerTop[0],
+                        'host' => $server[0],
+                        'queue' => $server[1],
+                        'type' => $server[2],
+                        'code' => $server[3],
+                    );
                 }
+                $_SESSION[$prt . 'Printer'] = $printer;
+                $response[$prt] = $printer['name'];
             }
-
             $_SESSION['userhash'] = $access['userhash'];
         }
     } else {

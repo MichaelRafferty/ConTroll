@@ -2,12 +2,10 @@
 // total = sum(prices) * qty of badges
 // memTypeCount = array by memId of counts
 // badges = array of the data for individual badges
-var badges = { 'count': 0, 'total': 0, 'memTypeCount': {}, 'badges': [] };
+var badges = { count: 0, total: 0, memTypeCount: {}, badges: [] };
 // prices = array by memId of prices for badges
 var prices = {};
 var $purchase_label = 'purchase';
-// ages = array by id for ages for color setting
-var ages = {};
 // shortnames are the memLabel short names for the memAge
 var shortnames = {};
 // anotherbadge = bootstrap 5 modal for the add another modal popup
@@ -16,6 +14,9 @@ var anotherBadge = null;
 var newBadge = null;
 // local variables for coupon processing
 var coupon = null;
+var couponSubtotal = 0;
+var couponDiscount = 0;
+var totalDue = 0;
 
 // pricing area
 var memSummaryDiv = null;
@@ -54,7 +55,11 @@ function URLparamsToArray(urlargs, doTrim = false) {
 function process(formRef) {
     var valid = true;
     var formData = URLparamsToArray($(formRef).serialize(), true);
+    var policyData = URLparamsToArray($('#editPolicies').serialize(), true);
+    var message = "Please correct the items highlighted in red and validate again.";
+    var required = config['required'];
 
+    clear_message('addMessageDiv');
     // validation
     // emails must not be blank and must match
     if (formData['email1'] == '' || formData['email2'] == '' || formData['email1'] != formData['email2']) {
@@ -70,89 +75,118 @@ function process(formRef) {
         $('#email2').removeClass('need');
     }
 
-    // first name is required
-    if (formData['fname'] == '') {
-        valid = false;
-        $('#fname').addClass('need');
-    } else {
-        $('#fname').removeClass('need');
+    if (formData['country'] == 'USA') {
+        message += "<br/>Note: If any of the address fields Address, City, State or Zip are used and the country is United States, " +
+            "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
     }
-
-    // last name is required
-    if (formData['lname'] == '') {
-        valid = false;
-        $('#lname').addClass('need');
-    } else {
-        $('#lname').removeClass('need');
-
-    }
-
-    // address 1 is required, address 2 is optional
-    if (formData['addr'] == '') {
-        valid = false;
-        $('#addr').addClass('need');
-    } else {
-        $('#addr').removeClass('need');
-    }
-
-    // city/state/zip required
-    if (formData['city'] == '') {
-        valid = false;
-        $('#city').addClass('need');
-    } else {
-        $('#city').removeClass('need');
-    }
-
-    if (formData['state'] == '') {
-        valid = false;
-        $('#state').addClass('need');
-    } else {
-        if (formData['country'] == 'USA') {
-            if (formData['state'].length != 2) {
-                valid = false;
-                $('#state').addClass('need');
-            } else {
-                $('#state').removeClass('need');
-            }
+    // validation
+    if (required != '') {
+        // first name is required
+        if (formData['fname'] == '') {
+            valid = false;
+            $('#fname').addClass('need');
         } else {
-            $('#state').removeClass('need');
+            $('#fname').removeClass('need');
         }
     }
 
-    if (formData['zip'] == '') {
-        valid = false;
-        $('#zip').addClass('need');
-    } else {
-        $('#zip').removeClass('need');
+    if (required == 'all') {
+        // last name is required
+        if (formData['lname'] == '') {
+            valid = false;
+            $('#lname').addClass('need');
+        } else {
+            $('#lname').removeClass('need');
+
+        }
+    }
+
+    if (required == 'addr' || required == 'all' || formData['addr'] != '' || formData['city'] != '' || formData['state'] != '' || formData['zip'] != '') {
+        // address 1 is required, address 2 is optional
+        if (formData['addr'] == '') {
+            valid = false;
+            $('#addr').addClass('need');
+        } else {
+            $('#addr').removeClass('need');
+        }
+
+        // city/state/zip required
+        if (formData['city'] == '') {
+            valid = false;
+            $('#city').addClass('need');
+        } else {
+            $('#city').removeClass('need');
+        }
+
+        if (formData['state'] == '') {
+            valid = false;
+            $('#state').addClass('need');
+        } else {
+            if (formData['country'] == 'USA') {
+                if (formData['state'].length != 2) {
+                    valid = false;
+                    $('#state').addClass('need');
+                } else {
+                    $('#state').removeClass('need');
+                }
+            } else {
+                $('#state').removeClass('need');
+            }
+        }
+
+        if (formData['zip'] == '') {
+            valid = false;
+            $('#zip').addClass('need');
+        } else {
+            $('#zip').removeClass('need');
+        }
     }
 
     // a membership type is required
-    if (formData['memType'] == '') {
+    if (formData['memId'] == '') {
         valid = false;
-        $('#memType').addClass('need');
+        $('#memId').addClass('need');
     } else {
-        $('#memType').removeClass('need');
+        $('#memId').removeClass('need');
     }
 
-    if (badges['memTypeCount'][formData['memType']] == null)
-        badges['memTypeCount'][formData['memType']] = 0;
+    if (badges['memTypeCount'][formData['memId']] == null)
+        badges['memTypeCount'][formData['memId']] = 0;
 
     // check if there are too many limited memberships in the cart
-    if (coupon.getMemGroup() == formData['memType']) {
-        var cur = badges['memTypeCount'][formData['memType']];
+    if (coupon.getMemGroup() == formData['memId']) {
+        var cur = badges['memTypeCount'][formData['memId']];
         var lim = coupon.getLimitMemberships();
-        if (badges['memTypeCount'][formData['memType']] >= coupon.getLimitMemberships()) {
-            alert("You already have the maximum number of memberships of this membership type in your cart based on the coupon applied. You must choose a different membership type.");
+        if (badges['memTypeCount'][formData['memId']] >= coupon.getLimitMemberships()) {
+            $message += "<br/>You already have the maximum number of memberships of this membership type in your cart based on the coupon applied. " +
+                "You must choose a different membership type.";
             valid = false;
         }
     }
 
+    for (var row in policies) {
+        var policy = policies[row];
+        if (policy.required == 'Y') {
+            var field = '#l_' + policy.policy;
+            if (typeof policyData['p_' + policy.policy] === 'undefined') {
+                console.log("required policy " + policy.policy + ' is not checked');
+                message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
+                $(field).addClass('need');
+                valid = false;
+            } else {
+                $(field).removeClass('need');
+            }
+        }
+    }
+
     // don't continue to process if any are missing
-    if (!valid)
+    if (!valid) {
+        show_message(message, "error", 'addMessageDiv');
         return false;
+    }
 
     // Check USPS for standardized address
-    if (uspsDiv != null && (formData['country'] == 'USA')) {
+    if (uspsDiv != null && formData['country'] == 'USA' && formData['city'] != '') {
         formDataSave = formData;
         uspsAddress = null;
         $.ajax({
@@ -172,6 +206,7 @@ function countryChange() {
     if (uspsDiv == null)
         return;
 
+    clear_message('addMessageDiv');
     var country = countryField.value;
     if (country == 'USA') {
         addToCartBtn.innerHTML = 'Validate Address To Add Membership To Cart';
@@ -184,16 +219,26 @@ function addressError(JqXHR, textStatus, errorThrown) {
 }
 
 function addressSuccess(data, textStatus, jqXHR) {
+    if (data['status'] == 'error') {
+        show_message(data['message'], 'error', 'addMessageDiv');
+        return false;
+    }
     showValidatedAddress(data);
 }
 
 function showValidatedAddress(data) {
+    var html = '';
+    clear_message('addMessageDiv');
     if (data['error']) {
-        html = "<h4>USPS Returned an error validating the address</h4>" +
-            "<pre>" + data['error'] + "</pre>\n";
+        var errormsg = data['error'];
+        if (errormsg.substring(0, 5) == '400: ') {
+            errormsg = errormsg.substring(5);
+        }
+        html = "<h4>USPS Returned an error<br/>validating the address</h4>" +
+            "<pre>" + errormsg + "</pre>\n";
     } else {
         uspsAddress = data['address'];
-        var html = "<h4>USPS Returned: " + uspsAddress['valid'] + "</h4>";
+        html = "<h4>USPS Returned: " + uspsAddress['valid'] + "</h4>";
         if (data['status'] == 'error') {
             html += "<p>USPS uspsAddress Validation Failed: " + data['error'] + "</p>";
         } else {
@@ -261,8 +306,7 @@ function addMembership(formData) {
     }
 
     badges['count'] +=  1;
-    badges['memTypeCount'][formData['memType']] += 1;
-    //badges['total'] += prices[formData['memType']];
+    badges['memTypeCount'][formData['memId']] += 1;
     badges['badges'].push(formData);
 
     repriceCart();
@@ -285,7 +329,7 @@ function addMembership(formData) {
     }
 
     // build badge block in Badges list
-    var memId = formData['memType'];
+    var memId = formData['memId'];
     // find matching mtype in array
     var found = false;
     var mtype = null;
@@ -355,27 +399,10 @@ function removeBadge(bdivid) {
     toRemove.remove();
 }
 
-
-
 function updateAddr() {
     var selOpt = $("#personList option:selected");
     var optData = selOpt.data('info');
-    
-    $('#cc_fname').val(optData['fname']);
-    $('#cc_lname').val(optData['lname']);
-    $('#cc_street').val(optData['addr']);
-    $('#cc_city').val(optData['city']);
-    $("#cc_state").val(optData['state']);
-    $('#cc_zip').val(optData['zip']);
-    $('#cc_country').val(optData['country']);
     $('#cc_email').val(optData['email1']);
-
-    $('.ccdata').attr('readonly', 'readonly');
-
-}
-   
-function toggleAddr() {
-    $('.ccdata').attr('readonly', false);
 }
 
 function mp_ajax_error(JqXHR, textStatus, errorThrown) {
@@ -410,7 +437,7 @@ function makePurchase(token, label) {
     // validate CC email address for receipt
     var cc_email = document.getElementById('cc_email').value;
     if (!validateAddress(cc_email)) {
-        alert("The 'who's paying for the order' email address is not vali, please use the Edit button to put in a valid email address for the receipt");
+        alert("The 'who's paying for the order' email address is not valid, please use the Edit button to put in a valid email address for the receipt");
         $('#cc_email').addClass('need');
         return false;
     }
@@ -429,8 +456,12 @@ function makePurchase(token, label) {
         badges: badges,
         nonce: token,
         purchaseform: URLparamsToArray($('#purchaseForm').serialize()),
+        policyInterestForm: URLparamsToArray($('#editPolicies').serialize()),
         couponCode: coupon.getCouponCode(),
         couponSerial: coupon.getCouponSerial(),
+        couponSubtotal: couponSubtotal,
+        couponDiscount: couponDiscount,
+        total: totalDue,
     }
     console.log("MP Data");
     console.log(data);
@@ -476,7 +507,7 @@ function couponModalClose() {
 }
 
 function addCouponCode() {
-    coupon.AddCouponCode();
+    coupon.addCouponCode();
 }
 
 function removeCouponCode() {
@@ -494,7 +525,7 @@ function repriceCart() {
     var couponmemberships = 0;
     var primarymemberships = 0;
 
-    if (typeof mtypes != 'undefined') {
+    if (typeof mtypes != 'undefined' && mtypes != null) {
         for (var row in mtypes) {
             var mbrtype = mtypes[row];
             var num = 0;
@@ -518,6 +549,7 @@ function repriceCart() {
         if (mbrtotal >= coupon.getMinCart() && primarymemberships >= coupon.getMinMemberships())
             cartDiscountable = true;
         // reset total for below
+        couponSubtotal = Number(total);
         subTotalColDiv.innerHTML = '$' + Number(total).toFixed(2);
     }
 
@@ -529,9 +561,10 @@ function repriceCart() {
     var itemtype = '';
     for (row in mtypes) {
         mbrtype = mtypes[row];
-        num = 0;
         if (nbrs[mbrtype['id']] > 0) {
             num = nbrs[mbrtype['id']];
+        } else {
+            continue;
         }
         // need to set num here
         if (mbrtype['memCategory'] == 'add-on' || mbrtype['memCategory'] == 'addon')
@@ -564,6 +597,7 @@ function repriceCart() {
         couponDiscounts += cartDiscount;
         total -= cartDiscount;
     }
+    couponDiscount = Number(couponDiscounts);
     couponDiscountDiv.innerHTML = "$" + Number(couponDiscounts).toFixed(2) + html;
     totalCostDiv.innerHTML = "$" + Number(total).toFixed(2) + html;
 
@@ -571,6 +605,7 @@ function repriceCart() {
     emptyCart.hidden =  primarymemberships > 0;
     noChargeCart.hidden = primarymemberships == 0 || badges['total'] > 0;
     chargeCart.hidden = primarymemberships == 0 || badges['total'] == 0;
+    totalDue = total;
 }
 
 function togglePopup() {
@@ -618,11 +653,10 @@ window.onload = function () {
     subTotalColDiv = document.getElementById('subTotalColDiv');
     couponDiscountDiv = document.getElementById('couponDiscountDiv');
 
-    if (typeof mtypes != 'undefined') { //v we got here from index (purchase a badge, not some other page)
+    if (typeof mtypes != 'undefined' && mtypes != null) { //v we got here from index (purchase a badge, not some other page)
         for (var row in mtypes) {
             var mbrtype = mtypes[row];
             var memId = mbrtype['id'];
-            ages[memId] = mbrtype['memGroup'];
             prices[memId] = Number(mbrtype['price']);
             badges['memTypeCount'][memId] = 0;
             shortnames[memId] = mbrtype['shortname'].replace(',','<br/>');

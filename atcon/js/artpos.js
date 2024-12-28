@@ -153,7 +153,7 @@ function start_over(reset_all) {
     if (reset_all > 0)
         clear_message();
 
-    if (base_manager_enabled) {
+    if (baseManagerEnabled) {
         base_toggleManager();
     }
 
@@ -1131,7 +1131,7 @@ function pay_shown() {
             <label for="pt-cash">Cash</label>
 `;
         if (discount_mode != "none") {
-            if (discount_mode == 'any' || (discount_mode == 'manager' && hasManager) || (discount_mode == 'active' && hasManager && base_manager_enabled)) {
+            if (discount_mode == 'any' || (discount_mode == 'manager' && hasManager) || (discount_mode == 'active' && hasManager && baseManagerEnabled)) {
                 payHtml += `
             <input type="radio" id="pt-discount" name="payment_type" value="discount" onclick='setPayType("discount");'/>
             <label for="pt-discount">Discount</label>

@@ -16,6 +16,8 @@ if ($db_ini['reg']['https'] <> 0) {
 require_once(__DIR__ . "/../../lib/db_functions.php");
 require_once(__DIR__ . '/../../lib/ajax_functions.php');
 require_once(__DIR__ . '/../../lib/global.php');
+require_once(__DIR__ . '/../../lib/cipher.php');
+require_once(__DIR__ . '/../../lib/jsVersions.php');
 
 db_connect();
 session_start();
@@ -38,7 +40,7 @@ echo <<<EOF
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>$title</title>
-    <link rel='icon' type='image/x-icon' href='/lib/favicon.ico'>
+    <link rel='icon' type='image/x-icon' href='/images/favicon.ico'>
     <link href='css/style.css' rel='stylesheet' type='text/css' />
     <link href='$jquicss' rel='stylesheet' type='text/css' /> 
     <link href='$tabcss' rel='stylesheet'>
