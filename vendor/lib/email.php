@@ -146,6 +146,20 @@ function payment($results) {
             $exhibitorName .= "(" . $vendor['artistName'] . ")";
         }
     }
+    switch ($portalType) {
+        case 'artist':
+            $portalName = 'Artist';
+            break;
+        case 'exhibitor':
+            $portalName = 'Exhibitor';
+            break;
+        case 'fan':
+            $portalName = 'Fan';
+            break;
+        default:
+            $portalName = 'Vendor';
+            break;
+    }
 
 
     $conf = get_conf('con');
@@ -157,7 +171,7 @@ function payment($results) {
     $body = "Dear " . trim($buyer['fname'] . ' ' . $buyer['lname']) . ":\n\n" .
         "Here is your receipt for payment of " . $dolfmt->formatCurrency($results['approved_amt'], $currency) . ' for ' . $conf['label'] . ' ' . $region['name'] . "\n\n" .
         "RECEIPT FOR PAYMENT TO: " . $conf['label'] . ' on ' . date('m/d/Y h:i:s A', time()) . "\n\n" .
-        "Vendor: $exhibitorName\n" .
+        "$portalName: $exhibitorName\n" .
         $vendor['addr'] . "\n";
         if ($vendor['addr2'] && $vendor['addr2'] != '')
             $body .= $vendor['addr2'] . "\n";
@@ -190,7 +204,7 @@ function payment($results) {
     $bodyHtml = '<p>Dear ' . trim($buyer['fname'] . ' ' . $buyer['lname']) . ":</p>\n" .
         '<p>Here is your receipt for payment of ' . $dolfmt->formatCurrency($results['approved_amt'], $currency) . ' for ' . $conf['label'] . ' ' . $region['name'] . "</p>\n" .
         '<p>RECEIPT FOR PAYMENT TO: ' . $conf['label'] . ' on ' . date('m/d/Y h:i:s A', time()) . "</p>\n" .
-        "<p>Vendor: <br/>\n" .
+        "<p>$portalName: <br/>\n" .
         "$exhibitorName<br/>\n" .
         $vendor['addr'] . "<br/>\n";
     if ($vendor['addr2'] && $vendor['addr2'] != '')

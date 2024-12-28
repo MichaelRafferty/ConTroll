@@ -34,13 +34,28 @@ $conid = $con['id'];
 $cancelList = $_POST['cancelList'];
 $direction = $_POST['direction'];
 
+// build string of items to cancel, cannot use '?' prepared notation for an IN clause
+$inString = '';
+foreach ($cancelList as $id) {
+    if (is_numeric($id)) {
+        $inString .= $id . ',';
+    }
+}
+
+if ($inString == '') {
+    $response['error'] = 'No items to cancel';
+    ajaxSuccess($response);
+    exit();
+}
+
+$inString = substr($inString, 0, -1);
 // loop over change list and update the status to cancelled
     if ($direction == 0) {
         $noteMsg = "$user_perid cancelled the membership";
         $updQ = <<<EOS
 UPDATE reg
 SET status = 'cancelled', updatedBy = ?
-WHERE id IN (?);
+WHERE id IN ($inString);
 EOS;
     } else {
         $noteMsg = "$user_perid restored the membership";
@@ -51,11 +66,11 @@ SET status = CASE
     WHEN planId IS NOT NULL THEN 'plan'
     ELSE 'unpaid'
 END, updatedBy = ?
-WHERE id IN (?);
+WHERE id IN ($inString);
 EOS;
     }
-$cancelIn = implode(',', $cancelList);
-$num_upd = dbSafeCmd($updQ, 'is', array($user_perid, $cancelIn));
+
+$num_upd = dbSafeCmd($updQ, 'i', array($user_perid));
 if ($num_upd === false || $num_upd < 0) {
     $response['error'] = "Error running $updQ on $cancelIn";
 } else {

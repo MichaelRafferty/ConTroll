@@ -25,7 +25,7 @@ if (!(array_key_exists('type', $_POST)) && array_key_exists('newperid', $_POST))
 }
 
 $type = $_POST['type'];
-$newperid = $_POST['newperid'];
+$newPerid = $_POST['newperid'];
 $perid = null;
 if ($type == 'e') {
     $perid = $_POST['perid'];
@@ -38,6 +38,26 @@ $updatedBy = $_SESSION['user_perid'];
 $con = get_conf('con');
 $portal_conf = get_conf('portal');
 $conid = $con['id'];
+
+// due to a race condition of two people trying to match the same person, it's necessary to check if they are already matched
+$cMatch = <<<EOS
+SELECT perid
+FROM newperson
+WHERE id = ?;
+EOS;
+$cR = dbSafeQuery($cMatch, 'i', array($newPerid));
+if ($cR === false) {
+    $response['error'] = 'Error checking if newperson already matched, check logs and seek assistance';
+    ajaxSuccess($response);
+    return;
+}
+$matchPerid = $cR->fetch_row()[0];
+$cR->free();
+if ($matchPerid && $matchPerid > 0) {
+    $response['error'] = "New Person $newPerid already matched to $matchPerid.";
+    ajaxSuccess($response);
+    return;
+}
 
 $iP = <<<EOS
 INSERT INTO perinfo(last_name, first_name, middle_name, suffix, email_addr, phone, badge_name,
@@ -105,7 +125,7 @@ if ($type == 'n') {
         ajaxSuccess($response);
         return;
     }
-    $response['success'] = "Person $perid created from match data edited from $newperid";
+    $response['success'] = "Person $perid created from match data edited from $newPerid";
 }
 if ($type == 'e') {
     // add perid for where clause
@@ -118,7 +138,7 @@ if ($type == 'e') {
         return;
     }
     if ($num_upd == 1) {
-        $response['success'] = "Person $perid updated from match data edited from $newperid";
+        $response['success'] = "Person $perid updated from match data edited from $newPerid";
     } else {
         $response['success'] = "Person $perid matched, all the data matched, nothing was updated in the person info";
     }
@@ -131,26 +151,26 @@ SET perid = ?, managedBy = ?, managedByNew = null, updatedBy = ?
 WHERE id = ?;
 EOS;
 
-$num_upd = dbSafeCmd($uN, 'iiii', array($perid, $managedBy, $updatedBy, $newperid));
+$num_upd = dbSafeCmd($uN, 'iiii', array($perid, $managedBy, $updatedBy, $newPerid));
 if ($num_upd === false) {
-    $response['success'] .= "<br/>Error trying to update the newperson record $newperid with the new perid $perid";
+    $response['success'] .= "<br/>Error trying to update the newperson record $newPerid with the new perid $perid";
 } else if ($num_upd != 1) {
-    $response['success'] .= "<br/>Error newperson record $newperid not found when updating it with the new perid $perid";
+    $response['success'] .= "<br/>Error newperson record $newPerid not found when updating it with the new perid $perid";
 } else {
-    $response['success'] .= "<br/>Match newperson record $newperid updated with perid $perid";
+    $response['success'] .= "<br/>Match newperson record $newPerid updated with perid $perid";
 }
 
 // now update the rest of the records for the newperid to perid transition
 $rows = dbSafeCmd('UPDATE newperson SET updatedBy = ?, managedBy = ?, managedByNew = null WHERE managedByNew=?;', 'iii',
-                  array ($updatedBy, $perid, $newperid));
+                  array ($updatedBy, $perid, $newPerid));
 // fix people they manage from perinfo to map to their new perid
 $rows = dbSafeCmd('UPDATE perinfo SET updatedBy = ?, managedBy = ?, managedByNew = null WHERE managedByNew=?;', 'iii',
-                  array ($updatedBy, $perid, $newperid));
+                  array ($updatedBy, $perid, $newPerid));
 // update referenced tables reg, transaction, exhibiors, memberInterests, memberPolciies and payorPlans to now point to the perid
-$rows = dbSafeCmd('UPDATE reg SET perid=? WHERE newperid=?;', 'ii', array ($perid, $newperid));
-$rows = dbSafeCmd('UPDATE transaction SET perid=? WHERE newperid=?;', 'ii', array ($perid, $newperid));
-$rows = dbSafeCmd('UPDATE exhibitors SET perid=? WHERE newperid=?;', 'ii', array ($perid, $newperid));
-$rows = dbSafeCmd('UPDATE payorPlans SET perid=? WHERE newperid=?;', 'ii', array ($perid, $newperid));
+$rows = dbSafeCmd('UPDATE reg SET perid=? WHERE newperid=?;', 'ii', array ($perid, $newPerid));
+$rows = dbSafeCmd('UPDATE transaction SET perid=? WHERE newperid=?;', 'ii', array ($perid, $newPerid));
+$rows = dbSafeCmd('UPDATE exhibitors SET perid=? WHERE newperid=?;', 'ii', array ($perid, $newPerid));
+$rows = dbSafeCmd('UPDATE payorPlans SET perid=? WHERE newperid=?;', 'ii', array ($perid, $newPerid));
 
 // now update / insert the policies
 $resultValues = [];
@@ -161,12 +181,12 @@ foreach ($_POST as $key => $value) {
     $resultValues[$policy] = $value;
 }
 // now merge them
-$msg = mergePolicies($conid, $perid, 'n', $newperid, $updatedBy, $resultValues);
+$msg = mergePolicies($conid, $perid, 'n', $newPerid, $updatedBy, $resultValues);
 if ($msg != '') {
     $response['error'] = $msg;
 }
 
-$msg = mergeInterests($conid, $perid, 'n', $newperid, $updatedBy);
+$msg = mergeInterests($conid, $perid, 'n', $newPerid, $updatedBy);
 if ($msg != '') {
     $response['error'] = $msg;
 }
