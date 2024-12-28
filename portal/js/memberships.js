@@ -926,10 +926,13 @@ class Membership {
         }
         this.#cartContentsDiv.innerHTML = html;
 
+        /*
         if (this.#cartChanges > 0)
             this.#saveCartBtn.innerHTML = "Save the cart and any changes you made to your profile and interests, and return to the home page";
         else
             this.#saveCartBtn.innerHTML = "Save any changes you may have made to your profile and interests, and return to the home page.";
+         */
+        this.#saveCartBtn.innerHTML = "Add Another Membership or Pay"
     }
 
     // add to cart
