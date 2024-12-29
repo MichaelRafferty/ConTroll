@@ -271,7 +271,7 @@ updateArtItem () {
             this.#itemTable.getRow(this.#index).getCell('bidderText').setValue(value);
         }
     }
-    this.closeEditPane(); //TODO updating bidder doesn't work
+    this.closeEditPane();
 }
 
 }
