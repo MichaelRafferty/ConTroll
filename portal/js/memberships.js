@@ -41,6 +41,7 @@ class Membership {
     #memberAgeLabel = null;
     #memberAgeStatus = null;
     #memberAgeError = false;
+    #ageListEmpty = false;
 
     // membership items
     #memberships = null;
@@ -449,6 +450,9 @@ class Membership {
 
         if (nextStep == 0) {
             this.gotoStep(0);
+        } else if (this.#ageListEmpty) {
+            this.#memberAge = null;
+            this.gotoStep(2);
         } else {
             this.gotoStep(1);
         }
@@ -479,6 +483,7 @@ class Membership {
                 '</button></div>' + "\n";
         }
         this.#ageButtonsDiv.innerHTML = html;
+        this.#ageListEmpty = html == '';
     }
 
     buildMembershipButtons() {
