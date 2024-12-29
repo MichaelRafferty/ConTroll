@@ -7,12 +7,15 @@ It also expects you to know how to fetch/update files from GitHub. The software 
 1.  Make sure all prerequisites in System_Requirements.txt are satisified by your system.
 
 2.  Decide what account is going to host Reg.  These instructions will create two complete systems: reg and reg-test.
-    a. create said account and create two directories under it: one for reg and one for reg-test
-    b. retrieve the production tree to reg and the test tree to reg-test.
+    a. create said account and create two directories under it: one for reg (labeled {reg} below) and one for reg-test (labeled {reg-test} below}.
+    b. retrieve the production tree to reg and the test tree to reg-test.  If you wish to use master and test branches, use git clone of
+        MichaelRafferty/ConTroll.git. If you wish to make local changes, create your own github account and create a fork
+        of MichaelRafferty/ConTroll.git.  In either case use your repositories path in the statements below.
+
         cd {reg}
-        git clone git@github.com:MichaelRafferty/ConTroll.git ConTroll
+        git clone git@{github.com:{repootoryPath} ConTroll
         cd {regtest}
-        git clone git@github.com:MichaelRafferty/ConTroll.git ConTroll
+        git clone git@github.com:{repootoryPath} ConTroll
     c. copy the regfetch script to your bin directory
         cd {reg}/ConTroll/scripts-sample
         cp regfetchprod ~/bin
@@ -24,11 +27,11 @@ It also expects you to know how to fetch/update files from GitHub. The software 
     h. Run composer for each tree
         regfetchprod
         regfetchtest
-    i. Make the local directories in each directory
+    i. Make the local directories in each directory (if they do not already exist)
         1. cd {reg}/ConTroll
-        2. mkdir backups config cronlog crons reglogs scripts onlinereg/images vendor/images
+        2. mkdir backups config cronlog crons reglogs scripts onlinereg/images vendor/images portal/images controll/images
         3. cd {regtest}/ConTroll
-        4. mkdir backups config cronlog crons reglogs scripts onlinereg/images vendor/images
+        4. mkdir backups config cronlog crons reglogs scripts onlinereg/images vendor/images portal/images controll/images
 
 3. Create the two databases in your database server
     a. suggested names are reg and reg_test
@@ -40,54 +43,72 @@ It also expects you to know how to fetch/update files from GitHub. The software 
             routines
     c. Copy config-sample/reg_conf.ini.sample to config/reg_conf.ini
     d. Edit at least the [mysql] section of the configuration to set the database parameters
-    f.  load the reg schema into each database using the InstallSetup.php program
+    f. Load the reg schema into each database using the InstallSetup.php program
         cd {reg}/install
         Use php InstallSetup.php -h to check the appropriate options for your system.
             It is recommended that the schema be set up outside of InstallSetup.php.  If you have not yet edited the rest of reg_conf.ini, use the -v option
 
-4. Populate the tables far enough to use the GUI to continue, or as far as you want.  Note: InstallSetuop will populate initial values for conlist, user, user_auth, atcon_user and atcon_auth for the first user.
+4. Populate the tables far enough to use the GUI to continue, or as far as you want.  Note: InstallSetup will populate initial values for conlist,
+    user, user_auth, atcon_user and atcon_auth for the first user.  The schema install will populate auth, atchLog, and the custom text tables.  It also
+    populates the required values in memCategories and memTypes.
     Necessary tables for the GUI:
         a. conList (at least for the current convention, preferred for the current and the next convention (can approximate the dates for that one), InstallSetup.php will insert the first conlist entry.
         b. user and user_auth: InstallSetup.php will install your master admin for you.
         c. atcon_user and atcon_auth: InstallSetup.php will install your master manager for you.
+        d. Custom Text Tables, and the required values in memCategories and memTypesd.
 
 5. Copy or create the following files in your config directory
     a. Edit reg_conf.ini copied in the steps above
         i. Mimimim just to get the gui working:
             1. [mysql] section in its entirity
             2. [con] label, conname, id, minComp, compLen, conLen, server
-            3. [reg] https, test, open, server, close, suspended, cancelled,
-            4. [atcon] (none)
-            5. [vendor] (none)
-            6. [google] all
-            7. [cc] set up a test version to start
+            3. [debug] (none)
+            4. [reg] https, test, open, server, close, suspended, cancelled,
+            5. [atcon] (none)
+            6. [vendor] (none)
+            7. [client] all
+            8. [google] all
+            9. [cc] set up a test version to start
             8. [log] all
             9. [email] all
-            10. [artshow] (none)
-            11. [control] (none)
+            10. [portal] https, test, open, suspended, portalsite
+            10. [controll] useportal
+            11. [usps] (none)
+            12. [local] (none)
+            13. [api] (none)
     3. Set up Google Authentication in the google console
         a. copy your json file into the config directory using the name you specified in the [google] block above
         b. make sure all of the url's are authorized to use google authentication
-            i. (your online reg URL))/reg_control
-            ii. (your online reg test system URL)/reg_control
+            i. (your controll URL))/
+            ii. (your portal URL))/
+            iii. (your controll test system URL)/
+            iv. (your portal test system URL)/
     4. Since the printservers database is used to hold the loanable Pi print servers, you will need to grant select access to it's tables to your reg databas user
         GRANT SELECT ON printservers.servers TO '(reg_db_user)'@'(dbhost)';
         GRANT SELECT ON printservers.printers TO '(reg_db_user)'@'(dbhost)';
 
 6. Set up your web server to server PHP FCGI for the following URL types, for both the test and the production systems
-    a. reg.(domain)  => .../reg/onlinereg
+    a. reg.(domain)  => .../reg/onlinereg       (if using online reg as primary)
+        or
+       reg.(domain) => .../reg/portal           (if using portal as primary)
     b. atcon.(domain) => .../reg/atcon
     c. vendor.(domain) => .../reg/vendor
     d. artist.(domain) => .../reg/vendor  /* yes, vendor, it uses the server name to determine which interface to show)
-    e. reg-test.(domain) => .../reg_test/onlinereg
-    f. atcon-test.(domain) => .../reg_test/atcon
-    g. vendor-test.(domain) => .../reg_test/vendor
-    h. artist-test.(domain) ==> .../reg_test/vendor
+    e. controll.(domain) => .../reg/controll
+    f. reg-test.(domain)  => .../reg-test/onlinereg       (if using online reg as primary)
+        or
+       reg-test.(domain) => .../reg-test/portal           (if using portal as primary)
+    g. atcon-test.(domain) => .../reg-test/atcon
+    h. vendor-test.(domain) => .../reg-test/vendor
+    i. artist-test.(domain) => .../reg-test/vendor  /* yes, vendor, it uses the server name to determine which interface to show)
+    j. controll-test.(domain) => .../reg-test/controll
 
-7. use reg_control's admin or the database directly to set up:
+7. use controll's admin or the database directly to set up:
     a. users
-    b. Membership Configuration Tables
-    c. Current Configuration Setup
+
+8. use controll's reg-admin to set up:
+    a. Membership Configuration Tables
+    b. Current Configuration Setup
 
 8. If you are running the Zambia scheduling system, zambia needs to access the perinfo, reg, and memList tables to keep its copy of the program
     participant information updated and in sync with the ConTroll.  Zambia pulls the membership and contact info for its program participants
@@ -116,7 +137,21 @@ It also expects you to know how to fetch/update files from GitHub. The software 
     e. copy the bkup.sh file from crons-sample to your crons directory
     f. set the variable for the install directory
         DIR=absolute path to the install directory (the one containing crons and scripts)
-    g. add an entry to your crontab to call this script at the frequence of backups you prefer, suggested is every day
+    g. add an entry to your crontab to call this script at the frequency of backups you prefer, suggested is every day
         crontab -e
         6 0 * * * /bin/sh /path-to-production-install-directory/crons/bkup.sh
-        8 0 * * * /bin/sh /path-to-test-install-directory/crons/bkup.sh
+        8 0 * * 0 /bin/sh /path-to-test-install-directory/crons/bkup.sh
+
+10. set up the periodic scripts in cron
+    a. for payment plan reminders:
+        i. copy the planreminders.php script from scripts-sample to script
+        ii. copy the planreminders.sh script from crons-sample to crons
+        iii. edit the planreminders.sh script and set the apporpriate value for PHPPATH, and LOCATION
+        iv. add an entry to your crontab to call this script at the frequency of reminders you prefer, suggested is every day as it
+            internally limits the reminders to once per week per plan.
+    b. interest emails: notify departments of who change their interest requests
+        i. copy the sendinterests.php script from scripts-sample to scripts
+        ii. copy the sendinterests.sh script from crons-sample to crons
+        iii. edit the sendinterests.sh script and set the apporpriate value for PHPPATH, and LOCATION
+        iv. add an entry to your crontab to call this script at the frequency of notifications you prefer, suggested is weekly
+            7 0 * * 1 /bin/sh /path-to-production-install-directory/crons/sendinterests.sh
