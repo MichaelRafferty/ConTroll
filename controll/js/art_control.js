@@ -7,6 +7,7 @@ var itemUndoBtn = null;
 var itemRedoBtn = null;
 
 var itemTable_dirty = false;
+var artItemModal = null;
 
 var priceregexp = 'regex:^([0-9]+([.][0-9]*)?|[.][0-9]+)$';
 
@@ -14,7 +15,7 @@ var testdiv = null;
 
 $(document).ready(function() {
     testdiv = document.getElementById('test');
-    artItemModalOnLoad();
+    artItemModal = artItemModalOnLoad(itemTable);
     setRegion('overview', null);
 });
 
@@ -103,6 +104,7 @@ function draw(data, textStatus, jqXHR) {
         paginationSize: 50,
         paginationSizeSelector: [10, 25, 50, 100, true], // enable page size select with these options
         columns: [
+            {title: 'Actions', hozAlign: "center", headerFilter: false, headerSort: false, formatter: addEditButton, responsive:0},
             {title: 'id', field: 'id', visible: false},
             {title: 'locations', field: 'locations', visible: false},
             {title: 'Name', field: 'exhibitorName', headerSort: true, headerFilter: 'list', headerFilterParams: { values: data['artists'].map(function(a) { return a.exhibitorName;})}, },
@@ -120,8 +122,7 @@ function draw(data, textStatus, jqXHR) {
             {title: 'Status', field: 'status', headerSort: true, headerFilter:'list', headerFilterParams: { values: ['Not In Show', 'Checked In', 'BID', 'Quicksale/Sold', 'Removed from Show', 'Purchased/Released', 'To Auction', 'Sold Bid Sheet', 'Checked Out']}, },
             {title: 'Location', field: 'location', headerSort: true, headerFilter: true, },
             {title: 'Bidder', field: 'bidderText', headerSort: true, headerFilter:true, },
-            {title: 'Sale Price', field: 'final_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", },
-            {title: 'Actions', width:150, hozAlign: "center", headerFilter: false, headerSort: false, formatter: addEditButton, responsive:0}
+            {title: 'Sale Price', field: 'final_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", }
         ]
     });
 
@@ -130,16 +131,24 @@ function draw(data, textStatus, jqXHR) {
 
     itemTable_dirty = false;
 
+    artItemModal.setItemTable(itemTable);
 }
+
 function addEditButton(cell, formatterParams, onRendered) {
     var html = '';
+    var index = cell.getRow().getIndex();
     var item_status = cell.getRow().getData().status;
     var btnClass = 'btn btn-sm p-0';
     var btnStyle = 'style="--bs-btn-font-size: 75%;"';
 
-    html += '<button type="button" class="'+btnClass+' btn-primary" '+btnStyle+' onclick="artItemModal.fetchArtItem(' + cell.getRow().getData().id + ')">Edit item</button>'
+    html += '<button type="button" class="'+btnClass+' btn-primary" '+btnStyle+' onclick="artItemModal.fetchArtItem(' + index + ',editReturn)">Edit item</button>'
 
     return html;
+}
+
+function editReturn(editTable, editfield, editIndex, editvalue) {
+    //itemTable
+
 }
 
 function itemTable_dataChanged(data) {

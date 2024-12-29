@@ -1,5 +1,5 @@
 <?php
-function drawEditPane()
+function drawEditPane($tabIndex=100)
 {
     /* div
     TODO: Tab Index
@@ -7,7 +7,7 @@ function drawEditPane()
     ?>
     <!-- artItem modal -->
     <div id='artItemEditPane' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Art Item Editor'
-         aria-hidden='true' style='--bs-modal-width: 90%;'>
+         aria-hidden='true' style='--bs-modal-width: 50%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
@@ -18,115 +18,91 @@ function drawEditPane()
                     <div class='container-fluid form-floating'>
                         <form id="artItemEditor" method="POST">
                             <div class="row mb-2">
-                                <div class="col-sm-2">
+                                <div class="col-sm-auto">
                                     Exhibitor:
+                                    <span id="artItemExhibitor"></span>
+                                    (<span id="artItemArtistNumber"></span>)
                                 </div>
-                                <div class="col-sm-auto" id="artItemExhibitor"></div>
                             </div>
                             <div class="row mb-2">
-                                <div class="col-sm-2">
+                                <div class="col-sm-auto">
                                     Show:
+                                    <span id="artItemShow"></span>
                                 </div>
-                                <div class="col-sm-auto" id="artItemShow"></div>
                             </div>
                             <div class="row mb-2">
-                                <div class="col-sm-2">
-                                    Artist Number:
-                                </div>
-                                <div class="col-sm-2" id="artItemArtistNumber"></div>
-                                <div class="col-sm-2">
+                                <div class="col-sm-auto">
                                     Item Number:
+                                    <span id="artItemItemNumber"></span> <!--TODO change to input tabIndex+1-->
                                 </div>
-                                <div class="col-sm-2" id="artItemItemNumber"></div>
-                                <div class="col-sm-2">
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-auto">
                                     Type:
+                                    <span id="artItemType"></span> <!--TODO change to select tabindex+2 -->
                                 </div>
-                                <div class="col-sm-2" id="artItemType"></div>
                             </div>
                             <div class="row mb-2">
-                                <div class="col-sm-2">
+                                <div class="col-sm-auto">
                                     <label for="artItemTitle">Title:</label>
-                                </div>
-                                <div class="col-sm-auto">
-                                    <input type="text" id="artItemTitle" name="title"/>
+                                    <input tabindex="<?php echo $tabIndex+5; ?>" type="text" id="artItemTitle" name="title"/>
                                 </div>
                             </div>
                             <div class="row mb-2">
-                                <div class="col-sm-2">
+                                <div class="col-sm-auto">
                                     <label for="artItemMaterial">Material:</label>
-                                </div>
-                                <div class="col-sm-auto">
-                                    <input type="text" id="artItemMaterial" name="material"/>
+                                    <input tabindex="<?php echo $tabIndex+6; ?>" type="text" id="artItemMaterial" name="material"/>
                                 </div>
                             </div>
                             <div class="row mb-2">
-                                <div class="col-sm-2">
+                                <div class="col-sm-auto">
                                     <label for="artItemStatus">Status:</label>
-                                </div>
-                                <div class="col-sm-4">
-                                    <select id="artItemStatus" name="status"> <!--populate from artItemStatuses-->
+                                    <select tabindex="<?php echo $tabIndex+7; ?>" id="artItemStatus" name="status"> <!--populate from artItemStatuses-->
                                     </select>
                                 </div>
-                                <div class="col-sm-2">
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-auto">
                                     <label for="artItemLocation">Location:</label>
-                                </div>
-                                <div class="col-sm-4">
-                                    <select id="artItemLocation" name="location">
+                                    <select tabindex="<?php echo $tabIndex+8; ?>" id="artItemLocation" name="location">
                                         <!--populate from this artist's locations-->
                                     </select>
                                 </div>
                             </div>
                             <div class="row mb-2">
-                                <div class="col-sm-2">
+                                <div class="col-sm-auto">
                                     <label for="artItemQuantity">Quantity:</label>
-                                </div>
-                                <div class="col-sm-4">
-                                    <input type="number" id="artItemQuantity" name="quantity"/>
+                                    <input tabindex="<?php echo $tabIndex+9; ?>" type="number" id="artItemQuantity" name="quantity"/>
                                     <!--max = original quantity-->
-                                </div>
-                                <div class="col-sm-2">
                                     <label for="artItemOrigQty">of (original):</label>
-                                </div>
-                                <div class="col-sm-4">
-                                    <input type="number" id="artItemOrigQty" name="orig_qty"/>
+                                    <input tabindex="<?php echo $tabIndex+10; ?>" type="number" id="artItemOrigQty" name="orig_qty"/>
                                 </div>
                             </div>
                             <div class="row mb-2" id="minPriceRow">
-                                <div class="col-sm-2">
-                                    <label for="artItemMinPrice">Minimum Bid:</label>
-                                </div>
                                 <div class="col-sm-auto">
-                                    <input type="number" id="artItemMinPrice" name="min"/>
+                                    <label for="artItemMinPrice">Minimum Bid:</label>
+                                    <input tabindex="<?php echo $tabIndex+11; ?>" type="number" id="artItemMinPrice" name="min"/>
                                 </div>
                             </div>
                             <div class="row mb-2">
-                                <div class="col-sm-2">
+                                <div class="col-sm-auto">
                                     <label for="artItemSalePrice" id="artItemSalePriceName">Quicksale/Sale Price/Ins
                                         Price:</label>
+                                    <input tabindex="<?php echo $tabIndex+12; ?>" type="number" id="artItemSalePrice" name="sale"/>
                                 </div>
+                            </div>
+                            <div class="row mb-2">
                                 <div class="col-sm-auto">
-                                    <input type="number" id="artItemSalePrice" name="sale"/>
-                                </div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-sm-2">
                                     <label for="artItemBidder">Bidder PerId:</label>
-                                </div>
-                                <div class="col-sm-4">
-                                    <input type="number" id="artItemBidder" name="bidder"/>
-                                </div>
-                                <div class="col-sm-2">
+                                    <input tabindex="<?php echo $tabIndex+13; ?>" type="number" id="artItemBidder" name="bidder"/>
                                     Name:
-                                </div>
-                                <div class="col-sm-4" id="artItemBidderName">
+                                    <span id="artItemBidderName"></span>
                                 </div>
                             </div>
                             <div class="row mb-2">
-                                <div class="col-sm-2">
+                                <div class="col-sm-auto">
                                     <label for="artItemFinalPrice">Final Price:</label>
-                                </div>
-                                <div class="col-sm-4">
-                                    <input type="number" id="artItemFinalPrice" name="final"/>
+                                    <input tabindex="<?php echo $tabIndex+14; ?>" type="number" id="artItemFinalPrice" name="final"/>
                                     <!--only valid for some statuses -->
                                 </div>
                             </div>
@@ -138,7 +114,7 @@ function drawEditPane()
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
                     <button class='btn btn-sm btn-secondary' onClick="artItemModal.resetEditPane()">Reset</button>
                     <button class='btn btn-sm btn-primary' id='profileSubmitBtn' onClick="artItemModal.updateArtItem()">
-                        Submit
+                        Update Art Item
                     </button>
                 </div>
             </div>

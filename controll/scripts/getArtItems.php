@@ -25,8 +25,9 @@ if(array_key_exists('region', $_GET)) {$region = $_GET['region']; }
 else { ajaxError('No Data'); } 
 
 $artQ = <<<EOS
-SELECT I.id, I.exhibitorRegionYearId, I.item_key, I.title, I.type, I.status, I.location, I.quantity, I.original_qty, I.min_price, I.sale_price, I.final_price, I.bidder,
-    ery.exhibitorNumber, ery.locations, e.exhibitorName,
+SELECT I.id, I.exhibitorRegionYearId, I.item_key, I.title, I.type, I.status, I.location, I.quantity, I.original_qty, 
+       I.min_price, I.sale_price, I.final_price, I.bidder, I.material,
+    ery.exhibitorNumber, ery.locations, e.exhibitorName, exR.name as exhibitRegionName,
     concat(trim(p.first_name), ' ', trim(p.last_name)) as bidderName,
     concat(trim(p.first_name), ' ', trim(p.last_name), ' (', I.bidder, ')') as bidderText,
     concat(I.exhibitorRegionYearId, '_', I.item_key) as extendedKey
@@ -35,6 +36,7 @@ FROM artItems I
     JOIN exhibitorYears ey ON ey.id=ery.exhibitorYearId
     JOIN exhibitors e ON e.id=ey.exhibitorId
     JOIN exhibitsRegionYears exRY ON exRY.id=ery.exhibitsRegionYearId
+    JOIN exhibitsRegions exR on exR.id=exRY.exhibitsRegion
     LEFT JOIN perinfo p ON p.id=I.bidder
 WHERE ey.conid=? and exRY.exhibitsRegion=?;
 EOS;

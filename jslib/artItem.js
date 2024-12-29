@@ -10,9 +10,9 @@ class artItemTypes {
     getType(value) {
         if(!this.isValid(value)) { return false; }
         switch (value) {
-            case 'art': return this.ART;
-            case 'nfs': return this.NFS;
-            case 'print': return this.PRINT;
+            case 'art': return artItemTypes.ART;
+            case 'nfs': return artItemTypes.NFS;
+            case 'print': return artItemTypes.PRINT;
         }
     }
 }
@@ -74,6 +74,10 @@ var statusList = new artItemStatuses();
 
 var ai_message_div; //file variable so it can be accessed anywhere
 class artItem {
+    #index;
+    #isChanged=false;
+    #changedFields;
+
     id;
     artistNumber;
     itemNumber;
@@ -113,10 +117,16 @@ class artItem {
     #bidderField;
     #bidderNameField;
     #final_priceField;
+    #itemTable;
 
 //functions to fetch and update based on id
-constructor() {
+constructor(itemTable) {
     var id = document.getElementById('artItemEditPane');
+    var _this=this;
+
+    this.itemTable = itemTable;
+    this.#changedFields={};
+
     if(id != null) {
         this.#editPane = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
     }
@@ -125,24 +135,49 @@ constructor() {
     this.#artistNumberField=document.getElementById('artItemArtistNumber');
     this.#itemNumberField=document.getElementById('artItemItemNumber');
     this.#typeField=document.getElementById('artItemType');
+    this.#sale_priceNameField=document.getElementById('artItemSalePriceName');
+    this.#bidderNameField=document.getElementById('artItemBidderName');//TODO make this field auto-update when bidder updates
 
     /* editable fields */
     this.#titleField=document.getElementById('artItemTitle');
+    this.#titleField.addEventListener('change',function() { _this.setIsChanged('artItemTitle','title') });
     this.#materialField=document.getElementById('artItemMaterial');
+    this.#materialField.addEventListener('change',function() { _this.setIsChanged('artItemMaterial','material') });
     this.#statusField=document.getElementById('artItemStatus');
+    this.#statusField.addEventListener('change',function() { _this.setIsChanged('artItemStatus','status') });
     this.#locationField=document.getElementById('artItemLocation');
+    this.#locationField.addEventListener('change',function() { _this.setIsChanged('artItemLocation', 'location') });
     this.#quantityField=document.getElementById('artItemQuantity');
+    this.#quantityField.addEventListener('change',function() { _this.setIsChanged('artItemQuantity','quantity') });
     this.#original_qtyField=document.getElementById('artItemOrigQty');
+    this.#original_qtyField.addEventListener('change',function() { _this.setIsChanged('artItemOrigQty', 'original_qty') });
     this.#min_bidField=document.getElementById('artItemMinPrice');
-    this.#sale_priceNameField=document.getElementById('artItemSalePriceName');
+    this.#min_bidField.addEventListener('change',function() { _this.setIsChanged('artItemMinPrice', 'min_price') });
     this.#sale_priceField=document.getElementById('artItemSalePrice');
+    this.#sale_priceField.addEventListener('change',function() { _this.setIsChanged('artItemSalePrice', 'sale_price') });
     this.#bidderField=document.getElementById('artItemBidder');
-    this.#bidderNameField=document.getElementById('artItemBidderName');
+    this.#bidderField.addEventListener('change',function() { _this.setIsChanged('artItemBidder','bidderText') });
     this.#final_priceField=document.getElementById('artItemFinalPrice');
+    this.#final_priceField.addEventListener('change',function() { _this.setIsChanged('artItemFinalPrice') });
 
     ai_message_div = document.getElementById('ai_result_message');
 }
-
+setPriceNames(type){
+    switch(type) {
+        case artItemTypes.ART:
+            document.getElementById('minPriceRow').style.display = 'block';
+            this.#sale_priceNameField.innerHTML = "Quicksale Price";
+            break;
+        case artItemTypes.NFS:
+            document.getElementById('minPriceRow').style.display = 'none';
+            this.#sale_priceNameField.innerHTML = "Insurance Amount";
+            break;
+        case artItemTypes.PRINT:
+            document.getElementById('minPriceRow').style.display = 'none';
+            this.#sale_priceNameField.innerHTML = "Sale Price";
+            break;
+    }
+}
 resetEditPane() {
     this.#exhibitorNameField.innerHTML = this.exhibitorName;
     this.#exhibitShowNameField.innerHTML = this.regionYearName;
@@ -150,20 +185,7 @@ resetEditPane() {
     this.#itemNumberField.innerHTML = this.itemNumber;
     this.#typeField.innerHTML = this.type;
 
-    switch(this.type) {
-        case typeList.ART:
-            document.getElementById('minPriceRow').display = 'block';
-            this.#sale_priceNameField.innerHTML = "Quicksale Price";
-            break;
-        case typeList.NFS:
-            document.getElementById('minPriceRow').display = 'none';
-            this.#sale_priceNameField.innerHTML = "Insurance Amount";
-            break;
-        case typeList.PRINT:
-            document.getElementById('minPriceRow').display = 'none';
-            this.#sale_priceNameField.innerHTML = "Sale Price";
-            break;
-    }
+    this.setPriceNames(this.type)
     //editable fields
     this.#titleField.value = this.title;
     this.#materialField.value = this.material;
@@ -178,28 +200,37 @@ resetEditPane() {
     this.#sale_priceField.value = this.sale_price;
     this.#bidderField.value = this.#bidder;
     this.#bidderNameField = this.bidderName;
-    //open Edit Pane
+
+    this.#isChanged=false;
+    this.#changedFields= {};
 }
-setValuesFromData(artItemData, artistInfo, bidderInfo = null) {
+
+setIsChanged(value,field) {
+    this.#isChanged=true;
+    this.#changedFields[value]=field;
+}
+setItemTable(itemTable) {this.#itemTable = itemTable;}
+
+setValuesFromData(artItemData) {
     this.id = artItemData['id'];
-    this.artistNumber = artistInfo['exhibitorNumber'];
-    this.itemNumber = artItemData['itemNumber'];
+    this.artistNumber = artItemData['exhibitorNumber'];
+    this.itemNumber = artItemData['item_key'];
     this.title=artItemData['title'];
     this.material=artItemData['material'];
     this.type=typeList.getType(artItemData['type']);
     this.status=statusList.getStatus(artItemData['status']);
     this.location=artItemData['location'];
-    this.#locationList = artistInfo['locations'].split(',');
+    this.#locationList = artItemData['locations'].split(',');
     this.quantity = artItemData['quantity'];
     this.original_qty = artItemData['orig_qty'];
     this.min_price = artItemData['min_price'];
     this.sale_price = artItemData['sale_price'];
     this.#bidder = artItemData['bidder'];
-    if(bidderInfo != null) { this.bidderName = bidderInfo['name']; }
+    this.bidderName = artItemData['bidderName'];
     this.#exhibitorRegionYearId = artItemData['exhibitorRegionYearId'];
-    this.exhibitorName = artistInfo['exhibitorName'];
-    this.#exhibitRegionYearId = artistInfo['exhibitRegionYearId']
-    this.regionYearName = artistInfo['exhibitRegionName']
+    this.exhibitorName = artItemData['exhibitorName'];
+    this.#exhibitRegionYearId = artItemData['exhibitRegionYearId']
+    this.regionYearName = artItemData['exhibitRegionName']
 
     if(this.type === false) {
         show_message('invalid item type', 'warn', ai_message_div); //TODO append if possible
@@ -217,33 +248,26 @@ closeEditPane() {
     this.#editPane.hide();
 }
 
-fetchArtItem(item_id) {
-    var _this = this;
-    $.ajax({
-        url: 'scripts/artItem_getItem.php',
-        method: 'GET',
-        data: {itemId: item_id},
-        success: function (data, textstatus, jqxhr) {
-            if((data['status'] == 'error') || data['error']) {
-                show_message(data['error'],'error', ai_message_div)
-            } else {
-                _this.setValuesFromData(data['item'], data['artist'], data['bidder']);
-                _this.resetEditPane();
-                _this.openEditPane();
-                show_message('Item ' + item_id + ' Retrieved');
-            }
-        },
-        error: showAjaxError
-    })
+
+fetchArtItem(index) {
+    var data = this.#itemTable.getRow(index).getData();
+    this.#index = index;
+    this.setValuesFromData(data);
+    this.resetEditPane();
+    this.openEditPane();
 }
 
 updateArtItem () {
-    //TODO make this work using the information in the editPaneModal;
-    alert("update not implemented");
+    for(const changed in this.#changedFields) {
+        var value = document.getElementById(changed).value;
+        this.#itemTable.getRow(this.#index).getCell(this.#changedFields[changed]).setValue(value);
+    }
+    this.closeEditPane(); //TODO updating bidder doesn't work
 }
 
 }
 artItemModal = null;
-function artItemModalOnLoad () {
-    artItemModal = new artItem();
+function artItemModalOnLoad (itemTable) {
+    artItemModal = new artItem(itemTable);
+    return artItemModal;
 }
