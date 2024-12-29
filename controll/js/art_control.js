@@ -115,14 +115,16 @@ function draw(data, textStatus, jqXHR) {
             {title: 'Item #', field: 'item_key', headerSort: true, headerFilter: true, headerWordWrap: true, width: 60, hozAlign: "right",},
             {title: 'Type', field: 'type', headerSort: true, headerFilter: 'list', headerFilterParams: { values: ['art', 'print', 'nfs']}, width: 75, },
             {title: 'Title', field: 'title', headerSort: true, headerFilter: true,},
+            {title: 'Material', field: 'material', headerSort: true, headerFilter: true,},
             {title: 'Min Bid or Ins.', field: 'min_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", },
             {title: 'Q. Sale or Print', field: 'sale_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", },
             {title: 'Orig Qty', field: 'original_qty', headerSort: true, headerFilter: true, headerWordWrap: true, width: 70, hozAlign: "right", },
             {title: 'Current Qty', field: 'quantity', headerSort: true, headerFilter: true, headerWordWrap: true, width: 70, hozAlign: "right", },
-            {title: 'Status', field: 'status', headerSort: true, headerFilter:'list', headerFilterParams: { values: ['Not In Show', 'Checked In', 'BID', 'Quicksale/Sold', 'Removed from Show', 'Purchased/Released', 'To Auction', 'Sold Bid Sheet', 'Checked Out']}, },
+            {title: 'Status', field: 'status', headerSort: true, headerFilter:'list', headerFilterParams: { values: statusList.getStatuses() } },
             {title: 'Location', field: 'location', headerSort: true, headerFilter: true, },
+            {title: 'BidderNum', field: 'bidder', visible: false, },
             {title: 'Bidder', field: 'bidderText', headerSort: true, headerFilter:true, },
-            {title: 'Sale Price', field: 'final_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", }
+            {title: 'Final Price', field: 'final_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", }
         ]
     });
 

@@ -42,17 +42,17 @@ class artItemStatuses {
     getStatus(value) {
         if (!this.isValid(value)) { return false; }
         switch (value) {
-            case this.ENTERED: return this.ENTERED;
-            case this.NOT_IN_SHOW: return this.NOT_IN_SHOW;
-            case this.CHECKED_IN: return this.CHECKED_IN;
-            case this.REMOVED: return this.REMOVED;
-            case this.BID: return this.BID;
-            case this.QUICKSALE: return this.QUICKSALE;
-            case this.TOAUCTION: return this.TOAUCTION;
-            case this.SOLDBID: return this.SOLDBID;
-            case this.SOLDAUCTION: return this.SOLDAUCTION;
-            case this.CHECKED_OUT: return this.CHECKED_OUT;
-            case this.RELEASED: return this.RELEASED;
+            case artItemStatuses.ENTERED: return artItemStatuses.ENTERED;
+            case artItemStatuses.NOT_IN_SHOW: return artItemStatuses.NOT_IN_SHOW;
+            case artItemStatuses.CHECKED_IN: return artItemStatuses.CHECKED_IN;
+            case artItemStatuses.REMOVED: return artItemStatuses.REMOVED;
+            case artItemStatuses.BID: return artItemStatuses.BID;
+            case artItemStatuses.QUICKSALE: return artItemStatuses.QUICKSALE;
+            case artItemStatuses.TOAUCTION: return artItemStatuses.TOAUCTION;
+            case artItemStatuses.SOLDBID: return artItemStatuses.SOLDBID;
+            case artItemStatuses.SOLDAUCTION: return artItemStatuses.SOLDAUCTION;
+            case artItemStatuses.CHECKED_OUT: return artItemStatuses.CHECKED_OUT;
+            case artItemStatuses.RELEASED: return artItemStatuses.RELEASED;
         }
     }
 
@@ -69,6 +69,7 @@ class artItemStatuses {
         }
         return options;
     }
+    getStatuses() { return this.#statuses;}
 }
 var statusList = new artItemStatuses();
 
@@ -156,9 +157,9 @@ constructor(itemTable) {
     this.#sale_priceField=document.getElementById('artItemSalePrice');
     this.#sale_priceField.addEventListener('change',function() { _this.setIsChanged('artItemSalePrice', 'sale_price') });
     this.#bidderField=document.getElementById('artItemBidder');
-    this.#bidderField.addEventListener('change',function() { _this.setIsChanged('artItemBidder','bidderText') });
+    this.#bidderField.addEventListener('change',function() {_this.setIsChanged('artItemBidder','bidder');});
     this.#final_priceField=document.getElementById('artItemFinalPrice');
-    this.#final_priceField.addEventListener('change',function() { _this.setIsChanged('artItemFinalPrice') });
+    this.#final_priceField.addEventListener('change',function() { _this.setIsChanged('artItemFinalPrice', 'final_price') });
 
     ai_message_div = document.getElementById('ai_result_message');
 }
@@ -189,7 +190,10 @@ resetEditPane() {
     //editable fields
     this.#titleField.value = this.title;
     this.#materialField.value = this.material;
+    this.#statusField.innerHTML = "";
     this.#statusField.innerHTML = statusList.setValidOptions(this.status);
+    this.#statusField.value = this.status;
+    this.#locationField.innerHTML = "<option></option>";
     for(const loc of this.#locationList) {
         this.#locationField.innerHTML += "<option>" + loc + "</option>";
     }
@@ -200,6 +204,7 @@ resetEditPane() {
     this.#sale_priceField.value = this.sale_price;
     this.#bidderField.value = this.#bidder;
     this.#bidderNameField = this.bidderName;
+    this.#final_priceField = this.final_price;
 
     this.#isChanged=false;
     this.#changedFields= {};
@@ -261,6 +266,10 @@ updateArtItem () {
     for(const changed in this.#changedFields) {
         var value = document.getElementById(changed).value;
         this.#itemTable.getRow(this.#index).getCell(this.#changedFields[changed]).setValue(value);
+
+        if(this.#changedFields[changed] == 'bidder') {
+            this.#itemTable.getRow(this.#index).getCell('bidderText').setValue(value);
+        }
     }
     this.closeEditPane(); //TODO updating bidder doesn't work
 }

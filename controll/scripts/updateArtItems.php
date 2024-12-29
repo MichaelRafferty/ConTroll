@@ -35,16 +35,19 @@ $response['tabledata'] = $tabledata;
 
 $updateSQL = <<<EOS
 UPDATE artItems
-SET item_key = ?, location = ?, min_price = ?, original_qty = ?, quantity = ?, sale_price = ?, status = ?, title = ?, type = ?
+SET item_key = ?, location = ?, min_price = ?, original_qty = ?, quantity = ?, sale_price = ?, status = ?, title = ?, 
+    type = ?, material = ?, bidder = ?, final_price = ?
 WHERE id = ?
 EOS;
 
-$updateTypes = "issiissssi";
+$updateTypes = "issiisssssiii";
 
 $updated = 0;
 
 foreach ($tabledata as $row) {
-    $paramarray = array($row['item_key'], $row['location'], $row['min_price'], $row['original_qty'], $row['quantity'], $row['sale_price'], $row['status'] , $row['title'], $row['type'], $row['id']);
+    $paramarray = array($row['item_key'], $row['location'], $row['min_price'], $row['original_qty'], $row['quantity'],
+        $row['sale_price'], $row['status'] , $row['title'], $row['type'], $row['material'], $row['bidder'], $row['final_price'],
+        $row['id']);
     $updated += dbSafeCmd($updateSQL, $updateTypes, $paramarray);
 }
     
