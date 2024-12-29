@@ -27,7 +27,7 @@ CREATE DEFINER=CURRENT_USER  TRIGGER `reg_update` BEFORE UPDATE ON `reg` FOR EAC
     END IF;
 END;;
 DELIMITER ;
-ALTER TABLE reg DROP CONSTRAINT `reg_ibfk_1`;
+ALTER TABLE reg DROP CONSTRAINT IF EXISTS `reg_ibfk_1`;
 
 /*
  * now clean up the regHistory Table
@@ -88,7 +88,7 @@ END;;
 DELIMITER ;
 
 DELIMITER ;
-ALTER TABLE perinfoHistory DROP CONSTRAINT `perinfoHistory_id_fk`;
+ALTER TABLE perinfoHistory DROP CONSTRAINT IF EXISTS `perinfoHistory_id_fk`;
 
 /*
  * Clean up perinfoHistory
@@ -137,7 +137,7 @@ CREATE DEFINER=CURRENT_USER  TRIGGER `artItems_update` BEFORE UPDATE ON `artItem
 END;;
 DELIMITER ;
 
-ALTER TABLE artItemsHistory DROP CONSTRAINT `artItemsHistory_id_fk`;
+ALTER TABLE artItemsHistory DROP CONSTRAINT IF EXISTS `artItemsHistory_id_fk`;
 
 /*
  * Clean up artItemsHistory

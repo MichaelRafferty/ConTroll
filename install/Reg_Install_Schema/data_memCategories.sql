@@ -11,7 +11,7 @@
 LOCK TABLES `memCategories` WRITE;
 ALTER TABLE `memCategories` DISABLE KEYS;
 INSERT INTO `memCategories` VALUES
-('addon','Req: Add-on\'s to memberips','N','N','N',80,'Y','X'),
+('addon','Req: Add-on\'s to memberships','N','N','N',80,'Y','X'),
 ('artist','Req: Artist Memberships','Y','Y','N',60,'Y','Artist'),
 ('dealer','Req: Dealer/Vendor Memberships','Y','Y','N',70,'Y','Dealer'),
 ('donation','Req: Variable Price Donations','N','Y','Y',90,'Y','X'),
