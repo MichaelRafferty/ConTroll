@@ -44,7 +44,14 @@ $updateTypes = "issiisssssiii";
 
 $updated = 0;
 
+
 foreach ($tabledata as $row) {
+    if($row['final_price'] == '') {$row['final_price'] = null;}
+    if($row['bidder'] == '') {$row['bidder'] = null;}
+    if($row['location'] == '') {$row['location'] = null;}
+    if($row['min_price'] == '') {$row['min_price'] = null;}
+    if($row['sale_price'] == '') {$row['sale_price'] = null;}
+
     $paramarray = array($row['item_key'], $row['location'], $row['min_price'], $row['original_qty'], $row['quantity'],
         $row['sale_price'], $row['status'] , $row['title'], $row['type'], $row['material'], $row['bidder'], $row['final_price'],
         $row['id']);
