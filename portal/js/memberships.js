@@ -932,7 +932,7 @@ class Membership {
         else
             this.#saveCartBtn.innerHTML = "Save any changes you may have made to your profile and interests, and return to the home page.";
          */
-        this.#saveCartBtn.innerHTML = "Add Another Membership or Pay"
+        this.#saveCartBtn.innerHTML = "Save, Add Another Membership or Pay"
     }
 
     // add to cart
