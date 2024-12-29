@@ -96,7 +96,7 @@ Member Tables;
             Banned: is this person allowed to buy a membership
             open_notes: notes the registration operators can access
             admin_notes: notes only the reg administration can access
-            contact_ok: (Depreciated, replaced by policies0)
+            contact_ok: (Depreciated, replaced by policies)
             share_reg_ok: (Depreciated, replaced by policies))
 
     newperson:  list of people who have bought a registration on-line
