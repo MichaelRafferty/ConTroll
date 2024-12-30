@@ -268,6 +268,7 @@ drawVerifyPersonInfo($policies);
 <?php
     outputCustomText('main/step4');
     drawGetNewMemberships();
+    outputCustomText('main/step4bottom');
 ?>
         <hr/>
     </div>
