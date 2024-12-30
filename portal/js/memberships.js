@@ -42,6 +42,8 @@ class Membership {
     #memberAgeStatus = null;
     #memberAgeError = false;
     #ageListEmpty = false;
+    #returnAgeListBTN = null;
+    #ageListVerBtn = null;
 
     // membership items
     #memberships = null;
@@ -97,6 +99,8 @@ class Membership {
         this.#auHeader = document.getElementById("auHeader");
         // set up div elements
         this.#ageButtonsDiv = document.getElementById("ageButtons");
+        this.#returnAgeListBTN = document.getElementById("returnAgeListBTN");
+        this.#ageListVerBtn = document.getElementById("ageListVerBtn");
         this.#membershipButtonsDiv = document.getElementById("membershipButtons");
         this.#emailDiv = document.getElementById("emailDiv");
         this.#ageBracketDiv = document.getElementById("ageBracketDiv");
@@ -484,6 +488,13 @@ class Membership {
         }
         this.#ageButtonsDiv.innerHTML = html;
         this.#ageListEmpty = html == '';
+        if (this.#ageListEmpty) {
+            if (this.#returnAgeListBTN)
+                this.#returnAgeListBTN.hidden = true;
+            if (this.#ageListVerBtn)
+                this.#ageListVerBtn.hidden = true;
+        }
+        this.gotoStep(2);
     }
 
     buildMembershipButtons() {
@@ -524,6 +535,9 @@ class Membership {
             this.#newEmailField.removeEventListener('keyup', membershipStep0NewEmailListener);
             this.#step0Listener = false;
         }
+
+        if (step == 1 && this.#ageListEmpty)
+            step = 2;
 
         if (!ignoreSkip && step == 2 && (now - this.#lastVerified) < (90 * 24 * 60 * 60 * 1000)) {
             step = 4;

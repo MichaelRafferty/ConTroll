@@ -32,7 +32,7 @@ function drawVerifyPersonInfo($policies) {
 ?>
     <div class="row mt-3">
         <div class='col-sm-auto'>
-            <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(1, true);'>Return to Age Verification</button>
+            <button class='btn btn-sm btn-secondary' id='ageListVerBtn' onclick='membership.gotoStep(1, true);'>Return to Age Verification</button>
         </div>
         <div class="col-sm-auto">
             <button class="btn btn-sm btn-primary" onclick="membership.verifyAddress();">Verify Address and move to next step</button>
