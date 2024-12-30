@@ -116,7 +116,7 @@ EOS;
                 trim($_POST['exhibitorEmail']),
                 trim($_POST['exhibitorPhone']),
                 trim($_POST['website']),
-                $description.
+                $description,
                 password_hash(trim($_POST['password']), PASSWORD_DEFAULT),
                 0, // need_new_passwd
                 0, // confirm
