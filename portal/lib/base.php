@@ -119,7 +119,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
                     if (str_starts_with($script, 'jslib/'))
                         $callout = "$script?v=$libJSversion";
                     else if (str_starts_with($script, 'js/'))
-                        $callout = "$script?v=$controllJSversion";
+                        $callout = "$script?v=$portalJSVersion";
                     else
                         $callout = $script;
     ?>
