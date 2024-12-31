@@ -7,15 +7,16 @@ This document is a work in progress and it will change as we make forward facing
 Coupons:
     Coupons are a marketing tool to allow for discounts to encourage people to register now (soon).
 
-Coupon Types:
+Coupon Types: enum('$off','%off','$mem','%mem','price')
     Overall Discount (Cart type items)
-        Fixed Dollars Off Cart - a set number of currency units (decimal 8.2) off the entire cart purchase
-        Fixed Percentage Off Primary Memberships in Cart - a fixed percentage (decimal 8.2) off the sum of the price of all primary memberships
+        $off: Fixed Dollars Off Cart - a set number of currency units (decimal 8.2) off the entire cart purchase
+        %off: Fixed Percentage Off Primary Memberships in Cart - a fixed percentage (decimal 8.2) off the sum of the price of all primary memberships
+                This is the same as fixe percentage off primary memberships (make patch to change this to %mem and drop from enum)
 
     Item Discounts (per memberships)
-        Fixed Dollars Off Primary Memberships - a set number of currentcy units (decimal 8.2) off each individual primary membership line item.
-        Fixed Percentage Off Primary Memberships - a fixed percentage (decimal 8.2) off each individual primary membership line item.
-        Set Specific Membership Type to a Fixed Price - for a specific memId (membership item), set the price ot a fixed current unit (decimal 8.2)
+        $mem: Fixed Dollars Off Primary Memberships - a set number of currentcy units (decimal 8.2) off each individual primary membership line item.
+        %mem: Fixed Percentage Off Primary Memberships - a fixed percentage (decimal 8.2) off each individual primary membership line item.
+        price; Set Specific Membership Type to a Fixed Price - for a specific memId (membership item), set the price ot a fixed current unit (decimal 8.2)
             Note: this overrides the rules engine, and the online Y/N flag, for is a membership available for purchase by this coupon user
             //TODO check that current applied coupon in Portal actually allows membership override, an that coupon is stored in the session until payment is
                 applied
@@ -37,19 +38,22 @@ Coupon Limitations: A coupon can be limited to when applicable by any combinatio
         the user of the coupon is recorded at redemption time.
 
 Coupon Accounting: // TODO this is a plan for discussion, not the actual coupon method right now
-    Coupons are remembered in the session until the cart is paid for
+    Coupons are remembered in the session until the cart is paid
     The total amount of the coupon is in the transaction record split between
-            couponDiscountCart for the coupons that effect the cart
-            couponDiscountReg for the coupons that effect the registration lines directly
-        such that price = paid + couponDiscountCart + couponDiscountReg when paid in full
+            couponDiscountCart for the coupons that effect the cart ($off)
+            couponDiscountReg for the coupons that effect the registration lines directly (remainder of coupons)
+        such that price = paid  and sum of reg line couponDiscount = couponDiscountReg, and one one of couponDiscountCart of couponDiscountReg has a value
     The reg table has the effect of the per line item coupons as the couponDiscount with the same formula
     A payment record of type 'coupon' is recorded for the transaction for the total value of the coupon
         The description is the coupon code/name
         The nonce is 'cart', 'line' or 'membership' to indicate how the coupon was applied
     For Square:
-        per line item coupons are per line item discounts
-        per cart coupons are order wide discounts
-        Square will allocate coupons as it sees fit. (we have not found a way to override this unless we do all per item discounts ourselves)
+        the coupon is an 'other' payment type
+        (Note for atcon: cash, check, and discount are also 'other' payment types and will be mapped to square appropriately, nothing is entered as a discount
+        in square)
+        the cc amount is post the other payment type being applied
+        All row items show price and paid as per the reg record
+        Nothing is entered to square as a discount
 
 Coupons are shown as payment lines on ConTroll receipts
 POS Display for coupon discount
