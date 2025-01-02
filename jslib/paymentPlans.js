@@ -618,7 +618,7 @@ class PaymentPlans {
             paymentAmt = balanceDue
 
         this.#planPaymentAmount = paymentAmt;
-        this.#planPaymentMinPayment = Number(payorPlan.minPayment);
+        this.#planPaymentMinPayment = Number(payorPlan.minPayment) > balanceDue ? balanceDue : Number(payorPlan.minPayment);
         this.#planPaymentBalanceDue = balanceDue;
         this.#planPaymentPayorPlanId = payorPlanId;
         this.#planPaymentPayorPlanName = plan.name;
