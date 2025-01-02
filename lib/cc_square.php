@@ -115,6 +115,21 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
         'squareVersion' => $cc['apiversion'],
         'environment' => $cc['env'],
     ]);
+    if (array_key_exists('currency', $con)) {
+        switch (strtolower($con['currency'])) {
+            case 'usd':
+                $currency = Currency::USD;
+                break;
+            case 'cad':
+                $currency = Currency::CAD;
+                break;
+            default:
+                ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Currency not yet supported in cc_square, seek assistance.'));
+                exit();
+                exit();
+        }
+    } else
+        $currency = Currency::USD;
 
     $loginPerid = getSessionVar('user_perid');
     if ($loginPerid == null) {
@@ -209,7 +224,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                 $item->setNote($note);
                 $item->setBasePriceMoney(new Money);
                 $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
-                $item->getBasePriceMoney()->setCurrency(Currency::USD);
+                $item->getBasePriceMoney()->setCurrency($currency);
                 $order_lineitems[$lineid] = $item;
                 $order_value += $badge['price'];
                 $lineid++;
@@ -221,7 +236,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
             $item->setName($results['spaceName'] . ':' . mb_substr($results['spaceDescription'], 0, 128));
             $item->setBasePriceMoney(new Money);
             $item->getBasePriceMoney()->setAmount($results['spacePrice'] * 100);
-            $item->getBasePriceMoney()->setCurrency(Currency::USD);
+            $item->getBasePriceMoney()->setCurrency($currency);
             $order_lineitems[$lineid] = $item;
             $order_value += $results['spacePrice'];
             $lineid++;
@@ -246,7 +261,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
             $item->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
             $money = new Money;
             $money->setAmount($results['discount'] * 100);
-            $money->setCurrency(Currency::USD);
+            $money->setCurrency($currency);
             $item->setAmountMoney($money);
             $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
             $orderDiscounts[] = $item;
@@ -265,7 +280,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
             $item->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
             $money = new Money;
             $money->setAmount($deferment * 100);
-            $money->setCurrency(Currency::USD);
+            $money->setCurrency($currency);
             $item->setAmountMoney($money);
             $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
             $orderDiscounts[] = $item;
@@ -281,7 +296,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
         $item->setName('Plan Payment: ' . $note);
         $item->setBasePriceMoney(new Money);
         $item->getBasePriceMoney()->setAmount($results['total'] * 100);
-        $item->getBasePriceMoney()->setCurrency(Currency::USD);
+        $item->getBasePriceMoney()->setCurrency($currency);
         $order_lineitems[$lineid] = $item;
 
         $order->setLineItems($order_lineitems);
@@ -354,7 +369,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     $payuuid = guidv4();
     $pay_money = new Money;
     $pay_money->setAmount($results['total'] * 100);
-    $pay_money->setCurrency(Currency::USD);
+    $pay_money->setCurrency($currency);
 
 //    if ($useLogWrite) {
 //        logWrite(array('CALLED WITH' => $results['total'], 'pay_money' => $pay_money));
