@@ -2,6 +2,7 @@
 global $db_ini;
 
 require_once "../lib/base.php";
+require_once "../lib/customText.php";
 
 $check_auth = google_init("ajax");
 $perm = "reg_admin";
@@ -193,18 +194,7 @@ EOS;
         break;
 
     case 'customText':
-        $updsql = <<<EOS
-UPDATE controllTxtItems
-SET contents = ?
-WHERE appName = ? AND appPage = ? AND appSection = ? AND txtItem = ?;
-EOS;
-
-        // now the updates, do the updates first in case we need to insert a new row with the same older key
-        foreach ($tabledata as $row) {
-            $numrows = dbSafeCmd($updsql, 'sssss',
-                 array($row['contents'], $row['appName'], $row['appPage'], $row['appSection'], $row['txtItem']));
-            $updated += $numrows;
-        }
+        $updated = updateCustomText($tabledata);
         break;
 
     default:
