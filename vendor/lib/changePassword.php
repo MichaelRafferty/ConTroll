@@ -73,7 +73,6 @@ EOH;
 EOH;
     }
     echo $html;
-    //vendor_page_footer();
 }
 
 // draw the password modal
