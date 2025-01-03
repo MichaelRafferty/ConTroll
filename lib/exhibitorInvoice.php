@@ -120,7 +120,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                        size='11' maxlength='11' required/>
                             </div>
                         </div>
-                        <?php if ($portalType == 'vendor' && array_key_exists('taxidlabel', $vendor_conf) && $vendor_conf['taxidlabel'] != '')) { ?>
+                         <?php if ($portalType == 'vendor' && array_key_exists('taxidlabel', $vendor_conf) && $vendor_conf['taxidlabel'] != '') { ?>
                         <div class="row">
                             <div class="col-sm-2">
                                 <label for="salesTaxId"><?php echo $vendor_conf['taxidlabel']; ?>:</label>
