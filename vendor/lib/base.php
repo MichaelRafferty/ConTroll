@@ -32,6 +32,15 @@ $bs5css=$cdn['bs5css'];
 $jqjs=$cdn['jqjs'];
 $jquijs=$cdn['jquijs'];
 $jquicss=$cdn['jquicss'];
+
+$vendor_conf = get_conf('vendor');
+if (array_key_exists('customtext', $vendor_conf)) {
+    $filter = $vendor_conf['customtext'];
+} else {
+    $filter = 'production';
+}
+loadCustomText('exhibitor', basename($_SERVER['PHP_SELF'], '.php'), $filter);
+
 echo <<<EOF
 <!DOCTYPE html>
 <html lang="en">

@@ -34,6 +34,9 @@ if (str_starts_with($_SERVER['HTTP_HOST'], 'artist')){
 } else if (str_starts_with($_SERVER['HTTP_HOST'], 'exhibit')){
     $portalName = 'Exhibitor';
     $portalType = 'exhibitor';
+} else if (str_starts_with($_SERVER['HTTP_HOST'], 'fan')){
+    $portalName = 'Fan';
+    $portalType = 'fan';
 } else {
     $portalName = 'Vendor';
     $portalType = 'vendor';
@@ -429,6 +432,7 @@ draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf[
                 <h3>Welcome to the <?php echo $portalName; ?> Portal Page for <?php echo $info['exhibitorName']; ?></h3>
             </div>
         </div>
+         <?php outputCustomText('main/top' . $portalName); ?>
         <div class="row p-1">
             <div class="col-sm-auto p-0">
                 <button class="btn btn-secondary m-1" onclick="exhibitorProfile.profileModalOpen('update');">View/Change your profile</button>
@@ -437,6 +441,7 @@ draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf[
                 <button class="btn btn-secondary m-1" onclick="window.location='?logout';">Logout</button>
             </div>
         </div>
+         <?php outputCustomText('main/beforeSpaces'); outputCustomText('main/spaces' . $portalName); ?>
         <div class="row p-1 pt-4">
             <div class="col-sm-12 p-0">
                 <h3><?php echo $portalName; ?> Spaces</h3>
@@ -566,6 +571,7 @@ draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf[
             </div>
         </div>
         <?php } ?>
+         <?php outputCustomText('main/bottom'); outputCustomText('main/bottom' . $portalName); ?>
     </div>
      <div class='container-fluid'>
         <div class='row'>
