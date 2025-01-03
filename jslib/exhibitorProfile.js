@@ -30,7 +30,7 @@ class ExhibitorProfile {
     // globals
     #debugFlag = 0;
 
-    static #fieldList = ["artistName", "exhibitorName", "exhibitorEmail", "exhibitorPhone", "exhibitorSalesTaxId", "pw1", "pw2", "description", "publicity",
+    static #fieldList = ["artistName", "exhibitorName", "exhibitorEmail", "exhibitorPhone", "salesTaxId", "pw1", "pw2", "description", "publicity",
         "addr", "city", "state", "zip", "country", "mailin"];
     static #copyFromFieldList = ['exhibitorName', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
     static #copyToFieldList = ['shipCompany', 'shipAddr', 'shipAddr2', 'shipCity', 'shipState', 'shipZip', 'shipCountry'];

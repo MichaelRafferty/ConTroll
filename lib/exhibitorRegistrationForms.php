@@ -168,7 +168,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     <label for='exhibitorTaxid'><?php echo $vendor_conf['taxidlabel']; ?>:</label>
                                 </div>
                                 <div class="col-sm-10 p-0">
-                                    <input class='form-control-sm' type='text' id="exhibitorSalesTaxid" name='exhibitorSalesTaxid'
+                                    <input class='form-control-sm' type='text' id="salesTaxId" name='salesTaxId'
                                            size=32 maxlength="32" tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
                                     />
                                 </div>
@@ -619,7 +619,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                             <label for='exhibitorTaxid'><?php echo $vendor_conf['taxidlabel']; ?>:</label>
                                         </div>
                                         <div class="col-sm-10 p-0">
-                                            <input class='form-control-sm' type='text' id="exhibitorSalesTaxid" name='exhibitorSalesTaxid'
+                                            <input class='form-control-sm' type='text' id="salesTaxId" name='salesTaxId'
                                                    size=32 maxlength="32" tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
                                             />
                                         </div>

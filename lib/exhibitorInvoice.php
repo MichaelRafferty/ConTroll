@@ -120,10 +120,10 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                         </div>
                         <div class="row">
                             <div class="col-sm-2">
-                                <label for="exhibitorSalesTaxId"><?php echo $vendor_conf['taxidlabel']; ?>:</label>
+                                <label for="salesTaxId"><?php echo $vendor_conf['taxidlabel']; ?>:</label>
                             </div>
                             <div class="col-sm-10 p-0">
-                                <input class='form-control-sm' type='text' name='exhibitorSalesTaxId' size=32 maxlength="32"/>
+                                <input class='form-control-sm' type='text' name='salesTaxId' size=32 maxlength="32"/>
                             </div>
                         </div>
                         <div class="row">
