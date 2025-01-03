@@ -40,7 +40,7 @@ function draw_exhibitorRequestModal($portalType = '')
                                     you sell if at all possible.
                                 </div>
                             </div>
-                            <?php } ?>
+                            <?php } outputCustomText('request/top'); outputCustomText('request/top' . $portalName); ?>
                             <div class="container-fluid p-0 m-0" id="spaceHtml"></div>
                             <div class='row p-1 pt-4 pb-3'>
                                 <div class='col-sm-12'>
@@ -69,6 +69,7 @@ function draw_exhibitorRequestModal($portalType = '')
                             </div>
                             <?php } ?>
                         </form>
+                        <?php outputCustomText('request/bottom'); outputCustomText('request/bottom' . $portalName); ?>
                         <div class="row">
                             <div class="col-sm-12" id="sr_message_div"></div>
                         </div>

@@ -41,6 +41,7 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                 </div>
                 <div class='modal-body' stype='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
+                        <?php outputCustomText('items/top');?>
                         <div class='row'> <?php /* art items */ ?>
                             <div class='col-sm-auto'>
                                 <h4> Registration for <?php echo $auctionTitle; ?></h4>
@@ -83,6 +84,7 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                                 <button id="nfs-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.saveNfs(); return false;" disabled>Save Changes</button>
                             </div>
                         </div>
+                        <?php outputCustomText('items/bottom');?>
                         <hr/>
                         <div class='row'>
                             <div class='col-sm-auto'>

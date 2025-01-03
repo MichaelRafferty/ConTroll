@@ -110,11 +110,17 @@ INSERT INTO controllAppItems(appName, appPage, appSection, txtItem, txtItemDescr
 ('exhibitor','index','invoice','beforeMemFan','Custom Text for before the memberships of the modal invoice popup-fan portals'),
 ('exhibitor','index','invoice','beforeMemExhibitor','Custom Text for before the memberships of the modal invoice popup-exhibitor portals'),
 ('exhibitor','index','invoice','beforeCharge','Custom Text for the before the credit card block of the modal invoice popup-all portals'),
+('exhibitor','index','invoice','payDisclaimer','Custom Text for the credit car disclaimer popup-all portals'),
+('exhibitor','index','invoice','payDisclaimerArtist','Custom Text for the credit car disclaimer popup-all portals'),
+('exhibitor','index','invoice','payDisclaimerVendor','Custom Text for the credit car disclaimer popup-all portals'),
+('exhibitor','index','invoice','payDisclaimerExhibitor','Custom Text for the credit car disclaimer popup-all portals'),
+('exhibitor','index','invoice','payDisclaimerFan','Custom Text for the credit car disclaimer popup-all portals'),
 ('exhibitor','index','invoice','bottom','Custom Text for the bottom of the modal invoice popup-all portals'),
 ('exhibitor','index','invoice','bottomArtist','Custom Text for the bottom custom text of the modal invoice popup-artist portal'),
 ('exhibitor','index','invoice','bottomVendor','Custom Text for the bottom custom text of the modal invoice popup-vendor portals'),
 ('exhibitor','index','invoice','bottomFan','Custom Text for the bottom custom text of the modal invoice popup-fan portals'),
 ('exhibitor','index','invoice','bottomExhibitor','Custom Text for bottom custom text of the modal invoice popup-exhibitor portals'),
+
 ('exhibitor','index','receipt','top', 'Custom Text for the top of the receipt - all portals'),
 ('exhibitor','index','receipt','bottom', 'Custom Text for the bottom of the receipt - all portals'),
 

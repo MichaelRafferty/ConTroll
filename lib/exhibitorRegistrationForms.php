@@ -107,13 +107,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             <?php if ($portalType != 'admin') { ?>
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <p> Please provide us with information we can use to manage <?php
-                                        echo $portalType; ?>s at <?php echo $con['conname'];
-                                        $addlkey = $portalType == 'artist' ? 'artistSignupAddltext' : 'vendorSignupAddltext';
-                                        if (array_key_exists($addlkey, $vendor_conf) && ($vendor_conf[$addlkey] != "")) {
-                                            echo '<br/>' . file_get_contents('../config/'. $vendor_conf[$addlkey]);
-                                        } ?>
-                                    </p>
+                                    <?php outputCustomText('profile/top'); outputCustomText('profile/top' . $portalName); ?>
                                 </div>
                             </div>
                             <?php } ?>
@@ -125,7 +119,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                 <div class='col-sm-2'></div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'><h1 class="h4">Business Information</h1></div>
                             </div>
-                             <?php if ($portalType == 'artist' || $portalType == 'admin') { ?>
+                             <?php outputCustomText('profile/bus' . $portalName); if ($portalType == 'artist' || $portalType == 'admin') { ?>
                                 <div class="row mt-1">
                                     <div class='col-sm-2'>
                                         <label for='artistName'> *Artist Name: </label>
@@ -257,6 +251,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                 <div class='col-sm-2'></div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'><h1 class="h4"><?php echo $portalName; ?> Address</h1></div>
                             </div>
+                            <?php outputCustomText('profile/add' . $portalName); ?>
                             <div class="row mt-1">
                                 <div class="col-sm-2">
                                     <label for="addr"> *Address </label>
@@ -318,6 +313,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                 <div class='col-sm-2'></div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'><h1 class="h4">Primary Contact</h1></div>
                             </div>
+                            <?php outputCustomText('profile/contact'); ?>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
                                     <label for='contactName'> *Contact Name: </label>
@@ -384,6 +380,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     </button>
                                 </div>
                             </div>
+                            <?php outputCustomText('profile/shipping'); ?>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
                                     <label for='shipCompany'> *Company </label>

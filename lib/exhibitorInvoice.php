@@ -34,10 +34,12 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class="container-fluid form-floating">
+                        <?php outputCustomText('invoice/top'); outputCustomText('invoice/top' . $portalName); ?>
                     <form id='vendor_invoice_form' class='form-floating' action='javascript:void(0);'>
                         <div class="row mt-2">
                             <div class="col-sm-12" id="vendor_inv_approved_for"></div>
                         </div>
+                        <?php outputCustomText('invoice/afterPrice'); outputCustomText('invoice/afterPrice' . $portalName); ?>
                         <div class='row mt-4'>
                             <div class='col-sm-12' id='vendor_inv_included'></div>
                         </div>
@@ -53,8 +55,8 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                         <div class="row">
                             <div class="col-sm-12">
                                 <strong><?php echo $portalName;?> Information</strong>
-                                <p>Please fill out this section with information on the <?php echo $portalType;?> or store.
-                                    Changes made to the <?php echo $portalName;?> Information part of this form will update your profile.</p>
+                                <?php outputCustomText('invoice/beforeProfile'); outputCustomText('invoice/beforeProfile' . $portalName); ?>
+                                <p>Changes made to the <?php echo $portalName;?> Information part of this form will update your profile.</p>
                             </div>
                         </div>
                         <div class="row">
@@ -142,6 +144,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                         <hr/>
 <?php
     }
+    outputCustomText('invoice/beforeMem'); outputCustomText('invoice/beforeMem' . $portalName);
 ?>
 
                         <div id="vendor_inv_included_mbr"></div>
@@ -168,7 +171,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                             </div>
                         </div>
 <?php
-                            if ($cc != null) {
+                            if ($cc != null) { outputCustomText('beforeCharge');
 ?>
                          <div class='row'>
                              <div class='col-sm-2'>
@@ -245,28 +248,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                             </div>
                         </div>
                         <hr/>
-                        <?php
-if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclaimer'] != '') {
-?>                          <div class='row p-1 pt-4 pb-3'>
-                                <div class='col-sm-12'><?php
-                            if (array_key_exists('pay_disclaimer', $vendor_conf) && $vendor_conf['pay_disclaimer'] != '') {
-                                $discfile = '../config/' . $vendor_conf['pay_disclaimer'];
-                                if (is_readable($discfile)) {
-                                    $disclaimer = file_get_contents($discfile);
-                                    ?>
-                                    <div class='row p-1 pt=0 pb-3'>
-                                        <div class='col-sm-12'>
-                                            <?php echo $disclaimer . "\n"; ?>
-                                        </div>
-                                    </div>
-                                    <?php
-                                }
-                            } ?>
-                                </div>
-                            </div>
-<?php
-}
-?>
+                        <?php outputCustomText('invoice/payDisclaimer'); outputCustomText('invoice/payDisclaimer' . $portalName); ?>
                         <div class="row">
                             <div class="col-sm-auto">
                                 Please wait for the email, and don't click the "Purchase" button more than once.
@@ -279,6 +261,7 @@ if (array_key_exists('pay_disclaimer',$vendor_conf) && $vendor_conf['pay_disclai
                             </div>
                         </div>
 <?php
+                                outputCustomText('invoice/bottom'); outputCustomText('invoice/bottom' . $portalName);
                             } else { // exhibitors module in ConTroll - cash/check/offline cc
 ?>
                             <div class="container-fluid">
