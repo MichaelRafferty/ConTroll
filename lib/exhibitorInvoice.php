@@ -10,6 +10,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
         $city = '';
         $state = '';
         $zip = '';
+        $salesTaxId = '';
         $contactEmail = '';
     } else {
         $exhibitorName = escape_quotes($info['exhibitorName']);
@@ -19,6 +20,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
         $city = escape_quotes($info['city']);
         $state = escape_quotes($info['state']);
         $zip = escape_quotes($info['zip']);
+        $salesTaxId = escape_quotes($info['salesTaxId']);
         $contactEmail = escape_quotes($info['contactEmail']);
     }
     ?>
@@ -118,17 +120,20 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                        size='11' maxlength='11' required/>
                             </div>
                         </div>
+                        <?php if ($portalType == 'vendor' && array_key_exists('taxidlabel', $vendor_conf) && $vendor_conf['taxidlabel'] != '')) { ?>
                         <div class="row">
                             <div class="col-sm-2">
                                 <label for="salesTaxId"><?php echo $vendor_conf['taxidlabel']; ?>:</label>
                             </div>
                             <div class="col-sm-10 p-0">
-                                <input class='form-control-sm' type='text' name='salesTaxId' size=32 maxlength="32"/>
+                                <input class='form-control-sm' type='text' name='salesTaxId' size=32 maxlength="32"
+                                       value="<?php echo $salesTaxId;?>"/>
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-sm-12"><?php echo $vendor_conf['taxidextra']; ?></div>
+                            <div class="col-sm-12"><?php outputCustomText('invoice/taxIdExtra'); ?></div>
                         </div>
+                        <?php } ?>
                         <div class="row mt-4 mb-4">
                             <div class="col-sm-2"></div>
                             <div class="col-sm-10" id="dealer_space_cost"></div>

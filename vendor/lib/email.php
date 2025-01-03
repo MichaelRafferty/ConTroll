@@ -177,7 +177,7 @@ function payment($results) {
             $body .= $vendor['addr2'] . "\n";
         $body .= $vendor['city'] . ', ' . $vendor['state'] . ' ' . $vendor['zip'] . "\n\n" .
             "Space: " . $region['name'] . ' (' . $region['description'] . ') with up to ' . $region['includedMemberships'] . ' included memberships and up to ' . $region['additionalMemberships'] . " additional memberships\n" .
-            $vendor_conf['taxidlabel'] . ': ' . $results['taxid'] . "\n\n" .
+            $vendor_conf['taxidlabel'] . ': ' . $results['salesTaxId'] . "\n\n" .
             "Price for Space: " . $dolfmt->formatCurrency($region['price'], $currency) . "\n\n" .
             "Special Requests:\n" . $results['specialrequests'] . "\n\n";
 
@@ -211,7 +211,7 @@ function payment($results) {
         $bodyHtml .= $vendor['addr2'] . "<br/>\n";
     $bodyHtml .= $vendor['city'] . ', ' . $vendor['state'] . ' ' . $vendor['zip'] . "</p>\n" .
         '<p>Space: ' . $region['name'] . ' (' . $region['description'] . ') with up to ' . $region['includedMemberships'] . ' included memberships and up to ' . $region['additionalMemberships'] . " additional memberships</p>\n" .
-        '<p>' . $vendor_conf['taxidlabel'] . ': ' . $results['taxid'] . "</p>\n" .
+        '<p>' . $vendor_conf['taxidlabel'] . ': ' . $results['salesTaxId'] . "</p>\n" .
         '<p>Price for Space: ' . $dolfmt->formatCurrency($region['price'], $currency) . "</p>\n" .
         "<p>Special Requests:<br/>\n" . $results['specialrequests'] . "</p>\n";
 

@@ -89,19 +89,22 @@ function isPrimary($mtype, $conid) {
 }
 
 //// functions for custom text usage
-global $customTexT, $keyPrefix, $customTextFilter;
+global $customTexT, $keyPrefix, $customTextFilter, $loadedPrefixes;
+$loadedPrefixes = [];
 
 // loadCustomText - load all the relevant custom text for this page
-    function loadCustomText($app, $page, $filter) {
-        global $customTexT, $keyPrefix, $customTextFilter;
+    function loadCustomText($app, $page, $filter, $addmode = false) {
+        global $customTexT, $keyPrefix, $customTextFilter, $loadedPrefixes;
 
-        if ($customTexT != null)
-            return; // already loaded
+        $usePrefix = $app . '/' . $page . '/';
+        if (array_key_exists($usePrefix, $loadedPrefixes))
+            return; // already loaded;
 
-        $keyPrefix = $app . '/' . $page . '/';
-        $customTextFilter = $filter;
-        $keyApp = $app;
-        $customTexT = [];
+        if (!$addmode) {
+            $keyPrefix = $usePrefix;
+            $customTexT = [];
+            $customTextFilter = $filter;
+        }
         $txtQ = <<<EOS
 SELECT *
 FROM controllTxtItems
@@ -114,11 +117,12 @@ EOS;
             $key = $txtL['appName'] . '/' . $txtL['appPage'] . '/' . $txtL['appSection'] . '/' . $txtL['txtItem'];
             $customTexT[$key] = $txtL['contents'];
         }
+        $loadedPrefixes[$usePrefix] = $txtR->num_rows;
         $txtR->free();
     }
 
 // output CustomText - output in a <div container-fluid> a custom text field if it exists and is non empty
-    function outputCustomText($key) {
+    function outputCustomText($key, $overridePrefix = null) {
         global $customTexT, $keyPrefix, $customTextFilter;
 
         if ($customTextFilter == 'none')
@@ -128,9 +132,14 @@ EOS;
             return; // custom text not loaded.
         }
 
+        if ($overridePrefix) {
+            $usePrefix = $overridePrefix;
+        } else {
+            $usePrefix = $keyPrefix;
+        }
 
-        if (array_key_exists($keyPrefix . $key, $customTexT)) {
-            $contents = $customTexT[$keyPrefix . $key];
+        if (array_key_exists($usePrefix . $key, $customTexT)) {
+            $contents = $customTexT[$usePrefix . $key];
             if ($contents != null && $contents != '') {
                 if ($customTextFilter == 'nodefault' || $customTextFilter == 'production') {
                     $prefixStr = 'Controll-Default: ';
@@ -146,6 +155,39 @@ EOS;
                     '</div>' . PHP_EOL;
             }
         }
+    }
+    function returnCustomText($key, $overridePrefix = null) {
+        global $customTexT, $keyPrefix, $customTextFilter;
+
+        if ($customTextFilter == 'none')
+            return '';
+
+        if ($customTexT == null) {
+            return ''; // custom text not loaded.
+        }
+
+        if ($overridePrefix) {
+            $usePrefix = $overridePrefix;
+        } else {
+            $usePrefix = $keyPrefix;
+        }
+
+        if (array_key_exists($usePrefix . $key, $customTexT)) {
+            $contents = $customTexT[$usePrefix . $key];
+            if ($contents != null && $contents != '') {
+                if ($customTextFilter == 'nodefault' || $customTextFilter == 'production') {
+                    $prefixStr = 'Controll-Default: ';
+                    if (substr($contents, 0, strlen($prefixStr)) == $prefixStr)
+                        return '';
+                    $prefixStr = '<p>Controll-Default: ';
+                    if (substr($contents, 0, strlen($prefixStr)) == $prefixStr)
+                        return '';
+                }
+
+                return $contents;
+            }
+        }
+        return '';
     }
 
 // replace in strings, items from the config file you can replace in strings

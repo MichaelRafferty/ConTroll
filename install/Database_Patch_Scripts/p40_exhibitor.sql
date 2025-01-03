@@ -3,6 +3,7 @@
  */
 
 ALTER TABLE exhibitors ADD COLUMN salesTaxId varchar(32) DEFAULT NULL AFTER exhibitorPhone;
+ALTER TABLE exhibitorRegionYears ADD COLUMN specialRequests text DEFAULT NULL AFTER approval;
 ALTER TABLE controllAppItems RENAME COLUMN appsection TO appSection;
 
 INSERT INTO controllAppPages(appName, appPage, pageDescription) VALUES
@@ -88,6 +89,11 @@ INSERT INTO controllAppItems(appName, appPage, appSection, txtItem, txtItemDescr
 ('exhibitor','index','request','bottomVendor','Custom Text for the t custom text of the modal space request popup-vendor portals'),
 ('exhibitor','index','request','bottomFan','Custom Text for the bottom custom text of the modal space request popup-fan portals'),
 ('exhibitor','index','request','bottomExhibitor','Custom Text for bottom custom text of the modal space request popup-exhibitor portals'),
+('exhibitor','index','request','disclaimer','Custom Text for the registration disclaimer popup-all portals'),
+('exhibitor','index','request','disclaimerArtist','Custom Text for the registration disclaimer popup-artist portal'),
+('exhibitor','index','request','disclaimerVendor','Custom Text for the registration disclaimer popup-vendor portal'),
+('exhibitor','index','request','disclaimerExhibitor','Custom Text for the registrationd disclaimer popup-exhibitor portal'),
+('exhibitor','index','request','disclaimerFan','Custom Text for the registration disclaimer popup-fan portal'),
 
 ('exhibitor','index','invoice','top','Custom Text for the top of the modal invoice popup-all portals'),
 ('exhibitor','index','invoice','topArtist','Custom Text for the top custom text of the modal invoice popup-artist portal'),
@@ -110,16 +116,17 @@ INSERT INTO controllAppItems(appName, appPage, appSection, txtItem, txtItemDescr
 ('exhibitor','index','invoice','beforeMemFan','Custom Text for before the memberships of the modal invoice popup-fan portals'),
 ('exhibitor','index','invoice','beforeMemExhibitor','Custom Text for before the memberships of the modal invoice popup-exhibitor portals'),
 ('exhibitor','index','invoice','beforeCharge','Custom Text for the before the credit card block of the modal invoice popup-all portals'),
-('exhibitor','index','invoice','payDisclaimer','Custom Text for the credit car disclaimer popup-all portals'),
-('exhibitor','index','invoice','payDisclaimerArtist','Custom Text for the credit car disclaimer popup-all portals'),
-('exhibitor','index','invoice','payDisclaimerVendor','Custom Text for the credit car disclaimer popup-all portals'),
-('exhibitor','index','invoice','payDisclaimerExhibitor','Custom Text for the credit car disclaimer popup-all portals'),
-('exhibitor','index','invoice','payDisclaimerFan','Custom Text for the credit car disclaimer popup-all portals'),
+('exhibitor','index','invoice','payDisclaimer','Custom Text for the payment disclaimer popup-all portals'),
+('exhibitor','index','invoice','payDisclaimerArtist','Custom Text for the payment disclaimer popup-artist portal'),
+('exhibitor','index','invoice','payDisclaimerVendor','Custom Text for the payment disclaimer popup-vendor portal'),
+('exhibitor','index','invoice','payDisclaimerExhibitor','Custom Text for the payment disclaimer popup-exhibitor portal'),
+('exhibitor','index','invoice','payDisclaimerFan','Custom Text for the payment disclaimer popup-fan portal'),
 ('exhibitor','index','invoice','bottom','Custom Text for the bottom of the modal invoice popup-all portals'),
 ('exhibitor','index','invoice','bottomArtist','Custom Text for the bottom custom text of the modal invoice popup-artist portal'),
 ('exhibitor','index','invoice','bottomVendor','Custom Text for the bottom custom text of the modal invoice popup-vendor portals'),
 ('exhibitor','index','invoice','bottomFan','Custom Text for the bottom custom text of the modal invoice popup-fan portals'),
 ('exhibitor','index','invoice','bottomExhibitor','Custom Text for bottom custom text of the modal invoice popup-exhibitor portals'),
+('exhibitor','index','invoice','taxIdExtra','Custom Text for after tax id of the modal invoice popup-exhibitor portals'),
 
 ('exhibitor','index','receipt','top', 'Custom Text for the top of the receipt - all portals'),
 ('exhibitor','index','receipt','bottom', 'Custom Text for the bottom of the receipt - all portals'),

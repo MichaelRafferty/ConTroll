@@ -3,7 +3,6 @@
 // draw the vendor request modal
 function draw_exhibitorRequestModal($portalType = '')
 {
-    $exhibitor_conf = get_conf('vendor');
     switch ($portalType) {
         case 'artist':
             $portalName = 'Artist';
@@ -49,25 +48,13 @@ function draw_exhibitorRequestModal($portalType = '')
                                 </div>
                             </div>
                             <?php
-                            if (array_key_exists('req_disclaimer', $exhibitor_conf) && $exhibitor_conf['req_disclaimer'] != '') {
-                                $discfile = '../config/' . $exhibitor_conf['req_disclaimer'];
-                                if (is_readable($discfile)) {
-                                    $disclaimer = file_get_contents($discfile);
-                                    ?>
-                                    <div class='row p-1 pt=0 pb-3'>
-                                        <div class='col-sm-12'>
-                                            <?php echo $disclaimer . "\n"; ?>
-                                        </div>
-                                    </div>
-                                    <?php
-                                }
+                            if ($portalType != 'admin') {
+                                outputCustomText('request/disclaimer'); outputCustomText('request/disclaimer' . $portalName);
                             }
-                            if ($portalType == '') {
                             ?>
                             <div class='row p-0 bg-warning'>
                                 <div class='col-sm-auto p-2'>Completing this application does not guarantee space.</div>
                             </div>
-                            <?php } ?>
                         </form>
                         <?php outputCustomText('request/bottom'); outputCustomText('request/bottom' . $portalName); ?>
                         <div class="row">

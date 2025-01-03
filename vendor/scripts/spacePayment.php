@@ -55,8 +55,12 @@ else
     $portalType = 'exhibits';
 
 $regionYearId = $_POST['regionYearId'];
-$specialRequests = $_POST['requests'];
-$taxid = $_POST['taxid'];
+$specialRequests = trim($_POST['requests']);
+if ($specialRequests == '')
+    $specialRequests = null;
+$salesTaxId = trim($_POST['salesTaxId']);
+if ($salesTaxId == '')
+    $salesTaxId = null;
 $portalName = $_POST['portalName'];
 if (array_key_exists('includedMemberships', $_POST))
     $includedMembershipsMax = $_POST['includedMemberships'];
@@ -100,7 +104,7 @@ $regionYearR->free();
 
 // get current exhibitor information
 $exhibitorQ = <<<EOS
-SELECT exhibitorId, artistName, exhibitorName, exhibitorEmail, website, description, addr, addr2, city, state, zip, perid, newperid,
+SELECT exhibitorId, artistName, exhibitorName, exhibitorEmail, website, description, addr, addr2, city, state, zip, perid, newperid, salesTaxId,
        contactEmail, contactName, ey.mailin
 FROM exhibitors e
 JOIN exhibitorYears ey ON e.id = ey.exhibitorId
@@ -334,17 +338,18 @@ $region['price'] = $spacePrice;
 $status_msg = '';
 // the form passes validation, lets try running it.
 // first does the exhibitor profile need updating
-if ($_POST['name'] != $exhibitor['exhibitorName'] || $_POST['email'] != $exhibitor['exhibitorEmail'] || $_POST['addr'] != $exhibitor['addr'] || $_POST['addr2'] != $exhibitor['addr2'] ||
-    $_POST['city'] != $exhibitor['city'] ||  $_POST['state'] != $exhibitor['state'] || $_POST['zip'] != $exhibitor['zip']) {
+if ($_POST['name'] != $exhibitor['exhibitorName'] || $_POST['email'] != $exhibitor['exhibitorEmail'] || $_POST['addr'] != $exhibitor['addr']
+    || $_POST['addr2'] != $exhibitor['addr2'] || $_POST['city'] != $exhibitor['city'] ||  $_POST['state'] != $exhibitor['state']
+    || $_POST['zip'] != $exhibitor['zip'] || $salesTaxId != $exhibitor['salesTaxId']) {
     // something doesn't match update these fields
     $updateV = <<<EOS
 UPDATE exhibitors
-SET exhibitorName=?, exhibitorEmail=?, addr=?, addr2=?,city=?, state=?, zip=?
+SET exhibitorName=?, exhibitorEmail=?, addr=?, addr2=?, city=?, state=?, zip=?, salesTaxId = ?
 WHERE id=?;
 EOS;
     $exhibitorA = array(trim($_POST['name']), trim($_POST['email']), trim($_POST['addr']), trim($_POST['addr2']), trim($_POST['city']), trim($_POST['state']),
-        trim($_POST['zip']), $exhId);
-    $num_rows = dbSafeCmd($updateV, 'sssssssi',$exhibitorA);
+        trim($_POST['zip']), $salesTaxId, $exhId);
+    $num_rows = dbSafeCmd($updateV, 'ssssssssi',$exhibitorA);
     if ($num_rows == 1)
         $status_msg = "$portalName Profile Updated<br/>\n";
     else
@@ -423,7 +428,7 @@ $results = array(
     'total' => $totprice,
     'nonce' => $_POST['nonce'],
     'vendorId' => $exhId,
-    'taxid' => $taxid,
+    'salesTaxId' => $salesTaxId,
     'specialrequests' => $specialRequests,
     'region' => $region,
     'vendor' => $exhibitor,
@@ -549,20 +554,28 @@ if ($exMailin == 'N') {
     }
     $updAgent = <<<EOS
 UPDATE exhibitorRegionYears
-SET agentPerid = ?, agentNewperson = ?, agentRequest = ?
+SET agentPerid = ?, agentNewperson = ?, agentRequest = ?, specialRequests = ?
 WHERE id = ?;
 EOS;
-    $num_rows = dbSafeCmd($updAgent, 'iisi', array($perid, $newperid, $agentRequest, $exRYid));
+    $num_rows = dbSafeCmd($updAgent, 'iissi', array($perid, $newperid, $agentRequest, $specialRequests, $exRYid));
 
-    // update the master agents if needed
-    if ($exhibitor['perid'] == null && $exhibitor['newperid'] == null) {
-        $updMaster = <<<EOS
+    // update the master agents and special requests
+
+    $updMaster = <<<EOS
 UPDATE exhibitors
 SET perid = ?, newperid = ?
 WHERE id = ?;
 EOS;
-        $num_rows = dbSafeCmd($updMaster, 'iii', array($perid, $newperid, $exhibitor['exhibitorId']));
-    }
+    $num_rows = dbSafeCmd($updMaster, 'iii', array($perid, $newperid, $exhibitor['exhibitorId']));
+
+} else {
+    // just update special requests
+    $updAgent = <<<EOS
+UPDATE exhibitorRegionYears
+SET specialRequests = ?
+WHERE id = ?;
+EOS;
+    $num_rows = dbSafeCmd($updAgent, 'si', array($specialRequests, $exRYid));
 }
 
 if ($exhNum == 0) {
