@@ -55,11 +55,11 @@ if (array_key_exists('controll_regadmin', $debug))
 else
     $debug_regadmin = 0;
 
+$config_vars = array();
+$config_vars['pageName'] = 'regAdmin';
+$config_vars['debug'] = $debug_regadmin;
+$config_vars['conid'] = $conid;
 ?>
-<div id='parameters' <?php if (!($debug_regadmin & 4)) echo 'hidden'; ?>>
-    <div id="debug"><?php echo $debug_regadmin; ?></div>
-    <div id="conid"><?php echo $conid; ?></div>
-</div>
 <?php bs_tinymceModal(); ?>
 <div id='merge-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Look up Merge Person' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
@@ -713,6 +713,9 @@ else
         </div>
     </div>
 </div>
+<script type='text/javascript'>
+    var config = <?php echo json_encode($config_vars); ?>;
+</script>
 <ul class='nav nav-tabs mb-3' id='regadmin-tab' role='tablist'>
     <li class='nav-item' role='presentation'>
         <button class='nav-link active' id='registrationlist-tab' data-bs-toggle='pill' data-bs-target='#registrationlist-pane' type='button'

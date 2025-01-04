@@ -51,13 +51,14 @@ EOS;
 }
 
 function updateCustomText($tableData) {
+    $updated = 0;
     $updsql = <<<EOS
 UPDATE controllTxtItems
 SET contents = ?
 WHERE appName = ? AND appPage = ? AND appSection = ? AND txtItem = ?;
 EOS;
     // because of the defaults, it's all updates
-    foreach ($tabledata as $row) {
+    foreach ($tableData as $row) {
         $numrows = dbSafeCmd($updsql, 'sssss',
                              array($row['contents'], $row['appName'], $row['appPage'], $row['appSection'], $row['txtItem']));
         $updated += $numrows;

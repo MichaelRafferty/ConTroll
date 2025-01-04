@@ -71,6 +71,7 @@ if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != 
 $config_vars = array();
 $portalType = 'admin';
 $portalName = 'Exhibitor';
+$config_vars['pageName'] = 'exhibitor';
 $config_vars['label'] = $con['label'];
 $config_vars['vemail'] = $conf['regadminemail'];
 $config_vars['portalType'] = $portalType;

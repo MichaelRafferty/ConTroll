@@ -2,9 +2,9 @@
 global $db_ini;
 
 require_once '../lib/base.php';
-    require_once '../lib/customText.php';
+require_once '../lib/customText.php';
 
-    $check_auth = google_init('ajax');
+$check_auth = google_init('ajax');
 $perm = 'exhibitor';
 
 $response = array('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
