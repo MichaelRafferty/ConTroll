@@ -22,11 +22,6 @@ if (!isset($_POST) || !isset($_POST['ajax_request_action']) || !isset($_POST['ta
     exit();
 }
 
-$con = get_con();
-$conid = $con['id'];
-$tablename = $_POST['tablename'];
-$indexcol = $_POST['indexcol'];
-$action = $_POST['ajax_request_action'];
 $response['customText'] = getCustomText('exhibitor');
 ajaxSuccess($response);
 ?>

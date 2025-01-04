@@ -195,6 +195,7 @@ EOS;
 
     case 'customText':
         $updated = updateCustomText($tabledata);
+        $response['customText'] = getCustomText('reg-admin');
         break;
 
     default:

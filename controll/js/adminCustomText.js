@@ -234,8 +234,8 @@ class customTextSetup {
                         _this.dataChanged();
                         return false;
                     }
-                    customText.close();
-                    customText.open();
+                    /* update routines do a reload, saving a round trip */
+                    _this.#customTextTable.replaceData(data['customText']);
                     show_message(data['success'], 'success');
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
