@@ -64,7 +64,7 @@ class exhibitssetup {
         this.#debug = debug;
         this.#conid = conid;
         this.#message_div = document.getElementById('test');
-        this.#exhibits_pane = document.getElementById('configuration-content');
+        this.#exhibits_pane = document.getElementById('configuration-pane');
         this.#result_message_div = document.getElementById('result_message');
         if (this.#debug & 1) {
             console.log("Debug = " + debug);

@@ -13,6 +13,7 @@ tabname = null;
 fulltabname = null;
 regionid = null;
 exhibitorsData = null;
+customText = null;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // globals for exhibits configuration
@@ -109,7 +110,8 @@ class exhibitorsAdm {
 
         // owners
         this.#ownerTabs['overview'] = document.getElementById('overview-content');
-        this.#ownerTabs['configuration'] = document.getElementById('configuration-content');
+        this.#ownerTabs['configuration'] = document.getElementById('configuration-tab');
+        this.#ownerTabs['customtext'] = document.getElementById('customtext-tab');
         this.#currentOwner = this.#ownerTabs['overview'];
         this.#currentPane = 'overview';
         var ownerKeys = Object.keys(regionOwners);
@@ -156,6 +158,9 @@ class exhibitorsAdm {
                 exhibits = null;
             }
         }
+        if (customText != null)
+            customText.close();
+
         if (this.#currentRegion) {
             this.#currentRegion.hidden = true;
             this.#currentRegion = null;
@@ -168,13 +173,19 @@ class exhibitorsAdm {
             if (exhibits == null)
                 exhibits = new exhibitssetup(config['conid'], config['debug']);
             exhibits.open();
-        } else {
-            var ownerLookup = regionOwnersTabNames[tabname];
-            var regionsInOwner = regionOwners[ownerLookup];
-            var regionKey = Object.keys(regionsInOwner)[0];
-            var region = regionsInOwner[regionKey];
-            this.settabRegion(region['name'].replaceAll(' ', '-') + '-pane');
+            return;
         }
+        if (content == 'customtext') {
+            if (customText == null)
+                customText = new customTextSetup();
+            customText.open();
+            return;
+        }
+        var ownerLookup = regionOwnersTabNames[tabname];
+        var regionsInOwner = regionOwners[ownerLookup];
+        var regionKey = Object.keys(regionsInOwner)[0];
+        var region = regionsInOwner[regionKey];
+        this.settabRegion(region['name'].replaceAll(' ', '-') + '-pane');
     }
 
     // second level - region

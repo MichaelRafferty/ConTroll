@@ -38,6 +38,7 @@ page_init($page,
                     'js/exhibitor.js',
                     'js/exhibitsConfiguration.js',
                     'js/exhibitorInvoice.js',
+                    'js/adminCustomtext.js',
                     'jslib/exhibitorRequest.js',
                     'jslib/exhibitorReceipt.js',
                     'js/tinymce/tinymce.min.js'
@@ -216,6 +217,11 @@ draw_exhibitorChooseModal();
                     aria-controls='nav-configuration' aria-selected='false' onclick="exhibitors.settabOwner('configuration-pane');">Exhibits Configuration
             </button>
         </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='customtext-tab' data-bs-toggle='pill' data-bs-target='#customtext-pane' type='button' role='tab'
+                    aria-controls='nav-customtext' aria-selected='false' onclick="exhibitors.settabOwner('customtext-pane');">Custom Text
+            </button>
+        </li>
 <?php
 // build tab structure
 $regionOwners = [];
@@ -268,8 +274,8 @@ while ($regionL = $regionOwnerR->fetch_assoc()) {
                         <li>Exhibits</li>
                         <li>Fan Tables</li>
                     </ol>
-                    <p>There is a separate tab within the Exhibitors tab for configuration of Exhibits Spaces and for each Exhibitor Space within the
-                        convention.</p>
+                    <p>There is a separate tab within the Exhibitors tab for configuration of Exhibits Spaces, configuration of Custom Text
+                        for the Exhibitor Portals, and for each Exhibitor Space within the convention.</p>
                     <p>The Exhibits configuration tab handles:</p>
                     <ol>
                         <li>Region Types - Rules configuration such as: portal type, approval requirements, mail-in among others.</li>
@@ -301,8 +307,8 @@ while ($regionL = $regionOwnerR->fetch_assoc()) {
             </div>
         </div>
     </div>
-    <div class='tab-content ms-2' id='configuration-content'>
-    </div>
+    <div class='tab-pane fade' id='configuration-pane' role='tabpanel' aria-labelledby='configuration-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='customtext-pane' role='tabpanel' aria-labelledby='customtext-tab' tabindex='0'></div>
 
     <?php
 foreach ($regionOwners AS $regionOwner => $regionList) {
