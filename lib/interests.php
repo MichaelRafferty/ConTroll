@@ -213,7 +213,7 @@ EOS;
                 if (array_key_exists($interestName, $remainInterests)) {
                     // the interest exists in both, check if it needs to be updated
                     $oldRow = $remainInterests[$interestName];
-                    if ($oldRow['Interested' != $newRow['Interested']]) {
+                    if ($oldRow['Interested'] != $newRow['Interested']) {
                         // they are not the same Interested, update the remaining interests
                         $numUpd += dbSafeCmd($chgU, 'sii', array($newRow['interested'], $loginId, $oldRow['id']));
                     }
