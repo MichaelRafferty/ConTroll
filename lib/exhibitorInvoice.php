@@ -23,6 +23,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
         $salesTaxId = escape_quotes($info['salesTaxId']);
         $contactEmail = escape_quotes($info['contactEmail']);
     }
+    $tabindex = 250;
     ?>
     <!-- invoice -->
     <div id='vendor_invoice' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Vendor Invoice' aria-hidden='true' style='--bs-modal-width: 90%;'>
@@ -67,7 +68,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                             </div>
                             <div class="col-sm-10 p-0">
                                 <input class="form-control-sm" type='text' name='name' id='vendor_inv_name' value="<?php echo $exhibitorName; ?>"
-                                       size="64" required/>
+                                       size="64" required tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                             </div>
                         </div>
                         <div class='row'>
@@ -76,7 +77,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                             </div>
                             <div class='col-sm-10 p-0'>
                                 <input class='form-control-sm' type='text' name='email' id='vendor_inv_email' value="<?php echo $exhibitorEmail; ?>"
-                                       size="64" required/>
+                                       size="64" required tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                             </div>
                         </div>
                         <div class='row'>
@@ -85,7 +86,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                             </div>
                             <div class='col-sm-10 p-0'>
                                 <input class='form-control-sm' type='text' name='addr' id='vendor_inv_addr' value="<?php echo $addr; ?>"
-                                       size='64' required/>
+                                       size='64' required tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                             </div>
                         </div>
                         <div class='row'>
@@ -94,7 +95,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                             </div>
                             <div class='col-sm-10 p-0'>
                                 <input class='form-control-sm' type='text' name='addr2' id='vendor_inv_addr2' value="<?php echo $addr2; ?>"
-                                       size='64'/>
+                                       size='64' tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                             </div>
                         </div>
                         <div class='row'>
@@ -103,21 +104,21 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                             </div>
                             <div class='col-sm-auto p-0 me-0'>
                                 <input class='form-control-sm' type='text' name='city' id='vendor_inv_city' value="<?php echo $city; ?>"
-                                       size='32' required/>
+                                       size='32' required tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                             </div>
                             <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
                                 <label for='vendor_inv_state'> State: </label>
                             </div>
                             <div class='col-sm-auto p-0 ms-0 me-0 ps-1'>
                                 <input class='form-control-sm' type='text' name='state'  id='vendor_inv_state' value="<?php echo $state; ?>"
-                                       size='10' maxlength='16' required/>
+                                       size='10' maxlength='16' required tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                             </div>
                             <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
                                 <label for='vendor_inv_zip'> Zip: </label>
                             </div>
                             <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
                                 <input class='form-control-sm' type='text' name='zip' id='vendor_inv_zip' value="<?php echo $zip; ?>"
-                                       size='11' maxlength='11' required/>
+                                       size='11' maxlength='11' required tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                             </div>
                         </div>
                          <?php if ($portalType == 'vendor' && array_key_exists('taxidlabel', $vendor_conf) && $vendor_conf['taxidlabel'] != '') { ?>
@@ -127,7 +128,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                             </div>
                             <div class="col-sm-10 p-0">
                                 <input class='form-control-sm' type='text' name='salesTaxId' size=32 maxlength="32"
-                                       value="<?php echo $salesTaxId;?>"/>
+                                       value="<?php echo $salesTaxId;?>" tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                             </div>
                         </div>
                         <div class="row">
@@ -143,7 +144,8 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                 <label for="vendor_inv_requests">Special Requests:</label>
                             </div>
                             <div class="col-sm-10 p-0">
-                                 <textarea class='form-control-sm' id='vendor_inv_requests' name='requests' cols="64" rows="5"></textarea>
+                                 <textarea class='form-control-sm' id='vendor_inv_requests' name='requests' cols="64" rows="5"
+                                           tabindex="<?php echo $tabindex; $tabindex += 2;?>"></textarea>
                             </div>
                         </div>
                         <hr/>
@@ -176,6 +178,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                             </div>
                         </div>
 <?php
+                            $tabindex = 900;
                             if ($cc != null) { outputCustomText('beforeCharge');
 ?>
                          <div class='row'>
@@ -185,10 +188,12 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                  </label>
                              </div>
                              <div class='col-sm-auto pe-0'>
-                                 <input type='text' name='cc_fname' id='cc_fname' required='required' placeholder='First Name' size="32" maxlength="32" />
+                                 <input type='text' name='cc_fname' id='cc_fname' required='required' placeholder='First Name' size="32" maxlength="32"
+                                        tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' name='cc_lname' id='cc_lname' required='required'  placeholder='Last Name' size='32' maxlength='32'/>
+                                 <input type='text' name='cc_lname' id='cc_lname' required='required'  placeholder='Last Name' size='32' maxlength='32'
+                                        tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                              </div>
                          </div>
                          <div class='row'>
@@ -198,7 +203,8 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                  </label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_street' required='required' name='cc_addr' size='64' maxlength='64' value="<?php echo $addr; ?>"/>
+                                 <input type='text' id='cc_street' required='required' name='cc_addr' size='64' maxlength='64' value="<?php echo $addr; ?>"
+                                        tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                              </div>
                          </div>
                          <div class='row'>
@@ -206,19 +212,22 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                  <label for='cc_city'>City:</label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_city' required='required' size='35' name='cc_city' maxlength='64' value="<?php echo $city; ?>"/>
+                                 <input type='text' id='cc_city' required='required' size='35' name='cc_city' maxlength='64' value="<?php echo $city; ?>"
+                                        tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                              </div>
                              <div class='col-sm-auto ps-0 pe-0'>
                                  <label for='cc_state'>State:</label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_state' size=10 maxlength="16" required='required' name='cc_state' value="<?php echo $state; ?>"/>
+                                 <input type='text' id='cc_state' size=10 maxlength="16" required='required' name='cc_state' value="<?php echo $state; ?>"
+                                        tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                              </div>
                              <div class='col-sm-auto ps-0 pe-0'>
                                  <label for='cc_zip'>Zip:</label>
                              </div>
                              <div class='col-sm-auto'>
-                                 <input type='text' id='cc_zip' required='required' size=10 maxlength="10" name='cc_zip' value="<?php echo $zip; ?>"/>
+                                 <input type='text' id='cc_zip' required='required' size=10 maxlength="10" name='cc_zip' value="<?php echo $zip; ?>"
+                                        tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                              </div>
                          </div>
                          <div class='row'>
@@ -226,7 +235,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                  <label for='cc_country'>Country:</label>
                              </div>
                              <div class='col-sm-auto'>
-                                  <select id='cc_country' required='required' name='cc_country' size=1>
+                                  <select id='cc_country' required='required' name='cc_country' size=1 tabindex="<?php echo $tabindex; $tabindex += 2;?>">
                                       <?php echo $countryOptions; ?>
                                   </select>
                              </div>
@@ -236,7 +245,8 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                  <label for="cc_email">Email:</label>
                              </div>
                              <div class="col-sm-auto">
-                                  <input type='email' id='cc_email' name='cc_email' size="35" maxlength="254" value="<?php echo $contactEmail; ?>"/>
+                                  <input type='email' id='cc_email' name='cc_email' size="35" maxlength="254" value="<?php echo $contactEmail; ?>"
+                                         tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                              </div>
                          </div>
                          <div class='row'>
@@ -273,42 +283,51 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                 <div class='row mt-2'>
                                     <div class='col-sm-2 ms-0 me-2 p-0'>Amount Paid:</div>
                                     <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'>
-                                        <input type='number' class='no-spinners' id='pay-amt' name='paid-amt' size='6'/>
+                                        <input type='number' class='no-spinners' id='pay-amt' name='paid-amt' size='6' tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                                     </div>
                                 </div>
                                 <div class='row'>
                                     <div class='col-sm-2 m-0 mt-2 me-2 mb-2 p-0'>Payment Type:</div>
                                     <div class='col-sm-auto m-0 mt-2 p-0 ms-0 me-2 mb-2 p-0' id='pt-div'>
-                                        <input type='radio' id='pt-credit' name='payment_type' value='credit' onchange='exhibitorInvoice.setPayType("credit")
-                                        ;'/>
+                                        <input type='radio' id='pt-credit' name='payment_type' value='credit'
+                                               onchange='exhibitorInvoice.setPayType("credit");'  tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                                         <label for='pt-credit'>Credit Card</label>
-                                        <input type='radio' id='pt-check' name='payment_type' value='check' onchange='exhibitorInvoice.setPayType("check");'/>
+                                        <input type='radio' id='pt-check' name='payment_type' value='check' onchange='exhibitorInvoice.setPayType("check");'
+                                               tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                                         <label for='pt-check'>Check</label>
-                                        <input type='radio' id='pt-cash' name='payment_type' value='cash' onchange='exhibitorInvoice.setPayType("cash");'/>
+                                        <input type='radio' id='pt-cash' name='payment_type' value='cash' onchange='exhibitorInvoice.setPayType("cash");'
+                                               tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                                         <label for='pt-cash'>Cash</label>
                                     </div>
                                 </div>
                                 <div class='row mb-2' id='pay-check-div' hidden>
                                     <div class='col-sm-2 ms-0 me-2 p-0'>Check Number:</div>
-                                    <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'><input type='text' size='8' maxlength='10' name='pay-checkno' id='pay-checkno'/></div>
+                                    <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'>
+                                        <input type='text' size='8' maxlength='10' name='pay-checkno' id='pay-checkno' tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                                    </div>
                                 </div>
                                 <div class='row mb-2' id='pay-ccauth-div' hidden>
                                     <div class='col-sm-2 ms-0 me-2 p-0'>CC Auth Code:</div>
-                                    <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'><input type='text' size='15' maxlength='16' name='pay-ccauth' id='pay-ccauth'/></div>
+                                    <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'>
+                                        <input type='text' size='15' maxlength='16' name='pay-ccauth' id='pay-ccauth' tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                                    </div>
                                 </div>
                                 <div class='row'>
                                     <div class='col-sm-2 ms-0 me-2 p-0'>Description:</div>
-                                    <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'><input type='text' size='60' maxlength='64' name='pay-desc' id='pay-desc'/></div>
+                                    <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'>
+                                        <input type='text' size='60' maxlength='64' name='pay-desc' id='pay-desc' tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                                    </div>
                                 </div>
                                 <div class='row mt-3'>
                                     <div class='col-sm-2 ms-0 me-2 p-0'>&nbsp;</div>
                                     <div class='col-sm-auto ms-0 me-2 p-0'>
                                         <button class='btn btn-primary btn-sm' type='button' id='pay-btn-pay' disabled
-                                                onclick="exhibitorInvoice.pay();">Confirm Pay</button>
+                                                onclick="exhibitorInvoice.pay();" tabindex="<?php echo $tabindex; $tabindex += 2;?>">Confirm Pay</button>
                                     </div>
                                     <div class='col-sm-auto ms-0 me-2 p-0'>
                                         <button class='btn btn-primary btn-sm' type='button' id='pay-btn-ercpt'
-                                                onclick="exhibitorInvoice.email_receipt('email');" hidden disabled>Email Receipt</button>
+                                                onclick="exhibitorInvoice.email_receipt('email');" tabindex="<?php echo $tabindex; $tabindex += 2;?>"
+                                                hidden disabled>Email Receipt</button>
                                     </div>
                                 </div>
                             </div>
