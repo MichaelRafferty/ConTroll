@@ -282,9 +282,9 @@ function validationComplete($id, $idType, $email, $validationType, $multiple) {
             setSessionVar('idType', $idType);
             setSessionVar('idSource', $validationType);
             setSessionVar('email', $email);
-            if ($multiple != null) {
-                setSessionVar('multiple', $multiple);
-            }
+        }
+        if ($multiple != null) {
+            setSessionVar('multiple', $multiple);
         }
         header('location:' . $portal_conf['portalsite'] . '/portal.php');
         exit();
