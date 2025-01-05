@@ -221,7 +221,7 @@ EOS;
                     $numDel += dbSafeCmd($sD, 'i', array($newRow['id']));
                 } else {
                     // the remaining place doesn't have the source interest, update the perid field of this id to the remaining id
-                    $numUpd += dbSafeCmd($idU, 'iii', array($remainingPerId, $newRow['id'], $loginId));
+                    $numUpd += dbSafeCmd($idU, 'iii', array($remainingPerId, $loginId, $newRow['id']));
                 }
             } else {
                 // not in the source, if not in the remain, insert the default value
