@@ -303,7 +303,7 @@ EOS;
             if (array_key_exists($policyName, $remainPolicies)) {
                 // the policy exists in both, check if it needs to be updated
                 $oldRow = $remainPolicies[$policyName];
-                if ($oldRow['response' != $newRow['response']]) {
+                if ($oldRow['response'] != $newRow['response']) {
                     // they are not the same response, update the remaining policies
                     $numUpd += dbSafeCmd($chgU, 'sii', array($newRow['response'], $loginId, $oldRow['id']));
                 }
