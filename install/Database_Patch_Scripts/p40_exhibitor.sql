@@ -138,6 +138,6 @@ INSERT INTO controllAppItems(appName, appPage, appSection, txtItem, txtItemDescr
 ('exhibitor','index','email','onsiteInvHTML','On Site Artist Inventory HTML Email'),
 ('exhibitor','index','email','onsiteInvText','On Site Artist Inventory Test Email'),
 ('exhibitor','index','email','mailinInvHTML','Mail In Artist Inventory HTML Email'),
-('exhibitor','index','email','mailinInvText','Mail In Site Artist Inventory Test Email');
+('exhibitor','index','email','mailinInvText','Mail In Artist Inventory Text Email');
 
 INSERT INTO patchLog(id, name) VALUES(40, 'exhibitor_tax_id');
