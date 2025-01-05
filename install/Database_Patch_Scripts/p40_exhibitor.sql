@@ -17,7 +17,8 @@ INSERT INTO controllAppSections(appName, appPage, appSection, sectionDescription
 ('exhibitor','index','request','space request modal popup of the exhibitor portal'),
 ('exhibitor','index','invoice','space invoice modal popup of the exhibitor portal'),
 ('exhibitor','index','receipt','space payment receipt modal popup of the exhibitor portal'),
-('exhibitor','index','items','art inventory modal popup of the exhibitor portal');
+('exhibitor','index','items','art inventory modal popup of the exhibitor portal'),
+('exhibitor','index','email','exhibitor emails');
 
 INSERT INTO controllAppItems(appName, appPage, appSection, txtItem, txtItemDescription) VALUES
 ('exhibitor','index','login','topArtist','Custom Text for top of login page of the Artist portal'),
@@ -132,6 +133,11 @@ INSERT INTO controllAppItems(appName, appPage, appSection, txtItem, txtItemDescr
 ('exhibitor','index','receipt','bottom', 'Custom Text for the bottom of the receipt - all portals'),
 
 ('exhibitor','index','items','top','Custom text for the top of the art inventory modal popup of the exhibitor portal'),
-('exhibitor','index','items','bottom','Custom text for the bottom of the art inventory modal popup of the exhibitor portal');
+('exhibitor','index','items','bottom','Custom text for the bottom of the art inventory modal popup of the exhibitor portal'),
+
+('exhibitor','index','email','onsiteInvHTML','On Site Artist Inventory HTML Email'),
+('exhibitor','index','email','onsiteInvText','On Site Artist Inventory Test Email'),
+('exhibitor','index','email','mailinInvHTML','Mail In Artist Inventory HTML Email'),
+('exhibitor','index','email','mailinInvText','Mail In Site Artist Inventory Test Email');
 
 INSERT INTO patchLog(id, name) VALUES(40, 'exhibitor_tax_id');
