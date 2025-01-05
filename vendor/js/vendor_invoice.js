@@ -163,6 +163,9 @@ function openInvoice(id) {
     membershipCostdiv.hidden =  (includedMemberships == 0 && additionalMemberships == 0) ;
 
     var html = '';
+    var firstStar = config['firstStar'];
+    var addrStar = config['addrStar'];
+    var allStar = config['allStar'];
     tabindex = 300;
     // now build the included memberships
     if (includedMemberships > 0) {
@@ -177,7 +180,7 @@ function openInvoice(id) {
 </div>
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="fname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>First Name</span></label><br/>
+        <label for="fname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + firstStar + `First Name</span></label><br/>
         <input class="form-control-sm" type="text" name="fname_i_` + mnum + `" id="fname_i_` + mnum + `" size="22" maxlength="32" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;
@@ -189,7 +192,7 @@ function openInvoice(id) {
             tabindex += 2;
             html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="lname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Last Name</span></label><br/>
+        <label for="lname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + allStar + `Last Name</span></label><br/>
         <input class="form-control-sm" type="text" name="lname_i_` + mnum + `" id="lname_i_` + mnum + `" size="22" maxlength="32" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;
@@ -214,7 +217,7 @@ function openInvoice(id) {
             html += `
 <div class="row">
     <div class="col-sm-12 ms-0 me-0 p-0">
-        <label for="addr_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Address</span></label><br/>
+        <label for="addr_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `Address</span></label><br/>
         <input class="form-control-sm" type="text" name='addr_i_` + mnum + `' id='addr_i_` + mnum + `' size=64 maxlength="64" tabindex=` + tabindex + `/>
     </div>
 </div>`;
@@ -230,19 +233,19 @@ function openInvoice(id) {
             html += `
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="city_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>City</span></label><br/>
+        <label for="city_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `City</span></label><br/>
         <input class="form-control-sm" type="text" name="city_i_` + mnum + `" id='city_i_` + mnum + `' size="22" maxlength="32" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;
             html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="state_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>State</span></label><br/>
+        <label for="state_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `State</span></label><br/>
         <input class="form-control-sm" type="text" name="state_i_` + mnum + `" id='state_i_` + mnum + `' size="10" maxlength=16" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;
             html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="zip_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Zip</span></label><br/>
+        <label for="zip_i_` + mnum + `" class="form-label-sm"><class="text-dark" style="font-size: 10pt;">` + addrStar + `Zip</span></label><br/>
         <input class="form-control-sm" type="text" name="zip_i_` + mnum + `" id='zip_i_` + mnum + `' size="5" maxlength="10" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;
@@ -258,7 +261,8 @@ function openInvoice(id) {
             html += `
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="email_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Email</span></label><br/>
+        <label for="email_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">
+            <span class="text-danger">&bigstar;</span>Email</span></label><br/>
         <input class="form-control-sm" type="email" name="email_i_` + mnum + `" id='email_i_` + mnum + `' size="35" maxlength="254" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;
@@ -294,7 +298,7 @@ function openInvoice(id) {
 </div>
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="fname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>First Name</span></label><br/>
+        <label for="fname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + firstStar + `First Name</span><</label><br/>
         <input class="form-control-sm" type="text" name="fname_a_` + mnum + `" id="fname_a_` + mnum + `" size="22" maxlength="32" 
             onchange="updateCost(` + regionYearId + "," + mnum + `)" tabindex=` + tabindex + `/>
     </div>`;
@@ -307,7 +311,7 @@ function openInvoice(id) {
             tabindex += 2;
             html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="lname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Last Name</span></label><br/>
+        <label for="lname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + allStar + `Last Name</span></label><br/>
         <input class="form-control-sm" type="text" name="lname_a_` + mnum + `" id="lname_a_` + mnum + `" size="22" maxlength="32" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;
@@ -332,7 +336,7 @@ function openInvoice(id) {
             html += `
 <div class="row">
     <div class="col-sm-12 ms-0 me-0 p-0">
-        <label for="addr_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Address</span></label><br/>
+        <label for="addr_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `Address</span></label><br/>
         <input class="form-control-sm" type="text" name='addr_a_` + mnum + `' id='addr_a_` + mnum + `' size=64 maxlength="64" tabindex=` + tabindex + `/>
     </div>
 </div>`;
@@ -348,19 +352,19 @@ function openInvoice(id) {
             html += `
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="city_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>City</span></label><br/>
+        <label for="city_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `City</span></label><br/>
         <input class="form-control-sm" type="text" name="city_a_` + mnum + `" id='city_a_` + mnum + `' size="22" maxlength="32" tabindex=` + tabindex + `/>
     </div>   `;
             tabindex += 2;
             html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="state_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>State</span></label><br/>
+        <label for="state_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `State</span></label><br/>
         <input class="form-control-sm" type="text" name="state_a_` + mnum + `" id='state_a_` + mnum + `' size="10" maxlength="16" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;
             html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="zip_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Zip</span></label><br/>
+        <label for="zip_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `Zip</span></label><br/>
         <input class="form-control-sm" type="text" name="zip_a_` + mnum + `" id='zip_a_` + mnum + `' size="5" maxlength="10" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;
@@ -376,7 +380,8 @@ function openInvoice(id) {
             html += `
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="email_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Email</span></label><br/>
+        <label for="email_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">
+            <span class="text-danger">&bigstar;</span>Email</span></label><br/>
         <input class="form-control-sm" type="email" name="email_a_` + mnum + `" id='email_a_` + mnum + `' size="35" maxlength="254" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;

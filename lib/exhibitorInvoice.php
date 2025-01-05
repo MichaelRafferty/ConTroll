@@ -184,7 +184,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                          <div class='row'>
                              <div class='col-sm-2'>
                                  <label for='cc_fname'>
-                                     Name:
+                                     <span class='text-danger'>&bigstar;</span>Name:
                                  </label>
                              </div>
                              <div class='col-sm-auto pe-0'>

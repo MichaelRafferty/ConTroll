@@ -46,6 +46,25 @@ $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
     $useUSPS = true;
 
+if (array_key_exists('required', $reg_conf)) {
+    $required = $reg_conf['required'];
+} else {
+    $required = 'addr';
+}
+$firstStar = '';
+$addrStar = '';
+$allStar = '';
+switch ($required) {
+    // cascading list of required fields, each case adds more so the breaks fall into the next section
+
+    case 'all':
+        $allStar = '<span class="text-danger">&bigstar;</span>';
+    case 'addr':
+        $addrStar = '<span class="text-danger">&bigstar;</span>';
+    case 'first':
+        $firstStar = '<span class="text-danger">&bigstar;</span>';
+}
+
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['vemail'] = $vendor_conf[$portalType];
@@ -56,6 +75,9 @@ $config_vars['vendorsite'] = $vendor_conf['vendorsite'];
 $config_vars['debug'] = $debug['vendors'];
 $config_vars['required'] = $reg_conf['required'];
 $config_vars['useUSPS'] = $useUSPS;
+$config_vars['allStar'] = $allStar;
+$config_vars['addrStar'] = $addrStar;
+$config_vars['firstStar'] = $firstStar;
 
 exhibitor_page_init($condata['label'] . " $portalName Registration");
 
