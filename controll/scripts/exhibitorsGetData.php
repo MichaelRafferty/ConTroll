@@ -32,7 +32,7 @@ if (array_key_exists('currency', $con)) {
 }
 
 $exhibitorQ = <<<EOS
-SELECT e.id as exhibitorId, perid, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, publicity, 
+SELECT e.id as exhibitorId, perid, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, password, publicity, 
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, archived,
        eY.id as contactId, conid, contactName, contactEmail, contactPhone, contactPassword, mailin
 FROM exhibitors e
@@ -51,6 +51,31 @@ if (!$exhibitorR) {
 
 $exhibitors = array();
 while ($exhibitorL = $exhibitorR->fetch_assoc()) {
+    $fullAddress = $exhibitorL['addr'];
+    if ($exhibitorL['addr2'] != null && $exhibitorL['addr2'] != '')
+        $fullAddress .= "<br/>" . $exhibitorL['addr2'];
+    if ($exhibitorL['city'] != null && $exhibitorL['city'] != '')
+        $fullAddress .= '<br/>' . $exhibitorL['city'] . ', ';
+    if ($exhibitorL['state'] != null && $exhibitorL['state'] != '')
+        $fullAddress .= $exhibitorL['state'] . ' ';
+    if ($exhibitorL['zip'] != null && $exhibitorL['zip'] != '')
+        $fullAddress .= $exhibitorL['zip'];
+    $exhibitorL['fullAddress'] = $fullAddress;
+
+    $contact = '';
+    if ($exhibitorL['contactName'] != null && $exhibitorL['contactName'] != '')
+        $contact = $exhibitorL['contactName'];
+    if ($exhibitorL['contactEmail'] != null && $exhibitorL['contactEmail'] != '') {
+        if ($contact != '')
+            $contact .= "<br/>";
+        $contact .= $exhibitorL['contactEmail'];
+    }
+    if ($exhibitorL['contactPhone'] != null && $exhibitorL['contactPhone'] != '') {
+        if ($contact != '')
+            $contact .= '<br/>';
+        $contact .= $exhibitorL['contactPhone'];
+    }
+    $exhibitorL['contact'] = $contact;
     $exhibitors[] = $exhibitorL;
 }
 $exhibitorR->free();
