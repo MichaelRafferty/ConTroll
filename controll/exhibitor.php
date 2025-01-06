@@ -38,7 +38,7 @@ page_init($page,
                     'js/exhibitor.js',
                     'js/exhibitsConfiguration.js',
                     'js/exhibitorInvoice.js',
-                    'js/adminCustomtext.js',
+                    'js/adminCustomText.js',
                     'jslib/exhibitorRequest.js',
                     'jslib/exhibitorReceipt.js',
                     'js/tinymce/tinymce.min.js'
