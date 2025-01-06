@@ -4,8 +4,6 @@ require_once '../lib/profile.php';
 require_once '../lib/portalForms.php';
 require_once '../lib/policies.php';
 require_once('../lib/cc__load_methods.php');
-require_once('../lib/profile.php');
-require_once('../lib/policies.php');
 //initialize google session
 $need_login = google_init('page');
 
