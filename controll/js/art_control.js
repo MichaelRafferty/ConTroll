@@ -7,6 +7,7 @@ var itemUndoBtn = null;
 var itemRedoBtn = null;
 
 var itemTable_dirty = false;
+var artItemModal = null;
 
 var priceregexp = 'regex:^([0-9]+([.][0-9]*)?|[.][0-9]+)$';
 
@@ -14,6 +15,7 @@ var testdiv = null;
 
 $(document).ready(function() {
     testdiv = document.getElementById('test');
+    artItemModal = artItemModalOnLoad(itemTable);
     setRegion('overview', null);
 });
 
@@ -102,6 +104,7 @@ function draw(data, textStatus, jqXHR) {
         paginationSize: 50,
         paginationSizeSelector: [10, 25, 50, 100, true], // enable page size select with these options
         columns: [
+            {title: 'Actions', hozAlign: "center", headerFilter: false, headerSort: false, formatter: addEditButton, responsive:0},
             {title: 'id', field: 'id', visible: false},
             {title: 'locations', field: 'locations', visible: false},
             {title: 'Name', field: 'exhibitorName', headerSort: true, headerFilter: 'list', headerFilterParams: { values: data['artists'].map(function(a) { return a.exhibitorName;})}, },
@@ -112,14 +115,16 @@ function draw(data, textStatus, jqXHR) {
             {title: 'Item #', field: 'item_key', headerSort: true, headerFilter: true, headerWordWrap: true, width: 60, hozAlign: "right",},
             {title: 'Type', field: 'type', headerSort: true, headerFilter: 'list', headerFilterParams: { values: ['art', 'print', 'nfs']}, width: 75, },
             {title: 'Title', field: 'title', headerSort: true, headerFilter: true,},
+            {title: 'Material', field: 'material', headerSort: true, headerFilter: true,},
             {title: 'Min Bid or Ins.', field: 'min_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", },
             {title: 'Q. Sale or Print', field: 'sale_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", },
             {title: 'Orig Qty', field: 'original_qty', headerSort: true, headerFilter: true, headerWordWrap: true, width: 70, hozAlign: "right", },
             {title: 'Current Qty', field: 'quantity', headerSort: true, headerFilter: true, headerWordWrap: true, width: 70, hozAlign: "right", },
-            {title: 'Status', field: 'status', headerSort: true, headerFilter:'list', headerFilterParams: { values: ['Not In Show', 'Checked In', 'BID', 'Quicksale/Sold', 'Removed from Show', 'Purchased/Released', 'To Auction', 'Sold Bid Sheet', 'Checked Out']}, },
+            {title: 'Status', field: 'status', headerSort: true, headerFilter:'list', headerFilterParams: { values: statusList.getStatuses() } },
             {title: 'Location', field: 'location', headerSort: true, headerFilter: true, },
+            {title: 'BidderNum', field: 'bidder', visible: false, },
             {title: 'Bidder', field: 'bidderText', headerSort: true, headerFilter:true, },
-            {title: 'Sale Price', field: 'final_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", },
+            {title: 'Final Price', field: 'final_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", }
         ]
     });
 
@@ -127,6 +132,24 @@ function draw(data, textStatus, jqXHR) {
     itemTable.on("cellEdited", cellChanged)
 
     itemTable_dirty = false;
+
+    artItemModal.setItemTable(itemTable);
+}
+
+function addEditButton(cell, formatterParams, onRendered) {
+    var html = '';
+    var index = cell.getRow().getIndex();
+    var item_status = cell.getRow().getData().status;
+    var btnClass = 'btn btn-sm p-0';
+    var btnStyle = 'style="--bs-btn-font-size: 75%;"';
+
+    html += '<button type="button" class="'+btnClass+' btn-primary" '+btnStyle+' onclick="artItemModal.fetchArtItem(' + index + ',editReturn)">Edit item</button>'
+
+    return html;
+}
+
+function editReturn(editTable, editfield, editIndex, editvalue) {
+    //itemTable
 
 }
 
