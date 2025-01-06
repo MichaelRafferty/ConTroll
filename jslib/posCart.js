@@ -1339,6 +1339,9 @@ class PosCart {
 // update the card with fields provided by the update of the database.  And since the DB is now updated, clear the dirty flags.
     updateFromDB(data) {
         this.#cartPerinfo = data.updated_perinfo;
+        // redraw the cart with the new id's and maps, which will compute the unpaid rows.
+        cart.drawCart();
+        return this.#unpaidRows;
     }
 
     // update selected element in the country pulldown from the review data screen to the cart

@@ -33,7 +33,7 @@ if (!(check_atcon('cashier', $conid) || check_atcon('data_entry', $conid))) {
 // print a badge if the printer is defined, note queue starting with 0 == make temp file only
 $response = array();
 $response['message'] = '';
-$printer = getSessionVar('badgePrinter')
+$printer = getSessionVar('badgePrinter');
 if ($printer != null && $printer['name'] != 'None') {
     try {
         $params = json_decode($_POST['params'], true, 512, JSON_THROW_ON_ERROR);

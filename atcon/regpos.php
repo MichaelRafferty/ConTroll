@@ -49,7 +49,6 @@ $config_vars['conid'] = $conid;
 $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['required'] = $ini['required'];
 $config_vars['useportal'] = $controll['useportal'];
-$config_vars['required'] = $ini['required'];
 $config_vars['cashier'] = $method == 'cashier' ? 1 : 0;
 $useUSPS = false;
 

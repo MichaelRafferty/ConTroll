@@ -1884,11 +1884,17 @@ addUnpaid(tid) {
     reviewedUpdateCart(data) {
         this.#pay_tid = data.master_tid;
         // update cart elements
-        cart.updateFromDB(data);
+        var unpaidRows = cart.updateFromDB(data);
         if (data['success'])
             show_message(data['success'], 'success');
         else
             clear_message();
+
+        // set tab to review-tab
+        if (unpaidRows == 0 && this.#print_tab) {
+            this.gotoPrint();
+            return;
+        }
 
         if (config['cashier'] == 1) {
             bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
@@ -2221,15 +2227,20 @@ addUnpaid(tid) {
             url: "scripts/pos_printBadge.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
+                if (data.constructor.name !== 'Object' ) {
+                    show_message(data, 'error');
+                    $("button[name='print_btn']").attr("disabled", false);
+                    return;
+                }
                 if (data['error'] !== undefined) {
                     show_message(data['error'], 'error');
+                    $("button[name='print_btn']").attr("disabled", false);
                     return;
                 }
                 _this.printComplete(data);
             },
             error: function (jqXHR, textstatus, errorThrown) {
                 $("button[name='print_btn']").attr("disabled", false);
-                _this.pay_button_pay.disabled = false;
                 showAjaxError(jqXHR, textstatus, errorThrown);
             },
         });
