@@ -205,6 +205,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     />
                                 </div>
                             </div>
+                             <?php outputCustomText('profile/web' . $portalName); ?>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
                                     <label for='description'>*Description: </label>
