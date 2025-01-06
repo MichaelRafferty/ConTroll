@@ -35,16 +35,26 @@ $response['tabledata'] = $tabledata;
 
 $updateSQL = <<<EOS
 UPDATE artItems
-SET item_key = ?, location = ?, min_price = ?, original_qty = ?, quantity = ?, sale_price = ?, status = ?, title = ?, type = ?
+SET item_key = ?, location = ?, min_price = ?, original_qty = ?, quantity = ?, sale_price = ?, status = ?, title = ?, 
+    type = ?, material = ?, bidder = ?, final_price = ?
 WHERE id = ?
 EOS;
 
-$updateTypes = "issiissssi";
+$updateTypes = "issiisssssiii";
 
 $updated = 0;
 
+
 foreach ($tabledata as $row) {
-    $paramarray = array($row['item_key'], $row['location'], $row['min_price'], $row['original_qty'], $row['quantity'], $row['sale_price'], $row['status'] , $row['title'], $row['type'], $row['id']);
+    if($row['final_price'] == '') {$row['final_price'] = null;}
+    if($row['bidder'] == '') {$row['bidder'] = null;}
+    if($row['location'] == '') {$row['location'] = null;}
+    if($row['min_price'] == '') {$row['min_price'] = null;}
+    if($row['sale_price'] == '') {$row['sale_price'] = null;}
+
+    $paramarray = array($row['item_key'], $row['location'], $row['min_price'], $row['original_qty'], $row['quantity'],
+        $row['sale_price'], $row['status'] , $row['title'], $row['type'], $row['material'], $row['bidder'], $row['final_price'],
+        $row['id']);
     $updated += dbSafeCmd($updateSQL, $updateTypes, $paramarray);
 }
     
