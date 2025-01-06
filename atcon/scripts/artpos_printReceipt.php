@@ -113,8 +113,8 @@ $endtext = "\nThank you for your purchase. All sales are final. There are no ref
 $receipt .= "         ----------\n" . sprintf("Total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, $currency)) . "\n$footer\n" . "\n" . $endtext . "\n\n\n";
 
 if ($receipt_type == 'print') {
-    if (isset($_SESSION['receiptPrinter'])) {
-        $printer = $_SESSION['receiptPrinter'];
+    $printer = getSessionVar('receiptPrinter');
+    if ($printer && $printer['name'] !!= 'None') {
         $result_code = print_receipt($printer, $receipt);
     } else {
         web_error_log($receipt);

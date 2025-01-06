@@ -37,7 +37,7 @@ if (!check_atcon($method, $conid)) {
 //  Outputs:
 //      updated member record
 $user_id = $_POST['user_id'];
-if ($user_id != $_SESSION['user']) {
+if ($user_id != getSessionVar('user')) {
     ajaxError("Invalid credentials passed");
 }
 $member = $_POST['member'];

@@ -1905,7 +1905,7 @@ addUnpaid(tid) {
                 el.hidden = true;
             el = document.getElementById('review_status');
             if (el)
-                el.innerHTML = "Completed: Send customer to cashier with id of " + this.#pay_tid;
+                el.innerHTML = "<strong>Completed: Send customer to cashier with id of " + this.#pay_tid + '</strong>';
         }
     }
 
@@ -2138,6 +2138,7 @@ addUnpaid(tid) {
         var footer_text = '';
         // server side will print the receipt
         var postData = {
+            user_id: this.#user_id,
             ajax_request_action: 'printReceipt',
             header: header_text,
             prows: JSON.stringify(cart.getCartPerinfo()),
@@ -2169,13 +2170,13 @@ addUnpaid(tid) {
                 } else if (data.warn !== undefined) {
                     show_message(data.warn, 'success');
                 }
-                if (this.#lastReceiptType == 'email')
+                if (_this.#lastReceiptType == 'email')
                     _this.#pay_button_ercpt.disabled = false;
                 else
                     _this.#pay_button_rcpt.disabled = false;
             },
             error: function (jqXHR, textstatus, errorThrown) {
-                if (this.#lastReceiptType == 'email')
+                if (_this.#lastReceiptType == 'email')
                     _this.#pay_button_ercpt.disabled = false;
                 else
                     _this.#pay_button_rcpt.disabled = false;

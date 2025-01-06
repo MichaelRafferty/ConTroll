@@ -4,10 +4,9 @@ require_once "lib/base.php";
 require_once '../lib/profile.php';
 require_once '../lib/portalForms.php';
 require_once '../lib/policies.php';
-require_once('../lib/profile.php');
-require_once('../lib/policies.php');
 
-if (!isset($_SESSION['user'])) {
+// if not logged in, send back to the index page to log in
+if (!isSessionVar('user')) {
     header("Location: /index.php");
     exit(0);
 }
@@ -71,6 +70,7 @@ page_init($page, $tab,
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
+    var allPolicies = <?php echo json_encode($policies); ?>
 </script>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">

@@ -66,7 +66,7 @@ EOS;
         $data[] = $user;
     }
     $response['users'] = $data;
-    $response['userid'] = $_SESSION['user'];
+    $response['userid'] = getSessionVar('user');
 }
 if ($loadtypes == 'all' || $loadtypes == 'printers') {
     // first synchronize any changes to the global printer before loading the data.

@@ -33,8 +33,8 @@ if (!check_atcon($method, $conid)) {
 // print a badge if the printer is defined, note queue starting with 0 == make temp file only
 $response = array();
 $response['message'] = '';
-if (isset($_SESSION['badgePrinter'])) {
-    $printer = $_SESSION['badgePrinter'];
+$printer = getSessionVar('badgePrinter');
+if ($printer) {
     $params = $_POST['params'];
     if (array_key_exists('badges', $_POST)) {
         $response['badges'] = $_POST['badges'];

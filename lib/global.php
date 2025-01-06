@@ -78,6 +78,19 @@ function clearSession($prefix = '') {
     }
 }
 
+// get all with the prefix, for response and vardump sort of uses
+function getAllSessionVars($prefix = '') {
+    global $appSessionPrefix;
+    $checkPrefix = ($appSessionPrefix != null ? $appSessionPrefix : '') . $prefix;
+    $len = strlen($checkPrefix);
+    $vars = [];
+    foreach ($_SESSION as $key => $value) {
+        if (mb_substr($key, 0, $len) == $checkPrefix)
+            $vars[$key] = $_SESSION[$key];
+    }
+    return $vars;
+}
+
 // is a memList item a primary membership type
 function isPrimary($mtype, $conid) {
     if ($mtype['price'] == 0 || $conid != $mtype['conid'] ||

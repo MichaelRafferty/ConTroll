@@ -33,11 +33,10 @@ if (!check_atcon('any', $conid)) {
 
     //$response = array('post' => $_POST, 'get' => $_GET);
 $response = array();
-
+$user = getSessionVar('user');
 // get the parameters to validate the existing password (and check that new is also passed
-if (isset($_POST) && isset($_POST['old']) && isset($_POST['new']) && isset($_SESSION['user'])) {
-    $user = $_SESSION['user'];
-    $userhash = $_SESSION['userhash'];
+if (isset($_POST) && isset($_POST['old']) && isset($_POST['new']) && $user != null) {
+    $userhash = getSessionVar('userhash');
     $oldpw = $_POST['old'];
     $newpw = $_POST['new'];
 

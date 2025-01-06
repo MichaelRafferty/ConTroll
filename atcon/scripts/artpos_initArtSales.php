@@ -30,7 +30,7 @@ if (!check_atcon('artsales', $conid)) {
 }
 
 $user_id = $_POST['user_id'];
-if ($user_id != $_SESSION['user']) {
+if ($user_id != getSessionVar('user')) {
     RenderErrorAjax("Invalid credentials passed");
     exit();
 }
