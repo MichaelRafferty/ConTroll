@@ -92,12 +92,28 @@ function getAllSessionVars($prefix = '') {
 }
 
 // is a memList item a primary membership type
-function isPrimary($mtype, $conid) {
-    if ($mtype['price'] == 0 || $conid != $mtype['conid'] ||
-        ($mtype['memCategory'] != 'standard' && $mtype['memCategory'] != 'supplement' && $mtype['memCategory'] != 'virtual')
-    ) {
+function isPrimary($mtype, $conid, $use = 'all') {
+    if ($conid != $mtype['conid']) // must be a current year membership to be primary, no year aheads for next year
         return false;
+
+    $memType = $mtype['memType'];
+    if (!($memType == 'full' || $memType == 'oneday' || $memType == 'virtual'))
+        return false;   // must be one of these main types to even be considered a primary
+
+    if ($use == 'all')
+        return true;    // the basic case, it's a primary if it's one of these types
+
+    if ($use == 'coupon') {
+        if ($mtype['price'] == 0 || $memType != 'full')
+            return false; // free memberships and oneday/virtual are not eligible for coupons
     }
+
+    if ($use == 'print') {
+        if ($mtype['memCategory'] == 'virtual')
+            return false; // virtual cannot be printed
+    }
+
+    // we got this far, all the 'falses; are called out, so it must be true
     return true;
 }
 

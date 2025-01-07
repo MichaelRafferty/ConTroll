@@ -57,7 +57,7 @@ function process(formRef) {
     var formData = URLparamsToArray($(formRef).serialize(), true);
     var policyData = URLparamsToArray($('#editPolicies').serialize(), true);
     var message = "Please correct the items highlighted in red and validate again.";
-    var required = config['required'];
+    var required = config.required;
 
     clear_message('addMessageDiv');
     // validation
@@ -523,7 +523,8 @@ function repriceCart() {
     var mbrtotal = 0;
     var cartDiscountable = false;
     var couponmemberships = 0;
-    var primarymemberships = 0;
+    var couponPrimaryMemberships = 0;
+    var primaryMemberships = 0;
 
     if (typeof mtypes != 'undefined' && mtypes != null) {
         for (var row in mtypes) {
@@ -532,13 +533,15 @@ function repriceCart() {
             if (nbrs[mbrtype['id']] > 0) {
                 num = nbrs[mbrtype['id']];
                 if (mbrtype['primary']) {
-                    primarymemberships += num;
+                    couponPrimaryMemberships += num;
                     if (coupon.isCouponActive()) {
                         if ((coupon.memId != null && coupon.memId == mbrtype['memId']) || coupon.memId == null)
                             couponmemberships += num;
                     }
                     mbrtotal += num * Number(mbrtype['price']).toFixed(2)
                 }
+                if (isPrimary(config.conid, mbrType.memType, mbrType.memCategory, mbrType.mmemPrice))
+                    primaryMemberships += num;
                 total += num * Number(mbrtype['price']).toFixed(2);
             }
         }
@@ -546,7 +549,7 @@ function repriceCart() {
 
     if (coupon.isCouponActive()) {
         // first compute un-discounted cart total to get is it sufficient for the discount
-        if (mbrtotal >= coupon.getMinCart() && primarymemberships >= coupon.getMinMemberships())
+        if (mbrtotal >= coupon.getMinCart() && couponPrimaryMemberships >= coupon.getMinMemberships())
             cartDiscountable = true;
         // reset total for below
         couponSubtotal = Number(total);
@@ -602,9 +605,9 @@ function repriceCart() {
     totalCostDiv.innerHTML = "$" + Number(total).toFixed(2) + html;
 
     // now set the proper div for the payment
-    emptyCart.hidden =  primarymemberships > 0;
-    noChargeCart.hidden = primarymemberships == 0 || badges['total'] > 0;
-    chargeCart.hidden = primarymemberships == 0 || badges['total'] == 0;
+    emptyCart.hidden =  primaryMemberships > 0;
+    noChargeCart.hidden = primaryMemberships == 0 || badges['total'] > 0;
+    chargeCart.hidden = primaryMemberships == 0 || badges['total'] == 0;
     totalDue = total;
 }
 

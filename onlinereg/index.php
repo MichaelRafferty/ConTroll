@@ -27,6 +27,7 @@ if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['required'] = $reg_conf['required'];
+$config_vars['conid'] = $condata['id'];
 
 $numCoupons = num_coupons();
 if ($numCoupons == 0)

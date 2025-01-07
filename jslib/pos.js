@@ -68,9 +68,6 @@ class Pos {
     #conlabel = null;
     #user_id = 0;
     #manager = false;
-    // initialize non primary categories to only those in addition to the memConfig table, including grandfathered spellings,
-    // it will be set in the initial data setup section
-    #non_primary_categories = ['add-on'];
     #upgradable_types = ['one-day', 'oneday', 'virtual'];
 
     // filter criteria
@@ -282,10 +279,6 @@ class Pos {
         return this.#review_editable_fields;
     }
 
-    nonPrimaryCategoriesIncludes(category) {
-        return this.#non_primary_categories.includes(category);
-    }
-
     upgradableTypesIncludes(type) {
         return this.#upgradable_types.includes(type);
     }
@@ -399,12 +392,6 @@ class Pos {
             index++;
         }
 
-        // build non primary categories from catList
-        for (row in this.#catList) {
-            if (this.#catList[row].badgeLabel.substring(0, 1) == 'X')
-                this.#non_primary_categories.push(this.#catList[row].memCategory);
-        }
-
         // set up coupon items
         this.#num_coupons = data.num_coupons;
         this.#couponList = data.couponList;
@@ -431,7 +418,7 @@ class Pos {
     }
 
     // find the primary membership for a perid given it's array of memberships
-    // primary is ? first or last ? of the list of memberships (trying first to match old way)
+    // with memberships sorted by purchase date, it's last
     find_primary_membership(regitems) {
         var mem_index = null;
         for (var item in regitems) {
@@ -439,7 +426,7 @@ class Pos {
             if (mi_row.conid != this.#conid)
                 continue;
 
-            if (this.#non_primary_categories.includes(mi_row.memCategory))
+            if (!isPrimary(mi_row.conid, mi_row.memType, mi_row.memCategory, mi_row.price))
                 continue;
 
             mem_index = item;

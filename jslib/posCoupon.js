@@ -281,8 +281,8 @@ class Coupon {
             if (this.#couponActive) {
                 if (this.#curCoupon.memId == mbrtype.id) {  // ok this is a forced primary
                     primary = true; // need a statement here, as combining the if's gets difficult
-                } else if (mbrtype.price == 0 || (mbrtype.memCategory != 'standard' && mbrtype.memCategory != 'virtual')) {
-                    primary = false;
+                } else {
+                    primary = isPrimary(mbrtype.conid, mbrtype.memType, mbrtype.memCategory, mbrtype.price, 'coupon';
                 }
             }
 
@@ -291,7 +291,8 @@ class Coupon {
                 discount = 0; // no discount if no coupon, price is 0 or its not a primary membership
             } else if (this.#curCoupon.couponType == '$off' || this.#curCoupon.couponType == '%off') {
                 discount = 0; // cart type memberships don't discount rows
-            } else if (this.#curCoupon.memId == null || this.#curCoupon.memId == mbrtype.id) { // ok, we have a coupon type that applies to this row
+            } else if ((this.#curCoupon.memId == null && primary) || this.#curCoupon.memId == mbrtype.id) { // ok, we have a coupon type that applies to
+                // this row
                 if (this.#curCoupon.couponType == 'price') {
                     // set price for a specific membership type, set the discount to the difference between the real price and the 'coupon price'
                     discount = Number(mbrtype.price) - Number(this.#curCoupon.discount);

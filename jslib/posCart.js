@@ -268,7 +268,7 @@ class PosCart {
     allowAddCouponToCart() {
         this.#anyUnpaid = false;
         var numCoupons = pos.everyMembership(this.#cartPerinfo, function(_this, mem) {
-            if ((!pos.nonPrimaryCategoriesIncludes(mem.memCategory)) && mem.conid == pos.getConid() && mem.status != 'paid')
+            if (isPrimary(mem.conid, mem.memType, mem.memCategory, mem.price, 'coupon') && mem.status != 'paid')
                 cart.setAnyUnpaid();
             if (mem.coupon)
                 return 1;
