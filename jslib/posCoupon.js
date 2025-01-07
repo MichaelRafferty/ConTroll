@@ -282,7 +282,7 @@ class Coupon {
                 if (this.#curCoupon.memId == mbrtype.id) {  // ok this is a forced primary
                     primary = true; // need a statement here, as combining the if's gets difficult
                 } else {
-                    primary = isPrimary(mbrtype.conid, mbrtype.memType, mbrtype.memCategory, mbrtype.price, 'coupon';
+                    primary = isPrimary(mbrtype.conid, mbrtype.memType, mbrtype.memCategory, mbrtype.price, 'coupon');
                 }
             }
 
