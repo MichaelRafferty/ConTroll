@@ -169,7 +169,8 @@ function process(formRef) {
         if (policy.required == 'Y') {
             var field = '#l_' + policy.policy;
             if (typeof policyData['p_' + policy.policy] === 'undefined') {
-                console.log("required policy " + policy.policy + ' is not checked');
+                if (config['debug'] > 0)
+                    console.log("required policy " + policy.policy + ' is not checked');
                 message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
                 $(field).addClass('need');
                 valid = false;
@@ -334,9 +335,9 @@ function addMembership(formData) {
     var found = false;
     var mtype = null;
     for (var row in mtypes) {
-        var mbrtype = mtypes[row];
-        if (mbrtype['id'] == memId) {
-            mtype = mbrtype;
+        var mbrType = mtypes[row];
+        if (mbrType['id'] == memId) {
+            mtype = mbrType;
             found = true;
             break;
         }
@@ -463,8 +464,10 @@ function makePurchase(token, label) {
         couponDiscount: couponDiscount,
         total: totalDue,
     }
-    console.log("MP Data");
-    console.log(data);
+    if (config['debug'] > 0) {
+        console.log("MP Data");
+        console.log(data);
+    }
     $.ajax({
         url: "scripts/makePurchase.php",
         data: data,
@@ -515,8 +518,10 @@ function removeCouponCode() {
 }
 
 function repriceCart() {
-    console.log(mtypes);
-    console.log(badges);
+    if (config['debug'] > 0) {
+        console.log(mtypes);
+        console.log(badges);
+    }
     var html = '';
     var nbrs = badges['memTypeCount'];
     var total = 0;
@@ -528,21 +533,22 @@ function repriceCart() {
 
     if (typeof mtypes != 'undefined' && mtypes != null) {
         for (var row in mtypes) {
-            var mbrtype = mtypes[row];
-            var num = 0;
-            if (nbrs[mbrtype['id']] > 0) {
-                num = nbrs[mbrtype['id']];
-                if (mbrtype['primary']) {
+            var mbrType = mtypes[row];
+            var num = num = nbrs[mbrType['id']];
+            if (num > 0) {
+
+                if (isPrimary(config.conid, mbrType.memType, mbrType.memCategory, mbrType.price, 'coupon')) {
                     couponPrimaryMemberships += num;
-                    if (coupon.isCouponActive()) {
-                        if ((coupon.memId != null && coupon.memId == mbrtype['memId']) || coupon.memId == null)
-                            couponmemberships += num;
-                    }
-                    mbrtotal += num * Number(mbrtype['price']).toFixed(2)
+                    mbrtotal += num * Number(mbrType['price']).toFixed(2);
                 }
-                if (isPrimary(config.conid, mbrType.memType, mbrType.memCategory, mbrType.mmemPrice))
+                if (coupon.isCouponActive()) {
+                    if ((coupon.memId != null && coupon.memId == mbrType['memId']) || coupon.memId == null)
+                        couponmemberships += num;
+                }
+                if (isPrimary(config.conid, mbrType.memType, mbrType.memCategory, mbrType.price)) {
                     primaryMemberships += num;
-                total += num * Number(mbrtype['price']).toFixed(2);
+                }
+                total += num * Number(mbrType['price']).toFixed(2);
             }
         }
     }
@@ -563,33 +569,33 @@ function repriceCart() {
     var thisDiscount = 0;
     var itemtype = '';
     for (row in mtypes) {
-        mbrtype = mtypes[row];
-        if (nbrs[mbrtype['id']] > 0) {
-            num = nbrs[mbrtype['id']];
+        mbrType = mtypes[row];
+        if (nbrs[mbrType['id']] > 0) {
+            num = nbrs[mbrType['id']];
         } else {
             continue;
         }
         // need to set num here
-        if (mbrtype['memCategory'] == 'add-on' || mbrtype['memCategory'] == 'addon')
+        if (mbrType['memCategory'] == 'add-on' || mbrType['memCategory'] == 'addon')
             itemtype = ' Add-ons: ';
         else
             itemtype = ' Memberships: ';
 
-        if (mbrtype['discountable'] && cartDiscountable) {
+        if (mbrType['discountable'] && cartDiscountable) {
             if (maxMbrDiscounts >= num) {
-                thisDiscount = num * Number(mbrtype['discount']).toFixed(2);
+                thisDiscount = num * Number(mbrType['discount']).toFixed(2);
                 couponDiscounts += thisDiscount;
                 maxMbrDiscounts -= num;
             } else {
-                thisDiscount = maxMbrDiscounts * Number(mbrtype['discount']).toFixed(2);
+                thisDiscount = maxMbrDiscounts * Number(mbrType['discount']).toFixed(2);
                 couponDiscounts += thisDiscount;
                 maxMbrDiscounts = 0;
             }
-            total += num * Number(mbrtype['price']).toFixed(2) - thisDiscount;
+            total += num * Number(mbrType['price']).toFixed(2) - thisDiscount;
         } else {
-            total += num * Number(mbrtype['price']).toFixed(2)
+            total += num * Number(mbrType['price']).toFixed(2)
         }
-        html += mbrtype['shortname'] + itemtype + num + ' x ' + mbrtype['price'] + '<br/>';
+        html += mbrType['shortname'] + itemtype + num + ' x ' + mbrType['price'] + '<br/>';
     }
     memSummaryDiv.innerHTML = html;
     badges['total'] = total;
@@ -658,14 +664,14 @@ window.onload = function () {
 
     if (typeof mtypes != 'undefined' && mtypes != null) { //v we got here from index (purchase a badge, not some other page)
         for (var row in mtypes) {
-            var mbrtype = mtypes[row];
-            var memId = mbrtype['id'];
-            prices[memId] = Number(mbrtype['price']);
+            var mbrType = mtypes[row];
+            var memId = mbrType['id'];
+            prices[memId] = Number(mbrType['price']);
             badges['memTypeCount'][memId] = 0;
-            shortnames[memId] = mbrtype['shortname'].replace(',','<br/>');
-            mbrtype['primary'] = !(mbrtype['price'] == 0 || (mbrtype['memCategory'] != 'standard' && mbrtype['memCategory'] != 'virtual'));
-            mbrtype['discount'] = 0;
-            mbrtype['discountable'] = false;
+            shortnames[memId] = mbrType['shortname'].replace(',','<br/>');
+            mbrType['primary'] = !(mbrType['price'] == 0 || (mbrType['memCategory'] != 'standard' && mbrType['memCategory'] != 'virtual'));
+            mbrType['discount'] = 0;
+            mbrType['discountable'] = false;
         }
 
         repriceCart();
