@@ -30,8 +30,10 @@ function isWebRequest()
     return isset($_SERVER) && isset($_SERVER['HTTP_USER_AGENT']);
 }
 
-function page_init($title, $tab, $css, $js)
+function page_init($title, $tab, $css, $js, $configVars = null)
 {
+    global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
+
     $con = get_conf('con');
     $vendor = get_conf('vendor');
     $label = $con['label'];
@@ -51,10 +53,12 @@ function page_init($title, $tab, $css, $js)
     else
         $taxLabel = '';
 
-    $config_vars = array();
-    $config_vars['debug'] = $atconDebug;
-    $config_vars['taxRate'] = $taxRate;
-    $config_vars['taxLabel'] = $taxLabel;
+    if ($configVars == null) {
+        $configVars = array ();
+    }
+    $configVars['debug'] = $atconDebug;
+    $configVars['taxRate'] = $taxRate;
+    $configVars['taxLabel'] = $taxLabel;
 
     global $perms;
     if (isWebRequest()) {
@@ -79,17 +83,25 @@ function page_init($title, $tab, $css, $js)
     <script src='<?php echo $includes['bs5js'];?>'></script>
     <script type='text/javascript' src='<?php echo $includes['jqjs']; ?>'></script>
     <script type='text/javascript' src='<?php echo $includes['jquijs']; ?>'></script>
-    <script type='text/javascript' src='/js/base.js'></script>
+    <script type='text/javascript' src='jslib/global.js?v=$globalJSversion'></script>
+    <script type='text/javascript' src='js/base.js?v=$controllJSversion'></script>
         <?php
-        if (isset($js) && $js != null) {
+        if(isset($js) && $js != null) {
             foreach ($js as $script) {
-                ?><script src='<?php echo $script; ?>'
-        type='text/javascript'></script><?php
+                if (str_starts_with($script, 'jslib/'))
+                    $callout = "$script?v=$libJSversion";
+                else if (str_starts_with($script, 'js/'))
+                    $callout = "$script?v=$controllJSversion";
+                else
+                    $callout = $script;
+                ?>
+                <script src='<?php echo $callout;?>' type='text/javascript'></script>
+                <?php
             }
         }
-        ?>
+?>
     <script type='text/javascript'>
-        var config = <?php echo json_encode($config_vars); ?>;
+        var config = <?php echo json_encode($configVars); ?>;
     </script>
 </head>
 <body>

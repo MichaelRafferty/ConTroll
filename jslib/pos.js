@@ -260,7 +260,7 @@ class Pos {
     }
 
     setMissingItems(num) {
-        this.#review_tab.disabled = num;
+        this.#review_missing_items = num;
     }
 
     getConid() {

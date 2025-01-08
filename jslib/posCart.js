@@ -1165,7 +1165,8 @@ class PosCart {
         var mrow;
         var field;
         var tabindex = 0;
-        var review_missing_items = 0;
+        var reviewMissingItems = 0;
+        var missingRequiredPolicies = 0;
         for (rownum in this.#cartPerinfo) {
             tabindex += 100;
             row = this.#cartPerinfo[rownum];
@@ -1175,7 +1176,7 @@ class PosCart {
             for (fieldno in this.#review_required_fields) {
                 field = this.#review_required_fields[fieldno];
                 if (row[field] == null || row[field] == '') {
-                    review_missing_items++;
+                    reviewMissingItems++;
                     colors.set(field, 'var(--bs-warning)');
                 } else {
                     colors.set(field, '');
@@ -1189,7 +1190,6 @@ class PosCart {
                     colors.set(field, '');
                 }
             }
-            pos.setMissingItems(review_missing_items);
             html += '<div class="row">';
             if (mrow == null) {
                 html += '<div class="col-sm-12 text-bg-info">No Membership</div>';
@@ -1286,7 +1286,12 @@ class PosCart {
             for (var polrow in policies) {
                 var policyName = policies[polrow].policy;
                 var policyResp = policies[polrow].response;
-                html += '<div class="col-sm-auto">' + policyName + ': ' +
+                var color = '';
+                if (config.mode != 'admin' && allPolicies[policyIndex[policyName]].required == 'Y' && policyResp == 'N') {
+                    missingRequiredPolicies++;
+                    color = "var(--bs-danger-bg-subtle)"
+                }
+                html += '<div class="col-sm-auto" style="background-color: ' + color + ';">' + policyName + ': ' +
                     '<input type="checkbox" name="c' + rownum + '-p_' + policyName + '" id="c' + rownum + '-p_' + policyName +
                     '" tabindex="' + String(tabindex + 26) +
                     '" value="Y"' + (policyResp == 'Y' ? ' checked' : ' ') + '/>\n</div>\n';
@@ -1294,13 +1299,13 @@ class PosCart {
 
         html += '\n</div>\n';
         }
-    var disableNoChanges =
+
     html += `<div class="row mt-2">
         <div class="col-sm-1 m-0 p-0">&nbsp;</div>
         <div class="col-sm-auto m-0 p-0">
             <button class="btn btn-primary btn-sm" type="button" id="review-btn-update" onclick="pos.reviewUpdate();">Update All</button>
             <button class="btn btn-primary btn-sm" type="button" id="review-btn-nochanges" onclick="pos.reviewNoChanges();" ` +
-                (pos.isReviewDirty() ? ' disabled ' : '') + `>No Changes</button>
+                (pos.isReviewDirty() || missingRequiredPolicies > 0 ? ' disabled ' : '') + `>No Changes</button>
         </div>
     </div>
     <div class="row">
@@ -1309,6 +1314,7 @@ class PosCart {
   </form>
 </div>
 `;
+        pos.setMissingItems(reviewMissingItems + missingRequiredPolicies);
         return html;
     }
 
@@ -1329,6 +1335,19 @@ class PosCart {
                     if (this.#cartPerinfo[rownum][field] != el.value) {
                         // alert("updating  row " + rownum + ":" + rownum + ":" + field + " from '" + this.#cartPerinfo[rownum][field] + "' to '" + el.value + "'");
                         this.#cartPerinfo[rownum][field] = el.value;
+                        this.#cartPerinfo[rownum].dirty = false;
+                    }
+                }
+            }
+            // update all the policy values
+            var policies = this.#cartPerinfo[rownum].policies;
+            for (var polrow in policies) {
+                var policyName = policies[polrow].policy;
+                var policyResp = policies[polrow].response;
+                el = document.getElementById('c' + rownum + '-p_' + policyName);
+                if (el) {
+                    if (policyResp != (el.checked ? 'Y' : 'N')) {
+                        this.#cartPerinfo[rownum].policies[polrow].response = el.checked ? 'Y' : 'N';
                         this.#cartPerinfo[rownum].dirty = false;
                     }
                 }
