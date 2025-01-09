@@ -105,7 +105,8 @@ $payorPlans = [];
 $payorPlanIdx = [];
 // get all the payor plans that are not paid off
 $ppQ = <<<EOS
-SELECT pp.*, p.name FROM payorPlans pp
+SELECT pp.*, p.name
+FROM payorPlans pp
 JOIN paymentPlans p on (pp.planId = p.id)
 WHERE status = 'active' /* and conid = ? */
 ORDER BY perid, createDate;
@@ -273,13 +274,14 @@ foreach ($payorPlans AS $payorPlan) {
     if ($verbose) echo "Message will be:\n$due\nYour minimum amount due is $minAmt\n";
 
     // build the reminder email
-    $emailSubject = "Reminder about your Plan Payment For $label - $due";
+    $createDate = $data['createDate'];
+    $emailSubject = "Reminder about your Plan Payment For $label created $createDate - $due";
     $fullName = $person['fullName'];
     $balanceDue = $data['balanceDue'];
     $payByDate = $data['payByDate'];
     $nextPayDueDate = $data['nextPayDueDate'];
     $emailText = <<<EOS
-$fullName has an active payment plan with $label. $due
+$fullName has an active payment plan with $label created $createDate. $due
 
 You may pay any amount up to the remaining balance of the plan of $balanceDue,  however the minimum amount due at this time is $minAmt.  
 Please note that this plan must be paid in full by $payByDate.
@@ -292,7 +294,7 @@ $label Registration
 EOS;
 
     $emailHTML = <<<EOS
-<p>$fullName has an active payment plan with $label. $duehtml</p>
+<p>$fullName has an active payment plan with $label created $createDate. $duehtml</p>
 <p>You may pay any amount up to the remaining balance of the plan of $balanceDue, however the minimum amount due at this time is $minAmt.  
 Please note that this plan must be paid in full by $payByDate.</p>
 <p>To make your payment please visit the $label Membership Portal at <a href="$portalSite">$portalSite</a>
