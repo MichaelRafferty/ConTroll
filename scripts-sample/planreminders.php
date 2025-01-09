@@ -274,7 +274,7 @@ foreach ($payorPlans AS $payorPlan) {
     if ($verbose) echo "Message will be:\n$due\nYour minimum amount due is $minAmt\n";
 
     // build the reminder email
-    $createDate = $data['createDate'];
+    $createDate = $data['dateCreated'];
     $emailSubject = "Reminder about your Plan Payment For $label created $createDate - $due";
     $fullName = $person['fullName'];
     $balanceDue = $data['balanceDue'];
