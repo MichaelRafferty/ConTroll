@@ -12,8 +12,17 @@ $con = get_conf('con');
 $local = get_conf('local');
 $conid = $con['id'];
 $regadminemail = $con['regadminemail'];
-$csvTo = $local['csvto'];
-$csvCc = $local['csvcc'];
+
+if (array_key_exists('csvto', $local))
+    $csvTo = $local['csvto'];
+else
+    $csvTo = null;
+
+if (array_key_exists('csvcc', $local))
+    $csvCc = $local['csvcc'];
+else
+    $csvCC = null;
+
 if (array_key_exists('csvsavedir', $local))
     $csvSaveDir = $local['csvsavedir'];
 else
@@ -54,7 +63,8 @@ if (array_key_exists('t', $options)) {
     else if (!filter_var($testEmailAddress, FILTER_VALIDATE_EMAIL)) {
         calling_seq("-t $testEmailAddress is not a valid email address");
     }
-    $csvTo = $testEmailAddress;
+    if ($csvTo != null)
+        $csvTo = $testEmailAddress;
     $csvCc = null;
 }
 $ccEmailAddress = null;
@@ -239,24 +249,29 @@ EOS;
 
 if ($verbose) echo "sendinterests individual notifies completed\n";
 
+if ($csvTo != null) {
 // send the combinded CSV file
-$interestFields = '';
-$joins = '';
-foreach ($interests as $interestRow)  {
-    $interest = $interestRow['interest'];
-    $interestFields .= ",$interest.interested AS $interest";
-    $joins .= <<<EOS
-LEFT OUTER JOIN memberInterests $interest ON ($interest.conid = m.conid AND $interest.interest = '$interest'
+    $interestFields = '';
+    $joins = '';
+    foreach ($interests as $interestRow)  {
+        $interest = $interestRow['interest'];
+        $interestFields .= ",$interest.interested AS $interest";
+        $joins .= <<<EOS
+LEFT OUTER JOIN nonCSV $interest ON ($interest.conid = m.conid AND $interest.interest = '$interest'
     AND IFNULL(m.perid, -1) = IFNULL($interest.perid, -1)
     AND IFNULL(m.newperid, -1) = IFNULL($interest.newperid, -1))
 
 EOS;
-}
-$csvGetQ = <<<EOS
-WITH perids AS (
-	SELECT DISTINCT perid, conid, newperid
+    }
+
+    $csvGetQ = <<<EOS
+WITH nonCSV AS (
+SELECT DISTINCT *
     FROM memberInterests
     WHERE conid = ? AND csvDate IS NULL
+), perids AS (
+	SELECT DISTINCT perid, conid, newperid
+    FROM nonCSV
 )
 SELECT m.perid, m.newperid,
     CASE 
@@ -283,75 +298,77 @@ LEFT OUTER JOIN newperson n ON (n.id = m.newperid)
 $joins;
 EOS;
 
-$updCSVP = <<<EOS
+    $updCSVP = <<<EOS
 UPDATE memberInterests
 SET csvDate = NOW()
 WHERE csvDate IS NULL AND conid = ?;
 EOS;
 
 
-$csvGetR = dbSafeQuery($csvGetQ, 'i', array($conid));
-if ($csvGetR === false) {
-    echo "Error in csv query for $conid\n";
-    exit();
-}
+    $csvGetR = dbSafeQuery($csvGetQ, 'i', array ($conid));
+    if ($csvGetR === false) {
+        echo "Error in csv query for $conid\n";
+        exit();
+    }
 
-if ($csvGetR->num_rows == 0) {
-    if (!$quiet)
-        echo "No new csv rows to report on since $lastCSVDate\n";
-    $msgTxt=<<<EOM
+    if ($csvGetR->num_rows == 0) {
+        if (!$quiet)
+            echo "No new csv rows to report on since $lastCSVDate\n";
+        $msgTxt = <<<EOM
 There is nothing new to send since $lastCSVDate.
 
 EOM;
-} else {
-    $first = true;
-    $csv = '';
-    while ($row = $csvGetR->fetch_assoc()) {
-        if ($first) {
-            $csv = implode(',', array_keys($row)) . PHP_EOL;
-            $first = false;
+    }
+    else {
+        $first = true;
+        $csv = '';
+        while ($row = $csvGetR->fetch_assoc()) {
+            if ($first) {
+                $csv = implode(',', array_keys($row)) . PHP_EOL;
+                $first = false;
+            }
+            $csv .= '"' . implode('","', $row) . '"' . PHP_EOL;
         }
-        $csv .= '"' . implode('","', $row) . '"' . PHP_EOL;
-    }
-    if ($verbose > 1) {
-        echo "csv:" . PHP_EOL . $csv . PHP_EOL;
-    }
+        if ($verbose > 1) {
+            echo "csv:" . PHP_EOL . $csv . PHP_EOL;
+        }
 
-    if (!$noSendUpdate) {
-        if ($csvTo != '') {
-            $fname = date_format(date_create(), 'Y-m-d-H-i-s') . "-allInterests.csv";
-            $csvF = fopen("$csvSaveDir/$fname", 'w');
-            fwrite($csvF, $csv);
-            fclose($csvF);
-            $emailText = <<<EOM
+        if (!$noSendUpdate) {
+            if ($csvTo != null) {
+                $fname = date_format(date_create(), 'Y-m-d-H-i-s') . "-allInterests.csv";
+                $csvF = fopen("$csvSaveDir/$fname", 'w');
+                fwrite($csvF, $csv);
+                fclose($csvF);
+                $emailText = <<<EOM
 Interested records since $lastCSVDate.
 
 EOM;
 
-            $return_arr = send_email($regadminemail, $csvTo, $csvCc, "Periodic Interests CSV Send",
-                                     $emailText, null, array(array("$csvSaveDir/$fname", $fname, 'application/csv')));
+                $return_arr = send_email($regadminemail, $csvTo, $csvCc, "Periodic Interests CSV Send",
+                                         $emailText, null, array (array ("$csvSaveDir/$fname", $fname, 'application/csv')));
 
-            if (array_key_exists('error_code', $return_arr)) {
-                $error_code = $return_arr['error_code'];
-            }
-            else {
-                $error_code = null;
-            }
-            if (array_key_exists('email_error', $return_arr))
-                echo "Unable to send csv change email to $csvTo, error: " . $return_arr['email_error'] . ", Code: $error_code\n";
-            else {
-                if ($verbose) echo "CSV Change email sent to $csvTo\n";
-                $emailsSent++;
+                if (array_key_exists('error_code', $return_arr)) {
+                    $error_code = $return_arr['error_code'];
+                }
+                else {
+                    $error_code = null;
+                }
+                if (array_key_exists('email_error', $return_arr))
+                    echo "Unable to send csv change email to $csvTo, error: " . $return_arr['email_error'] . ", Code: $error_code\n";
+                else {
+                    if ($verbose) echo "CSV Change email sent to $csvTo\n";
+                    $emailsSent++;
 
-                $numRows = dbSafeCmd($updCSVP, 'i', array ($conid));
-                if ($verbose) {
-                    echo "$numRows updated to current date for $interest";
+                    $numRows = dbSafeCmd($updCSVP, 'i', array ($conid));
+                    if ($verbose) {
+                        echo "$numRows updated to current date for $interest";
+                    }
                 }
             }
         }
     }
+    $csvGetR->free();
 }
-$csvGetR->free();
 
 if ($verbose) echo "sendinterests task completed\n";
 
