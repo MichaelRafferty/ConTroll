@@ -74,7 +74,7 @@ EOQ;
             $prices[$mbrtype['id']] = $mbrtype['price'];
             $memId[$mbrtype['id']] = $mbrtype['id'];
             $counts[$mbrtype['id']] = 0;
-            $isprimary = isPrimary($mbrtype, $conid);
+            $isprimary = isPrimary($mbrtype, $conid, 'coupon');
             if ($coupon !== null) {
                 $discounts[$mbrtype['id']] = $mbrtype['discount'];
                 if ($coupon['memId'] == $mbrtype['id']) {  // ok this is a forced primary

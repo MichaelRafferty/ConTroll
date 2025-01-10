@@ -68,9 +68,6 @@ class Pos {
     #conlabel = null;
     #user_id = 0;
     #manager = false;
-    // initialize non primary categories to only those in addition to the memConfig table, including grandfathered spellings,
-    // it will be set in the initial data setup section
-    #non_primary_categories = ['add-on'];
     #upgradable_types = ['one-day', 'oneday', 'virtual'];
 
     // filter criteria
@@ -263,7 +260,7 @@ class Pos {
     }
 
     setMissingItems(num) {
-        this.#review_tab.disabled = num;
+        this.#review_missing_items = num;
     }
 
     getConid() {
@@ -280,10 +277,6 @@ class Pos {
 
     getReviewEditableFields() {
         return this.#review_editable_fields;
-    }
-
-    nonPrimaryCategoriesIncludes(category) {
-        return this.#non_primary_categories.includes(category);
     }
 
     upgradableTypesIncludes(type) {
@@ -399,12 +392,6 @@ class Pos {
             index++;
         }
 
-        // build non primary categories from catList
-        for (row in this.#catList) {
-            if (this.#catList[row].badgeLabel.substring(0, 1) == 'X')
-                this.#non_primary_categories.push(this.#catList[row].memCategory);
-        }
-
         // set up coupon items
         this.#num_coupons = data.num_coupons;
         this.#couponList = data.couponList;
@@ -431,7 +418,7 @@ class Pos {
     }
 
     // find the primary membership for a perid given it's array of memberships
-    // primary is ? first or last ? of the list of memberships (trying first to match old way)
+    // with memberships sorted by purchase date, it's last
     find_primary_membership(regitems) {
         var mem_index = null;
         for (var item in regitems) {
@@ -439,7 +426,7 @@ class Pos {
             if (mi_row.conid != this.#conid)
                 continue;
 
-            if (this.#non_primary_categories.includes(mi_row.memCategory))
+            if (!isPrimary(mi_row.conid, mi_row.memType, mi_row.memCategory, mi_row.price))
                 continue;
 
             mem_index = item;
@@ -1884,11 +1871,17 @@ addUnpaid(tid) {
     reviewedUpdateCart(data) {
         this.#pay_tid = data.master_tid;
         // update cart elements
-        cart.updateFromDB(data);
+        var unpaidRows = cart.updateFromDB(data);
         if (data['success'])
             show_message(data['success'], 'success');
         else
             clear_message();
+
+        // set tab to review-tab
+        if (unpaidRows == 0 && this.#print_tab) {
+            this.gotoPrint();
+            return;
+        }
 
         if (config['cashier'] == 1) {
             bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
@@ -1905,7 +1898,7 @@ addUnpaid(tid) {
                 el.hidden = true;
             el = document.getElementById('review_status');
             if (el)
-                el.innerHTML = "Completed: Send customer to cashier with id of " + this.#pay_tid;
+                el.innerHTML = "<strong>Completed: Send customer to cashier with id of " + this.#pay_tid + '</strong>';
         }
     }
 
@@ -2138,6 +2131,7 @@ addUnpaid(tid) {
         var footer_text = '';
         // server side will print the receipt
         var postData = {
+            user_id: this.#user_id,
             ajax_request_action: 'printReceipt',
             header: header_text,
             prows: JSON.stringify(cart.getCartPerinfo()),
@@ -2169,13 +2163,13 @@ addUnpaid(tid) {
                 } else if (data.warn !== undefined) {
                     show_message(data.warn, 'success');
                 }
-                if (this.#lastReceiptType == 'email')
+                if (_this.#lastReceiptType == 'email')
                     _this.#pay_button_ercpt.disabled = false;
                 else
                     _this.#pay_button_rcpt.disabled = false;
             },
             error: function (jqXHR, textstatus, errorThrown) {
-                if (this.#lastReceiptType == 'email')
+                if (_this.#lastReceiptType == 'email')
                     _this.#pay_button_ercpt.disabled = false;
                 else
                     _this.#pay_button_rcpt.disabled = false;
@@ -2220,15 +2214,20 @@ addUnpaid(tid) {
             url: "scripts/pos_printBadge.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
+                if (data.constructor.name !== 'Object' ) {
+                    show_message(data, 'error');
+                    $("button[name='print_btn']").attr("disabled", false);
+                    return;
+                }
                 if (data['error'] !== undefined) {
                     show_message(data['error'], 'error');
+                    $("button[name='print_btn']").attr("disabled", false);
                     return;
                 }
                 _this.printComplete(data);
             },
             error: function (jqXHR, textstatus, errorThrown) {
                 $("button[name='print_btn']").attr("disabled", false);
-                _this.pay_button_pay.disabled = false;
                 showAjaxError(jqXHR, textstatus, errorThrown);
             },
         });

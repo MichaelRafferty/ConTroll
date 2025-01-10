@@ -4,10 +4,9 @@ require_once "lib/base.php";
 require_once '../lib/profile.php';
 require_once '../lib/portalForms.php';
 require_once '../lib/policies.php';
-require_once('../lib/profile.php');
-require_once('../lib/policies.php');
 
-if (!isset($_SESSION['user'])) {
+// if not logged in, send back to the index page to log in
+if (!isSessionVar('user')) {
     header("Location: /index.php");
     exit(0);
 }
@@ -15,6 +14,7 @@ if (!isset($_SESSION['user'])) {
 $con = get_conf('con');
 $debug = get_conf('debug');
 $usps = get_conf('usps');
+$vendor = get_conf('vendor');
 $ini = get_conf('reg');
 $controll = get_conf('controll');
 $condata = get_con();
@@ -39,19 +39,32 @@ if (!check_atcon($method, $conid)) {
     exit(0);
 }
 
+if (array_key_exists('taxRate', $con))
+    $taxRate = $con['taxRate'];
+else
+    $taxRate = 0;
+
+if (array_key_exists('taxidlabel', $vendor))
+    $taxLabel = $vendor['taxidlabel'];
+else
+    $taxLabel = '';
+
 $policies = getPolicies();
+$policyIndex = array();
+for ($index = 0; $index< count($policies); $index++) {
+    $policyIndex[$policies[$index]['policy']] = $index;
+}
 $useUSPS = false;
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['mode'] = $mode;
 $config_vars['tab'] = $tab;
-$config_vars['debug'] = $debug['atcon'];
 $config_vars['conid'] = $conid;
 $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['required'] = $ini['required'];
 $config_vars['useportal'] = $controll['useportal'];
-$config_vars['required'] = $ini['required'];
 $config_vars['cashier'] = $method == 'cashier' ? 1 : 0;
+
 $useUSPS = false;
 
 // form as laid out has no room for usps block, if we want it we need to reconsider how to do it here.
@@ -66,11 +79,13 @@ page_init($page, $tab,
                     'jslib/posCart.js',
                     'jslib/posCoupon.js',
                     'jslib/pos.js',
-                    'jslib/membershipRules.js', 'js/regpos.js')
+                    'jslib/membershipRules.js', 'js/regpos.js'),
+            $config_vars
     );
 ?>
 <script type='text/javascript'>
-    var config = <?php echo json_encode($config_vars); ?>;
+    var allPolicies = <?php echo json_encode($policies); ?>;
+    var policyIndex = <?php echo json_encode($policyIndex); ?>;
 </script>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">

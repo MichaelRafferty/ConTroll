@@ -33,10 +33,8 @@ if ($ajax_request_action != 'updatePerinfoNote') {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
-
-if (array_key_exists('user_id', $_SESSION)) {
-    $user_id = $_SESSION['user_id'];
-} else {
+$user_id = getSessionVar('user');
+if ($user_id == null || $user_id == '') {
     ajaxError('Invalid credentials passed');
     return;
 }

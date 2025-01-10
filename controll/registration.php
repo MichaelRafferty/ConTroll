@@ -4,8 +4,6 @@ require_once '../lib/profile.php';
 require_once '../lib/portalForms.php';
 require_once '../lib/policies.php';
 require_once('../lib/cc__load_methods.php');
-require_once('../lib/profile.php');
-require_once('../lib/policies.php');
 //initialize google session
 $need_login = google_init('page');
 
@@ -39,14 +37,20 @@ $usps = get_conf('usps');
 $controll = get_conf('controll');
 $conid = $con['id'];
 $conname = $con['conname'];
-$policies = getPolicies();
 $ini = get_conf('reg');
 $useUSPS = false;
+
+$policies = getPolicies();
+$policyIndex = array();
+for ($index = 0; $index< count($policies); $index++) {
+    $policyIndex[$policies[$index]['policy']] = $index;
+}
 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['debug'] = $debug['controll_registration'];
 $config_vars['conid'] = $conid;
+$config_vars['mode'] = 'admin';
 $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['required'] = $ini['required'];
 $config_vars['useportal'] = $controll['useportal'];
@@ -59,7 +63,8 @@ $config_vars['cashier'] = 1;
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
-    var allPolicies = <?php echo json_encode($policies); ?>
+    var allPolicies = <?php echo json_encode($policies); ?>;
+    var policyIndex = <?php echo json_encode($policyIndex); ?>;
 </script>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">

@@ -58,7 +58,7 @@ logInit($log['reg']);
 try {
     $person = json_decode($_POST['person'], true, 512, JSON_THROW_ON_ERROR);
     if ($person == null || (!(array_key_exists('fname', $person) || array_key_exists('first_name', $person) ))) {
-        logWrite(array('title'> 'Missing field error trap', 'get' => $_GET, 'post' => $_POST, 'session' => $_SESSION));
+        logWrite(array('title'> 'Missing field error trap', 'get' => $_GET, 'post' => $_POST, 'session' => getAllSessionVars()));
         $response['status'] = 'error';
         $response['message'] = 'Error: fname and first_name fields are missing from person, please seek assistance';
         ajaxSuccess($response);
@@ -282,7 +282,7 @@ EOS;
             if ((!array_key_exists($field, $person)) || $person[$field] == null) {
                 if ($field == 'fname') {
                     // log the *** out of this issue, lets see whats going on
-                    logWrite(array ('title' > 'Missing field error trap', 'get' => $_GET, 'post' => $_POST, 'session' => $_SESSION,
+                    logWrite(array ('title' > 'Missing field error trap', 'get' => $_GET, 'post' => $_POST, 'session' => getAllSessionVars(),
                                     'response' => $response));
                 }
                 $person[$field] = '';

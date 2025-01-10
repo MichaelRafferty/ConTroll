@@ -1,4 +1,4 @@
-<?php
+`<?php
 // Plan Reminders - send reminder emails about payment plans needing payment
 global $db_ini;
 if (!$db_ini) {
@@ -25,15 +25,17 @@ if (array_key_exists('currency', $con)) {
 // -c ccAddress - CC all emails to this address
 // -d days before payment is due to send notice, default = 7
 // -i days between reminders (interval), default 7.  Note: will send on exact due date anyway.
+// -k [p|c] kill plans past their p: pay by date, or c: within 10 days of con start date
 // -l do not log emails sent to database table
 // -q just show errors, be quiet about everything else
 // -s suppress the past due portion of the note (used during the catch up phase)
 // -t emailAddress - force all emails to go to this 'test' address
 // -v verbose level (0 or missing, none, 1: progress messages, 2: progress + dumps
+// -x delete expired 0 paid, unpaid memberships after as part of cancelling plan
 // -h show help instructions
 
 // get command line options
-$options = getopt('c:d:hi:lqst:v:');
+$options = getopt('c:d:hi:k:lqst:v:x');
 
 if ($options === false)
     calling_seq("options did not parse correctly");
@@ -81,31 +83,93 @@ if (array_key_exists('t', $options)) {
     }
 }
 
+$kill = 'n';
+$killDate = '2099/12/31';
+if (array_key_exists('k', $options)) {
+    $kill = $options['k'];
+    if ($kill == 'c') {
+        $conEndQ = <<<EOS
+SELECT DATE_ADD(startdate, INTERVAL -10 DAY) < NOW()
+FROM conlist
+WHERE id = ?;
+EOS;
+        $conR = dbSafeQuery($conEndQ, 'i', $conid);
+        if ($conR === false || $conR->num_rows != 1) {
+            calling_seq("error reading con end date for kill by con end - 10");
+        }
+        $killDate = $conR->fatch_row()[0];
+        $conR->free();
+
+        if ($killDate != 1) {
+            // not yet kill date
+            if ($verbose)
+                echo "Disabling Kill as it's not within 10 days of con start\n";
+            $kill = 'n';
+        }
+    }
+}
+
+$expire = array_key_exists('x', $options);
+
 if ($verbose) {
     echo <<<EOS
 Starting data fetch:
     days: $days
     cc: $cc
     to: $to
-
+    kill: $kill
+    expire: $expire
+  
 
 EOS;
 }
 
 $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 $emailsSent = 0;
+
 // get all the plans
 if ($verbose) echo "Getting Payment Plans\n";
 $data = getPaymentPlans();
 $plans = $data['plans'];
 if ($verbose) echo count($plans) . " payment plans loaded\n";
 
+if ($kill == 'c' || $kill == 'p') {
+    // ok, check for plans past the due date and kill them
+    $kQ = <<<EOS
+SELECT pp.*, pln.name, p.first_name, p.last_name, p.email_addr,
+       TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
+        IFNULL(p.suffix, '')), '  *', ' ')) AS fullName
+FROM payorPlans pp
+JOIN paymentPlans pln ON (pp.planId = pln.id)
+JOIN perinfo p ON (p.id = pp.perid)
+WHERE status = 'active'
+
+EOS;
+    if ($kill == 'p') {
+        $kQ .= "AND NOW() > pp.payByDate";
+    }
+    $kQ .= ';' . PHP_EOL;
+    $kR = dbQuery($kQ);
+    if ($kR === false) {
+        echo "Error reading in the payor plans to kill\n";
+        exit(1);
+    }
+    while ($kP = $kR->fetch_assoc()){
+        $emailsSent += killPlan($kP, $label, $dolfmt, $currency, $verbose, $portalSite, $regadminemail, $to, $cc);
+    }
+    if ($verbose) {
+        echo $kR->num_rows . " plans cancelled for being past due date\n";
+    }
+    $kR->free();
+}
+
 if ($verbose) echo "Getting Payor Plans\n";
 $payorPlans = [];
 $payorPlanIdx = [];
 // get all the payor plans that are not paid off
 $ppQ = <<<EOS
-SELECT pp.*, p.name FROM payorPlans pp
+SELECT pp.*, p.name
+FROM payorPlans pp
 JOIN paymentPlans p on (pp.planId = p.id)
 WHERE status = 'active' /* and conid = ? */
 ORDER BY perid, createDate;
@@ -115,7 +179,7 @@ $ppR = dbQuery($ppQ);
 if ($ppR === false) {
     echo "Error reading in the payor plans\n";
     exit(1);
-};
+}
 
 $index = 0;
 while ($row = $ppR->fetch_assoc()) {
@@ -140,7 +204,7 @@ EOS;
 if ($ppR === false) {
     echo "Error reading in the payor plan payments\n";
     exit(1);
-};
+}
 
 $priorid = -1;
 $payments = [];
@@ -186,7 +250,7 @@ $pR = dbQuery($pQ);
 if ($pR === false) {
     echo "Error reading in person records\n";
     exit(1);
-};
+}
 
 $index = 0;
 $people = [];
@@ -273,13 +337,14 @@ foreach ($payorPlans AS $payorPlan) {
     if ($verbose) echo "Message will be:\n$due\nYour minimum amount due is $minAmt\n";
 
     // build the reminder email
-    $emailSubject = "Reminder about your Plan Payment For $label - $due";
+    $createDate = $data['dateCreated'];
+    $emailSubject = "Reminder about your Plan Payment For $label created $createDate - $due";
     $fullName = $person['fullName'];
     $balanceDue = $data['balanceDue'];
     $payByDate = $data['payByDate'];
     $nextPayDueDate = $data['nextPayDueDate'];
     $emailText = <<<EOS
-$fullName has an active payment plan with $label. $due
+$fullName has an active payment plan with $label created $createDate. $due
 
 You may pay any amount up to the remaining balance of the plan of $balanceDue,  however the minimum amount due at this time is $minAmt.  
 Please note that this plan must be paid in full by $payByDate.
@@ -292,7 +357,7 @@ $label Registration
 EOS;
 
     $emailHTML = <<<EOS
-<p>$fullName has an active payment plan with $label. $duehtml</p>
+<p>$fullName has an active payment plan with $label created $createDate. $duehtml</p>
 <p>You may pay any amount up to the remaining balance of the plan of $balanceDue, however the minimum amount due at this time is $minAmt.  
 Please note that this plan must be paid in full by $payByDate.</p>
 <p>To make your payment please visit the $label Membership Portal at <a href="$portalSite">$portalSite</a>
@@ -325,10 +390,125 @@ EOS;
     }
 }
 
+if ($expire) {
+    // delete all 'expired' memberships that are unpaid and $0 paid
+    $expiredU = <<<EOS
+UPDATE reg
+JOIN memList m ON reg.memId = m.id
+SET reg.status = 'cancelled'
+WHERE reg.status = 'unpaid' AND reg.paid = 0 AND reg.price > 0 AND m.enddate < NOW();
+EOS;
+
+    $numExpired = dbCmd($expiredU);
+    if ($verbose)
+        echo "Expired unpaid: $numExpired rows marked cancelled";
+
+// and then delete them
+    $expiredD = <<<EOS
+DELETE reg
+FROM reg
+JOIN memList m ON reg.memId = m.id
+WHERE reg.status = 'cancelled' AND reg.paid = 0 AND reg.price > 0 AND m.enddate < NOW();
+EOS;
+
+    $numexpired = dbCmd($expiredD);
+    if ($verbose)
+        echo "Expired unpaid: $numExpired rows marked deleted";
+}
+
 if ($verbose) echo "Reminders task completed\n";
 
 echo "Send $emailsSent reminder emails out of " . count($payorPlans) . " payorPlans in " . count($plans) . " plans\n";
 exit(0);
+
+function killPlan($planInfo, $label, $dolfmt, $currency, $verbose, $portalSite, $regadminemail, $to, $cc) {
+    // set the plan status to cancelled, and then clear all the memberships assocated with the plan, plus compute the final amount due on those memberships
+    $amountDue = 0;
+    $regQ = <<<EOS
+SELECT id, price, paid
+FROM reg
+WHERE planId = ? AND status = 'plan';
+EOS;
+    $regU = <<<EOS
+UPDATE reg
+SET status = 'unpaid'
+WHERE planId = ? AND status = 'plan';
+EOS;
+
+    $planU = <<<EOS
+UPDATE payorPlans
+SET status = 'cancelled'
+WHERE id = ?;
+EOS;
+
+
+    $regR = dbSafeQuery($regQ, 'i', array($planInfo['id']));
+    if ($regR === false) {
+        echo "Error deleting plan " . $planInfo['id'] . "\n";
+        return 0;
+    }
+    while ($regL = $regR->fetch_assoc()) {
+        // mark them all unpaid if paid != price
+        $amountDue += $regL['price'] - ($regL['paid'] + $regL['couponDiscount']);
+    }
+    $regR->free();
+
+    // now mark them all unpaid, and the plan cancelled
+    $numRegUpd = dbSafeCmd($regU, 'i', array($planInfo['id']));
+    $numUpd = dbSafeCmd($planU, 'i', array($planInfo['id']));
+
+    // now tell the owner it's cancelled
+    if ($verbose) echo "Message will be:\n$amountDue\n";
+
+    // build the reminder email
+    $createDate = $planInfo['dateCreated'];
+    $emailSubject = "Your Plan Payment For $label created $createDate has been cancelled for non payment";
+    $fullName = $planInfo['fullName'];
+    $balanceDue = $dolfmt->format_currency($amountDue, $currency);
+    $payByDate = $planInfo['payByDate'];
+    $sendTo = $to ? $to : $planInfo['email_addr'];
+    $emailText = <<<EOS
+$fullName has an active payment plan with $label created $createDate.
+
+This plan was supposed have been paid by $payByDate, and is now cancelled.  All memberships under this plan that are full or partially paid remain so.
+All memberships that have zero payment against them and are for memberships that are no longer available have been deleted.
+
+You may use the portal to pay the remaining balance on the existing memberships and purchase replacement memberships for the expired ones.
+At the time of this cancellation your balance due on those memberships was $balanceDue.
+
+To make your payment please visit the $label Membership Portal at $portalSite.
+
+If you have any questions, please reach out to us at $regadminemail
+
+$label Registration
+EOS;
+
+    $emailHTML = <<<EOS
+<p>$fullName has an active payment plan with $label created $createDate.</p>
+<p>This plan was supposed have been paid by $payByDate, and is now cancelled.  All memberships under this plan that are full or partially paid remain so.
+All memberships that have zero payment against them and are for memberships that are no longer available have been deleted.</p>
+<p>You may use the portal to pay the remaining balance on the existing memberships and purchase replacement memberships for the expired ones.
+At the time of this cancellation your balance due on those memberships was $balanceDue.</p>
+<p>To make your payment please visit the $label Membership Portal at <a href="$portalSite">$portalSite</a>.</p>
+<p>If you have any questions, please reach out to us at <a href="mailto:$regadminemail?subject=Payment%20Plan%20Question"$regadminemail</a>.</p>
+<p>&nbsp;</p>
+<p>$label Registration</p>
+EOS;
+    $return_arr = send_email($regadminemail, $sendTo, $cc, $emailSubject, $emailText, $emailHTML);
+
+    if (array_key_exists('error_code', $return_arr)) {
+        $error_code = $return_arr['error_code'];
+    }
+    else {
+        $error_code = null;
+    }
+    if (array_key_exists('email_error', $return_arr)) {
+        echo "Unable to send receipt email to $sendTo, error: " . $return_arr['email_error'] . ", Code: $error_code\n";
+        return 0;
+    }
+    if ($verbose) echo "Reminder email sent to $sendTo\n";
+    return 1;
+}
 
 function calling_seq($msg) {
     echo <<<EOS
@@ -338,11 +518,13 @@ planreminders options:
     -c ccAddress - CC all emails to this address
     -d days before payment is due to send notice, default = 7
     -i days between reminders (interval), default 7.  Note: will send on exact due date anyway.
+    -k [p|c] kill plans past their p: pay by date, or c: within 10 days of con start date
     -l do not log emails sent to database table
     -q just show errors, be quiet about everything else
     -s suppress the past due portion of the note (used during the catch up phase)
     -t emailAddress - force all emails to go to this 'test' address
     -v verbose level (0 or missing, none, 1: progress messages, 2: progress + dumps
+    -x delete expired 0 paid, unpaid memberships after as part of cancelling plan
     -h show help instructions
    
 Example:

@@ -33,9 +33,8 @@ if (!(check_atcon('cashier', $conid) || check_atcon('data_entry', $conid))) {
 // print a badge if the printer is defined, note queue starting with 0 == make temp file only
 $response = array();
 $response['message'] = '';
-if (isset($_SESSION['badgePrinter'])) {
-    $printer = $_SESSION['badgePrinter'];
-
+$printer = getSessionVar('badgePrinter');
+if ($printer != null && $printer['name'] != 'None') {
     try {
         $params = json_decode($_POST['params'], true, 512, JSON_THROW_ON_ERROR);
     }
@@ -74,7 +73,16 @@ if (isset($_SESSION['badgePrinter'])) {
             $badge['badge_name'] = $badge['full_name'];
         }
 
-        if ($badge['type'] == 'full') {
+        if (($badge['type'] == 'one-day') || ($badge['type'] == 'oneday') || ($badge['type'] == 'oneDay')) {
+            $file_1day = init_file($printer);
+            write_badge($badge, $file_1day, $printer);
+            $badgefile = print_badge($printer, $file_1day);
+            $response['message'] .= $badge['day'] . ' badge for ' . $badge['badge_name'] . ' printed.';
+            if (mb_substr($printer['queue'], 0, 1) == '0') {
+                $response['message'] .= " <a href='$badgefile'>Badge</a>";
+            }
+            $response['message'] .= '<br/>';
+        } else {
             $file_full = init_file($printer);
             write_badge($badge, $file_full, $printer);
             $badgefile = print_badge($printer, $file_full);
@@ -83,17 +91,6 @@ if (isset($_SESSION['badgePrinter'])) {
                 $response['message'] .= " <a href='$badgefile'>Badge</a>";
             }
             $response['message'] .= "<br/>";
-        } else if(($badge['type'] == 'one-day') || ($badge['type']=='oneday') || ($badge['type']=='oneDay')) {
-            $file_1day = init_file($printer);
-            write_badge($badge, $file_1day, $printer);
-            $badgefile = print_badge($printer, $file_1day);
-            $response['message'] .= $badge['day'] . ' badge for ' . $badge['badge_name'] . ' printed.';
-            if(mb_substr($printer['queue'],0,1)=='0') {
-                $response['message'] .= " <a href='$badgefile'>Badge</a>";
-            }
-            $response['message'] .= "<br/>";
-        } else { // unprintable badge
-            continue;
         }
     }
     ajaxSuccess($response);

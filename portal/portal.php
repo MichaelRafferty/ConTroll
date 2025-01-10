@@ -64,6 +64,7 @@ $config_vars['initCoupon'] = $initCoupon;
 $config_vars['initCouponSerial'] = $initCouponSerial;
 $config_vars['id'] = $loginId;
 $config_vars['idType'] = $loginType;
+$config_vars['conid'] = $conid;
 $cdn = getTabulatorIncludes();
 // default memberships to empty to handle the refresh case which never loads them.
 $memberships = [];
@@ -80,6 +81,7 @@ if ($info === false) {
 $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
 if (!$refresh) {
+    $numPrimary = 0;
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
 SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, r.price AS actPrice, r.conid, r.create_date,
@@ -123,9 +125,12 @@ EOS;
                                          'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
                                          'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
             );
+            if (isPrimary($m, $conid))
+                $numPrimary++;
         }
         $holderRegR->free();
     }
+    $config_vars['numPrimary'] = $numPrimary;
 // get people managed by this account holder and their registrations
     if ($loginType == 'p') {
         $managedSQL = <<<EOS

@@ -131,7 +131,7 @@ SELECT m.id, m.perid, m.conid, m.newperid, m.interested,
 FROM memberInterests m
 LEFT OUTER JOIN perinfo p ON (p.id = m.perid)
 LEFT OUTER JOIN newperson n ON (n.id = m.newperid)
-WHERE m.conid = ? and m.interest = ? AND m.notifyDate IS NULL
+WHERE m.conid = ? and m.interest = ? AND m.notifyDate IS NULL AND (DATEDIFF(m.updateDate, m.createDate) > 0 || m.interested = 'Y')
 ORDER BY last_name, first_name, perid, newperid;
 EOS;
 
