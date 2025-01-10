@@ -360,9 +360,8 @@ EOM;
                     $emailsSent++;
 
                     $numRows = dbSafeCmd($updCSVP, 'i', array ($conid));
-                    if ($verbose) {
+                    if ($verbose)
                         echo "$numRows updated to current date for $interest";
-                    }
                 }
             }
         }
