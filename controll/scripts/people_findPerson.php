@@ -37,7 +37,9 @@ if ($findPattern == NULL || $findPattern == '') {
 }
 
 $excludeFree = '';
+$excludeJoin = '';
 if (array_key_exists('excludeFree', $_POST)) {
+    $excludeJoin = " LEFT OUTER JOIN badgeList b ON (p.id = b.perid AND b.conid = ? AND b.user_perid = ?)";
     $excludeFree = " AND b.perid IS NULL";
 }
 
@@ -70,7 +72,7 @@ WITH perids AS (
         END AS managerId,
         GROUP_CONCAT(DISTINCT TRIM(CONCAT(CASE WHEN m.conid = ? THEN '' ELSE m.conid END, ' ', m.label)) ORDER BY m.id SEPARATOR ', ') AS memberships
     FROM perinfo p
-    LEFT OUTER JOIN badgeList b ON (p.id = b.perid AND b.conid = ? AND b.user_perid = ?)
+    $excludeJoin
     LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)
     LEFT OUTER JOIN reg r ON (r.perid = p.id)
     LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
@@ -89,7 +91,14 @@ SELECT p.*, his.historyCount
 FROM perids p
 LEFT OUTER JOIN his ON (p.id = his.id);
 EOS;
-    $mR = dbSafeQuery($mQ, 'iiiiii', array($conid, $conid, $user_perid, $conid, $conid + 1, $findPattern));
+    if ($excludeJoin != '') {
+        $typestr = 'iiiiii';
+        $valArray = array($conid, $conid, $user_perid, $conid, $conid + 1, $findPattern);
+    } else {
+        $typestr = 'iiii';
+        $valArray = array($conid, $conid, $conid + 1, $findPattern);
+    }
+    $mR = dbSafeQuery($mQ, $typestr, $valArray);
 } else {
     // this is a pattern match
     $findPattern = '%' . strtolower(str_replace(' ', '%', $findPattern)) . '%';
@@ -121,7 +130,7 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
     END AS managerId,
     GROUP_CONCAT(DISTINCT TRIM(CONCAT(CASE WHEN m.conid = ? THEN '' ELSE m.conid END, ' ', m.label)) ORDER BY m.id SEPARATOR ', ') AS memberships
 FROM perinfo p
-LEFT OUTER JOIN badgeList b ON (p.id = b.perid AND b.conid = ? AND b.user_perid = ?)
+$excludeJoin
 LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)
 LEFT OUTER JOIN reg r ON (r.perid = p.id)
 LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
@@ -155,9 +164,16 @@ FROM perids p
 LEFT OUTER JOIN his ON (p.id = his.id)
 LIMIT $limit;
 EOS;
-    $mR = dbSafeQuery($mQ, 'iiiiisssssssss',
-        array ($conid, $conid, $user_perid, $conid, $conid + 1,
-           $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern));
+    if ($excludeJoin != '') {
+        $typestr = 'iiiiisssssssss';
+        $valArray = array ($conid, $conid, $user_perid, $conid, $conid + 1, $findPattern, $findPattern, $findPattern, $findPattern,
+                           $findPattern, $findPattern, $findPattern, $findPattern, $findPattern);
+    } else {
+        $typestr = 'iiisssssssss';
+        $valArray = array ($conid, $conid, $conid + 1, $findPattern, $findPattern, $findPattern, $findPattern,
+                           $findPattern, $findPattern, $findPattern, $findPattern, $findPattern);
+    }
+    $mR = dbSafeQuery($mQ, $typestr, $valArray);
 }
 if ($mR === false) {
     $response['error'] = 'Select people matching pattern failed';
