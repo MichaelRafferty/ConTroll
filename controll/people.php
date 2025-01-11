@@ -712,7 +712,7 @@ drawInterestList($interests, true);
             <div class='row mt-2'>
                 <div class='col-sm-1'></div>
                 <div class="col-sm-11">
-                    <button class='btn btn-sm btn-primary' type='button' onclick='findPerson.find();'>Find Person to Edit</button>
+                    <button class='btn btn-sm btn-primary' type='button'  id='findPersonBTN' onclick='findPerson.find();'>Find Person to Edit</button>
                     <button class='btn btn-sm btn-secondary' type='button' id='findAddPersonBTN' onclick='findPerson.addPerson();' disabled>Not found, Add New
                         Person</button>
                 </div>

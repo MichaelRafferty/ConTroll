@@ -18,6 +18,7 @@ class Find {
     // find fields
     #editModal = null;
     #historyModal = null;
+    #findPersonBTN = null;
 
     // edit person fields
     #firstName = null;
@@ -77,6 +78,8 @@ class Find {
         this.#messageDiv = document.getElementById('find_edit_message');
 
         this.#addPersonBtn = document.getElementById('findAddPersonBTN');
+        this.#findPersonBTN = document.getElementById('findPersonBTN');
+
         var id  = document.getElementById('edit-person');
         if (id) {
             this.#editModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
@@ -194,16 +197,19 @@ class Find {
         this.#managerLookupFind.hidden = true;
         this.#managesLookupFind.hidden = true;
         this.#addManages.hidden = true;
+        this.#findPersonBTN.disabled = true;
         $.ajax({
             url: script,
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                _this.#findPersonBTN.disabled = false;
                 _this.findSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
                 show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error');
+                _this.#findPersonBTN.disabled = false;
                 return false;
             }
         });
