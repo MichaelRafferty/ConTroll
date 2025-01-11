@@ -278,12 +278,17 @@ class Find {
         var row = cell.getRow();
         var index = row.getIndex()
 
-        return '<button class="btn btn-primary me-1" type="button" ' +
+        var html = '<button class="btn btn-primary me-1" type="button" ' +
             'style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
-            ' onclick="findPerson.editPerson(' + index + ');">Edit</button>' +
-            '<button class="btn btn-secondary" type="button" ' +
+            ' onclick="findPerson.editPerson(' + index + ');">Edit</button>';
+
+        var historyCount = row.getData().historyCount;
+        if (historyCount > 0) {
+            html += '<button class="btn btn-secondary" type="button" ' +
             'style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="findPerson.personHistory(' + index + ');">Hist</button>';
+        }
+        return html;
     }
 
     // select manager: select this row as manager
@@ -824,7 +829,7 @@ class Find {
             paginationSize: 50,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
-                { title: "History Id", field: "historyId", headerSort: true, },
+                { title: "History Id", field: "historyId", headerSort: true, visible: false, },
                 { title: "Change Date", field: "update_date", headerSort: true, },
                 { title: "Upd By", field: "updatedBy", headerSort: true, formatter: findPerson.colorSet, },
                 { title: "Last Name", field: 'last_name', headerWordWrap: true, formatter: findPerson.colorSet, },
