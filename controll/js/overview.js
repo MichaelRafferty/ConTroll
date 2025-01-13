@@ -163,12 +163,7 @@ function buildDaily(dailyRegCounts, today) {
     }
 
     var shapes = Array();
-    shapes.push({
-        type: 'line',
-        x0: today, y0: 0, x1: today, y1: max,
-        line: {color: 'grey', size: 1, dash: 'dash'},
-        label: {text: 'today: ' + today}
-    });
+    shapes.push({type:'line', x0:today,y0:0,x1:today,y1:max, line:{color:'rgba(128,0,128,1)', size:1}});
 
     Plotly.newPlot('DailyTrend', daily, {'title':'Membership Growth by Day', autosize:true, shapes:shapes}, {responsive:true});
 }
