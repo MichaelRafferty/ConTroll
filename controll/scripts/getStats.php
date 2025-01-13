@@ -38,14 +38,14 @@ $addlwhere = '';
 #$addlwhere = "AND (B.action = 'create' OR B.action = 'upgrade' OR B.action = 'pickup')";
 
 $dayRegQ = <<<EOF
-SELECT datediff(startdate, current_timestamp())
+SELECT datediff(enddate, current_timestamp())
 FROM conlist
 WHERE id=?;
 EOF;
 
 $dayRegA = dbSafeQuery($dayRegQ, 'i', array($conid));
 $dayReg = $dayRegA->fetch_array();
-if ($dayReg > 0) $response['today'] = $dayReg[0];
+if ($dayReg > 0) $response['today'] = $dayReg[0] - $conLen;
 
 switch($_GET['method']) {
     case 'overview': //updated 2025-01-09
@@ -220,7 +220,7 @@ EOF;
 SELECT R.conid, COUNT(R.id) cnt_all, COUNT(CASE WHEN paid>0 THEN R.id ELSE null END) as cnt_paid
 FROM reg R
 	JOIN conlist C on R.conid=C.id
-WHERE R.conid>=? and status in ('paid', 'plan')
+WHERE R.conid>=? and status='paid'
 GROUP BY R.conid
 ORDER BY R.conid;
 EOQ;
@@ -239,11 +239,7 @@ EOQ;
         break;
     case "preConTrend":
         $preconQ = <<<EOQ
-SELECT R.conid, datediff(C.startdate, R.create_date) as diff, COUNT(R.id) cnt_all, 
-       COUNT(CASE 
-           WHEN status='paid' and paid>0 THEN R.id 
-           WHEN status='plan' and paid>0 THEN R.id 
-           ELSE null END) as cnt_paid
+SELECT R.conid, datediff(C.enddate, R.create_date) as diff, COUNT(R.id) cnt_all, COUNT(CASE WHEN status='plan' and paid>0 THEN R.id ELSE null END) as cnt_plan, COUNT(CASE WHEN status='paid' and paid>0 THEN R.id ELSE null END) as cnt_paid
 FROM reg R
 	JOIN conlist C on R.conid=C.id
 WHERE R.conid>=?

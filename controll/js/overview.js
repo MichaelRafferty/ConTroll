@@ -55,18 +55,9 @@ function getBreakdown() {
                 var key;
                 $('#membershipBreakdown').append(ptr);
                 for(key in overview) {
-                    var dispLvl = 0
-                    switch(key) {
-                        case 'paid':
-                        case 'plan':
-                            dispLvl=0;
-                            break;
-                        default:
-                            dispLvl = 1;
-                    }
-                    buildBreakdownLevel(key, ptr, overview[key], 1, dispLvl);
+                    buildBreakdownLevel(key, ptr, overview[key], 2);
                 }
-                if (data['today'] && (data['today']>0)) {
+                if (data['today']) {
                     var ptr = $(document.createElement('p'));
                     ptr.html(data['today'] + ' days until con');
                     $('#membershipBreakdown').append(ptr);
@@ -79,11 +70,11 @@ function getBreakdown() {
     });
 }
 
-function buildBreakdownLevel(label, ptr, data, lvl, dispLvl=0) {
+function buildBreakdownLevel(label, ptr, data, lvl) {
     var keys = Object.keys(data);
     var next;
     var acc = 0;
-    if(lvl == 2) {
+    if(lvl == 3) {
         next = $(document.createElement('ul'));
         for (key in data) {
             var leaf = $(document.createElement('li'))
@@ -92,24 +83,21 @@ function buildBreakdownLevel(label, ptr, data, lvl, dispLvl=0) {
 
             acc += parseInt(data[key]);
         }
-        if((dispLvl == 0) || (dispLvl>=lvl)) {
-            var sum = $(document.createElement('li')).append(label + ": " + acc);
-            ptr.append(sum.append(next));
-        }
+        var sum = $(document.createElement('li')).append(label + ": " + acc);
+        ptr.append(sum.append(next));
         return acc;
     } else {
         if(keys.length > 1) {
             next = $(document.createElement('ul'));
             for (key in data) {
-                var tot = parseInt(buildBreakdownLevel(key, next, data[key], lvl+1, dispLvl));
+                var tot = parseInt(buildBreakdownLevel(key, next, data[key], lvl+1));
                 acc += parseInt(tot);
             }
-            if((dispLvl == 0) || (dispLvl>=lvl)) {
-                var sum = $(document.createElement('li')).append(label + ": " + acc);
-                ptr.append(sum.append(next));
-            }
+            var sum = $(document.createElement('li'))
+                .append(label + ": " + acc);
+            ptr.append(sum.append(next));
         } else {
-            acc = parseInt(buildBreakdownLevel(label, ptr, data[keys[0]], lvl+1, dispLvl));
+            acc = parseInt(buildBreakdownLevel(label, ptr, data[keys[0]], lvl+1));
         }
         return acc;
     }
@@ -148,10 +136,6 @@ function buildDaily(dailyRegCounts, today) {
             color = 'rgba(128,0,128,1)';
             weight = 3;
             legend = true;
-        } else if(year == 'mean') {
-            color = 'black';
-            weight = 1;
-            legend = true;
         } else {
             color = 'rgba(173,216,230,' + (0.76 - (config['conid']-year)*0.01) + ')';
             weight = 1;
@@ -179,15 +163,11 @@ function buildDaily(dailyRegCounts, today) {
     }
 
     var shapes = Array();
-    today = -today;
-    var str = " days pre-con"
-    if(today > 0) { str = " days after con start"; }
-    else {today = - today;}
     shapes.push({
         type: 'line',
         x0: today, y0: 0, x1: today, y1: max,
         line: {color: 'grey', size: 1, dash: 'dash'},
-        label: {text: today + str}
+        label: {text: 'today: ' + today}
     });
 
     Plotly.newPlot('DailyTrend', daily, {'title':'Membership Growth by Day', autosize:true, shapes:shapes}, {responsive:true});
