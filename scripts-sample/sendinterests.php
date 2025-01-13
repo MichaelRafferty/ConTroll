@@ -142,6 +142,14 @@ SELECT m.id, m.perid, m.conid, m.newperid, m.interested,
         ELSE n.last_name
     END AS last_name,
     CASE 
+        WHEN m.perid IS NOT NULL THEN p.badge_name
+        ELSE n.badge_name
+    END AS badge_name,
+    CASE 
+        WHEN m.perid IS NOT NULL THEN p.phone
+        ELSE n.phone
+    END AS phone,
+    CASE 
         WHEN m.perid IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', 
             IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
         ELSE TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ',
@@ -217,9 +225,9 @@ You have been configured by $regadminemail to receive notifications of changea t
 This is the list of updates as of $runDate
 
 EOS;
-    $csv = "lastName, firstName, fullName, emailAddr, interested\n";
+    $csv = "lastName, firstName, fullName, badgeName, emailAddr, phone, interested\n";
     foreach ($notifyList as $row) {
-        $csvRow = array($row['last_name'], $row['first_name'], $row['fullName'], $row['email_addr'], $row['interested']);
+        $csvRow = array($row['last_name'], $row['first_name'], $row['fullName'], $row['badge_name'], $row['email_addr'], $row['phone'], $row['interested']);
         $csv .= '"' . join('","', $csvRow) . '"' . PHP_EOL;
     }
 
@@ -297,6 +305,14 @@ SELECT m.perid, m.newperid,
         WHEN m.perid IS NOT NULL THEN p.last_name
         ELSE n.last_name
     END AS last_name,
+    CASE 
+        WHEN m.perid IS NOT NULL THEN p.badge_name
+        ELSE n.badge_name
+    END AS badge_name,
+    CASE 
+        WHEN m.perid IS NOT NULL THEN p.phone
+        ELSE n.phone
+    END AS phone,
     CASE 
         WHEN m.perid IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', 
             IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
