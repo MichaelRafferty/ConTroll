@@ -33,11 +33,13 @@ else
 // -n - no send,update, do not mark the records as updated, just echo what you would be doing
 // -q just show errors, be quiet about everything else
 // -t emailAddress - force all emails to go to this 'test' address
+// -u - no update (send emails but do not update the database)
 // -v verbose level (0 or missing, none, 1: progress messages, 2: progress + dumps
+// -y - only send 'Y' responses
 // -h show help instructions
 
 // get command line options
-$options = getopt('c:nqt:v:h');
+$options = getopt('c:nqt:uv:yh');
 
 if ($options === false)
     calling_seq("options did not parse correctly");
@@ -54,6 +56,8 @@ if (array_key_exists('v', $options)) {
 }
 
 $noSendUpdate = array_key_exists('n', $options);
+$noUpdadeDB = array_key_exists('u', $options);
+$yesOnly = array_key_exists('y', $options);
 $quiet = array_key_exists('q', $options);
 $testEmailAddress = null;
 if (array_key_exists('t', $options)) {
@@ -117,6 +121,11 @@ if ($lastNotifyDate == null)
 
 if ($verbose) echo "Getting People to check\n";
 $people = [];
+if ($yesOnly) {
+    $whereResp = "m.interested = 'Y'";
+} else {
+    $whereResp = "(DATEDIFF(m.updateDate, m.createDate) > 0 || m.interested = 'Y')";
+}
 
 $getP = <<<EOS
 SELECT m.id, m.perid, m.conid, m.newperid, m.interested,
@@ -141,14 +150,14 @@ SELECT m.id, m.perid, m.conid, m.newperid, m.interested,
 FROM memberInterests m
 LEFT OUTER JOIN perinfo p ON (p.id = m.perid)
 LEFT OUTER JOIN newperson n ON (n.id = m.newperid)
-WHERE m.conid = ? and m.interest = ? AND m.notifyDate IS NULL AND (DATEDIFF(m.updateDate, m.createDate) > 0 || m.interested = 'Y')
+WHERE m.conid = ? and m.interest = ? AND m.notifyDate IS NULL AND $whereResp
 ORDER BY last_name, first_name, perid, newperid;
 EOS;
 
 $updP = <<<EOS
-UPDATE memberInterests m
+UPDATE memberInterests
 SET notifyDate = NOW()
-WHERE m.conid = ? and m.interest = ? AND m.notifyDate IS NULL
+WHERE conid = ? and interest = ? AND notifyDate IS NULL
 EOS;
 
 
@@ -169,9 +178,9 @@ foreach ($interests as $interestRow) {
     }
 
     if ($testEmailAddress != null) {
-        $notifyArr = explode('l', $testEmailAddress);
+        $notifyArr = explode(',', $testEmailAddress);
     } else {
-        $notifyArr = explode('l', $notifyAddrs);
+        $notifyArr = explode(',', $notifyAddrs);
     }
     for ($index = 0; $index < count($notifyArr); $index++) {
         $notifyArr[$index] = trim($notifyArr[$index]);
@@ -224,7 +233,7 @@ EOS;
     }
 
     if (!$noSendUpdate) {
-        $return_arr = send_email($regadminemail, $notifyAddrs, $ccEmailAddress, "Interest $interest Change Notifications since $lastNotifyDate",
+        $return_arr = send_email($regadminemail, $notifyArr, $ccEmailAddress, "Interest $interest Change Notifications since $lastNotifyDate",
                                  $emailText, null, array(array("$csvSaveDir/$fname", $fname, 'application/csv')));
 
         if (array_key_exists('error_code', $return_arr)) {
@@ -239,9 +248,11 @@ EOS;
             if ($verbose) echo "Notification email sent to $notifyAddrs\n";
             $emailsSent++;
 
-            $numRows = dbSafeCmd($updP, 'is', array($conid, $interest));
-            if ($verbose) {
-                echo "$numRows updated to current date for $interest";
+            if (!$noUpdadeDB) {
+                $numRows = dbSafeCmd($updP, 'is', array ($conid, $interest));
+                if ($verbose) {
+                    echo "$numRows updated to current date for $interest";
+                }
             }
         }
     }
@@ -304,7 +315,6 @@ SET csvDate = NOW()
 WHERE csvDate IS NULL AND conid = ?;
 EOS;
 
-
     $csvGetR = dbSafeQuery($csvGetQ, 'i', array ($conid));
     if ($csvGetR === false) {
         echo "Error in csv query for $conid\n";
@@ -358,10 +368,11 @@ EOM;
                 else {
                     if ($verbose) echo "CSV Change email sent to $csvTo\n";
                     $emailsSent++;
-
-                    $numRows = dbSafeCmd($updCSVP, 'i', array ($conid));
-                    if ($verbose)
-                        echo "$numRows updated to current date for $interest";
+                    if (!$noUpdadeDB) {
+                        $numRows = dbSafeCmd($updCSVP, 'i', array ($conid));
+                        if ($verbose)
+                            echo "$numRows updated to current date for $interest";
+                    }
                 }
             }
         }
@@ -384,7 +395,9 @@ sendinterests options:
     -n - no send,update, do not mark the records as updated, just echo what you would be doing
     -q just show errors, be quiet about everything else
     -t emailAddress - force all emails to go to this 'test' address
+    -u - no update (send emails but do not update the database)
     -v verbose level (0 or missing, none, 1: progress messages, 2: progress + dumps
+    -y - only send 'Y' responses
     -h show help instructions
    
 Example:
