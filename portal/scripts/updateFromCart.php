@@ -425,7 +425,7 @@ if ($personType == 'p') {
 }
 $updInterest = <<<EOS
 UPDATE memberInterests
-SET interested = ?, updateBy = ?
+SET interested = ?, updateBy = ?, updateDate = NOW()
 WHERE id = ?;
 EOS;
 $insInterest = <<<EOS
